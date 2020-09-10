@@ -1,0 +1,41 @@
+// Copyright 2020 IBM Corp.
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+package connectors;
+option java_package = "com.datmesh";
+
+message DatasetIdentifier {
+    string dataset_id = 1;           // identifier of asset - always needed. JSON expected. Interpreted by the Connector, can contain any additional information as part of JSON
+}
+
+message DatasetContext {
+    DatasetIdentifier  dataset = 1;
+    AccessOperation operation = 2;
+}
+
+message ApplicationDetails {
+    string purpose = 1;
+    string role = 2;
+    string processing_geography = 3;
+}
+
+message AccessOperation {
+    enum AccessType {
+        UNKNOWN = 0; 
+        READ = 1;
+        COPY = 2;
+        WRITE = 3;
+    }
+
+    AccessType type = 1;
+    string destination = 2;     //Destination for transfer or write. other parameters?
+}
+
+message ApplicationContext {
+    string app_id = 1;                // string that identifies the application (namespace + appID) that will be used against secretProvider to obtain the realted credetnials
+    ApplicationDetails app_info = 2;
+    repeated DatasetContext datasets = 3;
+    repeated AccessOperation general_operations = 4;
+}
+

@@ -1,0 +1,48 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: motion.m4d.ibm.com/v1alpha1
+kind: StreamTransfer
+metadata:
+  name: {{ .Values.metadata.name }}
+  namespace: {{ .Values.metadata.namespace }}
+  labels:
+  {{ range $key, $value := .Values.metadata.labels }}
+    {{ $key }}: {{ $value }}
+  {{ end }}        
+spec:
+  source:
+    kafka:
+      kafkaBrokers: "{{ .Values.source.connection.kafka.bootstrap_servers }}"
+      schemaRegistryURL: "{{ .Values.source.connection.kafka.schema_registry }}"
+      kafkaTopic: "{{ .Values.source.connection.kafka.topic_name }}"
+      dataFormat: "{{ .Values.source.format }}"
+      # user: "demo-consumer" # can be taken from vault
+      # password: "" # can be taken from vault
+      createSnapshot: false
+      sslTruststore: "{{ .Values.source.connection.kafka.ssl_truststore }}"
+      sslTruststoreLocation: /opt/spark/work-dir/ca.p12
+      sslTruststorePassword: "{{ .Values.source.connection.kafka.ssl_truststore_password }}"
+      securityProtocol: "{{ .Values.source.connection.kafka.security_protocol }}"
+      saslMechanism: "{{ .Values.source.connection.kafka.sasl_mechanism }}"
+      keyDeserializer: "{{ .Values.source.connection.kafka.key_deserializer }}"
+      valueDeserializer: "{{ .Values.source.connection.kafka.value_deserializer }}"
+      vaultPath: "{{ .Values.source.credentialLocation }}"
+  destination:
+    s3:
+      endpoint: "{{ .Values.destination.connection.s3.endpoint }}"
+      bucket: "{{ .Values.destination.connection.s3.bucket }}"
+      objectKey: "{{ .Values.destination.connection.s3.object_key }}"
+      dataFormat: "{{ .Values.destination.format }}"
+      vaultPath: "{{ .Values.destination.credentialLocation }}"
+  transformation:
+  - name: "Remove columns"
+    action: "RemoveColumns"
+    columns: ["Latitude","Longitude"]
+  triggerInterval: "10 seconds"
+  image: ghcr.io/the-mesh-for-data/dummy-mover:latest
+  imagePullPolicy: "IfNotPresent"
+  secretProviderURL: "http://secret-provider.secret-provider.svc.cluster.local:5555/get-secret"
+  secretProviderRole: demo
+  column_name: column_value
+  noFinalizer: true

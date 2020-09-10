@@ -1,0 +1,55 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: app.m4d.ibm.com/v1alpha1
+kind: Blueprint
+metadata:
+  name: blueprint-ysqxbhyihk
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: notebook
+  entrypoint: notebook
+  flow:
+    name: notebook
+    steps:
+    - arguments:
+        flow: copy
+        copy:
+          destination:
+            connection:
+              name: S3
+              s3:
+                bucket: m4d-test-bucket
+                endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
+                object_key: small.kp.encrypted.parq
+            type: 2
+            credentialLocation: /v1/m4d/dataset-creds/m4d-test-bucket
+            format: parquet
+          source:
+            connection:
+              db2:
+                port: "5000"
+                table: NQD60833.SMALL
+                database: NQD60833
+                url: dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net
+                ssl: "true"
+            credentialLocation: "/v1/secret/data/db2/m4d"
+            format: table
+          transformations:
+          - enforcementActionArgs:
+              column: name-orig2
+            enforcementActionID: redact-ID
+            enforcementActionLevel: 2
+            enforcementActionName: redact
+        readargs: {}
+        writeargs: {}
+      name: notebook-implicit-copy-db2wh-to-s3-latest-fgjzkfwykn
+      template: implicit-copy-db2wh-to-s3-latest
+  templates:
+  - name: implicit-copy-db2wh-to-s3-latest
+    kind: M4DModule
+    flow: copy
+    resources:
+    - ghcr.io/the-mesh-for-data/m4d-db2wh:0.1.0

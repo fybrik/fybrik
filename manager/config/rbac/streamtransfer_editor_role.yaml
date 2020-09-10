@@ -1,0 +1,29 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+# permissions to do edit streamtransfers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: streamtransfer-editor-role
+rules:
+- apiGroups:
+  - motion.m4d.ibm.com
+  resources:
+  - streamtransfers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - motion.m4d.ibm.com
+  resources:
+  - streamtransfers/status
+  verbs:
+  - get
+  - patch
+  - update

@@ -1,0 +1,771 @@
+<!--
+ Copyright 2020 IBM Corp.
+ SPDX-License-Identifier: Apache-2.0
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<!-- <groupId>org.jpdna.grpchello</groupId> -->
+	<groupId>com.ibm.egeria</groupId>
+	<artifactId>egeriaconnector</artifactId>
+	<packaging>jar</packaging>
+	<version>1.0-SNAPSHOT</version>
+	<name>egeriaconnector</name>
+	<url>http://maven.apache.org</url>
+
+
+	<properties>
+		<compileSource>1.8</compileSource>
+	</properties>
+
+
+	<dependencies>
+		<dependency>
+			<groupId>org.mock-server</groupId>
+			<artifactId>mockserver-netty</artifactId>
+			<scope>test</scope>
+			<version>5.10.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mock-server</groupId>
+			<artifactId>mockserver-client-java</artifactId>
+			<scope>test</scope>
+			<version>5.10.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mock-server</groupId>
+			<artifactId>mockserver-core</artifactId>
+			<scope>test</scope>
+			<version>5.10.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-all</artifactId>
+			<version>1.29.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>javax.json</artifactId>
+			<version>1.0.4</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.json</groupId>
+			<artifactId>javax.json-api</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.avaje.composite</groupId>
+			<artifactId>logback</artifactId>
+			<version>1.1</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.8.6</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.6</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>okhttp</artifactId>
+			<version>3.12.1</version>
+		  </dependency>
+
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>1.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.9</version>
+		</dependency>
+
+		<!-- newly put -->
+
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>2.13.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.13.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>2.13.3</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.13.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.wnameless.json</groupId>
+			<artifactId>json-base</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.github.wnameless.json</groupId>
+			<artifactId>json-flattener</artifactId>
+			<version>0.8.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>1.8</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.eclipsesource.minimal-json</groupId>
+			<artifactId>minimal-json</artifactId>
+			<version>0.9.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+	</dependencies>
+
+
+	<pluginRepositories>
+		<pluginRepository>
+			<releases>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+		</pluginRepository>
+		<pluginRepository>
+			<id>protoc-plugin</id>
+			<url>https://dl.bintray.com/sergei-ivanov/maven/</url>
+		</pluginRepository>
+	</pluginRepositories>
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+		</resources>
+		<extensions>
+			<extension>
+				<groupId>kr.motd.maven</groupId>
+				<artifactId>os-maven-plugin</artifactId>
+				<version>1.4.0.Final</version>
+			</extension>
+		</extensions>
+		<plugins>
+			<plugin>
+				<groupId>com.google.protobuf.tools</groupId>
+				<artifactId>maven-protoc-plugin</artifactId>
+				<version>0.4.2</version>
+				<configuration>
+					<!--
+	      The version of protoc must match protobuf-java. If you don't depend on
+	      protobuf-java directly, you will be transitively depending on the
+	      protobuf-java version that grpc depends on.
+	  -->
+					<protoSourceRoot>${project.basedir}/../../pkg/connectors/protos/</protoSourceRoot>
+					<!-- <protoSourceRoot>${project.basedir}/../../service/protos-catalogconnector/</protoSourceRoot> -->
+					<protocArtifact>com.google.protobuf:protoc:3.0.0-beta-1:exe:${os.detected.classifier}</protocArtifact>
+					<pluginId>grpc-java</pluginId>
+					<!-- using newer grpc version to address exception handling -->
+					<!-- <pluginArtifact>io.grpc:protoc-gen-grpc-java:0.9.0:exe:${os.detected.classifier}</pluginArtifact> -->
+					<pluginArtifact>io.grpc:protoc-gen-grpc-java:1.29.0:exe:${os.detected.classifier}</pluginArtifact>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+							<goal>compile-custom</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.2</version>
+				<configuration>
+					<source>${compileSource}</source>
+					<target>${compileSource}</target>
+					<showDeprecation>true</showDeprecation>
+					<showWarnings>true</showWarnings>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>jpmygroup.App</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-jar-with-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.jsonschema2pojo</groupId>
+				<artifactId>jsonschema2pojo-maven-plugin</artifactId>
+				<version>1.0.2</version>
+				<executions>
+					<execution>
+						<id>execution1</id>
+						<configuration>
+							<sourceDirectory>${basedir}/src/main/resources/json/asset</sourceDirectory>
+							<outputDirectory>${basedir}/src/main/java</outputDirectory>
+							<includeConstructors>true</includeConstructors>
+							<includeAdditionalProperties>false</includeAdditionalProperties>
+							<targetPackage>com.ibm.generatedsources.asset</targetPackage>
+							<annotationStyle>gson</annotationStyle>
+							<sourceType>json</sourceType>
+							<usePrimitives>true</usePrimitives>
+							<useLongIntegers>true</useLongIntegers>
+							<generateBuilders>true</generateBuilders>
+						</configuration>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- for maven site -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.7.1</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>3.0.0</version>
+			</plugin>
+			<!-- for maven site -->
+			<!-- for jxr  -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jxr-plugin</artifactId>
+				<version>3.0.0</version>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>jxr</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- for jxr  -->
+
+			<!-- for checkstyle  -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>3.1.1</version>
+				<configuration>
+					<!-- <configLocation>checkstyle/checkstyle.xml</configLocation> -->
+					<!-- <configLocation>checkstyle.xml</configLocation> -->
+					<!-- <encoding>UTF-8</encoding> -->
+					<consoleOutput>true</consoleOutput>
+					<!-- <failsOnError>true</failsOnError> -->
+					<linkXRef>true</linkXRef>
+					<failOnViolation>true</failOnViolation>
+					<excludes>**/generatedsources/**/*.java, **/data_catalog_service/**/*.java, **/AssetMetaData.java, **/ConnectionMetaData.java</excludes>
+
+					<!-- <exclude>**/*Bean.java</exclude> -->
+					<!-- <excludes>**/generatedsources/**/*.java, **/data_catalog_service/**/*.java, **/AssetMetaData.java, **/ConnectionMetaData.java</excludes> -->
+					<sourceDirectories>
+						<sourceDirectory>src/main/java</sourceDirectory>
+						<sourceDirectory>src/test</sourceDirectory>
+						<sourceDirectory>src/main/resources</sourceDirectory>
+					</sourceDirectories>
+
+					<configLocation>checkstyle-conf/checkstyle.xml</configLocation>
+					<outputDirectory>${project.build.directory}/output_from_static_code_analysis_tools/checkstyle</outputDirectory>
+					<!-- https://stackoverflow.com/questions/48881957/maven-checkstyle-plugin-change-location-of-file-checkstyle-checker-xml-in-pr -->
+					<cacheFile default-value="${project.build.directory}/output_from_static_code_analysis_tools/checkstyle-cache/checkstyle" />
+					<outputFile default-value="${project.build.directory}/output_from_static_code_analysis_tools/checkstyle/checkstyle-result.xml"></outputFile>
+					<!-- <propertiesLocation>${project.build.directory}/output_from_static_code_analysis_tools/checkstyle/checkstyle-checker.properties</propertiesLocation> -->
+				</configuration>
+				<executions>
+					<execution>
+						<id>noFailOnError</id>
+						<!-- <phase>verify</phase> -->
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<failOnViolation>false</failOnViolation>
+						</configuration>
+					</execution>
+					<execution>
+						<id>failOnError</id>
+						<!-- <phase>install</phase> -->
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<failOnViolation>true</failOnViolation>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- for checkstyle  -->
+
+			<!-- for spotbugs -->
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<version>4.0.0</version>
+				<dependencies>
+					<!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
+					<!-- <dependency>
+			<groupId>com.github.spotbugs</groupId>
+			<artifactId>spotbugs</artifactId>
+			<version>4.0.3</version>
+		</dependency> -->
+				</dependencies>
+				<configuration>
+					<linkXRef>true</linkXRef>
+					<!-- <onlyAnalyze>org.rf.-,org.robotframework.-</onlyAnalyze>		 -->
+					<onlyAnalyze>com.ibm.egeria.EgeriaClient,com.ibm.egeria.EgeriaConnector,com.ibm.egeria.CustomException</onlyAnalyze>
+					<excludeFilterFile>spotbugs-conf/spotbugs-exclude.xml</excludeFilterFile>
+					<!-- <includeFilterFile>spotbugs-include.xml</includeFilterFile> -->
+					<!--
+				Enables analysis which takes more memory but finds more bugs.
+				If you run out of memory, changes the value of the effort element
+				to 'Low'.
+			-->
+					<effort>Max</effort>
+					<!-- Reports all bugs (other values are medium and max) -->
+					<threshold>Low</threshold>
+					<!-- Produces XML report -->
+					<xmlOutput>false</xmlOutput>
+					<!-- Configures the directory in which the XML report is created -->
+					<spotbugsXmlOutputDirectory>${project.build.directory}/output_from_static_code_analysis_tools/spotbugs</spotbugsXmlOutputDirectory>
+					<failOnError>true</failOnError>
+					<!-- Ref: https://stackoverflow.com/questions/1073656/problems-with-findbugs-exclude-filter, http://findbugs.sourceforge.net/manual/filter.html -->
+					<!-- <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile> -->
+					<!-- findbugs output directory -->
+					<!-- <outputDirectory>${env.WORKSPACE}/output_from_static_code_analysis_tools/</outputDirectory> -->
+					<!-- <outputDirectory>${project.build.directory}/output_from_static_code_analysis_tools/spotbugs</outputDirectory>  -->
+					<!-- <xmlOutputDirectory>${project.build.directory}/output_from_static_code_analysis_tools/spotbugs</xmlOutputDirectory> -->
+					<!-- <findbugsXmlOutputDirectory>${project.build.directory}/output_from_static_code_analysis_tools/findbugs</findbugsXmlOutputDirectory> -->
+					<xrefLocation>${project.build.directory}/output_from_static_code_analysis_tools/xref</xrefLocation>
+					<!-- plugin to a plugin !! -->
+					<!-- Ref: https://slacker.ro/2019/12/20/five-tools-to-improve-your-java-code/?__cf_chl_jschl_tk__=ab018881a6882801cc7343bdec9ab810ab09db17-1590320306-0-ARplckm0iliWnyH7lFAWb5wl8qcHcbHyCzNJS7aAgppjUqKf03MMxRRZ3XHV5ucNCE5ZikPBYwT199QOIPFKSBjwBzA2dsLb9h21ua-DtTwAI4DaNXSZwdECgC_MtiBy8zlCoY3ONLTwr2UHhzd7Arzj1qfur_T_jmY0ffd8nAqimCcznSZjslNKB-Hid9Fdj9tEubflJjsr94nHMJIi7TY_UspgOdBLrib4qof6zVckYNxbBW8jDXyDkZPWdRVrgfhwS0HCgmNYSvoMoe9kFkomp7voTmYCLO1q6MOZqqPzMvKi2m4KjUReLM9LCap6BOr9GmVtd98BAStS7jikzYo#3-conduct-bytecode-analysis-with-spotbugs-and-find-security-bugs-->
+					<!-- VVIMP : uncoment below to avoid more bugs !! :) -->
+					<plugins>
+						<plugin>
+							<groupId>com.h3xstream.findsecbugs</groupId>
+							<artifactId>findsecbugs-plugin</artifactId>
+							<version>1.10.1</version>
+						</plugin>
+
+						<plugin>
+							<groupId>com.mebigfatguy.fb-contrib</groupId>
+							<artifactId>fb-contrib</artifactId>
+							<!-- <version>7.4.7</version> -->
+							<!-- some exception is coming if i use above - bcel exception -->
+							<!-- Ref: https://sourceforge.net/p/fb-contrib/discussion/493264/thread/f62b6831/?limit=25 -->
+							<version> 7.4.0.sb</version>
+						</plugin>
+						<plugin>
+							<groupId>jp.skypencil.findbugs.slf4j</groupId>
+							<artifactId>bug-pattern</artifactId>
+							<version>LATEST</version>
+						</plugin>
+					</plugins>
+				</configuration>
+				<executions>
+					<!--
+				Ensures that FindBugs inspects source code when project is compiled.
+			-->
+					<!-- <execution>
+				<id>analyze-compile</id>
+				<phase>compile</phase>
+				<goals>
+					<goal>check</goal>
+				</goals>
+			</execution> -->
+					<!-- Ref: https://stackoverflow.com/questions/38632682/maven-execute-a-goal-on-build-fail-findbugs#comment64654907_38632682, https://stackoverflow.com/questions/38632682/maven-execute-a-goal-on-build-fail-findbugs/38655823#38655823 -->
+					<execution>
+						<id>noFailOnError</id>
+						<!-- <phase>verify</phase> -->
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<failOnError>false</failOnError>
+						</configuration>
+					</execution>
+					<execution>
+						<id>failOnError</id>
+						<!-- <phase>install</phase> -->
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<failOnError>true</failOnError>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+
+			<!-- Ref: https://www.petrikainulainen.net/programming/maven/findbugs-maven-plugin-tutorial/ -->
+			<!-- Ref: https://stackoverflow.com/questions/7035112/any-easy-way-to-generate-a-findbug-html-report-from-maven-without-sitesite/10365954#10365954 -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>xml-maven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>transform</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<transformationSets>
+						<transformationSet>
+							<dir>${project.build.directory}/output_from_static_code_analysis_tools/spotbugs</dir>
+							<excludes>*.html</excludes>
+							<excludes>*.jar</excludes>
+							<outputDir>${project.build.directory}/output_from_static_code_analysis_tools/spotbugs</outputDir>
+							<stylesheet>spotbugs-conf/color.xsl</stylesheet>
+							<fileMappers>
+								<fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+									<targetExtension>.html</targetExtension>
+								</fileMapper>
+							</fileMappers>
+						</transformationSet>
+						<transformationSet>
+							<dir>${project.build.directory}/output_from_static_code_analysis_tools/checkstyle</dir>
+							<excludes>*.html</excludes>
+							<excludes>*.jar</excludes>
+							<outputDir>${project.build.directory}/output_from_static_code_analysis_tools/checkstyle</outputDir>
+							<!-- https://stackoverflow.com/questions/48010137/generate-html-checkstyle-report-with-maven -->
+							<stylesheet>checkstyle-conf/checkstyle-author.xsl</stylesheet>
+							<fileMappers>
+								<fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+									<targetExtension>.html</targetExtension>
+								</fileMapper>
+							</fileMappers>
+						</transformationSet>
+					</transformationSets>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<!-- <groupId>com.google.code.findbugs</groupId>
+				<artifactId>findbugs</artifactId>
+				<version>2.0.0</version> -->
+						<groupId>com.github.spotbugs</groupId>
+						<artifactId>spotbugs</artifactId>
+						<version>4.0.3</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
+			<!-- for pmd static code analysis plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>createPMDXMLDir</id>
+						<phase>process-resources</phase>
+						<configuration>
+							<tasks>
+								<!-- <delete dir="${thrift.dir}"/> -->
+								<mkdir dir="${project.build.directory}/output_from_static_code_analysis_tools/pmd-html" />
+							</tasks>
+
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>createXREFDir</id>
+						<phase>process-resources</phase>
+						<configuration>
+							<tasks>
+								<!-- <copy file="target/site/xref"
+										tofile="${project.build.directory}/output_from_static_code_analysis_tools/pmd-html/xref" /> -->
+								<!-- includes="**/*.java"
+										excludes="**/Test.java"/> -->
+								<copy todir="${project.build.directory}/output_from_static_code_analysis_tools/pmd-html/xref">
+									<fileset dir="target/site/xref" includes="**" />
+								</copy>
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<version>3.13.0</version>
+				<configuration>
+					<!-- <xrefLocation>${project.build.directory}/output_from_static_code_analysis_tools/pmd/xref</xrefLocation>		 -->
+					<outputDirectory>${project.build.directory}/output_from_static_code_analysis_tools/pmd-html</outputDirectory>
+					<targetDirectory>${project.build.directory}/output_from_static_code_analysis_tools/pmd</targetDirectory>
+					<rulesetsTargetDirectory>${project.build.directory}/output_from_static_code_analysis_tools/pmd</rulesetsTargetDirectory>
+					<aggregate>true</aggregate>
+					<verbose>true</verbose>
+					<linkXref>true</linkXref>
+					<!-- failOnViolation is actually true by default, but can be disabled -->
+					<failOnViolation>true</failOnViolation>
+					<!-- printFailingErrors is pretty useful -->
+					<printFailingErrors>true</printFailingErrors>
+
+					<excludes>
+						<!-- <exclude>**/*Bean.java</exclude> -->
+						<exclude>**/generatedsources/**/*.java</exclude>
+						<exclude>**/AssetMetaData.java</exclude>
+						<exclude>**/protobuf/**/*.java</exclude>
+						<!-- <exclude>**/AssetMetaDataHelper.java</exclude>			 -->
+						<exclude>**/data_catalog_service/**/*.java</exclude>
+						<exclude>**/ConnectionMetaData.java</exclude>
+					</excludes>
+					<excludeRoots>
+						<excludeRoot>target/generated-sources</excludeRoot>
+						<excludeRoot>target/generated-sources/protobuf</excludeRoot>
+					</excludeRoots>
+					<!-- <skipPmdError>false</skipPmdError>
+					<failurePriority>2</failurePriority> -->
+				</configuration>
+				<executions>
+					<!-- Ref: https://stackoverflow.com/questions/38632682/maven-execute-a-goal-on-build-fail-findbugs#comment64654907_38632682, https://stackoverflow.com/questions/38632682/maven-execute-a-goal-on-build-fail-findbugs/38655823#38655823 -->
+					<execution>
+						<id>noFailOnError</id>
+						<!-- <phase>verify</phase> -->
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>check</goal>
+							<goal>cpd</goal>
+						</goals>
+						<configuration>
+							<failOnViolation>false</failOnViolation>
+						</configuration>
+					</execution>
+					<execution>
+						<id>failOnError</id>
+						<!-- <phase>install</phase> -->
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+							<goal>cpd</goal>
+						</goals>
+						<configuration>
+							<failOnViolation>true</failOnViolation>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- for pmd static code analysis plugin -->
+
+		</plugins>
+	</build>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jxr-plugin</artifactId>
+				<version>3.0.0</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>3.1.1</version>
+				<configuration>
+					<!-- <configLocation>checkstyle.xml</configLocation> -->
+					<!-- <encoding>UTF-8</encoding> -->
+					<consoleOutput>true</consoleOutput>
+					<!-- <failsOnError>false</failsOnError> -->
+					<linkXRef>true</linkXRef>
+					<!-- <failOnViolation>false</failOnViolation> -->
+
+					<sourceDirectories>
+						<sourceDirectory>src/main/java</sourceDirectory>
+						<sourceDirectory>src/test</sourceDirectory>
+						<sourceDirectory>src/main/resources</sourceDirectory>
+					</sourceDirectories>
+
+					<!-- <exclude>**/*Bean.java</exclude> -->
+					<!-- <excludes>**/generated-sources/**/*.java, **/target/generated-sources/**/*.java</excludes>				 -->
+
+					<!-- <exclude>**/*Bean.java</exclude> -->
+					<!-- <excludes>**/generated*/**/*</excludes> -->
+					<!-- <excludes>**/generated-sources/**/PCServiceGrpc.java, **/generated-sources/**/PolicyCompilerRequest.java,  **/generated-sources/**/PolicyCompilerResponse.java, **/generated-sources/**/PolicyCompilerService.java</excludes> -->
+
+					<configLocation>checkstyle-conf/checkstyle.xml</configLocation>
+
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<version>4.0.0</version>
+
+				<configuration>
+					<linkXRef>true</linkXRef>
+					<classFilesDirectory>${project.build.outputDirectory}</classFilesDirectory>
+					<spotbugsXmlOutputDirectory>${project.build.directory}/output_from_static_code_analysis_tools/spotbugs</spotbugsXmlOutputDirectory>
+					<!-- <onlyAnalyze>org.rf.-,org.robotframework.-</onlyAnalyze>		 -->
+					<onlyAnalyze>com.ibm.egeria.EgeriaClient,com.ibm.egeria.EgeriaConnector,com.ibm.egeria.CustomException</onlyAnalyze>
+					<excludeFilterFile>spotbugs-conf/spotbugs-exclude.xml</excludeFilterFile>
+					<!-- <includeFilterFile>spotbugs-include.xml</includeFilterFile> -->
+					<!--
+					Enables analysis which takes more memory but finds more bugs.
+					If you run out of memory, changes the value of the effort element
+					to 'Low'.
+				-->
+					<effort>Max</effort>
+					<!-- Reports all bugs (other values are medium and max) -->
+					<threshold>Low</threshold>
+					<!-- Produces XML report -->
+					<xmlOutput>true</xmlOutput>
+					<!-- Configures the directory in which the XML report is created -->
+					<xmlOutputDirectory>${project.build.directory}/output_from_static_code_analysis_tools/spotbugs</xmlOutputDirectory>
+					<failOnError>false</failOnError>
+					<!-- Ref: https://stackoverflow.com/questions/1073656/problems-with-findbugs-exclude-filter, http://findbugs.sourceforge.net/manual/filter.html -->
+					<!-- <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile> -->
+					<!-- findbugs output directory -->
+					<!-- <outputDirectory>${env.WORKSPACE}/output_from_static_code_analysis_tools/</outputDirectory> -->
+					<outputDirectory>${project.build.directory}/output_from_static_code_analysis_tools/spotbugs</outputDirectory>
+					<!-- <xmlOutputDirectory>${project.build.directory}/output_from_static_code_analysis_tools/spotbugs</xmlOutputDirectory> -->
+					<!-- <findbugsXmlOutputDirectory>${project.build.directory}/output_from_static_code_analysis_tools/findbugs</findbugsXmlOutputDirectory> -->
+					<!-- <xrefLocation>${project.build.directory}/output_from_static_code_analysis_tools/xref</xrefLocation>		 -->
+					<!-- plugin to a plugin !! -->
+					<!-- Ref: https://slacker.ro/2019/12/20/five-tools-to-improve-your-java-code/?__cf_chl_jschl_tk__=ab018881a6882801cc7343bdec9ab810ab09db17-1590320306-0-ARplckm0iliWnyH7lFAWb5wl8qcHcbHyCzNJS7aAgppjUqKf03MMxRRZ3XHV5ucNCE5ZikPBYwT199QOIPFKSBjwBzA2dsLb9h21ua-DtTwAI4DaNXSZwdECgC_MtiBy8zlCoY3ONLTwr2UHhzd7Arzj1qfur_T_jmY0ffd8nAqimCcznSZjslNKB-Hid9Fdj9tEubflJjsr94nHMJIi7TY_UspgOdBLrib4qof6zVckYNxbBW8jDXyDkZPWdRVrgfhwS0HCgmNYSvoMoe9kFkomp7voTmYCLO1q6MOZqqPzMvKi2m4KjUReLM9LCap6BOr9GmVtd98BAStS7jikzYo#3-conduct-bytecode-analysis-with-spotbugs-and-find-security-bugs-->
+					<!-- VVIMP : uncoment below to avoid more bugs !! :) -->
+					<plugins>
+						<plugin>
+							<groupId>com.h3xstream.findsecbugs</groupId>
+							<artifactId>findsecbugs-plugin</artifactId>
+							<version>1.10.1</version>
+						</plugin>
+
+						<!-- Ref: https://search.maven.org/artifact/com.mebigfatguy.fb-contrib/fb-contrib/7.4.7/jar-->
+						<plugin>
+							<groupId>com.mebigfatguy.fb-contrib</groupId>
+							<artifactId>fb-contrib</artifactId>
+							<!-- <version>7.4.7</version> -->
+							<!-- some exception is coming if i use above - bcel exception -->
+							<!-- Ref: https://sourceforge.net/p/fb-contrib/discussion/493264/thread/f62b6831/?limit=25 -->
+							<version>7.4.0.sb</version>
+						</plugin>
+						<plugin>
+							<groupId>jp.skypencil.findbugs.slf4j</groupId>
+							<artifactId>bug-pattern</artifactId>
+							<version>LATEST</version>
+						</plugin>
+					</plugins>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<version>3.13.0</version>
+				<configuration>
+					<aggregate>true</aggregate>
+					<verbose>true</verbose>
+					<linkXref>true</linkXref>
+					<printFailingErrors>true</printFailingErrors>
+					<excludes>
+						<exclude>**/protobuf/**/*.java</exclude>
+					</excludes>
+					<excludeRoots>
+						<excludeRoot>target/generated-sources/protobuf</excludeRoot>
+					</excludeRoots>
+				</configuration>
+
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>pmd</report>
+							<report>cpd</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+
+
+
+		</plugins>
+	</reporting>
+
+</project>

@@ -1,0 +1,4 @@
+Flask>=0.10.1
+requests
+pyhcl>=0.4.4
+argparse

@@ -1,0 +1,21 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: {{ include "m4d-proxy.instance" . }}
+  labels:
+    {{- include "m4d-proxy.labels" . | nindent 4 }}
+spec:
+  hosts:
+  - {{ .Values.proxy.host }}
+  ports:
+  - name: http
+    number: 80
+    protocol: HTTP
+  - name: https
+    number: 443
+    protocol: HTTPS
+  location: MESH_EXTERNAL
+  resolution: DNS

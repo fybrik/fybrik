@@ -1,0 +1,1 @@
+Deployed {{ include "m4d-db2wh.fullname" . }}

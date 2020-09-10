@@ -1,0 +1,19 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ include "m4d-proxy.instance" . }}
+  labels:
+    {{- include "m4d-proxy.labels" . | nindent 4 }}
+spec:
+  selector:
+    service.istio.io/canonical-name: {{ include "m4d-proxy.egressgateway" . }}
+  servers:
+  - hosts:
+    -  {{ include "m4d-proxy.fqdn" . }}
+    port:
+      name: http
+      number: 80
+      protocol: HTTP

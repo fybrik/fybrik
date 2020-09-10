@@ -1,0 +1,11 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+# Adds namespace to all resources.
+namespace: m4d-system
+
+bases:
+- ../default
+
+patchesStrategicMerge:
+- manager_patch.yaml

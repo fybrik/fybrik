@@ -1,0 +1,19 @@
+apiVersion: app.m4d.ibm.com/v1alpha1
+kind: M4DApplication
+metadata:
+  name: notebook-with-kubeflow
+  labels:
+    app: kf-notebook
+spec:
+  selector:
+    matchLabels:
+      app: kf-notebook
+  appInfo:
+    purpose: fraud-detection
+    processingGeography: US
+    role: Security
+  data:
+    - dataSetID: "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"ASSET_ID\"}"
+      ifDetails: 
+        protocol: m4d-arrow-flight
+        dataformat: arrow

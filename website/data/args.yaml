@@ -1,0 +1,13 @@
+name: "The Mesh for Data"
+
+# The primary version identifier the docs describe, used throughout the site
+version: "0.1"
+
+# The full version identifier the docs describe
+full_version: "0.1.0"
+
+github_base: "github.com/IBM"
+
+github_repo: "the-mesh-for-data"
+
+website: "website"
