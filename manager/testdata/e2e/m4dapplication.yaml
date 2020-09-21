@@ -1,0 +1,31 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: app.m4d.ibm.com/v1alpha1
+kind: M4DApplication
+metadata:
+  name: notebook
+  labels:
+    app: notebook
+spec:
+  selector:
+   matchLabels:
+    app: notebook
+  appInfo:
+    purpose: fraud-detection
+    processingGeography: US
+    role: Security
+  data:
+    - dataSetID: '{"asset_id": "xxx", "catalog_id": "kafka"}'
+      ifDetails:
+        protocol: m4d-arrow-flight
+        dataformat: arrow
+    - dataSetID: '{"asset_id": "yyy", "catalog_id": "s3"}'
+      ifDetails:
+        protocol: m4d-arrow-flight
+        dataformat: arrow
+    - dataSetID: '{"asset_id": "zzz", "catalog_id": "db2"}'
+      ifDetails:
+        protocol: m4d-arrow-flight
+        dataformat: arrow
+

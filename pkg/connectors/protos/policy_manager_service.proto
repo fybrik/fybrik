@@ -1,0 +1,17 @@
+// Copyright 2020 IBM Corp.
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package connectors;
+option java_package = "com.datmesh";
+
+import "policy_manager_request.proto";
+import "policy_manager_response.proto";
+
+service PolicyManagerService {
+	
+	rpc GetPoliciesDecisions (ApplicationContext) returns (PoliciesDecisions) {}
+
+} 
+

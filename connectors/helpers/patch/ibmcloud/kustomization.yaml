@@ -1,0 +1,25 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+bases:
+- ../../base
+
+images:
+- name: egr-connector
+  newName: ghcr.io/the-mesh-for-data/egr-connector
+  newTag: latest
+- name: egeria-mock
+  newName: ghcr.io/the-mesh-for-data/egeria-mock
+  newTag: latest
+- name: opa-connector
+  newName: ghcr.io/the-mesh-for-data/opa-connector
+  newTag: latest
+- name: policy-compiler-mock
+  newName: ghcr.io/the-mesh-for-data/policy-compiler-mock
+  newTag: latest
+- name: vault-connector
+  newName: ghcr.io/the-mesh-for-data/vault-connector
+  newTag: latest
+- name: wkc-connector
+  newName: ghcr.io/the-mesh-for-data/wkc-connector
+  newTag: latest

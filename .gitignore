@@ -1,0 +1,49 @@
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+.DS_Store
+
+# Kubernetes Generated files - skip generated files, except for vendored files
+
+!vendor/**/zz_generated.*
+
+# editor and IDE paraphernalia
+.idea
+*.swp
+*.swo
+*~
+.vscode
+.history
+.netrc
+
+.log
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history
+
+#generated code
+**/generatedsources/*
+**/target/*
+
+# Build binaries
+test/services/pilot/catalog-credential-mock/catalog-credential-mock
+test/services/pilot/policy-manager-mock/policy-manager-mock
+connectors/opa/opa_connector
+connectors/vault/vault_connector
+connectors/egeria/target

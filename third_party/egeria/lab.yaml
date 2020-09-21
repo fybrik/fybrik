@@ -1,0 +1,9 @@
+service:
+  type: ClusterIP
+  nodeport:
+    jupyter: 0
+    core: 0
+    datalake: 0
+    dev: 0
+    factory: 0
+    ui: 0

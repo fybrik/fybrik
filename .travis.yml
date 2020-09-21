@@ -1,0 +1,168 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+language: go
+
+services:
+- docker
+
+addons:
+  apt:
+    packages:
+      - python3
+      - python3-pip
+      - python3-setuptools
+      - asciidoctor
+      - conntrack
+      - ethtool
+
+os:
+- linux
+
+go:
+- "1.13"
+
+git:
+  depth: 3
+
+cache:
+  directories:
+  - $GOPATH/pkg/mod
+  - $HOME/.m2
+  - $HOME/gopath/src/github.com/ibm/the-mesh-for-data/hack/tools/bin
+
+go_import_path: github.com/ibm/the-mesh-for-data
+
+# Install must be set to prevent default `go get` to run.
+# The dependencies have already been vendored by `dep` so
+# we don't need to fetch them.
+install:
+-
+
+jobs:
+  include: 
+  - stage: warm-cache 
+    name: "Warm Cache"
+    install:
+    - make install-tools
+    - go mod download
+    script: true
+
+  - stage: verify-build-test-code
+    name: "Verify and test"
+    install:
+    - make install-tools
+    script:
+    - make verify || travis_terminate 1;
+    - git diff
+    - make test
+  - stage: verify-build-test-code
+    name: "Build binaries"
+    install:
+    - make install-tools
+    script:
+    - make build
+
+  # FIXME(hunchback): disabled as its' taking 15m to run
+  # - stage: verify-license
+  #   install:
+  #   script:
+  #   - make license
+
+  - stage: integration-tests
+    name: "Integration tests for manager"
+    install:
+    - make install-tools
+    script:
+    - make kind || travis_terminate 1;
+    - make cluster-prepare || travis_terminate 1;
+    - make install || travis_terminate 1;
+    - make e2e
+  - stage: integration-tests
+    name: "Integration tests for helm"
+    env:
+    - DOCKER_HOSTNAME=localhost:5000
+    - DOCKER_NAMESPACE=m4d
+    script:
+    - make kind || travis_terminate 1;
+    - make helm
+
+  - stage: build-and-push
+    name: "Build and push docker images"
+    install:
+    - make install-tools
+    script:
+    - make docker-build
+    deploy:
+      skip_cleanup: true
+      provider: script
+      script: make docker-push
+      on:
+        branch: master
+  - stage: build-and-push
+    name: "Build and push helm charts"
+    install:
+    - make install-tools
+    script:
+    deploy:
+      skip_cleanup: true
+      provider: script
+      script: make -C modules helm-chart-push
+      on:
+        branch: master
+  - stage: build-and-push
+    name: "Build and publish website"
+    env:
+    - WEBSITE_LOCAL_DIR=public
+    script:
+    - make -C website
+    deploy:
+      skip_cleanup: true
+      provider: pages
+      local_dir: website/$WEBSITE_LOCAL_DIR
+      github_url: github.ibm.com
+      github_token: $GITHUB_TOKEN # Set in travis-ci dashboard
+      on:
+        branch: master
+
+  - stage: verify-deploy
+    name: "Verify deploy"
+    env:
+    - COMPONENT=secret-provider
+    - CLUSTER=kind
+    - REGISTRY=ibmcloud
+    install:
+    - make install-tools
+    script:
+    - make $CLUSTER || travis_terminate 1;
+    - make cluster-prepare || travis_terminate 1;
+    - make -C $COMPONENT deploy
+  - stage: verify-deploy
+    name: "Verify deploy"
+    env:
+    - COMPONENT=manager
+    - CLUSTER=kind
+    - REGISTRY=ibmcloud
+    install:
+    - make install-tools
+    script:
+    - make $CLUSTER || travis_terminate 1;
+    - make cluster-prepare || travis_terminate 1;
+    - make -C $COMPONENT deploy
+  - stage: verify-deploy
+    name: "Verify deploy"
+    env:
+    - COMPONENT=connectors
+    - CLUSTER=kind
+    - REGISTRY=ibmcloud
+    install:
+    - make install-tools
+    script:
+    - make $CLUSTER || travis_terminate 1;
+    - make cluster-prepare || travis_terminate 1;
+    - make -C third_party/opa deploy || travis_terminate 1;
+    - make -C third_party/egeria deploy || travis_terminate 1;
+    - make -C $COMPONENT deploy
+
+notifications:
+  email: false

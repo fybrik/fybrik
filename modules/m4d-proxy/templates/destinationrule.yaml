@@ -1,0 +1,19 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: {{ include "m4d-proxy.instance" . }}
+  labels:
+    {{- include "m4d-proxy.labels" . | nindent 4 }}
+spec:
+  host: {{ .Values.proxy.host }}
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+    portLevelSettings:
+    - port:
+        number: 443
+      tls:
+        mode: SIMPLE

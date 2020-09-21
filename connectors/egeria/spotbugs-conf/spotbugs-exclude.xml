@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!--
+ Copyright 2020 IBM Corp.
+ SPDX-License-Identifier: Apache-2.0
+-->
+
+<!--
+  This file contains some false positive bugs detected by spotbugs. Their
+  false positive nature has been analyzed individually and they have been
+  put here to instruct spotbugs it must ignore them.
+-->
+<FindBugsFilter>
+    <Match>
+        <Class name="com.ibm.egeria.EgeriaConnector" />
+        <Bug pattern="SLF4J_LOGGER_SHOULD_BE_NON_STATIC"/>
+    </Match>
+
+    <Match>
+        <Class name="com.ibm.egeria.EgeriaClient" />
+        <Bug pattern="SLF4J_LOGGER_SHOULD_BE_NON_STATIC"/>
+    </Match>
+
+    <!-- https://stackoverflow.com/questions/21996330/findbugs-is-objecting-to-anonymous-inner-class -->
+    <Match>
+        <Class name="com.ibm.egeria.EgeriaConnector" />
+        <Bug pattern="SIC_INNER_SHOULD_BE_STATIC_ANON"/>
+    </Match>
+
+    <Match>
+        <Class name="com.ibm.egeria.EgeriaClient" />
+        <Bug pattern="CNC_COLLECTION_NAMING_CONFUSION"/>
+    </Match>
+
+     <!-- the followng bug pattern can report false positives with try-with-resources statements..https://github.com/spotbugs/spotbugs/issues/259 -->
+     <Match>
+        <Class name="com.ibm.egeria.EgeriaClient" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+</FindBugsFilter>

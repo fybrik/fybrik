@@ -1,0 +1,34 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: motion.m4d.ibm.com/v1alpha1
+kind: BatchTransfer
+metadata:
+  name: {{ .Values.metadata.name }}
+  namespace: {{ .Values.metadata.namespace }}
+  labels:
+  {{ range $key, $value := .Values.metadata.labels }}
+    {{ $key }}: {{ $value }}
+  {{ end }}        
+spec:
+  source:
+    database:
+      table: "{{ .Values.source.connection.db2.table }}"
+      db2URL: "jdbc:db2://{{ .Values.source.connection.db2.url }}:{{ .Values.source.connection.db2.port }}/{{ .Values.source.connection.db2.database }}:sslConnection={{ .Values.source.connection.db2.ssl }};"
+      vaultPath: "{{ .Values.source.credentialLocation }}"
+  destination:
+    s3:
+      endpoint: "{{ .Values.destination.connection.s3.endpoint }}"
+      bucket: "{{ .Values.destination.connection.s3.bucket }}"
+      objectKey: "{{ .Values.destination.connection.s3.object_key }}"
+      dataFormat: "{{ .Values.destination.format }}"
+      vaultPath: "{{ .Values.destination.credentialLocation }}"
+  transformation:
+  - name: "Remove columns"
+    action: "RemoveColumns"
+    columns: ["JOB", "SSN"]
+  secretProviderURL: "http://secret-provider.secret-provider.svc.cluster.local:5555/get-secret"
+  secretProviderRole: demo
+  image: ghcr.io/the-mesh-for-data/dummy-mover:latest
+  imagePullPolicy: "IfNotPresent"
+  noFinalizer: true
