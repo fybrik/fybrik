@@ -63,7 +63,7 @@ GOLANGCI_LINT_FLAGS := \
 	--enable=unconvert \
 	--enable=whitespace
 
-CODE_MAINT += lint
+#CODE_MAINT += lint
 .PHONY: lint
 lint: $(TOOLBIN)/golangci-lint
 	$(TOOLBIN)/golangci-lint run $(GOLANGCI_LINT_FLAGS) ./...
