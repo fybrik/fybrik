@@ -1,12 +1,6 @@
 # Copyright 2020 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
-apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-    control-plane: controller-manager
-  name: system
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -35,7 +29,7 @@ spec:
           - name: ENABLE_WEBHOOKS
             value: "true"
           - name: MOVER_IMAGE
-            value: "image-registry.openshift-image-registry.svc:5000/mover/mover:1.0-SNAPSHOT"
+            value: "image-registry.openshift-image-registry.svc:5000/the-mesh-for-data/mover:latest"
           - name: IMAGE_PULL_POLICY
             value: "Always"
         resources:

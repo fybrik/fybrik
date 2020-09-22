@@ -26,14 +26,14 @@ docker-build: generate
 
 # Deploy only movement-controller in the configured Kubernetes cluster in ~/.kube/config
 deploy_mc: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
-	$(TOOLBIN)/kubectl create namespace m4d-system || true
+	$(TOOLBIN)/kubectl create namespace ${DOCKER_NAMESPACE} || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:${DOCKER_TAGNAME}
-	$(TOOLBIN)/kustomize build --load_restrictor none config/movement-controller | $(TOOLBIN)/kubectl apply -f -
+	cd config/movement-controller && $(ABSTOOLBIN)/kustomize edit set namespace ${DOCKER_NAMESPACE}
+	$(TOOLBIN)/kustomize build --load_restrictor none config/movement-controller | $(TOOLBIN)/kubectl apply --namespace=${DOCKER_NAMESPACE} -f -
 
 undeploy_mc: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
-	$(TOOLBIN)/kubectl create namespace m4d-system || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:${DOCKER_TAGNAME}
-	$(TOOLBIN)/kustomize build --load_restrictor none config/movement-controller | $(TOOLBIN)/kubectl delete -f -
+	$(TOOLBIN)/kustomize build --load_restrictor none config/movement-controller | $(TOOLBIN)/kubectl delete --namespace=${DOCKER_NAMESPACE} -f -
 
 .PHONY: motion-integration-tests
 motion-integration-tests: #deploy_mc
