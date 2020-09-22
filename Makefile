@@ -49,21 +49,21 @@ undeploy:
 
 .PHONY: docker
 docker:
-	$(MAKE) -C build docker-dummy-mover
+	$(MAKE) -C build all
 	$(MAKE) -C manager docker-all
 	$(MAKE) -C secret-provider docker-all
 	$(MAKE) -C connectors docker-all
 
 .PHONY: docker-build
 docker-build:
-	$(MAKE) -C build docker-build-dummy-mover
+	$(MAKE) -C build docker-build-all
 	$(MAKE) -C manager docker-build
 	$(MAKE) -C secret-provider docker-build
 	$(MAKE) -C connectors docker-build
 
 .PHONY: docker-push
 docker-push:
-	$(MAKE) -C build docker-push-dummy-mover
+	$(MAKE) -C build docker-push-all
 	$(MAKE) -C manager docker-push
 	$(MAKE) -C secret-provider docker-push
 	$(MAKE) -C connectors docker-push

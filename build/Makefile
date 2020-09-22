@@ -10,7 +10,15 @@ IMG_MC ?= ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:${DOCKER_TA
 IMG_DM ?= ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/dummy-mover:${DOCKER_TAGNAME}
 
 .PHONY: all
-all: docker-movement-controller docker-dummy-mover
+all: docker-movement-controller docker-build-dummy-mover
+	$(MAKE) docker-push IMG=$(IMG_MC)
+	$(MAKE) docker-push IMG=$(IMG_DM)
+
+.PHONY: docker-build-all
+docker-build-all: docker-movement-controller docker-build-dummy-mover
+
+.PHONY: docker-push-all
+docker-push-all:
 	$(MAKE) docker-push IMG=$(IMG_MC)
 	$(MAKE) docker-push IMG=$(IMG_DM)
 
