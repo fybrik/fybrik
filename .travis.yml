@@ -125,6 +125,7 @@ jobs:
       github_token: $GITHUB_TOKEN # Set in travis-ci dashboard
       on:
         branch: master
+      if: false
 
   - stage: verify-deploy
     name: "Verify deploy"

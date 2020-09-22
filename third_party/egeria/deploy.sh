@@ -8,7 +8,7 @@ set -x
 CHART=odpi-egeria-lab
 RELEASE=lab
 NAMESPACE=egeria-catalog
-TIMEOUT=5m
+TIMEOUT=8m
 VERSION="V2.1"
 
 undeploy() {
