@@ -1,4 +1,4 @@
-[![Build Status](https://travis.ibm.com/data-mesh-research/datamesh.svg?token=SFs8yc7zrXxhyzzSs8R8&branch=master)](https://travis.ibm.com/data-mesh-research/datamesh "Travis")
+[![Build Status](https://travis-ci.com/IBM/the-mesh-for-data.svg?branch=master)](https://travis-ci.com/IBM/the-mesh-for-data "Travis")
 
 
 # The Mesh for Data
@@ -11,7 +11,7 @@ The Mesh for Data is a cloud native platform to control the usage of data within
 
 The Mesh for Data is composed of the following repositiores
 
-- [IBM/the-mesh-for-data](https://github.com/ibm/the-mesh-for-data). This is the main code repository. It hosts the core components, install artifacts, and sample programs. It includes:
+- [IBM/the-mesh-for-data](https://github.com/IBM/the-mesh-for-data). This is the main code repository. It hosts the core components, install artifacts, and sample programs. It includes:
 
   - [manager](manager) This directory contains the code for the main operator that is responsible for the control plane of The Mesh for Data.
 
