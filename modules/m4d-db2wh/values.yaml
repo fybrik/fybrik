@@ -11,6 +11,9 @@ metadata:
   namespace: "default"
   labels: []
 
+image:
+  name: "ghcr.io/the-mesh-for-data/mover-dummy:latest"
+
 # copies from source
 source:
   connection:

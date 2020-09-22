@@ -29,6 +29,6 @@ spec:
     columns: ["JOB", "SSN"]
   secretProviderURL: "http://secret-provider.secret-provider.svc.cluster.local:5555/get-secret"
   secretProviderRole: demo
-  image: ghcr.io/the-mesh-for-data/dummy-mover:latest
+  image: "{{ .Values.image.hostname }}/{{ .Values.image.namespace }}/dummy-mover:{{ .Values.image.tagname }}"
   imagePullPolicy: "IfNotPresent"
   noFinalizer: true

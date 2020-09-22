@@ -14,6 +14,9 @@ metadata:
   name: 012d42539692bba841a7
   namespace: default
 
+image:
+  name: "ghcr.io/the-mesh-for-data/mover-dummy:latest"
+
 source:
   connection:
     db2:
