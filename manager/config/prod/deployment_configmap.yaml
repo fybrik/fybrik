@@ -6,7 +6,6 @@ kind: ConfigMap
 metadata:
   name: m4d-config
 data:
-  DOCKER_HOSTNAME: "ghcr.io"
   SECRET_PROVIDER_URL: "http://secret-provider.m4d-system.svc.cluster.local:5555/get-secret"
   SECRET_PROVIDER_ROLE: "demo"
   #catalog connector

@@ -34,7 +34,12 @@ func (r *StreamTransfer) Default() {
 		if env, b := os.LookupEnv("MOVER_IMAGE"); b {
 			r.Spec.Image = env
 		} else {
-			r.Spec.Image = "ghcr.io/the-mesh-for-data/mover:latest"
+			hostname, b1 := os.LookupEnv("DOCKER_HOSTNAME")
+			namespace, b2 := os.LookupEnv("DOCKER_NAMESPACE")
+			tagname, b3 := os.LookupEnv("DOCKER_TAGNAME")
+			if b1 && b2 && b3 {
+				r.Spec.Image = hostname + "/" + namespace + "/mover:" + tagname
+			}
 		}
 	}
 

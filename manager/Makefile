@@ -90,11 +90,13 @@ e2e-cleanup: $(TOOLBIN)/kubectl
 
 .PHONY: docker-secret
 docker-secret: $(TOOLBIN)/kubectl 
-	echo -n $(DOCKER_USERNAME) > ./username.txt
-	echo -n $(DOCKER_PASSWORD) > ./password.txt
-	$(ABSTOOLBIN)/kubectl create secret generic docker-credentials --from-file=username=./username.txt --from-file=password=./password.txt || true
-	rm ./username.txt
-	rm ./password.txt
+	$(ABSTOOLBIN)/kubectl create secret generic docker-credentials \
+		--from-literal=hostname=$(DOCKER_HOSTNAME) \
+		--from-literal=namespace=$(DOCKER_NAMESPACE) \
+		--from-literal=tagname=$(DOCKER_TAGNAME) \
+		--from-literal=username=$(DOCKER_USERNAME) \
+		--from-literal=password=$(DOCKER_PASSWORD) \
+		|| true
 
 .PHONY: e2e-setup
 e2e-setup: $(TOOLBIN)/kubectl
