@@ -79,7 +79,6 @@ jobs:
     - make cluster-prepare || travis_terminate 1;
     - make install || travis_terminate 1;
     - make e2e
-    if: false
   - stage: integration-tests
     name: "Integration tests for helm"
     env:
@@ -101,7 +100,6 @@ jobs:
       script: make docker-push
       on:
         branch: master
-    if: false
   - stage: build-and-push
     name: "Build and push helm charts"
     install:
@@ -113,7 +111,6 @@ jobs:
       script: make -C modules helm-chart-push
       on:
         branch: master
-    if: false
   - stage: build-and-push
     name: "Build and publish website"
     env:
@@ -141,7 +138,6 @@ jobs:
     - make $CLUSTER || travis_terminate 1;
     - make cluster-prepare || travis_terminate 1;
     - make -C $COMPONENT deploy
-    if: false
   - stage: verify-deploy
     name: "Verify deploy"
     env:
@@ -154,7 +150,6 @@ jobs:
     - make $CLUSTER || travis_terminate 1;
     - make cluster-prepare || travis_terminate 1;
     - make -C $COMPONENT deploy
-    if: false
   - stage: verify-deploy
     name: "Verify deploy"
     env:
@@ -169,7 +164,6 @@ jobs:
     - make -C third_party/opa deploy || travis_terminate 1;
     - make -C third_party/egeria deploy || travis_terminate 1;
     - make -C $COMPONENT deploy
-    if: false
 
 notifications:
   email: false
