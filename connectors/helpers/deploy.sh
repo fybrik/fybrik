@@ -35,13 +35,28 @@ vault_create() {
         kill -9 %%
 }
 
+kustomize_build() {
+        local operation=$1
+        local pass=$2
+        local TEMP=$(mktemp -d)
+        cp -ar base/* $TEMP
+        cd $TEMP
+
+        local images="egr-connector opa-connector vault-connector"
+        for image in ${images}; do \
+                kustomize edit set image ${image}=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/${image}:${DOCKER_TAGNAME}; \
+        done
+        kustomize build . | kubectl $operation -f - || $pass
+
+        cd -
+}
+
 connectors_delete() {
-        printf "\nRemoving kubectl resources on active cluster"
-        kustomize build patch/$REGISTRY | kubectl delete -f - || true
+        kustomize_build delete true
 }
 
 connectors_create() {
-        kustomize build patch/$REGISTRY | kubectl apply -f -
+        kustomize_build apply false
 }
 
 kube_cluster_info() {
@@ -55,18 +70,6 @@ kube_cluster_info() {
         printf "\n(TIP:) You can use the command \'watch kubectl get all\' to continuously monitor the cluster resources!\n"
         printf "\nThe deployment script has completed successfully!\n"
 }
-
-case "$REGISTRY" in
-docker)
-    echo "Registry docker not supported" || exit 1
-    ;;
-localhost)
-    echo "Registry localhost not supported" || exit 1
-    ;;
-*)
-    REGISTRY=ibmcloud 
-    ;;
-esac
 
 undeploy() {
         $WITHOUT_VAULT || vault_delete
