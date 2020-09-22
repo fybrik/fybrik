@@ -4,8 +4,4 @@
 resources:
 - opa_connector.yaml
 - vault_connector.yaml
-#- wkc_connector.yaml
 - egr_connector.yaml
-#- catalog_credential_mock.yaml
-#- policy_manager_mock.yaml
-#- egr_mock.yaml
