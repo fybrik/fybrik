@@ -50,31 +50,39 @@ tidy:
 addlicense: $(TOOLBIN)/addlicense
 	$(ABSTOOLBIN)/addlicense -ignorefile .addlicenseignore -f $(ROOT_DIR)/hack/boilerplate.txt .
 
-GOLANGCI_LINT_FLAGS := \
+GOLINT_LINTERS ?= \
+	--disable-all \
+	--enable=deadcode \
 	--enable=dogsled \
 	--enable=dupl \
+	--enable=errcheck \
 	--enable=gocritic \
 	--enable=gofmt \
 	--enable=golint \
+	--enable=gosimple \
 	--enable=govet \
+	--enable=ineffassign \
 	--enable=misspell \
 	--enable=nakedret \
-	--enable=staticcheck \
+	--enable=structcheck \
+	--enable=typecheck \
 	--enable=unconvert \
+	--enable=unused \
+	--enable=varcheck \
 	--enable=whitespace
 
-#CODE_MAINT += lint
+CODE_MAINT += lint
 .PHONY: lint
 lint: $(TOOLBIN)/golangci-lint
-	$(TOOLBIN)/golangci-lint run $(GOLANGCI_LINT_FLAGS) ./...
+	$(TOOLBIN)/golangci-lint run ${GOLINT_LINTERS} ./...
 
 .PHONY: lint-fix
 lint-fix: $(TOOLBIN)/golangci-lint
-	$(TOOLBIN)/golangci-lint run --fix $(GOLANGCI_LINT_FLAGS) ./...
+	$(TOOLBIN)/golangci-lint run --fix ${GOLINT_LINTERS} ./...
 
 .PHONY: lint-todo
 lint-todo: $(TOOLBIN)/golangci-lint
-	$(TOOLBIN)/golangci-lint run --enable=godox $(GOLANGCI_LINT_FLAGS) ./...
+	$(TOOLBIN)/golangci-lint run --enable=godox ${GOLINT_LINTERS} ./...
 
 .PHONY: misspell
 misspell: $(TOOLBIN)/misspell

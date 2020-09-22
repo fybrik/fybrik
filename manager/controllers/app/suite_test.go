@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
+	appapi "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
-	appapi "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
