@@ -52,7 +52,7 @@ type Interface interface {
 	Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error)
 	Status(kubeNamespace string, releaseName string) (*release.Release, error)
 	RegistryLogin(hostname string, username string, password string, insecure bool) error
-	RegistryLogout(hostname string, username string) error
+	RegistryLogout(hostname string) error
 	ChartRemove(ref string) error
 	ChartSave(chart *chart.Chart, ref string) error
 	ChartLoad(ref string) (*chart.Chart, error)
@@ -94,7 +94,7 @@ func (r *Fake) RegistryLogin(hostname string, username string, password string, 
 }
 
 // RegistryLogout to docker registry v2
-func (r *Fake) RegistryLogout(hostname string, username string) error {
+func (r *Fake) RegistryLogout(hostname string) error {
 	return nil
 }
 
@@ -185,17 +185,14 @@ func (r *Impl) RegistryLogin(hostname string, username string, password string, 
 }
 
 // RegistryLogout to docker registry v2
-func (r *Impl) RegistryLogout(hostname string, username string) error {
-	if username != "" {
-		cfg, err := getConfig("")
-		if err != nil {
-			return err
-		}
-		logout := action.NewRegistryLogout(cfg)
-		var buf bytes.Buffer
-		return logout.Run(&buf, hostname)
+func (r *Impl) RegistryLogout(hostname string) error {
+	cfg, err := getConfig("")
+	if err != nil {
+		return err
 	}
-	return nil
+	logout := action.NewRegistryLogout(cfg)
+	var buf bytes.Buffer
+	return logout.Run(&buf, hostname)
 }
 
 // ChartRemove helm chart from cache

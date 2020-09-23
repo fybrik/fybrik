@@ -5,11 +5,12 @@ package helm
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"helm.sh/helm/v3/pkg/chart"
 	"os"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"helm.sh/helm/v3/pkg/chart"
 )
 
 func buildTestChart() *chart.Chart {
@@ -95,9 +96,11 @@ func TestHelmRegistry(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, origChart.Metadata.Name, chart.Metadata.Name, "expected pushed chart equals pulled chart")
 
-	err = impl.RegistryLogout(hostname, username)
-	assert.Nil(t, err)
-	Log(t, "registry logout", err)
+	if username != "" && password != "" {
+		err = impl.RegistryLogout(hostname)
+		assert.Nil(t, err)
+		Log(t, "registry logout", err)
+	}
 }
 
 func TestHelmRelease(t *testing.T) {
