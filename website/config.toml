@@ -36,7 +36,7 @@ summaryLength = 30
   homepage_button_left_text = 'Learn more'
   homepage_button_left_icon = 'fas fa-book-reader'
 
-  homepage_button_right_link = 'https://github.com/ibm/the-mesh-for-data'
+  homepage_button_right_link = 'https://github.com/IBM/the-mesh-for-data'
   homepage_button_right_text = 'Code'
   homepage_button_right_icon = 'fab fa-github'
 

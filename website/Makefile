@@ -10,7 +10,7 @@ include  $(ROOT_DIR)/.mk/tools.mk
 
 CONNECTORS_PROTO := $(ROOT_DIR)/pkg/connectors/protos
 
-WEBSITE_BASEURL ?= https://pages.github.com/ibm/the-mesh-for-data/
+WEBSITE_BASEURL ?= https://ibm.github.io/the-mesh-for-data/
 WEBSITE_LOCAL_DIR ?= public
 
 .PHONY: gen-pages
