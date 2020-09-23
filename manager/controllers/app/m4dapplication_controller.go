@@ -21,6 +21,8 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // M4DApplicationReconciler reconciles a M4DApplication object
@@ -36,6 +38,7 @@ type M4DApplicationReconciler struct {
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dapplications,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dapplications/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=blueprints,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=namespaces,verbs=get;list;watch;create;update;patch;delete
 
 // +kubebuilder:rbac:groups=*,resources=*,verbs=*
 
@@ -91,16 +94,16 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 
 // reconcileFinalizers reconciles finalizers for M4DApplication
 func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M4DApplication) error {
-	// finalizer (Blueprint)
-	finalizerName := r.Name + ".finalizer"
-	hasFinalizer := ContainsFinalizer(applicationContext, finalizerName)
-
+	// finalizer (DataMeshBlueprint)
+	finalizers := applicationContext.GetFinalizers()
+	hasFinalizer := len(finalizers) != 0
 	// If the object has a scheduled deletion time, delete it and its associated blueprint
 	if !applicationContext.DeletionTimestamp.IsZero() {
 		// The object is being deleted
 		if hasFinalizer { // Finalizer was created when the object was created
 			// the finalizer is present - delete the relevant blueprint
 			r.Log.V(0).Info("Reconcile: M4DApplication is deleting the blueprint")
+			finalizerName := finalizers[0]
 			r.DeleteOwnedBlueprint(applicationContext)
 
 			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
@@ -108,7 +111,7 @@ func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M
 			// clear provisioned buckets
 			key, _ := client.ObjectKeyFromObject(applicationContext)
 			_ = r.FreeStorageAssets(key)
-
+			r.DeleteAppNamespace(finalizerName)
 			// Add terminating condition
 			utils.ActivateCondition(applicationContext, app.TerminatingCondition, "Terminating", "The M4DApplication has been scheduled for deletion.")
 			if err := r.Update(context.Background(), applicationContext); err != nil {
@@ -119,24 +122,17 @@ func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M
 	}
 	// Make sure this CRD instance has a finalizer
 	if !hasFinalizer {
+		var finalizerName string
+		var errCreate error
+		if finalizerName, errCreate = r.CreateAppNamespace(applicationContext); errCreate != nil {
+			return errCreate
+		}
 		ctrlutil.AddFinalizer(applicationContext, finalizerName)
 		if err := r.Update(context.Background(), applicationContext); err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-// ContainsFinalizer returns true if the given finalizer string appears in the list of finalizers of the object
-// Should be implemented in controller-runtime package - TO FIX
-func ContainsFinalizer(obj *app.M4DApplication, finalizer string) bool {
-	f := obj.GetFinalizers()
-	for _, e := range f {
-		if e == finalizer {
-			return true
-		}
-	}
-	return false
 }
 
 // reconcile receives either M4DApplication CRD and generates the Blueprint CRD
@@ -271,4 +267,23 @@ func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, e
 		moduleMap[module.Name] = module.DeepCopy()
 	}
 	return moduleMap, nil
+}
+
+// CreateAppNamespace creates a namespace in which the blueprint and the relevant resources will be running
+// It returns the generated namespace name
+func (r *M4DApplicationReconciler) CreateAppNamespace(app *app.M4DApplication) (string, error) {
+	genNamespace := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{GenerateName: "m4d-"}}
+	if err := r.Create(context.Background(), genNamespace); err != nil {
+		return "", err
+	}
+	r.Log.V(0).Info("Created namespace " + genNamespace.Name + " for " + app.Namespace + "/" + app.Name)
+	return genNamespace.Name, nil
+}
+
+// DeleteAppNamespace deletes the blueprint namespace upon blueprint deletion
+func (r *M4DApplicationReconciler) DeleteAppNamespace(name string) {
+	_ = r.Delete(context.Background(), &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		}})
 }

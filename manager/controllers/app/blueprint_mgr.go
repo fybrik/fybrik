@@ -11,7 +11,6 @@ import (
 
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	// Temporary - shouldn't have something specific to implicit copies
 )
 
@@ -27,10 +26,16 @@ func containsTemplate(templateList []app.ComponentTemplate, moduleName string) b
 
 // GetBlueprintSignature returns the signature (name and namespace) of the blueprint owned by the given M4DApplication instance
 func (r *M4DApplicationReconciler) GetBlueprintSignature(applicationContext *app.M4DApplication) *app.Blueprint {
+	//sanity - finalizer should exist, since it represents the blueprint namespace name
+	finalizers := applicationContext.GetFinalizers()
+	if len(finalizers) == 0 {
+		return nil
+	}
+
 	return &app.Blueprint{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      applicationContext.Name + "-" + applicationContext.Namespace,
-			Namespace: utils.GetSystemNamespace(),
+			Name:      applicationContext.Name,
+			Namespace: finalizers[0],
 		},
 	}
 }

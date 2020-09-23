@@ -7,10 +7,10 @@ import (
 	"context"
 	"time"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	apiv1alpha1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -388,11 +388,14 @@ var _ = Describe("M4DApplication Controller", func() {
 
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
+			time.Sleep(2 * time.Second)
+			_ = k8sClient.Get(context.Background(), appSignature, resource)
+			Expect(resource.GetFinalizers()).NotTo(BeEmpty())
 			By("Expecting blueprint to be generated")
 			Eventually(func() error {
 				f := &apiv1alpha1.Blueprint{}
 				key := appSignature
-				key.Name += "-" + key.Namespace
+				key.Namespace = resource.Finalizers[0]
 				return k8sClient.Get(context.Background(), key, f)
 			}, timeout, interval).Should(Succeed())
 		})
