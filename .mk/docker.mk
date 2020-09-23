@@ -1,5 +1,5 @@
-#export DOCKER_USERNAME ?= ""
-#export DOCKER_PASSWORD ?= ""
+export DOCKER_USERNAME ?=
+export DOCKER_PASSWORD ?=
 export DOCKER_HOSTNAME ?= ghcr.io
 export DOCKER_NAMESPACE ?= the-mesh-for-data
 export DOCKER_TAGNAME ?= latest
