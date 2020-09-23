@@ -1,20 +1,17 @@
-DOCKER_PASSWORD ?= $(shell echo "${DOCKER_PASSWORD_ENCODED}" | base64 -d)
-DOCKER_HOSTNAME ?= ghcr.io
-DOCKER_NAMESPACE ?= the-mesh-for-data
+#export DOCKER_USERNAME ?= ""
+#export DOCKER_PASSWORD ?= ""
+export DOCKER_HOSTNAME ?= ghcr.io
+export DOCKER_NAMESPACE ?= the-mesh-for-data
+export DOCKER_TAGNAME ?= latest
+
 DOCKER_NAME ?= m4d
-DOCKER_TAGNAME ?= latest
+DOCKER_FILE ?= Dockerfile
 DOCKER_CONTEXT ?= .
-GO_INPUT_FILE ?= main.go
-GO_OUTPUT_FILE ?= manager
+
 IMG ?= ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/${DOCKER_NAME}:${DOCKER_TAGNAME}
 
-export DOCKER_USERNAME
-export DOCKER_PASSWORD
-export DOCKER_HOSTNAME
-export DOCKER_NAMESPACE
-export DOCKER_TAGNAME
-
-DOCKER_FILE ?= Dockerfile
+GO_INPUT_FILE ?= main.go
+GO_OUTPUT_FILE ?= manager
 
 .PHONY: docker-all
 docker-all: docker-build docker-push
@@ -29,7 +26,7 @@ docker-build-local:
 
 .PHONY: docker-push
 docker-push:
-ifdef DOCKER_USERNAME
+ifdef DOCKER_PASSWORD
 	@docker login \
 		--username ${DOCKER_USERNAME} \
 		--password ${DOCKER_PASSWORD} ${DOCKER_HOSTNAME}
