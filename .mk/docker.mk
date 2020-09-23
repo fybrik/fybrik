@@ -26,7 +26,7 @@ docker-build-local:
 
 .PHONY: docker-push
 docker-push:
-ifdef DOCKER_PASSWORD
+ifneq (${DOCKER_PASSWORD},)
 	@docker login \
 		--username ${DOCKER_USERNAME} \
 		--password ${DOCKER_PASSWORD} ${DOCKER_HOSTNAME}
