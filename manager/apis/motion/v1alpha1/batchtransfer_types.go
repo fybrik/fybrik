@@ -407,6 +407,10 @@ type Spark struct {
 	// +optional
 	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy"`
 
+	// Number of shuffle partitions for Spark
+	// +optional
+	ShufflePartitions int `json:"shufflePartitions,omitempty"`
+
 	// Additional options for Spark configuration.
 	// +optional
 	AdditionalOptions map[string]string `json:"options,omitempty"`
