@@ -34,7 +34,7 @@ registry_create() {
             -n $namespace
 }
 
-[ -n "$DOCKER_USERNAME" ] || exit 0
+[ -n "$DOCKER_PASSWORD" ] || exit 0
 
 case "$1" in
 undeploy)

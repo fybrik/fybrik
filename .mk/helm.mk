@@ -9,7 +9,7 @@ export HELM_EXPERIMENTAL_OCI=1
 
 .PHONY: helm-login
 helm-login: $(TOOLBIN)/helm
-ifdef DOCKER_USERNAME
+ifneq (${DOCKER_PASSWORD},)
 	@$(ABSTOOLBIN)/helm registry login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}" ${DOCKER_HOSTNAME}
 endif
 

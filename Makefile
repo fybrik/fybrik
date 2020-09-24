@@ -17,7 +17,8 @@ test:
 
 .PHONY: e2e
 e2e:
-	$(MAKE) -C pkg/helm test
+	# TODO(roee88): temporarily removed until can be set against local registry
+	# $(MAKE) -C pkg/helm test
 	$(MAKE) -C manager e2e
 
 .PHONY: cluster-prepare

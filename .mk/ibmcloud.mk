@@ -1,10 +1,3 @@
-DOCKER_PASSWORD ?= $(shell echo "${DOCKER_PASSWORD_ENCODED}" | base64 -d)
-DOCKER_HOSTNAME ?= registry-1.docker.io
-DOCKER_NAMESPACE ?= m4d
-DOCKER_NAME ?= m4d
-DOCKER_TAGNAME ?= latest
-IMG ?= ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/${DOCKER_NAME}:${DOCKER_TAGNAME}
-
 IBMCLOUD:=/usr/local/bin/ibmcloud
 
 .PHONY: ibmcloud-login
