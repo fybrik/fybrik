@@ -40,7 +40,7 @@ spec:
     action: "RemoveColumns"
     columns: ["Latitude","Longitude"]
   triggerInterval: "10 seconds"
-  image: ghcr.io/the-mesh-for-data/dummy-mover:latest
+  image: ghcr.io/the-mesh-for-data/mover:latest
   imagePullPolicy: "IfNotPresent"
   secretProviderURL: "http://secret-provider.secret-provider.svc.cluster.local:5555/get-secret"
   secretProviderRole: demo
