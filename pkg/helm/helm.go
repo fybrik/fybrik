@@ -172,16 +172,13 @@ func (r *Impl) Status(kubeNamespace string, releaseName string) (*release.Releas
 
 // RegistryLogin to docker registry v2
 func (r *Impl) RegistryLogin(hostname string, username string, password string, insecure bool) error {
-	if username != "" && password != "" {
-		cfg, err := getConfig("")
-		if err != nil {
-			return err
-		}
-		login := action.NewRegistryLogin(cfg)
-		var buf bytes.Buffer
-		return login.Run(&buf, hostname, username, password, insecure)
+	cfg, err := getConfig("")
+	if err != nil {
+		return err
 	}
-	return nil
+	login := action.NewRegistryLogin(cfg)
+	var buf bytes.Buffer
+	return login.Run(&buf, hostname, username, password, insecure)
 }
 
 // RegistryLogout to docker registry v2

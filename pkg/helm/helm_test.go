@@ -79,9 +79,11 @@ func TestHelmRegistry(t *testing.T) {
 	var err error
 	origChart := buildTestChart()
 
-	err = impl.RegistryLogin(hostname, username, password, insecure)
-	assert.Nil(t, err)
-	Log(t, "registry login", err)
+	if username != "" && password != "" {
+		err = impl.RegistryLogin(hostname, username, password, insecure)
+		assert.Nil(t, err)
+		Log(t, "registry login", err)
+	}
 
 	err = impl.ChartSave(origChart, chartRef)
 	assert.Nil(t, err)
