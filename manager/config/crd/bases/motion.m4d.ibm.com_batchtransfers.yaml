@@ -419,6 +419,9 @@ spec:
                     type: string
                   description: Additional options for Spark configuration.
                   type: object
+                shufflePartitions:
+                  description: Number of shuffle partitions for Spark
+                  type: integer
               type: object
             successfulJobHistoryLimit:
               description: Maximal number of successful Kubernetes job objects that should be kept. This property will be defaulted by the webhook if not set.
