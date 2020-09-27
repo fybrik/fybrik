@@ -89,17 +89,19 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log logr.L
 	nbytes, _ := yaml.Marshal(vals)
 	log.Info(fmt.Sprintf("--- Values.yaml ---\n\n%s\n\n", nbytes))
 
+	// TODO: should change to use an ImagePullSecret referenced from the M4DModule resource
 	hostname := os.Getenv("DOCKER_HOSTNAME")
 	username := os.Getenv("DOCKER_USERNAME")
 	password := os.Getenv("DOCKER_PASSWORD")
 	insecure, _ := strconv.ParseBool(os.Getenv("DOCKER_INSECURE"))
-
-	err := r.Helmer.RegistryLogin(hostname, username, password, insecure)
-	if err != nil {
-		return ctrl.Result{}, errors.WithMessage(err, ref+": failed chart pull")
+	if username != "" && password != "" {
+		err := r.Helmer.RegistryLogin(hostname, username, password, insecure)
+		if err != nil {
+			return ctrl.Result{}, errors.WithMessage(err, ref+": failed chart pull")
+		}
 	}
 
-	err = r.Helmer.ChartPull(ref)
+	err := r.Helmer.ChartPull(ref)
 	if err != nil {
 		return ctrl.Result{}, errors.WithMessage(err, ref+": failed chart pull")
 	}
