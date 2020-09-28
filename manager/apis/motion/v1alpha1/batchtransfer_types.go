@@ -222,6 +222,11 @@ type S3 struct {
 	// Data format of the objects in S3. e.g. parquet or csv. Please refer to struct for allowed values.
 	DataFormat string `json:"dataFormat,omitempty"`
 
+	// Partition by partition (for target data stores)
+	// Defines the columns to partition the output by for a target data store.
+	// +optional
+	PartitionBy *[]string `json:"partitionBy,omitempty"`
+
 	// Vault path where the accessKey/secretKey are stored. If not specified accessKey and secretKey have to be specified!
 	// +optional
 	VaultPath *string `json:"vaultPath,omitempty"`
