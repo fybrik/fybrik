@@ -41,28 +41,41 @@ install:
 
 jobs:
   include: 
-  - stage: warm-cache 
-    name: "Warm Cache"
+  - stage: Cache 
+    name: "Warm cache"
     install:
-    - free -h
     - make install-tools || travis_terminate 1;
     - go mod download
     script: true
+    if: (env(TRAVIS_BUILD_STAGE_NAME) IS blank OR \
+        env(TRAVIS_BUILD_STAGE_NAME) IN (env(TRAVIS_BUILD_STAGE_LIST)))
 
-  - stage: verify-build-test-code
-    name: "Verify and test"
+  - stage: Build
+    name: "Verify code"
     install:
     - make install-tools
     script:
-    - make verify || travis_terminate 1;
-    - git diff
+    - make verify
+    if: (env(TRAVIS_BUILD_STAGE_NAME) IS blank OR \
+        env(TRAVIS_BUILD_STAGE_NAME) IN (env(TRAVIS_BUILD_STAGE_LIST)))
+
+  - stage: Build
+    name: "Run unit tests"
+    install:
+    - make install-tools
+    script:
     - make test
-  - stage: verify-build-test-code
+    if: (env(TRAVIS_BUILD_STAGE_NAME) IS blank OR \
+        env(TRAVIS_BUILD_STAGE_NAME) IN (env(TRAVIS_BUILD_STAGE_LIST)))
+
+  - stage: Build
     name: "Build binaries"
     install:
     - make install-tools
     script:
     - make build
+    if: (env(TRAVIS_BUILD_STAGE_NAME) IS blank OR \
+        env(TRAVIS_BUILD_STAGE_NAME) IN (env(TRAVIS_BUILD_STAGE_LIST)))
 
   # FIXME(hunchback): disabled as its' taking 15m to run
   # - stage: verify-license
@@ -70,7 +83,7 @@ jobs:
   #   script:
   #   - make license
 
-  - stage: integration-tests
+  - stage: Test
     name: "Integration tests for manager"
     install:
     - make install-tools
@@ -79,7 +92,10 @@ jobs:
     - make cluster-prepare || travis_terminate 1;
     - make install || travis_terminate 1;
     - make e2e
-  - stage: integration-tests
+    if: (env(TRAVIS_BUILD_STAGE_NAME) IS blank OR \
+        env(TRAVIS_BUILD_STAGE_NAME) IN (env(TRAVIS_BUILD_STAGE_LIST)))
+
+  - stage: Test
     name: "Integration tests for helm"
     env:
     - DOCKER_HOSTNAME=localhost:5000
@@ -87,8 +103,10 @@ jobs:
     script:
     - make kind || travis_terminate 1;
     - make helm
+    if: (env(TRAVIS_BUILD_STAGE_NAME) IS blank OR \
+        env(TRAVIS_BUILD_STAGE_NAME) IN (env(TRAVIS_BUILD_STAGE_LIST)))
 
-  - stage: build-and-push
+  - stage: Publish
     name: "Build and push docker images"
     install:
     - make install-tools
@@ -100,7 +118,10 @@ jobs:
       script: make docker-push
       on:
         branch: master
-  - stage: build-and-push
+    if: (env(TRAVIS_BUILD_STAGE_NAME) IS blank OR \
+        env(TRAVIS_BUILD_STAGE_NAME) IN (env(TRAVIS_BUILD_STAGE_LIST)))
+
+  - stage: Publish
     name: "Build and push helm charts"
     install:
     - make install-tools
@@ -111,7 +132,10 @@ jobs:
       script: make -C modules helm-chart-push
       on:
         branch: master
-  - stage: build-and-push
+    if: (env(TRAVIS_BUILD_STAGE_NAME) IS blank OR \
+        env(TRAVIS_BUILD_STAGE_NAME) IN (env(TRAVIS_BUILD_STAGE_LIST)))
+
+  - stage: Publish
     name: "Build and publish website"
     env:
     - WEBSITE_LOCAL_DIR=public
@@ -124,8 +148,10 @@ jobs:
       github_token: $GITHUB_TOKEN # Set in travis-ci dashboard
       on:
         branch: master
+    if: (env(TRAVIS_BUILD_STAGE_NAME) IS blank OR \
+        env(TRAVIS_BUILD_STAGE_NAME) IN (env(TRAVIS_BUILD_STAGE_LIST)))
 
-  - stage: verify-deploy
+  - stage: Deploy
     name: "Verify deploy"
     env:
     - COMPONENT=secret-provider
@@ -137,7 +163,14 @@ jobs:
     - make $CLUSTER || travis_terminate 1;
     - make cluster-prepare || travis_terminate 1;
     - make -C $COMPONENT deploy
-  - stage: verify-deploy
+    on:
+      branch: master
+    if: (env(TRAVIS_BUILD_STAGE_NAME) IS blank OR \
+        env(TRAVIS_BUILD_STAGE_NAME) IN (env(TRAVIS_BUILD_STAGE_LIST))) AND
+        branch = master AND \
+        type = push
+
+  - stage: Deploy
     name: "Verify deploy"
     env:
     - COMPONENT=manager
@@ -149,7 +182,12 @@ jobs:
     - make $CLUSTER || travis_terminate 1;
     - make cluster-prepare || travis_terminate 1;
     - make -C $COMPONENT deploy
-  - stage: verify-deploy
+    if: (env(TRAVIS_BUILD_STAGE_NAME) IS blank OR \
+        env(TRAVIS_BUILD_STAGE_NAME) IN (env(TRAVIS_BUILD_STAGE_LIST))) AND
+        branch = master AND \
+        type = push
+
+  - stage: Deploy
     name: "Verify deploy"
     env:
     - COMPONENT=connectors
@@ -161,8 +199,13 @@ jobs:
     - make $CLUSTER || travis_terminate 1;
     - make cluster-prepare || travis_terminate 1;
     - make -C third_party/opa deploy || travis_terminate 1;
-    - make -C third_party/egeria deploy || travis_terminate 1;
+    # FIXME: egeria just takes too long to deploy
+    # - make -C third_party/egeria deploy || travis_terminate 1;
     - make -C $COMPONENT deploy
+    if: (env(TRAVIS_BUILD_STAGE_NAME) IS blank OR \
+        env(TRAVIS_BUILD_STAGE_NAME) IN (env(TRAVIS_BUILD_STAGE_LIST))) AND
+        branch = master AND \
+        type = push
 
 notifications:
   email: false
