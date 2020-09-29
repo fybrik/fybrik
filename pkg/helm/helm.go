@@ -11,11 +11,13 @@ import (
 
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
-	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/release"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
-var settings *cli.EnvSettings = nil
+var (
+	debugOption = (os.Getenv("HELM_DEBUG") == "true")
+)
 
 func getConfig(kubeNamespace string) (*action.Configuration, error) {
 	actionConfig := new(action.Configuration)
@@ -23,9 +25,11 @@ func getConfig(kubeNamespace string) (*action.Configuration, error) {
 	if kubeNamespace == "" {
 		kubeNamespace = "default"
 	}
-	os.Setenv("HELM_NAMESPACE", kubeNamespace)
-	settings = cli.New()
-	err := actionConfig.Init(settings.RESTClientGetter(), kubeNamespace, os.Getenv("HELM_DRIVER"), debug)
+
+	config := &genericclioptions.ConfigFlags{
+		Namespace: &kubeNamespace,
+	}
+	err := actionConfig.Init(config, kubeNamespace, os.Getenv("HELM_DRIVER"), debug)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +38,7 @@ func getConfig(kubeNamespace string) (*action.Configuration, error) {
 }
 
 func debug(format string, v ...interface{}) {
-	if settings != nil && settings.Debug {
+	if debugOption {
 		format = fmt.Sprintf("[debug] %s\n", format)
 		_ = log.Output(2, fmt.Sprintf(format, v...))
 	}
@@ -145,6 +149,7 @@ func (r *Impl) Install(chart *chart.Chart, kubeNamespace string, releaseName str
 	install := action.NewInstall(cfg)
 	install.ReleaseName = releaseName
 	install.Namespace = kubeNamespace
+	install.Wait = true
 	return install.Run(chart, vals)
 }
 
@@ -156,6 +161,7 @@ func (r *Impl) Upgrade(chart *chart.Chart, kubeNamespace string, releaseName str
 	}
 	upgrade := action.NewUpgrade(cfg)
 	upgrade.Namespace = kubeNamespace
+	upgrade.Wait = true
 	return upgrade.Run(releaseName, chart, vals)
 }
 
