@@ -11,11 +11,12 @@ import (
 	"strconv"
 	"strings"
 
+	vltutils "github.com/ibm/the-mesh-for-data/connectors/vault/vault_utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"google.golang.org/grpc"
 )
 
-var vault VaultConnection
+var vault vltutils.VaultConnection
 
 const defaultTimeout = "180"
 const defaultPort = "50083" //synched with vault_connector.yaml
@@ -42,17 +43,17 @@ func (s *server) GetCredentialsInfo(ctx context.Context, in *pb.DatasetCredentia
 }
 
 func main() {
-	vaultAddress := getEnv(VaultAddressKey)
-	timeOutInSecs := getEnvWithDefault(VaultTimeoutKey, defaultTimeout)
+	vaultAddress := vltutils.GetEnv(vltutils.VaultAddressKey)
+	timeOutInSecs := vltutils.GetEnvWithDefault(vltutils.VaultTimeoutKey, vltutils.DefaultTimeout)
 	timeOutSecs, err := strconv.Atoi(timeOutInSecs)
-	port := getEnvWithDefault(VaultConnectorPortKey, defaultPort)
+	port := vltutils.GetEnvWithDefault(vltutils.VaultConnectorPortKey, vltutils.DefaultPort)
 
-	log.Printf("Vault address env variable in %s: %s\n", VaultAddressKey, vaultAddress)
-	log.Printf("VaultConnectorPort env variable in %s: %s\n", VaultConnectorPortKey, port)
+	log.Printf("Vault address env variable in %s: %s\n", vltutils.VaultAddressKey, vaultAddress)
+	log.Printf("VaultConnectorPort env variable in %s: %s\n", vltutils.VaultConnectorPortKey, port)
 	log.Printf("TimeOut used %d\n", timeOutSecs)
-	log.Printf("Secret Token env variable in %s: %s\n", VaultSecretKey, getEnv(VaultSecretKey))
+	log.Printf("Secret Token env variable in %s: %s\n", vltutils.VaultSecretKey, vltutils.GetEnv(vltutils.VaultSecretKey))
 
-	vault = CreateVaultConnection()
+	vault = vltutils.CreateVaultConnection()
 	log.Println("Vault connection successfully initiated.")
 
 	lis, err := net.Listen("tcp", ":"+port)

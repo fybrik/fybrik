@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	vltutils "github.com/ibm/the-mesh-for-data/connectors/vault/vault_utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 
 	"google.golang.org/grpc"
@@ -165,6 +166,52 @@ func GetCredentials(datasetID string) {
 	}
 }
 
+func ConfigureVault(innerVaultPath string, credentials string) error {
+	vaultAddress := vltutils.GetEnv(vltutils.VaultAddressKey)
+	timeOutInSecs := vltutils.GetEnvWithDefault(vltutils.VaultTimeoutKey, vltutils.DefaultTimeout)
+	timeOutSecs, err := strconv.Atoi(timeOutInSecs)
+	port := vltutils.GetEnvWithDefault(vltutils.VaultConnectorPortKey, vltutils.DefaultPort)
+
+	log.Printf("Vault address env variable in %s: %s\n", vltutils.VaultAddressKey, vaultAddress)
+	log.Printf("VaultConnectorPort env variable in %s: %s\n", vltutils.VaultConnectorPortKey, port)
+	log.Printf("TimeOut used %d\n", timeOutSecs)
+	log.Printf("Secret Token env variable in %s: %s\n", vltutils.VaultSecretKey, vltutils.GetEnv(vltutils.VaultSecretKey))
+
+	var vault vltutils.VaultConnection
+	vault = vltutils.CreateVaultConnection()
+	log.Println("Vault connection successfully initiated.")
+
+	credentialsMap := make(map[string]interface{})
+	if err := json.Unmarshal([]byte(credentials), &credentialsMap); err != nil {
+		log.Println("err in json.Unmarshal")
+		errStatus, _ := status.FromError(err)
+		log.Println("Message:", errStatus.Message())
+		log.Println("Code:", errStatus.Code())
+		return err
+	}
+
+	vaultPath := vltutils.GetEnv(vltutils.VaultPathKey) + "/" + innerVaultPath
+	if _, err := vault.AddToVault(vaultPath, credentialsMap); err != nil {
+		log.Println("err in utils.AddToVault")
+		errStatus, _ := status.FromError(err)
+		log.Println("Message:", errStatus.Message())
+		log.Println("Code:", errStatus.Code())
+		return err
+	}
+
+	var retrievedValue string
+	if retrievedValue, err = vault.GetFromVault(innerVaultPath); err != nil {
+		log.Println("err in utils.GetFromVault")
+		errStatus, _ := status.FromError(err)
+		log.Println("Message:", errStatus.Message())
+		log.Println("Code:", errStatus.Code())
+		return err
+	}
+	log.Println("retrievedValue from vault:", retrievedValue)
+	return nil
+
+}
+
 func main() {
 	//example 1: remote parquet
 	// datasetID := "10a9fba1-b049-40d9-bac9-1a608c1e4774"
@@ -188,11 +235,13 @@ func main() {
 
 	var datasetIDJson string
 	if getEnv("CATALOG_PROVIDER_NAME") == "EGERIA" {
-		datasetIDJson = "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"4098e18e-bd53-4fd0-8ff8-e1c8e9fc42da\"}"
+		// datasetIDJson = "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"4098e18e-bd53-4fd0-8ff8-e1c8e9fc42da\"}"
+		datasetIDJson = "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"91aec690-bf78-4172-9ef2-cd0abd74b4b1\"}"
 	} else {
 		datasetIDJson = "{\"catalog_id\":\"" + catalogID + "\",\"asset_id\":\"" + datasetID + "\"}"
 	}
 
+	ConfigureVault(datasetIDJson, "{\"credentials\": \"my_egeria_credentials\"}")
 	GetMetadata(datasetIDJson)
 	GetCredentials(datasetIDJson)
 }
