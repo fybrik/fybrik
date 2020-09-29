@@ -15,9 +15,7 @@ import (
 	"helm.sh/helm/v3/pkg/release"
 )
 
-var (
-	settings = cli.New()
-)
+var settings *cli.EnvSettings = nil
 
 func getConfig(kubeNamespace string) (*action.Configuration, error) {
 	actionConfig := new(action.Configuration)
@@ -25,7 +23,8 @@ func getConfig(kubeNamespace string) (*action.Configuration, error) {
 	if kubeNamespace == "" {
 		kubeNamespace = "default"
 	}
-
+	os.Setenv("HELM_NAMESPACE", kubeNamespace)
+	settings = cli.New()
 	err := actionConfig.Init(settings.RESTClientGetter(), kubeNamespace, os.Getenv("HELM_DRIVER"), debug)
 	if err != nil {
 		return nil, err
@@ -35,7 +34,7 @@ func getConfig(kubeNamespace string) (*action.Configuration, error) {
 }
 
 func debug(format string, v ...interface{}) {
-	if settings.Debug {
+	if settings != nil && settings.Debug {
 		format = fmt.Sprintf("[debug] %s\n", format)
 		_ = log.Output(2, fmt.Sprintf(format, v...))
 	}
