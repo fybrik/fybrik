@@ -15,7 +15,7 @@ import (
 	"helm.sh/helm/v3/pkg/release"
 )
 
-var settings *cli.EnvSettings = nil
+var settings *cli.EnvSettings
 
 func getConfig(kubeNamespace string) (*action.Configuration, error) {
 	actionConfig := new(action.Configuration)
