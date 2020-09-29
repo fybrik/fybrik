@@ -152,7 +152,7 @@ jobs:
         env(TRAVIS_BUILD_STAGE_NAME) IN (env(TRAVIS_BUILD_STAGE_LIST)))
 
   - stage: Deploy
-    name: "Verify deploy"
+    name: "Secret-Provider deploy"
     env:
     - COMPONENT=secret-provider
     - CLUSTER=kind
@@ -163,15 +163,13 @@ jobs:
     - make $CLUSTER || travis_terminate 1;
     - make cluster-prepare || travis_terminate 1;
     - make -C $COMPONENT deploy
-    on:
-      branch: master
     if: (env(TRAVIS_BUILD_STAGE_NAME) IS blank OR \
         env(TRAVIS_BUILD_STAGE_NAME) IN (env(TRAVIS_BUILD_STAGE_LIST))) AND
         branch = master AND \
         type = push
 
   - stage: Deploy
-    name: "Verify deploy"
+    name: "Manager deploy"
     env:
     - COMPONENT=manager
     - CLUSTER=kind
@@ -188,7 +186,7 @@ jobs:
         type = push
 
   - stage: Deploy
-    name: "Verify deploy"
+    name: "Connectors deploy"
     env:
     - COMPONENT=connectors
     - CLUSTER=kind
