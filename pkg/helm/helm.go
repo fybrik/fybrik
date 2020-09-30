@@ -149,7 +149,6 @@ func (r *Impl) Install(chart *chart.Chart, kubeNamespace string, releaseName str
 	install := action.NewInstall(cfg)
 	install.ReleaseName = releaseName
 	install.Namespace = kubeNamespace
-	install.Wait = true
 	return install.Run(chart, vals)
 }
 
@@ -161,7 +160,6 @@ func (r *Impl) Upgrade(chart *chart.Chart, kubeNamespace string, releaseName str
 	}
 	upgrade := action.NewUpgrade(cfg)
 	upgrade.Namespace = kubeNamespace
-	upgrade.Wait = true
 	return upgrade.Run(releaseName, chart, vals)
 }
 
