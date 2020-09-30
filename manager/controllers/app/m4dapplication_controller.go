@@ -149,7 +149,7 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 
 	// delete the blueprint
 	namespace := applicationContext.Status.BlueprintNamespace
-	if len(namespace) == 0 {
+	if namespace == "" {
 		return nil
 	}
 
@@ -304,8 +304,8 @@ func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, e
 func (r *M4DApplicationReconciler) CreateNamespace(app *app.M4DApplication) error {
 	genNamespace := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{GenerateName: "m4d-"}}
 	genNamespace.Labels = map[string]string{
-		"m4d.ibm.com.owner": app.Namespace + "." + app.Name
-	 }
+		"m4d.ibm.com.owner": app.Namespace + "." + app.Name,
+	}
 	if err := r.Create(context.Background(), genNamespace); err != nil {
 		return err
 	}
