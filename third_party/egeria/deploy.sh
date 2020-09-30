@@ -42,7 +42,7 @@ deploy() {
         helm dep update $chartpath
         helm install $RELEASE $chartpath \
             -f lab.yaml \
-            --namespace=$NAMESPACE  \
+            --namespace=$NAMESPACE --create-namespace \
             --wait --timeout=${TIMEOUT}
 
         rm -rf egeria
