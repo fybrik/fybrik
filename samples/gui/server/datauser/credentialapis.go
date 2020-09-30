@@ -20,9 +20,9 @@ var vaultClient *api.Client
 
 // UserCredentials contains the credentials needed to access a given system for the purpose of running a specific compute function.
 type UserCredentials struct {
-	System                string                 `json:"system"`
+	System           string                 `json:"system"`
 	M4DApplicationID string                 `json:"m4dapplicationID"`
-	Credentials           map[string]interface{} `json:"credentials"` // often username and password, but could be token or other types of credentials
+	Credentials      map[string]interface{} `json:"credentials"` // often username and password, but could be token or other types of credentials
 }
 
 // CredentialRoutes is a list of the REST APIs supported by the backend of the Data User GUI
