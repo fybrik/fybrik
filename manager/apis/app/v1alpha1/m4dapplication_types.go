@@ -113,6 +113,7 @@ type M4DApplicationStatus struct {
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 
 	// BlueprintNamespace represents the namespace where the blueprint (and the relevant resources) will be allocated.
+	// +optional
 	BlueprintNamespace string `json:"blueprintNamespace,omitempty"`
 }
 

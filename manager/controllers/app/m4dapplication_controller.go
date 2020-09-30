@@ -103,7 +103,7 @@ func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M
 		// The object is being deleted
 		if hasFinalizer { // Finalizer was created when the object was created
 			// the finalizer is present - delete the allocated resources
-			if err := r.DeleteExternalResources(applicationContext); err != nil {
+			if err := r.deleteExternalResources(applicationContext); err != nil {
 				return err
 			}
 
@@ -140,8 +140,7 @@ func ContainsFinalizer(obj *app.M4DApplication, finalizer string) bool {
 	return false
 }
 
-// DeleteExternalResources deletes all resources allocated by the controller: blueprint, storage, namespace
-func (r *M4DApplicationReconciler) DeleteExternalResources(applicationContext *app.M4DApplication) error {
+func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *app.M4DApplication) error {
 	// clear provisioned buckets
 	key, _ := client.ObjectKeyFromObject(applicationContext)
 	if err := r.FreeStorageAssets(key); err != nil {
@@ -159,7 +158,7 @@ func (r *M4DApplicationReconciler) DeleteExternalResources(applicationContext *a
 		return err
 	}
 	//delete the allocated namespace
-	if err := r.DeleteAppNamespace(namespace); err != nil {
+	if err := r.DeleteNamespace(namespace); err != nil {
 		return err
 	}
 	return nil
@@ -205,8 +204,8 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	}
 	r.Log.V(0).Info("Creating Blueprint")
 	// first, a namespace should be created
-	if len(applicationContext.Status.BlueprintNamespace) == 0 {
-		if err := r.CreateAppNamespace(applicationContext); err != nil {
+	if applicationContext.Status.BlueprintNamespace == "" {
+		if err := r.CreateNamespace(applicationContext); err != nil {
 			return ctrl.Result{}, err
 		}
 	}
@@ -300,13 +299,13 @@ func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, e
 	return moduleMap, nil
 }
 
-// CreateAppNamespace creates a namespace in which the blueprint and the relevant resources will be running
+// CreateNamespace creates a namespace in which the blueprint and the relevant resources will be running
 // It stores the generated namespace name inside app status
-func (r *M4DApplicationReconciler) CreateAppNamespace(app *app.M4DApplication) error {
+func (r *M4DApplicationReconciler) CreateNamespace(app *app.M4DApplication) error {
 	genNamespace := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{GenerateName: "m4d-"}}
-	genNamespace.Labels = make(map[string]string)
-	genNamespace.Labels["ownerName"] = app.Name
-	genNamespace.Labels["ownerNamespace"] = app.Namespace
+	genNamespace.Labels = map[string]string{
+		"m4d.ibm.com.owner": app.Namespace + "." + app.Name
+	 }
 	if err := r.Create(context.Background(), genNamespace); err != nil {
 		return err
 	}
@@ -315,8 +314,8 @@ func (r *M4DApplicationReconciler) CreateAppNamespace(app *app.M4DApplication) e
 	return nil
 }
 
-// DeleteAppNamespace deletes the blueprint namespace upon blueprint deletion
-func (r *M4DApplicationReconciler) DeleteAppNamespace(name string) error {
+// DeleteNamespace deletes the blueprint namespace upon blueprint deletion
+func (r *M4DApplicationReconciler) DeleteNamespace(name string) error {
 	return r.Delete(context.Background(), &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
