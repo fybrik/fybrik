@@ -22,7 +22,7 @@ docker-push-all:
 
 .PHONY: docker-movement-controller
 docker-movement-controller:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager ../cmd/movement-controller/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o manager ../cmd/movement-controller/main.go
 	docker build . -t $(IMG_MC) -f Dockerfile.movement-controller
 	(rm manager || true)
 

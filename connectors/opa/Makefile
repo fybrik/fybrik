@@ -8,6 +8,11 @@ include $(ROOT_DIR)/.mk/docker.mk
 OPA_PATH=${ABSTOOLBIN}/opa
 OPA_DEFAULT_POLICY_FILE=${ROOT_DIR}/third_party/opa/opa-policy.rego
 
+docker-build:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o opa-connector opa_connector.go evaluate_opa.go
+	docker build . -t $(IMG) -f Dockerfile
+	(rm opa-connector || true)
+
 .PHONY: opaserver
 opaserver:
 	{ $(OPA_PATH) run --server $(OPA_DEFAULT_POLICY_FILE) > output-opa.log 2>&1 & echo $$! >> opa_pids.txt; }
