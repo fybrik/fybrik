@@ -388,14 +388,12 @@ var _ = Describe("M4DApplication Controller", func() {
 
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
-			time.Sleep(2 * time.Second)
-			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(resource.GetFinalizers()).NotTo(BeEmpty())
 			By("Expecting blueprint to be generated")
 			Eventually(func() error {
+				k8sClient.Get(context.Background(), appSignature, resource)
 				f := &apiv1alpha1.Blueprint{}
 				key := appSignature
-				key.Namespace = resource.Finalizers[0]
+				key.Namespace = resource.Status.BlueprintNamespace
 				return k8sClient.Get(context.Background(), key, f)
 			}, timeout, interval).Should(Succeed())
 		})

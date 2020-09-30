@@ -111,6 +111,9 @@ type M4DApplicationStatus struct {
 	// whether reconcile was called because the desired state changed, or whether the Blueprint status changed.
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+
+	// BlueprintNamespace represents the namespace where the blueprint (and the relevant resources) will be allocated.
+	BlueprintNamespace string `json:"blueprintNamespace,omitempty"`
 }
 
 // M4DApplication provides information about the application being used by a Data Scientist,

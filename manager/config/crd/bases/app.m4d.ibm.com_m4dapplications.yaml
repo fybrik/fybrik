@@ -125,6 +125,9 @@ spec:
         status:
           description: M4DApplicationStatus defines the observed state of M4DApplication.
           properties:
+            blueprintNamespace:
+              description: BlueprintNamespace represents the namespace where the blueprint (and the relevant resources) will be allocated.
+              type: string
             conditions:
               description: Conditions represent the possible error and failure conditions
               items:

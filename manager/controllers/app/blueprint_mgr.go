@@ -26,16 +26,15 @@ func containsTemplate(templateList []app.ComponentTemplate, moduleName string) b
 
 // GetBlueprintSignature returns the signature (name and namespace) of the blueprint owned by the given M4DApplication instance
 func (r *M4DApplicationReconciler) GetBlueprintSignature(applicationContext *app.M4DApplication) *app.Blueprint {
-	//sanity - finalizer should exist, since it represents the blueprint namespace name
-	finalizers := applicationContext.GetFinalizers()
-	if len(finalizers) == 0 {
+	//sanity - app.Status.BlueprintNamespace should exist, since it represents the blueprint namespace name
+	if len(applicationContext.Status.BlueprintNamespace) == 0 {
 		return nil
 	}
 
 	return &app.Blueprint{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      applicationContext.Name,
-			Namespace: finalizers[0],
+			Namespace: applicationContext.Status.BlueprintNamespace,
 		},
 	}
 }
@@ -45,6 +44,9 @@ func (r *M4DApplicationReconciler) GetBlueprintSignature(applicationContext *app
 func (r *M4DApplicationReconciler) getBlueprint(applicationContext *app.M4DApplication) (*app.Blueprint, error) {
 	// Get the Blueprints owned by this M4DApplication instance
 	m4dBlueprint := r.GetBlueprintSignature(applicationContext)
+	if m4dBlueprint == nil {
+		return nil, nil
+	}
 	namespace, _ := client.ObjectKeyFromObject(m4dBlueprint)
 	if err := r.Client.Get(context.Background(), namespace, m4dBlueprint); err != nil {
 		return nil, err
@@ -54,17 +56,19 @@ func (r *M4DApplicationReconciler) getBlueprint(applicationContext *app.M4DAppli
 
 // DeleteOwnedBlueprint deletes the blueprint owned by the given M4DApplication instance,
 // checking first that it actually exists
-func (r *M4DApplicationReconciler) DeleteOwnedBlueprint(applicationContext *app.M4DApplication) {
+func (r *M4DApplicationReconciler) DeleteOwnedBlueprint(applicationContext *app.M4DApplication) error {
 	// Check first if the blueprint exists
-	blueprint, err := r.getBlueprint(applicationContext)
-	if err != nil || blueprint == nil {
+	blueprint, _ := r.getBlueprint(applicationContext)
+	if blueprint == nil {
 		r.Log.V(0).Info("\tDidn't find a blueprint to delete: " + applicationContext.GetName())
-		return
+		return nil
 	}
 
-	if err = r.Delete(context.Background(), blueprint); err != nil {
+	if err := r.Delete(context.Background(), blueprint); err != nil {
 		r.Log.V(0).Info("\tFailed to delete blueprint: " + applicationContext.GetName())
+		return err
 	}
+	return nil
 }
 
 // GenerateBlueprint creates the Blueprint spec based on the datasets and the governance actions required, which dictate the modules that must run in the m4d
