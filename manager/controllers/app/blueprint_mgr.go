@@ -38,7 +38,7 @@ func (r *M4DApplicationReconciler) GetBlueprintSignature(applicationContext *app
 // and creturns it
 func (r *M4DApplicationReconciler) getBlueprint(applicationContext *app.M4DApplication) (*app.Blueprint, error) {
 	// Check if there is an allocated namespace for the blueprint
-	if len(applicationContext.Status.BlueprintNamespace) == 0 {
+	if applicationContext.Status.BlueprintNamespace == "" {
 		return nil, nil
 	}
 	// Get the Blueprints owned by this M4DApplication instance
