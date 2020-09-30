@@ -26,11 +26,6 @@ func containsTemplate(templateList []app.ComponentTemplate, moduleName string) b
 
 // GetBlueprintSignature returns the signature (name and namespace) of the blueprint owned by the given M4DApplication instance
 func (r *M4DApplicationReconciler) GetBlueprintSignature(applicationContext *app.M4DApplication) *app.Blueprint {
-	//sanity - app.Status.BlueprintNamespace should exist, since it represents the blueprint namespace name
-	if len(applicationContext.Status.BlueprintNamespace) == 0 {
-		return nil
-	}
-
 	return &app.Blueprint{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      applicationContext.Name,
@@ -42,11 +37,12 @@ func (r *M4DApplicationReconciler) GetBlueprintSignature(applicationContext *app
 // getBlueprint finds the Blueprint instance associated with this M4DApplication if one already exists,
 // and creturns it
 func (r *M4DApplicationReconciler) getBlueprint(applicationContext *app.M4DApplication) (*app.Blueprint, error) {
-	// Get the Blueprints owned by this M4DApplication instance
-	m4dBlueprint := r.GetBlueprintSignature(applicationContext)
-	if m4dBlueprint == nil {
+	// Check if there is an allocated namespace for the blueprint
+	if len(applicationContext.Status.BlueprintNamespace) == 0 {
 		return nil, nil
 	}
+	// Get the Blueprints owned by this M4DApplication instance
+	m4dBlueprint := r.GetBlueprintSignature(applicationContext)
 	namespace, _ := client.ObjectKeyFromObject(m4dBlueprint)
 	if err := r.Client.Get(context.Background(), namespace, m4dBlueprint); err != nil {
 		return nil, err
