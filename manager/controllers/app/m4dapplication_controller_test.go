@@ -388,6 +388,13 @@ var _ = Describe("M4DApplication Controller", func() {
 
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
+			By("Expecting a namespace to be allocated")
+			Eventually(func() string {
+				f := &apiv1alpha1.M4DApplication{}
+				_ = k8sClient.Get(context.Background(), appSignature, f)
+				return f.Status.BlueprintNamespace
+			}, timeout, interval).ShouldNot(BeEmpty())
+
 			By("Expecting blueprint to be generated")
 			Eventually(func() error {
 				Expect(k8sClient.Get(context.Background(), appSignature, resource)).Should(Succeed())
