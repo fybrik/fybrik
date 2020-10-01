@@ -1,7 +1,7 @@
 FROM gcr.io/distroless/static:nonroot
 
-COPY opa-connector /opa-connector
+COPY opa-connector /
 
 EXPOSE 50082
 
-CMD ["./opa-connector"]
+ENTRYPOINT ["/opa-connector"]
