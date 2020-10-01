@@ -7,16 +7,16 @@ include $(ROOT_DIR)/.mk/docker.mk
 
 .PHONY: deploy
 deploy:
-	cd deployment && ./deploy-secret-provider.sh deploy || echo "failed ./deploy-secret-provider.sh deploy"
+	cd deploy && ./deploy.sh deploy
 
 .PHONY: undeploy
 undeploy:
-	cd deployment && ./deploy-secret-provider.sh undeploy || echo "failed ./deploy-secret-provider.sh undeploy"
+	cd deploy && ./deploy.sh undeploy
 
 .PHONY: configure-vault
 configure-vault:
-	cd deployment && ./deploy-vault.sh configure || echo "failed to configure vault"
+	cd deploy && ./deploy-vault.sh configure || echo "failed to configure vault"
 
 .PHONY: vault-demo-secrets
 vault-demo-secrets:
-	cd deployment && ./deploy-vault.sh populate_demo_secrets || echo "failed to write demo secrets to vault"
+	cd deploy && ./deploy-vault.sh populate_demo_secrets || echo "failed to write demo secrets to vault"

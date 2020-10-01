@@ -1,0 +1,6 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+resources:
+- secret-provider.yaml
+- secret-provider-rbac.yaml
