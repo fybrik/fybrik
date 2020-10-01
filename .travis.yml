@@ -57,8 +57,8 @@ jobs:
     - DOCKER_HOSTNAME=localhost:5000
     - DOCKER_NAMESPACE=m4d
     script:
-    - make docker # Builds and pushes docker images locally
     - make kind || travis_terminate 1; # Setup local kind cluster
+    - make docker # Builds and pushes docker images locally
     - make cluster-prepare || travis_terminate 1; # Install 3rd party cluster dependencies
     - make deploy # Deploy components on cluster
     - make e2e # Run e2e test
