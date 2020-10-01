@@ -42,122 +42,40 @@ install:
 jobs:
   include: 
   - stage: Build
-    name: "Verify code"
+    name: "Verify code and run unit tests"
     install:
     - make install-tools
     script:
     - make verify
-
-  - stage: Build
-    name: "Run unit tests"
-    install:
-    - make install-tools
-    script:
     - make test
 
   - stage: Build
-    name: "Build binaries"
+    name: "Build, integration-tests and push"
     install:
     - make install-tools
+    env:
+    - DOCKER_HOSTNAME=localhost:5000
+    - DOCKER_NAMESPACE=m4d
     script:
-    - make build
+    - make docker # Builds and pushes docker images locally
+    - make kind || travis_terminate 1; # Setup local kind cluster
+    - make cluster-prepare || travis_terminate 1; # Install 3rd party cluster dependencies
+    - make deploy # Deploy components on cluster
+    - make e2e # Run e2e test
+    - make helm # Run helm and helm tests
+
+    deploy:
+      skip_cleanup: true
+      provider: script
+      script: echo "Nothing for now" # TODO tag all images to final names and push them
+      on:
+        branch: master
 
   # FIXME(hunchback): disabled as its' taking 15m to run
   # - stage: verify-license
   #   install:
   #   script:
   #   - make license
-
-  - stage: Test
-    name: "Integration tests for manager"
-    install:
-    - make install-tools
-    script:
-    - make kind || travis_terminate 1;
-    - make cluster-prepare || travis_terminate 1;
-    - make install || travis_terminate 1;
-    - make e2e
-
-  - stage: Test
-    name: "Integration tests for helm"
-    env:
-    - DOCKER_HOSTNAME=localhost:5000
-    - DOCKER_NAMESPACE=m4d
-    script:
-    - make kind || travis_terminate 1;
-    - make helm
-
-  - stage: Publish
-    name: "Build and push docker images"
-    env:
-    - COMPONENT=build
-    install:
-    - make install-tools
-    script:
-    - make -C $COMPONENT docker-build-all
-    deploy:
-      skip_cleanup: true
-      provider: script
-      script: make -C $COMPONENT docker-push-all
-      on:
-        branch: master
-
-  - stage: Publish
-    name: "Build and push docker images"
-    env:
-    - COMPONENT=manager
-    install:
-    - make install-tools
-    script:
-    - make -C $COMPONENT docker-build
-    deploy:
-      skip_cleanup: true
-      provider: script
-      script: make -C $COMPONENT docker-push
-      on:
-        branch: master
-
-  - stage: Publish
-    name: "Build and push docker images"
-    env:
-    - COMPONENT=secret-provider
-    install:
-    - make install-tools
-    script:
-    - make -C $COMPONENT docker-build
-    deploy:
-      skip_cleanup: true
-      provider: script
-      script: make -C $COMPONENT docker-push
-      on:
-        branch: master
-
-  - stage: Publish
-    name: "Build and push docker images"
-    env:
-    - COMPONENT=connectors
-    install:
-    - make install-tools
-    script:
-    - make -C $COMPONENT docker-build
-    deploy:
-      skip_cleanup: true
-      provider: script
-      script: make -C $COMPONENT docker-push
-      on:
-        branch: master
-
-  - stage: Publish
-    name: "Build and push helm charts"
-    install:
-    - make install-tools
-    script: true
-    deploy:
-      skip_cleanup: true
-      provider: script
-      script: make -C modules helm-chart-push
-      on:
-        branch: master
 
   - stage: Publish
     name: "Build and publish website"
@@ -172,52 +90,6 @@ jobs:
       github_token: $GITHUB_TOKEN # Set in travis-ci dashboard
       on:
         branch: master
-
-  - stage: Deploy
-    name: "Kind deploy"
-    env:
-    - COMPONENT=secret-provider
-    - CLUSTER=kind
-    - REGISTRY=ibmcloud
-    install:
-    - make install-tools
-    script:
-    - make $CLUSTER || travis_terminate 1;
-    - make cluster-prepare || travis_terminate 1;
-    - make -C $COMPONENT deploy
-    - kubectl get pod --all-namespaces
-    if: branch = master AND type = push
-
-  - stage: Deploy
-    name: "Kind deploy"
-    env:
-    - COMPONENT=manager
-    - CLUSTER=kind
-    - REGISTRY=ibmcloud
-    install:
-    - make install-tools
-    script:
-    - make $CLUSTER || travis_terminate 1;
-    - make cluster-prepare || travis_terminate 1;
-    - make -C $COMPONENT deploy
-    - kubectl get pod --all-namespaces
-    if: branch = master AND type = push
-
-  - stage: Deploy
-    name: "Kind deploy"
-    env:
-    - COMPONENT=connectors
-    - CLUSTER=kind
-    - REGISTRY=ibmcloud
-    install:
-    - make install-tools
-    script:
-    - make $CLUSTER || travis_terminate 1;
-    - make cluster-prepare || travis_terminate 1;
-    - make -C third_party/opa deploy || travis_terminate 1;
-    - make -C $COMPONENT deploy
-    - kubectl get pod --all-namespaces
-    if: branch = master AND type = push
 
 notifications:
   email: false
