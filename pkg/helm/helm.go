@@ -276,7 +276,7 @@ func (r *Impl) GetResources(kubeNamespace string, releaseName string) ([]*unstru
 	if err != nil {
 		return resources, err
 	}
-	resourceList, err = config.KubeClient.Build(bytes.NewBufferString(rel.Manifest), false)
+	resourceList, _ = config.KubeClient.Build(bytes.NewBufferString(rel.Manifest), false)
 	for _, res := range resourceList {
 		if err := res.Get(); err != nil {
 			return resources, err
