@@ -115,7 +115,7 @@ e2e-setup: $(TOOLBIN)/kubectl
 
 .PHONY: e2e-run
 e2e-run: main.deps
-	(timeout 20s go run ./main.go 2>&1 | tee e2e.out) || true
+	(timeout 60s go run ./main.go 2>&1 | tee e2e.out) || true
 	$(ABSTOOLBIN)/kubectl describe m4dapplication notebook | grep Ready | grep true
 
 DEBUG := ./debug.out
