@@ -12,7 +12,7 @@ include $(ROOT_DIR)/pkg/policy-compiler/policy-compiler.env
 docker-build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o vault-connector vault_connector.go vault_utils.go
 	docker build . -t $(IMG) -f Dockerfile
-	(rm vault-connector || true)
+	rm vault-connector
 
 .PHONY: vaultserver-clean
 vaultserver-clean:
