@@ -147,20 +147,10 @@ func ListeningAddress(port int) string {
 	return address
 }
 
-// GetCondition is a helper function to retrieve the relevant condition. Returns nil if not found.
-func GetCondition(status *app.M4DApplicationStatus, cType app.ConditionType, reason string) *app.Condition {
-	for _, cond := range status.Conditions {
-		if cond.Type == cType && cond.Reason == reason {
-			return &cond
-		}
-	}
-	return nil
-}
-
-// HasCondition returns true if there is an error condition
-func HasCondition(status *app.M4DApplicationStatus, cType app.ConditionType) bool {
-	for _, cond := range status.Conditions {
-		if cond.Type == cType {
+// HasCondition returns true if there is an appropriate condition with status True
+func HasCondition(conditions []app.Condition, cType app.ConditionType) bool {
+	for _, cond := range conditions {
+		if cond.Type == cType && cond.Status == corev1.ConditionTrue {
 			return true
 		}
 	}
@@ -168,25 +158,25 @@ func HasCondition(status *app.M4DApplicationStatus, cType app.ConditionType) boo
 }
 
 // UpdateCondition updates a condition or adds a new one
-func UpdateCondition(status *app.M4DApplicationStatus, cType app.ConditionType, reason string, message string) {
-	for ind, cond := range status.Conditions {
+func UpdateCondition(conditionsPtr *[]app.Condition, cType app.ConditionType, reason string, message string) {
+	for ind, cond := range *conditionsPtr {
 		if cond.Type == cType && cond.Reason == reason {
 			if cond.Message != message {
-				status.Conditions[ind].Message += " \n" + message
+				(*conditionsPtr)[ind].Message += " \n" + message
 			}
 			return
 		}
 	}
-	status.Conditions = append(status.Conditions, app.Condition{Type: cType, Status: corev1.ConditionTrue, Reason: reason, Message: message})
+	*conditionsPtr = append(*conditionsPtr, app.Condition{Type: cType, Status: corev1.ConditionTrue, Reason: reason, Message: message})
 }
 
 // ActivateCondition sets the required condition details and marks its status as True
 func ActivateCondition(appContext *app.M4DApplication, cType app.ConditionType, reason string, message string) {
-	UpdateCondition(&appContext.Status, cType, reason, message)
+	UpdateCondition(&appContext.Status.Conditions, cType, reason, message)
 	// specific actions that need to be taken
 	if cType == app.ErrorCondition {
 		// add failure condition
-		if !HasCondition(&appContext.Status, app.FailureCondition) {
+		if !HasCondition(appContext.Status.Conditions, app.FailureCondition) {
 			appContext.Status.Conditions = append(appContext.Status.Conditions, app.Condition{
 				Type: app.FailureCondition, Status: corev1.ConditionTrue, Reason: "Error", Message: "An error has occurred during blueprint construction."})
 		}

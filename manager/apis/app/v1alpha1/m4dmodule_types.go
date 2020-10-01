@@ -95,6 +95,38 @@ type Dependency struct {
 	Name string `json:"name"`
 }
 
+// StateType specifies the expected state of the given resource
+// +kubebuilder:validation:Enum=ready;failed;error
+type StateType string
+
+const (
+	// FailedState indicates failure
+	FailedState StateType = "failed"
+
+	//ReadyState indicates readiness
+	ReadyState StateType = "ready"
+
+	// ErrorState indicates that the resource has reached an error
+	ErrorState StateType = "error"
+)
+
+// ExpectedResourceStatus is used to determine the status of an orchestrated resource
+type ExpectedResourceStatus struct {
+	// Kind provides information about the resource kind
+	// +required
+	Kind string `json:"kind"`
+	// Path specifies what field inside the resource status to check, e.g. ready
+	// +required
+	Path string `json:"path"`
+	// Value specifies the expected value, e.g. FAILED
+	// If not specified, the expected value can be any non-empty string (e.g. error message)
+	// +optional
+	Value string `json:"value,omitempty"`
+	// State specifies the expected state of the resource
+	// +required
+	State string `json:"state"`
+}
+
 // Capability declares what this module knows how to do and the types of data it knows how to handle
 type Capability struct {
 
@@ -145,6 +177,10 @@ type M4DModuleSpec struct {
 	// Reference to a Helm chart that allows deployment of the resources required for this module
 	// +required
 	Chart string `json:"chart"`
+
+	// Expected states for non-standard resources that can not be computed by helm/kstatus
+	// +optional
+	Expected []ExpectedResourceStatus `json:"expected,omitempty"`
 }
 
 // +kubebuilder:object:root=true

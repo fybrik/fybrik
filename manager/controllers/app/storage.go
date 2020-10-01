@@ -27,7 +27,7 @@ func (r *M4DApplicationReconciler) FindAvailableBucket(owner types.NamespacedNam
 		return nil, err
 	}
 	for _, bucket := range buckets.Items {
-		utils.PrintStructure(bucket, r.Log, "Bucket ")
+		//utils.PrintStructure(bucket, r.Log, "Bucket ")
 		if IsBucketAvailable(&bucket, owner, id, canShare) {
 			AddOwner(&bucket, owner)
 			GetOrCreatePrefix(&bucket, id, prefixBase)

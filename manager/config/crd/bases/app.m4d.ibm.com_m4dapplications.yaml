@@ -140,7 +140,7 @@ spec:
                     description: Reason is a short explanation of the reason for the current condition
                     type: string
                   status:
-                    description: 'Status of the condition: true or false'
+                    description: 'Status of the condition: true,false,unknown'
                     type: string
                   type:
                     description: Type of the condition

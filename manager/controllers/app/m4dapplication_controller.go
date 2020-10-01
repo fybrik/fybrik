@@ -6,6 +6,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/hashicorp/vault/api"
@@ -47,7 +48,6 @@ type M4DApplicationReconciler struct {
 func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("m4dapplication", req.NamespacedName)
-
 	// obtain M4DApplication resource
 	applicationContext := &app.M4DApplication{}
 	if err := r.Get(ctx, req.NamespacedName, applicationContext); err != nil {
@@ -73,10 +73,9 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 			return result, err
 		}
 		applicationContext.Status.ObservedGeneration = applicationContext.GetGeneration()
-	} else if generatedBlueprint.Status.Ready {
-		applicationContext.Status.Ready = true
+	} else {
+		checkBlueprintStatus(applicationContext, generatedBlueprint)
 	}
-	// TODO: check for blueprint errors and report accordingly
 
 	// Update CRD status in case of change (other than deletion, which was handled separately)
 	if !equality.Semantic.DeepEqual(applicationContext.Status, observedStatus) && applicationContext.DeletionTimestamp.IsZero() {
@@ -85,11 +84,31 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 			return ctrl.Result{}, err
 		}
 	}
-	if utils.HasCondition(&applicationContext.Status, app.FailureCondition) {
+	failed := utils.HasCondition(applicationContext.Status.Conditions, app.FailureCondition)
+	if failed {
 		log.Info("Reconciled with error conditions")
 		utils.PrintStructure(applicationContext.Status.Conditions, log, "Conditions")
 	}
+	// polling for blueprint status
+	if !applicationContext.Status.Ready && !failed {
+		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+	}
 	return ctrl.Result{}, nil
+}
+
+func checkBlueprintStatus(applicationContext *app.M4DApplication, blueprint *app.Blueprint) {
+	applicationContext.Status.Ready = false
+	for _, cond := range blueprint.Status.Conditions {
+		if cond.Status != corev1.ConditionTrue {
+			continue
+		}
+		switch cond.Type {
+		case app.ReadyCondition:
+			applicationContext.Status.Ready = true
+		case app.FailureCondition:
+			utils.ActivateCondition(applicationContext, cond.Type, cond.Reason, cond.Message)
+		}
+	}
 }
 
 // reconcileFinalizers reconciles finalizers for M4DApplication
@@ -199,9 +218,14 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	}
 	instances := r.SelectModuleInstances(requirements, applicationContext)
 	// check for errors
-	if utils.HasCondition(&applicationContext.Status, app.FailureCondition) {
+	if utils.HasCondition(applicationContext.Status.Conditions, app.FailureCondition) {
 		return ctrl.Result{}, nil
 	}
+	/*	r.Log.V(0).Info("Input to blueprint generator:")
+		for _, inst := range instances {
+			utils.PrintStructure(inst.Args, r.Log, "Arguments for "+inst.Module.Name)
+		}
+	*/
 	r.Log.V(0).Info("Creating Blueprint")
 	// first, a namespace should be created
 	if applicationContext.Status.BlueprintNamespace == "" {

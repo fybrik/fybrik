@@ -483,8 +483,32 @@ spec:
         status:
           description: BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators forthe Kubernetes resources owned by the Blueprint for cleanup and status monitoring
           properties:
-            ready:
-              type: boolean
+            conditions:
+              description: Conditions represent the possible error and failure conditions
+              items:
+                description: Condition describes the state of a M4DApplication at a certain point.
+                properties:
+                  message:
+                    description: Message contains the details of the current condition
+                    type: string
+                  reason:
+                    description: Reason is a short explanation of the reason for the current condition
+                    type: string
+                  status:
+                    description: 'Status of the condition: true,false,unknown'
+                    type: string
+                  type:
+                    description: Type of the condition
+                    type: string
+                required:
+                - status
+                - type
+                type: object
+              type: array
+            observedGeneration:
+              description: ObservedGeneration is taken from the Blueprint metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.
+              format: int64
+              type: integer
           type: object
       type: object
   version: v1alpha1

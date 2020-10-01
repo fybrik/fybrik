@@ -148,8 +148,13 @@ type BlueprintSpec struct {
 // This includes readiness, error message, and indicators forthe Kubernetes
 // resources owned by the Blueprint for cleanup and status monitoring
 type BlueprintStatus struct {
+	// ObservedGeneration is taken from the Blueprint metadata.  This is used to determine during reconcile
+	// whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.
 	// +optional
-	Ready bool `json:"ready,omitempty"`
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+	// Conditions represent the possible error and failure conditions
+	// +optional
+	Conditions []Condition `json:"conditions,omitempty"`
 }
 
 // +kubebuilder:object:root=true

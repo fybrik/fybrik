@@ -4,7 +4,6 @@
 package v1alpha1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -61,34 +60,6 @@ type M4DApplicationSpec struct {
 	// +required
 	// +kubebuilder:validation:MinItems=1
 	Data []DataContext `json:"data"`
-}
-
-// ConditionType represents a condition type
-type ConditionType string
-
-const (
-	// ErrorCondition means that an error was encountered during blueprint construction
-	ErrorCondition ConditionType = "Error"
-
-	// FailureCondition means that a blueprint could not be constructed (i.e., error or not allowed)
-	FailureCondition ConditionType = "Failure"
-
-	// TerminatingCondition means that deletion is in progress
-	TerminatingCondition ConditionType = "Terminating"
-)
-
-// Condition describes the state of a M4DApplication at a certain point.
-type Condition struct {
-	// Type of the condition
-	Type ConditionType `json:"type"`
-	// Status of the condition: true or false
-	Status corev1.ConditionStatus `json:"status"`
-	// Reason is a short explanation of the reason for the current condition
-	// +optional
-	Reason string `json:"reason,omitempty"`
-	// Message contains the details of the current condition
-	// +optional
-	Message string `json:"message,omitempty"`
 }
 
 // M4DApplicationStatus defines the observed state of M4DApplication.

@@ -5,13 +5,16 @@ package helm
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/kube"
 	"helm.sh/helm/v3/pkg/release"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
@@ -61,6 +64,7 @@ type Interface interface {
 	ChartLoad(ref string) (*chart.Chart, error)
 	ChartPush(chart *chart.Chart, ref string) error
 	ChartPull(ref string) error
+	GetResources(kubeNamespace string, releaseName string) ([]*unstructured.Unstructured, error)
 }
 
 // Fake implementation
@@ -126,6 +130,11 @@ func (r *Fake) ChartPull(ref string) error {
 	return nil
 }
 
+// GetResources returns allocated resources for the specified release (their current state)
+func (r *Fake) GetResources(kubeNamespace string, releaseName string) ([]*unstructured.Unstructured, error) {
+	return make([]*unstructured.Unstructured, 0), nil
+}
+
 // Impl implementation
 type Impl struct {
 }
@@ -149,6 +158,7 @@ func (r *Impl) Install(chart *chart.Chart, kubeNamespace string, releaseName str
 	install := action.NewInstall(cfg)
 	install.ReleaseName = releaseName
 	install.Namespace = kubeNamespace
+	install.Wait = true
 	return install.Run(chart, vals)
 }
 
@@ -160,6 +170,7 @@ func (r *Impl) Upgrade(chart *chart.Chart, kubeNamespace string, releaseName str
 	}
 	upgrade := action.NewUpgrade(cfg)
 	upgrade.Namespace = kubeNamespace
+	upgrade.Wait = true
 	return upgrade.Run(releaseName, chart, vals)
 }
 
@@ -247,4 +258,35 @@ func (r *Impl) ChartPull(ref string) error {
 	push := action.NewChartPull(cfg)
 	var buf bytes.Buffer
 	return push.Run(&buf, ref)
+}
+
+// GetResources returns allocated resources for the specified release (their current state)
+func (r *Impl) GetResources(kubeNamespace string, releaseName string) ([]*unstructured.Unstructured, error) {
+	resources := make([]*unstructured.Unstructured, 0)
+	var rel *release.Release
+	var config *action.Configuration
+	var err error
+	var resourceList kube.ResourceList
+	config, err = getConfig(kubeNamespace)
+	if err != nil || config == nil {
+		return resources, err
+	}
+	status := action.NewStatus(config)
+	rel, err = status.Run(releaseName)
+	if err != nil {
+		return resources, err
+	}
+	resourceList, err = config.KubeClient.Build(bytes.NewBufferString(rel.Manifest), false)
+	for _, res := range resourceList {
+		if err := res.Get(); err != nil {
+			return resources, err
+		}
+		obj := res.Object
+		if unstr, ok := obj.(*unstructured.Unstructured); ok {
+			resources = append(resources, unstr)
+		} else {
+			return resources, errors.New("Invalid runtime object")
+		}
+	}
+	return resources, nil
 }
