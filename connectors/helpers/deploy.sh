@@ -5,34 +5,34 @@
 set -x
 set -e
 
-: ${KUBE_NAMESPACE:=default}
+: ${KUBE_NAMESPACE:=m4d-system}
 : ${WITHOUT_VAULT=true}
 : ${ROOT_DIR=../..}
+: ${PORT_TO_FORWARD=8200}
 
 POLICY_DIR=$ROOT_DIR/pkg/policy-compiler
 source $POLICY_DIR/policy-compiler.env
+source $ROOT_DIR/secret-provider/deploy/vault-util.sh
 
 vault_delete() {
         kubectl delete secret user-vault-unseal-keys || true
-        kubectl delete secret vault-unseal-keys || true
 }
 
 vault_create() {
-        kubectl create namespace m4d-system || true
+	echo "USER_VAULT_PATH: $USER_VAULT_PATH"
+        #export VAULT_ADDR=http://127.0.0.1:$PORT_TO_FORWARD
+        export VAULT_TOKEN=$(kubectl get secrets vault-unseal-keys -n $KUBE_NAMESPACE -o jsonpath={.data.vault-root} | base64 --decode)
+        
+        export SECRET_PATH=$USER_VAULT_PATH
+        export AUTH_METHOD=USERPASS
+        configure_path
+        push_secret $USER_VAULT_PATH/87ffdca3-8b5d-4f77-99f9-0cb1fba1f73f/01c6f0f0-9ffe-4ccc-ac07-409523755e72 '{"credentials":"my_kafka_credentials"}' $VAULT_TOKEN 
+        #vault kv put $USER_VAULT_PATH/87ffdca3-8b5d-4f77-99f9-0cb1fba1f73f/01c6f0f0-9ffe-4ccc-ac07-409523755e72  credentials="my_kafka_credentials"
 
-        export VAULT_ADDR=http://127.0.0.1:8202
-        kubectl port-forward -n m4d-system service/vault 8202:8200 &
-        export VAULT_TOKEN=$(kubectl get secrets vault-unseal-keys -n m4d-system -o jsonpath={.data.vault-root} | base64 --decode)
-
-        # vault secrets enable -path=$USER_VAULT_PATH kv
-        vault kv put $USER_VAULT_PATH/87ffdca3-8b5d-4f77-99f9-0cb1fba1f73f/01c6f0f0-9ffe-4ccc-ac07-409523755e72  credentials="my_kafka_credentials"
-
-        #create secrets for Vault_TOKEN and USER_VAULT_TOKEN
+        # create secret generic user-vault-unseal-keys
         echo -n $VAULT_TOKEN > ./token.txt
         kubectl create secret generic user-vault-unseal-keys --from-file=user-vault-root=./token.txt || true
-        kubectl create secret generic vault-unseal-keys --from-file=vault-root=./token.txt || true
         rm ./token.txt
-        kill -9 %%
 }
 
 kustomize_build() {
