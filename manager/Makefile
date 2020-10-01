@@ -128,4 +128,4 @@ e2e-debug: $(TOOLBIN)/dlv $(DEBUG)
 	$(ABSTOOLBIN)/dlv exec $(DEBUG)
 
 .PHONY: e2e
-e2e: e2e-cleanup e2e-setup e2e-run
+e2e: e2e-setup e2e-run
