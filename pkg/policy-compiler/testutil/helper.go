@@ -6,6 +6,7 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"log"
 	"net"
 	"strconv"
@@ -183,10 +184,11 @@ func (s *connectorMockMain) GetPoliciesDecisions(ctx context.Context, in *pb.App
 	return GetMainPMDecisions(in.GetAppInfo().GetPurpose()), nil
 }
 
-func MockMainConnector(port string) {
-	log.Println("Start Mock for Main PolicyConnector at port " + port)
+func MockMainConnector(port int) {
+	address := utils.ListeningAddress(port)
+	log.Println("Start Mock for Main PolicyConnector at " + address)
 
-	lis, err := net.Listen("tcp", ":"+port)
+	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatalf("Error in listening: %v", err)
 	}
@@ -229,10 +231,11 @@ func (s *connectorMockExt) GetPoliciesDecisions(ctx context.Context, in *pb.Appl
 	return GetExtPMDecisions(in.GetAppInfo().GetPurpose()), nil
 }
 
-func MockExtConnector(port string) {
-	log.Println("Start Mock for Extension PolicyConnector at port " + port)
+func MockExtConnector(port int) {
+	address := utils.ListeningAddress(port)
+	log.Println("Start Mock for Extension PolicyConnector at port " + address)
 
-	lis, err := net.Listen("tcp", ":"+port)
+	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatalf("Error in listening: %v", err)
 	}

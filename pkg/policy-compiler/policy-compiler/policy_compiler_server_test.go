@@ -55,8 +55,8 @@ func TestMain(m *testing.M) {
 	tu.EnvValues["MAIN_POLICY_MANAGER_URL"] = "localhost:" + "40082"
 	tu.EnvValues["EXTENSIONS_POLICY_MANAGER_URL"] = "localhost:" + "40092"
 
-	go tu.MockMainConnector("40082")
-	go tu.MockExtConnector("40092")
+	go tu.MockMainConnector(40082)
+	go tu.MockExtConnector(40092)
 	code := m.Run()
 	fmt.Println("TestMain function called after Run = policy_compiler_server_test ")
 	os.Exit(code)
