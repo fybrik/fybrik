@@ -185,7 +185,7 @@ jobs:
     - make $CLUSTER || travis_terminate 1;
     - make cluster-prepare || travis_terminate 1;
     - make -C $COMPONENT deploy
-    - hack/tools/bin/kubectl get pod --all-namespaces
+    - ./hack/tools/bin/kubectl get pod --all-namespaces
     if: branch = master AND type = push
 
   - stage: Deploy
@@ -200,7 +200,7 @@ jobs:
     - make $CLUSTER || travis_terminate 1;
     - make cluster-prepare || travis_terminate 1;
     - make -C $COMPONENT deploy
-    - hack/tools/bin/kubectl get pod --all-namespaces
+    - ./hack/tools/bin/kubectl get pod --all-namespaces
     if: branch = master AND type = push
 
   - stage: Deploy
@@ -216,7 +216,7 @@ jobs:
     - make cluster-prepare || travis_terminate 1;
     - make -C third_party/opa deploy || travis_terminate 1;
     - make -C $COMPONENT deploy
-    - hack/tools/bin/kubectl get pod --all-namespaces
+    - ./hack/tools/bin/kubectl get pod --all-namespaces
     if: branch = master AND type = push
 
 notifications:
