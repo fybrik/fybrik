@@ -10,9 +10,9 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"time"
 
+	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"

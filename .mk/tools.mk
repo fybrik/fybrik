@@ -55,7 +55,7 @@ $(TOOLBIN)/istioctl:
 	cd $(TOOLS_DIR); ./install_istio.sh
 	$(call post-install-check)
 
-INSTALL_TOOLS += $(TOOLBIN)/minikube
+# INSTALL_TOOLS += $(TOOLBIN)/minikube
 $(TOOLBIN)/minikube:
 	cd $(TOOLS_DIR); ./install_minikube.sh
 	$(call post-install-check)
@@ -85,7 +85,7 @@ $(TOOLBIN)/protoc-gen-deepcopy:
 	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get istio.io/tools/cmd/protoc-gen-deepcopy
 	$(call post-install-check)
 	   
-INSTALL_TOOLS += $(TOOLBIN)/oc
+# INSTALL_TOOLS += $(TOOLBIN)/oc
 $(TOOLBIN)/oc:
 	cd $(TOOLS_DIR); ./install_oc.sh
 	$(call post-install-check)

@@ -41,23 +41,21 @@ install:
 
 jobs:
   include: 
-  - stage: warm-cache 
-    name: "Warm Cache"
-    install:
-    - free -h
-    - make install-tools || travis_terminate 1;
-    - go mod download
-    script: true
-
-  - stage: verify-build-test-code
-    name: "Verify and test"
+  - stage: Build
+    name: "Verify code"
     install:
     - make install-tools
     script:
-    - make verify || travis_terminate 1;
-    - git diff
+    - make verify
+
+  - stage: Build
+    name: "Run unit tests"
+    install:
+    - make install-tools
+    script:
     - make test
-  - stage: verify-build-test-code
+
+  - stage: Build
     name: "Build binaries"
     install:
     - make install-tools
@@ -70,7 +68,7 @@ jobs:
   #   script:
   #   - make license
 
-  - stage: integration-tests
+  - stage: Test
     name: "Integration tests for manager"
     install:
     - make install-tools
@@ -79,7 +77,8 @@ jobs:
     - make cluster-prepare || travis_terminate 1;
     - make install || travis_terminate 1;
     - make e2e
-  - stage: integration-tests
+
+  - stage: Test
     name: "Integration tests for helm"
     env:
     - DOCKER_HOSTNAME=localhost:5000
@@ -88,19 +87,67 @@ jobs:
     - make kind || travis_terminate 1;
     - make helm
 
-  - stage: build-and-push
+  - stage: Publish
     name: "Build and push docker images"
+    env:
+    - COMPONENT=build
     install:
     - make install-tools
     script:
-    - make docker-build
+    - make -C $COMPONENT docker-build-all
     deploy:
       skip_cleanup: true
       provider: script
-      script: make docker-push
+      script: make -C $COMPONENT docker-push-all
       on:
         branch: master
-  - stage: build-and-push
+
+  - stage: Publish
+    name: "Build and push docker images"
+    env:
+    - COMPONENT=manager
+    install:
+    - make install-tools
+    script:
+    - make -C $COMPONENT docker-build
+    deploy:
+      skip_cleanup: true
+      provider: script
+      script: make -C $COMPONENT docker-push
+      on:
+        branch: master
+
+  - stage: Publish
+    name: "Build and push docker images"
+    env:
+    - COMPONENT=secret-provider
+    install:
+    - make install-tools
+    script:
+    - make -C $COMPONENT docker-build
+    deploy:
+      skip_cleanup: true
+      provider: script
+      script: make -C $COMPONENT docker-push
+      on:
+        branch: master
+
+  - stage: Publish
+    name: "Build and push docker images"
+    env:
+    - COMPONENT=connectors
+    install:
+    - make install-tools
+    script:
+    - make -C $COMPONENT docker-build
+    deploy:
+      skip_cleanup: true
+      provider: script
+      script: make -C $COMPONENT docker-push
+      on:
+        branch: master
+
+  - stage: Publish
     name: "Build and push helm charts"
     install:
     - make install-tools
@@ -111,7 +158,8 @@ jobs:
       script: make -C modules helm-chart-push
       on:
         branch: master
-  - stage: build-and-push
+
+  - stage: Publish
     name: "Build and publish website"
     env:
     - WEBSITE_LOCAL_DIR=public
@@ -125,8 +173,8 @@ jobs:
       on:
         branch: master
 
-  - stage: verify-deploy
-    name: "Verify deploy"
+  - stage: Deploy
+    name: "Kind deploy"
     env:
     - COMPONENT=secret-provider
     - CLUSTER=kind
@@ -137,8 +185,11 @@ jobs:
     - make $CLUSTER || travis_terminate 1;
     - make cluster-prepare || travis_terminate 1;
     - make -C $COMPONENT deploy
-  - stage: verify-deploy
-    name: "Verify deploy"
+    - ./hack/tools/bin/kubectl get pod --all-namespaces
+    if: branch = master AND type = push
+
+  - stage: Deploy
+    name: "Kind deploy"
     env:
     - COMPONENT=manager
     - CLUSTER=kind
@@ -149,8 +200,11 @@ jobs:
     - make $CLUSTER || travis_terminate 1;
     - make cluster-prepare || travis_terminate 1;
     - make -C $COMPONENT deploy
-  - stage: verify-deploy
-    name: "Verify deploy"
+    - ./hack/tools/bin/kubectl get pod --all-namespaces
+    if: branch = master AND type = push
+
+  - stage: Deploy
+    name: "Kind deploy"
     env:
     - COMPONENT=connectors
     - CLUSTER=kind
@@ -161,8 +215,9 @@ jobs:
     - make $CLUSTER || travis_terminate 1;
     - make cluster-prepare || travis_terminate 1;
     - make -C third_party/opa deploy || travis_terminate 1;
-    - make -C third_party/egeria deploy || travis_terminate 1;
     - make -C $COMPONENT deploy
+    - ./hack/tools/bin/kubectl get pod --all-namespaces
+    if: branch = master AND type = push
 
 notifications:
   email: false

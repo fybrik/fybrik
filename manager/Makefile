@@ -21,8 +21,9 @@ build-linux: generate vet
 
 # Overwrite docker-build from docker.mk
 docker-build: generate
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o manager main.go
 	docker build . -t ${IMG} -f Dockerfile
+	rm manager
 
 # Deploy only movement-controller in the configured Kubernetes cluster in ~/.kube/config
 deploy_mc: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
