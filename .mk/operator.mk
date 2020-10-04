@@ -7,7 +7,7 @@ CRD_OPTIONS ?= "crd:trivialVersions=true"
 all: manager
 
 # Run tests
-test: generate fmt vet manifests
+test: generate manifests
 	go test ./... -coverprofile cover.out
 
 # Build manager binary

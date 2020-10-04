@@ -7,7 +7,7 @@ include $(ROOT_DIR)/.mk/docker.mk
 
 .PHONY: build
 build:
-	mvn clean install -DskipTests
+	mvn clean package -DskipTests
 
 docker-build: build
 

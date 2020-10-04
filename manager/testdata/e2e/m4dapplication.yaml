@@ -20,12 +20,4 @@ spec:
       ifDetails:
         protocol: m4d-arrow-flight
         dataformat: arrow
-    - dataSetID: '{"asset_id": "yyy", "catalog_id": "s3"}'
-      ifDetails:
-        protocol: m4d-arrow-flight
-        dataformat: arrow
-    - dataSetID: '{"asset_id": "zzz", "catalog_id": "db2"}'
-      ifDetails:
-        protocol: m4d-arrow-flight
-        dataformat: arrow
 

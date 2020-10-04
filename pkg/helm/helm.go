@@ -11,12 +11,12 @@ import (
 
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
-	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/release"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
 var (
-	settings = cli.New()
+	debugOption = (os.Getenv("HELM_DEBUG") == "true")
 )
 
 func getConfig(kubeNamespace string) (*action.Configuration, error) {
@@ -26,7 +26,10 @@ func getConfig(kubeNamespace string) (*action.Configuration, error) {
 		kubeNamespace = "default"
 	}
 
-	err := actionConfig.Init(settings.RESTClientGetter(), kubeNamespace, os.Getenv("HELM_DRIVER"), debug)
+	config := &genericclioptions.ConfigFlags{
+		Namespace: &kubeNamespace,
+	}
+	err := actionConfig.Init(config, kubeNamespace, os.Getenv("HELM_DRIVER"), debug)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +38,7 @@ func getConfig(kubeNamespace string) (*action.Configuration, error) {
 }
 
 func debug(format string, v ...interface{}) {
-	if settings.Debug {
+	if debugOption {
 		format = fmt.Sprintf("[debug] %s\n", format)
 		_ = log.Output(2, fmt.Sprintf(format, v...))
 	}

@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
+	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	"k8s.io/client-go/kubernetes/scheme"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"

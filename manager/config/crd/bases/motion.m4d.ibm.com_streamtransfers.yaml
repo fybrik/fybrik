@@ -175,6 +175,11 @@ spec:
                     objectKey:
                       description: Object key of the object in S3. This is used as a prefix! Thus all objects that have the given objectKey as prefix will be used as input!
                       type: string
+                    partitionBy:
+                      description: Partition by partition (for target data stores) Defines the columns to partition the output by for a target data store.
+                      items:
+                        type: string
+                      type: array
                     region:
                       description: Region of S3 service
                       type: string
@@ -353,6 +358,11 @@ spec:
                     objectKey:
                       description: Object key of the object in S3. This is used as a prefix! Thus all objects that have the given objectKey as prefix will be used as input!
                       type: string
+                    partitionBy:
+                      description: Partition by partition (for target data stores) Defines the columns to partition the output by for a target data store.
+                      items:
+                        type: string
+                      type: array
                     region:
                       description: Region of S3 service
                       type: string
