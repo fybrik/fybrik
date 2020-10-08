@@ -19,10 +19,10 @@ Each of these personas suffers from a range of difficulties. For instance, the 
 The Mesh for Data enables the above persona to achieve the business goals by focusing on declaring and specifying what should be done and have the mesh for data enforce and reflect the required policies and regulation to ensure compliance.
 Each of the personas interact with native tools to specify how the workload should behave.
 * The data user develops and runs the models, analytics or code using native tools such as notebooks and deploy the workload in containers specifying its business goals
-* The operator describe the infrastructure (e.g., cloud resources, data locations, networking) using kuberentes mechanisms
+* The operator describe the infrastructure (e.g., cloud resources, data locations, networking) using Kuberentes mechanisms
 * The data steward specify policies and observe compliance through data catalogs and policy managers
 
-!{Vision}{mesh-for-data-vision.png}
+![Vision](mesh-for-data-vision.png)
 
 The Mesh for Data is a delivered as a combination of control plane orchestration and run-time modules. The Mesh for Data interacts with data catalogs and policy management tools, and deploy run-time modules that handle data access, security and governance in an holistic manner. The Mesh for Data control plane wraps the application workload (i.e., user core business logic) with run-time modules that are responsible for intermediating between the user code and the external resource (e.g., data).
 
@@ -50,7 +50,7 @@ The M4DApplication CRD is the main driver for the manager, it describes and regi
 The manager is responsible to obtain the details of the data assets (e.g., location, APIs) and relevant policies, which reside in external sources by using connectors. The connectors are configured in the manager's deployment config-map. All the control plane components runs in the same namespace including connectors. External components can run in their own namespace or location.
 The manager builds a deployment blueprint that isolates the workload from external resources and intermediate extern interactions according to the policies defined in the policy manager, based on the context that is provided by M4DApplication and the running environment. The components of the blueprint are assembled based on information from the module registry, which describe the available modules resources, their features and function. The Mesh for data does not handle end-users directly, and delegate this responsibility to the application to implement mechanisms such as end user authentication if required, e.g. using Istio authorization with JWT.
 
-!{Control Plane}{mesh-for-data-control-plane.png}
+![Control Plane](mesh-for-data-control-plane.png)
 
 The blueprint represent the data flow in the workload, and describe the modules that should be deployed, using helm charts, and how they should be configured in order to fulfill security, governance, data management, and application requirements.
 The modules represent the runtime part of the Mesh for Data. The manager creates a blueprint for each `M4Dapplication`. The modules that are described in the blueprint are deployed in a separate namespace that is under the control of the Mesh for Data. This namespace is also separate from the application workload namespace.
@@ -61,7 +61,7 @@ The blueprint controller is responsible to take the blueprint CRD, which is depl
 The application runs in its native Kuberetes namespace 
 
 
-!{The Runtime}{mesh-for-data-runtime.png}
+![The Runtime](mesh-for-data-runtime.png)
 
 
 
