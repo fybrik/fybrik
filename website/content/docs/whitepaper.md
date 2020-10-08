@@ -61,9 +61,12 @@ The blueprint controller is responsible to take the blueprint CRD, which is depl
 
 The Mesh for Data runtime is composed of the user workload and the modules that the blueprint controller deployed. The user workload runs in the namespace that the user has provided, while the components in the blueprint runs in their own namespace which is controlled by the Mesh for Data and is outside the control scope of the user.
 When running in the Mesh for Data runtime, the user workload can access data only through the Mesh for Data modules, it no longer directly access data and services, but all communication are intermediated by the Mesh for Data modules.
-The Modules are responsible to make sure that the usage of data is compliant with the policies defined in the policy manager. The Mesh for Data leverages mechanisms in Kubernetes and Istio to control and limit the application communication with external source. Note that internal communication between the workload is not intermediated. 
+
+The Modules are responsible to make sure that the usage of data is compliant with the policies defined in the policy manager. The Mesh for Data leverages mechanisms in Kubernetes and Istio to control and limit the application communication with external source. Note that internal communication between the workload is not intermediated.
+
 In the figure below we observe that the application container receives data only through ingest data module that are added by the control plane. The ingest module is configured to apply governance according to the policies in the policy manager. 
 Moreover, the Mesh for Data can automatically add credentials to the data access request outside the control scope of the user and thus bypassing the need to share credential with the user, and removing the possibility of bypassing governance when accessing the data. With this mechanism the Mesh for Data can apply governance based on the location of the data, the data residency and the location of the workload.
+
 In the same way, the Mesh for Data can control the input of the application, and for example, ensure that the application can only write its results to explicitly allowed locations. Modules can also inspect and if needed modify the results in the same way that the inputs can be transformed. For instance, search for credit card numbers in the output, and ensure that the application does not export credit card numbers.
 
 ![The Runtime](mesh-for-data-runtime.png)
