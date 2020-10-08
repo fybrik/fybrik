@@ -5,32 +5,12 @@
 set -x
 set -e
 
-: ${KUBE_NAMESPACE:=irltest4}
+: ${KUBE_NAMESPACE:=default}
 : ${WITHOUT_VAULT=false}
 : ${ROOT_DIR=../../../}
 
 POLICY_DIR=$ROOT_DIR/pkg/policy-compiler
 source $POLICY_DIR/policy-compiler.env
-
-
-registry_delete() {
-        [ -n "$DOCKER_USERNAME" ] || return
-        kubectl delete secret docker-registry cloud-registry || true
-}
-
-registry_create() {
-        [ -n "$DOCKER_USERNAME" ] || return
-
-        kubectl create secret docker-registry cloud-registry \
-            --docker-server="$DOCKER_HOSTNAME" \
-            --docker-username="$DOCKER_USERNAME" \
-            --docker-password="$DOCKER_PASSWORD" \
-            -n $KUBE_NAMESPACE
-
-        kubectl patch serviceaccount default -p \
-            '{"imagePullSecrets": [{"name": "cloud-registry"}]}' \
-            -n $KUBE_NAMESPACE
-}
 
 kustomize_build() {
         local operation=$1
@@ -77,27 +57,12 @@ kube_cluster_info() {
         printf "\nThe deployment script has completed successfully!\n"
 }
 
-case "$REGISTRY" in
-docker)
-    echo "Registry docker not supported" || exit 1
-    ;;
-localhost)
-    echo "Registry localhost not supported" || exit 1
-    ;;
-*)
-    REGISTRY=ibmcloud 
-    ;;
-esac
-
 undeploy() {
-        registry_delete
         mocks_delete
         kube_cluster_info
 }
 
 deploy() {
-        registry_delete
-        registry_create
         mocks_delete
         mocks_create
         kube_cluster_info
