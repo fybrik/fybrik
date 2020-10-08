@@ -58,41 +58,17 @@ The modules represent the runtime part of the Mesh for Data. The manager creates
 The blueprint controller is responsible to take the blueprint CRD, which is deployed in the runtime namespace, and deploy the modules using Helm charts thar are provided by each module.
 
 ### The Runtime
-The application runs in its native Kuberetes namespace 
 
+The Mesh for Data runtime is composed of the user workload and the modules that the blueprint controller deployed. The user workload runs in the namespace that the user has provided, while the components in the blueprint runs in their own namespace which is controlled by the Mesh for Data and is outside the control scope of the user.
+When running in the Mesh for Data runtime, the user workload can access data only through the Mesh for Data modules, it no longer directly access data and services, but all communication are intermediated by the Mesh for Data modules.
+The Modules are responsible to make sure that the usage of data is compliant with the policies defined in the policy manager. The Mesh for Data leverages mechanisms in Kubernetes and Istio to control and limit the application communication with external source. Note that internal communication between the workload is not intermediated. 
+In the figure below we observe that the application container receives data only through ingest data module that are added by the control plane. The ingest module is configured to apply governance according to the policies in the policy manager. 
+Moreover, the Mesh for Data can automatically add credentials to the data access request outside the control scope of the user and thus bypassing the need to share credential with the user, and removing the possibility of bypassing governance when accessing the data. With this mechanism the Mesh for Data can apply governance based on the location of the data, the data residency and the location of the workload.
+In the same way, the Mesh for Data can control the input of the application, and for example, ensure that the application can only write its results to explicitly allowed locations. Modules can also inspect and if needed modify the results in the same way that the inputs can be transformed. For instance, search for credit card numbers in the output, and ensure that the application does not export credit card numbers.
 
 ![The Runtime](mesh-for-data-runtime.png)
 
-
-
-
-As can be seen in the figure below, which shows a  basic data mesh, the application instead of having direct access to the data, gets access to the data it needs via a plugin which knows how to enforce governance policies before the data is shipped to the application.  We use the mechanisms of Kubernetes and Istio to control and limit the applications communication.  For instance, in this example, the application container is wired such that it can only get its inputs from the container that enforces governance.  In addition, by building upon mechanisms of Kubernetes and Istio, we can measure the code that is being run and verify where it is running in order to inject the credentials to access the source data but only if the code is authentic and running in the right location.  In this way, we can ensure, for example, that data that needs to be processed in the EU is only processed on Kubenetes clusters in the EU.
-In the same way we can control the input of the application, we can control what it does with its output.  In this example, we ensure that the application can only write its results to explicitly white-listed addresses, e.g., preventing writing the data to Box if not permitted.  We can also inspect and if needed modify the results in the same way we can modify the inputs.  For instance, if the application saw credit card numbers for purposes of building a fraud model, we can ensure that these credit card numbers are never leave the application.
-
-
-Since the mesh is build on top of Kubernetes, it can be deployed anywhere a client has available OpenShift clusters.  And in particular, our vision is to make it  possible to deploy a single mesh in a hybrid environment, such that some of the mesh's containers run on one cluster and other containers run on a different cluster.  This will support both hybrid and multi cloud deployments.
-
-
-Our approach is based on open standard and tools, such as Kubernetes, Istio, and we envision contribution parts of the core technology as open source.
-
-
-Through this data mesh the business can accelerate the use of data while keeping in with regulatory compliance, as regulatory compliance would be delivered through automation instead of human interactions.
-
-
-IBM is actively exploring use-cases and requirements for the data mesh.  In particular, to ensure that our technology addresses real business needs, we would like to engage with potential users, in particular in financial services, to build a demonstrator of a real application.
-
-
-
-
-
-
-Background on the Mesh for Data and Key Technical Concepts and Components
-
-The Mesh for Data is a combination of control plane orchestration tool and run-time modules that provides the ability to unify data access, security and governance in a cloud independent but native way. The Mesh for Data control plane wraps the application workload (i.e., user core business logic) with run-time modules that are responsible for intermediating between the user code and the external resource (e.g., data).
-
-The description of the application workload is a key entity for the mesh for data, and is defined by an application description (i.e., M4DApplication resource). Before running a workload, an application needs to be registred to the Mesh for Data control plane by applying a M4DApplication resource. This is the declarative definition provided by the data user. The registration provides context about the application such as the purpose for which it’s running, the data assets that it needs, and a selector to identify the workload. Additional context such as geo-location is extracted from the platform. The actions taken by the Mesh for Data are based on data policies and the context of the application. Specifically, the Mesh for Data does not consider end-users of an application. It is the responsibility of the application to implement mechanisms such as end user authentication if required, e.g. using Istio authorization with JWT.
-
-
+Since the runtime is build on top of Kubernetes, it can be deployed anywhere a client has available OpenShift clusters. And in particular, our vision is to make it  possible to deploy a single mesh in a hybrid environment, such that some of the mesh's containers run on one cluster and other containers run on a different cluster. This will support both hybrid and multi cloud deployments.
 
 ## Architecture - Key Components
 
