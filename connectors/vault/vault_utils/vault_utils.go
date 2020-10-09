@@ -72,6 +72,24 @@ func CreateVaultConnection() VaultConnection {
 	return connection
 }
 
+func CreateVaultConnection2(vaultaddress string) VaultConnection {
+	token := GetEnv(VaultSecretKey)
+	address := vaultaddress
+	config := VaultConfig{
+		Token:   token,
+		Address: address,
+	}
+
+	connection := VaultConnection{
+		Config: config,
+	}
+
+	client, _ := connection.InitVault()
+	connection.Client = client
+
+	return connection
+}
+
 func (vlt *VaultConnection) InitVault() (*api.Client, error) {
 	vaultAddress := vlt.Config.Address
 	token := vlt.Config.Token
@@ -106,6 +124,41 @@ func (vlt *VaultConnection) InitVault() (*api.Client, error) {
 // GetFromVault returns the credentials from vault as json
 func (vlt *VaultConnection) GetFromVault(innerVaultPath string) (string, error) {
 	vaultPath := GetEnv(VaultPathKey) + "/" + innerVaultPath
+
+	logicalClient := vlt.Client.Logical()
+	if logicalClient == nil {
+		msg := "No logical client received when retrieving credentials from vault"
+		return "", errors.New(msg)
+	}
+
+	// logicalClient does not work with paths that start with /v1/ so we need to remove the prefix
+	if strings.HasPrefix(vaultPath, "/v1/") {
+		vaultPath = vaultPath[3:]
+	}
+
+	data, err := logicalClient.Read(vaultPath)
+	if err != nil {
+		msg := "Error reading credentials from vault for " + vaultPath + ":" + err.Error()
+		return "", errors.New(msg)
+	}
+
+	if data == nil || data.Data == nil {
+		msg := "No data received for credentials from vault for " + vaultPath
+		return "", errors.New(msg)
+	}
+
+	b, jsonErr := json.Marshal(data.Data)
+	if jsonErr != nil {
+		msg := "Error marshaling credentials to json for " + vaultPath + ":" + jsonErr.Error()
+		return "", errors.New(msg)
+	}
+
+	return string(b), nil
+}
+
+// GetFromVault returns the credentials from vault as json
+func (vlt *VaultConnection) GetFromVault2(outerVaultPath string, innerVaultPath string) (string, error) {
+	vaultPath := outerVaultPath + "/" + innerVaultPath
 
 	logicalClient := vlt.Client.Logical()
 	if logicalClient == nil {

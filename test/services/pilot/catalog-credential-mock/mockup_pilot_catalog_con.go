@@ -166,19 +166,22 @@ func GetCredentials(datasetID string) {
 	}
 }
 
-func ConfigureVault(innerVaultPath string, credentials string) error {
-	vaultAddress := vltutils.GetEnv(vltutils.VaultAddressKey)
+func ConfigureVault(vaultAddress string, outerVaultPath string, innerVaultPath string, credentials string) error {
+	log.Printf("outerVaultPath used %s\n", outerVaultPath)
+	log.Printf("innerVaultPath used %s\n", innerVaultPath)
+	log.Printf("credentials used %s\n", credentials)
+
 	timeOutInSecs := vltutils.GetEnvWithDefault(vltutils.VaultTimeoutKey, vltutils.DefaultTimeout)
 	timeOutSecs, err := strconv.Atoi(timeOutInSecs)
 	port := vltutils.GetEnvWithDefault(vltutils.VaultConnectorPortKey, vltutils.DefaultPort)
 
-	log.Printf("Vault address env variable in %s: %s\n", vltutils.VaultAddressKey, vaultAddress)
+	log.Printf("Vault address env variable in ConfigureVault: %s\n", vaultAddress)
 	log.Printf("VaultConnectorPort env variable in %s: %s\n", vltutils.VaultConnectorPortKey, port)
 	log.Printf("TimeOut used %d\n", timeOutSecs)
 	log.Printf("Secret Token env variable in %s: %s\n", vltutils.VaultSecretKey, vltutils.GetEnv(vltutils.VaultSecretKey))
 
 	var vault vltutils.VaultConnection
-	vault = vltutils.CreateVaultConnection()
+	vault = vltutils.CreateVaultConnection2(vaultAddress)
 	log.Println("Vault connection successfully initiated.")
 
 	credentialsMap := make(map[string]interface{})
@@ -190,7 +193,8 @@ func ConfigureVault(innerVaultPath string, credentials string) error {
 		return err
 	}
 
-	vaultPath := vltutils.GetEnv(vltutils.VaultPathKey) + "/" + innerVaultPath
+	//vaultPath := vltutils.GetEnv(vltutils.VaultPathKey) + "/" + innerVaultPath
+	vaultPath := outerVaultPath + "/" + innerVaultPath
 	if _, err := vault.AddToVault(vaultPath, credentialsMap); err != nil {
 		log.Println("err in utils.AddToVault")
 		errStatus, _ := status.FromError(err)
@@ -200,8 +204,9 @@ func ConfigureVault(innerVaultPath string, credentials string) error {
 	}
 
 	var retrievedValue string
-	if retrievedValue, err = vault.GetFromVault(innerVaultPath); err != nil {
-		log.Println("err in utils.GetFromVault")
+	if retrievedValue, err =
+		vault.GetFromVault2(outerVaultPath, innerVaultPath); err != nil {
+		log.Println("err in utils.GetFromVault2")
 		errStatus, _ := status.FromError(err)
 		log.Println("Message:", errStatus.Message())
 		log.Println("Code:", errStatus.Code())
@@ -230,8 +235,12 @@ func main() {
 	// dataSetID := "6c49313f-1207-4995-a957-5cd49c4e57ac"
 
 	//kafka
-	catalogID := "87ffdca3-8b5d-4f77-99f9-0cb1fba1f73f"
-	datasetID := "01c6f0f0-9ffe-4ccc-ac07-409523755e72" //"466b5d7c-38c5-438c-8298-5c7e00e40638"
+	// catalogID := "87ffdca3-8b5d-4f77-99f9-0cb1fba1f73f"
+	// datasetID := "01c6f0f0-9ffe-4ccc-ac07-409523755e72" //"466b5d7c-38c5-438c-8298-5c7e00e40638"
+
+	//cp4d 3 - ramasuri-catalog
+	catalogID := "8027121c-6da6-4093-9178-38f2062f5210"
+	datasetID := "c8367c56-c1ce-419e-996f-86b0c27d348e"
 
 	var datasetIDJson string
 	if getEnv("CATALOG_PROVIDER_NAME") == "EGERIA" {
@@ -241,7 +250,21 @@ func main() {
 		datasetIDJson = "{\"catalog_id\":\"" + catalogID + "\",\"asset_id\":\"" + datasetID + "\"}"
 	}
 
-	ConfigureVault(datasetIDJson, "{\"credentials\": \"my_egeria_credentials\"}")
+	ConfigureVault(vltutils.GetEnv("USER_VAULT_ADDRESS"),
+		vltutils.GetEnv("USER_VAULT_PATH"),
+		datasetIDJson,
+		"{\"credentials\": \"my_egeria_credentials\"}")
+
+	wkcUserName := vltutils.GetEnv("CP4D_USERNAME_TO_BE_STORED_IN_VAULT")
+	wkcPassword := vltutils.GetEnv("CP4D_PASSWORD_TO_BE_STORED_IN_VAULT")
+	wkcOwnerId := vltutils.GetEnv("CP4D_OWNERID_TO_BE_STORED_IN_VAULT")
+	appID := vltutils.GetEnv("APPID")
+
+	ConfigureVault(vltutils.GetEnv("VAULT_ADDRESS"),
+		vltutils.GetEnv("VAULT_USER_HOME"),
+		appID,
+		"{\"username\":\""+wkcUserName+"\",\"password\":\""+wkcPassword+"\",\"ownerId\":\""+wkcOwnerId+"\"}")
+
 	GetMetadata(datasetIDJson)
 	GetCredentials(datasetIDJson)
 }

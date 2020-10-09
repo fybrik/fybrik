@@ -55,8 +55,12 @@ func constructInputParameters() *pb.ApplicationContext {
 	// catalogID := "1c080331-72da-4cea-8d06-5f075405cf17"
 
 	//kafka
-	catalogID := "87ffdca3-8b5d-4f77-99f9-0cb1fba1f73f"
-	datasetID := "01c6f0f0-9ffe-4ccc-ac07-409523755e72" //"988f7b32-2417-4b4f-b327-d4a63d110267" //"466b5d7c-38c5-438c-8298-5c7e00e40638"
+	// catalogID := "87ffdca3-8b5d-4f77-99f9-0cb1fba1f73f"
+	// datasetID := "01c6f0f0-9ffe-4ccc-ac07-409523755e72" //"988f7b32-2417-4b4f-b327-d4a63d110267" //"466b5d7c-38c5-438c-8298-5c7e00e40638"
+
+	//cp4d 3 - ramasuri-catalog
+	catalogID := "8027121c-6da6-4093-9178-38f2062f5210"
+	datasetID := "c8367c56-c1ce-419e-996f-86b0c27d348e"
 
 	var datasetIDJson string
 	if getEnv("CATALOG_PROVIDER_NAME") == "EGERIA" {
