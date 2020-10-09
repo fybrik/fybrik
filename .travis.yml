@@ -79,6 +79,21 @@ jobs:
     - make e2e
 
   - stage: Test
+    name: "Integration tests for manager in kind"
+    install:
+    - make install-tools
+    script:
+    - make kind || travis_terminate 1;
+    - make cluster-prepare || travis_terminate 1;
+    - make docker-minimal-it
+    #- make -C test/services docker Already build in docker-minimal-it
+    - make cluster-prepare-wait || travis_terminate 1;
+    - make -C secret-provider configure-vault
+    - make -C secret-provider deploy || travis_terminate 1;
+    - make -C manager deploy_it || travis_terminate 1;
+    - make -C manager motion-integration-tests || travis_terminate 1;
+
+  - stage: Test
     name: "Integration tests for helm"
     env:
     - DOCKER_HOSTNAME=localhost:5000

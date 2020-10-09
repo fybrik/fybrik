@@ -21,11 +21,20 @@ e2e:
 	# $(MAKE) -C pkg/helm test
 	$(MAKE) -C manager e2e
 
+# Splitting cluster-prepare into deploy and deploy-wait
+# Allows to differentiate between YAMLs to be deployed
+# and waiting for the state to be ready
+
 .PHONY: cluster-prepare
 cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy
 	$(MAKE) -C third_party/registry deploy
 	$(MAKE) -C third_party/vault deploy
+
+.PHONY: cluster-prepare-wait
+cluster-prepare-wait:
+	$(MAKE) -C third_party/cert-manager deploy-wait
+	$(MAKE) -C third_party/vault deploy-wait
 
 .PHONY: install
 install:
@@ -54,6 +63,14 @@ docker:
 	$(MAKE) -C manager docker-all
 	$(MAKE) -C secret-provider docker-all
 	$(MAKE) -C connectors docker-all
+
+# Build only the docker images needed for integration testing
+.PHONY: docker-minimal-it
+docker-minimal-it:
+	$(MAKE) -C build docker-dummy-mover
+	$(MAKE) -C manager docker-all
+	$(MAKE) -C secret-provider docker-all
+	$(MAKE) -C test/services docker
 
 .PHONY: docker-build
 docker-build:

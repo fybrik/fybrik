@@ -1,0 +1,41 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: policycompiler
+  namespace: system
+  labels:
+    app: policycompiler
+spec:
+  selector:
+    matchLabels:
+      app: policycompiler
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: policycompiler
+    spec:
+      containers:
+      - image: localhost:5000/m4d-system/serverpolicycompiler-mock:latest
+        name: policycompiler
+        imagePullPolicy: Always
+        ports:
+        - name: policycompiler
+          containerPort: 50090
+      terminationGracePeriodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: policycompiler
+spec:
+  selector:
+    app: policycompiler
+  ports:
+  - port: 50085
+    targetPort: policycompiler
