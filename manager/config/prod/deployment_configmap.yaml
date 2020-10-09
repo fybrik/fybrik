@@ -47,7 +47,7 @@ data:
   #external vault  variables
   USER_VAULT_ADDRESS: "http://vault.m4d-system.svc.cluster.local:8200/"
   USER_VAULT_PATH: "external"
-  APPID: "datauser1/notebook-with-kafka/WKC"
+  APPID: "datauser1/notebook-with-kafka"
 
   CP4D_USERNAME_TO_BE_STORED_IN_VAULT: "SET_USERNAME_HERE"
   CP4D_PASSWORD_TO_BE_STORED_IN_VAULT: "SET_PASSWORD_HERE"

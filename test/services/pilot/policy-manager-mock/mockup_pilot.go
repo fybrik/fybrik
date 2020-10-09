@@ -72,7 +72,8 @@ func constructInputParameters() *pb.ApplicationContext {
 
 	applicationDetails := &pb.ApplicationDetails{Purpose: "fraud-detection", Role: "Security", ProcessingGeography: "US"}
 
-	appID := "datauser1/notebook-with-kafka"
+	//appID := "datauser1/notebook-with-kafka"
+	appID := getEnv("APPID")
 	// credentialsStr := "v1/m4d/user-creds/datauser1/notebook-with-kafka/WKC"
 	// policyManagerCredentials := &pb.PolicyManagerCredentials{Credentials: credentialsStr}
 

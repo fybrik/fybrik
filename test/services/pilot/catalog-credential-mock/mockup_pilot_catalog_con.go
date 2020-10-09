@@ -58,7 +58,8 @@ func GetMetadata(datasetID string) {
 	c := pb.NewDataCatalogServiceClient(conn)
 
 	// catalogCredentials := "v1/m4d/user-creds/datauser1/notebook-with-kafka/WKC"
-	appID := "datauser1/notebook-with-kafka"
+	//appID := "datauser1/notebook-with-kafka"
+	appID := getEnv("APPID")
 	objToSend := &pb.CatalogDatasetRequest{AppId: appID, DatasetId: datasetID}
 
 	log.Printf("Sending CatalogDatasetRequest: ")
@@ -128,7 +129,8 @@ func GetCredentials(datasetID string) {
 	c1 := pb.NewDataCredentialServiceClient(conn)
 
 	// userCredentials := "v1/m4d/user-creds/datauser1/notebook-with-kafka/WKC"
-	appID := "datauser1/notebook-with-kafka"
+	//appID := "datauser1/notebook-with-kafka"
+	appID := getEnv("APPID")
 	objToSendForCredential := &pb.DatasetCredentialsRequest{AppId: appID, DatasetId: datasetID}
 
 	log.Printf("Sending DatasetCredentialsRequest: ")
@@ -253,12 +255,12 @@ func main() {
 	ConfigureVault(vltutils.GetEnv("USER_VAULT_ADDRESS"),
 		vltutils.GetEnv("USER_VAULT_PATH"),
 		datasetIDJson,
-		"{\"credentials\": \"my_egeria_credentials\"}")
+		"{\"credentials\": \"my_credentials\"}")
 
 	wkcUserName := vltutils.GetEnv("CP4D_USERNAME_TO_BE_STORED_IN_VAULT")
 	wkcPassword := vltutils.GetEnv("CP4D_PASSWORD_TO_BE_STORED_IN_VAULT")
 	wkcOwnerId := vltutils.GetEnv("CP4D_OWNERID_TO_BE_STORED_IN_VAULT")
-	appID := vltutils.GetEnv("APPID")
+	appID := vltutils.GetEnv("APPID") + "/" + vltutils.GetEnv("CATALOG_PROVIDER_NAME")
 
 	ConfigureVault(vltutils.GetEnv("VAULT_ADDRESS"),
 		vltutils.GetEnv("VAULT_USER_HOME"),
