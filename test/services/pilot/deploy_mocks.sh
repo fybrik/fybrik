@@ -45,18 +45,6 @@ mocks_create() {
         kustomize_build apply false
 }
 
-kube_cluster_info() {
-        printf "\nSleep ...\n"
-        sleep 10
-
-        printf "\nGetting current status of active cluster. Please wait...\n"
-        kubectl cluster-info
-        kubectl get all
-
-        printf "\n(TIP:) You can use the command \'watch kubectl get all\' to continuously monitor the cluster resources!\n"
-        printf "\nThe deployment script has completed successfully!\n"
-}
-
 undeploy() {
         mocks_delete
         kube_cluster_info
@@ -65,7 +53,6 @@ undeploy() {
 deploy() {
         mocks_delete
         mocks_create
-        kube_cluster_info
 }
 
 case "$1" in
