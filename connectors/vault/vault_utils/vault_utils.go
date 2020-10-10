@@ -121,7 +121,7 @@ func (vlt *VaultConnection) InitVault() (*api.Client, error) {
 	return client, nil
 }
 
-// GetFromVault returns the credentials from vault as json
+// GetFromVault returns the credentials from vault as json given inner vault path parameters
 func (vlt *VaultConnection) GetFromVault(innerVaultPath string) (string, error) {
 	vaultPath := GetEnv(VaultPathKey) + "/" + innerVaultPath
 
@@ -156,7 +156,7 @@ func (vlt *VaultConnection) GetFromVault(innerVaultPath string) (string, error) 
 	return string(b), nil
 }
 
-// GetFromVault returns the credentials from vault as json
+// GetFromVault2 returns the credentials from vault as json given outer and inner vault path parameters
 func (vlt *VaultConnection) GetFromVault2(outerVaultPath string, innerVaultPath string) (string, error) {
 	vaultPath := outerVaultPath + "/" + innerVaultPath
 
@@ -191,7 +191,7 @@ func (vlt *VaultConnection) GetFromVault2(outerVaultPath string, innerVaultPath 
 	return string(b), nil
 }
 
-// GetFromVault returns the credentials from vault as json
+// AddToVault adding credentials to vault as json
 func (vlt *VaultConnection) AddToVault(innerVaultPath string, credentialsMap map[string]interface{}) (string, error) {
 	//vaultDatasetPath := GetVaultDatasetHome() + id
 	vaultDatasetPath := innerVaultPath
