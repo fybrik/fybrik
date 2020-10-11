@@ -1,5 +1,4 @@
 [![Build Status](https://travis-ci.com/IBM/the-mesh-for-data.svg?branch=master)](https://travis-ci.com/IBM/the-mesh-for-data "Travis")
-
 [![Go Report Card](https://goreportcard.com/badge/github.com/IBM/the-mesh-for-data)](https://goreportcard.com/report/github.com/IBM/the-mesh-for-data)
 
 # The Mesh for Data
