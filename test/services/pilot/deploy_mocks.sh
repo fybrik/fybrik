@@ -30,7 +30,7 @@ kustomize_build() {
 
 mocks_delete() {
         printf "\nRemoving kubectl mock resources on active cluster"
-        kubectl delete --ignore-not-found -f $ROOT_DIR/manager/config/prod/deployment_configmap.yaml 
+        kubectl delete --ignore-not-found -f $ROOT_DIR/manager/config/prod/deployment_configmap.yaml
         #cd $ROOT_DIR/test/services/pilot/deploy
         #kustomize build patch/$REGISTRY | kubectl delete -f - || true
         kustomize_build delete true
@@ -38,7 +38,7 @@ mocks_delete() {
 }
 
 mocks_create() {
-        kubectl apply -f $ROOT_DIR/manager/config/prod/deployment_configmap.yaml 
+        kubectl apply -f $ROOT_DIR/manager/config/prod/deployment_configmap.yaml
         pwd
         #cd $ROOT_DIR/test/services/pilot/deploy
         #kustomize build patch/$REGISTRY | kubectl apply -f -
@@ -47,7 +47,6 @@ mocks_create() {
 
 undeploy() {
         mocks_delete
-        kube_cluster_info
 }
 
 deploy() {
