@@ -65,7 +65,7 @@ func constructInputParameters() *pb.ApplicationContext {
 	var datasetIDJson string
 	if getEnv("CATALOG_PROVIDER_NAME") == "EGERIA" {
 		// datasetIDJson = "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"4098e18e-bd53-4fd0-8ff8-e1c8e9fc42da\"}"
-		datasetIDJson = "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"91aec690-bf78-4172-9ef2-cd0abd74b4b1\"}"
+		datasetIDJson = "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"f710567c-0f71-4296-b99e-cf22dc258a9f\"}"
 	} else {
 		datasetIDJson = "{\"catalog_id\":\"" + catalogID + "\",\"asset_id\":\"" + datasetID + "\"}"
 	}
@@ -130,29 +130,29 @@ func main() {
 		log.Println("2***************************************************************")
 	}
 
-	fmt.Println("*********************************invoking new request *****************************")
-	r, err = policyCompiler.GetPoliciesDecisions(applicationContext)
+	// fmt.Println("*********************************invoking new request *****************************")
+	// r, err = policyCompiler.GetPoliciesDecisions(applicationContext)
 
-	if err != nil {
-		errStatus, _ := status.FromError(err)
-		fmt.Println("*********************************in error in  MockupPilot *****************************")
-		fmt.Println("Message: ", errStatus.Message())
-		fmt.Println("Code: ", errStatus.Code())
+	// if err != nil {
+	// 	errStatus, _ := status.FromError(err)
+	// 	fmt.Println("*********************************in error in  MockupPilot *****************************")
+	// 	fmt.Println("Message: ", errStatus.Message())
+	// 	fmt.Println("Code: ", errStatus.Code())
 
-		// take specific action based on specific error?
-		if codes.InvalidArgument == errStatus.Code() {
-			//write customized code here
-			log.Fatal()
-		}
-	} else {
-		log.Printf("Response received from Policy Compiler below:")
+	// 	// take specific action based on specific error?
+	// 	if codes.InvalidArgument == errStatus.Code() {
+	// 		//write customized code here
+	// 		log.Fatal()
+	// 	}
+	// } else {
+	// 	log.Printf("Response received from Policy Compiler below:")
 
-		s, _ := json.MarshalIndent(r, "", "    ")
+	// 	s, _ := json.MarshalIndent(r, "", "    ")
 
-		log.Print(string(s))
+	// 	log.Print(string(s))
 
-		log.Println("2***************************************************************")
-	}
+	// 	log.Println("2***************************************************************")
+	// }
 }
 
 func createDatasetRead(datasetIDJson string) *pb.DatasetContext {

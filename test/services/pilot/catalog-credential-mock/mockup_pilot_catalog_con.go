@@ -247,25 +247,27 @@ func main() {
 	var datasetIDJson string
 	if getEnv("CATALOG_PROVIDER_NAME") == "EGERIA" {
 		// datasetIDJson = "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"4098e18e-bd53-4fd0-8ff8-e1c8e9fc42da\"}"
-		datasetIDJson = "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"91aec690-bf78-4172-9ef2-cd0abd74b4b1\"}"
+		datasetIDJson = "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"f710567c-0f71-4296-b99e-cf22dc258a9f\"}"
+
+		ConfigureVault(vltutils.GetEnv("USER_VAULT_ADDRESS"),
+			vltutils.GetEnv("USER_VAULT_PATH"),
+			datasetIDJson,
+			"{\"credentials\": \"my_credentials\"}")
+
 	} else {
 		datasetIDJson = "{\"catalog_id\":\"" + catalogID + "\",\"asset_id\":\"" + datasetID + "\"}"
+
+		// store in vault only in case we are using WKC
+		wkcUserName := vltutils.GetEnv("CP4D_USERNAME_TO_BE_STORED_IN_VAULT")
+		wkcPassword := vltutils.GetEnv("CP4D_PASSWORD_TO_BE_STORED_IN_VAULT")
+		wkcOwnerId := vltutils.GetEnv("CP4D_OWNERID_TO_BE_STORED_IN_VAULT")
+		appID := vltutils.GetEnv("APPID") + "/" + vltutils.GetEnv("CATALOG_PROVIDER_NAME")
+
+		ConfigureVault(vltutils.GetEnv("VAULT_ADDRESS"),
+			vltutils.GetEnv("VAULT_USER_HOME"),
+			appID,
+			"{\"username\":\""+wkcUserName+"\",\"password\":\""+wkcPassword+"\",\"ownerId\":\""+wkcOwnerId+"\"}")
 	}
-
-	ConfigureVault(vltutils.GetEnv("USER_VAULT_ADDRESS"),
-		vltutils.GetEnv("USER_VAULT_PATH"),
-		datasetIDJson,
-		"{\"credentials\": \"my_credentials\"}")
-
-	wkcUserName := vltutils.GetEnv("CP4D_USERNAME_TO_BE_STORED_IN_VAULT")
-	wkcPassword := vltutils.GetEnv("CP4D_PASSWORD_TO_BE_STORED_IN_VAULT")
-	wkcOwnerId := vltutils.GetEnv("CP4D_OWNERID_TO_BE_STORED_IN_VAULT")
-	appID := vltutils.GetEnv("APPID") + "/" + vltutils.GetEnv("CATALOG_PROVIDER_NAME")
-
-	ConfigureVault(vltutils.GetEnv("VAULT_ADDRESS"),
-		vltutils.GetEnv("VAULT_USER_HOME"),
-		appID,
-		"{\"username\":\""+wkcUserName+"\",\"password\":\""+wkcPassword+"\",\"ownerId\":\""+wkcOwnerId+"\"}")
 
 	GetMetadata(datasetIDJson)
 	GetCredentials(datasetIDJson)
