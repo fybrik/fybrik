@@ -16,7 +16,7 @@
 OPENSHIFT=<1 / 0> make deploy
 
 # Deploy the sleep pod (deploys to the default ns)
-kubectl apply -f deployment/testing
+kubectl apply -f deploy/testing/sleep.yaml
 
 # Wait for all the pods in the m4d-system namespace to become ready before moving on to the next step.
 

@@ -4,12 +4,6 @@ WORKDIR /
 RUN echo -e '#!/bin/sh\necho "Running mover."' > /mover && \
   chmod +x /mover && \
   echo -e '#!/bin/sh\necho "Running finalizer."' > /finalizer && \
-  chmod +x /finalizer && \
-  addgroup --gid 1000 nonroot && \
-  adduser -u 1000 -G nonroot -H -D -s /bin/bash nonroot && \
-  chown nonroot:nonroot /mover && \
-  chown nonroot:nonroot /finalizer
-
-USER nonroot:nonroot
+  chmod +x /finalizer
 
 ENTRYPOINT ["/mover"]
