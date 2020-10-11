@@ -26,9 +26,11 @@ require (
 	istio.io/gogo-genproto v0.0.0-20191009201739-17d570f95998 // indirect
 	k8s.io/api v0.18.6
 	k8s.io/apimachinery v0.18.6
+	k8s.io/cli-runtime v0.18.4
 	k8s.io/client-go v0.18.6
 	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/controller-runtime v0.6.2
+	sigs.k8s.io/kustomize/kstatus v0.0.2
 	sigs.k8s.io/yaml v1.2.0
 )
 

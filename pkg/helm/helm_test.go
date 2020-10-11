@@ -8,9 +8,13 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/release"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	kstatus "sigs.k8s.io/kustomize/kstatus/status"
 )
 
 func buildTestChart() *chart.Chart {
@@ -18,19 +22,18 @@ func buildTestChart() *chart.Chart {
 kind: ConfigMap
 metadata:
   name: test-cm
-  annotations:
-    "helm.sh/hook": post-install,pre-delete,post-upgrade
 data:
   key: value`
 
 	return &chart.Chart{
 		Metadata: &chart.Metadata{
 			APIVersion: "v1",
-			Name:       "hello",
+			Name:       "test-chart",
+			Type:       "application",
 			Version:    "0.1.0",
 		},
 		Templates: []*chart.File{
-			{Name: "templates/hooks", Data: []byte(testManifestWithHook)},
+			{Name: "templates/config.yaml", Data: []byte(testManifestWithHook)},
 		},
 	}
 }
@@ -115,17 +118,28 @@ func TestHelmRelease(t *testing.T) {
 			"key": "value1",
 		},
 	}
-	_, err = impl.Install(origChart, kubeNamespace, releaseName, vals)
+	_, err = impl.Install(origChart, kubeNamespace, releaseName, vals, true)
 	assert.Nil(t, err)
 	Log(t, "install", err)
 
-	_, err = impl.Upgrade(origChart, kubeNamespace, releaseName, vals)
+	_, err = impl.Upgrade(origChart, kubeNamespace, releaseName, vals, true)
 	assert.Nil(t, err)
 	Log(t, "upgrade", err)
 
-	_, err = impl.Status(kubeNamespace, releaseName)
-	assert.Nil(t, err)
+	assert.Eventually(t, func() bool {
+		rel, err := impl.Status(kubeNamespace, releaseName)
+		assert.Nil(t, err)
+		return rel.Info.Status == release.StatusDeployed
+	}, time.Minute, time.Second)
 	Log(t, "status", err)
+
+	var resources []*unstructured.Unstructured
+	resources, err = impl.GetResources(kubeNamespace, releaseName)
+	assert.Nil(t, err)
+	assert.Len(t, resources, 1)
+	computedResult, _ := kstatus.Compute(resources[0])
+	assert.Equal(t, kstatus.CurrentStatus, computedResult.Status)
+	Log(t, "getResources", err)
 
 	_, err = impl.Uninstall(kubeNamespace, releaseName)
 	assert.Nil(t, err)

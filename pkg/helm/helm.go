@@ -5,13 +5,16 @@ package helm
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/kube"
 	"helm.sh/helm/v3/pkg/release"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
@@ -51,8 +54,8 @@ func ChartRef(hostname string, namespace string, name string, tagname string) st
 // Interface of a helm chart
 type Interface interface {
 	Uninstall(kubeNamespace string, releaseName string) (*release.UninstallReleaseResponse, error)
-	Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error)
-	Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error)
+	Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}, waitOption bool) (*release.Release, error)
+	Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}, waitOption bool) (*release.Release, error)
 	Status(kubeNamespace string, releaseName string) (*release.Release, error)
 	RegistryLogin(hostname string, username string, password string, insecure bool) error
 	RegistryLogout(hostname string) error
@@ -61,6 +64,7 @@ type Interface interface {
 	ChartLoad(ref string) (*chart.Chart, error)
 	ChartPush(chart *chart.Chart, ref string) error
 	ChartPull(ref string) error
+	GetResources(kubeNamespace string, releaseName string) ([]*unstructured.Unstructured, error)
 }
 
 // Fake implementation
@@ -74,13 +78,13 @@ func (r *Fake) Uninstall(kubeNamespace string, releaseName string) (*release.Uni
 }
 
 // Install helm release
-func (r *Fake) Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error) {
+func (r *Fake) Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}, waitOption bool) (*release.Release, error) {
 	rel := &release.Release{Info: &release.Info{}}
 	return rel, nil
 }
 
 // Upgrade helm release
-func (r *Fake) Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error) {
+func (r *Fake) Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}, waitOption bool) (*release.Release, error) {
 	rel := &release.Release{Info: &release.Info{}}
 	return rel, nil
 }
@@ -126,6 +130,11 @@ func (r *Fake) ChartPull(ref string) error {
 	return nil
 }
 
+// GetResources returns allocated resources for the specified release (their current state)
+func (r *Fake) GetResources(kubeNamespace string, releaseName string) ([]*unstructured.Unstructured, error) {
+	return make([]*unstructured.Unstructured, 0), nil
+}
+
 // Impl implementation
 type Impl struct {
 }
@@ -141,7 +150,7 @@ func (r *Impl) Uninstall(kubeNamespace string, releaseName string) (*release.Uni
 }
 
 // Install helm release
-func (r *Impl) Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error) {
+func (r *Impl) Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}, waitOption bool) (*release.Release, error) {
 	cfg, err := getConfig(kubeNamespace)
 	if err != nil {
 		return nil, err
@@ -149,17 +158,19 @@ func (r *Impl) Install(chart *chart.Chart, kubeNamespace string, releaseName str
 	install := action.NewInstall(cfg)
 	install.ReleaseName = releaseName
 	install.Namespace = kubeNamespace
+	install.Wait = waitOption
 	return install.Run(chart, vals)
 }
 
 // Upgrade helm release
-func (r *Impl) Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error) {
+func (r *Impl) Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}, waitOption bool) (*release.Release, error) {
 	cfg, err := getConfig(kubeNamespace)
 	if err != nil {
 		return nil, err
 	}
 	upgrade := action.NewUpgrade(cfg)
 	upgrade.Namespace = kubeNamespace
+	upgrade.Wait = waitOption
 	return upgrade.Run(releaseName, chart, vals)
 }
 
@@ -247,4 +258,35 @@ func (r *Impl) ChartPull(ref string) error {
 	push := action.NewChartPull(cfg)
 	var buf bytes.Buffer
 	return push.Run(&buf, ref)
+}
+
+// GetResources returns allocated resources for the specified release (their current state)
+func (r *Impl) GetResources(kubeNamespace string, releaseName string) ([]*unstructured.Unstructured, error) {
+	resources := make([]*unstructured.Unstructured, 0)
+	var rel *release.Release
+	var config *action.Configuration
+	var err error
+	var resourceList kube.ResourceList
+	config, err = getConfig(kubeNamespace)
+	if err != nil || config == nil {
+		return resources, err
+	}
+	status := action.NewStatus(config)
+	rel, err = status.Run(releaseName)
+	if err != nil {
+		return resources, err
+	}
+	resourceList, _ = config.KubeClient.Build(bytes.NewBufferString(rel.Manifest), false)
+	for _, res := range resourceList {
+		if err := res.Get(); err != nil {
+			return resources, err
+		}
+		obj := res.Object
+		if unstr, ok := obj.(*unstructured.Unstructured); ok {
+			resources = append(resources, unstr)
+		} else {
+			return resources, errors.New("Invalid runtime object")
+		}
+	}
+	return resources, nil
 }
