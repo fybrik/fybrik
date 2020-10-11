@@ -3,7 +3,7 @@ package data_policies
 #general functions that make data-policies composing easier
 
 verify_access_type {
-		compare_str(AccessType(), data.AccessTypes[_])
+		compare_str(AccessType(), AccessTypes[_])
 }
 
 verify_purpose {

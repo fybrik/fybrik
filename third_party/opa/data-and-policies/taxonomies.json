@@ -1,5 +1,5 @@
 {
-    "DataPurposes": ["audit&complience", "client Support", "marketing", "fraud detection"],
+    "DataPurposes": ["audit&complience", "client Support", "marketing", "fraud detection", "analysis"],
 
     "DataRoles":["data scientist", "hr", "management", "security"],
 
