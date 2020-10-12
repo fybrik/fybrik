@@ -10,7 +10,7 @@ deploy:
 
 .PHONY: deploy-wait
 deploy-wait: $(TOOLBIN)/kubectl
-	$(TOOLBIN)/kubectl wait --for=condition=ready -n $KUBE_NAMESPACE pod/vault-0 --timeout=180s
+	$(TOOLBIN)/kubectl wait --for=condition=ready -n ${KUBE_NAMESPACE} pod/vault-0 --timeout=180s
 
 .PHONY: undeploy
 undeploy:

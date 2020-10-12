@@ -9,4 +9,8 @@ nodes:
 containerdConfigPatches:
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:5000"]
-    endpoint = ["http://kind-registry:5000"]
+    endpoint = ["https://kind-registry:5000"]
+  [plugin."io.containerd.grpc.v1.cri".registry.configs."kind-registry".tls]
+    insecure_skip_verify = true
+  [plugin."io.containerd.grpc.v1.cri".registry.configs."kind-registry:5000".tls]
+    insecure_skip_verify = true

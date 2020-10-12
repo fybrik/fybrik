@@ -39,5 +39,5 @@ transformations:
   level: 2
   name: encrypt
 
-image: localhost:5000/m4d-system/dummy-mover:latest
+image: kind-registry:5000/m4d-system/dummy-mover:latest
 imagePullSecret: IfNotPresent

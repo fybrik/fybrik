@@ -39,6 +39,8 @@ undeploy_mc: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
 deploy_it: docker-secret
 	$(TOOLBIN)/kubectl create namespace ${KUBE_NAMESPACE} || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
+	cd config/integration-tests && $(ABSTOOLBIN)/kustomize edit set image data-catalog-mock=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/data-catalog-mock:${DOCKER_TAGNAME}
+	cd config/integration-tests && $(ABSTOOLBIN)/kustomize edit set image policycompiler=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/serverpolicycompiler-mock:${DOCKER_TAGNAME}
 	$(TOOLBIN)/kustomize build --load_restrictor none config/integration-tests | $(TOOLBIN)/kubectl apply -f -
 
 undeploy_it:
@@ -105,6 +107,10 @@ docker-secret: $(TOOLBIN)/kubectl
 		--from-literal=tagname=$(DOCKER_TAGNAME) \
 		--from-literal=username=$(DOCKER_USERNAME) \
 		--from-literal=password=$(DOCKER_PASSWORD) \
+		--namespace ${KUBE_NAMESPACE} \
+		|| true
+	$(ABSTOOLBIN)/kubectl create secret generic registry-ca-cert \
+		--from-file=../hack/tools/registry/ca.crt \
 		--namespace ${KUBE_NAMESPACE} \
 		|| true
 

@@ -20,7 +20,7 @@ spec:
         app: policycompiler
     spec:
       containers:
-      - image: localhost:5000/m4d-system/serverpolicycompiler-mock:latest
+      - image: policycompiler:latest
         name: policycompiler
         imagePullPolicy: Always
         ports:

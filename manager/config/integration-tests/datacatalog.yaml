@@ -20,7 +20,7 @@ spec:
         app: data-catalog
     spec:
       containers:
-      - image: localhost:5000/m4d-system/data-catalog-mock:latest
+      - image: data-catalog-mock:latest
         name: catalog
         imagePullPolicy: Always
         ports:

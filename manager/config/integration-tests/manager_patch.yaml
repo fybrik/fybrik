@@ -18,8 +18,20 @@ spec:
         - name: ENABLE_WEBHOOKS
           value: "true"
         - name: MOVER_IMAGE
-          value: "localhost:5000/m4d-system/dummy-mover:latest"
+          value: "kind-registry:5000/m4d-system/dummy-mover:latest"
         - name: IMAGE_PULL_POLICY
           value: "IfNotPresent"
         - name: NO_FINALIZER
           value: "false"
+        - name: GODEBUG
+          value: "x509ignoreCN=0"
+        volumeMounts:
+        - mountPath: /etc/ssl/certs/ca-certificates.crt
+          subPath: ca.crt
+          name: ca-cert
+          readOnly: true
+      volumes:
+      - name: ca-cert
+        secret:
+          defaultMode: 420
+          secretName: registry-ca-cert
