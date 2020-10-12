@@ -6,6 +6,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/hashicorp/vault/api"
@@ -73,10 +74,9 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 			return result, err
 		}
 		applicationContext.Status.ObservedGeneration = applicationContext.GetGeneration()
-	} else if generatedBlueprint.Status.Ready {
-		applicationContext.Status.Ready = true
+	} else {
+		checkBlueprintStatus(applicationContext, generatedBlueprint)
 	}
-	// TODO: check for blueprint errors and report accordingly
 
 	// Update CRD status in case of change (other than deletion, which was handled separately)
 	if !equality.Semantic.DeepEqual(applicationContext.Status, observedStatus) && applicationContext.DeletionTimestamp.IsZero() {
@@ -85,11 +85,23 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 			return ctrl.Result{}, err
 		}
 	}
-	if utils.HasCondition(&applicationContext.Status, app.FailureCondition) {
+	failed := utils.HasCondition(&applicationContext.Status, app.FailureCondition)
+	if failed {
 		log.Info("Reconciled with error conditions")
 		utils.PrintStructure(applicationContext.Status.Conditions, log, "Conditions")
 	}
+	// polling for blueprint status
+	if !applicationContext.Status.Ready && !failed {
+		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+	}
 	return ctrl.Result{}, nil
+}
+
+func checkBlueprintStatus(applicationContext *app.M4DApplication, blueprint *app.Blueprint) {
+	applicationContext.Status.Ready = blueprint.Status.Ready
+	if blueprint.Status.Error != "" {
+		utils.ActivateCondition(applicationContext, app.FailureCondition, "OrchestrationFailure", blueprint.Status.Error)
+	}
 }
 
 // reconcileFinalizers reconciles finalizers for M4DApplication
