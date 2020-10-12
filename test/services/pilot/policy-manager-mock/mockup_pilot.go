@@ -59,8 +59,13 @@ func constructInputParameters() *pb.ApplicationContext {
 	// datasetID := "01c6f0f0-9ffe-4ccc-ac07-409523755e72" //"988f7b32-2417-4b4f-b327-d4a63d110267" //"466b5d7c-38c5-438c-8298-5c7e00e40638"
 
 	//cp4d 3 - ramasuri-catalog
-	catalogID := "8027121c-6da6-4093-9178-38f2062f5210"
-	datasetID := "c8367c56-c1ce-419e-996f-86b0c27d348e"
+	//catalogID := "8027121c-6da6-4093-9178-38f2062f5210"
+	//datasetID := "c8367c56-c1ce-419e-996f-86b0c27d348e"
+	//datasetID := "e7b19aba-a58c-4710-b7c8-077328d013cb"
+
+	//cp4d 3 - Ritwik-catalog-testing-for-ING-catalog
+	catalogID := "fd0723d9-d604-4099-a2a6-fd7f2afe6dfa"
+	datasetID := "90e2f651-21b5-4f47-ac64-43b60f04f710"
 
 	var datasetIDJson string
 	if getEnv("CATALOG_PROVIDER_NAME") == "EGERIA" {
