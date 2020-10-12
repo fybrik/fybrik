@@ -1,21 +1,17 @@
 #!/usr/bin/env bash
 
-ROOT_DIR=../../
-#cd "${0%/*}"
-
 set -e
 
 : ${KUBE_NAMESPACE:=m4d-system}
 
 source secret-provider/deploy/vault-util.sh
 
-kubectl create ns $KUBE_NAMESPACE|| true
+kubectl create ns $KUBE_NAMESPACE || true
 
 kubectl config set-context --current --namespace=$KUBE_NAMESPACE
 
 kubectl apply -f manager/config/prod/deployment_configmap.yaml
 
-# pushd ${ROOT_DIR}
 make cluster-prepare
 
 # Install third party components
@@ -23,9 +19,9 @@ make -C third_party/vault deploy
 make -C third_party/egeria deploy
 make -C third_party/opa deploy
 
-
 # Waiting for the vault deployment to become ready
-# We're using old-school while b/c we can't waint on object that haven't been created, and we can't know for sure that the statefulset had been created so far
+# We're using old-school while b/c we can't wait on object that haven't been created, and we can't know for sure that the statefulset had been created so far
+# See https://github.com/kubernetes/kubernetes/issues/75227
 while [[ $(kubectl get -n $KUBE_NAMESPACE pods -l statefulset.kubernetes.io/pod-name=vault-0 -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]];
 do
     echo "waiting for vault pod to become ready" 
