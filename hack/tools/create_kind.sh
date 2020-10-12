@@ -36,16 +36,17 @@ registry_create() {
 
 certs_create() {
     mkdir registry -p
-    # htpasswd -cB -b registry/auth.htpasswd user pwd # Generated and stored as htpasswd might not be available on every machine
-	  openssl genrsa -out registry/ca.key 2048
-	  openssl req -new -x509 -key registry/ca.key -out registry/ca.crt -subj '/C=US/ST=NY/O=IBM' -extensions EXT -config <(printf "[dn]\nCN=ibm\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:ibm")
-	  openssl genrsa -out registry/registry.key 2048
-	  openssl req -new -key registry/registry.key -out registry/registry.csr -subj '/CN=kind-registry' -extensions EXT -config <(printf "[dn]\nCN=kind-registry\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:kind-registry\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
-	  openssl x509 -req -in registry/registry.csr -CA registry/ca.crt -CAkey registry/ca.key -CAcreateserial -out registry/registry.crt
+    htpasswd -cB -b registry/auth.htpasswd user pwd # Generated and stored as htpasswd might not be available on every machine
+    openssl genrsa -out registry/ca.key 2048
+    openssl req -new -x509 -key registry/ca.key -out registry/ca.crt -subj '/C=US/ST=NY/O=IBM/CN=ibm' -extensions EXT -config <(printf "[dn]\nCN=ibm\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:ibm\nbasicConstraints=CA:TRUE,pathlen:0")
+    openssl genrsa -out registry/registry.key 2048
+    openssl req -new -key registry/registry.key -out registry/registry.csr -subj '/C=US/ST=NY/O=IBM/CN=kind-registry' -extensions EXT -config <(printf "[dn]\nCN=kind-registry\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:kind-registry\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
+    openssl x509 -req -in registry/registry.csr -CA registry/ca.crt -CAkey registry/ca.key -CAcreateserial -out registry/registry.crt
 }
 
 certs_delete() {
     rm -rf registry/registry*
+    rm -rf registry/ca*
 }
 
 kind_delete() {

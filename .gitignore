@@ -37,8 +37,7 @@ bin
 !.vscode/extensions.json
 .history
 
-hack/tools/registry/ca*
-hack/tools/registry/registry*
+hack/tools/registry
 
 #generated code
 **/generatedsources/*
