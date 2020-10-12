@@ -11,13 +11,10 @@ require (
 	github.com/golang/protobuf v1.3.5
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/hashicorp/vault/api v1.0.4
-	github.com/mattn/go-colorable v0.1.4 // indirect
-	github.com/mattn/go-isatty v0.0.12 // indirect
-	github.com/onsi/ginkgo v1.12.1
+	github.com/onsi/ginkgo v1.13.0
 	github.com/onsi/gomega v1.10.1
 	github.com/robfig/cron v1.2.0
 	github.com/stretchr/testify v1.6.1
-	golang.org/x/tools v0.0.0-20200113154838-30cae5f2fb06 // indirect
 	google.golang.org/grpc v1.28.1
 	gopkg.in/yaml.v2 v2.3.0
 	helm.sh/helm/v3 v3.2.4
@@ -29,8 +26,8 @@ require (
 	k8s.io/cli-runtime v0.18.4
 	k8s.io/client-go v0.18.6
 	rsc.io/letsencrypt v0.0.3 // indirect
+	sigs.k8s.io/cli-utils v0.20.4
 	sigs.k8s.io/controller-runtime v0.6.2
-	sigs.k8s.io/kustomize/kstatus v0.0.2
 	sigs.k8s.io/yaml v1.2.0
 )
 

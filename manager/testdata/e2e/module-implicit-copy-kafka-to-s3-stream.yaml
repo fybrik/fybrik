@@ -83,4 +83,17 @@ spec:
       name: "encrypt"
       level: 2 # column
   chart: ghcr.io/the-mesh-for-data/m4d-kafka:0.1.0
+  resourceStates:
+    - kind: StreamTransfer
+      path: status
+      value: SUCCEEDED
+      state: Ready
+    - kind: StreamTransfer
+      path: status
+      value: FAILED
+      state: Failed
+    - kind: StreamTransfer
+      path: error
+      state: Error
+
   

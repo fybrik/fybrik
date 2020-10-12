@@ -119,6 +119,39 @@ type Capability struct {
 	Actions []pb.EnforcementAction `json:"actions,omitempty"`
 }
 
+// StateType specifies the expected state of the given resource
+// +kubebuilder:validation:Enum=Ready;Failed;Error
+type StateType string
+
+const (
+	// FailedState indicates failure
+	FailedState StateType = "Failed"
+
+	//ReadyState indicates readiness
+	ReadyState StateType = "Ready"
+
+	// ErrorState indicates that the resource has reached an error
+	ErrorState StateType = "Error"
+)
+
+// ExpectedResourceStatus is used to determine the status of an orchestrated resource
+type ExpectedResourceStatus struct {
+	// Kind provides information about the resource kind
+	// +required
+	Kind string `json:"kind"`
+	// Path specifies what field inside the custom resource status to check, e.g. ready
+	// Assumption: the custom resource should have a status field
+	// +required
+	Path string `json:"path"`
+	// Value specifies the expected value, e.g. FAILED
+	// If not specified, the expected value can be any non-empty string (e.g. error message)
+	// +optional
+	Value string `json:"value,omitempty"`
+	// State specifies the expected state of the resource
+	// +required
+	State StateType `json:"state"`
+}
+
 // M4DModuleSpec contains the info common to all modules,
 // which are one of the components that process, load, write, audit, monitor the data used by
 // the data scientist's application.
@@ -145,6 +178,10 @@ type M4DModuleSpec struct {
 	// Reference to a Helm chart that allows deployment of the resources required for this module
 	// +required
 	Chart string `json:"chart"`
+
+	// Expected states for non-standard resources that can not be computed by helm/kstatus
+	// +optional
+	ResourceStates []ExpectedResourceStatus `json:"resourceStates,omitempty"`
 }
 
 // +kubebuilder:object:root=true

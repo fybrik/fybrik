@@ -83,4 +83,16 @@ spec:
       name: "encrypt"
       level: 2 # column
   chart: ghcr.io/the-mesh-for-data/m4d-db2wh:0.1.0
+  resourceStates:
+    - kind: BatchTransfer
+      path: status
+      value: SUCCEEDED
+      state: Ready
+    - kind: BatchTransfer
+      path: status
+      value: FAILED
+      state: Failed
+    - kind: BatchTransfer
+      path: error
+      state: Error
   

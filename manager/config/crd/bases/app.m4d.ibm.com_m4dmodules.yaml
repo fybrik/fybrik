@@ -184,6 +184,33 @@ spec:
                 - write
                 type: string
               type: array
+            resourceStates:
+              description: Expected states for non-standard resources that can not be computed by helm/kstatus
+              items:
+                description: ExpectedResourceStatus is used to determine the status of an orchestrated resource
+                properties:
+                  kind:
+                    description: Kind provides information about the resource kind
+                    type: string
+                  path:
+                    description: 'Path specifies what field inside the custom resource status to check, e.g. ready Assumption: the custom resource should have a status field'
+                    type: string
+                  state:
+                    description: State specifies the expected state of the resource
+                    enum:
+                    - Ready
+                    - Failed
+                    - Error
+                    type: string
+                  value:
+                    description: Value specifies the expected value, e.g. FAILED If not specified, the expected value can be any non-empty string (e.g. error message)
+                    type: string
+                required:
+                - kind
+                - path
+                - state
+                type: object
+              type: array
             type:
               description: ModuleType indicates one of job, service, configuration so the manager knows how to deploy it
               enum:

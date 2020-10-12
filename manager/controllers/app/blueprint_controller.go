@@ -25,7 +25,6 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"github.com/ibm/the-mesh-for-data/pkg/helm"
 	corev1 "k8s.io/api/core/v1"
-	kstatus "sigs.k8s.io/kustomize/kstatus/status"
 )
 
 // BlueprintReconciler reconciles a Blueprint object
@@ -245,26 +244,65 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+func (r *BlueprintReconciler) getExpectedResults(kind string) ([]app.ExpectedResourceStatus, error) {
+	ctx := context.Background()
+
+	expected := make([]app.ExpectedResourceStatus, 0)
+	var moduleList app.M4DModuleList
+	if err := r.List(ctx, &moduleList); err != nil {
+		return expected, err
+	}
+	for _, module := range moduleList.Items {
+		for _, res := range module.Spec.ResourceStates {
+			if res.Kind == kind {
+				expected = append(expected, res)
+			}
+		}
+	}
+	return expected, nil
+}
+
 // checkResourceStatus returns the computed state and an error message if exists
 func (r *BlueprintReconciler) checkResourceStatus(res *unstructured.Unstructured) (corev1.ConditionStatus, string) {
-	/*
-		obj := res.UnstructuredContent()
-		kind, ok := obj["kind"].(string)
-		if !ok {
-			// invalid resource
-			return corev1.ConditionUnknown, ""
-		}
-		version, _ := obj["apiVersion"].(string)
-	*/
-	// TODO: get indications how to compute the resource status based on its kind and version
-	computedResult, _ := kstatus.Compute(res)
-	switch computedResult.Status {
-	case kstatus.FailedStatus:
-		return corev1.ConditionFalse, computedResult.Message
-	case kstatus.CurrentStatus: // Current status of a deployed release in addition to waiting for complete deployment should be enough
+	obj := res.UnstructuredContent()
+	kind, ok := obj["kind"].(string)
+	if !ok {
+		// invalid resource
+		return corev1.ConditionUnknown, ""
+	}
+
+	// get indications how to compute the resource status based on a module spec
+	expected, _ := r.getExpectedResults(kind)
+
+	if len(expected) == 0 {
+		// usage of wait option in addition to deployed release status should be enough to determine the resource readiness
+		// TODO: use kstatus to compute the status of the resources for them the expected results have not been specified
 		return corev1.ConditionTrue, ""
 	}
-	return corev1.ConditionUnknown, ""
+	// use expected values to compute the status
+	errorMsg := ""
+	state := corev1.ConditionUnknown
+	for _, expectedResult := range expected {
+		// TODO: handle an hierarchical path
+		actualValue, found, err := unstructured.NestedString(obj, "status", expectedResult.Path)
+		if !found || err != nil {
+			continue
+		}
+		// get error message
+		if expectedResult.State == app.ErrorState {
+			errorMsg = actualValue
+			continue
+		}
+		if expectedResult.Value != "" && actualValue == expectedResult.Value {
+			// set state: Ready or Failed
+			if expectedResult.State == app.ReadyState {
+				state = corev1.ConditionTrue
+			} else if expectedResult.State == app.FailedState {
+				state = corev1.ConditionFalse
+			}
+		}
+	}
+	return state, errorMsg
 }
 
 func (r *BlueprintReconciler) checkReleaseStatus(releaseName string, namespace string) (corev1.ConditionStatus, string) {

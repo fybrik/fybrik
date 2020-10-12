@@ -14,7 +14,7 @@ import (
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/release"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	kstatus "sigs.k8s.io/kustomize/kstatus/status"
+	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
 )
 
 func buildTestChart() *chart.Chart {

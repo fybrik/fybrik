@@ -42,7 +42,6 @@ motion-integration-tests: #deploy_mc
 	$(TOOLBIN)/kubectl wait --for=condition=available -n m4d-system deployment/m4dcontroller-manager --timeout=120s
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestBatchTransferAPIs -count 1
 
-export PILOT_MAGIC_NUMBER=abcde12345
 export CATALOG_CONNECTOR_URL=localhost:50085
 export CREDENTIALS_CONNECTOR_URL=localhost:50085
 export VAULT_ADDRESS=http://127.0.0.1:8200/
