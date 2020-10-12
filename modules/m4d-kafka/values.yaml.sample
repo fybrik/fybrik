@@ -16,6 +16,13 @@ metadata:
 
 source:
   connection:
+    kafka:
+      bootstrap_servers: "broker1:9093"
+      schema_registry: "http://kafka-registry.strimzi.svc:8081/ccompat"
+      topic_name: "MY_TOPIC"
+      sasl_mechanism: "PLAIN"
+      key_deserializer: "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
+      value_deserializer: "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
     db2:
       database: BLUDB
       port: "50000"
@@ -25,7 +32,7 @@ source:
     name: db2
     type: 3
   credentialLocation: /v1/m4d/dataset-creds/87ffdca3-8b5d-4f77-99f9-0cb1fba1f73f/01c6f0f0-9ffe-4ccc-ac07-409523755e72
-  format: table
+  format: avro
 
 transformations:
 - args:
@@ -40,4 +47,3 @@ transformations:
   name: encrypt
 
 image: localhost:5000/m4d-system/dummy-mover:latest
-imagePullSecret: IfNotPresent
