@@ -277,35 +277,6 @@ func buildNewEnfrocementAction(transformAction interface{}) (*pb.EnforcementActi
 	return nil, nil, false
 }
 
-// func buildNewEnfrocementAction(transformAction interface{}) (*pb.EnforcementAction, *pb.Policy, bool) {
-// 	if action, ok := transformAction.(map[string]interface{}); ok {
-// 		newUsedPolicy, ok := buildNewPolicy(action["used_policy"])
-// 		if !ok {
-// 			log.Println("Warning: unknown format of used policy information. Skipping policy", action)
-// 		}
-
-// 		if result, ok := action["result"].(string); ok {
-// 			switch result {
-// 			case "Remove column":
-// 				if columnName, ok := extractArgument(action["args"], "column name"); ok {
-// 					newEnforcementAction := &pb.EnforcementAction{Name: "removed", Id: "removed-ID",
-// 						Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": columnName}}
-// 					return newEnforcementAction, newUsedPolicy, true
-// 				}
-// 			case "Redact column":
-// 				if columnName, ok := extractArgument(action["args"], "column name"); ok {
-// 					newEnforcementAction := &pb.EnforcementAction{Name: "redact", Id: "redact-ID",
-// 						Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": columnName}}
-// 					return newEnforcementAction, newUsedPolicy, true
-// 				}
-// 			default:
-// 				log.Printf("Unknown Enforcement Action receieved from OPA")
-// 			}
-// 		}
-// 	}
-// 	return nil, nil, false
-// }
-
 func extractArgument(arguments interface{}, argName string) (string, bool) {
 	if argsMap, ok := arguments.(map[string]interface{}); ok {
 		if value, ok := argsMap[argName].(string); ok {
