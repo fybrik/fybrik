@@ -24,8 +24,8 @@ vault_create() {
         kubectl port-forward -n m4d-system service/vault 8202:8200 &
         export VAULT_TOKEN=$(kubectl get secrets vault-unseal-keys -n m4d-system -o jsonpath={.data.vault-root} | base64 --decode)
 
-        vault secrets enable -path=$USER_VAULT_PATH kv
-          vault kv put $USER_VAULT_PATH/87ffdca3-8b5d-4f77-99f9-0cb1fba1f73f/01c6f0f0-9ffe-4ccc-ac07-409523755e72  credentials="my_kafka_credentials"
+        # vault secrets enable -path=$USER_VAULT_PATH kv
+        vault kv put $USER_VAULT_PATH/87ffdca3-8b5d-4f77-99f9-0cb1fba1f73f/01c6f0f0-9ffe-4ccc-ac07-409523755e72  credentials="my_kafka_credentials"
 
         #create secrets for Vault_TOKEN and USER_VAULT_TOKEN
         echo -n $VAULT_TOKEN > ./token.txt
@@ -39,10 +39,10 @@ kustomize_build() {
         local operation=$1
         local pass=$2
         local TEMP=$(mktemp -d)
-        cp -ar base/* $TEMP
+        cp -aR base/* $TEMP
         cd $TEMP
 
-        local images="egr-connector opa-connector vault-connector"
+	local images="egr-connector opa-connector vault-connector"
         for image in ${images}; do \
                 kustomize edit set image ${image}=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/${image}:${DOCKER_TAGNAME}; \
         done

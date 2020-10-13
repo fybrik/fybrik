@@ -4,11 +4,13 @@ go 1.13
 
 require (
 	emperror.dev/errors v0.7.0
+	github.com/ckaznocha/protoc-gen-lint v0.2.1 // indirect
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-chi/render v1.0.1
 	github.com/go-logr/logr v0.1.0
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.3.5
+	github.com/golangci/golangci-lint v1.19.1 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/mattn/go-colorable v0.1.4 // indirect
@@ -30,7 +32,6 @@ require (
 	k8s.io/client-go v0.18.6
 	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/controller-runtime v0.6.2
-	sigs.k8s.io/controller-tools v0.3.0 // indirect
 	sigs.k8s.io/yaml v1.2.0
 )
 
