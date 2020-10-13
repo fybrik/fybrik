@@ -6,12 +6,12 @@ export VAULT_TOKEN=$(kubectl get secrets vault-unseal-keys -n m4d-system -o json
 echo -n $VAULT_TOKEN > ./token.txt
 echo $VAULT_TOKEN
 kubectl apply -f ../../manager/config/prod/deployment_configmap.yaml
-kubectl delete secret vault-unseal-keys
-kubectl create secret generic vault-unseal-keys --from-file=vault-root=./token.txt || true
+kubectl delete secret vault-unseal-keys -n default
+kubectl create secret generic vault-unseal-keys --from-file=vault-root=./token.txt -n default || true
 kubectl delete service datauserserver || true
 kubectl delete service datauserclient || true
-kubectl delete deployment gui
-kubectl apply -f Deployment.yaml
+kubectl delete deployment gui -n default
+kubectl apply -f Deployment.yaml -n default
 rm ./token.txt
 
 

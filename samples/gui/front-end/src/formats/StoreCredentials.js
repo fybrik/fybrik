@@ -52,7 +52,7 @@ const StoreCredentials = props => {
           data: {
             System: cred.system,
             M4DApplicationID: application.metadata.name,
-            Credentials: { credentials }
+            Credentials: credentials 
           }
         })
           .then(response => {
