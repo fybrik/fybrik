@@ -5,7 +5,6 @@ package app
 
 import (
 	"context"
-	"io"
 	"time"
 
 	apiv1alpha1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
@@ -133,8 +132,6 @@ var _ = Describe("M4DApplication Controller", func() {
 			appSignature := GetApplicationSignature()
 			resource := &apiv1alpha1.M4DApplication{ObjectMeta: metav1.ObjectMeta{Name: appSignature.Name, Namespace: appSignature.Namespace}}
 			_ = k8sClient.Delete(context.Background(), resource)
-
-			io.WriteString(GinkgoWriter, "Executing AfterEach!")
 
 			Eventually(func() error {
 				f := &apiv1alpha1.M4DApplication{}
