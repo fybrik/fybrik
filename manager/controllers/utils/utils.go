@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"runtime"
 	"sort"
+	"strings"
 
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	dc "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
@@ -171,7 +172,7 @@ func HasCondition(status *app.M4DApplicationStatus, cType app.ConditionType) boo
 func UpdateCondition(status *app.M4DApplicationStatus, cType app.ConditionType, reason string, message string) {
 	for ind, cond := range status.Conditions {
 		if cond.Type == cType && cond.Reason == reason {
-			if cond.Message != message {
+			if !strings.Contains(cond.Message, message) {
 				status.Conditions[ind].Message += " \n" + message
 			}
 			return

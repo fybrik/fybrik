@@ -63,7 +63,7 @@ func (r *BlueprintReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	if blueprint.DeletionTimestamp == nil {
-		if !equality.Semantic.DeepEqual(blueprint.Status, observedStatus) {
+		if !equality.Semantic.DeepEqual(&blueprint.Status, observedStatus) {
 			if err := r.Client.Status().Update(ctx, &blueprint); err != nil {
 				return ctrl.Result{}, errors.WrapWithDetails(err, "failed to update blueprint status", "status", blueprint.Status)
 			}
@@ -265,15 +265,18 @@ func (r *BlueprintReconciler) getExpectedResults(kind string) ([]app.ExpectedRes
 // checkResourceStatus returns the computed state and an error message if exists
 func (r *BlueprintReconciler) checkResourceStatus(res *unstructured.Unstructured) (corev1.ConditionStatus, string) {
 	obj := res.UnstructuredContent()
-	kind, ok := obj["kind"].(string)
-	if !ok {
+	kind, exists, err := unstructured.NestedString(obj, "kind")
+	if !exists || err != nil {
 		// invalid resource
 		return corev1.ConditionUnknown, ""
 	}
 
 	// get indications how to compute the resource status based on a module spec
-	expected, _ := r.getExpectedResults(kind)
-
+	expected, err := r.getExpectedResults(kind)
+	if err != nil {
+		// Could not retrieve the list of modules, will retry later
+		return corev1.ConditionUnknown, ""
+	}
 	if len(expected) == 0 {
 		// usage of wait option in addition to deployed release status should be enough to determine the resource readiness
 		// TODO: use kstatus to compute the status of the resources for them the expected results have not been specified

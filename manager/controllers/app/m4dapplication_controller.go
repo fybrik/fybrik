@@ -79,7 +79,7 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	}
 
 	// Update CRD status in case of change (other than deletion, which was handled separately)
-	if !equality.Semantic.DeepEqual(applicationContext.Status, observedStatus) && applicationContext.DeletionTimestamp.IsZero() {
+	if !equality.Semantic.DeepEqual(&applicationContext.Status, observedStatus) && applicationContext.DeletionTimestamp.IsZero() {
 		log.V(0).Info("Reconcile: Updating status for desired generation " + fmt.Sprint(applicationContext.GetGeneration()))
 		if err := r.Client.Status().Update(ctx, applicationContext); err != nil {
 			return ctrl.Result{}, err
