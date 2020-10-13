@@ -6,11 +6,12 @@ HELM_RELEASE ?= rel1-${DOCKER_NAME}
 TEMP := /tmp
 
 export HELM_EXPERIMENTAL_OCI=1
+export HELM_INSECURE ?= "" # Set this variable to "--insecure" to allow for insecure registries
 
 .PHONY: helm-login
 helm-login: $(TOOLBIN)/helm
 ifneq (${DOCKER_PASSWORD},)
-	@$(ABSTOOLBIN)/helm registry login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}" ${DOCKER_HOSTNAME}
+	@$(ABSTOOLBIN)/helm registry login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}" ${DOCKER_HOSTNAME} ${HELM_INSECURE}
 endif
 
 .PHONY: helm-verify

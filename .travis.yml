@@ -15,6 +15,9 @@ addons:
       - asciidoctor
       - conntrack
       - ethtool
+      - apache2-utils
+  hosts:
+  - kind-registry
 
 os:
 - linux
@@ -80,6 +83,12 @@ jobs:
 
   - stage: Test
     name: "Integration tests for manager in kind"
+    env:
+    - DOCKER_HOSTNAME=kind-registry:5000
+    - DOCKER_NAMESPACE=m4d-system
+    - DOCKER_USERNAME=user # Hardcoded for kind testing
+    - DOCKER_PASSWORD=pwd  # Hardcoded for kind testing
+    - HELM_INSECURE=--insecure
     install:
     - make install-tools
     script:
@@ -91,6 +100,8 @@ jobs:
     - make -C secret-provider configure-vault
     - make -C secret-provider deploy || travis_terminate 1;
     - make -C manager deploy_it || travis_terminate 1;
+    - make install-cert-local || travis_terminate 1;
+    - make helm || travis_terminate 1;
     - make -C manager motion-integration-tests || travis_terminate 1;
 
   - stage: Test
