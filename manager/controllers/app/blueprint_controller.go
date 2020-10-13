@@ -116,12 +116,12 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log logr.L
 
 	rel, err := r.Helmer.Status(kubeNamespace, releaseName)
 	if err == nil && rel != nil {
-		rel, err = r.Helmer.Upgrade(chart, kubeNamespace, releaseName, vals)
+		rel, err = r.Helmer.Upgrade(chart, kubeNamespace, releaseName, vals, false)
 		if err != nil {
 			return ctrl.Result{}, errors.WithMessage(err, ref+": failed upgrade")
 		}
 	} else {
-		rel, err = r.Helmer.Install(chart, kubeNamespace, releaseName, vals)
+		rel, err = r.Helmer.Install(chart, kubeNamespace, releaseName, vals, false)
 		if err != nil {
 			return ctrl.Result{}, errors.WithMessage(err, ref+": failed install")
 		}
