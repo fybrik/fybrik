@@ -125,10 +125,10 @@ func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationCon
 		toPrintBytes, _ := json.MarshalIndent(inputMap, "", "\t")
 		log.Println("********sending this to OPA : *******")
 		log.Println(string(toPrintBytes))
-		opaEval, err := EvaluateExtendedPoliciesOnInput(inputMap, opaServerURL)
+		opaEval, err := EvaluatePoliciesOnInput(inputMap, opaServerURL)
 		if err != nil {
-			log.Printf("error in EvaluateExtendedPoliciesOnInput (i = %d): %v", i, err)
-			return nil, fmt.Errorf("error in EvaluateExtendedPoliciesOnInput (i = %d): %v", i, err)
+			log.Printf("error in EvaluatePoliciesOnInput (i = %d): %v", i, err)
+			return nil, fmt.Errorf("error in EvaluatePoliciesOnInput (i = %d): %v", i, err)
 		}
 		log.Println("OPA Eval : " + opaEval)
 		opaOperationDecision, err := GetOPAOperationDecision(opaEval, operation)

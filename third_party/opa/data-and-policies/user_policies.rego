@@ -48,9 +48,9 @@ transform[action] {
 	correct_input
     
     #user context and access type check
-    check_access_type(AccessTypes.READ)
+    check_access_type([AccessTypes.READ])
     
-    dataset_has_tag("Finanace")
+    dataset_has_tag("Finance")
     
     column_names := column_with_any_name({"nameOrig", "nameDest"})
     action = build_encrypt_column_action(column_names[_], build_policy_from_description(description))

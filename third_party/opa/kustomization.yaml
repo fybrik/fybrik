@@ -1,0 +1,21 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+resources:
+- opa.yaml
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+generatorOptions:
+  disableNameSuffixHash: true
+configMapGenerator:
+- name: opa-policy
+  files:
+  - data-and-policies/action_struct.rego
+  - data-and-policies/auditing_struct.rego
+  - data-and-policies/helper_functions.rego
+  - data-and-policies/input_reader.rego
+  - data-and-policies/taxonomies_unification.rego
+  - data-and-policies/verify_correct_input.rego
+  - data-and-policies/user_policies.rego
+  - data-and-policies/taxonomies.json
+  - data-and-policies/medical_taxonomies.json
