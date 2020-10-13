@@ -35,7 +35,7 @@ registry_create() {
 }
 
 certs_create() {
-    mkdir registry -p
+    mkdir registry -p || true
     htpasswd -cB -b registry/auth.htpasswd user pwd # Generated and stored as htpasswd might not be available on every machine
     openssl genrsa -out registry/ca.key 2048
     openssl req -new -x509 -key registry/ca.key -out registry/ca.crt -subj '/C=US/ST=NY/O=IBM/CN=ibm' -extensions EXT -config <(printf "[dn]\nCN=ibm\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:ibm\nbasicConstraints=CA:TRUE,pathlen:0")

@@ -4,13 +4,21 @@
 # Adds namespace to all resources.
 namespace: m4d-system
 
-bases:
-- ../default
 
 resources:
 - deployment_configmap.yaml
 - datacatalog.yaml
 - policycompiler.yaml
+- ../default
 
 patchesStrategicMerge:
 - manager_patch.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+images:
+- name: data-catalog-mock
+  newName: ghcr.io/the-mesh-for-data/data-catalog-mock
+  newTag: latest
+- name: policycompiler
+  newName: ghcr.io/the-mesh-for-data/serverpolicycompiler-mock
+  newTag: latest

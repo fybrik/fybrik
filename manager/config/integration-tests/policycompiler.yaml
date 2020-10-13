@@ -37,5 +37,5 @@ spec:
   selector:
     app: policycompiler
   ports:
-  - port: 50085
+  - port: 50090
     targetPort: policycompiler

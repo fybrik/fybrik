@@ -5,6 +5,7 @@ package app
 
 import (
 	"context"
+	"io"
 	"time"
 
 	apiv1alpha1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
@@ -118,31 +119,37 @@ func CreateDb2ToS3CopyModule() *apiv1alpha1.M4DModule {
 
 var _ = Describe("M4DApplication Controller", func() {
 
-	const timeout = time.Minute
-	const interval = time.Second * 5
-
-	BeforeEach(func() {
-		// Add any setup steps that needs to be executed before each test
-	})
-
-	AfterEach(func() {
-		// Add any teardown steps that needs to be executed after each test
-		// delete application
-		appSignature := GetApplicationSignature()
-		resource := &apiv1alpha1.M4DApplication{ObjectMeta: metav1.ObjectMeta{Name: appSignature.Name, Namespace: appSignature.Namespace}}
-		_ = k8sClient.Delete(context.Background(), resource)
-		time.Sleep(2 * time.Second)
-
-		// delete storage
-		storageSignature := GetStorageSignature()
-		_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DBucket{ObjectMeta: metav1.ObjectMeta{Name: storageSignature.Name, Namespace: storageSignature.Namespace}})
-		// delete modules
-		_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "implicit-copy-kafka-to-s3-stream", Namespace: "default"}})
-		_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "read-path", Namespace: "default"}})
-		_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "implicit-copy-db2-to-s3", Namespace: "default"}})
-	})
+	const timeout = time.Second * 30
+	const interval = time.Millisecond * 100
 
 	Context("M4DApplication", func() {
+		BeforeEach(func() {
+			// Add any setup steps that needs to be executed before each test
+		})
+
+		AfterEach(func() {
+			// Add any teardown steps that needs to be executed after each test
+			// delete application
+			appSignature := GetApplicationSignature()
+			resource := &apiv1alpha1.M4DApplication{ObjectMeta: metav1.ObjectMeta{Name: appSignature.Name, Namespace: appSignature.Namespace}}
+			_ = k8sClient.Delete(context.Background(), resource)
+
+			io.WriteString(GinkgoWriter, "Executing AfterEach!")
+
+			Eventually(func() error {
+				f := &apiv1alpha1.M4DApplication{}
+				return k8sClient.Get(context.Background(), appSignature, f)
+			}, timeout, interval).ShouldNot(Succeed())
+
+			// delete storage
+			storageSignature := GetStorageSignature()
+			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DBucket{ObjectMeta: metav1.ObjectMeta{Name: storageSignature.Name, Namespace: storageSignature.Namespace}})
+			// delete modules
+			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "implicit-copy-kafka-to-s3-stream", Namespace: "default"}})
+			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "read-path", Namespace: "default"}})
+			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "implicit-copy-db2-to-s3", Namespace: "default"}})
+		})
+
 		// This test checks that the finalizers are properly reconciled upon creation and deletion of the resource
 		// M4DBucket is used to demonstrate freeing owned objects
 
