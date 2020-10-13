@@ -64,8 +64,12 @@ func constructInputParameters() *pb.ApplicationContext {
 	//datasetID := "e7b19aba-a58c-4710-b7c8-077328d013cb"
 
 	//cp4d 3 - Ritwik-catalog-testing-for-ING-catalog
-	catalogID := "fd0723d9-d604-4099-a2a6-fd7f2afe6dfa"
-	datasetID := "90e2f651-21b5-4f47-ac64-43b60f04f710"
+	// catalogID := "fd0723d9-d604-4099-a2a6-fd7f2afe6dfa"
+	// datasetID := "90e2f651-21b5-4f47-ac64-43b60f04f710"
+
+	//cp4d 3 - Ritwik-catalog-testing-for-ING-v2
+	catalogID := "6a6acae2-026d-4342-acf7-9be4048aa0d3"
+	datasetID := "4af958ed-09a9-4ba6-8d02-c10efc1566a4"
 
 	var datasetIDJson string
 	if getEnv("CATALOG_PROVIDER_NAME") == "EGERIA" {
