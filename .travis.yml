@@ -104,15 +104,6 @@ jobs:
     - make helm || travis_terminate 1;
     - make -C manager motion-integration-tests || travis_terminate 1;
 
-  - stage: Test
-    name: "Integration tests for helm"
-    env:
-    - DOCKER_HOSTNAME=localhost:5000
-    - DOCKER_NAMESPACE=m4d
-    script:
-    - make kind || travis_terminate 1;
-    - make helm
-
   - stage: Publish
     name: "Build and push docker images"
     env:
