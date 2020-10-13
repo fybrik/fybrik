@@ -112,12 +112,12 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log logr.L
 
 	rel, err := r.Helmer.Status(kubeNamespace, releaseName)
 	if err == nil && rel != nil {
-		rel, err = r.Helmer.Upgrade(chart, kubeNamespace, releaseName, vals, true)
+		rel, err = r.Helmer.Upgrade(chart, kubeNamespace, releaseName, vals)
 		if err != nil {
 			return ctrl.Result{}, errors.WithMessage(err, ref+": failed upgrade")
 		}
 	} else {
-		rel, err = r.Helmer.Install(chart, kubeNamespace, releaseName, vals, true)
+		rel, err = r.Helmer.Install(chart, kubeNamespace, releaseName, vals)
 		if err != nil {
 			return ctrl.Result{}, errors.WithMessage(err, ref+": failed install")
 		}
@@ -278,7 +278,6 @@ func (r *BlueprintReconciler) checkResourceStatus(res *unstructured.Unstructured
 		return corev1.ConditionUnknown, ""
 	}
 	if len(expected) == 0 {
-		// usage of wait option in addition to deployed release status should be enough to determine the resource readiness
 		// TODO: use kstatus to compute the status of the resources for them the expected results have not been specified
 		return corev1.ConditionTrue, ""
 	}
