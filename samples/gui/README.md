@@ -66,7 +66,7 @@ Frontend image creation
 
 ```
 cd <root>/samples/gui/front-end
-
+npm install
 Ensure that .env has a correct configuration 
 export NODE_OPTIONS=--max_old_space_size=4096
 rm -rf build

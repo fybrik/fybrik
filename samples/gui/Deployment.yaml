@@ -56,12 +56,12 @@ spec:
     spec:
       containers:
       - name: datauserclient
-        image: image-registry.openshift-image-registry.svc:5000/datauser1/datauserclient:latest
+        image: image-registry.openshift-image-registry.svc:5000/default/datauserclient:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
       - name: datauserserver
-        image: image-registry.openshift-image-registry.svc:5000/datauser1/datauserserver:latest
+        image: image-registry.openshift-image-registry.svc:5000/default/datauserserver:latest
         imagePullPolicy: Always
         envFrom:
         - configMapRef:
