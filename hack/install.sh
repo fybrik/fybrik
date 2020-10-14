@@ -9,9 +9,7 @@ source third_party/vault/vault-util.sh
 
 kubectl create ns $KUBE_NAMESPACE || true
 
-kubectl config set-context --current --namespace=$KUBE_NAMESPACE
-
-kubectl apply -f manager/config/prod/deployment_configmap.yaml
+kubectl apply -f manager/config/prod/deployment_configmap.yaml -n $KUBE_NAMESPACE
 
 make cluster-prepare
 
@@ -30,7 +28,7 @@ port_forward
 # This also configures the "external" endpoint for mimicking an external Vault installation
 WITHOUT_PORT_FORWARD=true WITHOUT_VAULT=false make deploy
 
-# Configure the secret-end point in vault
+# Configure the internal m4d endpoint in vault (the "secret" endpoint)
 WITHOUT_PORT_FORWARD=true make -C secret-provider configure-vault
 
 # Kill the port-forward
