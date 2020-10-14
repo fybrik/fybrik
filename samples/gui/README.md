@@ -76,7 +76,8 @@ docker build . -t <registry>/<namespace>/datauserclient:latest
 ## Deployment
   ```
 cd <root>>/samples/gui
-  
+
+export KUBE_NAMESPACE=<namespace>  
 ./deploy.sh
 ```
 
