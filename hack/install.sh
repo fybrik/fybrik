@@ -3,8 +3,9 @@
 set -e
 
 : ${KUBE_NAMESPACE:=m4d-system}
+: ${PORT_TO_FORWARD:=8200}
 
-source secret-provider/deploy/vault-util.sh
+source third_party/vault/vault-util.sh
 
 kubectl create ns $KUBE_NAMESPACE || true
 
@@ -20,13 +21,7 @@ make -C third_party/egeria deploy
 make -C third_party/opa deploy
 
 # Waiting for the vault deployment to become ready
-# We're using old-school while b/c we can't wait on object that haven't been created, and we can't know for sure that the statefulset had been created so far
-# See https://github.com/kubernetes/kubernetes/issues/75227
-while [[ $(kubectl get -n $KUBE_NAMESPACE pods -l statefulset.kubernetes.io/pod-name=vault-0 -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]];
-do
-    echo "waiting for vault pod to become ready" 
-    sleep 5
-done
+make -C third_party/vault wait_for_vault
 
 # Perform a port-forward to communicate with Vault
 port_forward
@@ -36,7 +31,6 @@ port_forward
 WITHOUT_PORT_FORWARD=true WITHOUT_VAULT=false make deploy
 
 # Configure the secret-end point in vault
-export AUTH_METHOD=K8S
 WITHOUT_PORT_FORWARD=true make -C secret-provider configure-vault
 
 # Kill the port-forward
