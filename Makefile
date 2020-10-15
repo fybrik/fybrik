@@ -96,6 +96,30 @@ docker-build-local:
 helm:
 	$(MAKE) -C modules helm
 
+.PHONY: docker-retag-images
+docker-retag-images:
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:latest ghcr.io/the-mesh-for-data/manager:latest
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/secret-provider:latest ghcr.io/the-mesh-for-data/secret-provider:latest
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/egr-connector:latest ghcr.io/the-mesh-for-data/egr-connector:latest
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:latest ghcr.io/the-mesh-for-data/movement-controller:latest
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/dummy-mover:latest ghcr.io/the-mesh-for-data/dummy-mover:latest
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:latest ghcr.io/the-mesh-for-data/opa-connector:latest
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/vault-connector:latest ghcr.io/the-mesh-for-data/vault-connector:latest
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/serverpolicycompiler-mock:latest ghcr.io/the-mesh-for-data/serverpolicycompiler-mock:latest
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/data-catalog-mock:latest ghcr.io/the-mesh-for-data/data-catalog-mock:latest
+
+.PHONY: docker-push-public
+docker-push-public:
+	docker push ghcr.io/the-mesh-for-data/manager:latest
+	docker push ghcr.io/the-mesh-for-data/secret-provider:latest
+	docker push ghcr.io/the-mesh-for-data/egr-connector:latest
+	docker push ghcr.io/the-mesh-for-data/movement-controller:latest
+	docker push ghcr.io/the-mesh-for-data/dummy-mover:latest
+	docker push ghcr.io/the-mesh-for-data/opa-connector:latest
+	docker push ghcr.io/the-mesh-for-data/vault-connector:latest
+	docker push ghcr.io/the-mesh-for-data/serverpolicycompiler-mock:latest
+	docker push ghcr.io/the-mesh-for-data/data-catalog-mock:latest
+
 include .mk/ibmcloud.mk
 include .mk/tools.mk
 include .mk/verify.mk
