@@ -250,8 +250,12 @@ func main() {
 	// datasetID := "90e2f651-21b5-4f47-ac64-43b60f04f710"
 
 	//cp4d 3 - Ritwik-catalog-testing-for-ING-v2
-	catalogID := "6a6acae2-026d-4342-acf7-9be4048aa0d3"
-	datasetID := "4af958ed-09a9-4ba6-8d02-c10efc1566a4"
+	// catalogID := "6a6acae2-026d-4342-acf7-9be4048aa0d3"
+	// datasetID := "4af958ed-09a9-4ba6-8d02-c10efc1566a4"
+
+	//cp4d 3 - New-Catalog-15-Oct-Demo
+	catalogID := "fb4e5fc8-266c-4cf7-a29f-33e3c9d5d091"
+	datasetID := "05df45f2-5927-4534-bdff-0d4b923baeea"
 
 	var datasetIDJson string
 	if getEnv("CATALOG_PROVIDER_NAME") == "EGERIA" {
