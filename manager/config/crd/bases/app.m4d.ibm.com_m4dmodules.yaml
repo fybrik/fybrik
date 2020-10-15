@@ -189,26 +189,22 @@ spec:
               items:
                 description: ExpectedResourceStatus is used to determine the status of an orchestrated resource
                 properties:
+                  errorMessage:
+                    description: ErrorMessage specifies the resource field to check for an error, e.g. status.errorMsg
+                    type: string
+                  failureCondition:
+                    description: FailureCondition specifies a condition that indicates the resource failure
+                    type: string
                   kind:
                     description: Kind provides information about the resource kind
                     type: string
-                  path:
-                    description: 'Path specifies what field inside the custom resource status to check, e.g. ready Assumption: the custom resource should have a status field'
-                    type: string
-                  state:
-                    description: State specifies the expected state of the resource
-                    enum:
-                    - Ready
-                    - Failed
-                    - Error
-                    type: string
-                  value:
-                    description: Value specifies the expected value, e.g. FAILED If not specified, the expected value can be any non-empty string (e.g. error message)
+                  successCondition:
+                    description: SuccessCondition specifies a condition that indicates that the resource is ready
                     type: string
                 required:
+                - failureCondition
                 - kind
-                - path
-                - state
+                - successCondition
                 type: object
               type: array
             type:

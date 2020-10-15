@@ -25,6 +25,7 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"github.com/ibm/the-mesh-for-data/pkg/helm"
 	corev1 "k8s.io/api/core/v1"
+	labels "k8s.io/apimachinery/pkg/labels"
 )
 
 // BlueprintReconciler reconciles a Blueprint object
@@ -244,22 +245,22 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *BlueprintReconciler) getExpectedResults(kind string) ([]app.ExpectedResourceStatus, error) {
+func (r *BlueprintReconciler) getExpectedResults(kind string) (*app.ExpectedResourceStatus, error) {
+	// Assumption: specification for each resource kind is done in one place.
 	ctx := context.Background()
 
-	expected := make([]app.ExpectedResourceStatus, 0)
 	var moduleList app.M4DModuleList
 	if err := r.List(ctx, &moduleList); err != nil {
-		return expected, err
+		return nil, err
 	}
 	for _, module := range moduleList.Items {
 		for _, res := range module.Spec.ResourceStates {
 			if res.Kind == kind {
-				expected = append(expected, res)
+				return res.DeepCopy(), nil
 			}
 		}
 	}
-	return expected, nil
+	return nil, nil
 }
 
 // checkResourceStatus returns the computed state and an error message if exists
@@ -277,34 +278,45 @@ func (r *BlueprintReconciler) checkResourceStatus(res *unstructured.Unstructured
 		// Could not retrieve the list of modules, will retry later
 		return corev1.ConditionUnknown, ""
 	}
-	if len(expected) == 0 {
+	if expected == nil {
 		// TODO: use kstatus to compute the status of the resources for them the expected results have not been specified
 		return corev1.ConditionTrue, ""
 	}
 	// use expected values to compute the status
-	errorMsg := ""
-	state := corev1.ConditionUnknown
-	for _, expectedResult := range expected {
-		// TODO: handle an hierarchical path
-		actualValue, found, err := unstructured.NestedString(obj, "status", expectedResult.Path)
-		if !found || err != nil {
-			continue
-		}
-		// get error message
-		if expectedResult.State == app.ErrorState {
-			errorMsg = actualValue
-			continue
-		}
-		if expectedResult.Value != "" && actualValue == expectedResult.Value {
-			// set state: Ready or Failed
-			if expectedResult.State == app.ReadyState {
-				state = corev1.ConditionTrue
-			} else if expectedResult.State == app.FailedState {
-				state = corev1.ConditionFalse
-			}
+	if r.matchesCondition(res, expected.SuccessCondition) {
+		return corev1.ConditionTrue, ""
+	}
+	if r.matchesCondition(res, expected.FailureCondition) {
+		return corev1.ConditionFalse, getErrorMessage(res, expected.ErrorMessage)
+	}
+	return corev1.ConditionUnknown, ""
+}
+
+func getErrorMessage(res *unstructured.Unstructured, fieldPath string) string {
+	// convert the unstructured data to Labels interface to use Has and Get methods for retrieving data
+	labelsImpl := utils.UnstructuredAsLabels{Data: res}
+	if !labelsImpl.Has(fieldPath) {
+		return ""
+	}
+	return labelsImpl.Get(fieldPath)
+}
+
+func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, condition string) bool {
+	selector, err := labels.Parse(condition)
+	if err != nil {
+		r.Log.V(0).Info("condition " + condition + "failed to parse: " + err.Error())
+		return false
+	}
+	// get selector requirements, 'selectable' property is ignored
+	requirements, _ := selector.Requirements()
+	// convert the unstructured data to Labels interface to leverage the package capability of parsing and evaluating conditions
+	labelsImpl := utils.UnstructuredAsLabels{Data: res}
+	for _, req := range requirements {
+		if !req.Matches(labelsImpl) {
+			return false
 		}
 	}
-	return state, errorMsg
+	return true
 }
 
 func (r *BlueprintReconciler) checkReleaseStatus(releaseName string, namespace string) (corev1.ConditionStatus, string) {

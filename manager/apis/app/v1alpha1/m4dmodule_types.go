@@ -119,37 +119,23 @@ type Capability struct {
 	Actions []pb.EnforcementAction `json:"actions,omitempty"`
 }
 
-// StateType specifies the expected state of the given resource
-// +kubebuilder:validation:Enum=Ready;Failed;Error
-type StateType string
-
-const (
-	// FailedState indicates failure
-	FailedState StateType = "Failed"
-
-	//ReadyState indicates readiness
-	ReadyState StateType = "Ready"
-
-	// ErrorState indicates that the resource has reached an error
-	ErrorState StateType = "Error"
-)
-
 // ExpectedResourceStatus is used to determine the status of an orchestrated resource
 type ExpectedResourceStatus struct {
 	// Kind provides information about the resource kind
 	// +required
 	Kind string `json:"kind"`
-	// Path specifies what field inside the custom resource status to check, e.g. ready
-	// Assumption: the custom resource should have a status field
+
+	// SuccessCondition specifies a condition that indicates that the resource is ready
 	// +required
-	Path string `json:"path"`
-	// Value specifies the expected value, e.g. FAILED
-	// If not specified, the expected value can be any non-empty string (e.g. error message)
+	SuccessCondition string `json:"successCondition"`
+
+	// FailureCondition specifies a condition that indicates the resource failure
+	// +required
+	FailureCondition string `json:"failureCondition"`
+
+	// ErrorMessage specifies the resource field to check for an error, e.g. status.errorMsg
 	// +optional
-	Value string `json:"value,omitempty"`
-	// State specifies the expected state of the resource
-	// +required
-	State StateType `json:"state"`
+	ErrorMessage string `json:"errorMessage,omitEmpty"`
 }
 
 // M4DModuleSpec contains the info common to all modules,
