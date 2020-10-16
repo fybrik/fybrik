@@ -184,10 +184,10 @@ spec:
                 - write
                 type: string
               type: array
-            resourceStates:
-              description: Expected states for non-standard resources that can not be computed by helm/kstatus
+            statusIndicators:
+              description: StatusIndicators allow to check status of a non-standard resource that can not be computed by helm/kstatus
               items:
-                description: ExpectedResourceStatus is used to determine the status of an orchestrated resource
+                description: ResourceStatusIndicator is used to determine the status of an orchestrated resource
                 properties:
                   errorMessage:
                     description: ErrorMessage specifies the resource field to check for an error, e.g. status.errorMsg
@@ -202,7 +202,6 @@ spec:
                     description: SuccessCondition specifies a condition that indicates that the resource is ready
                     type: string
                 required:
-                - failureCondition
                 - kind
                 - successCondition
                 type: object

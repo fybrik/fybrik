@@ -119,8 +119,8 @@ type Capability struct {
 	Actions []pb.EnforcementAction `json:"actions,omitempty"`
 }
 
-// ExpectedResourceStatus is used to determine the status of an orchestrated resource
-type ExpectedResourceStatus struct {
+// ResourceStatusIndicator is used to determine the status of an orchestrated resource
+type ResourceStatusIndicator struct {
 	// Kind provides information about the resource kind
 	// +required
 	Kind string `json:"kind"`
@@ -130,12 +130,12 @@ type ExpectedResourceStatus struct {
 	SuccessCondition string `json:"successCondition"`
 
 	// FailureCondition specifies a condition that indicates the resource failure
-	// +required
+	// +optional
 	FailureCondition string `json:"failureCondition"`
 
 	// ErrorMessage specifies the resource field to check for an error, e.g. status.errorMsg
 	// +optional
-	ErrorMessage string `json:"errorMessage,omitEmpty"`
+	ErrorMessage string `json:"errorMessage,omitempty"`
 }
 
 // M4DModuleSpec contains the info common to all modules,
@@ -165,9 +165,9 @@ type M4DModuleSpec struct {
 	// +required
 	Chart string `json:"chart"`
 
-	// Expected states for non-standard resources that can not be computed by helm/kstatus
+	// StatusIndicators allow to check status of a non-standard resource that can not be computed by helm/kstatus
 	// +optional
-	ResourceStates []ExpectedResourceStatus `json:"resourceStates,omitempty"`
+	StatusIndicators []ResourceStatusIndicator `json:"statusIndicators,omitempty"`
 }
 
 // +kubebuilder:object:root=true

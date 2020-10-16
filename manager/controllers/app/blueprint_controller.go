@@ -165,13 +165,14 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		}
 
 		// Add metadata arguments (namespace, name, labels, etc.)
+		hashedName := utils.Hash(step.Name, 20)
 		args["metadata"] = map[string]interface{}{
-			"name":      utils.Hash(step.Name, 20),
+			"name":      hashedName,
 			"namespace": blueprint.Namespace,
 			"labels":    blueprint.Labels,
 		}
 		// we add the "r" character at the beginning of the release name, since it must begin with an alphabetic character
-		releaseName := "r" + args["metadata"].(map[string]interface{})["name"].(string)
+		releaseName := "r" + hashedName
 		log.V(0).Info("Release name: " + releaseName)
 		// check if the blueprint is about to be deleted
 		if blueprint.DeletionTimestamp != nil {
@@ -245,7 +246,7 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *BlueprintReconciler) getExpectedResults(kind string) (*app.ExpectedResourceStatus, error) {
+func (r *BlueprintReconciler) getExpectedResults(kind string) (*app.ResourceStatusIndicator, error) {
 	// Assumption: specification for each resource kind is done in one place.
 	ctx := context.Background()
 
@@ -254,7 +255,7 @@ func (r *BlueprintReconciler) getExpectedResults(kind string) (*app.ExpectedReso
 		return nil, err
 	}
 	for _, module := range moduleList.Items {
-		for _, res := range module.Spec.ResourceStates {
+		for _, res := range module.Spec.StatusIndicators {
 			if res.Kind == kind {
 				return res.DeepCopy(), nil
 			}
@@ -265,15 +266,8 @@ func (r *BlueprintReconciler) getExpectedResults(kind string) (*app.ExpectedReso
 
 // checkResourceStatus returns the computed state and an error message if exists
 func (r *BlueprintReconciler) checkResourceStatus(res *unstructured.Unstructured) (corev1.ConditionStatus, string) {
-	obj := res.UnstructuredContent()
-	kind, exists, err := unstructured.NestedString(obj, "kind")
-	if !exists || err != nil {
-		// invalid resource
-		return corev1.ConditionUnknown, ""
-	}
-
 	// get indications how to compute the resource status based on a module spec
-	expected, err := r.getExpectedResults(kind)
+	expected, err := r.getExpectedResults(res.GetKind())
 	if err != nil {
 		// Could not retrieve the list of modules, will retry later
 		return corev1.ConditionUnknown, ""
