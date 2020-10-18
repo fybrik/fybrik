@@ -54,8 +54,8 @@ func ChartRef(hostname string, namespace string, name string, tagname string) st
 // Interface of a helm chart
 type Interface interface {
 	Uninstall(kubeNamespace string, releaseName string) (*release.UninstallReleaseResponse, error)
-	Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}, waitOption bool) (*release.Release, error)
-	Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}, waitOption bool) (*release.Release, error)
+	Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error)
+	Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error)
 	Status(kubeNamespace string, releaseName string) (*release.Release, error)
 	RegistryLogin(hostname string, username string, password string, insecure bool) error
 	RegistryLogout(hostname string) error
@@ -78,13 +78,13 @@ func (r *Fake) Uninstall(kubeNamespace string, releaseName string) (*release.Uni
 }
 
 // Install helm release
-func (r *Fake) Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}, waitOption bool) (*release.Release, error) {
+func (r *Fake) Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error) {
 	rel := &release.Release{Info: &release.Info{}}
 	return rel, nil
 }
 
 // Upgrade helm release
-func (r *Fake) Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}, waitOption bool) (*release.Release, error) {
+func (r *Fake) Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error) {
 	rel := &release.Release{Info: &release.Info{}}
 	return rel, nil
 }
@@ -150,7 +150,7 @@ func (r *Impl) Uninstall(kubeNamespace string, releaseName string) (*release.Uni
 }
 
 // Install helm release
-func (r *Impl) Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}, waitOption bool) (*release.Release, error) {
+func (r *Impl) Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error) {
 	cfg, err := getConfig(kubeNamespace)
 	if err != nil {
 		return nil, err
@@ -158,19 +158,17 @@ func (r *Impl) Install(chart *chart.Chart, kubeNamespace string, releaseName str
 	install := action.NewInstall(cfg)
 	install.ReleaseName = releaseName
 	install.Namespace = kubeNamespace
-	install.Wait = waitOption
 	return install.Run(chart, vals)
 }
 
 // Upgrade helm release
-func (r *Impl) Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}, waitOption bool) (*release.Release, error) {
+func (r *Impl) Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error) {
 	cfg, err := getConfig(kubeNamespace)
 	if err != nil {
 		return nil, err
 	}
 	upgrade := action.NewUpgrade(cfg)
 	upgrade.Namespace = kubeNamespace
-	upgrade.Wait = waitOption
 	return upgrade.Run(releaseName, chart, vals)
 }
 
