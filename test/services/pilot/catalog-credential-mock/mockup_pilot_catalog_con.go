@@ -174,7 +174,7 @@ func ConfigureVault(vaultAddress string, outerVaultPath string, innerVaultPath s
 	log.Printf("credentials used %s\n", credentials)
 
 	timeOutInSecs := vltutils.GetEnvWithDefault(vltutils.VaultTimeoutKey, vltutils.DefaultTimeout)
-	timeOutSecs, err := strconv.Atoi(timeOutInSecs)
+	timeOutSecs, _ := strconv.Atoi(timeOutInSecs)
 	port := vltutils.GetEnvWithDefault(vltutils.VaultConnectorPortKey, vltutils.DefaultPort)
 
 	log.Printf("Vault address env variable in ConfigureVault: %s\n", vaultAddress)
@@ -182,8 +182,7 @@ func ConfigureVault(vaultAddress string, outerVaultPath string, innerVaultPath s
 	log.Printf("TimeOut used %d\n", timeOutSecs)
 	log.Printf("Secret Token env variable in %s: %s\n", vltutils.VaultSecretKey, vltutils.GetEnv(vltutils.VaultSecretKey))
 
-	var vault vltutils.VaultConnection
-	vault = vltutils.CreateVaultConnection2(vaultAddress)
+	vault := vltutils.CreateVaultConnection2(vaultAddress)
 	log.Println("Vault connection successfully initiated.")
 
 	credentialsMap := make(map[string]interface{})
@@ -206,6 +205,7 @@ func ConfigureVault(vaultAddress string, outerVaultPath string, innerVaultPath s
 	}
 
 	var retrievedValue string
+	var err error
 	if retrievedValue, err =
 		vault.GetFromVault2(outerVaultPath, innerVaultPath); err != nil {
 		log.Println("err in utils.GetFromVault2")
@@ -216,7 +216,6 @@ func ConfigureVault(vaultAddress string, outerVaultPath string, innerVaultPath s
 	}
 	log.Println("retrievedValue from vault:", retrievedValue)
 	return nil
-
 }
 
 func main() {
@@ -262,26 +261,32 @@ func main() {
 		// datasetIDJson = "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"4098e18e-bd53-4fd0-8ff8-e1c8e9fc42da\"}"
 		datasetIDJson = "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"f710567c-0f71-4296-b99e-cf22dc258a9f\"}"
 
-		ConfigureVault(vltutils.GetEnv("USER_VAULT_ADDRESS"),
+		err := ConfigureVault(vltutils.GetEnv("USER_VAULT_ADDRESS"),
 			vltutils.GetEnv("USER_VAULT_PATH"),
 			datasetIDJson,
 			"{\"credentials\": \"my_credentials\"}")
-
+		if err != nil {
+			log.Println("Error in ConfigureVault in mockup catalog1 ! ")
+			return
+		}
 	} else {
 		datasetIDJson = "{\"catalog_id\":\"" + catalogID + "\",\"asset_id\":\"" + datasetID + "\"}"
 
 		// store in vault only in case we are using WKC
 		wkcUserName := vltutils.GetEnv("CP4D_USERNAME_TO_BE_STORED_IN_VAULT")
 		wkcPassword := vltutils.GetEnv("CP4D_PASSWORD_TO_BE_STORED_IN_VAULT")
-		wkcOwnerId := vltutils.GetEnv("CP4D_OWNERID_TO_BE_STORED_IN_VAULT")
+		wkcOwnerID := vltutils.GetEnv("CP4D_OWNERID_TO_BE_STORED_IN_VAULT")
 		appID := vltutils.GetEnv("APPID") + "/" + vltutils.GetEnv("CATALOG_PROVIDER_NAME")
 
-		ConfigureVault(vltutils.GetEnv("VAULT_ADDRESS"),
+		err := ConfigureVault(vltutils.GetEnv("VAULT_ADDRESS"),
 			vltutils.GetEnv("VAULT_USER_HOME"),
 			appID,
-			"{\"username\":\""+wkcUserName+"\",\"password\":\""+wkcPassword+"\",\"ownerId\":\""+wkcOwnerId+"\"}")
+			"{\"username\":\""+wkcUserName+"\",\"password\":\""+wkcPassword+"\",\"ownerId\":\""+wkcOwnerID+"\"}")
+		if err != nil {
+			log.Println("Error in ConfigureVault in mockup catalog2 ! ")
+			return
+		}
 	}
-
 	GetMetadata(datasetIDJson)
 	GetCredentials(datasetIDJson)
 }

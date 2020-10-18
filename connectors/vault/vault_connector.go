@@ -18,8 +18,8 @@ import (
 
 var vault vltutils.VaultConnection
 
-const defaultTimeout = "180"
-const defaultPort = "50083" //synched with vault_connector.yaml
+//const defaultTimeout = "180"
+//const defaultPort = "50083" //synched with vault_connector.yaml
 
 type server struct {
 	pb.UnimplementedDataCredentialServiceServer
@@ -45,7 +45,7 @@ func (s *server) GetCredentialsInfo(ctx context.Context, in *pb.DatasetCredentia
 func main() {
 	vaultAddress := vltutils.GetEnv(vltutils.VaultAddressKey)
 	timeOutInSecs := vltutils.GetEnvWithDefault(vltutils.VaultTimeoutKey, vltutils.DefaultTimeout)
-	timeOutSecs, err := strconv.Atoi(timeOutInSecs)
+	timeOutSecs, _ := strconv.Atoi(timeOutInSecs)
 	port := vltutils.GetEnvWithDefault(vltutils.VaultConnectorPortKey, vltutils.DefaultPort)
 
 	log.Printf("Vault address env variable in %s: %s\n", vltutils.VaultAddressKey, vaultAddress)

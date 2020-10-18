@@ -36,7 +36,7 @@ func getEnv(key string) string {
 func getEnvWithDefault(key string, defaultValue string) string {
 	value, exists := os.LookupEnv(key)
 	if !exists {
-		log.Printf("Env. variable not found, defualt value used: %s - %s\n", key, defaultValue)
+		log.Printf("Env. variable not found, default value used: %s - %s\n", key, defaultValue)
 		return defaultValue
 	}
 
