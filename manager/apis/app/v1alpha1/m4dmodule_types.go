@@ -126,10 +126,12 @@ type ResourceStatusIndicator struct {
 	Kind string `json:"kind"`
 
 	// SuccessCondition specifies a condition that indicates that the resource is ready
+	// It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
 	// +required
 	SuccessCondition string `json:"successCondition"`
 
 	// FailureCondition specifies a condition that indicates the resource failure
+	// It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
 	// +optional
 	FailureCondition string `json:"failureCondition"`
 

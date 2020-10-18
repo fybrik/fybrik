@@ -193,13 +193,13 @@ spec:
                     description: ErrorMessage specifies the resource field to check for an error, e.g. status.errorMsg
                     type: string
                   failureCondition:
-                    description: FailureCondition specifies a condition that indicates the resource failure
+                    description: FailureCondition specifies a condition that indicates the resource failure It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
                     type: string
                   kind:
                     description: Kind provides information about the resource kind
                     type: string
                   successCondition:
-                    description: SuccessCondition specifies a condition that indicates that the resource is ready
+                    description: SuccessCondition specifies a condition that indicates that the resource is ready It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
                     type: string
                 required:
                 - kind
