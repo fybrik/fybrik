@@ -4,6 +4,9 @@ set -e
 
 : ${KUBE_NAMESPACE:=m4d-system}
 : ${PORT_TO_FORWARD:=8200}
+: ${WITHOUT_VAULT=false}
+: ${WITHOUT_EGERIA=false}
+: ${WITHOUT_OPA=false}
 
 source third_party/vault/vault-util.sh
 
@@ -14,9 +17,9 @@ kubectl apply -f manager/config/prod/deployment_configmap.yaml -n $KUBE_NAMESPAC
 make cluster-prepare
 
 # Install third party components
-make -C third_party/vault deploy
-make -C third_party/egeria deploy
-make -C third_party/opa deploy
+WITHOUT_VAULT || make -C third_party/vault deploy
+WITHOUT_EGERIA || make -C third_party/egeria deploy
+WITHOUT_OPA || make -C third_party/opa deploy
 
 # Waiting for the vault deployment to become ready
 make -C third_party/vault wait_for_vault
