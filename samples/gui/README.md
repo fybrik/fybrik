@@ -55,12 +55,20 @@ Assuming rest server is running (see run locally)
 From within samples/gui/server/datauser 
 go test
 
+## Working in a cluster
+GUI is deployed in the namespace the workload is running in. This should also be your current namespace.
+Set the following environment variable prior to deploying the GUI. 
+
+```
+export WORKLOAD_NAMESPACE=<namespace>
+```
+
 ## Creating docker images
 
 Backend image creation is done from the main directory of the project.
 
 ```
-docker build . -t <registry>/<namespace>/datauserserver:latest -f samples/gui/server/Dockerfile.datauserserver
+docker build . -t <registry>/$WORKLOAD_NAMESPACE/datauserserver:latest -f samples/gui/server/Dockerfile.datauserserver
 ```
 Frontend image creation
 
@@ -71,13 +79,11 @@ Ensure that .env has a correct configuration
 export NODE_OPTIONS=--max_old_space_size=4096
 rm -rf build
 npm run build
-docker build . -t <registry>/<namespace>/datauserclient:latest
+docker build . -t <registry>/$WORKLOAD_NAMESPACE/datauserclient:latest
 ```
 ## Deployment
   ```
 cd <root>>/samples/gui
-
-export KUBE_NAMESPACE=<namespace>  
 ./deploy.sh
 ```
 
