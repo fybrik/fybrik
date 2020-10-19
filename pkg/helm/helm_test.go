@@ -118,11 +118,11 @@ func TestHelmRelease(t *testing.T) {
 			"key": "value1",
 		},
 	}
-	_, err = impl.Install(origChart, kubeNamespace, releaseName, vals, true)
+	_, err = impl.Install(origChart, kubeNamespace, releaseName, vals)
 	assert.Nil(t, err)
 	Log(t, "install", err)
 
-	_, err = impl.Upgrade(origChart, kubeNamespace, releaseName, vals, true)
+	_, err = impl.Upgrade(origChart, kubeNamespace, releaseName, vals)
 	assert.Nil(t, err)
 	Log(t, "upgrade", err)
 
