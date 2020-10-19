@@ -1,7 +1,8 @@
 # Kubeflow Jupyter notebook sample
 
 This sample demonstrate the use of The Mesh for Data with Kubeflow notebooks.
-The following sample and instructions have been tested on Kind and OpenShift clusters, and against Kubeflow v1.0.2. The commands are assume the use is in root directory of the project.
+The following sample and instructions have been tested on kind v0.10.0 and OpenShift 4.3 clusters, and against Kubeflow v1.0.2.
+The instructions below assume that they are issued from the root directory of the project, and you have created a Kubernets cluster in advance (either Kind or OpenShift).
 
 ## Connectors stack
 
@@ -94,10 +95,11 @@ kubectl port-forward -n m4d-system svc/vault 8200:8200 &
 
 you can use your browser and Vault's UI to upload the credentials:
 - Open `http://localhost:8200` in your browser and login using username `data_provider` and password `password`.
-- Click `/external` and then `Create secret`. Add new secret.
+- Click `/external` and then `Create secret`
 - Create the following secret:
     - Path for this secret: `{"ServerName":"cocoMDS3","AssetGuid":"<asset ID>"}`. For example, `{"ServerName":"cocoMDS3","AssetGuid":"5de27155-48d3-4d78-8767-73e7b264e394"}`
     - Secret data (shown here as JSON): `{"access_key": "<hmac-access-key-id>", "secret_key": "<hmac-secret-access-key>"}`
+- Click `save`
 
 Finally, kill the port-forward
 ```bash
