@@ -102,6 +102,10 @@ func checkBlueprintStatus(applicationContext *app.M4DApplication, blueprint *app
 	if blueprint.Status.Error != "" {
 		utils.ActivateCondition(applicationContext, app.FailureCondition, "OrchestrationFailure", blueprint.Status.Error)
 	}
+	applicationContext.Status.DataAccessInstructions = ""
+	if applicationContext.Status.Ready {
+		applicationContext.Status.DataAccessInstructions = blueprint.Status.DataAccessInstructions
+	}
 }
 
 // reconcileFinalizers reconciles finalizers for M4DApplication
