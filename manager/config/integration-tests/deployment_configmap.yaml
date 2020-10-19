@@ -31,7 +31,6 @@ data:
   VAULT_USER_MOUNT: "v1/sys/mounts/m4d/user-creds"
   VAULT_TTL: "24h"
   VAULT_AUTH: "kubernetes"
-  RUN_WITHOUT_VAULT: "1"
 
   #timeout for all the connectors
   CONNECTION_TIMEOUT: "120"
