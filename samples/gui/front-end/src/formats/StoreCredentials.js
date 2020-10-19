@@ -45,14 +45,14 @@ const StoreCredentials = props => {
   const handleStore = (event, uid) => {
     creds.forEach(cred => {
       if (cred.uid === uid) {
-        const credentials = array.omitBy({ username: cred.userName, password: cred.password, ownerID: cred.userID }, array.isEmpty)
+        const credentials = array.omitBy({ username: cred.userName, password: cred.password, ownerId: cred.userID }, array.isEmpty)
         axios({
           method: 'post',
           url: process.env.REACT_APP_BACKEND_ADDRESS + '/v1/creds/usercredentials',
           data: {
             System: cred.system,
             M4DApplicationID: application.metadata.name,
-            Credentials: { credentials }
+            Credentials: credentials 
           }
         })
           .then(response => {

@@ -15,3 +15,6 @@ deploy-wait: $(TOOLBIN)/kubectl
 .PHONY: undeploy
 undeploy:
 	./deploy.sh undeploy
+
+.PHONY: wait_for_vault
+	./deploy.sh wait_for_vault

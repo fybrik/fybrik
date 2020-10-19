@@ -8,20 +8,24 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
+	"time"
 
 	"emperror.dev/errors"
+	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
+	"helm.sh/helm/v3/pkg/release"
 
 	"github.com/go-logr/logr"
 	yaml "gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"github.com/ibm/the-mesh-for-data/pkg/helm"
+	corev1 "k8s.io/api/core/v1"
+	labels "k8s.io/apimachinery/pkg/labels"
 )
 
 // BlueprintReconciler reconciles a Blueprint object
@@ -60,7 +64,7 @@ func (r *BlueprintReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	if blueprint.DeletionTimestamp == nil {
-		if !equality.Semantic.DeepEqual(blueprint.Status, observedStatus) {
+		if !equality.Semantic.DeepEqual(&blueprint.Status, observedStatus) {
 			if err := r.Client.Status().Update(ctx, &blueprint); err != nil {
 				return ctrl.Result{}, errors.WrapWithDetails(err, "failed to update blueprint status", "status", blueprint.Status)
 			}
@@ -71,10 +75,7 @@ func (r *BlueprintReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return result, nil
 }
 
-func (r *BlueprintReconciler) deleteChartResource(ctx context.Context, log logr.Logger, ref string, vals map[string]interface{}) (ctrl.Result, error) {
-	kubeNamespace := vals["metadata"].(map[string]interface{})["namespace"].(string)
-	releaseName := vals["metadata"].(map[string]interface{})["name"].(string)
-
+func (r *BlueprintReconciler) deleteChartResource(ctx context.Context, kubeNamespace string, releaseName string) (ctrl.Result, error) {
 	rel, err := r.Helmer.Status(kubeNamespace, releaseName)
 	if err == nil && rel != nil {
 		_, _ = r.Helmer.Uninstall(kubeNamespace, releaseName)
@@ -83,7 +84,7 @@ func (r *BlueprintReconciler) deleteChartResource(ctx context.Context, log logr.
 	return ctrl.Result{}, nil
 }
 
-func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log logr.Logger, ref string, vals map[string]interface{}) (ctrl.Result, error) {
+func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log logr.Logger, ref string, vals map[string]interface{}, kubeNamespace string, releaseName string) (ctrl.Result, error) {
 	log.Info(fmt.Sprintf("--- Chart Ref ---\n\n%v\n\n", ref))
 
 	nbytes, _ := yaml.Marshal(vals)
@@ -110,10 +111,6 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log logr.L
 		return ctrl.Result{}, errors.WithMessage(err, ref+": failed chart load")
 	}
 
-	kubeNamespace := vals["metadata"].(map[string]interface{})["namespace"].(string)
-	// we add the "r" character at the beginning of the release name, since it must begin with an alphabetic character
-	releaseName := "r" + vals["metadata"].(map[string]interface{})["name"].(string)
-
 	rel, err := r.Helmer.Status(kubeNamespace, releaseName)
 	if err == nil && rel != nil {
 		rel, err = r.Helmer.Upgrade(chart, kubeNamespace, releaseName, vals)
@@ -132,9 +129,16 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log logr.L
 
 func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, blueprint *app.Blueprint) (ctrl.Result, error) {
 	// Gather all templates and process them into a list of resources to apply
-	// The log message below guarantees that 'make e2e' test instruction terminates successfully in case of blueprint errors
-	// TODO - fix the e2e test and remove this message
-	log.V(0).Info("PILOT_MAGIC_NUMBER=" + os.Getenv("PILOT_MAGIC_NUMBER"))
+	// force-update if the blueprint spec is different
+	updateRequired := blueprint.Status.ObservedGeneration != blueprint.GetGeneration()
+	blueprint.Status.ObservedGeneration = blueprint.GetGeneration()
+	// reset blueprint state
+	blueprint.Status.Ready = false
+	blueprint.Status.Error = ""
+
+	// count the overall number of Helm releases and how many of them are ready
+	numReleases, numReady := 0, 0
+
 	for _, step := range blueprint.Spec.Flow.Steps {
 		templateName := step.Template
 		templateSpec, err := findComponentTemplateByName(blueprint.Spec.Templates, templateName)
@@ -161,28 +165,56 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		}
 
 		// Add metadata arguments (namespace, name, labels, etc.)
+		hashedName := utils.Hash(step.Name, 20)
 		args["metadata"] = map[string]interface{}{
-			"name":      utils.Hash(step.Name, 20),
-			"namespace": blueprint.Namespace, // TODO(roee.shlomo): should eventually be a dedicated namespace per M4DApplication
+			"name":      hashedName,
+			"namespace": blueprint.Namespace,
 			"labels":    blueprint.Labels,
 		}
+		// we add the "r" character at the beginning of the release name, since it must begin with an alphabetic character
+		releaseName := "r" + hashedName
+		log.V(0).Info("Release name: " + releaseName)
+		// check if the blueprint is about to be deleted
+		if blueprint.DeletionTimestamp != nil {
+			_, _ = r.deleteChartResource(ctx, blueprint.Namespace, releaseName)
+			continue
+		}
 
-		// Process templates with arguments
-		for _, resource := range templateSpec.Resources {
-			if blueprint.DeletionTimestamp != nil {
-				_, _ = r.deleteChartResource(ctx, log, resource, args)
-				continue
+		numReleases++
+		//check the release status
+		rel, err := r.Helmer.Status(blueprint.Namespace, releaseName)
+		// unexisting release or a failed release - re-apply the chart
+		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
+			// Process templates with arguments
+			for _, resource := range templateSpec.Resources {
+				if _, err := r.applyChartResource(ctx, log, resource, args, blueprint.Namespace, releaseName); err != nil {
+					blueprint.Status.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
+				}
 			}
-
-			if res, err := r.applyChartResource(ctx, log, resource, args); err != nil {
-				r.Log.V(0).Info("failed to apply chart: " + err.Error())
-				return res, err
+		} else if rel.Info.Status == release.StatusDeployed {
+			// TODO: add release notes of the read module to the status
+			if args["flow"] == "read" {
+				log.V(0).Info(rel.Info.Notes)
+			}
+			status, errMsg := r.checkReleaseStatus(releaseName, blueprint.Namespace)
+			if status == corev1.ConditionFalse {
+				blueprint.Status.Error += "ResourceAllocationFailure: " + errMsg + "\n"
+			} else if status == corev1.ConditionTrue {
+				numReady++
 			}
 		}
 	}
+	// check if all releases reached the ready state
+	if numReady == numReleases {
+		// all modules have been orhestrated successfully - the data is ready for use
+		blueprint.Status.Ready = true
+		return ctrl.Result{}, nil
+	}
 
-	log.V(0).Info("PILOT_MAGIC_NUMBER=" + os.Getenv("PILOT_MAGIC_NUMBER"))
-	blueprint.Status.Ready = false // Won't be ready until all components are running.  TODO - add status checks
+	// the status is unknown yet - continue polling
+	if blueprint.Status.Error == "" {
+		return ctrl.Result{RequeueAfter: 2 * time.Second}, nil
+	}
 	return ctrl.Result{}, nil
 }
 
@@ -212,4 +244,96 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&app.Blueprint{}).
 		Complete(r)
+}
+
+func (r *BlueprintReconciler) getExpectedResults(kind string) (*app.ResourceStatusIndicator, error) {
+	// Assumption: specification for each resource kind is done in one place.
+	ctx := context.Background()
+
+	var moduleList app.M4DModuleList
+	if err := r.List(ctx, &moduleList); err != nil {
+		return nil, err
+	}
+	for _, module := range moduleList.Items {
+		for _, res := range module.Spec.StatusIndicators {
+			if res.Kind == kind {
+				return res.DeepCopy(), nil
+			}
+		}
+	}
+	return nil, nil
+}
+
+// checkResourceStatus returns the computed state and an error message if exists
+func (r *BlueprintReconciler) checkResourceStatus(res *unstructured.Unstructured) (corev1.ConditionStatus, string) {
+	// get indications how to compute the resource status based on a module spec
+	expected, err := r.getExpectedResults(res.GetKind())
+	if err != nil {
+		// Could not retrieve the list of modules, will retry later
+		return corev1.ConditionUnknown, ""
+	}
+	if expected == nil {
+		// TODO: use kstatus to compute the status of the resources for them the expected results have not been specified
+		return corev1.ConditionTrue, ""
+	}
+	// use expected values to compute the status
+	if r.matchesCondition(res, expected.SuccessCondition) {
+		return corev1.ConditionTrue, ""
+	}
+	if r.matchesCondition(res, expected.FailureCondition) {
+		return corev1.ConditionFalse, getErrorMessage(res, expected.ErrorMessage)
+	}
+	return corev1.ConditionUnknown, ""
+}
+
+func getErrorMessage(res *unstructured.Unstructured, fieldPath string) string {
+	// convert the unstructured data to Labels interface to use Has and Get methods for retrieving data
+	labelsImpl := utils.UnstructuredAsLabels{Data: res}
+	if !labelsImpl.Has(fieldPath) {
+		return ""
+	}
+	return labelsImpl.Get(fieldPath)
+}
+
+func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, condition string) bool {
+	selector, err := labels.Parse(condition)
+	if err != nil {
+		r.Log.V(0).Info("condition " + condition + "failed to parse: " + err.Error())
+		return false
+	}
+	// get selector requirements, 'selectable' property is ignored
+	requirements, _ := selector.Requirements()
+	// convert the unstructured data to Labels interface to leverage the package capability of parsing and evaluating conditions
+	labelsImpl := utils.UnstructuredAsLabels{Data: res}
+	for _, req := range requirements {
+		if !req.Matches(labelsImpl) {
+			return false
+		}
+	}
+	return true
+}
+
+func (r *BlueprintReconciler) checkReleaseStatus(releaseName string, namespace string) (corev1.ConditionStatus, string) {
+	// get all resources for the given helm release in their current state
+	resources, err := r.Helmer.GetResources(namespace, releaseName)
+	if err != nil {
+		r.Log.V(0).Info("Error getting resources: " + err.Error())
+		return corev1.ConditionUnknown, ""
+	}
+	// return True if all resources are ready, False - if any resource failed, Unknown - otherwise
+	numReady := 0
+	for _, res := range resources {
+		state, errMsg := r.checkResourceStatus(res)
+		r.Log.V(0).Info("Status of " + releaseName + " is " + string(state))
+		if state == corev1.ConditionFalse {
+			return state, errMsg
+		}
+		if state == corev1.ConditionTrue {
+			numReady++
+		}
+	}
+	if numReady == len(resources) {
+		return corev1.ConditionTrue, ""
+	}
+	return corev1.ConditionUnknown, ""
 }
