@@ -2,7 +2,7 @@
 all: helm-all
 
 ROOT_DIR := ../..
-DOCKER_NAME := m4d-cos2cos
+DOCKER_NAME := m4d-s3-to-s3
 DOCKER_TAGNAME := 0.1.0
 HELM_VALUES := --values values.yaml.sample
 
