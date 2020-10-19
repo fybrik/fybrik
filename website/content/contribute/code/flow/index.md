@@ -93,11 +93,13 @@ make kind
 By default the docker setup points to the official docker.io registry. When developing
 locally and building/pushing docker containers the docker host and namespace should be changed. When 
 using a local kind setup with a local registry the environment can be pointed to it by setting the following 
-environment variables:
+environment variables. (Please note that you also have to add an entry to your /etc/hosts file):
 
 ```bash
-export DOCKER_HOSTNAME=localhost:5000
+export DOCKER_HOSTNAME=kind-registry:5000
 export DOCKER_NAMESPACE=m4d
+export DOCKER_USERNAME=user
+export DOCKER_PASSWORD=pwd
 ```
 
 There are make commands for building and pushing docker images separately or in one go:
