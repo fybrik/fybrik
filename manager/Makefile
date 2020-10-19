@@ -42,7 +42,6 @@ motion-integration-tests: #deploy_mc
 	$(TOOLBIN)/kubectl wait --for=condition=available -n m4d-system deployment/m4dcontroller-manager --timeout=120s
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestBatchTransferAPIs -count 1
 
-export PILOT_MAGIC_NUMBER=abcde12345
 export CATALOG_CONNECTOR_URL=localhost:50085
 export CREDENTIALS_CONNECTOR_URL=localhost:50085
 export VAULT_ADDRESS=http://127.0.0.1:8200/
@@ -84,8 +83,6 @@ e2e-cleanup: $(TOOLBIN)/kubectl
 	$(ABSTOOLBIN)/kubectl delete -f testdata/e2e/module-implicit-copy-kafka-to-s3-stream.yaml || true
 	$(ABSTOOLBIN)/kubectl patch m4dapplication notebook -p '{"metadata":{"finalizers":[]}}' --type=merge || true
 	$(ABSTOOLBIN)/kubectl delete -f testdata/e2e/m4dapplication.yaml -n default || true
-	$(ABSTOOLBIN)/kubectl patch batchtransfer 012d42539692bba841a7 -n m4d-system -p '{"metadata":{"finalizers":[]}}' --type=merge || true
-	$(ABSTOOLBIN)/kubectl delete batchtransfer 012d42539692bba841a7 -n m4d-system || true
 	@echo
 	$(MAKE) uninstall 1>/dev/null 2>/dev/null || true
 
@@ -117,9 +114,8 @@ e2e-setup: $(TOOLBIN)/kubectl
 
 .PHONY: e2e-run
 e2e-run: main.deps
-	(timeout 20s go run ./main.go 2>&1 | tee e2e.out) || true
-	@cat e2e.out
-	@grep -q $(PILOT_MAGIC_NUMBER) e2e.out
+	(timeout 60s go run ./main.go 2>&1 | tee e2e.out) || true
+	$(ABSTOOLBIN)/kubectl describe m4dapplication notebook | grep Ready | grep true
 
 DEBUG := ./debug.out
 

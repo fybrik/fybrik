@@ -8,6 +8,8 @@ URL=https://kubernetes-charts.banzaicloud.com
 RELEASE=vault-operator
 CHART=banzaicloud-stable/vault-operator 
 
+source vault-util.sh
+
 deploy() {
     kubectl create namespace $KUBE_NAMESPACE 2>/dev/null || true
 
@@ -35,8 +37,11 @@ case "$1" in
     undeploy)
         undeploy
         ;;
+    wait_for_vault)
+      wait_for_vault
+      ;;
     *)
-        echo "usage: $0 [deploy|undeploy]"
+        echo "usage: $0 [deploy|undeploy|wait_for_vault]"
         exit 1
         ;;
 esac

@@ -1,9 +1,9 @@
 [![Build Status](https://travis-ci.com/IBM/the-mesh-for-data.svg?branch=master)](https://travis-ci.com/IBM/the-mesh-for-data "Travis")
-
+[![Go Report Card](https://goreportcard.com/badge/github.com/IBM/the-mesh-for-data)](https://goreportcard.com/report/github.com/IBM/the-mesh-for-data)
 
 # The Mesh for Data
 
-The Mesh for Data is a cloud native platform to control the usage of data within an organization and thus enble business agility while securing enterprise data.  The Mesh for Data encapsulate a containerized workload and intermediate all data flows both into the workload and out of the workload, enabling enforcement of policies defining what can be done with the data.
+The Mesh for Data is a cloud native platform to control the usage of data within an organization and thus enable business agility while securing enterprise data.  The Mesh for Data encapsulates a containerized workload and intermediates all data flows both into the workload and out of the workload, enabling enforcement of policies defining what can be done with the data.
 
 - For more information and details please visit [our website](https://ibm.github.io/the-mesh-for-data/)
 
