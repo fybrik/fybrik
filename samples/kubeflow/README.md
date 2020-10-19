@@ -13,7 +13,7 @@ This sample uses the default stack:
 
 ## Actors and flows
 
-A _data owner_ uploads a transactions.csv file to as s3 compatible object storage (e.g., Ceph, minio, IBM Cloud Object Storage, Amazon S3, etc.). Then, the data owner registers the asset in Egeria data catalog and adds tags to the asset to mark it as finance data. Finally, the data owner registers the credentials to access this asset in Vault credentials manager.
+A _data owner_ uploads a transactions.csv file to a s3 compatible object storage (e.g., Ceph, minio, IBM Cloud Object Storage, Amazon S3, etc.). Then, the data owner registers the asset in Egeria data catalog and adds tags to the asset to mark it as finance data. Finally, the data owner registers the credentials to access this asset in Vault credentials manager.
 
 A _data steward_ creates policies in OPA policy manager. These policies set transformations to perform on data columns when accessed for the purpose of fraud-detection.
 
@@ -40,6 +40,11 @@ Install on Kind:
 ./hack/install.sh
 ```
 
+Install the Arrow-Flight module
+```
+kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data-flight-module/master/module.yaml
+```
+
 Install kubeflow on your cluster.
 On a Kind cluster for example you can use the following script to install it:
 ```bash
@@ -47,11 +52,6 @@ cd samples/kubeflow/install/kubeflow
 ./install_kubeflow.sh
 
 cd -
-```
-
-Install the Arrow-Flight module
-```
-kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data-flight-module/master/module.yaml
 ```
 
 ## Data owner instructions
@@ -86,8 +86,8 @@ Export it to environment variable:
 export ASSET_ID=<asset-id>
 ```
 
-5. Register the credentials for the dataset in Vault. Currently, only hmac credentials are supported.
-Due to consistency with internal systems, currently the terms `access_key` and `secret_key` are used.
+5. Register in Vault the S3 credentials `access_key` (aka `access_key_id`) and `secret_key` (aka `secret_access_key`) required to access the dataset.
+Currently, only hmac credentials are supported.
 
 In order to communicate with Vault you first need to create a port-forward:
 ```bash
