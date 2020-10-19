@@ -9,6 +9,11 @@ include $(ROOT_DIR)/.mk/docker.mk
 VAULT_PATH=${ABSTOOLBIN}/vault
 include $(ROOT_DIR)/pkg/policy-compiler/policy-compiler.env
 
+docker-build:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o vault-connector vault_connector.go
+	docker build . -t $(IMG) -f Dockerfile
+	rm vault-connector
+
 .PHONY: vaultserver-clean
 vaultserver-clean:
 	rm -f output-vault.log && rm -f output-vault-init.log
