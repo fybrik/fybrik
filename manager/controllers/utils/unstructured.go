@@ -4,6 +4,8 @@
 package utils
 
 import (
+	"strings"
+
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -19,4 +21,32 @@ func CreateUnstructured(group, version, kind, name, namespace string) *unstructu
 	result.SetName(name)
 	result.SetNamespace(namespace)
 	return result
+}
+
+// UnstructuredAsLabels is an implementation of labels.Labels interface
+// which allows us to take advantage of k8s labels library
+// for the purposes of evaluating fail and success conditions
+type UnstructuredAsLabels struct {
+	Data *unstructured.Unstructured
+}
+
+// Has returns whether the provided label exists.
+func (c UnstructuredAsLabels) Has(label string) bool {
+	obj := c.Data.UnstructuredContent()
+	fields := strings.Split(label, ".")
+	// value is not returned
+	_, exists, err := unstructured.NestedString(obj, fields...)
+	if err != nil || !exists {
+		return false
+	}
+	return true
+}
+
+// Get returns the value for the provided label.
+func (c UnstructuredAsLabels) Get(label string) string {
+	obj := c.Data.UnstructuredContent()
+	fields := strings.Split(label, ".")
+	// not checking whether the label exists and is valid. Assuming Get is called after Has in labels package evaluation
+	val, _, _ := unstructured.NestedString(obj, fields...)
+	return val
 }

@@ -5,9 +5,16 @@
 
 : ${KUBE_NAMESPACE:=m4d-system}
 : ${PORT_TO_FORWARD:=8200}
+: ${WITHOUT_PORT_FORWARD:=false}
 : ${DATA_PROVIDER_USERNAME:=data_provider}
 : ${DATA_PROVIDER_PASSWORD:=password}
 : ${KUBERNETES_AUTH_ROLE:=demo}
+: ${SECRET_PATH:=secret}
+
+# Controls the auth mechanism to enable
+#   - "K8S" for k8s auth method
+#   - "USERPASS" for the userpass_auth
+: ${AUTH_METHOD:=K8S}
 
 enable_kv() {
   # Enable kv engine to write secrets to vault
@@ -111,80 +118,68 @@ create_policy() {
     http://127.0.0.1:"$PORT_TO_FORWARD"/v1/sys/policy/"$1"
   
   # Equivalent using the CLI:
-  # vault policy write "$2" - <<EOF
-#path '"'$3'"' {
+  # vault policy write "$1" - <<EOF
+#path '"'$2'"' {
 #    capabilities = ["create", "read", "update", "delete", "list"]
 #}
 #EOF
 }
 
-configure() {
-  # Make sure the vault pod is ready
+# We're using old-school while b/c we can't wait on object that haven't been created, and we can't know for sure that the statefulset had been created so far
+# See https://github.com/kubernetes/kubernetes/issues/75227
+wait_for_vault() {
   while [[ $(kubectl get -n $KUBE_NAMESPACE pods -l statefulset.kubernetes.io/pod-name=vault-0 -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]];
   do
       echo "waiting for vault pod to become ready" 
       sleep 5
   done
-  
+}
+
+# Do port-forwarding, if needed
+port_forward() {
   # Port forward, so we could access vault
   kubectl port-forward -n $KUBE_NAMESPACE service/vault "$PORT_TO_FORWARD":8200 &
   while ! nc -z localhost "$PORT_TO_FORWARD"; do echo "Waiting for the port-forward from $PORT_TO_FORWARD to 8200 to take effect"; sleep 1; done
+}
 
+configure_path() {
+  # Make sure the vault pod is ready
+  wait_for_vault
+  
+  $WITHOUT_PORT_FORWARD || port_forward
   # Get Vault's root token
   export VAULT_TOKEN=$(kubectl get secrets vault-unseal-keys -n $KUBE_NAMESPACE -o jsonpath={.data.vault-root} | base64 --decode)
   
   # Enabling kv
-  enable_kv "secret" "$VAULT_TOKEN"
-  enable_kv "external" "$VAULT_TOKEN"
+  enable_kv "$SECRET_PATH" "$VAULT_TOKEN"
   
   # creating allow-all policy
-  create_policy "allow-all-secret" "secret/*" $VAULT_TOKEN
-  # creating external policy (for the data-provider)
-  create_policy "allow-all-external" "external/*" $VAULT_TOKEN
+  create_policy "allow-all-$SECRET_PATH" "$SECRET_PATH/*" $VAULT_TOKEN
 
-  enable_k8s_auth "allow-all-secret" $VAULT_TOKEN
-  enable_userpass_auth "allow-all-external" $VAULT_TOKEN
+  if [ $AUTH_METHOD == "K8S" ]; then
+    enable_k8s_auth "allow-all-$SECRET_PATH" $VAULT_TOKEN
+  fi
+  if [ $AUTH_METHOD == "USERPASS" ]; then
+    enable_userpass_auth "allow-all-$SECRET_PATH" $VAULT_TOKEN
+  fi
+
+  # Kill the port-forward if nessecarry 
+  $WITHOUT_PORT_FORWARD || kill -9 %%
 }
 
 # $1 - the path of the secret
 # $2 - the secret, as json
 # $3 - vault-token
 push_secret() {
+  $WITHOUT_PORT_FORWARD || port_forward
+
   curl \
     -H "X-Vault-Token: $3" \
     -H "Content-Type: application/json" \
     -X POST \
     -d "$2" \
     http://127.0.0.1:"$PORT_TO_FORWARD"/v1/$1
+
+    $WITHOUT_PORT_FORWARD || kill -9 %%
 }
 
-populate_demo_secrets() {
-  # Push some secrets, assuming the user has exported the APIKEY
-  export VAULT_TOKEN=$(kubectl get secrets vault-unseal-keys -n $KUBE_NAMESPACE -o jsonpath={.data.vault-root} | base64 --decode)
-  echo "pushing some secrets to vault"
-  push_secret "secret/cos" '{"api_key":"'"$APIKEY"'"}' $VAULT_TOKEN
-  push_secret "secret/fake-key" '{"api_key":"abcdefgh12345678"}' $VAULT_TOKEN
-  push_secret "secret/db2y" '{"password":"s3cr3t", "username":"user1"}' $VAULT_TOKEN
-  push_secret "secret/some-secret" '{"password":"pass-pass", "username":"data-provider-1"}' $VAULT_TOKEN
-  push_secret "external/some-secret" '{"password":"pass-pass", "username":"data-provider-2"}' $VAULT_TOKEN
-  
-  #Equivalent using the CLI:
-  #vault kv put secret/cos api_key=$APIKEY
-  #vault kv put secret/fake-key api_key=abcdefgh12345678
-  #vault kv put secret/db2 username=user1 password=s3cr3t
-  #vault kv put secret/some-secret username=data-provider password=pass-pass
-  #vault kv put external/some-secret username=data-provider password=pass-pass
-}
-
-case "$1" in
-    configure)
-      configure
-    ;;
-    populate_demo_secrets)
-      populate_demo_secrets
-    ;;
-    *)
-      echo "usage: %0 [configure|populate_demo_secrets]"
-      exit 1
-    ;;
-esac
