@@ -127,7 +127,7 @@ cd samples/kubeflow/
 - Click **Notebook Servers** (in the left).
 - In the notebooks page select in the top left the `anonymous` namespace and then click **New Server**.
 - In the notebook server creation page, set `kf-notebook` in the **Name** box and then click **Launch**. Wait for the server to become ready.
-- Click **Connect** and upload `kfM4DPolicyDemo.ipynb` notebook to the server.
+- Click **Connect** and upload `kfM4DPolicySample.ipynb` notebook to the server.
 
 3. Create the `M4DApplication` resource by running the following:
 ```bash
