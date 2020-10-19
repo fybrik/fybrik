@@ -6,11 +6,13 @@ DOCKER_FILE=$(DOCKER_CONTEXT)/connectors/opa/Dockerfile
 include $(ROOT_DIR)/.mk/docker.mk
 
 OPA_PATH=${ABSTOOLBIN}/opa
-OPA_DEFAULT_POLICY_FILE=${ROOT_DIR}/third_party/opa/opa-policy.rego
+
+#should work with single file or folder
+OPA_DEFAULT_POLICIES=${ROOT_DIR}/third_party/opa/opa-policy.rego
 
 .PHONY: opaserver
 opaserver:
-	{ $(OPA_PATH) run --server $(OPA_DEFAULT_POLICY_FILE) > output-opa.log 2>&1 & echo $$! >> opa_pids.txt; }
+	{ $(OPA_PATH) run --server $(OPA_DEFAULT_POLICIES) > output-opa.log 2>&1 & echo $$! >> opa_pids.txt; }
 
 .PHONY: opaserver-terminate
 opaserver-terminate:
@@ -26,6 +28,7 @@ build:
 
 .PHONY: test
 test:
+	go test -v ./...
 
 .PHONY: clean
 clean: opaserver-clean

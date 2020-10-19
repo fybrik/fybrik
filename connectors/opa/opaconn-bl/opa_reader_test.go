@@ -13,8 +13,7 @@ import (
 
 //Tests  GetPoliciesDecisions in opa-connector.go
 //In the test the purpose is set as "marketing". For this purpose in different scenarios connector is mocked and different outputs are obtained.
-//In this test it is checked how the two results are synchronised. They are manually
-//synchronised, result of customOpaResponse function should be translated into
+//In this test the results are  manually synchronised, result of customOpaResponse function should be translated into
 //GetExpectedOpaDecisions. Tested here is the functionality of translating opa_result
 //format into enforcement decisions format
 
@@ -23,8 +22,9 @@ func TestMainOpaConnector(t *testing.T) {
 	timeOutSecs, catalogConnectorURL, opaServerUrl := tu.GetEnvironment()
 	applicationContext := tu.GetApplicationContext("marketing")
 
-	srv := NewServer(opaServerUrl)
-	policiesDecisions, _ := srv.GetPoliciesDecisions(applicationContext, catalogConnectorURL, timeOutSecs)
+	srv := NewOpaReader(opaServerUrl)
+	catalogReader := NewCatalogReader(catalogConnectorURL, timeOutSecs)
+	policiesDecisions, _ := srv.GetOPADecisions(applicationContext, catalogReader)
 	fmt.Println("policiesDecisions returned")
 	fmt.Println(policiesDecisions)
 	expectedOpaDecisions := tu.GetExpectedOpaDecisions("marketing", applicationContext)

@@ -26,8 +26,6 @@ var EnvValues = map[string]string{
 }
 
 func GetEnvironment() (int, string, string) {
-	// mapValues := mapVariableValues()
-
 	timeOutInSecs := EnvValues["CONNECTION_TIMEOUT"]
 	timeOutSecs, _ := strconv.Atoi(timeOutInSecs)
 
@@ -43,7 +41,6 @@ func GetApplicationContext(purpose string) *pb.ApplicationContext {
 	applicationDetails := &pb.ApplicationDetails{Purpose: purpose, Role: "Security", ProcessingGeography: "US"}
 	datasets := []*pb.DatasetContext{}
 	datasets = append(datasets, createDatasetRead(datasetID))
-	//datasets = append(datasets, createDatasetTransferFirst(datasetID))
 	applicationContext := &pb.ApplicationContext{AppInfo: applicationDetails, Datasets: datasets}
 
 	return applicationContext
@@ -52,13 +49,6 @@ func GetApplicationContext(purpose string) *pb.ApplicationContext {
 func createDatasetRead(datasetID string) *pb.DatasetContext {
 	dataset := &pb.DatasetIdentifier{DatasetId: datasetID}
 	operation := &pb.AccessOperation{Type: pb.AccessOperation_READ}
-	datasetContext := &pb.DatasetContext{Dataset: dataset, Operation: operation}
-	return datasetContext
-}
-
-func createDatasetTransferFirst(datasetID string) *pb.DatasetContext {
-	dataset := &pb.DatasetIdentifier{DatasetId: datasetID}
-	operation := &pb.AccessOperation{Type: pb.AccessOperation_COPY, Destination: "US"}
 	datasetContext := &pb.DatasetContext{Dataset: dataset, Operation: operation}
 	return datasetContext
 }
@@ -86,64 +76,6 @@ func ConstructRedactColumn(colName string) *pb.EnforcementAction {
 func EnsureDeepEqualDecisions(t *testing.T, testedDecisions *pb.PoliciesDecisions, expectedDecisions *pb.PoliciesDecisions) {
 	assert.True(t, proto.Equal(testedDecisions, expectedDecisions), "Decisions we got from policyManager are not as expected. Expected: %v, Received: %v", expectedDecisions, testedDecisions)
 }
-
-func VerifyContainsDatasetDecision(t *testing.T, combinedPolicies *pb.PoliciesDecisions, datasetDecison *pb.DatasetDecision) {
-	for _, combinedDatasetPolicies := range combinedPolicies.DatasetDecisions {
-		if proto.Equal(combinedDatasetPolicies.Dataset, datasetDecison.Dataset) {
-			for _, operationDecision := range datasetDecison.Decisions {
-				VerifyContainsSingleOperationDesision(t, combinedDatasetPolicies, operationDecision)
-			}
-			//found correct dataset and all operation-desioins inside it
-			return
-		}
-	}
-	assert.Fail(t, "didn't find the correct deision for this dataset", datasetDecison.Dataset)
-}
-
-func VerifyContainsSingleOperationDesision(t *testing.T, combinedDatasetPolicies *pb.DatasetDecision, operationDesicion *pb.OperationDecision) {
-	for _, decision := range combinedDatasetPolicies.Decisions {
-		if proto.Equal(decision.Operation, operationDesicion.Operation) {
-			//found correct decision for this dataset and access operation
-			for _, action := range operationDesicion.EnforcementActions {
-				isFound := false
-				for _, actionCombined := range decision.EnforcementActions {
-					if proto.Equal(action, actionCombined) {
-						isFound = true
-						break
-					}
-				}
-				if !isFound {
-					//one of the actions in dataset action is not in combined decisions
-					assert.Fail(t, "combined desisions miss enforcement action ", action)
-				}
-			}
-			for _, usedPolicy := range operationDesicion.UsedPolicies {
-				isFound := false
-				for _, policyCombined := range decision.UsedPolicies {
-					if proto.Equal(usedPolicy, policyCombined) {
-						isFound = true
-						break
-					}
-				}
-				if !isFound {
-					//one of the usedPolicies in dataset action is not in combined decisions
-					assert.Fail(t, "combined desisions miss used policy ", usedPolicy)
-				}
-			}
-			return //found correct desision and it contains all enforceemnt actions and used policies
-		}
-	}
-	assert.Fail(t, "didn't find the correct deision for this operation ", operationDesicion.Operation)
-}
-
-/*func CheckPolicies(t *testing.T, policies *pb.PoliciesDecisions, decision1, decision2 *pb.PoliciesDecisions) {
-	for _, datasetDecisions := range decision1.DatasetDecisions {
-		VerifyContainsDatasetDecision(t, policies, datasetDecisions)
-	}
-	for _, datasetDecisions := range decision2.DatasetDecisions {
-		VerifyContainsDatasetDecision(t, policies, datasetDecisions)
-	}
-}*/
 
 func GetExpectedOpaDecisions(purpose string, in *pb.ApplicationContext) *pb.PoliciesDecisions {
 	var dataset = &pb.DatasetIdentifier{DatasetId: "mock-datasetID"}
@@ -189,10 +121,14 @@ func GetExpectedOpaDecisions(purpose string, in *pb.ApplicationContext) *pb.Poli
 }
 
 /****************************/
-//Connector Mock "Extension policy manager"
+//Mocks for catalog-connector and OPA-connector
 
 type connectorMockCatalog struct {
 	pb.UnimplementedDataCatalogServiceServer
+}
+
+func (s *connectorMockCatalog) GetDatasetInfo(ctx context.Context, req *pb.CatalogDatasetRequest) (*pb.CatalogDatasetInfo, error) {
+	return GetCatalogInfo(req.GetAppId(), req.GetDatasetId()), nil
 }
 
 func GetCatalogInfo(appId string, datasetID string) *pb.CatalogDatasetInfo {
@@ -226,10 +162,6 @@ func GetCatalogInfo(appId string, datasetID string) *pb.CatalogDatasetInfo {
 	return datasetInfo
 }
 
-func (s *connectorMockCatalog) GetDatasetInfo(ctx context.Context, req *pb.CatalogDatasetRequest) (*pb.CatalogDatasetInfo, error) {
-	return GetCatalogInfo(req.GetAppId(), req.GetDatasetId()), nil
-}
-
 func MockCatalogConnector(port string) {
 	log.Println("Start Mock for Catalog Connector at port " + port)
 
@@ -257,5 +189,4 @@ func MockOpaServer(port string) {
 
 	http.HandleFunc("/v1/data/extendedEnforcement", customOpaResponse)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
-
 }

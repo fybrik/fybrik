@@ -23,7 +23,7 @@ const defaultPort = "50082" //synched with opa_connector.yaml
 
 type server struct {
 	pb.UnimplementedPolicyManagerServiceServer
-	opaReader *opabl.Server
+	opaReader *opabl.OpaReader
 }
 
 func getEnv(key string) string {
@@ -61,10 +61,14 @@ func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationCon
 		return nil, fmt.Errorf("Atoi conversion of timeOutinseconds failed: %v", err)
 	}
 
-	eval, err := s.opaReader.GetPoliciesDecisions(in, catalogConnectorAddress, timeOut)
+	catalogReader := opabl.NewCatalogReader(catalogConnectorAddress, timeOut)
+	eval, err := s.opaReader.GetOPADecisions(in, catalogReader)
+	if err != nil {
+		log.Println("GetOPADecisions err:", err)
+		return nil, err
+	}
 	jsonOutput, _ := json.MarshalIndent(eval, "", "\t")
 	log.Println("Received evaluation : " + string(jsonOutput))
-	log.Println("err:", err)
 
 	return eval, err
 }
@@ -82,7 +86,7 @@ func main() {
 		log.Fatalf("Error in listening: %v", err)
 	}
 	s := grpc.NewServer()
-	srv := &server{opaReader: opabl.NewServer(opaServerURL)}
+	srv := &server{opaReader: opabl.NewOpaReader(opaServerURL)}
 	pb.RegisterPolicyManagerServiceServer(s, srv)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Error in service: %v", err)
