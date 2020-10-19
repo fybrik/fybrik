@@ -15,7 +15,7 @@ import (
 /* The order of the lookup is Read, Copy, Write.
    Assumptions:
    - Read is always required.
-   - Copy is used on demand, if a read module doues not support the existing source of data
+   - Copy is used on demand, if a read module does not support the existing source of data
    - Write module has not yet been implemented - will be implemented in future release
    - Each module is responsible for all transformations required for its flow: read module performs actions on read, copy module - actions on copy, etc.
    - All data sets are processed, even if an error is encountered in one or more, to provide a complete status at the end of the reconcile
