@@ -119,6 +119,27 @@ type Capability struct {
 	Actions []pb.EnforcementAction `json:"actions,omitempty"`
 }
 
+// ResourceStatusIndicator is used to determine the status of an orchestrated resource
+type ResourceStatusIndicator struct {
+	// Kind provides information about the resource kind
+	// +required
+	Kind string `json:"kind"`
+
+	// SuccessCondition specifies a condition that indicates that the resource is ready
+	// It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
+	// +required
+	SuccessCondition string `json:"successCondition"`
+
+	// FailureCondition specifies a condition that indicates the resource failure
+	// It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
+	// +optional
+	FailureCondition string `json:"failureCondition"`
+
+	// ErrorMessage specifies the resource field to check for an error, e.g. status.errorMsg
+	// +optional
+	ErrorMessage string `json:"errorMessage,omitempty"`
+}
+
 // M4DModuleSpec contains the info common to all modules,
 // which are one of the components that process, load, write, audit, monitor the data used by
 // the data scientist's application.
@@ -145,6 +166,10 @@ type M4DModuleSpec struct {
 	// Reference to a Helm chart that allows deployment of the resources required for this module
 	// +required
 	Chart string `json:"chart"`
+
+	// StatusIndicators allow to check status of a non-standard resource that can not be computed by helm/kstatus
+	// +optional
+	StatusIndicators []ResourceStatusIndicator `json:"statusIndicators,omitempty"`
 }
 
 // +kubebuilder:object:root=true

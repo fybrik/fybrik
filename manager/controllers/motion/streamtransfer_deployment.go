@@ -21,7 +21,6 @@ import (
 func (reconciler *StreamTransferReconciler) CreateDeployment(streamTransfer *motionv1.StreamTransfer) error {
 	log := reconciler.Log.WithValues("streamTransfer", streamTransfer.Name)
 	replicas := int32(1)
-	uid := int64(1000)
 	name := streamTransfer.ObjectMeta.Name
 	if streamTransfer.Spec.Suspend {
 		replicas = int32(0)
@@ -45,6 +44,11 @@ func (reconciler *StreamTransferReconciler) CreateDeployment(streamTransfer *mot
 					SecretName: name,
 				},
 			},
+		}, {
+			Name: "workspace",
+			VolumeSource: v1.VolumeSource{
+				EmptyDir: &v1.EmptyDirVolumeSource{},
+			},
 		},
 	}
 	volumeMounts := []v1.VolumeMount{{
@@ -53,6 +57,9 @@ func (reconciler *StreamTransferReconciler) CreateDeployment(streamTransfer *mot
 	}, {
 		Name:      "checkpoint",
 		MountPath: "/tmp/checkpoint",
+	}, {
+		Name:      "workspace",
+		MountPath: "/opt/spark/work-dir",
 	}}
 	if streamTransfer.Spec.Source.Kafka != nil {
 		if streamTransfer.Spec.Source.Kafka.SslTruststoreSecret != "" {
@@ -87,9 +94,6 @@ func (reconciler *StreamTransferReconciler) CreateDeployment(streamTransfer *mot
 				},
 				Spec: v1.PodSpec{
 					Volumes: volumes,
-					SecurityContext: &v1.PodSecurityContext{
-						RunAsUser: &uid,
-					},
 					Containers: []v1.Container{{
 						Name:            "transfer",
 						Image:           streamTransfer.Spec.Image,
