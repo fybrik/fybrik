@@ -56,7 +56,8 @@ kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data-flight-
 
 ## Data owner instructions
 
-1. Upload the file `data.csv` to an object-storage of your choice. For example, IBM's COS.
+1. Upload [data.csv](data.csv) to an object-storage of your choice. For example, IBM [Cloud Object Storage](https://cloud.ibm.com/catalog/services/cloud-object-storage).
+
 `data.csv` contains the first 100 rows from the following [data set](https://www.kaggle.com/ntnu-testimon/paysim1/data) created by NTNU, and it is shared under the ***CC BY-SA 4.0*** license.
 
 2. Alter the `fullPath` field in the json `example_transactions.csv.json` to contain the details of your object storage location, etc.
@@ -165,7 +166,6 @@ If everything worked according to plan you should see in the cel `Get Data` the 
 ```bash
 kill $!
 ```
-
 
 
 
