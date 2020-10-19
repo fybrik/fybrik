@@ -7,7 +7,7 @@
 #     "class": "NewCSVFileAssetRequestBody",                // this field cannot be changed to anything else
 #     "displayName": "<name of the asset>",
 #     "description": "<free text description>",
-#     "fullPath": "<pointer to external storage>",			// this is json structure that points to the external storage when the asset itself stored, will explain this structure separatly
+#     "fullPath": "<pointer to external storage>",			// this is json structure that points to the external storage when the asset itself stored, will explain this structure separately
 #     "columnHeaders": [ "column1", "column2" ... ]			// list of all columns of the asset
 # }
 # We have an assumption that asset is stored in an external storage system. Today we support 3 storage types: S3, DB2, KAFKA

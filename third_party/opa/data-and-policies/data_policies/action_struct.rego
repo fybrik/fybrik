@@ -34,6 +34,18 @@ build_action(action_name, description, arguments, used_policy) = action {
 
 ################################### Enforcement Actions #######################################
 
+#deny access
+deny_access_struct = {
+    "action_name" : "deny access",
+    "description" : "Access to this data asset is denied",
+    "arguments" : {},
+    "used_policy" : "<used_policy_struct>"
+}
+
+build_deny_access_action(used_policies) = action {
+    action = build_action(deny_access_struct.action_name, deny_access_struct.description, deny_access_struct.arguments, used_policies)
+}
+
 #remove column
 remove_column_struct = {
     "action_name" : "remove column",

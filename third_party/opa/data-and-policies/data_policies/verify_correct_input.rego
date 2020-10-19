@@ -1,10 +1,10 @@
 package data_policies
 
 correct_input {
-	count(incorect_input) == 0
+	count(incorrect_input) == 0
 }
 
-incorect_input[used_policy] {
+incorrect_input[used_policy] {
    not verify_access_type
    used_policy := build_action_from_policies(build_policy_from_description("unknown access type"))
 } {

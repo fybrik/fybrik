@@ -21,8 +21,9 @@ Steps to update data and policies:
 
 2. Create single configmap and upload it to kubernetes:
     ```bash
-    kubectl create configmap opa-policy --from-file=opa_files/ --dry-run -o yaml | kubectl replace  -f -
+    kubectl create configmap opa-policy --from-file=opa_files1/ --from-file=opa_files2/ --dry-run -o yaml | kubectl replace  -f -
     ```
+    Note that nested folders are not supported, need to specify each folder separately as if not connected
 
 3.  Restart OPA pod:
     ```bash

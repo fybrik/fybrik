@@ -215,19 +215,8 @@ func GetOPAOperationDecision(opaEval string, operation *pb.AccessOperation) (*pb
 		enforcementActions = append(enforcementActions, newEnforcementAction)
 	}
 
-	// for k, v := range mainMap {
-	// 	switch k {
-	// 	case "Encrypt_col":
-	// 		newEnforcementActions, newUsedPolicies := GetEncryptColEnforcementActionsAndPolicies(v)
-	// 		enforcementActions = append(enforcementActions, newEnforcementActions...)
-	// 		usedPolicies = append(usedPolicies, newUsedPolicies...)
-	// 	default:
-	// 		log.Printf("Unknown Enforcement Action receieved from OPA")
-	// 	}
-	// }
-
-	log.Println("************************** EA: ", enforcementActions)
-	log.Println("************************** POL: ", usedPolicies)
+	log.Println("************************** enforcementActions: ", enforcementActions)
+	log.Println("************************** usedPolicies: ", usedPolicies)
 
 	return &pb.OperationDecision{Operation: operation, EnforcementActions: enforcementActions, UsedPolicies: usedPolicies}, nil
 }

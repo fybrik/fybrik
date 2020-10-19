@@ -10,12 +10,12 @@ generatorOptions:
 configMapGenerator:
 - name: opa-policy
   files:
-  - data-and-policies/action_struct.rego
-  - data-and-policies/auditing_struct.rego
-  - data-and-policies/helper_functions.rego
-  - data-and-policies/input_reader.rego
-  - data-and-policies/taxonomies_unification.rego
-  - data-and-policies/verify_correct_input.rego
+  - data-and-policies/data_poliices/action_struct.rego
+  - data-and-policies/data_poliices/auditing_struct.rego
+  - data-and-policies/data_poliices/helper_functions.rego
+  - data-and-policies/data_poliices/input_reader.rego
+  - data-and-policies/data_poliices/taxonomies_unification.rego
+  - data-and-policies/data_poliices/verify_correct_input.rego
+  - data-and-policies/data_poliices/taxonomies.json
+  - data-and-policies/data_poliices/medical_taxonomies.json
   - data-and-policies/user_policies.rego
-  - data-and-policies/taxonomies.json
-  - data-and-policies/medical_taxonomies.json
