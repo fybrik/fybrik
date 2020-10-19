@@ -135,6 +135,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 	// reset blueprint state
 	blueprint.Status.Ready = false
 	blueprint.Status.Error = ""
+	blueprint.Status.DataAccessInstructions = ""
 
 	// count the overall number of Helm releases and how many of them are ready
 	numReleases, numReady := 0, 0
@@ -194,7 +195,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		} else if rel.Info.Status == release.StatusDeployed {
 			// TODO: add release notes of the read module to the status
 			if args["flow"] == "read" {
-				log.V(0).Info(rel.Info.Notes)
+				blueprint.Status.DataAccessInstructions += rel.Info.Notes
 			}
 			status, errMsg := r.checkReleaseStatus(releaseName, blueprint.Namespace)
 			if status == corev1.ConditionFalse {
