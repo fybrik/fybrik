@@ -18,7 +18,7 @@ type Transformations struct {
 	Reason             string
 }
 
-//DataInfo defines all the information about the given data set
+// DataInfo defines all the information about the given data set
 type DataInfo struct {
 	// Data asset unique identifier, not necessarily the same string appearing in the resource definition
 	AssetID string
@@ -84,7 +84,7 @@ func (m *Selector) AddModuleInstances(args *app.ModuleArguments, item DataInfo) 
 	return instances
 }
 
-//SelectModule finds the module that fits the requirements
+// SelectModule finds the module that fits the requirements
 func (m *Selector) SelectModule(moduleMap map[string]*app.M4DModule) bool {
 	m.Message = ""
 	for _, module := range moduleMap {

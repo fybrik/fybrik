@@ -122,7 +122,7 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 		return instances
 	}
 
-	//If sources of this module include source, copy is not required
+	// If sources of this module include source, copy is not required
 	r.Log.V(0).Info("Checking supported read sources")
 	sources := GetSupportedReadSources(readSelector.GetModule())
 	utils.PrintStructure(sources, r.Log, "Read sources")

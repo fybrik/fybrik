@@ -57,13 +57,13 @@ func policyCompilerMainAndExtReversed(purpose string) *pb.PoliciesDecisions {
 	return policies
 }
 
-//Tests  GetEnforcementActions in policy_compiler.go
-//tests the main policy manager configuration
-//test for purpose "fraud-detection" and "marketing" purposes, connector mocks configured for different outputs for these purposes
+// Tests  GetEnforcementActions in policy_compiler.go
+// tests the main policy manager configuration
+// test for purpose "fraud-detection" and "marketing" purposes, connector mocks configured for different outputs for these purposes
 func TestMainPolicyCompiler(t *testing.T) {
 	policyDecision := policyCompilerMainOnly("fraud-detection")
 	mainPMpolicies := tu.GetMainPMDecisions("fraud-detection")
-	//we add component version similar to the one added by PolicyCompiler
+	// we add component version similar to the one added by PolicyCompiler
 	serverComponentVersion := &pb.ComponentVersion{Name: "PCComponent", Id: "ID-1", Version: "1.0"}
 	mainPMpolicies.ComponentVersions = append(mainPMpolicies.ComponentVersions, serverComponentVersion)
 	tu.EnsureDeepEqualDecisions(t, policyDecision, mainPMpolicies)
@@ -74,13 +74,13 @@ func TestMainPolicyCompiler(t *testing.T) {
 	tu.EnsureDeepEqualDecisions(t, policyDecision2, mainPMpolicies2)
 }
 
-//Tests  GetEnforcementActions in policy_compiler.go
-//tests the extension policy manager configuration (used instead on main policy-maanager)
-//test for purpose "fraud-detection" and "marketing" purposes, connector mocks configured for different outputs for these purposes
+// Tests  GetEnforcementActions in policy_compiler.go
+// tests the extension policy manager configuration (used instead on main policy-maanager)
+// test for purpose "fraud-detection" and "marketing" purposes, connector mocks configured for different outputs for these purposes
 func TestExtPolicyCompiler(t *testing.T) {
 	policyDecision := policyCompilerExtOnly("fraud-detection")
 	extPMpolicies := tu.GetExtPMDecisions("fraud-detection")
-	//we add component version similar to the one added by PolicyCompiler
+	// we add component version similar to the one added by PolicyCompiler
 	serverComponentVersion := &pb.ComponentVersion{Name: "PCComponent", Id: "ID-1", Version: "1.0"}
 	extPMpolicies.ComponentVersions = append(extPMpolicies.ComponentVersions, serverComponentVersion)
 	tu.EnsureDeepEqualDecisions(t, policyDecision, extPMpolicies)
@@ -91,9 +91,9 @@ func TestExtPolicyCompiler(t *testing.T) {
 	tu.EnsureDeepEqualDecisions(t, policyDecision2, extPMpolicies2)
 }
 
-//Tests  GetEnforcementActions in policy_compiler.go
-//tests main policy manager configuration combined with extension policy manager
-//test for purpose "fraud-detection" and "marketing" purposes, connector mocks configured for different outputs for these purposes
+// Tests  GetEnforcementActions in policy_compiler.go
+// tests main policy manager configuration combined with extension policy manager
+// test for purpose "fraud-detection" and "marketing" purposes, connector mocks configured for different outputs for these purposes
 func TestMainAndExtPolicyCompiler(t *testing.T) {
 	policyDecision := policyCompilerMainAndExt("fraud-detection")
 	mainPMpolicies := tu.GetMainPMDecisions("fraud-detection")
@@ -106,9 +106,9 @@ func TestMainAndExtPolicyCompiler(t *testing.T) {
 	tu.CheckPolicies(t, policyDecision2, mainPMpolicies2, extPMpolicies2)
 }
 
-//Tests  GetEnforcementActions in policy_compiler.go
-//tests main policy manager configuration combined with extension policy manager - after we switch the main and the extension one
-//test for purpose "fraud-detection" and "marketing" purposes, connector mocks configured for different outputs for these purposes
+// Tests  GetEnforcementActions in policy_compiler.go
+// tests main policy manager configuration combined with extension policy manager - after we switch the main and the extension one
+// test for purpose "fraud-detection" and "marketing" purposes, connector mocks configured for different outputs for these purposes
 func TestMainAndExtPolicyCompilerReversed(t *testing.T) {
 	policyDecision := policyCompilerMainAndExtReversed("fraud-detection")
 	mainPMpolicies := tu.GetMainPMDecisions("fraud-detection")
@@ -121,7 +121,7 @@ func TestMainAndExtPolicyCompilerReversed(t *testing.T) {
 	tu.CheckPolicies(t, policyDecision2, mainPMpolicies2, extPMpolicies2)
 }
 
-//TestMain executes the above defined test function.
+// TestMain executes the above defined test function.
 
 func TestMain(m *testing.M) {
 	fmt.Println("TestMain function called = policy_compiler_test ")

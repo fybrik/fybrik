@@ -15,7 +15,6 @@ import (
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
@@ -80,10 +79,10 @@ func GetMetadata(datasetID string) {
 		// you can do `int(status_code)` which will give you `3`
 		//
 		// Want to take specific action based on specific error?
-		if codes.InvalidArgument == errStatus.Code() {
-			// do your stuff here
-			log.Fatal()
-		}
+		// if codes.InvalidArgument == errStatus.Code() {
+		// 	do your stuff here
+		// 	log.Fatal()
+		// }
 	} else {
 		fmt.Println("***************************************************************")
 		log.Printf("Received Response for GetDatasetInfo with  datasetID: %s\n", r.GetDatasetId())
@@ -150,10 +149,10 @@ func GetCredentials(datasetID string) {
 		// you can do `int(status_code)` which will give you `3`
 		//
 		// Want to take specific action based on specific error?
-		if codes.InvalidArgument == errCredentialStatus.Code() {
-			// do your stuff here
-			log.Fatal()
-		}
+		// if codes.InvalidArgument == errCredentialStatus.Code() {
+		// 	do your stuff here
+		// 	log.Fatal()
+		// }
 	} else {
 		log.Println("***************************************************************")
 		log.Printf("Received Response for GetCredentialsInfo with datasetID: %s\n", responseCredential.GetDatasetId())
@@ -166,25 +165,25 @@ func GetCredentials(datasetID string) {
 }
 
 func main() {
-	//example 1: remote parquet
+	// example 1: remote parquet
 	// datasetID := "10a9fba1-b049-40d9-bac9-1a608c1e4774"
 	// catalogID := "591258ed-7461-47db-8eb6-1edf285c26cd"
 
-	//example 2: remote db2
+	// example 2: remote db2
 	// datasetID := "2d1b5352-1fbf-439b-8bb0-c1967ac484b9"
 	// catalogID := "1c080331-72da-4cea-8d06-5f075405cf17"
 
-	//example 3: remote csv,
-	//datasetID := "79aaff22-cfbe-470a-86b6-8f5125781a5c";
-	//catalogID := "1c080331-72da-4cea-8d06-5f075405cf17";
+	// example 3: remote csv,
+	// datasetID := "79aaff22-cfbe-470a-86b6-8f5125781a5c";
+	// catalogID := "1c080331-72da-4cea-8d06-5f075405cf17";
 
-	//example 4: local csv
+	// example 4: local csv
 	// datasetID := "cc17803b-163a-43db-97e3-323a8519c78f"
 	// dataSetID := "6c49313f-1207-4995-a957-5cd49c4e57ac"
 
-	//kafka
+	// kafka
 	catalogID := "87ffdca3-8b5d-4f77-99f9-0cb1fba1f73f"
-	datasetID := "01c6f0f0-9ffe-4ccc-ac07-409523755e72" //"466b5d7c-38c5-438c-8298-5c7e00e40638"
+	datasetID := "01c6f0f0-9ffe-4ccc-ac07-409523755e72" // "466b5d7c-38c5-438c-8298-5c7e00e40638"
 
 	var datasetIDJson string
 	if getEnv("CATALOG_PROVIDER_NAME") == "EGERIA" {
