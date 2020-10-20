@@ -21,22 +21,16 @@ registry_create() {
           docker run \
             -d --restart=always -p "5000:5000" --name "kind-registry" \
             --network kind \
-            -v ${PWD}/registry/auth.htpasswd:/etc/docker/registry/auth.htpasswd \
             -v ${PWD}/registry:/registry \
             -e REGISTRY_HTTP_ADDR=0.0.0.0:5000 \
             -e REGISTRY_HTTP_TLS_CERTIFICATE=/registry/registry.crt \
             -e REGISTRY_HTTP_TLS_KEY=/registry/registry.key \
-            -e REGISTRY_AUTH="{htpasswd: {realm: registry, path: /etc/docker/registry/auth.htpasswd}}" \
-            -e "REGISTRY_AUTH=htpasswd" \
-            -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
-            -e REGISTRY_AUTH_HTPASSWD_PATH=/etc/docker/registry/auth.htpasswd \
             registry:2
         fi
 }
 
 certs_create() {
     mkdir registry -p || true
-    htpasswd -cB -b registry/auth.htpasswd user pwd # Generated and stored as htpasswd might not be available on every machine
     openssl genrsa -out registry/ca.key 2048
     openssl req -new -x509 -key registry/ca.key -out registry/ca.crt -subj '/C=US/ST=NY/O=IBM/CN=ibm' -extensions EXT -config <(printf "[dn]\nCN=ibm\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:ibm\nbasicConstraints=CA:TRUE,pathlen:0")
     openssl genrsa -out registry/registry.key 2048

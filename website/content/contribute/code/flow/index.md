@@ -98,8 +98,6 @@ environment variables. (Please note that you also have to add an entry to your /
 ```bash
 export DOCKER_HOSTNAME=kind-registry:5000
 export DOCKER_NAMESPACE=m4d
-export DOCKER_USERNAME=user
-export DOCKER_PASSWORD=pwd
 ```
 
 There are make commands for building and pushing docker images separately or in one go:
