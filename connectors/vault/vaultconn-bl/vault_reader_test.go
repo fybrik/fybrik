@@ -16,6 +16,8 @@ import (
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 )
 
+// TestVaultConnectorNormalRun tests the execution of GetCredentialsInfo with dummy mock id and
+// dummy credentials stored in the runtime test instance of vault
 func TestVaultConnectorNormalRun(t *testing.T) {
 	ln, client := createTestVault(t)
 	defer ln.Close()
@@ -76,14 +78,6 @@ func createTestVault(t *testing.T) (net.Listener, *api.Client) {
 		t.Fatal(err)
 	}
 	client.SetToken(rootToken)
-
-	// Setup required secrets, policies, etc.
-	_, err = client.Logical().Write("secret/foo", map[string]interface{}{
-		"secret": "bar",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	return ln, client
 }

@@ -27,20 +27,6 @@ func GetEnvironment() string {
 	return userVaultPath
 }
 
-func createDatasetRead(datasetID string) *pb.DatasetContext {
-	dataset := &pb.DatasetIdentifier{DatasetId: datasetID}
-	operation := &pb.AccessOperation{Type: pb.AccessOperation_READ}
-	datasetContext := &pb.DatasetContext{Dataset: dataset, Operation: operation}
-	return datasetContext
-}
-
-func createDatasetTransferFirst(datasetID string) *pb.DatasetContext {
-	dataset := &pb.DatasetIdentifier{DatasetId: datasetID}
-	operation := &pb.AccessOperation{Type: pb.AccessOperation_COPY, Destination: "US"}
-	datasetContext := &pb.DatasetContext{Dataset: dataset, Operation: operation}
-	return datasetContext
-}
-
 func EnsureDeepEqualCredentials(t *testing.T, testedCredentials *pb.DatasetCredentials, expectedCredentials *pb.DatasetCredentials) {
 	assert.True(t, proto.Equal(testedCredentials, expectedCredentials), "DatasetCredentials we got are not as expected. Expected: %v, Received: %v", expectedCredentials, testedCredentials)
 }
