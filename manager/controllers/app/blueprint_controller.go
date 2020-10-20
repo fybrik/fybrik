@@ -277,7 +277,11 @@ func (r *BlueprintReconciler) checkResourceStatus(res *unstructured.Unstructured
 		// use kstatus to compute the status of the resources for them the expected results have not been specified
 		// Current status of a deployed release indicates that the resource has been successfully reconciled
 		// Failed status indicates a failure
-		computedResult, _ := kstatus.Compute(res)
+		computedResult, err := kstatus.Compute(res)
+		if err != nil {
+			r.Log.V(0).Info("Error computing the status of " + res.GetKind() + " : " + err.Error()
+			return corev1.ConditionUnknown, ""
+		}
 		switch computedResult.Status {
 		case kstatus.FailedStatus:
 			return corev1.ConditionFalse, computedResult.Message
