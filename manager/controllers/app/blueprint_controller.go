@@ -26,6 +26,7 @@ import (
 	"github.com/ibm/the-mesh-for-data/pkg/helm"
 	corev1 "k8s.io/api/core/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
+	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
 )
 
 // BlueprintReconciler reconciles a Blueprint object
@@ -273,8 +274,22 @@ func (r *BlueprintReconciler) checkResourceStatus(res *unstructured.Unstructured
 		return corev1.ConditionUnknown, ""
 	}
 	if expected == nil {
-		// TODO: use kstatus to compute the status of the resources for them the expected results have not been specified
-		return corev1.ConditionTrue, ""
+		// use kstatus to compute the status of the resources for them the expected results have not been specified
+		// Current status of a deployed release indicates that the resource has been successfully reconciled
+		// Failed status indicates a failure
+		computedResult, err := kstatus.Compute(res)
+		if err != nil {
+			r.Log.V(0).Info("Error computing the status of " + res.GetKind() + " : " + err.Error())
+			return corev1.ConditionUnknown, ""
+		}
+		switch computedResult.Status {
+		case kstatus.FailedStatus:
+			return corev1.ConditionFalse, computedResult.Message
+		case kstatus.CurrentStatus:
+			return corev1.ConditionTrue, ""
+		default:
+			return corev1.ConditionUnknown, ""
+		}
 	}
 	// use expected values to compute the status
 	if r.matchesCondition(res, expected.SuccessCondition) {
@@ -324,7 +339,7 @@ func (r *BlueprintReconciler) checkReleaseStatus(releaseName string, namespace s
 	numReady := 0
 	for _, res := range resources {
 		state, errMsg := r.checkResourceStatus(res)
-		r.Log.V(0).Info("Status of " + releaseName + " is " + string(state))
+		r.Log.V(0).Info("Status of " + res.GetKind() + " " + res.GetName() + " is " + string(state))
 		if state == corev1.ConditionFalse {
 			return state, errMsg
 		}
