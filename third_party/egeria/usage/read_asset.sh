@@ -4,7 +4,9 @@
 
 GUID=$1
 
-echo "Read asset info: $GUID"
+echo "Read asset info"
+
+echo "ASSET_ID: $GUID"
 
 USER=calliequartile
 : ${EGERIA_URL:=localhost:9443}
