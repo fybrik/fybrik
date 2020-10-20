@@ -279,7 +279,7 @@ func (r *BlueprintReconciler) checkResourceStatus(res *unstructured.Unstructured
 		// Failed status indicates a failure
 		computedResult, err := kstatus.Compute(res)
 		if err != nil {
-			r.Log.V(0).Info("Error computing the status of " + res.GetKind() + " : " + err.Error()
+			r.Log.V(0).Info("Error computing the status of " + res.GetKind() + " : " + err.Error())
 			return corev1.ConditionUnknown, ""
 		}
 		switch computedResult.Status {
