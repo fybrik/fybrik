@@ -1,3 +1,7 @@
+image: "ghcr.io/the-mesh-for-data/mover:latest"
+imagePullPolicy: "IfNotPresent"
+noFinalizer: "true"
+
 destination:
   connection:
     name: s3
@@ -26,6 +30,11 @@ source:
   format: parquet
 
 transformations:
-- name: redact
-  action: RedactColumns
-  columns: ["SSN"]
+- id: "redact-ID"
+  level: 2 # column
+  args:
+    column_name: col1
+- id: "removed-ID"
+  level: 2 # column
+  args:
+    column_name: col2
