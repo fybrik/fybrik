@@ -36,22 +36,11 @@ gen-api-docs: $(TOOLBIN)/crd-ref-docs
 	 --templates-dir=./crd-ref-docs/templates/asciidoctor \
 	 --renderer=asciidoctor \
 	 --output-path=./content/docs/reference/api/generated/app.asciidoc
-	sed -i '1i\
-	--- \
-	title: app.m4d.ibm.com \
-	weight: 10 \
-	--- \
-	' ./content/docs/reference/api/generated/app.asciidoc
-	
+	./crd-ref-docs/frontmatter.sh ./content/docs/reference/api/generated/app.asciidoc app.m4d.ibm.com 10
 	$(TOOLBIN)/crd-ref-docs \
 	 --source-path=../manager/apis/motion \
 	 --config=./crd-ref-docs/config.yaml \
 	 --templates-dir=./crd-ref-docs/templates/asciidoctor \
 	 --renderer=asciidoctor \
 	 --output-path=./content/docs/reference/api/generated/motion.asciidoc
-	sed -i '1i\
-	--- \
-	title: motion.m4d.ibm.com \
-	weight: 20 \
-	--- \
-	' ./content/docs/reference/api/generated/motion.asciidoc
+	./crd-ref-docs/frontmatter.sh ./content/docs/reference/api/generated/motion.asciidoc motion.m4d.ibm.com 20
