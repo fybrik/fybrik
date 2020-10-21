@@ -35,8 +35,3 @@ kind: kind-cleanup kind-setup istio-setup istio-status
 
 .PHONY: minikube
 minikube: minikube-cleanup minikube-setup istio-setup istio-status
-
-.PHONY: install-cert-local
-install-cert-local:
-	sudo cp hack/tools/registry/ca.crt /usr/local/share/ca-certificates
-	sudo update-ca-certificates

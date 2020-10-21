@@ -21,10 +21,6 @@ e2e:
 	# $(MAKE) -C pkg/helm test
 	$(MAKE) -C manager e2e
 
-# Splitting cluster-prepare into deploy and deploy-wait
-# Allows to differentiate between YAMLs to be deployed
-# and waiting for the state to be ready
-
 .PHONY: cluster-prepare
 cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy
@@ -110,15 +106,7 @@ docker-retag-images:
 
 .PHONY: docker-push-public
 docker-push-public:
-	docker push ghcr.io/the-mesh-for-data/manager:latest
-	docker push ghcr.io/the-mesh-for-data/secret-provider:latest
-	docker push ghcr.io/the-mesh-for-data/egr-connector:latest
-	docker push ghcr.io/the-mesh-for-data/movement-controller:latest
-	docker push ghcr.io/the-mesh-for-data/dummy-mover:latest
-	docker push ghcr.io/the-mesh-for-data/opa-connector:latest
-	docker push ghcr.io/the-mesh-for-data/vault-connector:latest
-	docker push ghcr.io/the-mesh-for-data/serverpolicycompiler-mock:latest
-	docker push ghcr.io/the-mesh-for-data/data-catalog-mock:latest
+	DOCKER_HOSTNAME=ghcr.io DOCKER_NAMESPACE=the-mesh-for-data DOCKER_TAG=latest $(MAKE) docker-push
 
 include .mk/ibmcloud.mk
 include .mk/tools.mk
