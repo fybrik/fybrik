@@ -216,14 +216,3 @@ func SupportsFlow(array []app.ModuleFlow, element app.ModuleFlow) bool {
 	}
 	return false
 }
-
-// ContainsFinalizer returns true if the given finalizer string appears in the list of finalizers of the object
-// Should be implemented in controller-runtime package - TO FIX
-func ContainsFinalizer(finalizers []string, finalizer string) bool {
-	for _, e := range finalizers {
-		if e == finalizer {
-			return true
-		}
-	}
-	return false
-}

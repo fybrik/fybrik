@@ -86,7 +86,7 @@ func (r *BlueprintReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) error {
 	// finalizer
 	finalizerName := r.Name + ".finalizer"
-	hasFinalizer := utils.ContainsFinalizer(blueprint.GetFinalizers(), finalizerName)
+	hasFinalizer := ctrlutil.ContainsFinalizer(blueprint, finalizerName)
 
 	// If the object has a scheduled deletion time, delete it and its associated resources
 	if !blueprint.DeletionTimestamp.IsZero() {
@@ -122,14 +122,15 @@ func getReleaseName(step app.FlowStep) string {
 }
 
 func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) error {
+	var err error
 	for _, step := range blueprint.Spec.Flow.Steps {
 		releaseName := getReleaseName(step)
-		rel, err := r.Helmer.Status(blueprint.Namespace, releaseName)
-		if err == nil && rel != nil {
-			_, _ = r.Helmer.Uninstall(blueprint.Namespace, releaseName)
+		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus != nil || rel == nil {
+			continue
 		}
+		_, err = r.Helmer.Uninstall(blueprint.Namespace, releaseName)
 	}
-	return nil
+	return err
 }
 
 func (r *BlueprintReconciler) applyChartResource(log logr.Logger, ref string, vals map[string]interface{}, kubeNamespace string, releaseName string) (ctrl.Result, error) {
