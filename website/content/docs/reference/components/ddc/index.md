@@ -107,7 +107,7 @@ Both transfer types will have the same API concerning the core transfer definiti
 
 The difference is that _SyncTransfer_ is running continuously, _BatchTransfer_ requires a schedule or is a one-time transfer.
 
-Initally we will limit _SyncTransfer_ to the movement of data from Kafka to COS or from Kafka to Db2.
+Initially we will limit _SyncTransfer_ to the movement of data from Kafka to COS or from Kafka to Db2.
 
 The status of the CRD is continuously updated with the state of the data distribution. It is used to detect both success or error situations as well as freshness. It also provides transfer statistics.
 
@@ -125,8 +125,8 @@ The data distribution API should not define any secrets in the CRD spec in a pro
 testing direct definitions can be used but in a production environment credentials shall be retrieved from the [secret provider](credentials_release.md).
 
 The secret provider can be accessed via a REST API using a role and a secret name. This secret name refers to a path in vault.
-As the movement operator shall not create any secrets in Kubernetes that contain any credentials and credentials shall only be maintained
-in memory the fetching of secrets will be executed by the [datamover](https://github.ibm.com/data-mesh-research/datamover) component.
+At the movement operator shall not create any secrets in Kubernetes that contain any credentials and credentials shall only be maintained
+in memory. The fetching of secrets will be executed by the [datamover](https://github.ibm.com/data-mesh-research/datamover) component.
 The datamover component retrieves configuration from a JSON file that is passed on as a Kubernetes secret. 
 The goal is that vault paths can be specified in this JSON configuration file and will be substituted by values retrieved from the
 secret provider. The following example illustrates this mechanism:
