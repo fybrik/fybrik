@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"emperror.dev/errors"
@@ -94,6 +95,7 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) erro
 		if hasFinalizer { // Finalizer was created when the object was created
 			// the finalizer is present - delete the allocated resources
 			if err := r.deleteExternalResources(blueprint); err != nil {
+				r.Log.V(0).Info("Error while deleting owned resources: " + err.Error())
 				return err
 			}
 
@@ -122,15 +124,20 @@ func getReleaseName(step app.FlowStep) string {
 }
 
 func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) error {
-	var err error
+	errs := make([]string, 0)
 	for _, step := range blueprint.Spec.Flow.Steps {
 		releaseName := getReleaseName(step)
 		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus != nil || rel == nil {
 			continue
 		}
-		_, err = r.Helmer.Uninstall(blueprint.Namespace, releaseName)
+		if _, err := r.Helmer.Uninstall(blueprint.Namespace, releaseName); err != nil {
+			errs = append(errs, err.Error())
+		}
 	}
-	return err
+	if len(errs) == 0 {
+		return nil
+	}
+	return errors.New(strings.Join(errs, "; "))
 }
 
 func (r *BlueprintReconciler) applyChartResource(log logr.Logger, ref string, vals map[string]interface{}, kubeNamespace string, releaseName string) (ctrl.Result, error) {
