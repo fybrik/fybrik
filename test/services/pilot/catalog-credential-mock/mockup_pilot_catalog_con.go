@@ -14,6 +14,7 @@ import (
 
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 )
@@ -26,7 +27,7 @@ func getEnv(key string) string {
 	return value
 }
 
-func GetMetadata(datasetID string) {
+func GetMetadata(datasetID string) error {
 	catalogConnectorURL := getEnv("CATALOG_CONNECTOR_URL")
 	catalogProviderName := getEnv("CATALOG_PROVIDER_NAME")
 
@@ -34,7 +35,7 @@ func GetMetadata(datasetID string) {
 	timeoutInSeconds, err := strconv.Atoi(timeoutInSecs)
 	if err != nil {
 		log.Printf("Atoi conversion of timeoutinseconds failed: %v", err)
-		return
+		return errors.Wrap(err, "Atoi conversion of timeoutinseconds failed")
 	}
 
 	fmt.Println("timeoutInSeconds: ", timeoutInSeconds)
@@ -49,7 +50,7 @@ func GetMetadata(datasetID string) {
 		errStatus, _ := status.FromError(err)
 		fmt.Println(errStatus.Message())
 		fmt.Println(errStatus.Code())
-		return
+		return errors.Wrap(err, "Connection to "+catalogProviderName+" Catalog Connector failed")
 	}
 	defer conn.Close()
 
@@ -74,15 +75,7 @@ func GetMetadata(datasetID string) {
 		fmt.Println("Message:", errStatus.Message())
 		// lets print the error code which is `INVALID_ARGUMENT`
 		fmt.Println("Code:", errStatus.Code())
-		// Want its int version for some reason?
-		// you shouldn't actullay do this, but if you need for debugging,
-		// you can do `int(status_code)` which will give you `3`
-		//
-		// Want to take specific action based on specific error?
-		// if codes.InvalidArgument == errStatus.Code() {
-		// 	do your stuff here
-		// 	log.Fatal()
-		// }
+		return errors.Wrap(err, "Error sending data to Catalog Connector")
 	} else {
 		fmt.Println("***************************************************************")
 		log.Printf("Received Response for GetDatasetInfo with  datasetID: %s\n", r.GetDatasetId())
@@ -91,10 +84,11 @@ func GetMetadata(datasetID string) {
 		s, _ := json.MarshalIndent(r, "", "\t")
 		fmt.Print(string(s))
 		fmt.Println("***************************************************************")
+		return nil
 	}
 }
 
-func GetCredentials(datasetID string) {
+func GetCredentials(datasetID string) error {
 	credentialsConnectorURL := getEnv("CREDENTIALS_CONNECTOR_URL")
 	credentialsProviderName := getEnv("CREDENTIALS_PROVIDER_NAME")
 
@@ -103,7 +97,7 @@ func GetCredentials(datasetID string) {
 
 	if err != nil {
 		log.Printf("Atoi conversion of timeoutinseconds failed: %v", err)
-		return
+		return errors.Wrap(err, "Atoi conversion of timeoutinseconds failed in GetCredentials")
 	}
 
 	fmt.Println("timeoutInSeconds: ", timeoutInSeconds)
@@ -119,7 +113,7 @@ func GetCredentials(datasetID string) {
 		fmt.Println(errStatus.Message())
 
 		fmt.Println(errStatus.Code())
-		return
+		return errors.Wrap(err, "Connection to Credentials Connector failed")
 	}
 	defer conn.Close()
 
@@ -144,15 +138,7 @@ func GetCredentials(datasetID string) {
 		log.Println("Message:", errCredentialStatus.Message())
 		// lets print the error code which is `INVALID_ARGUMENT`
 		log.Println("Code:", errCredentialStatus.Code())
-		// Want its int version for some reason?
-		// you shouldn't actullay do this, but if you need for debugging,
-		// you can do `int(status_code)` which will give you `3`
-		//
-		// Want to take specific action based on specific error?
-		// if codes.InvalidArgument == errCredentialStatus.Code() {
-		// 	do your stuff here
-		// 	log.Fatal()
-		// }
+		return errors.Wrap(err, "Error sending data to Credentials Connector in GetCredentials")
 	} else {
 		log.Println("***************************************************************")
 		log.Printf("Received Response for GetCredentialsInfo with datasetID: %s\n", responseCredential.GetDatasetId())
@@ -161,6 +147,7 @@ func GetCredentials(datasetID string) {
 		sCredential, _ := json.MarshalIndent(responseCredential, "", "\t")
 		log.Print(string(sCredential))
 		log.Println("***************************************************************")
+		return nil
 	}
 }
 
@@ -192,6 +179,21 @@ func main() {
 		datasetIDJson = "{\"catalog_id\":\"" + catalogID + "\",\"asset_id\":\"" + datasetID + "\"}"
 	}
 
-	GetMetadata(datasetIDJson)
-	GetCredentials(datasetIDJson)
+	err := GetMetadata(datasetIDJson)
+	if err != nil {
+		fmt.Printf("Error in GetCredentials:\n %v\n\n", err)
+		fmt.Printf("Error in GetCredentials Details:\n%+v\n\n", err)
+		// errors.Cause() provides access to original error.
+		fmt.Printf("Error in GetCredentials Cause: %v\n", errors.Cause(err))
+		fmt.Printf("Error in GetCredentials Extended Cause:\n%+v\n", errors.Cause(err))
+	}
+
+	err = GetCredentials(datasetIDJson)
+	if err != nil {
+		fmt.Printf("Error in GetCredentials: \n %v\n\n", err)
+		fmt.Printf("Error in GetCredentials Details: \n%+v\n\n", err)
+		// errors.Cause() provides access to original error.
+		fmt.Printf("Error in GetCredentials Cause: %v\n", errors.Cause(err))
+		fmt.Printf("Error in GetCredentials Details Extended Cause:\n%+v\n", errors.Cause(err))
+	}
 }
