@@ -80,16 +80,8 @@ func constructInputParameters() *pb.ApplicationContext {
 	// datasets = append(datasets, createDatasetTransferFirst(catalogIDDb2, datasetIDDb2))
 	// datasets = append(datasets, createDatasetTransferSecond(catalogIDDb2, datasetIDDb2))
 
-	// generalOperations := []*pb.AccessOperation{}
-
 	// applicationContext := &pb.ApplicationContext{PolicyManagerCredentials: policyManagerCredentials, AppInfo: applicationDetails, Datasets: datasets}
 	applicationContext := &pb.ApplicationContext{AppId: appID, AppInfo: applicationDetails, Datasets: datasets}
-
-	// ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
-	// ctx, cancel := context.WithTimeout(context.Background(), timeoutPeriod*time.Second)
-
-	// defer cancel()
-
 	log.Printf("Sending Application Context: ")
 	appContextStr, _ := json.MarshalIndent(applicationContext, "", "\t")
 	log.Print(string(appContextStr))
@@ -111,16 +103,13 @@ func main() {
 
 		// take specific action based on specific error?
 		if codes.InvalidArgument == errStatus.Code() {
-			// write customized code here
-			log.Fatal()
+			fmt.Println("InvalidArgument in mockup pilot")
+			return
 		}
 	} else {
 		log.Printf("Response received from Policy Compiler below:")
-
 		s, _ := json.MarshalIndent(r, "", "    ")
-
 		log.Print(string(s))
-
 		log.Println("2***************************************************************")
 	}
 
@@ -129,23 +118,19 @@ func main() {
 
 	if err != nil {
 		errStatus, _ := status.FromError(err)
-		fmt.Println("*********************************in error in  MockupPilot *****************************")
+		fmt.Println("*********************************in error in  MockupPilot for 2nd request *****************************")
 		fmt.Println("Message: ", errStatus.Message())
 		fmt.Println("Code: ", errStatus.Code())
 
 		// take specific action based on specific error?
 		if codes.InvalidArgument == errStatus.Code() {
-			// write customized code here
-			log.Fatal()
+			fmt.Println("InvalidArgument in mockup pilot for 2nd request")
+			return
 		}
 	} else {
-		log.Printf("Response received from Policy Compiler below:")
-
+		log.Printf("Response received from Policy Compiler below for 2nd request:")
 		s, _ := json.MarshalIndent(r, "", "    ")
-
 		log.Print(string(s))
-
-		log.Println("2***************************************************************")
 	}
 }
 
