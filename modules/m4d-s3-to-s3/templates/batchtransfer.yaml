@@ -40,10 +40,6 @@ spec:
     columns: [ "{{ .args.column_name }}" ]
   {{ end }}
   {{ end }}
-  {{ if .Values.secretProviderURL }}
-  secretProviderURL: {{ .Values.secretProviderURL | quote }}
-  {{ end }}
-  secretProviderRole: demo
   {{ if .Values.image }}
   image: {{ .Values.image | quote }}
   {{ end }}

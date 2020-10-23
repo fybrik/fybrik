@@ -14,7 +14,6 @@ metadata:
 image: "ghcr.io/the-mesh-for-data/mover:latest"
 imagePullPolicy: "IfNotPresent"
 noFinalizer: "false"
-secretProviderURL: "http://secret-provider.secret-provider.svc.cluster.local:5555/get-secret"
 
 # copies from source
 source:
