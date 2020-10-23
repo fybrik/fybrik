@@ -76,16 +76,16 @@ func GetMetadata(datasetID string) error {
 		// lets print the error code which is `INVALID_ARGUMENT`
 		fmt.Println("Code:", errStatus.Code())
 		return errors.Wrap(err, "Error sending data to Catalog Connector")
-	} else {
-		fmt.Println("***************************************************************")
-		log.Printf("Received Response for GetDatasetInfo with  datasetID: %s\n", r.GetDatasetId())
-		fmt.Println("***************************************************************")
-		log.Printf("Response received from %s is given below:", catalogProviderName)
-		s, _ := json.MarshalIndent(r, "", "\t")
-		fmt.Print(string(s))
-		fmt.Println("***************************************************************")
-		return nil
 	}
+
+	fmt.Println("***************************************************************")
+	log.Printf("Received Response for GetDatasetInfo with  datasetID: %s\n", r.GetDatasetId())
+	fmt.Println("***************************************************************")
+	log.Printf("Response received from %s is given below:", catalogProviderName)
+	s, _ := json.MarshalIndent(r, "", "\t")
+	fmt.Print(string(s))
+	fmt.Println("***************************************************************")
+	return nil
 }
 
 func GetCredentials(datasetID string) error {
@@ -139,16 +139,16 @@ func GetCredentials(datasetID string) error {
 		// lets print the error code which is `INVALID_ARGUMENT`
 		log.Println("Code:", errCredentialStatus.Code())
 		return errors.Wrap(err, "Error sending data to Credentials Connector in GetCredentials")
-	} else {
-		log.Println("***************************************************************")
-		log.Printf("Received Response for GetCredentialsInfo with datasetID: %s\n", responseCredential.GetDatasetId())
-		log.Println("***************************************************************")
-		log.Printf("Response received from %s is given below:", credentialsProviderName)
-		sCredential, _ := json.MarshalIndent(responseCredential, "", "\t")
-		log.Print(string(sCredential))
-		log.Println("***************************************************************")
-		return nil
 	}
+
+	log.Println("***************************************************************")
+	log.Printf("Received Response for GetCredentialsInfo with datasetID: %s\n", responseCredential.GetDatasetId())
+	log.Println("***************************************************************")
+	log.Printf("Response received from %s is given below:", credentialsProviderName)
+	sCredential, _ := json.MarshalIndent(responseCredential, "", "\t")
+	log.Print(string(sCredential))
+	log.Println("***************************************************************")
+	return nil
 }
 
 func main() {
