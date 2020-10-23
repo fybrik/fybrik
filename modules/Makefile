@@ -12,7 +12,7 @@ helm:
 	$(MAKE) -C m4d-template helm-all
 	$(MAKE) -C m4d-db2wh helm-all
 	$(MAKE) -C m4d-kafka helm-all
-	$(MAKE) -C m4d-cos2cos helm-all
+	$(MAKE) -C m4d-s3-to-s3 helm-all
 
 
 .PHONY: helm-chart-push
@@ -20,4 +20,4 @@ helm-chart-push:
 	$(MAKE) -C m4d-template helm-chart-push
 	$(MAKE) -C m4d-db2wh helm-chart-push
 	$(MAKE) -C m4d-kafka helm-chart-push
-	$(MAKE) -C m4d-cos2cos helm-chart-push
+	$(MAKE) -C m4d-s3-to-s3 helm-chart-push
