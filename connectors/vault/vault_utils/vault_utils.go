@@ -138,7 +138,7 @@ func (vlt *VaultConnection) GetFromVault(vaultPathKey string, innerVaultPath str
 	return string(b), nil
 }
 
-// GetFromVault returns the credentials from vault as json
+// AddToVault adds crededentialsMap to vault at the path given by innerVaultPath
 func (vlt *VaultConnection) AddToVault(innerVaultPath string, credentialsMap map[string]interface{}) (string, error) {
 	//vaultDatasetPath := GetVaultDatasetHome() + id
 	vaultDatasetPath := innerVaultPath

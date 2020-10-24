@@ -6,6 +6,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net"
 	"strconv"
@@ -33,6 +34,10 @@ func (s *server) GetCredentialsInfo(ctx context.Context, in *pb.DatasetCredentia
 
 	vaultPathKey := GetEnv(VaultPathKey)
 	eval, err := s.vaultConnector.GetCredentialsInfo(in, vault, vaultPathKey)
+	if err != nil {
+		log.Printf("Error in vaultConnector, got error from the vault: %v\n", err.Error())
+		return nil, fmt.Errorf("error in retrieving the secret from vault: %v", err)
+	}
 	jsonOutput, _ := json.MarshalIndent(eval, "", "\t")
 	log.Println("Received evaluation : " + string(jsonOutput))
 	log.Println("err:", err)

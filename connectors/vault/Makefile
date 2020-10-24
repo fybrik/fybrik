@@ -48,6 +48,7 @@ build:
 
 .PHONY: test
 test:
+	go test -v ./...
 
 .PHONY: clean
 clean: vaultserver-clean uservaultserver-clean
