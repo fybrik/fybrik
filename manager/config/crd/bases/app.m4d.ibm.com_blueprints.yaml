@@ -220,6 +220,9 @@ spec:
                             items:
                               description: ReadModuleArgs define the input parameters for modules that read data from location A
                               properties:
+                                assetName:
+                                  description: AssetName represents the asset name to be used for accessing the data when it is ready It is copied from the m4dapplication
+                                  type: string
                                 source:
                                   description: Source of the read path module
                                   properties:
@@ -307,6 +310,7 @@ spec:
                                     type: object
                                   type: array
                               required:
+                              - assetName
                               - source
                               type: object
                             type: array
