@@ -231,7 +231,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		releaseName := getReleaseName(step)
 		log.V(0).Info("Release name: " + releaseName)
 		numReleases++
-		//check the release status
+		// check the release status
 		rel, err := r.Helmer.Status(blueprint.Namespace, releaseName)
 		// unexisting release or a failed release - re-apply the chart
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
