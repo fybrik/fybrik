@@ -112,7 +112,7 @@ func checkBlueprintStatus(applicationContext *app.M4DApplication, blueprint *app
 func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M4DApplication) error {
 	// finalizer (Blueprint)
 	finalizerName := r.Name + ".finalizer"
-	hasFinalizer := ContainsFinalizer(applicationContext, finalizerName)
+	hasFinalizer := ctrlutil.ContainsFinalizer(applicationContext, finalizerName)
 
 	// If the object has a scheduled deletion time, delete it and its associated blueprint
 	if !applicationContext.DeletionTimestamp.IsZero() {
@@ -142,18 +142,6 @@ func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M
 		}
 	}
 	return nil
-}
-
-// ContainsFinalizer returns true if the given finalizer string appears in the list of finalizers of the object
-// Should be implemented in controller-runtime package - TO FIX
-func ContainsFinalizer(obj *app.M4DApplication, finalizer string) bool {
-	f := obj.GetFinalizers()
-	for _, e := range f {
-		if e == finalizer {
-			return true
-		}
-	}
-	return false
 }
 
 func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *app.M4DApplication) error {
