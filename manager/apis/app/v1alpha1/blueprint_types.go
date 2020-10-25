@@ -32,7 +32,7 @@ type ReadModuleArgs struct {
 	Source DataStore `json:"source"`
 
 	// AssetName represents the asset name to be used for accessing the data when it is ready
-	// It is copied from the m4dapplication resource
+	// It is copied from the M4DApplication resource
 	// +required
 	AssetName string `json:"assetName"`
 
