@@ -98,12 +98,17 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 }
 
 func checkBlueprintStatus(applicationContext *app.M4DApplication, blueprint *app.Blueprint) {
-	applicationContext.Status.Ready = blueprint.Status.Ready
+	applicationContext.Status.DataAccessInstructions = ""
+	applicationContext.Status.Ready = false
+	if utils.HasCondition(&applicationContext.Status, app.FailureCondition) {
+		return
+	}
 	if blueprint.Status.Error != "" {
 		utils.ActivateCondition(applicationContext, app.FailureCondition, "OrchestrationFailure", blueprint.Status.Error)
+		return
 	}
-	applicationContext.Status.DataAccessInstructions = ""
-	if applicationContext.Status.Ready {
+	if blueprint.Status.Ready {
+		applicationContext.Status.Ready = true
 		applicationContext.Status.DataAccessInstructions = blueprint.Status.DataAccessInstructions
 	}
 }
