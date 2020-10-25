@@ -11,7 +11,7 @@ import (
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 )
 
-//PolicyCompiler iassumed to have main policies-manager connector and may have or not extension policies-manager
+// PolicyCompiler iassumed to have main policies-manager connector and may have or not extension policies-manager
 type PolicyCompiler struct {
 	mainPolicyManagerCon       PolicyManagerConnector
 	extensionsPolicyManagerCon PolicyManagerConnector

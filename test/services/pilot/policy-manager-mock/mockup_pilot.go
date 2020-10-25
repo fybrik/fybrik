@@ -35,22 +35,22 @@ func constructInputParameters() *pb.ApplicationContext {
 	fmt.Println("timeoutinseconds in MockupPilot: ", timeoutinseconds)
 
 	// Defining an applicationcontext
-	//ownerID := "999"
-	//credentialsStr := "{ ownerID: " + ownerID + "}"
+	// ownerID := "999"
+	// credentialsStr := "{ ownerID: " + ownerID + "}"
 
-	//example 0: local file
-	//catalogID := "cc17803b-163a-43db-97e3-323a8519c78f"  //democatalog
-	//datasetID := "6c49313f-1207-4995-a957-5cd49c4e57ac"
+	// example 0: local file
+	// catalogID := "cc17803b-163a-43db-97e3-323a8519c78f"  //democatalog
+	// datasetID := "6c49313f-1207-4995-a957-5cd49c4e57ac"
 
-	//example 1: remote parquet
+	// example 1: remote parquet
 	// datasetIDcos := "10a9fba1-b049-40d9-bac9-1a608c1e4774" //small.parq
 	// catalogIDcos := "591258ed-7461-47db-8eb6-1edf285c26cd" //EtyCatalog
 
-	//example 2: remote db2
+	// example 2: remote db2
 	// datasetIDDb2 := "2d1b5352-1fbf-439b-8bb0-c1967ac484b9" //Connection-Db2-NQD60833-SMALL
 	// catalogIDDb2 := "1c080331-72da-4cea-8d06-5f075405cf17" //catalog-suri
 
-	//example 3: remote csv,
+	// example 3: remote csv,
 	// datasetID := "79aaff22-cfbe-470a-86b6-8f5125781a5c"
 	// catalogID := "1c080331-72da-4cea-8d06-5f075405cf17"
 
@@ -99,16 +99,8 @@ func constructInputParameters() *pb.ApplicationContext {
 	// datasets = append(datasets, createDatasetTransferFirst(catalogIDDb2, datasetIDDb2))
 	// datasets = append(datasets, createDatasetTransferSecond(catalogIDDb2, datasetIDDb2))
 
-	// generalOperations := []*pb.AccessOperation{}
-
-	//applicationContext := &pb.ApplicationContext{PolicyManagerCredentials: policyManagerCredentials, AppInfo: applicationDetails, Datasets: datasets}
+	// applicationContext := &pb.ApplicationContext{PolicyManagerCredentials: policyManagerCredentials, AppInfo: applicationDetails, Datasets: datasets}
 	applicationContext := &pb.ApplicationContext{AppId: appID, AppInfo: applicationDetails, Datasets: datasets}
-
-	//ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
-	//ctx, cancel := context.WithTimeout(context.Background(), timeoutPeriod*time.Second)
-
-	//defer cancel()
-
 	log.Printf("Sending Application Context: ")
 	appContextStr, _ := json.MarshalIndent(applicationContext, "", "\t")
 	log.Print(string(appContextStr))
@@ -130,42 +122,35 @@ func main() {
 
 		// take specific action based on specific error?
 		if codes.InvalidArgument == errStatus.Code() {
-			//write customized code here
-			log.Fatal()
+			fmt.Println("InvalidArgument in mockup pilot")
+			return
 		}
 	} else {
 		log.Printf("Response received from Policy Compiler below:")
-
 		s, _ := json.MarshalIndent(r, "", "    ")
-
 		log.Print(string(s))
-
 		log.Println("2***************************************************************")
 	}
 
 	// fmt.Println("*********************************invoking new request *****************************")
 	// r, err = policyCompiler.GetPoliciesDecisions(applicationContext)
 
-	// if err != nil {
-	// 	errStatus, _ := status.FromError(err)
-	// 	fmt.Println("*********************************in error in  MockupPilot *****************************")
-	// 	fmt.Println("Message: ", errStatus.Message())
-	// 	fmt.Println("Code: ", errStatus.Code())
+	if err != nil {
+		errStatus, _ := status.FromError(err)
+		fmt.Println("*********************************in error in  MockupPilot for 2nd request *****************************")
+		fmt.Println("Message: ", errStatus.Message())
+		fmt.Println("Code: ", errStatus.Code())
 
-	// 	// take specific action based on specific error?
-	// 	if codes.InvalidArgument == errStatus.Code() {
-	// 		//write customized code here
-	// 		log.Fatal()
-	// 	}
-	// } else {
-	// 	log.Printf("Response received from Policy Compiler below:")
-
-	// 	s, _ := json.MarshalIndent(r, "", "    ")
-
-	// 	log.Print(string(s))
-
-	// 	log.Println("2***************************************************************")
-	// }
+		// take specific action based on specific error?
+		if codes.InvalidArgument == errStatus.Code() {
+			fmt.Println("InvalidArgument in mockup pilot for 2nd request")
+			return
+		}
+	} else {
+		log.Printf("Response received from Policy Compiler below for 2nd request:")
+		s, _ := json.MarshalIndent(r, "", "    ")
+		log.Print(string(s))
+	}
 }
 
 func createDatasetRead(datasetIDJson string) *pb.DatasetContext {

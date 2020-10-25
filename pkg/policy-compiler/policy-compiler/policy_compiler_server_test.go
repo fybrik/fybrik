@@ -30,9 +30,9 @@ func verifyWrapperPolicyCompiler(t *testing.T, policyCompiler *bl.PolicyCompiler
 	tu.EnsureDeepEqualDecisions(t, decisions, innerDecisions)
 }
 
-//Tests  GetPoliciesDecisions in policy_compiler_server.go
-//tests the extension policy manager configuration (used instead on main policy-maanager)
-//test for purpose "fraud-detection" and "marketing" purposes, connector mocks configured for different outputs for these purposes
+// Tests  GetPoliciesDecisions in policy_compiler_server.go
+// tests the extension policy manager configuration (used instead on main policy-maanager)
+// test for purpose "fraud-detection" and "marketing" purposes, connector mocks configured for different outputs for these purposes
 func TestExtPolicyCompiler(t *testing.T) {
 	mainPolicyManager, extPolicyManager := constructPolicyConnectors()
 
