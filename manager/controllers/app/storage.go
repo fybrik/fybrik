@@ -17,7 +17,7 @@ import (
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dbuckets,verbs=get;list;watch;update;
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dbuckets/status,verbs=get;update;patch
 
-//FindAvailableBucket finds an available storage asset
+// FindAvailableBucket finds an available storage asset
 func (r *M4DApplicationReconciler) FindAvailableBucket(owner types.NamespacedName, id string, prefixBase string, canShare bool) (*app.M4DBucket, error) {
 	ctx := context.Background()
 
