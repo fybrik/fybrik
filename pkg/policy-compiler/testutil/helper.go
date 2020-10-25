@@ -6,11 +6,12 @@ package testutil
 import (
 	"context"
 	"fmt"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"log"
 	"net"
 	"strconv"
 	"testing"
+
+	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
@@ -97,7 +98,7 @@ func VerifyContainsDatasetDecision(t *testing.T, combinedPolicies *pb.PoliciesDe
 			for _, operationDecision := range datasetDecison.Decisions {
 				VerifyContainsSingleOperationDesision(t, combinedDatasetPolicies, operationDecision)
 			}
-			//found correct dataset and all operation-desioins inside it
+			// found correct dataset and all operation-desioins inside it
 			return
 		}
 	}
@@ -107,7 +108,7 @@ func VerifyContainsDatasetDecision(t *testing.T, combinedPolicies *pb.PoliciesDe
 func VerifyContainsSingleOperationDesision(t *testing.T, combinedDatasetPolicies *pb.DatasetDecision, operationDesicion *pb.OperationDecision) {
 	for _, decision := range combinedDatasetPolicies.Decisions {
 		if proto.Equal(decision.Operation, operationDesicion.Operation) {
-			//found correct decision for this dataset and access operation
+			// found correct decision for this dataset and access operation
 			for _, action := range operationDesicion.EnforcementActions {
 				isFound := false
 				for _, actionCombined := range decision.EnforcementActions {
@@ -117,7 +118,7 @@ func VerifyContainsSingleOperationDesision(t *testing.T, combinedDatasetPolicies
 					}
 				}
 				if !isFound {
-					//one of the actions in dataset action is not in combined decisions
+					// one of the actions in dataset action is not in combined decisions
 					assert.Fail(t, "combined desisions miss enforcement action ", action)
 				}
 			}
@@ -130,11 +131,11 @@ func VerifyContainsSingleOperationDesision(t *testing.T, combinedDatasetPolicies
 					}
 				}
 				if !isFound {
-					//one of the usedPolicies in dataset action is not in combined decisions
+					// one of the usedPolicies in dataset action is not in combined decisions
 					assert.Fail(t, "combined desisions miss used policy ", usedPolicy)
 				}
 			}
-			return //found correct desision and it contains all enforceemnt actions and used policies
+			return // found correct desision and it contains all enforceemnt actions and used policies
 		}
 	}
 	assert.Fail(t, "didn't find the correct deision for this operation ", operationDesicion.Operation)
@@ -150,7 +151,7 @@ func CheckPolicies(t *testing.T, policies *pb.PoliciesDecisions, decision1, deci
 }
 
 /****************************/
-//Connector Mock "Main policy manager"
+// Connector Mock "Main policy manager"
 
 type connectorMockMain struct {
 	pb.UnimplementedPolicyManagerServiceServer
@@ -200,7 +201,7 @@ func MockMainConnector(port int) {
 }
 
 /****************************/
-//Connector Mock "Extension policy manager"
+// Connector Mock "Extension policy manager"
 
 type connectorMockExt struct {
 	pb.UnimplementedPolicyManagerServiceServer

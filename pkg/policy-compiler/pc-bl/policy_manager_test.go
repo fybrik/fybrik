@@ -28,36 +28,36 @@ func policyManagerExtOnly(purpose string) *pb.PoliciesDecisions {
 	return policiesDecision
 }
 
-//Tests GetEnforcementActions func in policy_manager.go
-//tests the main policy manager configuration
-//test for purpose "fraud-detection", connector mocks configured for specific output per purpose
+// Tests GetEnforcementActions func in policy_manager.go
+// tests the main policy manager configuration
+// test for purpose "fraud-detection", connector mocks configured for specific output per purpose
 func TestMainPolicyManagerPurpose1(t *testing.T) {
 	policyDecision := policyManagerMainOnly("fraud-detection")
 	mainPMpolicies := tu.GetMainPMDecisions("fraud-detection")
 	tu.EnsureDeepEqualDecisions(t, policyDecision, mainPMpolicies)
 }
 
-//Tests GetEnforcementActions func in policy_manager.go
-//tests the main policy manager configuration
-//test for purpose "marketing", connector mocks configured for specific output per purpose
+// Tests GetEnforcementActions func in policy_manager.go
+// tests the main policy manager configuration
+// test for purpose "marketing", connector mocks configured for specific output per purpose
 func TestMainPolicyManagerPurpose2(t *testing.T) {
 	policyDecision := policyManagerMainOnly("marketing")
 	mainPMpolicies := tu.GetMainPMDecisions("marketing")
 	tu.EnsureDeepEqualDecisions(t, policyDecision, mainPMpolicies)
 }
 
-//Tests GetEnforcementActions func in policy_manager.go
-//tests the extensions policy manager configuration
-//test for purpose "fraud-detection", connector mocks configured for specific output per purpose
+// Tests GetEnforcementActions func in policy_manager.go
+// tests the extensions policy manager configuration
+// test for purpose "fraud-detection", connector mocks configured for specific output per purpose
 func TestExtPolicyManagerPurpose1(t *testing.T) {
 	policyDecision := policyManagerExtOnly("fraud-detection")
 	extPMpolicies := tu.GetExtPMDecisions("fraud-detection")
 	tu.EnsureDeepEqualDecisions(t, policyDecision, extPMpolicies)
 }
 
-//Tests GetEnforcementActions func in policy_manager.go
-//tests the extensions policy manager configuration
-//test for purpose "marketing", connector mocks configured for specific output per purpose
+// Tests GetEnforcementActions func in policy_manager.go
+// tests the extensions policy manager configuration
+// test for purpose "marketing", connector mocks configured for specific output per purpose
 func TestExtPolicyManagerPurpose2(t *testing.T) {
 	policyDecision := policyManagerExtOnly("marketing")
 	extPMpolicies := tu.GetExtPMDecisions("marketing")

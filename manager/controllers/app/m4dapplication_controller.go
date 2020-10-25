@@ -166,7 +166,7 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 	if err := r.DeleteOwnedBlueprint(applicationContext); err != nil {
 		return err
 	}
-	//delete the allocated namespace
+	// delete the allocated namespace
 	if err := r.DeleteNamespace(namespace); err != nil {
 		return err
 	}
