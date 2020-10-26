@@ -46,7 +46,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "m4d-cos2cos.selectorLabels" -}}
+{{- define "m4d-s3-to-s3.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "m4d-s3-to-s3.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}

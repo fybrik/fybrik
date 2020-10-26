@@ -1,7 +1,7 @@
 # Copyright 2020 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
-# Default values for m4d-cos2cos.
+# Default values for m4d-s3-to-s3.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
