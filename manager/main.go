@@ -97,13 +97,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	//Initialize PolicyCompiler interface
+	// Initialize PolicyCompiler interface
 	policyCompiler := pc.NewPolicyCompiler()
 
 	// Initiate the M4DApplication Controller (aka Pilot)
 	applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler)
 	if err := applicationController.SetupWithManager(mgr); err != nil {
-		//if err := controllers.NewM4DApplicationController(mgr, "M4DApplication"); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
 		os.Exit(1)
 	}
