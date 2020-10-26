@@ -12,7 +12,7 @@ metadata:
   labels: []
 
 image: "ghcr.io/the-mesh-for-data/mover:latest"
-imagePullPolicy: "IfNotPresent"
+imagePullPolicy: null
 noFinalizer: "false"
 
 # copies from source

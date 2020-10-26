@@ -11,6 +11,10 @@ metadata:
   namespace: "default"
   labels: []
 
+image: "ghcr.io/the-mesh-for-data/mover:latest"
+imagePullPolicy: null
+noFinalizer: "false"
+
 # copies from source
 source:
   connection:
