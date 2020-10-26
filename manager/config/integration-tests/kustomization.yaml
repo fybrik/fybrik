@@ -16,6 +16,9 @@ patchesStrategicMerge:
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
+- name: controller
+  newName: ghcr.io/the-mesh-for-data/manager
+  newTag: latest
 - name: data-catalog-mock
   newName: ghcr.io/the-mesh-for-data/data-catalog-mock
   newTag: latest

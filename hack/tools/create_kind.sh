@@ -42,14 +42,19 @@ install_certs() {
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         sudo cp ../registry/ca.crt /usr/local/share/ca-certificates
 	      sudo update-ca-certificates
-	  elif [[ "$OSTYPE" == "darwin"* ]]; then # TODO Add support for OS X
-        echo OSX certificate installation still to be done
+	  elif [[ "$OSTYPE" == "darwin"* ]]; then
+        echo OSX will ask to provide your password in order to install the CA certificate to keychain!
+        # Installs the CA certificate to the user local keychain
+        security add-trusted-cert -r trustRoot -k ~/Library/Keychains/login.keychain-db -e hostnameMismatch ../registry/ca.crt
     else
         echo Please install the certificates in $PWD/../registry/ca.crt !
     fi
 }
 
 certs_delete() {
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      security remove-trusted-cert  ../registry/ca.crt
+    fi
     rm -rf ../registry
 }
 
