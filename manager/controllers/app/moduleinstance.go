@@ -183,7 +183,7 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 	readInstructions := make([]app.ReadModuleArgs, 0)
 	readInstructions = append(readInstructions, app.ReadModuleArgs{
 		Source:          readSource,
-		AssetName:       item.AssetID,
+		AssetID:         item.AssetID,
 		Transformations: actionsOnRead.EnforcementActions})
 	readArgs := &app.ModuleArguments{
 		Flow: app.Read,
