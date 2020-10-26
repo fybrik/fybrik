@@ -27,8 +27,10 @@ spec:
   - name: "Remove columns"
     action: "RemoveColumns"
     columns: ["JOB", "SSN"]
-  secretProviderURL: "http://secret-provider.secret-provider.svc.cluster.local:5555/get-secret"
-  secretProviderRole: demo
-  image: ghcr.io/the-mesh-for-data/mover:latest
-  imagePullPolicy: "IfNotPresent"
-  noFinalizer: true
+  {{ if .Values.image }}
+  image: {{ .Values.image | quote }}
+  {{ end }}
+  {{ if .Values.imagePullPolicy }}
+  imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
+  {{ end }}
+  noFinalizer: {{ .Values.noFinalizer }}
