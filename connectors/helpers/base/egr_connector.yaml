@@ -11,7 +11,7 @@ spec:
   selector:
     matchLabels:
       app: egr-connector
-  replicas: 3
+  replicas: 1
   template:
     metadata:
       labels:
