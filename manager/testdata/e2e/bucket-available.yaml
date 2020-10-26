@@ -4,9 +4,9 @@
 apiVersion: app.m4d.ibm.com/v1alpha1
 kind: M4DBucket
 metadata:
-  name: test-bucket
+  name: bucket-for-copy
 spec:
-  name: m4d-test-bucket
+  name: datamesh-test-bucket
   endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
-  vaultPath: /v1/m4d/dataset-creds/m4d-test-bucket
+  vaultPath: /v1/m4d/dataset-creds/datamesh-test-bucket
 
