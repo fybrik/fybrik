@@ -138,6 +138,7 @@ wait_for_vault() {
 # Do port-forwarding, if needed
 port_forward() {
   # Port forward, so we could access vault
+  echo "Creating a port-forward from $PORT_TO_FORWARD to 8200 for Vault"
   kubectl port-forward -n $KUBE_NAMESPACE service/vault "$PORT_TO_FORWARD":8200 &
   while ! nc -z localhost "$PORT_TO_FORWARD"; do echo "Waiting for the port-forward from $PORT_TO_FORWARD to 8200 to take effect"; sleep 1; done
 }
