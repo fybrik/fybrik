@@ -1,0 +1,49 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: motion.m4d.ibm.com/v1alpha1
+kind: BatchTransfer
+metadata:
+  name: {{ .Values.metadata.name }}
+  namespace: {{ .Values.metadata.namespace }}
+  labels:
+  {{ range $key, $value := .Values.metadata.labels }}
+    {{ $key }}: {{ $value }}
+  {{ end }}        
+spec:
+  source:
+    s3:
+      endpoint: "{{ .Values.source.connection.s3.endpoint }}"
+      bucket: "{{ .Values.source.connection.s3.bucket }}"
+      objectKey: "{{ .Values.source.connection.s3.object_key }}"
+      dataFormat: "{{ .Values.source.format }}"
+      vaultPath: "{{ .Values.source.credentialLocation }}"
+  destination:
+    s3:
+      endpoint: "{{ .Values.destination.connection.s3.endpoint }}"
+      bucket: "{{ .Values.destination.connection.s3.bucket }}"
+      objectKey: "{{ .Values.destination.connection.s3.object_key }}"
+      dataFormat: "{{ .Values.destination.format }}"
+      vaultPath: "{{ .Values.destination.credentialLocation }}"
+  transformation:
+  {{ range .Values.transformations }}
+  {{ if eq .id "redact-ID" }}
+  - action: "RedactColumns"
+    description: "redacting column: {{ .args.column_name }}"
+    columns: [ {{ .args.column_name | quote }} ]
+    options:
+      redactValue: "XXXXXX"
+  {{ end }}
+  {{ if eq .id "removed-ID" }}
+  - action: "RemoveColumns"
+    description: "redacting column: {{ .args.column_name }}"
+    columns: [ "{{ .args.column_name }}" ]
+  {{ end }}
+  {{ end }}
+  {{ if .Values.image }}
+  image: {{ .Values.image | quote }}
+  {{ end }}
+  {{ if .Values.imagePullPolicy }}
+  imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
+  {{ end }}
+  noFinalizer: {{ .Values.noFinalizer }}
