@@ -31,6 +31,11 @@ type ReadModuleArgs struct {
 	// +required
 	Source DataStore `json:"source"`
 
+	// AssetID identifies the asset to be used for accessing the data when it is ready
+	// It is copied from the M4DApplication resource
+	// +required
+	AssetID string `json:"assetID"`
+
 	// Transformations are different types of processing that may be done to the data
 	// +optional
 	Transformations []pb.EnforcementAction `json:"transformations,omitempty"`

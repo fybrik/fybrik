@@ -196,7 +196,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	var requirements []modules.DataInfo
 	for _, dataset := range applicationContext.Spec.Data {
 		req := modules.DataInfo{
-			AssetID:      utils.CreateDataSetIdentifier(dataset.DataSetID),
+			AssetID:      dataset.DataSetID,
 			DataDetails:  nil,
 			Credentials:  nil,
 			Actions:      make(map[app.ModuleFlow]modules.Transformations),
