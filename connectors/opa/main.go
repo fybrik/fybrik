@@ -48,9 +48,8 @@ func getEnvWithDefault(key string, defaultValue string) string {
 
 func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationContext) (*pb.PoliciesDecisions, error) {
 
-	log.Println("*********************************Received ApplicationContext *****************************")
+	log.Println("Received ApplicationContext")
 	log.Println(in)
-	log.Println("******************************************************************************************")
 	catalogConnectorAddress := getEnv("CATALOG_CONNECTOR_URL")
 
 	timeOutInSecs := getEnv("CONNECTION_TIMEOUT")
