@@ -97,7 +97,8 @@ environment variables. (Please note that you also have to add an entry to your /
 
 ```bash
 export DOCKER_HOSTNAME=kind-registry:5000
-export DOCKER_NAMESPACE=m4d
+export DOCKER_NAMESPACE=m4d-system
+export HELM_EXPERIMENTAL_OCI=1
 ```
 
 There are make commands for building and pushing docker images separately or in one go:

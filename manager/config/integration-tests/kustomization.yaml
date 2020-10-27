@@ -17,11 +17,11 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: ghcr.io/the-mesh-for-data/manager
+  newName: kind-registry:5000/m4d-system/manager
   newTag: latest
 - name: data-catalog-mock
-  newName: ghcr.io/the-mesh-for-data/data-catalog-mock
+  newName: kind-registry:5000/m4d-system/data-catalog-mock
   newTag: latest
 - name: policycompiler
-  newName: ghcr.io/the-mesh-for-data/serverpolicycompiler-mock
+  newName: kind-registry:5000/m4d-system/serverpolicycompiler-mock
   newTag: latest
