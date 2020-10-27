@@ -107,9 +107,9 @@ var _ = BeforeSuite(func(done Done) {
 
 	Expect(k8sClient).ToNot(BeNil())
 
-	//k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
-	//Expect(err).ToNot(HaveOccurred())
-	//Expect(k8sClient).ToNot(BeNil())
+	// k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
+	// Expect(err).ToNot(HaveOccurred())
+	// Expect(k8sClient).ToNot(BeNil())
 
 	close(done)
 }, 60)

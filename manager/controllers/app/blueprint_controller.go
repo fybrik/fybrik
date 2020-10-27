@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"emperror.dev/errors"
@@ -21,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"github.com/ibm/the-mesh-for-data/pkg/helm"
@@ -51,24 +53,29 @@ func (r *BlueprintReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	if err := r.Get(ctx, req.NamespacedName, &blueprint); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-	observedStatus := blueprint.Status.DeepCopy()
-
-	if blueprint.DeletionTimestamp != nil {
-		log.V(0).Info("Reconcile: Deleting Blueprint " + blueprint.GetName())
-	} else {
-		log.V(0).Info("Reconcile: Installing/Updating Blueprint " + blueprint.GetName())
+	if err := r.reconcileFinalizers(&blueprint); err != nil {
+		log.V(0).Info("Could not reconcile finalizers " + err.Error())
+		return ctrl.Result{}, err
 	}
+
+	// If the object has a scheduled deletion time, update status and return
+	if !blueprint.DeletionTimestamp.IsZero() {
+		// The object is being deleted
+		log.V(0).Info("Reconcile: Deleting Blueprint " + blueprint.GetName())
+		return ctrl.Result{}, nil
+	}
+
+	observedStatus := blueprint.Status.DeepCopy()
+	log.V(0).Info("Reconcile: Installing/Updating Blueprint " + blueprint.GetName())
 
 	result, err := r.reconcile(ctx, log, &blueprint)
 	if err != nil {
 		return ctrl.Result{}, errors.Wrap(err, "failed to reconcile blueprint")
 	}
 
-	if blueprint.DeletionTimestamp == nil {
-		if !equality.Semantic.DeepEqual(&blueprint.Status, observedStatus) {
-			if err := r.Client.Status().Update(ctx, &blueprint); err != nil {
-				return ctrl.Result{}, errors.WrapWithDetails(err, "failed to update blueprint status", "status", blueprint.Status)
-			}
+	if !equality.Semantic.DeepEqual(&blueprint.Status, observedStatus) {
+		if err := r.Client.Status().Update(ctx, &blueprint); err != nil {
+			return ctrl.Result{}, errors.WrapWithDetails(err, "failed to update blueprint status", "status", blueprint.Status)
 		}
 	}
 
@@ -76,16 +83,64 @@ func (r *BlueprintReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return result, nil
 }
 
-func (r *BlueprintReconciler) deleteChartResource(ctx context.Context, kubeNamespace string, releaseName string) (ctrl.Result, error) {
-	rel, err := r.Helmer.Status(kubeNamespace, releaseName)
-	if err == nil && rel != nil {
-		_, _ = r.Helmer.Uninstall(kubeNamespace, releaseName)
-	}
+// reconcileFinalizers reconciles finalizers for Blueprint
+func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) error {
+	// finalizer
+	finalizerName := r.Name + ".finalizer"
+	hasFinalizer := ctrlutil.ContainsFinalizer(blueprint, finalizerName)
 
-	return ctrl.Result{}, nil
+	// If the object has a scheduled deletion time, delete it and its associated resources
+	if !blueprint.DeletionTimestamp.IsZero() {
+		// The object is being deleted
+		if hasFinalizer { // Finalizer was created when the object was created
+			// the finalizer is present - delete the allocated resources
+			if err := r.deleteExternalResources(blueprint); err != nil {
+				r.Log.V(0).Info("Error while deleting owned resources: " + err.Error())
+				return err
+			}
+
+			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
+			ctrlutil.RemoveFinalizer(blueprint, finalizerName)
+
+			if err := r.Update(context.Background(), blueprint); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	// Make sure this CRD instance has a finalizer
+	if !hasFinalizer {
+		ctrlutil.AddFinalizer(blueprint, finalizerName)
+		if err := r.Update(context.Background(), blueprint); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log logr.Logger, ref string, vals map[string]interface{}, kubeNamespace string, releaseName string) (ctrl.Result, error) {
+func getReleaseName(step app.FlowStep) string {
+	// we add the "r" character at the beginning of the release name, since it must begin with an alphabetic character
+	return "r" + utils.Hash(step.Name, 20)
+}
+
+func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) error {
+	errs := make([]string, 0)
+	for _, step := range blueprint.Spec.Flow.Steps {
+		releaseName := getReleaseName(step)
+		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus != nil || rel == nil {
+			continue
+		}
+		if _, err := r.Helmer.Uninstall(blueprint.Namespace, releaseName); err != nil {
+			errs = append(errs, err.Error())
+		}
+	}
+	if len(errs) == 0 {
+		return nil
+	}
+	return errors.New(strings.Join(errs, "; "))
+}
+
+func (r *BlueprintReconciler) applyChartResource(log logr.Logger, ref string, vals map[string]interface{}, kubeNamespace string, releaseName string) (ctrl.Result, error) {
 	log.Info(fmt.Sprintf("--- Chart Ref ---\n\n%v\n\n", ref))
 
 	nbytes, _ := yaml.Marshal(vals)
@@ -136,6 +191,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 	// reset blueprint state
 	blueprint.Status.Ready = false
 	blueprint.Status.Error = ""
+	blueprint.Status.DataAccessInstructions = ""
 
 	// count the overall number of Helm releases and how many of them are ready
 	numReleases, numReady := 0, 0
@@ -172,30 +228,23 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 			"namespace": blueprint.Namespace,
 			"labels":    blueprint.Labels,
 		}
-		// we add the "r" character at the beginning of the release name, since it must begin with an alphabetic character
-		releaseName := "r" + hashedName
+		releaseName := getReleaseName(step)
 		log.V(0).Info("Release name: " + releaseName)
-		// check if the blueprint is about to be deleted
-		if blueprint.DeletionTimestamp != nil {
-			_, _ = r.deleteChartResource(ctx, blueprint.Namespace, releaseName)
-			continue
-		}
-
 		numReleases++
-		//check the release status
+		// check the release status
 		rel, err := r.Helmer.Status(blueprint.Namespace, releaseName)
 		// unexisting release or a failed release - re-apply the chart
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
 			// Process templates with arguments
 			for _, resource := range templateSpec.Resources {
-				if _, err := r.applyChartResource(ctx, log, resource, args, blueprint.Namespace, releaseName); err != nil {
+				if _, err := r.applyChartResource(log, resource, args, blueprint.Namespace, releaseName); err != nil {
 					blueprint.Status.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
 				}
 			}
 		} else if rel.Info.Status == release.StatusDeployed {
 			// TODO: add release notes of the read module to the status
 			if args["flow"] == "read" {
-				log.V(0).Info(rel.Info.Notes)
+				blueprint.Status.DataAccessInstructions += rel.Info.Notes
 			}
 			status, errMsg := r.checkReleaseStatus(releaseName, blueprint.Namespace)
 			if status == corev1.ConditionFalse {

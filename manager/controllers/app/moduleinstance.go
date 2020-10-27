@@ -122,7 +122,7 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 		return instances
 	}
 
-	//If sources of this module include source, copy is not required
+	// If sources of this module include source, copy is not required
 	r.Log.V(0).Info("Checking supported read sources")
 	sources := GetSupportedReadSources(readSelector.GetModule())
 	utils.PrintStructure(sources, r.Log, "Read sources")
@@ -183,6 +183,7 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 	readInstructions := make([]app.ReadModuleArgs, 0)
 	readInstructions = append(readInstructions, app.ReadModuleArgs{
 		Source:          readSource,
+		AssetID:         item.AssetID,
 		Transformations: actionsOnRead.EnforcementActions})
 	readArgs := &app.ModuleArguments{
 		Flow: app.Read,
