@@ -24,9 +24,36 @@ const ApplicationTable = (props) => {
   // Show status success/in prgress/error
   const TableCellStatus = (status) => {
     if (('ready' in status.status) && status.status.ready) {
+      console.log(status.status.dataAccessInstructions)
+/*      var lines = status.status.dataAccessInstructions.split("\n")
+      return (
+        <Table.Cell textAlign='center'>
+          <Popup position='left center' pinned on='click' trigger={<Button basic icon='check' flowing='true' color='green'/>}>
+            <Grid>
+              {(lines.map((line, index) => (
+                <Grid.Row key={index}>
+                  <Segment attached>{line}</Segment>
+                </Grid.Row>
+              )))}
+            </Grid>
+          </Popup>
+        </Table.Cell>
+      )
+*/
+/*
+      var instructions = status.status.dataAccessInstructions.replace(/\n/g, "<br/>")
       return (
         <Table.Cell positive textAlign='center'>
-          <Button basic icon='check' data-tooltip='success' color='green'/>
+          <Popup position='left center' pinned on='click' content={<div className="description"> {instructions} </div>} 
+          trigger={<Button basic icon='check' flowing='true' color='green'/>}>
+          </Popup>
+        </Table.Cell>
+      )*/
+      return (
+        <Table.Cell positive textAlign='center'>
+          <Popup position='left center' pinned on='click' content={status.status.dataAccessInstructions} 
+          trigger={<Button basic icon='check' flowing='true' color='green'/>}>
+          </Popup>
         </Table.Cell>
       )
     } else {
