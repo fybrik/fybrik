@@ -29,14 +29,14 @@ spec:
   {{ range .Values.transformations }}
   {{ if eq .id "redact-ID" }}
   - action: "RedactColumns"
-    description: "redacting column: {{ .args.column_name }}"
+    name: "redacting column: {{ .args.column_name }}"
     columns: [ {{ .args.column_name | quote }} ]
     options:
       redactValue: "XXXXXX"
   {{ end }}
   {{ if eq .id "removed-ID" }}
   - action: "RemoveColumns"
-    description: "redacting column: {{ .args.column_name }}"
+    name: "redacting column: {{ .args.column_name }}"
     columns: [ "{{ .args.column_name }}" ]
   {{ end }}
   {{ end }}
