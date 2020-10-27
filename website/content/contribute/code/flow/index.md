@@ -3,11 +3,15 @@ title: Contribution Flow
 weight: 1
 ---
 
-Contributing to {{< name >}} is done following the GitHub workflow for Pull Requests (PRs).
+This page describes the contribution flow that you as a developer and contributor need to follow. It describes the Pull requests based workflow and instructions on how to build and test the project after making changes. 
+
+# Issues and Pull Requests
+
+Contributing to {{< name >}} is done following the GitHub workflow.
 
 You should usually open a pull request in the following situations:
-- Submit trivial fixes (for example, a typo, a broken link or an obvious error)
-- Start work on a contribution that was already asked for, or that you’ve already discussed, in an issue
+- Start work on a contribution that was already asked for, or that you’ve already discussed, in an issue.
+- Submit trivial fixes (for example, a typo, a broken link or an obvious error).
 
 A pull request doesn’t have to represent finished work. It’s usually better to open a pull request early on, so others can watch or give feedback on your progress. Just mark it as a “WIP” (Work in Progress) in the subject line. You can always add more commits later.
 
@@ -123,9 +127,12 @@ make e2e
 
 # Format of the Commit Message
 
-We follow a rough convention for commit messages that is designed to answer two questions: what changed and why.
+The project follows a rough convention for commit messages that is designed to answer two questions: what changed and why.
 The subject line should feature the what and the body of the commit should describe the why.
 
+Every commit must also include a DCO Sign Off at the end of the commit message. By doing this you state that you certify the [Developer Certificate of Origin](https://developercertificate.org/). This can be automated by adding the `-s` flag: `git commit -s`.
+
+Example commit message:
 ```
 scripts: add the test-cluster command
 
@@ -133,6 +140,8 @@ this uses tmux to setup a test cluster that you can easily kill and
 start for debugging.
 
 Fixes #38
+
+Signed-off-by: Legal Name <your.email@example.com>
 ```
 
 The format can be described more formally as follows:
@@ -143,6 +152,8 @@ The format can be described more formally as follows:
 <why this change was made>
 <BLANK LINE>
 <footer>
+<BLANK LINE>
+<signoff>
 ```
 
 The first line is the subject and should be no longer than 70 characters, the second line is always blank, and other lines should be wrapped at 80 characters.
