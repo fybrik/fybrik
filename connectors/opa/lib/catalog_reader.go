@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-//Reader from catalog, single instance for the connector, not dependent on the request
+// Reader from catalog, single instance for the connector, not dependent on the request
 type CatalogReader struct {
 	catalogConnectorAddress string
 	timeOut                 int
@@ -26,7 +26,7 @@ func NewCatalogReader(address string, timeOut int) *CatalogReader {
 	return &CatalogReader{catalogConnectorAddress: address, timeOut: timeOut}
 }
 
-//return map  datasetID -> metadata of dataset in form of map
+// return map  datasetID -> metadata of dataset in form of map
 func (r *CatalogReader) GetDatasetsMetadataFromCatalog(in *pb.ApplicationContext) (map[string]interface{}, error) {
 	log.Println("Create new catalog connection using catalog connector address: ", r.catalogConnectorAddress)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(r.timeOut)*time.Second)

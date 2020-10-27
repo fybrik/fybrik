@@ -103,7 +103,7 @@ func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *Ca
 	return &pb.PoliciesDecisions{DatasetDecisions: datasetDecisionList}, nil
 }
 
-//Translate the evaluation received from OPA for (dataset, operation) into pb.OperationDecision
+// Translate the evaluation received from OPA for (dataset, operation) into pb.OperationDecision
 func GetOPAOperationDecision(opaEval string, operation *pb.AccessOperation) (*pb.OperationDecision, error) {
 	resultInterface := make(map[string]interface{})
 	err := json.Unmarshal([]byte(opaEval), &resultInterface)
@@ -117,7 +117,7 @@ func GetOPAOperationDecision(opaEval string, operation *pb.AccessOperation) (*pb
 		return nil, errors.New("error in format of OPA evaluation (incorrect result map)")
 	}
 
-	//Now iterate over
+	// Now iterate over
 	enforcementActions := make([]*pb.EnforcementAction, 0)
 	usedPolicies := make([]*pb.Policy, 0)
 
