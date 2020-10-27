@@ -12,7 +12,7 @@ import (
 	"os"
 	"strconv"
 
-	opabl "github.com/ibm/the-mesh-for-data/connectors/opa/opaconn-bl"
+	opabl "github.com/ibm/the-mesh-for-data/connectors/opa/lib"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"google.golang.org/grpc"
 )
