@@ -16,6 +16,7 @@ type Transformations struct {
 	EnforcementActions []pb.EnforcementAction
 	Message            string
 	Reason             string
+	Required           bool
 }
 
 // DataInfo defines all the information about the given data set
