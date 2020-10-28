@@ -1,13 +1,15 @@
 ---
 title: Contribution Flow
+summary: This page describes the GitHub workflow, build and test instructions.
+
 weight: 1
 ---
 
-This page describes the contribution flow that you as a developer and contributor need to follow. It describes the Pull requests based workflow and instructions on how to build and test the project after making changes. 
+This page describes the flow that contributors should follow, including the GitHub workflow and how to build and test the project after making changes.
 
 # Issues and Pull Requests
 
-Contributing to {{< name >}} is done following the GitHub workflow.
+Contributing to {{< name >}} is done following the GitHub workflow of Pull Requests.
 
 You should usually open a pull request in the following situations:
 - Start work on a contribution that was already asked for, or that you’ve already discussed, in an issue.
@@ -31,9 +33,12 @@ Here’s how to submit a pull request:
     git merge upstream/master
     git push origin master
     ```
-- **[Create a branch](https://guides.github.com/introduction/flow/)** for your edits from where you want to base your work (usually master).
+- **[Create a branch](https://guides.github.com/introduction/flow/)** for your edits from master. Note that your should never add edits to the master branch itself.
+    ```shell
+    git checkout -b <branch name>
+    ```
 - **Make commits of logical units**, ensuring that commit messages are in the [proper format](#format-of-the-commit-message).
-- **Push your changes** to a topic branch in your fork of the repository.
+- **Push your changes** the created branch in your fork of the repository.
 - **Open a pull request** to the original repository.
 - **Reference any relevant issues** or supporting documentation in your PR (for example, “Closes #37.”)
 
@@ -41,22 +46,12 @@ As always, you must [follow code style](#normalize-the-code), ensure that [all t
 
 **Thanks for your contribution!**
 
-
-# Normalize the code
-
-To ensure the code is formatted uniformly we use various linters which are
-invoked using
-
-```bash
-make verify
-```
-
 # Building and testing
 
-Build run unit tests
+[Setup a development environment](../devenv) and make sure `make install-tools` finished successfully.
 
+Build and run unit tests with:
 ```bash
-make install-tools
 make build
 make test
 ```
@@ -88,9 +83,8 @@ USE_EXISTING_CONTROLLER=true NO_SIMULATED_PROGRESS=true USE_EXISTING_CLUSTER=tru
   should be used. E.g. in integration tests running against an existing setup a controller is already existing
   in the Kubernetes cluster and should not be started by the test as two controllers competing may influence the test.
 
-Setup default local kind cluster with istio and a local image registry:
+Setup default local kind cluster with a local image registry:
 ```bash
-make install-tools
 make kind
 ```
 
@@ -125,12 +119,21 @@ Running end to end tests:
 make e2e
 ```
 
+# Normalize the code
+
+To ensure the code is formatted uniformly we use various linters which are
+invoked using
+
+```bash
+make verify
+```
+
 # Format of the Commit Message
 
 The project follows a rough convention for commit messages that is designed to answer two questions: what changed and why.
 The subject line should feature the what and the body of the commit should describe the why.
 
-Every commit must also include a DCO Sign Off at the end of the commit message. By doing this you state that you certify the [Developer Certificate of Origin](https://developercertificate.org/). This can be automated by adding the `-s` flag: `git commit -s`.
+Every commit must also include a DCO Sign Off at the end of the commit message. By doing this you state that you certify the [Developer Certificate of Origin](https://developercertificate.org/). This can be automated by adding the `-s` flag to `git commit`. You can also mass sign-off a whole PR with `git rebase --signoff master`.
 
 Example commit message:
 ```
