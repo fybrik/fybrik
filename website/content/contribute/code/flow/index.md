@@ -38,7 +38,7 @@ Here’s how to submit a pull request:
     git checkout -b <branch name>
     ```
 - **Make commits of logical units**, ensuring that commit messages are in the [proper format](#format-of-the-commit-message).
-- **Push your changes** the created branch in your fork of the repository.
+- **Push your changes** to the created branch in your fork of the repository.
 - **Open a pull request** to the original repository.
 - **Reference any relevant issues** or supporting documentation in your PR (for example, “Closes #37.”)
 
