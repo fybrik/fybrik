@@ -27,7 +27,7 @@ spec:
         imagePullPolicy: Always
         envFrom:
         - configMapRef:
-            name: gui-config
+            name: m4dgui-config
         env:
         - name: VAULT_TOKEN
           valueFrom:
