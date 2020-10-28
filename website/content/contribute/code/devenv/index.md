@@ -1,9 +1,10 @@
 ---
 title: Development Environment
+summary: This page contains instructions for setting up a development environment 
 weight: 2
 ---
 
-This page describes what you need to install as a developer and contributor to this project, for setting up the development environment.
+This page describes what you need to install as a developer and contributor to this project, for setting up a development environment.
 
 # Operation system
 
