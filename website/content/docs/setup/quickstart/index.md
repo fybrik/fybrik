@@ -3,13 +3,14 @@ title: Quick Start
 weight: 10
 ---
 
-This guide lets you quickly evaluate {{< name >}} using the builtin sample connectors and data access module. Instaling {{< name >}} control plane includes: 
-- Installing Hashicorp Vault and connector as the credentials manager 
-- Installing ODPi Egeria lab and connectors as the data catalog
-- Installing Open Policy Agent (OPA) and connector as the policy manager.
-- Arrow-Flight data access module for reading Parquet and CSV datasets
+This guide lets you quickly evaluate {{< name >}}. For a custom setup follow the [Installation instructions](/docs/setup/install).
 
-For a custom setup follow the [Installation instructions](/docs/setup/install)
+By the end of this guide you will have the following installed to your Kubernetes cluster:
+- The control plane of {{< name >}}
+- Hashicorp Vault and connector as the credentials manager 
+- ODPi Egeria lab and connectors as the data catalog
+- Open Policy Agent (OPA) and connector as the policy manager.
+- Arrow-Flight data access module for reading Parquet and CSV datasets
 
 The following sample was verified with the following software versions:
 - Kubernetes: kind v0.10.0, OpenShift 4.3
@@ -54,4 +55,3 @@ The following steps assume you have the following available:
 
 You can now start using {{< name >}}. For samples please see:
 - [Sample Kubeflow notebook with {{< name >}}](/docs/usage/notebook-sample)
-
