@@ -30,6 +30,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 			Details: &pb.DatasetDetails{
 				Name:       "xxx",
 				DataFormat: "parquet",
+				Geo:        "US",
 				DataStore: &pb.DataStore{
 					Type: pb.DataStore_S3,
 					Name: "cos",
@@ -48,6 +49,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 			Details: &pb.DatasetDetails{
 				Name:       "yyy",
 				DataFormat: "table",
+				Geo:        "US",
 				DataStore: &pb.DataStore{
 					Type: pb.DataStore_DB2,
 					Name: "db2",
@@ -68,6 +70,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 			Details: &pb.DatasetDetails{
 				Name:       "Cars",
 				DataFormat: "json",
+				Geo:        "US",
 				DataStore: &pb.DataStore{
 					Type: pb.DataStore_KAFKA,
 					Name: "kafka",
@@ -92,6 +95,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 		Details: &pb.DatasetDetails{
 			Name:       "yyy",
 			DataFormat: "table",
+			Geo:        "US",
 			DataStore: &pb.DataStore{
 				Type: pb.DataStore_DB2,
 				Name: "db2",

@@ -52,7 +52,7 @@ func StructToInterfaceDetails(item modules.DataInfo) (*app.InterfaceDetails, err
 // These buckets are allocated during deployment of the control plane.
 // If there are no free buckets the creation of the runtime environment for the application will fail.
 // TODO - In the future need to implement dynamic provisioning of buckets for implicit copy.
-func (r *M4DApplicationReconciler) GetCopyDestination(item modules.DataInfo, appContext *app.M4DApplication) *app.DataStore {
+func (r *M4DApplicationReconciler) GetCopyDestination(item modules.DataInfo, appContext *app.M4DApplication, destinationInterface *app.InterfaceDetails) *app.DataStore {
 	// provisioned storage for COPY
 	objectKey, _ := client.ObjectKeyFromObject(appContext)
 	originalAssetName := item.DataDetails.Name
@@ -72,7 +72,7 @@ func (r *M4DApplicationReconciler) GetCopyDestination(item modules.DataInfo, app
 				ObjectKey: bucket.Status.AssetPrefixPerDataset[item.AssetID],
 			},
 		},
-		Format: string(item.AppInterface.DataFormat),
+		Format: string(destinationInterface.DataFormat),
 	}
 }
 
@@ -126,7 +126,10 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 	r.Log.V(0).Info("Checking supported read sources")
 	sources := GetSupportedReadSources(readSelector.GetModule())
 	utils.PrintStructure(sources, r.Log, "Read sources")
-	if !utils.SupportsInterface(sources, source) {
+	// logic for deciding whether copy module is required
+	// In some cases copy is required to perform transformations at source
+	// Temporary solution: in these cases mark copy actions as required until rules for transformations at data source are implemented in policy manager
+	if !utils.SupportsInterface(sources, source) || item.Actions[app.Copy].Required {
 		r.Log.V(0).Info("Copy is required for " + item.AssetID)
 		// is copy allowed?
 		actionsOnCopy := item.Actions[app.Copy]
@@ -157,7 +160,7 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 		}
 		r.Log.V(0).Info("Found copy module " + copySelector.GetModule().Name)
 		// copy should be applied - allocate storage
-		sinkDataStore = r.GetCopyDestination(item, appContext)
+		sinkDataStore = r.GetCopyDestination(item, appContext, copySelector.Destination)
 		if sinkDataStore == nil {
 			return instances
 		}

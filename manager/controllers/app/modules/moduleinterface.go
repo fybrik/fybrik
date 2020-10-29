@@ -16,6 +16,10 @@ type Transformations struct {
 	EnforcementActions []pb.EnforcementAction
 	Message            string
 	Reason             string
+
+	// In some cases copy is required to perform transformations at source
+	// Temporary solution: in these cases mark copy actions as required until rules for transformations at data source are implemented in policy manager
+	Required bool
 }
 
 // DataInfo defines all the information about the given data set
