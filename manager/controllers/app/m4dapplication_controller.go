@@ -180,8 +180,11 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 
 	// Data User created or updated the M4DApplication
 
-	// clear conditions
+	// clear status
 	applicationContext.Status.Conditions = make([]app.Condition, 0)
+	applicationContext.Status.DataAccessInstructions = ""
+	applicationContext.Status.Ready = false
+
 	key, _ := client.ObjectKeyFromObject(applicationContext)
 
 	// clear storage assets
