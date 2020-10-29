@@ -1,26 +1,15 @@
 ---
-title: Running Kubeflow notebook with The Mesh for Data
+title: Kubeflow notebook sample
 weight: 10
 ---
 
-This sample demonstrate the use of {{< name >}} with a Kubeflow notebooks.
-In this sample you will:
-1. Prepare a dataset to be read by the notebook
-1. Register the dataset in ODPi Egeria catalog
-1. Provide {{< name >}} with credentials to the dataset
-1. Deploy a Kubeflow notebook
-1. Create a {{< name >}} runtime environment for the notebook
-1. Read the dataset and observe policies applied seamlessly
+This sample shows how to run a Kubeflow notebook with {{< name >}} and demonstrate how polices are seamlessly applied when accessing a dataset.
 
-The following sample was verified with the following software versions:
-- Kubernetes: kind v0.10.0, OpenShift 4.3
-- Kuebflow v1.0.2
-- IBM Cloud Object Storage service
-
-The following steps assume you have the following available and running:
-- Kubernetes cluster
+## Before you begin
+Ensure that you have the following:
+- Kubernetes cluster (this guide was tested with kind v0.10.0 and OpenShift 4.3)
 - Kubectl
-- Kuebflow v1.0.2
+- Kuebflow installed on your cluster (this guide was tested with Kubeflow v1.0.2)
 - S3 Object storage account (e.g., Ceph, Minio, IBM Cloud Object Storage)
 
 {{< tip >}}
@@ -32,6 +21,17 @@ cd -
 ```
 {{</ tip >}}
 
+## About this sample
+In this sample guide you will run a Kubeflow notebook with {{< name >}} and demonstrate that data read polices that are defined in Open Policy Agent (OPA) are seamlessly applied when reading a dataset.
+
+In this sample guide you will:
+1. Prepare a dataset to be accessed by the notebook
+1. Register the dataset in ODPi Egeria catalog
+1. Provide {{< name >}} with credentials to the dataset
+1. Deploy a Kubeflow notebook
+1. Create a {{< name >}} runtime environment for the notebook
+1. Read the dataset and observe policies applied seamlessly
+
 ## Getting started
 
 1.  Obtain a local copy of {{< name >}} repository
@@ -42,7 +42,6 @@ cd -
     ```bash
     cd the-mesh-for-data
     ```
-
 
 ## Prepare the dataset for the sample notebook
 
@@ -109,10 +108,9 @@ The defined policies that relates to datasets that are tagged with 'finance' are
 
 The policies can be found at `third_party/opa/opa-policy.rego`.
 
-## Setting up and running Kubeflow notebook
+## Setup the notebook
 
-Next you will create a Kubeflow notebook server and a notebook with the business logic for creating a fraud detection model. Then, you will deploy a {{< name >}} runtime environment for the notebook by creating a `M4DApplication` resource that references the `data.csv` data set that was registered in the data catalog.
-This allows the code in the notebook to read the data and policies to seamlessly be applied before the data reaches the notebook server.
+Next you will create a Kubeflow notebook server and a notebook with the business logic for creating a fraud detection model.
 
 1. Create a port-forward to communicate with Kubeflow:
     ```bash
@@ -127,6 +125,11 @@ This allows the code in the notebook to read the data and policies to seamlessly
     - In the notebooks page select in the top left the `anonymous` namespace and then click **New Server**.
     - In the notebook server creation page, set `kf-notebook` in the **Name** box and then click **Launch**. Wait for the server to become ready.
     - Click **Connect** and upload `kfM4DPolicySample.ipynb` notebook to the server.
+
+## Run the notebook with {{< name >}}
+
+Now you will deploy a {{< name >}} runtime environment for the notebook by creating a `M4DApplication` resource that references the `data.csv` data set that was registered in the data catalog.
+This allows the code in the notebook to read the data and policies to seamlessly be applied before the data reaches the notebook server.
 
 1. Create the `M4DApplication` resource which will deploy {{< name >}} runtime environment by running the following:
     ```bash
@@ -154,7 +157,7 @@ This allows the code in the notebook to read the data and policies to seamlessly
 
     - Edit `"asset": "<bucket-name>/<file-name>.csv"` in the second command to point to your bucket and the name of the dataset.
 
-1. run the notebook
+1. Run the notebook
 
     You should observe in the cel `Get Data` the data from the dataset.
 
@@ -162,3 +165,6 @@ This allows the code in the notebook to read the data and policies to seamlessly
     ```bash
     kill $!
     ```
+
+# Next steps
+You have completed an execution of a notebook with {< name >}} and now ready to continue and exploring.
