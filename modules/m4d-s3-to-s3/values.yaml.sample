@@ -1,4 +1,4 @@
-image: "ghcr.io/the-mesh-for-data/mover:latest"
+image: "kind-registry:5000/m4d-system/mover:latest"
 imagePullPolicy: "IfNotPresent"
 noFinalizer: "true"
 

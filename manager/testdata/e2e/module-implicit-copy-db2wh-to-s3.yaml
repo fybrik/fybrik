@@ -49,44 +49,42 @@ metadata:
   namespace: m4d-system  # In future, will be a parameter defined by admin
   labels:
     name: implicit-copy-db2wh-to-s3 # module name
-    version: 1.0.0 
+    version: 1.0.0
   annotations:
     author: "Example Author (author@example.com)"
     summary: "a short description of this module"
     description: "a longer description of this module that might e.g. be used in contracts"
 spec:
   type: service # one of: job, service, configuration
-  flows:  # one or more of copy, read, write 
+  flows:  # one or more of copy, read, write
   - copy
   capabilities:
     credentials-managed-by: secret-provider #secret-provider or data-mesh-auto i.e. module calls secret-provider, or credentils injected by data-mesh
     supportedInterfaces:
     - flow: copy
-      source: 
-        protocol: jdbc-db2    
+      source:
+        protocol: jdbc-db2
         dataformat: table
-      sink: 
+      sink:
         protocol: s3
         dataformat: parquet
     actions:
     - id: "redact-ID"
       name: "redact"
       level: 2 # column
-      args: 
+      args:
         column_name: column_value
     - id: "removed-ID"
       name: "removed"
       level: 2 # column
-      args: 
+      args:
         column_name: column_value
     - id: "encrypt-ID"
       name: "encrypt"
       level: 2 # column
-  chart: ghcr.io/the-mesh-for-data/m4d-db2wh:0.1.0
+  chart: kind-registry:5000/m4d-system/m4d-db2wh:0.1.0
   statusIndicators:
     - kind: BatchTransfer
       successCondition: status.status == SUCCEEDED
       failureCondition: status.status == FAILED
       errorMessage: status.error
-
-      

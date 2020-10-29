@@ -19,7 +19,7 @@ noFinalizer: "false"
 source:
   connection:
     kafka:
-      bootstrap_servers: []
+      bootstrap_servers: ""
       schema_registry: ""
       topic_name: ""
       ssl_truststore: ""

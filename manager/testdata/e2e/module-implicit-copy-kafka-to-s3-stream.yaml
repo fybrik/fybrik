@@ -82,11 +82,10 @@ spec:
     - id: "encrypt-ID"
       name: "encrypt"
       level: 2 # column
-  chart: ghcr.io/the-mesh-for-data/m4d-kafka:0.1.0
+  chart: kind-registry:5000/m4d-system/m4d-kafka:0.1.0
   statusIndicators:
     - kind: StreamTransfer
       successCondition: status.status == SUCCEEDED
       failureCondition: status.status == FAILED
       errorMessage: status.error
 
-  

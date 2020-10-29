@@ -1,0 +1,41 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-catalog
+  namespace: system
+  labels:
+    app: data-catalog
+spec:
+  selector:
+    matchLabels:
+      app: data-catalog
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: data-catalog
+    spec:
+      containers:
+      - image: data-catalog-mock:latest
+        name: catalog
+        imagePullPolicy: Always
+        ports:
+        - name: data-catalog
+          containerPort: 50085
+      terminationGracePeriodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: data-catalog
+spec:
+  selector:
+    app: data-catalog
+  ports:
+  - port: 50085
+    targetPort: data-catalog

@@ -22,7 +22,7 @@ import (
 var _ = Describe("Blueprint Controller", func() {
 
 	const timeout = time.Second * 30
-	const interval = time.Second * 1
+	const interval = time.Millisecond * 100
 
 	BeforeEach(func() {
 		// Add any setup steps that needs to be executed before each test

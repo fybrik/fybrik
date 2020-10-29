@@ -14,7 +14,7 @@ kustomize_build() {
         local operation=$1
         local pass=$2
         local TEMP=$(mktemp -d)
-        cp -ar base/* $TEMP
+        cp -r base/* $TEMP
         cd $TEMP
 
         local image=secret-provider

@@ -15,6 +15,9 @@ addons:
       - asciidoctor
       - conntrack
       - ethtool
+      - apache2-utils
+  hosts:
+  - kind-registry
 
 os:
 - linux
@@ -78,14 +81,29 @@ jobs:
     - make install || travis_terminate 1;
     - make e2e
 
+  # The following integration/system test builds all images
+  # and deploys all the services locally in a kind environment
+  # It then runs integration tests that run requests against the installed system
+  # These requests can be CRDs to K8s api-server or other requests to other endpoints.
   - stage: Test
-    name: "Integration tests for helm"
+    name: "Integration tests for manager in kind"
     env:
-    - DOCKER_HOSTNAME=localhost:5000
-    - DOCKER_NAMESPACE=m4d
+    - DOCKER_HOSTNAME=kind-registry:5000
+    - DOCKER_NAMESPACE=m4d-system
+    install:
+    - make install-tools
     script:
-    - make kind || travis_terminate 1;
-    - make helm
+    - make kind-setup || travis_terminate 1; # Switch to make kind when istio is needed
+    - make cluster-prepare || travis_terminate 1;
+    - make docker-minimal-it
+    #- make -C test/services docker Already build in docker-minimal-it
+    - make cluster-prepare-wait || travis_terminate 1;
+    - make -C secret-provider configure-vault
+    - make -C secret-provider deploy || travis_terminate 1;
+    - make -C manager deploy_it || travis_terminate 1;
+    - make -C manager wait_for_manager || travis_terminate 1;
+    - make helm || travis_terminate 1;
+    - make -C manager run-integration-tests || travis_terminate 1;
 
   - stage: Publish
     name: "Build and push docker images"

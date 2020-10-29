@@ -4,6 +4,7 @@
 package app
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -49,7 +50,6 @@ var _ = BeforeSuite(func(done Done) {
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{
 			filepath.Join("..", "..", "config", "crd", "bases"),
-			filepath.Join("..", "..", "testdata", "crd"),
 		},
 		AttachControlPlaneOutput: true,
 	}
@@ -67,24 +67,29 @@ var _ = BeforeSuite(func(done Done) {
 
 	// +kubebuilder:scaffold:scheme
 
-	mgr, err = ctrl.NewManager(cfg, ctrl.Options{
-		Scheme:             scheme.Scheme,
-		MetricsBindAddress: "localhost:8086",
-	})
-	Expect(err).ToNot(HaveOccurred())
-
-	policyCompiler := &mockup.MockPolicyCompiler{}
-	err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler).SetupWithManager(mgr)
-	Expect(err).ToNot(HaveOccurred())
-	err = NewBlueprintReconciler(mgr, "Blueprint", new(helm.Fake)).SetupWithManager(mgr)
-	Expect(err).ToNot(HaveOccurred())
-
-	go func() {
-		err = mgr.Start(ctrl.SetupSignalHandler())
+	if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
+		logf.Log.Info("Using existing controller in existing cluster...")
+		k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
+	} else {
+		mgr, err = ctrl.NewManager(cfg, ctrl.Options{
+			Scheme:             scheme.Scheme,
+			MetricsBindAddress: "localhost:8086",
+		})
 		Expect(err).ToNot(HaveOccurred())
-	}()
 
-	k8sClient = mgr.GetClient()
+		policyCompiler := &mockup.MockPolicyCompiler{}
+		err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler).SetupWithManager(mgr)
+		Expect(err).ToNot(HaveOccurred())
+		err = NewBlueprintReconciler(mgr, "Blueprint", new(helm.Fake)).SetupWithManager(mgr)
+		Expect(err).ToNot(HaveOccurred())
+
+		go func() {
+			err = mgr.Start(ctrl.SetupSignalHandler())
+			Expect(err).ToNot(HaveOccurred())
+		}()
+
+		k8sClient = mgr.GetClient()
+	}
 	Expect(k8sClient).ToNot(BeNil())
 
 	close(done)

@@ -27,6 +27,11 @@ cluster-prepare:
 	$(MAKE) -C third_party/registry deploy
 	$(MAKE) -C third_party/vault deploy
 
+.PHONY: cluster-prepare-wait
+cluster-prepare-wait:
+	$(MAKE) -C third_party/cert-manager deploy-wait
+	$(MAKE) -C third_party/vault deploy-wait
+
 .PHONY: install
 install:
 	$(MAKE) -C manager install
@@ -55,6 +60,14 @@ docker:
 	$(MAKE) -C secret-provider docker-all
 	$(MAKE) -C connectors docker-all
 
+# Build only the docker images needed for integration testing
+.PHONY: docker-minimal-it
+docker-minimal-it:
+	$(MAKE) -C build docker-dummy-mover
+	$(MAKE) -C manager docker-all
+	$(MAKE) -C secret-provider docker-all
+	$(MAKE) -C test/services docker
+
 .PHONY: docker-build
 docker-build:
 	$(MAKE) -C build docker-build-all
@@ -78,6 +91,22 @@ docker-build-local:
 .PHONY: helm
 helm:
 	$(MAKE) -C modules helm
+
+.PHONY: docker-retag-images
+docker-retag-images:
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:latest ghcr.io/the-mesh-for-data/manager:latest
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/secret-provider:latest ghcr.io/the-mesh-for-data/secret-provider:latest
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/egr-connector:latest ghcr.io/the-mesh-for-data/egr-connector:latest
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:latest ghcr.io/the-mesh-for-data/movement-controller:latest
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/dummy-mover:latest ghcr.io/the-mesh-for-data/dummy-mover:latest
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:latest ghcr.io/the-mesh-for-data/opa-connector:latest
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/vault-connector:latest ghcr.io/the-mesh-for-data/vault-connector:latest
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/serverpolicycompiler-mock:latest ghcr.io/the-mesh-for-data/serverpolicycompiler-mock:latest
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/data-catalog-mock:latest ghcr.io/the-mesh-for-data/data-catalog-mock:latest
+
+.PHONY: docker-push-public
+docker-push-public:
+	DOCKER_HOSTNAME=ghcr.io DOCKER_NAMESPACE=the-mesh-for-data DOCKER_TAG=latest $(MAKE) docker-push
 
 include .mk/ibmcloud.mk
 include .mk/tools.mk
