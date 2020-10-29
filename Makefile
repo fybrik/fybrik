@@ -1,4 +1,5 @@
 include Makefile.env
+export DOCKER_TAGNAME ?= latest
 
 .PHONY: license
 license: $(TOOLBIN)/license_finder
@@ -94,19 +95,19 @@ helm:
 
 .PHONY: docker-retag-images
 docker-retag-images:
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:latest ghcr.io/the-mesh-for-data/manager:latest
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/secret-provider:latest ghcr.io/the-mesh-for-data/secret-provider:latest
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/egr-connector:latest ghcr.io/the-mesh-for-data/egr-connector:latest
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:latest ghcr.io/the-mesh-for-data/movement-controller:latest
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/dummy-mover:latest ghcr.io/the-mesh-for-data/dummy-mover:latest
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:latest ghcr.io/the-mesh-for-data/opa-connector:latest
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/vault-connector:latest ghcr.io/the-mesh-for-data/vault-connector:latest
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/serverpolicycompiler-mock:latest ghcr.io/the-mesh-for-data/serverpolicycompiler-mock:latest
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/data-catalog-mock:latest ghcr.io/the-mesh-for-data/data-catalog-mock:latest
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/manager:${DOCKER_TAGNAME}
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/secret-provider:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/secret-provider:${DOCKER_TAGNAME}
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/egr-connector:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/egr-connector:${DOCKER_TAGNAME}
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/movement-controller:${DOCKER_TAGNAME}
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/dummy-mover:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/dummy-mover:${DOCKER_TAGNAME}
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/opa-connector:${DOCKER_TAGNAME}
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/vault-connector:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/vault-connector:${DOCKER_TAGNAME}
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/serverpolicycompiler-mock:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/serverpolicycompiler-mock:${DOCKER_TAGNAME}
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/data-catalog-mock:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/data-catalog-mock:${DOCKER_TAGNAME}
 
 .PHONY: docker-push-public
 docker-push-public:
-	DOCKER_HOSTNAME=ghcr.io DOCKER_NAMESPACE=the-mesh-for-data DOCKER_TAG=latest $(MAKE) docker-push
+	DOCKER_HOSTNAME=ghcr.io DOCKER_NAMESPACE=the-mesh-for-data DOCKER_TAGNAME=${DOCKER_TAGNAME} $(MAKE) docker-push
 
 include .mk/ibmcloud.mk
 include .mk/tools.mk
