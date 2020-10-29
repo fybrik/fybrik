@@ -11,7 +11,7 @@ Ensure that you have the following:
 - `git`
 - `make`
 
-## About this sample
+## About this guide
 By the end of this guide you will have the following installed to your Kubernetes cluster:
 - The control plane of {{< name >}}
 - Hashicorp Vault and connector as the credentials manager 
@@ -23,7 +23,7 @@ By the end of this guide you will have the following installed to your Kubernete
 
 1.  Obtain a local copy of {{< name >}} repository
     ```bash
-    git clone https://github.com/IBM/the-mesh-for-data.git
+    git clone https://{{< github_base >}}/{{< github_repo >}}.git
     ```
 1.  Change to the root directory of the repository
     ```bash
@@ -42,9 +42,7 @@ By the end of this guide you will have the following installed to your Kubernete
     ./hack/install.sh
     ```
 
-    {{< warning >}}
     to install on OpenShift you need to run ```WITHOUT_OPENSHIFT=false ./hack/install.sh``` instead.
-    {{< /warning >}}
 
 1. Enable the use of the [arrow flight module](https://{{< github_base >}}/the-mesh-for-data-flight-module)
     ```

@@ -6,19 +6,19 @@ weight: 10
 This sample shows how to run a Kubeflow notebook with {{< name >}} and demonstrate how polices are seamlessly applied when accessing a dataset.
 
 ## Before you begin
+This sample guide assume that you have completed all the steps in [quick start guide](/docs/setup/quickstart/).
+
 Ensure that you have the following:
 - Kubernetes cluster (this guide was tested with kind v0.10.0 and OpenShift 4.3)
-- Kubectl
-- Kuebflow installed on your cluster (this guide was tested with Kubeflow v1.0.2)
+- {{< name >}} installed on your Kubernetes cluster
 - S3 Object storage account (e.g., Ceph, Minio, IBM Cloud Object Storage)
+- [Kuebflow](https://www.kubeflow.org/) installed on your cluster (this guide was tested with Kubeflow v1.0.2)
+- Kubectl
+- Web browser
+
 
 {{< tip >}}
-You can install Kubeflow on Kind using ```install_kubeflow.sh``` script from {{< name >}} repository as follows:
-```bash
-cd samples/kubeflow/install/kubeflow
-./install_kubeflow.sh
-cd -
-```
+You can install Kubeflow on by running [install_kubeflow.sh](https://{{< github_base >}}/{{< github_repo >}}/blob/master/samples/kubeflow/install/kubeflow/install_kubeflow.sh). 
 {{</ tip >}}
 
 ## About this sample
@@ -27,7 +27,7 @@ In this sample guide you will run a Kubeflow notebook with {{< name >}} and demo
 In this sample guide you will:
 1. Prepare a dataset to be accessed by the notebook
 1. Register the dataset in ODPi Egeria catalog
-1. Provide {{< name >}} with credentials to the dataset
+1. Register the dataset credentials in Vault
 1. Deploy a Kubeflow notebook
 1. Create a {{< name >}} runtime environment for the notebook
 1. Read the dataset and observe policies applied seamlessly
@@ -36,7 +36,7 @@ In this sample guide you will:
 
 1.  Obtain a local copy of {{< name >}} repository
     ```bash
-    git clone https://github.com/IBM/the-mesh-for-data.git
+    git clone https://{{< github_base >}}/{{< github_repo >}}.git
     ```
 1.  Change to the root directory of the repository
     ```bash
@@ -50,7 +50,7 @@ In this sample guide you will:
 1. Update ```samples/kubeflow/example_transactions.csv.json``` with the location of the dataset, The location is encoded in the `fullPath` field as follows:
     - Bucket: Change the `bucket` value from `m4d-bucket-example` to the bucket name where the dataset reside.
     - endpoint: Change the S3 endpoint name from `s3.eu-de.cloud-object-storage.appdomain.cloud` to the object storage endpoint
-    - object_key: Change object_key from `data.csv` to the object name that holds the dataset.
+    - object_key: If needed, change object_key from `data.csv` to the object name that you used in the previous step.
     For more information on the content please see the comments in [third_pary/egeria/usage/create_new_asset.sh](https://{{< github_base >}}/{{< github_repo >}}/blob/master//third_party/egeria/usage/create_new_asset.sh) for more details.
 1. Register the dataset in the catalog
 
@@ -73,7 +73,7 @@ In this sample guide you will:
         cd -
         kill $!
         ```
-1. Record the asset if for the dataset. It will be displayed as part of the output from the previous step and export it to environment variable. An example for an asset id is `5de27155-48d3-4d78-8767-73e7b264e394`
+1. Record the asset id for the dataset. It will be displayed as part of the output from the previous step and export it to environment variable. An example for an asset id is `5de27155-48d3-4d78-8767-73e7b264e394`
     ```
     export ASSET_ID=<asset-id>
     ```
@@ -94,6 +94,8 @@ In this sample guide you will:
         - Secret data key: `<access-key-id>`
         - Secrey data value: `<secret-access-key>`
     - Click `save`
+    
+    Note: The path is a reference to the Egeria metadata server and asset id. In the default Egeria installation `cocoMDS3` is the metadata server name.
 
     - Finally, kill the port-forward
 
