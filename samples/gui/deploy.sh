@@ -27,15 +27,13 @@ spec:
         imagePullPolicy: Always
         envFrom:
         - configMapRef:
-            name: m4d-config
+            name: m4dgui-config
         env:
         - name: VAULT_TOKEN
           valueFrom:
             secretKeyRef:
               name: gui-vault-secret
               key: vault-root  
-        - name: GEOGRAPHY
-          value: US          
         ports:
         - containerPort: 8080
       restartPolicy: Always" > Deployment.yaml
@@ -43,7 +41,7 @@ spec:
 export VAULT_TOKEN=$(kubectl get secrets vault-unseal-keys -n m4d-system -o jsonpath={.data.vault-root} | base64 --decode)
 echo -n $VAULT_TOKEN > ./token.txt
 echo $VAULT_TOKEN
-kubectl apply -f ../../manager/config/prod/deployment_configmap.yaml 
+kubectl apply -f gui_configmap.yaml 
 kubectl delete secret gui-vault-secret
 kubectl create secret generic gui-vault-secret --from-file=vault-root=./token.txt || true
 kubectl delete service datauserserver || true
