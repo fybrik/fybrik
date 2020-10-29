@@ -102,8 +102,6 @@ docker-retag-images:
 	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/dummy-mover:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/dummy-mover:${DOCKER_TAGNAME}
 	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/opa-connector:${DOCKER_TAGNAME}
 	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/vault-connector:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/vault-connector:${DOCKER_TAGNAME}
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/serverpolicycompiler-mock:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/serverpolicycompiler-mock:${DOCKER_TAGNAME}
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/data-catalog-mock:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/data-catalog-mock:${DOCKER_TAGNAME}
 
 .PHONY: docker-push-public
 docker-push-public:
