@@ -3,17 +3,16 @@ title: Kubeflow notebook sample
 weight: 10
 ---
 
-This sample shows how to run a Kubeflow notebook with {{< name >}} and demonstrate how polices are seamlessly applied when accessing a dataset.
+This sample shows how to run a Kubeflow notebook with {{< name >}} and demonstrates how polices are seamlessly applied when accessing a dataset.
 
 ## Before you begin
 This sample guide assume that you have completed all the steps in [quick start guide](/docs/setup/quickstart/).
 
 Ensure that you have the following:
-- Kubernetes cluster (this guide was tested with kind v0.10.0 and OpenShift 4.3)
+- `kubectl` with access to a Kubernetes cluster (this guide was tested with kind v0.10.0 and OpenShift 4.3)
 - {{< name >}} installed on your Kubernetes cluster
 - S3 Object storage account (e.g., Ceph, Minio, IBM Cloud Object Storage)
 - [Kuebflow](https://www.kubeflow.org/) installed on your cluster (this guide was tested with Kubeflow v1.0.2)
-- Kubectl
 - Web browser
 
 

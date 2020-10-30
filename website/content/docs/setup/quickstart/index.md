@@ -29,13 +29,13 @@ By the end of this guide you will have the following installed to your Kubernete
     ```bash
     cd the-mesh-for-data
     ```
+
+## Install {{< name >}}
+
 1. Set the current namespace to `m4d-system`
     ```bash
     kubectl config set-context --current --namespace=m4d-system
     ```
-
-## Install {{< name >}}
-
 1. Run the quick install script to install the control plane elements.
 
     ```bash
