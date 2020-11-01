@@ -3,7 +3,7 @@ title: Quick Start
 weight: 10
 ---
 
-This guide lets you quickly evaluate {{< name >}}. For a custom setup follow the [Installation instructions](/docs/setup/install).
+This guide lets you quickly evaluate {{< name >}}. For a custom setup follow the [Installation instructions](../install).
 
 ## Before you begin
 Ensure that you have the following:
@@ -51,4 +51,4 @@ By the end of this guide you will have the following installed to your Kubernete
 
 ## Next steps
 You can now start using {{< name >}}. For samples please see:
-- [Sample Kubeflow notebook with {{< name >}}](/docs/usage/notebook-sample)
+- [Sample Kubeflow notebook with {{< name >}}]({{< baseurl >}}/docs/usage/notebook-sample)

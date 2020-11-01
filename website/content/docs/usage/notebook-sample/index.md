@@ -6,7 +6,7 @@ weight: 10
 This sample shows how to run a Kubeflow notebook with {{< name >}} and demonstrates how polices are seamlessly applied when accessing a dataset.
 
 ## Before you begin
-This sample guide assume that you have completed all the steps in [quick start guide](/docs/setup/quickstart/).
+This sample guide assume that you have completed all the steps in [quick start guide]({{< baseurl >}}/docs/setup/quickstart/).
 
 Ensure that you have the following:
 - `kubectl` with access to a Kubernetes cluster (this guide was tested with kind v0.10.0 and OpenShift 4.3)
@@ -168,4 +168,4 @@ This allows the code in the notebook to read the data and policies to seamlessly
     ```
 
 # Next steps
-You have completed an execution of a notebook with {< name >}} and now ready to continue and exploring.
+You have completed an execution of a notebook with {{< name >}} and now ready to continue and exploring.
