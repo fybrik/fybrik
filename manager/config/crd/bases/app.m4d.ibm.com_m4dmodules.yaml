@@ -184,6 +184,28 @@ spec:
                 - write
                 type: string
               type: array
+            statusIndicators:
+              description: StatusIndicators allow to check status of a non-standard resource that can not be computed by helm/kstatus
+              items:
+                description: ResourceStatusIndicator is used to determine the status of an orchestrated resource
+                properties:
+                  errorMessage:
+                    description: ErrorMessage specifies the resource field to check for an error, e.g. status.errorMsg
+                    type: string
+                  failureCondition:
+                    description: FailureCondition specifies a condition that indicates the resource failure It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
+                    type: string
+                  kind:
+                    description: Kind provides information about the resource kind
+                    type: string
+                  successCondition:
+                    description: SuccessCondition specifies a condition that indicates that the resource is ready It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
+                    type: string
+                required:
+                - kind
+                - successCondition
+                type: object
+              type: array
             type:
               description: ModuleType indicates one of job, service, configuration so the manager knows how to deploy it
               enum:

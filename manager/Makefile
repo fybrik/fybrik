@@ -11,6 +11,7 @@ DOCKER_TAGNAME ?= latest
 DOCKER_FILE = Dockerfile
 DOCKER_CONTEXT = .
 GO_OUTPUT_FILE = manager
+KUBE_NAMESPACE ?= m4d-system
 include $(ROOT_DIR)/.mk/docker.mk
 include $(ROOT_DIR)/.mk/verify.mk
 include $(ROOT_DIR)/.mk/operator.mk
@@ -27,22 +28,34 @@ docker-build: generate
 
 # Deploy only movement-controller in the configured Kubernetes cluster in ~/.kube/config
 deploy_mc: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
-	$(TOOLBIN)/kubectl create namespace m4d-system || true
+	$(TOOLBIN)/kubectl create namespace ${KUBE_NAMESPACE} || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:${DOCKER_TAGNAME}
 	$(TOOLBIN)/kustomize build --load_restrictor none config/movement-controller | $(TOOLBIN)/kubectl apply -f -
 
 undeploy_mc: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
-	$(TOOLBIN)/kubectl create namespace m4d-system || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:${DOCKER_TAGNAME}
 	$(TOOLBIN)/kustomize build --load_restrictor none config/movement-controller | $(TOOLBIN)/kubectl delete -f -
 
-.PHONY: motion-integration-tests
-motion-integration-tests: #deploy_mc
-	IMG=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:${DOCKER_TAGNAME} $(MAKE) deploy_mc
-	$(TOOLBIN)/kubectl wait --for=condition=available -n m4d-system deployment/m4dcontroller-manager --timeout=120s
-	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestBatchTransferAPIs -count 1
+deploy_it: docker-secret
+	$(TOOLBIN)/kubectl create namespace ${KUBE_NAMESPACE} || true
+	cd config/integration-tests && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
+	cd config/integration-tests && $(ABSTOOLBIN)/kustomize edit set image data-catalog-mock=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/data-catalog-mock:${DOCKER_TAGNAME}
+	cd config/integration-tests && $(ABSTOOLBIN)/kustomize edit set image policycompiler=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/serverpolicycompiler-mock:${DOCKER_TAGNAME}
+	$(TOOLBIN)/kustomize build --load_restrictor none config/integration-tests | $(TOOLBIN)/kubectl apply -f -
 
-export PILOT_MAGIC_NUMBER=abcde12345
+undeploy_it:
+	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
+	$(TOOLBIN)/kustomize build --load_restrictor none config/integration-tests | $(TOOLBIN)/kubectl delete -f -
+
+.PHONY: wait_for_manager
+wait_for_manager:
+	$(TOOLBIN)/kubectl wait --for=condition=available -n ${KUBE_NAMESPACE} deployment/m4d-controller-manager --timeout=120s
+
+.PHONY: run-integration-tests
+run-integration-tests: wait_for_manager
+	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestMotionAPIs -count 1
+	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestAPIs -count 1
+
 export CATALOG_CONNECTOR_URL=localhost:50085
 export CREDENTIALS_CONNECTOR_URL=localhost:50085
 export VAULT_ADDRESS=http://127.0.0.1:8200/
@@ -84,8 +97,6 @@ e2e-cleanup: $(TOOLBIN)/kubectl
 	$(ABSTOOLBIN)/kubectl delete -f testdata/e2e/module-implicit-copy-kafka-to-s3-stream.yaml || true
 	$(ABSTOOLBIN)/kubectl patch m4dapplication notebook -p '{"metadata":{"finalizers":[]}}' --type=merge || true
 	$(ABSTOOLBIN)/kubectl delete -f testdata/e2e/m4dapplication.yaml -n default || true
-	$(ABSTOOLBIN)/kubectl patch batchtransfer 012d42539692bba841a7 -n m4d-system -p '{"metadata":{"finalizers":[]}}' --type=merge || true
-	$(ABSTOOLBIN)/kubectl delete batchtransfer 012d42539692bba841a7 -n m4d-system || true
 	@echo
 	$(MAKE) uninstall 1>/dev/null 2>/dev/null || true
 
@@ -97,6 +108,11 @@ docker-secret: $(TOOLBIN)/kubectl
 		--from-literal=tagname=$(DOCKER_TAGNAME) \
 		--from-literal=username=$(DOCKER_USERNAME) \
 		--from-literal=password=$(DOCKER_PASSWORD) \
+		--namespace ${KUBE_NAMESPACE} \
+		|| true
+	$(ABSTOOLBIN)/kubectl create secret generic registry-ca-cert \
+		--from-file=../hack/registry/ca.crt \
+		--namespace ${KUBE_NAMESPACE} \
 		|| true
 
 .PHONY: e2e-setup
@@ -117,9 +133,8 @@ e2e-setup: $(TOOLBIN)/kubectl
 
 .PHONY: e2e-run
 e2e-run: main.deps
-	(timeout 20s go run ./main.go 2>&1 | tee e2e.out) || true
-	@cat e2e.out
-	@grep -q $(PILOT_MAGIC_NUMBER) e2e.out
+	(timeout 60s go run ./main.go 2>&1 | tee e2e.out) || true
+	$(ABSTOOLBIN)/kubectl describe m4dapplication notebook | grep Ready | grep true
 
 DEBUG := ./debug.out
 

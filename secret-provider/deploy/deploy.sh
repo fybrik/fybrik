@@ -7,13 +7,14 @@ set -e
 
 : ${KUBE_NAMESPACE:=m4d-system}
 : ${WITHOUT_VAULT=true}
-: ${ROOT_DIR=../..}
+
+source ../../third_party/vault/vault-util.sh
 
 kustomize_build() {
         local operation=$1
         local pass=$2
         local TEMP=$(mktemp -d)
-        cp -ar base/* $TEMP
+        cp -r base/* $TEMP
         cd $TEMP
 
         local image=secret-provider
@@ -33,10 +34,17 @@ deploy() {
 }
 
 case "$1" in
-undeploy)
-    undeploy
-    ;;
-*)
+  deploy)
     deploy
     ;;
+  undeploy)
+    undeploy
+    ;;
+  configure_path)
+      export AUTH_METHOD=K8S
+      configure_path
+    ;;
+  *)
+    echo "usage: %0 [deploy|undeploy|configure_path]"
+    exit 1
 esac

@@ -15,8 +15,8 @@ undeploy:
 
 .PHONY: configure-vault
 configure-vault:
-	cd deploy && ./deploy-vault.sh configure || echo "failed to configure vault"
+	cd deploy && ./deploy.sh configure_path || echo "failed to configure vault"
 
 .PHONY: vault-demo-secrets
 vault-demo-secrets:
-	cd deploy && ./deploy-vault.sh populate_demo_secrets || echo "failed to write demo secrets to vault"
+	cd tests && ./test.sh populate_demo_secrets || echo "failed to write demo secrets to vault"

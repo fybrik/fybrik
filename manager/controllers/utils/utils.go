@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"runtime"
 	"sort"
+	"strings"
 
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	dc "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
@@ -32,7 +33,7 @@ func DetermineCause(err error, prefix string) string {
 	}
 }
 
-//GetDataFormat returns the existing data format
+// GetDataFormat returns the existing data format
 func GetDataFormat(info *dc.DatasetDetails) (app.DataFormatType, error) {
 	switch info.DataFormat {
 	case "parquet":
@@ -53,7 +54,7 @@ func GetDataFormat(info *dc.DatasetDetails) (app.DataFormatType, error) {
 	return app.Binary, errors.New("Unknown format " + info.DataFormat)
 }
 
-//GetProtocol returns the existing data protocol
+// GetProtocol returns the existing data protocol
 func GetProtocol(info *dc.DatasetDetails) (app.IFProtocol, error) {
 	switch info.DataStore.Type {
 	case dc.DataStore_S3:
@@ -68,17 +69,17 @@ func GetProtocol(info *dc.DatasetDetails) (app.IFProtocol, error) {
 
 // IsTransformation returns true if the data transformation is required
 func IsTransformation(actionName string) bool {
-	return (actionName != "Allow") //TODO FIX THIS
+	return (actionName != "Allow") // TODO FIX THIS
 }
 
 // IsAction returns true if any action is required
 func IsAction(actionName string) bool {
-	return (actionName != "Allow") //TODO FIX THIS
+	return (actionName != "Allow") // TODO FIX THIS
 }
 
 // IsDenied returns true if the data access is denied
 func IsDenied(actionName string) bool {
-	return (actionName == "Deny") //TODO FIX THIS
+	return (actionName == "Deny") // TODO FIX THIS
 }
 
 // GetAttribute parses a JSON string and returns the required attribute value
@@ -171,7 +172,10 @@ func HasCondition(status *app.M4DApplicationStatus, cType app.ConditionType) boo
 func UpdateCondition(status *app.M4DApplicationStatus, cType app.ConditionType, reason string, message string) {
 	for ind, cond := range status.Conditions {
 		if cond.Type == cType && cond.Reason == reason {
-			if cond.Message != message {
+			// A condition already exists: aggregate the error message in order to report multiple errors to the user
+			if !strings.Contains(cond.Message, message) {
+				// avoid duplicate errors
+				// TODO: add a more detailed description to the error message indicating from what dataset/resource it comes from
 				status.Conditions[ind].Message += " \n" + message
 			}
 			return

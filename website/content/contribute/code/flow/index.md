@@ -1,13 +1,19 @@
 ---
 title: Contribution Flow
+summary: This page describes the GitHub workflow, build and test instructions.
+
 weight: 1
 ---
 
-Contributing to {{< name >}} is done following the GitHub workflow for Pull Requests (PRs).
+This page describes the flow that contributors should follow, including the GitHub workflow and how to build and test the project after making changes.
+
+# Issues and Pull Requests
+
+Contributing to {{< name >}} is done following the GitHub workflow of Pull Requests.
 
 You should usually open a pull request in the following situations:
-- Submit trivial fixes (for example, a typo, a broken link or an obvious error)
-- Start work on a contribution that was already asked for, or that you’ve already discussed, in an issue
+- Start work on a contribution that was already asked for, or that you’ve already discussed, in an issue.
+- Submit trivial fixes (for example, a typo, a broken link or an obvious error).
 
 A pull request doesn’t have to represent finished work. It’s usually better to open a pull request early on, so others can watch or give feedback on your progress. Just mark it as a “WIP” (Work in Progress) in the subject line. You can always add more commits later.
 
@@ -27,9 +33,12 @@ Here’s how to submit a pull request:
     git merge upstream/master
     git push origin master
     ```
-- **[Create a branch](https://guides.github.com/introduction/flow/)** for your edits from where you want to base your work (usually master).
+- **[Create a branch](https://guides.github.com/introduction/flow/)** for your edits from master. Note that your should never add edits to the master branch itself.
+    ```shell
+    git checkout -b <branch name>
+    ```
 - **Make commits of logical units**, ensuring that commit messages are in the [proper format](#format-of-the-commit-message).
-- **Push your changes** to a topic branch in your fork of the repository.
+- **Push your changes** to the created branch in your fork of the repository.
 - **Open a pull request** to the original repository.
 - **Reference any relevant issues** or supporting documentation in your PR (for example, “Closes #37.”)
 
@@ -37,22 +46,12 @@ As always, you must [follow code style](#normalize-the-code), ensure that [all t
 
 **Thanks for your contribution!**
 
-
-# Normalize the code
-
-To ensure the code is formatted uniformly we use various linters which are
-invoked using
-
-```bash
-make verify
-```
-
 # Building and testing
 
-Build run unit tests
+[Setup a development environment](../devenv) and make sure `make install-tools` finished successfully.
 
+Build and run unit tests with:
 ```bash
-make install-tools
 make build
 make test
 ```
@@ -84,20 +83,20 @@ USE_EXISTING_CONTROLLER=true NO_SIMULATED_PROGRESS=true USE_EXISTING_CLUSTER=tru
   should be used. E.g. in integration tests running against an existing setup a controller is already existing
   in the Kubernetes cluster and should not be started by the test as two controllers competing may influence the test.
 
-Setup default local kind cluster with istio and a local image registry:
+Setup default local kind cluster with a local image registry:
 ```bash
-make install-tools
 make kind
 ```
 
 By default the docker setup points to the official docker.io registry. When developing
 locally and building/pushing docker containers the docker host and namespace should be changed. When 
 using a local kind setup with a local registry the environment can be pointed to it by setting the following 
-environment variables:
+environment variables. (Please note that you also have to add an entry to your /etc/hosts file):
 
 ```bash
-export DOCKER_HOSTNAME=localhost:5000
-export DOCKER_NAMESPACE=m4d
+export DOCKER_HOSTNAME=kind-registry:5000
+export DOCKER_NAMESPACE=m4d-system
+export HELM_EXPERIMENTAL_OCI=1
 ```
 
 There are make commands for building and pushing docker images separately or in one go:
@@ -121,11 +120,23 @@ Running end to end tests:
 make e2e
 ```
 
+# Normalize the code
+
+To ensure the code is formatted uniformly we use various linters which are
+invoked using
+
+```bash
+make verify
+```
+
 # Format of the Commit Message
 
-We follow a rough convention for commit messages that is designed to answer two questions: what changed and why.
+The project follows a rough convention for commit messages that is designed to answer two questions: what changed and why.
 The subject line should feature the what and the body of the commit should describe the why.
 
+Every commit must also include a DCO Sign Off at the end of the commit message. By doing this you state that you certify the [Developer Certificate of Origin](https://developercertificate.org/). This can be automated by adding the `-s` flag to `git commit`. You can also mass sign-off a whole PR with `git rebase --signoff master`.
+
+Example commit message:
 ```
 scripts: add the test-cluster command
 
@@ -133,6 +144,8 @@ this uses tmux to setup a test cluster that you can easily kill and
 start for debugging.
 
 Fixes #38
+
+Signed-off-by: Legal Name <your.email@example.com>
 ```
 
 The format can be described more formally as follows:
@@ -143,6 +156,8 @@ The format can be described more formally as follows:
 <why this change was made>
 <BLANK LINE>
 <footer>
+<BLANK LINE>
+<signoff>
 ```
 
 The first line is the subject and should be no longer than 70 characters, the second line is always blank, and other lines should be wrapped at 80 characters.

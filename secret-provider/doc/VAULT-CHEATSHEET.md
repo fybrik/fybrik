@@ -2,8 +2,8 @@
 
 Option 1 - connect to Vault instance inside a k8s cluster
 ```
-export VAULT_ADDR=http://127.0.0.1:8202
-kubectl port-forward -n m4d-system service/vault 8202:8200 &
+export VAULT_ADDR=http://127.0.0.1:8200
+kubectl port-forward -n m4d-system service/vault 8200:8200 &
 export VAULT_TOKEN=$(kubectl get secrets vault-unseal-keys -n m4d-system -o jsonpath={.data.vault-root} | base64 --decode)
 ```
 
@@ -64,4 +64,10 @@ vault kv get secret/cos
 
 # List the secrets under the secret path
 vault kv list secret
+```
+
+##### Teardown
+```
+# If used kubectl port-forward delete it in the end with:
+kill -9 %%
 ```

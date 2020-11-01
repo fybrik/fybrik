@@ -14,8 +14,8 @@ import (
 
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
@@ -27,7 +27,7 @@ func getEnv(key string) string {
 	return value
 }
 
-func GetMetadata(datasetID string) {
+func GetMetadata(datasetID string) error {
 	catalogConnectorURL := getEnv("CATALOG_CONNECTOR_URL")
 	catalogProviderName := getEnv("CATALOG_PROVIDER_NAME")
 
@@ -35,7 +35,7 @@ func GetMetadata(datasetID string) {
 	timeoutInSeconds, err := strconv.Atoi(timeoutInSecs)
 	if err != nil {
 		log.Printf("Atoi conversion of timeoutinseconds failed: %v", err)
-		return
+		return errors.Wrap(err, "Atoi conversion of timeoutinseconds failed")
 	}
 
 	fmt.Println("timeoutInSeconds: ", timeoutInSeconds)
@@ -50,7 +50,7 @@ func GetMetadata(datasetID string) {
 		errStatus, _ := status.FromError(err)
 		fmt.Println(errStatus.Message())
 		fmt.Println(errStatus.Code())
-		return
+		return errors.Wrap(err, "Connection to "+catalogProviderName+" Catalog Connector failed")
 	}
 	defer conn.Close()
 
@@ -75,27 +75,20 @@ func GetMetadata(datasetID string) {
 		fmt.Println("Message:", errStatus.Message())
 		// lets print the error code which is `INVALID_ARGUMENT`
 		fmt.Println("Code:", errStatus.Code())
-		// Want its int version for some reason?
-		// you shouldn't actullay do this, but if you need for debugging,
-		// you can do `int(status_code)` which will give you `3`
-		//
-		// Want to take specific action based on specific error?
-		if codes.InvalidArgument == errStatus.Code() {
-			// do your stuff here
-			log.Fatal()
-		}
-	} else {
-		fmt.Println("***************************************************************")
-		log.Printf("Received Response for GetDatasetInfo with  datasetID: %s\n", r.GetDatasetId())
-		fmt.Println("***************************************************************")
-		log.Printf("Response received from %s is given below:", catalogProviderName)
-		s, _ := json.MarshalIndent(r, "", "\t")
-		fmt.Print(string(s))
-		fmt.Println("***************************************************************")
+		return errors.Wrap(err, "Error sending data to Catalog Connector")
 	}
+
+	fmt.Println("***************************************************************")
+	log.Printf("Received Response for GetDatasetInfo with  datasetID: %s\n", r.GetDatasetId())
+	fmt.Println("***************************************************************")
+	log.Printf("Response received from %s is given below:", catalogProviderName)
+	s, _ := json.MarshalIndent(r, "", "\t")
+	fmt.Print(string(s))
+	fmt.Println("***************************************************************")
+	return nil
 }
 
-func GetCredentials(datasetID string) {
+func GetCredentials(datasetID string) error {
 	credentialsConnectorURL := getEnv("CREDENTIALS_CONNECTOR_URL")
 	credentialsProviderName := getEnv("CREDENTIALS_PROVIDER_NAME")
 
@@ -104,7 +97,7 @@ func GetCredentials(datasetID string) {
 
 	if err != nil {
 		log.Printf("Atoi conversion of timeoutinseconds failed: %v", err)
-		return
+		return errors.Wrap(err, "Atoi conversion of timeoutinseconds failed in GetCredentials")
 	}
 
 	fmt.Println("timeoutInSeconds: ", timeoutInSeconds)
@@ -120,7 +113,7 @@ func GetCredentials(datasetID string) {
 		fmt.Println(errStatus.Message())
 
 		fmt.Println(errStatus.Code())
-		return
+		return errors.Wrap(err, "Connection to Credentials Connector failed")
 	}
 	defer conn.Close()
 
@@ -145,46 +138,39 @@ func GetCredentials(datasetID string) {
 		log.Println("Message:", errCredentialStatus.Message())
 		// lets print the error code which is `INVALID_ARGUMENT`
 		log.Println("Code:", errCredentialStatus.Code())
-		// Want its int version for some reason?
-		// you shouldn't actullay do this, but if you need for debugging,
-		// you can do `int(status_code)` which will give you `3`
-		//
-		// Want to take specific action based on specific error?
-		if codes.InvalidArgument == errCredentialStatus.Code() {
-			// do your stuff here
-			log.Fatal()
-		}
-	} else {
-		log.Println("***************************************************************")
-		log.Printf("Received Response for GetCredentialsInfo with datasetID: %s\n", responseCredential.GetDatasetId())
-		log.Println("***************************************************************")
-		log.Printf("Response received from %s is given below:", credentialsProviderName)
-		sCredential, _ := json.MarshalIndent(responseCredential, "", "\t")
-		log.Print(string(sCredential))
-		log.Println("***************************************************************")
+		return errors.Wrap(err, "Error sending data to Credentials Connector in GetCredentials")
 	}
+
+	log.Println("***************************************************************")
+	log.Printf("Received Response for GetCredentialsInfo with datasetID: %s\n", responseCredential.GetDatasetId())
+	log.Println("***************************************************************")
+	log.Printf("Response received from %s is given below:", credentialsProviderName)
+	sCredential, _ := json.MarshalIndent(responseCredential, "", "\t")
+	log.Print(string(sCredential))
+	log.Println("***************************************************************")
+	return nil
 }
 
 func main() {
-	//example 1: remote parquet
+	// example 1: remote parquet
 	// datasetID := "10a9fba1-b049-40d9-bac9-1a608c1e4774"
 	// catalogID := "591258ed-7461-47db-8eb6-1edf285c26cd"
 
-	//example 2: remote db2
+	// example 2: remote db2
 	// datasetID := "2d1b5352-1fbf-439b-8bb0-c1967ac484b9"
 	// catalogID := "1c080331-72da-4cea-8d06-5f075405cf17"
 
-	//example 3: remote csv,
-	//datasetID := "79aaff22-cfbe-470a-86b6-8f5125781a5c";
-	//catalogID := "1c080331-72da-4cea-8d06-5f075405cf17";
+	// example 3: remote csv,
+	// datasetID := "79aaff22-cfbe-470a-86b6-8f5125781a5c";
+	// catalogID := "1c080331-72da-4cea-8d06-5f075405cf17";
 
-	//example 4: local csv
+	// example 4: local csv
 	// datasetID := "cc17803b-163a-43db-97e3-323a8519c78f"
 	// dataSetID := "6c49313f-1207-4995-a957-5cd49c4e57ac"
 
-	//kafka
+	// kafka
 	catalogID := "87ffdca3-8b5d-4f77-99f9-0cb1fba1f73f"
-	datasetID := "01c6f0f0-9ffe-4ccc-ac07-409523755e72" //"466b5d7c-38c5-438c-8298-5c7e00e40638"
+	datasetID := "01c6f0f0-9ffe-4ccc-ac07-409523755e72" // "466b5d7c-38c5-438c-8298-5c7e00e40638"
 
 	var datasetIDJson string
 	if getEnv("CATALOG_PROVIDER_NAME") == "EGERIA" {
@@ -193,6 +179,21 @@ func main() {
 		datasetIDJson = "{\"catalog_id\":\"" + catalogID + "\",\"asset_id\":\"" + datasetID + "\"}"
 	}
 
-	GetMetadata(datasetIDJson)
-	GetCredentials(datasetIDJson)
+	err := GetMetadata(datasetIDJson)
+	if err != nil {
+		fmt.Printf("Error in GetCredentials:\n %v\n\n", err)
+		fmt.Printf("Error in GetCredentials Details:\n%+v\n\n", err)
+		// errors.Cause() provides access to original error.
+		fmt.Printf("Error in GetCredentials Cause: %v\n", errors.Cause(err))
+		fmt.Printf("Error in GetCredentials Extended Cause:\n%+v\n", errors.Cause(err))
+	}
+
+	err = GetCredentials(datasetIDJson)
+	if err != nil {
+		fmt.Printf("Error in GetCredentials: \n %v\n\n", err)
+		fmt.Printf("Error in GetCredentials Details: \n%+v\n\n", err)
+		// errors.Cause() provides access to original error.
+		fmt.Printf("Error in GetCredentials Cause: %v\n", errors.Cause(err))
+		fmt.Printf("Error in GetCredentials Details Extended Cause:\n%+v\n", errors.Cause(err))
+	}
 }

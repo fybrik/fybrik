@@ -11,11 +11,15 @@ metadata:
   namespace: "default"
   labels: []
 
+image: "ghcr.io/the-mesh-for-data/mover:latest"
+imagePullPolicy: null
+noFinalizer: "false"
+
 # copies from source
 source:
   connection:
     kafka:
-      bootstrap_servers: []
+      bootstrap_servers: ""
       schema_registry: ""
       topic_name: ""
       ssl_truststore: ""

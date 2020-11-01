@@ -6,6 +6,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/hashicorp/vault/api"
@@ -73,30 +74,50 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 			return result, err
 		}
 		applicationContext.Status.ObservedGeneration = applicationContext.GetGeneration()
-	} else if generatedBlueprint.Status.Ready {
-		applicationContext.Status.Ready = true
+	} else {
+		checkBlueprintStatus(applicationContext, generatedBlueprint)
 	}
-	// TODO: check for blueprint errors and report accordingly
 
 	// Update CRD status in case of change (other than deletion, which was handled separately)
-	if !equality.Semantic.DeepEqual(applicationContext.Status, observedStatus) && applicationContext.DeletionTimestamp.IsZero() {
+	if !equality.Semantic.DeepEqual(&applicationContext.Status, observedStatus) && applicationContext.DeletionTimestamp.IsZero() {
 		log.V(0).Info("Reconcile: Updating status for desired generation " + fmt.Sprint(applicationContext.GetGeneration()))
 		if err := r.Client.Status().Update(ctx, applicationContext); err != nil {
 			return ctrl.Result{}, err
 		}
 	}
-	if utils.HasCondition(&applicationContext.Status, app.FailureCondition) {
+	failed := utils.HasCondition(&applicationContext.Status, app.FailureCondition)
+	if failed {
 		log.Info("Reconciled with error conditions")
 		utils.PrintStructure(applicationContext.Status.Conditions, log, "Conditions")
 	}
+	// polling for blueprint status
+	if !applicationContext.Status.Ready && !failed {
+		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+	}
 	return ctrl.Result{}, nil
+}
+
+func checkBlueprintStatus(applicationContext *app.M4DApplication, blueprint *app.Blueprint) {
+	applicationContext.Status.DataAccessInstructions = ""
+	applicationContext.Status.Ready = false
+	if utils.HasCondition(&applicationContext.Status, app.FailureCondition) {
+		return
+	}
+	if blueprint.Status.Error != "" {
+		utils.ActivateCondition(applicationContext, app.FailureCondition, "OrchestrationFailure", blueprint.Status.Error)
+		return
+	}
+	if blueprint.Status.Ready {
+		applicationContext.Status.Ready = true
+		applicationContext.Status.DataAccessInstructions = blueprint.Status.DataAccessInstructions
+	}
 }
 
 // reconcileFinalizers reconciles finalizers for M4DApplication
 func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M4DApplication) error {
 	// finalizer (Blueprint)
 	finalizerName := r.Name + ".finalizer"
-	hasFinalizer := ContainsFinalizer(applicationContext, finalizerName)
+	hasFinalizer := ctrlutil.ContainsFinalizer(applicationContext, finalizerName)
 
 	// If the object has a scheduled deletion time, delete it and its associated blueprint
 	if !applicationContext.DeletionTimestamp.IsZero() {
@@ -128,18 +149,6 @@ func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M
 	return nil
 }
 
-// ContainsFinalizer returns true if the given finalizer string appears in the list of finalizers of the object
-// Should be implemented in controller-runtime package - TO FIX
-func ContainsFinalizer(obj *app.M4DApplication, finalizer string) bool {
-	f := obj.GetFinalizers()
-	for _, e := range f {
-		if e == finalizer {
-			return true
-		}
-	}
-	return false
-}
-
 func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *app.M4DApplication) error {
 	// clear provisioned buckets
 	key, _ := client.ObjectKeyFromObject(applicationContext)
@@ -157,7 +166,7 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 	if err := r.DeleteOwnedBlueprint(applicationContext); err != nil {
 		return err
 	}
-	//delete the allocated namespace
+	// delete the allocated namespace
 	if err := r.DeleteNamespace(namespace); err != nil {
 		return err
 	}
@@ -171,8 +180,11 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 
 	// Data User created or updated the M4DApplication
 
-	// clear conditions
+	// clear status
 	applicationContext.Status.Conditions = make([]app.Condition, 0)
+	applicationContext.Status.DataAccessInstructions = ""
+	applicationContext.Status.Ready = false
+
 	key, _ := client.ObjectKeyFromObject(applicationContext)
 
 	// clear storage assets
@@ -187,7 +199,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	var requirements []modules.DataInfo
 	for _, dataset := range applicationContext.Spec.Data {
 		req := modules.DataInfo{
-			AssetID:      utils.CreateDataSetIdentifier(dataset.DataSetID),
+			AssetID:      dataset.DataSetID,
 			DataDetails:  nil,
 			Credentials:  nil,
 			Actions:      make(map[app.ModuleFlow]modules.Transformations),

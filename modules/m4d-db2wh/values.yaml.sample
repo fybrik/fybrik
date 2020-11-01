@@ -38,3 +38,6 @@ transformations:
   id: encrypt-ID
   level: 2
   name: encrypt
+
+image: kind-registry:5000/m4d-system/dummy-mover:latest
+imagePullSecret: IfNotPresent

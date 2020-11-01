@@ -22,6 +22,15 @@ const NewApplicationEdit = props => {
     })
     return result
   }
+
+  const parseSelector = selectorMap => {
+    var result = ''
+    for (const [key, value] of Object.entries(selectorMap)) {
+      result += key + ':' + value + ','
+    }
+    return result.slice(0,result.length-1)
+  }
+
   // application instance
   const [application, setApplication] = useState({
     name: props.history.location.state.application.metadata.name,
@@ -153,7 +162,7 @@ const NewApplicationEdit = props => {
         label='Workload selector'
         required formNoValidate
         disabled={true}
-        defaultValue={application.label}
+        defaultValue={parseSelector(application.labels)}
       />
       <Form.Input
         label='Purpose'

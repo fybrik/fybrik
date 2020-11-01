@@ -33,6 +33,9 @@ deploy() {
             --filter=blob:none \
             https://github.com/odpi/egeria.git
 
+        # create the ns if it doesn't exist
+        kubectl create ns $NAMESPACE || true
+
         # scc permissions for egeria pods to execute
         # this is done as per guidelines mentioned in https://github.com/odpi/egeria/issues/2790#issuecomment-674879248 
         $WITHOUT_OPENSHIFT || oc create -f egeria-scc.yaml
@@ -42,7 +45,7 @@ deploy() {
         helm dep update $chartpath
         helm install $RELEASE $chartpath \
             -f lab.yaml \
-            --namespace=$NAMESPACE --create-namespace \
+            --namespace=$NAMESPACE \
             --wait --timeout=${TIMEOUT}
 
         rm -rf egeria

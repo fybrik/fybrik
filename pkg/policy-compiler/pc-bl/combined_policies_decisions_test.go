@@ -28,12 +28,12 @@ func checkCombinedPolicies(t *testing.T, decisions1, decisions2 *pb.PoliciesDeci
 	for _, datasetDecisions := range decisions2.DatasetDecisions {
 		tu.VerifyContainsDatasetDecision(t, combinedPolicies, datasetDecisions)
 	}
-	//here could be verification on order if we would work with it
-	//todo: check duplication of same policy/action
+	// here could be verification on order if we would work with it
+	// TODO: check duplication of same policy/action
 }
 
-//TestSingleColumnSingleOperationCombine checks if multiple enforcement actions combined
-//together performed on a single column is returned correctly in accordance with what is expected
+// TestSingleColumnSingleOperationCombine checks if multiple enforcement actions combined
+// together performed on a single column is returned correctly in accordance with what is expected
 
 func TestSingleColumnSingleOperationCombine(t *testing.T) {
 	operationDecision1 := &pb.OperationDecision{Operation: &pb.AccessOperation{Type: pb.AccessOperation_READ},
@@ -52,9 +52,9 @@ func TestSingleColumnSingleOperationCombine(t *testing.T) {
 		&pb.PoliciesDecisions{DatasetDecisions: []*pb.DatasetDecision{datasetDecison2}})
 }
 
-//TestSingleDatasetSingleOperationCombine checks if multiple enforcement actions combined
-//together and performed on multiple columns pertaining to one single dataset
-//then if the policies are returned correctly in accordance with what is expected
+// TestSingleDatasetSingleOperationCombine checks if multiple enforcement actions combined
+// together and performed on multiple columns pertaining to one single dataset
+// then if the policies are returned correctly in accordance with what is expected
 
 func TestSingleDatasetSingleOperationCombine(t *testing.T) {
 	operationDecision1 := &pb.OperationDecision{Operation: &pb.AccessOperation{Type: pb.AccessOperation_READ},
@@ -73,9 +73,9 @@ func TestSingleDatasetSingleOperationCombine(t *testing.T) {
 		&pb.PoliciesDecisions{DatasetDecisions: []*pb.DatasetDecision{datasetDecison2}})
 }
 
-//TestSingleColumnTwoOperationsCombine checks if two operations are combined
-//together and performed on single columns  then if the copmbined  policies are returned
-//correctly in accordance with what is expected
+// TestSingleColumnTwoOperationsCombine checks if two operations are combined
+// together and performed on single columns  then if the copmbined  policies are returned
+// correctly in accordance with what is expected
 
 func TestSingleColumnTwoOperationsCombine(t *testing.T) {
 	operationDecision1 := &pb.OperationDecision{Operation: &pb.AccessOperation{Type: pb.AccessOperation_COPY},
@@ -94,9 +94,9 @@ func TestSingleColumnTwoOperationsCombine(t *testing.T) {
 		&pb.PoliciesDecisions{DatasetDecisions: []*pb.DatasetDecision{datasetDecison2}})
 }
 
-//TestTwoDatasetsSingleOperationCombine checks if single operations is performed on multiple
-//datasets and then the policies are combined together then if the combined policies are
-//returned correctly in accordance with what is expected
+// TestTwoDatasetsSingleOperationCombine checks if single operations is performed on multiple
+// datasets and then the policies are combined together then if the combined policies are
+// returned correctly in accordance with what is expected
 
 func TestTwoDatasetsSingleOperationCombine(t *testing.T) {
 	operationDecision1 := &pb.OperationDecision{Operation: &pb.AccessOperation{Type: pb.AccessOperation_COPY},

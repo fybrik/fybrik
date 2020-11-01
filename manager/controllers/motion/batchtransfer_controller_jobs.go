@@ -29,10 +29,18 @@ func VolumeConfiguration(batchTransfer *motionv1.BatchTransfer) ([]v1.Volume, []
 				SecretName: batchTransfer.Name,
 			},
 		},
+	}, {
+		Name: "workspace",
+		VolumeSource: v1.VolumeSource{
+			EmptyDir: &v1.EmptyDirVolumeSource{},
+		},
 	}}
 	volumeMounts := []v1.VolumeMount{{
 		Name:      motionv1.ConfigSecretVolumeName,
 		MountPath: motionv1.ConfigSecretMountPath,
+	}, {
+		Name:      "workspace",
+		MountPath: "/opt/spark/work-dir",
 	}}
 	if batchTransfer.Spec.Source.Kafka != nil {
 		if batchTransfer.Spec.Source.Kafka.SslTruststoreSecret != "" {
@@ -77,7 +85,6 @@ func (reconciler *BatchTransferReconciler) createSparkJob(batchTransfer *motionv
 	// We want job names for a given nominal start time to have a deterministic name to avoid the same job being
 	// created twice
 	con := int32(batchTransfer.Spec.MaxFailedRetries)
-	uid := int64(1000)
 
 	volumes, volumeMounts, err := VolumeConfiguration(batchTransfer)
 
@@ -103,9 +110,6 @@ func (reconciler *BatchTransferReconciler) createSparkJob(batchTransfer *motionv
 				},
 				Spec: v1.PodSpec{
 					Volumes: volumes,
-					SecurityContext: &v1.PodSecurityContext{
-						RunAsUser: &uid,
-					},
 					Containers: []v1.Container{{
 						Name:            "transfer",
 						Image:           batchTransfer.Spec.Image,
