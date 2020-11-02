@@ -217,7 +217,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 
 		// TODO: current Copy modules do not expect the "copy" key.
 		//       once updated, these lines could be dropped
-		if step.Arguments.Flow == app.Copy {
+		if step.Arguments.Copy != nil {
 			args = args["copy"].(map[string]interface{})
 		}
 
