@@ -206,18 +206,10 @@ spec:
                 - successCondition
                 type: object
               type: array
-            type:
-              description: ModuleType indicates one of job, service, configuration so the manager knows how to deploy it
-              enum:
-              - job
-              - service
-              - configuration
-              type: string
           required:
           - capabilities
           - chart
           - flows
-          - type
           type: object
       required:
       - spec

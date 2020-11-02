@@ -93,6 +93,7 @@ e2e-cleanup: $(TOOLBIN)/kubectl
 	killall -9 datacatalogstub 2>/dev/null || true
 	@echo
 	@echo "deleting resources..."
+	$(ABSTOOLBIN)/kubectl delete -f testdata/e2e/module-implicit-copy-s3-to-s3.yaml || true
 	$(ABSTOOLBIN)/kubectl delete -f testdata/e2e/module-implicit-copy-db2wh-to-s3.yaml || true
 	$(ABSTOOLBIN)/kubectl delete -f testdata/e2e/module-implicit-copy-kafka-to-s3-stream.yaml || true
 	$(ABSTOOLBIN)/kubectl patch m4dapplication notebook -p '{"metadata":{"finalizers":[]}}' --type=merge || true
@@ -121,6 +122,7 @@ e2e-setup: $(TOOLBIN)/kubectl
 	@echo
 	$(MAKE) install
 	@echo "creating resources..."
+	$(ABSTOOLBIN)/kubectl apply -f testdata/e2e/module-implicit-copy-s3-to-s3.yaml
 	$(ABSTOOLBIN)/kubectl apply -f testdata/e2e/module-implicit-copy-db2wh-to-s3.yaml
 	$(ABSTOOLBIN)/kubectl apply -f testdata/e2e/module-implicit-copy-kafka-to-s3-stream.yaml
 	$(ABSTOOLBIN)/kubectl apply -f testdata/e2e/bucket-available.yaml
