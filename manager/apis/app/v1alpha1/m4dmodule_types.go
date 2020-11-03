@@ -144,13 +144,6 @@ type ResourceStatusIndicator struct {
 // which are one of the components that process, load, write, audit, monitor the data used by
 // the data scientist's application.
 type M4DModuleSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// ModuleType indicates one of job, service, configuration so the manager knows how to deploy it
-	// +required
-	Type ComponentType `json:"type"`
-
 	// Flows is a list of the types of capabilities supported by the module - copy, read, write
 	// +required
 	Flows []ModuleFlow `json:"flows"`
