@@ -9,7 +9,7 @@ OPA_PATH=${ABSTOOLBIN}/opa
 OPA_DEFAULT_POLICY_FILE=${ROOT_DIR}/third_party/opa/opa-policy.rego
 
 docker-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o opa-connector opa_connector.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o opa-connector main.go
 	docker build . -t $(IMG) -f Dockerfile
 	rm opa-connector
 
