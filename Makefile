@@ -26,9 +26,6 @@ cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy
 	$(MAKE) -C third_party/registry deploy
 	$(MAKE) -C third_party/vault deploy
-
-.PHONY: cluster-prepare-wait
-cluster-prepare-wait:
 	$(MAKE) -C third_party/cert-manager deploy-wait
 	$(MAKE) -C third_party/vault deploy-wait
 

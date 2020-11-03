@@ -97,7 +97,6 @@ jobs:
     - make cluster-prepare || travis_terminate 1;
     - make docker-minimal-it
     #- make -C test/services docker Already build in docker-minimal-it
-    - make cluster-prepare-wait || travis_terminate 1;
     - make -C secret-provider configure-vault
     - make -C secret-provider deploy || travis_terminate 1;
     - make -C manager deploy_it || travis_terminate 1;

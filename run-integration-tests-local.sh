@@ -16,7 +16,6 @@ export HELM_EXPERIMENTAL_OCI=1
 make kind-setup
 make cluster-prepare
 make docker-minimal-it
-make cluster-prepare-wait
 make -C secret-provider configure-vault
 make -C secret-provider deploy
 make -C manager deploy_it
