@@ -8,22 +8,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ComponentType indicates the type of the module, important since different modules
-// need to be installed in different manners
-// +kubebuilder:validation:Enum=job;service;configuration
-type ComponentType string
-
-const (
-	// Job is a kubernetes job
-	Job ComponentType = "job"
-
-	// Service is a kubernetes service
-	Service ComponentType = "service"
-
-	// Configuration is for example for applying EnvoyFilter to a gateway.
-	Configuration ComponentType = "configuration"
-)
-
 // DependencyType indicates what type of pre-requisit is required
 // +kubebuilder:validation:Enum=module;connector;feature
 type DependencyType string
