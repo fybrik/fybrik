@@ -2,7 +2,7 @@
     "class": "NewCSVFileAssetRequestBody",
     "displayName": "transactions.csv",
     "description": "Synthetic Financial Dataset For Fraud Detection",
-    "fullPath": "{\"data_store\":\"S3\", \"bucket\":\"mybucket\", \"endpoint\":\"s3.eu-de.cloud-object-storage.appdomain.cloud\", \"object_key\":\"transactions.csv\", \"region\":\"eu\"}",
+    "fullPath": "{\"data_store\":\"S3\", \"bucket\":\"mybucket\", \"endpoint\":\"s3.eu-de.cloud-object-storage.appdomain.cloud\", \"object_key\":\"transactions.csv\", \"region\":\"eu\", \"data_location\": \"France\"}",
     "columnHeaders": [
         "step", "type", "amount", "nameOrig", "oldbalanceOrg", "newbalanceOrig", "nameDest", "oldbalanceDest", "newbalanceDest","isFraud","isFlaggedFraud"
     ]
