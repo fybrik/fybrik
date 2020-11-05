@@ -215,12 +215,6 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
 
-		// TODO: current Copy modules do not expect the "copy" key.
-		//       once updated, these lines could be dropped
-		if step.Arguments.Flow == app.Copy {
-			args = args["copy"].(map[string]interface{})
-		}
-
 		// Add metadata arguments (namespace, name, labels, etc.)
 		hashedName := utils.Hash(step.Name, 20)
 		args["metadata"] = map[string]interface{}{
