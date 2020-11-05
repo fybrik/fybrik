@@ -16,23 +16,24 @@ imagePullPolicy: null
 noFinalizer: "false"
 
 # copies from source
-source:
-  connection:
-    s3:
-      endpoint: ""
-      bucket: ""
-      object_key: ""
-  format: ""
-  credentialLocation: ""
+copy:
+  source:
+    connection:
+      s3:
+        endpoint: ""
+        bucket: ""
+        object_key: ""
+    format: ""
+    credentialLocation: ""
 
-# copies to destination
-destination:
-  connection:
-    s3:
-      endpoint: ""
-      bucket: ""
-      object_key: ""
-  format: ""
-  credentialLocation: ""
+  # copies to destination
+  destination:
+    connection:
+      s3:
+        endpoint: ""
+        bucket: ""
+        object_key: ""
+    format: ""
+    credentialLocation: ""
 
-transformations: []
+  transformations: []
