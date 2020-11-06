@@ -1,79 +1,31 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package main
+package opaconnbl
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
-	"net"
-	"os"
-	"strconv"
-	"time"
 
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
-var opaServerURL = ""
-
-const defaultPort = "50082" //synched with opa_connector.yaml
-
-func getEnv(key string) string {
-	value, exists := os.LookupEnv(key)
-	if !exists {
-		log.Fatalf("Env Variable %v not defined", key)
-	}
-	log.Printf("Env. variable extracted: %s - %s\n", key, value)
-	return value
+type OpaReader struct {
+	opaServerURL string
 }
 
-func getEnvWithDefault(key string, defaultValue string) string {
-	value, exists := os.LookupEnv(key)
-	if !exists {
-		log.Printf("Env. variable not found, defualt value used: %s - %s\n", key, defaultValue)
-		return defaultValue
-	}
-
-	log.Printf("Env. variable extracted: %s - %s\n", key, value)
-	return value
+func NewOpaReader(opasrvurl string) *OpaReader {
+	return &OpaReader{opaServerURL: opasrvurl}
 }
 
-type server struct {
-	pb.UnimplementedPolicyManagerServiceServer
-}
-
-func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationContext) (*pb.PoliciesDecisions, error) {
-	catalogConnectorAddress := getEnv("CATALOG_CONNECTOR_URL")
-
-	timeOutInSecs := getEnv("CONNECTION_TIMEOUT")
-	timeOut, err := strconv.Atoi(timeOutInSecs)
-
+func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *CatalogReader) (*pb.PoliciesDecisions, error) {
+	datasetsMetadata, err := catalogReader.GetDatasetsMetadataFromCatalog(in)
 	if err != nil {
-		log.Printf("Atoi conversion of timeOutinseconds failed: %v", err)
-		return nil, fmt.Errorf("Atoi conversion of timeOutinseconds failed: %v", err)
+		return nil, err
 	}
-	//func GetPoliciesDecisions(in *pb.ApplicationContext, catalogConnectorAddress string) (*pb.PoliciesDecisions, error) {
-	log.Println("Using catalog connector address: ", catalogConnectorAddress)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeOut)*time.Second)
-	defer cancel()
-	conn, err := grpc.DialContext(ctx, catalogConnectorAddress, grpc.WithInsecure())
-	if err != nil {
-		log.Printf("Connection to External Catalog Connector failed: %v", err)
-		errStatus, _ := status.FromError(err)
-		log.Println(errStatus.Message())
-		log.Println(errStatus.Code())
-		return nil, fmt.Errorf("Connection to External Catalog Connector failed: %v", err)
-	}
-	defer conn.Close()
-	c := pb.NewDataCatalogServiceClient(conn)
-	//Encode appInfo in a map[string]interface
-	appID := in.GetAppId()
+
 	appInfo := in.GetAppInfo()
 	appInfoBytes, err := json.MarshalIndent(appInfo, "", "\t")
 	if err != nil {
@@ -87,15 +39,20 @@ func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationCon
 		log.Printf("error in unmarshalling appInfoBytes: %v", err)
 		return nil, fmt.Errorf("error in unmarshalling appInfoBytes: %v", err)
 	}
+
 	//to store the list of DatasetDecision
 	var datasetDecisionList []*pb.DatasetDecision
 	for i, datasetContext := range in.GetDatasets() {
 		dataset := datasetContext.GetDataset()
 		datasetID := dataset.GetDatasetId()
-		inputMap, err := GetDatasetMetadata(datasetID, appID, &ctx, c, i)
-		if err != nil {
-			return nil, err
+		metadata := datasetsMetadata[datasetID]
+
+		inputMap, ok := metadata.(map[string]interface{})
+		if !ok {
+			log.Printf("error in unmarshalling dataset metadata: %v", err)
+			return nil, fmt.Errorf("error in unmarshalling dataset metadata (datasetID = %s): %v", datasetID, err)
 		}
+
 		operation := datasetContext.GetOperation()
 		//Encode operation in a map[string]interface
 		operationBytes, err := json.MarshalIndent(operation, "", "\t")
@@ -125,7 +82,7 @@ func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationCon
 		toPrintBytes, _ := json.MarshalIndent(inputMap, "", "\t")
 		log.Println("********sending this to OPA : *******")
 		log.Println(string(toPrintBytes))
-		opaEval, err := EvaluateExtendedPoliciesOnInput(inputMap, opaServerURL)
+		opaEval, err := EvaluateExtendedPoliciesOnInput(inputMap, r.opaServerURL)
 		if err != nil {
 			log.Printf("error in EvaluateExtendedPoliciesOnInput (i = %d): %v", i, err)
 			return nil, fmt.Errorf("error in EvaluateExtendedPoliciesOnInput (i = %d): %v", i, err)
@@ -146,7 +103,7 @@ func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationCon
 	return &pb.PoliciesDecisions{DatasetDecisions: datasetDecisionList}, nil
 }
 
-//Translate the evaluation received from OPA for (dataset, operation) into pb.OperationDecision
+// Translate the evaluation received from OPA for (dataset, operation) into pb.OperationDecision
 func GetOPAOperationDecision(opaEval string, operation *pb.AccessOperation) (*pb.OperationDecision, error) {
 	resultInterface := make(map[string]interface{})
 	err := json.Unmarshal([]byte(opaEval), &resultInterface)
@@ -154,20 +111,18 @@ func GetOPAOperationDecision(opaEval string, operation *pb.AccessOperation) (*pb
 		log.Printf("error in unmarshaling opaEval into resultInterface: " + err.Error())
 		return nil, err
 	}
-	mainMap, ok := resultInterface["result"].(map[string]interface{})
+	evaluationMap, ok := resultInterface["result"].(map[string]interface{})
 	if !ok {
 		log.Printf("error in format of OPA evaluation (incorrect result map)")
 		return nil, errors.New("error in format of OPA evaluation (incorrect result map)")
 	}
 
-	// log.Printf("************************** input: ", mainMap)
-
-	//Now iterate over
+	// Now iterate over
 	enforcementActions := make([]*pb.EnforcementAction, 0)
 	usedPolicies := make([]*pb.Policy, 0)
 
-	if mainMap["deny"] != nil {
-		lstDeny, ok := mainMap["deny"].([]interface{})
+	if evaluationMap["deny"] != nil {
+		lstDeny, ok := evaluationMap["deny"].([]interface{})
 		if !ok {
 			log.Printf("Error: unknown format of deny list")
 			return nil, errors.New("unknown format of deny content")
@@ -189,8 +144,8 @@ func GetOPAOperationDecision(opaEval string, operation *pb.AccessOperation) (*pb
 		}
 	}
 
-	if mainMap["transform"] != nil {
-		lstTransformations, ok := mainMap["transform"].([]interface{})
+	if evaluationMap["transform"] != nil {
+		lstTransformations, ok := evaluationMap["transform"].([]interface{})
 		if !ok {
 			log.Printf("Error: unknown format of transformationss list")
 			return nil, errors.New("unknown format of transform content")
@@ -215,19 +170,8 @@ func GetOPAOperationDecision(opaEval string, operation *pb.AccessOperation) (*pb
 		enforcementActions = append(enforcementActions, newEnforcementAction)
 	}
 
-	// for k, v := range mainMap {
-	// 	switch k {
-	// 	case "Encrypt_col":
-	// 		newEnforcementActions, newUsedPolicies := GetEncryptColEnforcementActionsAndPolicies(v)
-	// 		enforcementActions = append(enforcementActions, newEnforcementActions...)
-	// 		usedPolicies = append(usedPolicies, newUsedPolicies...)
-	// 	default:
-	// 		log.Printf("Unknown Enforcement Action receieved from OPA")
-	// 	}
-	// }
-
-	log.Println("************************** EA: ", enforcementActions)
-	log.Println("************************** POL: ", usedPolicies)
+	log.Println("************************** enforcementActions: ", enforcementActions)
+	log.Println("************************** usedPolicies: ", usedPolicies)
 
 	return &pb.OperationDecision{Operation: operation, EnforcementActions: enforcementActions, UsedPolicies: usedPolicies}, nil
 }
@@ -280,61 +224,4 @@ func buildNewPolicy(usedPolicy interface{}) (*pb.Policy, bool) {
 	}
 
 	return nil, false
-}
-
-func GetDatasetMetadata(datasetID string, appID string, ctx *context.Context, c pb.DataCatalogServiceClient, i int) (map[string]interface{}, error) {
-	objToSend := &pb.CatalogDatasetRequest{AppId: appID, DatasetId: datasetID}
-	log.Println("Sending request to External Catalog Connector")
-	r, err := c.GetDatasetInfo(*ctx, objToSend)
-	if err != nil {
-		log.Printf("error sending data to External Catalog Connector (i = %d): %v", i, err)
-		errStatus, _ := status.FromError(err)
-		log.Println("Message:", errStatus.Message())
-		log.Println("Code:", errStatus.Code())
-		if codes.InvalidArgument == errStatus.Code() {
-			log.Println("Invalid argument error : " + err.Error())
-		}
-		return nil, fmt.Errorf("error sending data to External Catalog Connector (i = %d): %v", i, err)
-	}
-	log.Println("***************************************************************")
-	log.Printf("Received Response from External Catalog Connector for  dataSetID: %s\n", datasetID)
-	log.Println("***************************************************************")
-	log.Printf("Response received from External Catalog Connector is given below:")
-	responseBytes, errJSON := json.MarshalIndent(r, "", "\t")
-	if errJSON != nil {
-		log.Printf("error Marshalling Catalog External Connector Response (i = %d): %v", i, errJSON)
-		return nil, fmt.Errorf("error Marshalling External Catalog Connector Response (i = %d): %v", i, errJSON)
-	}
-	log.Print(string(responseBytes))
-	log.Println("***************************************************************")
-	metadataMap := make(map[string]interface{})
-	err = json.Unmarshal(responseBytes, &metadataMap)
-	if err != nil {
-		log.Printf("error in unmarshalling responseBytes (i = %d): %v", i, err)
-		return nil, fmt.Errorf("error in unmarshalling responseBytes (i = %d): %v", i, err)
-	}
-	inputMap := make(map[string]interface{})
-	for k, v := range metadataMap {
-		inputMap[k] = v
-	}
-	return inputMap, nil
-}
-
-func main() {
-	port := getEnvWithDefault("PORT_OPA_CONNECTOR", defaultPort)
-	opaServerURL = getEnv("OPA_SERVER_URL") // set global variable
-
-	log.Println("OPA_SERVER_URL env variable in OPAConnector: ", opaServerURL)
-	log.Println("Using port to start go opa connector : ", port)
-
-	log.Printf("Server starts listening on port %v", port)
-	lis, err := net.Listen("tcp", ":"+port)
-	if err != nil {
-		log.Fatalf("Error in listening: %v", err)
-	}
-	s := grpc.NewServer()
-	pb.RegisterPolicyManagerServiceServer(s, &server{})
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("Error in service: %v", err)
-	}
 }
