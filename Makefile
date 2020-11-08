@@ -108,7 +108,6 @@ docker-retag-images:
 docker-push-public:
 	DOCKER_HOSTNAME=ghcr.io DOCKER_NAMESPACE=the-mesh-for-data DOCKER_TAG=latest $(MAKE) docker-push
 
-include .mk/ibmcloud.mk
 include .mk/tools.mk
 include .mk/verify.mk
 include .mk/cluster.mk

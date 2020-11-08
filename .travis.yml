@@ -196,7 +196,6 @@ jobs:
     env:
     - COMPONENT=secret-provider
     - CLUSTER=kind
-    - REGISTRY=ibmcloud
     install:
     - make install-tools
     script:
@@ -211,7 +210,6 @@ jobs:
     env:
     - COMPONENT=manager
     - CLUSTER=kind
-    - REGISTRY=ibmcloud
     install:
     - make install-tools
     script:
@@ -226,7 +224,6 @@ jobs:
     env:
     - COMPONENT=connectors
     - CLUSTER=kind
-    - REGISTRY=ibmcloud
     install:
     - make install-tools
     script:
