@@ -2,7 +2,7 @@
 
 This sample demonstrate the use of The Mesh for Data with Kubeflow notebooks.
 The following sample and instructions have been tested on kind v0.10.0 and OpenShift 4.3 clusters, and against Kubeflow v1.0.2.
-The instructions below assume that they are issued from the root directory of the project, and you have created a Kubernets cluster in advance (either Kind or OpenShift).
+The instructions below assume that they are issued from the root directory of the project, and you have created a Kubernetes cluster in advance (either Kind or OpenShift).
 
 ## Connectors stack
 
