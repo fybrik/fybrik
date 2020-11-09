@@ -4,10 +4,10 @@
 apiVersion: app.m4d.ibm.com/v1alpha1
 kind: M4DModule
 metadata:
-  name: arrow-flight-module
+  name: template-module
   namespace: default
   labels:
-    name: arrow-flight-module
+    name: template-module
     version: 0.0.1  # semantic version
 spec:
   chart: kind-registry:5000/m4d-system/m4d-template:0.1.0

@@ -10,7 +10,7 @@ metadata:
     name: arrow-flight-module
     version: 0.0.1  # semantic version
 spec:
-  chart: ghcr.io/the-mesh-for-data/arrow-flight-module-chart:latest
+  chart: kind-registry:5000/m4d-system/arrow-flight-module-chart:latest
   type: service
   flows:
     - read

@@ -428,9 +428,10 @@ var _ = Describe("M4DApplication Controller", func() {
 			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DBucket{ObjectMeta: metav1.ObjectMeta{Name: "test-bucket", Namespace: "default"}})
 			// delete modules
 			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "arrow-flight-module", Namespace: "default"}})
+			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "template-module", Namespace: "default"}})
 		})
 
-		It("Test end-to-end for M4DApplication", func() {
+		It("Test end-to-end for M4DApplication with arrow-flight module", func() {
 			Expect(1).Should(Equal(1))
 
 			var err error
@@ -453,9 +454,7 @@ var _ = Describe("M4DApplication Controller", func() {
 				_ = k8sClient.Delete(context.Background(), f)
 			}()
 
-			// TODO use read or copy module at some point?
-			//readModuleYAML, err := ioutil.ReadFile("../../testdata/e2e/module-read.yaml")
-			readModuleYAML, err := ioutil.ReadFile("../../testdata/e2e/module-template.yaml")
+			readModuleYAML, err := ioutil.ReadFile("../../testdata/e2e/module-read.yaml")
 			Expect(err).ToNot(HaveOccurred())
 			module := &apiv1alpha1.M4DModule{}
 			err = yaml.Unmarshal(readModuleYAML, module)
@@ -519,40 +518,8 @@ var _ = Describe("M4DApplication Controller", func() {
 			}, timeout, interval).Should(Succeed())
 
 			if !noSimulatedProgress {
-				// Simulate blueprint progress
+				// Simulate blueprint progress for arrow flight?
 				// TODO check what to do with fake helm client
-				cm := &v1.ConfigMap{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "a8afad067a6a96084dcb",
-						Namespace: ns,
-						Annotations: map[string]string{
-							"meta.helm.sh/release-name":      "ra8afad067a6a96084dcb",
-							"meta.helm.sh/release-namespace": ns,
-						},
-						Labels: map[string]string{
-							"app.kubernetes.io/managed-by": "Helm",
-						},
-					},
-					Data: nil,
-				}
-				secret := &v1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "sh.helm.release.v1.ra8afad067a6a96084dcb.v1",
-						Namespace: ns,
-						Labels: map[string]string{
-							"modifiedAt": "1604959961",
-							"name":       "ra8afad067a6a96084dcb",
-							"owner":      "helm",
-							"status":     "deployed",
-							"version":    "1",
-						},
-					},
-					Data: map[string][]byte{
-						"release": []byte(""),
-					},
-				}
-				Expect(k8sClient.Create(context.Background(), cm)).Should(Succeed())
-				Expect(k8sClient.Create(context.Background(), secret)).Should(Succeed())
 			}
 
 			if noSimulatedProgress {
