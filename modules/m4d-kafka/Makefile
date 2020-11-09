@@ -10,7 +10,6 @@ include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/.mk/docker.mk
 include $(ROOT_DIR)/.mk/helm.mk
 include $(ROOT_DIR)/.mk/tools.mk
-include $(ROOT_DIR)/.mk/ibmcloud.mk
 
 helm-crd-hook: crd-stream
 .PHONY: crd-stream

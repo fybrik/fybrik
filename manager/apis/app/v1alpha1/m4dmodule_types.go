@@ -8,22 +8,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ComponentType indicates the type of the module, important since different modules
-// need to be installed in different manners
-// +kubebuilder:validation:Enum=job;service;configuration
-type ComponentType string
-
-const (
-	// Job is a kubernetes job
-	Job ComponentType = "job"
-
-	// Service is a kubernetes service
-	Service ComponentType = "service"
-
-	// Configuration is for example for applying EnvoyFilter to a gateway.
-	Configuration ComponentType = "configuration"
-)
-
 // DependencyType indicates what type of pre-requisit is required
 // +kubebuilder:validation:Enum=module;connector;feature
 type DependencyType string
@@ -144,13 +128,6 @@ type ResourceStatusIndicator struct {
 // which are one of the components that process, load, write, audit, monitor the data used by
 // the data scientist's application.
 type M4DModuleSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// ModuleType indicates one of job, service, configuration so the manager knows how to deploy it
-	// +required
-	Type ComponentType `json:"type"`
-
 	// Flows is a list of the types of capabilities supported by the module - copy, read, write
 	// +required
 	Flows []ModuleFlow `json:"flows"`

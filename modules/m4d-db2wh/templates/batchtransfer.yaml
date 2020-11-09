@@ -13,20 +13,31 @@ metadata:
 spec:
   source:
     database:
-      table: "{{ .Values.source.connection.db2.table }}"
-      db2URL: "jdbc:db2://{{ .Values.source.connection.db2.url }}:{{ .Values.source.connection.db2.port }}/{{ .Values.source.connection.db2.database }}:sslConnection={{ .Values.source.connection.db2.ssl }};"
-      vaultPath: "{{ .Values.source.credentialLocation }}"
+      table: "{{ .Values.copy.source.connection.db2.table }}"
+      db2URL: "jdbc:db2://{{ .Values.copy.source.connection.db2.url }}:{{ .Values.copy.source.connection.db2.port }}/{{ .Values.copy.source.connection.db2.database }}:sslConnection={{ .Values.copy.source.connection.db2.ssl }};"
+      vaultPath: "{{ .Values.copy.source.credentialLocation }}"
   destination:
     s3:
-      endpoint: "{{ .Values.destination.connection.s3.endpoint }}"
-      bucket: "{{ .Values.destination.connection.s3.bucket }}"
-      objectKey: "{{ .Values.destination.connection.s3.object_key }}"
-      dataFormat: "{{ .Values.destination.format }}"
-      vaultPath: "{{ .Values.destination.credentialLocation }}"
+      endpoint: "{{ .Values.copy.destination.connection.s3.endpoint }}"
+      bucket: "{{ .Values.copy.destination.connection.s3.bucket }}"
+      objectKey: "{{ .Values.copy.destination.connection.s3.object_key }}"
+      dataFormat: "{{ .Values.copy.destination.format }}"
+      vaultPath: "{{ .Values.copy.destination.credentialLocation }}"
   transformation:
-  - name: "Remove columns"
-    action: "RemoveColumns"
-    columns: ["JOB", "SSN"]
+  {{ range .Values.copy.transformations }}
+  {{ if eq .id "redact-ID" }}
+  - action: "RedactColumns"
+    name: "redacting column: {{ .args.column_name }}"
+    columns: [ {{ .args.column_name | quote }} ]
+    options:
+      redactValue: "XXXXXX"
+  {{ end }}
+  {{ if eq .id "removed-ID" }}
+  - action: "RemoveColumns"
+    name: "redacting column: {{ .args.column_name }}"
+    columns: [ "{{ .args.column_name }}" ]
+  {{ end }}
+  {{ end }}
   {{ if .Values.image }}
   image: {{ .Values.image | quote }}
   {{ end }}

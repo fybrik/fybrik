@@ -45,7 +45,6 @@ func CreateReadPathModule() *apiv1alpha1.M4DModule {
 			Namespace: "default",
 		},
 		Spec: apiv1alpha1.M4DModuleSpec{
-			Type:  apiv1alpha1.Service,
 			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Read},
 			Capabilities: apiv1alpha1.Capability{
 				CredentialsManagedBy: apiv1alpha1.SecretProvider,
@@ -70,7 +69,6 @@ func CreateKafkaToS3CopyModule() *apiv1alpha1.M4DModule {
 			Namespace: "default",
 		},
 		Spec: apiv1alpha1.M4DModuleSpec{
-			Type:  apiv1alpha1.Service,
 			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Copy},
 			Capabilities: apiv1alpha1.Capability{
 				CredentialsManagedBy: apiv1alpha1.SecretProvider,
@@ -95,7 +93,6 @@ func CreateDb2ToS3CopyModule() *apiv1alpha1.M4DModule {
 			Namespace: "default",
 		},
 		Spec: apiv1alpha1.M4DModuleSpec{
-			Type:  apiv1alpha1.Service,
 			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Copy},
 			Capabilities: apiv1alpha1.Capability{
 				CredentialsManagedBy: apiv1alpha1.SecretProvider,
