@@ -59,9 +59,9 @@ git clone https://github.com/opendatahub-io/manifests.git
 ```
 
 Changes to `kfctl_openshift.yaml`:
-* Since we already have Istio installed, comment out `istio-crds` and `istio-install` (lines 15-33)
-* Comment out `cert-manager-crds` and `cert-manager` (lines 82-89 and 98-107)
-* Comment out `seldon-core-operator` (lines 267-273)
+* Since we already have Istio installed, comment out `istio-crds` and `istio-install`
+* Comment out `cert-manager-crds` and `cert-manager` 
+* Comment out `seldon-core-operator` 
 
 A modified `kfctl_openshift.yaml` is provided in this repo.
 
