@@ -53,6 +53,8 @@ cd samples/kubeflow/install/kubeflow
 
 cd -
 ```
+On an OpenShift 4+ cluster, you can install it with these commands:
+
 
 ## Data owner instructions
 
