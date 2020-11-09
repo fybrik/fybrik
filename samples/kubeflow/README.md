@@ -75,7 +75,8 @@ Changes to `kf-istio-resources.yaml`:
 cd /opt/openshift-kfdef/kustomize/istio/base 
 ```
  *Replace sni_hosts with sniHosts on lines 63 and 96
-Deploy Kubeflow resources:
+ 
+ Deploy Kubeflow resources:
 ```bash
 cd /opt/openshift-kfdef
 sudo kfctl build --file=kfctl_openshift.yaml
