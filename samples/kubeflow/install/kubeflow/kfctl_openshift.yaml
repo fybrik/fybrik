@@ -117,7 +117,7 @@ spec:
     name: seldon-core-operator
   repos:
   - name: manifests
-    uri: /Users/tonia/Documents/Cloud/kubeflow/manifests
+    uri: https://github.com/opendatahub-io/manifests/tarball/v1.0-branch-openshift
   version: v1.0-branch-openshift
 status:
   reposCache:
