@@ -58,13 +58,6 @@ jobs:
     script:
     - make test
 
-  - stage: Build
-    name: "Build binaries"
-    install:
-    - make install-tools
-    script:
-    - make build
-
   # FIXME(hunchback): disabled as its' taking 15m to run
   # - stage: verify-license
   #   install:
@@ -95,8 +88,8 @@ jobs:
     script:
     - make kind-setup || travis_terminate 1; # Switch to make kind when istio is needed
     - make cluster-prepare || travis_terminate 1;
-    - make docker-minimal-it
-    #- make -C test/services docker Already build in docker-minimal-it
+    - make docker
+    - make -C test/services docker # Build test services
     - make cluster-prepare-wait || travis_terminate 1;
     - make -C secret-provider configure-vault
     - make -C secret-provider deploy || travis_terminate 1;
@@ -104,78 +97,13 @@ jobs:
     - make -C manager wait_for_manager || travis_terminate 1;
     - make helm || travis_terminate 1;
     - make -C manager run-integration-tests || travis_terminate 1;
-
-  - stage: Publish
-    name: "Build and push docker images"
-    env:
-    - COMPONENT=build
-    install:
-    - make install-tools
-    script:
-    - make -C $COMPONENT docker-build-all
     deploy:
-      skip_cleanup: true
-      provider: script
-      script: make -C $COMPONENT docker-push-all
-      on:
-        branch: master
-
-  - stage: Publish
-    name: "Build and push docker images"
-    env:
-    - COMPONENT=manager
-    install:
-    - make install-tools
-    script:
-    - make -C $COMPONENT docker-build
-    deploy:
-      skip_cleanup: true
-      provider: script
-      script: make -C $COMPONENT docker-push
-      on:
-        branch: master
-
-  - stage: Publish
-    name: "Build and push docker images"
-    env:
-    - COMPONENT=secret-provider
-    install:
-    - make install-tools
-    script:
-    - make -C $COMPONENT docker-build
-    deploy:
-      skip_cleanup: true
-      provider: script
-      script: make -C $COMPONENT docker-push
-      on:
-        branch: master
-
-  - stage: Publish
-    name: "Build and push docker images"
-    env:
-    - COMPONENT=connectors
-    install:
-    - make install-tools
-    script:
-    - make -C $COMPONENT docker-build
-    deploy:
-      skip_cleanup: true
-      provider: script
-      script: make -C $COMPONENT docker-push
-      on:
-        branch: master
-
-  - stage: Publish
-    name: "Build and push helm charts"
-    install:
-    - make install-tools
-    script: true
-    deploy:
-      skip_cleanup: true
-      provider: script
-      script: make -C modules helm-chart-push
-      on:
-        branch: master
+     skip_cleanup: true
+     provider: script
+     script: make docker-retag-images && make docker-push-public
+     on:
+       condition: $TRAVIS_PULL_REQUEST = false
+       branch: master
 
   - stage: Publish
     name: "Build and publish website"
@@ -190,34 +118,6 @@ jobs:
       github_token: $GITHUB_TOKEN # Set in travis-ci dashboard
       on:
         branch: master
-
-  - stage: Deploy
-    name: "Kind deploy"
-    env:
-    - COMPONENT=secret-provider
-    - CLUSTER=kind
-    install:
-    - make install-tools
-    script:
-    - make $CLUSTER || travis_terminate 1;
-    - make cluster-prepare || travis_terminate 1;
-    - make -C $COMPONENT deploy
-    - ./hack/tools/bin/kubectl get pod --all-namespaces
-    if: branch = master AND type = push
-
-  - stage: Deploy
-    name: "Kind deploy"
-    env:
-    - COMPONENT=manager
-    - CLUSTER=kind
-    install:
-    - make install-tools
-    script:
-    - make $CLUSTER || travis_terminate 1;
-    - make cluster-prepare || travis_terminate 1;
-    - make -C $COMPONENT deploy
-    - ./hack/tools/bin/kubectl get pod --all-namespaces
-    if: branch = master AND type = push
 
   - stage: Deploy
     name: "Kind deploy"
