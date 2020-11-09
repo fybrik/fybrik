@@ -4,6 +4,7 @@
 package app
 
 import (
+	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"os"
 	"path/filepath"
 	"testing"
@@ -34,9 +35,12 @@ var cfg *rest.Config
 var k8sClient client.Client
 var mgr ctrl.Manager
 var testEnv *envtest.Environment
+var noSimulatedProgress bool
 
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
+
+	utils.DefaultTestConfiguration(t)
 
 	RunSpecsWithDefaultAndCustomReporters(t,
 		"Controller Suite",
@@ -47,11 +51,14 @@ var _ = BeforeSuite(func(done Done) {
 	logf.SetLogger(zap.LoggerTo(GinkgoWriter, true))
 
 	By("bootstrapping test environment")
+	if os.Getenv("NO_SIMULATED_PROGRESS") == "true" {
+		noSimulatedProgress = true
+	}
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{
 			filepath.Join("..", "..", "config", "crd", "bases"),
 		},
-		AttachControlPlaneOutput: true,
+		//AttachControlPlaneOutput: true,
 	}
 
 	var err error

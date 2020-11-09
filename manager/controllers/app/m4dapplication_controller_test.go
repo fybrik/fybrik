@@ -5,12 +5,16 @@ package app
 
 import (
 	"context"
+	"io/ioutil"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/yaml"
 	"time"
 
 	apiv1alpha1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -404,6 +408,160 @@ var _ = Describe("M4DApplication Controller", func() {
 				key.Namespace = resource.Status.BlueprintNamespace
 				return k8sClient.Get(context.Background(), key, f)
 			}, timeout, interval).Should(Succeed())
+		})
+	})
+
+	Context("M4DApplication e2e", func() {
+		BeforeEach(func() {
+			// Add any teardown steps that needs to be executed after each test
+			// delete application
+			appSignature := GetApplicationSignature()
+			resource := &apiv1alpha1.M4DApplication{ObjectMeta: metav1.ObjectMeta{Name: "notebook", Namespace: "default"}}
+			_ = k8sClient.Delete(context.Background(), resource)
+
+			Eventually(func() error {
+				f := &apiv1alpha1.M4DApplication{}
+				return k8sClient.Get(context.Background(), appSignature, f)
+			}, timeout, interval).ShouldNot(Succeed())
+
+			// delete storage
+			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DBucket{ObjectMeta: metav1.ObjectMeta{Name: "test-bucket", Namespace: "default"}})
+			// delete modules
+			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "arrow-flight-module", Namespace: "default"}})
+		})
+
+		It("Test end-to-end for M4DApplication", func() {
+			Expect(1).Should(Equal(1))
+
+			var err error
+			bucketYAML, err := ioutil.ReadFile("../../testdata/e2e/bucket-available.yaml")
+			Expect(err).ToNot(HaveOccurred())
+			bucket := &apiv1alpha1.M4DBucket{}
+			err = yaml.Unmarshal(bucketYAML, bucket)
+			Expect(err).ToNot(HaveOccurred())
+
+			bucketKey, err := client.ObjectKeyFromObject(bucket)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Create M4DBucket
+			Expect(k8sClient.Create(context.Background(), bucket)).Should(Succeed())
+
+			// Ensure getting cleaned up after tests finish
+			defer func() {
+				f := &apiv1alpha1.M4DBucket{ObjectMeta: metav1.ObjectMeta{Namespace: bucketKey.Namespace, Name: bucketKey.Name}}
+				_ = k8sClient.Get(context.Background(), bucketKey, f)
+				_ = k8sClient.Delete(context.Background(), f)
+			}()
+
+			// TODO use read or copy module at some point?
+			//readModuleYAML, err := ioutil.ReadFile("../../testdata/e2e/module-read.yaml")
+			readModuleYAML, err := ioutil.ReadFile("../../testdata/e2e/module-template.yaml")
+			Expect(err).ToNot(HaveOccurred())
+			module := &apiv1alpha1.M4DModule{}
+			err = yaml.Unmarshal(readModuleYAML, module)
+			Expect(err).ToNot(HaveOccurred())
+
+			moduleKey, err := client.ObjectKeyFromObject(module)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Create M4DModule
+			Expect(k8sClient.Create(context.Background(), module)).Should(Succeed())
+
+			// Ensure getting cleaned up after tests finish
+			defer func() {
+				f := &apiv1alpha1.M4DBucket{ObjectMeta: metav1.ObjectMeta{Namespace: moduleKey.Namespace, Name: moduleKey.Name}}
+				_ = k8sClient.Get(context.Background(), moduleKey, f)
+				_ = k8sClient.Delete(context.Background(), f)
+			}()
+
+			applicationYAML, err := ioutil.ReadFile("../../testdata/e2e/m4dapplication.yaml")
+			Expect(err).ToNot(HaveOccurred())
+			application := &apiv1alpha1.M4DApplication{}
+			err = yaml.Unmarshal(applicationYAML, application)
+			Expect(err).ToNot(HaveOccurred())
+
+			applicationKey, err := client.ObjectKeyFromObject(application)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Create M4DApplication
+			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
+
+			// Ensure getting cleaned up after tests finish
+			defer func() {
+				f := &apiv1alpha1.M4DBucket{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace, Name: applicationKey.Name}}
+				_ = k8sClient.Get(context.Background(), applicationKey, f)
+				_ = k8sClient.Delete(context.Background(), f)
+			}()
+
+			By("Expecting application to be created")
+			Eventually(func() error {
+				return k8sClient.Get(context.Background(), applicationKey, application)
+			}, timeout, interval).Should(Succeed())
+
+			// A blueprint namespace should be set
+			By("Expecting application to have a namespace in the status")
+			Eventually(func() string {
+				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
+				return application.Status.BlueprintNamespace
+			}, timeout, interval).ShouldNot(BeEmpty())
+
+			namespace := &v1.Namespace{}
+			ns := application.Status.BlueprintNamespace
+			By("Expect namespace to be created")
+			Eventually(func() error {
+				return k8sClient.Get(context.Background(), client.ObjectKey{"", ns}, namespace)
+			}, timeout, interval).Should(Succeed())
+
+			blueprint := &apiv1alpha1.Blueprint{}
+			By("Expect blueprint to be created")
+			Eventually(func() error {
+				return k8sClient.Get(context.Background(), client.ObjectKey{ns, application.Name}, blueprint)
+			}, timeout, interval).Should(Succeed())
+
+			if !noSimulatedProgress {
+				// Simulate blueprint progress
+				// TODO check what to do with fake helm client
+				cm := &v1.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "a8afad067a6a96084dcb",
+						Namespace: ns,
+						Annotations: map[string]string{
+							"meta.helm.sh/release-name":      "ra8afad067a6a96084dcb",
+							"meta.helm.sh/release-namespace": ns,
+						},
+						Labels: map[string]string{
+							"app.kubernetes.io/managed-by": "Helm",
+						},
+					},
+					Data: nil,
+				}
+				secret := &v1.Secret{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "sh.helm.release.v1.ra8afad067a6a96084dcb.v1",
+						Namespace: ns,
+						Labels: map[string]string{
+							"modifiedAt": "1604959961",
+							"name":       "ra8afad067a6a96084dcb",
+							"owner":      "helm",
+							"status":     "deployed",
+							"version":    "1",
+						},
+					},
+					Data: map[string][]byte{
+						"release": []byte(""),
+					},
+				}
+				Expect(k8sClient.Create(context.Background(), cm)).Should(Succeed())
+				Expect(k8sClient.Create(context.Background(), secret)).Should(Succeed())
+			}
+
+			if noSimulatedProgress {
+				By("Expecting M4DApplication to eventually be ready")
+				Eventually(func() bool {
+					Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
+					return application.Status.Ready
+				}, timeout, interval).Should(BeTrue())
+			}
 		})
 	})
 })
