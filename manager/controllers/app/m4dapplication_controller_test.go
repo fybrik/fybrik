@@ -347,7 +347,7 @@ var _ = Describe("M4DApplication Controller", func() {
 		// Enforcement actions for the first dataset: redact on read, encrypt on copy
 		// Enforcement action for the second dataset: Allow
 		// Applied copy module kafka->s3 and db2->s3 supporting redact and encrypt actions
-		// Result: blueprint is created successfully
+		// Result: blueprint is created successfully, a read module is applied once for both datasets
 
 		It("Test blueprint-created", func() {
 			// allocate storage
@@ -397,13 +397,24 @@ var _ = Describe("M4DApplication Controller", func() {
 			}, timeout, interval).ShouldNot(BeEmpty())
 
 			By("Expecting blueprint to be generated")
+			blueprint := &apiv1alpha1.Blueprint{}
 			Eventually(func() error {
 				Expect(k8sClient.Get(context.Background(), appSignature, resource)).Should(Succeed())
-				f := &apiv1alpha1.Blueprint{}
 				key := appSignature
 				key.Namespace = resource.Status.BlueprintNamespace
-				return k8sClient.Get(context.Background(), key, f)
+				return k8sClient.Get(context.Background(), key, blueprint)
 			}, timeout, interval).Should(Succeed())
+
+			// Check the generated blueprint
+			// There should be a single read module with two datasets
+			numReads := 0
+			for _, step := range blueprint.Spec.Flow.Steps {
+				if step.Template == readPathModule.Name {
+					numReads++
+					Expect(len(step.Arguments.Read)).To(Equal(2))
+				}
+			}
+			Expect(numReads).To(Equal(1))
 		})
 	})
 })
