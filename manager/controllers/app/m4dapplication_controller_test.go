@@ -508,13 +508,13 @@ var _ = Describe("M4DApplication Controller", func() {
 			ns := application.Status.BlueprintNamespace
 			By("Expect namespace to be created")
 			Eventually(func() error {
-				return k8sClient.Get(context.Background(), client.ObjectKey{"", ns}, namespace)
+				return k8sClient.Get(context.Background(), client.ObjectKey{Namespace: "", Name: ns}, namespace)
 			}, timeout, interval).Should(Succeed())
 
 			blueprint := &apiv1alpha1.Blueprint{}
 			By("Expect blueprint to be created")
 			Eventually(func() error {
-				return k8sClient.Get(context.Background(), client.ObjectKey{ns, application.Name}, blueprint)
+				return k8sClient.Get(context.Background(), client.ObjectKey{Namespace: ns, Name: application.Name}, blueprint)
 			}, timeout, interval).Should(Succeed())
 
 			if !noSimulatedProgress {
@@ -529,7 +529,7 @@ var _ = Describe("M4DApplication Controller", func() {
 				Eventually(func() bool {
 					Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
 					return application.Status.Ready
-				}, timeout * 2, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
+				}, timeout*2, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
 			}
 		})
 	})
