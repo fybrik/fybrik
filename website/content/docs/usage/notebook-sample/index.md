@@ -104,8 +104,8 @@ In this sample guide you will:
 
 ## Reviewing the policies for the dataset
 
-Currently policies are coded with the OPA deployment.
-The defined policies that relates to datasets that are tagged with 'finance' are redacting the columns `nameOrig` and `nameDest` when data is read.
+Currently predefined policies are included as part of the OPA deployment.
+Included are policies that are triggered for datasets that are tagged with 'finance' and have columns `nameOrig` and `nameDest`. The policies indicate that these columns must be redacted (masked) when data is read.
 
 The policies can be found at `third_party/opa/opa-policy.rego`.
 
@@ -168,4 +168,4 @@ This allows the code in the notebook to read the data and policies to seamlessly
     ```
 
 # Next steps
-You have completed an execution of a notebook with {{< name >}} and now ready to continue and exploring.
+You have completed an execution of a notebook with {{< name >}} and are now ready to continue and exploring.
