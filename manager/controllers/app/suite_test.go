@@ -18,9 +18,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	v1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
@@ -40,7 +40,6 @@ var cfg *rest.Config
 var k8sClient client.Client
 var mgr ctrl.Manager
 var testEnv *envtest.Environment
-var noSimulatedProgress bool
 
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
