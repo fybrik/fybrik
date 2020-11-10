@@ -6,16 +6,17 @@ DOCKER_FILE=$(DOCKER_CONTEXT)/connectors/opa/Dockerfile
 include $(ROOT_DIR)/.mk/docker.mk
 
 OPA_PATH=${ABSTOOLBIN}/opa
-OPA_DEFAULT_POLICY_FILE=${ROOT_DIR}/third_party/opa/opa-policy.rego
+OPA_DEFAULT_POLICY_FILE=${ROOT_DIR}/third_party/opa/data-and-policies/user_policies.rego
+OPA_DEFAULT_POLICY_FOLDER=${ROOT_DIR}/third_party/opa/data-and-policies/data_policies
 
 docker-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o opa-connector opa_connector.go evaluate_opa.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o opa-connector opa_connector.go evaluate_opa.go 	
 	docker build . -t $(IMG) -f Dockerfile
 	rm opa-connector
 
 .PHONY: opaserver
 opaserver:
-	{ $(OPA_PATH) run --server $(OPA_DEFAULT_POLICY_FILE) > output-opa.log 2>&1 & echo $$! >> opa_pids.txt; }
+	{ $(OPA_PATH) run --server $(OPA_DEFAULT_POLICY_FILE) $(OPA_DEFAULT_POLICY_FOLDER) > output-opa.log 2>&1 & echo $$! >> opa_pids.txt; }
 
 .PHONY: opaserver-terminate
 opaserver-terminate:

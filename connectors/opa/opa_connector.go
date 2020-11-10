@@ -125,10 +125,10 @@ func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationCon
 		toPrintBytes, _ := json.MarshalIndent(inputMap, "", "\t")
 		log.Println("********sending this to OPA : *******")
 		log.Println(string(toPrintBytes))
-		opaEval, err := EvaluateExtendedPoliciesOnInput(inputMap, opaServerURL)
+		opaEval, err := EvaluatePoliciesOnInput(inputMap, opaServerURL)
 		if err != nil {
-			log.Printf("error in EvaluateExtendedPoliciesOnInput (i = %d): %v", i, err)
-			return nil, fmt.Errorf("error in EvaluateExtendedPoliciesOnInput (i = %d): %v", i, err)
+			log.Printf("error in EvaluatePoliciesOnInput (i = %d): %v", i, err)
+			return nil, fmt.Errorf("error in EvaluatePoliciesOnInput (i = %d): %v", i, err)
 		}
 		log.Println("OPA Eval : " + opaEval)
 		opaOperationDecision, err := GetOPAOperationDecision(opaEval, operation)
@@ -215,19 +215,8 @@ func GetOPAOperationDecision(opaEval string, operation *pb.AccessOperation) (*pb
 		enforcementActions = append(enforcementActions, newEnforcementAction)
 	}
 
-	// for k, v := range mainMap {
-	// 	switch k {
-	// 	case "Encrypt_col":
-	// 		newEnforcementActions, newUsedPolicies := GetEncryptColEnforcementActionsAndPolicies(v)
-	// 		enforcementActions = append(enforcementActions, newEnforcementActions...)
-	// 		usedPolicies = append(usedPolicies, newUsedPolicies...)
-	// 	default:
-	// 		log.Printf("Unknown Enforcement Action receieved from OPA")
-	// 	}
-	// }
-
-	log.Println("************************** EA: ", enforcementActions)
-	log.Println("************************** POL: ", usedPolicies)
+	log.Println("************************** enforcementActions: ", enforcementActions)
+	log.Println("************************** usedPolicies: ", usedPolicies)
 
 	return &pb.OperationDecision{Operation: operation, EnforcementActions: enforcementActions, UsedPolicies: usedPolicies}, nil
 }
@@ -239,18 +228,34 @@ func buildNewEnfrocementAction(transformAction interface{}) (*pb.EnforcementActi
 			log.Println("Warning: unknown format of used policy information. Skipping policy", action)
 		}
 
-		if result, ok := action["result"].(string); ok {
+		if result, ok := action["action_name"].(string); ok {
 			switch result {
-			case "Remove column":
-				if columnName, ok := extractArgument(action["args"], "column name"); ok {
+			case "remove column":
+				if columnName, ok := extractArgument(action["arguments"], "column_name"); ok {
 					newEnforcementAction := &pb.EnforcementAction{Name: "removed", Id: "removed-ID",
 						Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": columnName}}
 					return newEnforcementAction, newUsedPolicy, true
 				}
-			case "Redact column":
-				if columnName, ok := extractArgument(action["args"], "column name"); ok {
-					newEnforcementAction := &pb.EnforcementAction{Name: "redact", Id: "redact-ID",
+			case "encrypt column":
+				if columnName, ok := extractArgument(action["arguments"], "column_name"); ok {
+					newEnforcementAction := &pb.EnforcementAction{Name: "encrypted", Id: "encrypted-ID",
 						Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": columnName}}
+					return newEnforcementAction, newUsedPolicy, true
+				}
+			case "reduct column":
+				if columnName, ok := extractArgument(action["arguments"], "column_name"); ok {
+					newEnforcementAction := &pb.EnforcementAction{Name: "reducted", Id: "reducted-ID",
+						Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": columnName}}
+					return newEnforcementAction, newUsedPolicy, true
+				}
+			case "periodic blackout":
+				if monthlyDaysNum, ok := extractArgument(action["arguments"], "monthly_days_end"); ok {
+					newEnforcementAction := &pb.EnforcementAction{Name: "periodic_blackout", Id: "periodic_blackout-ID",
+						Level: pb.EnforcementAction_DATASET, Args: map[string]string{"monthly_days_end": monthlyDaysNum}}
+					return newEnforcementAction, newUsedPolicy, true
+				} else if yearlyDaysNum, ok := extractArgument(action["arguments"], "yearly_days_end"); ok {
+					newEnforcementAction := &pb.EnforcementAction{Name: "periodic_blackout", Id: "periodic_blackout-ID",
+						Level: pb.EnforcementAction_DATASET, Args: map[string]string{"yearly_days_end": yearlyDaysNum}}
 					return newEnforcementAction, newUsedPolicy, true
 				}
 			default:
