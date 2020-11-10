@@ -72,6 +72,7 @@ jobs:
     - make kind || travis_terminate 1;
     - make cluster-prepare || travis_terminate 1;
     - make install || travis_terminate 1;
+    - ./pushArrowFlightToKind.sh
     - make e2e
 
   # The following integration/system test builds all images

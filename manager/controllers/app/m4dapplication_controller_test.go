@@ -529,7 +529,7 @@ var _ = Describe("M4DApplication Controller", func() {
 				Eventually(func() bool {
 					Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
 					return application.Status.Ready
-				}, timeout*2, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
+				}, timeout*10, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
 			}
 		})
 	})
