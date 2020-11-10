@@ -424,36 +424,12 @@ var _ = Describe("M4DApplication Controller", func() {
 				return k8sClient.Get(context.Background(), appSignature, f)
 			}, timeout, interval).ShouldNot(Succeed())
 
-			// delete storage
-			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DBucket{ObjectMeta: metav1.ObjectMeta{Name: "test-bucket", Namespace: "default"}})
 			// delete modules
 			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "arrow-flight-module", Namespace: "default"}})
-			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "template-module", Namespace: "default"}})
 		})
 
 		It("Test end-to-end for M4DApplication with arrow-flight module", func() {
-			Expect(1).Should(Equal(1))
-
 			var err error
-			bucketYAML, err := ioutil.ReadFile("../../testdata/e2e/bucket-available.yaml")
-			Expect(err).ToNot(HaveOccurred())
-			bucket := &apiv1alpha1.M4DBucket{}
-			err = yaml.Unmarshal(bucketYAML, bucket)
-			Expect(err).ToNot(HaveOccurred())
-
-			bucketKey, err := client.ObjectKeyFromObject(bucket)
-			Expect(err).ToNot(HaveOccurred())
-
-			// Create M4DBucket
-			Expect(k8sClient.Create(context.Background(), bucket)).Should(Succeed())
-
-			// Ensure getting cleaned up after tests finish
-			defer func() {
-				f := &apiv1alpha1.M4DBucket{ObjectMeta: metav1.ObjectMeta{Namespace: bucketKey.Namespace, Name: bucketKey.Name}}
-				_ = k8sClient.Get(context.Background(), bucketKey, f)
-				_ = k8sClient.Delete(context.Background(), f)
-			}()
-
 			readModuleYAML, err := ioutil.ReadFile("../../testdata/e2e/module-read.yaml")
 			Expect(err).ToNot(HaveOccurred())
 			module := &apiv1alpha1.M4DModule{}
