@@ -5,6 +5,8 @@ package app
 
 import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	"helm.sh/helm/v3/pkg/release"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"os"
 	"path/filepath"
 	"testing"
@@ -78,6 +80,14 @@ var _ = BeforeSuite(func(done Done) {
 		// Mockup connectors
 		go mockup.CreateTestCatalogConnector(GinkgoT())
 
+		// Fake helm client. Release name is from arrow-flight module
+		fakeHelm := helm.NewFake(
+			&release.Release{
+				Name: "ra8afad067a6a96084dcb",
+				Info: &release.Info{Status: release.StatusDeployed},
+			}, []*unstructured.Unstructured{},
+		)
+
 		mgr, err = ctrl.NewManager(cfg, ctrl.Options{
 			Scheme:             scheme.Scheme,
 			MetricsBindAddress: "localhost:8086",
@@ -87,7 +97,7 @@ var _ = BeforeSuite(func(done Done) {
 		policyCompiler := &mockup.MockPolicyCompiler{}
 		err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
-		err = NewBlueprintReconciler(mgr, "Blueprint", new(helm.Fake)).SetupWithManager(mgr)
+		err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
 
 		go func() {

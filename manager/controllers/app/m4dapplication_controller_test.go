@@ -504,6 +504,7 @@ var _ = Describe("M4DApplication Controller", func() {
 				return application.Status.BlueprintNamespace
 			}, timeout, interval).ShouldNot(BeEmpty())
 
+			// A blueprint namespace should be created
 			namespace := &v1.Namespace{}
 			ns := application.Status.BlueprintNamespace
 			By("Expect namespace to be created")
@@ -511,26 +512,31 @@ var _ = Describe("M4DApplication Controller", func() {
 				return k8sClient.Get(context.Background(), client.ObjectKey{Namespace: "", Name: ns}, namespace)
 			}, timeout, interval).Should(Succeed())
 
+			// The blueprint has to be created in the blueprint namespace
 			blueprint := &apiv1alpha1.Blueprint{}
+			blueprintObjectKey := client.ObjectKey{Namespace: ns, Name: application.Name}
 			By("Expect blueprint to be created")
 			Eventually(func() error {
-				return k8sClient.Get(context.Background(), client.ObjectKey{Namespace: ns, Name: application.Name}, blueprint)
+				return k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)
 			}, timeout, interval).Should(Succeed())
 
 			if !noSimulatedProgress {
-				// Simulate blueprint progress for arrow flight?
-				// TODO check what to do with fake helm client
+				// Fake helmer simulates progress
 			}
 
-			if noSimulatedProgress {
-				// Extra long timeout as deploying the arrow-flight module on a new cluster may take some time
-				// depending on the download speed
-				By("Expecting M4DApplication to eventually be ready")
-				Eventually(func() bool {
-					Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
-					return application.Status.Ready
-				}, timeout*10, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
-			}
+			By("Expect blueprint to be created")
+			Eventually(func() bool {
+				Expect(k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)).To(Succeed())
+				return blueprint.Status.Ready
+			}, timeout*10, interval).Should(BeTrue())
+
+			// Extra long timeout as deploying the arrow-flight module on a new cluster may take some time
+			// depending on the download speed
+			By("Expecting M4DApplication to eventually be ready")
+			Eventually(func() bool {
+				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
+				return application.Status.Ready
+			}, timeout*10, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
 		})
 	})
 })

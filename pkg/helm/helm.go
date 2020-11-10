@@ -69,6 +69,8 @@ type Interface interface {
 
 // Fake implementation
 type Fake struct {
+	release   *release.Release
+	resources []*unstructured.Unstructured
 }
 
 // Uninstall helm release
@@ -79,20 +81,17 @@ func (r *Fake) Uninstall(kubeNamespace string, releaseName string) (*release.Uni
 
 // Install helm release
 func (r *Fake) Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error) {
-	rel := &release.Release{Info: &release.Info{}}
-	return rel, nil
+	return r.release, nil
 }
 
 // Upgrade helm release
 func (r *Fake) Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error) {
-	rel := &release.Release{Info: &release.Info{}}
-	return rel, nil
+	return r.release, nil
 }
 
 // Status of helm release
 func (r *Fake) Status(kubeNamespace string, releaseName string) (*release.Release, error) {
-	rel := &release.Release{Info: &release.Info{}}
-	return rel, nil
+	return r.release, nil
 }
 
 // RegistryLogin to docker registry v2
@@ -132,7 +131,21 @@ func (r *Fake) ChartPull(ref string) error {
 
 // GetResources returns allocated resources for the specified release (their current state)
 func (r *Fake) GetResources(kubeNamespace string, releaseName string) ([]*unstructured.Unstructured, error) {
-	return make([]*unstructured.Unstructured, 0), nil
+	return r.resources, nil
+}
+
+func NewEmptyFake() *Fake {
+	return &Fake{
+		release:   &release.Release{Info: &release.Info{}},
+		resources: make([]*unstructured.Unstructured, 0),
+	}
+}
+
+func NewFake(release *release.Release, resources []*unstructured.Unstructured) *Fake {
+	return &Fake{
+		release:   release,
+		resources: resources,
+	}
 }
 
 // Impl implementation
