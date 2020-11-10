@@ -131,6 +131,7 @@ func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
 	SetIfNotSet("CONNECTION_TIMEOUT", "120", t)
 	SetIfNotSet("MAIN_POLICY_MANAGER_CONNECTOR_URL", "localhost:50090", t)
 	SetIfNotSet("MAIN_POLICY_MANAGER_NAME", "MOCK", t)
-	SetIfNotSet("USE_EXTENSIONPOLICY_MANAGER", "http://secret-provider.m4d-system.svc.cluster.local:5555/get-secret", t)
+	SetIfNotSet("USE_EXTENSIONPOLICY_MANAGER", "false", t)
+	SetIfNotSet("SECRET_PROVIDER_URL", "http://secret-provider.m4d-system.svc.cluster.local:5555/get-secret", t)
 	SetIfNotSet("SECRET_PROVIDER_ROLE", "demo", t)
 }

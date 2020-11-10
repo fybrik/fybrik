@@ -444,7 +444,7 @@ var _ = Describe("M4DApplication Controller", func() {
 
 			// Ensure getting cleaned up after tests finish
 			defer func() {
-				f := &apiv1alpha1.M4DBucket{ObjectMeta: metav1.ObjectMeta{Namespace: moduleKey.Namespace, Name: moduleKey.Name}}
+				f := &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Namespace: moduleKey.Namespace, Name: moduleKey.Name}}
 				_ = k8sClient.Get(context.Background(), moduleKey, f)
 				_ = k8sClient.Delete(context.Background(), f)
 			}()
@@ -463,7 +463,7 @@ var _ = Describe("M4DApplication Controller", func() {
 
 			// Ensure getting cleaned up after tests finish
 			defer func() {
-				f := &apiv1alpha1.M4DBucket{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace, Name: applicationKey.Name}}
+				f := &apiv1alpha1.M4DApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace, Name: applicationKey.Name}}
 				_ = k8sClient.Get(context.Background(), applicationKey, f)
 				_ = k8sClient.Delete(context.Background(), f)
 			}()
@@ -496,11 +496,7 @@ var _ = Describe("M4DApplication Controller", func() {
 				return k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)
 			}, timeout, interval).Should(Succeed())
 
-			if !noSimulatedProgress {
-				// Fake helmer simulates progress
-			}
-
-			By("Expect blueprint to be created")
+			By("Expect blueprint to be ready at some point")
 			Eventually(func() bool {
 				Expect(k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)).To(Succeed())
 				return blueprint.Status.Ready

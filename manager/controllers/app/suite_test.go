@@ -4,8 +4,10 @@
 package app
 
 import (
+	"context"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"helm.sh/helm/v3/pkg/release"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"os"
 	"path/filepath"
@@ -18,6 +20,7 @@ import (
 	"github.com/onsi/gomega/gexec"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	v1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
@@ -51,9 +54,6 @@ var _ = BeforeSuite(func(done Done) {
 	logf.SetLogger(zap.LoggerTo(GinkgoWriter, true))
 
 	By("bootstrapping test environment")
-	if os.Getenv("NO_SIMULATED_PROGRESS") == "true" {
-		noSimulatedProgress = true
-	}
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{
 			filepath.Join("..", "..", "config", "crd", "bases"),
@@ -106,6 +106,11 @@ var _ = BeforeSuite(func(done Done) {
 		}()
 
 		k8sClient = mgr.GetClient()
+		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "m4d-system",
+			},
+		}))
 	}
 	Expect(k8sClient).ToNot(BeNil())
 
