@@ -523,11 +523,13 @@ var _ = Describe("M4DApplication Controller", func() {
 			}
 
 			if noSimulatedProgress {
+				// Extra long timeout as deploying the arrow-flight module on a new cluster may take some time
+				// depending on the download speed
 				By("Expecting M4DApplication to eventually be ready")
 				Eventually(func() bool {
 					Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
 					return application.Status.Ready
-				}, timeout, interval).Should(BeTrue())
+				}, timeout * 2, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
 			}
 		})
 	})

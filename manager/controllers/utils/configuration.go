@@ -4,12 +4,11 @@
 package utils
 
 import (
+	"github.com/hashicorp/vault/api"
+	"github.com/onsi/ginkgo"
 	"io/ioutil"
 	"os"
 	"strings"
-	"testing"
-
-	"github.com/hashicorp/vault/api"
 )
 
 // Attributes that are defined in a config map or the runtime environment
@@ -109,7 +108,7 @@ func GetDataCatalogServiceAddress() string {
 	return os.Getenv(CatalogConnectorServiceAddressKey)
 }
 
-func SetIfNotSet(key string, value string, t *testing.T) {
+func SetIfNotSet(key string, value string, t ginkgo.GinkgoTInterface) {
 	if _, b := os.LookupEnv(key); !b {
 		if err := os.Setenv(key, value); err != nil {
 			t.Fatalf("Could not set environment variable %s", key)
@@ -117,7 +116,7 @@ func SetIfNotSet(key string, value string, t *testing.T) {
 	}
 }
 
-func DefaultTestConfiguration(t *testing.T) {
+func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
 	SetIfNotSet(CatalogConnectorServiceAddressKey, "localhost:50085", t)
 	SetIfNotSet(CredentialsManagerServiceAddressKey, "localhost:50085", t)
 	SetIfNotSet(VaultAddressKey, "http://127.0.0.1:8200/", t)

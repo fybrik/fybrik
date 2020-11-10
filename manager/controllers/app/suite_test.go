@@ -40,8 +40,6 @@ var noSimulatedProgress bool
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	utils.DefaultTestConfiguration(t)
-
 	RunSpecsWithDefaultAndCustomReporters(t,
 		"Controller Suite",
 		[]Reporter{printer.NewlineReporter{}})
@@ -61,13 +59,12 @@ var _ = BeforeSuite(func(done Done) {
 		//AttachControlPlaneOutput: true,
 	}
 
+	utils.DefaultTestConfiguration(GinkgoT())
+
 	var err error
 	cfg, err = testEnv.Start()
 	Expect(err).ToNot(HaveOccurred())
 	Expect(cfg).ToNot(BeNil())
-
-	// Mockup connectors
-	go mockup.MockCatalogConnector()
 
 	err = appapi.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
@@ -78,6 +75,9 @@ var _ = BeforeSuite(func(done Done) {
 		logf.Log.Info("Using existing controller in existing cluster...")
 		k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 	} else {
+		// Mockup connectors
+		go mockup.CreateTestCatalogConnector(GinkgoT())
+
 		mgr, err = ctrl.NewManager(cfg, ctrl.Options{
 			Scheme:             scheme.Scheme,
 			MetricsBindAddress: "localhost:8086",
