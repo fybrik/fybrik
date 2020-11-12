@@ -22,5 +22,4 @@ make -C secret-provider deploy
 make -C manager deploy_it
 make -C manager wait_for_manager
 make helm
-./pushArrowFlightToKind.sh
 make -C manager run-integration-tests

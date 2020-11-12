@@ -86,7 +86,6 @@ jobs:
     - make -C manager deploy_it || travis_terminate 1;
     - make -C manager wait_for_manager || travis_terminate 1;
     - make helm || travis_terminate 1;
-    - ./pushArrowFlightToKind.sh
     - make -C manager run-integration-tests || travis_terminate 1;
     deploy:
      skip_cleanup: true
