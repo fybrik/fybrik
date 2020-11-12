@@ -5,12 +5,16 @@ package app
 
 import (
 	"context"
+	"io/ioutil"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/yaml"
 	"time"
 
 	apiv1alpha1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -415,6 +419,107 @@ var _ = Describe("M4DApplication Controller", func() {
 				}
 			}
 			Expect(numReads).To(Equal(1))
+		})
+	})
+
+	Context("M4DApplication e2e", func() {
+		BeforeEach(func() {
+			// Add any teardown steps that needs to be executed after each test
+			// delete application
+			appSignature := GetApplicationSignature()
+			resource := &apiv1alpha1.M4DApplication{ObjectMeta: metav1.ObjectMeta{Name: "notebook", Namespace: "default"}}
+			_ = k8sClient.Delete(context.Background(), resource)
+
+			Eventually(func() error {
+				f := &apiv1alpha1.M4DApplication{}
+				return k8sClient.Get(context.Background(), appSignature, f)
+			}, timeout, interval).ShouldNot(Succeed())
+
+			// delete modules
+			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "arrow-flight-module", Namespace: "default"}})
+		})
+
+		It("Test end-to-end for M4DApplication with arrow-flight module", func() {
+			var err error
+			readModuleYAML, err := ioutil.ReadFile("../../testdata/e2e/module-read.yaml")
+			Expect(err).ToNot(HaveOccurred())
+			module := &apiv1alpha1.M4DModule{}
+			err = yaml.Unmarshal(readModuleYAML, module)
+			Expect(err).ToNot(HaveOccurred())
+
+			moduleKey, err := client.ObjectKeyFromObject(module)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Create M4DModule
+			Expect(k8sClient.Create(context.Background(), module)).Should(Succeed())
+
+			// Ensure getting cleaned up after tests finish
+			defer func() {
+				f := &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Namespace: moduleKey.Namespace, Name: moduleKey.Name}}
+				_ = k8sClient.Get(context.Background(), moduleKey, f)
+				_ = k8sClient.Delete(context.Background(), f)
+			}()
+
+			applicationYAML, err := ioutil.ReadFile("../../testdata/e2e/m4dapplication.yaml")
+			Expect(err).ToNot(HaveOccurred())
+			application := &apiv1alpha1.M4DApplication{}
+			err = yaml.Unmarshal(applicationYAML, application)
+			Expect(err).ToNot(HaveOccurred())
+
+			applicationKey, err := client.ObjectKeyFromObject(application)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Create M4DApplication
+			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
+
+			// Ensure getting cleaned up after tests finish
+			defer func() {
+				f := &apiv1alpha1.M4DApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace, Name: applicationKey.Name}}
+				_ = k8sClient.Get(context.Background(), applicationKey, f)
+				_ = k8sClient.Delete(context.Background(), f)
+			}()
+
+			By("Expecting application to be created")
+			Eventually(func() error {
+				return k8sClient.Get(context.Background(), applicationKey, application)
+			}, timeout, interval).Should(Succeed())
+
+			// A blueprint namespace should be set
+			By("Expecting application to have a namespace in the status")
+			Eventually(func() string {
+				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
+				return application.Status.BlueprintNamespace
+			}, timeout, interval).ShouldNot(BeEmpty())
+
+			// A blueprint namespace should be created
+			namespace := &v1.Namespace{}
+			ns := application.Status.BlueprintNamespace
+			By("Expect namespace to be created")
+			Eventually(func() error {
+				return k8sClient.Get(context.Background(), client.ObjectKey{Namespace: "", Name: ns}, namespace)
+			}, timeout, interval).Should(Succeed())
+
+			// The blueprint has to be created in the blueprint namespace
+			blueprint := &apiv1alpha1.Blueprint{}
+			blueprintObjectKey := client.ObjectKey{Namespace: ns, Name: application.Name}
+			By("Expect blueprint to be created")
+			Eventually(func() error {
+				return k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)
+			}, timeout, interval).Should(Succeed())
+
+			By("Expect blueprint to be ready at some point")
+			Eventually(func() bool {
+				Expect(k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)).To(Succeed())
+				return blueprint.Status.Ready
+			}, timeout*10, interval).Should(BeTrue())
+
+			// Extra long timeout as deploying the arrow-flight module on a new cluster may take some time
+			// depending on the download speed
+			By("Expecting M4DApplication to eventually be ready")
+			Eventually(func() bool {
+				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
+				return application.Status.Ready
+			}, timeout*10, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
 		})
 	})
 })

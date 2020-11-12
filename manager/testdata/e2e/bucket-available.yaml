@@ -5,6 +5,7 @@ apiVersion: app.m4d.ibm.com/v1alpha1
 kind: M4DBucket
 metadata:
   name: test-bucket
+  namespace: m4d-system
 spec:
   name: m4d-test-bucket
   endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud

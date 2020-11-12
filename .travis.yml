@@ -64,16 +64,6 @@ jobs:
   #   script:
   #   - make license
 
-  - stage: Test
-    name: "Integration tests for manager"
-    install:
-    - make install-tools
-    script:
-    - make kind || travis_terminate 1;
-    - make cluster-prepare || travis_terminate 1;
-    - make install || travis_terminate 1;
-    - make e2e
-
   # The following integration/system test builds all images
   # and deploys all the services locally in a kind environment
   # It then runs integration tests that run requests against the installed system
