@@ -57,7 +57,6 @@ var _ = BeforeSuite(func(done Done) {
 		CRDDirectoryPaths: []string{
 			filepath.Join("..", "..", "config", "crd", "bases"),
 		},
-		//AttachControlPlaneOutput: true,
 	}
 
 	utils.DefaultTestConfiguration(GinkgoT())

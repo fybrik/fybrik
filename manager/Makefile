@@ -59,13 +59,15 @@ run-integration-tests: wait_for_manager
 .PHONY: main.deps
 main.deps: generate fmt vet manifests
 
-# Download CA certificates from manager image and add the CA certificate that was generated for the test
-# This file is then uploaded to K8s as a secret and injected into the manager during deployment
+# Download CA certificates from manager image and add the CA certificate that was generated for the test.
+# This file is then uploaded to K8s as a secret and injected into the manager during deployment.
+# This way the image of the manger is not altered and still only contains the CA certificates from the base image.
 .PHONY: build-ca-certs
 build-ca-certs: $(TOOLBIN)/kubectl
-	rm ../hack/registry/ca-certificates.crt || true
-	bash -c "docker cp $$(docker create --rm $(DOCKER_HOSTNAME)/$(DOCKER_NAMESPACE)/$(DOCKER_NAME):$(DOCKER_TAGNAME)):/etc/ssl/certs/ca-certificates.crt ../hack/registry/ca-certificates.crt"
-	cat ../hack/registry/ca.crt >> ../hack/registry/ca-certificates.crt
+	rm $(ROOT_DIR)/hack/registry/ca-certificates.crt || true
+	# Hack to fetch CA certificates of base image
+	bash -c "docker cp $$(docker create --rm $(DOCKER_HOSTNAME)/$(DOCKER_NAMESPACE)/$(DOCKER_NAME):$(DOCKER_TAGNAME)):/etc/ssl/certs/ca-certificates.crt $(ROOT_DIR)/hack/registry/ca-certificates.crt"
+	cat $(ROOT_DIR)/hack/registry/ca.crt >> $(ROOT_DIR)/hack/registry/ca-certificates.crt
 
 .PHONY: docker-secret
 docker-secret: $(TOOLBIN)/kubectl
