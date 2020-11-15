@@ -38,7 +38,15 @@ func (s *server) GetCredentialsInfo(ctx context.Context, in *pb.DatasetCredentia
 	}
 	log.Println("Read credentials from vault: " + readCredentials)
 
-	return &pb.DatasetCredentials{DatasetId: in.DatasetId, Credentials: readCredentials}, nil
+	//return &pb.DatasetCredentials{DatasetId: in.DatasetId, Credentials: readCredentials}, nil
+
+	credentials := &pb.Credentials{
+		CustomCredentialsJson: readCredentials,
+	}
+	dscredentials := &pb.DatasetCredentials{DatasetId: in.DatasetId, Creds: credentials}
+	log.Println("sending credentials from vault connector: ")
+	log.Println(dscredentials)
+	return dscredentials, nil
 }
 
 func main() {
