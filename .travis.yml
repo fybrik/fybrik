@@ -126,3 +126,12 @@ jobs:
 
 notifications:
   email: false
+deploy:
+  provider: releases
+  api_key:
+    secure: Es3z5bIx3N2en+vn6ogPyftwMoyUYE60s29gfBmThBd0UoQKKltGn5bCo1UnR5NpmNAyDlJtz2yN239IImp2RYwLGVXMrT/lqsTtsrEm8rKEgMWhteBdxWeZhBWMEip0PjZznO0gY9ALAH0IALvYqtVmo93ZtvXXbyYgzXleqNSGE1ChK3u7gFrNeEHKH1ivQ0xKozg3W4kaKAxwnbsi7KSxyb0o/aK8QGPya8Ldfn0l7DhxMuSe9a3l30dnoh0EOTEsH9yosYmhqG+e4erKBSdjKbzQpxzh9xpKHbw998p84OsVrSR8UyRNmzG6IhfISVRUsn73CtpG7imeMhTaezcXQ0Hy1r6WvumoSl7oOFLUz1b3R59bfR1XCYKLcWgK4kek/unzd0x2OJJWdfy/RgCRwnr60O0hD3bwm5w9I2DywyF7ilObGp0M/oo8LiKryawe9lahkrIhRNVdgNEO62q/UmNTOfTH3pm2wXDMAaciphXkbK5ZFfGo5Xzdpx6Cm72ctMc3hcfLw4W5btNOKTXlfLHNdicTSRdFVlosvZMBgYpuoeloj232Kx4HYvbOals7vRM2FhZGWRZ4g2QMB8b6piVD/TRYUUnZeUOP4q+Hi6E2hb902M7LJZz968clMGeC6nLhsOJBHh+4lAfL1RBex85Y5ma60OV1YpvdUnk=
+  file:
+  - README.md
+  skip_cleanup: 'true'
+  on:
+    tags: true
