@@ -56,12 +56,6 @@ type WriteModuleArgs struct {
 // In the future might support output args as well
 // The arguments passed depend on the type of module
 type ModuleArguments struct {
-
-	// ONE AND ONLY ONE OF THE FOLLOWING FIELDS SHOULD BE POPULATED
-	// Flow is the selector for this union
-	// +required
-	Flow ModuleFlow `json:"flow"`
-
 	// CopyArgs are parameters specific to modules that copy data from one data store to another.
 	// +optional
 	Copy *CopyModuleArgs `json:"copy,omitempty"`

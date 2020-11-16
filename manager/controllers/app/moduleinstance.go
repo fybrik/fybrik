@@ -155,7 +155,6 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 		}
 		// append moduleinstances to the list
 		copyArgs := &app.ModuleArguments{
-			Flow: app.Copy,
 			Copy: &app.CopyModuleArgs{
 				Source:          *sourceDataStore,
 				Destination:     *sinkDataStore,
@@ -178,7 +177,6 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 		AssetID:         item.AssetID,
 		Transformations: actionsOnRead.EnforcementActions})
 	readArgs := &app.ModuleArguments{
-		Flow: app.Read,
 		Read: readInstructions,
 	}
 	instances = append(instances, readSelector.AddModuleInstances(readArgs, item)...)

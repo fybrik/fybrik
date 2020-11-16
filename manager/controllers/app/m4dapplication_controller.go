@@ -222,7 +222,9 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 			return ctrl.Result{}, err
 		}
 	}
-	blueprintSpec := r.GenerateBlueprint(instances, applicationContext)
+	// unite several instances of a read/write module
+	newInstances := r.RefineInstances(instances)
+	blueprintSpec := r.GenerateBlueprint(newInstances, applicationContext)
 	r.Log.V(0).Info("Blueprint entrypoint: " + blueprintSpec.Entrypoint)
 
 	blueprint := r.GetBlueprintSignature(applicationContext)
