@@ -54,7 +54,7 @@ func CreateReadPathModule() *apiv1alpha1.M4DModule {
 						Source: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
 					},
 				},
-				API: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.DatmeshArrowFlight, DataFormat: apiv1alpha1.Arrow},
+				API: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
 			},
 			Chart: "s3-flight",
 		},
@@ -210,7 +210,7 @@ var _ = Describe("M4DApplication Controller", func() {
 		// Assumptions on response from connectors:
 		// S3 dataset, needs to be consumed in the same way
 		// Enforcement action for read operation: Deny
-		// Result: an error condition with "Denied" reason
+		// Result: an error
 
 		It("Test deny-on-read", func() {
 
@@ -224,22 +224,22 @@ var _ = Describe("M4DApplication Controller", func() {
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
 
-			By("Expecting an error condition with reason Denied")
-			Eventually(func() []apiv1alpha1.Condition {
+			By("Expecting access denied on read")
+			Eventually(func() string {
 				f := &apiv1alpha1.M4DApplication{}
 				_ = k8sClient.Get(context.Background(), appSignature, f)
-				return f.Status.Conditions
+				return f.Status.Error
 			}, timeout, interval).ShouldNot(BeEmpty())
 
 			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(resource.Status.Conditions[0].Reason).To(Equal("AccessDenied"))
+			Expect(resource.Status.Error).To(ContainSubstring("Governance policies forbid access to the data"))
 		})
 		// Tests selection of read-path module
 
 		// Assumptions on response from connectors:
 		// db2 dataset, will be received in s3/parquet
 		// Read module does not have api for s3/parquet
-		// Result: an error condition with "ModuleNotFound" reason
+		// Result: an error
 
 		It("Test no-read-path", func() {
 			appSignature := GetApplicationSignature()
@@ -253,15 +253,15 @@ var _ = Describe("M4DApplication Controller", func() {
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
 
-			By("Expecting an error condition with reason ModuleNotFound")
-			Eventually(func() []apiv1alpha1.Condition {
+			By("Expecting an error")
+			Eventually(func() string {
 				f := &apiv1alpha1.M4DApplication{}
 				_ = k8sClient.Get(context.Background(), appSignature, f)
-				return f.Status.Conditions
+				return f.Status.Error
 			}, timeout, interval).ShouldNot(BeEmpty())
 
 			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(resource.Status.Conditions[0].Reason).To(Equal("ModuleNotFound"))
+			Expect(resource.Status.Error).To(ContainSubstring("No module was found for read"))
 		})
 
 		// Tests denial of the necessary copy operation
@@ -271,7 +271,7 @@ var _ = Describe("M4DApplication Controller", func() {
 		// Read module with source=s3,parquet exists
 		// Copy to s3 is required
 		// Enforcement action for copy operation: Deny
-		// Result: an error condition with "CopyDenied" reason
+		// Result: an error
 
 		It("Test deny-on-copy", func() {
 			module := CreateReadPathModule()
@@ -281,21 +281,21 @@ var _ = Describe("M4DApplication Controller", func() {
 			resource := InitM4DApplication(1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID: "{\"asset_id\": \"deny-on-copy\", \"catalog_id\": \"db2\"}",
-				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.DatmeshArrowFlight, DataFormat: apiv1alpha1.Arrow},
+				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
 			}
 
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
 
-			By("Expecting an error condition with reason CopyDenied")
-			Eventually(func() []apiv1alpha1.Condition {
+			By("Expecting an error")
+			Eventually(func() string {
 				f := &apiv1alpha1.M4DApplication{}
 				_ = k8sClient.Get(context.Background(), appSignature, f)
-				return f.Status.Conditions
+				return f.Status.Error
 			}, timeout, interval).ShouldNot(BeEmpty())
 
 			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(resource.Status.Conditions[0].Reason).To(Equal("CopyDenied"))
+			Expect(resource.Status.Error).To(ContainSubstring("Copy of the data is required but can not be done according to the governance policies"))
 		})
 
 		// Tests finding a module for copy
@@ -306,37 +306,38 @@ var _ = Describe("M4DApplication Controller", func() {
 		// S3 dataset, no copy is needed
 		// Enforcement action for both operations and datasets: Allow
 		// Applied one copy module (kafka->s3), not the one we need for the first data set
-		// Result: an error condition with "ModuleNotFound" reason
-
+		// Result: an error
 		It("Test wrong-copy-module", func() {
 
 			// Load kafka-s3 copy module
 			module := CreateKafkaToS3CopyModule()
+			readPathModule := CreateReadPathModule()
 			Expect(k8sClient.Create(context.Background(), module)).Should(Succeed())
+			Expect(k8sClient.Create(context.Background(), readPathModule)).Should(Succeed())
 
 			appSignature := GetApplicationSignature()
 			resource := InitM4DApplication(2)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID: "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"db2\"}",
-				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.DatmeshArrowFlight, DataFormat: apiv1alpha1.Arrow},
+				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
 			}
 			resource.Spec.Data[1] = apiv1alpha1.DataContext{
 				DataSetID: "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
-				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.DatmeshArrowFlight, DataFormat: apiv1alpha1.Arrow},
+				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
 			}
 
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
 
-			By("Expecting an error condition")
-			Eventually(func() []apiv1alpha1.Condition {
+			By("Expecting an error")
+			Eventually(func() string {
 				f := &apiv1alpha1.M4DApplication{}
 				_ = k8sClient.Get(context.Background(), appSignature, f)
-				return f.Status.Conditions
+				return f.Status.Error
 			}, timeout, interval).ShouldNot(BeEmpty())
 
 			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(resource.Status.Conditions[0].Reason).To(Equal("ModuleNotFound"))
+			Expect(resource.Status.Error).To(ContainSubstring("No module was found for copy"))
 			_ = k8sClient.Delete(context.Background(), module)
 
 		})
@@ -380,11 +381,11 @@ var _ = Describe("M4DApplication Controller", func() {
 			resource := InitM4DApplication(2)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID: "{\"asset_id\": \"default-dataset\", \"catalog_id\": \"db2\"}",
-				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.DatmeshArrowFlight, DataFormat: apiv1alpha1.Arrow},
+				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
 			}
 			resource.Spec.Data[1] = apiv1alpha1.DataContext{
 				DataSetID: "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
-				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.DatmeshArrowFlight, DataFormat: apiv1alpha1.Arrow},
+				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
 			}
 
 			// Create M4DApplication

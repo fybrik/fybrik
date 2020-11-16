@@ -87,6 +87,10 @@ spec:
                 type: object
               minItems: 1
               type: array
+            maxRetries:
+              description: MaxRetries limits the number of failed attempts to generate a blueprint
+              format: int64
+              type: integer
             selector:
               description: Selector enables to connect the resource to the application Application labels should match the labels in the selector.
               properties:
@@ -128,31 +132,16 @@ spec:
             blueprintNamespace:
               description: BlueprintNamespace represents the namespace where the blueprint (and the relevant resources) will be allocated.
               type: string
-            conditions:
-              description: Conditions represent the possible error and failure conditions
-              items:
-                description: Condition describes the state of a M4DApplication at a certain point.
-                properties:
-                  message:
-                    description: Message contains the details of the current condition
-                    type: string
-                  reason:
-                    description: Reason is a short explanation of the reason for the current condition
-                    type: string
-                  status:
-                    description: 'Status of the condition: true or false'
-                    type: string
-                  type:
-                    description: Type of the condition
-                    type: string
-                required:
-                - status
-                - type
-                type: object
-              type: array
             dataAccessInstructions:
               description: DataAccessInstructions indicate how the data user or his application may access the data. Instructions are available upon successful orchestration.
               type: string
+            error:
+              description: Error indicates that there has been an error to generate a blueprint and provides the error message
+              type: string
+            numRetries:
+              description: NumRetries counts the number of failed attempts to generate a blueprint
+              format: int64
+              type: integer
             observedGeneration:
               description: ObservedGeneration is taken from the M4DApplication metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether the Blueprint status changed.
               format: int64

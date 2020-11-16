@@ -24,10 +24,10 @@ const (
 
 // IFProtocol valid values
 const (
-	S3                 IFProtocol = "s3"
-	Kafka              IFProtocol = "kafka"
-	JdbcDb2            IFProtocol = "jdbc-db2"
-	DatmeshArrowFlight IFProtocol = "m4d-arrow-flight"
+	S3          IFProtocol = "s3"
+	Kafka       IFProtocol = "kafka"
+	JdbcDb2     IFProtocol = "jdbc-db2"
+	ArrowFlight IFProtocol = "m4d-arrow-flight"
 )
 
 // InterfaceDetails indicate how the application or module receive or write the data

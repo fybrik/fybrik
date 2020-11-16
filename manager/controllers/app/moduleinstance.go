@@ -22,13 +22,8 @@ import (
    - Dependencies are checked but not added yet to the blueprint
 */
 func (r *M4DApplicationReconciler) SelectModuleInstances(requirements []modules.DataInfo, appContext *app.M4DApplication) []modules.ModuleInstanceSpec {
-	moduleMap, err := r.GetAllModules()
+	moduleMap := r.GetAllModules()
 	instances := make([]modules.ModuleInstanceSpec, 0)
-	if err != nil {
-		utils.ActivateCondition(appContext, app.ErrorCondition, "ModulesNotRegistered", err.Error())
-		return instances
-	}
-
 	for _, item := range requirements {
 		instances = append(instances, r.SelectModuleInstancesPerDataset(item, appContext, moduleMap)...)
 	}
@@ -56,9 +51,9 @@ func (r *M4DApplicationReconciler) GetCopyDestination(item modules.DataInfo, app
 	// provisioned storage for COPY
 	objectKey, _ := client.ObjectKeyFromObject(appContext)
 	originalAssetName := item.DataDetails.Name
-	bucket, err := r.FindAvailableBucket(objectKey, item.AssetID, originalAssetName, false)
-	if err != nil {
-		utils.ActivateCondition(appContext, app.ErrorCondition, "NoAvailableStorageFound", err.Error())
+	bucket := r.FindAvailableBucket(objectKey, item.AssetID, originalAssetName, false)
+	if bucket == nil {
+		SetError(appContext, item.AssetID, "No bucket was provisioned for implicit copy", "Storage Provisioner")
 		return nil
 	}
 	return &app.DataStore{
@@ -85,17 +80,12 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 	r.Log.V(0).Info("Select read path for " + item.AssetID)
 	// Select a module that supports READ flow, supports actions-on-read, has the required dependency modules (recursively), with API = sink.
 	actionsOnRead := item.Actions[app.Read]
-	// Deny on read or invalid data
-	if !actionsOnRead.Allowed {
-		utils.ActivateCondition(appContext, app.FailureCondition, actionsOnRead.Reason, actionsOnRead.Message)
-		return instances
-	}
 	r.Log.V(0).Info("Finding modules for " + item.AssetID)
 	// Each selector receives source/sink interface and relevant actions
 	// Starting with the existing location for source and user request for sink
 	source, err := StructToInterfaceDetails(item)
 	if err != nil {
-		utils.ActivateCondition(appContext, app.ErrorCondition, "InvalidInterface", item.AssetID+" : "+err.Error())
+		SetError(appContext, item.AssetID, err.Error(), "")
 		return instances
 	}
 	sink := item.AppInterface
@@ -117,8 +107,7 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 		Message:      ""}
 	if !readSelector.SelectModule(moduleMap) {
 		r.Log.V(0).Info(item.AssetID + " : " + readSelector.GetError())
-		utils.ActivateCondition(appContext, app.ErrorCondition, "ModuleNotFound", item.AssetID+" : "+readSelector.GetError())
-
+		SetError(appContext, item.AssetID, readSelector.GetError(), "")
 		return instances
 	}
 
@@ -134,7 +123,7 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 		// is copy allowed?
 		actionsOnCopy := item.Actions[app.Copy]
 		if !actionsOnCopy.Allowed {
-			utils.ActivateCondition(appContext, app.ErrorCondition, actionsOnCopy.Reason, actionsOnCopy.Message)
+			SetError(appContext, item.AssetID, actionsOnCopy.Message, "")
 			return instances
 		}
 		// select a module that supports COPY, supports actions-on-copy, has the required dependencies, with source in module sources and a non-empty intersection between READ_SOURCES and module destinations.
@@ -155,7 +144,7 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 		// no copy module - report an error
 		if copySelector.GetModule() == nil {
 			r.Log.V(0).Info("Could not find copy module for " + item.AssetID)
-			utils.ActivateCondition(appContext, app.ErrorCondition, "ModuleNotFound", item.AssetID+" : "+copySelector.GetError())
+			SetError(appContext, item.AssetID, copySelector.GetError(), "")
 			return instances
 		}
 		r.Log.V(0).Info("Found copy module " + copySelector.GetModule().Name)
