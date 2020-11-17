@@ -73,6 +73,12 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	generatedBlueprint, _ := r.getBlueprint(applicationContext)
 	if generatedBlueprint == nil || observedStatus.ObservedGeneration != applicationContext.GetGeneration() {
 		if result, err := r.reconcile(applicationContext); err != nil {
+			// another attempt will be done
+			// users should be informed in case of errors
+			if !equality.Semantic.DeepEqual(&applicationContext.Status, observedStatus) {
+				// ignore an update error, a new reconcile will be made in any case
+				_ = r.Client.Status().Update(ctx, applicationContext)
+			}
 			return result, err
 		}
 		applicationContext.Status.ObservedGeneration = applicationContext.GetGeneration()
@@ -320,12 +326,17 @@ func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, e
 func SetErrorOrRetry(app *app.M4DApplication, log logr.Logger, assetID string, err error, receivedFrom string) error {
 	errStatus, _ := status.FromError(err)
 	log.V(0).Info(errStatus.Message())
-	if errStatus.Code() != codes.InvalidArgument {
-		//attempt a retrial
-		return err
+	if errStatus.Code() == codes.InvalidArgument {
+		SetError(app, assetID, errStatus.Message(), receivedFrom)
+		return nil
 	}
-	SetError(app, assetID, errStatus.Message(), receivedFrom)
-	return nil
+	// update status
+	if app.Status.Error == "" {
+		app.Status.Error = "An error was received from " + receivedFrom + ". "
+		app.Status.Error += "If the error persists, please contact an operator.\n"
+		app.Status.Error += "Error description: " + errStatus.Message()
+	}
+	return err
 }
 
 // SetError sets an error string in m4dapplication status
