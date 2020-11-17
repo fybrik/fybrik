@@ -6,11 +6,13 @@ package app
 import (
 	"context"
 	"io/ioutil"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/yaml"
 	"time"
 
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/yaml"
+
 	apiv1alpha1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
+	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -236,7 +238,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			}, timeout, interval).ShouldNot(BeEmpty())
 
 			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(resource.Status.Error).To(ContainSubstring("Governance policies forbid access to the data"))
+			Expect(resource.Status.Error).To(ContainSubstring(app.ReadAccessDenied))
 		})
 		// Tests selection of read-path module
 
@@ -265,7 +267,8 @@ var _ = Describe("M4DApplication Controller", func() {
 			}, timeout, interval).ShouldNot(BeEmpty())
 
 			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(resource.Status.Error).To(ContainSubstring("No module was found for read"))
+			Expect(resource.Status.Error).To(ContainSubstring(app.ModuleNotFound))
+			Expect(resource.Status.Error).To(ContainSubstring("read"))
 		})
 
 		// Tests denial of the necessary copy operation
@@ -299,7 +302,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			}, timeout, interval).ShouldNot(BeEmpty())
 
 			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(resource.Status.Error).To(ContainSubstring("Copy of the data is required but can not be done according to the governance policies"))
+			Expect(resource.Status.Error).To(ContainSubstring(app.CopyNotAllowed))
 		})
 
 		// Tests finding a module for copy
@@ -341,7 +344,8 @@ var _ = Describe("M4DApplication Controller", func() {
 			}, timeout, interval).ShouldNot(BeEmpty())
 
 			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(resource.Status.Error).To(ContainSubstring("No module was found for copy"))
+			Expect(resource.Status.Error).To(ContainSubstring(app.ModuleNotFound))
+			Expect(resource.Status.Error).To(ContainSubstring("copy"))
 			_ = k8sClient.Delete(context.Background(), module)
 
 		})

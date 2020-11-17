@@ -79,9 +79,9 @@ func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, 
 				if utils.IsDenied(action.GetName()) {
 					var msg string
 					if operationDecision.Operation.Type == pb.AccessOperation_READ {
-						msg = "Governance policies forbid access to the data"
+						msg = app.ReadAccessDenied
 					} else {
-						msg = "Copy of the data is required but can not be done according to the governance policies."
+						msg = app.CopyNotAllowed
 					}
 					req.Actions[flow] = modules.Transformations{
 						Allowed:            false,

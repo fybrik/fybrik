@@ -204,13 +204,15 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 			AppInterface: &dataset.IFdetails,
 		}
 		// get enforcement actions and location info for a dataset
-		res := r.ConstructDataInfo(dataset.DataSetID, &req, applicationContext)
-		if res.Requeue {
-			return res, nil
+		if err := r.ConstructDataInfo(dataset.DataSetID, &req, applicationContext); err != nil {
+			return ctrl.Result{}, err
 		}
 		requirements = append(requirements, req)
 	}
-	instances := r.SelectModuleInstances(requirements, applicationContext)
+	instances, err := r.SelectModuleInstances(requirements, applicationContext)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 	// check for errors
 	if applicationContext.Status.Error != "" {
 		return ctrl.Result{}, nil
@@ -247,7 +249,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 }
 
 // ConstructDataInfo gets a list of governance actions and data location details for the given dataset and fills the received DataInfo structure
-func (r *M4DApplicationReconciler) ConstructDataInfo(datasetID string, req *modules.DataInfo, input *app.M4DApplication) ctrl.Result {
+func (r *M4DApplicationReconciler) ConstructDataInfo(datasetID string, req *modules.DataInfo, input *app.M4DApplication) error {
 	// policies for READ operation
 	if err := LookupPolicyDecisions(datasetID, r.PolicyCompiler, req, input, pb.AccessOperation_READ); err != nil {
 		return SetErrorOrRetry(input, r.Log, datasetID, err, "Policy Compiler")
@@ -272,7 +274,7 @@ func (r *M4DApplicationReconciler) ConstructDataInfo(datasetID string, req *modu
 	if err := LookupPolicyDecisions(datasetID, r.PolicyCompiler, req, input, pb.AccessOperation_COPY); err != nil {
 		return SetErrorOrRetry(input, r.Log, datasetID, err, "Policy Compiler")
 	}
-	return ctrl.Result{}
+	return nil
 }
 
 // NewM4DApplicationReconciler creates a new reconciler for Blueprint resources
@@ -295,42 +297,39 @@ func (r *M4DApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dmodules,verbs=get;list;watch
 
 // GetAllModules returns all CRDs of the kind M4DModule mapped by their name
-func (r *M4DApplicationReconciler) GetAllModules() map[string]*app.M4DModule {
+func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, error) {
 	ctx := context.Background()
 
 	moduleMap := make(map[string]*app.M4DModule)
 	var moduleList app.M4DModuleList
 	if err := r.List(ctx, &moduleList); err != nil {
 		r.Log.V(0).Info("Error while listing modules: " + err.Error())
-		return moduleMap
+		return moduleMap, err
 	}
 	r.Log.Info("Listing all modules")
 	for _, module := range moduleList.Items {
 		r.Log.Info(module.GetName())
 		moduleMap[module.Name] = module.DeepCopy()
 	}
-	return moduleMap
+	return moduleMap, nil
 }
 
 // SetErrorOrRetry analyzes whether the given error is fatal, or a retrial attempt can be made.
 // Reasons for retrial can be either communication problems with external services, or kubernetes problems to perform some action on a resource.
-// If an error is fatal, or a number of retrials reached the specified limit, the error is reported to the data user.
-// Otherwise the error is printed to the log, and the number of retrials is increased.
-func SetErrorOrRetry(app *app.M4DApplication, log logr.Logger, assetID string, err error, receivedFrom string) ctrl.Result {
+// If an error is fatal, the error is reported to the data user.
+func SetErrorOrRetry(app *app.M4DApplication, log logr.Logger, assetID string, err error, receivedFrom string) error {
 	errStatus, _ := status.FromError(err)
 	log.V(0).Info(errStatus.Message())
 	if errStatus.Code() != codes.InvalidArgument {
 		//attempt a retrial
-		app.Status.NumRetries++
-		if app.Status.NumRetries <= app.Spec.MaxRetries {
-			return ctrl.Result{Requeue: true, RequeueAfter: 10 * time.Second}
-		}
+		return err
 	}
-	return SetError(app, assetID, errStatus.Message(), receivedFrom)
+	SetError(app, assetID, errStatus.Message(), receivedFrom)
+	return nil
 }
 
 // SetError sets an error string in m4dapplication status
-func SetError(app *app.M4DApplication, assetID string, msg string, receivedFrom string) ctrl.Result {
+func SetError(app *app.M4DApplication, assetID string, msg string, receivedFrom string) {
 	var errorMsg string
 	if assetID != "" {
 		errorMsg += "Asset is " + assetID + " ; "
@@ -342,7 +341,6 @@ func SetError(app *app.M4DApplication, assetID string, msg string, receivedFrom 
 	if !strings.Contains(app.Status.Error, errorMsg) {
 		app.Status.Error += errorMsg + "\n"
 	}
-	return ctrl.Result{}
 }
 
 // CreateNamespace creates a namespace in which the blueprint and the relevant resources will be running

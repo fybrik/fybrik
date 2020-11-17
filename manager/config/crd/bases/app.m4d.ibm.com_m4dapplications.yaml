@@ -87,10 +87,6 @@ spec:
                 type: object
               minItems: 1
               type: array
-            maxRetries:
-              description: MaxRetries limits the number of failed attempts to generate a blueprint
-              format: int64
-              type: integer
             selector:
               description: Selector enables to connect the resource to the application Application labels should match the labels in the selector.
               properties:
@@ -138,10 +134,6 @@ spec:
             error:
               description: Error indicates that there has been an error to generate a blueprint and provides the error message
               type: string
-            numRetries:
-              description: NumRetries counts the number of failed attempts to generate a blueprint
-              format: int64
-              type: integer
             observedGeneration:
               description: ObservedGeneration is taken from the M4DApplication metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether the Blueprint status changed.
               format: int64

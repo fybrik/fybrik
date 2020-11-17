@@ -21,13 +21,16 @@ import (
    - All data sets are processed, even if an error is encountered in one or more, to provide a complete status at the end of the reconcile
    - Dependencies are checked but not added yet to the blueprint
 */
-func (r *M4DApplicationReconciler) SelectModuleInstances(requirements []modules.DataInfo, appContext *app.M4DApplication) []modules.ModuleInstanceSpec {
-	moduleMap := r.GetAllModules()
+func (r *M4DApplicationReconciler) SelectModuleInstances(requirements []modules.DataInfo, appContext *app.M4DApplication) ([]modules.ModuleInstanceSpec, error) {
 	instances := make([]modules.ModuleInstanceSpec, 0)
+	moduleMap, err := r.GetAllModules()
+	if err != nil {
+		return instances, err
+	}
 	for _, item := range requirements {
 		instances = append(instances, r.SelectModuleInstancesPerDataset(item, appContext, moduleMap)...)
 	}
-	return instances
+	return instances, nil
 }
 
 // StructToInterfaceDetails constructs a valid InterfaceDetails object
@@ -53,7 +56,7 @@ func (r *M4DApplicationReconciler) GetCopyDestination(item modules.DataInfo, app
 	originalAssetName := item.DataDetails.Name
 	bucket := r.FindAvailableBucket(objectKey, item.AssetID, originalAssetName, false)
 	if bucket == nil {
-		SetError(appContext, item.AssetID, "No bucket was provisioned for implicit copy", "Storage Provisioner")
+		SetError(appContext, item.AssetID, app.InsufficientStorage, "Storage Provisioner")
 		return nil
 	}
 	return &app.DataStore{

@@ -60,11 +60,15 @@ type M4DApplicationSpec struct {
 	// +required
 	// +kubebuilder:validation:MinItems=1
 	Data []DataContext `json:"data"`
-
-	// MaxRetries limits the number of failed attempts to generate a blueprint
-	// +optional
-	MaxRetries int64 `json:"maxRetries,omitempty"`
 }
+
+// ErrorMessages that are reported to the user
+const (
+	ReadAccessDenied    string = "Governance policies forbid access to the data"
+	CopyNotAllowed      string = "Copy of the data is required but can not be done according to the governance policies."
+	ModuleNotFound      string = "No module has been registered"
+	InsufficientStorage string = "No bucket was provisioned for implicit copy"
+)
 
 // M4DApplicationStatus defines the observed state of M4DApplication.
 type M4DApplicationStatus struct {
@@ -75,10 +79,6 @@ type M4DApplicationStatus struct {
 	// Error indicates that there has been an error to generate a blueprint and provides the error message
 	// +optional
 	Error string `json:"error,omitempty"`
-
-	// NumRetries counts the number of failed attempts to generate a blueprint
-	// +optional
-	NumRetries int64 `json:"numRetries,omitempty"`
 
 	// DataAccessInstructions indicate how the data user or his application may access the data.
 	// Instructions are available upon successful orchestration.
