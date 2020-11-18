@@ -12,12 +12,12 @@ Ensure that you have the following:
 - `kubectl` with access to a Kubernetes cluster (this guide was tested with kind v0.10.0 and OpenShift 4.3)
 - {{< name >}} installed on your Kubernetes cluster
 - S3 Object storage account (e.g., Ceph, Minio, IBM Cloud Object Storage)
-- [Kuebflow](https://www.kubeflow.org/) installed on your cluster (this guide was tested with Kubeflow v1.0.2)
+- [Kubeflow](https://www.kubeflow.org/) installed on your cluster (this guide was tested with Kubeflow v1.0.2)
 - Web browser
 
 
 {{< tip >}}
-You can install Kubeflow on by running [install_kubeflow.sh](https://{{< github_base >}}/{{< github_repo >}}/blob/master/samples/kubeflow/install/kubeflow/install_kubeflow.sh). 
+You can install Kubeflow on Kind by running [install_kubeflow.sh](https://{{< github_base >}}/{{< github_repo >}}/blob/master/samples/kubeflow/install/kubeflow/install_kubeflow.sh). To install Kubeflow on OpenShift 4.3, complete the steps in this [README](https://{{< github_base >}}/{{< github_repo >}}/blob/master/samples/kubeflow/install/kubeflow/README.md).
 {{</ tip >}}
 
 ## About this sample
