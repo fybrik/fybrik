@@ -17,7 +17,7 @@ Ensure that you have the following:
 
 
 {{< tip >}}
-You can install Kubeflow on Kind by running [install_kubeflow.sh](https://{{< github_base >}}/{{< github_repo >}}/blob/master/samples/kubeflow/install/kubeflow/install_kubeflow.sh). To install Kubeflow on OpenShift 4.3, complete the steps in this [README](https://{{< github_base >}}/{{< github_repo >}}/blob/master/samples/kubeflow/install/kubeflow/README.md).
+You can install Kubeflow on Kind by running [install_kubeflow.sh](https://{{< github_base >}}/{{< github_repo >}}/blob/master/samples/kubeflow/install/kubeflow/install_kubeflow.sh). To install Kubeflow on OpenShift 4.3, complete the steps in this [guide](https://{{< github_base >}}/{{< github_repo >}}/blob/master/samples/kubeflow/install/kubeflow/KF_OPENSHIFT.md).
 {{</ tip >}}
 
 ## About this sample
