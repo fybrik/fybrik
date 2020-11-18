@@ -53,7 +53,7 @@ cd samples/kubeflow/install/kubeflow
 
 cd -
 ```
-On an OpenShift 4+ cluster, follow the directions in this [README](https://github.ibm.com/the-mesh-for-data/samples/kubeflow/install/kubeflow/README.md) to install Kubeflow assuming Istio 1.7 is already installed on your cluster.
+On an OpenShift 4+ cluster, follow the directions in this [guide](https://github.com/IBM/the-mesh-for-data/samples/kubeflow/install/kubeflow/KF_OPENSHIFT.md) to install Kubeflow assuming Istio 1.7 is already installed on your cluster.
 ```
 
 ## Data owner instructions
