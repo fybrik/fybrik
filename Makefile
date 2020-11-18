@@ -16,12 +16,6 @@ test:
 	$(MAKE) -C pkg/policy-compiler test
 	$(MAKE) -C manager test
 
-.PHONY: e2e
-e2e:
-	# TODO(roee88): temporarily removed until can be set against local registry
-	# $(MAKE) -C pkg/helm test
-	$(MAKE) -C manager e2e
-
 .PHONY: cluster-prepare
 cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy
