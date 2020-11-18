@@ -58,12 +58,12 @@ On an OpenShift 4+ cluster, follow [Kubeflow Documentation](https://www.kubeflow
 git clone https://github.com/opendatahub-io/manifests.git
 ```
 
-Changes to `kfctl_openshift.yaml`:
+ A modified `kfctl_openshift.yaml` is provided in this repo with the following changes already made:
 * Since we already have Istio installed, comment out `istio-crds` and `istio-install`
 * Comment out `cert-manager-crds` and `cert-manager` 
 * Comment out `seldon-core-operator` 
 
-A modified `kfctl_openshift.yaml` is provided in this repo.
+
 
 Make sure to update the manifest uri to your local file path
 ```bash
