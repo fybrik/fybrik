@@ -95,7 +95,7 @@ case "$op" in
         header_text "Installing kind cluster"
         certs_create
         install_certs
-        kind_create
+        kind_create kind kind-config.yaml
         registry_create
         ;;
 esac
