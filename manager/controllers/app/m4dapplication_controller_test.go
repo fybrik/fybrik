@@ -12,7 +12,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	apiv1alpha1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -238,7 +237,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			}, timeout, interval).ShouldNot(BeEmpty())
 
 			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(getErrorMessages(resource)).To(ContainSubstring(app.ReadAccessDenied))
+			Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.ReadAccessDenied))
 		})
 		// Tests selection of read-path module
 
@@ -267,7 +266,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			}, timeout, interval).ShouldNot(BeEmpty())
 
 			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(getErrorMessages(resource)).To(ContainSubstring(app.ModuleNotFound))
+			Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.ModuleNotFound))
 			Expect(getErrorMessages(resource)).To(ContainSubstring("read"))
 		})
 
@@ -302,7 +301,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			}, timeout, interval).ShouldNot(BeEmpty())
 
 			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(getErrorMessages(resource)).To(ContainSubstring(app.CopyNotAllowed))
+			Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.CopyNotAllowed))
 		})
 
 		// Tests finding a module for copy
@@ -344,7 +343,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			}, timeout, interval).ShouldNot(BeEmpty())
 
 			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(getErrorMessages(resource)).To(ContainSubstring(app.ModuleNotFound))
+			Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.ModuleNotFound))
 			Expect(getErrorMessages(resource)).To(ContainSubstring("copy"))
 			_ = k8sClient.Delete(context.Background(), module)
 
