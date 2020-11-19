@@ -4,6 +4,7 @@
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -70,15 +71,43 @@ const (
 	InsufficientStorage string = "No bucket was provisioned for implicit copy"
 )
 
+// ConditionIndices are static. Conditions always present in the status.
+const (
+	FailureConditionIndex int64 = 0
+	ErrorConditionIndex   int64 = 1
+)
+
+// ConditionType represents a condition type
+type ConditionType string
+
+const (
+	// ErrorCondition means that an error was encountered during blueprint construction
+	ErrorCondition ConditionType = "Error"
+
+	// FailureCondition means that a blueprint could not be constructed
+	FailureCondition ConditionType = "Failure"
+)
+
+// Condition describes the state of a M4DApplication at a certain point.
+type Condition struct {
+	// Type of the condition
+	Type ConditionType `json:"type"`
+	// Status of the condition: true or false
+	Status corev1.ConditionStatus `json:"status"`
+	// Message contains the details of the current condition
+	// +optional
+	Message string `json:"message,omitempty"`
+}
+
 // M4DApplicationStatus defines the observed state of M4DApplication.
 type M4DApplicationStatus struct {
 
 	// Ready is true if a blueprint has been successfully orchestrated
 	Ready bool `json:"ready,omitempty"`
 
-	// Error indicates that there has been an error to generate a blueprint and provides the error message
+	// Conditions represent the possible error and failure conditions
 	// +optional
-	Error string `json:"error,omitempty"`
+	Conditions []Condition `json:"conditions,omitempty"`
 
 	// DataAccessInstructions indicate how the data user or his application may access the data.
 	// Instructions are available upon successful orchestration.

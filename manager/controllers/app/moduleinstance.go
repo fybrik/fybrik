@@ -56,7 +56,7 @@ func (r *M4DApplicationReconciler) GetCopyDestination(item modules.DataInfo, app
 	originalAssetName := item.DataDetails.Name
 	bucket := r.FindAvailableBucket(objectKey, item.AssetID, originalAssetName, false)
 	if bucket == nil {
-		SetError(appContext, item.AssetID, app.InsufficientStorage, "Storage Provisioner")
+		setCondition(appContext, item.AssetID, app.InsufficientStorage, "Storage Provisioner", true)
 		return nil
 	}
 	return &app.DataStore{
@@ -88,7 +88,7 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 	// Starting with the existing location for source and user request for sink
 	source, err := StructToInterfaceDetails(item)
 	if err != nil {
-		SetError(appContext, item.AssetID, err.Error(), "")
+		setCondition(appContext, item.AssetID, err.Error(), "", true)
 		return instances
 	}
 	sink := item.AppInterface
@@ -110,7 +110,7 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 		Message:      ""}
 	if !readSelector.SelectModule(moduleMap) {
 		r.Log.V(0).Info(item.AssetID + " : " + readSelector.GetError())
-		SetError(appContext, item.AssetID, readSelector.GetError(), "")
+		setCondition(appContext, item.AssetID, readSelector.GetError(), "", true)
 		return instances
 	}
 
@@ -126,7 +126,7 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 		// is copy allowed?
 		actionsOnCopy := item.Actions[app.Copy]
 		if !actionsOnCopy.Allowed {
-			SetError(appContext, item.AssetID, actionsOnCopy.Message, "")
+			setCondition(appContext, item.AssetID, actionsOnCopy.Message, "", true)
 			return instances
 		}
 		// select a module that supports COPY, supports actions-on-copy, has the required dependencies, with source in module sources and a non-empty intersection between READ_SOURCES and module destinations.
@@ -147,7 +147,7 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 		// no copy module - report an error
 		if copySelector.GetModule() == nil {
 			r.Log.V(0).Info("Could not find copy module for " + item.AssetID)
-			SetError(appContext, item.AssetID, copySelector.GetError(), "")
+			setCondition(appContext, item.AssetID, copySelector.GetError(), "", true)
 			return instances
 		}
 		r.Log.V(0).Info("Found copy module " + copySelector.GetModule().Name)

@@ -6,7 +6,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -93,11 +92,11 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 			return ctrl.Result{}, err
 		}
 	}
-	if applicationContext.Status.Error != "" {
-		log.Info("Reconciled with errors: " + applicationContext.Status.Error)
+	if hasError(applicationContext) {
+		log.Info("Reconciled with errors: " + getErrorMessages(applicationContext))
 	}
 	// polling for blueprint status
-	if !applicationContext.Status.Ready && applicationContext.Status.Error == "" {
+	if !applicationContext.Status.Ready && !hasError(applicationContext) {
 		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
 	}
 	return ctrl.Result{}, nil
@@ -106,11 +105,11 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 func checkBlueprintStatus(applicationContext *app.M4DApplication, blueprint *app.Blueprint) {
 	applicationContext.Status.DataAccessInstructions = ""
 	applicationContext.Status.Ready = false
-	if applicationContext.Status.Error != "" {
+	if hasError(applicationContext) {
 		return
 	}
 	if blueprint.Status.Error != "" {
-		applicationContext.Status.Error = blueprint.Status.Error
+		setCondition(applicationContext, "", blueprint.Status.Error, "Blueprint", true)
 		return
 	}
 	if blueprint.Status.Ready {
@@ -185,7 +184,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	// Data User created or updated the M4DApplication
 
 	// clear status
-	applicationContext.Status.Error = ""
+	resetConditions(applicationContext)
 	applicationContext.Status.DataAccessInstructions = ""
 	applicationContext.Status.Ready = false
 
@@ -220,7 +219,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		return ctrl.Result{}, err
 	}
 	// check for errors
-	if applicationContext.Status.Error != "" {
+	if hasError(applicationContext) {
 		return ctrl.Result{}, nil
 	}
 	r.Log.V(0).Info("Creating Blueprint")
@@ -258,27 +257,27 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 func (r *M4DApplicationReconciler) ConstructDataInfo(datasetID string, req *modules.DataInfo, input *app.M4DApplication) error {
 	// policies for READ operation
 	if err := LookupPolicyDecisions(datasetID, r.PolicyCompiler, req, input, pb.AccessOperation_READ); err != nil {
-		return SetErrorOrRetry(input, r.Log, datasetID, err, "Policy Compiler")
+		return AnalyzeError(input, r.Log, datasetID, err, "Policy Compiler")
 	}
 	if !req.Actions[app.Read].Allowed {
-		SetError(input, datasetID, req.Actions[app.Read].Message, "Policy Compiler")
+		setCondition(input, datasetID, req.Actions[app.Read].Message, "Policy Compiler", true)
 	}
 	// Call the DataCatalog service to get info about the dataset
 	if err := GetConnectionDetails(datasetID, req, input); err != nil {
-		return SetErrorOrRetry(input, r.Log, datasetID, err, "Catalog Connector")
+		return AnalyzeError(input, r.Log, datasetID, err, "Catalog Connector")
 	}
 	// Call the CredentialsManager service to get info about the dataset
 	if err := GetCredentials(datasetID, req, input); err != nil {
-		return SetErrorOrRetry(input, r.Log, datasetID, err, "Credentials Manager")
+		return AnalyzeError(input, r.Log, datasetID, err, "Credentials Manager")
 	}
 	// The received credentials are stored in vault
 	if err := r.RegisterCredentials(req); err != nil {
-		return SetErrorOrRetry(input, r.Log, datasetID, err, "Vault")
+		return AnalyzeError(input, r.Log, datasetID, err, "Vault")
 	}
 
 	// policies for COPY operation in case copy is required
 	if err := LookupPolicyDecisions(datasetID, r.PolicyCompiler, req, input, pb.AccessOperation_COPY); err != nil {
-		return SetErrorOrRetry(input, r.Log, datasetID, err, "Policy Compiler")
+		return AnalyzeError(input, r.Log, datasetID, err, "Policy Compiler")
 	}
 	return nil
 }
@@ -320,38 +319,18 @@ func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, e
 	return moduleMap, nil
 }
 
-// SetErrorOrRetry analyzes whether the given error is fatal, or a retrial attempt can be made.
+// AnalyzeError analyzes whether the given error is fatal, or a retrial attempt can be made.
 // Reasons for retrial can be either communication problems with external services, or kubernetes problems to perform some action on a resource.
-// If an error is fatal, the error is reported to the data user.
-func SetErrorOrRetry(app *app.M4DApplication, log logr.Logger, assetID string, err error, receivedFrom string) error {
+// A retrial is achieved by returning an error to the reconcile method
+func AnalyzeError(app *app.M4DApplication, log logr.Logger, assetID string, err error, receivedFrom string) error {
 	errStatus, _ := status.FromError(err)
 	log.V(0).Info(errStatus.Message())
 	if errStatus.Code() == codes.InvalidArgument {
-		SetError(app, assetID, errStatus.Message(), receivedFrom)
+		setCondition(app, assetID, errStatus.Message(), receivedFrom, true)
 		return nil
 	}
-	// update status
-	if app.Status.Error == "" {
-		app.Status.Error = "An error was received from " + receivedFrom + ". "
-		app.Status.Error += "If the error persists, please contact an operator.\n"
-		app.Status.Error += "Error description: " + errStatus.Message()
-	}
+	setCondition(app, assetID, errStatus.Message(), receivedFrom, false)
 	return err
-}
-
-// SetError sets an error string in m4dapplication status
-func SetError(app *app.M4DApplication, assetID string, msg string, receivedFrom string) {
-	var errorMsg string
-	if assetID != "" {
-		errorMsg += "Asset is " + assetID + " ; "
-	}
-	if receivedFrom != "" {
-		errorMsg += "From " + receivedFrom + " ; "
-	}
-	errorMsg += msg
-	if !strings.Contains(app.Status.Error, errorMsg) {
-		app.Status.Error += errorMsg + "\n"
-	}
 }
 
 // CreateNamespace creates a namespace in which the blueprint and the relevant resources will be running
@@ -375,4 +354,60 @@ func (r *M4DApplicationReconciler) DeleteNamespace(name string) error {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		}})
+}
+
+// Helper functions to manage conditions
+func resetConditions(application *app.M4DApplication) {
+	application.Status.Conditions = make([]app.Condition, 2)
+	application.Status.Conditions[app.ErrorConditionIndex] = app.Condition{Type: app.ErrorCondition, Status: corev1.ConditionFalse}
+	application.Status.Conditions[app.FailureConditionIndex] = app.Condition{Type: app.FailureCondition, Status: corev1.ConditionFalse}
+}
+
+func setCondition(application *app.M4DApplication, assetID string, msg string, receivedFrom string, fatalError bool) {
+	if len(application.Status.Conditions) == 0 {
+		resetConditions(application)
+	}
+	errMsg := "An error was received"
+	if receivedFrom != "" {
+		errMsg += " from " + receivedFrom
+	}
+	if assetID != "" {
+		errMsg += " for asset " + assetID
+	}
+	if !fatalError {
+		errMsg += "If the error persists, please contact an operator.\n"
+	}
+	errMsg += "Error description: " + msg + "\n"
+	var ind int64
+	if fatalError {
+		ind = app.FailureConditionIndex
+	} else {
+		ind = app.ErrorConditionIndex
+	}
+	application.Status.Conditions[ind].Status = corev1.ConditionTrue
+	application.Status.Conditions[ind].Message += errMsg
+}
+
+func hasError(application *app.M4DApplication) bool {
+	// check if the conditions have been initialized
+	if len(application.Status.Conditions) == 0 {
+		return false
+	}
+	return (application.Status.Conditions[app.ErrorConditionIndex].Status == corev1.ConditionTrue ||
+		application.Status.Conditions[app.FailureConditionIndex].Status == corev1.ConditionTrue)
+}
+
+func getErrorMessages(application *app.M4DApplication) string {
+	var errMsg string
+	// check if the conditions have been initialized
+	if len(application.Status.Conditions) == 0 {
+		return errMsg
+	}
+	if application.Status.Conditions[app.ErrorConditionIndex].Status == corev1.ConditionTrue {
+		errMsg += application.Status.Conditions[app.ErrorConditionIndex].Message
+	}
+	if application.Status.Conditions[app.FailureConditionIndex].Status == corev1.ConditionTrue {
+		errMsg += application.Status.Conditions[app.FailureConditionIndex].Message
+	}
+	return errMsg
 }

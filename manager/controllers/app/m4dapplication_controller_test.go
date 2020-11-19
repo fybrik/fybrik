@@ -234,11 +234,11 @@ var _ = Describe("M4DApplication Controller", func() {
 			Eventually(func() string {
 				f := &apiv1alpha1.M4DApplication{}
 				_ = k8sClient.Get(context.Background(), appSignature, f)
-				return f.Status.Error
+				return getErrorMessages(f)
 			}, timeout, interval).ShouldNot(BeEmpty())
 
 			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(resource.Status.Error).To(ContainSubstring(app.ReadAccessDenied))
+			Expect(getErrorMessages(resource)).To(ContainSubstring(app.ReadAccessDenied))
 		})
 		// Tests selection of read-path module
 
@@ -263,12 +263,12 @@ var _ = Describe("M4DApplication Controller", func() {
 			Eventually(func() string {
 				f := &apiv1alpha1.M4DApplication{}
 				_ = k8sClient.Get(context.Background(), appSignature, f)
-				return f.Status.Error
+				return getErrorMessages(f)
 			}, timeout, interval).ShouldNot(BeEmpty())
 
 			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(resource.Status.Error).To(ContainSubstring(app.ModuleNotFound))
-			Expect(resource.Status.Error).To(ContainSubstring("read"))
+			Expect(getErrorMessages(resource)).To(ContainSubstring(app.ModuleNotFound))
+			Expect(getErrorMessages(resource)).To(ContainSubstring("read"))
 		})
 
 		// Tests denial of the necessary copy operation
@@ -298,11 +298,11 @@ var _ = Describe("M4DApplication Controller", func() {
 			Eventually(func() string {
 				f := &apiv1alpha1.M4DApplication{}
 				_ = k8sClient.Get(context.Background(), appSignature, f)
-				return f.Status.Error
+				return getErrorMessages(f)
 			}, timeout, interval).ShouldNot(BeEmpty())
 
 			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(resource.Status.Error).To(ContainSubstring(app.CopyNotAllowed))
+			Expect(getErrorMessages(resource)).To(ContainSubstring(app.CopyNotAllowed))
 		})
 
 		// Tests finding a module for copy
@@ -340,12 +340,12 @@ var _ = Describe("M4DApplication Controller", func() {
 			Eventually(func() string {
 				f := &apiv1alpha1.M4DApplication{}
 				_ = k8sClient.Get(context.Background(), appSignature, f)
-				return f.Status.Error
+				return getErrorMessages(f)
 			}, timeout, interval).ShouldNot(BeEmpty())
 
 			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(resource.Status.Error).To(ContainSubstring(app.ModuleNotFound))
-			Expect(resource.Status.Error).To(ContainSubstring("copy"))
+			Expect(getErrorMessages(resource)).To(ContainSubstring(app.ModuleNotFound))
+			Expect(getErrorMessages(resource)).To(ContainSubstring("copy"))
 			_ = k8sClient.Delete(context.Background(), module)
 
 		})
