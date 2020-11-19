@@ -63,14 +63,33 @@ kind_delete() {
         bin/kind delete cluster --name kind
 }
 
+kind_delete_control() {
+        bin/kind version
+        bin/kind delete cluster --name control
+}
+
 kind_create() {
         bin/kind version
         bin/kind create cluster --name kind \
-             -v 4 --retain --wait=1m \
+             -v 4 --retain --wait=0s \
              --config ./kind-config.yaml \
              --image=kindest/node:$K8S_VERSION
         bin/kubectl config use-context kind-kind
-        for node in $(kind get nodes); do
+        for node in $(kind get nodes --name kind); do
+          bin/kubectl annotate node "${node}" "tilt.dev/registry=kind-registry:5000";
+          docker cp ../registry/ca.crt "$node":/usr/local/share/ca-certificates
+          docker exec "$node" update-ca-certificates
+        done
+}
+
+kind_create_control() {
+        bin/kind version
+        bin/kind create cluster --name control \
+             -v 4 --retain --wait=0s \
+             --config ./kind-control-config.yaml \
+             --image=kindest/node:$K8S_VERSION
+        bin/kubectl config use-context kind-control
+        for node in $(kind get nodes --name control); do
           bin/kubectl annotate node "${node}" "tilt.dev/registry=kind-registry:5000";
           docker cp ../registry/ca.crt "$node":/usr/local/share/ca-certificates
           docker exec "$node" update-ca-certificates
@@ -83,6 +102,15 @@ case "$op" in
         registry_delete || true
         certs_delete || true
         kind_delete || true
+        kind_delete_control || true
+        ;;
+    multi)
+        header_text "Installing kind multi-cluster"
+        certs_create
+        install_certs
+        kind_create
+        registry_create
+        kind_create_control
         ;;
     *)
         header_text "Installing kind cluster"

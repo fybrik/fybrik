@@ -14,6 +14,10 @@ minikube-cleanup: $(TOOLBIN)/minikube $(TOOLBIN)/kubectl
 kind-setup: $(TOOLBIN)/kind $(TOOLBIN)/kubectl
 	cd $(TOOLS_DIR); ./create_kind.sh
 
+.PHONY: kind-setup-multi
+kind-setup-multi: $(TOOLBIN)/kind $(TOOLBIN)/kubectl
+	cd $(TOOLS_DIR); ./create_kind.sh multi
+
 .PHONY: kind-cleanup
 kind-cleanup: $(TOOLBIN)/kind $(TOOLBIN)/kubectl
 	cd $(TOOLS_DIR); ./create_kind.sh cleanup
