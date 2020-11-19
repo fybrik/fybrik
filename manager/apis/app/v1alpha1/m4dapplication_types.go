@@ -71,7 +71,7 @@ const (
 	InsufficientStorage string = "No bucket was provisioned for implicit copy"
 )
 
-// ConditionIndices are static. Conditions always present in the status.
+// Condition indices are static. Conditions always present in the status.
 const (
 	FailureConditionIndex int64 = 0
 	ErrorConditionIndex   int64 = 1

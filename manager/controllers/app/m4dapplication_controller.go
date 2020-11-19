@@ -372,7 +372,7 @@ func setCondition(application *app.M4DApplication, assetID string, msg string, r
 		errMsg += " from " + receivedFrom
 	}
 	if assetID != "" {
-		errMsg += " for asset " + assetID + ' . '
+		errMsg += " for asset " + assetID + " . "
 	}
 	if !fatalError {
 		errMsg += "If the error persists, please contact an operator.\n"
