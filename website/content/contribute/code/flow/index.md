@@ -120,6 +120,17 @@ Running end to end tests:
 make e2e
 ```
 
+# Building in a multi cluster environment
+
+As {{< name >}} can run in a multi-cluster environment there is also a test environment
+that can be used that simulates this scenario. Using kind one can spin up two separate kubernetes
+clusters with differnt contexts and develop and test in these. 
+
+Two kind clusters that share the same kind-registry can be set up using:
+```bash
+make kind-setup-multi
+``` 
+
 # Normalize the code
 
 To ensure the code is formatted uniformly we use various linters which are
