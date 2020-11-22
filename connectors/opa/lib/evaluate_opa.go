@@ -56,19 +56,6 @@ func EvaluateExtendedPoliciesOnInput(inputMap map[string]interface{}, opaServerU
 	retryClient.RetryMax = 10
 	standardClient := retryClient.HTTPClient // *http.Client
 
-	// policy HTTP req
-	// httpMethod := "PUT"
-	// content, err := ioutil.ReadFile("encrypt-policy.rego")
-	// if err != nil {
-	//	log.Fatal(err)
-	// }
-	// contentType := "application/text"
-	// res := performHTTPReq(standardClient, opaServerURL+"v1/policies/extendedEnforcement", httpMethod, string(content), contentType)
-	// data, _ := ioutil.ReadAll(res.Body)
-	// fmt.Printf("body from policy http response: %s\n", data)
-	// fmt.Printf("status from policy http response: %d\n", res.StatusCode)
-	// res.Body.Close()
-
 	// input HTTP req
 	httpMethod := "POST"
 	toPrintBytes, _ := json.MarshalIndent(inputMap, "", "\t")
