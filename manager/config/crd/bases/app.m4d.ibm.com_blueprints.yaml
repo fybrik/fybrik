@@ -208,18 +208,14 @@ spec:
                             - destination
                             - source
                             type: object
-                          flow:
-                            description: ONE AND ONLY ONE OF THE FOLLOWING FIELDS SHOULD BE POPULATED Flow is the selector for this union
-                            enum:
-                            - copy
-                            - read
-                            - write
-                            type: string
                           read:
                             description: ReadArgs are parameters that are specific to modules that enable an application to read data
                             items:
                               description: ReadModuleArgs define the input parameters for modules that read data from location A
                               properties:
+                                assetID:
+                                  description: AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the M4DApplication resource
+                                  type: string
                                 source:
                                   description: Source of the read path module
                                   properties:
@@ -307,6 +303,7 @@ spec:
                                     type: object
                                   type: array
                               required:
+                              - assetID
                               - source
                               type: object
                             type: array
@@ -405,8 +402,6 @@ spec:
                               - destination
                               type: object
                             type: array
-                        required:
-                        - flow
                         type: object
                       name:
                         description: Name is the name of the instance of the module. For example, if the application is named "notebook" and an implicitcopy module is deemed necessary.  The FlowStep name would be notebook-implicitcopy.
@@ -483,6 +478,9 @@ spec:
         status:
           description: BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators forthe Kubernetes resources owned by the Blueprint for cleanup and status monitoring
           properties:
+            dataAccessInstructions:
+              description: DataAccessInstructions indicate how the data user or his application may access the data. Instructions are available upon successful orchestration.
+              type: string
             error:
               description: Error indicates that there has been an error to orchestrate the modules and provides the error message
               type: string

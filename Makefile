@@ -1,4 +1,5 @@
 include Makefile.env
+export DOCKER_TAGNAME ?= latest
 
 .PHONY: license
 license: $(TOOLBIN)/license_finder
@@ -15,17 +16,16 @@ test:
 	$(MAKE) -C pkg/policy-compiler test
 	$(MAKE) -C manager test
 
-.PHONY: e2e
-e2e:
-	# TODO(roee88): temporarily removed until can be set against local registry
-	# $(MAKE) -C pkg/helm test
-	$(MAKE) -C manager e2e
-
 .PHONY: cluster-prepare
 cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy
 	$(MAKE) -C third_party/registry deploy
 	$(MAKE) -C third_party/vault deploy
+
+.PHONY: cluster-prepare-wait
+cluster-prepare-wait:
+	$(MAKE) -C third_party/cert-manager deploy-wait
+	$(MAKE) -C third_party/vault deploy-wait
 
 .PHONY: install
 install:
@@ -55,6 +55,14 @@ docker:
 	$(MAKE) -C secret-provider docker-all
 	$(MAKE) -C connectors docker-all
 
+# Build only the docker images needed for integration testing
+.PHONY: docker-minimal-it
+docker-minimal-it:
+	$(MAKE) -C build docker-dummy-mover
+	$(MAKE) -C manager docker-all
+	$(MAKE) -C secret-provider docker-all
+	$(MAKE) -C test/services docker
+
 .PHONY: docker-build
 docker-build:
 	$(MAKE) -C build docker-build-all
@@ -79,7 +87,20 @@ docker-build-local:
 helm:
 	$(MAKE) -C modules helm
 
-include .mk/ibmcloud.mk
+.PHONY: docker-retag-images
+docker-retag-images:
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/manager:${DOCKER_TAGNAME}
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/secret-provider:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/secret-provider:${DOCKER_TAGNAME}
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/egr-connector:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/egr-connector:${DOCKER_TAGNAME}
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/movement-controller:${DOCKER_TAGNAME}
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/dummy-mover:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/dummy-mover:${DOCKER_TAGNAME}
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/opa-connector:${DOCKER_TAGNAME}
+	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/vault-connector:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/vault-connector:${DOCKER_TAGNAME}
+
+.PHONY: docker-push-public
+docker-push-public:
+	DOCKER_HOSTNAME=ghcr.io DOCKER_NAMESPACE=the-mesh-for-data DOCKER_TAGNAME=${DOCKER_TAGNAME} $(MAKE) docker-push
+
 include .mk/tools.mk
 include .mk/verify.mk
 include .mk/cluster.mk

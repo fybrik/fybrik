@@ -10,7 +10,6 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/hashicorp/vault/api"
-	"google.golang.org/grpc/status"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -22,6 +21,8 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -71,6 +72,12 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	generatedBlueprint, _ := r.getBlueprint(applicationContext)
 	if generatedBlueprint == nil || observedStatus.ObservedGeneration != applicationContext.GetGeneration() {
 		if result, err := r.reconcile(applicationContext); err != nil {
+			// another attempt will be done
+			// users should be informed in case of errors
+			if !equality.Semantic.DeepEqual(&applicationContext.Status, observedStatus) {
+				// ignore an update error, a new reconcile will be made in any case
+				_ = r.Client.Status().Update(ctx, applicationContext)
+			}
 			return result, err
 		}
 		applicationContext.Status.ObservedGeneration = applicationContext.GetGeneration()
@@ -85,22 +92,29 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 			return ctrl.Result{}, err
 		}
 	}
-	failed := utils.HasCondition(&applicationContext.Status, app.FailureCondition)
-	if failed {
-		log.Info("Reconciled with error conditions")
-		utils.PrintStructure(applicationContext.Status.Conditions, log, "Conditions")
+	if hasError(applicationContext) {
+		log.Info("Reconciled with errors: " + getErrorMessages(applicationContext))
 	}
 	// polling for blueprint status
-	if !applicationContext.Status.Ready && !failed {
+	if !applicationContext.Status.Ready && !hasError(applicationContext) {
 		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
 	}
 	return ctrl.Result{}, nil
 }
 
 func checkBlueprintStatus(applicationContext *app.M4DApplication, blueprint *app.Blueprint) {
-	applicationContext.Status.Ready = blueprint.Status.Ready
+	applicationContext.Status.DataAccessInstructions = ""
+	applicationContext.Status.Ready = false
+	if hasError(applicationContext) {
+		return
+	}
 	if blueprint.Status.Error != "" {
-		utils.ActivateCondition(applicationContext, app.FailureCondition, "OrchestrationFailure", blueprint.Status.Error)
+		setCondition(applicationContext, "", blueprint.Status.Error, "Blueprint", true)
+		return
+	}
+	if blueprint.Status.Ready {
+		applicationContext.Status.Ready = true
+		applicationContext.Status.DataAccessInstructions = blueprint.Status.DataAccessInstructions
 	}
 }
 
@@ -108,7 +122,7 @@ func checkBlueprintStatus(applicationContext *app.M4DApplication, blueprint *app
 func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M4DApplication) error {
 	// finalizer (Blueprint)
 	finalizerName := r.Name + ".finalizer"
-	hasFinalizer := ContainsFinalizer(applicationContext, finalizerName)
+	hasFinalizer := ctrlutil.ContainsFinalizer(applicationContext, finalizerName)
 
 	// If the object has a scheduled deletion time, delete it and its associated blueprint
 	if !applicationContext.DeletionTimestamp.IsZero() {
@@ -122,8 +136,6 @@ func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M
 			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 			ctrlutil.RemoveFinalizer(applicationContext, finalizerName)
 
-			// Add terminating condition
-			utils.ActivateCondition(applicationContext, app.TerminatingCondition, "Terminating", "The M4DApplication has been scheduled for deletion.")
 			if err := r.Update(context.Background(), applicationContext); err != nil {
 				return err
 			}
@@ -138,18 +150,6 @@ func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M
 		}
 	}
 	return nil
-}
-
-// ContainsFinalizer returns true if the given finalizer string appears in the list of finalizers of the object
-// Should be implemented in controller-runtime package - TO FIX
-func ContainsFinalizer(obj *app.M4DApplication, finalizer string) bool {
-	f := obj.GetFinalizers()
-	for _, e := range f {
-		if e == finalizer {
-			return true
-		}
-	}
-	return false
 }
 
 func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *app.M4DApplication) error {
@@ -169,7 +169,7 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 	if err := r.DeleteOwnedBlueprint(applicationContext); err != nil {
 		return err
 	}
-	//delete the allocated namespace
+	// delete the allocated namespace
 	if err := r.DeleteNamespace(namespace); err != nil {
 		return err
 	}
@@ -183,8 +183,11 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 
 	// Data User created or updated the M4DApplication
 
-	// clear conditions
-	applicationContext.Status.Conditions = make([]app.Condition, 0)
+	// clear status
+	resetConditions(applicationContext)
+	applicationContext.Status.DataAccessInstructions = ""
+	applicationContext.Status.Ready = false
+
 	key, _ := client.ObjectKeyFromObject(applicationContext)
 
 	// clear storage assets
@@ -199,19 +202,24 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	var requirements []modules.DataInfo
 	for _, dataset := range applicationContext.Spec.Data {
 		req := modules.DataInfo{
-			AssetID:      utils.CreateDataSetIdentifier(dataset.DataSetID),
+			AssetID:      dataset.DataSetID,
 			DataDetails:  nil,
 			Credentials:  nil,
 			Actions:      make(map[app.ModuleFlow]modules.Transformations),
 			AppInterface: &dataset.IFdetails,
 		}
 		// get enforcement actions and location info for a dataset
-		r.ConstructDataInfo(dataset.DataSetID, &req, applicationContext)
+		if err := r.ConstructDataInfo(dataset.DataSetID, &req, applicationContext); err != nil {
+			return ctrl.Result{}, err
+		}
 		requirements = append(requirements, req)
 	}
-	instances := r.SelectModuleInstances(requirements, applicationContext)
+	instances, err := r.SelectModuleInstances(requirements, applicationContext)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 	// check for errors
-	if utils.HasCondition(&applicationContext.Status, app.FailureCondition) {
+	if hasError(applicationContext) {
 		return ctrl.Result{}, nil
 	}
 	r.Log.V(0).Info("Creating Blueprint")
@@ -221,7 +229,9 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 			return ctrl.Result{}, err
 		}
 	}
-	blueprintSpec := r.GenerateBlueprint(instances, applicationContext)
+	// unite several instances of a read/write module
+	newInstances := r.RefineInstances(instances)
+	blueprintSpec := r.GenerateBlueprint(newInstances, applicationContext)
 	r.Log.V(0).Info("Blueprint entrypoint: " + blueprintSpec.Entrypoint)
 
 	blueprint := r.GetBlueprintSignature(applicationContext)
@@ -244,35 +254,32 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 }
 
 // ConstructDataInfo gets a list of governance actions and data location details for the given dataset and fills the received DataInfo structure
-func (r *M4DApplicationReconciler) ConstructDataInfo(datasetID string, req *modules.DataInfo, input *app.M4DApplication) {
+func (r *M4DApplicationReconciler) ConstructDataInfo(datasetID string, req *modules.DataInfo, input *app.M4DApplication) error {
 	// policies for READ operation
-	LookupPolicyDecisions(datasetID, r.PolicyCompiler, req, input, pb.AccessOperation_READ)
+	if err := LookupPolicyDecisions(datasetID, r.PolicyCompiler, req, input, pb.AccessOperation_READ); err != nil {
+		return AnalyzeError(input, r.Log, datasetID, err, "Policy Compiler")
+	}
 	if !req.Actions[app.Read].Allowed {
-		utils.ActivateCondition(input, app.FailureCondition, req.Actions[app.Read].Reason, req.Actions[app.Read].Message)
-		return
+		setCondition(input, datasetID, req.Actions[app.Read].Message, "Policy Compiler", true)
 	}
 	// Call the DataCatalog service to get info about the dataset
 	if err := GetConnectionDetails(datasetID, req, input); err != nil {
-		r.Log.V(0).Info("Could not get dataset info " + req.AssetID + " " + err.Error())
-		errStatus, _ := status.FromError(err)
-		utils.ActivateCondition(input, app.ErrorCondition, utils.DetermineCause(err, "CatalogConnectorService"), errStatus.Message())
-		return
+		return AnalyzeError(input, r.Log, datasetID, err, "Catalog Connector")
 	}
 	// Call the CredentialsManager service to get info about the dataset
 	if err := GetCredentials(datasetID, req, input); err != nil {
-		r.Log.V(0).Info("Could not get credentials " + req.AssetID + " " + err.Error())
-		errStatus, _ := status.FromError(err)
-		utils.ActivateCondition(input, app.ErrorCondition, utils.DetermineCause(err, "CredentialsManagerService"), errStatus.Message())
-		return
+		return AnalyzeError(input, r.Log, datasetID, err, "Credentials Manager")
 	}
 	// The received credentials are stored in vault
 	if err := r.RegisterCredentials(req); err != nil {
-		r.Log.V(0).Info("Could not register credentials for " + req.AssetID)
-		utils.ActivateCondition(input, app.ErrorCondition, "VaultServiceCommunicationError", "Failure registering credentials for "+req.AssetID+":"+err.Error())
+		return AnalyzeError(input, r.Log, datasetID, err, "Vault")
 	}
 
 	// policies for COPY operation in case copy is required
-	LookupPolicyDecisions(datasetID, r.PolicyCompiler, req, input, pb.AccessOperation_COPY)
+	if err := LookupPolicyDecisions(datasetID, r.PolicyCompiler, req, input, pb.AccessOperation_COPY); err != nil {
+		return AnalyzeError(input, r.Log, datasetID, err, "Policy Compiler")
+	}
+	return nil
 }
 
 // NewM4DApplicationReconciler creates a new reconciler for Blueprint resources
@@ -301,6 +308,7 @@ func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, e
 	moduleMap := make(map[string]*app.M4DModule)
 	var moduleList app.M4DModuleList
 	if err := r.List(ctx, &moduleList); err != nil {
+		r.Log.V(0).Info("Error while listing modules: " + err.Error())
 		return moduleMap, err
 	}
 	r.Log.Info("Listing all modules")
@@ -309,6 +317,20 @@ func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, e
 		moduleMap[module.Name] = module.DeepCopy()
 	}
 	return moduleMap, nil
+}
+
+// AnalyzeError analyzes whether the given error is fatal, or a retrial attempt can be made.
+// Reasons for retrial can be either communication problems with external services, or kubernetes problems to perform some action on a resource.
+// A retrial is achieved by returning an error to the reconcile method
+func AnalyzeError(app *app.M4DApplication, log logr.Logger, assetID string, err error, receivedFrom string) error {
+	errStatus, _ := status.FromError(err)
+	log.V(0).Info(errStatus.Message())
+	if errStatus.Code() == codes.InvalidArgument {
+		setCondition(app, assetID, errStatus.Message(), receivedFrom, true)
+		return nil
+	}
+	setCondition(app, assetID, errStatus.Message(), receivedFrom, false)
+	return err
 }
 
 // CreateNamespace creates a namespace in which the blueprint and the relevant resources will be running
@@ -332,4 +354,60 @@ func (r *M4DApplicationReconciler) DeleteNamespace(name string) error {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		}})
+}
+
+// Helper functions to manage conditions
+func resetConditions(application *app.M4DApplication) {
+	application.Status.Conditions = make([]app.Condition, 2)
+	application.Status.Conditions[app.ErrorConditionIndex] = app.Condition{Type: app.ErrorCondition, Status: corev1.ConditionFalse}
+	application.Status.Conditions[app.FailureConditionIndex] = app.Condition{Type: app.FailureCondition, Status: corev1.ConditionFalse}
+}
+
+func setCondition(application *app.M4DApplication, assetID string, msg string, receivedFrom string, fatalError bool) {
+	if len(application.Status.Conditions) == 0 {
+		resetConditions(application)
+	}
+	errMsg := "An error was received"
+	if receivedFrom != "" {
+		errMsg += " from " + receivedFrom
+	}
+	if assetID != "" {
+		errMsg += " for asset " + assetID + " . "
+	}
+	if !fatalError {
+		errMsg += "If the error persists, please contact an operator.\n"
+	}
+	errMsg += "Error description: " + msg + "\n"
+	var ind int64
+	if fatalError {
+		ind = app.FailureConditionIndex
+	} else {
+		ind = app.ErrorConditionIndex
+	}
+	application.Status.Conditions[ind].Status = corev1.ConditionTrue
+	application.Status.Conditions[ind].Message += errMsg
+}
+
+func hasError(application *app.M4DApplication) bool {
+	// check if the conditions have been initialized
+	if len(application.Status.Conditions) == 0 {
+		return false
+	}
+	return (application.Status.Conditions[app.ErrorConditionIndex].Status == corev1.ConditionTrue ||
+		application.Status.Conditions[app.FailureConditionIndex].Status == corev1.ConditionTrue)
+}
+
+func getErrorMessages(application *app.M4DApplication) string {
+	var errMsg string
+	// check if the conditions have been initialized
+	if len(application.Status.Conditions) == 0 {
+		return errMsg
+	}
+	if application.Status.Conditions[app.ErrorConditionIndex].Status == corev1.ConditionTrue {
+		errMsg += application.Status.Conditions[app.ErrorConditionIndex].Message
+	}
+	if application.Status.Conditions[app.FailureConditionIndex].Status == corev1.ConditionTrue {
+		errMsg += application.Status.Conditions[app.FailureConditionIndex].Message
+	}
+	return errMsg
 }

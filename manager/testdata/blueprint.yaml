@@ -52,4 +52,4 @@ spec:
     kind: M4DModule
     flow: copy
     resources:
-    - ghcr.io/the-mesh-for-data/m4d-db2wh:0.1.0
+    - kind-registry:5000/m4d-system/m4d-db2wh:0.1.0

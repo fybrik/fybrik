@@ -11,23 +11,28 @@ metadata:
   namespace: "default"
   labels: []
 
-# copies from source
-source:
-  connection:
-    db2:
-      table: ""
-      url: ""
-      port: ""
-      database: ""
-      ssl: false
-  credentialLocation: ""
+image: "ghcr.io/the-mesh-for-data/mover:latest"
+imagePullPolicy: null
+noFinalizer: "false"
 
-# copies to destination
-destination:
-  connection:
-    s3:
-      endpoint: ""
-      bucket: ""
-      object_key: ""
-  format: ""
-  credentialLocation: ""
+copy:
+  # copies from source
+  source:
+    connection:
+      db2:
+        table: ""
+        url: ""
+        port: ""
+        database: ""
+        ssl: false
+    credentialLocation: ""
+
+  # copies to destination
+  destination:
+    connection:
+      s3:
+        endpoint: ""
+        bucket: ""
+        object_key: ""
+    format: ""
+    credentialLocation: ""

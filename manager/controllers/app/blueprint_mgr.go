@@ -67,6 +67,30 @@ func (r *M4DApplicationReconciler) DeleteOwnedBlueprint(applicationContext *app.
 	return nil
 }
 
+// RefineInstances collects all instances of the same read/write module and creates a new instance instead, with accumulated arguments.
+// Copy modules are left unchanged.
+func (r *M4DApplicationReconciler) RefineInstances(instances []modules.ModuleInstanceSpec) []modules.ModuleInstanceSpec {
+	newInstances := make([]modules.ModuleInstanceSpec, 0)
+	instanceMap := make(map[string]modules.ModuleInstanceSpec)
+	for _, moduleInstance := range instances {
+		if moduleInstance.Args.Copy != nil {
+			newInstances = append(newInstances, moduleInstance)
+			continue
+		}
+		modulename := moduleInstance.Module.GetName()
+		if _, ok := instanceMap[modulename]; !ok {
+			instanceMap[modulename] = moduleInstance
+		} else {
+			instanceMap[modulename].Args.Read = append(instanceMap[modulename].Args.Read, moduleInstance.Args.Read...)
+			instanceMap[modulename].Args.Write = append(instanceMap[modulename].Args.Write, moduleInstance.Args.Write...)
+		}
+	}
+	for _, moduleInstance := range instanceMap {
+		newInstances = append(newInstances, moduleInstance)
+	}
+	return newInstances
+}
+
 // GenerateBlueprint creates the Blueprint spec based on the datasets and the governance actions required, which dictate the modules that must run in the m4d
 // Credentials for accessing data set are stored in a credential management system (such as vault) and the paths for accessing them are included in the blueprint.
 // The credentials themselves are not included in the blueprint.

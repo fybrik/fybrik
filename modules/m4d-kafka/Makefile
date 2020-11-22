@@ -4,12 +4,12 @@ all: helm-all
 ROOT_DIR := ../..
 DOCKER_NAME := m4d-kafka
 DOCKER_TAGNAME := 0.1.0
+HELM_VALUES := --values values.yaml.sample
 
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/.mk/docker.mk
 include $(ROOT_DIR)/.mk/helm.mk
 include $(ROOT_DIR)/.mk/tools.mk
-include $(ROOT_DIR)/.mk/ibmcloud.mk
 
 helm-crd-hook: crd-stream
 .PHONY: crd-stream

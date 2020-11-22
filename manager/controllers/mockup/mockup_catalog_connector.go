@@ -5,12 +5,13 @@ package mockup
 
 import (
 	"context"
-	"log"
-	"net"
-
+	"fmt"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	"github.com/onsi/ginkgo"
 	"google.golang.org/grpc"
+	"log"
+	"net"
 )
 
 type server struct {
@@ -30,6 +31,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 			Details: &pb.DatasetDetails{
 				Name:       "xxx",
 				DataFormat: "parquet",
+				Geo:        "US",
 				DataStore: &pb.DataStore{
 					Type: pb.DataStore_S3,
 					Name: "cos",
@@ -48,6 +50,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 			Details: &pb.DatasetDetails{
 				Name:       "yyy",
 				DataFormat: "table",
+				Geo:        "US",
 				DataStore: &pb.DataStore{
 					Type: pb.DataStore_DB2,
 					Name: "db2",
@@ -68,6 +71,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 			Details: &pb.DatasetDetails{
 				Name:       "Cars",
 				DataFormat: "json",
+				Geo:        "US",
 				DataStore: &pb.DataStore{
 					Type: pb.DataStore_KAFKA,
 					Name: "kafka",
@@ -92,6 +96,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 		Details: &pb.DatasetDetails{
 			Name:       "yyy",
 			DataFormat: "table",
+			Geo:        "US",
 			DataStore: &pb.DataStore{
 				Type: pb.DataStore_DB2,
 				Name: "db2",
@@ -117,18 +122,32 @@ func (s *server) GetCredentialsInfo(ctx context.Context, in *pb.DatasetCredentia
 	}, nil
 }
 
-// MockCatalogConnector returns fake data location details based on the catalog id
-func MockCatalogConnector() {
-	address := utils.ListeningAddress(50085)
-	log.Printf("Listening on address " + address)
+// Creates a new mock connector or an error
+func createMockCatalogConnector(port int) error {
+	address := utils.ListeningAddress(port)
+	log.Printf("Starting mock catalog connector on " + address)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
-		log.Fatalf("Error in listening: %v", err)
+		return fmt.Errorf("Error when setting up mock catalog connector: %v", err)
 	}
 	s := grpc.NewServer()
 	pb.RegisterDataCatalogServiceServer(s, &server{})
 	pb.RegisterDataCredentialServiceServer(s, &server{})
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("Error in service: %v", err)
+		return fmt.Errorf("Cannot serve mock catalog connector: %v", err)
+	}
+	return nil
+}
+
+// MockCatalogConnector returns fake data location details based on the catalog id
+func MockCatalogConnector() {
+	if err := createMockCatalogConnector(50085); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func CreateTestCatalogConnector(t ginkgo.GinkgoTInterface) {
+	if err := createMockCatalogConnector(50085); err != nil {
+		t.Fatal(err)
 	}
 }

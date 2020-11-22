@@ -32,7 +32,7 @@ $(TOOLBIN)/hugo:
 
 INSTALL_TOOLS += $(TOOLBIN)/golangci-lint
 $(TOOLBIN)/golangci-lint:
-	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.19.1
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.31.0
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/kubebuilder
@@ -102,10 +102,6 @@ $(TOOLBIN)/misspell:
 
 $(TOOLBIN)/license_finder:
 	gem install license_finder -v 6.5.0 --bindir=$(ABSTOOLBIN)
-	$(call post-install-check)
-
-/usr/local/bin/ibmcloud:
-	 curl -sL https://ibm.biz/idt-installer | bash
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/opa

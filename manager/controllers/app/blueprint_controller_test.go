@@ -14,7 +14,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	//"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
@@ -23,7 +22,7 @@ import (
 var _ = Describe("Blueprint Controller", func() {
 
 	const timeout = time.Second * 30
-	const interval = time.Second * 1
+	const interval = time.Millisecond * 100
 
 	BeforeEach(func() {
 		// Add any setup steps that needs to be executed before each test
