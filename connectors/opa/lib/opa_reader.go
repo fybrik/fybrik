@@ -29,14 +29,12 @@ func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *Ca
 	appInfo := in.GetAppInfo()
 	appInfoBytes, err := json.MarshalIndent(appInfo, "", "\t")
 	if err != nil {
-		log.Printf("error in marshalling appInfo: %v", err)
 		return nil, fmt.Errorf("error in marshalling appInfo: %v", err)
 	}
 	log.Println("appInfo : " + string(appInfoBytes))
 	appInfoMap := make(map[string]interface{})
 	err = json.Unmarshal(appInfoBytes, &appInfoMap)
 	if err != nil {
-		log.Printf("error in unmarshalling appInfoBytes: %v", err)
 		return nil, fmt.Errorf("error in unmarshalling appInfoBytes: %v", err)
 	}
 
@@ -49,7 +47,6 @@ func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *Ca
 
 		inputMap, ok := metadata.(map[string]interface{})
 		if !ok {
-			log.Printf("error in unmarshalling dataset metadata: %v", err)
 			return nil, fmt.Errorf("error in unmarshalling dataset metadata (datasetID = %s): %v", datasetID, err)
 		}
 
@@ -58,13 +55,11 @@ func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *Ca
 		operationBytes, err := json.MarshalIndent(operation, "", "\t")
 		log.Println("Operation Bytes: " + string(operationBytes))
 		if err != nil {
-			log.Printf("error in marshalling operation (i = %d): %v", i, err)
 			return nil, fmt.Errorf("error in marshalling operation (i = %d): %v", i, err)
 		}
 		operationMap := make(map[string]interface{})
 		err = json.Unmarshal(operationBytes, &operationMap)
 		if err != nil {
-			log.Printf("error in marshalling into operation map (i = %d): %v", i, err)
 			return nil, fmt.Errorf("error in marshalling into operation map (i = %d): %v", i, err)
 		}
 		for k, v := range operationMap {
@@ -84,13 +79,11 @@ func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *Ca
 		log.Println(string(toPrintBytes))
 		opaEval, err := EvaluateExtendedPoliciesOnInput(inputMap, r.opaServerURL)
 		if err != nil {
-			log.Printf("error in EvaluateExtendedPoliciesOnInput (i = %d): %v", i, err)
 			return nil, fmt.Errorf("error in EvaluateExtendedPoliciesOnInput (i = %d): %v", i, err)
 		}
 		log.Println("OPA Eval : " + opaEval)
 		opaOperationDecision, err := GetOPAOperationDecision(opaEval, operation)
 		if err != nil {
-			log.Printf("error in GetOPAOperationDecision (i = %d): %v", i, err)
 			return nil, fmt.Errorf("error in GetOPAOperationDecision (i = %d): %v", i, err)
 		}
 		//add to a list
@@ -108,12 +101,10 @@ func GetOPAOperationDecision(opaEval string, operation *pb.AccessOperation) (*pb
 	resultInterface := make(map[string]interface{})
 	err := json.Unmarshal([]byte(opaEval), &resultInterface)
 	if err != nil {
-		log.Printf("error in unmarshaling opaEval into resultInterface: " + err.Error())
 		return nil, err
 	}
 	evaluationMap, ok := resultInterface["result"].(map[string]interface{})
 	if !ok {
-		log.Printf("error in format of OPA evaluation (incorrect result map)")
 		return nil, errors.New("error in format of OPA evaluation (incorrect result map)")
 	}
 
@@ -124,7 +115,6 @@ func GetOPAOperationDecision(opaEval string, operation *pb.AccessOperation) (*pb
 	if evaluationMap["deny"] != nil {
 		lstDeny, ok := evaluationMap["deny"].([]interface{})
 		if !ok {
-			log.Printf("Error: unknown format of deny list")
 			return nil, errors.New("unknown format of deny content")
 		}
 		if len(lstDeny) > 0 {
@@ -147,13 +137,11 @@ func GetOPAOperationDecision(opaEval string, operation *pb.AccessOperation) (*pb
 	if evaluationMap["transform"] != nil {
 		lstTransformations, ok := evaluationMap["transform"].([]interface{})
 		if !ok {
-			log.Printf("Error: unknown format of transformationss list")
 			return nil, errors.New("unknown format of transform content")
 		}
 		for i, transformAction := range lstTransformations {
 			newEnforcementAction, newUsedPolicy, ok := buildNewEnfrocementAction(transformAction)
 			if !ok {
-				log.Printf("Error: unknown format of transform action")
 				return nil, errors.New("unknown format of transform action")
 			}
 			enforcementActions = append(enforcementActions, newEnforcementAction)
@@ -170,8 +158,8 @@ func GetOPAOperationDecision(opaEval string, operation *pb.AccessOperation) (*pb
 		enforcementActions = append(enforcementActions, newEnforcementAction)
 	}
 
-	log.Println("************************** enforcementActions: ", enforcementActions)
-	log.Println("************************** usedPolicies: ", usedPolicies)
+	log.Println("enforcementActions: ", enforcementActions)
+	log.Println("usedPolicies: ", usedPolicies)
 
 	return &pb.OperationDecision{Operation: operation, EnforcementActions: enforcementActions, UsedPolicies: usedPolicies}, nil
 }

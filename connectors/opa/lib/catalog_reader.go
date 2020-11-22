@@ -12,8 +12,6 @@ import (
 
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // Reader from catalog, single instance for the connector, not dependent on the request
@@ -33,10 +31,6 @@ func (r *CatalogReader) GetDatasetsMetadataFromCatalog(in *pb.ApplicationContext
 	defer cancel()
 	conn, err := grpc.DialContext(ctx, r.catalogConnectorAddress, grpc.WithInsecure())
 	if err != nil {
-		log.Printf("Connection to External Catalog Connector failed: %v", err)
-		errStatus, _ := status.FromError(err)
-		log.Println(errStatus.Message())
-		log.Println(errStatus.Code())
 		return nil, fmt.Errorf("Connection to External Catalog Connector failed: %v", err)
 	}
 	defer conn.Close()
@@ -68,30 +62,19 @@ func (c *CatalogReader) GetDatasetMetadata(ctx *context.Context, client pb.DataC
 	log.Printf("Sending request to External Catalog Connector: datasetID = %s", datasetID)
 	r, err := client.GetDatasetInfo(*ctx, objToSend)
 	if err != nil {
-		log.Printf("error sending data to External Catalog Connector (datasetID = %s): %v", datasetID, err)
-		errStatus, _ := status.FromError(err)
-		log.Println("Message:", errStatus.Message())
-		log.Println("Code:", errStatus.Code())
-		if codes.InvalidArgument == errStatus.Code() {
-			log.Println("Invalid argument error : " + err.Error())
-		}
 		return nil, fmt.Errorf("error sending data to External Catalog Connector (datasetID = %s): %v", datasetID, err)
 	}
-	log.Println("***************************************************************")
+
 	log.Printf("Received Response from External Catalog Connector for  dataSetID: %s\n", datasetID)
-	log.Println("***************************************************************")
 	log.Printf("Response received from External Catalog Connector is given below:")
 	responseBytes, errJSON := json.MarshalIndent(r, "", "\t")
 	if errJSON != nil {
-		log.Printf("error Marshalling Catalog External Connector Response: %v", errJSON)
 		return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
 	}
 	log.Print(string(responseBytes))
-	log.Println("***************************************************************")
 	metadataMap := make(map[string]interface{})
 	err = json.Unmarshal(responseBytes, &metadataMap)
 	if err != nil {
-		log.Printf("error in unmarshalling responseBytes: %v", err)
 		return nil, fmt.Errorf("error in unmarshalling responseBytes (datasetID = %s): %v", datasetID, err)
 	}
 
