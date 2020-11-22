@@ -56,7 +56,6 @@ func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationCon
 	timeOut, err := strconv.Atoi(timeOutInSecs)
 
 	if err != nil {
-		log.Printf("Atoi conversion of timeOutinseconds failed: %v", err)
 		return nil, fmt.Errorf("Atoi conversion of timeOutinseconds failed: %v", err)
 	}
 
@@ -66,9 +65,11 @@ func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationCon
 		log.Println("GetOPADecisions err:", err)
 		return nil, err
 	}
-	jsonOutput, _ := json.MarshalIndent(eval, "", "\t")
+	jsonOutput, err := json.MarshalIndent(eval, "", "\t")
+	if err != nil {
+		return nil, fmt.Errorf("Error during MarshalIndent of OPA Decisions: %v", err)
+	}
 	log.Println("Received evaluation : " + string(jsonOutput))
-
 	return eval, err
 }
 

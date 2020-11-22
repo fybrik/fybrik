@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	tu "github.com/ibm/the-mesh-for-data/connectors/opa/testutil"
+	"gotest.tools/assert"
 )
 
 // Tests  GetPoliciesDecisions in opa-connector.go
@@ -24,7 +25,8 @@ func TestMainOpaConnector(t *testing.T) {
 
 	srv := NewOpaReader(opaServerUrl)
 	catalogReader := NewCatalogReader(catalogConnectorURL, timeOutSecs)
-	policiesDecisions, _ := srv.GetOPADecisions(applicationContext, catalogReader)
+	policiesDecisions, err := srv.GetOPADecisions(applicationContext, catalogReader)
+	assert.NilError(t, err)
 	fmt.Println("policiesDecisions returned")
 	fmt.Println(policiesDecisions)
 	expectedOpaDecisions := tu.GetExpectedOpaDecisions("marketing", applicationContext)

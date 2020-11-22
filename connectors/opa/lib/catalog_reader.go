@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Reader from catalog, single instance for the connector, not dependent on the request
+// CatalogReader - Reader from catalog, single instance for the connector, not dependent on the request
 type CatalogReader struct {
 	catalogConnectorAddress string
 	timeOut                 int
