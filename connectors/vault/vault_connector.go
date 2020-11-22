@@ -28,9 +28,8 @@ type server struct {
 var vault VaultConnection
 
 func (s *server) GetCredentialsInfo(ctx context.Context, in *pb.DatasetCredentialsRequest) (*pb.DatasetCredentials, error) {
-	log.Println("*********************************Received ApplicationContext *****************************")
+	log.Println("Received ApplicationContext")
 	log.Println(in)
-	log.Println("******************************************************************************************")
 
 	vaultPathKey := GetEnv(VaultPathKey)
 	eval, err := s.vaultConnector.GetCredentialsInfo(in, vault, vaultPathKey)
