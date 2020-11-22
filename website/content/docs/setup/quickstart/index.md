@@ -44,6 +44,8 @@ By the end of this guide you will have the following installed to your Kubernete
 
     to install on OpenShift you need to run ```WITHOUT_OPENSHIFT=false ./hack/install.sh``` instead.
 
+    for the [Sample Kubeflow notebook]({{< baseurl >}}/docs/usage/notebook-sample) you need to run with ```WITHOUT_ISTIO=true``` due to incompatibly between Istio version used in kubeflow and Istio version used in this project (please see [issue #1535](https://github.com/kubeflow/manifests/issues/1535)).
+
 1. Enable the use of the [arrow flight module](https://{{< github_base >}}/the-mesh-for-data-flight-module)
     ```
     kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data-flight-module/master/module.yaml

@@ -30,15 +30,17 @@ kubectl config set-context --current --namespace=m4d-system
 
 Install on OpenShift:
 ```bash
-WITHOUT_OPENSHIFT=false ./hack/install.sh
+WITHOUT_ISTIO=true WITHOUT_OPENSHIFT=false ./hack/install.sh
 ```
 
 **Or**
 
 Install on Kind:
 ```bash
-./hack/install.sh
+WITHOUT_ISTIO=true ./hack/install.sh
 ```
+
+Using ```WITHOUT_ISTIO=true``` is needed due to incompatibly between Istio version used in kubeflow and Istio version used in this project (please see [issue #1535](https://github.com/kubeflow/manifests/issues/1535)). Thus when running this kubeflow sample the Envoy proxy injection and Istio security policies are disabled.
 
 Install the Arrow-Flight module
 ```

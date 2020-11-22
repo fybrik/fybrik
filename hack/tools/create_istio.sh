@@ -17,12 +17,12 @@ manifest_args="
         --set values.gateways.istio-ingressgateway.enabled=true
         --set values.gateways.istio-egressgateway.enabled=true
         --set values.meshConfig.accessLogFile="/dev/stdout"
-        --set values.kiali.enabled=true
         --set values.istiocoredns.enabled=true
 "
 
 istio_install() {
-    bin/istioctl manifest apply $manifest_args
+    bin/istioctl manifest install $manifest_args
+    kubectl apply -f istio/samples/addons
 }
 
 istio_uninstall() {
