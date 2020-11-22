@@ -17,6 +17,8 @@ spec:
       labels:
         app: opa-connector
     spec:
+      serviceAccount: opa-connector
+      serviceAccountName: opa-connector
       containers:
       - name: opa-connector
         image: opa-connector:latest
@@ -38,3 +40,8 @@ spec:
   ports:
   - port: 50082
     targetPort: opa-connector
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: opa-connector

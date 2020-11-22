@@ -1,0 +1,21 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: egr-connector-ingress-security
+  namespace: m4d-system
+spec:
+ selector:
+   matchLabels:
+     app: egr-connector
+ action: ALLOW
+ rules:
+   - from:
+     - source:
+        principals: ["cluster.local/ns/m4d-system/sa/opa-connector"]
+     - source:
+        principals: ["cluster.local/ns/m4d-system/sa/m4d-controller-manager"]
+
+

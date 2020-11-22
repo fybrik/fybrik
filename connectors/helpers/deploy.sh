@@ -7,6 +7,7 @@ set -e
 
 : ${KUBE_NAMESPACE:=m4d-system}
 : ${WITHOUT_VAULT=true}
+: ${WITHOUT_ISTIO=false}
 : ${ROOT_DIR=../..}
 : ${PORT_TO_FORWARD=8200}
 
@@ -71,9 +72,48 @@ kube_cluster_info() {
         printf "\nThe deployment script has completed successfully!\n"
 }
 
+istio_sidecar_injection(){
+      local svc="egr-connector opa-connector vault-connector"
+      for svc in ${svc}; do \
+                kubectl get deployment ${svc} -o yaml | istioctl kube-inject -f - | kubectl apply -f -; \
+                kubectl wait --for=condition=available -n ${KUBE_NAMESPACE} deployment/${svc} --timeout=120s; \
+      done
+}
+
+istio_sidecar_uninjection() {
+        local svc="egr-connector opa-connector vault-connector"
+        for svc in ${svc}; do \
+                kubectl get deployment ${svc} -o yaml | istioctl x kube-uninject -f - | kubectl apply -f -; \
+        done
+}
+
+istio_deploy_policies(){
+        local svc="egr-connector opa-connector vault-connector"
+        for svc in ${svc}; do \
+                kubectl apply -f base/istio/${svc}-authorization.yaml; \
+        done
+}
+
+istio_undeploy_policies(){
+        local svc="egr-connector opa-connector vault-connector"
+        for svc in ${svc}; do \
+                kubectl delete -f base/istio/${svc}-authorization.yaml; \
+        done
+}
+
+wait_for_istio() {
+        printf "\nWaiting for istio sidecars to be ready. Please wait...\n"
+        local svc="egr-connector opa-connector vault-connector"
+        for svc in ${svc}; do \
+                kubectl wait --for=condition=available -n ${KUBE_NAMESPACE} deployment/${svc} --timeout=120s; \
+        done
+}
+
 undeploy() {
         $WITHOUT_VAULT || vault_delete
+        $WITHOUT_VAULT || istio_sidecar_uninjection
         connectors_delete
+        $WITHOUT_ISTIO || istio_undeploy_policies
         kube_cluster_info
 }
 
@@ -82,6 +122,9 @@ deploy() {
         $WITHOUT_VAULT || vault_create
         connectors_delete
         connectors_create
+        $WITHOUT_ISTIO || istio_sidecar_injection
+        $WITHOUT_ISTIO || wait_for_istio
+        $WITHOUT_ISTIO || istio_deploy_policies
         kube_cluster_info
 }
 

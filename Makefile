@@ -36,6 +36,7 @@ deploy:
 	$(MAKE) -C secret-provider deploy
 	$(MAKE) -C manager deploy
 	$(MAKE) -C connectors deploy
+	$(MAKE) -C istio deploy
 
 # Deploys the manager using local images
 .PHONY: deploy-local
@@ -45,6 +46,7 @@ deploy-local:
 .PHONY: undeploy
 undeploy:
 	$(MAKE) -C secret-provider undeploy
+	$(MAKE) -C istio undeploy
 	$(MAKE) -C manager undeploy
 	$(MAKE) -C connectors undeploy
 
