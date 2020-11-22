@@ -13,6 +13,7 @@ require (
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/onsi/ginkgo v1.13.0
 	github.com/onsi/gomega v1.10.1
+	github.com/pkg/errors v0.9.1
 	github.com/robfig/cron v1.2.0
 	github.com/stretchr/testify v1.6.1
 	google.golang.org/grpc v1.28.1

@@ -208,13 +208,6 @@ spec:
                             - destination
                             - source
                             type: object
-                          flow:
-                            description: ONE AND ONLY ONE OF THE FOLLOWING FIELDS SHOULD BE POPULATED Flow is the selector for this union
-                            enum:
-                            - copy
-                            - read
-                            - write
-                            type: string
                           read:
                             description: ReadArgs are parameters that are specific to modules that enable an application to read data
                             items:
@@ -409,8 +402,6 @@ spec:
                               - destination
                               type: object
                             type: array
-                        required:
-                        - flow
                         type: object
                       name:
                         description: Name is the name of the instance of the module. For example, if the application is named "notebook" and an implicitcopy module is deemed necessary.  The FlowStep name would be notebook-implicitcopy.

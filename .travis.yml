@@ -58,28 +58,11 @@ jobs:
     script:
     - make test
 
-  - stage: Build
-    name: "Build binaries"
-    install:
-    - make install-tools
-    script:
-    - make build
-
   # FIXME(hunchback): disabled as its' taking 15m to run
   # - stage: verify-license
   #   install:
   #   script:
   #   - make license
-
-  - stage: Test
-    name: "Integration tests for manager"
-    install:
-    - make install-tools
-    script:
-    - make kind || travis_terminate 1;
-    - make cluster-prepare || travis_terminate 1;
-    - make install || travis_terminate 1;
-    - make e2e
 
   # The following integration/system test builds all images
   # and deploys all the services locally in a kind environment
@@ -95,8 +78,8 @@ jobs:
     script:
     - make kind-setup || travis_terminate 1; # Switch to make kind when istio is needed
     - make cluster-prepare || travis_terminate 1;
-    - make docker-minimal-it
-    #- make -C test/services docker Already build in docker-minimal-it
+    - make docker
+    - make -C test/services docker # Build test services
     - make cluster-prepare-wait || travis_terminate 1;
     - make -C secret-provider configure-vault
     - make -C secret-provider deploy || travis_terminate 1;
@@ -104,78 +87,13 @@ jobs:
     - make -C manager wait_for_manager || travis_terminate 1;
     - make helm || travis_terminate 1;
     - make -C manager run-integration-tests || travis_terminate 1;
-
-  - stage: Publish
-    name: "Build and push docker images"
-    env:
-    - COMPONENT=build
-    install:
-    - make install-tools
-    script:
-    - make -C $COMPONENT docker-build-all
     deploy:
-      skip_cleanup: true
-      provider: script
-      script: make -C $COMPONENT docker-push-all
-      on:
-        branch: master
-
-  - stage: Publish
-    name: "Build and push docker images"
-    env:
-    - COMPONENT=manager
-    install:
-    - make install-tools
-    script:
-    - make -C $COMPONENT docker-build
-    deploy:
-      skip_cleanup: true
-      provider: script
-      script: make -C $COMPONENT docker-push
-      on:
-        branch: master
-
-  - stage: Publish
-    name: "Build and push docker images"
-    env:
-    - COMPONENT=secret-provider
-    install:
-    - make install-tools
-    script:
-    - make -C $COMPONENT docker-build
-    deploy:
-      skip_cleanup: true
-      provider: script
-      script: make -C $COMPONENT docker-push
-      on:
-        branch: master
-
-  - stage: Publish
-    name: "Build and push docker images"
-    env:
-    - COMPONENT=connectors
-    install:
-    - make install-tools
-    script:
-    - make -C $COMPONENT docker-build
-    deploy:
-      skip_cleanup: true
-      provider: script
-      script: make -C $COMPONENT docker-push
-      on:
-        branch: master
-
-  - stage: Publish
-    name: "Build and push helm charts"
-    install:
-    - make install-tools
-    script: true
-    deploy:
-      skip_cleanup: true
-      provider: script
-      script: make -C modules helm-chart-push
-      on:
-        branch: master
+     skip_cleanup: true
+     provider: script
+     script: make docker-retag-images && make docker-push-public
+     on:
+       condition: $TRAVIS_PULL_REQUEST = false
+       branch: master
 
   - stage: Publish
     name: "Build and publish website"
@@ -194,39 +112,8 @@ jobs:
   - stage: Deploy
     name: "Kind deploy"
     env:
-    - COMPONENT=secret-provider
-    - CLUSTER=kind
-    - REGISTRY=ibmcloud
-    install:
-    - make install-tools
-    script:
-    - make $CLUSTER || travis_terminate 1;
-    - make cluster-prepare || travis_terminate 1;
-    - make -C $COMPONENT deploy
-    - ./hack/tools/bin/kubectl get pod --all-namespaces
-    if: branch = master AND type = push
-
-  - stage: Deploy
-    name: "Kind deploy"
-    env:
-    - COMPONENT=manager
-    - CLUSTER=kind
-    - REGISTRY=ibmcloud
-    install:
-    - make install-tools
-    script:
-    - make $CLUSTER || travis_terminate 1;
-    - make cluster-prepare || travis_terminate 1;
-    - make -C $COMPONENT deploy
-    - ./hack/tools/bin/kubectl get pod --all-namespaces
-    if: branch = master AND type = push
-
-  - stage: Deploy
-    name: "Kind deploy"
-    env:
     - COMPONENT=connectors
     - CLUSTER=kind
-    - REGISTRY=ibmcloud
     install:
     - make install-tools
     script:
@@ -239,3 +126,12 @@ jobs:
 
 notifications:
   email: false
+deploy:
+  provider: releases
+  api_key:
+    secure: Es3z5bIx3N2en+vn6ogPyftwMoyUYE60s29gfBmThBd0UoQKKltGn5bCo1UnR5NpmNAyDlJtz2yN239IImp2RYwLGVXMrT/lqsTtsrEm8rKEgMWhteBdxWeZhBWMEip0PjZznO0gY9ALAH0IALvYqtVmo93ZtvXXbyYgzXleqNSGE1ChK3u7gFrNeEHKH1ivQ0xKozg3W4kaKAxwnbsi7KSxyb0o/aK8QGPya8Ldfn0l7DhxMuSe9a3l30dnoh0EOTEsH9yosYmhqG+e4erKBSdjKbzQpxzh9xpKHbw998p84OsVrSR8UyRNmzG6IhfISVRUsn73CtpG7imeMhTaezcXQ0Hy1r6WvumoSl7oOFLUz1b3R59bfR1XCYKLcWgK4kek/unzd0x2OJJWdfy/RgCRwnr60O0hD3bwm5w9I2DywyF7ilObGp0M/oo8LiKryawe9lahkrIhRNVdgNEO62q/UmNTOfTH3pm2wXDMAaciphXkbK5ZFfGo5Xzdpx6Cm72ctMc3hcfLw4W5btNOKTXlfLHNdicTSRdFVlosvZMBgYpuoeloj232Kx4HYvbOals7vRM2FhZGWRZ4g2QMB8b6piVD/TRYUUnZeUOP4q+Hi6E2hb902M7LJZz968clMGeC6nLhsOJBHh+4lAfL1RBex85Y5ma60OV1YpvdUnk=
+  file:
+  - README.md
+  skip_cleanup: 'true'
+  on:
+    tags: true

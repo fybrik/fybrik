@@ -411,6 +411,10 @@ public final class EgeriaClient {
 
         //it can contain a direct link to the file or a json with remote object
         String qualifiedName = assetMetaDataHelper.getQualifiedName();
+        // fix for https://github.com/IBM/the-mesh-for-data/issues/122 - start 
+        JsonObject storeJson = JsonParser.parseString(qualifiedName).getAsJsonObject();
+        String geo = storeJson.get("data_location").getAsString();
+        // fix for https://github.com/IBM/the-mesh-for-data/issues/122 - end 
         DataStore dataStore = getAssetStore(qualifiedName);
 
         datasetDetails = DatasetDetails.newBuilder()
@@ -418,7 +422,8 @@ public final class EgeriaClient {
                         .setDataOwner(dataowner)
                         .setMetadata(metadata)
                         .setDataStore(dataStore)
-                        .setGeo("geo not supported yet") //should be in additionalProperties
+                        //.setGeo("geo not supported yet") //should be in additionalProperties
+                        .setGeo(geo)
                         .setDataFormat(typeOfAsset)
                         .build();
 
