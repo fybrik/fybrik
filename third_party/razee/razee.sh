@@ -11,6 +11,9 @@ op=$1
 
 source ../../hack/tools/common.sh
 
+RAZEE_USER=${RAZEE_USER:="razee-dev@example.com"}
+RAZEE_PASSWORD=${RAZEE_PASSWORD:="password123"}
+
 setup_control_cluster() {
     kubectl config use-context kind-control
     # Install razee dash API and UI
@@ -42,17 +45,16 @@ delete_razee_remotes() {
 
 setup_user() {
     # The passwords below are only used for development on local machines and email addresses are fake
-    # TODO replace them with environment variables at some point
     DATA=$(curl --request POST \
       --url http://localhost:3333/graphql \
       --header 'Content-Type: application/json' \
-      --data '{"query":"mutation {\n  signUp(\n    username: \"razee-dev\"\n    email: \"razee-dev@example.com\"\n    password: \"password123\"\n    orgName: \"dev-org\"\n    role: \"ADMIN\"\n  ) {\n    token\n  }\n}"}')
+      --data "{\"query\":\"mutation {\n  signUp(\n    username: \\\"razee-dev\\\"\n    email: \\\"$RAZEE_USER\\\"\n    password: \\\"$RAZEE_PASSWORD\\\"\n    orgName: \\\"dev-org\\\"\n    role: \\\"ADMIN\\\"\n  ) {\n    token\n  }\n}\"}")
     if [[ $DATA =~ "E11000" ]]; then
       echo User already exists!
       DATA=$(curl --request POST \
         --url http://localhost:3333/graphql \
         --header 'Content-Type: application/json' \
-        --data '{"query":"mutation {\n  signIn(\n    login: \"razee-dev@example.com\"\n    password: \"password123\"\n  ) {\n    token\n  }\n}"}')
+        --data "{\"query\":\"mutation {\n  signIn(\n    login: \\\"$RAZEE_USER\\\"\n    password: \\\"$RAZEE_PASSWORD\\\"\n  ) {\n    token\n  }\n}\"}")
       TOKEN=$(echo $DATA | jq -r -c ".data.signIn.token")
     else
       TOKEN=$(echo $DATA | jq -r -c ".data.signUp.token")
