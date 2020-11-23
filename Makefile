@@ -101,7 +101,7 @@ docker-retag-images:
 docker-push-public:
 	DOCKER_HOSTNAME=ghcr.io DOCKER_NAMESPACE=the-mesh-for-data DOCKER_TAGNAME=${DOCKER_TAGNAME} $(MAKE) docker-push
 
-include .mk/tools.mk
-include .mk/verify.mk
-include .mk/cluster.mk
-include .mk/helm.mk
+include hack/make-rules/tools.mk
+include hack/make-rules/verify.mk
+include hack/make-rules/cluster.mk
+include hack/make-rules/helm.mk

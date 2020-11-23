@@ -1,6 +1,6 @@
 ROOT_DIR := ../..
 include $(ROOT_DIR)/Makefile.env
-include $(ROOT_DIR)/.mk/docker.mk
+include $(ROOT_DIR)/hack/make-rules/docker.mk
 
 SOURCE := \
 	helm.go \
