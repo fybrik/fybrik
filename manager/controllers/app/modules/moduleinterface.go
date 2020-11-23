@@ -5,7 +5,6 @@ package modules
 
 import (
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 )
@@ -15,7 +14,6 @@ type Transformations struct {
 	Allowed            bool
 	EnforcementActions []pb.EnforcementAction
 	Message            string
-	Reason             string
 
 	// In some cases copy is required to perform transformations at source
 	// Temporary solution: in these cases mark copy actions as required until rules for transformations at data source are implemented in policy manager
@@ -159,7 +157,7 @@ func (m *Selector) SelectModule(moduleMap map[string]*app.M4DModule) bool {
 		}
 		return true
 	}
-	m.Message += "No module was found for " + string(m.Flow)
+	m.Message += string(m.Flow) + " : " + app.ModuleNotFound
 	return false
 }
 

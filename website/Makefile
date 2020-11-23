@@ -4,7 +4,7 @@ include $(ROOT_DIR)/Makefile.env
 .PHONY: all
 all: gen-docs gen-pages
 
-include  $(ROOT_DIR)/.mk/tools.mk
+include  $(ROOT_DIR)/hack/make-rules/tools.mk
 
 # Proto files
 

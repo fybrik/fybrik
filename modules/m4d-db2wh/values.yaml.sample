@@ -1,8 +1,3 @@
-metadata:
-  labels: {}
-  name: 012d42539692bba841a7
-  namespace: default
-
 image: kind-registry:5000/m4d-system/dummy-mover:latest
 imagePullSecret: IfNotPresent
 

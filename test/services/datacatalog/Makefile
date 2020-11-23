@@ -2,9 +2,9 @@ ROOT_DIR := ../../../
 include $(ROOT_DIR)/Makefile.env
 #include Makefile.env
 
-include $(ROOT_DIR)/.mk/tools.mk
+include $(ROOT_DIR)/hack/make-rules/tools.mk
 DOCKER_TAGNAME ?= latest
-include $(ROOT_DIR)/.mk/docker.mk
+include $(ROOT_DIR)/hack/make-rules/docker.mk
 
 IMG_DCM ?= ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/data-catalog-mock:${DOCKER_TAGNAME}
 
