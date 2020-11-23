@@ -24,6 +24,7 @@ setup_control_cluster() {
     kubectl wait --for=condition=available -n razee deployment/razeedash --timeout=180s
     echo "Please follow Step 7 of the Razee Documentation to set up authentication https://github.com/razee-io/Razee/blob/master/README.md#installing-razeedash"
     echo "Once done please export the api key with 'export APIKEY=mykey'"
+    echo "Or use 'make setup_user' in order to create/login a local user"
 }
 
 delete_razee() {
@@ -37,6 +38,27 @@ delete_razee_remotes() {
     ./removeCluster.sh kind-control &
     ./removeCluster.sh kind-kind &
     wait
+}
+
+setup_user() {
+    # The passwords below are only used for development on local machines and email addresses are fake
+    # TODO replace them with environment variables at some point
+    DATA=$(curl --request POST \
+      --url http://localhost:3333/graphql \
+      --header 'Content-Type: application/json' \
+      --data '{"query":"mutation {\n  signUp(\n    username: \"razee-dev\"\n    email: \"razee-dev@example.com\"\n    password: \"password123\"\n    orgName: \"dev-org\"\n    role: \"ADMIN\"\n  ) {\n    token\n  }\n}"}')
+    if [[ $DATA =~ "E11000" ]]; then
+      echo User already exists!
+      DATA=$(curl --request POST \
+        --url http://localhost:3333/graphql \
+        --header 'Content-Type: application/json' \
+        --data '{"query":"mutation {\n  signIn(\n    login: \"razee-dev@example.com\"\n    password: \"password123\"\n  ) {\n    token\n  }\n}"}')
+      TOKEN=$(echo $DATA | jq -r -c ".data.signIn.token")
+    else
+      TOKEN=$(echo $DATA | jq -r -c ".data.signUp.token")
+    fi
+
+    echo $TOKEN > token
 }
 
 setup_remotes() {
@@ -61,9 +83,14 @@ case "$op" in
         header_text "Installing razee on clusters"
         setup_remotes
         ;;
+    setup_user)
+        header_text "Installing razee on clusters"
+        setup_user
+        ;;
     *)
         header_text "Installing razee"
         setup_control_cluster
+        setup_user
         setup_remotes
         ;;
 esac

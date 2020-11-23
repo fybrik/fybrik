@@ -45,6 +45,8 @@ certs_create() {
 
 install_certs() {
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        # This has been tested on Ubuntu. On other distributions this may vary.
+        # If developers use different distributions please add a branch here that works.
         sudo cp ../registry/ca.crt /usr/local/share/ca-certificates
 	      sudo update-ca-certificates
 	  elif [[ "$OSTYPE" == "darwin"* ]]; then

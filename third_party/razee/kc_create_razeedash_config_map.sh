@@ -10,4 +10,4 @@ RAZEEDASH_API_LB="razeedash-api-lb.razee.svc.cluster.local"
 kubectl create configmap razeedash-config -n razee \
     --from-literal=root_url=http://"${RAZEEDASH_LB}":8080/ \
     --from-literal=razeedash_api_url=http://"${RAZEEDASH_API_LB}":8081/ \
-#    --from-literal=login_type=local # Local login type still in development
+    --from-literal=login_type=local # Local login type still in development
