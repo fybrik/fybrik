@@ -73,11 +73,11 @@ docker-build: generate
 # Deploy only movement-controller in the configured Kubernetes cluster in ~/.kube/config
 deploy_mc: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
 	$(TOOLBIN)/kubectl create namespace ${KUBE_NAMESPACE} || true
-	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:${DOCKER_TAGNAME}
+	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
 	$(TOOLBIN)/kustomize build --load_restrictor none config/movement-controller | $(TOOLBIN)/kubectl apply -f -
 
 undeploy_mc: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
-	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:${DOCKER_TAGNAME}
+	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
 	$(TOOLBIN)/kustomize build --load_restrictor none config/movement-controller | $(TOOLBIN)/kubectl delete -f -
 
 deploy_it: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl

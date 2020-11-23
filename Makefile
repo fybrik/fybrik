@@ -50,25 +50,26 @@ undeploy:
 
 .PHONY: docker
 docker:
-	$(MAKE) -C build all
 	$(MAKE) -C manager docker-all
 	$(MAKE) -C secret-provider docker-all
 	$(MAKE) -C connectors docker-all
+	$(MAKE) -C test/dummy-mover docker-all
 
 # Build only the docker images needed for integration testing
 .PHONY: docker-minimal-it
 docker-minimal-it:
-	$(MAKE) -C build docker-dummy-mover
 	$(MAKE) -C manager docker-all
 	$(MAKE) -C secret-provider docker-all
+	$(MAKE) -C test/dummy-mover docker-all
 	$(MAKE) -C test/services docker
 
 .PHONY: docker-build
 docker-build:
-	$(MAKE) -C build docker-build-all
+	$(MAKE) -C test/dummy-mover docker-all
 	$(MAKE) -C manager docker-build
 	$(MAKE) -C secret-provider docker-build
 	$(MAKE) -C connectors docker-build
+	$(MAKE) -C test/dummy-mover docker-build-dummy-mover
 
 .PHONY: docker-push
 docker-push:
@@ -76,6 +77,7 @@ docker-push:
 	$(MAKE) -C manager docker-push
 	$(MAKE) -C secret-provider docker-push
 	$(MAKE) -C connectors docker-push
+	$(MAKE) -C test/dummy-mover docker-push-dummy-mover
 
 # Build docker images locally. (Can be used in combination with minikube and deploy-local)
 .PHONY: docker-build-local
@@ -93,7 +95,6 @@ DOCKER_PUBLIC_NAMES := \
 	manager \
 	secret-provider \
 	egr-connector \
-	movement-controller \
 	dummy-mover \
 	opa-connector \
 	vault-connector
