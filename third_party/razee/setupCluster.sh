@@ -17,7 +17,7 @@ else
   export RAZEEDASH_URL=$2
 fi
 
-bin/kubectl config use-context $CLUSTERNAME
+kubectl config use-context $CLUSTERNAME
 
 echo Creating cluster entry for $CLUSTERNAME
 
@@ -45,11 +45,7 @@ fi
 
 export CLUSTERNAMEB64=$(echo "{\"name\": \"$CLUSTERNAME\"}" | base64)
 
-if [ -f razeedeploy-delta-install-template.yaml ]; then
-  cat razeedeploy-delta-install-template.yaml | envsubst | kubectl apply --context $CLUSTERNAME -f -
-else
-  cat razee/razeedeploy-delta-install-template.yaml | envsubst | kubectl apply --context $CLUSTERNAME -f -
-fi
+cat razeedeploy-delta-install-template.yaml | envsubst | kubectl apply --context $CLUSTERNAME -f -
 
 
 

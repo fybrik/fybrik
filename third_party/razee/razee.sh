@@ -9,39 +9,39 @@
 
 op=$1
 
-source ./common.sh
+source ../../hack/tools/common.sh
 
 setup_control_cluster() {
-    bin/kubectl config use-context kind-control
+    kubectl config use-context kind-control
     # Install razee dash API and UI
-    bin/kubectl apply -f razee/razeedash-all-in-one.yaml
-    bin/kubectl apply -f razee/razeedash.yaml
-    bin/kubectl apply -f razee/razeedash-api.yaml
-    bin/kubectl apply -f razee/razee-nodeports.yaml
-    razee/kc_create_razeedash_config_map.sh || true
-    bin/kubectl wait --for=condition=available -n razee deployment/mongo --timeout=180s
-    bin/kubectl wait --for=condition=available -n razee deployment/razeedash-api --timeout=180s
-    bin/kubectl wait --for=condition=available -n razee deployment/razeedash --timeout=180s
+    kubectl apply -f razeedash-all-in-one.yaml
+    kubectl apply -f razeedash.yaml
+    kubectl apply -f razeedash-api.yaml
+    kubectl apply -f razee-nodeports.yaml
+    ./kc_create_razeedash_config_map.sh || true
+    kubectl wait --for=condition=available -n razee deployment/mongo --timeout=180s
+    kubectl wait --for=condition=available -n razee deployment/razeedash-api --timeout=180s
+    kubectl wait --for=condition=available -n razee deployment/razeedash --timeout=180s
     echo "Please follow Step 7 of the Razee Documentation to set up authentication https://github.com/razee-io/Razee/blob/master/README.md#installing-razeedash"
     echo "Once done please export the api key with 'export APIKEY=mykey'"
 }
 
 delete_razee() {
-  bin/kubectl delete ns razee --context kind-control &
-  bin/kubectl -n razee delete pv mongo-pv-volume --context kind-control &
-  delete_razee_remotes &
-  wait
+    kubectl delete ns razee --context kind-control &
+    kubectl -n razee delete pv mongo-pv-volume --context kind-control &
+    delete_razee_remotes &
+    wait
 }
 
 delete_razee_remotes() {
-  razee/removeCluster.sh kind-control &
-  razee/removeCluster.sh kind-kind &
-  wait
+    ./removeCluster.sh kind-control &
+    ./removeCluster.sh kind-kind &
+    wait
 }
 
 setup_remotes() {
-    razee/setupCluster.sh kind-control "http://razeedash-api-lb.razee.svc.cluster.local:8081/api/v2"
-    razee/setupCluster.sh kind-kind "http://control-control-plane:30333/api/v2"
+    ./setupCluster.sh kind-control "http://razeedash-api-lb.razee.svc.cluster.local:8081/api/v2"
+    ./setupCluster.sh kind-kind "http://control-control-plane:30333/api/v2"
 }
 
 case "$op" in

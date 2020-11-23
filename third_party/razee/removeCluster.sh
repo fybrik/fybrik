@@ -13,6 +13,11 @@ CLUSTERNAME=$1
 
 echo Removing cluster $CLUSTERNAME
 
+cat razeedeploy-delta-remove-template.yaml | envsubst | kubectl apply --context $CLUSTERNAME -f -
+
+# Graceful deletion by starting razee-deploy remove job
+kubectl wait job/razeedeploy-job-remove -n razeedeploy --for=condition=complete --context $CLUSTERNAME --timeout 60s
+
 ORGANIZATIONS=$(curl --request POST \
   --url http://localhost:3333/graphql \
   --header 'content-type: application/json' \
@@ -35,12 +40,4 @@ curl --request POST \
   --header "x-api-key: $APIKEY" \
   --data "{\"query\":\"mutation {deleteClusterByClusterId(orgId: \\\"$ORGID\\\", clusterId: \\\"$CLUSTERID\\\"){\n  deletedClusterCount\n  deletedResourceCount\n}}\"}"
 
-if [ -f razeedeploy-delta-remove-template.yaml ]; then
-  cat razeedeploy-delta-remove-template.yaml | envsubst | kubectl apply --context $CLUSTERNAME -f -
-else
-  cat razee/razeedeploy-delta-remove-template.yaml | envsubst | kubectl apply --context $CLUSTERNAME -f -
-fi
-
-# Graceful deletion by starting razee-deploy remove job
-bin/kubectl wait job/razeedeploy-job-remove -n razeedeploy --for=condition=complete --context $CLUSTERNAME --timeout 60s
-bin/kubectl delete ns razeedeploy --context $CLUSTERNAME
+kubectl delete ns razeedeploy --context $CLUSTERNAME
