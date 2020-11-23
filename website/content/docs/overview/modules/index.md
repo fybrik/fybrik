@@ -89,7 +89,8 @@ capabilities:
 
 * **`api`** specifies what client-facing API the module exposes to a caller that invokes read or write commands 
 * **`supportedInterfaces`** lists the supported data services that the module can read data from and write data to
-* **`actions`** lists the enforcement actions (e.g., transforms) supported by the module. The actions are taken from a defined [Enforcement Actions Taxonomy](about:blank)
+* **`actions`** lists the enforcement actions (e.g., transforms) supported by the module. 
+<!-- The actions are taken from a defined [Enforcement Actions Taxonomy](about:blank) -->
 
 A `protocol` field can take a value such as `kafka`, `s3`, `jdbc-db2`, `m4d-arrow-flight`, etc.
 
@@ -99,27 +100,6 @@ Note that a module that targets copy flows will omit the `api` field and contain
 
 # Module Helm chart
 
-Module is packed as a Helm chart to be installed dynamically by the control plane whenever needed. The Helm chart must be stored in an [OCI registry](https://helm.sh/docs/topics/registries/) capable of holding Helm charts. The project provides tooling for pushing modules to such Helm repositories.
+A module is packed as a Helm chart to be installed dynamically by the control plane whenever needed. The Helm chart must be stored in an [OCI registry](https://helm.sh/docs/topics/registries/) capable of holding Helm charts, such as [ghcr.io](https://ghcr.io). The project provides tooling for pushing modules to such Helm repositories.
 
-
-Since the Helm package is installed by the control plane, it can't assume that arbitrary values will be passed. Instead, the project defines the exact values that are available to the control plane and that the module *should* accept as template values. The name, namespace, labels and service account must always be templated.
-
-
-Context | Name | Type | Description
---------|------|------|------------
-Root | name | String | Instance name
-Root | namespace | String | Instance namespace
-Root | labels | String[] | Instance labels
-Root | serviceAccount | String | Service account
-Root | arguments | Arguments | Arguments
-Arguments | flow | String | copy, read or write
-Arguments | copy | Copy | Copy arguments
-Copy | source | DataStore | Copy source 
-Copy | destination | DataStore | Copy sink
-Copy | transformations | EnforcementAction[] | Actions on copy
-Arguments | read | Read[] | Read arguments
-Read | source | DataStore | Read datastore
-Read | transformations | EnforcementAction[]      | Actions for read item
-Arguments | write | Write[] | Write arguments
-Write | destination | DataStore | Write datastore
-Write | transformations | EnforcementAction[] | Actions on write item
+The control plane performs the equivalent of `helm install` and related commands. The `values` it passes to the install command are described in [ModuleArguments]({{< baseurl >}}//docs/reference/api/generated/app/#k8s-api-github-com-ibm-the-mesh-for-data-manager-apis-app-v1alpha1-modulearguments). Thusm the Chart templates should use these values appropriately.  

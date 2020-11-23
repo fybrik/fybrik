@@ -22,7 +22,7 @@ The project defines the GRPC interfaces of connectors. The interfaces are implem
 
 {{< name >}} provides some default connectors described in this page, but anyone can develop their own connectors. Note that a single Kubernetes service can implement all GRPC interfaces if the system it connects to supports the required functionality.
 
-Refer to [API docs](about:blank) for more details about the connectors GRPC interfaces.
+Refer to [API documentation]({{< baseurl >}}/docs/reference/api/generated/connectors.pb/) for more details about the connectors GRPC interfaces.
 
 # Connector types
 

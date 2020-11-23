@@ -105,8 +105,11 @@ but to the folder containing it.
 
 ## Add links to content on GitHub
 
-The **{{</* github_base */>}}** shortcode is replaced with `{{< github_base >}}`, the organization page in GitHub.
-The **{{</* github_repo */>}}** shortcode is replaced with `{{< github_repo >}}`, the name of the main repository of the project.
+To refer to content in GitHub, use the following shortcodes: 
+
+- `{{</* github_base */>}}` renders as  `{{< github_base >}}`, the organization page in GitHub.
+- `{{</* github_repo */>}}` renders as  `{{< github_repo >}}`, the name of the main repository of the project.
+
 Tou can use these in external links. For example, to render a [README.md](https://{{< github_base >}}/{{< github_repo >}}/blob/master/README.md) link use:
   ```plain
   [README.md](https://{{</* github_base */>}}/{{</* github_repo */>}}/blob/master/README.md)
@@ -116,9 +119,9 @@ Tou can use these in external links. For example, to render a [README.md](https:
 
 To display current release information, use the following shortcodes: 
 
-- `{{</* name */>}}`, which renders as {{< name >}}
-- `{{</* version */>}}`, which renders as {{< version >}}
-- `{{</* version_full */>}}`, which renders as {{< version_full >}}
+- `{{</* name */>}}` renders as {{< name >}}
+- `{{</* version */>}}` renders as {{< version >}}
+- `{{</* version_full */>}}` renders as {{< version_full >}}
 
 ## Callouts
 
