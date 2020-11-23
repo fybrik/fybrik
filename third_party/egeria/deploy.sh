@@ -3,11 +3,11 @@
 set -e
 set -x
 
-: ${WITHOUT_OPENSHIFT=true}
+: ${WITHOUT_OPENSHIFT=false}
 
 CHART=odpi-egeria-lab
 RELEASE=lab
-NAMESPACE=egeria-catalog
+NAMESPACE=irltest1
 TIMEOUT=8m
 VERSION="V2.1"
 
