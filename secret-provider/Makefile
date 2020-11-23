@@ -3,7 +3,7 @@ include $(ROOT_DIR)/Makefile.env
 
 DOCKER_NAME ?= secret-provider
 DOCKER_TAGNAME ?= latest
-include $(ROOT_DIR)/.mk/docker.mk
+include $(ROOT_DIR)/hack/make-rules/docker.mk
 
 .PHONY: deploy
 deploy:
