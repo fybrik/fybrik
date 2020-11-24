@@ -27,7 +27,6 @@ func (s *Server) GetCredentialsInfo(in *pb.DatasetCredentialsRequest, vault vaul
 		log.Printf("Error in vaultConnector, got error from the vault: %v\n", err.Error())
 		return nil, fmt.Errorf("error in retrieving the secret from vault(key = %s): %v", secretaddr, err)
 	}
-	log.Println("Read credentials from vault: " + readCredentials)
 
 	return &pb.DatasetCredentials{DatasetId: in.DatasetId, Credentials: readCredentials}, nil
 }
