@@ -48,8 +48,8 @@ A PDP returns a list of enforcement actions given a set of policies and specific
 
 Policies are therefore defined externally in the policy manager of choice. {{< name >}} provides a package to help writing data policies in OPA. Otherwise, data stewards are expected to keep using the policy manager that they already use, as long as there is a connector to it.
 
-# Securing the Connector Traffic
+# Securing the Connector Ingress Traffic
 
 Istio authorization policy is used to ensure that the connector ingress is limited to traffic only from the pilot and other connectors if needed.
-For this purpose Istio AuthorizationPolicy CRD should be deployed by the data operator for each connector. Please see [instructions](../../setup/istio/) for more details.
-In addition, Istio authentication policy is automatically deployed upon installation of {{< name >}} to ensure mutual TLS between the pilot and connectors. This policy is not connector specific but rather enables Istio [auto mutual     TLS feature](https://Istio.io/latest/docs/tasks/security/authentication/authn-policy/#auto-mutual-tls).
+For this purpose Istio AuthorizationPolicy CRD is automatically deployed upon installation of {{< name >}}. This CRD allows ingress traffic to any connector only from the pilot. If the ingress traffic of a specific connector is required from another connector as well, an additional AuthorizationPolicy CRD should be added to enable that. Please see [instructions](../../setup/istio/) for more details.
+In addition, Istio authentication policy is automatically deployed upon installation of {{< name >}} to ensure mutual TLS between the pilot and connectors. This policy is also not connector specific but rather enables Istio [auto mutual     TLS feature](https://Istio.io/latest/docs/tasks/security/authentication/authn-policy/#auto-mutual-tls).

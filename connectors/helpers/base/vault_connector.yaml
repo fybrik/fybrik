@@ -7,6 +7,7 @@ metadata:
   name: vault-connector
   labels:
     app: vault-connector
+    type: connector
 spec:
   selector:
     matchLabels:
@@ -16,6 +17,7 @@ spec:
     metadata:
       labels:
         app: vault-connector
+        type: connector
     spec:
       containers:
       - name: vault-connector
@@ -38,6 +40,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: vault-connector
+  labels:
+    type: connector
 spec:
   selector:
     app: vault-connector

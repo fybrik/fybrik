@@ -7,7 +7,7 @@ This guide lets you quickly evaluate {{< name >}}. For a custom setup follow the
 
 ## Before you begin
 Ensure that you have the following:
-- `kubectl` with access to a Kubernetes cluster with Istio installed (this guide was tested with kind v0.10.0 and OpenShift 4.3)
+- `kubectl` with access to a Kubernetes cluster with Istio installed (this guide was tested with kind v0.10.0, OpenShift 4.3 and Istio 1.8.0)
 - `git`
 - `make`
 
@@ -21,7 +21,7 @@ By the end of this guide you will have the following installed to your Kubernete
 
 ## Prepare for installing {{< name >}}
 
-1.  Apply Istio [post installation instructions](../istio/) to the cluster.
+1.  Apply [Istio post installation instructions](../istio/) to the cluster.
 
 1.  Obtain a local copy of {{< name >}} repository
     ```bash
@@ -52,6 +52,10 @@ By the end of this guide you will have the following installed to your Kubernete
     ```
     kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data-flight-module/master/module.yaml
     ```
+1. Apply AuthorizationPolicy CRD for egeria
+   ```bash
+   kubectl apply -f connectors/helpers/base/istio/egr-connector-authorization.yaml
+   ```
 
 ## Next steps
 You can now start using {{< name >}}. For samples please see:

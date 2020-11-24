@@ -10,7 +10,7 @@ set -e
 : ${ROOT_DIR=../}
 
 enable_sidecar_injection() {
-       kubectl label namespace ${KUBE_NAMESPACE} istio-injection=enabled
+       kubectl label namespace ${KUBE_NAMESPACE} istio-injection=enabled --overwrite
 }
 
 disable_sidecar_injection() {
