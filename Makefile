@@ -33,10 +33,10 @@ install:
 
 .PHONY: deploy
 deploy:
+	$(MAKE) -C istio deploy
 	$(MAKE) -C secret-provider deploy
 	$(MAKE) -C manager deploy
 	$(MAKE) -C connectors deploy
-	$(MAKE) -C istio deploy
 
 # Deploys the manager using local images
 .PHONY: deploy-local

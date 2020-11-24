@@ -9,13 +9,12 @@ set -e
 : ${WITHOUT_ISTIO=false}
 : ${ROOT_DIR=../}
 
-inject_manager_sidecar() {
-       kubectl get deployment m4d-controller-manager -o yaml | istioctl kube-inject -f - | kubectl apply -f -; \
-       kubectl wait --for=condition=available -n ${KUBE_NAMESPACE} deployment/m4d-controller-manager --timeout=120s; \
+enable_sidecar_injection() {
+       kubectl label namespace ${KUBE_NAMESPACE} istio-injection=enabled
 }
 
-uninject_manager_sidecar() {
-       kubectl get deployment m4d-controller-manager -o yaml | istioctl x kube-uninject -f - | kubectl apply -f -; \
+disable_sidecar_injection() {
+       kubectl label namespace ${KUBE_NAMESPACE} istio-injection-
 }
 
 deploy_policy() {
@@ -30,11 +29,11 @@ undeploy_policy() {
 
 undeploy() {
         $WITHOUT_ISTIO || undeploy_policy
-        $WITHOUT_ISTIO || uninject_manager_sidecar
+        $WITHOUT_ISTIO || disable_sidecar_injection
 }
 
 deploy() {
-        $WITHOUT_ISTIO || inject_manager_sidecar
+        $WITHOUT_ISTIO || enable_sidecar_injection
         $WITHOUT_ISTIO || deploy_policy
 }
 
