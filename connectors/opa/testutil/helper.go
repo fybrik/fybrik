@@ -91,23 +91,23 @@ func GetExpectedOpaDecisions(purpose string, in *pb.ApplicationContext) *pb.Poli
 		if purpose == "marketing" {
 			newEnforcementAction := ConstructRedactColumn("nameDest")
 			enforcementActions = append(enforcementActions, newEnforcementAction)
-			newUsedPolicy = &pb.Policy{Description: "reduct columns with name nameOrig and nameDest  in datasets with Finance"}
+			newUsedPolicy = &pb.Policy{Description: "redact columns with name nameOrig and nameDest in datasets which have been tagged with Finance"}
 			usedPolicies = append(usedPolicies, newUsedPolicy)
 
 			newEnforcementAction = ConstructRedactColumn("nameOrig")
 			enforcementActions = append(enforcementActions, newEnforcementAction)
-			newUsedPolicy = &pb.Policy{Description: "reduct columns with name nameOrig and nameDest  in datasets with Finance"}
+			newUsedPolicy = &pb.Policy{Description: "redact columns with name nameOrig and nameDest in datasets which have been tagged with Finance"}
 			usedPolicies = append(usedPolicies, newUsedPolicy)
 			// newUsedPolicy = &pb.Policy{Description: "reduct columns with name nameOrig and nameDest  in datasets with Finance"}
 		} else {
 			newEnforcementAction := ConstructRemoveColumn("nameDest")
 			enforcementActions = append(enforcementActions, newEnforcementAction)
-			newUsedPolicy = &pb.Policy{Description: "remove columns with name nameOrig and nameDest  in datasets with Finance"}
+			newUsedPolicy = &pb.Policy{Description: "remove columns with name nameOrig and nameDest in datasets which have been tagged with Finance"}
 			usedPolicies = append(usedPolicies, newUsedPolicy)
 
 			newEnforcementAction = ConstructRemoveColumn("nameOrig")
 			enforcementActions = append(enforcementActions, newEnforcementAction)
-			newUsedPolicy = &pb.Policy{Description: "remove columns with name nameOrig and nameDest  in datasets with Finance"}
+			newUsedPolicy = &pb.Policy{Description: "remove columns with name nameOrig and nameDest in datasets which have been tagged with Finance"}
 			usedPolicies = append(usedPolicies, newUsedPolicy)
 			// newUsedPolicy = &pb.Policy{Description: "remove columns with name nameOrig and nameDest  in datasets with Finance"}
 		}
@@ -179,7 +179,7 @@ func MockCatalogConnector(port string) {
 func customOpaResponse(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: customOpaResponse")
 
-	customeResponse := "{\"result\":{\"allow\":true,\"allowed_access_types\":[\"READ\",\"COPY\",\"WRITE\"],\"allowed_copy_destinations\":[\"NorthAmerica\",\"US\"],\"allowed_purposes\":[\"analysis\",\"fraud-detection\"],\"allowed_roles\":[\"DataScientist\",\"Security\"],\"deny\":[],\"transform\":[{\"args\":{\"column name\":\"nameDest\"},\"result\":\"Redact column\",\"used_policy\":{\"description\":\"reduct columns with name nameOrig and nameDest  in datasets with Finance\"}},{\"args\":{\"column name\":\"nameOrig\"},\"result\":\"Redact column\",\"used_policy\":{\"description\":\"reduct columns with name nameOrig and nameDest  in datasets with Finance\"}}]}}"
+	customeResponse := "{\"result\":{\"allow\":true,\"allowed_access_types\":[\"READ\",\"COPY\",\"WRITE\"],\"allowed_copy_destinations\":[\"NorthAmerica\",\"US\"],\"allowed_purposes\":[\"analysis\",\"fraud-detection\"],\"allowed_roles\":[\"DataScientist\",\"Security\"],\"deny\":[],\"transform\":[{\"args\":{\"column name\":\"nameDest\"},\"result\":\"Redact column\",\"used_policy\":{\"description\":\"redact columns with name nameOrig and nameDest in datasets which have been tagged with Finance\"}},{\"args\":{\"column name\":\"nameOrig\"},\"result\":\"Redact column\",\"used_policy\":{\"description\":\"redact columns with name nameOrig and nameDest in datasets which have been tagged with Finance\"}}]}}"
 
 	fmt.Fprintf(w, customeResponse)
 }
