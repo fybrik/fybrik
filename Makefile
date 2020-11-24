@@ -61,23 +61,21 @@ docker-minimal-it:
 	$(MAKE) -C manager docker-all
 	$(MAKE) -C secret-provider docker-all
 	$(MAKE) -C test/dummy-mover docker-all
-	$(MAKE) -C test/services docker
+	$(MAKE) -C test/services docker-all
 
 .PHONY: docker-build
 docker-build:
-	$(MAKE) -C test/dummy-mover docker-all
 	$(MAKE) -C manager docker-build
 	$(MAKE) -C secret-provider docker-build
 	$(MAKE) -C connectors docker-build
-	$(MAKE) -C test/dummy-mover docker-build-dummy-mover
+	$(MAKE) -C test/dummy-mover docker-build
 
 .PHONY: docker-push
 docker-push:
-	$(MAKE) -C build docker-push-all
 	$(MAKE) -C manager docker-push
 	$(MAKE) -C secret-provider docker-push
 	$(MAKE) -C connectors docker-push
-	$(MAKE) -C test/dummy-mover docker-push-dummy-mover
+	$(MAKE) -C test/dummy-mover docker-push
 
 # Build docker images locally. (Can be used in combination with minikube and deploy-local)
 .PHONY: docker-build-local
