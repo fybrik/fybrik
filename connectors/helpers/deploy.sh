@@ -72,24 +72,9 @@ kube_cluster_info() {
         printf "\nThe deployment script has completed successfully!\n"
 }
 
-istio_deploy_policies(){
-        local svc="egr-connector opa-connector vault-connector"
-        for svc in ${svc}; do \
-                kubectl apply -f base/istio/${svc}-authorization.yaml; \
-        done
-}
-
-istio_undeploy_policies(){
-        local svc="egr-connector opa-connector vault-connector"
-        for svc in ${svc}; do \
-                kubectl delete -f base/istio/${svc}-authorization.yaml; \
-        done
-}
-
 undeploy() {
         $WITHOUT_VAULT || vault_delete
         connectors_delete
-        $WITHOUT_ISTIO || istio_undeploy_policies
         kube_cluster_info
 }
 
@@ -98,7 +83,6 @@ deploy() {
         $WITHOUT_VAULT || vault_create
         connectors_delete
         connectors_create
-        $WITHOUT_ISTIO || istio_deploy_policies
         kube_cluster_info
 }
 
