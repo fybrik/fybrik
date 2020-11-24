@@ -112,7 +112,7 @@ ifneq (${TRAVIS_TAG},)
 	$(call do-docker-retag-and-push-public,${TRAVIS_TAG})
 endif
 
-include .mk/tools.mk
-include .mk/verify.mk
-include .mk/cluster.mk
-include .mk/helm.mk
+include hack/make-rules/tools.mk
+include hack/make-rules/verify.mk
+include hack/make-rules/cluster.mk
+include hack/make-rules/helm.mk

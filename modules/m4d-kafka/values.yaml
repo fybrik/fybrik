@@ -5,12 +5,6 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# metadata associated with k8s resources
-metadata:
-  name: "kafka"
-  namespace: "default"
-  labels: []
-
 image: "ghcr.io/the-mesh-for-data/mover:latest"
 imagePullPolicy: null
 noFinalizer: "false"

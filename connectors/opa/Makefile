@@ -3,7 +3,7 @@ include $(ROOT_DIR)/Makefile.env
 DOCKER_NAME=opa-connector
 DOCKER_CONTEXT=$(ROOT_DIR)
 DOCKER_FILE=$(DOCKER_CONTEXT)/connectors/opa/Dockerfile
-include $(ROOT_DIR)/.mk/docker.mk
+include $(ROOT_DIR)/hack/make-rules/docker.mk
 
 OPA_PATH=${ABSTOOLBIN}/opa
 OPA_DEFAULT_POLICY_FILE=${ROOT_DIR}/third_party/opa/opa-policy.rego
