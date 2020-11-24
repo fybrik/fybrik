@@ -67,7 +67,7 @@ build-ca-certs: $(TOOLBIN)/kubectl
 	rm $(ROOT_DIR)/hack/registry/ca-certificates.crt || true
 	# Hack to fetch CA certificates of base image
 	bash -c "docker cp $$(docker create --rm $(DOCKER_HOSTNAME)/$(DOCKER_NAMESPACE)/$(DOCKER_NAME):$(DOCKER_TAGNAME)):/etc/ssl/certs/ca-certificates.crt $(ROOT_DIR)/hack/registry/ca-certificates.crt"
-	cat $(ROOT_DIR)/hack/registry/ca.crt >> $(ROOT_DIR)/hack/registry/ca-certificates.crt
+	cat $(ROOT_DIR)/hack/registry/themeshfordata-ca.crt >> $(ROOT_DIR)/hack/registry/ca-certificates.crt
 
 .PHONY: docker-secret
 docker-secret: $(TOOLBIN)/kubectl

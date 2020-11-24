@@ -32,14 +32,14 @@ registry_create() {
 certs_create() {
     mkdir -p ../registry || true
 
-    if [ ! -f ../registry/ca.crt ]; then
-      openssl genrsa -out ../registry/ca.key 2048
-      openssl req -new -x509 -key ../registry/ca.key -out ../registry/ca.crt -subj '/C=US/ST=NY/O=IBM/CN=themeshfordata' -extensions EXT -config <(printf "[dn]\nCN=ibm\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:ibm\nbasicConstraints=CA:TRUE,pathlen:0")
+    if [ ! -f ../registry/themeshfordata-ca.crt ]; then
+      openssl genrsa -out ../registry/themeshfordata-ca.key 2048
+      openssl req -new -x509 -key ../registry/themeshfordata-ca.key -out ../registry/themeshfordata-ca.crt -subj '/C=US/ST=NY/O=IBM/CN=themeshfordata' -extensions EXT -config <(printf "[dn]\nCN=ibm\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:ibm\nbasicConstraints=CA:TRUE,pathlen:0")
     fi
     if [ ! -f ../registry/registry.crt ]; then
       openssl genrsa -out ../registry/registry.key 2048
       openssl req -new -key ../registry/registry.key -out ../registry/registry.csr -subj '/C=US/ST=NY/O=IBM/CN=kind-registry' -extensions EXT -config <(printf "[dn]\nCN=kind-registry\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:kind-registry,DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
-      openssl x509 -req -in ../registry/registry.csr -CA ../registry/ca.crt -CAkey ../registry/ca.key -CAcreateserial -out ../registry/registry.crt
+      openssl x509 -req -in ../registry/registry.csr -CA ../registry/themeshfordata-ca.crt -CAkey ../registry/themeshfordata-ca.key -CAcreateserial -out ../registry/registry.crt
     fi
 }
 
@@ -47,7 +47,7 @@ install_certs() {
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         # This has been tested on Ubuntu. On other distributions this may vary.
         # If developers use different distributions please add a branch here that works.
-        sudo cp ../registry/ca.crt /usr/local/share/ca-certificates
+        sudo cp ../registry/themeshfordata-ca.crt /usr/local/share/ca-certificates
 	      sudo update-ca-certificates
 	  elif [[ "$OSTYPE" == "darwin"* ]]; then
 	      VALIDCERT=0
@@ -57,16 +57,21 @@ install_certs() {
         else
           echo OSX will ask to provide your password in order to install the CA certificate to keychain!
           # Installs the CA certificate to the user local keychain
-          security add-trusted-cert -r trustRoot -k ~/Library/Keychains/login.keychain-db -e hostnameMismatch ../registry/ca.crt
+          security add-trusted-cert -r trustRoot -k ~/Library/Keychains/login.keychain-db -e hostnameMismatch ../registry/themeshfordata-ca.crt
         fi
     else
-        echo Please install the certificates in $PWD/../registry/ca.crt !
+        echo Please install the certificates in $PWD/../registry/themeshfordata-ca.crt !
     fi
 }
 
 certs_delete() {
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-      security remove-trusted-cert  ../registry/ca.crt
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+      # This has been tested on Ubuntu. On other distributions this may vary.
+      # If developers use different distributions please add a branch here that works.
+      sudo rm /usr/local/share/ca-certificates/themeshfordata-ca.crt
+      sudo update-ca-certificates
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+      security remove-trusted-cert  ../registry/themeshfordata-ca.crt
       security delete-certificate -c themeshfordata
     fi
     rm -rf ../registry
@@ -83,7 +88,7 @@ kind_create() {
              --image=kindest/node:$K8S_VERSION
         for node in $(kind get nodes --name $1); do
           bin/kubectl annotate node "${node}" "tilt.dev/registry=kind-registry:5000" --context kind-${1};
-          docker cp ../registry/ca.crt "$node":/usr/local/share/ca-certificates
+          docker cp ../registry/themeshfordata-ca.crt "$node":/usr/local/share/ca-certificates
           docker exec "$node" update-ca-certificates
         done
 }
