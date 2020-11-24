@@ -1,8 +1,24 @@
 ---
-title: Istio security policies deployment
-linktitle: Istio security policies deployment
+title: Istio post-installation steps
+linktitle: Istio post-installation steps
 weight: 30
 ---
+
+## Istio post-installation steps
+
+Envoy sidecar is automatically injected to pods in the control-plane namespace (called 4d-system be default). To ensure the cluster supports automatic injection Istio's [MutatingWebhook](https://istio.io/latest/docs/setup/additional-setup/sidecar-injection/#automatic-sidecar-injection) should be turned on in the cluster.
+
+To check it MutatingWebhook is turned on in the cluster run:
+
+```bash
+kubeadm config print init-defaults
+```
+
+To turn it on in Kind run:
+
+```bash
+kubeadm init --config the-mesh-for-data/istio/admission_patch.yaml
+```
 
 ## Steps to secure the Ingress Traffic of a New Connector
 
