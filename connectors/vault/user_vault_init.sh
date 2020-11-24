@@ -25,7 +25,8 @@ export VAULT_BIN=$DIR_ABSTOOLBIN/vault
 export USER_VAULT_KAFKA_ASSET_KEY="{\"catalog_id\":\"87ffdca3-8b5d-4f77-99f9-0cb1fba1f73f\",\"asset_id\":\"01c6f0f0-9ffe-4ccc-ac07-409523755e72\"}"
 export USER_VAULT_KAFKA_ASSET_CRED="my_kafka_credentials"
 
-export USER_VAULT_EGERIA_ASSET_KEY="{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"4098e18e-bd53-4fd0-8ff8-e1c8e9fc42da\"}"
+#export USER_VAULT_EGERIA_ASSET_KEY="{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"4098e18e-bd53-4fd0-8ff8-e1c8e9fc42da\"}"
+export USER_VAULT_EGERIA_ASSET_KEY="{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"f6d9bf8c-dd37-4747-bca9-8ca9d1a5bb8f\"}"
 export USER_VAULT_EGERIA_ASSET_CRED="my_egeria_credentials"
 
 echo "VAULT_BIN env variable is set to $VAULT_BIN"

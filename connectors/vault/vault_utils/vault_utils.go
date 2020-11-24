@@ -1,7 +1,7 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package main
+package vaultutils
 
 import (
 	"encoding/json"
@@ -21,9 +21,11 @@ const (
 	VaultTimeoutKey       string = "USER_VAULT_TIMEOUT"
 	VaultPathKey          string = "USER_VAULT_PATH"
 	VaultConnectorPortKey string = "PORT_VAULT_CONNECTOR"
+	DefaultTimeout        string = "180"
+	DefaultPort           string = "50083" //synched with vault_connector.yaml
 )
 
-func getEnv(key string) string {
+func GetEnv(key string) string {
 	value, exists := os.LookupEnv(key)
 	if !exists {
 		log.Fatalf("Env Variable %v not defined", key)
@@ -32,7 +34,7 @@ func getEnv(key string) string {
 	return value
 }
 
-func getEnvWithDefault(key string, defaultValue string) string {
+func GetEnvWithDefault(key string, defaultValue string) string {
 	value, exists := os.LookupEnv(key)
 	if !exists {
 		log.Printf("Env. variable not found, use default value: %s - %s\n", key, defaultValue)
@@ -43,36 +45,36 @@ func getEnvWithDefault(key string, defaultValue string) string {
 }
 
 type VaultConfig struct {
-	token   string
-	address string
+	Token   string
+	Address string
 }
 
 type VaultConnection struct {
-	config VaultConfig
-	client *api.Client
+	Config VaultConfig
+	Client *api.Client
 }
 
 func CreateVaultConnection() VaultConnection {
-	token := getEnv(VaultSecretKey)
-	address := getEnv(VaultAddressKey)
+	token := GetEnv(VaultSecretKey)
+	address := GetEnv(VaultAddressKey)
 	config := VaultConfig{
-		token:   token,
-		address: address,
+		Token:   token,
+		Address: address,
 	}
 
 	connection := VaultConnection{
-		config: config,
+		Config: config,
 	}
 
 	client, _ := connection.InitVault()
-	connection.client = client
+	connection.Client = client
 
 	return connection
 }
 
 func (vlt *VaultConnection) InitVault() (*api.Client, error) {
-	vaultAddress := vlt.config.address
-	token := vlt.config.token
+	vaultAddress := vlt.Config.Address
+	token := vlt.Config.Token
 
 	var httpClient = &http.Client{
 		Timeout: 10 * time.Second,
@@ -102,10 +104,10 @@ func (vlt *VaultConnection) InitVault() (*api.Client, error) {
 }
 
 // GetFromVault returns the credentials from vault as json
-func (vlt *VaultConnection) GetFromVault(innerVaultPath string) (string, error) {
-	vaultPath := getEnv(VaultPathKey) + "/" + innerVaultPath
+func (vlt *VaultConnection) GetFromVault(vaultPathKey string, innerVaultPath string) (string, error) {
+	vaultPath := vaultPathKey + "/" + innerVaultPath
 
-	logicalClient := vlt.client.Logical()
+	logicalClient := vlt.Client.Logical()
 	if logicalClient == nil {
 		msg := "No logical client received when retrieving credentials from vault"
 		return "", errors.New(msg)
@@ -134,4 +136,25 @@ func (vlt *VaultConnection) GetFromVault(innerVaultPath string) (string, error) 
 	}
 
 	return string(b), nil
+}
+
+// AddToVault adds crededentialsMap to vault at the path given by innerVaultPath
+func (vlt *VaultConnection) AddToVault(innerVaultPath string, credentialsMap map[string]interface{}) (string, error) {
+	//vaultDatasetPath := GetVaultDatasetHome() + id
+	vaultDatasetPath := innerVaultPath
+
+	// Add credentials to vault, and return vaultPath where they are stored
+	logicalClient := vlt.Client.Logical()
+	if logicalClient == nil {
+		msg := "No logical client received when adding data set credentials to vault"
+		return vaultDatasetPath, errors.New(msg)
+	}
+
+	log.Printf("vaultDatasetPath in AddToVault: %s\n", vaultDatasetPath)
+	_, err := logicalClient.Write(vaultDatasetPath, credentialsMap)
+	if err != nil {
+		msg := "Error adding credentials to vault to " + vaultDatasetPath + ":" + err.Error()
+		return vaultDatasetPath, errors.New(msg)
+	}
+	return vaultDatasetPath, nil
 }
