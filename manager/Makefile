@@ -8,15 +8,15 @@ include $(ROOT_DIR)/Makefile.env
 .PHONY: all
 all: manager
 
-include $(ROOT_DIR)/.mk/tools.mk
+include $(ROOT_DIR)/hack/make-rules/tools.mk
 DOCKER_NAME ?= manager
 DOCKER_TAGNAME ?= latest
 DOCKER_FILE = Dockerfile
 DOCKER_CONTEXT = .
 GO_OUTPUT_FILE = manager
 KUBE_NAMESPACE ?= m4d-system
-include $(ROOT_DIR)/.mk/docker.mk
-include $(ROOT_DIR)/.mk/verify.mk
+include $(ROOT_DIR)/hack/make-rules/docker.mk
+include $(ROOT_DIR)/hack/make-rules/verify.mk
 
 # Run tests
 test: generate manifests

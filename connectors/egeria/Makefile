@@ -3,7 +3,7 @@ include $(ROOT_DIR)/Makefile.env
 include ${ROOT_DIR}/pkg/policy-compiler/policy-compiler.env
 
 DOCKER_NAME = egr-connector
-include $(ROOT_DIR)/.mk/docker.mk
+include $(ROOT_DIR)/hack/make-rules/docker.mk
 
 .PHONY: build
 build:

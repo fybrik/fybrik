@@ -1,6 +1,6 @@
 ROOT_DIR:=../..
 include $(ROOT_DIR)/Makefile.env
-include $(ROOT_DIR)/.mk/tools.mk
+include $(ROOT_DIR)/hack/make-rules/tools.mk
 
 REMOTE:=https://github.com/jetstack/cert-manager/releases/download/v0.13.1/cert-manager.yaml
 LOCAL:=$(ABSTOOLBIN)/cert-manager.yaml

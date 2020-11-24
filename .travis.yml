@@ -90,7 +90,7 @@ jobs:
     deploy:
      skip_cleanup: true
      provider: script
-     script: make docker-retag-images && make docker-push-public
+     script: make docker-retag-and-push-public
      on:
        condition: $TRAVIS_PULL_REQUEST = false
        branch: master
