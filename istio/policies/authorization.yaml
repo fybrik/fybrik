@@ -1,0 +1,18 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: connector-ingress-security
+spec:
+ selector:
+   matchLabels:
+     type: connector
+ action: ALLOW
+ rules:
+   - from:
+     - source:
+        principals: ["cluster.local/ns/m4d-system/sa/m4d-controller-manager"]
+
+
