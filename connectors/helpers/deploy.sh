@@ -7,7 +7,6 @@ set -e
 
 : ${KUBE_NAMESPACE:=m4d-system}
 : ${WITHOUT_VAULT=true}
-: ${WITHOUT_ISTIO=false}
 : ${ROOT_DIR=../..}
 : ${PORT_TO_FORWARD=8200}
 
