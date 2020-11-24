@@ -87,19 +87,30 @@ docker-build-local:
 helm:
 	$(MAKE) -C modules helm
 
-.PHONY: docker-retag-images
-docker-retag-images:
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/manager:${DOCKER_TAGNAME}
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/secret-provider:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/secret-provider:${DOCKER_TAGNAME}
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/egr-connector:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/egr-connector:${DOCKER_TAGNAME}
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/movement-controller:${DOCKER_TAGNAME}
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/dummy-mover:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/dummy-mover:${DOCKER_TAGNAME}
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/opa-connector:${DOCKER_TAGNAME}
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/vault-connector:${DOCKER_TAGNAME} ghcr.io/the-mesh-for-data/vault-connector:${DOCKER_TAGNAME}
+DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
+DOCKER_PUBLIC_NAMESPACE ?= the-mesh-for-data
+DOCKER_PUBLIC_NAMES := \
+	manager \
+	secret-provider \
+	egr-connector \
+	movement-controller \
+	dummy-mover \
+	opa-connector \
+	vault-connector
+ 
+define do-docker-retag-and-push-public
+	for name in ${DOCKER_PUBLIC_NAMES}; do \
+		docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$$name:${DOCKER_TAGNAME} ${DOCKER_PUBLIC_HOSTNAME}/${DOCKER_PUBLIC_NAMESPACE}/$$name:$1; \
+	done
+	DOCKER_HOSTNAME=${DOCKER_PUBLIC_HOSTNAME} DOCKER_NAMESPACE=${DOCKER_PUBLIC_NAMESPACE} DOCKER_TAGNAME=$1 $(MAKE) docker-push
+endef
 
-.PHONY: docker-push-public
-docker-push-public:
-	DOCKER_HOSTNAME=ghcr.io DOCKER_NAMESPACE=the-mesh-for-data DOCKER_TAGNAME=${DOCKER_TAGNAME} $(MAKE) docker-push
+.PHONY: docker-retag-and-push-public
+docker-retag-and-push-public:
+	$(call do-docker-retag-and-push-public,latest)
+ifneq (${TRAVIS_TAG},)
+	$(call do-docker-retag-and-push-public,${TRAVIS_TAG})
+endif
 
 include hack/make-rules/tools.mk
 include hack/make-rules/verify.mk
