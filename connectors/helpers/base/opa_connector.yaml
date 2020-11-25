@@ -7,7 +7,7 @@ metadata:
   name: opa-connector
   labels:
     app: opa-connector
-    type: connector
+    m4d.ibm.com/componentType: connector
 spec:
   selector:
     matchLabels:
@@ -17,7 +17,7 @@ spec:
     metadata:
       labels:
         app: opa-connector
-        type: connector
+        m4d.ibm.com/componentType: connector
     spec:
       serviceAccount: opa-connector
       serviceAccountName: opa-connector
@@ -37,7 +37,7 @@ kind: Service
 metadata:
   name: opa-connector
   labels:
-    type: connector
+    m4d.ibm.com/componentType: connector
 spec:
   selector:
     app: opa-connector

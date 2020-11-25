@@ -14,12 +14,6 @@ To check if MutatingAdmissionWebhook is turned on in the cluster run:
 kube-apiserver -h | grep enable-admission-plugins
 ```
 
-To turn it on in Kind run:
-
-```bash
-kubeadm init --config the-mesh-for-data/istio/admission_patch.yaml
-```
-
 ## Steps to secure the Ingress Traffic of a New Connector
 
 Upon {{< name >}} deployment a new AuthorizationPolicy CRD is applied. This policiy

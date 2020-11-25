@@ -5,15 +5,13 @@
 
 source ./common.sh
 
-export ISTIO_VERSION=1.8.0
+export ISTIO_VERSION=1.6.2
 
 header_text "Checking for bin/istioctl"
 [[ -f bin/istioctl ]] && exit 0
 
 header_text "Installing bin/istioctl"
 mkdir -p ./bin
-mkdir -p ./istio
-curl -L https://istio.io/downloadIstio | sh -
-install ./istio-$ISTIO_VERSION/bin/istioctl bin/.
-cp -rf ./istio-$ISTIO_VERSION/samples istio
-rm -rf ./istio-$ISTIO_VERSION
+
+curl -sL https://istio.io/downloadIstioctl | sh -
+install ${HOME}/.istioctl/bin/istioctl bin/.

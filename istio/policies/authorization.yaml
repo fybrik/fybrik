@@ -8,7 +8,7 @@ metadata:
 spec:
  selector:
    matchLabels:
-     type: connector
+     m4d.ibm.com/componentType: connector
  action: ALLOW
  rules:
    - from:
