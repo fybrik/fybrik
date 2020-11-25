@@ -6,16 +6,18 @@ package app
 import (
 	"context"
 	"fmt"
-	"time"
+	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/hashicorp/vault/api"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
@@ -25,7 +27,12 @@ import (
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	corev1 "k8s.io/api/core/v1"
+)
+
+const (
+	// OwnerLabelKey is a key to Labels map.
+	// All owned resources should be labeled using this key.
+	OwnerLabelKey string = "m4d.ibm.com.owner"
 )
 
 // M4DApplicationReconciler reconciles a M4DApplication object
@@ -48,12 +55,14 @@ type M4DApplicationReconciler struct {
 // +kubebuilder:rbac:groups=*,resources=*,verbs=*
 
 // Reconcile reconciles M4DApplication CRD
-// It receives M4DApplication CRD and generates the Blueprint CRD
+// It receives M4DApplication CRD and selects the appropriate modules that will run
+// The outcome is either a single Blueprint running on the same cluster or a Plotter containing multiple Blueprints that may run on different clusters
 func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("m4dapplication", req.NamespacedName)
 	// obtain M4DApplication resource
 	applicationContext := &app.M4DApplication{}
+	log.V(0).Info("Reconciled object: name = " + req.Name + " namespace = " + req.Namespace)
 	if err := r.Get(ctx, req.NamespacedName, applicationContext); err != nil {
 		log.V(0).Info("The reconciled object was not found")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -72,7 +81,7 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	observedStatus := applicationContext.Status.DeepCopy()
 
 	// check if reconcile is required
-	// reconcile is required if the spec has been changed, or no blueprint generation was done (reconcile due to non-fatal errors)
+	// reconcile is required if the spec has been changed, or the previous reconcile has failed to allocate a Blueprint or a Plotter resource
 	generationComplete := r.ResourceInterface.ResourceExists(applicationContext.Status.Generated)
 	if !generationComplete || observedStatus.ObservedGeneration != applicationContext.GetGeneration() {
 		if result, err := r.reconcile(applicationContext); err != nil {
@@ -90,7 +99,7 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		if err != nil {
 			return ctrl.Result{}, err
 		}
-		checkBlueprintStatus(applicationContext, resourceStatus)
+		checkResourceStatus(applicationContext, resourceStatus)
 	}
 
 	// Update CRD status in case of change (other than deletion, which was handled separately)
@@ -103,14 +112,10 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	if hasError(applicationContext) {
 		log.Info("Reconciled with errors: " + getErrorMessages(applicationContext))
 	}
-	// polling for blueprint status
-	if !applicationContext.Status.Ready && !hasError(applicationContext) {
-		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
-	}
 	return ctrl.Result{}, nil
 }
 
-func checkBlueprintStatus(applicationContext *app.M4DApplication, status ResourceStatus) {
+func checkResourceStatus(applicationContext *app.M4DApplication, status app.ObservedState) {
 	applicationContext.Status.DataAccessInstructions = ""
 	applicationContext.Status.Ready = false
 	if hasError(applicationContext) {
@@ -132,7 +137,7 @@ func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M
 	finalizerName := r.Name + ".finalizer"
 	hasFinalizer := ctrlutil.ContainsFinalizer(applicationContext, finalizerName)
 
-	// If the object has a scheduled deletion time, delete it and its associated blueprint
+	// If the object has a scheduled deletion time, delete it and all resources it has created
 	if !applicationContext.DeletionTimestamp.IsZero() {
 		// The object is being deleted
 		if hasFinalizer { // Finalizer was created when the object was created
@@ -172,7 +177,7 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 		return nil
 	}
 
-	r.Log.V(0).Info("Reconcile: M4DApplication is deleting the blueprint")
+	r.Log.V(0).Info("Reconcile: M4DApplication is deleting the generated " + applicationContext.Status.Generated.Kind)
 	if err := r.ResourceInterface.DeleteResource(applicationContext.Status.Generated); err != nil {
 		return err
 	}
@@ -180,8 +185,8 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 	return nil
 }
 
-// reconcile receives either M4DApplication CRD and generates the blueprint resource
-// or a status update from a previously created blueprint resource
+// reconcile receives either M4DApplication CRD
+// or a status update from the generated resource
 func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplication) (ctrl.Result, error) {
 	utils.PrintStructure(applicationContext.Spec, r.Log, "M4DApplication")
 
@@ -228,7 +233,6 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	}
 	// unite several instances of a read/write module
 	newInstances := r.RefineInstances(instances)
-	r.Log.V(0).Info("Creating blueprint(s)")
 
 	blueprintSpec := r.GenerateBlueprint(newInstances, applicationContext)
 	blueprintPerClusterMap := make(map[string]app.BlueprintSpec)
@@ -238,12 +242,13 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	if err := r.ResourceInterface.CreateOrUpdateResource(resourceMetadata, blueprintPerClusterMap); err != nil {
-		r.Log.V(0).Info("Error creating blueprint: " + err.Error())
+	ownerMetadata := &app.ResourceMetadata{Name: applicationContext.Name, Namespace: applicationContext.Namespace}
+	if err := r.ResourceInterface.CreateOrUpdateResource(ownerMetadata, resourceMetadata, blueprintPerClusterMap); err != nil {
+		r.Log.V(0).Info("Error creating " + resourceMetadata.Kind + " : " + err.Error())
 		return ctrl.Result{}, err
 	}
 	applicationContext.Status.Generated = resourceMetadata
-	r.Log.V(0).Info("Succeeded in blueprint creation")
+	r.Log.V(0).Info("Created " + resourceMetadata.Kind + " successfully!")
 	return ctrl.Result{}, nil
 }
 
@@ -276,7 +281,7 @@ func (r *M4DApplicationReconciler) ConstructDataInfo(datasetID string, req *modu
 	return nil
 }
 
-// NewM4DApplicationReconciler creates a new reconciler for Blueprint resources
+// NewM4DApplicationReconciler creates a new reconciler for M4DApplications
 func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api.Client, policyCompiler pc.IPolicyCompiler, context ContextInterface) *M4DApplicationReconciler {
 	return &M4DApplicationReconciler{
 		Client:            mgr.GetClient(),
@@ -291,10 +296,31 @@ func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api
 
 // SetupWithManager registers M4DApplication controller
 func (r *M4DApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	mapFn := handler.ToRequestsFunc(
+		func(a handler.MapObject) []reconcile.Request {
+			labels := a.Meta.GetLabels()
+			if labels == nil {
+				return []reconcile.Request{}
+			}
+			label, ok := labels[OwnerLabelKey]
+			namespaced := strings.Split(label, ".")
+			r.Log.V(0).Info(label)
+			if !ok || len(namespaced) != 2 {
+				return []reconcile.Request{}
+			}
+			return []reconcile.Request{
+				{NamespacedName: types.NamespacedName{
+					Name:      namespaced[1],
+					Namespace: namespaced[0],
+				}},
+			}
+		})
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&app.M4DApplication{}).
-		Watches(&source.Kind{Type: r.ResourceInterface.GetManagedObject()}, &handler.EnqueueRequestForObject{}).
-		Complete(r)
+		Watches(&source.Kind{Type: r.ResourceInterface.GetManagedObject()},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: mapFn,
+			}).Complete(r)
 }
 
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dmodules,verbs=get;list;watch
@@ -331,58 +357,6 @@ func AnalyzeError(app *app.M4DApplication, log logr.Logger, assetID string, err 
 	return err
 }
 
-// Helper functions to manage conditions
-func resetConditions(application *app.M4DApplication) {
-	application.Status.Conditions = make([]app.Condition, 2)
-	application.Status.Conditions[app.ErrorConditionIndex] = app.Condition{Type: app.ErrorCondition, Status: corev1.ConditionFalse}
-	application.Status.Conditions[app.FailureConditionIndex] = app.Condition{Type: app.FailureCondition, Status: corev1.ConditionFalse}
-}
-
-func setCondition(application *app.M4DApplication, assetID string, msg string, receivedFrom string, fatalError bool) {
-	if len(application.Status.Conditions) == 0 {
-		resetConditions(application)
-	}
-	errMsg := "An error was received"
-	if receivedFrom != "" {
-		errMsg += " from " + receivedFrom
-	}
-	if assetID != "" {
-		errMsg += " for asset " + assetID + " . "
-	}
-	if !fatalError {
-		errMsg += "If the error persists, please contact an operator.\n"
-	}
-	errMsg += "Error description: " + msg + "\n"
-	var ind int64
-	if fatalError {
-		ind = app.FailureConditionIndex
-	} else {
-		ind = app.ErrorConditionIndex
-	}
-	application.Status.Conditions[ind].Status = corev1.ConditionTrue
-	application.Status.Conditions[ind].Message += errMsg
-}
-
-func hasError(application *app.M4DApplication) bool {
-	// check if the conditions have been initialized
-	if len(application.Status.Conditions) == 0 {
-		return false
-	}
-	return (application.Status.Conditions[app.ErrorConditionIndex].Status == corev1.ConditionTrue ||
-		application.Status.Conditions[app.FailureConditionIndex].Status == corev1.ConditionTrue)
-}
-
-func getErrorMessages(application *app.M4DApplication) string {
-	var errMsg string
-	// check if the conditions have been initialized
-	if len(application.Status.Conditions) == 0 {
-		return errMsg
-	}
-	if application.Status.Conditions[app.ErrorConditionIndex].Status == corev1.ConditionTrue {
-		errMsg += application.Status.Conditions[app.ErrorConditionIndex].Message
-	}
-	if application.Status.Conditions[app.FailureConditionIndex].Status == corev1.ConditionTrue {
-		errMsg += application.Status.Conditions[app.FailureConditionIndex].Message
-	}
-	return errMsg
+func ownerLabels(id types.NamespacedName) map[string]string {
+	return map[string]string{OwnerLabelKey: id.Namespace + "." + id.Name}
 }

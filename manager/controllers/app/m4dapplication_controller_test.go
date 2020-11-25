@@ -514,7 +514,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			By("Expect blueprint to be ready at some point")
 			Eventually(func() bool {
 				Expect(k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)).To(Succeed())
-				return blueprint.Status.Ready
+				return blueprint.Status.ObservedState.Ready
 			}, timeout*10, interval).Should(BeTrue())
 
 			// Extra long timeout as deploying the arrow-flight module on a new cluster may take some time

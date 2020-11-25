@@ -17,23 +17,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// ResourceStatus represents a part of the generated resource status that allows update of M4DApplication status
-type ResourceStatus struct {
-	// Ready represents that the modules have been orchestrated successfully and the data is ready for usage
-	Ready bool
-	// Error indicates that there has been an error to orchestrate the modules and provides the error message
-	Error string
-	// DataAccessInstructions indicate how the data user or his application may access the data.
-	// Instructions are available upon successful orchestration.
-	DataAccessInstructions string
-}
-
 // ContextInterface is an interface for communication with a generated resource (e.g. Blueprint)
 type ContextInterface interface {
 	ResourceExists(metadata *app.ResourceMetadata) bool
-	CreateOrUpdateResource(metadata *app.ResourceMetadata, blueprintPerClusterMap map[string]app.BlueprintSpec) error
+	CreateOrUpdateResource(owner *app.ResourceMetadata, metadata *app.ResourceMetadata, blueprintPerClusterMap map[string]app.BlueprintSpec) error
 	DeleteResource(metadata *app.ResourceMetadata) error
-	GetResourceStatus(metadata *app.ResourceMetadata) (ResourceStatus, error)
+	GetResourceStatus(metadata *app.ResourceMetadata) (app.ObservedState, error)
 	CreateResourceMetadata(appName string, appNamespace string) (*app.ResourceMetadata, error)
 	GetManagedObject() runtime.Object
 }
@@ -54,9 +43,7 @@ func (c *BlueprintInterface) GetManagedObject() runtime.Object {
 // It also creates a namespace where the blueprint and the orchestrated resources will be running
 func (c *BlueprintInterface) CreateResourceMetadata(appName string, appNamespace string) (*app.ResourceMetadata, error) {
 	genNamespace := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{GenerateName: "m4d-"}}
-	genNamespace.Labels = map[string]string{
-		"m4d.ibm.com.owner": appNamespace + "." + appName,
-	}
+	genNamespace.Labels = ownerLabels(types.NamespacedName{Namespace: appNamespace, Name: appName})
 	if err := c.Client.Create(context.Background(), genNamespace); err != nil {
 		return nil, err
 	}
@@ -86,7 +73,7 @@ func (c *BlueprintInterface) GetResourceSignature(metadata *app.ResourceMetadata
 }
 
 // CreateOrUpdateResource creates a new Blueprint resource or updates an existing one
-func (c *BlueprintInterface) CreateOrUpdateResource(metadata *app.ResourceMetadata, blueprintPerClusterMap map[string]app.BlueprintSpec) error {
+func (c *BlueprintInterface) CreateOrUpdateResource(owner *app.ResourceMetadata, metadata *app.ResourceMetadata, blueprintPerClusterMap map[string]app.BlueprintSpec) error {
 	resource := c.GetResourceSignature(metadata)
 	if len(blueprintPerClusterMap) != 1 {
 		return errors.New("Invalid cluster configuration")
@@ -95,6 +82,7 @@ func (c *BlueprintInterface) CreateOrUpdateResource(metadata *app.ResourceMetada
 	for _, blueprintSpec := range blueprintPerClusterMap {
 		if _, err := ctrl.CreateOrUpdate(context.Background(), c.Client, resource, func() error {
 			resource.Spec = blueprintSpec
+			resource.Labels = ownerLabels(types.NamespacedName{Namespace: owner.Namespace, Name: owner.Name})
 			return nil
 		}); err != nil {
 			return err
@@ -116,18 +104,15 @@ func (c *BlueprintInterface) DeleteResource(metadata *app.ResourceMetadata) erro
 }
 
 // GetResourceStatus returns the generated Blueprint status
-func (c *BlueprintInterface) GetResourceStatus(metadata *app.ResourceMetadata) (ResourceStatus, error) {
+func (c *BlueprintInterface) GetResourceStatus(metadata *app.ResourceMetadata) (app.ObservedState, error) {
 	if metadata == nil || metadata.Namespace == "" {
-		return ResourceStatus{}, nil
+		return app.ObservedState{}, nil
 	}
 	resource := c.GetResourceSignature(metadata)
 	if err := c.Client.Get(context.Background(), types.NamespacedName{Namespace: metadata.Namespace, Name: metadata.Name}, resource); err != nil {
-		return ResourceStatus{}, err
+		return app.ObservedState{}, err
 	}
-	return ResourceStatus{DataAccessInstructions: resource.Status.DataAccessInstructions,
-		Ready: resource.Status.Ready,
-		Error: resource.Status.Error,
-	}, nil
+	return resource.Status.ObservedState, nil
 }
 
 // NewBlueprintInterface creates a new blueprint interface for M4DApplication controller
@@ -178,13 +163,14 @@ func (c *PlotterInterface) GetResourceSignature(metadata *app.ResourceMetadata) 
 }
 
 // CreateOrUpdateResource creates a new Plotter resource or updates an existing one
-func (c *PlotterInterface) CreateOrUpdateResource(metadata *app.ResourceMetadata, blueprintPerClusterMap map[string]app.BlueprintSpec) error {
+func (c *PlotterInterface) CreateOrUpdateResource(owner *app.ResourceMetadata, metadata *app.ResourceMetadata, blueprintPerClusterMap map[string]app.BlueprintSpec) error {
 	resource := c.GetResourceSignature(metadata)
 	if len(blueprintPerClusterMap) == 0 {
 		return errors.New("Invalid cluster configuration")
 	}
 	if _, err := ctrl.CreateOrUpdate(context.Background(), c.Client, resource, func() error {
 		resource.Spec.Blueprints = blueprintPerClusterMap
+		resource.Labels = ownerLabels(types.NamespacedName{Namespace: owner.Namespace, Name: owner.Name})
 		return nil
 	}); err != nil {
 		return err
@@ -202,18 +188,15 @@ func (c *PlotterInterface) DeleteResource(metadata *app.ResourceMetadata) error 
 }
 
 // GetResourceStatus returns the generated Plotter status
-func (c *PlotterInterface) GetResourceStatus(metadata *app.ResourceMetadata) (ResourceStatus, error) {
+func (c *PlotterInterface) GetResourceStatus(metadata *app.ResourceMetadata) (app.ObservedState, error) {
 	if metadata == nil || metadata.Namespace == "" {
-		return ResourceStatus{}, nil
+		return app.ObservedState{}, nil
 	}
 	resource := c.GetResourceSignature(metadata)
 	if err := c.Client.Get(context.Background(), types.NamespacedName{Namespace: metadata.Namespace, Name: metadata.Name}, resource); err != nil {
-		return ResourceStatus{}, err
+		return app.ObservedState{}, err
 	}
-	return ResourceStatus{DataAccessInstructions: resource.Status.DataAccessInstructions,
-		Ready: resource.Status.Ready,
-		Error: resource.Status.Error,
-	}, nil
+	return resource.Status.ObservedState, nil
 }
 
 // NewPlotterInterface creates a new plotter interface for M4DApplication controller
