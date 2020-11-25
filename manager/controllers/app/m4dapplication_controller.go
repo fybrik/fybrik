@@ -304,7 +304,6 @@ func (r *M4DApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			}
 			label, ok := labels[OwnerLabelKey]
 			namespaced := strings.Split(label, ".")
-			r.Log.V(0).Info(label)
 			if !ok || len(namespaced) != 2 {
 				return []reconcile.Request{}
 			}
