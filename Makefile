@@ -33,12 +33,14 @@ install:
 
 .PHONY: deploy
 deploy:
+	$(MAKE) -C istio deploy
 	$(MAKE) -C secret-provider deploy
 	$(MAKE) -C manager deploy
 	$(MAKE) -C connectors deploy
 
 .PHONY: undeploy
 undeploy:
+	$(MAKE) -C istio undeploy
 	$(MAKE) -C secret-provider undeploy
 	$(MAKE) -C manager undeploy
 	$(MAKE) -C connectors undeploy

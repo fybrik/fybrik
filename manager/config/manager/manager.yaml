@@ -41,3 +41,11 @@ spec:
             cpu: 100m
             memory: 100Mi
       terminationGracePeriodSeconds: 10
+      serviceAccount: controller-manager
+      serviceAccountName: controller-manager
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: controller-manager
+  namespace: system

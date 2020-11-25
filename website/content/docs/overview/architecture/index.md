@@ -31,3 +31,9 @@ The information below is outdated
 {{< bullet n=8 >}} Processing jobs for preparing the environment for the application are running. The figure shows an example of creating an implicit copy job to copy data from PostgresSQL to Ceph.
 
 {{< bullet n=9 >}} The application reads from and writes data to whitelisted targets. Requests are handled by `M4DModule` instances. The application can not interact with non-whitelisted targets.
+
+### Control Plane Security
+
+The traffic between the pilot and the connectors is secured by lavergaing Istio security features:
+- Istio authentication policy enables mutual TLS between the pilot and the connectors.
+- Istio authorization policies control the ingress traffic of the connectors.
