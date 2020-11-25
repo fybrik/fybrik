@@ -79,7 +79,7 @@ jobs:
     - make kind-setup || travis_terminate 1; # Switch to make kind when istio is needed
     - make cluster-prepare || travis_terminate 1;
     - make docker
-    - make -C test/services docker # Build test services
+    - make -C test/services docker-all # Build test services
     - make cluster-prepare-wait || travis_terminate 1;
     - make -C secret-provider configure-vault
     - make -C secret-provider deploy || travis_terminate 1;
