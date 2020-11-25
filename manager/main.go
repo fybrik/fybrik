@@ -101,7 +101,13 @@ func main() {
 	policyCompiler := pc.NewPolicyCompiler()
 
 	// Initiate the M4DApplication Controller (aka Pilot)
-	applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler)
+	var resourceContext app.ContextInterface
+	if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" {
+		resourceContext = app.NewPlotterInterface(mgr.GetClient())
+	} else {
+		resourceContext = app.NewBlueprintInterface(mgr.GetClient())
+	}
+	applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, resourceContext)
 	if err := applicationController.SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
 		os.Exit(1)

@@ -5,14 +5,15 @@ package app
 
 import (
 	"context"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
-	"helm.sh/helm/v3/pkg/release"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	"helm.sh/helm/v3/pkg/release"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	appapi "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	. "github.com/onsi/ginkgo"
@@ -93,7 +94,8 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 
 		policyCompiler := &mockup.MockPolicyCompiler{}
-		err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler).SetupWithManager(mgr)
+		resourceContext := NewBlueprintInterface(mgr.GetClient())
+		err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler, resourceContext).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
 		err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())

@@ -13,6 +13,9 @@ resources:
 - group: app
   kind: Blueprint
   version: v1alpha1
+- group: app
+  kind: Plotter
+  version: v1alpha1
 - group: admin
   kind: M4DModule
   version: v1alpha1

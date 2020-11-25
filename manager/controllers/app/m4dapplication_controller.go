@@ -15,6 +15,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
@@ -24,22 +26,23 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // M4DApplicationReconciler reconciles a M4DApplication object
 type M4DApplicationReconciler struct {
 	client.Client
-	Name           string
-	Log            logr.Logger
-	Scheme         *runtime.Scheme
-	VaultClient    *api.Client
-	PolicyCompiler pc.IPolicyCompiler
+	Name              string
+	Log               logr.Logger
+	Scheme            *runtime.Scheme
+	VaultClient       *api.Client
+	PolicyCompiler    pc.IPolicyCompiler
+	ResourceInterface ContextInterface
 }
 
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dapplications,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dapplications/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=blueprints,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=plotters,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=namespaces,verbs=get;list;watch;create;update;patch;delete
 
 // +kubebuilder:rbac:groups=*,resources=*,verbs=*
@@ -49,10 +52,10 @@ type M4DApplicationReconciler struct {
 func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("m4dapplication", req.NamespacedName)
-
 	// obtain M4DApplication resource
 	applicationContext := &app.M4DApplication{}
 	if err := r.Get(ctx, req.NamespacedName, applicationContext); err != nil {
+		log.V(0).Info("The reconciled object was not found")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 	if err := r.reconcileFinalizers(applicationContext); err != nil {
@@ -69,8 +72,9 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	observedStatus := applicationContext.Status.DeepCopy()
 
 	// check if reconcile is required
-	generatedBlueprint, _ := r.getBlueprint(applicationContext)
-	if generatedBlueprint == nil || observedStatus.ObservedGeneration != applicationContext.GetGeneration() {
+	// reconcile is required if the spec has been changed, or no blueprint generation was done (reconcile due to non-fatal errors)
+	generationComplete := r.ResourceInterface.ResourceExists(applicationContext.Status.Generated)
+	if !generationComplete || observedStatus.ObservedGeneration != applicationContext.GetGeneration() {
 		if result, err := r.reconcile(applicationContext); err != nil {
 			// another attempt will be done
 			// users should be informed in case of errors
@@ -82,7 +86,11 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		}
 		applicationContext.Status.ObservedGeneration = applicationContext.GetGeneration()
 	} else {
-		checkBlueprintStatus(applicationContext, generatedBlueprint)
+		resourceStatus, err := r.ResourceInterface.GetResourceStatus(applicationContext.Status.Generated)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		checkBlueprintStatus(applicationContext, resourceStatus)
 	}
 
 	// Update CRD status in case of change (other than deletion, which was handled separately)
@@ -102,25 +110,25 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	return ctrl.Result{}, nil
 }
 
-func checkBlueprintStatus(applicationContext *app.M4DApplication, blueprint *app.Blueprint) {
+func checkBlueprintStatus(applicationContext *app.M4DApplication, status ResourceStatus) {
 	applicationContext.Status.DataAccessInstructions = ""
 	applicationContext.Status.Ready = false
 	if hasError(applicationContext) {
 		return
 	}
-	if blueprint.Status.Error != "" {
-		setCondition(applicationContext, "", blueprint.Status.Error, "Blueprint", true)
+	if status.Error != "" {
+		setCondition(applicationContext, "", status.Error, "Orchestration", true)
 		return
 	}
-	if blueprint.Status.Ready {
+	if status.Ready {
 		applicationContext.Status.Ready = true
-		applicationContext.Status.DataAccessInstructions = blueprint.Status.DataAccessInstructions
+		applicationContext.Status.DataAccessInstructions = status.DataAccessInstructions
 	}
 }
 
 // reconcileFinalizers reconciles finalizers for M4DApplication
 func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M4DApplication) error {
-	// finalizer (Blueprint)
+	// finalizer
 	finalizerName := r.Name + ".finalizer"
 	hasFinalizer := ctrlutil.ContainsFinalizer(applicationContext, finalizerName)
 
@@ -159,25 +167,21 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 		return err
 	}
 
-	// delete the blueprint
-	namespace := applicationContext.Status.BlueprintNamespace
-	if namespace == "" {
+	// delete the generated resource
+	if applicationContext.Status.Generated == nil {
 		return nil
 	}
 
 	r.Log.V(0).Info("Reconcile: M4DApplication is deleting the blueprint")
-	if err := r.DeleteOwnedBlueprint(applicationContext); err != nil {
+	if err := r.ResourceInterface.DeleteResource(applicationContext.Status.Generated); err != nil {
 		return err
 	}
-	// delete the allocated namespace
-	if err := r.DeleteNamespace(namespace); err != nil {
-		return err
-	}
+	applicationContext.Status.Generated = nil
 	return nil
 }
 
-// reconcile receives either M4DApplication CRD and generates the Blueprint CRD
-// or a status update from a previously created Blueprint
+// reconcile receives either M4DApplication CRD and generates the blueprint resource
+// or a status update from a previously created blueprint resource
 func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplication) (ctrl.Result, error) {
 	utils.PrintStructure(applicationContext.Spec, r.Log, "M4DApplication")
 
@@ -222,34 +226,24 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	if hasError(applicationContext) {
 		return ctrl.Result{}, nil
 	}
-	r.Log.V(0).Info("Creating Blueprint")
-	// first, a namespace should be created
-	if applicationContext.Status.BlueprintNamespace == "" {
-		if err := r.CreateNamespace(applicationContext); err != nil {
-			return ctrl.Result{}, err
-		}
-	}
 	// unite several instances of a read/write module
 	newInstances := r.RefineInstances(instances)
-	blueprintSpec := r.GenerateBlueprint(newInstances, applicationContext)
-	r.Log.V(0).Info("Blueprint entrypoint: " + blueprintSpec.Entrypoint)
+	r.Log.V(0).Info("Creating blueprint(s)")
 
-	blueprint := r.GetBlueprintSignature(applicationContext)
-	if _, err := ctrl.CreateOrUpdate(context.Background(), r, blueprint, func() error {
-		blueprint.Spec = *blueprintSpec
-		return nil
-	}); err != nil {
+	blueprintSpec := r.GenerateBlueprint(newInstances, applicationContext)
+	blueprintPerClusterMap := make(map[string]app.BlueprintSpec)
+	blueprintPerClusterMap[applicationContext.ClusterName] = *blueprintSpec
+
+	resourceMetadata, err := r.ResourceInterface.CreateResourceMetadata(applicationContext.Name, applicationContext.Namespace)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	if err := r.ResourceInterface.CreateOrUpdateResource(resourceMetadata, blueprintPerClusterMap); err != nil {
 		r.Log.V(0).Info("Error creating blueprint: " + err.Error())
 		return ctrl.Result{}, err
 	}
-
-	/* This won't work because the m4dapplication is in a different namespace
-	if err := ctrl.SetControllerReference(applicationContext, blueprint, r.Scheme); err != nil {
-		log.V(0).Info("Error setting M4DApplication as owner of Blueprint: " + err.Error())
-		return ctrl.Result{}, err
-	}
-	*/
-	r.Log.V(0).Info("Succeeded in creating blueprint CRD")
+	applicationContext.Status.Generated = resourceMetadata
+	r.Log.V(0).Info("Succeeded in blueprint creation")
 	return ctrl.Result{}, nil
 }
 
@@ -283,20 +277,24 @@ func (r *M4DApplicationReconciler) ConstructDataInfo(datasetID string, req *modu
 }
 
 // NewM4DApplicationReconciler creates a new reconciler for Blueprint resources
-func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api.Client, policyCompiler pc.IPolicyCompiler) *M4DApplicationReconciler {
+func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api.Client, policyCompiler pc.IPolicyCompiler, context ContextInterface) *M4DApplicationReconciler {
 	return &M4DApplicationReconciler{
-		Client:         mgr.GetClient(),
-		Name:           name,
-		Log:            ctrl.Log.WithName("controllers").WithName(name),
-		Scheme:         mgr.GetScheme(),
-		VaultClient:    vaultClient,
-		PolicyCompiler: policyCompiler,
+		Client:            mgr.GetClient(),
+		Name:              name,
+		Log:               ctrl.Log.WithName("controllers").WithName(name),
+		Scheme:            mgr.GetScheme(),
+		VaultClient:       vaultClient,
+		PolicyCompiler:    policyCompiler,
+		ResourceInterface: context,
 	}
 }
 
 // SetupWithManager registers M4DApplication controller
 func (r *M4DApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).For(&app.M4DApplication{}).Owns(&app.Blueprint{}).Complete(r)
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&app.M4DApplication{}).
+		Watches(&source.Kind{Type: r.ResourceInterface.GetManagedObject()}, &handler.EnqueueRequestForObject{}).
+		Complete(r)
 }
 
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dmodules,verbs=get;list;watch
@@ -331,29 +329,6 @@ func AnalyzeError(app *app.M4DApplication, log logr.Logger, assetID string, err 
 	}
 	setCondition(app, assetID, errStatus.Message(), receivedFrom, false)
 	return err
-}
-
-// CreateNamespace creates a namespace in which the blueprint and the relevant resources will be running
-// It stores the generated namespace name inside app status
-func (r *M4DApplicationReconciler) CreateNamespace(app *app.M4DApplication) error {
-	genNamespace := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{GenerateName: "m4d-"}}
-	genNamespace.Labels = map[string]string{
-		"m4d.ibm.com.owner": app.Namespace + "." + app.Name,
-	}
-	if err := r.Create(context.Background(), genNamespace); err != nil {
-		return err
-	}
-	r.Log.V(0).Info("Created namespace " + genNamespace.Name + " for " + app.Namespace + "/" + app.Name)
-	app.Status.BlueprintNamespace = genNamespace.Name
-	return nil
-}
-
-// DeleteNamespace deletes the blueprint namespace upon blueprint deletion
-func (r *M4DApplicationReconciler) DeleteNamespace(name string) error {
-	return r.Delete(context.Background(), &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-		}})
 }
 
 // Helper functions to manage conditions
