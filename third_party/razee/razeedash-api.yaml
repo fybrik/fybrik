@@ -1,0 +1,196 @@
+apiVersion: v1
+kind: List
+metadata:
+  name: razeedash-api
+  namespace: razee
+  annotations:
+    version: "18f696bcd2aee6c8124649fd73618512315be346"
+type: array
+items:
+  - apiVersion: apps/v1      #api
+    kind: Deployment
+    metadata:
+      annotations:
+        version: "18f696bcd2aee6c8124649fd73618512315be346"
+        razee.io/git-repo: "https://github.com/razee-io/Razeedash-api.git"
+        razee.io/commit-sha: "18f696bcd2aee6c8124649fd73618512315be346"
+      labels:
+        razee/watch-resource: "lite"
+      name: razeedash-api
+      namespace: razee
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 0
+      selector:
+        matchLabels:
+          app: razeedash-api
+      strategy:
+        type: RollingUpdate
+      template:
+        metadata:
+          labels:
+            app: razeedash-api
+            razee/watch-resource: "lite"
+          name: razeedash-api
+        spec:
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+          containers:
+            - env:
+                - name: S3_ENDPOINT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: razeedash-config
+                      key: s3_endpoint
+                      optional: true
+                - name: S3_LOCATION_CONSTRAINT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: razeedash-config
+                      key: s3_location_constraint
+                      optional: true
+                - name: S3_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: razeedash-secret
+                      key: s3_access_key_id
+                      optional: true
+                - name: S3_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: razeedash-secret
+                      key: s3_secret_access_key
+                      optional: true
+                - name: S3_CHANNEL_BUCKET
+                  valueFrom:
+                    configMapKeyRef:
+                      name: razeedash-config
+                      key: s3_channel_bucket
+                      optional: true
+                - name: S3_RESOURCE_BUCKET
+                  valueFrom:
+                    configMapKeyRef:
+                      name: razeedash-config
+                      key: s3_resource_bucket
+                      optional: true
+                - name: MONGO_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: razeedash-secret
+                      key: mongo_url
+                - name: MONGO_DB_NAME
+                  value: razeedash
+                - name: ORG_ADMIN_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: razeedash-secret
+                      key: org_admin_key
+                      optional: true
+                - name: ADD_CLUSTER_WEBHOOK_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: razeedash-secret
+                      key: add_cluster_webhook_url
+                      optional: true
+                - name: REDIS_PUBSUB_URL
+                  value: "redis://redis-service:6379/0"
+                - name: AUTH_MODEL # Activate when local mode is working
+                  value: local
+              image: "quay.io/razee/razeedash-api:1.3.0"
+              imagePullPolicy: Always
+              name: razeedash-api
+              ports:
+                - containerPort: 3333
+                  protocol: TCP
+              livenessProbe:
+                httpGet:
+                  path: /api/kube/liveness
+                  port: 3333
+                initialDelaySeconds: 5
+                periodSeconds: 20
+                timeoutSeconds: 2
+              readinessProbe:
+                exec:
+                  command: ["npm", "run", "wait-mongo"]
+                initialDelaySeconds: 5
+                periodSeconds: 15
+                timeoutSeconds: 10
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 80Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              volumeMounts:
+                - name: add-cluster-webhook-headers-vol
+                  mountPath: /var/run/secrets/razeeio/razeedash-api/add-cluster-webhook-headers
+                - name: razeedash-secret-vol
+                  mountPath: /var/run/secrets/razeeio/razeedash-secret
+          volumes:
+            - name: add-cluster-webhook-headers-vol
+              secret:
+                secretName: razeedash-add-cluster-webhook-headers-secret
+                optional: true
+            - name: razeedash-secret-vol
+              secret:
+                secretName: razeedash-secret
+  - apiVersion: apps/v1   # redis
+    kind: Deployment
+    metadata:
+      name: redis
+      namespace: razee
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: redis
+      template:
+        metadata:
+          labels:
+            app: redis
+          name: redis
+        spec:
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
+            fsGroup: 999
+          containers:
+            - name: redis
+              image: "redis:latest"
+              imagePullPolicy: Always
+              ports:
+                - containerPort: 6379
+                  protocol: TCP
+              livenessProbe:
+                exec:
+                  command:
+                    - redis-cli
+                    - ping
+                initialDelaySeconds: 30
+                timeoutSeconds: 5
+              resources:
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+                requests:
+                  cpu: 1m
+                  memory: 64Mi
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      annotations:
+        prometheus.io/probe: 'true'
+        prometheus.io/probepath: 'metrics'
+        prometheus.io/scrape: 'true'
+      name: redis-service
+      namespace: razee
+    spec:
+      selector:
+        app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+          targetPort: 6379
