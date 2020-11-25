@@ -48,7 +48,7 @@ install_certs() {
         # This has been tested on Ubuntu. On other distributions this may vary.
         # If developers use different distributions please add a branch here that works.
         sudo cp ../registry/themeshfordata-ca.crt /usr/local/share/ca-certificates
-	      sudo update-ca-certificates
+	      sudo update-ca-certificates --fresh
 	  elif [[ "$OSTYPE" == "darwin"* ]]; then
 	      VALIDCERT=0
 	      security verify-cert -k /Users/ffr/Library/Keychains/login.keychain-db -c ../registry/registry.crt || VALIDCERT=$?
@@ -69,7 +69,7 @@ certs_delete() {
       # This has been tested on Ubuntu. On other distributions this may vary.
       # If developers use different distributions please add a branch here that works.
       sudo rm /usr/local/share/ca-certificates/themeshfordata-ca.crt
-      sudo update-ca-certificates
+      sudo update-ca-certificates --fresh
     elif [[ "$OSTYPE" == "darwin"* ]]; then
       security remove-trusted-cert  ../registry/themeshfordata-ca.crt
       security delete-certificate -c themeshfordata
