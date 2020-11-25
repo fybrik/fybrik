@@ -1,7 +1,7 @@
 ROOT_DIR:=../..
 include $(ROOT_DIR)/Makefile.env
-include $(ROOT_DIR)/.mk/tools.mk
-include $(ROOT_DIR)/.mk/docker.mk
+include $(ROOT_DIR)/hack/make-rules/tools.mk
+include $(ROOT_DIR)/hack/make-rules/docker.mk
 
 .PHONY: deploy
 deploy: $(TOOLBIN)/kubectl

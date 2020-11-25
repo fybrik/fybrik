@@ -5,7 +5,6 @@ package app
 
 import (
 	"context"
-	"errors"
 
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	statusErr "k8s.io/apimachinery/pkg/api/errors"
@@ -18,13 +17,14 @@ import (
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dbuckets/status,verbs=get;update;patch
 
 // FindAvailableBucket finds an available storage asset
-func (r *M4DApplicationReconciler) FindAvailableBucket(owner types.NamespacedName, id string, prefixBase string, canShare bool) (*app.M4DBucket, error) {
+func (r *M4DApplicationReconciler) FindAvailableBucket(owner types.NamespacedName, id string, prefixBase string, canShare bool) *app.M4DBucket {
 	ctx := context.Background()
 
 	var buckets app.M4DBucketList
 	r.Log.V(0).Info("Searching for an available bucket")
 	if err := r.List(ctx, &buckets); err != nil {
-		return nil, err
+		r.Log.V(0).Info(err.Error())
+		return nil
 	}
 	for _, bucket := range buckets.Items {
 		utils.PrintStructure(bucket, r.Log, "Bucket ")
@@ -39,10 +39,10 @@ func (r *M4DApplicationReconciler) FindAvailableBucket(owner types.NamespacedNam
 				r.Log.V(0).Info("Could not update M4DBucket " + bucket.Name)
 				continue
 			}
-			return &bucket, nil
+			return &bucket
 		}
 	}
-	return nil, errors.New("More storage should be provisioned")
+	return nil
 }
 
 // FreeStorageAssets removes the app identifier from the list of owners

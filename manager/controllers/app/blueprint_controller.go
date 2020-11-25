@@ -215,13 +215,6 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
 
-		// Add metadata arguments (namespace, name, labels, etc.)
-		hashedName := utils.Hash(step.Name, 20)
-		args["metadata"] = map[string]interface{}{
-			"name":      hashedName,
-			"namespace": blueprint.Namespace,
-			"labels":    blueprint.Labels,
-		}
 		releaseName := getReleaseName(step)
 		log.V(0).Info("Release name: " + releaseName)
 		numReleases++
@@ -236,8 +229,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 				}
 			}
 		} else if rel.Info.Status == release.StatusDeployed {
-			// TODO: add release notes of the read module to the status
-			if args["flow"] == "read" {
+			if len(step.Arguments.Read) > 0 {
 				blueprint.Status.DataAccessInstructions += rel.Info.Notes
 			}
 			status, errMsg := r.checkReleaseStatus(releaseName, blueprint.Namespace)

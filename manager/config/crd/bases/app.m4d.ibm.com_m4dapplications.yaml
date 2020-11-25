@@ -136,9 +136,6 @@ spec:
                   message:
                     description: Message contains the details of the current condition
                     type: string
-                  reason:
-                    description: Reason is a short explanation of the reason for the current condition
-                    type: string
                   status:
                     description: 'Status of the condition: true or false'
                     type: string
