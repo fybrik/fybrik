@@ -398,18 +398,18 @@ var _ = Describe("M4DApplication Controller", func() {
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
 			By("Expecting a namespace to be allocated")
-			Eventually(func() string {
+			Eventually(func() *apiv1alpha1.ResourceReference {
 				f := &apiv1alpha1.M4DApplication{}
 				_ = k8sClient.Get(context.Background(), appSignature, f)
-				return f.Status.BlueprintNamespace
-			}, timeout, interval).ShouldNot(BeEmpty())
+				return f.Status.Generated
+			}, timeout, interval).ShouldNot(BeNil())
 
 			By("Expecting blueprint to be generated")
 			blueprint := &apiv1alpha1.Blueprint{}
 			Eventually(func() error {
 				Expect(k8sClient.Get(context.Background(), appSignature, resource)).Should(Succeed())
 				key := appSignature
-				key.Namespace = resource.Status.BlueprintNamespace
+				key.Namespace = resource.Status.Generated.Namespace
 				return k8sClient.Get(context.Background(), key, blueprint)
 			}, timeout, interval).Should(Succeed())
 
@@ -490,14 +490,14 @@ var _ = Describe("M4DApplication Controller", func() {
 
 			// A blueprint namespace should be set
 			By("Expecting application to have a namespace in the status")
-			Eventually(func() string {
+			Eventually(func() *apiv1alpha1.ResourceReference {
 				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
-				return application.Status.BlueprintNamespace
-			}, timeout, interval).ShouldNot(BeEmpty())
+				return application.Status.Generated
+			}, timeout, interval).ShouldNot(BeNil())
 
 			// A blueprint namespace should be created
 			namespace := &v1.Namespace{}
-			ns := application.Status.BlueprintNamespace
+			ns := application.Status.Generated.Namespace
 			By("Expect namespace to be created")
 			Eventually(func() error {
 				return k8sClient.Get(context.Background(), client.ObjectKey{Namespace: "", Name: ns}, namespace)
@@ -514,7 +514,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			By("Expect blueprint to be ready at some point")
 			Eventually(func() bool {
 				Expect(k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)).To(Succeed())
-				return blueprint.Status.Ready
+				return blueprint.Status.ObservedState.Ready
 			}, timeout*10, interval).Should(BeTrue())
 
 			// Extra long timeout as deploying the arrow-flight module on a new cluster may take some time

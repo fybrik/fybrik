@@ -1,0 +1,550 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.3.0
+  creationTimestamp: null
+  name: plotters.app.m4d.ibm.com
+spec:
+  group: app.m4d.ibm.com
+  names:
+    kind: Plotter
+    listKind: PlotterList
+    plural: plotters
+    singular: plotter
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: Plotter is the Schema for the plotters API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter installs the runtime environment (as blueprints running on remote clusters) which provides the Data Scientist's application with secure and governed access to the data requested in the M4DApplication.
+          properties:
+            blueprints:
+              additionalProperties:
+                description: 'BlueprintSpec defines the desired state of Blueprint, which is the runtime environment which provides the Data Scientist''s application with secure and governed access to the data requested in the M4DApplication. The blueprint uses an "argo like" syntax which indicates the components and the flow of data between them as steps TODO: Add an indication of the communication relationships between the components'
+                properties:
+                  entrypoint:
+                    type: string
+                  flow:
+                    description: DataFlow indicates the flow of the data between the components Currently we assume this is linear and thus use steps, but other more complex graphs could be defined as per how it is done in argo workflow
+                    properties:
+                      name:
+                        type: string
+                      steps:
+                        items:
+                          description: FlowStep is one step indicates an instance of a module in the blueprint, It includes the name of the module template (spec) and the parameters received by the component instance that is initiated by the orchestrator.
+                          properties:
+                            arguments:
+                              description: Arguments are the input parameters for a specific instance of a module.
+                              properties:
+                                copy:
+                                  description: CopyArgs are parameters specific to modules that copy data from one data store to another.
+                                  properties:
+                                    destination:
+                                      description: Destination is the data store to which the data will be copied
+                                      properties:
+                                        connection:
+                                          description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+                                          properties:
+                                            db2:
+                                              description: oneof location {   // should have been oneof but for technical rasons, a problem to translate it to JSON, we remove the oneof for now should have been local, db2, s3 without "location"  but had a problem to compile it in proto - collision with proto name DataLocationDb2
+                                              properties:
+                                                database:
+                                                  type: string
+                                                port:
+                                                  type: string
+                                                ssl:
+                                                  type: string
+                                                table:
+                                                  type: string
+                                                url:
+                                                  type: string
+                                              type: object
+                                            kafka:
+                                              properties:
+                                                bootstrap_servers:
+                                                  type: string
+                                                key_deserializer:
+                                                  type: string
+                                                sasl_mechanism:
+                                                  type: string
+                                                schema_registry:
+                                                  type: string
+                                                security_protocol:
+                                                  type: string
+                                                ssl_truststore:
+                                                  type: string
+                                                ssl_truststore_password:
+                                                  type: string
+                                                topic_name:
+                                                  type: string
+                                                value_deserializer:
+                                                  type: string
+                                              type: object
+                                            name:
+                                              type: string
+                                            s3:
+                                              properties:
+                                                bucket:
+                                                  type: string
+                                                endpoint:
+                                                  type: string
+                                                object_key:
+                                                  type: string
+                                                region:
+                                                  type: string
+                                              type: object
+                                            type:
+                                              format: int32
+                                              type: integer
+                                          type: object
+                                        credentialLocation:
+                                          description: 'CredentialLocation is used to obtain the credentials from the credential management system - ex: vault'
+                                          type: string
+                                        format:
+                                          description: Format represents data format (e.g. parquet) as received from catalog connectors
+                                          type: string
+                                      required:
+                                      - connection
+                                      - credentialLocation
+                                      - format
+                                      type: object
+                                    source:
+                                      description: Source is the where the data currently resides
+                                      properties:
+                                        connection:
+                                          description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+                                          properties:
+                                            db2:
+                                              description: oneof location {   // should have been oneof but for technical rasons, a problem to translate it to JSON, we remove the oneof for now should have been local, db2, s3 without "location"  but had a problem to compile it in proto - collision with proto name DataLocationDb2
+                                              properties:
+                                                database:
+                                                  type: string
+                                                port:
+                                                  type: string
+                                                ssl:
+                                                  type: string
+                                                table:
+                                                  type: string
+                                                url:
+                                                  type: string
+                                              type: object
+                                            kafka:
+                                              properties:
+                                                bootstrap_servers:
+                                                  type: string
+                                                key_deserializer:
+                                                  type: string
+                                                sasl_mechanism:
+                                                  type: string
+                                                schema_registry:
+                                                  type: string
+                                                security_protocol:
+                                                  type: string
+                                                ssl_truststore:
+                                                  type: string
+                                                ssl_truststore_password:
+                                                  type: string
+                                                topic_name:
+                                                  type: string
+                                                value_deserializer:
+                                                  type: string
+                                              type: object
+                                            name:
+                                              type: string
+                                            s3:
+                                              properties:
+                                                bucket:
+                                                  type: string
+                                                endpoint:
+                                                  type: string
+                                                object_key:
+                                                  type: string
+                                                region:
+                                                  type: string
+                                              type: object
+                                            type:
+                                              format: int32
+                                              type: integer
+                                          type: object
+                                        credentialLocation:
+                                          description: 'CredentialLocation is used to obtain the credentials from the credential management system - ex: vault'
+                                          type: string
+                                        format:
+                                          description: Format represents data format (e.g. parquet) as received from catalog connectors
+                                          type: string
+                                      required:
+                                      - connection
+                                      - credentialLocation
+                                      - format
+                                      type: object
+                                    transformations:
+                                      description: Transformations are different types of processing that may be done to the data as it is copied.
+                                      items:
+                                        properties:
+                                          args:
+                                            additionalProperties:
+                                              type: string
+                                            type: object
+                                          id:
+                                            type: string
+                                          level:
+                                            format: int32
+                                            type: integer
+                                          name:
+                                            type: string
+                                        type: object
+                                      type: array
+                                  required:
+                                  - destination
+                                  - source
+                                  type: object
+                                read:
+                                  description: ReadArgs are parameters that are specific to modules that enable an application to read data
+                                  items:
+                                    description: ReadModuleArgs define the input parameters for modules that read data from location A
+                                    properties:
+                                      assetID:
+                                        description: AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the M4DApplication resource
+                                        type: string
+                                      source:
+                                        description: Source of the read path module
+                                        properties:
+                                          connection:
+                                            description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+                                            properties:
+                                              db2:
+                                                description: oneof location {   // should have been oneof but for technical rasons, a problem to translate it to JSON, we remove the oneof for now should have been local, db2, s3 without "location"  but had a problem to compile it in proto - collision with proto name DataLocationDb2
+                                                properties:
+                                                  database:
+                                                    type: string
+                                                  port:
+                                                    type: string
+                                                  ssl:
+                                                    type: string
+                                                  table:
+                                                    type: string
+                                                  url:
+                                                    type: string
+                                                type: object
+                                              kafka:
+                                                properties:
+                                                  bootstrap_servers:
+                                                    type: string
+                                                  key_deserializer:
+                                                    type: string
+                                                  sasl_mechanism:
+                                                    type: string
+                                                  schema_registry:
+                                                    type: string
+                                                  security_protocol:
+                                                    type: string
+                                                  ssl_truststore:
+                                                    type: string
+                                                  ssl_truststore_password:
+                                                    type: string
+                                                  topic_name:
+                                                    type: string
+                                                  value_deserializer:
+                                                    type: string
+                                                type: object
+                                              name:
+                                                type: string
+                                              s3:
+                                                properties:
+                                                  bucket:
+                                                    type: string
+                                                  endpoint:
+                                                    type: string
+                                                  object_key:
+                                                    type: string
+                                                  region:
+                                                    type: string
+                                                type: object
+                                              type:
+                                                format: int32
+                                                type: integer
+                                            type: object
+                                          credentialLocation:
+                                            description: 'CredentialLocation is used to obtain the credentials from the credential management system - ex: vault'
+                                            type: string
+                                          format:
+                                            description: Format represents data format (e.g. parquet) as received from catalog connectors
+                                            type: string
+                                        required:
+                                        - connection
+                                        - credentialLocation
+                                        - format
+                                        type: object
+                                      transformations:
+                                        description: Transformations are different types of processing that may be done to the data
+                                        items:
+                                          properties:
+                                            args:
+                                              additionalProperties:
+                                                type: string
+                                              type: object
+                                            id:
+                                              type: string
+                                            level:
+                                              format: int32
+                                              type: integer
+                                            name:
+                                              type: string
+                                          type: object
+                                        type: array
+                                    required:
+                                    - assetID
+                                    - source
+                                    type: object
+                                  type: array
+                                write:
+                                  description: WriteArgs are parameters that are specific to modules that enable an application to write data
+                                  items:
+                                    description: WriteModuleArgs define the input parameters for modules that write data to location B
+                                    properties:
+                                      destination:
+                                        description: Destination is the data store to which the data will be written
+                                        properties:
+                                          connection:
+                                            description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+                                            properties:
+                                              db2:
+                                                description: oneof location {   // should have been oneof but for technical rasons, a problem to translate it to JSON, we remove the oneof for now should have been local, db2, s3 without "location"  but had a problem to compile it in proto - collision with proto name DataLocationDb2
+                                                properties:
+                                                  database:
+                                                    type: string
+                                                  port:
+                                                    type: string
+                                                  ssl:
+                                                    type: string
+                                                  table:
+                                                    type: string
+                                                  url:
+                                                    type: string
+                                                type: object
+                                              kafka:
+                                                properties:
+                                                  bootstrap_servers:
+                                                    type: string
+                                                  key_deserializer:
+                                                    type: string
+                                                  sasl_mechanism:
+                                                    type: string
+                                                  schema_registry:
+                                                    type: string
+                                                  security_protocol:
+                                                    type: string
+                                                  ssl_truststore:
+                                                    type: string
+                                                  ssl_truststore_password:
+                                                    type: string
+                                                  topic_name:
+                                                    type: string
+                                                  value_deserializer:
+                                                    type: string
+                                                type: object
+                                              name:
+                                                type: string
+                                              s3:
+                                                properties:
+                                                  bucket:
+                                                    type: string
+                                                  endpoint:
+                                                    type: string
+                                                  object_key:
+                                                    type: string
+                                                  region:
+                                                    type: string
+                                                type: object
+                                              type:
+                                                format: int32
+                                                type: integer
+                                            type: object
+                                          credentialLocation:
+                                            description: 'CredentialLocation is used to obtain the credentials from the credential management system - ex: vault'
+                                            type: string
+                                          format:
+                                            description: Format represents data format (e.g. parquet) as received from catalog connectors
+                                            type: string
+                                        required:
+                                        - connection
+                                        - credentialLocation
+                                        - format
+                                        type: object
+                                      transformations:
+                                        description: Transformations are different types of processing that may be done to the data as it is written.
+                                        items:
+                                          properties:
+                                            args:
+                                              additionalProperties:
+                                                type: string
+                                              type: object
+                                            id:
+                                              type: string
+                                            level:
+                                              format: int32
+                                              type: integer
+                                            name:
+                                              type: string
+                                          type: object
+                                        type: array
+                                    required:
+                                    - destination
+                                    type: object
+                                  type: array
+                              type: object
+                            name:
+                              description: Name is the name of the instance of the module. For example, if the application is named "notebook" and an implicitcopy module is deemed necessary.  The FlowStep name would be notebook-implicitcopy.
+                              type: string
+                            template:
+                              description: 'Template is the name of the specification in the Blueprint describing how to instantiate a component indicated by the module.  It is the name of a M4DModule CRD. For example: implicit-copy-db2wh-to-s3-latest'
+                              type: string
+                          required:
+                          - name
+                          - template
+                          type: object
+                        type: array
+                    required:
+                    - name
+                    - steps
+                    type: object
+                  selector:
+                    description: Selector enables to connect the resource to the application Should match the selector of the owner - M4DApplication CRD.
+                    properties:
+                      matchExpressions:
+                        description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
+                        items:
+                          description: A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+                          properties:
+                            key:
+                              description: key is the label key that the selector applies to.
+                              type: string
+                            operator:
+                              description: operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+                              type: string
+                            values:
+                              description: values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+                              items:
+                                type: string
+                              type: array
+                          required:
+                          - key
+                          - operator
+                          type: object
+                        type: array
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+                        type: object
+                    type: object
+                  templates:
+                    items:
+                      description: ComponentTemplate is a copy of a M4DModule Custom Resource.  It contains the information necessary to instantiate a component in a FlowStep, which provides the functionality described by the module.  There are 3 different module types.
+                      properties:
+                        kind:
+                          description: Kind of k8s resource
+                          type: string
+                        name:
+                          description: Name of the template
+                          type: string
+                        resources:
+                          description: Resources contains the location of the helm chart with info detailing how to deploy
+                          items:
+                            type: string
+                          type: array
+                      required:
+                      - kind
+                      - name
+                      - resources
+                      type: object
+                    type: array
+                required:
+                - entrypoint
+                - flow
+                - selector
+                - templates
+                type: object
+              description: Blueprints structure represents remote blueprints mapped by the identifier of a cluster in which they will be running
+              type: object
+            selector:
+              description: Selector enables to connect the resource to the application Should match the selector of the owner - M4DApplication CRD.
+              properties:
+                matchExpressions:
+                  description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
+                  items:
+                    description: A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+                    properties:
+                      key:
+                        description: key is the label key that the selector applies to.
+                        type: string
+                      operator:
+                        description: operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+                        type: string
+                      values:
+                        description: values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - key
+                    - operator
+                    type: object
+                  type: array
+                matchLabels:
+                  additionalProperties:
+                    type: string
+                  description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+                  type: object
+              type: object
+          required:
+          - blueprints
+          - selector
+          type: object
+        status:
+          description: PlotterStatus defines the observed state of Plotter This includes readiness, error message, and indicators received from blueprint resources owned by the Plotter for cleanup and status monitoring
+          properties:
+            observedGeneration:
+              description: ObservedGeneration is taken from the Plotter metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated blueprints should be checked.
+              format: int64
+              type: integer
+            observedState:
+              description: ObservedState includes information to be reported back to the M4DApplication resource It includes readiness and error indications, as well as user instructions
+              properties:
+                dataAccessInstructions:
+                  description: DataAccessInstructions indicate how the data user or his application may access the data. Instructions are available upon successful orchestration.
+                  type: string
+                error:
+                  description: Error indicates that there has been an error to orchestrate the modules and provides the error message
+                  type: string
+                ready:
+                  description: Ready represents that the modules have been orchestrated successfully and the data is ready for usage
+                  type: boolean
+              type: object
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

@@ -99,6 +99,16 @@ type Condition struct {
 	Message string `json:"message,omitempty"`
 }
 
+// ResourceReference contains resource identifier(name, namespace, kind)
+type ResourceReference struct {
+	// Name of the resource
+	Name string `json:"name"`
+	// Namespace of the resource
+	Namespace string `json:"namespace"`
+	// Kind of the resource (Blueprint, Plotter)
+	Kind string `json:"kind"`
+}
+
 // M4DApplicationStatus defines the observed state of M4DApplication.
 type M4DApplicationStatus struct {
 
@@ -119,9 +129,9 @@ type M4DApplicationStatus struct {
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 
-	// BlueprintNamespace represents the namespace where the blueprint (and the relevant resources) will be allocated.
+	// Generated resource identifier
 	// +optional
-	BlueprintNamespace string `json:"blueprintNamespace,omitempty"`
+	Generated *ResourceReference `json:"generated,omitempty"`
 }
 
 // M4DApplication provides information about the application being used by a Data Scientist,
