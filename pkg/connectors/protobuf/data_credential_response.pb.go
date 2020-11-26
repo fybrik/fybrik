@@ -92,8 +92,7 @@ func (m *Credentials) GetApiKey() string {
 }
 
 type DatasetCredentials struct {
-	DatasetId string `protobuf:"bytes,1,opt,name=dataset_id,json=datasetId,proto3" json:"dataset_id,omitempty"`
-	//string credentials = 2;          //json with credentials to asset's data source
+	DatasetId            string       `protobuf:"bytes,1,opt,name=dataset_id,json=datasetId,proto3" json:"dataset_id,omitempty"`
 	Creds                *Credentials `protobuf:"bytes,2,opt,name=creds,proto3" json:"creds,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
 	XXX_unrecognized     []byte       `json:"-"`
