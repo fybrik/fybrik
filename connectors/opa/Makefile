@@ -7,9 +7,11 @@ include $(ROOT_DIR)/hack/make-rules/docker.mk
 
 OPA_PATH=${ABSTOOLBIN}/opa
 OPA_DEFAULT_POLICY_FILE=${ROOT_DIR}/third_party/opa/opa-policy.rego
+NEED_TEST_COVERAGE_STATISTICS=1
+NEED_TEST_COVERAGE_STATISTICS_IN_HTML=0
 
 docker-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o opa-connector opa_connector.go evaluate_opa.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o opa-connector main.go
 	docker build . -t $(IMG) -f Dockerfile
 	rm opa-connector
 
@@ -31,6 +33,16 @@ build:
 
 .PHONY: test
 test:
+ifeq ($(NEED_TEST_COVERAGE_STATISTICS),1)
+	go test -v ./... -coverprofile=coverage.out
+	go tool cover -func=coverage.out
+    ifeq ($(NEED_TEST_COVERAGE_STATISTICS_IN_HTML),1)
+		go tool cover -html=coverage.out
+    endif
+	rm coverage.out
+else
+	go test -v ./...
+endif
 
 .PHONY: clean
 clean: opaserver-clean
