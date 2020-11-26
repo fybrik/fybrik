@@ -116,8 +116,15 @@ func main() {
 		// Initialize PolicyCompiler interface
 		policyCompiler := pc.NewPolicyCompiler()
 
-		// Initiate the M4DApplication Controller (aka Pilot)
-		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler)
+		// Initiate the M4DApplication Controller
+		var resourceContext app.ContextInterface
+		if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" {
+			resourceContext = app.NewPlotterInterface(mgr.GetClient())
+		} else {
+			resourceContext = app.NewBlueprintInterface(mgr.GetClient())
+		}
+
+		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, resourceContext)
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
 			os.Exit(1)
@@ -125,16 +132,10 @@ func main() {
 	}
 
 	if enableBlueprintController || enableAllControllers {
-		// Initiate the M4DApplication Controller (aka Pilot)
-		var resourceContext app.ContextInterface
-		if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" {
-			resourceContext = app.NewPlotterInterface(mgr.GetClient())
-		} else {
-			resourceContext = app.NewBlueprintInterface(mgr.GetClient())
-		}
-		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, resourceContext)
-		if err := applicationController.SetupWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
+		// Initiate the Blueprint Controller
+		blueprintController := app.NewBlueprintReconciler(mgr, "Blueprint", new(helm.Impl))
+		if err := blueprintController.SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", blueprintController.Name)
 			os.Exit(1)
 		}
 	}
