@@ -16,18 +16,6 @@ test:
 	$(MAKE) -C pkg/policy-compiler test
 	$(MAKE) -C manager test
 
-run-integration-tests-local:
-	$(MAKE) kind-cleanup kind-setup
-	$(MAKE) cluster-prepare
-	$(MAKE) docker-minimal-it
-	$(MAKE) cluster-prepare-wait
-	$(MAKE) -C secret-provider configure-vault
-	$(MAKE) -C secret-provider deploy
-	$(MAKE) -C manager deploy_it
-	$(MAKE) -C manager wait_for_manager
-	$(MAKE) helm
-	$(MAKE) -C manager run-integration-tests
-
 .PHONY: cluster-prepare
 cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy

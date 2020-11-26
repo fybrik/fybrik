@@ -76,7 +76,17 @@ jobs:
     install:
     - make install-tools
     script:
-    - make run-integration-tests-local
+    - make kind-setup || travis_terminate 1; # Switch to make kind when istio is needed
+    - make cluster-prepare || travis_terminate 1;
+    - make docker
+    - make -C test/services docker # Build test services
+    - make cluster-prepare-wait || travis_terminate 1;
+    - make -C secret-provider configure-vault
+    - make -C secret-provider deploy || travis_terminate 1;
+    - make -C manager deploy_it || travis_terminate 1;
+    - make -C manager wait_for_manager || travis_terminate 1;
+    - make helm || travis_terminate 1;
+    - make -C manager run-integration-tests || travis_terminate 1;
     deploy:
      skip_cleanup: true
      provider: script
