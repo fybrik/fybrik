@@ -1,0 +1,72 @@
+################################################################################
+# Copyright 2020 IBM Corp. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+################################################################################
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: razeedeploy-sa
+  namespace: "razeedeploy"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: razeedeploy-admin-cr
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- nonResourceURLs:
+  - '*'
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: razeedeploy-rb
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: razeedeploy-admin-cr
+subjects:
+- kind: ServiceAccount
+  name: razeedeploy-sa
+  namespace: "razeedeploy"
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: razeedeploy-job-remove
+  namespace: "razeedeploy"
+spec:
+  template:
+    spec:
+      serviceAccountName: razeedeploy-sa
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+      - name: razeedeploy-job
+        image: "quay.io/razee/razeedeploy-delta:2.1.0"
+        command: ["node", "src/remove", "--namespace=razeedeploy"]
+        args: ["--rr", "--rrs3", "--wk", "--mtp", "--ffsld", "--ms", "-a"]
+        # see README.md for args options. https://github.com/razee-io/razeedeploy-delta/blob/master/README.md
+      restartPolicy: Never
+  backoffLimit: 2
