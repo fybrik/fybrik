@@ -70,17 +70,20 @@ docker-build: generate
 	docker build . -t ${IMG} -f Dockerfile
 	rm manager
 
+config/manager/kustomization.yaml: config/manager/kustomization.yaml.in
+	cp $< $@
+
 # Deploy only movement-controller in the configured Kubernetes cluster in ~/.kube/config
-deploy_mc: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
+deploy_mc: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/manager/kustomization.yaml
 	$(TOOLBIN)/kubectl create namespace ${KUBE_NAMESPACE} || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:${DOCKER_TAGNAME}
 	$(TOOLBIN)/kustomize build --load_restrictor none config/movement-controller | $(TOOLBIN)/kubectl apply -f -
 
-undeploy_mc: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
+undeploy_mc: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/manager/kustomization.yaml
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:${DOCKER_TAGNAME}
 	$(TOOLBIN)/kustomize build --load_restrictor none config/movement-controller | $(TOOLBIN)/kubectl delete -f -
 
-deploy_it: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
+deploy_it: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/manager/kustomization.yaml
 	make build-ca-certs
 	make docker-secret
 	make deploy-custom-ca-secret
@@ -90,7 +93,7 @@ deploy_it: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
 	cd config/integration-tests && $(ABSTOOLBIN)/kustomize edit set image policycompiler=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/serverpolicycompiler-mock:${DOCKER_TAGNAME}
 	$(TOOLBIN)/kustomize build --load_restrictor none config/integration-tests | $(TOOLBIN)/kubectl apply -f -
 
-undeploy_it:
+undeploy_it: config/manager/kustomization.yaml
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
 	$(TOOLBIN)/kustomize build --load_restrictor none config/integration-tests | $(TOOLBIN)/kubectl delete -f -
 
