@@ -22,6 +22,7 @@ import (
 	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	"github.com/ibm/the-mesh-for-data/pkg/helm"
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	// +kubebuilder:scaffold:imports
 )
