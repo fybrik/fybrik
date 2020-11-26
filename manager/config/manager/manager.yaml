@@ -21,7 +21,8 @@ spec:
     spec:
       containers:
       - args:
-        - --enable-leader-election
+        - "--enable-leader-election"
+        - "--enable-all-controllers"
         image: controller:latest
         name: manager
         imagePullPolicy: Always

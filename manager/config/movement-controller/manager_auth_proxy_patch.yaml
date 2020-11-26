@@ -26,4 +26,4 @@ spec:
         args:
         - "--metrics-addr=127.0.0.1:8080"
         - "--enable-leader-election"
-        - "--enable-all-controllers"
+        - "--enable-motion-controller"
