@@ -32,7 +32,7 @@ import (
 const (
 	// OwnerLabelKey is a key to Labels map.
 	// All owned resources should be labeled using this key.
-	OwnerLabelKey string = "m4d.ibm.com.owner"
+	OwnerLabelKey string = "m4d.ibm.com/owner"
 )
 
 // M4DApplicationReconciler reconciles a M4DApplication object
@@ -62,7 +62,6 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	log := r.Log.WithValues("m4dapplication", req.NamespacedName)
 	// obtain M4DApplication resource
 	applicationContext := &app.M4DApplication{}
-	log.V(0).Info("Reconciled object: name = " + req.Name + " namespace = " + req.Namespace)
 	if err := r.Get(ctx, req.NamespacedName, applicationContext); err != nil {
 		log.V(0).Info("The reconciled object was not found")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -238,17 +237,17 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	blueprintPerClusterMap := make(map[string]app.BlueprintSpec)
 	blueprintPerClusterMap[applicationContext.ClusterName] = *blueprintSpec
 
-	resourceMetadata, err := r.ResourceInterface.CreateResourceMetadata(applicationContext.Name, applicationContext.Namespace)
+	resourceRef, err := r.ResourceInterface.CreateResourceReference(applicationContext.Name, applicationContext.Namespace)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	ownerMetadata := &app.ResourceMetadata{Name: applicationContext.Name, Namespace: applicationContext.Namespace}
-	if err := r.ResourceInterface.CreateOrUpdateResource(ownerMetadata, resourceMetadata, blueprintPerClusterMap); err != nil {
-		r.Log.V(0).Info("Error creating " + resourceMetadata.Kind + " : " + err.Error())
+	ownerRef := &app.ResourceReference{Name: applicationContext.Name, Namespace: applicationContext.Namespace}
+	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, blueprintPerClusterMap); err != nil {
+		r.Log.V(0).Info("Error creating " + resourceRef.Kind + " : " + err.Error())
 		return ctrl.Result{}, err
 	}
-	applicationContext.Status.Generated = resourceMetadata
-	r.Log.V(0).Info("Created " + resourceMetadata.Kind + " successfully!")
+	applicationContext.Status.Generated = resourceRef
+	r.Log.V(0).Info("Created " + resourceRef.Kind + " successfully!")
 	return ctrl.Result{}, nil
 }
 

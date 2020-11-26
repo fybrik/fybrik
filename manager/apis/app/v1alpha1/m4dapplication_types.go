@@ -99,14 +99,14 @@ type Condition struct {
 	Message string `json:"message,omitempty"`
 }
 
-// ResourceMetadata contains metadata that allows to query the generated object
-type ResourceMetadata struct {
+// ResourceReference contains resource identifier(name, namespace, kind)
+type ResourceReference struct {
 	// Name of the resource
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 	// Namespace of the resource
-	Namespace string `json:"namespace,omitempty"`
+	Namespace string `json:"namespace"`
 	// Kind of the resource (Blueprint, Plotter)
-	Kind string `json:"kind,omitempty"`
+	Kind string `json:"kind"`
 }
 
 // M4DApplicationStatus defines the observed state of M4DApplication.
@@ -129,9 +129,9 @@ type M4DApplicationStatus struct {
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 
-	// Generated resource metadata
+	// Generated resource identifier
 	// +optional
-	Generated *ResourceMetadata `json:"generated,omitempty"`
+	Generated *ResourceReference `json:"generated,omitempty"`
 }
 
 // M4DApplication provides information about the application being used by a Data Scientist,

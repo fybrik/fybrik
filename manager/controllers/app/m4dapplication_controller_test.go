@@ -398,7 +398,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
 			By("Expecting a namespace to be allocated")
-			Eventually(func() *apiv1alpha1.ResourceMetadata {
+			Eventually(func() *apiv1alpha1.ResourceReference {
 				f := &apiv1alpha1.M4DApplication{}
 				_ = k8sClient.Get(context.Background(), appSignature, f)
 				return f.Status.Generated
@@ -490,7 +490,7 @@ var _ = Describe("M4DApplication Controller", func() {
 
 			// A blueprint namespace should be set
 			By("Expecting application to have a namespace in the status")
-			Eventually(func() *apiv1alpha1.ResourceMetadata {
+			Eventually(func() *apiv1alpha1.ResourceReference {
 				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
 				return application.Status.Generated
 			}, timeout, interval).ShouldNot(BeNil())

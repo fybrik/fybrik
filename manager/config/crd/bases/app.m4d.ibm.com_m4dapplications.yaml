@@ -148,7 +148,7 @@ spec:
               description: DataAccessInstructions indicate how the data user or his application may access the data. Instructions are available upon successful orchestration.
               type: string
             generated:
-              description: Generated resource metadata
+              description: Generated resource identifier
               properties:
                 kind:
                   description: Kind of the resource (Blueprint, Plotter)
@@ -159,6 +159,10 @@ spec:
                 namespace:
                   description: Namespace of the resource
                   type: string
+              required:
+              - kind
+              - name
+              - namespace
               type: object
             observedGeneration:
               description: ObservedGeneration is taken from the M4DApplication metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether the Blueprint status changed.
