@@ -23,7 +23,7 @@ Here’s how to submit a pull request:
 - **Clone the forked repository locally**. Connect your local to the original “upstream” repository by adding it as a remote.
     ```shell
     git clone git@github.com:$(git config user.name)/{{< github_repo >}}.git
-    git remote add upstream https://{{< github_base >}}/{{< github_repo >}}/{{< github_repo >}}.git
+    git remote add upstream https://{{< github_base >}}/{{< github_repo >}}.git
     git remote set-url --push upstream no_push
     ```
 - **[Pull in changes](https://help.github.com/articles/syncing-a-fork/)** from “upstream” often so that you stay up to date so that when you submit your pull request, merge conflicts will be less likely.

@@ -8,15 +8,15 @@ include $(ROOT_DIR)/Makefile.env
 .PHONY: all
 all: manager
 
-include $(ROOT_DIR)/.mk/tools.mk
+include $(ROOT_DIR)/hack/make-rules/tools.mk
 DOCKER_NAME ?= manager
 DOCKER_TAGNAME ?= latest
 DOCKER_FILE = Dockerfile
 DOCKER_CONTEXT = .
 GO_OUTPUT_FILE = manager
 KUBE_NAMESPACE ?= m4d-system
-include $(ROOT_DIR)/.mk/docker.mk
-include $(ROOT_DIR)/.mk/verify.mk
+include $(ROOT_DIR)/hack/make-rules/docker.mk
+include $(ROOT_DIR)/hack/make-rules/verify.mk
 
 # Run tests
 test: generate manifests
@@ -80,7 +80,10 @@ undeploy_mc: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:${DOCKER_TAGNAME}
 	$(TOOLBIN)/kustomize build --load_restrictor none config/movement-controller | $(TOOLBIN)/kubectl delete -f -
 
-deploy_it: docker-secret
+deploy_it: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
+	make build-ca-certs
+	make docker-secret
+	make deploy-custom-ca-secret
 	$(TOOLBIN)/kubectl create namespace ${KUBE_NAMESPACE} || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
 	cd config/integration-tests && $(ABSTOOLBIN)/kustomize edit set image data-catalog-mock=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/data-catalog-mock:${DOCKER_TAGNAME}
@@ -117,21 +120,23 @@ build-ca-certs: $(TOOLBIN)/kubectl
 	rm $(ROOT_DIR)/hack/registry/ca-certificates.crt || true
 	# Hack to fetch CA certificates of base image
 	bash -c "docker cp $$(docker create --rm $(DOCKER_HOSTNAME)/$(DOCKER_NAMESPACE)/$(DOCKER_NAME):$(DOCKER_TAGNAME)):/etc/ssl/certs/ca-certificates.crt $(ROOT_DIR)/hack/registry/ca-certificates.crt"
-	cat $(ROOT_DIR)/hack/registry/ca.crt >> $(ROOT_DIR)/hack/registry/ca-certificates.crt
+	cat $(ROOT_DIR)/hack/registry/themeshfordata-ca.crt >> $(ROOT_DIR)/hack/registry/ca-certificates.crt
+
+.PHONY: deploy-custom-ca-secret
+deploy-custom-ca-secret: $(TOOLBIN)/kubectl
+	$(ABSTOOLBIN)/kubectl create secret generic registry-ca-cert \
+		--from-file=../hack/registry/ca-certificates.crt \
+		--namespace ${KUBE_NAMESPACE} \
+		|| true
 
 .PHONY: docker-secret
 docker-secret: $(TOOLBIN)/kubectl
-	make build-ca-certs
 	$(ABSTOOLBIN)/kubectl create secret generic docker-credentials \
 		--from-literal=hostname=$(DOCKER_HOSTNAME) \
 		--from-literal=namespace=$(DOCKER_NAMESPACE) \
 		--from-literal=tagname=$(DOCKER_TAGNAME) \
 		--from-literal=username=$(DOCKER_USERNAME) \
 		--from-literal=password=$(DOCKER_PASSWORD) \
-		--namespace ${KUBE_NAMESPACE} \
-		|| true
-	$(ABSTOOLBIN)/kubectl create secret generic registry-ca-cert \
-		--from-file=../hack/registry/ca-certificates.crt \
 		--namespace ${KUBE_NAMESPACE} \
 		|| true
 
