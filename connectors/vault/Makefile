@@ -4,7 +4,7 @@ include $(ROOT_DIR)/Makefile.env
 DOCKER_NAME = vault-connector
 DOCKER_CONTEXT=$(ROOT_DIR)
 DOCKER_FILE = $(DOCKER_CONTEXT)/connectors/vault/Dockerfile
-include $(ROOT_DIR)/.mk/docker.mk
+include $(ROOT_DIR)/hack/make-rules/docker.mk
 
 VAULT_PATH=${ABSTOOLBIN}/vault
 include $(ROOT_DIR)/pkg/policy-compiler/policy-compiler.env

@@ -4,11 +4,11 @@
 package utils
 
 import (
+	"github.com/hashicorp/vault/api"
+	"github.com/onsi/ginkgo"
 	"io/ioutil"
 	"os"
 	"strings"
-
-	"github.com/hashicorp/vault/api"
 )
 
 // Attributes that are defined in a config map or the runtime environment
@@ -106,4 +106,32 @@ func GetCredentialsManagerServiceAddress() string {
 // GetDataCatalogServiceAddress returns the address where data catalog is running
 func GetDataCatalogServiceAddress() string {
 	return os.Getenv(CatalogConnectorServiceAddressKey)
+}
+
+func SetIfNotSet(key string, value string, t ginkgo.GinkgoTInterface) {
+	if _, b := os.LookupEnv(key); !b {
+		if err := os.Setenv(key, value); err != nil {
+			t.Fatalf("Could not set environment variable %s", key)
+		}
+	}
+}
+
+func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
+	SetIfNotSet(CatalogConnectorServiceAddressKey, "localhost:50085", t)
+	SetIfNotSet(CredentialsManagerServiceAddressKey, "localhost:50085", t)
+	SetIfNotSet(VaultAddressKey, "http://127.0.0.1:8200/", t)
+	SetIfNotSet(VaultDatasetMountKey, "v1/sys/mounts/m4d/dataset-creds", t)
+	SetIfNotSet(VaultUserMountKey, "v1/sys/mounts/m4d/user-creds", t)
+	SetIfNotSet(VaultDatasetHomeKey, "m4d/dataset-creds/", t)
+	SetIfNotSet(VaultUserHomeKey, "m4d/user-creds/", t)
+	SetIfNotSet(VaultTTLKey, "24h", t)
+	SetIfNotSet(VaultAuthKey, "kubernetes", t)
+	SetIfNotSet("RUN_WITHOUT_VAULT", "1", t)
+	SetIfNotSet("ENABLE_WEBHOOKS", "false", t)
+	SetIfNotSet("CONNECTION_TIMEOUT", "120", t)
+	SetIfNotSet("MAIN_POLICY_MANAGER_CONNECTOR_URL", "localhost:50090", t)
+	SetIfNotSet("MAIN_POLICY_MANAGER_NAME", "MOCK", t)
+	SetIfNotSet("USE_EXTENSIONPOLICY_MANAGER", "false", t)
+	SetIfNotSet("SECRET_PROVIDER_URL", "http://secret-provider.m4d-system.svc.cluster.local:5555/get-secret", t)
+	SetIfNotSet("SECRET_PROVIDER_ROLE", "demo", t)
 }

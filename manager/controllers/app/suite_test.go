@@ -4,15 +4,22 @@
 package app
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	"helm.sh/helm/v3/pkg/release"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 	appapi "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -51,16 +58,14 @@ var _ = BeforeSuite(func(done Done) {
 		CRDDirectoryPaths: []string{
 			filepath.Join("..", "..", "config", "crd", "bases"),
 		},
-		AttachControlPlaneOutput: true,
 	}
+
+	utils.DefaultTestConfiguration(GinkgoT())
 
 	var err error
 	cfg, err = testEnv.Start()
 	Expect(err).ToNot(HaveOccurred())
 	Expect(cfg).ToNot(BeNil())
-
-	// Mockup connectors
-	go mockup.MockCatalogConnector()
 
 	err = appapi.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
@@ -71,6 +76,17 @@ var _ = BeforeSuite(func(done Done) {
 		logf.Log.Info("Using existing controller in existing cluster...")
 		k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 	} else {
+		// Mockup connectors
+		go mockup.CreateTestCatalogConnector(GinkgoT())
+
+		// Fake helm client. Release name is from arrow-flight module
+		fakeHelm := helm.NewFake(
+			&release.Release{
+				Name: "ra8afad067a6a96084dcb",
+				Info: &release.Info{Status: release.StatusDeployed},
+			}, []*unstructured.Unstructured{},
+		)
+
 		mgr, err = ctrl.NewManager(cfg, ctrl.Options{
 			Scheme:             scheme.Scheme,
 			MetricsBindAddress: "localhost:8086",
@@ -78,9 +94,10 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 
 		policyCompiler := &mockup.MockPolicyCompiler{}
-		err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler).SetupWithManager(mgr)
+		resourceContext := NewBlueprintInterface(mgr.GetClient())
+		err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler, resourceContext).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
-		err = NewBlueprintReconciler(mgr, "Blueprint", new(helm.Fake)).SetupWithManager(mgr)
+		err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
 
 		go func() {
@@ -89,6 +106,11 @@ var _ = BeforeSuite(func(done Done) {
 		}()
 
 		k8sClient = mgr.GetClient()
+		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "m4d-system",
+			},
+		}))
 	}
 	Expect(k8sClient).ToNot(BeNil())
 

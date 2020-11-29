@@ -147,16 +147,11 @@ type BlueprintSpec struct {
 // This includes readiness, error message, and indicators forthe Kubernetes
 // resources owned by the Blueprint for cleanup and status monitoring
 type BlueprintStatus struct {
-	// Ready represents that the modules have been orchestrated successfully and the data is ready for usage
+	// ObservedState includes information to be reported back to the M4DApplication resource
+	// It includes readiness and error indications, as well as user instructions
 	// +optional
-	Ready bool `json:"ready,omitempty"`
-	// Error indicates that there has been an error to orchestrate the modules and provides the error message
-	// +optional
-	Error string `json:"error,omitempty"`
-	// DataAccessInstructions indicate how the data user or his application may access the data.
-	// Instructions are available upon successful orchestration.
-	// +optional
-	DataAccessInstructions string `json:"dataAccessInstructions,omitempty"`
+	ObservedState ObservedState `json:"observedState,omitempty"`
+
 	// ObservedGeneration is taken from the Blueprint metadata.  This is used to determine during reconcile
 	// whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.
 	// +optional

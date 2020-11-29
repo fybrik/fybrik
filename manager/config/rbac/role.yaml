@@ -118,6 +118,18 @@ rules:
   - list
   - watch
 - apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - plotters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - apps
   resources:
   - deployments
