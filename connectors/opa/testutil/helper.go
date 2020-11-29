@@ -58,10 +58,10 @@ func ConstructRemoveColumn(colName string) *pb.EnforcementAction {
 		Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": colName}}
 }
 
-/*func ConstructEncryptColumn(colName string) *pb.EnforcementAction {
+func ConstructEncryptColumn(colName string) *pb.EnforcementAction {
 	return &pb.EnforcementAction{Name: "encrypted", Id: "encrypted-ID",
 		Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": colName}}
-}*/
+}
 
 func ConstructRedactColumn(colName string) *pb.EnforcementAction {
 	return &pb.EnforcementAction{Name: "redact", Id: "redact-ID",
@@ -89,14 +89,18 @@ func GetExpectedOpaDecisions(purpose string, in *pb.ApplicationContext) *pb.Poli
 		fmt.Println(operation)
 		var newUsedPolicy *pb.Policy
 		if purpose == "marketing" {
-			newEnforcementAction := ConstructRedactColumn("nameDest")
+			//newEnforcementAction := ConstructRedactColumn("nameDest")
+			newEnforcementAction := ConstructEncryptColumn("nameDest")
 			enforcementActions = append(enforcementActions, newEnforcementAction)
-			newUsedPolicy = &pb.Policy{Description: "redact columns with name nameOrig and nameDest in datasets which have been tagged with Finance"}
+			//newUsedPolicy = &pb.Policy{Description: "redact columns with name nameOrig and nameDest in datasets which have been tagged with Finance"}
+			newUsedPolicy = &pb.Policy{Description: "test for transactions dataset that encrypts some columns by name"}
 			usedPolicies = append(usedPolicies, newUsedPolicy)
 
-			newEnforcementAction = ConstructRedactColumn("nameOrig")
+			//newEnforcementAction = ConstructRedactColumn("nameOrig")
+			newEnforcementAction = ConstructEncryptColumn("nameOrig")
 			enforcementActions = append(enforcementActions, newEnforcementAction)
-			newUsedPolicy = &pb.Policy{Description: "redact columns with name nameOrig and nameDest in datasets which have been tagged with Finance"}
+			//newUsedPolicy = &pb.Policy{Description: "redact columns with name nameOrig and nameDest in datasets which have been tagged with Finance"}
+			newUsedPolicy = &pb.Policy{Description: "test for transactions dataset that encrypts some columns by name"}
 			usedPolicies = append(usedPolicies, newUsedPolicy)
 			// newUsedPolicy = &pb.Policy{Description: "reduct columns with name nameOrig and nameDest  in datasets with Finance"}
 		} else {
@@ -179,7 +183,9 @@ func MockCatalogConnector(port string) {
 func customOpaResponse(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: customOpaResponse")
 
-	customeResponse := "{\"result\":{\"allow\":true,\"allowed_access_types\":[\"READ\",\"COPY\",\"WRITE\"],\"allowed_copy_destinations\":[\"NorthAmerica\",\"US\"],\"allowed_purposes\":[\"analysis\",\"fraud-detection\"],\"allowed_roles\":[\"DataScientist\",\"Security\"],\"deny\":[],\"transform\":[{\"args\":{\"column name\":\"nameDest\"},\"result\":\"Redact column\",\"used_policy\":{\"description\":\"redact columns with name nameOrig and nameDest in datasets which have been tagged with Finance\"}},{\"args\":{\"column name\":\"nameOrig\"},\"result\":\"Redact column\",\"used_policy\":{\"description\":\"redact columns with name nameOrig and nameDest in datasets which have been tagged with Finance\"}}]}}"
+	//customeResponse := "{\"result\":{\"allow\":true,\"allowed_access_types\":[\"READ\",\"COPY\",\"WRITE\"],\"allowed_copy_destinations\":[\"NorthAmerica\",\"US\"],\"allowed_purposes\":[\"analysis\",\"fraud-detection\"],\"allowed_roles\":[\"DataScientist\",\"Security\"],\"deny\":[],\"transform\":[{\"arguments\":{\"column name\":\"nameDest\"},\"action_name\":\"redact column\",\"used_policy\":{\"description\":\"redact columns with name nameOrig and nameDest in datasets which have been tagged with Finance\"}},{\"arguments\":{\"column name\":\"nameOrig\"},\"action_name\":\"redact column\",\"used_policy\":{\"description\":\"redact columns with name nameOrig and nameDest in datasets which have been tagged with Finance\"}}]}}"
+
+	customeResponse := "{\"result\":{\"deny\":[],\"transform\":[{\"action_name\":\"encrypt column\",\"arguments\":{\"column_name\":\"nameDest\"},\"description\":\"Single column is encrypted with its own key\",\"used_policy\":{\"description\":\"test for transactions dataset that encrypts some columns by name\"}},{\"action_name\":\"encrypt column\",\"arguments\":{\"column_name\":\"nameOrig\"},\"description\":\"Single column is encrypted with its own key\",\"used_policy\":{\"description\":\"test for transactions dataset that encrypts some columns by name\"}}]}}"
 
 	fmt.Fprintf(w, customeResponse)
 }
@@ -187,6 +193,6 @@ func customOpaResponse(w http.ResponseWriter, r *http.Request) {
 func MockOpaServer(port string) {
 	log.Println("Start Mock for OPA Server at port " + port)
 
-	http.HandleFunc("/v1/data/extendedEnforcement", customOpaResponse)
+	http.HandleFunc("/v1/data/user_policies", customOpaResponse)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
