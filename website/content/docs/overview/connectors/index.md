@@ -6,7 +6,7 @@ weight: 30
 ---
 
 The project currently has two extension mechanisms, namely connectors and modules. 
-Here we describe what connectors are and what default connectors are installed using the default {{< name >}} installation.
+This page describes what connectors are and what connectors are installed using the default {{< name >}} installation.
 
 # What are connectors?
 

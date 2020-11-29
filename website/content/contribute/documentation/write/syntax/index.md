@@ -94,10 +94,10 @@ Each type uses a different syntax to express the target.
 
 - **Absolute links**. These links target pages outside the hierarchy of the
   current page but within the {{< website >}} website. Start the path of absolute links
-  with {{</* baseurl >}}, for example:
+  with {{</* baseurl */>}}, for example:
 
     ```plain
-    [This links to a page on the about section]({{< baseurl >}}/about/page/)
+    [This links to a page on the about section]({{</* baseurl */>}}/about/page/)
     ```
 
 Regardless of type, links do not point to the `index.md` file with the content,
@@ -107,8 +107,8 @@ but to the folder containing it.
 
 To refer to content in GitHub, use the following shortcodes: 
 
-- `{{</* github_base */>}}` renders as  `{{< github_base >}}`, the organization page in GitHub.
-- `{{</* github_repo */>}}` renders as  `{{< github_repo >}}`, the name of the main repository of the project.
+- `{{</* github_base */>}}` renders as the organization page `{{< github_base >}}`
+- `{{</* github_repo */>}}` renders as the main repository `{{< github_repo >}}`
 
 Tou can use these in external links. For example, to render a [README.md](https://{{< github_base >}}/{{< github_repo >}}/blob/master/README.md) link use:
   ```plain
