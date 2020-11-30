@@ -6,7 +6,7 @@ kind: ConfigMap
 metadata:
   name: m4d-config
 data:
-  SECRET_PROVIDER_URL: "http://secret-provider.m4d-system.svc.cluster.local:5555/get-secret"
+  SECRET_PROVIDER_URL: "http://secret-provider.m4d-system:5555/get-secret"
   SECRET_PROVIDER_ROLE: "demo"
   #catalog connector
   CATALOG_CONNECTOR_URL: "data-catalog:50085"
@@ -24,7 +24,7 @@ data:
   #EXTENSIONS_POLICY_MANAGER_NAME: "OPA"
 
   #internal vault related variables
-  VAULT_ADDRESS: "http://vault.m4d-system.svc.cluster.local:8200/"
+  VAULT_ADDRESS: "http://vault:8200/"
   VAULT_DATASET_HOME: "m4d/dataset-creds/"
   VAULT_USER_HOME: "m4d/user-creds/"
   VAULT_DATASET_MOUNT: "v1/sys/mounts/m4d/dataset-creds"
@@ -37,8 +37,8 @@ data:
 
   #external services
   OPA_SERVER_URL: "opa:8181"
-  EGERIA_SERVER_URL: "https://lab-core.egeria-catalog.svc.cluster.local:9443"
+  EGERIA_SERVER_URL: "https://lab-core.egeria-catalog:9443"
 
   #external vault  variables
-  USER_VAULT_ADDRESS: "http://vault.m4d-system.svc.cluster.local:8200/"
+  USER_VAULT_ADDRESS: "http://vault:8200/"
   USER_VAULT_PATH: "external"
