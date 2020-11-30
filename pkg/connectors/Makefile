@@ -1,6 +1,6 @@
 ROOT_DIR := ../..
 include $(ROOT_DIR)/Makefile.env
-include $(ROOT_DIR)/.mk/tools.mk
+include $(ROOT_DIR)/hack/make-rules/tools.mk
  
 ########### build targets ###########
 

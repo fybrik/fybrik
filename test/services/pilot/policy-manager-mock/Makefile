@@ -3,7 +3,7 @@ DOCKER_NAME = plcy-mgr-mock
 DOCKER_CONTEXT = $(ROOT_DIR)
 DOCKER_FILE = $(DOCKER_CONTEXT)/test/services/pilot/policy-manager-mock/Dockerfile
 
-include $(ROOT_DIR)/.mk/docker.mk
+include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/pkg/policy-compiler/policy-compiler.env
 
 .PHONY: build

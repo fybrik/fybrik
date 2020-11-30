@@ -6,7 +6,7 @@ weight: 30
 ---
 
 The project currently has two extension mechanisms, namely connectors and modules. 
-Here we describe what connectors are and what default connectors are installed using the default {{< name >}} instsallation.
+Here we describe what connectors are and what default connectors are installed using the default {{< name >}} installation.
 
 # What are connectors?
 
@@ -20,7 +20,7 @@ Connectors are GRPC services that the {{< name >}} control plane uses to connect
 
 The project defines the GRPC interfaces of connectors. The interfaces are implemented by concrete connector implementations like a connector to Egeria, a connector to Open Policy Agent, etc. 
 
-{{< name >}} provides some default connectors described in this page, but anyone can develop its own connectors. Note that a single Kubernetes service can implement all GRPC interfaces if the system it connects to supports the required functionality.
+{{< name >}} provides some default connectors described in this page, but anyone can develop their own connectors. Note that a single Kubernetes service can implement all GRPC interfaces if the system it connects to supports the required functionality.
 
 Refer to [API docs](about:blank) for more details about the connectors GRPC interfaces.
 

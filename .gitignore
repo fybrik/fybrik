@@ -49,3 +49,6 @@ test/services/pilot/policy-manager-mock/policy-manager-mock
 connectors/opa/opa_connector
 connectors/vault/vault_connector
 connectors/egeria/target
+
+# Downloaded egeria
+third_party/egeria/egeria
