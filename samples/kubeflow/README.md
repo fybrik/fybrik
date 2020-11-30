@@ -2,7 +2,7 @@
 
 This sample demonstrate the use of The Mesh for Data with Kubeflow notebooks.
 The following sample and instructions have been tested on kind v0.10.0 and OpenShift 4.3 clusters, and against Kubeflow v1.0.2.
-The instructions below assume that they are issued from the root directory of the project, and you have created a Kubernets cluster in advance (either Kind or OpenShift).
+The instructions below assume that they are issued from the root directory of the project, and you have created a Kubernetes cluster in advance (either Kind or OpenShift).
 
 ## Connectors stack
 
@@ -53,6 +53,7 @@ cd samples/kubeflow/install/kubeflow
 
 cd -
 ```
+On an OpenShift 4+ cluster, follow the directions in this [guide](https://github.com/IBM/the-mesh-for-data/samples/kubeflow/install/kubeflow/KF_OPENSHIFT.md) to install Kubeflow assuming Istio 1.7 is already installed on your cluster.
 
 ## Data owner instructions
 
