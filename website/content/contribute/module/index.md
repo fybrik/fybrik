@@ -22,23 +22,7 @@ These steps are described in the following sections in more detail, so that you 
 
 The module workload is associated with a specific user workload and is deployed by the control plane.  It may implement the logic required itself, or it may be a client interface to an external component.  
 
-In either case its input parameters must match the relevant type of `ModuleArguments`.  The details of the different types of arguments are defined in [blueprint_types.go]( {{< baseurl >}}/contribute/module/reference/api/generated/app/#k8s-api-github-com-ibm-the-mesh-for-data-manager-apis-app-v1alpha1-modulearguments). 
-
-```
-type ModuleArguments struct {
-	// CopyArgs are parameters specific to modules that do implicit copies of data from one data store to another.
-	// +optional
-	Copy *CopyModuleArgs `json:"copy,omitempty"`
-
-	// ReadArgs are parameters that are specific to modules that enable user workloads to read data or are involved in preparing data to be read.
-	// +optional
-	Read []ReadModuleArgs `json:"read,omitempty"`
-
-	// WriteArgs are parameters that are specific to modules that enable an application to write data
-	// +optional
-	Write []WriteModuleArgs `json:"write,omitempty"`
-}
-```
+In either case its input parameters must match the relevant type of [ModuleArguments]({{< baseurl >}}/docs/reference/api/generated/app/#k8s-api-github-com-ibm-the-mesh-for-data-manager-apis-app-v1alpha1-modulearguments). 
 
 If the module workload needs to return information to the user, that information should be written to the NOTES.txt of the helm chart.
 
