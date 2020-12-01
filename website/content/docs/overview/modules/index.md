@@ -10,7 +10,7 @@ This page describes what modules are and how they are leveraged by the control p
 
 As described in the [Architecture]({{< baseurl >}}/docs/overview/architecture/) page, the control plane generates a description of a data plane based on policies and application requirements. This is known as a blueprint, and includes components that are deployed by the control plane to fulfill different data-centric requirements.  For example, a component that can mask data can be used to enforce a data masking policy, or a component that copies data may be used to create a local data copy to meet performance requirements, etc. Modules are the way to describe such data plane components and make them available to the control plane. 
 
-The functionality described by the module may be deployed (a) per workload, or (b) it may be composed of one or more components that run independent of the workload and its associated control plane.  In the case of (a), the Mesh for Data control plane handles the deployment of the functional component. In the case of (b) where the functionality of the module runs independently and handles requests from multiple workloads, a client module is what is deployed by the Mesh for Data control plane.  This client module passes parameters to the external component(s) and monitors that status and results of the request to the external component(s), which are declared as a dependencies in the module yaml.
+The functionality described by the module may be deployed (a) per workload, or (b) it may be composed of one or more components that run independent of the workload and its associated control plane.  In the case of (a), the plane handles the deployment of the functional component. In the case of (b) where the functionality of the module runs independently and handles requests from multiple workloads, a client module is what is deployed by the control plane.  This client module passes parameters to the external component(s) and monitors that status and results of the request to the external component(s), which are declared as a dependencies in the module yaml.
 
 In both cases, the module component is packaged as a [Helm](https://helm.sh/) chart that the control plane can install to a workload's data plane. To make a module available to the control plane it must be registered by applying a [`M4DModule`]({{< baseurl >}}/docs/reference/api/generated/app/#k8s-api-github-com-ibm-the-mesh-for-data-manager-apis-app-v1alpha1-m4dmodule) CRD.
 
@@ -20,13 +20,15 @@ The following diagram shows an example with an Arrow Flight module that is fully
 
 
 # Components that make up a module
+
 There are several parts to a module:
 1. [Module Workload]({{< baseurl >}}/contribute/module#module-workload): the workload that runs once the Helm chart is installed by the control plane
-2. (Optional) External component(s): deployed and managed independently of the Mesh for Data.  In this case, the [Module Workload]({{< baseurl >}}/contribute/module#module-workload) is a client to the external component(s).
+2. (Optional) External component(s): deployed and managed independently of {{< name >}}.  In this case, the [Module Workload]({{< baseurl >}}/contribute/module#module-workload) is a client to the external component(s).
 3. [Module Helm Chart]({{< baseurl >}}/contribute/module#module-helm-chart): the package containing the module workload that the control plane installs as part of a data plane.
 4. [M4DModule YAML]({{< baseurl >}}/contribute/module#m4dmodule-yaml): describes the functional capabilities, supported interfaces, and has links to the Module Helm chart - that is either the functional component itself or the client to an external component
 
-# Registering the Module
+# Registering the module
+
 To make the control plane aware of the module so that it can be included in appropriate workload data flows, the administrator must apply the M4DModule YAML in the `m4d-system` namespace.  This makes the control plane aware of the existence of the module.  Note though that it *does not* check that the module's helm chart exists.
 
 For example, the following registers the `arrow-flight-module`:
@@ -43,13 +45,8 @@ There are three main data flows in which modules may be used:
 
 A module may be used in one or more of these flows, as is indicated in the module's yaml file.
 
-# Credential management
-Modules that access or write data need credentials in order to access the data store.  Rather than pass them between components, the control plane stores the credentials in an internal credential management system and passes to the module a link to the credentials.  The module must call the control plane's internal credential management interface, known as the Secret Provider, using the following API.
+# Control plane choice of modules
 
-TODO: Link to API.
-
-
-# Control Plane Choice of Modules
 A user workload description `M4DApplicaton` includes a list of the data sets required, the technologies that will be used to read them, and information about the location and reason for the use of the data.  This information together with input from data and enterprise policies, determine which modules are chosen by the control plane. Currently the logic for choosing the modules for the data plane is as follows:
 
 (1) If the user is requesting to read data, find all the read flow related modules
@@ -60,12 +57,14 @@ A user workload description `M4DApplicaton` includes a list of the data sets req
 
 TODO: Update to address multi-cluster logic
 
-# Available Modules
+# Available modules
 
 The table below lists the currently available modules: 
 Name | Description | M4DModule 
 ---  | ---         | ---      
-[arrow-flight-module](https://{{< github_base >}}/the-mesh-for-data-flight-module) | reading datasets while performing data transformations | https://raw.githubusercontent.com/IBM/the-mesh-for-data-flight-module/master/module.yaml<!-- implicit-copy-module is not listed because it's still only available as part of the project tests -->
+[arrow-flight-module](https://{{< github_base >}}/the-mesh-for-data-flight-module) | reading datasets while performing data transformations | https://raw.githubusercontent.com/IBM/the-mesh-for-data-flight-module/master/module.yaml
+
+<!-- implicit-copy-module is not listed because it's still only available as part of the project tests -->
 
 # Contributing
 For details of the components that make up a module, and how to create one please see -  [`Contribute a Module`]({{< baseurl >}}/contribute/module/)
