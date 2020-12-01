@@ -6,12 +6,13 @@ package mockup
 import (
 	"context"
 	"fmt"
+	"log"
+	"net"
+
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/onsi/ginkgo"
 	"google.golang.org/grpc"
-	"log"
-	"net"
 )
 
 type server struct {
@@ -117,8 +118,8 @@ func (s *server) GetCredentialsInfo(ctx context.Context, in *pb.DatasetCredentia
 	log.Printf("Received: ")
 	log.Printf("DataSetID: " + in.GetDatasetId())
 	return &pb.DatasetCredentials{
-		DatasetId:   in.GetDatasetId(),
-		Credentials: "{\"password\":\"pswd\",\"username\":\"admin\"}",
+		DatasetId: in.GetDatasetId(),
+		Creds:     &pb.Credentials{Username: "admin", Password: "pswd"},
 	}, nil
 }
 
