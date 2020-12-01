@@ -8,9 +8,9 @@ weight: 40
 The project currently has two extension mechanisms, namely connectors and modules. 
 This page describes what modules are and how they are leveraged by the control plane to build the data plane flow.  
 
-As described in the [Architecture]({{< baseurl >}}/docs/overview/architecture/) page, the control plane generates a description of a data plane based on policies and application requirements. This is known as a blueprint, and includes components that are deployed by the control plane to fulfill different data-centric requirements.  For example, a component that can mask data can be used to enforce a data masking policy, or a component that copies data may be used to create a local data copy to meet performace requirements, etc. Modules are the way to describe such data plane components and make them available to the control plane. 
+As described in the [Architecture]({{< baseurl >}}/docs/overview/architecture/) page, the control plane generates a description of a data plane based on policies and application requirements. This is known as a blueprint, and includes components that are deployed by the control plane to fulfill different data-centric requirements.  For example, a component that can mask data can be used to enforce a data masking policy, or a component that copies data may be used to create a local data copy to meet performance requirements, etc. Modules are the way to describe such data plane components and make them available to the control plane. 
 
-The functionality described by the module may be deployed (a) per workload, or (b) it may be a component that runs independent of the workload and its associated control plane.  In the case of (a), the Mesh for Data control plane handles the deployment of the functional component. In the case of (b) where the functionality of the module runs independently and handles requests from multiple workloads, a client module is what is deployed by the Mesh for Data control plane.  This client module passes parameters to the external component and monitors that status and results of the request to the external component.  The external component is declared as a dependency in the module yaml.
+The functionality described by the module may be deployed (a) per workload, or (b) it may be composed of one or more components that run independent of the workload and its associated control plane.  In the case of (a), the Mesh for Data control plane handles the deployment of the functional component. In the case of (b) where the functionality of the module runs independently and handles requests from multiple workloads, a client module is what is deployed by the Mesh for Data control plane.  This client module passes parameters to the external component(s) and monitors that status and results of the request to the external component(s), which are declared as a dependencies in the module yaml.
 
 In both cases, the module component is packaged as a [Helm](https://helm.sh/) chart that the control plane can install to a workload's data plane. To make a module available to the control plane it must be registered by applying a [`M4DModule`]({{< baseurl >}}/docs/reference/api/generated/app/#k8s-api-github-com-ibm-the-mesh-for-data-manager-apis-app-v1alpha1-m4dmodule) CRD.
 
@@ -21,11 +21,18 @@ The following diagram shows an example with an Arrow Flight module that is fully
 
 # Components that make up a module
 There are several parts to a module:
-1. [Module Workload](#module-workload): the workload that runs once the Helm chart is installed by the control plane
-2. (Optional) External component: deployed and managed independently of the Mesh for Data.  In this case, the [Module Workload](#module-workload) is a client to the external component.
-3. [Module Helm Chart](#module-helm-chart): the package containing the module workload that the control plane installs as part of a data plane.
-4. [M4DModule YAML](#m4dmodule): describes the functional capabilities, supported interfaces, and has links to the Module Helm chart - that is either the functional component itself or the client to an external component
+1. [Module Workload]({{< baseurl >}}/contribute/module#module-workload): the workload that runs once the Helm chart is installed by the control plane
+2. (Optional) External component(s): deployed and managed independently of the Mesh for Data.  In this case, the [Module Workload]({{< baseurl >}}/contribute/module#module-workload) is a client to the external component(s).
+3. [Module Helm Chart]({{< baseurl >}}/contribute/module#module-helm-chart): the package containing the module workload that the control plane installs as part of a data plane.
+4. [M4DModule YAML]({{< baseurl >}}/contribute/module#m4dmodule-yaml): describes the functional capabilities, supported interfaces, and has links to the Module Helm chart - that is either the functional component itself or the client to an external component
 
+# Registering the Module
+To make the control plane aware of the module so that it can be included in appropriate workload data flows, the administrator must apply the M4DModule YAML in the `m4d-system` namespace.  This makes the control plane aware of the existence of the module.  Note though that it *does not* check that the module's helm chart exists.
+
+For example, the following registers the `arrow-flight-module`:
+```bash
+kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data-flight-module/master/module.yaml -n m4d-system
+```
 
 # When is a module used?
 
@@ -37,14 +44,13 @@ There are three main data flows in which modules may be used:
 A module may be used in one or more of these flows, as is indicated in the module's yaml file.
 
 # Credential management
-Modules that access or write data need to receive from the control plane either the credentials to the data stores  or a link to where those credentials reside.  Modules thus can indicate which approach they will use:
-* secret-provider - module calls the Mesh for Data secret provider to obtain the credentials.  TODO: Add link to API
-* automatic - credentials are injected by data-mesh, meaning that the credential values are sent as parameters to the module when the module is called.  
+Modules that access or write data need credentials in order to access the data store.  Rather than pass them between components, the control plane stores the credentials in an internal credential management system and passes to the module a link to the credentials.  The module must call the control plane's internal credential management interface, known as the Secret Provider, using the following API.
 
-TODO: It appears that the code currently assumes all modules call the secret provider directly
+TODO: Link to API.
+
 
 # Control Plane Choice of Modules
-A user workload description (M4DApplicaton) includes a list of the data sets required, the technologies that will be used to read them, and information about the location and reason for the use of the data.  This information together with input from data and enterprise policies, determine which modules are chosen by the control plane. Currently the logic for choosing the modules for the data plane is as follows:
+A user workload description `M4DApplicaton` includes a list of the data sets required, the technologies that will be used to read them, and information about the location and reason for the use of the data.  This information together with input from data and enterprise policies, determine which modules are chosen by the control plane. Currently the logic for choosing the modules for the data plane is as follows:
 
 (1) If the user is requesting to read data, find all the read flow related modules
 
