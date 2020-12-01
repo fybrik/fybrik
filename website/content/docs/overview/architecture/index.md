@@ -36,4 +36,4 @@ The information below is outdated
 
 The traffic between the pilot and the connectors is secured by lavergaing Istio security features:
 - Istio authentication policy enables mutual TLS between the pilot and the connectors.
-- Istio authorization policies control the ingress traffic of the connectors.
+- Istio authorization policy controls the ingress traffic of the connectors.

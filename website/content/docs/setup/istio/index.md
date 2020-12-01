@@ -1,6 +1,6 @@
 ---
-title: Istio post-installation steps
-linktitle: Istio post-installation steps
+title: Istio Installation notes
+linktitle: Istio Installation notes
 weight: 30
 ---
 
@@ -17,10 +17,6 @@ kube-apiserver -h | grep enable-admission-plugins
 ## Steps to secure the Ingress Traffic of a New Connector
 
 Upon {{< name >}} deployment a new AuthorizationPolicy CRD is applied. This policiy
-allows ingress traffic of any connector labeld ```m4d.ibm.com/componentType: connector``` only from the pilot.
+allows ingress traffic to any connector labeled ```m4d.ibm.com/componentType: connector``` only from workloads within the control-plane namespace.
 
-Given that, the following steps should apply to secure a new connector ingress traffic:
-
-1. Add a new label:```m4d.ibm.com/componentType: connector``` to the components of the connectors (pods, service, deployment).
-1. Create a service account for the connector identity. This is only needed if the new connector is in the ingress traffic of other connectors. In that case, the AuthorizationPolicy CRDs of the other connectors should be updated with the new connector identity. Please see [Istio principles](https://Istio.io/latest/docs/concepts/security/#principals) for more information.
-1. Add AuthorizationPolicy CRD for the new connector if needed. This is only needed if the new connector has ingress traffic from another connector. Please see [AuthorizationPolicy CRD example](https://{{< github_base >}}/{{< github_repo >}}/blob/master/connectors/helpers/base/Istio/egr-connector-authorization.yaml) for more details.
+Given that, a new label:```m4d.ibm.com/componentType: connector``` should be added to the components of a new connector (pods, service, deployment).

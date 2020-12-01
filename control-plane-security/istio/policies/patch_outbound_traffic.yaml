@@ -6,13 +6,8 @@ kind: AuthorizationPolicy
 metadata:
   name: connector-ingress-security
 spec:
- selector:
-   matchLabels:
-     m4d.ibm.com/componentType: connector
- action: ALLOW
  rules:
-   - from:
-     - source:
-        principals: ["cluster.local/ns/m4d-system/sa/m4d-controller-manager"]
-
+ - from:
+   - source:
+        namespaces: ["m4d-system"]
 

@@ -50,6 +50,6 @@ Policies are therefore defined externally in the policy manager of choice. {{< n
 
 # Securing the Connector Ingress Traffic
 
-Istio authorization policy is used to ensure that the connector ingress is limited to traffic only from the pilot and other connectors if needed.
-For this purpose Istio AuthorizationPolicy CRD is automatically deployed upon installation of {{< name >}}. This CRD allows ingress traffic to any connector only from the pilot. If the ingress traffic of a specific connector is required from another connector as well, an additional AuthorizationPolicy CRD should be added to enable that. Please see [instructions](../../setup/istio/) for more details.
+Istio authorization policy is used to ensure that the connector ingress is limited to traffic only from workloads within the control-plane namespace.
+For this purpose Istio AuthorizationPolicy CRD is automatically deployed upon installation of {{< name >}}. Please see [instructions](../../setup/istio/) for more details.
 In addition, Istio authentication policy is automatically deployed upon installation of {{< name >}} to ensure mutual TLS between the pilot and connectors. This policy is also not connector specific but rather enables Istio [auto mutual     TLS feature](https://Istio.io/latest/docs/tasks/security/authentication/authn-policy/#auto-mutual-tls).

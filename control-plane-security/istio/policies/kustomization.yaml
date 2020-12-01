@@ -4,6 +4,8 @@
 resources:
 - authentication.yaml
 - authorization.yaml
+- outbound_traffic_policy.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: m4d-system
+patchesStrategicMerge:
+- patch_outbound_traffic.yaml

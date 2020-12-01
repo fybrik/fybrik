@@ -23,7 +23,7 @@ By the end of this guide you will have the following installed to your Kubernete
 
 ## Prepare for installing {{< name >}}
 
-1.  Apply [Istio post installation instructions](../istio/) to the cluster.
+1.  Apply [Istio installation notes](../istio/) to the cluster.
 
 1.  Obtain a local copy of {{< name >}} repository
     ```bash
@@ -54,10 +54,6 @@ By the end of this guide you will have the following installed to your Kubernete
     ```
     kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data-flight-module/master/module.yaml
     ```
-1. Apply AuthorizationPolicy CRD for egeria connector
-   ```bash
-   kubectl apply -f connectors/helpers/base/istio/egr-connector-authorization.yaml
-   ```
 
 ## Next steps
 You can now start using {{< name >}}. For samples please see:
