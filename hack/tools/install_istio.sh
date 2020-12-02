@@ -5,7 +5,7 @@
 
 source ./common.sh
 
-export ISTIO_VERSION=1.6.2
+export ISTIO_VERSION=${ISTIO_VERSION:=1.8.0}
 
 header_text "Checking for bin/istioctl"
 [[ -f bin/istioctl ]] && exit 0

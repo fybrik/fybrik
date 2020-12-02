@@ -22,20 +22,8 @@ kind-setup-multi: $(TOOLBIN)/kind $(TOOLBIN)/kubectl
 kind-cleanup: $(TOOLBIN)/kind $(TOOLBIN)/kubectl
 	cd $(TOOLS_DIR); ./create_kind.sh cleanup
 
-.PHONY: istio-setup
-istio-setup: $(TOOLBIN)/kubectl $(TOOLBIN)/istioctl
-	cd $(TOOLS_DIR); ./create_istio.sh
-
-.PHONY: istio-cleanup
-istio-cleanup: $(TOOLBIN)/kubectl $(TOOLBIN)/istioctl
-	cd $(TOOLS_DIR); ./create_istio.sh cleanup
-
-.PHONY: istio-status
-istio-status: $(TOOLBIN)/kubectl
-	cd $(TOOLS_DIR); ./create_istio.sh status
-
 .PHONY: kind
-kind: kind-cleanup kind-setup istio-setup istio-status
+kind: kind-cleanup kind-setup
 
 .PHONY: minikube
-minikube: minikube-cleanup minikube-setup istio-setup istio-status
+minikube: minikube-cleanup minikube-setup
