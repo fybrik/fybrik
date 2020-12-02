@@ -1,8 +1,6 @@
 package multicluster
 
 import (
-	"fmt"
-	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/onsi/gomega"
 	apps "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
@@ -10,43 +8,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"testing"
 )
-
-
-type DummyMultiClusterManager struct {
-	DeployedBlueprints map[string]*v1alpha1.Blueprint
-}
-
-func (m *DummyMultiClusterManager) GetClusters() ([]Cluster, error) {
-	return []Cluster{
-		{
-			Name:     "kind-kind",
-			Metadata: ClusterMetadata{},
-		},
-	}, nil
-}
-
-func (m *DummyMultiClusterManager) GetBlueprint(cluster string, namespace string, name string) (*v1alpha1.Blueprint, error) {
-	blueprint, found := m.DeployedBlueprints[cluster]
-	if found {
-		return blueprint, nil
-	}
-	return nil, fmt.Errorf("Blueprint not found")
-}
-
-func (m *DummyMultiClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
-	m.DeployedBlueprints[cluster] = blueprint
-	return nil
-}
-
-func (m *DummyMultiClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
-	m.DeployedBlueprints[cluster] = blueprint
-	return nil
-}
-
-func (m *DummyMultiClusterManager) DeleteBlueprint(cluster string, namespace string, name string) error {
-	delete(m.DeployedBlueprints, cluster)
-	return nil
-}
 
 func TestDecodeJsonToRuntimeObject(t *testing.T) {
 	var json = `
