@@ -14,16 +14,14 @@ type Transformations struct {
 	Allowed            bool
 	EnforcementActions []pb.EnforcementAction
 	Message            string
-
-	// In some cases copy is required to perform transformations at source
-	// Temporary solution: in these cases mark copy actions as required until rules for transformations at data source are implemented in policy manager
-	Required bool
 }
 
 // DataInfo defines all the information about the given data set
 type DataInfo struct {
 	// Data asset unique identifier, not necessarily the same string appearing in the resource definition
 	AssetID string
+	// Processing geography
+	Geo string
 	// Application interface
 	AppInterface *app.InterfaceDetails
 	// Source connection details
@@ -36,9 +34,10 @@ type DataInfo struct {
 
 // ModuleInstanceSpec consists of the module spec and arguments
 type ModuleInstanceSpec struct {
-	Module  *app.M4DModule
-	Args    *app.ModuleArguments
-	AssetID string
+	Module    *app.M4DModule
+	Args      *app.ModuleArguments
+	AssetID   string
+	Geography string
 }
 
 // Selector is responsible for finding an appropriate module
@@ -70,90 +69,116 @@ func (m *Selector) GetError() string {
 // AddModuleInstances creates module instances for the selected module and its dependencies
 func (m *Selector) AddModuleInstances(args *app.ModuleArguments, item DataInfo) []ModuleInstanceSpec {
 	instances := make([]ModuleInstanceSpec, 0)
+	geo := m.selectGeography(item)
 	// append moduleinstances to the list
 	instances = append(instances, ModuleInstanceSpec{
-		AssetID: item.AssetID,
-		Module:  m.GetModule(),
-		Args:    args,
+		AssetID:   item.AssetID,
+		Module:    m.GetModule(),
+		Args:      args,
+		Geography: geo,
 	})
 	for _, dep := range m.GetDependencies() {
 		instances = append(instances, ModuleInstanceSpec{
-			AssetID: item.AssetID,
-			Module:  dep,
-			Args:    args,
+			AssetID:   item.AssetID,
+			Module:    dep,
+			Args:      args,
+			Geography: geo,
 		})
 	}
 	return instances
+}
+
+// SupportsGovernanceActions checks whether the module supports the required agovernance actions
+func (m *Selector) SupportsGovernanceActions(module *app.M4DModule, actions []pb.EnforcementAction) bool {
+	// Check that the governance actions match
+	for i := range actions {
+		action := &actions[i]
+		supportsAction := false
+		for j := range module.Spec.Capabilities.Actions {
+			transformation := &module.Spec.Capabilities.Actions[j]
+			if transformation.Id == action.Id && transformation.Level == action.Level {
+				supportsAction = true
+				break
+			}
+		}
+		if !supportsAction {
+			return false
+		}
+	}
+	return true
+}
+
+// SupportsGovernanceAction checks whether the module supports the required agovernance action
+func (m *Selector) SupportsGovernanceAction(module *app.M4DModule, action pb.EnforcementAction) bool {
+	// Check that the governance actions match
+	for j := range module.Spec.Capabilities.Actions {
+		transformation := &module.Spec.Capabilities.Actions[j]
+		if transformation.Id == action.Id && transformation.Level == action.Level {
+			return true
+		}
+	}
+	return false
+}
+
+//SupportsDependencies checks whether the module supports the dependency requirements
+func (m *Selector) SupportsDependencies(module *app.M4DModule, moduleMap map[string]*app.M4DModule) bool {
+	// check dependencies
+	subModuleNames, errNames := CheckDependencies(module, moduleMap)
+	if len(errNames) > 0 {
+		m.Message += module.Name + " has missing dependencies: "
+		for _, name := range errNames {
+			m.Message += "\n" + name
+		}
+		m.Message += "\n"
+		return false
+	}
+	m.Module = module.DeepCopy()
+	for _, name := range subModuleNames {
+		m.Dependencies = append(m.Dependencies, moduleMap[name])
+	}
+	return true
+}
+
+// SupportsInterface indicates whether the module supports interface requirements and dependencies
+func (m *Selector) SupportsInterface(module *app.M4DModule) bool {
+	// Check if the module supports the flow
+	if !utils.SupportsFlow(module.Spec.Flows, m.Flow) {
+		return false
+	}
+	// Check if the source and sink protocols requested are supported
+	supportsInterface := false
+	if m.Flow == app.Read {
+		supportsInterface = module.Spec.Capabilities.API.DataFormat == m.Destination.DataFormat && module.Spec.Capabilities.API.Protocol == m.Destination.Protocol
+	} else if m.Flow == app.Copy {
+		for _, inter := range module.Spec.Capabilities.SupportedInterfaces {
+			if inter.Flow != m.Flow {
+				continue
+			}
+			if inter.Source.DataFormat != m.Source.DataFormat || inter.Source.Protocol != m.Source.Protocol {
+				continue
+			}
+			if inter.Sink.DataFormat != m.Destination.DataFormat || inter.Sink.Protocol != m.Destination.Protocol {
+				continue
+			}
+			supportsInterface = true
+			break
+		}
+	}
+	return supportsInterface
 }
 
 // SelectModule finds the module that fits the requirements
 func (m *Selector) SelectModule(moduleMap map[string]*app.M4DModule) bool {
 	m.Message = ""
 	for _, module := range moduleMap {
-		// Check if the module supports the flow
-		if !utils.SupportsFlow(module.Spec.Flows, m.Flow) {
+		if !m.SupportsInterface(module) {
 			continue
 		}
-		// Check if the source and sink protocols requested are supported
-		supportsInterface := false
-		var supportedInterfaceLog, requiredInterfaceLog string
-		if m.Flow == app.Read {
-			supportsInterface = module.Spec.Capabilities.API.DataFormat == m.Destination.DataFormat && module.Spec.Capabilities.API.Protocol == m.Destination.Protocol
-			supportedInterfaceLog = "supports: " + string(module.Spec.Capabilities.API.DataFormat) + "," + string(module.Spec.Capabilities.API.Protocol) + "\n"
-			requiredInterfaceLog = "requires: " + string(m.Destination.DataFormat) + "," + string(m.Destination.Protocol) + "\n"
-		} else if m.Flow == app.Copy {
-			for _, inter := range module.Spec.Capabilities.SupportedInterfaces {
-				if inter.Flow != m.Flow {
-					continue
-				}
-				supportedInterfaceLog = "supports: " + string(inter.Source.DataFormat) + "," + string(inter.Source.Protocol) + "\n"
-				requiredInterfaceLog = "requires: " + string(m.Source.DataFormat) + "," + string(m.Source.Protocol) + "\n"
-				supportedInterfaceLog += "supports: " + string(inter.Sink.DataFormat) + "," + string(inter.Sink.Protocol) + "\n"
-				requiredInterfaceLog += "requires: " + string(m.Destination.DataFormat) + "," + string(m.Destination.Protocol) + "\n"
-
-				if inter.Source.DataFormat != m.Source.DataFormat || inter.Source.Protocol != m.Source.Protocol {
-					continue
-				}
-				if inter.Sink.DataFormat != m.Destination.DataFormat || inter.Sink.Protocol != m.Destination.Protocol {
-					continue
-				}
-				supportsInterface = true
-				break
-			}
-		}
-		if !supportsInterface {
-			m.Message += module.Name + " does not support user interface:\n" + supportedInterfaceLog + requiredInterfaceLog
+		if !m.SupportsGovernanceActions(module, m.Actions) {
 			continue
 		}
-		// Check that the governance actions match
-		for i := range m.Actions {
-			action := &m.Actions[i]
-			supportsAction := false
-			for j := range module.Spec.Capabilities.Actions {
-				transformation := &module.Spec.Capabilities.Actions[j]
-				if transformation.Id == action.Id && transformation.Level == action.Level {
-					supportsAction = true
-					break
-				}
-			}
-			if !supportsAction {
-				m.Message += module.Name + " does not support action " + action.Id + ";"
-				continue
-			}
-		}
-		// check dependencies
-		subModuleNames, errNames := CheckDependencies(module, moduleMap)
-		if len(errNames) > 0 {
-			m.Message += module.Name + " has missing dependencies: "
-			for _, name := range errNames {
-				m.Message += "\n" + name
-			}
-			m.Message += "\n"
+		if !m.SupportsDependencies(module, moduleMap) {
 			continue
-		}
-		m.Module = module.DeepCopy()
-		for _, name := range subModuleNames {
-			m.Dependencies = append(m.Dependencies, moduleMap[name])
 		}
 		return true
 	}
@@ -180,4 +205,15 @@ func CheckDependencies(module *app.M4DModule, moduleMap map[string]*app.M4DModul
 		}
 	}
 	return found, missing
+}
+
+// Choose geography for a module
+// Current logic:
+// Read is done at target (processing geography)
+// Copy is done at source when transformations are required, and at target - otherwise
+func (m *Selector) selectGeography(item DataInfo) string {
+	if len(m.Actions) > 0 && m.Flow == app.Copy {
+		return item.DataDetails.Geo
+	}
+	return item.Geo
 }

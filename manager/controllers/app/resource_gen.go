@@ -77,7 +77,7 @@ func (c *BlueprintInterface) GetResourceSignature(ref *app.ResourceReference) *a
 func (c *BlueprintInterface) CreateOrUpdateResource(owner *app.ResourceReference, ref *app.ResourceReference, blueprintPerClusterMap map[string]app.BlueprintSpec) error {
 	resource := c.GetResourceSignature(ref)
 	if len(blueprintPerClusterMap) != 1 {
-		return errors.New("Invalid cluster configuration")
+		return errors.New(app.InvalidClusterConfiguration)
 	}
 	// There is no actual iteration loop, since the map includes a single BlueprintSpec element
 	for _, blueprintSpec := range blueprintPerClusterMap {

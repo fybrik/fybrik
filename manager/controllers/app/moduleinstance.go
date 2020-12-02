@@ -4,34 +4,35 @@
 package app
 
 import (
+	"emperror.dev/errors"
+	"github.com/go-logr/logr"
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	modules "github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+// ModuleManager builds a set of modules based on the requirements (governance actions, data location) and the existing set of M4DModules
+type ModuleManager struct {
+	Client  client.Client
+	Log     logr.Logger
+	Modules map[string]*app.M4DModule
+	Owner   types.NamespacedName
+}
 
 // SelectModuleInstances builds a list of required modules with the relevant arguments
 /* The order of the lookup is Read, Copy, Write.
    Assumptions:
    - Read is always required.
-   - Copy is used on demand, if a read module does not support the existing source of data
+   - Copy is used on demand, e.g. if a read module does not support the existing source of data or actions
+   - Transformations are always done at data source location
+   - Read module runs close to compute (in processing geography)
    - Write module has not yet been implemented - will be implemented in future release
-   - Each module is responsible for all transformations required for its flow: read module performs actions on read, copy module - actions on copy, etc.
    - All data sets are processed, even if an error is encountered in one or more, to provide a complete status at the end of the reconcile
    - Dependencies are checked but not added yet to the blueprint
 */
-func (r *M4DApplicationReconciler) SelectModuleInstances(requirements []modules.DataInfo, appContext *app.M4DApplication) ([]modules.ModuleInstanceSpec, error) {
-	instances := make([]modules.ModuleInstanceSpec, 0)
-	moduleMap, err := r.GetAllModules()
-	if err != nil {
-		return instances, err
-	}
-	for _, item := range requirements {
-		instances = append(instances, r.SelectModuleInstancesPerDataset(item, appContext, moduleMap)...)
-	}
-	return instances, nil
-}
 
 // StructToInterfaceDetails constructs a valid InterfaceDetails object
 func StructToInterfaceDetails(item modules.DataInfo) (*app.InterfaceDetails, error) {
@@ -46,18 +47,16 @@ func StructToInterfaceDetails(item modules.DataInfo) (*app.InterfaceDetails, err
 	return source, nil
 }
 
-// GetCopyDestination chooses on of the buckets pre-allocated for use by implicit copies.
+// GetCopyDestination chooses one of the buckets pre-allocated for use by implicit copies.
 // These buckets are allocated during deployment of the control plane.
 // If there are no free buckets the creation of the runtime environment for the application will fail.
 // TODO - In the future need to implement dynamic provisioning of buckets for implicit copy.
-func (r *M4DApplicationReconciler) GetCopyDestination(item modules.DataInfo, appContext *app.M4DApplication, destinationInterface *app.InterfaceDetails) *app.DataStore {
+func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInterface *app.InterfaceDetails) (*app.DataStore, error) {
 	// provisioned storage for COPY
-	objectKey, _ := client.ObjectKeyFromObject(appContext)
 	originalAssetName := item.DataDetails.Name
-	bucket := r.FindAvailableBucket(objectKey, item.AssetID, originalAssetName, false)
+	bucket := FindAvailableBucket(m.Client, m.Log, m.Owner, item.AssetID, originalAssetName, false)
 	if bucket == nil {
-		setCondition(appContext, item.AssetID, app.InsufficientStorage, "Storage Provisioner", true)
-		return nil
+		return nil, errors.New(app.InsufficientStorage)
 	}
 	return &app.DataStore{
 		CredentialLocation: utils.GetFullCredentialsPath(bucket.Spec.VaultPath),
@@ -71,25 +70,27 @@ func (r *M4DApplicationReconciler) GetCopyDestination(item modules.DataInfo, app
 			},
 		},
 		Format: string(destinationInterface.DataFormat),
-	}
+	}, nil
 }
 
-// SelectModuleInstancesPerDataset selects the necessary read/copy/write modules for the blueprint
-func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.DataInfo, appContext *app.M4DApplication, moduleMap map[string]*app.M4DModule) []modules.ModuleInstanceSpec {
+// SelectModuleInstances selects the necessary read/copy/write modules for the blueprint
+func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo) ([]modules.ModuleInstanceSpec, error) {
 	instances := make([]modules.ModuleInstanceSpec, 0)
 
 	// Write path is not yet implemented
 	var readSelector, copySelector *modules.Selector
-	r.Log.V(0).Info("Select read path for " + item.AssetID)
+	m.Log.Info("Select read path for " + item.AssetID)
 	// Select a module that supports READ flow, supports actions-on-read, has the required dependency modules (recursively), with API = sink.
 	actionsOnRead := item.Actions[app.Read]
-	r.Log.V(0).Info("Finding modules for " + item.AssetID)
+	if !actionsOnRead.Allowed {
+		return instances, errors.New(actionsOnRead.Message)
+	}
+	m.Log.Info("Finding modules for " + item.AssetID)
 	// Each selector receives source/sink interface and relevant actions
 	// Starting with the existing location for source and user request for sink
 	source, err := StructToInterfaceDetails(item)
 	if err != nil {
-		setCondition(appContext, item.AssetID, err.Error(), "", true)
-		return instances
+		return instances, err
 	}
 	sink := item.AppInterface
 	var sourceDataStore, sinkDataStore *app.DataStore
@@ -101,72 +102,64 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 	// DataStore for destination will be determined if an implicit copy is required
 	sinkDataStore = nil
 
+	// select a read module that supports user interface requirements
+	// actions are not checked since they are not necessarily done by the read module
 	readSelector = &modules.Selector{Flow: app.Read,
 		Destination:  sink,
-		Actions:      actionsOnRead.EnforcementActions,
+		Actions:      make([]pb.EnforcementAction, 0),
 		Source:       nil,
 		Dependencies: make([]*app.M4DModule, 0),
 		Module:       nil,
 		Message:      ""}
-	if !readSelector.SelectModule(moduleMap) {
-		r.Log.V(0).Info(item.AssetID + " : " + readSelector.GetError())
-		setCondition(appContext, item.AssetID, readSelector.GetError(), "", true)
-		return instances
+	if !readSelector.SelectModule(m.Modules) {
+		m.Log.Info(item.AssetID + " : " + readSelector.GetError())
+		return instances, errors.New(readSelector.GetError())
 	}
-
-	// If sources of this module include source, copy is not required
-	r.Log.V(0).Info("Checking supported read sources")
-	sources := GetSupportedReadSources(readSelector.GetModule())
-	utils.PrintStructure(sources, r.Log, "Read sources")
 	// logic for deciding whether copy module is required
-	// In some cases copy is required to perform transformations at source
-	// Temporary solution: in these cases mark copy actions as required until rules for transformations at data source are implemented in policy manager
-	if !utils.SupportsInterface(sources, source) || item.Actions[app.Copy].Required {
-		r.Log.V(0).Info("Copy is required for " + item.AssetID)
+	copyRequired, interfaces, actions := m.getCopyRequirements(item, readSelector)
+
+	if copyRequired {
+		m.Log.Info("Copy is required for " + item.AssetID)
 		// is copy allowed?
-		actionsOnCopy := item.Actions[app.Copy]
-		if !actionsOnCopy.Allowed {
-			setCondition(appContext, item.AssetID, actionsOnCopy.Message, "", true)
-			return instances
+		if !item.Actions[app.Copy].Allowed {
+			return instances, errors.New(item.Actions[app.Copy].Message)
 		}
-		// select a module that supports COPY, supports actions-on-copy, has the required dependencies, with source in module sources and a non-empty intersection between READ_SOURCES and module destinations.
-		for _, copyDest := range sources {
+		// select a module that supports COPY, supports required governance actions, has the required dependencies, with source in module sources and a non-empty intersection between READ_SOURCES and module destinations.
+		for _, copyDest := range interfaces {
 			copySelector = &modules.Selector{
 				Flow:         app.Copy,
 				Source:       source,
-				Actions:      actionsOnCopy.EnforcementActions,
+				Actions:      actions,
 				Destination:  copyDest,
 				Dependencies: make([]*app.M4DModule, 0),
 				Module:       nil,
 				Message:      ""}
 
-			if copySelector.SelectModule(moduleMap) {
+			if copySelector.SelectModule(m.Modules) {
 				break
 			}
 		}
 		// no copy module - report an error
 		if copySelector.GetModule() == nil {
-			r.Log.V(0).Info("Could not find copy module for " + item.AssetID)
-			setCondition(appContext, item.AssetID, copySelector.GetError(), "", true)
-			return instances
+			m.Log.Info("Could not find copy module for " + item.AssetID)
+			return instances, errors.New(copySelector.GetError())
 		}
-		r.Log.V(0).Info("Found copy module " + copySelector.GetModule().Name)
+		m.Log.Info("Found copy module " + copySelector.GetModule().Name)
 		// copy should be applied - allocate storage
-		sinkDataStore = r.GetCopyDestination(item, appContext, copySelector.Destination)
-		if sinkDataStore == nil {
-			return instances
+		if sinkDataStore, err = m.GetCopyDestination(item, copySelector.Destination); err != nil {
+			return instances, nil
 		}
 		// append moduleinstances to the list
 		copyArgs := &app.ModuleArguments{
 			Copy: &app.CopyModuleArgs{
 				Source:          *sourceDataStore,
 				Destination:     *sinkDataStore,
-				Transformations: actionsOnCopy.EnforcementActions},
+				Transformations: copySelector.Actions},
 		}
-		r.Log.V(0).Info("Adding copy module")
+		m.Log.Info("Adding copy module")
 		instances = copySelector.AddModuleInstances(copyArgs, item)
 	}
-	r.Log.V(0).Info("Adding read path")
+	m.Log.Info("Adding read path")
 	var readSource app.DataStore
 	if sinkDataStore == nil {
 		readSource = *sourceDataStore
@@ -178,12 +171,12 @@ func (r *M4DApplicationReconciler) SelectModuleInstancesPerDataset(item modules.
 	readInstructions = append(readInstructions, app.ReadModuleArgs{
 		Source:          readSource,
 		AssetID:         item.AssetID,
-		Transformations: actionsOnRead.EnforcementActions})
+		Transformations: readSelector.Actions})
 	readArgs := &app.ModuleArguments{
 		Read: readInstructions,
 	}
 	instances = append(instances, readSelector.AddModuleInstances(readArgs, item)...)
-	return instances
+	return instances, nil
 }
 
 // GetSupportedReadSources returns a list of supported READ interfaces of a module
@@ -196,4 +189,43 @@ func GetSupportedReadSources(module *app.M4DModule) []*app.InterfaceDetails {
 		list = append(list, inter.Source)
 	}
 	return list
+}
+
+// check whether copy is required
+// decide on actions performed on read (update readSelector)
+// copy is required in the following cases:
+// - the read module does not support data interface
+// - the read module does not support all governance actions
+// - transformations are required while the read module does not run at source location
+// output:
+// - true if copy is required, false - otherwise
+// - interface capabilities to match copy destination, based on read sources
+// - actions that copy has to support
+func (m *ModuleManager) getCopyRequirements(item modules.DataInfo, readSelector *modules.Selector) (bool, []*app.InterfaceDetails, []pb.EnforcementAction) {
+	m.Log.Info("Checking supported read sources")
+	sources := GetSupportedReadSources(readSelector.GetModule())
+	utils.PrintStructure(sources, m.Log, "Read sources")
+	// check if read sources include the data source
+	source, _ := StructToInterfaceDetails(item)
+	supportsDataSource := utils.SupportsInterface(sources, source)
+	// check if read supports all governance actions
+	supportsAllActions := readSelector.SupportsGovernanceActions(readSelector.GetModule(), item.Actions[app.Read].EnforcementActions)
+	// Copy is required when data has to be transformed and read is done at another location
+	transformAtSource := len(item.Actions[app.Read].EnforcementActions) > 0 && item.DataDetails.Geo != item.Geo
+	actions := item.Actions[app.Copy].EnforcementActions
+	if transformAtSource {
+		actions = append(actions, item.Actions[app.Read].EnforcementActions...)
+	} else {
+		// ensure that copy + read support all needed actions
+		// actions that the read module can not perform are required to be done during copy
+		for _, action := range item.Actions[app.Read].EnforcementActions {
+			if !readSelector.SupportsGovernanceAction(readSelector.GetModule(), action) {
+				actions = append(actions, action)
+			} else {
+				readSelector.Actions = append(readSelector.Actions, action)
+			}
+		}
+	}
+	copyRequired := !supportsDataSource || !supportsAllActions || transformAtSource
+	return copyRequired, sources, actions
 }

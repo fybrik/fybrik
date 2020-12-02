@@ -94,7 +94,13 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 
 		policyCompiler := &mockup.MockPolicyCompiler{}
-		resourceContext := NewBlueprintInterface(mgr.GetClient())
+		// Initiate the M4DApplication Controller
+		var resourceContext ContextInterface
+		if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" {
+			resourceContext = NewPlotterInterface(mgr.GetClient())
+		} else {
+			resourceContext = NewBlueprintInterface(mgr.GetClient())
+		}
 		err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler, resourceContext).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
 		err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)

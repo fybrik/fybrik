@@ -6,6 +6,7 @@ package app
 import (
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
+	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	// Temporary - shouldn't have something specific to implicit copies
 )
 
@@ -43,14 +44,26 @@ func (r *M4DApplicationReconciler) RefineInstances(instances []modules.ModuleIns
 	return newInstances
 }
 
+// GenerateBlueprints creates Blueprint specs (one per cluster/geography)
+func (r *M4DApplicationReconciler) GenerateBlueprints(instances []modules.ModuleInstanceSpec, appContext *app.M4DApplication) map[string]app.BlueprintSpec {
+	blueprintMap := make(map[string]app.BlueprintSpec, 0)
+	instanceMap := make(map[string][]modules.ModuleInstanceSpec)
+	for _, moduleInstance := range instances {
+		instanceMap[moduleInstance.Geography] = append(instanceMap[moduleInstance.Geography], moduleInstance)
+	}
+	for key, instanceList := range instanceMap {
+		// unite several instances of a read/write module
+		instances := r.RefineInstances(instanceList)
+		blueprintMap[key] = r.GenerateBlueprint(instances, appContext)
+	}
+	utils.PrintStructure(blueprintMap, r.Log, "BlueprintMap")
+	return blueprintMap
+}
+
 // GenerateBlueprint creates the Blueprint spec based on the datasets and the governance actions required, which dictate the modules that must run in the m4d
 // Credentials for accessing data set are stored in a credential management system (such as vault) and the paths for accessing them are included in the blueprint.
 // The credentials themselves are not included in the blueprint.
-func (r *M4DApplicationReconciler) GenerateBlueprint(instances []modules.ModuleInstanceSpec, appContext *app.M4DApplication) *app.BlueprintSpec {
-	// If no modules received return error.  We should have at least an application
-	if len(instances) == 0 {
-		return nil
-	}
+func (r *M4DApplicationReconciler) GenerateBlueprint(instances []modules.ModuleInstanceSpec, appContext *app.M4DApplication) app.BlueprintSpec {
 	var spec app.BlueprintSpec
 
 	// clone the selector
@@ -63,7 +76,6 @@ func (r *M4DApplicationReconciler) GenerateBlueprint(instances []modules.ModuleI
 	// Define the flow structure, which indicates the flow of data between the components in the m4d
 	// Loop over the list of modules and create a step for each
 	// Also create a template for each module specification - i.e. there could be multiple instances of a module, each with different arguments
-	// TODO - currently assumes one data set per module instance.  Read and Write modules can receive multiple data sets
 	var flow app.DataFlow
 	flow.Name = appName
 	var steps []app.FlowStep
@@ -96,5 +108,5 @@ func (r *M4DApplicationReconciler) GenerateBlueprint(instances []modules.ModuleI
 	spec.Flow = flow
 	spec.Templates = templates
 
-	return &spec
+	return spec
 }
