@@ -2,21 +2,18 @@
 title: Contributing a Module
 date: 2020-11-28T22:10:51+02:00
 draft: false
-weight: 1
+weight: 4
 ---
 
-This page describes what exactly must be provided when contributing a module, and how to make the control plane aware of the new module so that it can be used.
-
-
+This page describes what must be provided when contributing a [module]({{<baseurl>}}/docs/overview/modules/).
 
 Steps for creating a module:
-1. Implement the logic of the module you are contributing - either directly in the [Module Workload](#module-workload) or in an external component.  If the logic is in an external component, then the module workload should act as a client - i.e. receiving paramaters from the control plane and passing them to the external component.
-2. Create the [Module Helm Chart](#module-helm-chart) that will be used by the control plane to deploy the module workload, update it, and delete it as necessary.
-3. Create the [M4DModule YAML](#m4dmodule-yaml) which describes the capabilities of the module workload, in which flows it should be considered for inclusion, its supported interfaces, and the link to the module helm chart.
-4. [Test](#test) the new module
+1. Implement the logic of the module you are contributing. The implementation can either be directly in the [Module Workload](#module-workload) or in an external component.  If the logic is in an external component, then the module workload should act as a client - i.e. receiving paramaters from the control plane and passing them to the external component.
+1. Create and publish the [Module Helm Chart](#module-helm-chart) that will be used by the control plane to deploy the module workload, update it, and delete it as necessary.
+1. Create the [M4DModule YAML](#m4dmodule-yaml) which describes the capabilities of the module workload, in which flows it should be considered for inclusion, its supported interfaces, and the link to the module helm chart.
+1. [Test](#test) the new module
 
-These steps are described in the following sections in more detail, so that you can create your own modules for use by the {{< name >}}.  Note that a new module is maintained in its own git repository, separate from the core [{{< github_repo >}} repository](https://{{< github_base >}}/{{< github_repo >}}).
-
+These steps are described in the following sections in more detail, so that you can create your own modules for use by the {{< name >}}.  Note that a new module is maintained in its own git repository, separate from the [{{< github_repo >}}](https://{{< github_base >}}/{{< github_repo >}}) repository.
 
 ## Module Workload
 
@@ -28,30 +25,43 @@ Modules that access or write data need credentials in order to access the data s
 
 ## Module Helm Chart
 
-For any module chosen by the control plane to be part of the data path, the control plane needs to be able to install/remove/upgrade an instance of the module. {{< name >}} uses [Helm](https://helm.sh/docs/intro/using_helm/) to provide this functionality.  Thus, a [helm chart](https://helm.sh/docs/chart_template_guide/getting_started/) should be provided and pushed to the image registry for each `Module Workload`.
+For any module chosen by the control plane to be part of the data path, the control plane needs to be able to install/remove/upgrade an instance of the module. {{< name >}} uses [Helm](https://helm.sh/docs/intro/using_helm/) to provide this functionality. Follow the Helm [getting started](https://helm.sh/docs/chart_template_guide/getting_started/) guide if you are unfamiliar with Helm. Note that Helm 3.3 or above is required.
 
-In either case its input parameters must match the relevant type of [ModuleArguments]({{< baseurl >}}/docs/reference/api/generated/app/#k8s-api-github-com-ibm-the-mesh-for-data-manager-apis-app-v1alpha1-modulearguments). 
+Because the chart is installed by the control plane, the input `values` to the chart must match the relevant type of [ModuleArguments]({{< baseurl >}}/docs/reference/api/generated/app/#k8s-api-github-com-ibm-the-mesh-for-data-manager-apis-app-v1alpha1-modulearguments). 
+<!-- TODO: expand this when we support setting values in the M4DModule YAML: https://github.com/IBM/the-mesh-for-data/pull/42 -->
 
-If the module workload needs to return information to the user, that information should be written to the NOTES.txt of the helm chart.
+If the module workload needs to return information to the user, that information should be written to the `NOTES.txt` of the helm chart.
 
-Example: [Arrow Flight Module helm chart](https://github.com/IBM/the-mesh-for-data-flight-module/tree/cd168bb6cdf666c2ec1df960395c0dc1c8feeaa9/helm/afm)
+For a full example see the [Arrow Flight Module chart](https://github.com/IBM/the-mesh-for-data-flight-module/tree/cd168bb6cdf666c2ec1df960395c0dc1c8feeaa9/helm/afm).
 
+### Publishing the Helm Chart
+
+Once your Helm chart is ready, you need to push it to a [OCI-based registry](https://helm.sh/docs/topics/registries/) such as [ghcr.io](https://ghcr.io). This allows the control plane of {{< name >}} to later pull the chart whenever it needs to be installed.
+
+You can use the [hack/make-rules/helm.mk](https://{{< github_base >}}/{{< github_repo >}}/blob/master/hack/make-rules/helm.mk) Makefile, or manually push the chart:
+```bash
+HELM_EXPERIMENTAL_OCI=1 
+helm registry login -u <username> <registry>
+helm chart save <chart folder> <registry>/<path>:<version>
+helm chart push <registry>/<path>:<version>
+```
 
 ## M4DModule YAML
 
 `M4DModule` is a kubernetes Custom Resource Definition (CRD) which describes to the control plane the functionality provided by the module.  The M4DModule CRD has no controller. The specification of the `M4DModule` Kubernetes CRD is available in the [API documentation]({{< baseurl >}}/docs/reference/api/generated/app/#k8s-api-github-com-ibm-the-mesh-for-data-manager-apis-app-v1alpha1-m4dmodule). 
 
-### Metadata about the module
-
-The first section in the YAML file contains general information about the module and where it will run.
-
-```
+The YAML file begins with standard Kubernetes metadata followed by the `M4DModule` specification:
+```yaml
 apiVersion: app.m4d.ibm.com/v1alpha1 # always this value
 kind: M4DModule # always this value
 metadata:
   name: "<module name>" # the name of your new module
   namespace: m4d-system  # control plane namespace. Always m4d-system
+spec:
+   ...
 ```
+
+The child fields of `spec` are described next. 
 
 ### `spec.chart`
 
@@ -68,19 +78,19 @@ Used for tracking the status of the module in terms of success or failure. In ma
 
 if the Helm chart includes standard Kubernetes resources such as Deployment and Service, then the status is automatically detected. If however Custom Resource Definitions are used, then the status may not be automatically detected and statusIndicators should be specified.
 
-```
+```yaml
 statusIndicators:
-    - kind: <module name>
-      successCondition: # ex: status.status == SUCCEEDED
-      failureCondition: # ex: status.status == FAILED
-      errorMessage: # ex: status.error
+    - kind: "<module name>"
+      successCondition: "<condition>" # ex: status.status == SUCCEEDED
+      failureCondition: "<condition>" # ex: status.status == FAILED
+      errorMessage: "<field path>" # ex: status.error
 ```
 
 
 ### `spec.dependencies`
 
 A dependency has a `type` and a `name`. Currently `dependencies` of type `module` are supported, indicating that another module must also be installed for this module to work.
-```
+```yaml
 dependencies:
     - type: module #currently the only option is a dependency on another module deployed by the control plane
       name: <dependent module name>
@@ -91,7 +101,7 @@ dependencies:
 
 The `flows` field indicates the types of capabilities supported by the module. Currently supported are three data flows: `read` for enabling an application to read data or prepare data for being read, `write` for enabling an application to write data, and `copy` for performing an implicit data copy on behalf of the application. A module is associated with one or more data flow based on its functionality.
 
-```
+```yaml
 flows: # Indicate the data flow(s) in which the control plane should consider using this module 
 - read  # optional
 - write # optional
@@ -112,7 +122,8 @@ Note that a module that targets copy flows will omit the `api` field and contain
 `capabilites.api` indicates the protocol and data format supported for reading or writing data from the user's workload.
 
 An example for a module that copies data from a db2 database table to an s3 bucket in parquet format.
-```
+
+```yaml
 capabilities:
     credentials-managed-by: secret-provider
     supportedInterfaces:
@@ -126,7 +137,8 @@ capabilities:
 ```
 
 An example for a module that has an API for reading data, and supports reading both parquet and csv formats from s3.
-```
+
+```yaml
 capabilities:
     credentials-managed-by: secret-provider
     api:
@@ -148,7 +160,7 @@ a module that does not perform any transformation on the data may omit the `capa
 
 The following is an example of how a module would declare that it knows how to redact, remove or encrypt data.  For each action there is a level indication, which can be data set level, column level, or row level.  In the example shown column level is indicated, and the actions arguments indicate the columns on which the transformation should be performed.
 
-```
+```yaml
 capabilities:
     actions:
     - id: "redact-ID"
@@ -171,14 +183,9 @@ The following are examples of YAMLs from fully implemented modules:
 
 ## Test
 
-1. [Register the module]({{< baseurl >}}/docs/overview/modules#registering-the-module) to make the control plane aware of it.
-
-2. Create an `M4DApplication` YAML for a user workload, ensuring that the data set and other parameters included in it, together with the governance policies defined in the policy manager, will result in your module being chosen based on the [control plane logic]({{< baseurl >}}/docs/overview/modules#registering-the-module).
-
-3. Apply the `M4DApplication` YAML.
-
-4. View the `M4DApplication status`.
-
-5. Run the user workload and review the results to check if they are what is expected.
-
+1. [Register the module]({{< baseurl >}}/docs/overview/modules#registering-a-module) to make the control plane aware of it.
+1. Create an `M4DApplication` YAML for a user workload, ensuring that the data set and other parameters included in it, together with the governance policies defined in the policy manager, will result in your module being chosen based on the [control plane logic]({{< baseurl >}}/docs/overview/modules#control-plane-choice-of-modules).
+1. Apply the `M4DApplication` YAML.
+1. View the `M4DApplication status`.
+1. Run the user workload and review the results to check if they are what is expected.
 
