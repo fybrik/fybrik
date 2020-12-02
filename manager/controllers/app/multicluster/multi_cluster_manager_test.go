@@ -36,7 +36,7 @@ func TestMultiCluster(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 	actualDeployment := apps.Deployment{}
 	scheme := runtime.NewScheme()
-	//utilruntime.Must(apps.AddToScheme(scheme))
+	// utilruntime.Must(apps.AddToScheme(scheme))
 	if err := decode(json, scheme, &actualDeployment); err != nil {
 		println("failed decoding")
 		t.Error(err)

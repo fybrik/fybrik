@@ -34,7 +34,7 @@ type DummyMultiClusterManager struct {
 
 func (m *DummyMultiClusterManager) GetClusters() ([]Cluster, error) {
 	return []Cluster{
-		Cluster{
+		{
 			Name:     "kind-kind",
 			Metadata: ClusterMetadata{},
 		},
@@ -45,9 +45,8 @@ func (m *DummyMultiClusterManager) GetBlueprint(cluster string, namespace string
 	blueprint, found := m.DeployedBlueprints[cluster]
 	if found {
 		return blueprint, nil
-	} else {
-		return nil, fmt.Errorf("Blueprint not found")
 	}
+	return nil, fmt.Errorf("Blueprint not found")
 }
 
 func (m *DummyMultiClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) (DeploymentDetails, error) {
