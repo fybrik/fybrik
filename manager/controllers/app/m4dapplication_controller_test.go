@@ -456,7 +456,7 @@ var _ = Describe("M4DApplication Controller", func() {
 				Expect(numReads).To(Equal(1))
 			}
 		})
-		It("Test multiple-blueprints-in-single-cluster", func() {
+		It("Test multiple-blueprints", func() {
 			// allocate storage
 			storageSignature := GetStorageSignature()
 			storage := &apiv1alpha1.M4DBucket{
@@ -496,10 +496,10 @@ var _ = Describe("M4DApplication Controller", func() {
 				Eventually(func() *apiv1alpha1.ResourceReference {
 					f := &apiv1alpha1.M4DApplication{}
 					Expect(k8sClient.Get(context.Background(), appSignature, f)).To(Succeed())
+					resource = f
 					return f.Status.Generated
 				}, timeout, interval).ShouldNot(BeNil())
 				By("Expecting plotter to be generated")
-				_ = k8sClient.Get(context.Background(), appSignature, resource)
 				plotter := &apiv1alpha1.Plotter{}
 				Eventually(func() error {
 					key := types.NamespacedName{Name: resource.Status.Generated.Name, Namespace: resource.Status.Generated.Namespace}
@@ -510,10 +510,10 @@ var _ = Describe("M4DApplication Controller", func() {
 				Eventually(func() string {
 					f := &apiv1alpha1.M4DApplication{}
 					_ = k8sClient.Get(context.Background(), appSignature, f)
+					resource = f
 					return getErrorMessages(f)
 				}, timeout, interval).ShouldNot(BeEmpty())
 
-				_ = k8sClient.Get(context.Background(), appSignature, resource)
 				Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.InvalidClusterConfiguration))
 			}
 		})
