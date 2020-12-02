@@ -50,6 +50,13 @@ func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, 
 	if err != nil {
 		return err
 	}
+
+	// initialize Actions structure
+	req.Actions[flow] = modules.Transformations{
+		Allowed:            true,
+		EnforcementActions: make([]pb.EnforcementAction, 0),
+	}
+
 	for _, datasetDecision := range pcresponse.GetDatasetDecisions() {
 		if datasetDecision.GetDataset().GetDatasetId() != datasetID {
 			continue // not our data set
