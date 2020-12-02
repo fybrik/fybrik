@@ -91,7 +91,7 @@ func CreateKafkaToS3CopyModule() *apiv1alpha1.M4DModule {
 	}
 }
 
-// CreateDb2ToS3CopyModule creates a copy module db2->s3
+// CreateDb2ToS3CopyModule creates a copy module that copies db2 data to s3
 func CreateDb2ToS3CopyModule() *apiv1alpha1.M4DModule {
 	db2Module := &apiv1alpha1.M4DModule{
 		ObjectMeta: metav1.ObjectMeta{
@@ -104,16 +104,17 @@ func CreateDb2ToS3CopyModule() *apiv1alpha1.M4DModule {
 				CredentialsManagedBy: apiv1alpha1.SecretProvider,
 				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
 					{
-						Flow:   apiv1alpha1.Copy,
 						Source: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.JdbcDb2, DataFormat: apiv1alpha1.Table},
 						Sink:   &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
+						Flow:   apiv1alpha1.Copy,
 					},
 				},
 				Actions: make([]pb.EnforcementAction, 2),
 			},
-			Chart: "yyy",
+			Chart: "db2-chart",
 		},
 	}
+	// define actions
 	db2Module.Spec.Capabilities.Actions[0] = pb.EnforcementAction{Name: "redact", Id: "redact-ID", Level: pb.EnforcementAction_COLUMN}
 	db2Module.Spec.Capabilities.Actions[1] = pb.EnforcementAction{Name: "encrypt", Id: "encrypt-ID", Level: pb.EnforcementAction_COLUMN}
 	return db2Module
@@ -129,7 +130,7 @@ func CreateS3ToS3CopyModule() *apiv1alpha1.M4DModule {
 		Spec: apiv1alpha1.M4DModuleSpec{
 			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Copy},
 			Capabilities: apiv1alpha1.Capability{
-				CredentialsManagedBy: apiv1alpha1.SecretProvider,
+				CredentialsManagedBy: apiv1alpha1.Automatic,
 				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
 					{
 						Flow:   apiv1alpha1.Copy,
