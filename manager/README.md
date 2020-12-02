@@ -38,7 +38,7 @@ Description of configuration folder structure:
 - `config/default`: This is the default deployment that deploys everything. This includes the CRD, manager deployment, certificates, rbac rules and webhook. This gets installed into the cluster when executing `make deploy`.
 - `config/manager`: Kustomization of the deployment of the controller of the operator. Just the K8s deployment object of the manager.
 - `config/movement-controller`: This is used to install a controller on K8s that is just managing the motion CRDs and no other CRDs. 
-  its used in the make target `make deploy_mc` (the movement-controller image must already be available in an image registry)
+  it's used in the make target `make deploy_mc` (the movement-controller image must already be available in an image registry)
 - `config/prod`: This is meant as the production profile that is based on `config/default` and applies patches to be run
  in the production environment. (NOT DEFINED YET)
 - `config/prometheus`: For monitoring using prometheus (not used at the moment)
