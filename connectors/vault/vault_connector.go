@@ -5,12 +5,14 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
 	"strconv"
 	"strings"
 
+	"github.com/golang/protobuf/jsonpb"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"google.golang.org/grpc"
 )
@@ -38,7 +40,24 @@ func (s *server) GetCredentialsInfo(ctx context.Context, in *pb.DatasetCredentia
 	}
 	log.Println("Read credentials from vault: " + readCredentials)
 
-	return &pb.DatasetCredentials{DatasetId: in.DatasetId, Credentials: readCredentials}, nil
+	//return &pb.DatasetCredentials{DatasetId: in.DatasetId, Credentials: readCredentials}, nil
+
+	// credentials := &pb.Credentials{
+	// 	CustomCredentialsJson: readCredentials,
+	// }
+	credentials := pb.Credentials{}
+	err = jsonpb.UnmarshalString(readCredentials, &credentials)
+	if err != nil {
+		return nil, fmt.Errorf("error in UnmarshalString from readCredentials %s. Error is  %v", readCredentials, err)
+	}
+	log.Println("populated credentials object is given below")
+	sCredential, _ := json.MarshalIndent(credentials, "", "\t")
+	log.Print(string(sCredential))
+
+	dscredentials := &pb.DatasetCredentials{DatasetId: in.DatasetId, Creds: &credentials}
+	log.Println("sending credentials from vault connector: ")
+	log.Println(dscredentials)
+	return dscredentials, nil
 }
 
 func main() {

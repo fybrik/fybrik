@@ -6,120 +6,65 @@ weight: 40
 ---
 
 The project currently has two extension mechanisms, namely connectors and modules. 
-Here we describe what modules are and what default modules are installed using the default {{< name >}} installation.
+This page describes what modules are and how they are leveraged by the control plane to build the data plane flow.  
 
-# What are modules?
+As described in the [architecture]({{< baseurl >}}/docs/overview/architecture/) page, the control plane generates a description of a data plane based on policies and application requirements. This is known as a blueprint, and includes components that are deployed by the control plane to fulfill different data-centric requirements.  For example, a component that can mask data can be used to enforce a data masking policy, or a component that copies data may be used to create a local data copy to meet performance requirements, etc. 
 
-At runtime, the control plane builds a blueprint for each application. The blueprint includes additional components that are injected into the data path by the control plane to fulfill governance requirements and application requirements.
+Modules are the way to describe such data plane components and make them available to the control plane. A module is packaged as a [Helm](https://helm.sh/) chart that the control plane can install to a workload's data plane. To make a module available to the control plane it must be [registered](#register-a-module) by applying a [`M4DModule`]({{< baseurl >}}/docs/reference/api/generated/app/#k8s-api-github-com-ibm-the-mesh-for-data-manager-apis-app-v1alpha1-m4dmodule) CRD.
 
-Modules are the way to provide a specification of the capabilities of such components, and make them available to the control plane.
+The functionality described by the module may be deployed (a) per workload, or (b) it may be composed of one or more components that run independent of the workload and its associated control plane.  In the case of (a), the control plane handles the deployment of the functional component. In the case of (b) where the functionality of the module runs independently and handles requests from multiple workloads, a client module is what is deployed by the control plane.  This client module passes parameters to the external component(s) and monitors the status and results of the requests to the external component(s). 
+<!-- TODO: Add "which are declared as a dependencies in the module yaml"  when we support it-->
 
-# Concept
+The following diagram shows an example with an Arrow Flight module that is fully deployed by the control plane and a second module where the client is deployed by the control plane but the ETL component providing the functionality has been independently deployed and supports multiple workloads.
 
-For the control plane to build a blueprint that includes modules, the control plane needs a catalog of all the modules available for its use.  Therefore, the control plane includes a **module repository** listing all registered modules. 
+![Example](module_arch.png)
 
+# Components that make up a module
 
-For each module, the control plane needs **module details** describing the capabilities of the module (read, write, copy, transforms, etc.). This is needed so the control plane can pick the set of modules that can be used together in the same blueprint and fulfill all application and governance requirements. 
+There are several parts to a module:
+1. **Optional** external component(s): deployed and managed independently of {{< name >}}.
+1. [Module Workload]({{< baseurl >}}/contribute/module#module-workload): the workload that runs once the Helm chart is installed by the control plane.
+Can be a client to the external component(s) or be independent.
+1. [Module Helm Chart]({{< baseurl >}}/contribute/module#module-helm-chart): the package containing the module workload that the control plane installs as part of a data plane.
+1. [M4DModule YAML]({{< baseurl >}}/contribute/module#m4dmodule-yaml): describes the functional capabilities, supported interfaces, and has links to the Module Helm chart.
 
+# Registering a module
 
-For any module chosen by the control plane to be part of a blueprint, the control plane needs to be able to install/remove/upgrade an instance of the module. For example, if it's a service then the control plane needs to deploy and configure the service. This is done by installing the deployable **module package**.
+To make the control plane aware of the module so that it can be included in appropriate workload data flows, the administrator must apply the M4DModule YAML in the `m4d-system` namespace.  This makes the control plane aware of the existence of the module.  Note that it **does not** check that the module's helm chart exists.
 
-
-Once deployed, we have an instance of the module's resources deployed to the cluster. This is the **module code**.
-
-
-This document describes how {{< name >}} currently implements this concept using `M4DModule` CRD and Helm as well as listing requirements from the module code.
-
-# M4DModule
-
-A `M4DModule` CRD describes a single module:
-
-```yaml
-apiVersion: app.m4d.ibm.com/v1alpha1
-kind: M4DModule
-metadata:
-  name: module name
-  namespace: m4d-system  # control plane namespace
-  labels:
-    name: module name
-    version: 1.0.0  # semantic version 
-spec:
-  chart: helm chart reference # e.g. docker.io/username/chartname:chartversion
-  dependencies:
-    - type: module # currently must be "module"
-      name: module name # the `metadata.name` field of another applied M4DModule
-  flows:
-    - read  # optional
-    - write # optional
-    - copy  # optional
-  capabilities:
-    ... # omitted for brevity
+For example, the following registers the `arrow-flight-module`:
+```bash
+kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data-flight-module/master/module.yaml -n m4d-system
 ```
 
-An administrator registers a module with a control plane by applying a `M4DModule` resource in the namespace of the control plane (i.e., `m4d-system`). Hence, the module repository is the set of all `M4DModule` resources in that namespace.
+# When is a module used?
 
-The `spec.chart` field contains a reference to a Helm chart stored in an OCI image registry. This is similar to how a Kubernetes `Pod` contains a reference to a container image. The Helm chart is the module package that the control plane can dynamically install/remove/upgrade as needed as part of a blueprint. See [Module Helm chart](#module-helm-chart) for details.
+There are three main data flows in which modules may be used:
+* Read - preparing data to be read and/or actually reading the data
+* Write - writing a new data set or appending data to an existing data set
+* Copy - for performing an implicit data copy on behalf of the application.  The decision to do an implicit copy is made by the control plane, typically for performance or governance reasons.
 
-The reminder of the `spec` field lists the module details: 
-- **`dependencies`**: lists the requirements for using this module in a blueprint. Currently only a dependency on another modules is supported. When another module is listed as a dependency, it means that it must be part of the same blueprint. For modules of type `configuration` the first dependency indicates the parent module that the configuration applies to.
-- **`flows`**: {{< name >}} currently supports three data flows: read for enabling an application to read data, write for enabling an application to write data, and copy for performing an implicit data copy on behalf of the application. A module is associated with one or more data flow based on its functionality.
-- **`capabilities`**: lists the capabilities of the module as described next in [Module capabilities](#module-capabilities) 
+A module may be used in one or more of these flows, as is indicated in the module's yaml file.
 
-# Module capabilities
+# Control plane choice of modules
 
-The `spec.capabilities` field is defined as follows:
+A user workload description `M4DApplicaton` includes a list of the data sets required, the technologies that will be used to read them, and information about the location and reason for the use of the data.  This information together with input from data and enterprise policies, determine which modules are chosen by the control plane. Currently the logic for choosing the modules for the data plane is as follows:
+1. If the user is requesting to read data, find all the read flow related modules
+1. If the data set protocol/format and the protocol/format requested by the user do not match, then make an implicit copy of the data, storing it such that it is readable via the protocol/format requested by the user.
+1. If the governance action(s) required on the data set are not supported by the read module, and it is supported by the implicit copy module ... then make an implicit copy. Otherwise no need for implicit copy, and read will be done from the source directly.
 
-```yaml
-capabilities:
-  api:
-    protocol: protocol
-    dataformat: format # optional
-  supportedInterfaces:
-    - flow: read/write/copy
-      source: #optional
-        protocol: protocol
-        dataformat: file format
-      sink: #optional
-        protocol: protocol
-        dataformat: file format
-  actions:
-    - id: enforcement action identifier 
-      level: dataset/column
-```
+<!-- TODO: Update to address multi-cluster logic -->
 
-* **`api`** specifies what client-facing API the module exposes to a caller that invokes read or write commands 
-* **`supportedInterfaces`** lists the supported data services that the module can read data from and write data to
-* **`actions`** lists the enforcement actions (e.g., transforms) supported by the module. The actions are taken from a defined [Enforcement Actions Taxonomy](about:blank)
+# Available modules
 
-A `protocol` field can take a value such as `kafka`, `s3`, `jdbc-db2`, `m4d-arrow-flight`, etc.
+The table below lists the currently available modules: 
 
-A `format` field can take a value such as `avro`, `parquet`, `json`, or `csv`.
+Name | Description | M4DModule 
+---  | ---         | ---      
+[arrow-flight-module](https://{{< github_base >}}/the-mesh-for-data-flight-module) | reading datasets while performing data transformations | https://raw.githubusercontent.com/IBM/the-mesh-for-data-flight-module/master/module.yaml
 
-Note that a module that targets copy flows will omit the `api` field and contain just `source` and `sink`, a module that only supports reading data assets will omit the `sink` field and only contain `api` and `source`, a module that does not perform any enforcement actions can omit the `actions` field, etc.
+<!-- implicit-copy-module is not listed because it's still only available as part of the project tests -->
 
-# Module Helm chart
+# Contributing
 
-Module is packed as a Helm chart to be installed dynamically by the control plane whenever needed. The Helm chart must be stored in an [OCI registry](https://helm.sh/docs/topics/registries/) capable of holding Helm charts. The project provides tooling for pushing modules to such Helm repositories.
-
-
-Since the Helm package is installed by the control plane, it can't assume that arbitrary values will be passed. Instead, the project defines the exact values that are available to the control plane and that the module *should* accept as template values. The name, namespace, labels and service account must always be templated.
-
-
-Context | Name | Type | Description
---------|------|------|------------
-Root | name | String | Instance name
-Root | namespace | String | Instance namespace
-Root | labels | String[] | Instance labels
-Root | serviceAccount | String | Service account
-Root | arguments | Arguments | Arguments
-Arguments | flow | String | copy, read or write
-Arguments | copy | Copy | Copy arguments
-Copy | source | DataStore | Copy source 
-Copy | destination | DataStore | Copy sink
-Copy | transformations | EnforcementAction[] | Actions on copy
-Arguments | read | Read[] | Read arguments
-Read | source | DataStore | Read datastore
-Read | transformations | EnforcementAction[]      | Actions for read item
-Arguments | write | Write[] | Write arguments
-Write | destination | DataStore | Write datastore
-Write | transformations | EnforcementAction[] | Actions on write item
+Read  [Contribute a Module]({{< baseurl >}}/contribute/module/) for details on the components that make up a module and how to create a module.

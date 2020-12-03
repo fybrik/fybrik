@@ -46,27 +46,17 @@ func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, 
 		flow = app.Write
 	}
 
-	if flow == app.Copy {
-		// Special use-case: in case of different geographies and required transformations, require a copy that will handle the transformations
-		// TODO: get this information from policy compiler
-		if req.DataDetails.Geo != input.Spec.AppInfo.ProcessingGeography && len(req.Actions[app.Read].EnforcementActions) > 0 && req.Actions[app.Read].Allowed {
-			req.Actions[flow] = modules.Transformations{
-				Allowed:            true,
-				Required:           true,
-				EnforcementActions: req.Actions[app.Read].EnforcementActions,
-			}
-			req.Actions[app.Read] = modules.Transformations{
-				Allowed:            true,
-				EnforcementActions: make([]pb.EnforcementAction, 0),
-			}
-			return nil
-		}
-	}
-
 	pcresponse, err := policyCompiler.GetPoliciesDecisions(appContext)
 	if err != nil {
 		return err
 	}
+
+	// initialize Actions structure
+	req.Actions[flow] = modules.Transformations{
+		Allowed:            true,
+		EnforcementActions: make([]pb.EnforcementAction, 0),
+	}
+
 	for _, datasetDecision := range pcresponse.GetDatasetDecisions() {
 		if datasetDecision.GetDataset().GetDatasetId() != datasetID {
 			continue // not our data set
