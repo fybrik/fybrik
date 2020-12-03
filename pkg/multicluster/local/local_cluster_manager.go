@@ -13,11 +13,11 @@ const (
 	clusterMetadataConfigmapName string = "cluster-metadata"
 )
 
-type LocalClusterManager struct {
+type ClusterManager struct {
 	Client client.Client
 }
 
-func (cm *LocalClusterManager) GetClusters() ([]multicluster.Cluster, error) {
+func (cm *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	clusterMetadataConfigmap := corev1.ConfigMap{}
 	namespacedName := client.ObjectKey{
 		Name:      clusterMetadataConfigmapName,
@@ -38,24 +38,24 @@ func (cm *LocalClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	return clusters, nil
 }
 
-func (cm *LocalClusterManager) GetBlueprint(cluster string, namespace string, name string) (*v1alpha1.Blueprint, error) {
+func (cm *ClusterManager) GetBlueprint(cluster string, namespace string, name string) (*v1alpha1.Blueprint, error) {
 	return nil, nil
 }
 
-func (cm *LocalClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+func (cm *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	return nil
 }
 
-func (cm *LocalClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+func (cm *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	return nil
 }
 
-func (cm *LocalClusterManager) DeleteBlueprint(cluster string, namespace string, name string) error {
+func (cm *ClusterManager) DeleteBlueprint(cluster string, namespace string, name string) error {
 	return nil
 }
 
 func CreateLocalClusterManager(client client.Client) multicluster.ClusterManager {
-	return &LocalClusterManager{
+	return &ClusterManager{
 		Client: client,
 	}
 }
