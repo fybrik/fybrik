@@ -43,14 +43,14 @@ func performHTTPReq(standardClient *http.Client, address string, httpMethod stri
 	return res
 }
 
-func EvaluateExtendedPoliciesOnInput(inputMap map[string]interface{}, opaServerURL string) (string, error) {
+func EvaluatePoliciesOnInput(inputMap map[string]interface{}, opaServerURL string) (string, error) {
 	if !strings.HasPrefix(opaServerURL, "http://") {
 		opaServerURL = "http://" + opaServerURL + "/"
 	}
 	if !strings.HasSuffix(opaServerURL, "/") {
 		opaServerURL += "/"
 	}
-	log.Println("using opaServerURL in OPAConnector EvaluateExtendedPoliciesOnInput: ", opaServerURL)
+	log.Println("using opaServerURL in OPAConnector EvaluatePoliciesOnInput: ", opaServerURL)
 
 	retryClient := retryablehttp.NewClient()
 	retryClient.RetryMax = 10
@@ -66,8 +66,7 @@ func EvaluateExtendedPoliciesOnInput(inputMap map[string]interface{}, opaServerU
 	log.Println("opaServerURL")
 	log.Println(opaServerURL)
 
-	res := performHTTPReq(standardClient, opaServerURL+"v1/data/extendedEnforcement", httpMethod, inputJSON, contentType)
-
+	res := performHTTPReq(standardClient, opaServerURL+"v1/data/user_policies", httpMethod, inputJSON, contentType)
 	data, _ := ioutil.ReadAll(res.Body)
 	fmt.Printf("body from input http response: %s\n", data)
 	fmt.Printf("status from input http response: %d\n", res.StatusCode)

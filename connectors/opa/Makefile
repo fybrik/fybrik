@@ -6,7 +6,8 @@ DOCKER_FILE=$(DOCKER_CONTEXT)/connectors/opa/Dockerfile
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 
 OPA_PATH=${ABSTOOLBIN}/opa
-OPA_DEFAULT_POLICY_FILE=${ROOT_DIR}/third_party/opa/opa-policy.rego
+OPA_DEFAULT_POLICY_FILE=${ROOT_DIR}/third_party/opa/data-and-policies/user_policies.rego
+OPA_DEFAULT_POLICY_FOLDER=${ROOT_DIR}/third_party/opa/data-and-policies/data_policies
 NEED_TEST_COVERAGE_STATISTICS=1
 NEED_TEST_COVERAGE_STATISTICS_IN_HTML=0
 
@@ -17,7 +18,7 @@ docker-build:
 
 .PHONY: opaserver
 opaserver:
-	{ $(OPA_PATH) run --server $(OPA_DEFAULT_POLICY_FILE) > output-opa.log 2>&1 & echo $$! >> opa_pids.txt; }
+	{ $(OPA_PATH) run --server $(OPA_DEFAULT_POLICY_FILE) $(OPA_DEFAULT_POLICY_FOLDER) > output-opa.log 2>&1 & echo $$! >> opa_pids.txt; }
 
 .PHONY: opaserver-terminate
 opaserver-terminate:
