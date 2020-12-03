@@ -6,6 +6,7 @@ package app
 import (
 	"context"
 	"io/ioutil"
+	"os"
 	"time"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -90,7 +91,7 @@ func CreateKafkaToS3CopyModule() *apiv1alpha1.M4DModule {
 	}
 }
 
-// CreateDb2ToS3CopyModule creates a copy module db2->s3
+// CreateDb2ToS3CopyModule creates a copy module that copies db2 data to s3
 func CreateDb2ToS3CopyModule() *apiv1alpha1.M4DModule {
 	db2Module := &apiv1alpha1.M4DModule{
 		ObjectMeta: metav1.ObjectMeta{
@@ -103,19 +104,48 @@ func CreateDb2ToS3CopyModule() *apiv1alpha1.M4DModule {
 				CredentialsManagedBy: apiv1alpha1.SecretProvider,
 				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
 					{
-						Flow:   apiv1alpha1.Copy,
 						Source: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.JdbcDb2, DataFormat: apiv1alpha1.Table},
+						Sink:   &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
+						Flow:   apiv1alpha1.Copy,
+					},
+				},
+				Actions: make([]pb.EnforcementAction, 2),
+			},
+			Chart: "db2-chart",
+		},
+	}
+	// define actions
+	db2Module.Spec.Capabilities.Actions[0] = pb.EnforcementAction{Name: "redact", Id: "redact-ID", Level: pb.EnforcementAction_COLUMN}
+	db2Module.Spec.Capabilities.Actions[1] = pb.EnforcementAction{Name: "encrypt", Id: "encrypt-ID", Level: pb.EnforcementAction_COLUMN}
+	return db2Module
+}
+
+// CreateS3ToS3CopyModule creates a copy module s3->s3
+func CreateS3ToS3CopyModule() *apiv1alpha1.M4DModule {
+	s3Module := &apiv1alpha1.M4DModule{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "implicit-copy-s3-to-s3",
+			Namespace: "default",
+		},
+		Spec: apiv1alpha1.M4DModuleSpec{
+			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Copy},
+			Capabilities: apiv1alpha1.Capability{
+				CredentialsManagedBy: apiv1alpha1.Automatic,
+				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
+					{
+						Flow:   apiv1alpha1.Copy,
+						Source: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
 						Sink:   &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
 					},
 				},
 				Actions: make([]pb.EnforcementAction, 2),
 			},
-			Chart: "yyy",
+			Chart: "s3-s3",
 		},
 	}
-	db2Module.Spec.Capabilities.Actions[0] = pb.EnforcementAction{Name: "redact", Id: "redact-ID", Level: pb.EnforcementAction_COLUMN}
-	db2Module.Spec.Capabilities.Actions[1] = pb.EnforcementAction{Name: "encrypt", Id: "encrypt-ID", Level: pb.EnforcementAction_COLUMN}
-	return db2Module
+	s3Module.Spec.Capabilities.Actions[0] = pb.EnforcementAction{Name: "redact", Id: "redact-ID", Level: pb.EnforcementAction_COLUMN}
+	s3Module.Spec.Capabilities.Actions[1] = pb.EnforcementAction{Name: "encrypt", Id: "encrypt-ID", Level: pb.EnforcementAction_COLUMN}
+	return s3Module
 }
 
 var _ = Describe("M4DApplication Controller", func() {
@@ -147,6 +177,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "implicit-copy-kafka-to-s3-stream", Namespace: "default"}})
 			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "read-path", Namespace: "default"}})
 			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "implicit-copy-db2-to-s3", Namespace: "default"}})
+			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "implicit-copy-s3-to-s3", Namespace: "default"}})
 		})
 
 		// This test checks that the finalizers are properly reconciled upon creation and deletion of the resource
@@ -354,7 +385,7 @@ var _ = Describe("M4DApplication Controller", func() {
 		// S3 dataset, no copy is needed
 		// Enforcement actions for the first dataset: redact on read, encrypt on copy
 		// Enforcement action for the second dataset: Allow
-		// Applied copy module kafka->s3 and db2->s3 supporting redact and encrypt actions
+		// Applied copy module s3->s3 and db2->s3 supporting redact and encrypt actions
 		// Result: blueprint is created successfully, a read module is applied once for both datasets
 
 		It("Test blueprint-created", func() {
@@ -373,11 +404,11 @@ var _ = Describe("M4DApplication Controller", func() {
 			}
 			Expect(k8sClient.Create(context.Background(), storage)).Should(Succeed())
 
-			// Load kafka-s3 copy module
-			kafkaModule := CreateKafkaToS3CopyModule()
+			// Load s3-s3 copy module
+			s3Module := CreateS3ToS3CopyModule()
 			readPathModule := CreateReadPathModule()
 
-			Expect(k8sClient.Create(context.Background(), kafkaModule)).Should(Succeed())
+			Expect(k8sClient.Create(context.Background(), s3Module)).Should(Succeed())
 			Expect(k8sClient.Create(context.Background(), readPathModule)).Should(Succeed())
 
 			// Load db2-s3 copy module
@@ -399,30 +430,92 @@ var _ = Describe("M4DApplication Controller", func() {
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
 			By("Expecting a namespace to be allocated")
 			Eventually(func() *apiv1alpha1.ResourceReference {
-				f := &apiv1alpha1.M4DApplication{}
-				_ = k8sClient.Get(context.Background(), appSignature, f)
-				return f.Status.Generated
+				_ = k8sClient.Get(context.Background(), appSignature, resource)
+				return resource.Status.Generated
 			}, timeout, interval).ShouldNot(BeNil())
 
-			By("Expecting blueprint to be generated")
-			blueprint := &apiv1alpha1.Blueprint{}
-			Eventually(func() error {
-				Expect(k8sClient.Get(context.Background(), appSignature, resource)).Should(Succeed())
-				key := appSignature
-				key.Namespace = resource.Status.Generated.Namespace
-				return k8sClient.Get(context.Background(), key, blueprint)
-			}, timeout, interval).Should(Succeed())
+			if resource.Status.Generated.Kind == "Blueprint" {
+				By("Expecting blueprint to be generated")
+				blueprint := &apiv1alpha1.Blueprint{}
+				Eventually(func() error {
+					Expect(k8sClient.Get(context.Background(), appSignature, resource)).Should(Succeed())
+					key := appSignature
+					key.Namespace = resource.Status.Generated.Namespace
+					return k8sClient.Get(context.Background(), key, blueprint)
+				}, timeout, interval).Should(Succeed())
 
-			// Check the generated blueprint
-			// There should be a single read module with two datasets
-			numReads := 0
-			for _, step := range blueprint.Spec.Flow.Steps {
-				if step.Template == readPathModule.Name {
-					numReads++
-					Expect(len(step.Arguments.Read)).To(Equal(2))
+				// Check the generated blueprint
+				// There should be a single read module with two datasets
+				numReads := 0
+				for _, step := range blueprint.Spec.Flow.Steps {
+					if step.Template == readPathModule.Name {
+						numReads++
+						Expect(len(step.Arguments.Read)).To(Equal(2))
+					}
 				}
+				Expect(numReads).To(Equal(1))
 			}
-			Expect(numReads).To(Equal(1))
+		})
+		It("Test multiple-blueprints", func() {
+			// allocate storage
+			storageSignature := GetStorageSignature()
+			storage := &apiv1alpha1.M4DBucket{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      storageSignature.Name,
+					Namespace: storageSignature.Namespace,
+				},
+				Spec: apiv1alpha1.M4DBucketSpec{
+					Name:      "test-bucket",
+					Endpoint:  "xxx",
+					VaultPath: "yyy",
+				},
+			}
+			Expect(k8sClient.Create(context.Background(), storage)).Should(Succeed())
+
+			// Load s3-s3 copy module
+			s3Module := CreateS3ToS3CopyModule()
+			readPathModule := CreateReadPathModule()
+
+			Expect(k8sClient.Create(context.Background(), s3Module)).Should(Succeed())
+			Expect(k8sClient.Create(context.Background(), readPathModule)).Should(Succeed())
+
+			// Load db2-s3 copy module
+			db2Module := CreateDb2ToS3CopyModule()
+			Expect(k8sClient.Create(context.Background(), db2Module)).Should(Succeed())
+
+			appSignature := GetApplicationSignature()
+			resource := InitM4DApplication(1)
+			resource.Spec.Data[0] = apiv1alpha1.DataContext{
+				DataSetID: "{\"asset_id\": \"default-dataset\", \"catalog_id\": \"s3\"}",
+				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
+			}
+			resource.Spec.AppInfo.ProcessingGeography = "Germany"
+			// Create M4DApplication
+			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
+			if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" {
+				Eventually(func() *apiv1alpha1.ResourceReference {
+					f := &apiv1alpha1.M4DApplication{}
+					Expect(k8sClient.Get(context.Background(), appSignature, f)).To(Succeed())
+					resource = f
+					return f.Status.Generated
+				}, timeout, interval).ShouldNot(BeNil())
+				By("Expecting plotter to be generated")
+				plotter := &apiv1alpha1.Plotter{}
+				Eventually(func() error {
+					key := types.NamespacedName{Name: resource.Status.Generated.Name, Namespace: resource.Status.Generated.Namespace}
+					return k8sClient.Get(context.Background(), key, plotter)
+				}, timeout, interval).Should(Succeed())
+			} else {
+				By("Expecting an error")
+				Eventually(func() string {
+					f := &apiv1alpha1.M4DApplication{}
+					_ = k8sClient.Get(context.Background(), appSignature, f)
+					resource = f
+					return getErrorMessages(f)
+				}, timeout, interval).ShouldNot(BeEmpty())
+
+				Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.InvalidClusterConfiguration))
+			}
 		})
 	})
 
@@ -494,36 +587,37 @@ var _ = Describe("M4DApplication Controller", func() {
 				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
 				return application.Status.Generated
 			}, timeout, interval).ShouldNot(BeNil())
+			if application.Status.Generated.Kind == "Blueprint" {
+				// A blueprint namespace should be created
+				namespace := &v1.Namespace{}
+				ns := application.Status.Generated.Namespace
+				By("Expect namespace to be created")
+				Eventually(func() error {
+					return k8sClient.Get(context.Background(), client.ObjectKey{Namespace: "", Name: ns}, namespace)
+				}, timeout, interval).Should(Succeed())
 
-			// A blueprint namespace should be created
-			namespace := &v1.Namespace{}
-			ns := application.Status.Generated.Namespace
-			By("Expect namespace to be created")
-			Eventually(func() error {
-				return k8sClient.Get(context.Background(), client.ObjectKey{Namespace: "", Name: ns}, namespace)
-			}, timeout, interval).Should(Succeed())
+				// The blueprint has to be created in the blueprint namespace
+				blueprint := &apiv1alpha1.Blueprint{}
+				blueprintObjectKey := client.ObjectKey{Namespace: ns, Name: application.Name}
+				By("Expect blueprint to be created")
+				Eventually(func() error {
+					return k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)
+				}, timeout, interval).Should(Succeed())
 
-			// The blueprint has to be created in the blueprint namespace
-			blueprint := &apiv1alpha1.Blueprint{}
-			blueprintObjectKey := client.ObjectKey{Namespace: ns, Name: application.Name}
-			By("Expect blueprint to be created")
-			Eventually(func() error {
-				return k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)
-			}, timeout, interval).Should(Succeed())
+				By("Expect blueprint to be ready at some point")
+				Eventually(func() bool {
+					Expect(k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)).To(Succeed())
+					return blueprint.Status.ObservedState.Ready
+				}, timeout*10, interval).Should(BeTrue())
 
-			By("Expect blueprint to be ready at some point")
-			Eventually(func() bool {
-				Expect(k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)).To(Succeed())
-				return blueprint.Status.ObservedState.Ready
-			}, timeout*10, interval).Should(BeTrue())
-
-			// Extra long timeout as deploying the arrow-flight module on a new cluster may take some time
-			// depending on the download speed
-			By("Expecting M4DApplication to eventually be ready")
-			Eventually(func() bool {
-				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
-				return application.Status.Ready
-			}, timeout*10, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
+				// Extra long timeout as deploying the arrow-flight module on a new cluster may take some time
+				// depending on the download speed
+				By("Expecting M4DApplication to eventually be ready")
+				Eventually(func() bool {
+					Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
+					return application.Status.Ready
+				}, timeout*10, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
+			}
 		})
 	})
 })

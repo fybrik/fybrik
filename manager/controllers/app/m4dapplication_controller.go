@@ -51,6 +51,7 @@ type M4DApplicationReconciler struct {
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=blueprints,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=plotters,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=namespaces,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dmodules,verbs=get;list;watch
 
 // +kubebuilder:rbac:groups=*,resources=*,verbs=*
 
@@ -215,6 +216,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 			Credentials:  nil,
 			Actions:      make(map[app.ModuleFlow]modules.Transformations),
 			AppInterface: &dataset.IFdetails,
+			Geo:          applicationContext.Spec.AppInfo.ProcessingGeography,
 		}
 		// get enforcement actions and location info for a dataset
 		if err := r.ConstructDataInfo(dataset.DataSetID, &req, applicationContext); err != nil {
@@ -222,21 +224,32 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		}
 		requirements = append(requirements, req)
 	}
-	instances, err := r.SelectModuleInstances(requirements, applicationContext)
+	// check for errors
+	if hasError(applicationContext) {
+		return ctrl.Result{}, nil
+	}
+
+	// create a module manager that will select modules to be orchestrated based on user requirements and module capabilities
+	moduleMap, err := r.GetAllModules()
 	if err != nil {
 		return ctrl.Result{}, err
+	}
+	objectKey, _ := client.ObjectKeyFromObject(applicationContext)
+	moduleManager := &ModuleManager{Client: r.Client, Log: r.Log, Modules: moduleMap, Owner: objectKey}
+	instances := make([]modules.ModuleInstanceSpec, 0)
+	for _, item := range requirements {
+		instancesPerDataset, err := moduleManager.SelectModuleInstances(item)
+		if err != nil {
+			setCondition(applicationContext, item.AssetID, err.Error(), "", true)
+		}
+		instances = append(instances, instancesPerDataset...)
 	}
 	// check for errors
 	if hasError(applicationContext) {
 		return ctrl.Result{}, nil
 	}
-	// unite several instances of a read/write module
-	newInstances := r.RefineInstances(instances)
-
-	blueprintSpec := r.GenerateBlueprint(newInstances, applicationContext)
-	blueprintPerClusterMap := make(map[string]app.BlueprintSpec)
-	blueprintPerClusterMap[applicationContext.ClusterName] = *blueprintSpec
-
+	// generate blueprint specifications (per geography)
+	blueprintPerClusterMap := r.GenerateBlueprints(instances, applicationContext)
 	resourceRef, err := r.ResourceInterface.CreateResourceReference(applicationContext.Name, applicationContext.Namespace)
 	if err != nil {
 		return ctrl.Result{}, err
@@ -244,6 +257,10 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	ownerRef := &app.ResourceReference{Name: applicationContext.Name, Namespace: applicationContext.Namespace}
 	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, blueprintPerClusterMap); err != nil {
 		r.Log.V(0).Info("Error creating " + resourceRef.Kind + " : " + err.Error())
+		if err.Error() == app.InvalidClusterConfiguration {
+			setCondition(applicationContext, "", app.InvalidClusterConfiguration, "", true)
+			return ctrl.Result{}, nil
+		}
 		return ctrl.Result{}, err
 	}
 	applicationContext.Status.Generated = resourceRef
@@ -321,7 +338,23 @@ func (r *M4DApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			}).Complete(r)
 }
 
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dmodules,verbs=get;list;watch
+// AnalyzeError analyzes whether the given error is fatal, or a retrial attempt can be made.
+// Reasons for retrial can be either communication problems with external services, or kubernetes problems to perform some action on a resource.
+// A retrial is achieved by returning an error to the reconcile method
+func AnalyzeError(app *app.M4DApplication, log logr.Logger, assetID string, err error, receivedFrom string) error {
+	errStatus, _ := status.FromError(err)
+	log.V(0).Info(errStatus.Message())
+	if errStatus.Code() == codes.InvalidArgument {
+		setCondition(app, assetID, errStatus.Message(), receivedFrom, true)
+		return nil
+	}
+	setCondition(app, assetID, errStatus.Message(), receivedFrom, false)
+	return err
+}
+
+func ownerLabels(id types.NamespacedName) map[string]string {
+	return map[string]string{OwnerLabelKey: id.Namespace + "." + id.Name}
+}
 
 // GetAllModules returns all CRDs of the kind M4DModule mapped by their name
 func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, error) {
@@ -339,22 +372,4 @@ func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, e
 		moduleMap[module.Name] = module.DeepCopy()
 	}
 	return moduleMap, nil
-}
-
-// AnalyzeError analyzes whether the given error is fatal, or a retrial attempt can be made.
-// Reasons for retrial can be either communication problems with external services, or kubernetes problems to perform some action on a resource.
-// A retrial is achieved by returning an error to the reconcile method
-func AnalyzeError(app *app.M4DApplication, log logr.Logger, assetID string, err error, receivedFrom string) error {
-	errStatus, _ := status.FromError(err)
-	log.V(0).Info(errStatus.Message())
-	if errStatus.Code() == codes.InvalidArgument {
-		setCondition(app, assetID, errStatus.Message(), receivedFrom, true)
-		return nil
-	}
-	setCondition(app, assetID, errStatus.Message(), receivedFrom, false)
-	return err
-}
-
-func ownerLabels(id types.NamespacedName) map[string]string {
-	return map[string]string{OwnerLabelKey: id.Namespace + "." + id.Name}
 }

@@ -65,10 +65,11 @@ type M4DApplicationSpec struct {
 
 // ErrorMessages that are reported to the user
 const (
-	ReadAccessDenied    string = "Governance policies forbid access to the data"
-	CopyNotAllowed      string = "Copy of the data is required but can not be done according to the governance policies."
-	ModuleNotFound      string = "No module has been registered"
-	InsufficientStorage string = "No bucket was provisioned for implicit copy"
+	ReadAccessDenied            string = "Governance policies forbid access to the data"
+	CopyNotAllowed              string = "Copy of the data is required but can not be done according to the governance policies."
+	ModuleNotFound              string = "No module has been registered"
+	InsufficientStorage         string = "No bucket was provisioned for implicit copy"
+	InvalidClusterConfiguration string = "Cluster configuration does not support the requirements."
 )
 
 // Condition indices are static. Conditions always present in the status.
