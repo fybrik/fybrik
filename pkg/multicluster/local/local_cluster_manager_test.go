@@ -28,12 +28,12 @@ func TestLocalClusterManager(t *testing.T) {
 		},
 	}
 	cl := fake.NewFakeClientWithScheme(s, objs...)
-
-	cm := CreateLocalClusterManager(cl)
+	namespace := "m4d-system"
+	cm := New(cl, namespace)
 	var actualClusters []multicluster.Cluster
 	var err error
 	if actualClusters, err = cm.GetClusters(); err != nil {
-		t.Error("TestMultiCluster failed")
+		t.Errorf("unexpected error in GetClusters: %v", err)
 	}
 
 	expectedClusters := []multicluster.Cluster{

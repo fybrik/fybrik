@@ -4,27 +4,29 @@ import (
 	"context"
 	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
+	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
-	m4dSystemNs                  string = "m4d-system"
 	clusterMetadataConfigmapName string = "cluster-metadata"
 )
 
 type ClusterManager struct {
 	Client client.Client
+	Namespace string
 }
 
 func (cm *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	clusterMetadataConfigmap := corev1.ConfigMap{}
 	namespacedName := client.ObjectKey{
 		Name:      clusterMetadataConfigmapName,
-		Namespace: m4dSystemNs,
+		Namespace: cm.Namespace,
 	}
 	if err := cm.Client.Get(context.Background(), namespacedName, &clusterMetadataConfigmap); err != nil {
-		return nil, err
+		wrappedError := fmt.Errorf("Error in GetClusters: %w", err)
+		return nil, wrappedError
 	}
 	var clusters []multicluster.Cluster
 	cluster := multicluster.Cluster{
@@ -54,8 +56,9 @@ func (cm *ClusterManager) DeleteBlueprint(cluster string, namespace string, name
 	return nil
 }
 
-func CreateLocalClusterManager(client client.Client) multicluster.ClusterManager {
+func New(client client.Client, namespace string) multicluster.ClusterManager {
 	return &ClusterManager{
 		Client: client,
+		Namespace: namespace,
 	}
 }
