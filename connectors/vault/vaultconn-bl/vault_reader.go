@@ -26,14 +26,16 @@ func (s *Server) GetCredentialsInfo(in *pb.DatasetCredentialsRequest, vault vaul
 		log.Printf("Error in vaultConnector, got error from the vault: %v\n", err.Error())
 		return nil, fmt.Errorf("error in retrieving the secret from vault(key = %s): %v", secretaddr, err)
 	}
+
 	credentials := pb.Credentials{}
 	err = jsonpb.UnmarshalString(readCredentials, &credentials)
+	log.Println("readCredentials: unmarshalled into Credentials object ")
+
 	if err != nil {
+		log.Println("GetCredentialsInfo: Error - ", err)
 		return nil, fmt.Errorf("error in UnmarshalString from readCredentials %s. Error is  %v", readCredentials, err)
 	}
-	log.Println("GetCredentialsInfo: populated credentials object ")
-
 	dscredentials := &pb.DatasetCredentials{DatasetId: in.DatasetId, Creds: &credentials}
-	log.Println("sending credentials from vault connector: ")
+	log.Println("GetCredentialsInfo: Sending populated dscredentials object from vault connector ")
 	return dscredentials, nil
 }

@@ -35,20 +35,24 @@ func TestVaultConnectorNormalRun(t *testing.T) {
 		Config: config,
 	}
 
-	data := map[string]interface{}{
-		"dataset_id":  datasetID,
-		"credentials": "my_egeria_credentials_test",
-	}
+	data := make(map[string]interface{})
+	data["access_key"] = "dummy_access_key"
+	data["secret_key"] = "dummy_secret_key"
 
 	_, err := client.Logical().Write("secret/"+datasetID, data)
 	if err != nil {
 		t.Errorf("Error writing credentials from vault for " + datasetID + ":" + err.Error())
 	}
 
+	data1, _ := client.Logical().Read("secret/" + datasetID)
+	fmt.Println("read value from vault: ", data1)
+
 	connection.Client = client
 	userVaultPath := tu.GetEnvironment()
 	var vault vltutils.VaultConnection
 	vault = connection
+
+	fmt.Println("userVaultPath in vault_connector_test: ", userVaultPath)
 	credentialsInfo, _ := srv.GetCredentialsInfo(objToSendForCredential, vault, userVaultPath)
 	expectedCredentials := tu.GetExpectedVaultCredentials(objToSendForCredential)
 	tu.EnsureDeepEqualCredentials(t, credentialsInfo, expectedCredentials)

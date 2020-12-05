@@ -32,6 +32,7 @@ func EnsureDeepEqualCredentials(t *testing.T, testedCredentials *pb.DatasetCrede
 }
 
 func GetExpectedVaultCredentials(in *pb.DatasetCredentialsRequest) *pb.DatasetCredentials {
+	credentials := &pb.Credentials{AccessKey: "dummy_access_key", SecretKey: "dummy_secret_key"}
 	return &pb.DatasetCredentials{DatasetId: "mock-datasetID",
-		Credentials: "{\"credentials\":\"my_egeria_credentials_test\",\"dataset_id\":\"mock-datasetID\"}"}
+		Creds: credentials}
 }
