@@ -29,6 +29,7 @@ summaryLength = 30
    weight = 3
 
 [params]
+  github_link = 'https://github.com/IBM/the-mesh-for-data'
   mainSections = ["docs", "contribute"]
   google_analytics_id=""
 
@@ -36,9 +37,9 @@ summaryLength = 30
   homepage_button_left_text = 'Learn more'
   homepage_button_left_icon = 'fas fa-book-reader'
 
-  homepage_button_right_link = 'https://github.com/IBM/the-mesh-for-data'
-  homepage_button_right_text = 'Code'
-  homepage_button_right_icon = 'fab fa-github'
+  homepage_button_right_link = '/docs/setup/quickstart/'
+  homepage_button_right_text = 'Quick start'
+  homepage_button_right_icon = 'fas fa-download'
 
   homepage_intro = 'The Mesh for Data is a cloud-native platform to control data access and data usage across an organization.'
 #  homepage_image = '/images/terminal.gif'
@@ -50,8 +51,8 @@ summaryLength = 30
     meta_description = "The Mesh for Data is a cloud-native platform to solve your data access problems."
     meta_og_title = "The Mesh for Data"
     meta_og_type = "website"
-    meta_og_url = "https://hugo-whisper.netlify.com"
-    meta_og_image = "https://raw.githubusercontent.com/JugglerX/hugo-whisper-theme/master/images/tn.png"
+    meta_og_url = "https://ibm.github.io/the-mesh-for-data/"
+    #meta_og_image = "https://raw.githubusercontent.com/JugglerX/hugo-whisper-theme/master/images/tn.png"
     meta_og_description = "The Mesh for Data is a cloud-native platform to solve your data access problems."
     meta_twitter_card = "summary"
     #meta_twitter_site = "@themeshfordata"

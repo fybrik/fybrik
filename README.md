@@ -3,9 +3,9 @@
 
 # The Mesh for Data
 
-The Mesh for Data is a cloud native platform to control the usage of data within an organization and thus enable business agility while securing enterprise data.  The Mesh for Data encapsulates a containerized workload and intermediates all data flows both into the workload and out of the workload, enabling enforcement of policies defining what can be done with the data.
+[The Mesh for Data](https://ibm.github.io/the-mesh-for-data/) is a cloud native platform to control the usage of data within an organization and thus enable business agility while securing enterprise data.  The Mesh for Data encapsulates a containerized workload and intermediates all data flows both into the workload and out of the workload, enabling enforcement of policies defining what can be done with the data.
 
-- For more information and details please visit [our website](https://ibm.github.io/the-mesh-for-data/)
+For more information please visit [our website](https://ibm.github.io/the-mesh-for-data/).
 
 ## Repositories
 

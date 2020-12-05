@@ -7,6 +7,8 @@ import (
 	"flag"
 	"os"
 
+	"github.com/ibm/the-mesh-for-data/manager/controllers/motion"
+
 	"github.com/hashicorp/vault/api"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
@@ -19,7 +21,6 @@ import (
 	appv1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/motion"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"github.com/ibm/the-mesh-for-data/pkg/helm"
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
@@ -48,13 +49,30 @@ func init() {
 func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
+	var enableApplicationController bool
+	var enableBlueprintController bool
+	var enableMotionController bool
+	var enableAllControllers bool
 	var namespace string
 	address := utils.ListeningAddress(8085)
 	flag.StringVar(&metricsAddr, "metrics-addr", address, "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
+	flag.BoolVar(&enableApplicationController, "enable-application-controller", false,
+		"Enable application controller of the manager. This manages CRDs of type M4DApplication.")
+	flag.BoolVar(&enableBlueprintController, "enable-blueprint-controller", false,
+		"Enable blueprint controller of the manager. This manages CRDs of type Blueprint.")
+	flag.BoolVar(&enableMotionController, "enable-motion-controller", false,
+		"Enable motion controller of the manager. This manages CRDs of type BatchTransfer or StreamTransfer.")
+	flag.BoolVar(&enableAllControllers, "enable-all-controllers", false,
+		"Enables all controllers.")
 	flag.StringVar(&namespace, "namespace", "", "The namespace to which this controller manager is limited.")
 	flag.Parse()
+
+	if !enableAllControllers && !enableApplicationController && !enableBlueprintController && !enableMotionController {
+		setupLog.Info("At least one controller flag must be set!")
+		os.Exit(1)
+	}
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
@@ -88,30 +106,43 @@ func main() {
 		os.Exit(1)
 	}
 
-	motion.SetupMotionControllers(mgr)
+	if enableApplicationController || enableAllControllers {
+		// Initiate vault client
+		vaultClient, errVaultSetup := initVaultConnection()
+		if errVaultSetup != nil {
+			setupLog.Error(errVaultSetup, "Error setting up vault")
+			os.Exit(1)
+		}
 
-	// Initiate vault client
-	vaultClient, errVaultSetup := initVaultConnection()
-	if errVaultSetup != nil {
-		setupLog.Error(errVaultSetup, "Error setting up vault")
-		os.Exit(1)
+		// Initialize PolicyCompiler interface
+		policyCompiler := pc.NewPolicyCompiler()
+
+		// Initiate the M4DApplication Controller
+		var resourceContext app.ContextInterface
+		if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" {
+			resourceContext = app.NewPlotterInterface(mgr.GetClient())
+		} else {
+			resourceContext = app.NewBlueprintInterface(mgr.GetClient())
+		}
+
+		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, resourceContext)
+		if err := applicationController.SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
+			os.Exit(1)
+		}
 	}
 
-	// Initialize PolicyCompiler interface
-	policyCompiler := pc.NewPolicyCompiler()
-
-	// Initiate the M4DApplication Controller (aka Pilot)
-	applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler)
-	if err := applicationController.SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
-		os.Exit(1)
+	if enableBlueprintController || enableAllControllers {
+		// Initiate the Blueprint Controller
+		blueprintController := app.NewBlueprintReconciler(mgr, "Blueprint", new(helm.Impl))
+		if err := blueprintController.SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", blueprintController.Name)
+			os.Exit(1)
+		}
 	}
 
-	// Initiate the Blueprint Controller (aka Orchestrator)
-	blueprintController := app.NewBlueprintReconciler(mgr, "Blueprint", new(helm.Impl))
-	if err := blueprintController.SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", blueprintController.Name)
-		os.Exit(1)
+	if enableMotionController || enableAllControllers {
+		motion.SetupMotionControllers(mgr)
 	}
 
 	// +kubebuilder:scaffold:builder

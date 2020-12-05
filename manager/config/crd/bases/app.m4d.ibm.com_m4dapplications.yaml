@@ -125,9 +125,6 @@ spec:
         status:
           description: M4DApplicationStatus defines the observed state of M4DApplication.
           properties:
-            blueprintNamespace:
-              description: BlueprintNamespace represents the namespace where the blueprint (and the relevant resources) will be allocated.
-              type: string
             conditions:
               description: Conditions represent the possible error and failure conditions
               items:
@@ -150,6 +147,23 @@ spec:
             dataAccessInstructions:
               description: DataAccessInstructions indicate how the data user or his application may access the data. Instructions are available upon successful orchestration.
               type: string
+            generated:
+              description: Generated resource identifier
+              properties:
+                kind:
+                  description: Kind of the resource (Blueprint, Plotter)
+                  type: string
+                name:
+                  description: Name of the resource
+                  type: string
+                namespace:
+                  description: Namespace of the resource
+                  type: string
+              required:
+              - kind
+              - name
+              - namespace
+              type: object
             observedGeneration:
               description: ObservedGeneration is taken from the M4DApplication metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether the Blueprint status changed.
               format: int64

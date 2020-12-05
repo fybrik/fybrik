@@ -189,9 +189,9 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 	updateRequired := blueprint.Status.ObservedGeneration != blueprint.GetGeneration()
 	blueprint.Status.ObservedGeneration = blueprint.GetGeneration()
 	// reset blueprint state
-	blueprint.Status.Ready = false
-	blueprint.Status.Error = ""
-	blueprint.Status.DataAccessInstructions = ""
+	blueprint.Status.ObservedState.Ready = false
+	blueprint.Status.ObservedState.Error = ""
+	blueprint.Status.ObservedState.DataAccessInstructions = ""
 
 	// count the overall number of Helm releases and how many of them are ready
 	numReleases, numReady := 0, 0
@@ -225,16 +225,16 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 			// Process templates with arguments
 			for _, resource := range templateSpec.Resources {
 				if _, err := r.applyChartResource(log, resource, args, blueprint.Namespace, releaseName); err != nil {
-					blueprint.Status.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
+					blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
 				}
 			}
 		} else if rel.Info.Status == release.StatusDeployed {
 			if len(step.Arguments.Read) > 0 {
-				blueprint.Status.DataAccessInstructions += rel.Info.Notes
+				blueprint.Status.ObservedState.DataAccessInstructions += rel.Info.Notes
 			}
 			status, errMsg := r.checkReleaseStatus(releaseName, blueprint.Namespace)
 			if status == corev1.ConditionFalse {
-				blueprint.Status.Error += "ResourceAllocationFailure: " + errMsg + "\n"
+				blueprint.Status.ObservedState.Error += "ResourceAllocationFailure: " + errMsg + "\n"
 			} else if status == corev1.ConditionTrue {
 				numReady++
 			}
@@ -243,12 +243,12 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 	// check if all releases reached the ready state
 	if numReady == numReleases {
 		// all modules have been orhestrated successfully - the data is ready for use
-		blueprint.Status.Ready = true
+		blueprint.Status.ObservedState.Ready = true
 		return ctrl.Result{}, nil
 	}
 
 	// the status is unknown yet - continue polling
-	if blueprint.Status.Error == "" {
+	if blueprint.Status.ObservedState.Error == "" {
 		return ctrl.Result{RequeueAfter: 2 * time.Second}, nil
 	}
 	return ctrl.Result{}, nil
