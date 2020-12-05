@@ -2,7 +2,6 @@ package vaultconnbl
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"testing"
@@ -51,9 +50,6 @@ func TestVaultConnectorNormalRun(t *testing.T) {
 	var vault vltutils.VaultConnection
 	vault = connection
 	credentialsInfo, _ := srv.GetCredentialsInfo(objToSendForCredential, vault, userVaultPath)
-	log.Println("credentialsInfo")
-	log.Println(credentialsInfo)
-
 	expectedCredentials := tu.GetExpectedVaultCredentials(objToSendForCredential)
 	tu.EnsureDeepEqualCredentials(t, credentialsInfo, expectedCredentials)
 }

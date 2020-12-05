@@ -5,13 +5,13 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net"
 	"strconv"
 
-	"github.com/golang/protobuf/jsonpb"
+	vaultutils "github.com/ibm/the-mesh-for-data/connectors/vault/vault_utils"
+	vaultconnbl "github.com/ibm/the-mesh-for-data/connectors/vault/vaultconn-bl"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"google.golang.org/grpc"
 )
@@ -21,59 +21,37 @@ const defaultPort = "50083" //synched with vault_connector.yaml
 
 type server struct {
 	pb.UnimplementedDataCredentialServiceServer
-	vaultConnector *vaultbl.Server
+	vaultConnector *vaultconnbl.Server
 }
 
-var vault VaultConnection
+var vault vaultutils.VaultConnection
 
 func (s *server) GetCredentialsInfo(ctx context.Context, in *pb.DatasetCredentialsRequest) (*pb.DatasetCredentials, error) {
 	log.Println("Received ApplicationContext")
 	log.Println(in)
 
-	vaultPathKey := GetEnv(VaultPathKey)
+	vaultPathKey := vaultutils.GetEnv(vaultutils.VaultPathKey)
 	eval, err := s.vaultConnector.GetCredentialsInfo(in, vault, vaultPathKey)
 	if err != nil {
 		log.Printf("Error in vaultConnector, got error from the vault: %v\n", err.Error())
 		return nil, fmt.Errorf("error in retrieving the secret from vault: %v", err)
 	}
-	jsonOutput, _ := json.MarshalIndent(eval, "", "\t")
-	log.Println("Received evaluation : " + string(jsonOutput))
-	log.Println("err:", err)
-
+	log.Println("Received evaluation from vaultConnector.GetCredentialsInfo ")
 	return eval, err
-
-	//return &pb.DatasetCredentials{DatasetId: in.DatasetId, Credentials: readCredentials}, nil
-
-	// credentials := &pb.Credentials{
-	// 	CustomCredentialsJson: readCredentials,
-	// }
-	credentials := pb.Credentials{}
-	err = jsonpb.UnmarshalString(readCredentials, &credentials)
-	if err != nil {
-		return nil, fmt.Errorf("error in UnmarshalString from readCredentials %s. Error is  %v", readCredentials, err)
-	}
-	log.Println("populated credentials object is given below")
-	sCredential, _ := json.MarshalIndent(credentials, "", "\t")
-	log.Print(string(sCredential))
-
-	dscredentials := &pb.DatasetCredentials{DatasetId: in.DatasetId, Creds: &credentials}
-	log.Println("sending credentials from vault connector: ")
-	log.Println(dscredentials)
-	return dscredentials, nil
 }
 
 func main() {
-	vaultAddress := GetEnv(VaultAddressKey)
-	timeOutInSecs := GetEnvWithDefault(VaultTimeoutKey, defaultTimeout)
+	vaultAddress := vaultutils.GetEnv(vaultutils.VaultAddressKey)
+	timeOutInSecs := vaultutils.GetEnvWithDefault(vaultutils.VaultTimeoutKey, defaultTimeout)
 	timeOutSecs, err := strconv.Atoi(timeOutInSecs)
-	port := GetEnvWithDefault(VaultConnectorPortKey, defaultPort)
+	port := vaultutils.GetEnvWithDefault(vaultutils.VaultConnectorPortKey, defaultPort)
 
-	log.Printf("Vault address env variable in %s: %s\n", VaultAddressKey, vaultAddress)
-	log.Printf("VaultConnectorPort env variable in %s: %s\n", VaultConnectorPortKey, port)
+	log.Printf("Vault address env variable in %s: %s\n", vaultutils.VaultAddressKey, vaultAddress)
+	log.Printf("VaultConnectorPort env variable in %s: %s\n", vaultutils.VaultConnectorPortKey, port)
 	log.Printf("TimeOut used %d\n", timeOutSecs)
-	log.Printf("Secret Token env variable in %s: %s\n", VaultSecretKey, GetEnv(VaultSecretKey))
+	log.Printf("Secret Token env variable is accessed from environment %s\n", vaultutils.VaultSecretKey)
 
-	vault = CreateVaultConnection()
+	vault = vaultutils.CreateVaultConnection()
 	log.Println("Vault connection successfully initiated.")
 
 	lis, err := net.Listen("tcp", ":"+port)
