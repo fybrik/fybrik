@@ -56,7 +56,7 @@ func (cm *ClusterManager) DeleteBlueprint(cluster string, namespace string, name
 	return nil
 }
 
-func New(client client.Client, namespace string) multicluster.ClusterManager {
+func NewManager(client client.Client, namespace string) multicluster.ClusterManager {
 	return &ClusterManager{
 		Client: client,
 		Namespace: namespace,

@@ -29,7 +29,7 @@ func TestLocalClusterManager(t *testing.T) {
 	}
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	namespace := "m4d-system"
-	cm := New(cl, namespace)
+	cm := NewManager(cl, namespace)
 	var actualClusters []multicluster.Cluster
 	var err error
 	if actualClusters, err = cm.GetClusters(); err != nil {
