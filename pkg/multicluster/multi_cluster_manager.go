@@ -29,7 +29,7 @@ type Cluster struct {
 }
 
 // Decode json into runtime.Object, which is a pointer (such as &corev1.ConfigMapList)
-func decode(json string, scheme *runtime.Scheme, object runtime.Object) error {
+func Decode(json string, scheme *runtime.Scheme, object runtime.Object) error {
 	decoder := serializer.NewCodecFactory(scheme).UniversalDecoder()
 	err := runtime.DecodeInto(decoder, []byte(json), object)
 	if err != nil {

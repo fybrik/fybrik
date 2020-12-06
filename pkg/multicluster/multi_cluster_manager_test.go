@@ -37,7 +37,7 @@ func TestDecodeJsonToRuntimeObject(t *testing.T) {
 	actualDeployment := apps.Deployment{}
 	scheme := runtime.NewScheme()
 	// utilruntime.Must(apps.AddToScheme(scheme))
-	if err := decode(json, scheme, &actualDeployment); err != nil {
+	if err := Decode(json, scheme, &actualDeployment); err != nil {
 		println("failed decoding")
 		t.Error(err)
 	}
