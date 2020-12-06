@@ -17,7 +17,7 @@ func TestDummyMultiClusterManager(t *testing.T) {
 			Namespace: "ns",
 		},
 	}
-	manager := MultiClusterManager{
+	manager := ClusterManager{
 		DeployedBlueprints: make(map[string]*app.Blueprint),
 	}
 
