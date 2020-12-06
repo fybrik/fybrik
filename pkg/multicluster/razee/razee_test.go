@@ -50,6 +50,10 @@ var mySemantic = conversion.EqualitiesOrDie(
 )
 
 func TestGetResourceByKeys(t *testing.T) {
+	// Pass the test if no orgId or clusterId are defined
+	if orgId == "" || clusterId == "" {
+		return
+	}
 	razeeClient := NewRazeeLocalClient(razeeTestURL, loginTestUser, razeeTestPassword)
 	if jsonData, err := razeeClient.getResourceByKeys(orgId, clusterId, selfLink); err != nil {
 		t.Error(err)
@@ -82,7 +86,7 @@ func TestGetResourceByKeys(t *testing.T) {
 				},
 			},
 		}
-		fmt.Printf("expectedConfigMap and actualConfigMap are equal (without compating time): %t\n",mySemantic.DeepEqual(expectedConfigMap, actualConfigMap))
+		fmt.Printf("expectedConfigMap and actualConfigMap are equal (without comparing time): %t\n",mySemantic.DeepEqual(expectedConfigMap, actualConfigMap))
 		if !mySemantic.DeepEqual(expectedConfigMap, actualConfigMap) {
 			t.Fail()
 		}

@@ -9,6 +9,8 @@ import (
 	"testing"
 )
 
+var _ multicluster.ClusterManager = &ClusterManager{}
+
 func TestDummyMultiClusterManager(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 	blueprint := &app.Blueprint{

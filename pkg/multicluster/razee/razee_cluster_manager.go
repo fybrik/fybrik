@@ -26,14 +26,14 @@ func init() {
 	_ = v1alpha1.AddToScheme(scheme)
 }
 
-type RazeeManager struct {
+type ClusterManager struct {
 	orgId 		string
 	con   		client.SatCon
 	razeeClient *RazeeClient
 	log   		logr.Logger
 }
 
-func (r *RazeeManager) GetClusters() ([]multicluster.Cluster, error) {
+func (r *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	var clusters []multicluster.Cluster
 	razeeClusters, err := r.con.Clusters.ClustersByOrgID(r.orgId)
 	if err != nil {
@@ -66,7 +66,7 @@ func createBluePrintSelfLink(namespace string, name string) string {
 	return fmt.Sprintf("/apis/app.m4d.ibm.com/v1alpha1/namespaces/%s/blueprints/%s", namespace, name)
 }
 
-func (r *RazeeManager) GetBlueprint(clusterName string, namespace string, name string) (*v1alpha1.Blueprint, error) {
+func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name string) (*v1alpha1.Blueprint, error) {
 	selfLink := createBluePrintSelfLink(namespace, name)
 	cluster, err := r.razeeClient.getClusterByName(r.orgId, clusterName)
 	if err != nil {
@@ -87,7 +87,7 @@ func getGroupName(cluster string) string {
 	return "m4d-" + cluster
 }
 
-func (r *RazeeManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	groupName := getGroupName(cluster)
 	channelName := channelName(cluster, blueprint.Namespace, blueprint.Name)
 	version := "0"
@@ -165,11 +165,11 @@ func (r *RazeeManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Bluep
 	return nil
 }
 
-func (r *RazeeManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+func (r *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	return nil
 }
 
-func (r *RazeeManager) DeleteBlueprint(cluster string, namespace string, name string) error {
+func (r *ClusterManager) DeleteBlueprint(cluster string, namespace string, name string) error {
 	channelName := channelName(cluster, namespace, name)
 	channel, err := r.con.Channels.ChannelByName(r.orgId, channelName)
 	if err != nil {
@@ -218,9 +218,9 @@ func NewRazeeManager(url string, login string, password string, orgId string) mu
 
 	con, _ := client.New(url, http.DefaultClient, localAuth)
 	razeeClient := NewRazeeLocalClient(url, login, password)
-	logger := ctrl.Log.WithName("RazeeManager")
+	logger := ctrl.Log.WithName("ClusterManager")
 
-	return &RazeeManager{
+	return &ClusterManager{
 		orgId: orgId,
 		con:   con,
 		razeeClient: razeeClient,

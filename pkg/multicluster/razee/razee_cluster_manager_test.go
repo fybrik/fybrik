@@ -2,6 +2,7 @@ package razee
 
 import (
 	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	"github.com/onsi/gomega"
 	"testing"
 
@@ -13,9 +14,12 @@ const (
 	blueprintNS string = "default"
 )
 
+var _ multicluster.ClusterManager = &ClusterManager{}
+
 func TestGetBlueprints(t *testing.T) {
-	println("orgId: ", orgId)
-	println("clusterId: ", clusterId)
+	if orgId == "" || clusterId == "" {
+		return
+	}
 	clusterManager := NewRazeeManager(razeeTestURL, loginTestUser, razeeTestPassword, orgId)
 	actualBlueprint, err := clusterManager.GetBlueprint(clusterName, blueprintNS, blueprintName)
 	if err != nil {
@@ -38,6 +42,9 @@ func TestGetBlueprints(t *testing.T) {
 }
 
 func TestGetClusters(t *testing.T) {
+	if orgId == "" || clusterId == "" {
+		return
+	}
 	clusterManager := NewRazeeManager(razeeTestURL, loginTestUser, razeeTestPassword, orgId)
 	clusters, err := clusterManager.GetClusters()
 	if err != nil {
