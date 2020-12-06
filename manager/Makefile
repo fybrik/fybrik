@@ -94,12 +94,6 @@ undeploy_it:
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
 	$(TOOLBIN)/kustomize build --load_restrictor none config/integration-tests | $(TOOLBIN)/kubectl delete -f -
 
-# Deploy controller in the configured Kubernetes cluster in ~/.kube/config
-deploy-minikube: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
-	$(TOOLBIN)/kubectl create namespace m4d-system || true
-	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=manager:latest
-	$(TOOLBIN)/kustomize build config/minikube | $(TOOLBIN)/kubectl apply -f -
-
 .PHONY: wait_for_manager
 wait_for_manager:
 	$(TOOLBIN)/kubectl wait --for=condition=available -n ${KUBE_NAMESPACE} deployment/m4d-controller-manager --timeout=120s

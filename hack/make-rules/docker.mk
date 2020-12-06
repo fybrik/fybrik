@@ -10,19 +10,12 @@ DOCKER_CONTEXT ?= .
 
 IMG ?= ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/${DOCKER_NAME}:${DOCKER_TAGNAME}
 
-GO_INPUT_FILE ?= main.go
-GO_OUTPUT_FILE ?= manager
-
 .PHONY: docker-all
 docker-all: docker-build docker-push
 
 .PHONY: docker-build
 docker-build:
 	docker build $(DOCKER_CONTEXT) -t ${IMG} -f $(DOCKER_FILE)
-
-.PHONY: docker-build-local
-docker-build-local:
-	make docker-build IMG=${DOCKER_NAME}:${DOCKER_TAGNAME}
 
 .PHONY: docker-push
 docker-push:
