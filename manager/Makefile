@@ -53,7 +53,6 @@ uninstall: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl manifests
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: docker-secret manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
 	$(TOOLBIN)/kubectl create namespace m4d-system || true
-	$(TOOLBIN)/kubectl label namespaces m4d-system m4d.com/namespaceType=control-plane || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${IMG}
 	$(TOOLBIN)/kustomize build config/default | $(TOOLBIN)/kubectl apply -f -
 
@@ -94,6 +93,15 @@ deploy_it: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
 undeploy_it:
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
 	$(TOOLBIN)/kustomize build --load_restrictor none config/integration-tests | $(TOOLBIN)/kubectl delete -f -
+
+deploy_cps: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
+	$(TOOLBIN)/kubectl create namespace m4d-system || true
+	$(TOOLBIN)/kubectl label namespaces m4d-system istio-injection=enabled --overwrite || true
+	$(TOOLBIN)/kustomize build config/control-plane-security | $(TOOLBIN)/kubectl apply -f -
+
+undeploy_cps:
+	$(TOOLBIN)/kubectl label namespace m4d-system istio-injection-
+	$(TOOLBIN)/kustomize build --load_restrictor none config/control-plane-security | $(TOOLBIN)/kubectl delete -f -
 
 .PHONY: wait_for_manager
 wait_for_manager:

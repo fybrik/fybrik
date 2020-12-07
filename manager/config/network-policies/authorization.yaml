@@ -10,6 +10,4 @@ spec:
   - Ingress
   ingress:
   - from:
-    - namespaceSelector:
-        matchLabels:
-          m4d.com/namespaceType: control-plane
+    - podSelector: {}
