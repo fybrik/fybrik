@@ -183,12 +183,6 @@ func (r *RazeeClient) createGroup(orgId string, groupName string) (string, error
 }
 
 //nolint:golint,unused
-type IAMRazeeClient struct {
-	apiKey string
-	client *graphql.Client
-}
-
-//nolint:golint,unused
 func NewIAMRazeeClient(apiKey string) *RazeeClient {
 	authenticator := &core.IamAuthenticator{
 		ApiKey: apiKey,
@@ -233,6 +227,17 @@ func NewRazeeLocalClient(url string, login string, password string) *RazeeClient
 
 	client := graphql.NewClient(url, graphql.WithHTTPClient(&httpClient))
 
+	return &RazeeClient{
+		client: client,
+	}
+}
+
+//nolint:golint,unused
+func NewRazeeClient(url string, roundTripper http.RoundTripper) *RazeeClient {
+	httpClient := http.Client{
+		Transport: roundTripper,
+	}
+	client := graphql.NewClient(url, graphql.WithHTTPClient(&httpClient))
 	return &RazeeClient{
 		client: client,
 	}

@@ -215,7 +215,7 @@ func (r *ClusterManager) DeleteBlueprint(cluster string, namespace string, name 
 
 //nolint:golint,unused
 func channelName(cluster string, namespace string, name string) string {
-	return "m4d-" + cluster + "-blueprint-" + namespace + "-" + name
+	return "m4d.ibm.com" + "/" + cluster + "/"+  namespace + "/" + name
 }
 
 //nolint:golint,unused
