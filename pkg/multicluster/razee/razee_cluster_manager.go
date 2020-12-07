@@ -157,7 +157,7 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	}
 
 	// create channel version
-	channelVersion, err := r.con.Versions.AddChannelVersion(r.orgId, channel.UUID, version, []byte(content), "")
+	channelVersion, err := r.con.Versions.AddChannelVersion(r.orgId, channel.UUID, version, content, "")
 	if err != nil {
 		return err
 	}
