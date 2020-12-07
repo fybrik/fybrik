@@ -30,7 +30,9 @@ func GetEnv(key string) string {
 	if !exists {
 		log.Fatalf("Env Variable %v not defined", key)
 	}
-	log.Printf("Env. variable extracted: %s - %s\n", key, value)
+	if key != VaultSecretKey {
+		log.Printf("Env. variable extracted: %s - %s\n", key, value)
+	}
 	return value
 }
 
@@ -140,7 +142,6 @@ func (vlt *VaultConnection) GetFromVault(vaultPathKey string, innerVaultPath str
 
 // AddToVault adds crededentialsMap to vault at the path given by innerVaultPath
 func (vlt *VaultConnection) AddToVault(innerVaultPath string, credentialsMap map[string]interface{}) (string, error) {
-	//vaultDatasetPath := GetVaultDatasetHome() + id
 	vaultDatasetPath := innerVaultPath
 
 	// Add credentials to vault, and return vaultPath where they are stored
