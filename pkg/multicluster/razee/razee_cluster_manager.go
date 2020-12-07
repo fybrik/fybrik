@@ -22,10 +22,12 @@ var (
 	scheme = runtime.NewScheme()
 )
 
+//nolint:golint,unused
 func init() {
 	_ = v1alpha1.AddToScheme(scheme)
 }
 
+//nolint:golint,unused
 type ClusterManager struct {
 	orgId 		string
 	con   		client.SatCon
@@ -33,6 +35,7 @@ type ClusterManager struct {
 	log   		logr.Logger
 }
 
+//nolint:golint,unused
 func (r *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	var clusters []multicluster.Cluster
 	razeeClusters, err := r.con.Clusters.ClustersByOrgID(r.orgId)
@@ -62,10 +65,12 @@ func (r *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	return clusters, nil
 }
 
+//nolint:golint,unused
 func createBluePrintSelfLink(namespace string, name string) string {
 	return fmt.Sprintf("/apis/app.m4d.ibm.com/v1alpha1/namespaces/%s/blueprints/%s", namespace, name)
 }
 
+//nolint:golint,unused
 func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name string) (*v1alpha1.Blueprint, error) {
 	selfLink := createBluePrintSelfLink(namespace, name)
 	cluster, err := r.razeeClient.getClusterByName(r.orgId, clusterName)
@@ -83,10 +88,12 @@ func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name
 	return &blueprint, err
 }
 
+//nolint:golint,unused
 func getGroupName(cluster string) string {
 	return "m4d-" + cluster
 }
 
+//nolint:golint,unused
 func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	groupName := getGroupName(cluster)
 	channelName := channelName(cluster, blueprint.Namespace, blueprint.Name)
@@ -165,10 +172,12 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	return nil
 }
 
+//nolint:golint,unused
 func (r *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	return nil
 }
 
+//nolint:golint,unused
 func (r *ClusterManager) DeleteBlueprint(cluster string, namespace string, name string) error {
 	channelName := channelName(cluster, namespace, name)
 	channel, err := r.con.Channels.ChannelByName(r.orgId, channelName)
@@ -204,10 +213,12 @@ func (r *ClusterManager) DeleteBlueprint(cluster string, namespace string, name 
 	return nil
 }
 
+//nolint:golint,unused
 func channelName(cluster string, namespace string, name string) string {
 	return "m4d-" + cluster + "-blueprint-" + namespace + "-" + name
 }
 
+//nolint:golint,unused
 func NewRazeeManager(url string, login string, password string, orgId string) multicluster.ClusterManager {
 	localAuth := &RazeeLocalRoundTripper{
 		url:      url,

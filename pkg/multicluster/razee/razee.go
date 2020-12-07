@@ -11,11 +11,13 @@ type Response struct {
 	Organizations []Organization `json:"organizations"`
 }
 
+//nolint:golint,unused
 type Organization struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
 }
 
+//nolint:golint,unused
 type Cluster struct {
 	ClusterId     string         `json:"clusterId"`
 	Name          string         `json:"name"`
@@ -23,19 +25,23 @@ type Cluster struct {
 	ClusterGroups []ClusterGroup `json:"groups"`
 }
 
+//nolint:golint,unused
 type ClusterGroup struct {
 	GroupId string `json:"uuid"`
 	Name    string `json:"name"`
 }
 
+//nolint:golint,unused
 type Resource struct {
 	Data string `json:"data"`
 }
 
+//nolint:golint,unused
 type RazeeClient struct {
 	client *graphql.Client
 }
 
+//nolint:golint,unused
 func (r *RazeeClient) getResourceByKeys(orgId string, clusterId string, selfLink string) (string, error) {
 	req := graphql.NewRequest(`
     query ($orgId: String!, $clusterId: String!, $selfLink: String!) {resourceByKeys(orgId: $orgId, clusterId: $clusterId, selfLink: $selfLink) {
@@ -60,6 +66,7 @@ func (r *RazeeClient) getResourceByKeys(orgId string, clusterId string, selfLink
 	return res.Resource.Data, nil
 }
 
+//nolint:golint,unused
 func (r *RazeeClient) GetOrganizations() ([]Organization, error) {
 	req := graphql.NewRequest(`
     query {organizations {
@@ -79,6 +86,7 @@ func (r *RazeeClient) GetOrganizations() ([]Organization, error) {
 	return res.Organizations, nil
 }
 
+//nolint:golint,unused
 func (r *RazeeClient) GetClustersByOrgId(orgId string) ([]Cluster, error) {
 	req := graphql.NewRequest(`
     query ($orgId: String!) {clustersByOrgId(orgId: $orgId) {
@@ -105,6 +113,7 @@ func (r *RazeeClient) GetClustersByOrgId(orgId string) ([]Cluster, error) {
 	return result.Clusters, nil
 }
 
+//nolint:golint,unused
 func (r *RazeeClient) getClusterByName(orgId string, clusterName string) (*Cluster, error) {
 	req := graphql.NewRequest(`
     query ($orgId: String!, $clusterName: String!) {clusterByName(orgId: $orgId, clusterName: $clusterName) {
@@ -127,6 +136,7 @@ func (r *RazeeClient) getClusterByName(orgId string, clusterName string) (*Clust
 	return &result.Cluster, nil
 }
 
+//nolint:golint,unused
 func (r *RazeeClient) getChannelByName(orgId string, clusterName string) (*Cluster, error) {
 	req := graphql.NewRequest(`
     query ($orgId: String!, $clusterName: String!) {clusterByName(orgId: $orgId, clusterName: $clusterName) {
@@ -149,6 +159,7 @@ func (r *RazeeClient) getChannelByName(orgId string, clusterName string) (*Clust
 	return &result.Cluster, nil
 }
 
+//nolint:golint,unused
 func (r *RazeeClient) createGroup(orgId string, groupName string) (string, error) {
 	req := graphql.NewRequest(`
     mutation($orgId: String!, $name: String!){addGroup(orgId: $orgId, name: $name) {
@@ -171,11 +182,13 @@ func (r *RazeeClient) createGroup(orgId string, groupName string) (string, error
 	return result.AddGroup.Uuid, nil
 }
 
+//nolint:golint,unused
 type IAMRazeeClient struct {
 	apiKey string
 	client *graphql.Client
 }
 
+//nolint:golint,unused
 func NewIAMRazeeClient(apiKey string) *RazeeClient {
 	authenticator := &core.IamAuthenticator{
 		ApiKey: apiKey,
@@ -193,6 +206,7 @@ func NewIAMRazeeClient(apiKey string) *RazeeClient {
 	}
 }
 
+//nolint:golint,unused
 func NewGithubAPIKeyClient(url string, apiKey string) *RazeeClient {
 	httpClient := http.Client{
 		Transport: &RazeeGithubApiRoundTripper{
@@ -206,6 +220,7 @@ func NewGithubAPIKeyClient(url string, apiKey string) *RazeeClient {
 	}
 }
 
+//nolint:golint,unused
 func NewRazeeLocalClient(url string, login string, password string) *RazeeClient {
 	httpClient := http.Client{
 		Transport: &RazeeLocalRoundTripper{
@@ -223,14 +238,17 @@ func NewRazeeLocalClient(url string, login string, password string) *RazeeClient
 	}
 }
 
+//nolint:golint,unused
 type IAMHTTPClient struct {
 	*http.Client
 }
 
+//nolint:golint,unused
 type IAMRoundTripper struct {
 	authenticator core.Authenticator
 }
 
+//nolint:golint,unused
 func (t *IAMRoundTripper) RoundTrip(request *http.Request) (*http.Response, error) {
 	err := t.authenticator.Authenticate(request)
 	if err != nil {
@@ -239,15 +257,18 @@ func (t *IAMRoundTripper) RoundTrip(request *http.Request) (*http.Response, erro
 	return http.DefaultTransport.RoundTrip(request)
 }
 
+//nolint:golint,unused
 type RazeeGithubApiRoundTripper struct {
 	apiKey string
 }
 
+//nolint:golint,unused
 func (t *RazeeGithubApiRoundTripper) RoundTrip(request *http.Request) (*http.Response, error) {
 	request.Header.Add("x-api-key", t.apiKey)
 	return http.DefaultTransport.RoundTrip(request)
 }
 
+//nolint:golint,unused
 type RazeeLocalRoundTripper struct {
 	url      string
 	login    string
@@ -255,6 +276,7 @@ type RazeeLocalRoundTripper struct {
 	token    string
 }
 
+//nolint:golint,unused
 func (t *RazeeLocalRoundTripper) RoundTrip(request *http.Request) (*http.Response, error) {
 	if t.token == "" {
 		req := graphql.NewRequest(`
@@ -291,6 +313,7 @@ func (t *RazeeLocalRoundTripper) RoundTrip(request *http.Request) (*http.Respons
 }
 
 // Authentication method used by sat-con-client library
+//nolint:golint,unused
 func (t *RazeeLocalRoundTripper) Authenticate(request *http.Request) error {
 	if t.token == "" {
 		req := graphql.NewRequest(`
