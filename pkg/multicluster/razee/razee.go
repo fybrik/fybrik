@@ -215,24 +215,6 @@ func NewGithubAPIKeyClient(url string, apiKey string) *RazeeClient {
 }
 
 //nolint:golint,unused
-func NewRazeeLocalClient(url string, login string, password string) *RazeeClient {
-	httpClient := http.Client{
-		Transport: &RazeeLocalRoundTripper{
-			url:      url,
-			login:    login,
-			password: password,
-			token:    "",
-		},
-	}
-
-	client := graphql.NewClient(url, graphql.WithHTTPClient(&httpClient))
-
-	return &RazeeClient{
-		client: client,
-	}
-}
-
-//nolint:golint,unused
 func NewRazeeClient(url string, roundTripper http.RoundTripper) *RazeeClient {
 	httpClient := http.Client{
 		Transport: roundTripper,

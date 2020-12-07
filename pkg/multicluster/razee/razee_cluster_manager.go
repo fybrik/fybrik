@@ -228,7 +228,7 @@ func NewRazeeManager(url string, login string, password string, orgId string) mu
 	}
 
 	con, _ := client.New(url, http.DefaultClient, localAuth)
-	razeeClient := NewRazeeLocalClient(url, login, password)
+	razeeClient := NewRazeeClient(url, localAuth)
 	logger := ctrl.Log.WithName("ClusterManager")
 
 	return &ClusterManager{
