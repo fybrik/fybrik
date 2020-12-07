@@ -44,12 +44,12 @@ func (r *M4DApplicationReconciler) RefineInstances(instances []modules.ModuleIns
 	return newInstances
 }
 
-// GenerateBlueprints creates Blueprint specs (one per cluster/geography)
+// GenerateBlueprints creates Blueprint specs (one per cluster)
 func (r *M4DApplicationReconciler) GenerateBlueprints(instances []modules.ModuleInstanceSpec, appContext *app.M4DApplication) map[string]app.BlueprintSpec {
 	blueprintMap := make(map[string]app.BlueprintSpec)
 	instanceMap := make(map[string][]modules.ModuleInstanceSpec)
 	for _, moduleInstance := range instances {
-		instanceMap[moduleInstance.Geography] = append(instanceMap[moduleInstance.Geography], moduleInstance)
+		instanceMap[moduleInstance.ClusterName] = append(instanceMap[moduleInstance.ClusterName], moduleInstance)
 	}
 	for key, instanceList := range instanceMap {
 		// unite several instances of a read/write module

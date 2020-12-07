@@ -24,6 +24,7 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -44,6 +45,7 @@ type M4DApplicationReconciler struct {
 	VaultClient       *api.Client
 	PolicyCompiler    pc.IPolicyCompiler
 	ResourceInterface ContextInterface
+	ClusterManager    multicluster.ClusterLister
 }
 
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dapplications,verbs=get;list;watch;create;update;patch;delete
@@ -235,7 +237,11 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		return ctrl.Result{}, err
 	}
 	objectKey, _ := client.ObjectKeyFromObject(applicationContext)
-	moduleManager := &ModuleManager{Client: r.Client, Log: r.Log, Modules: moduleMap, Owner: objectKey}
+	clusters, err := r.ClusterManager.GetClusters()
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	moduleManager := &ModuleManager{Client: r.Client, Log: r.Log, Modules: moduleMap, Clusters: clusters, Owner: objectKey}
 	instances := make([]modules.ModuleInstanceSpec, 0)
 	for _, item := range requirements {
 		instancesPerDataset, err := moduleManager.SelectModuleInstances(item)
@@ -248,7 +254,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	if hasError(applicationContext) {
 		return ctrl.Result{}, nil
 	}
-	// generate blueprint specifications (per geography)
+	// generate blueprint specifications (per cluster)
 	blueprintPerClusterMap := r.GenerateBlueprints(instances, applicationContext)
 	resourceRef, err := r.ResourceInterface.CreateResourceReference(applicationContext.Name, applicationContext.Namespace)
 	if err != nil {
@@ -298,7 +304,8 @@ func (r *M4DApplicationReconciler) ConstructDataInfo(datasetID string, req *modu
 }
 
 // NewM4DApplicationReconciler creates a new reconciler for M4DApplications
-func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api.Client, policyCompiler pc.IPolicyCompiler, context ContextInterface) *M4DApplicationReconciler {
+func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api.Client,
+	policyCompiler pc.IPolicyCompiler, context ContextInterface, cm multicluster.ClusterLister) *M4DApplicationReconciler {
 	return &M4DApplicationReconciler{
 		Client:            mgr.GetClient(),
 		Name:              name,
@@ -307,6 +314,7 @@ func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api
 		VaultClient:       vaultClient,
 		PolicyCompiler:    policyCompiler,
 		ResourceInterface: context,
+		ClusterManager:    cm,
 	}
 }
 

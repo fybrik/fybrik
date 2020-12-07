@@ -95,13 +95,14 @@ var _ = BeforeSuite(func(done Done) {
 
 		policyCompiler := &mockup.MockPolicyCompiler{}
 		// Initiate the M4DApplication Controller
+		var clusterManager *mockup.ClusterLister
 		var resourceContext ContextInterface
 		if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" {
 			resourceContext = NewPlotterInterface(mgr.GetClient())
 		} else {
 			resourceContext = NewBlueprintInterface(mgr.GetClient())
 		}
-		err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler, resourceContext).SetupWithManager(mgr)
+		err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler, resourceContext, clusterManager).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
 		err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
@@ -115,6 +116,17 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "m4d-system",
+			},
+		}))
+		Expect(k8sClient.Create(context.Background(), &v1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "cluster-metadata",
+				Namespace: "m4d-system",
+			},
+			Data: map[string]string{
+				"ClusterName": "US-cluster",
+				"Region":      "US",
+				"Zone":        "North-America",
 			},
 		}))
 	}

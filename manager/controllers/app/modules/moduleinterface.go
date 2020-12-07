@@ -4,9 +4,12 @@
 package modules
 
 import (
+	"errors"
+
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 )
 
 // Transformations structure defines the governance actions to be taken for a specific flow
@@ -34,10 +37,10 @@ type DataInfo struct {
 
 // ModuleInstanceSpec consists of the module spec and arguments
 type ModuleInstanceSpec struct {
-	Module    *app.M4DModule
-	Args      *app.ModuleArguments
-	AssetID   string
-	Geography string
+	Module      *app.M4DModule
+	Args        *app.ModuleArguments
+	AssetID     string
+	ClusterName string
 }
 
 // Selector is responsible for finding an appropriate module
@@ -67,22 +70,21 @@ func (m *Selector) GetError() string {
 }
 
 // AddModuleInstances creates module instances for the selected module and its dependencies
-func (m *Selector) AddModuleInstances(args *app.ModuleArguments, item DataInfo) []ModuleInstanceSpec {
+func (m *Selector) AddModuleInstances(args *app.ModuleArguments, item DataInfo, cluster string) []ModuleInstanceSpec {
 	instances := make([]ModuleInstanceSpec, 0)
-	geo := m.selectGeography(item)
 	// append moduleinstances to the list
 	instances = append(instances, ModuleInstanceSpec{
-		AssetID:   item.AssetID,
-		Module:    m.GetModule(),
-		Args:      args,
-		Geography: geo,
+		AssetID:     item.AssetID,
+		Module:      m.GetModule(),
+		Args:        args,
+		ClusterName: cluster,
 	})
 	for _, dep := range m.GetDependencies() {
 		instances = append(instances, ModuleInstanceSpec{
-			AssetID:   item.AssetID,
-			Module:    dep,
-			Args:      args,
-			Geography: geo,
+			AssetID:     item.AssetID,
+			Module:      dep,
+			Args:        args,
+			ClusterName: cluster,
 		})
 	}
 	return instances
@@ -207,13 +209,21 @@ func CheckDependencies(module *app.M4DModule, moduleMap map[string]*app.M4DModul
 	return found, missing
 }
 
-// Choose geography for a module
+// SelectCluster chooses where the module runs
 // Current logic:
 // Read is done at target (processing geography)
 // Copy is done at source when transformations are required, and at target - otherwise
-func (m *Selector) selectGeography(item DataInfo) string {
+func (m *Selector) SelectCluster(item DataInfo, clusters []multicluster.Cluster) (string, error) {
+	var geo string
 	if len(m.Actions) > 0 && m.Flow == app.Copy {
-		return item.DataDetails.Geo
+		geo = item.DataDetails.Geo
+	} else {
+		geo = item.Geo
 	}
-	return item.Geo
+	for _, cluster := range clusters {
+		if cluster.Metadata.Region == geo {
+			return cluster.Name, nil
+		}
+	}
+	return "", errors.New(app.InvalidClusterConfiguration + "\nNo clusters have been found for running " + m.Module.Name + " in " + geo)
 }
