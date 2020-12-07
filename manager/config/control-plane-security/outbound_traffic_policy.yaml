@@ -4,7 +4,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Sidecar
 metadata:
-  name: default
+  name: sidecar-default
 spec:
   egress:
   - hosts:

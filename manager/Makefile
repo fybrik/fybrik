@@ -53,6 +53,7 @@ uninstall: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl manifests
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: docker-secret manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
 	$(TOOLBIN)/kubectl create namespace m4d-system || true
+	$(TOOLBIN)/kubectl label namespaces m4d-system m4d.com/namespaceType=control-plane || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${IMG}
 	$(TOOLBIN)/kustomize build config/default | $(TOOLBIN)/kubectl apply -f -
 

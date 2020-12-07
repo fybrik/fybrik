@@ -50,6 +50,6 @@ Policies are therefore defined externally in the policy manager of choice. {{< n
 
 # Securing the Connector Ingress Traffic
 
-Istio authorization policy is used to ensure that the connector ingress is limited to traffic only from workloads within the control-plane namespace.
-For this purpose Istio AuthorizationPolicy CRD is automatically deployed upon installation of {{< name >}}. Please see [instructions](../../setup/istio/) for more details.
-In addition, Istio authentication policy is automatically deployed upon installation of {{< name >}} to ensure mutual TLS between the pilot and connectors. This policy is also not connector specific but rather enables Istio [auto mutual     TLS feature](https://Istio.io/latest/docs/tasks/security/authentication/authn-policy/#auto-mutual-tls).
+[Kubernetes NetworkPolicy](https://kubernetes.io/docs/concepts/services-networking/network-policies/) resource is used to ensure that the connector ingress is limited to traffic only from workloads within the control-plane namespace.
+The policy is automatically deployed upon installation of {{< name >}}.
+In addition, Istio authentication policy can be deployed upon installation of {{< name >}} to ensure mutual TLS between the pilot and connectors. This policy is also not connector specific but rather enables Istio [auto mutual     TLS feature](https://Istio.io/latest/docs/tasks/security/authentication/authn-policy/#auto-mutual-tls). Please see [control-plane security](../../setup/control-plane-security/) section for more details.

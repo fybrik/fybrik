@@ -34,6 +34,8 @@ The information below is outdated
 
 ### Control Plane Security
 
-The traffic between the pilot and the connectors is secured by lavergaing Istio security features:
-- Istio authentication policy enables mutual TLS between the pilot and the connectors.
-- Istio authorization policy controls the ingress traffic of the connectors.
+The traffic between the pilot and the connectors is secured by lavergaing the following Kubernetes and Istio security features:
+- Istio authentication policy(\*) enables mutual TLS between the pilot and the connectors.
+- Kubernetes authorization policy controls the ingress traffic of the connectors.
+
+(\*) Applying Istio authentication policy is not part of the default {{< name >}} deployment.

@@ -7,11 +7,11 @@ This guide lets you quickly evaluate {{< name >}}. For a custom setup follow the
 
 ## Before you begin
 Ensure that you have the following:
-- `kubectl` with access to a Kubernetes cluster with Istio installed (this guide was tested with kind v0.10.0, OpenShift 4.3 and Istio 1.8.0)
 - `git`
 - `make`
 - `kubectl` version 1.16 and above
 - `helm` version 3.3 and above
+- `Istio` version 1.6.1 and above (Istio is only required if the manager control-plane-security configuration is used. Please see the manager README [config section](https://{{< github_base >}}/{{< github_repo >}}/tree/master/manager#config)).
 
 ## About this guide
 By the end of this guide you will have the following installed to your Kubernetes cluster:
@@ -22,8 +22,6 @@ By the end of this guide you will have the following installed to your Kubernete
 - Arrow-Flight data access module for reading Parquet and CSV datasets
 
 ## Prepare for installing {{< name >}}
-
-1.  Apply [Istio installation notes](../istio/) to the cluster.
 
 1.  Obtain a local copy of {{< name >}} repository
     ```bash
@@ -47,8 +45,6 @@ By the end of this guide you will have the following installed to your Kubernete
     ```
 
     to install on OpenShift you need to run ```WITHOUT_OPENSHIFT=false ./hack/install.sh``` instead.
-
-    for the [Sample Kubeflow notebook]({{< baseurl >}}/docs/usage/notebook-sample) you need to run with ```WITHOUT_ISTIO=true``` due to incompatibly between Istio version used in kubeflow and Istio version used in this project (please see [issue #1535](https://github.com/kubeflow/manifests/issues/1535)).
 
 1. Enable the use of the [arrow flight module](https://{{< github_base >}}/the-mesh-for-data-flight-module)
     ```
