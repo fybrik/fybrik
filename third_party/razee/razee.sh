@@ -64,8 +64,27 @@ setup_user() {
 }
 
 setup_remotes() {
-    ./setupCluster.sh kind-control "http://razeedash-api-lb.razee.svc.cluster.local:8081/api/v2"
-    ./setupCluster.sh kind-kind "http://control-control-plane:30333/api/v2"
+    RAZEE_USER=$RAZEE_USER RAZEE_PASSWORD=$RAZEE_PASSWORD ./setupCluster.sh kind-control "http://razeedash-api-lb.razee.svc.cluster.local:8081"
+    RAZEE_USER=$RAZEE_USER RAZEE_PASSWORD=$RAZEE_PASSWORD ./setupCluster.sh kind-kind "http://control-control-plane:30333"
+}
+
+create_razee_secret() {
+  # fetch the token
+  DATA=$(curl --request POST \
+        --url http://localhost:3333/graphql \
+        --header 'Content-Type: application/json' \
+        --data "{\"query\":\"mutation {\n  signIn(\n    login: \\\"$RAZEE_USER\\\"\n    password: \\\"$RAZEE_PASSWORD\\\"\n  ) {\n    token\n  }\n}\"}")
+  TOKEN=$(echo $DATA | jq -r -c ".data.signIn.token")
+
+  echo "TOKEN: $TOKEN"
+
+  ordId=$(curl --request POST \
+  --url http://localhost:3333/graphql \
+  --header 'content-type: application/json' \
+  --header "Authorization: Bearer $TOKEN" \
+  --data '{"query":"query {\n  me {\n    orgId \n  }\n}"}')
+
+  echo  "ordId = $ordId"
 }
 
 case "$op" in
@@ -88,6 +107,9 @@ case "$op" in
     setup_user)
         header_text "Installing razee on clusters"
         setup_user
+        ;;
+    create_razee_secret)
+        create_razee_secret
         ;;
     *)
         header_text "Installing razee"
