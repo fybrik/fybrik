@@ -18,12 +18,12 @@ spec:
     spec:
       containers:
       - name: datauserclient
-        image: image-registry.openshift-image-registry.svc:5000/"$WORKLOAD_NAMESPACE"/datauserclient:latest
+        image: "$DOCKER_HOSTNAME"/"$WORKLOAD_NAMESPACE"/datauserclient:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
       - name: datauserserver
-        image: image-registry.openshift-image-registry.svc:5000/"$WORKLOAD_NAMESPACE"/datauserserver:latest
+        image: "$DOCKER_HOSTNAME"/"$WORKLOAD_NAMESPACE"/datauserserver:latest
         imagePullPolicy: Always
         envFrom:
         - configMapRef:
