@@ -36,7 +36,7 @@ const ApplicationTable = (props) => {
         </Table.Cell>
       )
     } else {
-      if ('conditions' in status.status) {
+      if ('conditions' in status.status && (status.status.conditions[0].status == "True" || status.status.conditions[1].status == "True")) {
         return (
           <Table.Cell textAlign='center'>
             <Popup position='left center' pinned on='click' trigger={<Button basic icon='exclamation' flowing='true' color='red'/>}>
@@ -44,7 +44,6 @@ const ApplicationTable = (props) => {
                 {(status.status.conditions.map((condition, index) => (
                   <Grid.Row key={index}>
                     <Segment secondary attached><b>{condition.type}</b></Segment>
-                    <Segment attached><b>Reason: </b>{condition.reason}</Segment>
                     <Segment attached><b>Message: </b>{condition.message}</Segment>
                   </Grid.Row>
                 )))}
