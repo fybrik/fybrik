@@ -80,9 +80,9 @@ build_encrypt_column_action(column_name, used_policies) = action {
     action = build_action(encrypt_column_struct.action_name, encrypt_column_struct.description, args, used_policies)
 }
 
-#mask_reduct_column
-reduct_column_struct = {
-    "action_name" : "reduct column",
+#mask_redact_column
+redact_column_struct = {
+    "action_name" : "redact column",
     "description" : "Single column is obfuscated with XXX instead of values",
     "arguments" : { 
         "column_name": "<column name>"
@@ -90,11 +90,11 @@ reduct_column_struct = {
     "used_policy" : "<used_policy_struct>"
 }
 
-build_reduct_column_action(column_name, used_policies) = action {
+build_redact_column_action(column_name, used_policies) = action {
     args := { 
        "column_name" : column_name
     }
-    action = build_action(reduct_column_struct.action_name, reduct_column_struct.description, args, used_policies)
+    action = build_action(redact_column_struct.action_name, redact_column_struct.description, args, used_policies)
 }
 
 #periodic_blackout

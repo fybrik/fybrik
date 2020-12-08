@@ -42,12 +42,14 @@ transform[action] {
     not dp.check_destination([dp.GeoDestinations.US])
     
     column_names := dp.column_with_any_tag(["SPI", "SMI"])
-    action = dp.build_encrypt_column_action(column_names[_], dp.build_policy_from_description(description))
+    #action = dp.build_encrypt_column_action(column_names[_], dp.build_policy_from_description(description))
+    action = dp.build_redact_column_action(column_names[_], dp.build_policy_from_description(description))
 }
 
 #for transactions dataset
 transform[action] {
-	description = "test for transactions dataset that encrypts some columns by name"
+	#description = "test for transactions dataset that encrypts some columns by name"
+    description = "test for transactions dataset that redacts some columns by name"
     
 	dp.correct_input
     
@@ -57,7 +59,9 @@ transform[action] {
     dp.dataset_has_tag("Finance")
     
     column_names := dp.column_with_any_name({"nameOrig", "nameDest"})
-    action = dp.build_encrypt_column_action(column_names[_], dp.build_policy_from_description(description))
+    #action = dp.build_encrypt_column_action(column_names[_], dp.build_policy_from_description(description))
+    action = dp.build_redact_column_action(column_names[_], dp.build_policy_from_description(description))    
+    
 }
 
 #for transactions dataset
