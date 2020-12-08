@@ -28,9 +28,9 @@ fi
 CLUSTERNAME=$1
 
 if [ -z "$2" ]; then
-  export RAZEEDASH_URL="http://control-control-plane:30333/api/v2"
+  export RAZEEDASH_API="http://control-control-plane:30333"
 else
-  export RAZEEDASH_URL=$2
+  export RAZEEDASH_API=$2
 fi
 
 kubectl config use-context $CLUSTERNAME
@@ -53,6 +53,9 @@ CURLRESULT=$(curl --request POST \
 
 export ORGAPIKEY=$(echo $CURLRESULT | jq .data.registerCluster.orgKey -r)
 export CLUSTERID=$(echo $CURLRESULT | jq .data.registerCluster.clusterId -r)
+
+kubectl create ns m4d-system || true
+kubectl -n m4d-system create secret generic razee-credentials --from-literal=RAZEE_ORG_ID=$ORGID --from-literal=RAZEE_URL="$RAZEEDASH_API/graphql" --from-literal=RAZEE_USER="$RAZEE_USER" --from-literal=RAZEE_PASSWORD=$RAZEE_PASSWORD
 
 if [ $ORGAPIKEY == "null" ]; then
   echo "Could not register cluster!"

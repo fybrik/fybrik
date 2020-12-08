@@ -103,4 +103,3 @@ endif
 include hack/make-rules/tools.mk
 include hack/make-rules/verify.mk
 include hack/make-rules/cluster.mk
-include hack/make-rules/helm.mk
