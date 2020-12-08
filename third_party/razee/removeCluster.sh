@@ -4,8 +4,24 @@
 
 # Usage: ./removeCluster.sh <cluster name>
 
-if [ -z "$APIKEY" ]; then
-  echo "You need to supplied an APIKEY for razee!"
+AUTHENTICATION_HEADER=""
+
+if [ ! -f token ]; then
+  if [ -z "$APIKEY" ]; then
+    echo "You need to supply an APIKEY for razee as environment variable!"
+    exit
+  else
+    echo Using APIKEY for authentication
+    AUTHENTICATION_HEADER="x-api-key: $APIKEY"
+  fi
+else
+  echo Using token for authentication
+  TOKEN=$(cat token)
+  AUTHENTICATION_HEADER="Authorization: Bearer $TOKEN"
+fi
+
+if [ -z "$AUTHENTICATION_HEADER" ]; then
+  echo "You need to supply an APIKEY as enivonrment variable or a local token file!"
   exit
 fi
 
@@ -21,7 +37,7 @@ kubectl wait job/razeedeploy-job-remove -n razeedeploy --for=condition=complete 
 ORGANIZATIONS=$(curl --request POST \
   --url http://localhost:3333/graphql \
   --header 'content-type: application/json' \
-  --header "x-api-key: $APIKEY" \
+  --header "$AUTHENTICATION_HEADER" \
   --data '{"query":"query {organizations {\n  id\n  name\n}}"}')
 
 ORGID=$(echo $ORGANIZATIONS | jq -r -c ".data.organizations[0].id")
@@ -29,7 +45,7 @@ ORGID=$(echo $ORGANIZATIONS | jq -r -c ".data.organizations[0].id")
 CLUSTERIDRES=$(curl --request POST \
   --url http://localhost:3333/graphql \
   --header 'content-type: application/json' \
-  --header "x-api-key: $APIKEY" \
+  --header "$AUTHENTICATION_HEADER" \
   --data "{\"query\":\"query {clusterByName(orgId: \\\"$ORGID\\\", clusterName: \\\"$CLUSTERNAME\\\") {\n  clusterId\n}}\"}")
 
 CLUSTERID=$(echo $CLUSTERIDRES | jq -r .data.clusterByName.clusterId)
@@ -37,7 +53,7 @@ CLUSTERID=$(echo $CLUSTERIDRES | jq -r .data.clusterByName.clusterId)
 curl --request POST \
   --url http://localhost:3333/graphql \
   --header 'content-type: application/json' \
-  --header "x-api-key: $APIKEY" \
+  --header "$AUTHENTICATION_HEADER" \
   --data "{\"query\":\"mutation {deleteClusterByClusterId(orgId: \\\"$ORGID\\\", clusterId: \\\"$CLUSTERID\\\"){\n  deletedClusterCount\n  deletedResourceCount\n}}\"}"
 
 kubectl delete ns razeedeploy --context $CLUSTERNAME

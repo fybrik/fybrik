@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	emperror.dev/errors v0.7.0
+	github.com/IBM/go-sdk-core v1.1.0
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-chi/render v1.0.1
 	github.com/go-logr/logr v0.1.0

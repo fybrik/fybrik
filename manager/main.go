@@ -159,7 +159,6 @@ func main() {
 // init vault client and mount the base directory for storing credentials
 func initVaultConnection() (*api.Client, error) {
 	token := utils.GetVaultToken()
-	setupLog.Info("Token is " + token)
 	if err := utils.MountDatasetVault(token); err != nil {
 		return nil, err
 	}

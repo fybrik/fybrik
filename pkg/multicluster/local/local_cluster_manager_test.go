@@ -11,6 +11,8 @@ import (
 	"testing"
 )
 
+var _ multicluster.ClusterManager = &ClusterManager{}
+
 func TestLocalClusterManager(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 	s := scheme.Scheme

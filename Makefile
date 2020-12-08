@@ -37,11 +37,6 @@ deploy:
 	$(MAKE) -C manager deploy
 	$(MAKE) -C connectors deploy
 
-# Deploys the manager using local images
-.PHONY: deploy-local
-deploy-local:
-	$(MAKE) -C manager deploy-local
-
 .PHONY: undeploy
 undeploy:
 	$(MAKE) -C secret-provider undeploy
@@ -77,12 +72,6 @@ docker-push:
 	$(MAKE) -C connectors docker-push
 	$(MAKE) -C test/dummy-mover docker-push
 
-# Build docker images locally. (Can be used in combination with minikube and deploy-local)
-.PHONY: docker-build-local
-docker-build-local:
-	$(MAKE) -C manager docker-build-local
-	$(MAKE) -C secret-provider docker-build-local
-
 .PHONY: helm
 helm:
 	$(MAKE) -C modules helm
@@ -114,4 +103,3 @@ endif
 include hack/make-rules/tools.mk
 include hack/make-rules/verify.mk
 include hack/make-rules/cluster.mk
-include hack/make-rules/helm.mk

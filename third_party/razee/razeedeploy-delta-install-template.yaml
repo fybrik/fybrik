@@ -70,11 +70,11 @@ spec:
       - name: razeedeploy-job
         image: "quay.io/razee/razeedeploy-delta:2.1.0"
         command: ["node", "src/install", "--namespace=razeedeploy"]
-        args: ["--razeedash-url=$RAZEEDASH_URL",
+        args: ["--razeedash-api=$RAZEEDASH_API",
                "--razeedash-org-key=$ORGAPIKEY",
                "--razeedash-cluster-id=$CLUSTERID",
                "--razeedash-cluster-metadata64=$CLUSTERNAMEB64",
-               "--rr", "--rrs3", "--wk", "--mtp", "--ffsld", "--ms", "-a"]
+               "--cs", "--rr", "--rrs3", "--wk", "--mtp", "--ffsld", "--ms"]
         # see README.md for args options. https://github.com/razee-io/razeedeploy-delta/blob/master/README.md
       restartPolicy: Never
   backoffLimit: 2
