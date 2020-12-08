@@ -94,12 +94,12 @@ undeploy_it:
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
 	$(TOOLBIN)/kustomize build --load_restrictor none config/integration-tests | $(TOOLBIN)/kubectl delete -f -
 
-deploy_cps: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
+deploy_control_plane_security: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
 	$(TOOLBIN)/kubectl create namespace m4d-system || true
 	$(TOOLBIN)/kubectl label namespaces m4d-system istio-injection=enabled --overwrite || true
 	$(TOOLBIN)/kustomize build config/control-plane-security | $(TOOLBIN)/kubectl apply -f -
 
-undeploy_cps:
+undeploy_control_plane_security:
 	$(TOOLBIN)/kubectl label namespace m4d-system istio-injection-
 	$(TOOLBIN)/kustomize build --load_restrictor none config/control-plane-security | $(TOOLBIN)/kubectl delete -f -
 

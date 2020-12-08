@@ -2,6 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 resources:
-- authorization.yaml
+- connectors-ingress.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization

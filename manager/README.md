@@ -34,7 +34,7 @@ can also be manged with this mechanism.
 
 Description of configuration folder structure:
 - `config/certmanager`: Creates a certificate that can be used for webhooks
-- `config/control-plane-security`: Applies authorization and authentication policies to secure the control plane. Some of the policies are based on [Istio](https://istio.io/) thus Istio installation is prerequisite for this configuration. It's used in the make target `make deploy_cps` (in order for the Istio sidecar automatic injection to take effect the pods in the control-plane should be restarted after running the make command).
+- `config/control-plane-security`: Applies authorization and authentication policies to secure the control plane. Some of the policies are based on [Istio](https://istio.io/) thus Istio installation is prerequisite for this configuration. It's used in the make target `make deploy_control-plane-security` (in order for the Istio sidecar automatic injection to take effect the pods in the control-plane should be restarted after running the make command).
 - `config/crd`: Contains the generated CRD definition as well as some patches for the webhook of the crd. This gets installed into the cluster when executing `make install`
 - `config/default`: This is the default deployment that deploys everything. This includes the CRD, manager deployment, certificates, rbac rules and webhook. This gets installed into the cluster when executing `make deploy`.
 - `config/manager`: Kustomization of the deployment of the controller of the operator. Just the K8s deployment object of the manager.

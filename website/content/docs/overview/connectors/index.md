@@ -48,8 +48,8 @@ A PDP returns a list of enforcement actions given a set of policies and specific
 
 Policies are therefore defined externally in the policy manager of choice. {{< name >}} provides a package to help writing data policies in OPA. Otherwise, data stewards are expected to keep using the policy manager that they already use, as long as there is a connector to it.
 
-# Securing the Connector Ingress Traffic
+# Securing the connector ingress traffic
 
-[Kubernetes NetworkPolicy](https://kubernetes.io/docs/concepts/services-networking/network-policies/) resource is used to ensure that the connector ingress is limited to traffic only from workloads within the control-plane namespace.
+Kubernetes [NetworkPolicy](https://kubernetes.io/docs/concepts/services-networking/network-policies/) resource is used to ensure that the connector ingress is limited to traffic only from workloads within the control plane namespace.
 The policy is automatically deployed upon installation of {{< name >}}.
-In addition, Istio authentication policy can be deployed upon installation of {{< name >}} to ensure mutual TLS between the pilot and connectors. This policy is also not connector specific but rather enables Istio [auto mutual     TLS feature](https://Istio.io/latest/docs/tasks/security/authentication/authn-policy/#auto-mutual-tls). Please see [control-plane security](../../setup/control-plane-security/) section for more details.
+In addition, Istio authentication policy can be deployed upon installation of {{< name >}} to ensure mutual TLS between the pilot and connectors. This policy is also not connector specific but rather enables Istio [auto mutual TLS](https://Istio.io/latest/docs/tasks/security/authentication/authn-policy/#auto-mutual-tls) feature. Please see [control plane security](../../setup/control-plane-security/) section for more details.

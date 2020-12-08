@@ -11,7 +11,6 @@ Ensure that you have the following:
 - `make`
 - `kubectl` version 1.16 and above
 - `helm` version 3.3 and above
-- `Istio` version 1.6.1 and above (Istio is only required if the manager control-plane-security configuration is used. Please see the manager README [config section](https://{{< github_base >}}/{{< github_repo >}}/tree/master/manager#config)).
 
 ## About this guide
 By the end of this guide you will have the following installed to your Kubernetes cluster:

@@ -6,6 +6,7 @@ apiVersion: "security.istio.io/v1beta1"
 kind: "PeerAuthentication"
 metadata:
   name: "premissive-mtls-in-control-plane"
+  namespace: system
 spec:
   mtls:
     # PERMISSIVE: Workloads accept both mutual TLS and plain text traffic

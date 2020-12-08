@@ -32,7 +32,7 @@ The information below is outdated
 
 {{< bullet n=9 >}} The application reads from and writes data to whitelisted targets. Requests are handled by `M4DModule` instances. The application can not interact with non-whitelisted targets.
 
-### Control Plane Security
+### Control plane security
 
 The traffic between the pilot and the connectors is secured by lavergaing the following Kubernetes and Istio security features:
 - Istio authentication policy(\*) enables mutual TLS between the pilot and the connectors.
