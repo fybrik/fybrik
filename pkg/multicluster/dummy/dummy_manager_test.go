@@ -9,6 +9,8 @@ import (
 	"testing"
 )
 
+var _ multicluster.ClusterManager = &ClusterManager{}
+
 func TestDummyMultiClusterManager(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 	blueprint := &app.Blueprint{
@@ -17,7 +19,7 @@ func TestDummyMultiClusterManager(t *testing.T) {
 			Namespace: "ns",
 		},
 	}
-	manager := MultiClusterManager{
+	manager := ClusterManager{
 		DeployedBlueprints: make(map[string]*app.Blueprint),
 	}
 

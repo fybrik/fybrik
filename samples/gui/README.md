@@ -61,6 +61,7 @@ Set the following environment variable prior to deploying the GUI.
 
 ```
 export WORKLOAD_NAMESPACE=<namespace>
+export DOCKER_HOSTNAME=<registry>
 ```
 
 ## Creating docker images
@@ -68,7 +69,7 @@ export WORKLOAD_NAMESPACE=<namespace>
 Backend image creation is done from the main directory of the project.
 
 ```
-docker build . -t <registry>/$WORKLOAD_NAMESPACE/datauserserver:latest -f samples/gui/server/Dockerfile.datauserserver
+docker build . -t $DOCKER_HOSTNAME/$WORKLOAD_NAMESPACE/datauserserver:latest -f samples/gui/server/Dockerfile.datauserserver
 ```
 Frontend image creation
 
@@ -79,7 +80,7 @@ Ensure that .env has a correct configuration
 export NODE_OPTIONS=--max_old_space_size=4096
 rm -rf build
 npm run build
-docker build . -t <registry>/$WORKLOAD_NAMESPACE/datauserclient:latest
+docker build . -t $DOCKER_HOSTNAME/$WORKLOAD_NAMESPACE/datauserclient:latest
 ```
 ## Deployment
   ```
