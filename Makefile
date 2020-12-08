@@ -87,10 +87,6 @@ docker-build-local:
 helm:
 	$(MAKE) -C modules helm
 
-.PHONY: helm-chart-push
-helm-chart-push:
-	$(MAKE) -C modules helm-chart-push
-
 DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
 DOCKER_PUBLIC_NAMESPACE ?= the-mesh-for-data
 DOCKER_PUBLIC_NAMES := \
