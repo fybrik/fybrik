@@ -55,11 +55,6 @@ $(TOOLBIN)/istioctl:
 	cd $(TOOLS_DIR); ./install_istio.sh
 	$(call post-install-check)
 
-# INSTALL_TOOLS += $(TOOLBIN)/minikube
-$(TOOLBIN)/minikube:
-	cd $(TOOLS_DIR); ./install_minikube.sh
-	$(call post-install-check)
-
 INSTALL_TOOLS += $(TOOLBIN)/protoc
 $(TOOLBIN)/protoc:
 	cd $(TOOLS_DIR); ./install_protoc.sh
