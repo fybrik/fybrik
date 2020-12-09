@@ -31,9 +31,3 @@ The information below is outdated
 {{< bullet n=8 >}} Processing jobs for preparing the environment for the application are running. The figure shows an example of creating an implicit copy job to copy data from PostgresSQL to Ceph.
 
 {{< bullet n=9 >}} The application reads from and writes data to whitelisted targets. Requests are handled by `M4DModule` instances. The application can not interact with non-whitelisted targets.
-
-### Control plane security
-
-The traffic between the pilot and the connectors is secured by lavergaing the following Kubernetes and Istio security features:
-- A Kubernetes `NetworkPolicy` controls ingress traffic to connectors.
-- Istio enables mutual TLS between the pilot and the connectors. Note that this is not part of the default {{< name >}} deployment and needs to be enabled explicitly.
