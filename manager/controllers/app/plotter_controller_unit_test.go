@@ -6,7 +6,6 @@ package app
 import (
 	"context"
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/dummy"
 	"github.com/onsi/gomega"
 	"io/ioutil"
@@ -51,7 +50,7 @@ func TestPlotterController(t *testing.T) {
 
 	// Register operator types with the runtime scheme.
 	s := scheme.Scheme
-	s.AddKnownTypes(motionv1.GroupVersion, plotter)
+	s.AddKnownTypes(app.GroupVersion, plotter)
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	dummyManager := &dummy.ClusterManager{
