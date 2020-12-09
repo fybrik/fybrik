@@ -17,21 +17,14 @@ spec:
         env:
         - name: ENABLE_WEBHOOKS
           value: "true"
-        - name: MOVER_IMAGE
-          value: "kind-registry:5000/m4d-system/dummy-mover:latest"
         - name: IMAGE_PULL_POLICY
           value: "IfNotPresent"
         - name: NO_FINALIZER
           value: "false"
         - name: GODEBUG
           value: "x509ignoreCN=0"
-        volumeMounts:
-        - mountPath: /etc/ssl/certs/ca-certificates.crt
-          subPath: ca-certificates.crt
-          name: ca-cert
-          readOnly: true
-      volumes:
-      - name: ca-cert
-        secret:
-          defaultMode: 420
-          secretName: registry-ca-cert
+        envFrom:
+        - secretRef:
+            name: razee-credentials
+        - configMapRef:
+            name: m4d-config
