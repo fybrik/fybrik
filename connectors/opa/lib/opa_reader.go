@@ -186,9 +186,9 @@ func buildNewEnfrocementAction(transformAction interface{}) (*pb.EnforcementActi
 						Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": columnName}}
 					return newEnforcementAction, newUsedPolicy, true
 				}
-			case "reduct column":
+			case "redact column":
 				if columnName, ok := extractArgument(action["arguments"], "column_name"); ok {
-					newEnforcementAction := &pb.EnforcementAction{Name: "reducted", Id: "reducted-ID",
+					newEnforcementAction := &pb.EnforcementAction{Name: "redacted", Id: "redacted-ID",
 						Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": columnName}}
 					return newEnforcementAction, newUsedPolicy, true
 				}
