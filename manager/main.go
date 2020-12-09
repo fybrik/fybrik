@@ -23,6 +23,7 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"github.com/ibm/the-mesh-for-data/pkg/helm"
+	clustermngr "github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	// +kubebuilder:scaffold:imports
 )
@@ -117,6 +118,8 @@ func main() {
 		// Initialize PolicyCompiler interface
 		policyCompiler := pc.NewPolicyCompiler()
 
+		// Initialize ClusterManager
+		cm := clustermngr.NewManager(mgr.GetClient(), utils.GetSystemNamespace())
 		// Initiate the M4DApplication Controller
 		var resourceContext app.ContextInterface
 		if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" {
@@ -124,8 +127,7 @@ func main() {
 		} else {
 			resourceContext = app.NewBlueprintInterface(mgr.GetClient())
 		}
-
-		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, resourceContext)
+		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, resourceContext, cm)
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
 			os.Exit(1)

@@ -10,16 +10,18 @@ import (
 	modules "github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // ModuleManager builds a set of modules based on the requirements (governance actions, data location) and the existing set of M4DModules
 type ModuleManager struct {
-	Client  client.Client
-	Log     logr.Logger
-	Modules map[string]*app.M4DModule
-	Owner   types.NamespacedName
+	Client   client.Client
+	Log      logr.Logger
+	Modules  map[string]*app.M4DModule
+	Clusters []multicluster.Cluster
+	Owner    types.NamespacedName
 }
 
 // SelectModuleInstances builds a list of required modules with the relevant arguments
@@ -156,8 +158,12 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo) ([]modules.
 				Destination:     *sinkDataStore,
 				Transformations: copySelector.Actions},
 		}
+		copyCluster, err := copySelector.SelectCluster(item, m.Clusters)
+		if err != nil {
+			return instances, err
+		}
 		m.Log.Info("Adding copy module")
-		instances = copySelector.AddModuleInstances(copyArgs, item)
+		instances = copySelector.AddModuleInstances(copyArgs, item, copyCluster)
 	}
 	m.Log.Info("Adding read path")
 	var readSource app.DataStore
@@ -175,7 +181,11 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo) ([]modules.
 	readArgs := &app.ModuleArguments{
 		Read: readInstructions,
 	}
-	instances = append(instances, readSelector.AddModuleInstances(readArgs, item)...)
+	readCluster, err := readSelector.SelectCluster(item, m.Clusters)
+	if err != nil {
+		return instances, err
+	}
+	instances = append(instances, readSelector.AddModuleInstances(readArgs, item, readCluster)...)
 	return instances, nil
 }
 
