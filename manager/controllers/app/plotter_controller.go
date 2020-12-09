@@ -22,7 +22,7 @@ import (
 	"time"
 )
 
-// BlueprintReconciler reconciles a Blueprint object
+// PlotterReconciler reconciles a Plotter object
 type PlotterReconciler struct {
 	client.Client
 	Name           string
@@ -34,7 +34,7 @@ type PlotterReconciler struct {
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=plotters,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=plotters/status,verbs=get;update;patch
 
-// Reconcile receives a Blueprint CRD
+// Reconcile receives a Plotter CRD
 //nolint:dupl
 func (r *PlotterReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
@@ -75,7 +75,7 @@ func (r *PlotterReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return result, nil
 }
 
-// reconcileFinalizers reconciles finalizers for Blueprint
+// reconcileFinalizers reconciles finalizers for Plotter
 func (r *PlotterReconciler) reconcileFinalizers(plotter *app.Plotter) error {
 	// finalizer
 	finalizerName := r.Name + ".finalizer"
@@ -121,8 +121,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, error)
 		isInitialReconcile = true
 	}
 
-	// fetch status of blueprints from crd
-	// nothing yet deployed. Generate Blueprints
+	// Reconciliation loop per cluster
 	isReady := true
 	for cluster, blueprintSpec := range plotter.Spec.Blueprints {
 		r.Log.V(1).Info("Handling cluster " + cluster)
@@ -137,7 +136,6 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, error)
 			if remoteBlueprint == nil {
 				r.Log.Info("Could not yet find remote blueprint")
 				return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
-				// return ctrl.Result{}, errors.New("received nil as remote blueprint")
 			}
 
 			if !reflect.DeepEqual(blueprintSpec, remoteBlueprint.Spec) {
@@ -229,7 +227,7 @@ func SetupPlotterController(mgr manager.Manager, clusterManager multicluster.Clu
 	}
 }
 
-// NewPlotterReconciler creates a new reconciler for Blueprint resources
+// NewPlotterReconciler creates a new reconciler for Plotter resources
 func NewPlotterReconciler(mgr ctrl.Manager, name string, manager multicluster.ClusterManager) *PlotterReconciler {
 	return &PlotterReconciler{
 		Client:         mgr.GetClient(),
@@ -240,7 +238,7 @@ func NewPlotterReconciler(mgr ctrl.Manager, name string, manager multicluster.Cl
 	}
 }
 
-// SetupWithManager registers Blueprint controller
+// SetupWithManager registers Plotter controller
 func (r *PlotterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&app.Plotter{}).

@@ -237,7 +237,7 @@ func (r *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	max := 0
 	channelInfo, err := r.con.Channels.ChannelByName(r.orgId, channelName)
 	if err != nil {
-		return errors.New("cannot fetch channel info")
+		return errors.New("cannot fetch channel info for channel '"+ channelName + "'")
 	}
 	for _, version := range channelInfo.Versions {
 		v, err := strconv.Atoi(version.Name)
