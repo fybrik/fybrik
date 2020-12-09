@@ -69,12 +69,10 @@ func (r *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	return clusters, nil
 }
 
-//nolint:golint,unused
 func createBluePrintSelfLink(namespace string, name string) string {
 	return fmt.Sprintf("/apis/app.m4d.ibm.com/v1alpha1/namespaces/%s/blueprints/%s", namespace, name)
 }
 
-//nolint:golint,unused
 func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name string) (*v1alpha1.Blueprint, error) {
 	selfLink := createBluePrintSelfLink(namespace, name)
 	cluster, err := r.razeeClient.getClusterByName(r.orgId, clusterName)
@@ -93,7 +91,6 @@ func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name
 	return &blueprint, err
 }
 
-//nolint:golint,unused
 func getGroupName(cluster string) string {
 	return "m4d-" + cluster
 }
@@ -104,9 +101,8 @@ type Collection struct {
 	Items           []metav1.Object `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
-//nolint:golint,unused
-func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
-	genNamespace := &v1.Namespace{
+func groupWithNamespace(blueprint *v1alpha1.Blueprint) *Collection {
+	namespace := &v1.Namespace{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Namespace",
 			APIVersion: "v1",
@@ -114,20 +110,25 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 		ObjectMeta: metav1.ObjectMeta{Name: blueprint.Namespace},
 	}
 
-	groupName := getGroupName(cluster)
-	channelName := channelName(cluster, blueprint.Namespace, blueprint.Name)
-	version := "0"
-
-	list := &Collection{
+	return &Collection{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "List",
 			APIVersion: "v1",
 		},
 		Items: []metav1.Object{
-			genNamespace,
+			namespace,
 			blueprint,
 		},
 	}
+}
+
+//nolint:golint,unused
+func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+	groupName := getGroupName(cluster)
+	channelName := channelName(cluster, blueprint.Namespace, blueprint.Name)
+	version := "0"
+
+	list := groupWithNamespace(blueprint)
 
 	content, err := yaml.Marshal(list)
 	if err != nil {
@@ -209,24 +210,7 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 func (r *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	channelName := channelName(cluster, blueprint.Namespace, blueprint.Name)
 
-	genNamespace := &v1.Namespace{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Namespace",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{Name: blueprint.Namespace},
-	}
-
-	list := &Collection{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "List",
-			APIVersion: "v1",
-		},
-		Items: []metav1.Object{
-			genNamespace,
-			blueprint,
-		},
-	}
+	list := groupWithNamespace(blueprint)
 
 	content, err := yaml.Marshal(list)
 	if err != nil {
@@ -237,7 +221,7 @@ func (r *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	max := 0
 	channelInfo, err := r.con.Channels.ChannelByName(r.orgId, channelName)
 	if err != nil {
-		return errors.New("cannot fetch channel info for channel '"+ channelName + "'")
+		return errors.New("cannot fetch channel info for channel '" + channelName + "'")
 	}
 	for _, version := range channelInfo.Versions {
 		v, err := strconv.Atoi(version.Name)
