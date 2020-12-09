@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: manager
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         env:
         - name: ENABLE_WEBHOOKS
           value: "true"
@@ -25,6 +25,11 @@ spec:
           value: "false"
         - name: GODEBUG
           value: "x509ignoreCN=0"
+        envFrom:
+        - secretRef:
+            name: razee-credentials
+        - configMapRef:
+            name: m4d-config
         volumeMounts:
         - mountPath: /etc/ssl/certs/ca-certificates.crt
           subPath: ca-certificates.crt

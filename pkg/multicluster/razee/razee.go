@@ -42,15 +42,15 @@ type RazeeClient struct {
 }
 
 //nolint:golint,unused
-func (r *RazeeClient) getResourceByKeys(orgId string, clusterId string, selfLink string) (string, error) {
+func (r *RazeeClient) getResourceByKeys(orgID string, clusterID string, selfLink string) (string, error) {
 	req := graphql.NewRequest(`
     query ($orgId: String!, $clusterId: String!, $selfLink: String!) {resourceByKeys(orgId: $orgId, clusterId: $clusterId, selfLink: $selfLink) {
 	  data
 	}}
 	`)
 
-	req.Var("orgId", orgId)
-	req.Var("clusterId", clusterId)
+	req.Var("orgId", orgID)
+	req.Var("clusterId", clusterID)
 	req.Var("selfLink", selfLink)
 
 	var res struct {
@@ -180,6 +180,31 @@ func (r *RazeeClient) createGroup(orgId string, groupName string) (string, error
 		return "", err
 	}
 	return result.AddGroup.Uuid, nil
+}
+
+func (r *RazeeClient) setSubscription(orgID string, subscriptionUUID string, versionUUID string) error {
+	req := graphql.NewRequest(`
+    mutation($orgId: String!, $uuid: String!, $versionUuid: String!) {setSubscription(orgId: $orgId, uuid: $uuid, versionUuid: $versionUuid) {
+	  uuid
+	  success
+	}}
+	`)
+
+	req.Var("orgId", orgID)
+	req.Var("uuid", subscriptionUUID)
+	req.Var("versionUuid", versionUUID)
+	var result struct {
+		SetSubscription struct {
+			UUID    string `json:"uuid"`
+			Success bool   `json:"success"`
+		} `json:"setSubscription"`
+	}
+	err := r.client.Run(context.Background(), req, &result)
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 //nolint:golint,unused

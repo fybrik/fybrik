@@ -130,6 +130,14 @@ rules:
   - update
   - watch
 - apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - plotters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - apps
   resources:
   - deployments
