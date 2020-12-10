@@ -1,0 +1,46 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: app.m4d.ibm.com/v1alpha1
+kind: Plotter
+metadata:
+  name: plotter
+  namespace: m4d-system
+spec:
+  blueprints:
+    kind-kind:
+      entrypoint: "MyApp"
+      flow:
+        name: notebook
+        steps:
+        - arguments:
+            copy:
+              destination:
+                connection:
+                  name: S3
+                  s3:
+                    bucket: my-bucket
+                    endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
+                    object_key: my-object
+                  type: 2
+                credentialLocation: /v1/m4d/dataset-creds/m4d-test-bucket
+                format: parquet
+              source:
+                connection:
+                  db2:
+                    port: "5000"
+                    table: SMALL
+                    database: MYDB
+                    url: mydb
+                    ssl: "true"
+                credentialLocation: "/v1/secret/data/db2/m4d"
+                format: table
+          name: implicit-copy-db2wh-to-s3-latest
+          template: implicit-copy-db2wh-to-s3-latest
+      selector: {}
+      templates:
+      - kind: M4DModule
+        name: implicit-copy-db2wh-to-s3-latest
+        resources:
+        - kind-registry:5000/m4d-system/m4d-db2wh:0.1.0
+  selector: {}

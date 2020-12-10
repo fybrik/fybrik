@@ -518,6 +518,34 @@ spec:
         status:
           description: PlotterStatus defines the observed state of Plotter This includes readiness, error message, and indicators received from blueprint resources owned by the Plotter for cleanup and status monitoring
           properties:
+            blueprints:
+              additionalProperties:
+                properties:
+                  metadata:
+                    type: object
+                  status:
+                    description: BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators forthe Kubernetes resources owned by the Blueprint for cleanup and status monitoring
+                    properties:
+                      observedGeneration:
+                        description: ObservedGeneration is taken from the Blueprint metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.
+                        format: int64
+                        type: integer
+                      observedState:
+                        description: ObservedState includes information to be reported back to the M4DApplication resource It includes readiness and error indications, as well as user instructions
+                        properties:
+                          dataAccessInstructions:
+                            description: DataAccessInstructions indicate how the data user or his application may access the data. Instructions are available upon successful orchestration.
+                            type: string
+                          error:
+                            description: Error indicates that there has been an error to orchestrate the modules and provides the error message
+                            type: string
+                          ready:
+                            description: Ready represents that the modules have been orchestrated successfully and the data is ready for usage
+                            type: boolean
+                        type: object
+                    type: object
+                type: object
+              type: object
             observedGeneration:
               description: ObservedGeneration is taken from the Plotter metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated blueprints should be checked.
               format: int64

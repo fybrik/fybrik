@@ -44,6 +44,7 @@ type BlueprintReconciler struct {
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=blueprints/status,verbs=get;update;patch
 
 // Reconcile receives a Blueprint CRD
+//nolint:dupl
 func (r *BlueprintReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("blueprint", req.NamespacedName)

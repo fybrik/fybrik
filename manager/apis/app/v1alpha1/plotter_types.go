@@ -35,6 +35,9 @@ type PlotterStatus struct {
 	// whether reconcile was called because the desired state changed, or whether status of the allocated blueprints should be checked.
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+
+	// + optional
+	Blueprints map[string]MetaBlueprint `json:"blueprints,omitempty"`
 }
 
 // +kubebuilder:object:root=true

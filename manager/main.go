@@ -5,7 +5,11 @@ package main
 
 import (
 	"flag"
+	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
+	"github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
+	"github.com/ibm/the-mesh-for-data/pkg/multicluster/razee"
 	"os"
+	"strings"
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/motion"
 
@@ -23,7 +27,6 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"github.com/ibm/the-mesh-for-data/pkg/helm"
-	clustermngr "github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	// +kubebuilder:scaffold:imports
 )
@@ -52,6 +55,7 @@ func main() {
 	var enableLeaderElection bool
 	var enableApplicationController bool
 	var enableBlueprintController bool
+	var enablePlotterController bool
 	var enableMotionController bool
 	var enableAllControllers bool
 	var namespace string
@@ -63,6 +67,8 @@ func main() {
 		"Enable application controller of the manager. This manages CRDs of type M4DApplication.")
 	flag.BoolVar(&enableBlueprintController, "enable-blueprint-controller", false,
 		"Enable blueprint controller of the manager. This manages CRDs of type Blueprint.")
+	flag.BoolVar(&enablePlotterController, "enable-plotter-controller", false,
+		"Enable plotter controller of the manager. This manages CRDs of type Plotter.")
 	flag.BoolVar(&enableMotionController, "enable-motion-controller", false,
 		"Enable motion controller of the manager. This manages CRDs of type BatchTransfer or StreamTransfer.")
 	flag.BoolVar(&enableAllControllers, "enable-all-controllers", false,
@@ -102,6 +108,9 @@ func main() {
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrlOps)
 
+	// Initialize ClusterManager
+	clusterManager := NewClusterManager(mgr)
+
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
@@ -118,8 +127,6 @@ func main() {
 		// Initialize PolicyCompiler interface
 		policyCompiler := pc.NewPolicyCompiler()
 
-		// Initialize ClusterManager
-		cm := clustermngr.NewManager(mgr.GetClient(), utils.GetSystemNamespace())
 		// Initiate the M4DApplication Controller
 		var resourceContext app.ContextInterface
 		if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" {
@@ -127,7 +134,7 @@ func main() {
 		} else {
 			resourceContext = app.NewBlueprintInterface(mgr.GetClient())
 		}
-		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, resourceContext, cm)
+		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, resourceContext, clusterManager)
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
 			os.Exit(1)
@@ -141,6 +148,10 @@ func main() {
 			setupLog.Error(err, "unable to create controller", "controller", blueprintController.Name)
 			os.Exit(1)
 		}
+	}
+
+	if enablePlotterController || enableAllControllers {
+		app.SetupPlotterController(mgr, clusterManager)
 	}
 
 	if enableMotionController || enableAllControllers {
@@ -185,4 +196,25 @@ func initVaultConnection() (*api.Client, error) {
 		return vaultClient, err
 	}
 	return vaultClient, nil
+}
+
+// This method decides based on the environment variables that are set which
+// cluster manager instance should be initiated.
+func NewClusterManager(mgr manager.Manager) multicluster.ClusterManager {
+	setupLog := ctrl.Log.WithName("setup")
+	if user, razeeLocal := os.LookupEnv("RAZEE_USER"); razeeLocal {
+		razeeURL := strings.TrimSpace(os.Getenv("RAZEE_URL"))
+		password := strings.TrimSpace(os.Getenv("RAZEE_PASSWORD"))
+		orgID := strings.TrimSpace(os.Getenv("RAZEE_ORG_ID"))
+
+		setupLog.Info("Using razee at " + razeeURL + " orgId " + orgID)
+		return razee.NewRazeeManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password, orgID)
+	} else if apiKey, satConf := os.LookupEnv("IAM_API_KEY"); satConf {
+		orgID := strings.TrimSpace(os.Getenv("RAZEE_ORG_ID"))
+
+		setupLog.Info("Using IBM Satellite config with orgId " + orgID)
+		return razee.NewSatConfManager(strings.TrimSpace(apiKey), orgID)
+	} else {
+		return local.NewManager(mgr.GetClient(), "m4d-system")
+	}
 }

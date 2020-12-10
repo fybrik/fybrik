@@ -76,8 +76,6 @@ create_razee_secret() {
         --data "{\"query\":\"mutation {\n  signIn(\n    login: \\\"$RAZEE_USER\\\"\n    password: \\\"$RAZEE_PASSWORD\\\"\n  ) {\n    token\n  }\n}\"}")
   TOKEN=$(echo $DATA | jq -r -c ".data.signIn.token")
 
-  echo "TOKEN: $TOKEN"
-
   ordId=$(curl --request POST \
   --url http://localhost:3333/graphql \
   --header 'content-type: application/json' \

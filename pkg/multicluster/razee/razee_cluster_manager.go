@@ -1,7 +1,9 @@
 package razee
 
 import (
+	"errors"
 	"fmt"
+	"github.com/IBM/go-sdk-core/core"
 	"github.com/IBM/satcon-client-go/client"
 	"github.com/IBM/satcon-client-go/client/types"
 	"github.com/ghodss/yaml"
@@ -9,9 +11,11 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"net/http"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"strconv"
 )
 
 const (
@@ -29,10 +33,10 @@ func init() {
 
 //nolint:golint,unused
 type ClusterManager struct {
-	orgId 		string
-	con   		client.SatCon
+	orgId       string
+	con         client.SatCon
 	razeeClient *RazeeClient
-	log   		logr.Logger
+	log         logr.Logger
 }
 
 //nolint:golint,unused
@@ -65,12 +69,10 @@ func (r *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	return clusters, nil
 }
 
-//nolint:golint,unused
 func createBluePrintSelfLink(namespace string, name string) string {
 	return fmt.Sprintf("/apis/app.m4d.ibm.com/v1alpha1/namespaces/%s/blueprints/%s", namespace, name)
 }
 
-//nolint:golint,unused
 func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name string) (*v1alpha1.Blueprint, error) {
 	selfLink := createBluePrintSelfLink(namespace, name)
 	cluster, err := r.razeeClient.getClusterByName(r.orgId, clusterName)
@@ -78,6 +80,7 @@ func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name
 		return nil, err
 	}
 	jsonData, err := r.razeeClient.getResourceByKeys(r.orgId, cluster.ClusterId, selfLink)
+	r.log.V(2).Info("Blueprint data: '" + jsonData + "'")
 	if err != nil {
 		return nil, err
 	}
@@ -88,9 +91,35 @@ func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name
 	return &blueprint, err
 }
 
-//nolint:golint,unused
 func getGroupName(cluster string) string {
 	return "m4d-" + cluster
+}
+
+type Collection struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Items           []metav1.Object `json:"items" protobuf:"bytes,2,rep,name=items"`
+}
+
+func groupWithNamespace(blueprint *v1alpha1.Blueprint) *Collection {
+	namespace := &v1.Namespace{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Namespace",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{Name: blueprint.Namespace},
+	}
+
+	return &Collection{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "List",
+			APIVersion: "v1",
+		},
+		Items: []metav1.Object{
+			namespace,
+			blueprint,
+		},
+	}
 }
 
 //nolint:golint,unused
@@ -98,10 +127,15 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	groupName := getGroupName(cluster)
 	channelName := channelName(cluster, blueprint.Namespace, blueprint.Name)
 	version := "0"
-	content, err := yaml.Marshal(blueprint)
+
+	list := groupWithNamespace(blueprint)
+
+	content, err := yaml.Marshal(list)
 	if err != nil {
 		return err
 	}
+
+	r.log.Info("Blueprint content to create: " + string(content))
 	razeeClusters, err := r.con.Clusters.ClustersByOrgID(r.orgId)
 	if err != nil {
 		return err
@@ -174,6 +208,57 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 
 //nolint:golint,unused
 func (r *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+	channelName := channelName(cluster, blueprint.Namespace, blueprint.Name)
+
+	list := groupWithNamespace(blueprint)
+
+	content, err := yaml.Marshal(list)
+	if err != nil {
+		return err
+	}
+	r.log.Info("Blueprint content to update: " + string(content))
+
+	max := 0
+	channelInfo, err := r.con.Channels.ChannelByName(r.orgId, channelName)
+	if err != nil {
+		return errors.New("cannot fetch channel info for channel '" + channelName + "'")
+	}
+	for _, version := range channelInfo.Versions {
+		v, err := strconv.Atoi(version.Name)
+		if err != nil {
+			return errors.New("Cannot parse version name " + version.Name)
+		} else if max < v {
+			max = v
+		}
+	}
+
+	nextVersion := strconv.Itoa(max + 1)
+
+	// There is only one subscription per channel in our use case
+	if len(channelInfo.Subscriptions) != 1 {
+		return errors.New("found more or less than one subscription")
+	}
+	subscriptionUuid := channelInfo.Subscriptions[0].UUID
+
+	r.log.V(1).Info("Creating new channel version", "nextVersion", nextVersion, "subscriptionUuid", subscriptionUuid, "channelUuid", channelInfo.UUID)
+
+	// create channel version
+	channelVersion, err := r.con.Versions.AddChannelVersion(r.orgId, channelInfo.UUID, nextVersion, content, "")
+	if err != nil {
+		r.log.Error(err, "er")
+		return err
+	}
+
+	r.log.V(2).Info("Updating subscription...")
+
+	// update subscription
+	err = r.razeeClient.setSubscription(r.orgId, subscriptionUuid, channelVersion.VersionUUID)
+	if err != nil {
+		return err
+	}
+
+	r.log.Info("Subscription successfully updated!")
+
 	return nil
 }
 
@@ -215,7 +300,7 @@ func (r *ClusterManager) DeleteBlueprint(cluster string, namespace string, name 
 
 //nolint:golint,unused
 func channelName(cluster string, namespace string, name string) string {
-	return "m4d.ibm.com" + "/" + cluster + "/"+  namespace + "/" + name
+	return "m4d.ibm.com" + "-" + cluster + "-" + namespace + "-" + name
 }
 
 //nolint:golint,unused
@@ -232,10 +317,27 @@ func NewRazeeManager(url string, login string, password string, orgId string) mu
 	logger := ctrl.Log.WithName("ClusterManager")
 
 	return &ClusterManager{
-		orgId: orgId,
-		con:   con,
+		orgId:       orgId,
+		con:         con,
 		razeeClient: razeeClient,
-		log:   logger,
+		log:         logger,
+	}
+}
 
+func NewSatConfManager(apikey string, orgID string) multicluster.ClusterManager {
+	razeeClient := NewIAMRazeeClient(apikey)
+
+	authenticator := &core.IamAuthenticator{
+		ApiKey: apikey,
+	}
+
+	con, _ := client.New("https://config.satellite.cloud.ibm.com/graphql", http.DefaultClient, authenticator)
+	logger := ctrl.Log.WithName("RazeeManager")
+
+	return &ClusterManager{
+		orgId:       orgID,
+		con:         con,
+		razeeClient: razeeClient,
+		log:         logger,
 	}
 }

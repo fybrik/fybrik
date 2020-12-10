@@ -1,0 +1,22 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+# This profile should be used for integration tests in a multi cluster environment
+# Adds namespace to all resources.
+namespace: m4d-system
+
+
+resources:
+- ../integration-tests
+
+patchesStrategicMerge:
+- manager_patch.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+images:
+- name: data-catalog-mock
+  newName: kind-registry:5000/m4d-system/data-catalog-mock
+  newTag: latest
+- name: policycompiler
+  newName: kind-registry:5000/m4d-system/serverpolicycompiler-mock
+  newTag: latest

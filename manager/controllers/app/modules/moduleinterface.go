@@ -122,7 +122,7 @@ func (m *Selector) SupportsGovernanceAction(module *app.M4DModule, action pb.Enf
 	return false
 }
 
-//SupportsDependencies checks whether the module supports the dependency requirements
+// SupportsDependencies checks whether the module supports the dependency requirements
 func (m *Selector) SupportsDependencies(module *app.M4DModule, moduleMap map[string]*app.M4DModule) bool {
 	// check dependencies
 	subModuleNames, errNames := CheckDependencies(module, moduleMap)

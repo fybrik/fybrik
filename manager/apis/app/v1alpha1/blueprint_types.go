@@ -171,6 +171,12 @@ type Blueprint struct {
 	Status BlueprintStatus `json:"status,omitempty"`
 }
 
+type MetaBlueprint struct {
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Status BlueprintStatus `json:"status,omitempty"`
+}
+
 // +kubebuilder:object:root=true
 
 // BlueprintList contains a list of Blueprint

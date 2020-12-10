@@ -2,9 +2,9 @@ package local
 
 import (
 	"context"
+	"fmt"
 	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
-	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -14,7 +14,7 @@ const (
 )
 
 type ClusterManager struct {
-	Client client.Client
+	Client    client.Client
 	Namespace string
 }
 
@@ -58,7 +58,7 @@ func (cm *ClusterManager) DeleteBlueprint(cluster string, namespace string, name
 
 func NewManager(client client.Client, namespace string) multicluster.ClusterManager {
 	return &ClusterManager{
-		Client: client,
+		Client:    client,
 		Namespace: namespace,
 	}
 }
