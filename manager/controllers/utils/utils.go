@@ -113,7 +113,7 @@ func CreateDataSetIdentifier(datasetID string) string {
 
 	id := ""
 	for _, key := range keys {
-		id += key + "/" + jsonMap[key] + "/"
+		id += key + "-" + jsonMap[key] + "-"
 	}
 	return id[:len(id)-1]
 }
