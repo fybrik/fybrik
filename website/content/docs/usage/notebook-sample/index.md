@@ -6,7 +6,6 @@ weight: 10
 This sample shows how to run a Kubeflow notebook with {{< name >}} and demonstrates how polices are seamlessly applied when accessing a dataset.
 
 ## Before you begin
-This sample guide assume that you have completed all the steps in [quick start guide]({{< baseurl >}}/docs/setup/quickstart/).
 
 Ensure that you have the following:
 - `kubectl` with access to a Kubernetes cluster (this guide was tested with kind v0.10.0 and OpenShift 4.3)
@@ -34,14 +33,7 @@ In this sample guide you will:
 
 ## Getting started
 
-1.  Obtain a local copy of {{< name >}} repository
-    ```bash
-    git clone https://{{< github_base >}}/{{< github_repo >}}.git
-    ```
-1.  Change to the root directory of the repository
-    ```bash
-    cd the-mesh-for-data
-    ```
+Completed all the steps in [quick start guide]({{< baseurl >}}/docs/setup/quickstart/).
 
 ## Prepare the dataset for the sample notebook
 
@@ -161,7 +153,7 @@ This allows the code in the notebook to read the data and policies to seamlessly
 
 1. Run the notebook
 
-    You should observe in the cel `Get Data` the data from the dataset.
+    You should observe in the cell `Get Data` the data from the dataset.
 
 1. Finally, kill the port-forward
     ```bash
