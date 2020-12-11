@@ -176,7 +176,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo) ([]modules.
 	readInstructions := make([]app.ReadModuleArgs, 0)
 	readInstructions = append(readInstructions, app.ReadModuleArgs{
 		Source:          readSource,
-		AssetID:         item.AssetID,
+		AssetID:         utils.CreateDataSetIdentifier(item.AssetID),
 		Transformations: readSelector.Actions})
 	readArgs := &app.ModuleArguments{
 		Read: readInstructions,
