@@ -193,16 +193,37 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	// create channel version
 	channelVersion, err := r.con.Versions.AddChannelVersion(r.orgId, channel.UUID, version, content, "")
 	if err != nil {
+		// Remove channel if channelVersion could not be created
+		removeChannel, channelRemoveErr := r.con.Channels.RemoveChannel(r.orgId, channel.UUID)
+		if channelRemoveErr != nil {
+			r.log.Error(channelRemoveErr, "Unable to remove channel after error")
+		} else if removeChannel.Success {
+			r.log.Info("Rolled back channel version after error")
+		}
+
 		return err
 	}
 
 	// create subscription
 	_, err = r.con.Subscriptions.AddSubscription(r.orgId, channelName, channel.UUID, channelVersion.VersionUUID, []string{groupName})
 	if err != nil {
+		// Remove channelVersion and channel if the subscription could not be created
+		removeChannelVersion, versionRemoveErr := r.con.Versions.RemoveChannelVersion(r.orgId, channelVersion.VersionUUID)
+		if versionRemoveErr != nil {
+			r.log.Error(versionRemoveErr, "Unable to remove channel version after error")
+		} else if removeChannelVersion.Success {
+			r.log.Info("Rolled back channel version after error")
+		}
+		removeChannel, channelRemoveErr := r.con.Channels.RemoveChannel(r.orgId, channel.UUID)
+		if channelRemoveErr != nil {
+			r.log.Error(channelRemoveErr, "Unable to remove channel after error")
+		} else if removeChannel.Success {
+			r.log.Info("Rolled back channel after error")
+		}
 		return err
 	}
 
-	r.log.Info("Successfully created subscription! ")
+	r.log.Info("Successfully created subscription!")
 	return nil
 }
 
