@@ -8,6 +8,13 @@ metadata:
   creationTimestamp: null
   name: blueprints.app.m4d.ibm.com
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  - JSONPath: .status.observedState.ready
+    name: Ready
+    type: string
   group: app.m4d.ibm.com
   names:
     kind: Blueprint

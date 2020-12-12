@@ -16,7 +16,7 @@ make cluster-prepare
 make cluster-prepare-wait
 make -C secret-provider configure-vault
 make -C secret-provider deploy
-make -C manager deploy_it
+make -C manager deploy_multi_it
 make -C manager wait_for_manager
 make -C modules helm-chart-push
 
@@ -25,5 +25,8 @@ make cluster-prepare
 make cluster-prepare-wait
 make -C secret-provider configure-vault
 make -C secret-provider deploy
-make -C manager deploy_it
+make -C manager deploy_multi_it
 make -C manager wait_for_manager
+
+# Switch to control cluster after setup
+kubectl config use-context kind-control

@@ -138,6 +138,8 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, error)
 				return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
 			}
 
+			r.Log.V(2).Info("Remote blueprint: ", "rbp", remoteBlueprint)
+
 			if !reflect.DeepEqual(blueprintSpec, remoteBlueprint.Spec) {
 				r.Log.V(1).Info("Blueprint specs differ...")
 				remoteBlueprint.Spec = blueprintSpec
@@ -172,7 +174,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, error)
 					APIVersion: "app.m4d.ibm.com/v1alpha1",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:        "blueprint",
+					Name:        plotter.Name,
 					Namespace:   randomNamespace,
 					ClusterName: cluster,
 					Labels:      map[string]string{"razee/watch-resource": "debug"},
