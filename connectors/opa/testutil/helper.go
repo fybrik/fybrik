@@ -6,6 +6,7 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"log"
 	"net"
 	"net/http"
@@ -166,10 +167,11 @@ func GetCatalogInfo(appId string, datasetID string) *pb.CatalogDatasetInfo {
 	return datasetInfo
 }
 
-func MockCatalogConnector(port string) {
-	log.Println("Start Mock for Catalog Connector at port " + port)
+func MockCatalogConnector(port int) {
+	address := utils.ListeningAddress(port)
+	log.Println("Start Mock for Catalog Connector at " + address)
 
-	lis, err := net.Listen("tcp", ":"+port)
+	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatalf("Error in listening: %v", err)
 	}
@@ -190,9 +192,10 @@ func customOpaResponse(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, customeResponse)
 }
 
-func MockOpaServer(port string) {
-	log.Println("Start Mock for OPA Server at port " + port)
+func MockOpaServer(port int) {
+	address := utils.ListeningAddress(port)
+	log.Println("Start Mock for OPA Server at " + address)
 
 	http.HandleFunc("/v1/data/user_policies", customOpaResponse)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(http.ListenAndServe(address, nil))
 }

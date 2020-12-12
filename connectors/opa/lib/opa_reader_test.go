@@ -44,9 +44,9 @@ func TestMain(m *testing.M) {
 	tu.EnvValues["CATALOG_CONNECTOR_URL"] = "localhost:" + "50084"
 	tu.EnvValues["OPA_SERVER_URL"] = "localhost:" + "8282"
 
-	go tu.MockCatalogConnector("50084")
+	go tu.MockCatalogConnector(50084)
 	time.Sleep(5 * time.Second)
-	go tu.MockOpaServer("8282")
+	go tu.MockOpaServer(8282)
 	time.Sleep(5 * time.Second)
 	code := m.Run()
 	fmt.Println("TestMain function called after Run = opa_connector_test ")
