@@ -85,9 +85,18 @@ func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name
 		return nil, err
 	}
 
+	if jsonData == "" {
+		r.log.Info("Retrieved empty data for ", "cluster", cluster, "namespace", namespace , "name", name)
+		return nil, nil
+	}
+
 	_ = v1alpha1.AddToScheme(scheme)
 	blueprint := v1alpha1.Blueprint{}
 	err = multicluster.Decode(jsonData, scheme, &blueprint)
+	if blueprint.Namespace == "" {
+		r.log.Info("Retrieved an empty blueprint for ", "cluster", cluster, "namespace", namespace , "name", name)
+		return nil, nil
+	}
 	return &blueprint, err
 }
 
@@ -319,9 +328,11 @@ func (r *ClusterManager) DeleteBlueprint(cluster string, namespace string, name 
 	return nil
 }
 
+// The channel name should be per cluster and plotter so it cannot be based on
+// the namespace that is random for every blueprint
 //nolint:golint,unused
 func channelName(cluster string, namespace string, name string) string {
-	return "m4d.ibm.com" + "-" + cluster + "-" + namespace + "-" + name
+	return "m4d.ibm.com" + "-" + cluster + "-" + name
 }
 
 //nolint:golint,unused

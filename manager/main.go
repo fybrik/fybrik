@@ -215,6 +215,7 @@ func NewClusterManager(mgr manager.Manager) multicluster.ClusterManager {
 		setupLog.Info("Using IBM Satellite config with orgId " + orgID)
 		return razee.NewSatConfManager(strings.TrimSpace(apiKey), orgID)
 	} else {
+		setupLog.Info("Using local cluster manager")
 		return local.NewManager(mgr.GetClient(), "m4d-system")
 	}
 }

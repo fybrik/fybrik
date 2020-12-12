@@ -161,6 +161,8 @@ type BlueprintStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Namespaced
+// +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
+// +kubebuilder:printcolumn:name="Ready",type=string,JSONPath=`.status.observedState.ready`
 
 // Blueprint is the Schema for the blueprints API
 type Blueprint struct {
