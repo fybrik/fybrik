@@ -14,20 +14,15 @@ The `NetworkPolicy` is always created. However, your Kubernetes cluster must hav
 
 # Mutual TLS
 
-If Istio is installed in the cluster then you can enable mutual TLS to encrypt the traffic to the connectors. 
-This is optional and must be explicitly enabled. Before you begin ensure that:
-1. Istio 1.6 or above is installed
-1. Istio [automatic sidecar injection](https://istio.io/latest/docs/setup/additional-setup/sidecar-injection/#automatic-sidecar-injection) is enabled
-1. Istio [automatic mutual TLS](https://istio.io/latest/docs/tasks/security/authentication/authn-policy/#auto-mutual-tls) is enabled (this is the default)
+If Istio is installed in the cluster then you can use [automatic mutual TLS](https://istio.io/latest/docs/tasks/security/authentication/authn-policy/#auto-mutual-tls) to encrypt the traffic to the connectors.
+Before you begin ensure that Istio 1.6 or above is installed.
 
 Before installing {{< name >}} run the following:
 ```bash
-kubectl create namespace m4d-system
-kubectl label namespace m4d-system istio-injection=enabled
 make -C manager deploy_control_plane_security
 ```
 
-If you already installed  {{< name >}} before running the above steps then you must restart existing pods:
+If you already installed  {{< name >}} before running the above command then you must restart existing pods:
 ```bash
 kubectl delete pod --all -n m4d-system
 ```
