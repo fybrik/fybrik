@@ -24,7 +24,7 @@ A connector needs to implement one or more of the GRPC interfaces described in t
 
 In addition, to benefit from the [control plane security]({{< baseurl >}}/docs/setup/control-plane-security/) feature ensure that the `Pods` of your connector:
 1. Have a `m4d.ibm.com/componentType: connector` label 
-1. If `sidecar.istio.io/inject` label is set then it should be set to `true`
+1. Have a `sidecar.istio.io/inject: "true"` annotation
 
 
 # Connector types
