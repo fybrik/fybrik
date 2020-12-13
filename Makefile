@@ -16,6 +16,22 @@ test:
 	$(MAKE) -C pkg/policy-compiler test
 	$(MAKE) -C manager test
 
+.PHONY: run-integration-tests
+run-integration-tests: export DOCKER_HOSTNAME=kind-registry:5000
+run-integration-tests: export DOCKER_NAMESPACE=m4d-system
+run-integration-tests:
+	$(MAKE) kind
+	$(MAKE) cluster-prepare
+	$(MAKE) docker
+	$(MAKE) -C test/services docker-all
+	$(MAKE) cluster-prepare-wait
+	$(MAKE) -C secret-provider configure-vault
+	$(MAKE) -C secret-provider deploy
+	$(MAKE) -C manager deploy_it
+	$(MAKE) -C manager wait_for_manager
+	$(MAKE) helm
+	$(MAKE) -C manager run-integration-tests
+
 .PHONY: cluster-prepare
 cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy

@@ -109,6 +109,8 @@ wait_for_manager:
 	$(TOOLBIN)/kubectl wait --for=condition=available -n ${KUBE_NAMESPACE} deployment/m4d-controller-manager --timeout=120s
 
 .PHONY: run-integration-tests
+run-integration-tests: export DOCKER_HOSTNAME=kind-registry:5000
+run-integration-tests: export DOCKER_NAMESPACE=m4d-system
 run-integration-tests: wait_for_manager
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestMotionAPIs -count 1
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestAPIs -count 1

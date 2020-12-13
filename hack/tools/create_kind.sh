@@ -2,6 +2,7 @@
 # Copyright 2020 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
+set -x
 
 op=$1
 
@@ -74,7 +75,7 @@ certs_delete() {
       security remove-trusted-cert  ../registry/themeshfordata-ca.crt
       security delete-certificate -c themeshfordata
     fi
-    rm -rf ../registry
+    rm -rf ../registry || exit 1
 }
 
 kind_delete() {
@@ -97,7 +98,7 @@ case "$op" in
     cleanup)
         header_text "Uninstalling kind cluster"
         registry_delete || true
-        # certs_delete || true # Deactivated for now to simplify development when recreating a kind cluster
+        certs_delete || true
         kind_delete kind || true
         kind_delete control || true
         ;;
