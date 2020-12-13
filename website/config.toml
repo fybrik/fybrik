@@ -1,6 +1,6 @@
 baseURL = "/"
 languageCode = "en-us"
-title = "The Mesh for Data"
+title = "Mesh for Data"
 themesDir = "themes"
 theme = "hugo-whisper-theme"
 
@@ -41,22 +41,22 @@ summaryLength = 30
   homepage_button_right_text = 'Quick start'
   homepage_button_right_icon = 'fas fa-download'
 
-  homepage_intro = 'The Mesh for Data is a cloud-native platform to control data access and data usage across an organization.'
+  homepage_intro = 'Mesh for Data is a cloud-native platform to control data access and data usage across an organization.'
 #  homepage_image = '/images/terminal.gif'
 
   ## You can enable to add anchor links to header elements
   enable_anchor_link = true
 
   [params.homepage_meta_tags]
-    meta_description = "The Mesh for Data is a cloud-native platform to solve your data access problems."
-    meta_og_title = "The Mesh for Data"
+    meta_description = "Mesh for Data is a cloud-native platform to solve your data access problems."
+    meta_og_title = "Mesh for Data"
     meta_og_type = "website"
     meta_og_url = "https://ibm.github.io/the-mesh-for-data/"
     #meta_og_image = "https://raw.githubusercontent.com/JugglerX/hugo-whisper-theme/master/images/tn.png"
-    meta_og_description = "The Mesh for Data is a cloud-native platform to solve your data access problems."
+    meta_og_description = "Mesh for Data is a cloud-native platform to solve your data access problems."
     meta_twitter_card = "summary"
-    #meta_twitter_site = "@themeshfordata"
-    #meta_twitter_creator = "@themeshfordata"
+    #meta_twitter_site = "@meshfordata"
+    #meta_twitter_creator = "@meshfordata"
 
   [params.logo]
     mobile = "/images/logo.svg"

@@ -13,7 +13,7 @@ Steps for creating a module:
 1. Create the [M4DModule YAML](#m4dmodule-yaml) which describes the capabilities of the module workload, in which flows it should be considered for inclusion, its supported interfaces, and the link to the module helm chart.
 1. [Test](#test) the new module
 
-These steps are described in the following sections in more detail, so that you can create your own modules for use by the {{< name >}}.  Note that a new module is maintained in its own git repository, separate from the [{{< github_repo >}}](https://{{< github_base >}}/{{< github_repo >}}) repository.
+These steps are described in the following sections in more detail, so that you can create your own modules for use by {{< name >}}.  Note that a new module is maintained in its own git repository, separate from the [{{< github_repo >}}](https://{{< github_base >}}/{{< github_repo >}}) repository.
 
 ## Module Workload
 

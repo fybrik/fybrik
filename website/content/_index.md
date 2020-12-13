@@ -1,5 +1,5 @@
 ---
-title: 'The Mesh for Data'
+title: 'Mesh for Data'
 date: 2018-11-28T15:14:39+10:00
 ---
 

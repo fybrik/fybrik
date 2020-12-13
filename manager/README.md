@@ -1,6 +1,6 @@
 # `manager`
 
-Kubernetes [custom resources and controllers](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) of The Mesh for Data.
+Kubernetes [custom resources and controllers](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) of Mesh for Data.
 
 The `manager` binary includes all of the controllers that this project defines but you need to select which of the controllers to run by passing one or more of the following command line arguments:
 - `enable-all-controllers` to enable all controllers

@@ -1,4 +1,4 @@
-# The Mesh for Data Website
+# Mesh for Data Website
 
 Holds source files for the project documentation and the website hosting it
 
