@@ -2,10 +2,6 @@ image: "kind-registry:5000/m4d-system/mover:latest"
 imagePullPolicy: "IfNotPresent"
 noFinalizer: "true"
 
-metadata:
-  labels: {}
-  name: 012d42539692bba841b7
-  namespace: default
 
 copy:
   source:

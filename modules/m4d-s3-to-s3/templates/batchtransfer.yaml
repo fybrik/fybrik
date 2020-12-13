@@ -4,7 +4,12 @@
 apiVersion: motion.m4d.ibm.com/v1alpha1
 kind: BatchTransfer
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ include "m4d-s3-to-s3.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "m4d-s3-to-s3.name" . }}
+    helm.sh/chart: {{ include "m4d-s3-to-s3.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   source:
     s3:
