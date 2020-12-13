@@ -105,7 +105,7 @@ type ComponentTemplate struct {
 
 	// Chart contains the location of the helm chart with info detailing how to deploy
 	// +required
-	Chart string `json:"chart"`
+	Chart ChartSpec `json:"chart"`
 }
 
 // DataFlow indicates the flow of the data between the components

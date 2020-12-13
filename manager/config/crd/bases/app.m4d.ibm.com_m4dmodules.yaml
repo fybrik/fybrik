@@ -153,7 +153,18 @@ spec:
               type: object
             chart:
               description: Reference to a Helm chart that allows deployment of the resources required for this module
-              type: string
+              properties:
+                name:
+                  description: Name of helm chart
+                  type: string
+                values:
+                  additionalProperties:
+                    type: string
+                  description: Values to pass to helm chart insallation
+                  type: object
+              required:
+              - name
+              type: object
             dependencies:
               description: Other components that must be installed in order for this module to work
               items:

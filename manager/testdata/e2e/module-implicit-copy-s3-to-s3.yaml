@@ -32,7 +32,8 @@ spec:
       level: 2  # column
     - id: removed-ID
       level: 2  # column
-  chart: ghcr.io/the-mesh-for-data/m4d-s3-to-s3:0.1.0
+  chart:
+    name: ghcr.io/the-mesh-for-data/m4d-s3-to-s3:0.1.0
   statusIndicators:
     - kind: BatchTransfer
       successCondition: status.status == SUCCEEDED
