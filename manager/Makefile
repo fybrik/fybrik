@@ -50,6 +50,11 @@ install: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl manifests
 uninstall: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl manifests
 	$(TOOLBIN)/kustomize build config/crd | $(TOOLBIN)/kubectl delete -f -
 
+# Install CRDs into a charts/m4d-crds
+.PHONY: charts-crd
+charts-crd: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl manifests
+	$(TOOLBIN)/kustomize build config/crd > $(ROOT_DIR)/charts/m4d-crd/templates/crds.yaml
+
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: docker-secret manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
 	$(TOOLBIN)/kubectl create namespace m4d-system || true
