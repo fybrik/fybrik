@@ -136,7 +136,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, error)
 
 			if remoteBlueprint == nil {
 				r.Log.Info("Could not yet find remote blueprint")
-				return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+				continue // Continue with next blueprint
 			}
 
 			r.Log.V(2).Info("Remote blueprint: ", "rbp", remoteBlueprint)
@@ -149,7 +149,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, error)
 				if err != nil {
 					return ctrl.Result{}, err
 				}
-				return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+				continue // Continue with next blueprint
 			}
 
 			r.Log.V(2).Info("Status of remote blueprint ", "status", remoteBlueprint.Status)
