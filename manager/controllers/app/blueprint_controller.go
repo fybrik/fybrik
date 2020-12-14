@@ -224,10 +224,9 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		// unexisting release or a failed release - re-apply the chart
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
 			// Process templates with arguments
-			for _, resource := range templateSpec.Resources {
-				if _, err := r.applyChartResource(log, resource, args, blueprint.Namespace, releaseName); err != nil {
-					blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
-				}
+			chart := templateSpec.Chart
+			if _, err := r.applyChartResource(log, chart, args, blueprint.Namespace, releaseName); err != nil {
+				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
 			}
 		} else if rel.Info.Status == release.StatusDeployed {
 			if len(step.Arguments.Read) > 0 {
