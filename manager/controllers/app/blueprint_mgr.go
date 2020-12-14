@@ -97,8 +97,7 @@ func (r *M4DApplicationReconciler) GenerateBlueprint(instances []modules.ModuleI
 			var template app.ComponentTemplate
 			template.Name = modulename
 			template.Kind = moduleInstance.Module.TypeMeta.Kind
-			template.Resources = make([]string, 1)
-			template.Resources[0] = moduleInstance.Module.Spec.Chart
+			template.Chart = moduleInstance.Module.Spec.Chart
 
 			templates = append(templates, template)
 		}

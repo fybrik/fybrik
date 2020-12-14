@@ -103,9 +103,9 @@ type ComponentTemplate struct {
 	// +required
 	Kind string `json:"kind"`
 
-	// Resources contains the location of the helm chart with info detailing how to deploy
+	// Chart contains the location of the helm chart with info detailing how to deploy
 	// +required
-	Resources []string `json:"resources"`
+	Chart string `json:"chart"`
 }
 
 // DataFlow indicates the flow of the data between the components

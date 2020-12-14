@@ -459,21 +459,19 @@ spec:
               items:
                 description: ComponentTemplate is a copy of a M4DModule Custom Resource.  It contains the information necessary to instantiate a component in a FlowStep, which provides the functionality described by the module.  There are 3 different module types.
                 properties:
+                  chart:
+                    description: Chart contains the location of the helm chart with info detailing how to deploy
+                    type: string
                   kind:
                     description: Kind of k8s resource
                     type: string
                   name:
                     description: Name of the template
                     type: string
-                  resources:
-                    description: Resources contains the location of the helm chart with info detailing how to deploy
-                    items:
-                      type: string
-                    type: array
                 required:
+                - chart
                 - kind
                 - name
-                - resources
                 type: object
               type: array
           required:
