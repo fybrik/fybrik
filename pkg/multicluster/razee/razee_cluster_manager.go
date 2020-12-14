@@ -16,6 +16,7 @@ import (
 	"net/http"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -191,6 +192,19 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	_, err = r.con.Groups.GroupClusters(r.orgId, groupUuid, []string{rCluster.ClusterID})
 	if err != nil {
 		return err
+	}
+
+	// Check if channel exists
+	existingChannel, err := r.con.Channels.ChannelByName(r.orgId, channelName)
+	if err != nil {
+		if !strings.HasPrefix(err.Error(), "Query channelByName error. Could not find the channel with name") {
+			return err
+		}
+	}
+	if existingChannel != nil {
+		// Channel already exists. Update channel instead of creating
+		r.log.Info("Channel already exists! Updating channel version...", "existingChannel", existingChannel)
+		return r.UpdateBlueprint(cluster, blueprint)
 	}
 
 	// create channel

@@ -121,6 +121,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, error)
 		isInitialReconcile = true
 	}
 
+	plotter.Status.ObservedState.Error = "" // Reset error state
 	// Reconciliation loop per cluster
 	isReady := true
 	for cluster, blueprintSpec := range plotter.Spec.Blueprints {
