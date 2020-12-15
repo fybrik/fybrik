@@ -21,10 +21,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-// GetApplicationSignature returns a test name + namespace
-func GetApplicationSignature() types.NamespacedName {
-	return types.NamespacedName{Name: "dma-for-test", Namespace: "default"}
-}
+const timeout = time.Second * 30
+const interval = time.Millisecond * 100
 
 // GetStorageSignature returns a signature of M4DBucket
 func GetStorageSignature() types.NamespacedName {
@@ -32,8 +30,8 @@ func GetStorageSignature() types.NamespacedName {
 }
 
 // InitM4DApplication creates an empty resource with n data sets
-func InitM4DApplication(n int) *apiv1alpha1.M4DApplication {
-	appSignature := GetApplicationSignature()
+func InitM4DApplication(name string, n int) *apiv1alpha1.M4DApplication {
+	appSignature := types.NamespacedName{Name: name, Namespace: "default"}
 	return &apiv1alpha1.M4DApplication{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      appSignature.Name,
@@ -41,6 +39,18 @@ func InitM4DApplication(n int) *apiv1alpha1.M4DApplication {
 		},
 		Spec: apiv1alpha1.M4DApplicationSpec{AppInfo: apiv1alpha1.ApplicationDetails{ProcessingGeography: "US"}, Data: make([]apiv1alpha1.DataContext, n)},
 	}
+}
+
+func DeleteM4DApplication(name string) {
+	// delete application
+	appSignature := types.NamespacedName{Name: name, Namespace: "default"}
+	resource := &apiv1alpha1.M4DApplication{ObjectMeta: metav1.ObjectMeta{Name: appSignature.Name, Namespace: appSignature.Namespace}}
+	_ = k8sClient.Delete(context.Background(), resource)
+
+	Eventually(func() error {
+		f := &apiv1alpha1.M4DApplication{}
+		return k8sClient.Get(context.Background(), appSignature, f)
+	}, timeout, interval).ShouldNot(Succeed())
 }
 
 // CreateReadPathModule creates a read-path module
@@ -149,10 +159,6 @@ func CreateS3ToS3CopyModule() *apiv1alpha1.M4DModule {
 }
 
 var _ = Describe("M4DApplication Controller", func() {
-
-	const timeout = time.Second * 30
-	const interval = time.Millisecond * 100
-
 	Context("M4DApplication", func() {
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test
@@ -160,16 +166,6 @@ var _ = Describe("M4DApplication Controller", func() {
 
 		AfterEach(func() {
 			// Add any teardown steps that needs to be executed after each test
-			// delete application
-			appSignature := GetApplicationSignature()
-			resource := &apiv1alpha1.M4DApplication{ObjectMeta: metav1.ObjectMeta{Name: appSignature.Name, Namespace: appSignature.Namespace}}
-			_ = k8sClient.Delete(context.Background(), resource)
-
-			Eventually(func() error {
-				f := &apiv1alpha1.M4DApplication{}
-				return k8sClient.Get(context.Background(), appSignature, f)
-			}, timeout, interval).ShouldNot(Succeed())
-
 			// delete storage
 			storageSignature := GetStorageSignature()
 			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DBucket{ObjectMeta: metav1.ObjectMeta{Name: storageSignature.Name, Namespace: storageSignature.Namespace}})
@@ -205,8 +201,14 @@ var _ = Describe("M4DApplication Controller", func() {
 			}
 			Expect(k8sClient.Create(context.Background(), storage)).Should(Succeed())
 
-			appSignature := GetApplicationSignature()
-			resource := InitM4DApplication(1)
+			// Load db2-s3 copy module
+			copyModule := CreateDb2ToS3CopyModule()
+			readPathModule := CreateReadPathModule()
+			Expect(k8sClient.Create(context.Background(), copyModule)).Should(Succeed())
+			Expect(k8sClient.Create(context.Background(), readPathModule)).Should(Succeed())
+
+			appSignature := types.NamespacedName{Name: "with-finalizers", Namespace: "default"}
+			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID: "{\"asset_id\": \"123\", \"catalog_id\": \"db2\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
@@ -250,8 +252,8 @@ var _ = Describe("M4DApplication Controller", func() {
 
 		It("Test deny-on-read", func() {
 
-			appSignature := GetApplicationSignature()
-			resource := InitM4DApplication(1)
+			appSignature := types.NamespacedName{Name: "deny-on-read", Namespace: "default"}
+			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID: "{\"asset_id\": \"deny-dataset\", \"catalog_id\": \"s3\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
@@ -259,6 +261,11 @@ var _ = Describe("M4DApplication Controller", func() {
 
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
+
+			// Ensure getting cleaned up after tests finish
+			defer func() {
+				DeleteM4DApplication(appSignature.Name)
+			}()
 
 			By("Expecting access denied on read")
 			Eventually(func() string {
@@ -278,8 +285,9 @@ var _ = Describe("M4DApplication Controller", func() {
 		// Result: an error
 
 		It("Test no-read-path", func() {
-			appSignature := GetApplicationSignature()
-			resource := InitM4DApplication(1)
+			appSignature := types.NamespacedName{Name: "read-expected", Namespace: "default"}
+			resource := InitM4DApplication(appSignature.Name, 1)
+
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID: "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"db2\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
@@ -288,6 +296,11 @@ var _ = Describe("M4DApplication Controller", func() {
 
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
+
+			// Ensure getting cleaned up after tests finish
+			defer func() {
+				DeleteM4DApplication(appSignature.Name)
+			}()
 
 			By("Expecting an error")
 			Eventually(func() string {
@@ -314,8 +327,8 @@ var _ = Describe("M4DApplication Controller", func() {
 			module := CreateReadPathModule()
 			Expect(k8sClient.Create(context.Background(), module)).Should(Succeed())
 
-			appSignature := GetApplicationSignature()
-			resource := InitM4DApplication(1)
+			appSignature := types.NamespacedName{Name: "with-copy", Namespace: "default"}
+			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID: "{\"asset_id\": \"deny-on-copy\", \"catalog_id\": \"db2\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
@@ -323,6 +336,11 @@ var _ = Describe("M4DApplication Controller", func() {
 
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
+
+			// Ensure getting cleaned up after tests finish
+			defer func() {
+				DeleteM4DApplication(appSignature.Name)
+			}()
 
 			By("Expecting an error")
 			Eventually(func() string {
@@ -352,8 +370,8 @@ var _ = Describe("M4DApplication Controller", func() {
 			Expect(k8sClient.Create(context.Background(), module)).Should(Succeed())
 			Expect(k8sClient.Create(context.Background(), readPathModule)).Should(Succeed())
 
-			appSignature := GetApplicationSignature()
-			resource := InitM4DApplication(2)
+			appSignature := types.NamespacedName{Name: "wrong-copy", Namespace: "default"}
+			resource := InitM4DApplication(appSignature.Name, 2)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID: "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"db2\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
@@ -365,6 +383,10 @@ var _ = Describe("M4DApplication Controller", func() {
 
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
+			// Ensure getting cleaned up after tests finish
+			defer func() {
+				DeleteM4DApplication(appSignature.Name)
+			}()
 
 			By("Expecting an error")
 			Eventually(func() string {
@@ -415,8 +437,8 @@ var _ = Describe("M4DApplication Controller", func() {
 			db2Module := CreateDb2ToS3CopyModule()
 			Expect(k8sClient.Create(context.Background(), db2Module)).Should(Succeed())
 
-			appSignature := GetApplicationSignature()
-			resource := InitM4DApplication(2)
+			appSignature := types.NamespacedName{Name: "m4d-test", Namespace: "default"}
+			resource := InitM4DApplication(appSignature.Name, 2)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID: "{\"asset_id\": \"default-dataset\", \"catalog_id\": \"db2\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
@@ -428,6 +450,12 @@ var _ = Describe("M4DApplication Controller", func() {
 
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
+
+			// Ensure getting cleaned up after tests finish
+			defer func() {
+				DeleteM4DApplication(appSignature.Name)
+			}()
+
 			By("Expecting a namespace to be allocated")
 			Eventually(func() *apiv1alpha1.ResourceReference {
 				_ = k8sClient.Get(context.Background(), appSignature, resource)
@@ -483,8 +511,8 @@ var _ = Describe("M4DApplication Controller", func() {
 			db2Module := CreateDb2ToS3CopyModule()
 			Expect(k8sClient.Create(context.Background(), db2Module)).Should(Succeed())
 
-			appSignature := GetApplicationSignature()
-			resource := InitM4DApplication(1)
+			appSignature := types.NamespacedName{Name: "multiple-regions", Namespace: "default"}
+			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID: "{\"asset_id\": \"default-dataset\", \"catalog_id\": \"s3\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
@@ -492,6 +520,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			resource.Spec.AppInfo.ProcessingGeography = "Germany"
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
+
 			if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" {
 				Eventually(func() *apiv1alpha1.ResourceReference {
 					f := &apiv1alpha1.M4DApplication{}
@@ -516,22 +545,13 @@ var _ = Describe("M4DApplication Controller", func() {
 
 				Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.InvalidClusterConfiguration))
 			}
+			DeleteM4DApplication(appSignature.Name)
 		})
 	})
 
 	Context("M4DApplication e2e", func() {
 		BeforeEach(func() {
 			// Add any teardown steps that needs to be executed after each test
-			// delete application
-			appSignature := GetApplicationSignature()
-			resource := &apiv1alpha1.M4DApplication{ObjectMeta: metav1.ObjectMeta{Name: "notebook", Namespace: "default"}}
-			_ = k8sClient.Delete(context.Background(), resource)
-
-			Eventually(func() error {
-				f := &apiv1alpha1.M4DApplication{}
-				return k8sClient.Get(context.Background(), appSignature, f)
-			}, timeout, interval).ShouldNot(Succeed())
-
 			// delete modules
 			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "arrow-flight-module", Namespace: "default"}})
 		})

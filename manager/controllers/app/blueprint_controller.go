@@ -55,7 +55,7 @@ func (r *BlueprintReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 	if err := r.reconcileFinalizers(&blueprint); err != nil {
-		log.V(0).Info("Could not reconcile finalizers " + err.Error())
+		log.V(0).Info("Could not reconcile finalizers: " + err.Error())
 		return ctrl.Result{}, err
 	}
 
@@ -99,7 +99,9 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) erro
 				r.Log.V(0).Info("Error while deleting owned resources: " + err.Error())
 				return err
 			}
-
+			if r.hasExternalResources(blueprint) {
+				return errors.NewPlain("helm release uninstall is still in progress")
+			}
 			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 			ctrlutil.RemoveFinalizer(blueprint, finalizerName)
 
@@ -139,6 +141,16 @@ func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) 
 		return nil
 	}
 	return errors.New(strings.Join(errs, "; "))
+}
+
+func (r *BlueprintReconciler) hasExternalResources(blueprint *app.Blueprint) bool {
+	for _, step := range blueprint.Spec.Flow.Steps {
+		releaseName := getReleaseName(step)
+		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus == nil && rel != nil {
+			return true
+		}
+	}
+	return false
 }
 
 func (r *BlueprintReconciler) applyChartResource(log logr.Logger, ref string, vals map[string]interface{}, kubeNamespace string, releaseName string) (ctrl.Result, error) {
