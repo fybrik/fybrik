@@ -38,6 +38,9 @@ type PlotterStatus struct {
 
 	// + optional
 	Blueprints map[string]MetaBlueprint `json:"blueprints,omitempty"`
+
+	// + optional
+	ReadyTimestamp *metav1.Time `json:"readyTimestamp,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -45,6 +48,7 @@ type PlotterStatus struct {
 // +kubebuilder:resource:scope=Namespaced
 // +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 // +kubebuilder:printcolumn:name="Ready",type=string,JSONPath=`.status.observedState.ready`
+// +kubebuilder:printcolumn:name="ReadySince",type=string,JSONPath=`.status.readyTimestamp`
 
 // Plotter is the Schema for the plotters API
 type Plotter struct {
