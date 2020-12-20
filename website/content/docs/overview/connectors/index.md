@@ -18,11 +18,14 @@ Connectors are GRPC services that the {{< name >}} control plane uses to connect
 
 # Can I write my own connectors?
 
-The project defines the GRPC interfaces of connectors. The interfaces are implemented by concrete connector implementations like a connector to Egeria, a connector to Open Policy Agent, etc. 
+Yes. {{< name >}} provides some default connectors described in this page but anyone can develop their own connectors.
 
-{{< name >}} provides some default connectors described in this page, but anyone can develop their own connectors. Note that a single Kubernetes service can implement all GRPC interfaces if the system it connects to supports the required functionality.
+A connector needs to implement one or more of the GRPC interfaces described in the [API documentation]({{< baseurl >}}/docs/reference/api/generated/connectors.pb/), depending on the connector type. Note that a single Kubernetes service can implement all GRPC interfaces if the system it connects to supports the required functionality, but it can also be different services.
 
-Refer to [API documentation]({{< baseurl >}}/docs/reference/api/generated/connectors.pb/) for more details about the connectors GRPC interfaces.
+In addition, to benefit from the [control plane security]({{< baseurl >}}/docs/setup/control-plane-security/) feature ensure that the `Pods` of your connector:
+1. Have a `m4d.ibm.com/componentType: connector` label 
+1. Have a `sidecar.istio.io/inject: "true"` annotation
+
 
 # Connector types
 

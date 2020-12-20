@@ -34,11 +34,13 @@ can also be manged with this mechanism.
 
 Description of configuration folder structure:
 - `config/certmanager`: Creates a certificate that can be used for webhooks
+- `config/control-plane-security`: Applies authorization and authentication policies to secure the control plane. Some of the policies are based on [Istio](https://istio.io/) thus Istio installation is prerequisite for this configuration. It's used in the make target `make deploy_control-plane-security` (in order for the Istio sidecar automatic injection to take effect the pods in the control-plane should be restarted after running the make command).
 - `config/crd`: Contains the generated CRD definition as well as some patches for the webhook of the crd. This gets installed into the cluster when executing `make install`
 - `config/default`: This is the default deployment that deploys everything. This includes the CRD, manager deployment, certificates, rbac rules and webhook. This gets installed into the cluster when executing `make deploy`.
 - `config/manager`: Kustomization of the deployment of the controller of the operator. Just the K8s deployment object of the manager.
 - `config/movement-controller`: This is used to install a controller on K8s that is just managing the motion CRDs and no other CRDs. 
   it's used in the make target `make deploy_mc` (the movement-controller image must already be available in an image registry)
+- `config/network-policies`: Applies Kubernetes NetworkPolicy resource to secure the control plane. It's used in the default configuration.
 - `config/prod`: This is meant as the production profile that is based on `config/default` and applies patches to be run
  in the production environment. (NOT DEFINED YET)
 - `config/prometheus`: For monitoring using prometheus (not used at the moment)
