@@ -81,7 +81,10 @@ spec:
     - id: "encrypt-ID"
       name: "encrypt"
       level: 2 # column
-  chart: kind-registry:5000/m4d-system/m4d-db2wh:0.1.0
+  chart:
+    name: kind-registry:5000/m4d-system/m4d-db2wh:0.1.0
+    values:
+      image: ghcr.io/the-mesh-for-data/mover:latest
   statusIndicators:
     - kind: BatchTransfer
       successCondition: status.status == SUCCEEDED
