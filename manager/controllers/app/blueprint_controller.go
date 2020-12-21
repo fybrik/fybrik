@@ -143,16 +143,6 @@ func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) 
 	return errors.New(strings.Join(errs, "; "))
 }
 
-func (r *BlueprintReconciler) hasExternalResources(blueprint *app.Blueprint) bool {
-	for _, step := range blueprint.Spec.Flow.Steps {
-		releaseName := getReleaseName(step)
-		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus == nil && rel != nil {
-			return true
-		}
-	}
-	return false
-}
-
 func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.ChartSpec, args map[string]interface{}, kubeNamespace string, releaseName string) (ctrl.Result, error) {
 	log.Info(fmt.Sprintf("--- Chart Ref ---\n\n%v\n\n", chartSpec.Name))
 
