@@ -142,11 +142,21 @@ type M4DModuleSpec struct {
 
 	// Reference to a Helm chart that allows deployment of the resources required for this module
 	// +required
-	Chart string `json:"chart"`
+	Chart ChartSpec `json:"chart"`
 
 	// StatusIndicators allow to check status of a non-standard resource that can not be computed by helm/kstatus
 	// +optional
 	StatusIndicators []ResourceStatusIndicator `json:"statusIndicators,omitempty"`
+}
+
+type ChartSpec struct {
+	// Name of helm chart
+	// +required
+	Name string `json:"name"`
+
+	// Values to pass to helm chart insallation
+	// +optional
+	Values map[string]string `json:"values,omitempty"`
 }
 
 // +kubebuilder:object:root=true
