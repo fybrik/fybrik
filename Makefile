@@ -27,6 +27,7 @@ run-integration-tests:
 	$(MAKE) cluster-prepare-wait
 	$(MAKE) -C secret-provider configure-vault
 	$(MAKE) -C secret-provider deploy
+	$(MAKE) -C manager deploy-crd
 	$(MAKE) -C manager deploy_it
 	$(MAKE) -C manager wait_for_manager
 	$(MAKE) helm
@@ -57,6 +58,7 @@ deploy:
 undeploy:
 	$(MAKE) -C secret-provider undeploy
 	$(MAKE) -C manager undeploy
+	$(MAKE) -C manager undeploy-crd
 	$(MAKE) -C connectors undeploy
 
 .PHONY: docker
