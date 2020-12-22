@@ -76,16 +76,25 @@ type Fake struct {
 // Uninstall helm release
 func (r *Fake) Uninstall(kubeNamespace string, releaseName string) (*release.UninstallReleaseResponse, error) {
 	res := &release.UninstallReleaseResponse{}
+	r.release = nil
 	return res, nil
 }
 
 // Install helm release
 func (r *Fake) Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error) {
+	r.release = &release.Release{
+		Name: releaseName,
+		Info: &release.Info{Status: release.StatusDeployed},
+	}
 	return r.release, nil
 }
 
 // Upgrade helm release
 func (r *Fake) Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error) {
+	r.release = &release.Release{
+		Name: releaseName,
+		Info: &release.Info{Status: release.StatusDeployed},
+	}
 	return r.release, nil
 }
 
