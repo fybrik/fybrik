@@ -5,4 +5,3 @@
 image:
    mover: ghcr.io/the-mesh-for-data/mover:latest
    manager: ghcr.io/the-mesh-for-data/manager:latest
-   secretProvider: ghcr.io/the-mesh-for-data/secret-provider:latest
