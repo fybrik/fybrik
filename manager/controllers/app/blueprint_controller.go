@@ -54,9 +54,9 @@ func (r *BlueprintReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	if err := r.Get(ctx, req.NamespacedName, &blueprint); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-	if err := r.reconcileFinalizers(&blueprint); err != nil {
+	if res, err := r.reconcileFinalizers(&blueprint); err != nil {
 		log.V(0).Info("Could not reconcile finalizers: " + err.Error())
-		return ctrl.Result{}, err
+		return res, err
 	}
 
 	// If the object has a scheduled deletion time, update status and return
@@ -85,7 +85,7 @@ func (r *BlueprintReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 }
 
 // reconcileFinalizers reconciles finalizers for Blueprint
-func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) error {
+func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) (ctrl.Result, error) {
 	// finalizer
 	finalizerName := r.Name + ".finalizer"
 	hasFinalizer := ctrlutil.ContainsFinalizer(blueprint, finalizerName)
@@ -97,28 +97,28 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) erro
 			// the finalizer is present - delete the allocated resources
 			if err := r.deleteExternalResources(blueprint); err != nil {
 				r.Log.V(0).Info("Error while deleting owned resources: " + err.Error())
-				return err
+				return ctrl.Result{}, err
 			}
 			if r.hasExternalResources(blueprint) {
-				return errors.NewPlain("helm release uninstall is still in progress")
+				return ctrl.Result{RequeueAfter: 2 * time.Second}, errors.NewPlain("helm release uninstall is still in progress")
 			}
 			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 			ctrlutil.RemoveFinalizer(blueprint, finalizerName)
 
 			if err := r.Update(context.Background(), blueprint); err != nil {
-				return err
+				return ctrl.Result{}, err
 			}
 		}
-		return nil
+		return ctrl.Result{}, nil
 	}
 	// Make sure this CRD instance has a finalizer
 	if !hasFinalizer {
 		ctrlutil.AddFinalizer(blueprint, finalizerName)
 		if err := r.Update(context.Background(), blueprint); err != nil {
-			return err
+			return ctrl.Result{}, err
 		}
 	}
-	return nil
+	return ctrl.Result{}, nil
 }
 
 func getReleaseName(step app.FlowStep) string {
