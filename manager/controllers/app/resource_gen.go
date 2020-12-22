@@ -94,9 +94,15 @@ func (c *BlueprintInterface) CreateOrUpdateResource(owner *app.ResourceReference
 
 // DeleteResource deletes the generated Blueprint resource
 func (c *BlueprintInterface) DeleteResource(ref *app.ResourceReference) error {
-	resource := c.GetResourceSignature(ref)
-	if err := c.Client.Delete(context.Background(), resource); err != nil {
-		return err
+	if c.ResourceExists(ref) {
+		resource := c.GetResourceSignature(ref)
+		if err := c.Client.Delete(context.Background(), resource); err != nil {
+			return err
+		}
+	}
+	// namespace can be removed only after the resource deletion has been complete
+	if c.ResourceExists(ref) {
+		return errors.NewPlain("a non-empty namespace " + ref.Namespace + " could not be deleted")
 	}
 	return c.Client.Delete(context.Background(), &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
