@@ -153,10 +153,14 @@ func (r *BlueprintReconciler) hasExternalResources(blueprint *app.Blueprint) boo
 	return false
 }
 
-func (r *BlueprintReconciler) applyChartResource(log logr.Logger, ref string, vals map[string]interface{}, kubeNamespace string, releaseName string) (ctrl.Result, error) {
-	log.Info(fmt.Sprintf("--- Chart Ref ---\n\n%v\n\n", ref))
+func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.ChartSpec, args map[string]interface{}, kubeNamespace string, releaseName string) (ctrl.Result, error) {
+	log.Info(fmt.Sprintf("--- Chart Ref ---\n\n%v\n\n", chartSpec.Name))
 
-	nbytes, _ := yaml.Marshal(vals)
+	args = CopyMap(args)
+	for k, v := range chartSpec.Values {
+		SetMapField(args, k, v)
+	}
+	nbytes, _ := yaml.Marshal(args)
 	log.Info(fmt.Sprintf("--- Values.yaml ---\n\n%s\n\n", nbytes))
 
 	// TODO: should change to use an ImagePullSecret referenced from the M4DModule resource
@@ -167,33 +171,66 @@ func (r *BlueprintReconciler) applyChartResource(log logr.Logger, ref string, va
 	if username != "" && password != "" {
 		err := r.Helmer.RegistryLogin(hostname, username, password, insecure)
 		if err != nil {
-			return ctrl.Result{}, errors.WithMessage(err, ref+": failed chart pull")
+			return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart login")
 		}
 	}
 
-	err := r.Helmer.ChartPull(ref)
+	err := r.Helmer.ChartPull(chartSpec.Name)
 	if err != nil {
-		return ctrl.Result{}, errors.WithMessage(err, ref+": failed chart pull")
+		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart pull")
 	}
-	chart, err := r.Helmer.ChartLoad(ref)
+	chart, err := r.Helmer.ChartLoad(chartSpec.Name)
 	if err != nil {
-		return ctrl.Result{}, errors.WithMessage(err, ref+": failed chart load")
+		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart load")
 	}
 
 	rel, err := r.Helmer.Status(kubeNamespace, releaseName)
 	if err == nil && rel != nil {
-		rel, err = r.Helmer.Upgrade(chart, kubeNamespace, releaseName, vals)
+		rel, err = r.Helmer.Upgrade(chart, kubeNamespace, releaseName, args)
 		if err != nil {
-			return ctrl.Result{}, errors.WithMessage(err, ref+": failed upgrade")
+			return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed upgrade")
 		}
 	} else {
-		rel, err = r.Helmer.Install(chart, kubeNamespace, releaseName, vals)
+		rel, err = r.Helmer.Install(chart, kubeNamespace, releaseName, args)
 		if err != nil {
-			return ctrl.Result{}, errors.WithMessage(err, ref+": failed install")
+			return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed install")
 		}
 	}
 	log.Info(fmt.Sprintf("--- Release Status ---\n\n%s\n\n", rel.Info.Status))
 	return ctrl.Result{}, nil
+}
+
+func CopyMap(m map[string]interface{}) map[string]interface{} {
+	cp := make(map[string]interface{})
+	for k, v := range m {
+		vm, ok := v.(map[string]interface{})
+		if ok {
+			cp[k] = CopyMap(vm)
+		} else {
+			cp[k] = v
+		}
+	}
+
+	return cp
+}
+
+func SetMapField(obj map[string]interface{}, k string, v interface{}) bool {
+	components := strings.Split(k, ".")
+	for n, component := range components {
+		if n == len(components)-1 {
+			obj[component] = v
+		} else {
+			m, ok := obj[component]
+			if !ok {
+				m := make(map[string]interface{})
+				obj[component] = m
+				obj = m
+			} else if obj, ok = m.(map[string]interface{}); !ok {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, blueprint *app.Blueprint) (ctrl.Result, error) {

@@ -14,8 +14,11 @@ spec:
   replicas: 1
   template:
     metadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
       labels:
         app: egr-connector
+        m4d.ibm.com/componentType: connector
     spec:
       containers:
       - name: egr-connector

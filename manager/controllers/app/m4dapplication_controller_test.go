@@ -72,7 +72,9 @@ func CreateReadPathModule() *apiv1alpha1.M4DModule {
 				},
 				API: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
 			},
-			Chart: "s3-flight",
+			Chart: apiv1alpha1.ChartSpec{
+				Name: "s3-flight",
+			},
 		},
 	}
 }
@@ -96,7 +98,9 @@ func CreateKafkaToS3CopyModule() *apiv1alpha1.M4DModule {
 					},
 				},
 			},
-			Chart: "xxx",
+			Chart: apiv1alpha1.ChartSpec{
+				Name: "xxx",
+			},
 		},
 	}
 }
@@ -121,7 +125,9 @@ func CreateDb2ToS3CopyModule() *apiv1alpha1.M4DModule {
 				},
 				Actions: make([]pb.EnforcementAction, 2),
 			},
-			Chart: "db2-chart",
+			Chart: apiv1alpha1.ChartSpec{
+				Name: "db2-chart",
+			},
 		},
 	}
 	// define actions
@@ -150,7 +156,9 @@ func CreateS3ToS3CopyModule() *apiv1alpha1.M4DModule {
 				},
 				Actions: make([]pb.EnforcementAction, 2),
 			},
-			Chart: "s3-s3",
+			Chart: apiv1alpha1.ChartSpec{
+				Name: "s3-s3",
+			},
 		},
 	}
 	s3Module.Spec.Capabilities.Actions[0] = pb.EnforcementAction{Name: "redact", Id: "redact-ID", Level: pb.EnforcementAction_COLUMN}

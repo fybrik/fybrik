@@ -109,13 +109,22 @@ undeploy_it:
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
 	$(TOOLBIN)/kustomize build --load_restrictor none config/integration-tests | $(TOOLBIN)/kubectl delete -f -
 
+deploy_control_plane_security: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl
+	$(TOOLBIN)/kubectl create namespace m4d-system || true
+	$(TOOLBIN)/kubectl label namespaces m4d-system istio-injection=enabled --overwrite || true
+	$(TOOLBIN)/kustomize build config/control-plane-security | $(TOOLBIN)/kubectl apply -f -
+
+undeploy_control_plane_security:
+	$(TOOLBIN)/kubectl label namespace m4d-system istio-injection-
+	$(TOOLBIN)/kustomize build --load_restrictor none config/control-plane-security | $(TOOLBIN)/kubectl delete -f -
+
 .PHONY: wait_for_manager
 wait_for_manager:
 	$(TOOLBIN)/kubectl wait --for=condition=available -n ${KUBE_NAMESPACE} deployment/m4d-controller-manager --timeout=120s
 
 .PHONY: run-integration-tests
-run-integration-tests: export DOCKER_HOSTNAME=kind-registry:5000
-run-integration-tests: export DOCKER_NAMESPACE=m4d-system
+run-integration-tests: export DOCKER_HOSTNAME?=kind-registry:5000
+run-integration-tests: export DOCKER_NAMESPACE?=m4d-system
 run-integration-tests: wait_for_manager
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestMotionAPIs -count 1
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestAPIs -count 1
