@@ -8,7 +8,7 @@ set -e
 : ${WITHOUT_EGERIA:=false}
 : ${WITHOUT_OPA:=false}
 
-source third_party/vault/vault-util.sh
+source secret-provider/deploy/vault-util.sh
 
 kubectl create ns $KUBE_NAMESPACE || true
 
@@ -22,7 +22,7 @@ $WITHOUT_EGERIA || make -C third_party/egeria deploy
 $WITHOUT_OPA || make -C third_party/opa deploy
 
 # Waiting for the vault deployment to become ready
-make -C third_party/vault wait_for_vault
+make -C third_party/vault deploy-wait
 
 # Perform a port-forward to communicate with Vault
 port_forward
