@@ -8,7 +8,7 @@ set -e
 : ${KUBE_NAMESPACE:=m4d-system}
 : ${WITHOUT_VAULT=true}
 
-source ../../third_party/vault/vault-util.sh
+source vault-util.sh
 
 kustomize_build() {
         local operation=$1

@@ -37,11 +37,8 @@ case "$1" in
     undeploy)
         undeploy
         ;;
-    wait_for_vault)
-      wait_for_vault
-      ;;
     *)
-        echo "usage: $0 [deploy|undeploy|wait_for_vault]"
+        echo "usage: $0 [deploy|undeploy]"
         exit 1
         ;;
 esac
