@@ -12,14 +12,19 @@ cert-manager:
 	kubectl create namespace cert-manager
 	helm repo add jetstack https://charts.jetstack.io
 	helm repo update
-	helm install cert-manager jetstack/cert-manager \
-	  --namespace cert-manager --version v1.1.0 --set installCRDs=true \
-	  --wait --timeout 120s
+	helm install cert-manager jetstack/cert-manager --version v1.1.0 \
+		--set installCRDs=true \
+		--namespace cert-manager \
+		--wait --timeout 120s
 
 .PHONY: vault
 vault:
 	@echo "Installing vault ..."
-	cd ../third_party/vault && $(MAKE) deploy deploy-wait
+	helm repo add hashicorp https://helm.releases.hashicorp.com
+	helm install vault hashicorp/vault --version 0.8.0 \
+                --set "global.openshift=false" \
+                --set "server.dev.enabled=true" \
+		--wait --timeout 120s
 
 .PHONY: m4d
 m4d:
