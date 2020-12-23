@@ -25,8 +25,16 @@ type ModuleManager struct {
 }
 
 // SelectModuleInstances builds a list of required modules with the relevant arguments
-/* The order of the lookup is Read, Copy, Write.
-   Assumptions:
+/*
+The new order of the lookup to support ingest is:
+- If Data Context Flow=Copy (and purpose=ingest) then run Copy module close to destination (determined based on governance decisions), and register in data catalog
+- If Data Context Flow=Write
+   - Write is always required, and always close to compute
+   - Implicit Copy is used on demand, e.g. if a write module does not support the existing source of data or governance actions
+   - Transformations are always done at workload location
+   - If not external data, then register in data catalog
+
+- If Data Context Flow=Read
    - Read is always required.
    - Copy is used on demand, e.g. if a read module does not support the existing source of data or actions
    - Transformations are always done at data source location
@@ -201,7 +209,7 @@ func GetSupportedReadSources(module *app.M4DModule) []*app.InterfaceDetails {
 	return list
 }
 
-// check whether copy is required
+// check whether IMPLICIT copy is required
 // decide on actions performed on read (update readSelector)
 // copy is required in the following cases:
 // - the read module does not support data interface
