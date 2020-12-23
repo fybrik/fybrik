@@ -83,41 +83,77 @@ USE_EXISTING_CONTROLLER=true NO_SIMULATED_PROGRESS=true USE_EXISTING_CLUSTER=tru
   should be used. E.g. in integration tests running against an existing setup a controller is already existing
   in the Kubernetes cluster and should not be started by the test as two controllers competing may influence the test.
 
-Setup default local kind cluster with a local image registry:
-```bash
-make kind
+# Running integration tests
+
+## Pre requisite
+
+The integration tests make use of the local docker registry such enables using
+current docker images (rather than official images) during tests. The docker
+registry runs on localhost:5000 but in order that it be accessible from within
+the k8s cluster it has to be designated a FQDN named `kind-registry`.
+
+To support local image registry host resolution append the following to /etc/hosts:
+
+```
+127.0.0.1       kind-registry
 ```
 
-By default the docker setup points to the official docker.io registry. When developing
-locally and building/pushing docker containers the docker host and namespace should be changed. When 
-using a local kind setup with a local registry the environment can be pointed to it by setting the following 
-environment variables. (Please note that you also have to add an entry to your /etc/hosts file):
+## Running in one step
+
+With the following you will then setup a kind cluster with the local registry,
+build and push current docker images and finally run the integration
+tests on it:
 
 ```bash
+make run-integration-tests
+```
+
+## Running step by step
+
+It is also possible to call the commands step by step, which sometimes is
+useful if you want to only repeat a specific step which failed without having
+to rerun  the entire sequence
+
+```bash
+# use the local kind registry
 export DOCKER_HOSTNAME=kind-registry:5000
 export DOCKER_NAMESPACE=m4d-system
-export HELM_EXPERIMENTAL_OCI=1
-```
 
-There are make commands for building and pushing docker images separately or in one go:
-```bash
-make docker-build  # Only build docker images
-make docker-push   # Only push docker images to registry defined with env $DOCKER_HOSTNAME
+# build a local kind cluser
+make kind
 
-make docker        # Build and push images to the registry defined with env $DOCKER_HOSTNAME
-```
+# deploy the the cluster 3rd party such as cert-manager and vault
+make cluster-prepare
 
-Deploy on the cluster. This will install the CRDs, dependencies such as the certificate manager and the controller
-itself. The default will pull the images from docker.io. If a local development setup is used please make sure
-that $DOCKER_HOSTNAME is set to the registry that should be used. 
+# build all docker images and push them to the local registry
+make docker
 
-```bash
-make deploy
-```
+# build the mock/test docker images and push them to local registry
+make -C test/services docker-all
 
-Running end to end tests:
-```bash
-make e2e
+# wait until cluster-prepare setup really completed
+make cluster-prepare-wait
+
+# init vault for the secret-provider
+make -C secret-provider configure-vault
+
+# deploy the secret-provider service to the kind cluster
+make -C secret-provider deploy
+
+# deploy the m4d CRDs to the kind cluster
+make -C manager deploy-crd
+
+# deploy m4d manager to the kind cluster
+make -C manager deploy_it
+
+# wait until manager is ready
+make -C manager wait_for_manager
+
+# build and push helm charts to the local registry
+make helm
+
+# actually run the integration tests
+make -C manager run-integration-tests
 ```
 
 # Building in a multi cluster environment
