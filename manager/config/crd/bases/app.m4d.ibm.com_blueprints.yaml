@@ -461,7 +461,18 @@ spec:
                 properties:
                   chart:
                     description: Chart contains the location of the helm chart with info detailing how to deploy
-                    type: string
+                    properties:
+                      name:
+                        description: Name of helm chart
+                        type: string
+                      values:
+                        additionalProperties:
+                          type: string
+                        description: Values to pass to helm chart insallation
+                        type: object
+                    required:
+                    - name
+                    type: object
                   kind:
                     description: Kind of k8s resource
                     type: string

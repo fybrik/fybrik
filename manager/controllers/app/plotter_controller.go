@@ -13,12 +13,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/rand"
+	"math"
 	"os"
 	"reflect"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"strings"
 	"time"
 )
 
@@ -39,7 +41,6 @@ type PlotterReconciler struct {
 func (r *PlotterReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("plotter", req.NamespacedName)
-	var err error
 
 	plotter := app.Plotter{}
 	if err := r.Get(ctx, req.NamespacedName, &plotter); err != nil {
@@ -60,15 +61,20 @@ func (r *PlotterReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	observedStatus := plotter.Status.DeepCopy()
 	log.V(0).Info("Reconcile: Installing/Updating Plotter " + plotter.GetName())
 
-	result, err := r.reconcile(&plotter)
-	if err != nil {
-		return ctrl.Result{}, errors.Wrap(err, "failed to reconcile plotter")
-	}
+	result, reconcileErrors := r.reconcile(&plotter)
 
 	if !equality.Semantic.DeepEqual(&plotter.Status, observedStatus) {
-		if err := r.Client.Status().Update(ctx, &plotter); err != nil {
+		if err := r.Status().Update(ctx, &plotter); err != nil {
 			return ctrl.Result{}, errors.WrapWithDetails(err, "failed to update plotter status", "status", plotter.Status)
 		}
+	}
+
+	if reconcileErrors != nil {
+		log.Info("returning with errors", "result", result)
+		for _, s := range reconcileErrors {
+			log.Error(s, "Error:")
+		}
+		return ctrl.Result{}, errors.Wrap(reconcileErrors[0], "failed to reconcile plotter")
 	}
 
 	log.Info("plotter reconcile cycle completed", "result", result)
@@ -114,49 +120,66 @@ func (r *PlotterReconciler) reconcileFinalizers(plotter *app.Plotter) error {
 	return nil
 }
 
-func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, error) {
-	isInitialReconcile := false
+func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []error) {
 	if plotter.Status.Blueprints == nil {
 		plotter.Status.Blueprints = make(map[string]app.MetaBlueprint)
-		isInitialReconcile = true
 	}
 
 	plotter.Status.ObservedState.Error = "" // Reset error state
 	// Reconciliation loop per cluster
 	isReady := true
+
+	var errorCollection []error
 	for cluster, blueprintSpec := range plotter.Spec.Blueprints {
-		r.Log.V(1).Info("Handling cluster " + cluster)
+		r.Log.V(1).Info("Handling spec for cluster " + cluster)
 		if blueprint, exists := plotter.Status.Blueprints[cluster]; exists {
 			r.Log.V(2).Info("Found status for cluster " + cluster)
 
 			remoteBlueprint, err := r.ClusterManager.GetBlueprint(cluster, blueprint.Namespace, blueprint.Name)
 			if err != nil {
-				return ctrl.Result{}, err
+				r.Log.Error(err, "Could not fetch blueprint", "name", blueprint.Name)
+				errorCollection = append(errorCollection, err)
+				isReady = false
+				continue
 			}
 
 			if remoteBlueprint == nil {
 				r.Log.Info("Could not yet find remote blueprint")
+				isReady = false
 				continue // Continue with next blueprint
 			}
 
 			r.Log.V(2).Info("Remote blueprint: ", "rbp", remoteBlueprint)
 
 			if !reflect.DeepEqual(blueprintSpec, remoteBlueprint.Spec) {
-				r.Log.V(1).Info("Blueprint specs differ...")
-				remoteBlueprint.Spec = blueprintSpec
-				remoteBlueprint.ObjectMeta.Annotations = map[string]string(nil) // reset annotations
-				err := r.ClusterManager.UpdateBlueprint(cluster, remoteBlueprint)
-				if err != nil {
-					return ctrl.Result{}, err
+				r.Log.V(1).Info("Blueprint specs differ",
+					"plotter.generation", plotter.Generation,
+					"plotter.observedGeneration", plotter.Status.ObservedGeneration)
+				if plotter.Generation != plotter.Status.ObservedGeneration {
+					r.Log.V(1).Info("Updating blueprint...")
+					remoteBlueprint.Spec = blueprintSpec
+					remoteBlueprint.ObjectMeta.Annotations = map[string]string(nil) // reset annotations
+					err := r.ClusterManager.UpdateBlueprint(cluster, remoteBlueprint)
+					if err != nil {
+						r.Log.Error(err, "Could not update blueprint", "newSpec", blueprintSpec)
+						errorCollection = append(errorCollection, err)
+						isReady = false
+						continue
+					}
+					// Update meta blueprint without state as changes occur
+					plotter.Status.Blueprints[cluster] = app.CreateMetaBlueprintWithoutState(remoteBlueprint)
+					// Plotter cannot be ready if changes were just applied
+					isReady = false
+					continue // Continue with next blueprint
 				}
-				continue // Continue with next blueprint
+				r.Log.V(1).Info("Not updating blueprint as generation did not change")
+				isReady = false
+				continue
 			}
 
 			r.Log.V(2).Info("Status of remote blueprint ", "status", remoteBlueprint.Status)
 
-			blueprint.Status = remoteBlueprint.Status
-
-			plotter.Status.Blueprints[cluster] = blueprint
+			plotter.Status.Blueprints[cluster] = app.CreateMetaBlueprint(remoteBlueprint)
 
 			if !remoteBlueprint.Status.ObservedState.Ready {
 				isReady = false
@@ -167,6 +190,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, error)
 				plotter.Status.ObservedState.Error = remoteBlueprint.Status.ObservedState.Error
 			}
 		} else {
+			r.Log.V(2).Info("Found no status for cluster " + cluster)
 			random := rand.String(5)
 			randomNamespace := "m4d-" + random
 			blueprint := &app.Blueprint{
@@ -183,29 +207,48 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, error)
 				Spec: blueprintSpec,
 			}
 
-			blueprintMini := app.MetaBlueprint{
-				ObjectMeta: blueprint.ObjectMeta,
-				Status:     app.BlueprintStatus{},
-			}
-
-			plotter.Status.Blueprints[cluster] = blueprintMini
 			err := r.ClusterManager.CreateBlueprint(cluster, blueprint)
 			if err != nil {
-				return ctrl.Result{}, err
+				errorCollection = append(errorCollection, err)
+				r.Log.Error(err, "Could not create blueprint for cluster", "cluster", cluster)
+				continue
 			}
+
+			plotter.Status.Blueprints[cluster] = app.CreateMetaBlueprintWithoutState(blueprint)
 			isReady = false
 		}
 	}
 
-	// TODO do loop of statuses vs spec for removed specs
-
-	if isInitialReconcile {
-		// Return after initial deployment of blueprints
-		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+	// Tidy up blueprints that have been deployed but are not in the spec any more
+	// E.g. after a plotter has been updated
+	for cluster, remoteBlueprint := range plotter.Status.Blueprints {
+		if _, exists := plotter.Spec.Blueprints[cluster]; !exists {
+			err := r.ClusterManager.DeleteBlueprint(cluster, remoteBlueprint.Namespace, remoteBlueprint.Name)
+			if err != nil {
+				if !strings.HasPrefix(err.Error(), "Query channelByName error. Could not find the channel with name") {
+					errorCollection = append(errorCollection, err)
+					r.Log.Error(err, "Could not delete remote blueprint after spec changed!", "cluster", cluster)
+					continue
+				}
+			}
+			delete(plotter.Status.Blueprints, cluster)
+			r.Log.V(1).Info("Successfully removed blueprint from plotter",
+				"plotter", plotter.Name,
+				"cluster", cluster,
+				"namespace", remoteBlueprint.Namespace,
+				"name", remoteBlueprint.Name)
+		}
 	}
 
+	// Update observed generation
+	plotter.Status.ObservedGeneration = plotter.ObjectMeta.Generation
+	plotter.Status.ObservedState.Ready = isReady
+
 	if isReady {
-		plotter.Status.ObservedState.Ready = true
+		if plotter.Status.ReadyTimestamp == nil {
+			now := metav1.NewTime(time.Now())
+			plotter.Status.ReadyTimestamp = &now
+		}
 
 		aggregatedInstructions := ""
 		for _, blueprint := range plotter.Status.Blueprints {
@@ -214,11 +257,32 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, error)
 			}
 		}
 		plotter.Status.ObservedState.DataAccessInstructions = aggregatedInstructions
-		// TODO use different RequeueAfter time when plotter is ready?
+
+		// The following does a simple exponential backoff with a minimum of 5 seconds
+		// and a maximum of 60 seconds until the next reconcile
+		ready := *plotter.Status.ReadyTimestamp
+		elapsedTime := time.Since(ready.Time)
+		backoffFactor := int(math.Min(math.Exp2(elapsedTime.Minutes()), 60.0))
+		requeueAfter := time.Duration(4+backoffFactor) * time.Second
+
+		r.Log.V(2).Info("Plotter is ready!", "plotter", plotter.Name, "backoffFactor", backoffFactor, "elapsedTime", elapsedTime)
+
+		return ctrl.Result{RequeueAfter: requeueAfter}, errorCollection
+	}
+
+	plotter.Status.ReadyTimestamp = nil
+
+	// If no error was set from observed state set it to possible errorCollection that appeared
+	if plotter.Status.ObservedState.Error == "" && errorCollection != nil {
+		aggregatedError := ""
+		for _, err := range errorCollection {
+			aggregatedError = aggregatedError + err.Error() + "\n"
+		}
+		plotter.Status.ObservedState.Error = aggregatedError
 	}
 
 	// TODO Once a better notification mechanism exists in razee switch to that
-	return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+	return ctrl.Result{RequeueAfter: 5 * time.Second}, errorCollection
 }
 
 func SetupPlotterController(mgr manager.Manager, clusterManager multicluster.ClusterManager) {

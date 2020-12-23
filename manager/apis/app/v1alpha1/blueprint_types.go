@@ -105,7 +105,7 @@ type ComponentTemplate struct {
 
 	// Chart contains the location of the helm chart with info detailing how to deploy
 	// +required
-	Chart string `json:"chart"`
+	Chart ChartSpec `json:"chart"`
 }
 
 // DataFlow indicates the flow of the data between the components
@@ -190,4 +190,20 @@ type BlueprintList struct {
 
 func init() {
 	SchemeBuilder.Register(&Blueprint{}, &BlueprintList{})
+}
+
+func CreateMetaBlueprint(blueprint *Blueprint) MetaBlueprint {
+	metaBlueprint := MetaBlueprint{
+		ObjectMeta: blueprint.ObjectMeta,
+		Status:     blueprint.Status,
+	}
+	return metaBlueprint
+}
+
+func CreateMetaBlueprintWithoutState(blueprint *Blueprint) MetaBlueprint {
+	metaBlueprint := MetaBlueprint{
+		ObjectMeta: blueprint.ObjectMeta,
+		Status:     BlueprintStatus{},
+	}
+	return metaBlueprint
 }

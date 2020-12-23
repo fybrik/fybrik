@@ -15,6 +15,9 @@ spec:
   - JSONPath: .status.observedState.ready
     name: Ready
     type: string
+  - JSONPath: .status.readyTimestamp
+    name: ReadySince
+    type: string
   group: app.m4d.ibm.com
   names:
     kind: Plotter
@@ -465,7 +468,18 @@ spec:
                       properties:
                         chart:
                           description: Chart contains the location of the helm chart with info detailing how to deploy
-                          type: string
+                          properties:
+                            name:
+                              description: Name of helm chart
+                              type: string
+                            values:
+                              additionalProperties:
+                                type: string
+                              description: Values to pass to helm chart insallation
+                              type: object
+                          required:
+                          - name
+                          type: object
                         kind:
                           description: Kind of k8s resource
                           type: string
@@ -568,6 +582,9 @@ spec:
                   description: Ready represents that the modules have been orchestrated successfully and the data is ready for usage
                   type: boolean
               type: object
+            readyTimestamp:
+              format: date-time
+              type: string
           type: object
       type: object
   version: v1alpha1
