@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"emperror.dev/errors"
 	"github.com/go-logr/logr"
 	"github.com/hashicorp/vault/api"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -25,6 +26,8 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
+	corev1 "k8s.io/api/core/v1"
+
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -210,6 +213,12 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	// create a list of requirements for creating a data flow (actions, interface to app, data format) per a single data set
 	// A unique identifier (AssetID) is used to represent the dataset in the internal flow (for logs, map keys, vault path creation)
 	// The original dataset.DataSetID is used for communication with the connectors
+
+	workloadGeography, err := r.GetProcessingGeography(applicationContext)
+	if err != nil {
+		setCondition(applicationContext, "", err.Error(), "", true)
+		return ctrl.Result{}, err
+	}
 	var requirements []modules.DataInfo
 	for _, dataset := range applicationContext.Spec.Data {
 		req := modules.DataInfo{
@@ -218,7 +227,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 			Credentials:  nil,
 			Actions:      make(map[app.ModuleFlow]modules.Transformations),
 			AppInterface: &dataset.IFdetails,
-			Geo:          applicationContext.Spec.AppInfo.ProcessingGeography,
+			Geo:          workloadGeography,
 		}
 		// get enforcement actions and location info for a dataset
 		if err := r.ConstructDataInfo(dataset.DataSetID, &req, applicationContext); err != nil {
@@ -380,4 +389,31 @@ func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, e
 		moduleMap[module.Name] = module.DeepCopy()
 	}
 	return moduleMap, nil
+}
+
+// GetProcessingGeography determines the geography of the workload cluster.
+// If no workload has been specified, a local cluster is assumed.
+func (r *M4DApplicationReconciler) GetProcessingGeography(applicationContext *app.M4DApplication) (string, error) {
+	clusterName := applicationContext.Spec.Selector.ClusterName
+	if clusterName == "" {
+		clusterMetadataConfigmap := corev1.ConfigMap{}
+		namespacedName := client.ObjectKey{
+			Name:      "cluster-metadata",
+			Namespace: utils.GetSystemNamespace(),
+		}
+		if err := r.Client.Get(context.Background(), namespacedName, &clusterMetadataConfigmap); err != nil {
+			return "", err
+		}
+		return clusterMetadataConfigmap.Data["Region"], nil
+	}
+	clusters, err := r.ClusterManager.GetClusters()
+	if err != nil {
+		return "", err
+	}
+	for _, cluster := range clusters {
+		if cluster.Name == clusterName {
+			return cluster.Metadata.Region, nil
+		}
+	}
+	return "", errors.New("Unknown cluster: " + clusterName)
 }

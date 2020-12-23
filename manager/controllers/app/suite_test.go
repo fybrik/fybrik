@@ -75,17 +75,6 @@ var _ = BeforeSuite(func(done Done) {
 	if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
 		logf.Log.Info("Using existing controller in existing cluster...")
 		k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
-		Expect(k8sClient.Create(context.Background(), &v1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "cluster-metadata",
-				Namespace: "m4d-system",
-			},
-			Data: map[string]string{
-				"ClusterName": "US-cluster",
-				"Region":      "US",
-				"Zone":        "North-America",
-			},
-		}))
 	} else {
 		// Mockup connectors
 		go mockup.CreateTestCatalogConnector(GinkgoT())
@@ -131,7 +120,17 @@ var _ = BeforeSuite(func(done Done) {
 		}))
 	}
 	Expect(k8sClient).ToNot(BeNil())
-
+	Expect(k8sClient.Create(context.Background(), &v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "cluster-metadata",
+			Namespace: "m4d-system",
+		},
+		Data: map[string]string{
+			"ClusterName": "US-cluster",
+			"Region":      "US",
+			"Zone":        "North-America",
+		},
+	}))
 	close(done)
 }, 60)
 

@@ -5,11 +5,12 @@ package main
 
 import (
 	"flag"
+	"os"
+	"strings"
+
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/razee"
-	"os"
-	"strings"
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/motion"
 
@@ -216,6 +217,6 @@ func NewClusterManager(mgr manager.Manager) multicluster.ClusterManager {
 		return razee.NewSatConfManager(strings.TrimSpace(apiKey), orgID)
 	} else {
 		setupLog.Info("Using local cluster manager")
-		return local.NewManager(mgr.GetClient(), "m4d-system")
+		return local.NewManager(mgr.GetClient(), utils.GetSystemNamespace())
 	}
 }

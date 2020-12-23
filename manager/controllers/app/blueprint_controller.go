@@ -200,6 +200,7 @@ func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.
 	return ctrl.Result{}, nil
 }
 
+// CopyMap copies a map
 func CopyMap(m map[string]interface{}) map[string]interface{} {
 	cp := make(map[string]interface{})
 	for k, v := range m {
@@ -214,6 +215,7 @@ func CopyMap(m map[string]interface{}) map[string]interface{} {
 	return cp
 }
 
+// SetMapField updates a map
 func SetMapField(obj map[string]interface{}, k string, v interface{}) bool {
 	components := strings.Split(k, ".")
 	for n, component := range components {

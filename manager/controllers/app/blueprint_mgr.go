@@ -66,8 +66,6 @@ func (r *M4DApplicationReconciler) GenerateBlueprints(instances []modules.Module
 func (r *M4DApplicationReconciler) GenerateBlueprint(instances []modules.ModuleInstanceSpec, appContext *app.M4DApplication) app.BlueprintSpec {
 	var spec app.BlueprintSpec
 
-	// clone the selector
-	appContext.Spec.Selector.DeepCopyInto(&spec.Selector)
 	// Entrypoint is always the name of the application
 	appName := appContext.GetName()
 	spec.Entrypoint = appName

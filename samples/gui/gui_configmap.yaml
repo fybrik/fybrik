@@ -12,5 +12,5 @@ data:
   VAULT_USER_MOUNT: "v1/sys/mounts/m4d/user-creds"
   VAULT_TTL: "24h"
   VAULT_AUTH: "kubernetes"
-  GEOGRAPHY: "Netherlands"
+  GEOGRAPHY: "NetherlandsCloud"
 

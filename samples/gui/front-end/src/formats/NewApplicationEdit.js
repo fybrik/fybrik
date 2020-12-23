@@ -98,9 +98,9 @@ const NewApplicationEdit = props => {
           appInfo: {
             purpose: application.purpose,
             role: application.role,
-            processingGeography: application.geography
           },
           selector: { 
+            clusterName: application.geography,
             matchLabels: application.labels
           },
           data: dataToSend
