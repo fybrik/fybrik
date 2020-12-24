@@ -37,7 +37,7 @@ func InitM4DApplication(name string, n int) *apiv1alpha1.M4DApplication {
 			Name:      appSignature.Name,
 			Namespace: appSignature.Namespace,
 		},
-		Spec: apiv1alpha1.M4DApplicationSpec{Selector: apiv1alpha1.ClusterSelector{ClusterName: "US-cluster"}, Data: make([]apiv1alpha1.DataContext, n)},
+		Spec: apiv1alpha1.M4DApplicationSpec{Selector: apiv1alpha1.Selector{ClusterName: "US-cluster"}, Data: make([]apiv1alpha1.DataContext, n)},
 	}
 }
 

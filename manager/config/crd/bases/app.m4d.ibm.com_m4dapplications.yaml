@@ -121,7 +121,6 @@ spec:
                       type: object
                   type: object
               required:
-              - clusterName
               - workloadSelector
               type: object
           required:

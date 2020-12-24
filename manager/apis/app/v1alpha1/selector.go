@@ -7,10 +7,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ClusterSelector is a label query over a set of resources in the specified cluster.
-type ClusterSelector struct {
+// Selector is a label query over a set of resources in the specified cluster.
+type Selector struct {
 	// Cluster name
-	// +required
+	// +optional
 	ClusterName string `json:"clusterName"`
 
 	// WorkloadSelector enables to connect the resource to the application

@@ -46,7 +46,7 @@ type M4DApplicationSpec struct {
 	// Application labels should match the labels in the selector.
 	// For some flows the selector may not be used.
 	// +optional
-	Selector ClusterSelector `json:"selector"`
+	Selector Selector `json:"selector"`
 
 	// AppInfo contains information describing the reasons and geography of the processing
 	// that will be done by the Data Scientist's application.
