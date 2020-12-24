@@ -12,7 +12,7 @@ set -e
 
 POLICY_DIR=$ROOT_DIR/pkg/policy-compiler
 source $POLICY_DIR/policy-compiler.env
-source $ROOT_DIR/third_party/vault/vault-util.sh
+source $ROOT_DIR/secret-provider/deploy/vault-util.sh
 
 vault_delete() {
         kubectl delete secret user-vault-unseal-keys || true
