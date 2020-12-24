@@ -21,6 +21,10 @@ vault:
 	@echo "Installing vault ..."
 	cd ../third_party/vault && $(MAKE) deploy deploy-wait
 
+.PHONY:
+vault-setup:
+	cd ../secret-provider && $(MAKE) configure-vault
+
 .PHONY: m4d
 m4d:
 	@echo "installing m4d ..."
@@ -32,4 +36,4 @@ m4d:
 
 .PHONY: run-integration-tests
 run-integration-tests: export ROOT_DIR := .
-run-integration-tests: kind cert-manager vault m4d
+run-integration-tests: kind cert-manager vault vault-setup m4d
