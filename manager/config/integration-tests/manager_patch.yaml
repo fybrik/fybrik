@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: manager
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         env:
         - name: ENABLE_WEBHOOKS
           value: "true"
@@ -27,7 +27,7 @@ spec:
           value: "x509ignoreCN=0"
         volumeMounts:
         - mountPath: /etc/ssl/certs/ca-certificates.crt
-          subPath: ca.crt
+          subPath: ca-certificates.crt
           name: ca-cert
           readOnly: true
       volumes:

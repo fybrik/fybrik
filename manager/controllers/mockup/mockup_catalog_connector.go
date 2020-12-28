@@ -5,11 +5,13 @@ package mockup
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	"github.com/onsi/ginkgo"
 	"google.golang.org/grpc"
 )
 
@@ -116,23 +118,37 @@ func (s *server) GetCredentialsInfo(ctx context.Context, in *pb.DatasetCredentia
 	log.Printf("Received: ")
 	log.Printf("DataSetID: " + in.GetDatasetId())
 	return &pb.DatasetCredentials{
-		DatasetId:   in.GetDatasetId(),
-		Credentials: "{\"password\":\"pswd\",\"username\":\"admin\"}",
+		DatasetId: in.GetDatasetId(),
+		Creds:     &pb.Credentials{Username: "admin", Password: "pswd"},
 	}, nil
 }
 
-// MockCatalogConnector returns fake data location details based on the catalog id
-func MockCatalogConnector() {
-	address := utils.ListeningAddress(50085)
-	log.Printf("Listening on address " + address)
+// Creates a new mock connector or an error
+func createMockCatalogConnector(port int) error {
+	address := utils.ListeningAddress(port)
+	log.Printf("Starting mock catalog connector on " + address)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
-		log.Fatalf("Error in listening: %v", err)
+		return fmt.Errorf("Error when setting up mock catalog connector: %v", err)
 	}
 	s := grpc.NewServer()
 	pb.RegisterDataCatalogServiceServer(s, &server{})
 	pb.RegisterDataCredentialServiceServer(s, &server{})
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("Error in service: %v", err)
+		return fmt.Errorf("Cannot serve mock catalog connector: %v", err)
+	}
+	return nil
+}
+
+// MockCatalogConnector returns fake data location details based on the catalog id
+func MockCatalogConnector() {
+	if err := createMockCatalogConnector(50085); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func CreateTestCatalogConnector(t ginkgo.GinkgoTInterface) {
+	if err := createMockCatalogConnector(50085); err != nil {
+		t.Fatal(err)
 	}
 }

@@ -43,7 +43,7 @@ The actions taken by {{< name >}} are based on policies and the context of the a
 
 While the {{< name >}} platform handles enforcement of data governance policies, if one could access the data not through the platform then we lose control over data usage.
 
-For this reason,  {{< name >}} does not let user applications ever observe data access credentials, both for externally created data assets and for data assets created by the {{< name >}} control plane and applications running in it. 
+For this reason, {{< name >}} does not let user applications ever observe data access credentials, both for externally created data assets and for data assets created by the {{< name >}} control plane and applications running in it.
 
 Instead, modules are injected into the data path to handle access to data, including injecting the data access credentials to upstream data stores. Security is preserved by authorizing the applications based on their Pod identities (i.e., service account tokens in the current implementation).
 

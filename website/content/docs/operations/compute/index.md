@@ -7,7 +7,7 @@ weight: 100
 
 <!-- Not implemented nor designed yet -->
 
-Currently {{< name >}} does not support multicluster operation. The administrator needs to register the _OpenShift Projects_ (namespaces) that the {{< name >}} control plane operates on. This is done by creating `M4DMemberRoll` resources in the `m4d-system` project. For example, the following adds the fraudanalysis project to the {{< name >}}:
+Currently {{< name >}} does not support multicluster operation. The administrator needs to register the _OpenShift Projects_ (namespaces) that the {{< name >}} control plane operates on. This is done by creating `M4DMemberRoll` resources in the `m4d-system` project. For example, the following adds the fraudanalysis project to {{< name >}}:
 
 ```yaml
 apiVersion: admin.m4d.ibm.com/v1alpha1

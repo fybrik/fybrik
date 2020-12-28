@@ -1,4 +1,5 @@
 include Makefile.env
+export DOCKER_TAGNAME ?= latest
 
 .PHONY: license
 license: $(TOOLBIN)/license_finder
@@ -15,11 +16,22 @@ test:
 	$(MAKE) -C pkg/policy-compiler test
 	$(MAKE) -C manager test
 
-.PHONY: e2e
-e2e:
-	# TODO(roee88): temporarily removed until can be set against local registry
-	# $(MAKE) -C pkg/helm test
-	$(MAKE) -C manager e2e
+.PHONY: run-integration-tests
+run-integration-tests: export DOCKER_HOSTNAME?=kind-registry:5000
+run-integration-tests: export DOCKER_NAMESPACE?=m4d-system
+run-integration-tests:
+	$(MAKE) kind
+	$(MAKE) cluster-prepare
+	$(MAKE) docker
+	$(MAKE) -C test/services docker-all
+	$(MAKE) cluster-prepare-wait
+	$(MAKE) -C secret-provider configure-vault
+	$(MAKE) -C secret-provider deploy
+	$(MAKE) -C manager deploy-crd
+	$(MAKE) -C manager deploy_it
+	$(MAKE) -C manager wait_for_manager
+	$(MAKE) helm
+	$(MAKE) -C manager run-integration-tests
 
 .PHONY: cluster-prepare
 cluster-prepare:
@@ -42,74 +54,78 @@ deploy:
 	$(MAKE) -C manager deploy
 	$(MAKE) -C connectors deploy
 
-# Deploys the manager using local images
-.PHONY: deploy-local
-deploy-local:
-	$(MAKE) -C manager deploy-local
-
 .PHONY: undeploy
 undeploy:
 	$(MAKE) -C secret-provider undeploy
 	$(MAKE) -C manager undeploy
+	$(MAKE) -C manager undeploy-crd
 	$(MAKE) -C connectors undeploy
 
 .PHONY: docker
 docker:
-	$(MAKE) -C build all
 	$(MAKE) -C manager docker-all
 	$(MAKE) -C secret-provider docker-all
 	$(MAKE) -C connectors docker-all
+	$(MAKE) -C test/dummy-mover docker-all
 
 # Build only the docker images needed for integration testing
 .PHONY: docker-minimal-it
 docker-minimal-it:
-	$(MAKE) -C build docker-dummy-mover
 	$(MAKE) -C manager docker-all
 	$(MAKE) -C secret-provider docker-all
-	$(MAKE) -C test/services docker
+	$(MAKE) -C test/dummy-mover docker-all
+	$(MAKE) -C test/services docker-all
 
 .PHONY: docker-build
 docker-build:
-	$(MAKE) -C build docker-build-all
 	$(MAKE) -C manager docker-build
 	$(MAKE) -C secret-provider docker-build
 	$(MAKE) -C connectors docker-build
+	$(MAKE) -C test/dummy-mover docker-build
 
 .PHONY: docker-push
 docker-push:
-	$(MAKE) -C build docker-push-all
 	$(MAKE) -C manager docker-push
 	$(MAKE) -C secret-provider docker-push
 	$(MAKE) -C connectors docker-push
-
-# Build docker images locally. (Can be used in combination with minikube and deploy-local)
-.PHONY: docker-build-local
-docker-build-local:
-	$(MAKE) -C manager docker-build-local
-	$(MAKE) -C secret-provider docker-build-local
+	$(MAKE) -C test/dummy-mover docker-push
 
 .PHONY: helm
 helm:
 	$(MAKE) -C modules helm
 
-.PHONY: docker-retag-images
-docker-retag-images:
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:latest ghcr.io/the-mesh-for-data/manager:latest
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/secret-provider:latest ghcr.io/the-mesh-for-data/secret-provider:latest
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/egr-connector:latest ghcr.io/the-mesh-for-data/egr-connector:latest
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/movement-controller:latest ghcr.io/the-mesh-for-data/movement-controller:latest
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/dummy-mover:latest ghcr.io/the-mesh-for-data/dummy-mover:latest
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:latest ghcr.io/the-mesh-for-data/opa-connector:latest
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/vault-connector:latest ghcr.io/the-mesh-for-data/vault-connector:latest
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/serverpolicycompiler-mock:latest ghcr.io/the-mesh-for-data/serverpolicycompiler-mock:latest
-	docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/data-catalog-mock:latest ghcr.io/the-mesh-for-data/data-catalog-mock:latest
+DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
+DOCKER_PUBLIC_NAMESPACE ?= the-mesh-for-data
+DOCKER_PUBLIC_NAMES := \
+	manager \
+	secret-provider \
+	egr-connector \
+	dummy-mover \
+	opa-connector \
+	vault-connector
+ 
+define do-docker-retag-and-push-public
+	for name in ${DOCKER_PUBLIC_NAMES}; do \
+		docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$$name:${DOCKER_TAGNAME} ${DOCKER_PUBLIC_HOSTNAME}/${DOCKER_PUBLIC_NAMESPACE}/$$name:$1; \
+	done
+	DOCKER_HOSTNAME=${DOCKER_PUBLIC_HOSTNAME} DOCKER_NAMESPACE=${DOCKER_PUBLIC_NAMESPACE} DOCKER_TAGNAME=$1 $(MAKE) docker-push
+endef
 
-.PHONY: docker-push-public
-docker-push-public:
-	DOCKER_HOSTNAME=ghcr.io DOCKER_NAMESPACE=the-mesh-for-data DOCKER_TAG=latest $(MAKE) docker-push
+.PHONY: docker-retag-and-push-public
+docker-retag-and-push-public:
+	$(call do-docker-retag-and-push-public,latest)
+ifneq (${TRAVIS_TAG},)
+	$(call do-docker-retag-and-push-public,${TRAVIS_TAG})
+endif
 
-include .mk/ibmcloud.mk
-include .mk/tools.mk
-include .mk/verify.mk
-include .mk/cluster.mk
-include .mk/helm.mk
+.PHONY: helm-push-public
+helm-push-public:
+	DOCKER_HOSTNAME=${DOCKER_PUBLIC_HOSTNAME} DOCKER_NAMESPACE=${DOCKER_PUBLIC_NAMESPACE} make -C modules helm-chart-push
+ifneq (${TRAVIS_TAG},)
+	DOCKER_HOSTNAME=${DOCKER_PUBLIC_HOSTNAME} DOCKER_NAMESPACE=${DOCKER_PUBLIC_NAMESPACE} DOCKER_TAGNAME=${TRAVIS_TAG} make -C modules helm-chart-push
+endif
+
+
+include hack/make-rules/tools.mk
+include hack/make-rules/verify.mk
+include hack/make-rules/cluster.mk

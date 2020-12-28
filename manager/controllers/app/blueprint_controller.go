@@ -44,6 +44,7 @@ type BlueprintReconciler struct {
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=blueprints/status,verbs=get;update;patch
 
 // Reconcile receives a Blueprint CRD
+//nolint:dupl
 func (r *BlueprintReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("blueprint", req.NamespacedName)
@@ -53,9 +54,9 @@ func (r *BlueprintReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	if err := r.Get(ctx, req.NamespacedName, &blueprint); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-	if err := r.reconcileFinalizers(&blueprint); err != nil {
-		log.V(0).Info("Could not reconcile finalizers " + err.Error())
-		return ctrl.Result{}, err
+	if res, err := r.reconcileFinalizers(&blueprint); err != nil {
+		log.V(0).Info("Could not reconcile finalizers: " + err.Error())
+		return res, err
 	}
 
 	// If the object has a scheduled deletion time, update status and return
@@ -84,7 +85,7 @@ func (r *BlueprintReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 }
 
 // reconcileFinalizers reconciles finalizers for Blueprint
-func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) error {
+func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) (ctrl.Result, error) {
 	// finalizer
 	finalizerName := r.Name + ".finalizer"
 	hasFinalizer := ctrlutil.ContainsFinalizer(blueprint, finalizerName)
@@ -96,26 +97,28 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) erro
 			// the finalizer is present - delete the allocated resources
 			if err := r.deleteExternalResources(blueprint); err != nil {
 				r.Log.V(0).Info("Error while deleting owned resources: " + err.Error())
-				return err
+				return ctrl.Result{}, err
 			}
-
+			if r.hasExternalResources(blueprint) {
+				return ctrl.Result{RequeueAfter: 2 * time.Second}, errors.NewPlain("helm release uninstall is still in progress")
+			}
 			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 			ctrlutil.RemoveFinalizer(blueprint, finalizerName)
 
 			if err := r.Update(context.Background(), blueprint); err != nil {
-				return err
+				return ctrl.Result{}, err
 			}
 		}
-		return nil
+		return ctrl.Result{}, nil
 	}
 	// Make sure this CRD instance has a finalizer
 	if !hasFinalizer {
 		ctrlutil.AddFinalizer(blueprint, finalizerName)
 		if err := r.Update(context.Background(), blueprint); err != nil {
-			return err
+			return ctrl.Result{}, err
 		}
 	}
-	return nil
+	return ctrl.Result{}, nil
 }
 
 func getReleaseName(step app.FlowStep) string {
@@ -140,10 +143,24 @@ func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) 
 	return errors.New(strings.Join(errs, "; "))
 }
 
-func (r *BlueprintReconciler) applyChartResource(log logr.Logger, ref string, vals map[string]interface{}, kubeNamespace string, releaseName string) (ctrl.Result, error) {
-	log.Info(fmt.Sprintf("--- Chart Ref ---\n\n%v\n\n", ref))
+func (r *BlueprintReconciler) hasExternalResources(blueprint *app.Blueprint) bool {
+	for _, step := range blueprint.Spec.Flow.Steps {
+		releaseName := getReleaseName(step)
+		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus == nil && rel != nil {
+			return true
+		}
+	}
+	return false
+}
 
-	nbytes, _ := yaml.Marshal(vals)
+func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.ChartSpec, args map[string]interface{}, kubeNamespace string, releaseName string) (ctrl.Result, error) {
+	log.Info(fmt.Sprintf("--- Chart Ref ---\n\n%v\n\n", chartSpec.Name))
+
+	args = CopyMap(args)
+	for k, v := range chartSpec.Values {
+		SetMapField(args, k, v)
+	}
+	nbytes, _ := yaml.Marshal(args)
 	log.Info(fmt.Sprintf("--- Values.yaml ---\n\n%s\n\n", nbytes))
 
 	// TODO: should change to use an ImagePullSecret referenced from the M4DModule resource
@@ -154,33 +171,66 @@ func (r *BlueprintReconciler) applyChartResource(log logr.Logger, ref string, va
 	if username != "" && password != "" {
 		err := r.Helmer.RegistryLogin(hostname, username, password, insecure)
 		if err != nil {
-			return ctrl.Result{}, errors.WithMessage(err, ref+": failed chart pull")
+			return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart login")
 		}
 	}
 
-	err := r.Helmer.ChartPull(ref)
+	err := r.Helmer.ChartPull(chartSpec.Name)
 	if err != nil {
-		return ctrl.Result{}, errors.WithMessage(err, ref+": failed chart pull")
+		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart pull")
 	}
-	chart, err := r.Helmer.ChartLoad(ref)
+	chart, err := r.Helmer.ChartLoad(chartSpec.Name)
 	if err != nil {
-		return ctrl.Result{}, errors.WithMessage(err, ref+": failed chart load")
+		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart load")
 	}
 
 	rel, err := r.Helmer.Status(kubeNamespace, releaseName)
 	if err == nil && rel != nil {
-		rel, err = r.Helmer.Upgrade(chart, kubeNamespace, releaseName, vals)
+		rel, err = r.Helmer.Upgrade(chart, kubeNamespace, releaseName, args)
 		if err != nil {
-			return ctrl.Result{}, errors.WithMessage(err, ref+": failed upgrade")
+			return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed upgrade")
 		}
 	} else {
-		rel, err = r.Helmer.Install(chart, kubeNamespace, releaseName, vals)
+		rel, err = r.Helmer.Install(chart, kubeNamespace, releaseName, args)
 		if err != nil {
-			return ctrl.Result{}, errors.WithMessage(err, ref+": failed install")
+			return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed install")
 		}
 	}
 	log.Info(fmt.Sprintf("--- Release Status ---\n\n%s\n\n", rel.Info.Status))
 	return ctrl.Result{}, nil
+}
+
+func CopyMap(m map[string]interface{}) map[string]interface{} {
+	cp := make(map[string]interface{})
+	for k, v := range m {
+		vm, ok := v.(map[string]interface{})
+		if ok {
+			cp[k] = CopyMap(vm)
+		} else {
+			cp[k] = v
+		}
+	}
+
+	return cp
+}
+
+func SetMapField(obj map[string]interface{}, k string, v interface{}) bool {
+	components := strings.Split(k, ".")
+	for n, component := range components {
+		if n == len(components)-1 {
+			obj[component] = v
+		} else {
+			m, ok := obj[component]
+			if !ok {
+				m := make(map[string]interface{})
+				obj[component] = m
+				obj = m
+			} else if obj, ok = m.(map[string]interface{}); !ok {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, blueprint *app.Blueprint) (ctrl.Result, error) {
@@ -189,9 +239,9 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 	updateRequired := blueprint.Status.ObservedGeneration != blueprint.GetGeneration()
 	blueprint.Status.ObservedGeneration = blueprint.GetGeneration()
 	// reset blueprint state
-	blueprint.Status.Ready = false
-	blueprint.Status.Error = ""
-	blueprint.Status.DataAccessInstructions = ""
+	blueprint.Status.ObservedState.Ready = false
+	blueprint.Status.ObservedState.Error = ""
+	blueprint.Status.ObservedState.DataAccessInstructions = ""
 
 	// count the overall number of Helm releases and how many of them are ready
 	numReleases, numReady := 0, 0
@@ -215,19 +265,6 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
 
-		// TODO: current Copy modules do not expect the "copy" key.
-		//       once updated, these lines could be dropped
-		if step.Arguments.Flow == app.Copy {
-			args = args["copy"].(map[string]interface{})
-		}
-
-		// Add metadata arguments (namespace, name, labels, etc.)
-		hashedName := utils.Hash(step.Name, 20)
-		args["metadata"] = map[string]interface{}{
-			"name":      hashedName,
-			"namespace": blueprint.Namespace,
-			"labels":    blueprint.Labels,
-		}
 		releaseName := getReleaseName(step)
 		log.V(0).Info("Release name: " + releaseName)
 		numReleases++
@@ -236,19 +273,17 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		// unexisting release or a failed release - re-apply the chart
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
 			// Process templates with arguments
-			for _, resource := range templateSpec.Resources {
-				if _, err := r.applyChartResource(log, resource, args, blueprint.Namespace, releaseName); err != nil {
-					blueprint.Status.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
-				}
+			chart := templateSpec.Chart
+			if _, err := r.applyChartResource(log, chart, args, blueprint.Namespace, releaseName); err != nil {
+				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
 			}
 		} else if rel.Info.Status == release.StatusDeployed {
-			// TODO: add release notes of the read module to the status
-			if args["flow"] == "read" {
-				blueprint.Status.DataAccessInstructions += rel.Info.Notes
+			if len(step.Arguments.Read) > 0 {
+				blueprint.Status.ObservedState.DataAccessInstructions += rel.Info.Notes
 			}
 			status, errMsg := r.checkReleaseStatus(releaseName, blueprint.Namespace)
 			if status == corev1.ConditionFalse {
-				blueprint.Status.Error += "ResourceAllocationFailure: " + errMsg + "\n"
+				blueprint.Status.ObservedState.Error += "ResourceAllocationFailure: " + errMsg + "\n"
 			} else if status == corev1.ConditionTrue {
 				numReady++
 			}
@@ -257,12 +292,12 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 	// check if all releases reached the ready state
 	if numReady == numReleases {
 		// all modules have been orhestrated successfully - the data is ready for use
-		blueprint.Status.Ready = true
+		blueprint.Status.ObservedState.Ready = true
 		return ctrl.Result{}, nil
 	}
 
 	// the status is unknown yet - continue polling
-	if blueprint.Status.Error == "" {
+	if blueprint.Status.ObservedState.Error == "" {
 		return ctrl.Result{RequeueAfter: 2 * time.Second}, nil
 	}
 	return ctrl.Result{}, nil

@@ -1,0 +1,30 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+# This patch sets the imagePullPolicy of the manager to Always.
+# This ensures that the image is always reloaded.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller-manager
+  namespace: system
+spec:
+  template:
+    spec:
+      containers:
+      - name: manager
+        imagePullPolicy: Always
+        env:
+        - name: ENABLE_WEBHOOKS
+          value: "true"
+        - name: IMAGE_PULL_POLICY
+          value: "IfNotPresent"
+        - name: NO_FINALIZER
+          value: "false"
+        - name: GODEBUG
+          value: "x509ignoreCN=0"
+        envFrom:
+        - secretRef:
+            name: razee-credentials
+        - configMapRef:
+            name: m4d-config

@@ -153,7 +153,18 @@ spec:
               type: object
             chart:
               description: Reference to a Helm chart that allows deployment of the resources required for this module
-              type: string
+              properties:
+                name:
+                  description: Name of helm chart
+                  type: string
+                values:
+                  additionalProperties:
+                    type: string
+                  description: Values to pass to helm chart insallation
+                  type: object
+              required:
+              - name
+              type: object
             dependencies:
               description: Other components that must be installed in order for this module to work
               items:
@@ -206,18 +217,10 @@ spec:
                 - successCondition
                 type: object
               type: array
-            type:
-              description: ModuleType indicates one of job, service, configuration so the manager knows how to deploy it
-              enum:
-              - job
-              - service
-              - configuration
-              type: string
           required:
           - capabilities
           - chart
           - flows
-          - type
           type: object
       required:
       - spec

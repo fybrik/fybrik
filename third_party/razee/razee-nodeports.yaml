@@ -1,0 +1,31 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: razeedash-api-np
+  namespace: razee
+spec:
+  type: NodePort
+  selector:
+    app: razeedash-api
+  ports:
+  - protocol: TCP
+    port: 3333
+    targetPort: 3333
+    nodePort: 30333
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: razeedash-np
+  namespace: razee
+spec:
+  type: NodePort
+  selector:
+    app: razeedash
+  ports:
+  - protocol: TCP
+    port: 3000
+    targetPort: 3000
+    nodePort: 30080

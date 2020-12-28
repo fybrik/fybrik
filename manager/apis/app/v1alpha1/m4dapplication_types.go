@@ -63,6 +63,21 @@ type M4DApplicationSpec struct {
 	Data []DataContext `json:"data"`
 }
 
+// ErrorMessages that are reported to the user
+const (
+	ReadAccessDenied            string = "Governance policies forbid access to the data"
+	CopyNotAllowed              string = "Copy of the data is required but can not be done according to the governance policies."
+	ModuleNotFound              string = "No module has been registered"
+	InsufficientStorage         string = "No bucket was provisioned for implicit copy"
+	InvalidClusterConfiguration string = "Cluster configuration does not support the requirements."
+)
+
+// Condition indices are static. Conditions always present in the status.
+const (
+	FailureConditionIndex int64 = 0
+	ErrorConditionIndex   int64 = 1
+)
+
 // ConditionType represents a condition type
 type ConditionType string
 
@@ -70,11 +85,8 @@ const (
 	// ErrorCondition means that an error was encountered during blueprint construction
 	ErrorCondition ConditionType = "Error"
 
-	// FailureCondition means that a blueprint could not be constructed (i.e., error or not allowed)
+	// FailureCondition means that a blueprint could not be constructed
 	FailureCondition ConditionType = "Failure"
-
-	// TerminatingCondition means that deletion is in progress
-	TerminatingCondition ConditionType = "Terminating"
 )
 
 // Condition describes the state of a M4DApplication at a certain point.
@@ -83,12 +95,19 @@ type Condition struct {
 	Type ConditionType `json:"type"`
 	// Status of the condition: true or false
 	Status corev1.ConditionStatus `json:"status"`
-	// Reason is a short explanation of the reason for the current condition
-	// +optional
-	Reason string `json:"reason,omitempty"`
 	// Message contains the details of the current condition
 	// +optional
 	Message string `json:"message,omitempty"`
+}
+
+// ResourceReference contains resource identifier(name, namespace, kind)
+type ResourceReference struct {
+	// Name of the resource
+	Name string `json:"name"`
+	// Namespace of the resource
+	Namespace string `json:"namespace"`
+	// Kind of the resource (Blueprint, Plotter)
+	Kind string `json:"kind"`
 }
 
 // M4DApplicationStatus defines the observed state of M4DApplication.
@@ -111,9 +130,9 @@ type M4DApplicationStatus struct {
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 
-	// BlueprintNamespace represents the namespace where the blueprint (and the relevant resources) will be allocated.
+	// Generated resource identifier
 	// +optional
-	BlueprintNamespace string `json:"blueprintNamespace,omitempty"`
+	Generated *ResourceReference `json:"generated,omitempty"`
 }
 
 // M4DApplication provides information about the application being used by a Data Scientist,

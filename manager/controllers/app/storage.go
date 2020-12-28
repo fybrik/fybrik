@@ -5,10 +5,11 @@ package app
 
 import (
 	"context"
-	"errors"
 
+	"github.com/go-logr/logr"
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	statusErr "k8s.io/apimachinery/pkg/api/errors"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"k8s.io/apimachinery/pkg/types"
@@ -18,31 +19,32 @@ import (
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dbuckets/status,verbs=get;update;patch
 
 // FindAvailableBucket finds an available storage asset
-func (r *M4DApplicationReconciler) FindAvailableBucket(owner types.NamespacedName, id string, prefixBase string, canShare bool) (*app.M4DBucket, error) {
+func FindAvailableBucket(c client.Client, log logr.Logger, owner types.NamespacedName, id string, prefixBase string, canShare bool) *app.M4DBucket {
 	ctx := context.Background()
 
 	var buckets app.M4DBucketList
-	r.Log.V(0).Info("Searching for an available bucket")
-	if err := r.List(ctx, &buckets); err != nil {
-		return nil, err
+	log.Info("Searching for an available bucket")
+	if err := c.List(ctx, &buckets); err != nil {
+		log.Info(err.Error())
+		return nil
 	}
 	for _, bucket := range buckets.Items {
-		utils.PrintStructure(bucket, r.Log, "Bucket ")
+		utils.PrintStructure(bucket, log, "Bucket ")
 		if IsBucketAvailable(&bucket, owner, id, canShare) {
 			AddOwner(&bucket, owner)
 			GetOrCreatePrefix(&bucket, id, prefixBase)
-			if err := r.Client.Status().Update(ctx, &bucket); err != nil {
+			if err := c.Status().Update(ctx, &bucket); err != nil {
 				// the object has been updated by someone else - continue to the next one
 				if statusErr.IsConflict(err) {
-					r.Log.V(0).Info("Conflict during an update of M4DBucket " + bucket.Name)
+					log.Info("Conflict during an update of M4DBucket " + bucket.Name)
 				}
-				r.Log.V(0).Info("Could not update M4DBucket " + bucket.Name)
+				log.Info("Could not update M4DBucket " + bucket.Name)
 				continue
 			}
-			return &bucket, nil
+			return &bucket
 		}
 	}
-	return nil, errors.New("More storage should be provisioned")
+	return nil
 }
 
 // FreeStorageAssets removes the app identifier from the list of owners

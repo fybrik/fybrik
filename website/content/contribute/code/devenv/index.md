@@ -6,9 +6,9 @@ weight: 2
 
 This page describes what you need to install as a developer and contributor to this project, for setting up a development environment.
 
-# Operation system
+# Operating system
 
-Currently, only the Linux and Mac operation systems are officially supported. 
+Currently, only the Linux and Mac OS operating systems are officially supported. 
 If you have a Windows machine consider using Windows Subsystem for Linux (WSL 2), 
 a remote Linux machine, or any other solution such as a virtual machine.
 

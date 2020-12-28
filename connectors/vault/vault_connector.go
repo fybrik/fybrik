@@ -9,50 +9,49 @@ import (
 	"log"
 	"net"
 	"strconv"
-	"strings"
 
+	vaultutils "github.com/ibm/the-mesh-for-data/connectors/vault/vault_utils"
+	vaultconnbl "github.com/ibm/the-mesh-for-data/connectors/vault/vaultconn-bl"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"google.golang.org/grpc"
 )
-
-var vault VaultConnection
 
 const defaultTimeout = "180"
 const defaultPort = "50083" //synched with vault_connector.yaml
 
 type server struct {
 	pb.UnimplementedDataCredentialServiceServer
+	vaultConnector *vaultconnbl.Server
 }
 
+var vault vaultutils.VaultConnection
+
 func (s *server) GetCredentialsInfo(ctx context.Context, in *pb.DatasetCredentialsRequest) (*pb.DatasetCredentials, error) {
-	log.Println("Vault connector: GetCredentialsInfo")
-	log.Printf("Vault connector: GetCredentialsInfo, in = %v\n", in)
+	log.Println("Received ApplicationContext")
+	log.Println(in)
 
-	// secretaddr := url.QueryEscape(in.DatasetId)
-	secretaddr := strings.ReplaceAll(in.DatasetId, " ", "")
-
-	readCredentials, err := vault.GetFromVault(secretaddr)
+	vaultPathKey := vaultutils.GetEnv(vaultutils.VaultPathKey)
+	eval, err := s.vaultConnector.GetCredentialsInfo(in, vault, vaultPathKey)
 	if err != nil {
 		log.Printf("Error in vaultConnector, got error from the vault: %v\n", err.Error())
-		return nil, fmt.Errorf("error in retrieving the secret from vault(key = %s): %v", secretaddr, err)
+		return nil, fmt.Errorf("error in retrieving the secret from vault: %v", err)
 	}
-	log.Println("Read credentials from vault: " + readCredentials)
-
-	return &pb.DatasetCredentials{DatasetId: in.DatasetId, Credentials: readCredentials}, nil
+	log.Println("Received evaluation from vaultConnector.GetCredentialsInfo ")
+	return eval, err
 }
 
 func main() {
-	vaultAddress := getEnv(VaultAddressKey)
-	timeOutInSecs := getEnvWithDefault(VaultTimeoutKey, defaultTimeout)
+	vaultAddress := vaultutils.GetEnv(vaultutils.VaultAddressKey)
+	timeOutInSecs := vaultutils.GetEnvWithDefault(vaultutils.VaultTimeoutKey, defaultTimeout)
 	timeOutSecs, err := strconv.Atoi(timeOutInSecs)
-	port := getEnvWithDefault(VaultConnectorPortKey, defaultPort)
+	port := vaultutils.GetEnvWithDefault(vaultutils.VaultConnectorPortKey, defaultPort)
 
-	log.Printf("Vault address env variable in %s: %s\n", VaultAddressKey, vaultAddress)
-	log.Printf("VaultConnectorPort env variable in %s: %s\n", VaultConnectorPortKey, port)
+	log.Printf("Vault address env variable in %s: %s\n", vaultutils.VaultAddressKey, vaultAddress)
+	log.Printf("VaultConnectorPort env variable in %s: %s\n", vaultutils.VaultConnectorPortKey, port)
 	log.Printf("TimeOut used %d\n", timeOutSecs)
-	log.Printf("Secret Token env variable in %s: %s\n", VaultSecretKey, getEnv(VaultSecretKey))
+	log.Printf("Secret Token env variable is accessed from environment %s\n", vaultutils.VaultSecretKey)
 
-	vault = CreateVaultConnection()
+	vault = vaultutils.CreateVaultConnection()
 	log.Println("Vault connection successfully initiated.")
 
 	lis, err := net.Listen("tcp", ":"+port)

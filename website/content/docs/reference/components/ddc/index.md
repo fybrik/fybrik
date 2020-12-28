@@ -10,7 +10,7 @@ weight: 100
 # Overview of Requirements and Functionality
 
 The **Data Distribution Controller** (DDC) handles the movement of data between data stores.
-The {{< name >}} uses the DDC to perform an action called "implicit copy", i.e. the movement
+{{< name >}} uses the DDC to perform an action called "implicit copy", i.e. the movement
 of a data set from one data store to another with possibly some unitary transform applied
 to that data set. It corresponds to Step 8 in the Architecture Document (Add a link here)
 

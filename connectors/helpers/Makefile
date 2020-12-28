@@ -1,11 +1,6 @@
 ROOT_DIR:=../..
 include $(ROOT_DIR)/Makefile.env
-
-.PHONY: all
-all:
-	@echo "usage: make [kind|minikube|openshift]"
-
-include $(ROOT_DIR)/.mk/docker.mk
+include $(ROOT_DIR)/hack/make-rules/docker.mk
 
 .PHONY: deploy
 deploy:

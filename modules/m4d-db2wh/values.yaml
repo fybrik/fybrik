@@ -5,33 +5,28 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# metadata associated with k8s resources
-metadata:
-  name: "db2wh"
-  namespace: "default"
-  labels: []
-
 image: "ghcr.io/the-mesh-for-data/mover:latest"
 imagePullPolicy: null
 noFinalizer: "false"
 
-# copies from source
-source:
-  connection:
-    db2:
-      table: ""
-      url: ""
-      port: ""
-      database: ""
-      ssl: false
-  credentialLocation: ""
+copy:
+  # copies from source
+  source:
+    connection:
+      db2:
+        table: ""
+        url: ""
+        port: ""
+        database: ""
+        ssl: false
+    credentialLocation: ""
 
-# copies to destination
-destination:
-  connection:
-    s3:
-      endpoint: ""
-      bucket: ""
-      object_key: ""
-  format: ""
-  credentialLocation: ""
+  # copies to destination
+  destination:
+    connection:
+      s3:
+        endpoint: ""
+        bucket: ""
+        object_key: ""
+    format: ""
+    credentialLocation: ""

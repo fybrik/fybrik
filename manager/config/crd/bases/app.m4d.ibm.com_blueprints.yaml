@@ -8,6 +8,13 @@ metadata:
   creationTimestamp: null
   name: blueprints.app.m4d.ibm.com
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  - JSONPath: .status.observedState.ready
+    name: Ready
+    type: string
   group: app.m4d.ibm.com
   names:
     kind: Blueprint
@@ -208,13 +215,6 @@ spec:
                             - destination
                             - source
                             type: object
-                          flow:
-                            description: ONE AND ONLY ONE OF THE FOLLOWING FIELDS SHOULD BE POPULATED Flow is the selector for this union
-                            enum:
-                            - copy
-                            - read
-                            - write
-                            type: string
                           read:
                             description: ReadArgs are parameters that are specific to modules that enable an application to read data
                             items:
@@ -409,8 +409,6 @@ spec:
                               - destination
                               type: object
                             type: array
-                        required:
-                        - flow
                         type: object
                       name:
                         description: Name is the name of the instance of the module. For example, if the application is named "notebook" and an implicitcopy module is deemed necessary.  The FlowStep name would be notebook-implicitcopy.
@@ -461,21 +459,30 @@ spec:
               items:
                 description: ComponentTemplate is a copy of a M4DModule Custom Resource.  It contains the information necessary to instantiate a component in a FlowStep, which provides the functionality described by the module.  There are 3 different module types.
                 properties:
+                  chart:
+                    description: Chart contains the location of the helm chart with info detailing how to deploy
+                    properties:
+                      name:
+                        description: Name of helm chart
+                        type: string
+                      values:
+                        additionalProperties:
+                          type: string
+                        description: Values to pass to helm chart insallation
+                        type: object
+                    required:
+                    - name
+                    type: object
                   kind:
                     description: Kind of k8s resource
                     type: string
                   name:
                     description: Name of the template
                     type: string
-                  resources:
-                    description: Resources contains the location of the helm chart with info detailing how to deploy
-                    items:
-                      type: string
-                    type: array
                 required:
+                - chart
                 - kind
                 - name
-                - resources
                 type: object
               type: array
           required:
@@ -487,19 +494,23 @@ spec:
         status:
           description: BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators forthe Kubernetes resources owned by the Blueprint for cleanup and status monitoring
           properties:
-            dataAccessInstructions:
-              description: DataAccessInstructions indicate how the data user or his application may access the data. Instructions are available upon successful orchestration.
-              type: string
-            error:
-              description: Error indicates that there has been an error to orchestrate the modules and provides the error message
-              type: string
             observedGeneration:
               description: ObservedGeneration is taken from the Blueprint metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.
               format: int64
               type: integer
-            ready:
-              description: Ready represents that the modules have been orchestrated successfully and the data is ready for usage
-              type: boolean
+            observedState:
+              description: ObservedState includes information to be reported back to the M4DApplication resource It includes readiness and error indications, as well as user instructions
+              properties:
+                dataAccessInstructions:
+                  description: DataAccessInstructions indicate how the data user or his application may access the data. Instructions are available upon successful orchestration.
+                  type: string
+                error:
+                  description: Error indicates that there has been an error to orchestrate the modules and provides the error message
+                  type: string
+                ready:
+                  description: Ready represents that the modules have been orchestrated successfully and the data is ready for usage
+                  type: boolean
+              type: object
           type: object
       type: object
   version: v1alpha1

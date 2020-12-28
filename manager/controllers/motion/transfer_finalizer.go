@@ -67,7 +67,7 @@ func (reconciler *Reconciler) submitFinalizerPod(transfer motionv1.Transfer) err
 	}
 
 	if err := reconciler.Create(context.Background(), pod); err != nil {
-		reconciler.Log.Error(err, "unable to create finalizer process for streamTransfer", "pod", pod)
+		reconciler.Log.Error(err, "unable to create finalizer process for transfer", "pod", pod)
 		return err
 	}
 
