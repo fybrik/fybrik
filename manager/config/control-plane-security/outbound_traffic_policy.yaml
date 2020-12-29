@@ -1,0 +1,14 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: networking.istio.io/v1alpha3
+kind: Sidecar
+metadata:
+  name: sidecar-default
+  namespace: system
+spec:
+  egress:
+  - hosts:
+    - "*/*"
+  outboundTrafficPolicy:
+    mode: ALLOW_ANY

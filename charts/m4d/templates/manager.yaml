@@ -1,0 +1,490 @@
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: m4d-mutating-webhook-configuration
+webhooks:
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: m4d-webhook-service
+      namespace: m4d-system
+      path: /mutate-motion-m4d-ibm-com-v1alpha1-batchtransfer
+  failurePolicy: Fail
+  name: mbatchtransfer.kb.io
+  rules:
+  - apiGroups:
+    - motion.m4d.ibm.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - batchtransfers
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: m4d-webhook-service
+      namespace: m4d-system
+      path: /mutate-motion-m4d-ibm-com-v1alpha1-streamtransfer
+  failurePolicy: Fail
+  name: mstreamtransfer.kb.io
+  rules:
+  - apiGroups:
+    - motion.m4d.ibm.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - streamtransfers
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: m4d-leader-election-role
+  namespace: m4d-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - configmaps/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: m4d-manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  - secrets
+  - secrets/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  - persistentvolumeclaims/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - pods/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - blueprints
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - blueprints/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - m4dapplications
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - m4dapplications/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - m4dbuckets
+  verbs:
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - m4dbuckets/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - m4dmodules
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - plotters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - plotters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - deployments/finalizers
+  - deployments/status
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  - jobs/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs/status
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - motion.m4d.ibm.com
+  resources:
+  - batchtransfers
+  - batchtransfers/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - motion.m4d.ibm.com
+  resources:
+  - batchtransfers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - motion.m4d.ibm.com
+  resources:
+  - streamtransfers
+  - streamtransfers/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - motion.m4d.ibm.com
+  resources:
+  - streamtransfers/status
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: m4d-proxy-role
+rules:
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: m4d-leader-election-rolebinding
+  namespace: m4d-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: m4d-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: m4d-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: m4d-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: m4d-manager-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: m4d-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: m4d-proxy-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: m4d-proxy-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: m4d-system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: m4d-controller-manager-metrics-service
+  namespace: m4d-system
+spec:
+  ports:
+  - name: https
+    port: 8443
+    targetPort: https
+  selector:
+    control-plane: controller-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: m4d-webhook-service
+  namespace: m4d-system
+spec:
+  ports:
+  - port: 443
+    targetPort: 9443
+  selector:
+    control-plane: controller-manager
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: m4d-controller-manager
+  namespace: m4d-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  template:
+    metadata:
+      labels:
+        control-plane: controller-manager
+    spec:
+      containers:
+      - args:
+        - --enable-leader-election
+        - --enable-all-controllers
+        env:
+        - name: ENABLE_WEBHOOKS
+          value: "true"
+        - name: MOVER_IMAGE
+          value: {{ .Values.image.mover }}
+        - name: IMAGE_PULL_POLICY
+          value: Always
+        image: {{ .Values.image.manager }}
+        imagePullPolicy: Always
+        name: manager
+        resources:
+          limits:
+            cpu: 500m
+            memory: 500Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+      terminationGracePeriodSeconds: 10
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: m4d-serving-cert
+  namespace: m4d-system
+spec:
+  dnsNames:
+  - m4d-webhook-service.m4d-system.svc
+  - m4d-webhook-service.m4d-system.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: m4d-selfsigned-issuer
+  secretName: webhook-server-cert
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Issuer
+metadata:
+  name: m4d-selfsigned-issuer
+  namespace: m4d-system
+spec:
+  selfSigned: {}
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: m4d-validating-webhook-configuration
+webhooks:
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: m4d-webhook-service
+      namespace: m4d-system
+      path: /validate-motion-m4d-ibm-com-v1alpha1-batchtransfer
+  failurePolicy: Fail
+  name: vbatchtransfer.kb.io
+  rules:
+  - apiGroups:
+    - motion.m4d.ibm.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - batchtransfers
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: m4d-webhook-service
+      namespace: m4d-system
+      path: /validate-motion-m4d-ibm-com-v1alpha1-streamtransfer
+  failurePolicy: Fail
+  name: vstreamtransfer.kb.io
+  rules:
+  - apiGroups:
+    - motion.m4d.ibm.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - streamtransfers

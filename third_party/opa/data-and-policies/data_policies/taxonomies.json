@@ -1,0 +1,11 @@
+{
+    "DataPurposes": ["audit&complience", "client Support", "marketing", "fraud detection", "analysis"],
+
+    "DataRoles":["data scientist", "hr", "management", "security"],
+
+    "DataSensitivity": ["SPI", "SHI", "ECI"],
+
+    "DataAccessTypes": ["READ", "COPY", "WRITE"],
+
+    "DataGeoDestinations":["NorthAmerica", "US"]
+}

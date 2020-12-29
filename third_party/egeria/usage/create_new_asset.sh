@@ -12,7 +12,7 @@
 # }
 # We have an assumption that asset is stored in an external storage system. Today we support 3 storage types: S3, DB2, KAFKA
 # These are the fields that should be present in the Json describing external storage.
-# This json will be retrieve by The Mesh for Data and used to access the data, so it is important to follow the exact structure described here.
+# This json will be retrieve by Mesh for Data and used to access the data, so it is important to follow the exact structure described here.
 # DB2:
 # 			data_store : "DB2"		//required
 #          	url

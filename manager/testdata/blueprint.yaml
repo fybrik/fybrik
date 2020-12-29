@@ -51,5 +51,5 @@ spec:
   - name: implicit-copy-db2wh-to-s3-latest
     kind: M4DModule
     flow: copy
-    resources:
-    - kind-registry:5000/m4d-system/m4d-db2wh:0.1.0
+    chart:
+      name: kind-registry:5000/m4d-system/m4d-db2wh:0.1.0

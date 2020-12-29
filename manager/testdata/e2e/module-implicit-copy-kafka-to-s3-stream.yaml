@@ -49,13 +49,12 @@ metadata:
   namespace: m4d-system  # In future, will be a parameter defined by admin
   labels:
     name: implicit-copy-kafka-to-s3-stream # module name
-    version: 1.0.0 
+    version: 0.1.0 
   annotations:
     author: "Example Author (author@example.com)"
     summary: "a short description of this module"
     description: "a longer description of this module that might e.g. be used in contracts"
 spec:
-  type: service # one of: job, service, configuration
   flows:  # one or more of copy, read, write 
   - copy  
   capabilities:
@@ -82,7 +81,10 @@ spec:
     - id: "encrypt-ID"
       name: "encrypt"
       level: 2 # column
-  chart: kind-registry:5000/m4d-system/m4d-kafka:0.1.0
+  chart:
+    name: kind-registry:5000/m4d-system/m4d-kafka:0.1.0
+    values:
+      image: ghcr.io/the-mesh-for-data/mover:latest
   statusIndicators:
     - kind: StreamTransfer
       successCondition: status.status == SUCCEEDED

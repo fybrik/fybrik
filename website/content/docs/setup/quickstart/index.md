@@ -7,9 +7,10 @@ This guide lets you quickly evaluate {{< name >}}. For a custom setup follow the
 
 ## Before you begin
 Ensure that you have the following:
-- `kubectl` with access to a Kubernetes cluster (this guide was tested with kind v0.10.0 and OpenShift 4.3)
 - `git`
 - `make`
+- `kubectl` version 1.16 and above
+- `helm` version 3.3 and above
 
 ## About this guide
 By the end of this guide you will have the following installed to your Kubernetes cluster:

@@ -1,10 +1,10 @@
-# The Mesh for Data Website
+# Mesh for Data Website
 
 Holds source files for the project documentation and the website hosting it
 
 ## Contribute 
 
-Read the [Contribution Workflow](https://pages.github.com/ibm/the-mesh-for-data/contribute/documentation/workflow/)
+Read the [Contribution Workflow](https://ibm.github.io/the-mesh-for-data/contribute/documentation/workflow/)
 
 ## Requirements
 

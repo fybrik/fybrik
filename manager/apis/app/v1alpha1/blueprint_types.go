@@ -56,12 +56,6 @@ type WriteModuleArgs struct {
 // In the future might support output args as well
 // The arguments passed depend on the type of module
 type ModuleArguments struct {
-
-	// ONE AND ONLY ONE OF THE FOLLOWING FIELDS SHOULD BE POPULATED
-	// Flow is the selector for this union
-	// +required
-	Flow ModuleFlow `json:"flow"`
-
 	// CopyArgs are parameters specific to modules that copy data from one data store to another.
 	// +optional
 	Copy *CopyModuleArgs `json:"copy,omitempty"`
@@ -109,9 +103,9 @@ type ComponentTemplate struct {
 	// +required
 	Kind string `json:"kind"`
 
-	// Resources contains the location of the helm chart with info detailing how to deploy
+	// Chart contains the location of the helm chart with info detailing how to deploy
 	// +required
-	Resources []string `json:"resources"`
+	Chart ChartSpec `json:"chart"`
 }
 
 // DataFlow indicates the flow of the data between the components
@@ -153,16 +147,11 @@ type BlueprintSpec struct {
 // This includes readiness, error message, and indicators forthe Kubernetes
 // resources owned by the Blueprint for cleanup and status monitoring
 type BlueprintStatus struct {
-	// Ready represents that the modules have been orchestrated successfully and the data is ready for usage
+	// ObservedState includes information to be reported back to the M4DApplication resource
+	// It includes readiness and error indications, as well as user instructions
 	// +optional
-	Ready bool `json:"ready,omitempty"`
-	// Error indicates that there has been an error to orchestrate the modules and provides the error message
-	// +optional
-	Error string `json:"error,omitempty"`
-	// DataAccessInstructions indicate how the data user or his application may access the data.
-	// Instructions are available upon successful orchestration.
-	// +optional
-	DataAccessInstructions string `json:"dataAccessInstructions,omitempty"`
+	ObservedState ObservedState `json:"observedState,omitempty"`
+
 	// ObservedGeneration is taken from the Blueprint metadata.  This is used to determine during reconcile
 	// whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.
 	// +optional
@@ -172,6 +161,8 @@ type BlueprintStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Namespaced
+// +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
+// +kubebuilder:printcolumn:name="Ready",type=string,JSONPath=`.status.observedState.ready`
 
 // Blueprint is the Schema for the blueprints API
 type Blueprint struct {
@@ -179,6 +170,12 @@ type Blueprint struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec   BlueprintSpec   `json:"spec,omitempty"`
+	Status BlueprintStatus `json:"status,omitempty"`
+}
+
+type MetaBlueprint struct {
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
 	Status BlueprintStatus `json:"status,omitempty"`
 }
 
@@ -193,4 +190,20 @@ type BlueprintList struct {
 
 func init() {
 	SchemeBuilder.Register(&Blueprint{}, &BlueprintList{})
+}
+
+func CreateMetaBlueprint(blueprint *Blueprint) MetaBlueprint {
+	metaBlueprint := MetaBlueprint{
+		ObjectMeta: blueprint.ObjectMeta,
+		Status:     blueprint.Status,
+	}
+	return metaBlueprint
+}
+
+func CreateMetaBlueprintWithoutState(blueprint *Blueprint) MetaBlueprint {
+	metaBlueprint := MetaBlueprint{
+		ObjectMeta: blueprint.ObjectMeta,
+		Status:     BlueprintStatus{},
+	}
+	return metaBlueprint
 }

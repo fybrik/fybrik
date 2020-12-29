@@ -6,18 +6,18 @@ weight: 10
 This sample shows how to run a Kubeflow notebook with {{< name >}} and demonstrates how polices are seamlessly applied when accessing a dataset.
 
 ## Before you begin
-This sample guide assume that you have completed all the steps in [quick start guide]({{< baseurl >}}/docs/setup/quickstart/).
 
 Ensure that you have the following:
 - `kubectl` with access to a Kubernetes cluster (this guide was tested with kind v0.10.0 and OpenShift 4.3)
 - {{< name >}} installed on your Kubernetes cluster
 - S3 Object storage account (e.g., Ceph, Minio, IBM Cloud Object Storage)
-- [Kuebflow](https://www.kubeflow.org/) installed on your cluster (this guide was tested with Kubeflow v1.0.2)
+- [Kubeflow](https://www.kubeflow.org/) installed on your cluster (this guide was tested with Kubeflow v1.0.2)
 - Web browser
 
 
 {{< tip >}}
-You can install Kubeflow on by running [install_kubeflow.sh](https://{{< github_base >}}/{{< github_repo >}}/blob/master/samples/kubeflow/install/kubeflow/install_kubeflow.sh). 
+You can install Kubeflow on Kind by running [install_kubeflow.sh](https://{{< github_base >}}/{{< github_repo >}}/blob/master/samples/kubeflow/install/kubeflow/install_kubeflow.sh). 
+For OpenShift follow [KF_OPENSHIFT.md](https://{{< github_base >}}/{{< github_repo >}}/blob/master/samples/kubeflow/install/kubeflow/KF_OPENSHIFT.md).
 {{</ tip >}}
 
 ## About this sample
@@ -33,14 +33,7 @@ In this sample guide you will:
 
 ## Getting started
 
-1.  Obtain a local copy of {{< name >}} repository
-    ```bash
-    git clone https://{{< github_base >}}/{{< github_repo >}}.git
-    ```
-1.  Change to the root directory of the repository
-    ```bash
-    cd the-mesh-for-data
-    ```
+Completed all the steps in [quick start guide]({{< baseurl >}}/docs/setup/quickstart/).
 
 ## Prepare the dataset for the sample notebook
 
@@ -104,8 +97,8 @@ In this sample guide you will:
 
 ## Reviewing the policies for the dataset
 
-Currently policies are coded with the OPA deployment.
-The defined policies that relates to datasets that are tagged with 'finance' are redacting the columns `nameOrig` and `nameDest` when data is read.
+Currently predefined policies are included as part of the OPA deployment.
+Included are policies that are triggered for datasets that are tagged with 'finance' and have columns `nameOrig` and `nameDest`. The policies indicate that these columns must be redacted (masked) when data is read.
 
 The policies can be found at `third_party/opa/opa-policy.rego`.
 
@@ -160,7 +153,7 @@ This allows the code in the notebook to read the data and policies to seamlessly
 
 1. Run the notebook
 
-    You should observe in the cel `Get Data` the data from the dataset.
+    You should observe in the cell `Get Data` the data from the dataset.
 
 1. Finally, kill the port-forward
     ```bash
@@ -168,4 +161,4 @@ This allows the code in the notebook to read the data and policies to seamlessly
     ```
 
 # Next steps
-You have completed an execution of a notebook with {{< name >}} and now ready to continue and exploring.
+You have completed an execution of a notebook with {{< name >}} and are now ready to continue exploring.

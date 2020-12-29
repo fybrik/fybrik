@@ -9,6 +9,7 @@ resources:
 - bases/motion.m4d.ibm.com_streamtransfers.yaml
 - bases/app.m4d.ibm.com_m4dapplications.yaml
 - bases/app.m4d.ibm.com_blueprints.yaml
+- bases/app.m4d.ibm.com_plotters.yaml
 - bases/app.m4d.ibm.com_m4dmodules.yaml
 - bases/app.m4d.ibm.com_m4dbuckets.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
