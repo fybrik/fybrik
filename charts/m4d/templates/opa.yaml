@@ -1,0 +1,238 @@
+{{- if .Values.global.opa }}
+apiVersion: v1
+data:
+  action_struct.rego: "package data_policies\n\n#general enforcment action structure\nenforcement_action_struct
+    = {\n    \"action_name\" : \"<name of action>\",\n    \"desription\" : \"<free
+    text description of the action>\",\n    \"arguments\" : \"<arguments set can be
+    different for each action>\",\n    \"used_policy\" : \"<used_policy_struct>\"\n}\n\nbuild_action_from_policies(used_policy)
+    = action {\n    action = {\n        \"used_policy\" : used_policy\n    }\n}\n\nbuild_action_from_name(action_name,
+    used_policy) = action {\n    action = {\n        \"action_name\" : action_name,\n
+    \       \"desription\" : action_name,\n        \"arguments\" :[],\n        \"used_policy\"
+    : used_policy\n    }\n}\n\nbuild_action(action_name, description, arguments, used_policy)
+    = action {\n    action = {\n        \"action_name\" : action_name,\n        \"description\"
+    : description,\n        \"arguments\" :arguments,\n        \"used_policy\" : used_policy\n
+    \   }\n}\n\n################################### Enforcement Actions #######################################\n\n#deny
+    access\ndeny_access_struct = {\n    \"action_name\" : \"deny access\",\n    \"description\"
+    : \"Access to this data asset is denied\",\n    \"arguments\" : {},\n    \"used_policy\"
+    : \"<used_policy_struct>\"\n}\n\nbuild_deny_access_action(used_policies) = action
+    {\n    action = build_action(deny_access_struct.action_name, deny_access_struct.description,
+    deny_access_struct.arguments, used_policies)\n}\n\n#remove column\nremove_column_struct
+    = {\n    \"action_name\" : \"remove column\",\n    \"description\" : \"Single
+    column is removed\",\n    \"arguments\" : { \n        \"column_name\": \"<column
+    name>\"\n    },\n    \"used_policy\" : \"<used_policy_struct>\"\n}\n\nbuild_remove_column_action(column_name,
+    used_policies) = action {\n    args := { \n       \"column_name\" : column_name\n
+    \   }\n    action = build_action(remove_column_struct.action_name, remove_column_struct.description,
+    args, used_policies)\n}\n\n#encrypt colmn\nencrypt_column_struct = {\n    \"action_name\"
+    : \"encrypt column\",\n    \"description\" : \"Single column is encrypted with
+    its own key\",\n    \"arguments\" : { \n        \"column_name\": \"<column name>\"\n
+    \   },\n    \"used_policy\" : \"<used_policy_struct>\"\n}\n\nbuild_encrypt_column_action(column_name,
+    used_policies) = action {\n    args := { \n       \"column_name\" : column_name\n
+    \   }\n    action = build_action(encrypt_column_struct.action_name, encrypt_column_struct.description,
+    args, used_policies)\n}\n\n#mask_redact_column\nredact_column_struct = {\n    \"action_name\"
+    : \"redact column\",\n    \"description\" : \"Single column is obfuscated with
+    XXX instead of values\",\n    \"arguments\" : { \n        \"column_name\": \"<column
+    name>\"\n    },\n    \"used_policy\" : \"<used_policy_struct>\"\n}\n\nbuild_redact_column_action(column_name,
+    used_policies) = action {\n    args := { \n       \"column_name\" : column_name\n
+    \   }\n    action = build_action(redact_column_struct.action_name, redact_column_struct.description,
+    args, used_policies)\n}\n\n#periodic_blackout\nperiodic_blackout_struct = {\n
+    \   \"action_name\" : \"periodic blackout\",\n    \"description\" : \"Access to
+    dataset is denied based on date of the access\",\n    \"arguments\" : { \n        #only
+    one of the arguments should be filled in\n        \"monthly_days_end\": \"<number
+    of days before the end of month when data is denied>\",\n        \"yearly_days_end\":
+    \"<number of days before the end of year when data is denied>\",\n    },\n    \"used_policy\"
+    : \"<used_policy_struct>\"\n}\n\nbuild_monthly_periodic_blackout_action(days_before_month_end,
+    used_policies) = action {\n    args := { \n       \"monthly_days_end\" : days_before_month_end\n
+    \   }\n    action = build_action(periodic_blackout_struct.action_name, periodic_blackout_struct.description,
+    args, used_policies)\n}\n\nbuild_yearly_periodic_blackout_action(days_before_year_end,
+    used_policies) = action {\n    args := { \n       \"yearly_days_end\" : days_before_year_end\n
+    \   }\n    action = build_action(periodic_blackout_struct.action_name, periodic_blackout_struct.description,
+    args, used_policies)\n}"
+  auditing_struct.rego: |-
+    package data_policies
+
+    #general structure ofused policy for auditing
+    used_policy_struct = {
+        "policy_id" : "<unique id>",
+        "description" : "<free text description of the policy reason>",
+        "policy_type" : "<classification of policy itslef>",
+        "hierarchy" : "<relation to other policies>"
+    }
+
+    build_policy_from_id(id) = policy {
+        policy = { "policy_id" : id }
+    }
+
+    build_policy_from_description(desc) = policy {
+        policy = { "description" : desc }
+    }
+
+    build_policy(id, desc, type, hierarchy) = policy {
+        policy = {
+            "policy_id" : id,
+            "description" : desc,
+            "policy_type" : type,
+            "hierarchy" : hierarchy
+        }
+    }
+  helper_functions.rego: "package data_policies\n\n#general functions that make data-policies
+    composing easier\n\nverify_access_type {\n\t\tcompare_str(AccessType(), AccessTypes[_])\n}\n\nverify_purpose
+    {\n\t\tcompare_str(Purpose(), Purposes[_])\n}\n\nverify_role {\n\tcompare_str(Role(),
+    Roles[_])\n}\n\nverify_geography {\n    compare_str(ProcessingGeo(), GeoDestinations[_])\n}\n\ndataset_has_tag(tag)
+    {\n    compare_str(tag,  DatasetTags()[_])\n}\n\ncheck_access_type(access_types)
+    {\n    compare_str(AccessType(), access_types[_])\n}\n\ncheck_destination(destinations)
+    {\n    compare_str(DestinationGeo(), destinations[_])\n}\n\n\nclean_string(str)
+    = result {\n    str2 := lower(str)\n    str3 = replace(str2, \" \", \"\")\n    str4
+    := replace(str3, \"-\", \"\")\n    str5 := replace(str4, \"_\", \"\")\n\n    result=str5\n}\n\ncompare_str(str1,
+    str2) {\n    clean_string(str1) == clean_string(str2)\n}"
+  input_reader.rego: "package data_policies\n\n#this file assumes input to be provided
+    in specific format, in this case how data mesh provides it \n#similar file can
+    be built for Egeria, at least for the metadata part, or any other catalog when
+    we show how the input should be  parsed correctly\n\n#Example structure:\n# {\n#
+    \t\"name\": \"<name>\"\n# \t\"destination\": \"<destination>\",\n# \t\"processing_geography\":
+    \"<processing_geography>\",\n# \t\"purpose\": \"<purpose>\",\n# \t\"role\": \"<role>\",\n#
+    \t\"type\": \"<access type>\",\n# \t\"details\": {\n# \t\t\"data_format\": \"<data_format>\",\n#
+    \t\t\"data_store\": {\n# \t\t\t\"name\": \"<datastore name>\"\n# \t\t},\n# \t\t\"geo\":
+    \"<geo>\",\n# \t\t\"metadata\": {\n# \t\t\t\"components_metadata\": {\n# \t\t\t\t\"<column
+    name1>\": {\n# \t\t\t\t\t\"component_type\": \"column\",\n# \t\t\t\t\t\"named_metadata\":
+    {\n# \t\t\t\t\t\t\"type\": \"length=10.0,nullable=true,type=date,scale=0.0,signed=false\"\n#
+    \t\t\t\t\t}\n# \t\t\t\t},\n# \t\t\t\t\"<column name2>\": {\n# \t\t\t\t\t\"component_type\":
+    \"column\",\n# \t\t\t\t\t\"named_metadata\": {\n# \t\t\t\t\t\t\"type\": \"length=3.0,nullable=true,type=char,scale=0.0,signed=false\"\n#
+    \t\t\t\t\t},\n# \t\t\t\t\t\"tags\": [\"<tag1>\", \"<tag2>\"]\n# \t\t\t\t}\n# \t\t\t},\n#
+    \t\t\t\"dataset_named_metadata\": {\n# \t\t\t\t\"<term1 name>\": \"<term1 value>\",\n#
+    \t\t\t\t\"<term2 name>\": \"<term2 value>\"\n# \t\t\t},\n# \t\t\t\"dataset_tags\":
+    [\n# \t\t\t\t\"<tag1>\",\n# \t\t\t\t\"<tag2>\"\n# \t\t\t]\n# \t\t},\n# \t}\n#
+    }\n\nPurpose() = input.purpose \n\nRole() = input.role \n\nAccessType() = input.type
+    \n\nDatasetTags() = input.details.metadata.dataset_tags\n\nProcessingGeo() = input.processing_geography\n\nDestinationGeo()
+    = input.destination\n\n\n\ncolumn_with_tag(tag) = column_names {\n\tcolumn_names
+    := [column_name | input.details.metadata.components_metadata[column_name].tags[_]
+    == tag]\n}\n\ncolumn_with_any_tag(tags) = column_names {\n\tcolumn_names := [column_name
+    | input.details.metadata.components_metadata[column_name].tags[_] == tags[_]]\n}\n\ncolumn_with_any_name(names)
+    = column_names {\n\tall_column_names := {column_name | input.details.metadata.components_metadata[column_name]
+    }\n    column_names := all_column_names & names\n}"
+  medical_taxonomies.json: |-
+    {
+        "MedicalRoles": ["ER", "doctor", "nurse"]
+    }
+  taxonomies.json: |-
+    {
+        "DataPurposes": ["audit&complience", "client Support", "marketing", "fraud detection", "analysis"],
+
+        "DataRoles":["data scientist", "hr", "management", "security"],
+
+        "DataSensitivity": ["SPI", "SHI", "ECI"],
+
+        "DataAccessTypes": ["READ", "COPY", "WRITE"],
+
+        "DataGeoDestinations":["NorthAmerica", "US"]
+    }
+  taxonomies_unification.rego: |-
+    package data_policies
+
+    #In data part we provide set of general and industry specific taxonomies, also the user can add more taxonomies specific for his needs.
+    #Here is the place when for each category user chooses what taxonomies should be used
+
+    Purposes = { x | x = data.DataPurposes[_] }
+
+    Roles = { x | x = data.DataRoles[_] } | { x | x = data.MedicalRoles[_] }
+
+    Sensitivity = { x | x = data.DataSensitivity[_] }
+
+    AccessTypes = { x | x = data.DataAccessTypes[_] }
+
+    GeoDestinations = { x | x = data.DataGeoDestinations[_] }
+  user_policies.rego: "package user_policies\n\nimport data.data_policies as dp\n\n#Example
+    of data policies that use \"data_policies\" package to create easily data policies
+    that deny access or transform the data accordingly\n\ntransform[action] {\n\tdescription
+    = \"location data should be removed before copy\"\n\n\tdp.correct_input\n    \n
+    \   #user context and access type check\n    dp.check_access_type([dp.AccessTypes.COPY])\n
+    \   \n    column_names := dp.column_with_tag(\"location\")\n    action = dp.build_remove_column_action(column_names[_],
+    dp.build_policy_from_description(description))\n}  \n\ntransform[action] {\n\tdescription
+    = \"sensitive columns in health data should be removed\"\n\n\tdp.correct_input\n
+    \   \n    #user context and access type check\n    dp.check_access_type([dp.AccessTypes.COPY,
+    dp.AccessTypes.READ])\n    \n    dp.dataset_has_tag(\"HealthData\")\n    \n    column_names
+    := dp.column_with_tag(\"SPI\")\n    action = dp.build_remove_column_action(column_names[_],
+    dp.build_policy_from_description(description))\n} \n\ntransform[action] {\n\tdescription
+    = \"encrypt sensitive personal and health data on COPY out of united states for
+    health data assets\"\n    \n\tdp.correct_input\n    \n    #user context and access
+    type check\n    dp.check_access_type(dp.AccessTypes.COPY)\n    \n    dp.dataset_has_tag(\"HealthData\")\n
+    \   not dp.check_destination([dp.GeoDestinations.US])\n    \n    column_names
+    := dp.column_with_any_tag([\"SPI\", \"SMI\"])\n    #action = dp.build_encrypt_column_action(column_names[_],
+    dp.build_policy_from_description(description))\n    action = dp.build_redact_column_action(column_names[_],
+    dp.build_policy_from_description(description))\n}\n\n#for transactions dataset\ntransform[action]
+    {\n\t#description = \"test for transactions dataset that encrypts some columns
+    by name\"\n    description = \"test for transactions dataset that redacts some
+    columns by name\"\n    \n\tdp.correct_input\n    \n    #user context and access
+    type check\n    dp.check_access_type([dp.AccessTypes.READ])\n    \n    dp.dataset_has_tag(\"Finance\")\n
+    \   \n    column_names := dp.column_with_any_name({\"nameOrig\", \"nameDest\"})\n
+    \   #action = dp.build_encrypt_column_action(column_names[_], dp.build_policy_from_description(description))\n
+    \   action = dp.build_redact_column_action(column_names[_], dp.build_policy_from_description(description))
+    \   \n    \n}\n\n#for transactions dataset\ndeny[action] {\n\tdescription = \"test
+    for transactions dataset with deny\"\n    \n\tdp.correct_input\n    \n    #user
+    context and access type check\n    dp.check_access_type([dp.AccessTypes.COPY])\n
+    \   \n    dp.dataset_has_tag(\"Finance\")\n    \n    action = dp.build_deny_access_action(dp.build_policy_from_description(description))\n}"
+  verify_correct_input.rego: "package data_policies\n\ncorrect_input {\n\tcount(incorrect_input)
+    == 0\n}\n\nincorrect_input[used_policy] {\n   not verify_access_type\n   used_policy
+    := build_action_from_policies(build_policy_from_description(\"unknown access type\"))\n}
+    {\n    not verify_purpose\n    used_policy := build_action_from_policies(build_policy_from_description(\"unknown
+    purpose\"))\n} {\n    not verify_role\n    used_policy := build_action_from_policies(build_policy_from_description(\"unknown
+    role\"))\n} {\n\tcheck_access_type([\"COPY\"])\n    not verify_geography\n    used_policy
+    := build_action_from_policies(build_policy_from_description(\"unknown geography
+    to copy the data\"))\n}"
+kind: ConfigMap
+metadata:
+  name: opa-policy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: opa
+  name: opa
+spec:
+  ports:
+  - name: http
+    port: 8181
+    protocol: TCP
+    targetPort: 8181
+  selector:
+    app: opa
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: opa
+  name: opa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opa
+  template:
+    metadata:
+      labels:
+        app: opa
+      name: opa
+    spec:
+      containers:
+      - args:
+        - run
+        - --ignore=.*
+        - --server
+        - /policies
+        image: openpolicyagent/opa:latest
+        imagePullPolicy: Always
+        name: opa
+        ports:
+        - containerPort: 8181
+          name: http
+        volumeMounts:
+        - mountPath: /policies
+          name: opa-policy
+          readOnly: true
+      volumes:
+      - configMap:
+          name: opa-policy
+        name: opa-policy
+{{- end }}
