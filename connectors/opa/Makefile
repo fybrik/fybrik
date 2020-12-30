@@ -57,3 +57,21 @@ run: opaserver
 terminate: opaserver-terminate
 	kill -9 $$( cat pids.txt ); rm -f pids.txt
 
+IMAGE := opa-connector
+
+kustomization.yaml: kustomization.yaml.in
+	cp $< $@
+
+.PHONY: deploy
+deploy: kustomization.yaml
+	kustomize edit set image $(IMAGE)=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(IMAGE):${DOCKER_TAGNAME}
+	kustomize build . | kubectl apply -f -
+
+.PHONY: undeploy
+undeploy: kustomization.yaml
+	kustomize edit set image $(IMAGE)=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(IMAGE):${DOCKER_TAGNAME}
+	kustomize build . | kubectl delete -f -
+
+.PHONY: charts
+charts: kustomization.yaml
+	cp opa_connector.yaml ${ROOT_DIR}/charts/m4d/templates/.
