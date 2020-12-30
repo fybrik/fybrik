@@ -1,0 +1,5 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+resources:
+- vault_connector.yaml
