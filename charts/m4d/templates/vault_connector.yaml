@@ -1,0 +1,51 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+{{- if .Values.connectors.vault }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault-connector
+  labels:
+    app: vault-connector
+spec:
+  selector:
+    matchLabels:
+      app: vault-connector
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
+      labels:
+        app: vault-connector
+        m4d.ibm.com/componentType: connector
+    spec:
+      containers:
+      - name: vault-connector
+        image: {{ .Values.image.vault }}
+        imagePullPolicy: Always
+        ports:
+        - name: vault-connector
+          containerPort: 50083
+        envFrom:
+        - configMapRef:
+            name: m4d-config
+        env:
+        - name: USER_VAULT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: user-vault-unseal-keys
+              key: user-vault-root
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-connector
+spec:
+  selector:
+    app: vault-connector
+  ports:
+  - port: 50083
+    targetPort: vault-connector
+{{- end }}

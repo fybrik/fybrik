@@ -9,3 +9,11 @@ image:
    mover: ghcr.io/the-mesh-for-data/mover:latest
    manager: ghcr.io/the-mesh-for-data/manager:latest
    secretProvider: ghcr.io/the-mesh-for-data/secret-provider:latest
+   egeria: ghcr.io/the-mesh-for-data/egr-connector:latest
+   opa: ghcr.io/the-mesh-for-data/opa-connector:latest
+   vault: ghcr.io/the-mesh-for-data/vault-connector:latest
+
+connectors:
+  egeria: true
+  opa: true
+  vault: true

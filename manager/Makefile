@@ -55,7 +55,7 @@ uninstall: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl manifests
 
 # Install core into charts/m4d
 .PHONY: charts
-charts:
+charts: config/default/kustomization.yaml
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${IMG}
 	$(TOOLBIN)/kustomize build config/default > $(ROOT_DIR)/charts/m4d/templates/manager.yaml
 

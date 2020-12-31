@@ -1,0 +1,45 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+{{- if .Values.connectors.egeria }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: egr-connector
+  labels:
+    app: egr-connector
+spec:
+  selector:
+    matchLabels:
+      app: egr-connector
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
+      labels:
+        app: egr-connector
+        m4d.ibm.com/componentType: connector
+    spec:
+      containers:
+      - name: egr-connector
+        image: {{ .Values.image.egeria }}
+        imagePullPolicy: Always
+        ports:
+        - name: egr-connector
+          containerPort: 50084
+        envFrom:
+        - configMapRef:
+            name: m4d-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: egr-connector
+spec:
+  selector:
+    app: egr-connector
+  ports:
+  - port: 50084
+    targetPort: egr-connector
+{{- end }}
