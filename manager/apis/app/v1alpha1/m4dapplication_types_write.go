@@ -3,11 +3,7 @@
 
 package v1alpha1
 
-import (
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
-
+/*
 // RecurrenceType defines how often the data loads should be repeated
 // Relevant to implicit and explicit copies, streamed read flows
 type RecurrenceType string
@@ -20,7 +16,27 @@ const (
 	Monthly RecurrenceType = "monthly"
 	Stream  RecurrenceType = "stream"
 )
+*/
+// CommonDataContext contains the parameters common to both cataloged and uncataloged data
+/*
+type CommonDataContext struct {
+	// IFdetails indicates the protocol and format expected by the data by the Data Scientist's application
+	// +required
+	IFdetails InterfaceDetails `json:"ifDetails"`
 
+	// Flow indicates if the intent is to read or write data from the user's application
+	// If purpose = ingest && Flow = COPY, data should be ingested from the designated data store into the automatically provisioned store in the managed environment
+	// (future) If purpose = archive & Flow = COPY, data should be copied from the designated data store and sent to the automatically provisioned archive store
+	// If nothing is indicated, then the assumption is it is a read flow.
+	// +required
+	Flow ModuleFlow `json:"flow"`
+
+	// Recurrence indicates how often the copy should take place or if streamed input is needed
+	// +optional
+	Recurrence RecurrenceType `json:"recurrence"`
+}
+*/
+/*
 // DataResidency indicates the geography in which the data was created
 // TODO: Values should come from a taxonomy
 type DataResidency string
@@ -47,15 +63,26 @@ type ExternalDataContext struct {
 	// this is a list.  (ex: confidential, personal, special personal information)
 	// No values means there is no sensitive data.
 	// +optional
-	Sensitivity []DataSensitivity `json:"sensitivity,omitempty"`
+	Sensitivity []DataSensitivity `json:"sensitivity"`
+
+	// CommonContext has additional parameters used for both cataloged and uncataloged data
+	// +required
+	//CommonContext CommonDataContext `json:"commonContext"`
 
 	// IFdetails indicates the protocol and format expected by the data by the Data Scientist's application
 	// +required
 	IFdetails InterfaceDetails `json:"ifDetails"`
 
+	// Flow indicates if the intent is to read or write data from the user's application
+	// If purpose = ingest && Flow = COPY, data should be ingested from the designated data store into the automatically provisioned store in the managed environment
+	// (future) If purpose = archive & Flow = COPY, data should be copied from the designated data store and sent to the automatically provisioned archive store
+	// If nothing is indicated, then the assumption is it is a read flow.
+	// +required
+	Flow ModuleFlow `json:"flow"`
+
 	// Recurrence indicates how often the copy should take place or if streamed input is needed
 	// +optional
-	Recurrence RecurrenceType `json:"recurrence,omitempty"`
+	Recurrence RecurrenceType `json:"recurrence"`
 }
 
 // DataContext indicates data set chosen by the Data Scientist to be read from or written to by his application,
@@ -71,9 +98,20 @@ type DataContext struct {
 	// +required
 	IFdetails InterfaceDetails `json:"ifDetails"`
 
+	// Flow indicates if the intent is to read or write data from the user's application
+	// If purpose = ingest && Flow = COPY, data should be ingested from the designated data store into the automatically provisioned store in the managed environment
+	// (future) If purpose = archive & Flow = COPY, data should be copied from the designated data store and sent to the automatically provisioned archive store
+	// If nothing is indicated, then the assumption is it is a read flow.
+	// +required
+	Flow ModuleFlow `json:"flow"`
+
 	// Recurrence indicates how often the copy should take place or if streamed input is needed
 	// +optional
-	Recurrence RecurrenceType `json:"recurrence,omitempty"`
+	Recurrence RecurrenceType `json:"recurrence"`
+
+	// CommonContext has additional parameters used for both cataloged and uncataloged data
+	// +required
+	//	CommonContext CommonDataContext `json:"commonContext"`
 }
 
 // AppUserRole indicates the role required to use the application
@@ -84,6 +122,8 @@ type AppUserRole string
 // based on policies and rules defined in an external data policy manager.
 type ApplicationDetails struct {
 	// Purpose indicates the reason for the processing and the use of the data by the Data Scientist's application.
+	// For ingest scenario this should be "ingest"
+	// (future) For archive scenario this should be "archive"
 	// +required
 	Purpose string `json:"purpose,omitempty"`
 
@@ -105,7 +145,6 @@ type M4DApplicationSpec struct {
 
 	// Selector enables to connect the resource to the application
 	// Application labels should match the labels in the selector.
-	// If no selector, we assume ingest flow!
 	// +optional
 	Selector metav1.LabelSelector `json:"selector"`
 
@@ -118,11 +157,11 @@ type M4DApplicationSpec struct {
 	// and the protocol used to access it and the format expected.
 	// Note: either Data or ExternalData must have at least one entry
 	// +optional
-	Data []DataContext `json:"data,omitempty"`
+	Data []DataContext `json:"data"`
 
 	// ExternalData contains the information about data outside the managed environment that is not cataloged in the data catalog.
 	// +optional
-	ExternalData []ExternalDataContext `json:"externalData,omitempty"`
+	ExternalData []ExternalDataContext `json:"externalData"`
 }
 
 // ErrorMessages that are reported to the user
@@ -228,3 +267,4 @@ type M4DApplicationList struct {
 func init() {
 	SchemeBuilder.Register(&M4DApplication{}, &M4DApplicationList{})
 }
+*/

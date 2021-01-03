@@ -18,8 +18,9 @@ import (
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dbuckets,verbs=get;list;watch;update;
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dbuckets/status,verbs=get;update;patch
 
-// FindAvailableBucket finds an available storage asset
-func FindAvailableBucket(c client.Client, log logr.Logger, owner types.NamespacedName, id string, prefixBase string, canShare bool) *app.M4DBucket {
+// FindAvailableBucket finds an available storage asset - in the relevant geo
+// TODO: Implement check for geo.  Needed for ingest
+func FindAvailableBucket(c client.Client, log logr.Logger, owner types.NamespacedName, id string, prefixBase string, canShare bool, geo string) *app.M4DBucket {
 	ctx := context.Background()
 
 	var buckets app.M4DBucketList

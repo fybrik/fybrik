@@ -25,6 +25,7 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
+	m "github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -207,6 +208,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		return ctrl.Result{}, err
 	}
 
+	// Requirements for READING CATALOGED data sets.
 	// create a list of requirements for creating a data flow (actions, interface to app, data format) per a single data set
 	// A unique identifier (AssetID) is used to represent the dataset in the internal flow (for logs, map keys, vault path creation)
 	// The original dataset.DataSetID is used for communication with the connectors
@@ -231,16 +233,27 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		return ctrl.Result{}, nil
 	}
 
+	// Requirements for INGESTing data into the data lake - i.e. reading from the external source
+	// and writing to the dynamically allocated storage destination in one of the clusters
+	clusters, err := r.ClusterManager.GetClusters()
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	for _, externalDataset := range applicationContext.Spec.ExternalData {
+		var req modules.DataInfo
+		if err := r.ConstructIngestDataInfo(externalDataset, &req, applicationContext, clusters); err != nil {
+			return ctrl.Result{}, err
+		}
+		requirements = append(requirements, req)
+	}
+
 	// create a module manager that will select modules to be orchestrated based on user requirements and module capabilities
 	moduleMap, err := r.GetAllModules()
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 	objectKey, _ := client.ObjectKeyFromObject(applicationContext)
-	clusters, err := r.ClusterManager.GetClusters()
-	if err != nil {
-		return ctrl.Result{}, err
-	}
 	moduleManager := &ModuleManager{Client: r.Client, Log: r.Log, Modules: moduleMap, Clusters: clusters, Owner: objectKey}
 	instances := make([]modules.ModuleInstanceSpec, 0)
 	for _, item := range requirements {
@@ -274,9 +287,51 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	return ctrl.Result{}, nil
 }
 
-// ConstructDataInfo gets a list of governance actions and data location details for the given dataset and fills the received DataInfo structure
+// ConstructIngestDataInfo already has the information about the external data set's endpoint,
+// but it adds the governance decisions. It also already has the link to the credentials, which was provided by the user.
+// NOTE: Assumes the credentials were put into the M4D credential manager by the user!!
+func (r *M4DApplicationReconciler) ConstructIngestDataInfo(externalDataset app.ExternalDataContext, req *modules.DataInfo, input *app.M4DApplication, clusters []m.Cluster) error {
+	dataDetails := pb.DatasetDetails{
+		DataOwner:  "",
+		DataStore:  externalDataset.ExternalStore.Connection,
+		DataFormat: externalDataset.ExternalStore.Format,
+		Geo:        string(externalDataset.Residency),
+	}
+	req.AssetID = externalDataset.ExternalStore.Connection.Name // Not cataloged so no id. Name isn't unique though.  OK?
+	req.DataDetails = &dataDetails
+	req.Credentials = nil
+	req.Actions = make(map[app.ModuleFlow]modules.Transformations)
+	req.AppInterface = &externalDataset.IFdetails
+	req.Flow = app.Copy // This is how we know it's an ingest flow
+
+	// Check if we are allowed to write the data to any of the geographies available to us
+	// If yes, we will allocated the storage later
+	excludedGeos := ""
+	for _, cluster := range clusters {
+		req.Geo = cluster.Metadata.Region
+		if err := TempLookupPolicyDecision(externalDataset, r.PolicyCompiler, req, input, pb.AccessOperation_COPY); err != nil { // TODO: Change to regular policy compiler function
+			return AnalyzeError(input, r.Log, req.AssetID, err, "Policy Compiler")
+		}
+		if req.Actions[app.Copy].Allowed {
+			return nil // We found a geo to which we can write
+		}
+		if excludedGeos != "" {
+			excludedGeos += ", "
+		}
+		excludedGeos += cluster.Metadata.Region
+	}
+
+	// We haven't found any geographies to which we are allowed to write
+	setCondition(input, req.AssetID, "Writing to all geographies denied: "+excludedGeos, "Policy Compiler", true)
+
+	return nil // Should this return an error?
+}
+
+// ConstructDataInfo gets a list of governance actions FOR READING and data location details for the given dataset and fills the received DataInfo structure
+// Assumes that the data is registered in the data catalog.
 func (r *M4DApplicationReconciler) ConstructDataInfo(datasetID string, req *modules.DataInfo, input *app.M4DApplication) error {
 	// policies for READ operation
+	req.Flow = app.Read // This is how we know it's a read path flow
 	if err := LookupPolicyDecisions(datasetID, r.PolicyCompiler, req, input, pb.AccessOperation_READ); err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err, "Policy Compiler")
 	}
