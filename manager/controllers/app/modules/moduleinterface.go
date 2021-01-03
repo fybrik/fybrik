@@ -20,8 +20,10 @@ type Transformations struct {
 }
 
 // DataInfo defines all the information about the given data set
+// TODO: Add support for recurrence in modules
 type DataInfo struct {
 	// Data asset unique identifier, not necessarily the same string appearing in the resource definition
+	// For ingest this is based on the asset name, since there is no unique catalog id yet
 	AssetID string
 	// Processing geography
 	Geo string
@@ -33,6 +35,13 @@ type DataInfo struct {
 	Credentials *pb.DatasetCredentials
 	// Governance actions
 	Actions map[app.ModuleFlow]Transformations
+	// Flow indicates what is being done with this data set
+	// Copy indicates that this is an ingest flow.
+	// Read indicates that the workload wants to read this data
+	// Write isn't implemented yet
+	Flow app.ModuleFlow
+	// Recurrence indicates whether the data streams or requires repeat loads if this is copy or read
+	//	Recurrence app.RecurrenceType
 }
 
 // ModuleInstanceSpec consists of the module spec and arguments
@@ -52,7 +61,10 @@ type Selector struct {
 	Source       *app.InterfaceDetails
 	Destination  *app.InterfaceDetails
 	Actions      []pb.EnforcementAction
+	Recurrence   app.RecurrenceType
 }
+
+// TODO: Add function to check if module supports recurrence type
 
 // GetModule returns the selected module
 func (m *Selector) GetModule() *app.M4DModule {
@@ -213,6 +225,7 @@ func CheckDependencies(module *app.M4DModule, moduleMap map[string]*app.M4DModul
 // Current logic:
 // Read is done at target (processing geography)
 // Copy is done at source when transformations are required, and at target - otherwise
+// Write is done at target
 func (m *Selector) SelectCluster(item DataInfo, clusters []multicluster.Cluster) (string, error) {
 	var geo string
 	if len(m.Actions) > 0 && m.Flow == app.Copy {

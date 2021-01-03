@@ -13,5 +13,5 @@ require (
 	github.com/hashicorp/vault/api v1.0.5-0.20201001211907-38d91b749c77
 	github.com/shirou/gopsutil v3.20.11+incompatible // indirect
 	github.com/stretchr/testify v1.6.1
-	google.golang.org/grpc v1.29.1
+	google.golang.org/grpc v1.31.1
 )
