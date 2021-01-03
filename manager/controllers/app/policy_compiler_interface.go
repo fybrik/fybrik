@@ -36,7 +36,6 @@ func ConstructApplicationContext(datasetID string, input *app.M4DApplication, op
 // compiler is updated to receive the externalDataset in place of the datasetID for external data sets.
 // TODO: Update LookupPolicyDecisions after policy compiler is updated
 func TempLookupPolicyDecision(externalDataset app.ExternalDataContext, policyCompiler pc.IPolicyCompiler, req *modules.DataInfo, input *app.M4DApplication, op pb.AccessOperation_AccessType) error {
-
 	// For now approve if destGeo is the same as the residency of the data set
 	if req.Geo == string(externalDataset.Residency) {
 		req.Actions[app.Copy] = modules.Transformations{

@@ -93,7 +93,6 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 // SelectIngestModuleInstances creates the modules with their params needed to copy external data into the managed environment
 // Currently assumes that a single copy module will do the job
 func (m *ModuleManager) SelectIngestModuleInstances(item modules.DataInfo) ([]modules.ModuleInstanceSpec, error) {
-
 	var copySelector *modules.Selector
 	m.Log.Info("Select ingest module instances for " + item.AssetID)
 
@@ -122,8 +121,7 @@ func (m *ModuleManager) SelectIngestModuleInstances(item modules.DataInfo) ([]mo
 		return instances, err
 	}
 
-	var sourceDataStore *app.DataStore
-	sourceDataStore = &app.DataStore{
+	sourceDataStore := &app.DataStore{
 		Connection:         item.DataDetails.GetDataStore(),
 		CredentialLocation: utils.GetDatasetVaultPath(item.AssetID),
 		Format:             item.DataDetails.DataFormat,
@@ -169,7 +167,6 @@ func (m *ModuleManager) SelectIngestModuleInstances(item modules.DataInfo) ([]mo
 
 // SelectModuleInstances selects the necessary read/copy/write modules for the blueprint for a given data set
 func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo) ([]modules.ModuleInstanceSpec, error) {
-
 	// INGEST FLOW
 	if item.Flow == app.Copy {
 		instancesPerDataset, err := m.SelectIngestModuleInstances(item)
