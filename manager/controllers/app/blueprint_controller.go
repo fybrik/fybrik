@@ -6,8 +6,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -162,18 +160,6 @@ func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.
 	}
 	nbytes, _ := yaml.Marshal(args)
 	log.Info(fmt.Sprintf("--- Values.yaml ---\n\n%s\n\n", nbytes))
-
-	// TODO: should change to use an ImagePullSecret referenced from the M4DModule resource
-	hostname := os.Getenv("DOCKER_HOSTNAME")
-	username := os.Getenv("DOCKER_USERNAME")
-	password := os.Getenv("DOCKER_PASSWORD")
-	insecure, _ := strconv.ParseBool(os.Getenv("DOCKER_INSECURE"))
-	if username != "" && password != "" {
-		err := r.Helmer.RegistryLogin(hostname, username, password, insecure)
-		if err != nil {
-			return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart login")
-		}
-	}
 
 	err := r.Helmer.ChartPull(chartSpec.Name)
 	if err != nil {
