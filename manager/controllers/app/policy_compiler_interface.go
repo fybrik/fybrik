@@ -32,6 +32,27 @@ func ConstructApplicationContext(datasetID string, input *app.M4DApplication, op
 	}
 }
 
+// TempLookupPolicyDecision is a temporary function used to simulate the policy compiler, until the policy
+// compiler is updated to receive the externalDataset in place of the datasetID for external data sets.
+// TODO: Update LookupPolicyDecisions after policy compiler is updated
+func TempLookupPolicyDecision(externalDataset app.ExternalDataContext, policyCompiler pc.IPolicyCompiler, req *modules.DataInfo, input *app.M4DApplication, op pb.AccessOperation_AccessType) error {
+
+	// For now approve if destGeo is the same as the residency of the data set
+	if req.Geo == string(externalDataset.Residency) {
+		req.Actions[app.Copy] = modules.Transformations{
+			Allowed:            true,
+			EnforcementActions: make([]pb.EnforcementAction, 0),
+		}
+	} else {
+		req.Actions[app.Copy] = modules.Transformations{
+			Allowed:            false,
+			EnforcementActions: make([]pb.EnforcementAction, 0),
+		}
+	}
+
+	return nil
+}
+
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
 func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, req *modules.DataInfo, input *app.M4DApplication, op pb.AccessOperation_AccessType) error {
 	// call external policy manager to get governance instructions for this operation

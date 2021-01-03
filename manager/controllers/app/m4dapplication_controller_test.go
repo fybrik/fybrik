@@ -29,7 +29,7 @@ func GetStorageSignature() types.NamespacedName {
 	return types.NamespacedName{Name: "available-bucket", Namespace: "default"}
 }
 
-// InitM4DApplication creates an empty resource with n data sets
+// InitM4DApplication creates an empty resource with n cataloged data sets
 func InitM4DApplication(name string, n int) *apiv1alpha1.M4DApplication {
 	appSignature := types.NamespacedName{Name: name, Namespace: "default"}
 	return &apiv1alpha1.M4DApplication{
@@ -38,6 +38,18 @@ func InitM4DApplication(name string, n int) *apiv1alpha1.M4DApplication {
 			Namespace: appSignature.Namespace,
 		},
 		Spec: apiv1alpha1.M4DApplicationSpec{AppInfo: apiv1alpha1.ApplicationDetails{ProcessingGeography: "US"}, Data: make([]apiv1alpha1.DataContext, n)},
+	}
+}
+
+// InitM4DIngestApplication creates an empty resource with n external data sets
+func InitM4DIngestApplication(name string, n int) *apiv1alpha1.M4DApplication {
+	appSignature := types.NamespacedName{Name: name, Namespace: "default"}
+	return &apiv1alpha1.M4DApplication{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      appSignature.Name,
+			Namespace: appSignature.Namespace,
+		},
+		Spec: apiv1alpha1.M4DApplicationSpec{AppInfo: apiv1alpha1.ApplicationDetails{ProcessingGeography: "US"}, ExternalData: make([]apiv1alpha1.ExternalDataContext, n)},
 	}
 }
 
@@ -554,6 +566,92 @@ var _ = Describe("M4DApplication Controller", func() {
 				Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.InvalidClusterConfiguration))
 			}
 			DeleteM4DApplication(appSignature.Name)
+		})
+
+		It("Test ingest blueprint created", func() {
+			// allocate storage
+			storageSignature := GetStorageSignature()
+			storage := &apiv1alpha1.M4DBucket{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      storageSignature.Name,
+					Namespace: storageSignature.Namespace,
+				},
+				Spec: apiv1alpha1.M4DBucketSpec{
+					Name:      "ingest-bucket",
+					Endpoint:  "xxx",
+					VaultPath: "yyy",
+				},
+			}
+			Expect(k8sClient.Create(context.Background(), storage)).Should(Succeed())
+
+			// Load s3-s3 copy module
+			s3Module := CreateS3ToS3CopyModule()
+			Expect(k8sClient.Create(context.Background(), s3Module)).Should(Succeed())
+
+			// Load db2-s3 copy module
+			db2Module := CreateDb2ToS3CopyModule()
+			Expect(k8sClient.Create(context.Background(), db2Module)).Should(Succeed())
+
+			appSignature := types.NamespacedName{Name: "m4d-ingest-test", Namespace: "default"}
+			resource := InitM4DIngestApplication(appSignature.Name, 1)
+			sensitivities := []apiv1alpha1.DataSensitivity{"PI"}
+			resource.Spec.ExternalData[0] = apiv1alpha1.ExternalDataContext{
+				ExternalStore: apiv1alpha1.DataStore{
+					CredentialLocation: "wherever",
+					Connection: &pb.DataStore{
+						Type: 2, // S3
+						Name: "Ingest Test",
+						S3: &pb.S3DataStore{
+							Endpoint:  "endpoint",
+							Bucket:    "bucket",
+							ObjectKey: "object key",
+							Region:    "region",
+						},
+					},
+					Format: string(apiv1alpha1.Parquet),
+				},
+				Residency:   "US",
+				Sensitivity: sensitivities,
+				IFdetails:   apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
+			}
+
+			// Create M4DApplication
+			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
+
+			// Ensure getting cleaned up after tests finish
+			defer func() {
+				DeleteM4DApplication(appSignature.Name)
+			}()
+
+			By("Expecting a namespace to be allocated")
+			Eventually(func() *apiv1alpha1.ResourceReference {
+				_ = k8sClient.Get(context.Background(), appSignature, resource)
+				return resource.Status.Generated
+			}, timeout, interval).ShouldNot(BeNil())
+
+			if resource.Status.Generated.Kind == "Blueprint" {
+				By("Expecting blueprint to be generated")
+				blueprint := &apiv1alpha1.Blueprint{}
+				Eventually(func() error {
+					Expect(k8sClient.Get(context.Background(), appSignature, resource)).Should(Succeed())
+					key := appSignature
+					key.Namespace = resource.Status.Generated.Namespace
+					return k8sClient.Get(context.Background(), key, blueprint)
+				}, timeout, interval).Should(Succeed())
+
+				// Check the generated blueprint
+				// There should be a single copy module
+				numSteps := 0
+				moduleMatch := false
+				for _, step := range blueprint.Spec.Flow.Steps {
+					numSteps++
+					if step.Template == s3Module.Name {
+						moduleMatch = true
+					}
+				}
+				Expect(numSteps).To(Equal(1))
+				Expect(moduleMatch).To(Equal(true))
+			}
 		})
 	})
 

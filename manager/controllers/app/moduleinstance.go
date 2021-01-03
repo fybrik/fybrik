@@ -26,15 +26,22 @@ type ModuleManager struct {
 
 // SelectModuleInstances builds a list of required modules with the relevant arguments
 /*
-The new order of the lookup to support ingest is:
-- If Data Context Flow=Copy (and purpose=ingest) then run Copy module close to destination (determined based on governance decisions), and register in data catalog
+
+Future (ingest & write) order of the lookup to support ingest is:
+- If no label selector assume ingest of external data (what about archive in future?)
+	- run Copy module close to destination (determined based on governance decisions)
+	- and register new data set in data catalog
 - If Data Context Flow=Write
    - Write is always required, and always close to compute
    - Implicit Copy is used on demand, e.g. if a write module does not support the existing source of data or governance actions
    - Transformations are always done at workload location
    - If not external data, then register in data catalog
 
-- If Data Context Flow=Read
+Updates to add ingest:
+- If no label selector assume ingest of external data
+	- run Copy module close to destination (determined based on governance decisions)
+	- and register new data set in data catalog
+- Otherwise assume workload wants to read from cataloged data
    - Read is always required.
    - Copy is used on demand, e.g. if a read module does not support the existing source of data or actions
    - Transformations are always done at data source location
@@ -57,14 +64,14 @@ func StructToInterfaceDetails(item modules.DataInfo) (*app.InterfaceDetails, err
 	return source, nil
 }
 
-// GetCopyDestination chooses one of the buckets pre-allocated for use by implicit copies.
+// GetCopyDestination chooses one of the buckets pre-allocated for use by implicit copies or ingest.
 // These buckets are allocated during deployment of the control plane.
 // If there are no free buckets the creation of the runtime environment for the application will fail.
 // TODO - In the future need to implement dynamic provisioning of buckets for implicit copy.
-func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInterface *app.InterfaceDetails) (*app.DataStore, error) {
+func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInterface *app.InterfaceDetails, geo string) (*app.DataStore, error) {
 	// provisioned storage for COPY
 	originalAssetName := item.DataDetails.Name
-	bucket := FindAvailableBucket(m.Client, m.Log, m.Owner, item.AssetID, originalAssetName, false)
+	bucket := FindAvailableBucket(m.Client, m.Log, m.Owner, item.AssetID, originalAssetName, false, geo)
 	if bucket == nil {
 		return nil, errors.New(app.InsufficientStorage)
 	}
@@ -83,13 +90,99 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	}, nil
 }
 
-// SelectModuleInstances selects the necessary read/copy/write modules for the blueprint
+// SelectIngestModuleInstances creates the modules with their params needed to copy external data into the managed environment
+// Currently assumes that a single copy module will do the job
+func (m *ModuleManager) SelectIngestModuleInstances(item modules.DataInfo) ([]modules.ModuleInstanceSpec, error) {
+
+	var copySelector *modules.Selector
+	m.Log.Info("Select ingest module instances for " + item.AssetID)
+
+	// Allocate the destination storage in the relevant geo
+	var destDataStore *app.DataStore
+	var err error
+	if destDataStore, err = m.GetCopyDestination(item, item.AppInterface, item.Geo); err != nil {
+		return nil, err
+	}
+
+	// Find a copy module that is able to copy from the source to the destination
+	instances := make([]modules.ModuleInstanceSpec, 0)
+
+	// Select a module that supports COPY flow for ingest
+	actionsOnCopy := item.Actions[app.Copy]
+	if !actionsOnCopy.Allowed {
+		m.Log.Info("Ingest not allowed")
+		return instances, errors.New(actionsOnCopy.Message)
+	}
+
+	source, err := StructToInterfaceDetails(item)
+	if err != nil {
+		m.Log.Info("StructToInterfaceDetails failed for: ")
+		utils.PrintStructure(item, m.Log, "Ingest modules.DataInfo")
+
+		return instances, err
+	}
+
+	var sourceDataStore *app.DataStore
+	sourceDataStore = &app.DataStore{
+		Connection:         item.DataDetails.GetDataStore(),
+		CredentialLocation: utils.GetDatasetVaultPath(item.AssetID),
+		Format:             item.DataDetails.DataFormat,
+	}
+
+	// select a module that supports COPY, supports required governance actions, has the required dependencies, with source in module sources and a non-empty intersection between READ_SOURCES and module destinations.
+	m.Log.Info("Finding modules for " + item.AssetID)
+	copySelector = &modules.Selector{
+		Flow:         app.Copy,
+		Source:       source,
+		Actions:      item.Actions[app.Copy].EnforcementActions,
+		Destination:  item.AppInterface,
+		Dependencies: make([]*app.M4DModule, 0),
+		Module:       nil,
+		Message:      ""}
+
+	if copySelector.SelectModule(m.Modules) {
+		// no copy module - report an error
+		if copySelector.GetModule() == nil {
+			m.Log.Info("Could not find copy module for " + item.AssetID)
+			utils.PrintStructure(copySelector, m.Log, "modules.Selector")
+			return instances, errors.New(copySelector.GetError())
+		}
+	}
+	m.Log.Info("Found copy module " + copySelector.GetModule().Name)
+
+	// append moduleinstances to the list
+	copyArgs := &app.ModuleArguments{
+		Copy: &app.CopyModuleArgs{
+			Source:          *sourceDataStore,
+			Destination:     *destDataStore,
+			Transformations: copySelector.Actions},
+	}
+	copyCluster, err := copySelector.SelectCluster(item, m.Clusters)
+	if err != nil {
+		return instances, err
+	}
+	m.Log.Info("Adding copy module")
+	instances = copySelector.AddModuleInstances(copyArgs, item, copyCluster)
+
+	return instances, nil
+}
+
+// SelectModuleInstances selects the necessary read/copy/write modules for the blueprint for a given data set
 func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo) ([]modules.ModuleInstanceSpec, error) {
+
+	// INGEST FLOW
+	if item.Flow == app.Copy {
+		instancesPerDataset, err := m.SelectIngestModuleInstances(item)
+		return instancesPerDataset, err
+	}
+
+	// READ FLOW
 	instances := make([]modules.ModuleInstanceSpec, 0)
 
 	// Write path is not yet implemented
 	var readSelector, copySelector *modules.Selector
 	m.Log.Info("Select read path for " + item.AssetID)
+
 	// Select a module that supports READ flow, supports actions-on-read, has the required dependency modules (recursively), with API = sink.
 	actionsOnRead := item.Actions[app.Read]
 	if !actionsOnRead.Allowed {
@@ -156,7 +249,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo) ([]modules.
 		}
 		m.Log.Info("Found copy module " + copySelector.GetModule().Name)
 		// copy should be applied - allocate storage
-		if sinkDataStore, err = m.GetCopyDestination(item, copySelector.Destination); err != nil {
+		if sinkDataStore, err = m.GetCopyDestination(item, copySelector.Destination, item.Geo); err != nil {
 			return instances, nil
 		}
 		// append moduleinstances to the list
