@@ -248,6 +248,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		requirements = append(requirements, req)
 	}
 
+	// For ALL FLOWS
 	// create a module manager that will select modules to be orchestrated based on user requirements and module capabilities
 	moduleMap, err := r.GetAllModules()
 	if err != nil {

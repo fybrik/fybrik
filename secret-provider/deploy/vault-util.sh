@@ -125,16 +125,6 @@ create_policy() {
 #EOF
 }
 
-# We're using old-school while b/c we can't wait on object that haven't been created, and we can't know for sure that the statefulset had been created so far
-# See https://github.com/kubernetes/kubernetes/issues/75227
-wait_for_vault() {
-  while [[ $(kubectl get -n $KUBE_NAMESPACE pods -l statefulset.kubernetes.io/pod-name=vault-0 -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]];
-  do
-      echo "waiting for vault pod to become ready" 
-      sleep 5
-  done
-}
-
 # Do port-forwarding, if needed
 port_forward() {
   # Port forward, so we could access vault
@@ -144,9 +134,6 @@ port_forward() {
 }
 
 configure_path() {
-  # Make sure the vault pod is ready
-  wait_for_vault
-  
   $WITHOUT_PORT_FORWARD || port_forward
   # Get Vault's root token
   export VAULT_TOKEN=$(kubectl get secrets vault-unseal-keys -n $KUBE_NAMESPACE -o jsonpath={.data.vault-root} | base64 --decode)
