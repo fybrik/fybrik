@@ -26,6 +26,7 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
+	local "github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
@@ -395,11 +396,12 @@ func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, e
 func (r *M4DApplicationReconciler) GetProcessingGeography(applicationContext *app.M4DApplication) (string, error) {
 	clusterName := applicationContext.Spec.Selector.ClusterName
 	if clusterName == "" {
-		localCluster, err := r.ClusterManager.GetLocalCluster()
-		if err != nil {
+		localClusterManager := local.NewManager(r.Client, utils.GetSystemNamespace())
+		clusters, err := localClusterManager.GetClusters()
+		if err != nil || len(clusters) != 1 {
 			return "", err
 		}
-		return localCluster.Metadata.Region, nil
+		return clusters[0].Metadata.Region, nil
 	}
 	clusters, err := r.ClusterManager.GetClusters()
 	if err != nil {

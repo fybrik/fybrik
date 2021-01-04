@@ -34,11 +34,3 @@ func (m *ClusterLister) GetClusters() ([]multicluster.Cluster, error) {
 		},
 	}, nil
 }
-
-// GetLocalCluster implementation for testing
-func (m *ClusterLister) GetLocalCluster() (multicluster.Cluster, error) {
-	return multicluster.Cluster{
-		Name:     "US-cluster",
-		Metadata: multicluster.ClusterMetadata{Region: "US"},
-	}, nil
-}
