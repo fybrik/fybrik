@@ -149,6 +149,7 @@ type M4DModuleSpec struct {
 	StatusIndicators []ResourceStatusIndicator `json:"statusIndicators,omitempty"`
 }
 
+// ChartSpec specifies chart name and values
 type ChartSpec struct {
 	// Name of helm chart
 	// +required

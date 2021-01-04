@@ -5,6 +5,12 @@ package app
 
 import (
 	"context"
+	"math"
+	"os"
+	"reflect"
+	"strings"
+	"time"
+
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
@@ -13,15 +19,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/rand"
-	"math"
-	"os"
-	"reflect"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"strings"
-	"time"
 )
 
 // PlotterReconciler reconciles a Plotter object
@@ -285,6 +286,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	return ctrl.Result{RequeueAfter: 5 * time.Second}, errorCollection
 }
 
+// SetupPlotterController registers a new controller for Plotter resources
 func SetupPlotterController(mgr manager.Manager, clusterManager multicluster.ClusterManager) {
 	setupLog := ctrl.Log.WithName("setup")
 

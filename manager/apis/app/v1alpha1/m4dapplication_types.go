@@ -33,11 +33,6 @@ type ApplicationDetails struct {
 	// +required
 	Purpose string `json:"purpose,omitempty"`
 
-	// ProcessingGeography indicates the state or country or union in which the data processing will take place.
-	// This should be the same as the location of the cluster in which the manager is deployed.
-	// +optional
-	ProcessingGeography string `json:"processingGeography,omitempty"`
-
 	// Role indicates the position held or role filled by the Data Scientist as it relates to the processing of the
 	// data he has chosen.
 	// +required
@@ -49,7 +44,9 @@ type M4DApplicationSpec struct {
 
 	// Selector enables to connect the resource to the application
 	// Application labels should match the labels in the selector.
-	Selector metav1.LabelSelector `json:"selector"`
+	// For some flows the selector may not be used.
+	// +optional
+	Selector Selector `json:"selector"`
 
 	// AppInfo contains information describing the reasons and geography of the processing
 	// that will be done by the Data Scientist's application.

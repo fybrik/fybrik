@@ -46,7 +46,7 @@ export VAULT_TOKEN= <take from local vault environment>
 export VAULT_ADDRESS=http://127.0.0.1:8200/
 export VAULT_USER_HOME=m4d/user_creds/
 export VAULT_DATASET_HOME=m4d/dataset_creds/
-export GEOGRAPHY=US
+export GEOGRAPHY=US-cluster
 
 go run m4d/samples/gui/server/main.go
 

@@ -26,6 +26,25 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 
 	catalogID := utils.GetAttribute("catalog_id", in.GetDatasetId())
 	switch catalogID {
+	case "s3-external":
+		return &pb.CatalogDatasetInfo{
+			DatasetId: in.GetDatasetId(),
+			Details: &pb.DatasetDetails{
+				Name:       "xxx",
+				DataFormat: "parquet",
+				Geo:        "Germany",
+				DataStore: &pb.DataStore{
+					Type: pb.DataStore_S3,
+					Name: "cos",
+					S3: &pb.S3DataStore{
+						Endpoint:  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
+						Bucket:    "m4d-test-bucket",
+						ObjectKey: "small.parq",
+					},
+				},
+				Metadata: &pb.DatasetMetadata{},
+			},
+		}, nil
 	case "s3":
 		return &pb.CatalogDatasetInfo{
 			DatasetId: in.GetDatasetId(),

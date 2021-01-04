@@ -37,7 +37,7 @@ func InitM4DApplication(name string, n int) *apiv1alpha1.M4DApplication {
 			Name:      appSignature.Name,
 			Namespace: appSignature.Namespace,
 		},
-		Spec: apiv1alpha1.M4DApplicationSpec{AppInfo: apiv1alpha1.ApplicationDetails{ProcessingGeography: "US"}, Data: make([]apiv1alpha1.DataContext, n)},
+		Spec: apiv1alpha1.M4DApplicationSpec{Selector: apiv1alpha1.Selector{ClusterName: "US-cluster"}, Data: make([]apiv1alpha1.DataContext, n)},
 	}
 }
 
@@ -522,14 +522,14 @@ var _ = Describe("M4DApplication Controller", func() {
 			appSignature := types.NamespacedName{Name: "multiple-regions", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID: "{\"asset_id\": \"default-dataset\", \"catalog_id\": \"s3\"}",
+				DataSetID: "{\"asset_id\": \"default-dataset\", \"catalog_id\": \"s3-external\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
 			}
-			resource.Spec.AppInfo.ProcessingGeography = "Germany"
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
 
-			if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" {
+			// work-around: we don't have currently a setup for multicluster environment in tests
+			if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" && os.Getenv("USE_EXISTING_CONTROLLER") == "false" {
 				Eventually(func() *apiv1alpha1.ResourceReference {
 					f := &apiv1alpha1.M4DApplication{}
 					Expect(k8sClient.Get(context.Background(), appSignature, f)).To(Succeed())
