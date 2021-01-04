@@ -43,11 +43,11 @@ func GetConnectionDetails(datasetID string, req *modules.DataInfo, input *app.M4
 }
 
 // GetCredentials calls the credentials manager service
-func GetCredentials(datasetID string, req *modules.DataInfo, input *app.M4DApplication) error {
+func GetCredentials(datasetID string, input *app.M4DApplication) (*dc.Credentials, error) {
 	// Set up a connection to the data catalog interface server.
 	conn, err := grpc.Dial(utils.GetCredentialsManagerServiceAddress(), grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer conn.Close()
 	c := dc.NewDataCredentialServiceClient(conn)
@@ -60,9 +60,7 @@ func GetCredentials(datasetID string, req *modules.DataInfo, input *app.M4DAppli
 		DatasetId: datasetID,
 		AppId:     utils.CreateAppIdentifier(input)})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	req.Credentials = dataCredentials.DeepCopy()
-
-	return nil
+	return dataCredentials.Creds.DeepCopy(), nil
 }

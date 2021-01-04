@@ -8,13 +8,14 @@ import (
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 )
 
 // RegisterCredentials stores credentials in vault
 // Credentials are stored as a string (JSON). Using JSON allows providing different data stores with different types of credentials
 // Credentials are received from an external credential manager and are stored by Pilot as-is.
-func (r *M4DApplicationReconciler) RegisterCredentials(req *modules.DataInfo) error {
-	jsonStr, err := json.Marshal(req.Credentials.GetCreds())
+func (r *M4DApplicationReconciler) RegisterCredentials(req *modules.DataInfo, credentials *pb.Credentials) error {
+	jsonStr, err := json.Marshal(credentials)
 	if err != nil {
 		return err
 	}
@@ -25,5 +26,6 @@ func (r *M4DApplicationReconciler) RegisterCredentials(req *modules.DataInfo) er
 	if _, err := utils.AddToVault(req.AssetID, credentialsMap, r.VaultClient); err != nil {
 		return err
 	}
+	req.Credentials = utils.GetDatasetVaultPath(req.AssetID)
 	return nil
 }

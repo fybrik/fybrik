@@ -98,7 +98,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo) ([]modules.
 	var sourceDataStore, sinkDataStore *app.DataStore
 	sourceDataStore = &app.DataStore{
 		Connection:         item.DataDetails.GetDataStore(),
-		CredentialLocation: utils.GetDatasetVaultPath(item.AssetID),
+		CredentialLocation: item.Credentials,
 		Format:             item.DataDetails.DataFormat,
 	}
 	// DataStore for destination will be determined if an implicit copy is required

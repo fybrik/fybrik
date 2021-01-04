@@ -215,7 +215,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		req := modules.DataInfo{
 			AssetID:      dataset.DataSetID,
 			DataDetails:  nil,
-			Credentials:  nil,
+			Credentials:  "",
 			Actions:      make(map[app.ModuleFlow]modules.Transformations),
 			AppInterface: &dataset.IFdetails,
 			Geo:          applicationContext.Spec.AppInfo.ProcessingGeography,
@@ -288,11 +288,12 @@ func (r *M4DApplicationReconciler) ConstructDataInfo(datasetID string, req *modu
 		return AnalyzeError(input, r.Log, datasetID, err, "Catalog Connector")
 	}
 	// Call the CredentialsManager service to get info about the dataset
-	if err := GetCredentials(datasetID, req, input); err != nil {
+	credentials, err := GetCredentials(datasetID, input)
+	if err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err, "Credentials Manager")
 	}
 	// The received credentials are stored in vault
-	if err := r.RegisterCredentials(req); err != nil {
+	if err := r.RegisterCredentials(req, credentials); err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err, "Vault")
 	}
 

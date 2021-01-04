@@ -29,8 +29,8 @@ type DataInfo struct {
 	AppInterface *app.InterfaceDetails
 	// Source connection details
 	DataDetails *pb.DatasetDetails
-	// Data asset credentials
-	Credentials *pb.DatasetCredentials
+	// Data asset credentials (vault path)
+	Credentials string
 	// Governance actions
 	Actions map[app.ModuleFlow]Transformations
 }
