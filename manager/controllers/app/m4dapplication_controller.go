@@ -25,7 +25,6 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
-	m "github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -290,16 +289,29 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 // ConstructIngestDataInfo already has the information about the external data set's endpoint,
 // but it adds the governance decisions. It also already has the link to the credentials, which was provided by the user.
 // NOTE: Assumes the credentials were put into the M4D credential manager by the user!!
-func (r *M4DApplicationReconciler) ConstructIngestDataInfo(externalDataset app.ExternalDataContext, req *modules.DataInfo, input *app.M4DApplication, clusters []m.Cluster) error {
+func (r *M4DApplicationReconciler) ConstructIngestDataInfo(externalDataset app.ExternalDataContext, req *modules.DataInfo, input *app.M4DApplication, clusters []multicluster.Cluster) error {
 	dataDetails := pb.DatasetDetails{
 		DataOwner:  "",
 		DataStore:  externalDataset.ExternalStore.Connection,
 		DataFormat: externalDataset.ExternalStore.Format,
 		Geo:        string(externalDataset.Residency),
 	}
+	// Store link to credentials rather than the credentials themselves
+	// This is a hack, but works for now.
+	creds := pb.Credentials{
+		AccessKey: externalDataset.ExternalStore.CredentialLocation,
+		SecretKey: "",
+		Username:  "",
+		Password:  "",
+		ApiKey:    "",
+	}
+	datasetcreds := pb.DatasetCredentials{
+		DatasetId: externalDataset.ExternalStore.Connection.Name,
+		Creds:     &creds,
+	}
 	req.AssetID = externalDataset.ExternalStore.Connection.Name // Not cataloged so no id. Name isn't unique though.  OK?
 	req.DataDetails = &dataDetails
-	req.Credentials = nil
+	req.Credentials = &datasetcreds
 	req.Actions = make(map[app.ModuleFlow]modules.Transformations)
 	req.AppInterface = &externalDataset.IFdetails
 	req.Flow = app.Copy // This is how we know it's an ingest flow
@@ -324,7 +336,7 @@ func (r *M4DApplicationReconciler) ConstructIngestDataInfo(externalDataset app.E
 	// We haven't found any geographies to which we are allowed to write
 	setCondition(input, req.AssetID, "Writing to all geographies denied: "+excludedGeos, "Policy Compiler", true)
 
-	return nil // Should this return an error?
+	return nil
 }
 
 // ConstructDataInfo gets a list of governance actions FOR READING and data location details for the given dataset and fills the received DataInfo structure

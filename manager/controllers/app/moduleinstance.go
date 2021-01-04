@@ -123,7 +123,7 @@ func (m *ModuleManager) SelectIngestModuleInstances(item modules.DataInfo) ([]mo
 
 	sourceDataStore := &app.DataStore{
 		Connection:         item.DataDetails.GetDataStore(),
-		CredentialLocation: utils.GetDatasetVaultPath(item.AssetID),
+		CredentialLocation: item.Credentials.Creds.GetAccessKey(),
 		Format:             item.DataDetails.DataFormat,
 	}
 

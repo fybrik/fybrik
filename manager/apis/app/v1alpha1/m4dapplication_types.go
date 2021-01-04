@@ -72,6 +72,7 @@ type DataContext struct {
 	IFdetails InterfaceDetails `json:"ifDetails"`
 
 	// Recurrence indicates how often the copy should take place or if streamed input is needed
+	// Default is none
 	// +optional
 	Recurrence RecurrenceType `json:"recurrence,omitempty"`
 }
