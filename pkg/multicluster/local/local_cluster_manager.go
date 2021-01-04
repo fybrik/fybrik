@@ -2,7 +2,7 @@ package local
 
 import (
 	"context"
-	"fmt"
+
 	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	corev1 "k8s.io/api/core/v1"
@@ -19,25 +19,31 @@ type ClusterManager struct {
 }
 
 func (cm *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
+	var clusters []multicluster.Cluster
+	cluster, err := cm.GetLocalCluster()
+	if err != nil {
+		return clusters, err
+	}
+	clusters = append(clusters, cluster)
+	return clusters, nil
+}
+
+func (cm *ClusterManager) GetLocalCluster() (multicluster.Cluster, error) {
 	clusterMetadataConfigmap := corev1.ConfigMap{}
 	namespacedName := client.ObjectKey{
 		Name:      clusterMetadataConfigmapName,
 		Namespace: cm.Namespace,
 	}
 	if err := cm.Client.Get(context.Background(), namespacedName, &clusterMetadataConfigmap); err != nil {
-		wrappedError := fmt.Errorf("Error in GetClusters: %w", err)
-		return nil, wrappedError
+		return multicluster.Cluster{}, err
 	}
-	var clusters []multicluster.Cluster
-	cluster := multicluster.Cluster{
+	return multicluster.Cluster{
 		Name: clusterMetadataConfigmap.Data["ClusterName"],
 		Metadata: multicluster.ClusterMetadata{
 			Region: clusterMetadataConfigmap.Data["Region"],
 			Zone:   clusterMetadataConfigmap.Data["Zone"],
 		},
-	}
-	clusters = append(clusters, cluster)
-	return clusters, nil
+	}, nil
 }
 
 func (cm *ClusterManager) GetBlueprint(cluster string, namespace string, name string) (*v1alpha1.Blueprint, error) {

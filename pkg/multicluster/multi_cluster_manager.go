@@ -6,10 +6,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 )
 
+// ClusterLister provides information about the configured clusters
 type ClusterLister interface {
 	GetClusters() ([]Cluster, error)
+	GetLocalCluster() (Cluster, error)
 }
 
+// ClusterManager extends ClusterLister interface and manages blueprint resources
 type ClusterManager interface {
 	ClusterLister
 	GetBlueprint(cluster string, namespace string, name string) (*v1alpha1.Blueprint, error)
@@ -18,11 +21,13 @@ type ClusterManager interface {
 	DeleteBlueprint(cluster string, namespace string, name string) error
 }
 
+// ClusterMetadata provides cluster metadata details
 type ClusterMetadata struct {
 	Region string
 	Zone   string
 }
 
+// Cluster structure provides cluster details (name and metadata)
 type Cluster struct {
 	Name     string
 	Metadata ClusterMetadata

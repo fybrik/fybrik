@@ -26,7 +26,6 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
-	corev1 "k8s.io/api/core/v1"
 
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
@@ -396,15 +395,11 @@ func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, e
 func (r *M4DApplicationReconciler) GetProcessingGeography(applicationContext *app.M4DApplication) (string, error) {
 	clusterName := applicationContext.Spec.Selector.ClusterName
 	if clusterName == "" {
-		clusterMetadataConfigmap := corev1.ConfigMap{}
-		namespacedName := client.ObjectKey{
-			Name:      "cluster-metadata",
-			Namespace: utils.GetSystemNamespace(),
-		}
-		if err := r.Client.Get(context.Background(), namespacedName, &clusterMetadataConfigmap); err != nil {
+		localCluster, err := r.ClusterManager.GetLocalCluster()
+		if err != nil {
 			return "", err
 		}
-		return clusterMetadataConfigmap.Data["Region"], nil
+		return localCluster.Metadata.Region, nil
 	}
 	clusters, err := r.ClusterManager.GetClusters()
 	if err != nil {

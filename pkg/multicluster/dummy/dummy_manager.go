@@ -2,6 +2,7 @@ package dummy
 
 import (
 	"errors"
+
 	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 )
@@ -17,6 +18,13 @@ func (m *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 			Name:     "kind-kind",
 			Metadata: multicluster.ClusterMetadata{},
 		},
+	}, nil
+}
+
+func (m *ClusterManager) GetLocalCluster() (multicluster.Cluster, error) {
+	return multicluster.Cluster{
+		Name:     "kind-kind",
+		Metadata: multicluster.ClusterMetadata{},
 	}, nil
 }
 
