@@ -73,7 +73,7 @@ undeploy-crd:
 	kustomize build config/crd | kubectl delete -f -
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
-deploy: docker-secret manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/default/kustomization.yaml
+deploy: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/default/kustomization.yaml
 	$(TOOLBIN)/kubectl create namespace m4d-system || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${IMG}
 	$(TOOLBIN)/kustomize build config/default | $(TOOLBIN)/kubectl apply -f -
@@ -104,7 +104,6 @@ undeploy_mc: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/default/ku
 
 deploy_it: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/default/kustomization.yaml 
 	make build-ca-certs
-	make docker-secret
 	make deploy-custom-ca-secret
 	$(TOOLBIN)/kubectl create namespace ${KUBE_NAMESPACE} || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
@@ -114,7 +113,6 @@ deploy_it: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/default/kust
 
 deploy_multi_it: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/default/kustomization.yaml
 	make build-ca-certs
-	make docker-secret
 	make deploy-custom-ca-secret
 	$(TOOLBIN)/kubectl create namespace ${KUBE_NAMESPACE} || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
@@ -163,17 +161,6 @@ build-ca-certs: $(TOOLBIN)/kubectl
 deploy-custom-ca-secret: $(TOOLBIN)/kubectl
 	$(ABSTOOLBIN)/kubectl create secret generic registry-ca-cert \
 		--from-file=../hack/registry/ca-certificates.crt \
-		--namespace ${KUBE_NAMESPACE} \
-		|| true
-
-.PHONY: docker-secret
-docker-secret: $(TOOLBIN)/kubectl
-	$(ABSTOOLBIN)/kubectl create secret generic docker-credentials \
-		--from-literal=hostname=$(DOCKER_HOSTNAME) \
-		--from-literal=namespace=$(DOCKER_NAMESPACE) \
-		--from-literal=tagname=$(DOCKER_TAGNAME) \
-		--from-literal=username=$(DOCKER_USERNAME) \
-		--from-literal=password=$(DOCKER_PASSWORD) \
 		--namespace ${KUBE_NAMESPACE} \
 		|| true
 

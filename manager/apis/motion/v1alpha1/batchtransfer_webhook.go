@@ -5,6 +5,14 @@ package v1alpha1
 
 import (
 	"fmt"
+	log "log"
+	"net"
+	"net/url"
+	"os"
+	"regexp"
+	"strconv"
+	"strings"
+
 	"github.com/robfig/cron"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -13,15 +21,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	validationutils "k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	log "log"
-	"net"
-	"net/url"
-	"os"
-	"regexp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
-	"strconv"
-	"strings"
 )
 
 func (r *BatchTransfer) SetupWebhookWithManager(mgr ctrl.Manager) error {
@@ -45,13 +46,6 @@ func (r *BatchTransfer) Default() {
 	if r.Spec.Image == "" {
 		if env, b := os.LookupEnv("MOVER_IMAGE"); b {
 			r.Spec.Image = env
-		} else {
-			hostname, b1 := os.LookupEnv("DOCKER_HOSTNAME")
-			namespace, b2 := os.LookupEnv("DOCKER_NAMESPACE")
-			tagname, b3 := os.LookupEnv("DOCKER_TAGNAME")
-			if b1 && b2 && b3 {
-				r.Spec.Image = hostname + "/" + namespace + "/mover:" + tagname
-			}
 		}
 	}
 
