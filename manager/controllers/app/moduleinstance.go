@@ -90,11 +90,11 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	}, nil
 }
 
-// SelectIngestModuleInstances creates the modules with their params needed to copy external data into the managed environment
+// SelectNewDataModuleInstances creates the modules with their params needed to copy external data into the managed environment
 // Currently assumes that a single copy module will do the job
-func (m *ModuleManager) SelectIngestModuleInstances(item modules.DataInfo) ([]modules.ModuleInstanceSpec, error) {
+func (m *ModuleManager) SelectNewDataModuleInstances(item modules.DataInfo) ([]modules.ModuleInstanceSpec, error) {
 	var copySelector *modules.Selector
-	m.Log.Info("Select ingest module instances for " + item.AssetID)
+	m.Log.Info("Select module instances for new data set being imported: " + item.AssetID)
 
 	// Allocate the destination storage in the relevant geo
 	var destDataStore *app.DataStore
@@ -106,17 +106,17 @@ func (m *ModuleManager) SelectIngestModuleInstances(item modules.DataInfo) ([]mo
 	// Find a copy module that is able to copy from the source to the destination
 	instances := make([]modules.ModuleInstanceSpec, 0)
 
-	// Select a module that supports COPY flow for ingest
+	// Select a module that supports COPY flow for onboarding new data into the environment
 	actionsOnCopy := item.Actions[app.Copy]
 	if !actionsOnCopy.Allowed {
-		m.Log.Info("Ingest not allowed")
+		m.Log.Info("Copy into environment not allowed")
 		return instances, errors.New(actionsOnCopy.Message)
 	}
 
 	source, err := StructToInterfaceDetails(item)
 	if err != nil {
 		m.Log.Info("StructToInterfaceDetails failed for: ")
-		utils.PrintStructure(item, m.Log, "Ingest modules.DataInfo")
+		utils.PrintStructure(item, m.Log, "NewData modules.DataInfo")
 
 		return instances, err
 	}
@@ -137,6 +137,8 @@ func (m *ModuleManager) SelectIngestModuleInstances(item modules.DataInfo) ([]mo
 		Dependencies: make([]*app.M4DModule, 0),
 		Module:       nil,
 		Message:      ""}
+
+	utils.PrintStructure(*copySelector, m.Log, "Copy Selector")
 
 	if copySelector.SelectModule(m.Modules) {
 		// no copy module - report an error
@@ -167,9 +169,9 @@ func (m *ModuleManager) SelectIngestModuleInstances(item modules.DataInfo) ([]mo
 
 // SelectModuleInstances selects the necessary read/copy/write modules for the blueprint for a given data set
 func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo) ([]modules.ModuleInstanceSpec, error) {
-	// INGEST FLOW
+	// Copying new data into the M4D managed environment
 	if item.Flow == app.Copy {
-		instancesPerDataset, err := m.SelectIngestModuleInstances(item)
+		instancesPerDataset, err := m.SelectNewDataModuleInstances(item)
 		return instancesPerDataset, err
 	}
 

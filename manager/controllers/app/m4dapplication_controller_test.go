@@ -41,15 +41,15 @@ func InitM4DApplication(name string, n int) *apiv1alpha1.M4DApplication {
 	}
 }
 
-// InitM4DIngestApplication creates an empty resource with n external data sets
-func InitM4DIngestApplication(name string, n int) *apiv1alpha1.M4DApplication {
+// InitM4DIngesInitM4DNewDataApplicationtApplication creates an empty resource with n external data sets
+func InitM4DNewDataApplication(name string, n int) *apiv1alpha1.M4DApplication {
 	appSignature := types.NamespacedName{Name: name, Namespace: "default"}
 	return &apiv1alpha1.M4DApplication{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      appSignature.Name,
 			Namespace: appSignature.Namespace,
 		},
-		Spec: apiv1alpha1.M4DApplicationSpec{AppInfo: apiv1alpha1.ApplicationDetails{ProcessingGeography: "US"}, ExternalData: make([]apiv1alpha1.ExternalDataContext, n)},
+		Spec: apiv1alpha1.M4DApplicationSpec{AppInfo: apiv1alpha1.ApplicationDetails{ProcessingGeography: "Turkey"}, Data: make([]apiv1alpha1.DataContext, n)},
 	}
 }
 
@@ -230,6 +230,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			appSignature := types.NamespacedName{Name: "with-finalizers", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
+				Cataloged: true,
 				DataSetID: "{\"asset_id\": \"123\", \"catalog_id\": \"db2\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
 			}
@@ -275,6 +276,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			appSignature := types.NamespacedName{Name: "deny-on-read", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
+				Cataloged: true,
 				DataSetID: "{\"asset_id\": \"deny-dataset\", \"catalog_id\": \"s3\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
 			}
@@ -309,6 +311,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			resource := InitM4DApplication(appSignature.Name, 1)
 
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
+				Cataloged: true,
 				DataSetID: "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"db2\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
 			}
@@ -350,6 +353,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			appSignature := types.NamespacedName{Name: "with-copy", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
+				Cataloged: true,
 				DataSetID: "{\"asset_id\": \"deny-on-copy\", \"catalog_id\": \"db2\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
 			}
@@ -393,10 +397,12 @@ var _ = Describe("M4DApplication Controller", func() {
 			appSignature := types.NamespacedName{Name: "wrong-copy", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 2)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
+				Cataloged: true,
 				DataSetID: "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"db2\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
 			}
 			resource.Spec.Data[1] = apiv1alpha1.DataContext{
+				Cataloged: true,
 				DataSetID: "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
 			}
@@ -460,10 +466,12 @@ var _ = Describe("M4DApplication Controller", func() {
 			appSignature := types.NamespacedName{Name: "m4d-test", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 2)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
+				Cataloged: true,
 				DataSetID: "{\"asset_id\": \"default-dataset\", \"catalog_id\": \"db2\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
 			}
 			resource.Spec.Data[1] = apiv1alpha1.DataContext{
+				Cataloged: true,
 				DataSetID: "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
 			}
@@ -534,6 +542,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			appSignature := types.NamespacedName{Name: "multiple-regions", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
+				Cataloged: true,
 				DataSetID: "{\"asset_id\": \"default-dataset\", \"catalog_id\": \"s3\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
 			}
@@ -568,7 +577,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			DeleteM4DApplication(appSignature.Name)
 		})
 
-		It("Test ingest blueprint created", func() {
+		It("Test new data blueprint created", func() {
 			// allocate storage
 			storageSignature := GetStorageSignature()
 			storage := &apiv1alpha1.M4DBucket{
@@ -577,7 +586,7 @@ var _ = Describe("M4DApplication Controller", func() {
 					Namespace: storageSignature.Namespace,
 				},
 				Spec: apiv1alpha1.M4DBucketSpec{
-					Name:      "ingest-bucket",
+					Name:      "newdata-bucket",
 					Endpoint:  "xxx",
 					VaultPath: "yyy",
 				},
@@ -592,27 +601,29 @@ var _ = Describe("M4DApplication Controller", func() {
 			db2Module := CreateDb2ToS3CopyModule()
 			Expect(k8sClient.Create(context.Background(), db2Module)).Should(Succeed())
 
-			appSignature := types.NamespacedName{Name: "m4d-ingest-test", Namespace: "default"}
-			resource := InitM4DIngestApplication(appSignature.Name, 1)
-			sensitivities := []apiv1alpha1.DataSensitivity{"PI"}
-			resource.Spec.ExternalData[0] = apiv1alpha1.ExternalDataContext{
-				ExternalStore: apiv1alpha1.DataStore{
-					CredentialLocation: "wherever",
-					Connection: &pb.DataStore{
-						Type: 2, // S3
-						Name: "Ingest Test",
-						S3: &pb.S3DataStore{
-							Endpoint:  "endpoint",
-							Bucket:    "bucket",
-							ObjectKey: "object key",
-							Region:    "region",
-						},
-					},
-					Format: string(apiv1alpha1.Parquet),
-				},
-				Residency:   "US",
-				Sensitivity: sensitivities,
-				IFdetails:   apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
+			// TODO: Register data set in inline catalog
+			/*			dataStore := apiv1alpha1.DataStore{
+							CredentialLocation: "wherever",
+							Connection: &pb.DataStore{
+								Type: 2, // S3
+								Name: "New Data Test",
+								S3: &pb.S3DataStore{
+									Endpoint:  "endpoint",
+									Bucket:    "bucket",
+									ObjectKey: "object key",
+									Region:    "region",
+								},
+							},
+							Format: string(apiv1alpha1.Parquet),
+						}
+			*/
+			appSignature := types.NamespacedName{Name: "m4d-newdata-test", Namespace: "default"}
+			resource := InitM4DNewDataApplication(appSignature.Name, 1)
+			resource.Spec.Data[0] = apiv1alpha1.DataContext{
+				DataCatalogID: "inlinecatalog",                                             // TODO: change to real identifier
+				DataSetID:     "{\"asset_id\": \"FakeNewDataID\", \"catalog_id\": \"s3\"}", // TODO: Get from inline catalog response.
+				IFdetails:     apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
+				Cataloged:     false,
 			}
 
 			// Create M4DApplication
@@ -652,6 +663,7 @@ var _ = Describe("M4DApplication Controller", func() {
 				Expect(numSteps).To(Equal(1))
 				Expect(moduleMatch).To(Equal(true))
 			}
+			DeleteM4DApplication(appSignature.Name)
 		})
 	})
 

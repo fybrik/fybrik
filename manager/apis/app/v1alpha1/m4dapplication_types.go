@@ -21,6 +21,7 @@ const (
 	Stream  RecurrenceType = "stream"
 )
 
+/*
 // DataResidency indicates the geography in which the data was created
 // TODO: Values should come from a taxonomy
 type DataResidency string
@@ -57,11 +58,17 @@ type ExternalDataContext struct {
 	// +optional
 	Recurrence RecurrenceType `json:"recurrence,omitempty"`
 }
+*/
 
 // DataContext indicates data set chosen by the Data Scientist to be read from or written to by his application,
 // and includes information about the data format and technologies used by the application
 // to access the data.
 type DataContext struct {
+	// DataCatalogID indicates the data catalog that contains the information about the data set.  If no value is provided the assumption is there is only one data catalog.
+	// TODO: Temporary pending design for multi-catalog support.
+	// +optional
+	DataCatalogID string `json:"dataCatalogID"`
+
 	// DataSetID is a unique identifier of the dataset chosen from the data catalog for processing by the data user application.
 	// +required
 	// +kubebuilder:validation:MinLength=1
@@ -75,6 +82,12 @@ type DataContext struct {
 	// Default is none
 	// +optional
 	Recurrence RecurrenceType `json:"recurrence,omitempty"`
+
+	// Cataloged indicates whether or not the data set has already been registered in the organization's data catalog.
+	// When a user chooses the data set from the catalog this should be true.  In flows where a new data set is
+	// being created in the M4D managed environment this should be false.
+	// +optional
+	Cataloged bool `json:"cataloged,omitempty"`
 }
 
 // AppUserRole indicates the role required to use the application
@@ -120,10 +133,6 @@ type M4DApplicationSpec struct {
 	// Note: either Data or ExternalData must have at least one entry
 	// +optional
 	Data []DataContext `json:"data,omitempty"`
-
-	// ExternalData contains the information about data outside the managed environment that is not cataloged in the data catalog.
-	// +optional
-	ExternalData []ExternalDataContext `json:"externalData,omitempty"`
 }
 
 // ErrorMessages that are reported to the user

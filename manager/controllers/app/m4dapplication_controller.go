@@ -207,7 +207,10 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		return ctrl.Result{}, err
 	}
 
-	// Requirements for READING CATALOGED data sets.
+	clusters, err := r.ClusterManager.GetClusters()
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 	// create a list of requirements for creating a data flow (actions, interface to app, data format) per a single data set
 	// A unique identifier (AssetID) is used to represent the dataset in the internal flow (for logs, map keys, vault path creation)
 	// The original dataset.DataSetID is used for communication with the connectors
@@ -221,30 +224,23 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 			AppInterface: &dataset.IFdetails,
 			Geo:          applicationContext.Spec.AppInfo.ProcessingGeography,
 		}
-		// get enforcement actions and location info for a dataset
-		if err := r.ConstructDataInfo(dataset.DataSetID, &req, applicationContext); err != nil {
-			return ctrl.Result{}, err
+
+		if dataset.Cataloged {
+			// get enforcement actions and location info for the dataset which is already in the organization's catalog
+			if err := r.ConstructDataInfo(dataset.DataSetID, &req, applicationContext); err != nil {
+				return ctrl.Result{}, err
+			}
+		} else {
+			// Get governance decisions related to writing the data in the M4D controlled environment, and allocate destination storage
+			if err := r.ConstructNewDataInfo(dataset, &req, applicationContext, clusters); err != nil {
+				return ctrl.Result{}, err
+			}
 		}
 		requirements = append(requirements, req)
 	}
 	// check for errors
 	if hasError(applicationContext) {
 		return ctrl.Result{}, nil
-	}
-
-	// Requirements for INGESTing data into the data lake - i.e. reading from the external source
-	// and writing to the dynamically allocated storage destination in one of the clusters
-	clusters, err := r.ClusterManager.GetClusters()
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-
-	for _, externalDataset := range applicationContext.Spec.ExternalData {
-		var req modules.DataInfo
-		if err := r.ConstructIngestDataInfo(externalDataset, &req, applicationContext, clusters); err != nil {
-			return ctrl.Result{}, err
-		}
-		requirements = append(requirements, req)
 	}
 
 	// create a module manager that will select modules to be orchestrated based on user requirements and module capabilities
@@ -286,42 +282,45 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	return ctrl.Result{}, nil
 }
 
-// ConstructIngestDataInfo already has the information about the external data set's endpoint,
-// but it adds the governance decisions. It also already has the link to the credentials, which was provided by the user.
+// ConstructNewDataInfo handles the flow where a new data set is being added to the M4D managed environment.  This means that the data set
+// needs to be cataloged in the environment's catalog.
 // NOTE: Assumes the credentials were put into the M4D credential manager by the user!!
-func (r *M4DApplicationReconciler) ConstructIngestDataInfo(externalDataset app.ExternalDataContext, req *modules.DataInfo, input *app.M4DApplication, clusters []multicluster.Cluster) error {
-	dataDetails := pb.DatasetDetails{
-		DataOwner:  "",
-		DataStore:  externalDataset.ExternalStore.Connection,
-		DataFormat: externalDataset.ExternalStore.Format,
-		Geo:        string(externalDataset.Residency),
+// TODO: When implementing multiple data catalogs there needs to be a way to differentiate between the "inline" catalog where the source data
+// info resides, and the catalog to which we want to register the data set.
+// TODO: Resolve credential issues
+func (r *M4DApplicationReconciler) ConstructNewDataInfo(dataset app.DataContext, req *modules.DataInfo, input *app.M4DApplication, clusters []multicluster.Cluster) error {
+	// Call the DataCatalog service to get info about the dataset
+	if err := GetConnectionDetails(dataset.DataSetID, dataset.DataCatalogID, req, input); err != nil {
+		return AnalyzeError(input, r.Log, dataset.DataSetID, err, "Catalog Connector")
 	}
-	// Store link to credentials rather than the credentials themselves
-	// This is a hack, but works for now.
+
+	// In cataloged data sets we are reading the actual credentials from the external credential manager.
+	// In this case we are assuming that the user put the credentials in our internal credential manager, and thus we only need to get the link.
+	// TODO: Need a way to get the link.  From where will we get it?  The internal data catalog?  Need a relevant API.  Temp code is a temporary place holder.
 	creds := pb.Credentials{
-		AccessKey: externalDataset.ExternalStore.CredentialLocation,
+		AccessKey: "needrealvalue", // TODO: GetCredentials returns structure and not link.
 		SecretKey: "",
 		Username:  "",
 		Password:  "",
 		ApiKey:    "",
 	}
 	datasetcreds := pb.DatasetCredentials{
-		DatasetId: externalDataset.ExternalStore.Connection.Name,
+		DatasetId: dataset.DataSetID,
 		Creds:     &creds,
 	}
-	req.AssetID = externalDataset.ExternalStore.Connection.Name // Not cataloged so no id. Name isn't unique though.  OK?
-	req.DataDetails = &dataDetails
+	req.AssetID = dataset.DataSetID
+	//	req.DataDetails = &dataDetails
 	req.Credentials = &datasetcreds
 	req.Actions = make(map[app.ModuleFlow]modules.Transformations)
-	req.AppInterface = &externalDataset.IFdetails
-	req.Flow = app.Copy // This is how we know it's an ingest flow
+	req.AppInterface = &dataset.IFdetails
+	req.Flow = app.Copy // This is how we know we're copying an external dataset into the M4D controlled environment
 
 	// Check if we are allowed to write the data to any of the geographies available to us
-	// If yes, we will allocated the storage later
+	// If yes, we will allocate the storage later
 	excludedGeos := ""
 	for _, cluster := range clusters {
 		req.Geo = cluster.Metadata.Region
-		if err := TempLookupPolicyDecision(externalDataset, r.PolicyCompiler, req, input, pb.AccessOperation_COPY); err != nil { // TODO: Change to regular policy compiler function
+		if err := TempLookupPolicyDecision(dataset, r.PolicyCompiler, req, input, pb.AccessOperation_COPY); err != nil { // TODO: Change to regular policy compiler function
 			return AnalyzeError(input, r.Log, req.AssetID, err, "Policy Compiler")
 		}
 		if req.Actions[app.Copy].Allowed {
@@ -351,11 +350,11 @@ func (r *M4DApplicationReconciler) ConstructDataInfo(datasetID string, req *modu
 		setCondition(input, datasetID, req.Actions[app.Read].Message, "Policy Compiler", true)
 	}
 	// Call the DataCatalog service to get info about the dataset
-	if err := GetConnectionDetails(datasetID, req, input); err != nil {
+	if err := GetConnectionDetails(datasetID, "", req, input); err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err, "Catalog Connector")
 	}
 	// Call the CredentialsManager service to get info about the dataset
-	if err := GetCredentials(datasetID, req, input); err != nil {
+	if err := GetCredentials(datasetID, "", req, input); err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err, "Credentials Manager")
 	}
 	// The received credentials are stored in vault

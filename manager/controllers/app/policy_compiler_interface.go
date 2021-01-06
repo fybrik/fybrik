@@ -12,6 +12,7 @@ import (
 )
 
 // ConstructApplicationContext constructs ApplicationContext structure to send to Policy Compiler
+// TODO: Add DataCatalogID
 func ConstructApplicationContext(datasetID string, input *app.M4DApplication, operationType pb.AccessOperation_AccessType) *pb.ApplicationContext {
 	return &pb.ApplicationContext{
 		AppInfo: &pb.ApplicationDetails{
@@ -21,7 +22,7 @@ func ConstructApplicationContext(datasetID string, input *app.M4DApplication, op
 		},
 		AppId: utils.CreateAppIdentifier(input),
 		Datasets: []*pb.DatasetContext{{
-			Dataset: &pb.DatasetIdentifier{
+			Dataset: &pb.DatasetIdentifier{ // TODO: Add DataCatalogID
 				DatasetId: datasetID,
 			},
 			Operation: &pb.AccessOperation{
@@ -33,11 +34,11 @@ func ConstructApplicationContext(datasetID string, input *app.M4DApplication, op
 }
 
 // TempLookupPolicyDecision is a temporary function used to simulate the policy compiler, until the policy
-// compiler is updated to receive the externalDataset in place of the datasetID for external data sets.
+// compiler is updated to handle uncataloged data.
 // TODO: Update LookupPolicyDecisions after policy compiler is updated
-func TempLookupPolicyDecision(externalDataset app.ExternalDataContext, policyCompiler pc.IPolicyCompiler, req *modules.DataInfo, input *app.M4DApplication, op pb.AccessOperation_AccessType) error {
-	// For now approve if destGeo is the same as the residency of the data set
-	if req.Geo == string(externalDataset.Residency) {
+func TempLookupPolicyDecision(dataset app.DataContext, policyCompiler pc.IPolicyCompiler, req *modules.DataInfo, input *app.M4DApplication, op pb.AccessOperation_AccessType) error {
+	// For now approve if destGeo is Turkey
+	if req.Geo == "US" {
 		req.Actions[app.Copy] = modules.Transformations{
 			Allowed:            true,
 			EnforcementActions: make([]pb.EnforcementAction, 0),

@@ -52,6 +52,12 @@ spec:
               items:
                 description: DataContext indicates data set chosen by the Data Scientist to be read from or written to by his application, and includes information about the data format and technologies used by the application to access the data.
                 properties:
+                  cataloged:
+                    description: Cataloged indicates whether or not the data set has already been registered in the organization's data catalog. When a user chooses the data set from the catalog this should be true.  In flows where a new data set is being created in the M4D managed environment this should be false.
+                    type: boolean
+                  dataCatalogID:
+                    description: 'DataCatalogID indicates the data catalog that contains the information about the data set.  If no value is provided the assumption is there is only one data catalog. TODO: Temporary pending design for multi-catalog support.'
+                    type: string
                   dataSetID:
                     description: DataSetID is a unique identifier of the dataset chosen from the data catalog for processing by the data user application.
                     minLength: 1
@@ -87,123 +93,6 @@ spec:
                 required:
                 - dataSetID
                 - ifDetails
-                type: object
-              type: array
-            externalData:
-              description: ExternalData contains the information about data outside the managed environment that is not cataloged in the data catalog.
-              items:
-                description: ExternalDataContext provides the information for reading or writing data that is not cataloged in the data catalog. In this case the metadata has to be declared, rather than obtained from the data catalog.
-                properties:
-                  externalStore:
-                    description: External data source not cataloged in the data catalog
-                    properties:
-                      connection:
-                        description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
-                        properties:
-                          db2:
-                            description: oneof location {   // should have been oneof but for technical rasons, a problem to translate it to JSON, we remove the oneof for now should have been local, db2, s3 without "location"  but had a problem to compile it in proto - collision with proto name DataLocationDb2
-                            properties:
-                              database:
-                                type: string
-                              port:
-                                type: string
-                              ssl:
-                                type: string
-                              table:
-                                type: string
-                              url:
-                                type: string
-                            type: object
-                          kafka:
-                            properties:
-                              bootstrap_servers:
-                                type: string
-                              key_deserializer:
-                                type: string
-                              sasl_mechanism:
-                                type: string
-                              schema_registry:
-                                type: string
-                              security_protocol:
-                                type: string
-                              ssl_truststore:
-                                type: string
-                              ssl_truststore_password:
-                                type: string
-                              topic_name:
-                                type: string
-                              value_deserializer:
-                                type: string
-                            type: object
-                          name:
-                            type: string
-                          s3:
-                            properties:
-                              bucket:
-                                type: string
-                              endpoint:
-                                type: string
-                              object_key:
-                                type: string
-                              region:
-                                type: string
-                            type: object
-                          type:
-                            format: int32
-                            type: integer
-                        type: object
-                      credentialLocation:
-                        description: 'CredentialLocation is used to obtain the credentials from the credential management system - ex: vault'
-                        type: string
-                      format:
-                        description: Format represents data format (e.g. parquet) as received from catalog connectors
-                        type: string
-                    required:
-                    - connection
-                    - credentialLocation
-                    - format
-                    type: object
-                  ifDetails:
-                    description: IFdetails indicates the protocol and format expected by the data by the Data Scientist's application
-                    properties:
-                      dataformat:
-                        description: DataFormatType defines data format type
-                        enum:
-                        - parquet
-                        - table
-                        - csv
-                        - json
-                        - avro
-                        - binary
-                        - arrow
-                        type: string
-                      protocol:
-                        description: IFProtocol defines interface protocol for data transactions
-                        enum:
-                        - s3
-                        - kafka
-                        - jdbc-db2
-                        - m4d-arrow-flight
-                        type: string
-                    required:
-                    - protocol
-                    type: object
-                  recurrence:
-                    description: Recurrence indicates how often the copy should take place or if streamed input is needed
-                    type: string
-                  residency:
-                    description: 'Residency indicates the geographical origin of the data, especially important if there is an personal or other sensitive data. Assumes all data in the data set is from the same geography. TODO: In the future perhaps we need to handle situations where there are multiple residencies'
-                    type: string
-                  sensitivity:
-                    description: 'Sensitivity indicates if there is any sensitive data in the data set. Since there may be different types of data with different levels of sensitivity, this is a list.  (ex: confidential, personal, special personal information) No values means there is no sensitive data.'
-                    items:
-                      description: 'DataSensitivity indicates the level of sensitivity of the data in the data set TODO: Values should be taken from a taxonomy'
-                      type: string
-                    type: array
-                required:
-                - externalStore
-                - ifDetails
-                - residency
                 type: object
               type: array
             selector:
