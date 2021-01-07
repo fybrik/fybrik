@@ -530,7 +530,6 @@ var _ = Describe("M4DApplication Controller", func() {
 
 			// work-around: we don't have currently a setup for multicluster environment in tests
 			if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
-				By("Expecting an error")
 				Eventually(func() string {
 					f := &apiv1alpha1.M4DApplication{}
 					_ = k8sClient.Get(context.Background(), appSignature, f)
@@ -541,7 +540,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			} else {
 				Eventually(func() *apiv1alpha1.ResourceReference {
 					f := &apiv1alpha1.M4DApplication{}
-					Expect(k8sClient.Get(context.Background(), appSignature, f)).To(Succeed())
+					_ = k8sClient.Get(context.Background(), appSignature, f)
 					resource = f
 					return f.Status.Generated
 				}, timeout, interval).ShouldNot(BeNil())
