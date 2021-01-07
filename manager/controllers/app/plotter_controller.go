@@ -18,7 +18,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/rand"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -192,8 +191,6 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			}
 		} else {
 			r.Log.V(2).Info("Found no status for cluster " + cluster)
-			random := rand.String(5)
-			randomNamespace := "m4d-" + random
 			blueprint := &app.Blueprint{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "Blueprint",
@@ -201,7 +198,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        plotter.Name,
-					Namespace:   randomNamespace,
+					Namespace:   "m4d-blueprints",
 					ClusterName: cluster,
 					Labels:      map[string]string{"razee/watch-resource": "debug"},
 				},
