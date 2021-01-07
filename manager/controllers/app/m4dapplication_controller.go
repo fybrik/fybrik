@@ -314,7 +314,7 @@ func (r *M4DApplicationReconciler) ConstructDataInfo(datasetID string, req *modu
 
 // NewM4DApplicationReconciler creates a new reconciler for M4DApplications
 func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api.Client,
-	policyCompiler pc.IPolicyCompiler, context ContextInterface, cm multicluster.ClusterLister) *M4DApplicationReconciler {
+	policyCompiler pc.IPolicyCompiler, cm multicluster.ClusterLister) *M4DApplicationReconciler {
 	return &M4DApplicationReconciler{
 		Client:            mgr.GetClient(),
 		Name:              name,
@@ -322,7 +322,7 @@ func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api
 		Scheme:            mgr.GetScheme(),
 		VaultClient:       vaultClient,
 		PolicyCompiler:    policyCompiler,
-		ResourceInterface: context,
+		ResourceInterface: NewPlotterInterface(mgr.GetClient()),
 		ClusterManager:    cm,
 	}
 }

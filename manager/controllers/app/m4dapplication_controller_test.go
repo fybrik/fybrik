@@ -529,7 +529,16 @@ var _ = Describe("M4DApplication Controller", func() {
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
 
 			// work-around: we don't have currently a setup for multicluster environment in tests
-			if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" && os.Getenv("USE_EXISTING_CONTROLLER") == "false" {
+			if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
+				By("Expecting an error")
+				Eventually(func() string {
+					f := &apiv1alpha1.M4DApplication{}
+					_ = k8sClient.Get(context.Background(), appSignature, f)
+					resource = f
+					return getErrorMessages(f)
+				}, timeout, interval).ShouldNot(BeEmpty())
+				Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.InvalidClusterConfiguration))
+			} else {
 				Eventually(func() *apiv1alpha1.ResourceReference {
 					f := &apiv1alpha1.M4DApplication{}
 					Expect(k8sClient.Get(context.Background(), appSignature, f)).To(Succeed())
@@ -542,16 +551,6 @@ var _ = Describe("M4DApplication Controller", func() {
 					key := types.NamespacedName{Name: resource.Status.Generated.Name, Namespace: resource.Status.Generated.Namespace}
 					return k8sClient.Get(context.Background(), key, plotter)
 				}, timeout, interval).Should(Succeed())
-			} else {
-				By("Expecting an error")
-				Eventually(func() string {
-					f := &apiv1alpha1.M4DApplication{}
-					_ = k8sClient.Get(context.Background(), appSignature, f)
-					resource = f
-					return getErrorMessages(f)
-				}, timeout, interval).ShouldNot(BeEmpty())
-
-				Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.InvalidClusterConfiguration))
 			}
 			DeleteM4DApplication(appSignature.Name)
 		})

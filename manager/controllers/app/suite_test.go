@@ -96,13 +96,7 @@ var _ = BeforeSuite(func(done Done) {
 		policyCompiler := &mockup.MockPolicyCompiler{}
 		// Initiate the M4DApplication Controller
 		var clusterManager *mockup.ClusterLister
-		var resourceContext ContextInterface
-		if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" {
-			resourceContext = NewPlotterInterface(mgr.GetClient())
-		} else {
-			resourceContext = NewBlueprintInterface(mgr.GetClient())
-		}
-		err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler, resourceContext, clusterManager).SetupWithManager(mgr)
+		err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler, clusterManager).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
 		err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
