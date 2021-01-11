@@ -33,6 +33,17 @@ run-integration-tests:
 	$(MAKE) helm
 	$(MAKE) -C manager run-integration-tests
 
+.PHONY: run-deploy-tests
+run-deploy-tests:
+	$(MAKE) kind
+	$(MAKE) cluster-prepare
+	$(MAKE) -C third_party/opa deploy
+	kubectl apply -f ./manager/config/prod/deployment_configmap.yaml
+	kubectl create secret generic user-vault-unseal-keys --from-literal=user-vault-root=''
+	$(MAKE) -C connectors deploy
+	kubectl get pod --all-namespaces
+	kubectl wait --for=condition=ready pod --all-namespaces --all --timeout=120s
+
 .PHONY: cluster-prepare
 cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy
