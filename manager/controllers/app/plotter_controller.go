@@ -33,6 +33,8 @@ type PlotterReconciler struct {
 	ClusterManager multicluster.ClusterManager
 }
 
+const BlueprintNamespace = "m4d-blueprints"
+
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=plotters,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=plotters/status,verbs=get;update;patch
 
@@ -198,7 +200,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        plotter.Name,
-					Namespace:   "m4d-blueprints",
+					Namespace:   BlueprintNamespace,
 					ClusterName: cluster,
 					Labels:      map[string]string{"razee/watch-resource": "debug"},
 				},
