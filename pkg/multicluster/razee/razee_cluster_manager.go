@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/IBM/go-sdk-core/core"
 	"github.com/IBM/satcon-client-go/client"
-	"github.com/IBM/satcon-client-go/client/types"
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
 	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
@@ -48,13 +47,14 @@ func (r *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 		return nil, err
 	}
 	for _, c := range razeeClusters {
-		configMapJson, err := r.razeeClient.getResourceByKeys(r.orgId, c.ClusterID, clusterMetadataConfigMapSL)
+		configMapJson, err := r.con.Resources.ResourceContent(r.orgId, c.ClusterID, clusterMetadataConfigMapSL)
 		if err != nil {
+			r.log.Error(err, "Could not fetch cluster information", "cluster", c.Name)
 			return nil, err
 		}
 		scheme := runtime.NewScheme()
 		clusterMetadataConfigmap := v1.ConfigMap{}
-		err = multicluster.Decode(configMapJson, scheme, &clusterMetadataConfigmap)
+		err = multicluster.Decode(configMapJson.Content, scheme, &clusterMetadataConfigmap)
 		if err != nil {
 			return nil, err
 		}
@@ -76,24 +76,30 @@ func createBluePrintSelfLink(namespace string, name string) string {
 
 func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name string) (*v1alpha1.Blueprint, error) {
 	selfLink := createBluePrintSelfLink(namespace, name)
-	cluster, err := r.razeeClient.getClusterByName(r.orgId, clusterName)
+	cluster, err := r.con.Clusters.ClusterByName(r.orgId, clusterName)
 	if err != nil {
 		return nil, err
 	}
-	jsonData, err := r.razeeClient.getResourceByKeys(r.orgId, cluster.ClusterId, selfLink)
-	r.log.V(2).Info("Blueprint data: '" + jsonData + "'")
+	jsonData, err := r.con.Resources.ResourceContent(r.orgId, cluster.ClusterID, selfLink)
 	if err != nil {
+		r.log.Error(err, "Error while fetching resource content of blueprint", "cluster", clusterName, "name", name)
 		return nil, err
 	}
+	if jsonData == nil {
+		r.log.Info("Could not get any resource data", "cluster", cluster, "namespace", namespace, "name", name)
+		return nil, nil
+	}
+	r.log.V(2).Info("Blueprint data: '" + jsonData.Content + "'")
 
-	if jsonData == "" {
+
+	if jsonData.Content == "" {
 		r.log.Info("Retrieved empty data for ", "cluster", cluster, "namespace", namespace, "name", name)
 		return nil, nil
 	}
 
 	_ = v1alpha1.AddToScheme(scheme)
 	blueprint := v1alpha1.Blueprint{}
-	err = multicluster.Decode(jsonData, scheme, &blueprint)
+	err = multicluster.Decode(jsonData.Content, scheme, &blueprint)
 	if blueprint.Namespace == "" {
 		r.log.Info("Retrieved an empty blueprint for ", "cluster", cluster, "namespace", namespace, "name", name)
 		return nil, nil
@@ -123,51 +129,40 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	}
 
 	r.log.Info("Blueprint content to create: " + string(content))
-	razeeClusters, err := r.con.Clusters.ClustersByOrgID(r.orgId)
+	rCluster, err := r.con.Clusters.ClusterByName(r.orgId, cluster)
 	if err != nil {
+		r.log.Error(err, "Error while fetching cluster by name")
 		return err
 	}
-	var rCluster types.Cluster
-	if len(razeeClusters) == 0 {
-		err = fmt.Errorf("No clusters found for orgID %v", r.orgId)
-		return err
-	}
-	for _, c := range razeeClusters {
-		// Hack until sat-con library is extended with name field
-		m := c.Metadata.(map[string]interface{})
-		name := fmt.Sprintf("%v", m["name"])
-		if name == cluster {
-			rCluster = c
-		}
-	}
-	if rCluster.ClusterID == "" {
-		err = fmt.Errorf("Cannot find cluster %v", cluster)
+	if rCluster == nil {
+		err = fmt.Errorf("No cluster found for orgID %v and cluster name %v", r.orgId, cluster)
 		return err
 	}
 
 	// check group exists
-	groups, err := r.con.Groups.Groups(r.orgId)
+	group, err := r.con.Groups.GroupByName(r.orgId, groupName)
 	if err != nil {
-		return err
-	}
-	var group *types.Group
-	var groupUuid string
-	for _, g := range groups {
-		if g.Name == groupName {
-			group = &g
-			groupUuid = g.UUID
+		if err.Error() == "Cannot destructure property 'req_id' of 'context' as it is undefined." {
+			r.log.Info("Group does not exist. Creating group.")
+		} else {
+			r.log.Error(err, "Error while fetching group by name", "group", groupName)
+			return err
 		}
 	}
+	var groupUuid string
 	if group == nil {
 		addGroup, err := r.con.Groups.AddGroup(r.orgId, groupName)
 		if err != nil {
 			return err
 		}
 		groupUuid = addGroup.UUID
+	} else {
+		groupUuid = group.UUID
 	}
 
 	_, err = r.con.Groups.GroupClusters(r.orgId, groupUuid, []string{rCluster.ClusterID})
 	if err != nil {
+		r.log.Error(err, "Error while creating group", "group", groupName, "cluster", rCluster, "groupUuid", groupUuid)
 		return err
 	}
 
@@ -271,7 +266,7 @@ func (r *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	r.log.V(2).Info("Updating subscription...")
 
 	// update subscription
-	err = r.razeeClient.setSubscription(r.orgId, subscriptionUuid, channelVersion.VersionUUID)
+	_, err = r.con.Subscriptions.SetSubscription(r.orgId, subscriptionUuid, channelVersion.VersionUUID)
 	if err != nil {
 		return err
 	}
