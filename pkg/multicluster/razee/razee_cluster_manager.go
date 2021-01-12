@@ -111,36 +111,13 @@ type Collection struct {
 	Items           []metav1.Object `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
-func groupWithNamespace(blueprint *v1alpha1.Blueprint) *Collection {
-	namespace := &v1.Namespace{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Namespace",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{Name: blueprint.Namespace},
-	}
-
-	return &Collection{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "List",
-			APIVersion: "v1",
-		},
-		Items: []metav1.Object{
-			namespace,
-			blueprint,
-		},
-	}
-}
-
 //nolint:golint,unused
 func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	groupName := getGroupName(cluster)
 	channelName := channelName(cluster, blueprint.Name)
 	version := "0"
 
-	list := groupWithNamespace(blueprint)
-
-	content, err := yaml.Marshal(list)
+	content, err := yaml.Marshal(blueprint)
 	if err != nil {
 		return err
 	}
@@ -254,9 +231,7 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 func (r *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	channelName := channelName(cluster, blueprint.Name)
 
-	list := groupWithNamespace(blueprint)
-
-	content, err := yaml.Marshal(list)
+	content, err := yaml.Marshal(blueprint)
 	if err != nil {
 		return err
 	}

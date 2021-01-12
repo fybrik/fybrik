@@ -75,6 +75,7 @@ undeploy-crd:
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/default/kustomization.yaml
 	$(TOOLBIN)/kubectl create namespace m4d-system || true
+	$(TOOLBIN)/kubectl create namespace m4d-blueprints || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${IMG}
 	$(TOOLBIN)/kustomize build config/default | $(TOOLBIN)/kubectl apply -f -
 
@@ -95,6 +96,7 @@ docker-build: generate
 # Deploy only movement-controller in the configured Kubernetes cluster in ~/.kube/config
 deploy_mc: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/default/kustomization.yaml
 	$(TOOLBIN)/kubectl create namespace ${KUBE_NAMESPACE} || true
+	$(TOOLBIN)/kubectl create namespace m4d-blueprints || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
 	$(TOOLBIN)/kustomize build --load_restrictor none config/movement-controller | $(TOOLBIN)/kubectl apply -f -
 
@@ -106,6 +108,7 @@ deploy_it: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/default/kust
 	make build-ca-certs
 	make deploy-custom-ca-secret
 	$(TOOLBIN)/kubectl create namespace ${KUBE_NAMESPACE} || true
+	$(TOOLBIN)/kubectl create namespace m4d-blueprints || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
 	cd config/integration-tests && $(ABSTOOLBIN)/kustomize edit set image data-catalog-mock=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/data-catalog-mock:${DOCKER_TAGNAME}
 	cd config/integration-tests && $(ABSTOOLBIN)/kustomize edit set image policycompiler=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/serverpolicycompiler-mock:${DOCKER_TAGNAME}
@@ -115,6 +118,7 @@ deploy_multi_it: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/defaul
 	make build-ca-certs
 	make deploy-custom-ca-secret
 	$(TOOLBIN)/kubectl create namespace ${KUBE_NAMESPACE} || true
+	$(TOOLBIN)/kubectl create namespace m4d-blueprints || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
 	cd config/integration-tests && $(ABSTOOLBIN)/kustomize edit set image data-catalog-mock=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/data-catalog-mock:${DOCKER_TAGNAME}
 	cd config/integration-tests && $(ABSTOOLBIN)/kustomize edit set image policycompiler=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/serverpolicycompiler-mock:${DOCKER_TAGNAME}
