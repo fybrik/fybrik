@@ -52,10 +52,8 @@ $(foreach dir,$(CONNECTORS),$(eval $(call docker-build-target,$(dir))))
 $(foreach dir,$(CONNECTORS),$(eval $(call docker-push-target,$(dir))))
 $(foreach dir,$(CONNECTORS),$(eval $(call docker-rmi-target,$(dir))))
 
-.PHONY: deploy
-deploy:
-	$(MAKE) -C helpers deploy
-
-.PHONY: undeploy
-undeploy:
-	$(MAKE) -C helpers undeploy
+.PHONY: deploy undeploy charts
+deploy undeploy charts:
+	$(MAKE) -C vault $@
+	$(MAKE) -C opa $@
+	$(MAKE) -C egeria $@
