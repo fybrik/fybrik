@@ -37,7 +37,7 @@ func InitM4DApplication(name string, n int) *apiv1alpha1.M4DApplication {
 			Name:      appSignature.Name,
 			Namespace: appSignature.Namespace,
 		},
-		Spec: apiv1alpha1.M4DApplicationSpec{AppInfo: apiv1alpha1.ApplicationDetails{ProcessingGeography: "US"}, Data: make([]apiv1alpha1.DataContext, n)},
+		Spec: apiv1alpha1.M4DApplicationSpec{Selector: apiv1alpha1.Selector{ClusterName: "US-cluster"}, Data: make([]apiv1alpha1.DataContext, n)},
 	}
 }
 
@@ -49,7 +49,7 @@ func InitM4DNewDataApplication(name string, n int) *apiv1alpha1.M4DApplication {
 			Name:      appSignature.Name,
 			Namespace: appSignature.Namespace,
 		},
-		Spec: apiv1alpha1.M4DApplicationSpec{AppInfo: apiv1alpha1.ApplicationDetails{ProcessingGeography: "Turkey"}, Data: make([]apiv1alpha1.DataContext, n)},
+		Spec: apiv1alpha1.M4DApplicationSpec{Selector: apiv1alpha1.Selector{ClusterName: "Turkey-cluster"}, Data: make([]apiv1alpha1.DataContext, n)},
 	}
 }
 
@@ -543,17 +543,25 @@ var _ = Describe("M4DApplication Controller", func() {
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				Cataloged: true,
-				DataSetID: "{\"asset_id\": \"default-dataset\", \"catalog_id\": \"s3\"}",
+				DataSetID: "{\"asset_id\": \"default-dataset\", \"catalog_id\": \"s3-external\"}",
 				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
 			}
-			resource.Spec.AppInfo.ProcessingGeography = "Germany"
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
 
-			if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" {
+			// work-around: we don't have currently a setup for multicluster environment in tests
+			if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
+				Eventually(func() string {
+					f := &apiv1alpha1.M4DApplication{}
+					_ = k8sClient.Get(context.Background(), appSignature, f)
+					resource = f
+					return getErrorMessages(f)
+				}, timeout, interval).ShouldNot(BeEmpty())
+				Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.InvalidClusterConfiguration))
+			} else {
 				Eventually(func() *apiv1alpha1.ResourceReference {
 					f := &apiv1alpha1.M4DApplication{}
-					Expect(k8sClient.Get(context.Background(), appSignature, f)).To(Succeed())
+					_ = k8sClient.Get(context.Background(), appSignature, f)
 					resource = f
 					return f.Status.Generated
 				}, timeout, interval).ShouldNot(BeNil())
@@ -563,16 +571,6 @@ var _ = Describe("M4DApplication Controller", func() {
 					key := types.NamespacedName{Name: resource.Status.Generated.Name, Namespace: resource.Status.Generated.Namespace}
 					return k8sClient.Get(context.Background(), key, plotter)
 				}, timeout, interval).Should(Succeed())
-			} else {
-				By("Expecting an error")
-				Eventually(func() string {
-					f := &apiv1alpha1.M4DApplication{}
-					_ = k8sClient.Get(context.Background(), appSignature, f)
-					resource = f
-					return getErrorMessages(f)
-				}, timeout, interval).ShouldNot(BeEmpty())
-
-				Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.InvalidClusterConfiguration))
 			}
 			DeleteM4DApplication(appSignature.Name)
 		})

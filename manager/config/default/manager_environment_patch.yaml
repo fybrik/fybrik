@@ -20,28 +20,3 @@ spec:
             secretKeyRef:
               name: vault-unseal-keys
               key: vault-root
-        - name: DOCKER_HOSTNAME
-          valueFrom:
-            secretKeyRef:
-              name: docker-credentials
-              key: hostname
-        - name: DOCKER_NAMESPACE
-          valueFrom:
-            secretKeyRef:
-              name: docker-credentials
-              key: namespace
-        - name: DOCKER_TAGNAME
-          valueFrom:
-            secretKeyRef:
-              name: docker-credentials
-              key: tagname
-        - name: DOCKER_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: docker-credentials
-              key: password
-        - name: DOCKER_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: docker-credentials
-              key: username             

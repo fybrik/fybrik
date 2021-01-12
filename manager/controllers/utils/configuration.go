@@ -4,11 +4,12 @@
 package utils
 
 import (
-	"github.com/hashicorp/vault/api"
-	"github.com/onsi/ginkgo"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/hashicorp/vault/api"
+	"github.com/onsi/ginkgo"
 )
 
 // Attributes that are defined in a config map or the runtime environment

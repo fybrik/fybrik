@@ -101,17 +101,10 @@ jobs:
 
   - stage: Deploy
     name: "Kind deploy"
-    env:
-    - COMPONENT=connectors
-    - CLUSTER=kind
     install:
     - make install-tools
     script:
-    - make $CLUSTER || travis_terminate 1;
-    - make cluster-prepare || travis_terminate 1;
-    - make -C third_party/opa deploy || travis_terminate 1;
-    - make -C $COMPONENT deploy
-    - ./hack/tools/bin/kubectl get pod --all-namespaces
+    - make run-deploy-tests
     if: branch = master AND type = push
 
 notifications:

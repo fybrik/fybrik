@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"emperror.dev/errors"
 	"github.com/go-logr/logr"
 	"github.com/hashicorp/vault/api"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -25,6 +26,8 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
+	local "github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
+
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -214,6 +217,12 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	// create a list of requirements for creating a data flow (actions, interface to app, data format) per a single data set
 	// A unique identifier (AssetID) is used to represent the dataset in the internal flow (for logs, map keys, vault path creation)
 	// The original dataset.DataSetID is used for communication with the connectors
+
+	workloadGeography, err := r.GetProcessingGeography(applicationContext)
+	if err != nil {
+		setCondition(applicationContext, "", err.Error(), "", true)
+		return ctrl.Result{}, err
+	}
 	var requirements []modules.DataInfo
 	for _, dataset := range applicationContext.Spec.Data {
 		req := modules.DataInfo{
@@ -222,7 +231,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 			Credentials:  nil,
 			Actions:      make(map[app.ModuleFlow]modules.Transformations),
 			AppInterface: &dataset.IFdetails,
-			Geo:          applicationContext.Spec.AppInfo.ProcessingGeography,
+			Geo:          workloadGeography,
 		}
 
 		if dataset.Cataloged {
@@ -365,7 +374,7 @@ func (r *M4DApplicationReconciler) ConstructDataInfo(datasetID string, req *modu
 
 // NewM4DApplicationReconciler creates a new reconciler for M4DApplications
 func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api.Client,
-	policyCompiler pc.IPolicyCompiler, context ContextInterface, cm multicluster.ClusterLister) *M4DApplicationReconciler {
+	policyCompiler pc.IPolicyCompiler, cm multicluster.ClusterLister) *M4DApplicationReconciler {
 	return &M4DApplicationReconciler{
 		Client:            mgr.GetClient(),
 		Name:              name,
@@ -373,7 +382,7 @@ func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api
 		Scheme:            mgr.GetScheme(),
 		VaultClient:       vaultClient,
 		PolicyCompiler:    policyCompiler,
-		ResourceInterface: context,
+		ResourceInterface: NewPlotterInterface(mgr.GetClient()),
 		ClusterManager:    cm,
 	}
 }
@@ -440,4 +449,28 @@ func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, e
 		moduleMap[module.Name] = module.DeepCopy()
 	}
 	return moduleMap, nil
+}
+
+// GetProcessingGeography determines the geography of the workload cluster.
+// If no workload has been specified, a local cluster is assumed.
+func (r *M4DApplicationReconciler) GetProcessingGeography(applicationContext *app.M4DApplication) (string, error) {
+	clusterName := applicationContext.Spec.Selector.ClusterName
+	if clusterName == "" {
+		localClusterManager := local.NewManager(r.Client, utils.GetSystemNamespace())
+		clusters, err := localClusterManager.GetClusters()
+		if err != nil || len(clusters) != 1 {
+			return "", err
+		}
+		return clusters[0].Metadata.Region, nil
+	}
+	clusters, err := r.ClusterManager.GetClusters()
+	if err != nil {
+		return "", err
+	}
+	for _, cluster := range clusters {
+		if cluster.Name == clusterName {
+			return cluster.Metadata.Region, nil
+		}
+	}
+	return "", errors.New("Unknown cluster: " + clusterName)
 }

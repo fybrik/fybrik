@@ -12,11 +12,11 @@ import (
 )
 
 // ConstructApplicationContext constructs ApplicationContext structure to send to Policy Compiler
-func ConstructApplicationContext(datasetID string, input *app.M4DApplication, operationType pb.AccessOperation_AccessType) *pb.ApplicationContext {
+func ConstructApplicationContext(datasetID string, input *app.M4DApplication, operationType pb.AccessOperation_AccessType, geo string) *pb.ApplicationContext {
 	return &pb.ApplicationContext{
 		AppInfo: &pb.ApplicationDetails{
 			Purpose:             input.Spec.AppInfo.Purpose,
-			ProcessingGeography: input.Spec.AppInfo.ProcessingGeography,
+			ProcessingGeography: geo,
 			Role:                string(input.Spec.AppInfo.Role),
 		},
 		AppId: utils.CreateAppIdentifier(input),
@@ -25,8 +25,7 @@ func ConstructApplicationContext(datasetID string, input *app.M4DApplication, op
 				DatasetId: datasetID,
 			},
 			Operation: &pb.AccessOperation{
-				Type:        operationType,
-				Destination: input.Spec.AppInfo.ProcessingGeography,
+				Type: operationType,
 			},
 		}},
 	}
@@ -35,7 +34,7 @@ func ConstructApplicationContext(datasetID string, input *app.M4DApplication, op
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
 func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, req *modules.DataInfo, input *app.M4DApplication, op pb.AccessOperation_AccessType) error {
 	// call external policy manager to get governance instructions for this operation
-	appContext := ConstructApplicationContext(datasetID, input, op)
+	appContext := ConstructApplicationContext(datasetID, input, op, req.Geo)
 	var flow app.ModuleFlow
 	switch op {
 	case pb.AccessOperation_READ:

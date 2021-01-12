@@ -35,9 +35,12 @@ spec:
             appInfo:
               description: AppInfo contains information describing the reasons and geography of the processing that will be done by the Data Scientist's application.
               properties:
+<<<<<<< HEAD
                 processingGeography:
                   description: ProcessingGeography indicates the state or country or union in which the data processing will take place. This should be the same as the location of the cluster in which the manager is deployed. TO BE OBTAINED FROM THE ENVIRONMENT
                   type: string
+=======
+>>>>>>> upstream/master
                 purpose:
                   description: Purpose indicates the reason for the processing and the use of the data by the Data Scientist's application.
                   type: string
@@ -96,37 +99,54 @@ spec:
                 type: object
               type: array
             selector:
+<<<<<<< HEAD
               description: Selector enables to connect the resource to the application Application labels should match the labels in the selector. If no selector, we assume ingest flow!
+=======
+              description: Selector enables to connect the resource to the application Application labels should match the labels in the selector. For some flows the selector may not be used.
+>>>>>>> upstream/master
               properties:
-                matchExpressions:
-                  description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
-                  items:
-                    description: A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
-                    properties:
-                      key:
-                        description: key is the label key that the selector applies to.
+                clusterName:
+                  description: Cluster name
+                  type: string
+                workloadSelector:
+                  description: WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.
+                  properties:
+                    matchExpressions:
+                      description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
+                      items:
+                        description: A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+                        properties:
+                          key:
+                            description: key is the label key that the selector applies to.
+                            type: string
+                          operator:
+                            description: operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+                            type: string
+                          values:
+                            description: values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+                            items:
+                              type: string
+                            type: array
+                        required:
+                        - key
+                        - operator
+                        type: object
+                      type: array
+                    matchLabels:
+                      additionalProperties:
                         type: string
-                      operator:
-                        description: operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
-                        type: string
-                      values:
-                        description: values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
-                        items:
-                          type: string
-                        type: array
-                    required:
-                    - key
-                    - operator
-                    type: object
-                  type: array
-                matchLabels:
-                  additionalProperties:
-                    type: string
-                  description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+                      description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+                      type: object
                   type: object
+              required:
+              - workloadSelector
               type: object
           required:
           - appInfo
+<<<<<<< HEAD
+=======
+          - data
+>>>>>>> upstream/master
           type: object
         status:
           description: M4DApplicationStatus defines the observed state of M4DApplication.

@@ -5,11 +5,12 @@ package main
 
 import (
 	"flag"
+	"os"
+	"strings"
+
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/razee"
-	"os"
-	"strings"
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/motion"
 
@@ -128,13 +129,7 @@ func main() {
 		policyCompiler := pc.NewPolicyCompiler()
 
 		// Initiate the M4DApplication Controller
-		var resourceContext app.ContextInterface
-		if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" {
-			resourceContext = app.NewPlotterInterface(mgr.GetClient())
-		} else {
-			resourceContext = app.NewBlueprintInterface(mgr.GetClient())
-		}
-		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, resourceContext, clusterManager)
+		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, clusterManager)
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
 			os.Exit(1)
@@ -216,6 +211,6 @@ func NewClusterManager(mgr manager.Manager) multicluster.ClusterManager {
 		return razee.NewSatConfManager(strings.TrimSpace(apiKey), orgID)
 	} else {
 		setupLog.Info("Using local cluster manager")
-		return local.NewManager(mgr.GetClient(), "m4d-system")
+		return local.NewManager(mgr.GetClient(), utils.GetSystemNamespace())
 	}
 }

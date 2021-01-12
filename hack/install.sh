@@ -34,5 +34,7 @@ WITHOUT_PORT_FORWARD=true WITHOUT_VAULT=false make deploy
 # Configure the internal m4d endpoint in vault (the "secret" endpoint)
 WITHOUT_PORT_FORWARD=true make -C secret-provider configure-vault
 
+make install
+
 # Kill the port-forward
 kill -9 %%
