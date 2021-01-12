@@ -55,12 +55,12 @@ spec:
                   cataloged:
                     description: Cataloged indicates whether or not the data set has already been registered in the organization's data catalog. When a user chooses the data set from the catalog this should be true.  In flows where a new data set is being created in the M4D managed environment this should be false.
                     type: boolean
-                  dataCatalogID:
-                    description: 'DataCatalogID indicates the data catalog that contains the information about the data set.  If no value is provided the assumption is there is only one data catalog. TODO: Temporary pending design for multi-catalog support.'
-                    type: string
                   dataSetID:
-                    description: DataSetID is a unique identifier of the dataset chosen from the data catalog for processing by the data user application.
+                    description: DataSetID is a unique identifier of the dataset either chosen from the enterprise data catalog for processing by the data user application, or the source location of a new data set being imported into the environment.  This parameter should contain datacatalogservice, catalog, datasetID.
                     minLength: 1
+                    type: string
+                  destinationCatalog:
+                    description: DestinationCatalog indicates the catalog service and catalog in which a data set being imported should be registered. This parameter should contain datacatalogservice, and catalog.  This should be populated only when Cataloged is false.
                     type: string
                   ifDetails:
                     description: IFdetails indicates the protocol and format expected by the data by the Data Scientist's application

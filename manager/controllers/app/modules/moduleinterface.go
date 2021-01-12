@@ -22,6 +22,8 @@ type Transformations struct {
 // DataInfo defines all the information about the given data set
 // TODO: Add support for recurrence in modules
 type DataInfo struct {
+	// Indicates which of the different data catalogs contains the connection and metadata about this data set
+	CatalogID string
 	// Data asset unique identifier, not necessarily the same string appearing in the resource definition
 	// For ingest this is based on the asset name, since there is no unique catalog id yet
 	AssetID string

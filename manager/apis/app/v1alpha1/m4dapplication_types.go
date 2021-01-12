@@ -21,55 +21,12 @@ const (
 	Stream  RecurrenceType = "stream"
 )
 
-/*
-// DataResidency indicates the geography in which the data was created
-// TODO: Values should come from a taxonomy
-type DataResidency string
-
-// DataSensitivity indicates the level of sensitivity of the data in the data set
-// TODO: Values should be taken from a taxonomy
-type DataSensitivity string
-
-// ExternalDataContext provides the information for reading or writing data that is not cataloged in the data catalog.
-// In this case the metadata has to be declared, rather than obtained from the data catalog.
-type ExternalDataContext struct {
-	// External data source not cataloged in the data catalog
-	// +required
-	ExternalStore DataStore `json:"externalStore"`
-
-	// Residency indicates the geographical origin of the data, especially important if there is an personal or other sensitive data.
-	// Assumes all data in the data set is from the same geography.
-	// TODO: In the future perhaps we need to handle situations where there are multiple residencies
-	// +required
-	Residency DataResidency `json:"residency"`
-
-	// Sensitivity indicates if there is any sensitive data in the data set.
-	// Since there may be different types of data with different levels of sensitivity,
-	// this is a list.  (ex: confidential, personal, special personal information)
-	// No values means there is no sensitive data.
-	// +optional
-	Sensitivity []DataSensitivity `json:"sensitivity,omitempty"`
-
-	// IFdetails indicates the protocol and format expected by the data by the Data Scientist's application
-	// +required
-	IFdetails InterfaceDetails `json:"ifDetails"`
-
-	// Recurrence indicates how often the copy should take place or if streamed input is needed
-	// +optional
-	Recurrence RecurrenceType `json:"recurrence,omitempty"`
-}
-*/
-
 // DataContext indicates data set chosen by the Data Scientist to be read from or written to by his application,
 // and includes information about the data format and technologies used by the application
 // to access the data.
 type DataContext struct {
-	// DataCatalogID indicates the data catalog that contains the information about the data set.  If no value is provided the assumption is there is only one data catalog.
-	// TODO: Temporary pending design for multi-catalog support.
-	// +optional
-	DataCatalogID string `json:"dataCatalogID"`
-
-	// DataSetID is a unique identifier of the dataset chosen from the data catalog for processing by the data user application.
+	// DataSetID is a unique identifier of the dataset either chosen from the enterprise data catalog for processing by the data user application,
+	// or the source location of a new data set being imported into the environment.  This parameter should contain datacatalogservice, catalog, datasetID.
 	// +required
 	// +kubebuilder:validation:MinLength=1
 	DataSetID string `json:"dataSetID"`
@@ -88,6 +45,11 @@ type DataContext struct {
 	// being created in the M4D managed environment this should be false.
 	// +optional
 	Cataloged bool `json:"cataloged,omitempty"`
+
+	// DestinationCatalog indicates the catalog service and catalog in which a data set being imported should be registered.
+	// This parameter should contain datacatalogservice, and catalog.  This should be populated only when Cataloged is false.
+	// +optional
+	DestinationCatalog string `json:"destinationCatalog,omitempty"`
 }
 
 // AppUserRole indicates the role required to use the application

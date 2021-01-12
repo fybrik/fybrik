@@ -289,28 +289,22 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 // info resides, and the catalog to which we want to register the data set.
 // TODO: Resolve credential issues
 func (r *M4DApplicationReconciler) ConstructNewDataInfo(dataset app.DataContext, req *modules.DataInfo, input *app.M4DApplication, clusters []multicluster.Cluster) error {
-	// Call the DataCatalog service to get info about the dataset
-	if err := GetConnectionDetails(dataset.DataSetID, dataset.DataCatalogID, req, input); err != nil {
+	// Call the DataCatalog service holding the external data info to get info about the dataset
+	if err := GetConnectionDetails(dataset.DataSetID, req, input); err != nil {
 		return AnalyzeError(input, r.Log, dataset.DataSetID, err, "Catalog Connector")
 	}
 
-	// In cataloged data sets we are reading the actual credentials from the external credential manager.
-	// In this case we are assuming that the user put the credentials in our internal credential manager, and thus we only need to get the link.
-	// TODO: Need a way to get the link.  From where will we get it?  The internal data catalog?  Need a relevant API.  Temp code is a temporary place holder.
-	creds := pb.Credentials{
-		AccessKey: "needrealvalue", // TODO: GetCredentials returns structure and not link.
-		SecretKey: "",
-		Username:  "",
-		Password:  "",
-		ApiKey:    "",
+	// Call the CredentialsManager service to get the credentials for the dataset
+	if err := GetCredentials(dataset.DataSetID, req, input); err != nil {
+		return AnalyzeError(input, r.Log, dataset.DataSetID, err, "Credentials Manager")
 	}
-	datasetcreds := pb.DatasetCredentials{
-		DatasetId: dataset.DataSetID,
-		Creds:     &creds,
+
+	// The received credentials are stored in M4D's internal vault
+	if err := r.RegisterCredentials(req); err != nil {
+		return AnalyzeError(input, r.Log, dataset.DataSetID, err, "Vault")
 	}
+
 	req.AssetID = dataset.DataSetID
-	//	req.DataDetails = &dataDetails
-	req.Credentials = &datasetcreds
 	req.Actions = make(map[app.ModuleFlow]modules.Transformations)
 	req.AppInterface = &dataset.IFdetails
 	req.Flow = app.Copy // This is how we know we're copying an external dataset into the M4D controlled environment
@@ -350,11 +344,11 @@ func (r *M4DApplicationReconciler) ConstructDataInfo(datasetID string, req *modu
 		setCondition(input, datasetID, req.Actions[app.Read].Message, "Policy Compiler", true)
 	}
 	// Call the DataCatalog service to get info about the dataset
-	if err := GetConnectionDetails(datasetID, "", req, input); err != nil {
+	if err := GetConnectionDetails(datasetID, req, input); err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err, "Catalog Connector")
 	}
 	// Call the CredentialsManager service to get info about the dataset
-	if err := GetCredentials(datasetID, "", req, input); err != nil {
+	if err := GetCredentials(datasetID, req, input); err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err, "Credentials Manager")
 	}
 	// The received credentials are stored in vault

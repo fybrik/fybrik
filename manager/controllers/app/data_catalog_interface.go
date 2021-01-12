@@ -16,8 +16,8 @@ import (
 )
 
 // GetConnectionDetails calls the data catalog service
-// TODO: Choose appropriate catalog connector based on dataCatalogID
-func GetConnectionDetails(datasetID string, dataCatalogID string, req *modules.DataInfo, input *app.M4DApplication) error {
+// TODO: Choose appropriate catalog connector based on the datacatalog service indicated as part of datasetID
+func GetConnectionDetails(datasetID string, req *modules.DataInfo, input *app.M4DApplication) error {
 	// Set up a connection to the data catalog interface server.
 	// TODO: Based on dataCatalogID param decide which catalog to access
 	conn, err := grpc.Dial(utils.GetDataCatalogServiceAddress(), grpc.WithInsecure(), grpc.WithBlock())
@@ -45,8 +45,8 @@ func GetConnectionDetails(datasetID string, dataCatalogID string, req *modules.D
 }
 
 // GetCredentials calls the credentials manager service
-// TODO: Choose appropriate catalog connector based on dataCatalogID
-func GetCredentials(datasetID string, dataCatalogID string, req *modules.DataInfo, input *app.M4DApplication) error {
+// TODO: Choose appropriate catalog connector based on the datacatalog service indicated as part of datasetID
+func GetCredentials(datasetID string, req *modules.DataInfo, input *app.M4DApplication) error {
 	// Set up a connection to the data catalog interface server.
 	conn, err := grpc.Dial(utils.GetCredentialsManagerServiceAddress(), grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
