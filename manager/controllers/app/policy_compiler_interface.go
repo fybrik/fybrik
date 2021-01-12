@@ -12,7 +12,6 @@ import (
 )
 
 // ConstructApplicationContext constructs ApplicationContext structure to send to Policy Compiler
-// TODO: Add DataCatalogID
 func ConstructApplicationContext(datasetID string, input *app.M4DApplication, operationType pb.AccessOperation_AccessType) *pb.ApplicationContext {
 	return &pb.ApplicationContext{
 		AppInfo: &pb.ApplicationDetails{
@@ -22,7 +21,7 @@ func ConstructApplicationContext(datasetID string, input *app.M4DApplication, op
 		},
 		AppId: utils.CreateAppIdentifier(input),
 		Datasets: []*pb.DatasetContext{{
-			Dataset: &pb.DatasetIdentifier{ // TODO: Add DataCatalogID
+			Dataset: &pb.DatasetIdentifier{
 				DatasetId: datasetID,
 			},
 			Operation: &pb.AccessOperation{
@@ -31,26 +30,6 @@ func ConstructApplicationContext(datasetID string, input *app.M4DApplication, op
 			},
 		}},
 	}
-}
-
-// TempLookupPolicyDecision is a temporary function used to simulate the policy compiler, until the policy
-// compiler is updated to handle uncataloged data.
-// TODO: Update LookupPolicyDecisions after policy compiler is updated
-func TempLookupPolicyDecision(dataset app.DataContext, policyCompiler pc.IPolicyCompiler, req *modules.DataInfo, input *app.M4DApplication, op pb.AccessOperation_AccessType) error {
-	// For now approve if destGeo is Turkey
-	if req.Geo == "US" {
-		req.Actions[app.Copy] = modules.Transformations{
-			Allowed:            true,
-			EnforcementActions: make([]pb.EnforcementAction, 0),
-		}
-	} else {
-		req.Actions[app.Copy] = modules.Transformations{
-			Allowed:            false,
-			EnforcementActions: make([]pb.EnforcementAction, 0),
-		}
-	}
-
-	return nil
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
@@ -64,7 +43,7 @@ func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, 
 	case pb.AccessOperation_COPY:
 		flow = app.Copy
 	case pb.AccessOperation_WRITE:
-		flow = app.Write
+		flow = app.Copy
 	}
 
 	pcresponse, err := policyCompiler.GetPoliciesDecisions(appContext)
@@ -89,11 +68,15 @@ func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, 
 			for _, action := range enforcementActions {
 				if utils.IsDenied(action.GetName()) {
 					var msg string
-					if operationDecision.Operation.Type == pb.AccessOperation_READ {
+					switch operationDecision.Operation.Type {
+					case pb.AccessOperation_READ:
 						msg = app.ReadAccessDenied
-					} else {
+					case pb.AccessOperation_COPY:
 						msg = app.CopyNotAllowed
+					case pb.AccessOperation_WRITE:
+						msg = app.WriteNotAllowed
 					}
+
 					req.Actions[flow] = modules.Transformations{
 						Allowed:            false,
 						Message:            msg,

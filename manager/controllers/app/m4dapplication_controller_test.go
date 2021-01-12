@@ -620,9 +620,10 @@ var _ = Describe("M4DApplication Controller", func() {
 			appSignature := types.NamespacedName{Name: "m4d-newdata-test", Namespace: "default"}
 			resource := InitM4DNewDataApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID: "{\"asset_id\": \"FakeNewDataID\", \"catalog_id\": \"s3\"}", // TODO: Add the catalog service
-				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
-				Cataloged: false,
+				DataSetID:          "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}", // TODO: Add the catalog service
+				DestinationCatalog: "{\"catalog_system\": \"egaria\", \"catalog_id\": \"ingest_test\"}",
+				IFdetails:          apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
+				Cataloged:          false,
 			}
 
 			// Create M4DApplication

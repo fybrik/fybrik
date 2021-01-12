@@ -314,10 +314,10 @@ func (r *M4DApplicationReconciler) ConstructNewDataInfo(dataset app.DataContext,
 	excludedGeos := ""
 	for _, cluster := range clusters {
 		req.Geo = cluster.Metadata.Region
-		if err := TempLookupPolicyDecision(dataset, r.PolicyCompiler, req, input, pb.AccessOperation_COPY); err != nil { // TODO: Change to regular policy compiler function
+		if err := LookupPolicyDecisions(dataset.DataSetID, r.PolicyCompiler, req, input, pb.AccessOperation_WRITE); err != nil {
 			return AnalyzeError(input, r.Log, req.AssetID, err, "Policy Compiler")
 		}
-		if req.Actions[app.Copy].Allowed {
+		if req.Actions[app.Write].Allowed {
 			return nil // We found a geo to which we can write
 		}
 		if excludedGeos != "" {
