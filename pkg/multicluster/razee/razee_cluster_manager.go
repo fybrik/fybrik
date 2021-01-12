@@ -35,7 +35,6 @@ func init() {
 type ClusterManager struct {
 	orgId       string
 	con         client.SatCon
-	razeeClient *RazeeClient
 	log         logr.Logger
 }
 
@@ -314,14 +313,12 @@ func (r *ClusterManager) DeleteBlueprint(cluster string, namespace string, name 
 
 // The channel name should be per cluster and plotter so it cannot be based on
 // the namespace that is random for every blueprint
-//nolint:golint,unused
 func channelName(cluster string, name string) string {
 	return "m4d.ibm.com" + "-" + cluster + "-" + name
 }
 
-//nolint:golint,unused
 func NewRazeeManager(url string, login string, password string, orgId string) multicluster.ClusterManager {
-	localAuth := &RazeeLocalRoundTripper{
+	localAuth := &LocalAuthClient{
 		url:      url,
 		login:    login,
 		password: password,
@@ -329,20 +326,16 @@ func NewRazeeManager(url string, login string, password string, orgId string) mu
 	}
 
 	con, _ := client.New(url, http.DefaultClient, localAuth)
-	razeeClient := NewRazeeClient(url, localAuth)
 	logger := ctrl.Log.WithName("ClusterManager")
 
 	return &ClusterManager{
 		orgId:       orgId,
 		con:         con,
-		razeeClient: razeeClient,
 		log:         logger,
 	}
 }
 
 func NewSatConfManager(apikey string, orgID string) multicluster.ClusterManager {
-	razeeClient := NewIAMRazeeClient(apikey)
-
 	authenticator := &core.IamAuthenticator{
 		ApiKey: apikey,
 	}
@@ -353,7 +346,6 @@ func NewSatConfManager(apikey string, orgID string) multicluster.ClusterManager 
 	return &ClusterManager{
 		orgId:       orgID,
 		con:         con,
-		razeeClient: razeeClient,
 		log:         logger,
 	}
 }
