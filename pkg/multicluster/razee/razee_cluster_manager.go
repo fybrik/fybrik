@@ -26,34 +26,31 @@ var (
 	scheme = runtime.NewScheme()
 )
 
-//nolint:golint,unused
 func init() {
 	_ = v1alpha1.AddToScheme(scheme)
 }
 
-//nolint:golint,unused
 type ClusterManager struct {
-	orgId       string
-	con         client.SatCon
-	log         logr.Logger
+	orgID string
+	con   client.SatCon
+	log   logr.Logger
 }
 
-//nolint:golint,unused
 func (r *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	var clusters []multicluster.Cluster
-	razeeClusters, err := r.con.Clusters.ClustersByOrgID(r.orgId)
+	razeeClusters, err := r.con.Clusters.ClustersByOrgID(r.orgID)
 	if err != nil {
 		return nil, err
 	}
 	for _, c := range razeeClusters {
-		configMapJson, err := r.con.Resources.ResourceContent(r.orgId, c.ClusterID, clusterMetadataConfigMapSL)
+		configMapJSON, err := r.con.Resources.ResourceContent(r.orgID, c.ClusterID, clusterMetadataConfigMapSL)
 		if err != nil {
 			r.log.Error(err, "Could not fetch cluster information", "cluster", c.Name)
 			return nil, err
 		}
 		scheme := runtime.NewScheme()
 		clusterMetadataConfigmap := v1.ConfigMap{}
-		err = multicluster.Decode(configMapJson.Content, scheme, &clusterMetadataConfigmap)
+		err = multicluster.Decode(configMapJSON.Content, scheme, &clusterMetadataConfigmap)
 		if err != nil {
 			return nil, err
 		}
@@ -75,11 +72,11 @@ func createBluePrintSelfLink(namespace string, name string) string {
 
 func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name string) (*v1alpha1.Blueprint, error) {
 	selfLink := createBluePrintSelfLink(namespace, name)
-	cluster, err := r.con.Clusters.ClusterByName(r.orgId, clusterName)
+	cluster, err := r.con.Clusters.ClusterByName(r.orgID, clusterName)
 	if err != nil {
 		return nil, err
 	}
-	jsonData, err := r.con.Resources.ResourceContent(r.orgId, cluster.ClusterID, selfLink)
+	jsonData, err := r.con.Resources.ResourceContent(r.orgID, cluster.ClusterID, selfLink)
 	if err != nil {
 		r.log.Error(err, "Error while fetching resource content of blueprint", "cluster", clusterName, "name", name)
 		return nil, err
@@ -89,7 +86,6 @@ func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name
 		return nil, nil
 	}
 	r.log.V(2).Info("Blueprint data: '" + jsonData.Content + "'")
-
 
 	if jsonData.Content == "" {
 		r.log.Info("Retrieved empty data for ", "cluster", cluster, "namespace", namespace, "name", name)
@@ -116,7 +112,6 @@ type Collection struct {
 	Items           []metav1.Object `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
-//nolint:golint,unused
 func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	groupName := getGroupName(cluster)
 	channelName := channelName(cluster, blueprint.Name)
@@ -128,18 +123,18 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	}
 
 	r.log.Info("Blueprint content to create: " + string(content))
-	rCluster, err := r.con.Clusters.ClusterByName(r.orgId, cluster)
+	rCluster, err := r.con.Clusters.ClusterByName(r.orgID, cluster)
 	if err != nil {
 		r.log.Error(err, "Error while fetching cluster by name")
 		return err
 	}
 	if rCluster == nil {
-		err = fmt.Errorf("No cluster found for orgID %v and cluster name %v", r.orgId, cluster)
+		err = fmt.Errorf("No cluster found for orgID %v and cluster name %v", r.orgID, cluster)
 		return err
 	}
 
 	// check group exists
-	group, err := r.con.Groups.GroupByName(r.orgId, groupName)
+	group, err := r.con.Groups.GroupByName(r.orgID, groupName)
 	if err != nil {
 		if err.Error() == "Cannot destructure property 'req_id' of 'context' as it is undefined." {
 			r.log.Info("Group does not exist. Creating group.")
@@ -148,25 +143,25 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 			return err
 		}
 	}
-	var groupUuid string
+	var groupUUID string
 	if group == nil {
-		addGroup, err := r.con.Groups.AddGroup(r.orgId, groupName)
+		addGroup, err := r.con.Groups.AddGroup(r.orgID, groupName)
 		if err != nil {
 			return err
 		}
-		groupUuid = addGroup.UUID
+		groupUUID = addGroup.UUID
 	} else {
-		groupUuid = group.UUID
+		groupUUID = group.UUID
 	}
 
-	_, err = r.con.Groups.GroupClusters(r.orgId, groupUuid, []string{rCluster.ClusterID})
+	_, err = r.con.Groups.GroupClusters(r.orgID, groupUUID, []string{rCluster.ClusterID})
 	if err != nil {
-		r.log.Error(err, "Error while creating group", "group", groupName, "cluster", rCluster, "groupUuid", groupUuid)
+		r.log.Error(err, "Error while creating group", "group", groupName, "cluster", rCluster, "groupUUID", groupUUID)
 		return err
 	}
 
 	// Check if channel exists
-	existingChannel, err := r.con.Channels.ChannelByName(r.orgId, channelName)
+	existingChannel, err := r.con.Channels.ChannelByName(r.orgID, channelName)
 	if err != nil {
 		if !strings.HasPrefix(err.Error(), "Query channelByName error. Could not find the channel with name") {
 			return err
@@ -179,16 +174,16 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	}
 
 	// create channel
-	channel, err := r.con.Channels.AddChannel(r.orgId, channelName)
+	channel, err := r.con.Channels.AddChannel(r.orgID, channelName)
 	if err != nil {
 		return err
 	}
 
 	// create channel version
-	channelVersion, err := r.con.Versions.AddChannelVersion(r.orgId, channel.UUID, version, content, "")
+	channelVersion, err := r.con.Versions.AddChannelVersion(r.orgID, channel.UUID, version, content, "")
 	if err != nil {
 		// Remove channel if channelVersion could not be created
-		removeChannel, channelRemoveErr := r.con.Channels.RemoveChannel(r.orgId, channel.UUID)
+		removeChannel, channelRemoveErr := r.con.Channels.RemoveChannel(r.orgID, channel.UUID)
 		if channelRemoveErr != nil {
 			r.log.Error(channelRemoveErr, "Unable to remove channel after error")
 		} else if removeChannel.Success {
@@ -199,16 +194,16 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	}
 
 	// create subscription
-	_, err = r.con.Subscriptions.AddSubscription(r.orgId, channelName, channel.UUID, channelVersion.VersionUUID, []string{groupName})
+	_, err = r.con.Subscriptions.AddSubscription(r.orgID, channelName, channel.UUID, channelVersion.VersionUUID, []string{groupName})
 	if err != nil {
 		// Remove channelVersion and channel if the subscription could not be created
-		removeChannelVersion, versionRemoveErr := r.con.Versions.RemoveChannelVersion(r.orgId, channelVersion.VersionUUID)
+		removeChannelVersion, versionRemoveErr := r.con.Versions.RemoveChannelVersion(r.orgID, channelVersion.VersionUUID)
 		if versionRemoveErr != nil {
 			r.log.Error(versionRemoveErr, "Unable to remove channel version after error")
 		} else if removeChannelVersion.Success {
 			r.log.Info("Rolled back channel version after error")
 		}
-		removeChannel, channelRemoveErr := r.con.Channels.RemoveChannel(r.orgId, channel.UUID)
+		removeChannel, channelRemoveErr := r.con.Channels.RemoveChannel(r.orgID, channel.UUID)
 		if channelRemoveErr != nil {
 			r.log.Error(channelRemoveErr, "Unable to remove channel after error")
 		} else if removeChannel.Success {
@@ -221,7 +216,6 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	return nil
 }
 
-//nolint:golint,unused
 func (r *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	channelName := channelName(cluster, blueprint.Name)
 
@@ -232,7 +226,7 @@ func (r *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	r.log.Info("Blueprint content to update: " + string(content))
 
 	max := 0
-	channelInfo, err := r.con.Channels.ChannelByName(r.orgId, channelName)
+	channelInfo, err := r.con.Channels.ChannelByName(r.orgID, channelName)
 	if err != nil {
 		return errors.New("cannot fetch channel info for channel '" + channelName + "'")
 	}
@@ -251,12 +245,12 @@ func (r *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	if len(channelInfo.Subscriptions) != 1 {
 		return errors.New("found more or less than one subscription")
 	}
-	subscriptionUuid := channelInfo.Subscriptions[0].UUID
+	subscriptionUUID := channelInfo.Subscriptions[0].UUID
 
-	r.log.V(1).Info("Creating new channel version", "nextVersion", nextVersion, "subscriptionUuid", subscriptionUuid, "channelUuid", channelInfo.UUID)
+	r.log.V(1).Info("Creating new channel version", "nextVersion", nextVersion, "subscriptionUUID", subscriptionUUID, "channelUuid", channelInfo.UUID)
 
 	// create channel version
-	channelVersion, err := r.con.Versions.AddChannelVersion(r.orgId, channelInfo.UUID, nextVersion, content, "")
+	channelVersion, err := r.con.Versions.AddChannelVersion(r.orgID, channelInfo.UUID, nextVersion, content, "")
 	if err != nil {
 		r.log.Error(err, "er")
 		return err
@@ -265,7 +259,7 @@ func (r *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	r.log.V(2).Info("Updating subscription...")
 
 	// update subscription
-	_, err = r.con.Subscriptions.SetSubscription(r.orgId, subscriptionUuid, channelVersion.VersionUUID)
+	_, err = r.con.Subscriptions.SetSubscription(r.orgID, subscriptionUUID, channelVersion.VersionUUID)
 	if err != nil {
 		return err
 	}
@@ -275,15 +269,14 @@ func (r *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	return nil
 }
 
-//nolint:golint,unused
 func (r *ClusterManager) DeleteBlueprint(cluster string, namespace string, name string) error {
 	channelName := channelName(cluster, name)
-	channel, err := r.con.Channels.ChannelByName(r.orgId, channelName)
+	channel, err := r.con.Channels.ChannelByName(r.orgID, channelName)
 	if err != nil {
 		return err
 	}
 	for _, s := range channel.Subscriptions {
-		subscription, err := r.con.Subscriptions.RemoveSubscription(r.orgId, s.UUID)
+		subscription, err := r.con.Subscriptions.RemoveSubscription(r.orgID, s.UUID)
 		if err != nil {
 			return err
 		}
@@ -292,7 +285,7 @@ func (r *ClusterManager) DeleteBlueprint(cluster string, namespace string, name 
 		}
 	}
 	for _, v := range channel.Versions {
-		version, err := r.con.Versions.RemoveChannelVersion(r.orgId, v.UUID)
+		version, err := r.con.Versions.RemoveChannelVersion(r.orgID, v.UUID)
 		if err != nil {
 			return err
 		}
@@ -301,7 +294,7 @@ func (r *ClusterManager) DeleteBlueprint(cluster string, namespace string, name 
 		}
 	}
 
-	removeChannel, err := r.con.Channels.RemoveChannel(r.orgId, channel.UUID)
+	removeChannel, err := r.con.Channels.RemoveChannel(r.orgID, channel.UUID)
 	if err != nil {
 		return err
 	}
@@ -317,7 +310,7 @@ func channelName(cluster string, name string) string {
 	return "m4d.ibm.com" + "-" + cluster + "-" + name
 }
 
-func NewRazeeManager(url string, login string, password string, orgId string) multicluster.ClusterManager {
+func NewRazeeManager(url string, login string, password string, orgID string) multicluster.ClusterManager {
 	localAuth := &LocalAuthClient{
 		url:      url,
 		login:    login,
@@ -329,9 +322,9 @@ func NewRazeeManager(url string, login string, password string, orgId string) mu
 	logger := ctrl.Log.WithName("ClusterManager")
 
 	return &ClusterManager{
-		orgId:       orgId,
-		con:         con,
-		log:         logger,
+		orgID: orgID,
+		con:   con,
+		log:   logger,
 	}
 }
 
@@ -344,8 +337,8 @@ func NewSatConfManager(apikey string, orgID string) multicluster.ClusterManager 
 	logger := ctrl.Log.WithName("RazeeManager")
 
 	return &ClusterManager{
-		orgId:       orgID,
-		con:         con,
-		log:         logger,
+		orgID: orgID,
+		con:   con,
+		log:   logger,
 	}
 }

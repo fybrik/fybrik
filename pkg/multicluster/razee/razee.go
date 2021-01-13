@@ -22,10 +22,10 @@ const TokenValidityDuration = 40 * time.Minute
 
 //nolint:golint,unused
 type LocalAuthClient struct {
-	url      string
-	login    string
-	password string
-	token    string
+	url            string
+	login          string
+	password       string
+	token          string
 	tokenTimestamp time.Time
 }
 
@@ -62,6 +62,6 @@ func (t *LocalAuthClient) Authenticate(request *http.Request) error {
 		t.token = result.Signin.Token
 	}
 
-	request.Header.Add("Authorization", "Bearer " + t.token)
+	request.Header.Add("Authorization", "Bearer "+t.token)
 	return nil
 }
