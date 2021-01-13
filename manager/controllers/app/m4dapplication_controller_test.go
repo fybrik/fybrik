@@ -16,7 +16,6 @@ import (
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -38,18 +37,6 @@ func InitM4DApplication(name string, n int) *apiv1alpha1.M4DApplication {
 			Namespace: appSignature.Namespace,
 		},
 		Spec: apiv1alpha1.M4DApplicationSpec{Selector: apiv1alpha1.Selector{ClusterName: "US-cluster"}, Data: make([]apiv1alpha1.DataContext, n)},
-	}
-}
-
-// InitM4DIngesInitM4DNewDataApplicationtApplication creates an empty resource with n external data sets
-func InitM4DNewDataApplication(name string, n int) *apiv1alpha1.M4DApplication {
-	appSignature := types.NamespacedName{Name: name, Namespace: "default"}
-	return &apiv1alpha1.M4DApplication{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      appSignature.Name,
-			Namespace: appSignature.Namespace,
-		},
-		Spec: apiv1alpha1.M4DApplicationSpec{Selector: apiv1alpha1.Selector{ClusterName: "Turkey-cluster"}, Data: make([]apiv1alpha1.DataContext, n)},
 	}
 }
 
@@ -616,7 +603,7 @@ var _ = Describe("M4DApplication Controller", func() {
 						}
 			*/
 			appSignature := types.NamespacedName{Name: "m4d-newdata-test", Namespace: "default"}
-			resource := InitM4DNewDataApplication(appSignature.Name, 1)
+			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID:          "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}", // TODO: Add the catalog service
 				DestinationCatalog: "{\"catalog_system\": \"egaria\", \"catalog_id\": \"ingest_test\"}",
@@ -716,44 +703,32 @@ var _ = Describe("M4DApplication Controller", func() {
 			Eventually(func() error {
 				return k8sClient.Get(context.Background(), applicationKey, application)
 			}, timeout, interval).Should(Succeed())
-
-			// A blueprint namespace should be set
-			By("Expecting application to have a namespace in the status")
+			By("Expecting plotter to be constructed")
 			Eventually(func() *apiv1alpha1.ResourceReference {
-				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
+				_ = k8sClient.Get(context.Background(), applicationKey, application)
 				return application.Status.Generated
 			}, timeout, interval).ShouldNot(BeNil())
-			if application.Status.Generated.Kind == "Blueprint" {
-				// A blueprint namespace should be created
-				namespace := &v1.Namespace{}
-				ns := application.Status.Generated.Namespace
-				By("Expect namespace to be created")
-				Eventually(func() error {
-					return k8sClient.Get(context.Background(), client.ObjectKey{Namespace: "", Name: ns}, namespace)
-				}, timeout, interval).Should(Succeed())
 
-				// The blueprint has to be created in the blueprint namespace
-				blueprint := &apiv1alpha1.Blueprint{}
-				blueprintObjectKey := client.ObjectKey{Namespace: ns, Name: application.Name}
-				By("Expect blueprint to be created")
-				Eventually(func() error {
-					return k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)
-				}, timeout, interval).Should(Succeed())
+			// The plotter has to be created
+			plotter := &apiv1alpha1.Plotter{}
+			plotterObjectKey := client.ObjectKey{Namespace: application.Status.Generated.Namespace, Name: application.Status.Generated.Name}
+			By("Expect plotter to be created")
+			Eventually(func() error {
+				return k8sClient.Get(context.Background(), plotterObjectKey, plotter)
+			}, timeout, interval).Should(Succeed(), "Could not find Plotter "+application.Status.Generated.Namespace+"/"+application.Status.Generated.Name)
+			By("Expect plotter to be ready at some point")
+			Eventually(func() bool {
+				Expect(k8sClient.Get(context.Background(), plotterObjectKey, plotter)).To(Succeed())
+				return plotter.Status.ObservedState.Ready
+			}, timeout*10, interval).Should(BeTrue(), "plotter is not ready")
 
-				By("Expect blueprint to be ready at some point")
-				Eventually(func() bool {
-					Expect(k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)).To(Succeed())
-					return blueprint.Status.ObservedState.Ready
-				}, timeout*10, interval).Should(BeTrue())
-
-				// Extra long timeout as deploying the arrow-flight module on a new cluster may take some time
-				// depending on the download speed
-				By("Expecting M4DApplication to eventually be ready")
-				Eventually(func() bool {
-					Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
-					return application.Status.Ready
-				}, timeout*10, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
-			}
+			// Extra long timeout as deploying the arrow-flight module on a new cluster may take some time
+			// depending on the download speed
+			By("Expecting M4DApplication to eventually be ready")
+			Eventually(func() bool {
+				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
+				return application.Status.Ready
+			}, timeout*10, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
 		})
 	})
 })
