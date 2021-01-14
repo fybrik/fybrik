@@ -49,9 +49,6 @@ spec:
               items:
                 description: DataContext indicates data set chosen by the Data Scientist to be read from or written to by his application, and includes information about the data format and technologies used by the application to access the data.
                 properties:
-                  cataloged:
-                    description: Cataloged indicates whether or not the data set has already been registered in the organization's data catalog. When a user chooses the data set from the catalog this should be true.  In flows where a new data set is being created in the M4D managed environment this should be false.
-                    type: boolean
                   dataSetID:
                     description: DataSetID is a unique identifier of the dataset either chosen from the enterprise data catalog for processing by the data user application, or the source location of a new data set being imported into the environment.  This parameter should contain datacatalogservice, catalog, datasetID.
                     minLength: 1

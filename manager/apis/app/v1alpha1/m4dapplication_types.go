@@ -40,12 +40,6 @@ type DataContext struct {
 	// +optional
 	Recurrence RecurrenceType `json:"recurrence,omitempty"`
 
-	// Cataloged indicates whether or not the data set has already been registered in the organization's data catalog.
-	// When a user chooses the data set from the catalog this should be true.  In flows where a new data set is
-	// being created in the M4D managed environment this should be false.
-	// +optional
-	Cataloged bool `json:"cataloged,omitempty"`
-
 	// DestinationCatalog indicates the catalog service and catalog in which a data set being imported should be registered.
 	// This parameter should contain datacatalogservice, and catalog.  This should be populated only when Cataloged is false.
 	// +optional
