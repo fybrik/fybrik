@@ -495,28 +495,26 @@ var _ = Describe("M4DApplication Controller", func() {
 				_ = k8sClient.Get(context.Background(), appSignature, resource)
 				return resource.Status.Generated
 			}, timeout, interval).ShouldNot(BeNil())
+			By("Expecting plotter to be generated")
+			plotter := &apiv1alpha1.Plotter{}
+			Eventually(func() error {
+				key := types.NamespacedName{Name: resource.Status.Generated.Name, Namespace: resource.Status.Generated.Namespace}
+				return k8sClient.Get(context.Background(), key, plotter)
+			}, timeout, interval).Should(Succeed())
 
-			if resource.Status.Generated.Kind == "Blueprint" {
-				By("Expecting blueprint to be generated")
-				blueprint := &apiv1alpha1.Blueprint{}
-				Eventually(func() error {
-					Expect(k8sClient.Get(context.Background(), appSignature, resource)).Should(Succeed())
-					key := appSignature
-					key.Namespace = resource.Status.Generated.Namespace
-					return k8sClient.Get(context.Background(), key, blueprint)
-				}, timeout, interval).Should(Succeed())
-
-				// Check the generated blueprint
-				// There should be a single read module with two datasets
-				numReads := 0
-				for _, step := range blueprint.Spec.Flow.Steps {
-					if step.Template == readPathModule.Name {
-						numReads++
-						Expect(len(step.Arguments.Read)).To(Equal(2))
-					}
+			// Check the generated blueprint
+			// There should be a single read module with two datasets
+			Expect(len(plotter.Spec.Blueprints)).To(Equal(1))
+			blueprint := plotter.Spec.Blueprints["US-cluster"]
+			Expect(blueprint).NotTo(BeNil())
+			numReads := 0
+			for _, step := range blueprint.Flow.Steps {
+				if step.Template == readPathModule.Name {
+					numReads++
+					Expect(len(step.Arguments.Read)).To(Equal(2))
 				}
-				Expect(numReads).To(Equal(1))
 			}
+			Expect(numReads).To(Equal(1))
 		})
 		It("Test multiple-blueprints", func() {
 			// allocate storage
@@ -638,35 +636,33 @@ var _ = Describe("M4DApplication Controller", func() {
 				DeleteM4DApplication(appSignature.Name)
 			}()
 
-			By("Expecting a namespace to be allocated")
 			Eventually(func() *apiv1alpha1.ResourceReference {
 				_ = k8sClient.Get(context.Background(), appSignature, resource)
 				return resource.Status.Generated
 			}, timeout, interval).ShouldNot(BeNil())
 
-			if resource.Status.Generated.Kind == "Blueprint" {
-				By("Expecting blueprint to be generated")
-				blueprint := &apiv1alpha1.Blueprint{}
-				Eventually(func() error {
-					Expect(k8sClient.Get(context.Background(), appSignature, resource)).Should(Succeed())
-					key := appSignature
-					key.Namespace = resource.Status.Generated.Namespace
-					return k8sClient.Get(context.Background(), key, blueprint)
-				}, timeout, interval).Should(Succeed())
+			By("Expecting plotter to be generated")
+			plotter := &apiv1alpha1.Plotter{}
+			Eventually(func() error {
+				key := types.NamespacedName{Name: resource.Status.Generated.Name, Namespace: resource.Status.Generated.Namespace}
+				return k8sClient.Get(context.Background(), key, plotter)
+			}, timeout, interval).Should(Succeed())
 
-				// Check the generated blueprint
-				// There should be a single copy module
-				numSteps := 0
-				moduleMatch := false
-				for _, step := range blueprint.Spec.Flow.Steps {
-					numSteps++
-					if step.Template == s3Module.Name {
-						moduleMatch = true
-					}
+			// Check the generated blueprint
+			// There should be a single copy module
+			Expect(len(plotter.Spec.Blueprints)).To(Equal(1))
+			blueprint := plotter.Spec.Blueprints["US-cluster"]
+			Expect(blueprint).NotTo(BeNil())
+			numSteps := 0
+			moduleMatch := false
+			for _, step := range blueprint.Flow.Steps {
+				numSteps++
+				if step.Template == s3Module.Name {
+					moduleMatch = true
 				}
-				Expect(numSteps).To(Equal(1))
-				Expect(moduleMatch).To(Equal(true))
 			}
+			Expect(numSteps).To(Equal(1))
+			Expect(moduleMatch).To(Equal(true))
 			DeleteM4DApplication(appSignature.Name)
 		})
 	})
