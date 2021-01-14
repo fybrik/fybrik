@@ -119,15 +119,24 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) (ctr
 	return ctrl.Result{}, nil
 }
 
-func getReleaseName(step app.FlowStep) string {
+func getReleaseName(blueprintName string, step app.FlowStep) string {
 	// we add the "r" character at the beginning of the release name, since it must begin with an alphabetic character
-	return "r" + utils.Hash(step.Name, 20)
+	fullName := blueprintName + "-" + step.Name
+	if len(fullName) > 63 { // Some k8s objects only allow for a length of 63 characters. This is why we restrict it here
+		// The new name is formed from a prefix which is formed from the full name to have some human readable
+		// form of the name and the postfix which is the last characters hashed to have some shorter identifier
+		// that is still deterministic given the full name.
+		prefix := fullName[:57]
+		postfix := utils.Hash(fullName[:57], 5)
+		return prefix + "-" + postfix
+	}
+	return fullName
 }
 
 func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) error {
 	errs := make([]string, 0)
 	for _, step := range blueprint.Spec.Flow.Steps {
-		releaseName := getReleaseName(step)
+		releaseName := getReleaseName(blueprint.Name, step)
 		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus != nil || rel == nil {
 			continue
 		}
@@ -143,7 +152,7 @@ func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) 
 
 func (r *BlueprintReconciler) hasExternalResources(blueprint *app.Blueprint) bool {
 	for _, step := range blueprint.Spec.Flow.Steps {
-		releaseName := getReleaseName(step)
+		releaseName := getReleaseName(blueprint.Name, step)
 		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus == nil && rel != nil {
 			return true
 		}
@@ -253,7 +262,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
 
-		releaseName := getReleaseName(step)
+		releaseName := getReleaseName(blueprint.Name, step)
 		log.V(0).Info("Release name: " + releaseName)
 		numReleases++
 		// check the release status
