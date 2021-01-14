@@ -38,8 +38,8 @@ github.com/IBM/go-sdk-core v1.1.0 h1:pV73lZqr9r1xKb3h08c1uNG3AphwoV5KzUzhS+pfEqY
 github.com/IBM/go-sdk-core v1.1.0/go.mod h1:2pcx9YWsIsZ3I7kH+1amiAkXvLTZtAq9kbxsfXilSoY=
 github.com/IBM/go-sdk-core/v4 v4.8.0 h1:QA0GedzHgdvoCPxREItrfAWb5NMTnZjM3i7fEqC19Kg=
 github.com/IBM/go-sdk-core/v4 v4.8.0/go.mod h1:GECJ/p0r9Hs0XcOnCiGjZrt6M/rQc+gW8YkCsGJ+j5U=
-github.com/IBM/satcon-client-go v0.0.0-20201112204724-2c144e92e201 h1:LIoX02zqjOlRkb36ZmUNuCAicAqHJn9QYW8LM4LUsts=
-github.com/IBM/satcon-client-go v0.0.0-20201112204724-2c144e92e201/go.mod h1:K9V1NwwCV8cXm5mEWK3s3+TpZwI/bWGPuT84C7jBecM=
+github.com/IBM/satcon-client-go v0.0.0-20210107134702-1be071817792 h1:AWqdZP2ZwG9VHIpgVgUPGZXXXqkiiVeUoWaEu2rem/k=
+github.com/IBM/satcon-client-go v0.0.0-20210107134702-1be071817792/go.mod h1:K9V1NwwCV8cXm5mEWK3s3+TpZwI/bWGPuT84C7jBecM=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
 github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd h1:sjQovDkwrZp8u+gxLtPgKGjk5hCxuy2hrRejBTA9xFU=
 github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd/go.mod h1:64YHyfSL2R96J44Nlwm39UHepQbyR5q10x7iYa1ks2E=

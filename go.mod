@@ -5,7 +5,7 @@ go 1.13
 require (
 	emperror.dev/errors v0.7.0
 	github.com/IBM/go-sdk-core v1.1.0
-	github.com/IBM/satcon-client-go v0.0.0-20201112204724-2c144e92e201
+	github.com/IBM/satcon-client-go v0.0.0-20210107134702-1be071817792
 	github.com/Microsoft/go-winio v0.4.15 // indirect
 	github.com/containerd/continuity v0.0.0-20201119173150-04c754faca46 // indirect
 	github.com/ghodss/yaml v1.0.0
