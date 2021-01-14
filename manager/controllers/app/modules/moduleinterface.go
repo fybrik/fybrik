@@ -41,8 +41,6 @@ type DataInfo struct {
 	// For an existing workload a read path is chosen to connect the data to the workload
 	// For copying data into the m4d environment no workload is selected, thus the read path won't be chosen
 	WorkloadSelected bool
-	// Recurrence indicates whether the data streams or requires repeat loads if this is copy or read
-	//	Recurrence app.RecurrenceType
 }
 
 // ModuleInstanceSpec consists of the module spec and arguments
@@ -62,7 +60,6 @@ type Selector struct {
 	Source       *app.InterfaceDetails
 	Destination  *app.InterfaceDetails
 	Actions      []pb.EnforcementAction
-	Recurrence   app.RecurrenceType
 }
 
 // TODO: Add function to check if module supports recurrence type

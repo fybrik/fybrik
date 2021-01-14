@@ -81,9 +81,6 @@ spec:
                     required:
                     - protocol
                     type: object
-                  recurrence:
-                    description: Recurrence indicates how often the copy should take place or if streamed input is needed Default is none
-                    type: string
                 required:
                 - dataSetID
                 - ifDetails

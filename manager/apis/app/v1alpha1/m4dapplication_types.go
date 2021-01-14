@@ -8,19 +8,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// RecurrenceType defines how often the data loads should be repeated
-// Relevant to implicit and explicit copies, streamed read flows
-type RecurrenceType string
-
-// RecurrenceType valid values
-const (
-	None    RecurrenceType = "none" // load once, and no repeat
-	Daily   RecurrenceType = "daily"
-	Weekly  RecurrenceType = "weekly"
-	Monthly RecurrenceType = "monthly"
-	Stream  RecurrenceType = "stream"
-)
-
 // DataContext indicates data set chosen by the Data Scientist to be read from or written to by his application,
 // and includes information about the data format and technologies used by the application
 // to access the data.
@@ -34,11 +21,6 @@ type DataContext struct {
 	// IFdetails indicates the protocol and format expected by the data by the Data Scientist's application
 	// +required
 	IFdetails InterfaceDetails `json:"ifDetails"`
-
-	// Recurrence indicates how often the copy should take place or if streamed input is needed
-	// Default is none
-	// +optional
-	Recurrence RecurrenceType `json:"recurrence,omitempty"`
 
 	// DestinationCatalog indicates the catalog service and catalog in which a data set being imported should be registered.
 	// This parameter should contain datacatalogservice, and catalog.  This should be populated only when Cataloged is false.
