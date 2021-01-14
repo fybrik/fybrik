@@ -143,7 +143,6 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo) ([]modules.
 		if !item.Actions[pb.AccessOperation_WRITE].Allowed {
 			return instances, errors.New(app.CopyNotAllowed)
 		}
-
 	} else {
 		// COPY FLOW
 		copyRequired = true
