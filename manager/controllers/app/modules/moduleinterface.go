@@ -17,18 +17,16 @@ type Transformations struct {
 	Allowed            bool
 	EnforcementActions []pb.EnforcementAction
 	Message            string
+	// geography relevant for the read/write operation
+	// indicates where the workload runs (for read access) or where to write the data to (for copying data to another location)
+	Geo string
 }
 
 // DataInfo defines all the information about the given data set
 // TODO: Add support for recurrence in modules
 type DataInfo struct {
-	// Indicates which of the different data catalogs contains the connection and metadata about this data set
-	CatalogID string
 	// Data asset unique identifier, not necessarily the same string appearing in the resource definition
-	// For ingest this is based on the asset name, since there is no unique catalog id yet
 	AssetID string
-	// Processing geography
-	Geo string
 	// Application interface
 	AppInterface *app.InterfaceDetails
 	// Source connection details
@@ -36,12 +34,13 @@ type DataInfo struct {
 	// Data asset credentials
 	Credentials *pb.DatasetCredentials
 	// Governance actions
-	Actions map[app.ModuleFlow]Transformations
-	// Flow indicates what is being done with this data set
-	// Copy indicates that this is an ingest flow.
-	// Read indicates that the workload wants to read this data
-	// Write isn't implemented yet
-	Flow app.ModuleFlow
+	// Actions are collected on demand depending on the scenario
+	// For reading the data by the workload READ operation is requested always, WRITE is requested only when implicit copy is required
+	// For copying data into the managed environment, WRITE is always requested, READ is implicitly allowed (as suggested by the scenario) so no need to check
+	Actions map[pb.AccessOperation_AccessType]Transformations
+	// For an existing workload a read path is chosen to connect the data to the workload
+	// For copying data into the m4d environment no workload is selected, thus the read path won't be chosen
+	WorkloadSelected bool
 	// Recurrence indicates whether the data streams or requires repeat loads if this is copy or read
 	//	Recurrence app.RecurrenceType
 }
@@ -229,11 +228,15 @@ func CheckDependencies(module *app.M4DModule, moduleMap map[string]*app.M4DModul
 // Copy is done at source when transformations are required, and at target - otherwise
 // Write is done at target
 func (m *Selector) SelectCluster(item DataInfo, clusters []multicluster.Cluster) (string, error) {
-	var geo string
-	if len(m.Actions) > 0 && m.Flow == app.Copy {
-		geo = item.DataDetails.Geo
-	} else {
-		geo = item.Geo
+	geo := item.DataDetails.Geo
+	if m.Flow == app.Read {
+		if actions, found := item.Actions[pb.AccessOperation_READ]; found {
+			geo = actions.Geo
+		}
+	} else if m.Flow == app.Copy && len(m.Actions) == 0 {
+		if actions, found := item.Actions[pb.AccessOperation_WRITE]; found {
+			geo = actions.Geo
+		}
 	}
 	for _, cluster := range clusters {
 		if cluster.Metadata.Region == geo {

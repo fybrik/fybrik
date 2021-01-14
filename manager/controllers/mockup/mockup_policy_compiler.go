@@ -47,7 +47,7 @@ func (s *MockPolicyCompiler) GetPoliciesDecisions(in *pb.ApplicationContext) (*p
 				Id:   "Deny-ID",
 			})
 		case "deny-on-copy":
-			if element.GetOperation().GetType() == pb.AccessOperation_COPY {
+			if element.GetOperation().GetType() == pb.AccessOperation_WRITE {
 				enforcementActions = append(enforcementActions, &pb.EnforcementAction{
 					Name: "Deny",
 					Id:   "Deny-ID",

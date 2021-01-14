@@ -218,32 +218,19 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	// A unique identifier (AssetID) is used to represent the dataset in the internal flow (for logs, map keys, vault path creation)
 	// The original dataset.DataSetID is used for communication with the connectors
 
-	workloadGeography, err := r.GetProcessingGeography(applicationContext)
-	if err != nil {
-		setCondition(applicationContext, "", err.Error(), "", true)
-		return ctrl.Result{}, err
-	}
+	workloadExists := applicationContext.Spec.Selector.WorkloadSelector.Size() > 0
 	var requirements []modules.DataInfo
 	for _, dataset := range applicationContext.Spec.Data {
 		req := modules.DataInfo{
-			AssetID:      dataset.DataSetID,
-			DataDetails:  nil,
-			Credentials:  nil,
-			Actions:      make(map[app.ModuleFlow]modules.Transformations),
-			AppInterface: &dataset.IFdetails,
-			Geo:          workloadGeography,
+			AssetID:          dataset.DataSetID,
+			DataDetails:      nil,
+			Credentials:      nil,
+			Actions:          make(map[pb.AccessOperation_AccessType]modules.Transformations),
+			AppInterface:     &dataset.IFdetails,
+			WorkloadSelected: workloadExists,
 		}
-
-		if dataset.Cataloged {
-			// get enforcement actions and location info for the dataset which is already in the organization's catalog
-			if err := r.ConstructDataInfo(dataset.DataSetID, &req, applicationContext); err != nil {
-				return ctrl.Result{}, err
-			}
-		} else {
-			// Get governance decisions related to writing the data in the M4D controlled environment, and allocate destination storage
-			if err := r.ConstructNewDataInfo(dataset, &req, applicationContext, clusters); err != nil {
-				return ctrl.Result{}, err
-			}
+		if err := r.ConstructDataInfo(&req, applicationContext, clusters); err != nil {
+			return ctrl.Result{}, err
 		}
 		requirements = append(requirements, req)
 	}
@@ -291,83 +278,66 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	return ctrl.Result{}, nil
 }
 
-// ConstructNewDataInfo handles the flow where a new data set is being added to the M4D managed environment.  This means that the data set
-// needs to be cataloged in the environment's catalog.
-// NOTE: Assumes the credentials were put into the M4D credential manager by the user!!
-// TODO: When implementing multiple data catalogs there needs to be a way to differentiate between the "inline" catalog where the source data
-// info resides, and the catalog to which we want to register the data set.
-// TODO: Resolve credential issues
-func (r *M4DApplicationReconciler) ConstructNewDataInfo(dataset app.DataContext, req *modules.DataInfo, input *app.M4DApplication, clusters []multicluster.Cluster) error {
-	// Call the DataCatalog service holding the external data info to get info about the dataset
-	if err := GetConnectionDetails(dataset.DataSetID, req, input); err != nil {
-		return AnalyzeError(input, r.Log, dataset.DataSetID, err, "Catalog Connector")
-	}
-
-	// Call the CredentialsManager service to get the credentials for the dataset
-	if err := GetCredentials(dataset.DataSetID, req, input); err != nil {
-		return AnalyzeError(input, r.Log, dataset.DataSetID, err, "Credentials Manager")
-	}
-
-	// The received credentials are stored in M4D's internal vault
-	if err := r.RegisterCredentials(req); err != nil {
-		return AnalyzeError(input, r.Log, dataset.DataSetID, err, "Vault")
-	}
-
-	req.AssetID = dataset.DataSetID
-	req.Actions = make(map[app.ModuleFlow]modules.Transformations)
-	req.AppInterface = &dataset.IFdetails
-	req.Flow = app.Copy // This is how we know we're copying an external dataset into the M4D controlled environment
-
-	// Check if we are allowed to write the data to any of the geographies available to us
-	// If yes, we will allocate the storage later
-	excludedGeos := ""
-	for _, cluster := range clusters {
-		req.Geo = cluster.Metadata.Region
-		if err := LookupPolicyDecisions(dataset.DataSetID, r.PolicyCompiler, req, input, pb.AccessOperation_WRITE); err != nil {
-			return AnalyzeError(input, r.Log, req.AssetID, err, "Policy Compiler")
-		}
-		if req.Actions[app.Write].Allowed {
-			return nil // We found a geo to which we can write
-		}
-		if excludedGeos != "" {
-			excludedGeos += ", "
-		}
-		excludedGeos += cluster.Metadata.Region
-	}
-
-	// We haven't found any geographies to which we are allowed to write
-	setCondition(input, req.AssetID, "Writing to all geographies denied: "+excludedGeos, "Policy Compiler", true)
-
-	return nil
-}
-
 // ConstructDataInfo gets a list of governance actions FOR READING and data location details for the given dataset and fills the received DataInfo structure
 // Assumes that the data is registered in the data catalog.
-func (r *M4DApplicationReconciler) ConstructDataInfo(datasetID string, req *modules.DataInfo, input *app.M4DApplication) error {
-	// policies for READ operation
-	req.Flow = app.Read // This is how we know it's a read path flow
-	if err := LookupPolicyDecisions(datasetID, r.PolicyCompiler, req, input, pb.AccessOperation_READ); err != nil {
-		return AnalyzeError(input, r.Log, datasetID, err, "Policy Compiler")
-	}
-	if !req.Actions[app.Read].Allowed {
-		setCondition(input, datasetID, req.Actions[app.Read].Message, "Policy Compiler", true)
-	}
+func (r *M4DApplicationReconciler) ConstructDataInfo(req *modules.DataInfo, input *app.M4DApplication, clusters []multicluster.Cluster) error {
+	datasetID := req.AssetID
+	var err error
 	// Call the DataCatalog service to get info about the dataset
-	if err := GetConnectionDetails(datasetID, req, input); err != nil {
+	if err = GetConnectionDetails(datasetID, req, input); err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err, "Catalog Connector")
 	}
 	// Call the CredentialsManager service to get info about the dataset
-	if err := GetCredentials(datasetID, req, input); err != nil {
+	if err = GetCredentials(datasetID, req, input); err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err, "Credentials Manager")
 	}
 	// The received credentials are stored in vault
-	if err := r.RegisterCredentials(req); err != nil {
+	if err = r.RegisterCredentials(req); err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err, "Vault")
 	}
 
-	// policies for COPY operation in case copy is required
-	if err := LookupPolicyDecisions(datasetID, r.PolicyCompiler, req, input, pb.AccessOperation_COPY); err != nil {
-		return AnalyzeError(input, r.Log, datasetID, err, "Policy Compiler")
+	// policies for READ operation
+	var workloadGeography string
+	if req.WorkloadSelected {
+		workloadGeography, err = r.GetProcessingGeography(input)
+		if err != nil {
+			setCondition(input, datasetID, err.Error(), "", true)
+			return err
+		}
+
+		if req.Actions[pb.AccessOperation_READ], err = LookupPolicyDecisions(datasetID, r.PolicyCompiler, input,
+			pb.AccessOperation{Type: pb.AccessOperation_READ, Destination: workloadGeography}); err != nil {
+			return AnalyzeError(input, r.Log, datasetID, err, "Policy Compiler")
+		}
+		if !req.Actions[pb.AccessOperation_READ].Allowed {
+			setCondition(input, datasetID, req.Actions[pb.AccessOperation_READ].Message, "Policy Compiler", true)
+		}
+	}
+
+	// policies for WRITE operation
+	// if workload exists, the write will be done to the workload geography depending on the decision logic
+	// Otherwise, select any of the available geographies
+	if req.WorkloadSelected {
+		if req.Actions[pb.AccessOperation_WRITE], err = LookupPolicyDecisions(datasetID, r.PolicyCompiler, input, pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: workloadGeography}); err != nil {
+			return AnalyzeError(input, r.Log, datasetID, err, "Policy Compiler")
+		}
+	} else {
+		excludedGeos := ""
+		for _, cluster := range clusters {
+			operation := pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: cluster.Metadata.Region}
+			if req.Actions[pb.AccessOperation_WRITE], err = LookupPolicyDecisions(datasetID, r.PolicyCompiler, input, operation); err != nil {
+				return AnalyzeError(input, r.Log, datasetID, err, "Policy Compiler")
+			}
+			if req.Actions[pb.AccessOperation_WRITE].Allowed {
+				return nil // We found a geo to which we can write
+			}
+			if excludedGeos != "" {
+				excludedGeos += ", "
+			}
+			excludedGeos += cluster.Metadata.Region
+		}
+		// We haven't found any geographies to which we are allowed to write
+		setCondition(input, datasetID, "Writing to all geographies denied: "+excludedGeos, "Policy Compiler", true)
 	}
 	return nil
 }

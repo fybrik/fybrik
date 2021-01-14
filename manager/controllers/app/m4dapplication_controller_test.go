@@ -31,12 +31,31 @@ func GetStorageSignature() types.NamespacedName {
 // InitM4DApplication creates an empty resource with n cataloged data sets
 func InitM4DApplication(name string, n int) *apiv1alpha1.M4DApplication {
 	appSignature := types.NamespacedName{Name: name, Namespace: "default"}
+	labels := map[string]string{"key": "value"}
 	return &apiv1alpha1.M4DApplication{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      appSignature.Name,
 			Namespace: appSignature.Namespace,
 		},
-		Spec: apiv1alpha1.M4DApplicationSpec{Selector: apiv1alpha1.Selector{ClusterName: "US-cluster"}, Data: make([]apiv1alpha1.DataContext, n)},
+		Spec: apiv1alpha1.M4DApplicationSpec{
+			Selector: apiv1alpha1.Selector{ClusterName: "US-cluster", WorkloadSelector: metav1.LabelSelector{MatchLabels: labels}},
+			Data:     make([]apiv1alpha1.DataContext, n),
+		},
+	}
+}
+
+// InitM4DApplicationWithoutWorkload creates an empty resource with no workload reference
+func InitM4DApplicationWithoutWorkload(name string, n int) *apiv1alpha1.M4DApplication {
+	appSignature := types.NamespacedName{Name: name, Namespace: "default"}
+	return &apiv1alpha1.M4DApplication{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      appSignature.Name,
+			Namespace: appSignature.Namespace,
+		},
+		Spec: apiv1alpha1.M4DApplicationSpec{
+			Selector: apiv1alpha1.Selector{ClusterName: "US-cluster"},
+			Data:     make([]apiv1alpha1.DataContext, n),
+		},
 	}
 }
 
@@ -603,7 +622,7 @@ var _ = Describe("M4DApplication Controller", func() {
 						}
 			*/
 			appSignature := types.NamespacedName{Name: "m4d-newdata-test", Namespace: "default"}
-			resource := InitM4DApplication(appSignature.Name, 1)
+			resource := InitM4DApplicationWithoutWorkload(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID:          "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}", // TODO: Add the catalog service
 				DestinationCatalog: "{\"catalog_system\": \"egaria\", \"catalog_id\": \"ingest_test\"}",
