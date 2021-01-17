@@ -20,7 +20,7 @@ spec:
   data:
     - dataSetID: '{"asset_id": "xxx", "catalog_id": "s3"}'
       requirements:
-        ifDetails:
+        interface:
           protocol: m4d-arrow-flight
           dataformat: arrow
 

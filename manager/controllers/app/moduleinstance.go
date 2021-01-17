@@ -99,7 +99,7 @@ func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.
 	// select a read module that supports user interface requirements
 	// actions are not checked since they are not necessarily done by the read module
 	readSelector := &modules.Selector{Flow: app.Read,
-		Destination:  &item.Context.Requirements.IFdetails,
+		Destination:  &item.Context.Requirements.Interface,
 		Actions:      make([]pb.EnforcementAction, 0),
 		Source:       nil,
 		Dependencies: make([]*app.M4DModule, 0),
@@ -123,7 +123,7 @@ func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.
 	} else if item.Context.Requirements.Copy.Required {
 		copyRequired = true
 		actionsOnCopy = item.Actions[pb.AccessOperation_WRITE].EnforcementActions
-		interfaces = []*app.InterfaceDetails{&item.Context.Requirements.IFdetails}
+		interfaces = []*app.InterfaceDetails{&item.Context.Requirements.Interface}
 	}
 	if !copyRequired {
 		return nil, nil

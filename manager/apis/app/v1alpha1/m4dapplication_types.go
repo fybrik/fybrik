@@ -10,35 +10,31 @@ import (
 
 // CatalogRequirements contain the specifics for catalogging the data asset
 type CatalogRequirements struct {
-	// Required indicates that the data asset should be cataloged.
+	// CatalogService specifies the datacatalog service that will be used for catalogging the data into.
 	// +optional
-	Required bool `json:"required,omitempty"`
+	CatalogService string `json:"service,omitempty"`
 
 	// CatalogID specifies the catalog where the data will be cataloged.
 	// +optional
 	CatalogID string `json:"catalogID,omitempty"`
-
-	// CatalogService specifies the datacatalog service that will be used for catalogging the data into.
-	// +optional
-	CatalogService string `json:"service,omitempty"`
 }
 
 // CopyRequirements include the requirements for the data copy operation
 type CopyRequirements struct {
-	// Required indicates that the data should be copied.
+	// Required indicates that the data must be copied.
 	// +optional
 	Required bool `json:"required,omitempty"`
 
-	// Catalog indicates that the data asset should be cataloged.
+	// Catalog indicates that the data asset must be cataloged.
 	// +optional
 	Catalog CatalogRequirements `json:"catalog,omitempty"`
 }
 
 // DataRequirements structure contains a list of requirements (interface, need to catalog the dataset, etc.)
 type DataRequirements struct {
-	// IFdetails indicates the protocol and format expected by the data user
+	// Interface indicates the protocol and format expected by the data user
 	// +required
-	IFdetails InterfaceDetails `json:"ifDetails"`
+	Interface InterfaceDetails `json:"interface"`
 
 	// CopyRequrements include the requirements for copying the data
 	// +optional

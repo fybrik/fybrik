@@ -237,7 +237,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID:    "{\"asset_id\": \"123\", \"catalog_id\": \"db2\"}",
-				Requirements: apiv1alpha1.DataRequirements{IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet}},
+				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet}},
 			}
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
@@ -282,7 +282,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID:    "{\"asset_id\": \"deny-dataset\", \"catalog_id\": \"s3\"}",
-				Requirements: apiv1alpha1.DataRequirements{IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet}},
+				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet}},
 			}
 
 			// Create M4DApplication
@@ -316,7 +316,7 @@ var _ = Describe("M4DApplication Controller", func() {
 
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"db2\"}",
-				Requirements: apiv1alpha1.DataRequirements{IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet}},
+				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet}},
 			}
 			Expect(k8sClient.Create(context.Background(), CreateReadPathModule())).Should(Succeed())
 
@@ -357,7 +357,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID:    "{\"asset_id\": \"deny-on-copy\", \"catalog_id\": \"db2\"}",
-				Requirements: apiv1alpha1.DataRequirements{IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
+				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
 			}
 
 			// Create M4DApplication
@@ -400,11 +400,11 @@ var _ = Describe("M4DApplication Controller", func() {
 			resource := InitM4DApplication(appSignature.Name, 2)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"db2\"}",
-				Requirements: apiv1alpha1.DataRequirements{IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
+				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
 			}
 			resource.Spec.Data[1] = apiv1alpha1.DataContext{
 				DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
-				Requirements: apiv1alpha1.DataRequirements{IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
+				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
 			}
 
 			// Create M4DApplication
@@ -467,11 +467,11 @@ var _ = Describe("M4DApplication Controller", func() {
 			resource := InitM4DApplication(appSignature.Name, 2)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID:    "{\"asset_id\": \"default-dataset\", \"catalog_id\": \"db2\"}",
-				Requirements: apiv1alpha1.DataRequirements{IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
+				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
 			}
 			resource.Spec.Data[1] = apiv1alpha1.DataContext{
 				DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
-				Requirements: apiv1alpha1.DataRequirements{IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
+				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
 			}
 
 			// Create M4DApplication
@@ -539,7 +539,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID:    "{\"asset_id\": \"default-dataset\", \"catalog_id\": \"s3-external\"}",
-				Requirements: apiv1alpha1.DataRequirements{IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
+				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
 			}
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
@@ -594,30 +594,14 @@ var _ = Describe("M4DApplication Controller", func() {
 			db2Module := CreateDb2ToS3CopyModule()
 			Expect(k8sClient.Create(context.Background(), db2Module)).Should(Succeed())
 
-			// TODO: Register data set in inline catalog
-			/*			dataStore := apiv1alpha1.DataStore{
-							CredentialLocation: "wherever",
-							Connection: &pb.DataStore{
-								Type: 2, // S3
-								Name: "New Data Test",
-								S3: &pb.S3DataStore{
-									Endpoint:  "endpoint",
-									Bucket:    "bucket",
-									ObjectKey: "object key",
-									Region:    "region",
-								},
-							},
-							Format: string(apiv1alpha1.Parquet),
-						}
-			*/
 			appSignature := types.NamespacedName{Name: "m4d-newdata-test", Namespace: "default"}
 			resource := InitM4DApplicationWithoutWorkload(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
 				DataSetID: "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}", // TODO: Add the catalog service
 				Requirements: apiv1alpha1.DataRequirements{
-					IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
+					Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
 					Copy: apiv1alpha1.CopyRequirements{Required: true,
-						Catalog: apiv1alpha1.CatalogRequirements{Required: true, CatalogID: "ingest_test", CatalogService: "Egeria"}}},
+						Catalog: apiv1alpha1.CatalogRequirements{CatalogID: "ingest_test", CatalogService: "Egeria"}}},
 			}
 
 			// Create M4DApplication
