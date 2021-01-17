@@ -1,0 +1,29 @@
+apiVersion: katalog.m4d.ibm.com/v1alpha1
+kind: Asset
+metadata:
+  name: data-csv
+spec:
+  secretRef: 
+    name: data-csv-creds
+  details:
+    dataFormat: csv
+    connection:
+      type: s3
+      s3:
+        endpoint: "http://minio:9000"
+        bucket: demo
+        objectKey: data.csv
+  security:
+    geography: us-south
+    tags:
+    - finance
+    componentsMetadata:
+      nameOrig: 
+        tags:
+        - PII
+      oldbalanceOrg:
+        tags:
+        - sensitive
+      newbalanceOrig:
+        tags:
+        - sensitive
