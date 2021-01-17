@@ -39,52 +39,79 @@ spec:
                   description: Purpose indicates the reason for the processing and the use of the data by the Data Scientist's application.
                   type: string
                 role:
-                  description: Role indicates the position held or role filled by the Data Scientist as it relates to the processing of the data he has chosen. TO BE MOVED TO CREDENTIALS
+                  description: Role indicates the position held or role filled by the Data Scientist as it relates to the processing of the data he has chosen.
                   type: string
               required:
               - role
               type: object
             data:
-              description: 'Data contains the identifiers of the cataloged data to be read or written by the Data Scientist''s application, and the protocol used to access it and the format expected. Note: either Data or ExternalData must have at least one entry'
+              description: Data contains the identifiers of the data to be used by the Data Scientist's application, and the protocol used to access it and the format expected.
               items:
-                description: DataContext indicates data set chosen by the Data Scientist to be read from or written to by his application, and includes information about the data format and technologies used by the application to access the data.
+                description: DataContext indicates data set chosen by the Data Scientist to be used by his application, and includes information about the data format and technologies used by the application to access the data.
                 properties:
+                  catalogService:
+                    description: CatalogService represents the catalog service for accessing the requested dataset. If not specified, the enterprise catalog service will be used.
+                    type: string
                   dataSetID:
-                    description: DataSetID is a unique identifier of the dataset either chosen from the enterprise data catalog for processing by the data user application, or the source location of a new data set being imported into the environment.  This parameter should contain datacatalogservice, catalog, datasetID.
+                    description: DataSetID is a unique identifier of the dataset chosen from the data catalog for processing by the data user application.
                     minLength: 1
                     type: string
-                  destinationCatalog:
-                    description: DestinationCatalog indicates the catalog service and catalog in which a data set being imported should be registered. This parameter should contain datacatalogservice, and catalog.  This should be populated only when Cataloged is false.
-                    type: string
-                  ifDetails:
-                    description: IFdetails indicates the protocol and format expected by the data by the Data Scientist's application
+                  requirements:
+                    description: Requirements from the system
                     properties:
-                      dataformat:
-                        description: DataFormatType defines data format type
-                        enum:
-                        - parquet
-                        - table
-                        - csv
-                        - json
-                        - avro
-                        - binary
-                        - arrow
-                        type: string
-                      protocol:
-                        description: IFProtocol defines interface protocol for data transactions
-                        enum:
-                        - s3
-                        - kafka
-                        - jdbc-db2
-                        - m4d-arrow-flight
-                        type: string
+                      copy:
+                        description: CopyRequrements include the requirements for copying the data
+                        properties:
+                          catalog:
+                            description: Catalog indicates that the data asset should be cataloged.
+                            properties:
+                              catalogID:
+                                description: CatalogID specifies the catalog where the data will be cataloged.
+                                type: string
+                              required:
+                                description: Required indicates that the data asset should be cataloged.
+                                type: boolean
+                              service:
+                                description: CatalogService specifies the datacatalog service that will be used for catalogging the data into.
+                                type: string
+                            type: object
+                          required:
+                            description: Required indicates that the data should be copied.
+                            type: boolean
+                        type: object
+                      ifDetails:
+                        description: IFdetails indicates the protocol and format expected by the data user
+                        properties:
+                          dataformat:
+                            description: DataFormatType defines data format type
+                            enum:
+                            - parquet
+                            - table
+                            - csv
+                            - json
+                            - avro
+                            - binary
+                            - arrow
+                            type: string
+                          protocol:
+                            description: IFProtocol defines interface protocol for data transactions
+                            enum:
+                            - s3
+                            - kafka
+                            - jdbc-db2
+                            - m4d-arrow-flight
+                            type: string
+                        required:
+                        - protocol
+                        type: object
                     required:
-                    - protocol
+                    - ifDetails
                     type: object
                 required:
                 - dataSetID
-                - ifDetails
+                - requirements
                 type: object
+              minItems: 1
               type: array
             selector:
               description: Selector enables to connect the resource to the application Application labels should match the labels in the selector. For some flows the selector may not be used.
@@ -127,6 +154,7 @@ spec:
               type: object
           required:
           - appInfo
+          - data
           type: object
         status:
           description: M4DApplicationStatus defines the observed state of M4DApplication.
@@ -151,7 +179,7 @@ spec:
                 type: object
               type: array
             dataAccessInstructions:
-              description: DataAccessInstructions indicate how the data user or his application may access the data (i.e. virtual endpoint). Instructions are available upon successful orchestration. For data cataloged by the system, this will include the catalog ID
+              description: DataAccessInstructions indicate how the data user or his application may access the data. Instructions are available upon successful orchestration.
               type: string
             generated:
               description: Generated resource identifier

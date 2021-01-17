@@ -71,7 +71,7 @@ func StructToInterfaceDetails(item modules.DataInfo) (*app.InterfaceDetails, err
 func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInterface *app.InterfaceDetails, geo string) (*app.DataStore, error) {
 	// provisioned storage for COPY
 	originalAssetName := item.DataDetails.Name
-	bucket := FindAvailableBucket(m.Client, m.Log, m.Owner, item.AssetID, originalAssetName, false, geo)
+	bucket := FindAvailableBucket(m.Client, m.Log, m.Owner, item.Context.DataSetID, originalAssetName, false, geo)
 	if bucket == nil {
 		return nil, errors.New(app.InsufficientStorage)
 	}
@@ -83,99 +83,112 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 			S3: &pb.S3DataStore{
 				Bucket:    bucket.Spec.Name,
 				Endpoint:  bucket.Spec.Endpoint,
-				ObjectKey: bucket.Status.AssetPrefixPerDataset[item.AssetID],
+				ObjectKey: bucket.Status.AssetPrefixPerDataset[item.Context.DataSetID],
 			},
 		},
 		Format: string(destinationInterface.DataFormat),
 	}, nil
 }
 
+func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.M4DApplication) (*modules.Selector, error) {
+	// read module is required if the workload exists
+	if appContext.Spec.Selector.WorkloadSelector.Size() == 0 {
+		return nil, nil
+	}
+	m.Log.Info("Select read path for " + item.Context.DataSetID)
+	// select a read module that supports user interface requirements
+	// actions are not checked since they are not necessarily done by the read module
+	readSelector := &modules.Selector{Flow: app.Read,
+		Destination:  &item.Context.Requirements.IFdetails,
+		Actions:      make([]pb.EnforcementAction, 0),
+		Source:       nil,
+		Dependencies: make([]*app.M4DModule, 0),
+		Module:       nil,
+		Message:      ""}
+	if !readSelector.SelectModule(m.Modules) {
+		m.Log.Info(readSelector.GetError())
+		return nil, errors.New(readSelector.GetError())
+	}
+	return readSelector, nil
+}
+
+func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.M4DApplication, readSelector *modules.Selector) (*modules.Selector, error) {
+	// logic for deciding whether copy module is required
+	var interfaces []*app.InterfaceDetails
+	var copyRequired bool
+	var actionsOnCopy []pb.EnforcementAction
+
+	if readSelector != nil {
+		copyRequired, interfaces, actionsOnCopy = m.getCopyRequirements(item, readSelector)
+	} else if item.Context.Requirements.Copy.Required {
+		copyRequired = true
+		actionsOnCopy = item.Actions[pb.AccessOperation_WRITE].EnforcementActions
+		interfaces = []*app.InterfaceDetails{&item.Context.Requirements.IFdetails}
+	}
+	if !copyRequired {
+		return nil, nil
+	}
+	if !item.Actions[pb.AccessOperation_WRITE].Allowed {
+		return nil, errors.New(app.CopyNotAllowed)
+	}
+	source, err := StructToInterfaceDetails(item)
+	if err != nil {
+		return nil, err
+	}
+
+	m.Log.Info("Copy is required for " + item.Context.DataSetID)
+	var copySelector *modules.Selector
+	// select a module that supports COPY, supports required governance actions, has the required dependencies, with source in module sources and a non-empty intersection between requested and supported interfaces.
+	for _, copyDest := range interfaces {
+		copySelector = &modules.Selector{
+			Flow:         app.Copy,
+			Source:       source,
+			Actions:      actionsOnCopy,
+			Destination:  copyDest,
+			Dependencies: make([]*app.M4DModule, 0),
+			Module:       nil,
+			Message:      ""}
+
+		if copySelector.SelectModule(m.Modules) {
+			break
+		}
+	}
+	if copySelector == nil {
+		return nil, errors.New("No copy module has been found supporting required source interface")
+	}
+	if copySelector.GetModule() == nil {
+		m.Log.Info("Could not find copy module for " + item.Context.DataSetID)
+		return nil, errors.New(copySelector.GetError())
+	}
+	return copySelector, nil
+}
+
 // SelectModuleInstances selects the necessary read/copy/write modules for the blueprint for a given data set
 // Write path is not yet implemented
-func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo) ([]modules.ModuleInstanceSpec, error) {
+func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext *app.M4DApplication) ([]modules.ModuleInstanceSpec, error) {
+	datasetID := item.Context.DataSetID
 	instances := make([]modules.ModuleInstanceSpec, 0)
 	// Each selector receives source/sink interface and relevant actions
 	// Starting with the data location interface for source and the required interface for sink
-	source, err := StructToInterfaceDetails(item)
-	if err != nil {
-		return instances, err
-	}
-	sink := item.AppInterface
 	var sourceDataStore, sinkDataStore *app.DataStore
 	sourceDataStore = &app.DataStore{
 		Connection:         item.DataDetails.GetDataStore(),
-		CredentialLocation: utils.GetDatasetVaultPath(item.AssetID),
+		CredentialLocation: utils.GetDatasetVaultPath(datasetID),
 		Format:             item.DataDetails.DataFormat,
 	}
 	// DataStore for destination will be determined if an implicit copy is required
 	sinkDataStore = nil
+	var err error
 
 	var readSelector, copySelector *modules.Selector
-	actionsOnRead, readRequired := item.Actions[pb.AccessOperation_READ]
-	var interfaces []*app.InterfaceDetails
-	var copyRequired bool
-	var actionsOnCopy []pb.EnforcementAction
-	if readRequired {
-		// READ FLOW
-		m.Log.Info("Select read path for " + item.AssetID)
-		// Select a module that supports READ flow, supports actions-on-read, has the required dependency modules (recursively), with API = sink.
-		if !actionsOnRead.Allowed {
-			return instances, errors.New(actionsOnRead.Message)
-		}
-		m.Log.Info("Finding modules for " + item.AssetID)
-
-		// select a read module that supports user interface requirements
-		// actions are not checked since they are not necessarily done by the read module
-		readSelector = &modules.Selector{Flow: app.Read,
-			Destination:  sink,
-			Actions:      make([]pb.EnforcementAction, 0),
-			Source:       nil,
-			Dependencies: make([]*app.M4DModule, 0),
-			Module:       nil,
-			Message:      ""}
-		if !readSelector.SelectModule(m.Modules) {
-			m.Log.Info(item.AssetID + " : " + readSelector.GetError())
-			return instances, errors.New(readSelector.GetError())
-		}
-		// logic for deciding whether copy module is required
-		copyRequired, interfaces, actionsOnCopy = m.getCopyRequirements(item, readSelector)
-		// is copy allowed?
-		if !item.Actions[pb.AccessOperation_WRITE].Allowed {
-			return instances, errors.New(app.CopyNotAllowed)
-		}
-	} else {
-		// COPY FLOW
-		copyRequired = true
-		actionsOnCopy = item.Actions[pb.AccessOperation_WRITE].EnforcementActions
-		interfaces = []*app.InterfaceDetails{item.AppInterface}
-		// is copy allowed?
-		if !item.Actions[pb.AccessOperation_WRITE].Allowed {
-			return instances, errors.New(item.Actions[pb.AccessOperation_WRITE].Message)
-		}
+	if readSelector, err = m.selectReadModule(item, appContext); err != nil {
+		return instances, err
+	}
+	if copySelector, err = m.selectCopyModule(item, appContext, readSelector); err != nil {
+		return instances, err
 	}
 
-	if copyRequired {
-		m.Log.Info("Copy is required for " + item.AssetID)
-		// select a module that supports COPY, supports required governance actions, has the required dependencies, with source in module sources and a non-empty intersection between requested and supported interfaces.
-		for _, copyDest := range interfaces {
-			copySelector = &modules.Selector{
-				Flow:         app.Copy,
-				Source:       source,
-				Actions:      actionsOnCopy,
-				Destination:  copyDest,
-				Dependencies: make([]*app.M4DModule, 0),
-				Module:       nil,
-				Message:      ""}
-
-			if !copySelector.SelectModule(m.Modules) {
-				continue
-			}
-		}
-		// no copy module - report an error
-		if copySelector.GetModule() == nil {
-			m.Log.Info("Could not find copy module for " + item.AssetID)
-			return instances, errors.New(copySelector.GetError())
-		}
+	if copySelector != nil {
 		m.Log.Info("Found copy module " + copySelector.GetModule().Name)
 		// copy should be applied - allocate storage
 		if sinkDataStore, err = m.GetCopyDestination(item, copySelector.Destination, item.Actions[pb.AccessOperation_WRITE].Geo); err != nil {
@@ -195,7 +208,8 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo) ([]modules.
 		m.Log.Info("Adding copy module")
 		instances = copySelector.AddModuleInstances(copyArgs, item, copyCluster)
 	}
-	if readRequired {
+
+	if readSelector != nil {
 		m.Log.Info("Adding read path")
 		var readSource app.DataStore
 		if sinkDataStore == nil {
@@ -207,7 +221,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo) ([]modules.
 		readInstructions := make([]app.ReadModuleArgs, 0)
 		readInstructions = append(readInstructions, app.ReadModuleArgs{
 			Source:          readSource,
-			AssetID:         utils.CreateDataSetIdentifier(item.AssetID),
+			AssetID:         utils.CreateDataSetIdentifier(item.Context.DataSetID),
 			Transformations: readSelector.Actions})
 		readArgs := &app.ModuleArguments{
 			Read: readInstructions,

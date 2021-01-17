@@ -8,24 +8,60 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// DataContext indicates data set chosen by the Data Scientist to be read from or written to by his application,
+// CatalogRequirements contain the specifics for catalogging the data asset
+type CatalogRequirements struct {
+	// Required indicates that the data asset should be cataloged.
+	// +optional
+	Required bool `json:"required,omitempty"`
+
+	// CatalogID specifies the catalog where the data will be cataloged.
+	// +optional
+	CatalogID string `json:"catalogID,omitempty"`
+
+	// CatalogService specifies the datacatalog service that will be used for catalogging the data into.
+	// +optional
+	CatalogService string `json:"service,omitempty"`
+}
+
+// CopyRequirements include the requirements for the data copy operation
+type CopyRequirements struct {
+	// Required indicates that the data should be copied.
+	// +optional
+	Required bool `json:"required,omitempty"`
+
+	// Catalog indicates that the data asset should be cataloged.
+	// +optional
+	Catalog CatalogRequirements `json:"catalog,omitempty"`
+}
+
+// DataRequirements structure contains a list of requirements (interface, need to catalog the dataset, etc.)
+type DataRequirements struct {
+	// IFdetails indicates the protocol and format expected by the data user
+	// +required
+	IFdetails InterfaceDetails `json:"ifDetails"`
+
+	// CopyRequrements include the requirements for copying the data
+	// +optional
+	Copy CopyRequirements `json:"copy,omitempty"`
+}
+
+// DataContext indicates data set chosen by the Data Scientist to be used by his application,
 // and includes information about the data format and technologies used by the application
 // to access the data.
 type DataContext struct {
-	// DataSetID is a unique identifier of the dataset either chosen from the enterprise data catalog for processing by the data user application,
-	// or the source location of a new data set being imported into the environment.  This parameter should contain datacatalogservice, catalog, datasetID.
+	// DataSetID is a unique identifier of the dataset chosen from the data catalog for processing by the data user application.
 	// +required
 	// +kubebuilder:validation:MinLength=1
 	DataSetID string `json:"dataSetID"`
 
-	// IFdetails indicates the protocol and format expected by the data by the Data Scientist's application
-	// +required
-	IFdetails InterfaceDetails `json:"ifDetails"`
-
-	// DestinationCatalog indicates the catalog service and catalog in which a data set being imported should be registered.
-	// This parameter should contain datacatalogservice, and catalog.  This should be populated only when Cataloged is false.
+	// CatalogService represents the catalog service for accessing the requested dataset.
+	// If not specified, the enterprise catalog service will be used.
 	// +optional
-	DestinationCatalog string `json:"destinationCatalog,omitempty"`
+	CatalogService string `json:"catalogService,omitempty"`
+
+	// Requirements from the system
+	// +required
+	Requirements DataRequirements `json:"requirements"`
 }
 
 // AppUserRole indicates the role required to use the application
@@ -41,7 +77,6 @@ type ApplicationDetails struct {
 
 	// Role indicates the position held or role filled by the Data Scientist as it relates to the processing of the
 	// data he has chosen.
-	// TO BE MOVED TO CREDENTIALS
 	// +required
 	Role AppUserRole `json:"role"`
 }
@@ -60,11 +95,11 @@ type M4DApplicationSpec struct {
 	// +required
 	AppInfo ApplicationDetails `json:"appInfo"`
 
-	// Data contains the identifiers of the cataloged data to be read or written by the Data Scientist's application,
+	// Data contains the identifiers of the data to be used by the Data Scientist's application,
 	// and the protocol used to access it and the format expected.
-	// Note: either Data or ExternalData must have at least one entry
-	// +optional
-	Data []DataContext `json:"data,omitempty"`
+	// +required
+	// +kubebuilder:validation:MinItems=1
+	Data []DataContext `json:"data"`
 }
 
 // ErrorMessages that are reported to the user
@@ -125,9 +160,8 @@ type M4DApplicationStatus struct {
 	// +optional
 	Conditions []Condition `json:"conditions,omitempty"`
 
-	// DataAccessInstructions indicate how the data user or his application may access the data (i.e. virtual endpoint).
+	// DataAccessInstructions indicate how the data user or his application may access the data.
 	// Instructions are available upon successful orchestration.
-	// For data cataloged by the system, this will include the catalog ID
 	// +optional
 	DataAccessInstructions string `json:"dataAccessInstructions,omitempty"`
 

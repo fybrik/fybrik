@@ -30,16 +30,16 @@ func ConstructApplicationContext(datasetID string, input *app.M4DApplication, op
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
-func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, input *app.M4DApplication, op pb.AccessOperation) (modules.Transformations, error) {
+func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, input *app.M4DApplication, op pb.AccessOperation) (modules.Operations, error) {
 	// call external policy manager to get governance instructions for this operation
 	appContext := ConstructApplicationContext(datasetID, input, op)
 	pcresponse, err := policyCompiler.GetPoliciesDecisions(appContext)
 	if err != nil {
-		return modules.Transformations{}, err
+		return modules.Operations{}, err
 	}
 
 	// initialize Actions structure
-	res := modules.Transformations{
+	res := modules.Operations{
 		Allowed:            true,
 		Message:            "",
 		Geo:                op.Destination,

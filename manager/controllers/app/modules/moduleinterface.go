@@ -12,8 +12,8 @@ import (
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 )
 
-// Transformations structure defines the governance actions to be taken for a specific flow
-type Transformations struct {
+// Operations structure defines the governance decision for a specific operation
+type Operations struct {
 	Allowed            bool
 	EnforcementActions []pb.EnforcementAction
 	Message            string
@@ -22,13 +22,8 @@ type Transformations struct {
 	Geo string
 }
 
-// DataInfo defines all the information about the given data set
-// TODO: Add support for recurrence in modules
+// DataInfo defines all the information about the given data set that comes from the m4dapplication spec and from the connectors.
 type DataInfo struct {
-	// Data asset unique identifier, not necessarily the same string appearing in the resource definition
-	AssetID string
-	// Application interface
-	AppInterface *app.InterfaceDetails
 	// Source connection details
 	DataDetails *pb.DatasetDetails
 	// Data asset credentials
@@ -37,10 +32,9 @@ type DataInfo struct {
 	// Actions are collected on demand depending on the scenario
 	// For reading the data by the workload READ operation is requested always, WRITE is requested only when implicit copy is required
 	// For copying data into the managed environment, WRITE is always requested, READ is implicitly allowed (as suggested by the scenario) so no need to check
-	Actions map[pb.AccessOperation_AccessType]Transformations
-	// For an existing workload a read path is chosen to connect the data to the workload
-	// For copying data into the m4d environment no workload is selected, thus the read path won't be chosen
-	WorkloadSelected bool
+	Actions map[pb.AccessOperation_AccessType]Operations
+	// Pointer to the relevant data context in the M4D application spec
+	Context *app.DataContext
 }
 
 // ModuleInstanceSpec consists of the module spec and arguments
@@ -84,14 +78,14 @@ func (m *Selector) AddModuleInstances(args *app.ModuleArguments, item DataInfo, 
 	instances := make([]ModuleInstanceSpec, 0)
 	// append moduleinstances to the list
 	instances = append(instances, ModuleInstanceSpec{
-		AssetID:     item.AssetID,
+		AssetID:     item.Context.DataSetID,
 		Module:      m.GetModule(),
 		Args:        args,
 		ClusterName: cluster,
 	})
 	for _, dep := range m.GetDependencies() {
 		instances = append(instances, ModuleInstanceSpec{
-			AssetID:     item.AssetID,
+			AssetID:     item.Context.DataSetID,
 			Module:      dep,
 			Args:        args,
 			ClusterName: cluster,
