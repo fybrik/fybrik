@@ -6,6 +6,10 @@ license: $(TOOLBIN)/license_finder
 	$(call license_go,.)
 	$(call license_python,secret-provider)
 
+.PHONY: docker-mirror-read
+docker-mirror-read:
+	$(TOOLS_DIR)/docker_mirror.sh $(TOOLS_DIR)/docker_mirror.conf
+
 .PHONY: build
 build:
 	$(MAKE) -C pkg/policy-compiler build
