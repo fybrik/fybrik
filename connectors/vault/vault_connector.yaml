@@ -34,8 +34,8 @@ spec:
         - name: USER_VAULT_TOKEN
           valueFrom:
             secretKeyRef:
-              name: user-vault-unseal-keys
-              key: user-vault-root
+              name: vault-unseal-keys
+              key: vault-root
 ---
 apiVersion: v1
 kind: Service
