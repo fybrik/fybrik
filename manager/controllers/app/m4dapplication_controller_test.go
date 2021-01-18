@@ -343,10 +343,10 @@ var _ = Describe("M4DApplication Controller", func() {
 		// Tests denial of the necessary copy operation
 
 		// Assumptions on response from connectors:
-		// Db2 dataset
+		// s3 dataset
 		// Read module with source=s3,parquet exists
-		// Copy to s3 is required
-		// Enforcement action for copy operation: Deny
+		// Copy to s3 is required by the user
+		// Enforcement action for write operation: Deny
 		// Result: an error
 
 		It("Test deny-on-copy", func() {
@@ -356,8 +356,11 @@ var _ = Describe("M4DApplication Controller", func() {
 			appSignature := types.NamespacedName{Name: "with-copy", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID:    "{\"asset_id\": \"deny-on-copy\", \"catalog_id\": \"db2\"}",
-				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
+				DataSetID: "{\"asset_id\": \"deny-on-copy\", \"catalog_id\": \"s3\"}",
+				Requirements: apiv1alpha1.DataRequirements{
+					Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
+					Copy:      apiv1alpha1.CopyRequirements{Required: true},
+				},
 			}
 
 			// Create M4DApplication
@@ -597,7 +600,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			appSignature := types.NamespacedName{Name: "m4d-newdata-test", Namespace: "default"}
 			resource := InitM4DApplicationWithoutWorkload(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID: "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}", // TODO: Add the catalog service
+				DataSetID: "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
 				Requirements: apiv1alpha1.DataRequirements{
 					Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
 					Copy: apiv1alpha1.CopyRequirements{Required: true,

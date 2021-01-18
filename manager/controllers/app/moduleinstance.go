@@ -250,6 +250,7 @@ func GetSupportedReadSources(module *app.M4DModule) []*app.InterfaceDetails {
 // check whether IMPLICIT copy is required
 // decide on actions performed on read (update readSelector)
 // copy is required in the following cases:
+// - specifically requested by the user
 // - the read module does not support data interface
 // - the read module does not support all governance actions
 // - transformations are required while the read module does not run at source location
@@ -283,6 +284,6 @@ func (m *ModuleManager) getCopyRequirements(item modules.DataInfo, readSelector 
 			}
 		}
 	}
-	copyRequired := !supportsDataSource || !supportsAllActions || transformAtSource
+	copyRequired := !supportsDataSource || !supportsAllActions || transformAtSource || item.Context.Requirements.Copy.Required
 	return copyRequired, sources, actionsOnCopy
 }
