@@ -43,7 +43,6 @@ run-deploy-tests:
 	$(MAKE) cluster-prepare
 	$(MAKE) -C third_party/opa deploy
 	kubectl apply -f ./manager/config/prod/deployment_configmap.yaml
-	kubectl create secret generic user-vault-unseal-keys --from-literal=user-vault-root=''
 	$(MAKE) -C connectors deploy
 	kubectl get pod --all-namespaces
 	kubectl wait --for=condition=ready pod --all-namespaces --all --timeout=120s
