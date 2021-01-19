@@ -67,7 +67,9 @@ $(TOOLBIN)/protoc-gen-docs:
 
 INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-go
 $(TOOLBIN)/protoc-gen-go:
-	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get github.com/golang/protobuf/protoc-gen-go@v1.3.5
+	# FIXME: using `go install` to fix broken deps but needs to be reverted back to `go get`
+	# GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get github.com/golang/protobuf/protoc-gen-go@v1.3.5
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go install github.com/golang/protobuf/protoc-gen-go
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-lint
@@ -77,7 +79,7 @@ $(TOOLBIN)/protoc-gen-lint:
 
 INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-deepcopy
 $(TOOLBIN)/protoc-gen-deepcopy:
-	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get istio.io/tools/cmd/protoc-gen-deepcopy
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get istio.io/tools/cmd/protoc-gen-deepcopy@1.8.2
 	$(call post-install-check)
 	   
 # INSTALL_TOOLS += $(TOOLBIN)/oc
