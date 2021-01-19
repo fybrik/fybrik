@@ -9,6 +9,7 @@ spec:
   group: katalog.m4d.ibm.com
   names:
     kind: Asset
+    listKind: AssetList
     plural: assets
     singular: asset
   scope: Namespaced
@@ -60,8 +61,7 @@ spec:
                             type: string
                         type: object
                       s3:
-                        description: Connection information for S3 compatible object
-                          store
+                        description: Connection information for S3 compatible object store
                         properties:
                           bucket:
                             type: string
@@ -91,12 +91,10 @@ spec:
                 - connection
                 type: object
               secretRef:
-                description: Reference to a Secret resource holding credentials for
-                  this asset
+                description: Reference to a Secret resource holding credentials for this asset
                 properties:
                   name:
-                    description: Name of the Secret resource (must exist in the same
-                      namespace)
+                    description: Name of the Secret resource (must exist in the same namespace)
                     type: string
                 required:
                 - name
@@ -111,15 +109,10 @@ spec:
                         namedMetadata:
                           additionalProperties:
                             type: string
-                          description: 'Named terms, that exist in Catalog toxonomy
-                            and the values for these terms for columns we will have
-                            "SchemaDetails" key, that will include technical schema
-                            details for this column TODO: Consider create special
-                            field for schema outside of metadata'
+                          description: 'Named terms, that exist in Catalog toxonomy and the values for these terms for columns we will have "SchemaDetails" key, that will include technical schema details for this column TODO: Consider create special field for schema outside of metadata'
                           type: object
                         tags:
-                          description: Tags - can be any free text added to a component
-                            (no taxonomy)
+                          description: Tags - can be any free text added to a component (no taxonomy)
                           items:
                             type: string
                           type: array
@@ -155,4 +148,4 @@ status:
     kind: ""
     plural: ""
   conditions: null
-  storedVersions: null
+  storedVersions: []

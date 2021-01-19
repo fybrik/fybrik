@@ -118,11 +118,11 @@ $(TOOLBIN)/oapi-codegen:
 
 INSTALL_TOOLS += $(TOOLBIN)/openapi2crd
 $(TOOLBIN)/openapi2crd:
-	curl -sfL https://raw.githubusercontent.com/mesh-for-data/openapi2crd/main/hack/get-openapi2crd.sh | sh -s -- -b $(ABSTOOLBIN)
+	curl -sfL https://raw.githubusercontent.com/mesh-for-data/openapi2crd/main/hack/get-openapi2crd.sh | sh -s -- -b $(ABSTOOLBIN) -d v0.1.4
 
 INSTALL_TOOLS += $(TOOLBIN)/crdoc
 $(TOOLBIN)/crdoc:
-	curl -sfL https://raw.githubusercontent.com/mesh-for-data/crdoc/main/hack/get-crdoc.sh | sh -s -- -b $(ABSTOOLBIN)
+	curl -sfL https://raw.githubusercontent.com/mesh-for-data/crdoc/main/hack/get-crdoc.sh | sh -s -- -b $(ABSTOOLBIN) -d v0.1.2
 
 .PHONY: install-tools
 install-tools: $(INSTALL_TOOLS)
