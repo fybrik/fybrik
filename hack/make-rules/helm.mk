@@ -6,6 +6,7 @@ HELM_RELEASE ?= rel1-${DOCKER_NAME}
 TEMP := /tmp
 
 export HELM_EXPERIMENTAL_OCI=1
+export GODEBUG=x509ignoreCN=0
 
 .PHONY: helm-login
 helm-login: $(TOOLBIN)/helm
