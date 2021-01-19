@@ -5,6 +5,7 @@ syntax = "proto3";
 
 package connectors;
 option java_package = "com.datmesh";
+option go_package = "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf";
 
 message DataComponentMetadata {
     string component_type = 1; // e.g., column
