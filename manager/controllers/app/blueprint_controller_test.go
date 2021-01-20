@@ -136,13 +136,13 @@ var _ = Describe("Blueprint Controller", func() {
 			}
 
 			relName := getReleaseName(blueprint.Name, blueprint.Spec.Flow.Steps[0])
-			Expect(relName).To(Equal("appnsisalreadylong-appnameisevenlonger-myblueprintnameisr-5950f"))
-			Expect(relName).To(HaveLen(63))
+			Expect(relName).To(Equal("appnsisalreadylong-appnameisevenlonger-mybluepr-58392"))
+			Expect(relName).To(HaveLen(53))
 
 			// Make sure that calling the same method again results in the same result
 			relName2 := getReleaseName(blueprint.Name, blueprint.Spec.Flow.Steps[0])
-			Expect(relName2).To(Equal("appnsisalreadylong-appnameisevenlonger-myblueprintnameisr-5950f"))
-			Expect(relName2).To(HaveLen(63))
+			Expect(relName2).To(Equal("appnsisalreadylong-appnameisevenlonger-mybluepr-58392"))
+			Expect(relName2).To(HaveLen(53))
 		})
 	})
 })

@@ -120,17 +120,8 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) (ctr
 }
 
 func getReleaseName(blueprintName string, step app.FlowStep) string {
-	// we add the "r" character at the beginning of the release name, since it must begin with an alphabetic character
 	fullName := blueprintName + "-" + step.Name
-	if len(fullName) > 63 { // Some k8s objects only allow for a length of 63 characters. This is why we restrict it here
-		// The new name is formed from a prefix which is formed from the full name to have some human readable
-		// form of the name and the postfix which is the last characters hashed to have some shorter identifier
-		// that is still deterministic given the full name.
-		prefix := fullName[:57]
-		postfix := utils.Hash(fullName[:57], 5)
-		return prefix + "-" + postfix
-	}
-	return fullName
+	return utils.HelmConformName(fullName)
 }
 
 func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) error {

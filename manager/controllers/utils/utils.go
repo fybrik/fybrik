@@ -123,6 +123,33 @@ func CreateAppIdentifier(application *app.M4DApplication) string {
 	return application.Namespace + "/" + application.Name
 }
 
+// Some k8s objects only allow for a length of 63 characters.
+// This method shortens the name keeping a prefix and using the last 5 characters of the
+// new name for the hash of the postfix.
+func K8sConformName(name string) string {
+	return ShortenedName(name, 63, 5)
+}
+
+// Helm has stricter restrictions than K8s and restricts release names to 53 characters
+func HelmConformName(name string) string {
+	return ShortenedName(name, 53, 5)
+}
+
+// This function shortens a name to the maximum length given and uses rest of the string that is too long
+// as hash that gets added to the valid name.
+func ShortenedName(name string, maxLength int, hashLength int) string {
+	if len(name) > maxLength {
+		// The new name is formed from a prefix which is formed from the full name to have some human readable
+		// form of the name and the postfix which is the last characters hashed to have some shorter identifier
+		// that is still deterministic given the full name.
+		cutOffIndex := maxLength - hashLength - 1
+		prefix := name[:cutOffIndex]
+		postfix := Hash(name[:cutOffIndex], hashLength)
+		return prefix + "-" + postfix
+	}
+	return name
+}
+
 func ListeningAddress(port int) string {
 	address := fmt.Sprintf(":%d", port)
 	if runtime.GOOS == "darwin" {
