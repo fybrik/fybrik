@@ -78,12 +78,12 @@ Resource Types:
         <td><b><a href="#assetspecassetdetails">assetDetails</a></b></td>
         <td>object</td>
         <td>Asset details</td>
-        <td>false</td>
+        <td>true</td>
       </tr><tr>
         <td><b><a href="#assetspecassetmetadata">assetMetadata</a></b></td>
         <td>object</td>
         <td></td>
-        <td>false</td>
+        <td>true</td>
       </tr><tr>
         <td><b><a href="#assetspecsecretref">secretRef</a></b></td>
         <td>object</td>

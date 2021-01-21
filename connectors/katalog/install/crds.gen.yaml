@@ -135,8 +135,8 @@ spec:
                 type: object
             required:
             - secretRef
-            - security
-            - details
+            - assetMetadata
+            - assetDetails
             type: object
         required:
         - spec

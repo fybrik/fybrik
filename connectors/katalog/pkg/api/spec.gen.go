@@ -51,8 +51,8 @@ type AssetMetadata_NamedMetadata struct {
 type AssetSpec struct {
 
 	// Asset details
-	AssetDetails  *AssetDetails  `json:"assetDetails,omitempty"`
-	AssetMetadata *AssetMetadata `json:"assetMetadata,omitempty"`
+	AssetDetails  AssetDetails  `json:"assetDetails"`
+	AssetMetadata AssetMetadata `json:"assetMetadata"`
 
 	// Reference to a Secret resource holding credentials for this asset
 	SecretRef SecretRef `json:"secretRef"`

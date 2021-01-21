@@ -21,8 +21,8 @@ components:
           $ref: '#/components/schemas/AssetDetails'
       required:
       - secretRef
-      - security
-      - details
+      - assetMetadata
+      - assetDetails
     SecretRef:
       description: Reference to a Secret resource holding credentials for this asset
       type: object
