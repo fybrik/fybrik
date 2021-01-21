@@ -43,9 +43,9 @@ func (s *DataCatalogService) GetDatasetInfo(ctx context.Context, req *connectors
 		DatasetId: req.DatasetId,
 		Details: &connectors.DatasetDetails{
 			Name:       req.DatasetId,
-			DataOwner:  emptyIfNil(asset.Spec.Security.Owner),
-			DataFormat: emptyIfNil(asset.Spec.Details.DataFormat),
-			Geo:        emptyIfNil(asset.Spec.Security.Geography),
+			DataOwner:  emptyIfNil(asset.Spec.AssetMetadata.Owner),
+			DataFormat: emptyIfNil(asset.Spec.AssetDetails.DataFormat),
+			Geo:        emptyIfNil(asset.Spec.AssetMetadata.Geography),
 			DataStore:  datastore,
 			Metadata:   buildDatasetMetadata(asset),
 		},
@@ -53,15 +53,15 @@ func (s *DataCatalogService) GetDatasetInfo(ctx context.Context, req *connectors
 }
 
 func buildDatasetMetadata(asset *Asset) *connectors.DatasetMetadata {
-	security := asset.Spec.Security
+	assetMetadata := asset.Spec.AssetMetadata
 
 	var namedMetadata map[string]string
-	if security.NamedMetadata != nil {
-		namedMetadata = security.NamedMetadata.AdditionalProperties
+	if assetMetadata.NamedMetadata != nil {
+		namedMetadata = assetMetadata.NamedMetadata.AdditionalProperties
 	}
 
 	componentsMetadata := map[string]*connectors.DataComponentMetadata{}
-	for componentName, componentValue := range security.ComponentsMetadata.AdditionalProperties {
+	for componentName, componentValue := range assetMetadata.ComponentsMetadata.AdditionalProperties {
 		var componentNamedMetadata map[string]string
 		if componentValue.NamedMetadata != nil {
 			componentNamedMetadata = componentValue.NamedMetadata.AdditionalProperties
@@ -74,14 +74,14 @@ func buildDatasetMetadata(asset *Asset) *connectors.DatasetMetadata {
 	}
 
 	return &connectors.DatasetMetadata{
-		DatasetTags:          emptyArrayIfNil(security.Tags),
+		DatasetTags:          emptyArrayIfNil(assetMetadata.Tags),
 		DatasetNamedMetadata: namedMetadata,
 		ComponentsMetadata:   componentsMetadata,
 	}
 }
 
 func builDataStore(asset *Asset) (*connectors.DataStore, error) {
-	connection := asset.Spec.Details.Connection
+	connection := asset.Spec.AssetDetails.Connection
 	switch connection.Type {
 	case "s3":
 		return &connectors.DataStore{

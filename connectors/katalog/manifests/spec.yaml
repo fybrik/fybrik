@@ -15,9 +15,9 @@ components:
       properties:
         secretRef:
           $ref: '#/components/schemas/SecretRef'
-        security:
+        assetMetadata:
           $ref: '#/components/schemas/AssetMetadata'
-        details:
+        assetDetails:
           $ref: '#/components/schemas/AssetDetails'
       required:
       - secretRef

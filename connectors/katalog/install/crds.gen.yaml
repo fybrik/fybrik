@@ -20,7 +20,7 @@ spec:
         properties:
           spec:
             properties:
-              details:
+              assetDetails:
                 description: Asset details
                 properties:
                   connection:
@@ -90,16 +90,7 @@ spec:
                 required:
                 - connection
                 type: object
-              secretRef:
-                description: Reference to a Secret resource holding credentials for this asset
-                properties:
-                  name:
-                    description: Name of the Secret resource (must exist in the same namespace)
-                    type: string
-                required:
-                - name
-                type: object
-              security:
+              assetMetadata:
                 properties:
                   componentsMetadata:
                     additionalProperties:
@@ -132,6 +123,15 @@ spec:
                     items:
                       type: string
                     type: array
+                type: object
+              secretRef:
+                description: Reference to a Secret resource holding credentials for this asset
+                properties:
+                  name:
+                    description: Name of the Secret resource (must exist in the same namespace)
+                    type: string
+                required:
+                - name
                 type: object
             required:
             - secretRef

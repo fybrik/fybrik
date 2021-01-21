@@ -75,25 +75,25 @@ Resource Types:
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#assetspecdetails">details</a></b></td>
+        <td><b><a href="#assetspecassetdetails">assetDetails</a></b></td>
         <td>object</td>
         <td>Asset details</td>
-        <td>true</td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#assetspecassetmetadata">assetMetadata</a></b></td>
+        <td>object</td>
+        <td></td>
+        <td>false</td>
       </tr><tr>
         <td><b><a href="#assetspecsecretref">secretRef</a></b></td>
         <td>object</td>
         <td>Reference to a Secret resource holding credentials for this asset</td>
         <td>true</td>
-      </tr><tr>
-        <td><b><a href="#assetspecsecurity">security</a></b></td>
-        <td>object</td>
-        <td></td>
-        <td>true</td>
       </tr></tbody>
 </table>
 
 
-### Asset.spec.details
+### Asset.spec.assetDetails
 <sup><sup>[↩ Parent](#assetspec)</sup></sup>
 
 
@@ -115,7 +115,7 @@ Asset details
         <td></td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#assetspecdetailsconnection">connection</a></b></td>
+        <td><b><a href="#assetspecassetdetailsconnection">connection</a></b></td>
         <td>object</td>
         <td>Connection information</td>
         <td>true</td>
@@ -123,8 +123,8 @@ Asset details
 </table>
 
 
-### Asset.spec.details.connection
-<sup><sup>[↩ Parent](#assetspecdetails)</sup></sup>
+### Asset.spec.assetDetails.connection
+<sup><sup>[↩ Parent](#assetspecassetdetails)</sup></sup>
 
 
 
@@ -140,17 +140,17 @@ Connection information
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#assetspecdetailsconnectiondb2">db2</a></b></td>
+        <td><b><a href="#assetspecassetdetailsconnectiondb2">db2</a></b></td>
         <td>object</td>
         <td></td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#assetspecdetailsconnectionkafka">kafka</a></b></td>
+        <td><b><a href="#assetspecassetdetailsconnectionkafka">kafka</a></b></td>
         <td>object</td>
         <td></td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#assetspecdetailsconnections3">s3</a></b></td>
+        <td><b><a href="#assetspecassetdetailsconnections3">s3</a></b></td>
         <td>object</td>
         <td>Connection information for S3 compatible object store</td>
         <td>false</td>
@@ -163,8 +163,8 @@ Connection information
 </table>
 
 
-### Asset.spec.details.connection.db2
-<sup><sup>[↩ Parent](#assetspecdetailsconnection)</sup></sup>
+### Asset.spec.assetDetails.connection.db2
+<sup><sup>[↩ Parent](#assetspecassetdetailsconnection)</sup></sup>
 
 
 
@@ -208,8 +208,8 @@ Connection information
 </table>
 
 
-### Asset.spec.details.connection.kafka
-<sup><sup>[↩ Parent](#assetspecdetailsconnection)</sup></sup>
+### Asset.spec.assetDetails.connection.kafka
+<sup><sup>[↩ Parent](#assetspecassetdetailsconnection)</sup></sup>
 
 
 
@@ -273,8 +273,8 @@ Connection information
 </table>
 
 
-### Asset.spec.details.connection.s3
-<sup><sup>[↩ Parent](#assetspecdetailsconnection)</sup></sup>
+### Asset.spec.assetDetails.connection.s3
+<sup><sup>[↩ Parent](#assetspecassetdetailsconnection)</sup></sup>
 
 
 
@@ -313,32 +313,7 @@ Connection information for S3 compatible object store
 </table>
 
 
-### Asset.spec.secretRef
-<sup><sup>[↩ Parent](#assetspec)</sup></sup>
-
-
-
-Reference to a Secret resource holding credentials for this asset
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>Name of the Secret resource (must exist in the same namespace)</td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-### Asset.spec.security
+### Asset.spec.assetMetadata
 <sup><sup>[↩ Parent](#assetspec)</sup></sup>
 
 
@@ -355,7 +330,7 @@ Reference to a Secret resource holding credentials for this asset
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#assetspecsecuritycomponentsmetadatakey">componentsMetadata</a></b></td>
+        <td><b><a href="#assetspecassetmetadatacomponentsmetadatakey">componentsMetadata</a></b></td>
         <td>map[string]object</td>
         <td>metadata for each component in asset (e.g., column)</td>
         <td>false</td>
@@ -383,8 +358,8 @@ Reference to a Secret resource holding credentials for this asset
 </table>
 
 
-### Asset.spec.security.componentsMetadata[key]
-<sup><sup>[↩ Parent](#assetspecsecurity)</sup></sup>
+### Asset.spec.assetMetadata.componentsMetadata[key]
+<sup><sup>[↩ Parent](#assetspecassetmetadata)</sup></sup>
 
 
 
@@ -414,5 +389,30 @@ Reference to a Secret resource holding credentials for this asset
         <td>[]string</td>
         <td>Tags - can be any free text added to a component (no taxonomy)</td>
         <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Asset.spec.secretRef
+<sup><sup>[↩ Parent](#assetspec)</sup></sup>
+
+
+
+Reference to a Secret resource holding credentials for this asset
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>Name of the Secret resource (must exist in the same namespace)</td>
+        <td>true</td>
       </tr></tbody>
 </table>
