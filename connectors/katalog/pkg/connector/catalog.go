@@ -34,7 +34,7 @@ func (s *DataCatalogService) GetDatasetInfo(ctx context.Context, req *connectors
 		return nil, err
 	}
 
-	datastore, err := builDataStore(asset)
+	datastore, err := buildDataStore(asset)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func buildDatasetMetadata(asset *Asset) *connectors.DatasetMetadata {
 	}
 }
 
-func builDataStore(asset *Asset) (*connectors.DataStore, error) {
+func buildDataStore(asset *Asset) (*connectors.DataStore, error) {
 	connection := asset.Spec.AssetDetails.Connection
 	switch connection.Type {
 	case "s3":
