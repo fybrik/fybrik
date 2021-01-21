@@ -31,6 +31,7 @@ import (
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/mockup"
 	"github.com/ibm/the-mesh-for-data/pkg/helm"
+	local "github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -100,6 +101,7 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 		err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
+		SetupPlotterController(mgr, local.NewManager(mgr.GetClient(), "m4d-system"))
 
 		go func() {
 			err = mgr.Start(ctrl.SetupSignalHandler())
@@ -110,6 +112,11 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "m4d-system",
+			},
+		}))
+		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "m4d-blueprints",
 			},
 		}))
 	}

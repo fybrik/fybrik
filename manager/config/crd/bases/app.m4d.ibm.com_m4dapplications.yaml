@@ -49,38 +49,64 @@ spec:
               items:
                 description: DataContext indicates data set chosen by the Data Scientist to be used by his application, and includes information about the data format and technologies used by the application to access the data.
                 properties:
+                  catalogService:
+                    description: CatalogService represents the catalog service for accessing the requested dataset. If not specified, the enterprise catalog service will be used.
+                    type: string
                   dataSetID:
                     description: DataSetID is a unique identifier of the dataset chosen from the data catalog for processing by the data user application.
                     minLength: 1
                     type: string
-                  ifDetails:
-                    description: IFdetails indicates the protocol and format expected by the data by the Data Scientist's application
+                  requirements:
+                    description: Requirements from the system
                     properties:
-                      dataformat:
-                        description: DataFormatType defines data format type
-                        enum:
-                        - parquet
-                        - table
-                        - csv
-                        - json
-                        - avro
-                        - binary
-                        - arrow
-                        type: string
-                      protocol:
-                        description: IFProtocol defines interface protocol for data transactions
-                        enum:
-                        - s3
-                        - kafka
-                        - jdbc-db2
-                        - m4d-arrow-flight
-                        type: string
+                      copy:
+                        description: CopyRequrements include the requirements for copying the data
+                        properties:
+                          catalog:
+                            description: Catalog indicates that the data asset must be cataloged.
+                            properties:
+                              catalogID:
+                                description: CatalogID specifies the catalog where the data will be cataloged.
+                                type: string
+                              service:
+                                description: CatalogService specifies the datacatalog service that will be used for catalogging the data into.
+                                type: string
+                            type: object
+                          required:
+                            description: Required indicates that the data must be copied.
+                            type: boolean
+                        type: object
+                      interface:
+                        description: Interface indicates the protocol and format expected by the data user
+                        properties:
+                          dataformat:
+                            description: DataFormatType defines data format type
+                            enum:
+                            - parquet
+                            - table
+                            - csv
+                            - json
+                            - avro
+                            - binary
+                            - arrow
+                            type: string
+                          protocol:
+                            description: IFProtocol defines interface protocol for data transactions
+                            enum:
+                            - s3
+                            - kafka
+                            - jdbc-db2
+                            - m4d-arrow-flight
+                            type: string
+                        required:
+                        - protocol
+                        type: object
                     required:
-                    - protocol
+                    - interface
                     type: object
                 required:
                 - dataSetID
-                - ifDetails
+                - requirements
                 type: object
               minItems: 1
               type: array

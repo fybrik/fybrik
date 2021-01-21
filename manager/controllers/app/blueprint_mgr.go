@@ -83,7 +83,7 @@ func (r *M4DApplicationReconciler) GenerateBlueprint(instances []modules.ModuleI
 
 		// Create a flow step
 		var step app.FlowStep
-		step.Name = appName + "-" + modulename + "-" + utils.Hash(moduleInstance.AssetID, 20) // Need unique name for each step so include ids for dataset
+		step.Name = modulename + "-" + utils.Hash(moduleInstance.AssetID, 10) // Need unique name for each step so include ids for dataset
 		step.Template = modulename
 
 		step.Arguments = *moduleInstance.Args

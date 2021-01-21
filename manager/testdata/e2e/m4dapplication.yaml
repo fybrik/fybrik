@@ -19,7 +19,8 @@ spec:
     role: Security
   data:
     - dataSetID: '{"asset_id": "xxx", "catalog_id": "s3"}'
-      ifDetails:
-        protocol: m4d-arrow-flight
-        dataformat: arrow
+      requirements:
+        interface:
+          protocol: m4d-arrow-flight
+          dataformat: arrow
 

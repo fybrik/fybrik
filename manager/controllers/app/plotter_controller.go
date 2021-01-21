@@ -33,6 +33,7 @@ type PlotterReconciler struct {
 	ClusterManager multicluster.ClusterManager
 }
 
+// BlueprintNamespace defines a namespace where blueprints and associated resources will be allocated
 const BlueprintNamespace = "m4d-blueprints"
 
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=plotters,verbs=get;list;watch;create;update;patch;delete

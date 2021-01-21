@@ -16,7 +16,6 @@ import (
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -29,15 +28,34 @@ func GetStorageSignature() types.NamespacedName {
 	return types.NamespacedName{Name: "available-bucket", Namespace: "default"}
 }
 
-// InitM4DApplication creates an empty resource with n data sets
+// InitM4DApplication creates an empty resource with n cataloged data sets
 func InitM4DApplication(name string, n int) *apiv1alpha1.M4DApplication {
+	appSignature := types.NamespacedName{Name: name, Namespace: "default"}
+	labels := map[string]string{"key": "value"}
+	return &apiv1alpha1.M4DApplication{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      appSignature.Name,
+			Namespace: appSignature.Namespace,
+		},
+		Spec: apiv1alpha1.M4DApplicationSpec{
+			Selector: apiv1alpha1.Selector{ClusterName: "US-cluster", WorkloadSelector: metav1.LabelSelector{MatchLabels: labels}},
+			Data:     make([]apiv1alpha1.DataContext, n),
+		},
+	}
+}
+
+// InitM4DApplicationWithoutWorkload creates an empty resource with no workload reference
+func InitM4DApplicationWithoutWorkload(name string, n int) *apiv1alpha1.M4DApplication {
 	appSignature := types.NamespacedName{Name: name, Namespace: "default"}
 	return &apiv1alpha1.M4DApplication{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      appSignature.Name,
 			Namespace: appSignature.Namespace,
 		},
-		Spec: apiv1alpha1.M4DApplicationSpec{Selector: apiv1alpha1.Selector{ClusterName: "US-cluster"}, Data: make([]apiv1alpha1.DataContext, n)},
+		Spec: apiv1alpha1.M4DApplicationSpec{
+			Selector: apiv1alpha1.Selector{ClusterName: "US-cluster"},
+			Data:     make([]apiv1alpha1.DataContext, n),
+		},
 	}
 }
 
@@ -218,8 +236,8 @@ var _ = Describe("M4DApplication Controller", func() {
 			appSignature := types.NamespacedName{Name: "with-finalizers", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID: "{\"asset_id\": \"123\", \"catalog_id\": \"db2\"}",
-				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
+				DataSetID:    "{\"asset_id\": \"123\", \"catalog_id\": \"db2\"}",
+				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet}},
 			}
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
@@ -263,8 +281,8 @@ var _ = Describe("M4DApplication Controller", func() {
 			appSignature := types.NamespacedName{Name: "deny-on-read", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID: "{\"asset_id\": \"deny-dataset\", \"catalog_id\": \"s3\"}",
-				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
+				DataSetID:    "{\"asset_id\": \"deny-dataset\", \"catalog_id\": \"s3\"}",
+				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet}},
 			}
 
 			// Create M4DApplication
@@ -297,8 +315,8 @@ var _ = Describe("M4DApplication Controller", func() {
 			resource := InitM4DApplication(appSignature.Name, 1)
 
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID: "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"db2\"}",
-				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
+				DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"db2\"}",
+				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet}},
 			}
 			Expect(k8sClient.Create(context.Background(), CreateReadPathModule())).Should(Succeed())
 
@@ -325,10 +343,10 @@ var _ = Describe("M4DApplication Controller", func() {
 		// Tests denial of the necessary copy operation
 
 		// Assumptions on response from connectors:
-		// Db2 dataset
+		// s3 dataset
 		// Read module with source=s3,parquet exists
-		// Copy to s3 is required
-		// Enforcement action for copy operation: Deny
+		// Copy to s3 is required by the user
+		// Enforcement action for write operation: Deny
 		// Result: an error
 
 		It("Test deny-on-copy", func() {
@@ -338,8 +356,11 @@ var _ = Describe("M4DApplication Controller", func() {
 			appSignature := types.NamespacedName{Name: "with-copy", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID: "{\"asset_id\": \"deny-on-copy\", \"catalog_id\": \"db2\"}",
-				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
+				DataSetID: "{\"asset_id\": \"deny-on-copy\", \"catalog_id\": \"s3\"}",
+				Requirements: apiv1alpha1.DataRequirements{
+					Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
+					Copy:      apiv1alpha1.CopyRequirements{Required: true},
+				},
 			}
 
 			// Create M4DApplication
@@ -381,12 +402,12 @@ var _ = Describe("M4DApplication Controller", func() {
 			appSignature := types.NamespacedName{Name: "wrong-copy", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 2)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID: "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"db2\"}",
-				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
+				DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"db2\"}",
+				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
 			}
 			resource.Spec.Data[1] = apiv1alpha1.DataContext{
-				DataSetID: "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
-				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
+				DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
+				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
 			}
 
 			// Create M4DApplication
@@ -448,12 +469,12 @@ var _ = Describe("M4DApplication Controller", func() {
 			appSignature := types.NamespacedName{Name: "m4d-test", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 2)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID: "{\"asset_id\": \"default-dataset\", \"catalog_id\": \"db2\"}",
-				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
+				DataSetID:    "{\"asset_id\": \"default-dataset\", \"catalog_id\": \"db2\"}",
+				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
 			}
 			resource.Spec.Data[1] = apiv1alpha1.DataContext{
-				DataSetID: "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
-				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
+				DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
+				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
 			}
 
 			// Create M4DApplication
@@ -469,28 +490,26 @@ var _ = Describe("M4DApplication Controller", func() {
 				_ = k8sClient.Get(context.Background(), appSignature, resource)
 				return resource.Status.Generated
 			}, timeout, interval).ShouldNot(BeNil())
+			By("Expecting plotter to be generated")
+			plotter := &apiv1alpha1.Plotter{}
+			Eventually(func() error {
+				key := types.NamespacedName{Name: resource.Status.Generated.Name, Namespace: resource.Status.Generated.Namespace}
+				return k8sClient.Get(context.Background(), key, plotter)
+			}, timeout, interval).Should(Succeed())
 
-			if resource.Status.Generated.Kind == "Blueprint" {
-				By("Expecting blueprint to be generated")
-				blueprint := &apiv1alpha1.Blueprint{}
-				Eventually(func() error {
-					Expect(k8sClient.Get(context.Background(), appSignature, resource)).Should(Succeed())
-					key := appSignature
-					key.Namespace = resource.Status.Generated.Namespace
-					return k8sClient.Get(context.Background(), key, blueprint)
-				}, timeout, interval).Should(Succeed())
-
-				// Check the generated blueprint
-				// There should be a single read module with two datasets
-				numReads := 0
-				for _, step := range blueprint.Spec.Flow.Steps {
-					if step.Template == readPathModule.Name {
-						numReads++
-						Expect(len(step.Arguments.Read)).To(Equal(2))
-					}
+			// Check the generated blueprint
+			// There should be a single read module with two datasets
+			Expect(len(plotter.Spec.Blueprints)).To(Equal(1))
+			blueprint := plotter.Spec.Blueprints["US-cluster"]
+			Expect(blueprint).NotTo(BeNil())
+			numReads := 0
+			for _, step := range blueprint.Flow.Steps {
+				if step.Template == readPathModule.Name {
+					numReads++
+					Expect(len(step.Arguments.Read)).To(Equal(2))
 				}
-				Expect(numReads).To(Equal(1))
 			}
+			Expect(numReads).To(Equal(1))
 		})
 		It("Test multiple-blueprints", func() {
 			// allocate storage
@@ -522,8 +541,8 @@ var _ = Describe("M4DApplication Controller", func() {
 			appSignature := types.NamespacedName{Name: "multiple-regions", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID: "{\"asset_id\": \"default-dataset\", \"catalog_id\": \"s3-external\"}",
-				IFdetails: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
+				DataSetID:    "{\"asset_id\": \"default-dataset\", \"catalog_id\": \"s3-external\"}",
+				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
 			}
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
@@ -551,6 +570,78 @@ var _ = Describe("M4DApplication Controller", func() {
 					return k8sClient.Get(context.Background(), key, plotter)
 				}, timeout, interval).Should(Succeed())
 			}
+			DeleteM4DApplication(appSignature.Name)
+		})
+
+		It("Test new data blueprint created", func() {
+			// allocate storage
+			storageSignature := GetStorageSignature()
+			storage := &apiv1alpha1.M4DBucket{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      storageSignature.Name,
+					Namespace: storageSignature.Namespace,
+				},
+				Spec: apiv1alpha1.M4DBucketSpec{
+					Name:      "newdata-bucket",
+					Endpoint:  "xxx",
+					VaultPath: "yyy",
+				},
+			}
+			Expect(k8sClient.Create(context.Background(), storage)).Should(Succeed())
+
+			// Load s3-s3 copy module
+			s3Module := CreateS3ToS3CopyModule()
+			Expect(k8sClient.Create(context.Background(), s3Module)).Should(Succeed())
+
+			// Load db2-s3 copy module
+			db2Module := CreateDb2ToS3CopyModule()
+			Expect(k8sClient.Create(context.Background(), db2Module)).Should(Succeed())
+
+			appSignature := types.NamespacedName{Name: "m4d-newdata-test", Namespace: "default"}
+			resource := InitM4DApplicationWithoutWorkload(appSignature.Name, 1)
+			resource.Spec.Data[0] = apiv1alpha1.DataContext{
+				DataSetID: "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
+				Requirements: apiv1alpha1.DataRequirements{
+					Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
+					Copy: apiv1alpha1.CopyRequirements{Required: true,
+						Catalog: apiv1alpha1.CatalogRequirements{CatalogID: "ingest_test", CatalogService: "Egeria"}}},
+			}
+
+			// Create M4DApplication
+			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
+
+			// Ensure getting cleaned up after tests finish
+			defer func() {
+				DeleteM4DApplication(appSignature.Name)
+			}()
+
+			Eventually(func() *apiv1alpha1.ResourceReference {
+				_ = k8sClient.Get(context.Background(), appSignature, resource)
+				return resource.Status.Generated
+			}, timeout, interval).ShouldNot(BeNil())
+
+			By("Expecting plotter to be generated")
+			plotter := &apiv1alpha1.Plotter{}
+			Eventually(func() error {
+				key := types.NamespacedName{Name: resource.Status.Generated.Name, Namespace: resource.Status.Generated.Namespace}
+				return k8sClient.Get(context.Background(), key, plotter)
+			}, timeout, interval).Should(Succeed())
+
+			// Check the generated blueprint
+			// There should be a single copy module
+			Expect(len(plotter.Spec.Blueprints)).To(Equal(1))
+			blueprint := plotter.Spec.Blueprints["US-cluster"]
+			Expect(blueprint).NotTo(BeNil())
+			numSteps := 0
+			moduleMatch := false
+			for _, step := range blueprint.Flow.Steps {
+				numSteps++
+				if step.Template == s3Module.Name {
+					moduleMatch = true
+				}
+			}
+			Expect(numSteps).To(Equal(1))
+			Expect(moduleMatch).To(Equal(true))
 			DeleteM4DApplication(appSignature.Name)
 		})
 	})
@@ -606,44 +697,32 @@ var _ = Describe("M4DApplication Controller", func() {
 			Eventually(func() error {
 				return k8sClient.Get(context.Background(), applicationKey, application)
 			}, timeout, interval).Should(Succeed())
-
-			// A blueprint namespace should be set
-			By("Expecting application to have a namespace in the status")
+			By("Expecting plotter to be constructed")
 			Eventually(func() *apiv1alpha1.ResourceReference {
-				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
+				_ = k8sClient.Get(context.Background(), applicationKey, application)
 				return application.Status.Generated
 			}, timeout, interval).ShouldNot(BeNil())
-			if application.Status.Generated.Kind == "Blueprint" {
-				// A blueprint namespace should be created
-				namespace := &v1.Namespace{}
-				ns := application.Status.Generated.Namespace
-				By("Expect namespace to be created")
-				Eventually(func() error {
-					return k8sClient.Get(context.Background(), client.ObjectKey{Namespace: "", Name: ns}, namespace)
-				}, timeout, interval).Should(Succeed())
 
-				// The blueprint has to be created in the blueprint namespace
-				blueprint := &apiv1alpha1.Blueprint{}
-				blueprintObjectKey := client.ObjectKey{Namespace: ns, Name: application.Name}
-				By("Expect blueprint to be created")
-				Eventually(func() error {
-					return k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)
-				}, timeout, interval).Should(Succeed())
+			// The plotter has to be created
+			plotter := &apiv1alpha1.Plotter{}
+			plotterObjectKey := client.ObjectKey{Namespace: application.Status.Generated.Namespace, Name: application.Status.Generated.Name}
+			By("Expect plotter to be created")
+			Eventually(func() error {
+				return k8sClient.Get(context.Background(), plotterObjectKey, plotter)
+			}, timeout, interval).Should(Succeed(), "Could not find Plotter "+application.Status.Generated.Namespace+"/"+application.Status.Generated.Name)
+			By("Expect plotter to be ready at some point")
+			Eventually(func() bool {
+				Expect(k8sClient.Get(context.Background(), plotterObjectKey, plotter)).To(Succeed())
+				return plotter.Status.ObservedState.Ready
+			}, timeout*10, interval).Should(BeTrue(), "plotter is not ready")
 
-				By("Expect blueprint to be ready at some point")
-				Eventually(func() bool {
-					Expect(k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)).To(Succeed())
-					return blueprint.Status.ObservedState.Ready
-				}, timeout*10, interval).Should(BeTrue())
-
-				// Extra long timeout as deploying the arrow-flight module on a new cluster may take some time
-				// depending on the download speed
-				By("Expecting M4DApplication to eventually be ready")
-				Eventually(func() bool {
-					Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
-					return application.Status.Ready
-				}, timeout*10, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
-			}
+			// Extra long timeout as deploying the arrow-flight module on a new cluster may take some time
+			// depending on the download speed
+			By("Expecting M4DApplication to eventually be ready")
+			Eventually(func() bool {
+				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
+				return application.Status.Ready
+			}, timeout*10, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
 		})
 	})
 })

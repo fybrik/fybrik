@@ -15,6 +15,7 @@ spec:
     role: Security
   data:
     - dataSetID: "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"ASSET_ID\"}"
-      ifDetails: 
-        protocol: m4d-arrow-flight
-        dataformat: arrow
+      requirements:
+        interface: 
+          protocol: m4d-arrow-flight
+          dataformat: arrow
