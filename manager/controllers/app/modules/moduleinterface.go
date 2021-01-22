@@ -10,22 +10,35 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // Operations structure defines the governance decision for a specific operation
 type Operations struct {
 	Allowed            bool
-	EnforcementActions []pb.EnforcementAction
+	EnforcementActions []*pb.EnforcementAction
 	Message            string
 	// geography relevant for the read/write operation
 	// indicates where the workload runs (for read access) or where to write the data to (for copying data to another location)
 	Geo string
 }
 
+// AssetInfo is the information recieved from the catalog connector
+type AssetInfo struct {
+	// Name of the asset
+	Name string
+	// Interface is the protocol and format
+	Interface app.InterfaceDetails
+	// Geography is the geo-location of the asset
+	Geography string
+	// Connection is the connection details in raw format as received from the connector
+	Connection runtime.RawExtension
+}
+
 // DataInfo defines all the information about the given data set that comes from the m4dapplication spec and from the connectors.
 type DataInfo struct {
 	// Source connection details
-	DataDetails *pb.DatasetDetails
+	DataDetails *AssetInfo
 	// Data asset credentials
 	Credentials *pb.DatasetCredentials
 	// Governance actions
@@ -53,7 +66,7 @@ type Selector struct {
 	Flow         app.ModuleFlow
 	Source       *app.InterfaceDetails
 	Destination  *app.InterfaceDetails
-	Actions      []pb.EnforcementAction
+	Actions      []*pb.EnforcementAction
 }
 
 // TODO: Add function to check if module supports recurrence type
@@ -95,14 +108,13 @@ func (m *Selector) AddModuleInstances(args *app.ModuleArguments, item DataInfo, 
 }
 
 // SupportsGovernanceActions checks whether the module supports the required agovernance actions
-func (m *Selector) SupportsGovernanceActions(module *app.M4DModule, actions []pb.EnforcementAction) bool {
+func (m *Selector) SupportsGovernanceActions(module *app.M4DModule, actions []*pb.EnforcementAction) bool {
 	// Check that the governance actions match
-	for i := range actions {
-		action := &actions[i]
+	for _, action := range actions {
 		supportsAction := false
 		for j := range module.Spec.Capabilities.Actions {
 			transformation := &module.Spec.Capabilities.Actions[j]
-			if transformation.Id == action.Id && transformation.Level == action.Level {
+			if transformation.ID == action.Id && transformation.Level == action.Level {
 				supportsAction = true
 				break
 			}
@@ -115,11 +127,11 @@ func (m *Selector) SupportsGovernanceActions(module *app.M4DModule, actions []pb
 }
 
 // SupportsGovernanceAction checks whether the module supports the required agovernance action
-func (m *Selector) SupportsGovernanceAction(module *app.M4DModule, action pb.EnforcementAction) bool {
+func (m *Selector) SupportsGovernanceAction(module *app.M4DModule, action *pb.EnforcementAction) bool {
 	// Check that the governance actions match
 	for j := range module.Spec.Capabilities.Actions {
 		transformation := &module.Spec.Capabilities.Actions[j]
-		if transformation.Id == action.Id && transformation.Level == action.Level {
+		if transformation.ID == action.Id && transformation.Level == action.Level {
 			return true
 		}
 	}
@@ -219,7 +231,7 @@ func CheckDependencies(module *app.M4DModule, moduleMap map[string]*app.M4DModul
 // Copy is done at source when transformations are required, and at target - otherwise
 // Write is done at target
 func (m *Selector) SelectCluster(item DataInfo, clusters []multicluster.Cluster) (string, error) {
-	geo := item.DataDetails.Geo
+	geo := item.DataDetails.Geography
 	if m.Flow == app.Read {
 		if actions, found := item.Actions[pb.AccessOperation_READ]; found {
 			geo = actions.Geo

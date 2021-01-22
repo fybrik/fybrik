@@ -13,6 +13,7 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	dc "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	"github.com/ibm/the-mesh-for-data/pkg/serde"
 )
 
 // GetConnectionDetails calls the data catalog service
@@ -37,7 +38,32 @@ func GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) erro
 		return err
 	}
 
-	req.DataDetails = response.GetDetails().DeepCopy()
+	details := response.GetDetails()
+
+	// TODO(roee88): fill self structure [protocol, format, geo, JSON]
+	protocol, err := utils.GetProtocol(details)
+	if err != nil {
+		return err
+	}
+	format, err := utils.GetDataFormat(details)
+	if err != nil {
+		return err
+	}
+
+	connection, err := serde.ToRawExtension(details.DataStore)
+	if err != nil {
+		return err
+	}
+
+	req.DataDetails = &modules.AssetInfo{
+		Name: details.Name,
+		Interface: app.InterfaceDetails{
+			Protocol:   protocol,
+			DataFormat: format,
+		},
+		Geography:  details.Geo,
+		Connection: *connection,
+	}
 
 	return nil
 }
@@ -63,7 +89,7 @@ func GetCredentials(req *modules.DataInfo, input *app.M4DApplication) error {
 	if err != nil {
 		return err
 	}
-	req.Credentials = dataCredentials.DeepCopy()
+	req.Credentials = dataCredentials
 
 	return nil
 }
