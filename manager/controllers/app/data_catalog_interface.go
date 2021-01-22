@@ -55,7 +55,7 @@ func GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) erro
 		return err
 	}
 
-	req.DataDetails = &modules.AssetInfo{
+	req.DataDetails = &modules.DataDetails{
 		Name: details.Name,
 		Interface: app.InterfaceDetails{
 			Protocol:   protocol,

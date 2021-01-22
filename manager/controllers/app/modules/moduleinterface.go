@@ -23,8 +23,8 @@ type Operations struct {
 	Geo string
 }
 
-// AssetInfo is the information recieved from the catalog connector
-type AssetInfo struct {
+// DataDetails is the information recieved from the catalog connector
+type DataDetails struct {
 	// Name of the asset
 	Name string
 	// Interface is the protocol and format
@@ -38,7 +38,7 @@ type AssetInfo struct {
 // DataInfo defines all the information about the given data set that comes from the m4dapplication spec and from the connectors.
 type DataInfo struct {
 	// Source connection details
-	DataDetails *AssetInfo
+	DataDetails *DataDetails
 	// Data asset credentials
 	Credentials *pb.DatasetCredentials
 	// Governance actions
