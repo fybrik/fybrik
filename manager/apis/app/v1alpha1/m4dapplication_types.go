@@ -8,6 +8,39 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// CatalogRequirements contain the specifics for catalogging the data asset
+type CatalogRequirements struct {
+	// CatalogService specifies the datacatalog service that will be used for catalogging the data into.
+	// +optional
+	CatalogService string `json:"service,omitempty"`
+
+	// CatalogID specifies the catalog where the data will be cataloged.
+	// +optional
+	CatalogID string `json:"catalogID,omitempty"`
+}
+
+// CopyRequirements include the requirements for the data copy operation
+type CopyRequirements struct {
+	// Required indicates that the data must be copied.
+	// +optional
+	Required bool `json:"required,omitempty"`
+
+	// Catalog indicates that the data asset must be cataloged.
+	// +optional
+	Catalog CatalogRequirements `json:"catalog,omitempty"`
+}
+
+// DataRequirements structure contains a list of requirements (interface, need to catalog the dataset, etc.)
+type DataRequirements struct {
+	// Interface indicates the protocol and format expected by the data user
+	// +required
+	Interface InterfaceDetails `json:"interface"`
+
+	// CopyRequrements include the requirements for copying the data
+	// +optional
+	Copy CopyRequirements `json:"copy,omitempty"`
+}
+
 // DataContext indicates data set chosen by the Data Scientist to be used by his application,
 // and includes information about the data format and technologies used by the application
 // to access the data.
@@ -17,9 +50,14 @@ type DataContext struct {
 	// +kubebuilder:validation:MinLength=1
 	DataSetID string `json:"dataSetID"`
 
-	// IFdetails indicates the protocol and format expected by the data by the Data Scientist's application
+	// CatalogService represents the catalog service for accessing the requested dataset.
+	// If not specified, the enterprise catalog service will be used.
+	// +optional
+	CatalogService string `json:"catalogService,omitempty"`
+
+	// Requirements from the system
 	// +required
-	IFdetails InterfaceDetails `json:"ifDetails"`
+	Requirements DataRequirements `json:"requirements"`
 }
 
 // AppUserRole indicates the role required to use the application
@@ -33,11 +71,6 @@ type ApplicationDetails struct {
 	// +required
 	Purpose string `json:"purpose,omitempty"`
 
-	// ProcessingGeography indicates the state or country or union in which the data processing will take place.
-	// This should be the same as the location of the cluster in which the manager is deployed.
-	// +optional
-	ProcessingGeography string `json:"processingGeography,omitempty"`
-
 	// Role indicates the position held or role filled by the Data Scientist as it relates to the processing of the
 	// data he has chosen.
 	// +required
@@ -49,7 +82,9 @@ type M4DApplicationSpec struct {
 
 	// Selector enables to connect the resource to the application
 	// Application labels should match the labels in the selector.
-	Selector metav1.LabelSelector `json:"selector"`
+	// For some flows the selector may not be used.
+	// +optional
+	Selector Selector `json:"selector"`
 
 	// AppInfo contains information describing the reasons and geography of the processing
 	// that will be done by the Data Scientist's application.
@@ -65,8 +100,9 @@ type M4DApplicationSpec struct {
 
 // ErrorMessages that are reported to the user
 const (
-	ReadAccessDenied            string = "Governance policies forbid access to the data"
+	ReadAccessDenied            string = "Governance policies forbid access to the data."
 	CopyNotAllowed              string = "Copy of the data is required but can not be done according to the governance policies."
+	WriteNotAllowed             string = "Governance policies forbid writing of the data."
 	ModuleNotFound              string = "No module has been registered"
 	InsufficientStorage         string = "No bucket was provisioned for implicit copy"
 	InvalidClusterConfiguration string = "Cluster configuration does not support the requirements."

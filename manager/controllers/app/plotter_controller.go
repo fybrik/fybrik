@@ -5,6 +5,12 @@ package app
 
 import (
 	"context"
+	"math"
+	"os"
+	"reflect"
+	"strings"
+	"time"
+
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
@@ -12,16 +18,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/rand"
-	"math"
-	"os"
-	"reflect"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"strings"
-	"time"
 )
 
 // PlotterReconciler reconciles a Plotter object
@@ -32,6 +32,9 @@ type PlotterReconciler struct {
 	Scheme         *runtime.Scheme
 	ClusterManager multicluster.ClusterManager
 }
+
+// BlueprintNamespace defines a namespace where blueprints and associated resources will be allocated
+const BlueprintNamespace = "m4d-blueprints"
 
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=plotters,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=plotters/status,verbs=get;update;patch
@@ -191,8 +194,6 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			}
 		} else {
 			r.Log.V(2).Info("Found no status for cluster " + cluster)
-			random := rand.String(5)
-			randomNamespace := "m4d-" + random
 			blueprint := &app.Blueprint{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "Blueprint",
@@ -200,7 +201,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        plotter.Name,
-					Namespace:   randomNamespace,
+					Namespace:   BlueprintNamespace,
 					ClusterName: cluster,
 					Labels:      map[string]string{"razee/watch-resource": "debug"},
 				},
@@ -285,6 +286,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	return ctrl.Result{RequeueAfter: 5 * time.Second}, errorCollection
 }
 
+// SetupPlotterController registers a new controller for Plotter resources
 func SetupPlotterController(mgr manager.Manager, clusterManager multicluster.ClusterManager) {
 	setupLog := ctrl.Log.WithName("setup")
 

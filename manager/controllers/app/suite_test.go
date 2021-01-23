@@ -31,6 +31,7 @@ import (
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/mockup"
 	"github.com/ibm/the-mesh-for-data/pkg/helm"
+	local "github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -75,17 +76,6 @@ var _ = BeforeSuite(func(done Done) {
 	if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
 		logf.Log.Info("Using existing controller in existing cluster...")
 		k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
-		Expect(k8sClient.Create(context.Background(), &v1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "cluster-metadata",
-				Namespace: "m4d-system",
-			},
-			Data: map[string]string{
-				"ClusterName": "US-cluster",
-				"Region":      "US",
-				"Zone":        "North-America",
-			},
-		}))
 	} else {
 		// Mockup connectors
 		go mockup.CreateTestCatalogConnector(GinkgoT())
@@ -107,16 +97,11 @@ var _ = BeforeSuite(func(done Done) {
 		policyCompiler := &mockup.MockPolicyCompiler{}
 		// Initiate the M4DApplication Controller
 		var clusterManager *mockup.ClusterLister
-		var resourceContext ContextInterface
-		if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" {
-			resourceContext = NewPlotterInterface(mgr.GetClient())
-		} else {
-			resourceContext = NewBlueprintInterface(mgr.GetClient())
-		}
-		err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler, resourceContext, clusterManager).SetupWithManager(mgr)
+		err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler, clusterManager).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
 		err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
+		SetupPlotterController(mgr, local.NewManager(mgr.GetClient(), "m4d-system"))
 
 		go func() {
 			err = mgr.Start(ctrl.SetupSignalHandler())
@@ -129,9 +114,24 @@ var _ = BeforeSuite(func(done Done) {
 				Name: "m4d-system",
 			},
 		}))
+		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "m4d-blueprints",
+			},
+		}))
 	}
 	Expect(k8sClient).ToNot(BeNil())
-
+	Expect(k8sClient.Create(context.Background(), &v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "cluster-metadata",
+			Namespace: "m4d-system",
+		},
+		Data: map[string]string{
+			"ClusterName": "US-cluster",
+			"Region":      "US",
+			"Zone":        "North-America",
+		},
+	}))
 	close(done)
 }, 60)
 

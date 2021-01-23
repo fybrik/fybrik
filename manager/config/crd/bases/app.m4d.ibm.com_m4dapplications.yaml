@@ -35,9 +35,6 @@ spec:
             appInfo:
               description: AppInfo contains information describing the reasons and geography of the processing that will be done by the Data Scientist's application.
               properties:
-                processingGeography:
-                  description: ProcessingGeography indicates the state or country or union in which the data processing will take place. This should be the same as the location of the cluster in which the manager is deployed.
-                  type: string
                 purpose:
                   description: Purpose indicates the reason for the processing and the use of the data by the Data Scientist's application.
                   type: string
@@ -52,75 +49,109 @@ spec:
               items:
                 description: DataContext indicates data set chosen by the Data Scientist to be used by his application, and includes information about the data format and technologies used by the application to access the data.
                 properties:
+                  catalogService:
+                    description: CatalogService represents the catalog service for accessing the requested dataset. If not specified, the enterprise catalog service will be used.
+                    type: string
                   dataSetID:
                     description: DataSetID is a unique identifier of the dataset chosen from the data catalog for processing by the data user application.
                     minLength: 1
                     type: string
-                  ifDetails:
-                    description: IFdetails indicates the protocol and format expected by the data by the Data Scientist's application
+                  requirements:
+                    description: Requirements from the system
                     properties:
-                      dataformat:
-                        description: DataFormatType defines data format type
-                        enum:
-                        - parquet
-                        - table
-                        - csv
-                        - json
-                        - avro
-                        - binary
-                        - arrow
-                        type: string
-                      protocol:
-                        description: IFProtocol defines interface protocol for data transactions
-                        enum:
-                        - s3
-                        - kafka
-                        - jdbc-db2
-                        - m4d-arrow-flight
-                        type: string
+                      copy:
+                        description: CopyRequrements include the requirements for copying the data
+                        properties:
+                          catalog:
+                            description: Catalog indicates that the data asset must be cataloged.
+                            properties:
+                              catalogID:
+                                description: CatalogID specifies the catalog where the data will be cataloged.
+                                type: string
+                              service:
+                                description: CatalogService specifies the datacatalog service that will be used for catalogging the data into.
+                                type: string
+                            type: object
+                          required:
+                            description: Required indicates that the data must be copied.
+                            type: boolean
+                        type: object
+                      interface:
+                        description: Interface indicates the protocol and format expected by the data user
+                        properties:
+                          dataformat:
+                            description: DataFormatType defines data format type
+                            enum:
+                            - parquet
+                            - table
+                            - csv
+                            - json
+                            - avro
+                            - binary
+                            - arrow
+                            type: string
+                          protocol:
+                            description: IFProtocol defines interface protocol for data transactions
+                            enum:
+                            - s3
+                            - kafka
+                            - jdbc-db2
+                            - m4d-arrow-flight
+                            type: string
+                        required:
+                        - protocol
+                        type: object
                     required:
-                    - protocol
+                    - interface
                     type: object
                 required:
                 - dataSetID
-                - ifDetails
+                - requirements
                 type: object
               minItems: 1
               type: array
             selector:
-              description: Selector enables to connect the resource to the application Application labels should match the labels in the selector.
+              description: Selector enables to connect the resource to the application Application labels should match the labels in the selector. For some flows the selector may not be used.
               properties:
-                matchExpressions:
-                  description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
-                  items:
-                    description: A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
-                    properties:
-                      key:
-                        description: key is the label key that the selector applies to.
+                clusterName:
+                  description: Cluster name
+                  type: string
+                workloadSelector:
+                  description: WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.
+                  properties:
+                    matchExpressions:
+                      description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
+                      items:
+                        description: A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+                        properties:
+                          key:
+                            description: key is the label key that the selector applies to.
+                            type: string
+                          operator:
+                            description: operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+                            type: string
+                          values:
+                            description: values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+                            items:
+                              type: string
+                            type: array
+                        required:
+                        - key
+                        - operator
+                        type: object
+                      type: array
+                    matchLabels:
+                      additionalProperties:
                         type: string
-                      operator:
-                        description: operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
-                        type: string
-                      values:
-                        description: values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
-                        items:
-                          type: string
-                        type: array
-                    required:
-                    - key
-                    - operator
-                    type: object
-                  type: array
-                matchLabels:
-                  additionalProperties:
-                    type: string
-                  description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+                      description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+                      type: object
                   type: object
+              required:
+              - workloadSelector
               type: object
           required:
           - appInfo
           - data
-          - selector
           type: object
         status:
           description: M4DApplicationStatus defines the observed state of M4DApplication.

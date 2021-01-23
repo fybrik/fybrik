@@ -20,6 +20,7 @@ Install the following on your machine:
 1. [Docker](https://docs.docker.com/get-docker/)
 1. `make`
 1. `jq`
+1. `unzip`
 1. Maven (`mvn`) 
 1. Java Development Kit version 8 or above
 1. **Mac only**: `brew install coreutils` (installs the timeout command)

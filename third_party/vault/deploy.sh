@@ -20,6 +20,15 @@ deploy() {
     kubectl apply -f vault.yaml -n $KUBE_NAMESPACE
 }
 
+deploy-wait() {
+    # We're using old-school while b/c we can't wait on object that haven't been created, and we can't know for sure that the statefulset had been created so far
+	# See https://github.com/kubernetes/kubernetes/issues/75227
+	while [[ $(kubectl get -n ${KUBE_NAMESPACE} pods -l statefulset.kubernetes.io/pod-name=vault-0 -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do \
+	    echo "waiting for vault pod to become ready"; \
+	    sleep 5; \
+	done
+}
+
 undeploy() {
     kubectl delete -f vault.yaml -n $KUBE_NAMESPACE
     kubectl delete -f vault-rbac.yaml -n $KUBE_NAMESPACE
@@ -32,11 +41,14 @@ case "$1" in
     deploy)
         deploy
         ;;
+    deploy-wait)
+        deploy-wait
+        ;;
     undeploy)
         undeploy
         ;;
     *)
-        echo "usage: $0 [deploy|undeploy]"
+        echo "usage: $0 [deploy|deploy-wait|undeploy]"
         exit 1
         ;;
 esac

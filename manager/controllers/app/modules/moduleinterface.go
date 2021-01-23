@@ -12,27 +12,29 @@ import (
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 )
 
-// Transformations structure defines the governance actions to be taken for a specific flow
-type Transformations struct {
+// Operations structure defines the governance decision for a specific operation
+type Operations struct {
 	Allowed            bool
 	EnforcementActions []pb.EnforcementAction
 	Message            string
+	// geography relevant for the read/write operation
+	// indicates where the workload runs (for read access) or where to write the data to (for copying data to another location)
+	Geo string
 }
 
-// DataInfo defines all the information about the given data set
+// DataInfo defines all the information about the given data set that comes from the m4dapplication spec and from the connectors.
 type DataInfo struct {
-	// Data asset unique identifier, not necessarily the same string appearing in the resource definition
-	AssetID string
-	// Processing geography
-	Geo string
-	// Application interface
-	AppInterface *app.InterfaceDetails
 	// Source connection details
 	DataDetails *pb.DatasetDetails
 	// Data asset credentials
 	Credentials *pb.DatasetCredentials
 	// Governance actions
-	Actions map[app.ModuleFlow]Transformations
+	// Actions are collected on demand depending on the scenario
+	// For reading the data by the workload READ operation is requested always, WRITE is requested only when implicit copy is required
+	// For copying data into the managed environment, WRITE is always requested, READ is implicitly allowed (as suggested by the scenario) so no need to check
+	Actions map[pb.AccessOperation_AccessType]Operations
+	// Pointer to the relevant data context in the M4D application spec
+	Context *app.DataContext
 }
 
 // ModuleInstanceSpec consists of the module spec and arguments
@@ -54,6 +56,8 @@ type Selector struct {
 	Actions      []pb.EnforcementAction
 }
 
+// TODO: Add function to check if module supports recurrence type
+
 // GetModule returns the selected module
 func (m *Selector) GetModule() *app.M4DModule {
 	return m.Module
@@ -74,14 +78,14 @@ func (m *Selector) AddModuleInstances(args *app.ModuleArguments, item DataInfo, 
 	instances := make([]ModuleInstanceSpec, 0)
 	// append moduleinstances to the list
 	instances = append(instances, ModuleInstanceSpec{
-		AssetID:     item.AssetID,
+		AssetID:     item.Context.DataSetID,
 		Module:      m.GetModule(),
 		Args:        args,
 		ClusterName: cluster,
 	})
 	for _, dep := range m.GetDependencies() {
 		instances = append(instances, ModuleInstanceSpec{
-			AssetID:     item.AssetID,
+			AssetID:     item.Context.DataSetID,
 			Module:      dep,
 			Args:        args,
 			ClusterName: cluster,
@@ -213,12 +217,17 @@ func CheckDependencies(module *app.M4DModule, moduleMap map[string]*app.M4DModul
 // Current logic:
 // Read is done at target (processing geography)
 // Copy is done at source when transformations are required, and at target - otherwise
+// Write is done at target
 func (m *Selector) SelectCluster(item DataInfo, clusters []multicluster.Cluster) (string, error) {
-	var geo string
-	if len(m.Actions) > 0 && m.Flow == app.Copy {
-		geo = item.DataDetails.Geo
-	} else {
-		geo = item.Geo
+	geo := item.DataDetails.Geo
+	if m.Flow == app.Read {
+		if actions, found := item.Actions[pb.AccessOperation_READ]; found {
+			geo = actions.Geo
+		}
+	} else if m.Flow == app.Copy && len(m.Actions) == 0 {
+		if actions, found := item.Actions[pb.AccessOperation_WRITE]; found {
+			geo = actions.Geo
+		}
 	}
 	for _, cluster := range clusters {
 		if cluster.Metadata.Region == geo {

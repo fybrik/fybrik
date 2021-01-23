@@ -6,14 +6,16 @@ metadata:
     app: kf-notebook
 spec:
   selector:
-    matchLabels:
-      app: kf-notebook
+    clusterName: US-cluster
+    workloadSelector:
+      matchLabels:
+        app: kf-notebook
   appInfo:
     purpose: fraud-detection
-    processingGeography: US
     role: Security
   data:
     - dataSetID: "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"ASSET_ID\"}"
-      ifDetails: 
-        protocol: m4d-arrow-flight
-        dataformat: arrow
+      requirements:
+        interface: 
+          protocol: m4d-arrow-flight
+          dataformat: arrow

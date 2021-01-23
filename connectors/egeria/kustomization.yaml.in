@@ -2,6 +2,4 @@
 # SPDX-License-Identifier: Apache-2.0
 
 resources:
-- opa_connector.yaml
-- vault_connector.yaml
 - egr_connector.yaml

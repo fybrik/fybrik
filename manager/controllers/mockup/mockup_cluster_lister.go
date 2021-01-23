@@ -4,8 +4,6 @@
 package mockup
 
 import (
-	"os"
-
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 )
 
@@ -15,22 +13,14 @@ type ClusterLister struct {
 
 // GetClusters returns the cluster config for testing
 func (m *ClusterLister) GetClusters() ([]multicluster.Cluster, error) {
-	if os.Getenv("MULTI_CLUSTERED_CONFIG") == "true" {
-		return []multicluster.Cluster{
-			{
-				Name:     "US-cluster",
-				Metadata: multicluster.ClusterMetadata{Region: "US"},
-			},
-			{
-				Name:     "Germany-cluster",
-				Metadata: multicluster.ClusterMetadata{Region: "Germany"},
-			},
-		}, nil
-	}
 	return []multicluster.Cluster{
 		{
 			Name:     "US-cluster",
 			Metadata: multicluster.ClusterMetadata{Region: "US"},
+		},
+		{
+			Name:     "Germany-cluster",
+			Metadata: multicluster.ClusterMetadata{Region: "Germany"},
 		},
 	}, nil
 }

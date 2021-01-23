@@ -99,4 +99,50 @@ var _ = Describe("Blueprint Controller", func() {
 			}, timeout, interval).ShouldNot(Succeed())
 		})
 	})
+
+	Context("Release name", func() {
+		It("Should form a name when name is short", func() {
+			blueprint := app.Blueprint{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "appns-app-mybp",
+				},
+				Spec: app.BlueprintSpec{
+					Flow: app.DataFlow{
+						Name: "dataflow",
+						Steps: []app.FlowStep{{Name: "mystep",
+							Template:  "template",
+							Arguments: app.ModuleArguments{}}},
+					},
+				},
+			}
+
+			relName := getReleaseName(blueprint.Name, blueprint.Spec.Flow.Steps[0])
+			Expect(relName).To(Equal("appns-app-mybp-mystep"))
+		})
+
+		It("Should limit the release name if it is too long", func() {
+			blueprint := app.Blueprint{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "appnsisalreadylong-appnameisevenlonger-myblueprintnameisreallytakingitoverthetopkubernetescantevendealwithit",
+				},
+				Spec: app.BlueprintSpec{
+					Flow: app.DataFlow{
+						Name: "dataflow",
+						Steps: []app.FlowStep{{Name: "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff",
+							Template:  "template",
+							Arguments: app.ModuleArguments{}}},
+					},
+				},
+			}
+
+			relName := getReleaseName(blueprint.Name, blueprint.Spec.Flow.Steps[0])
+			Expect(relName).To(Equal("appnsisalreadylong-appnameisevenlonger-mybluepr-58392"))
+			Expect(relName).To(HaveLen(53))
+
+			// Make sure that calling the same method again results in the same result
+			relName2 := getReleaseName(blueprint.Name, blueprint.Spec.Flow.Steps[0])
+			Expect(relName2).To(Equal("appnsisalreadylong-appnameisevenlonger-mybluepr-58392"))
+			Expect(relName2).To(HaveLen(53))
+		})
+	})
 })

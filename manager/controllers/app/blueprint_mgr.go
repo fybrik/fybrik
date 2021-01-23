@@ -66,8 +66,6 @@ func (r *M4DApplicationReconciler) GenerateBlueprints(instances []modules.Module
 func (r *M4DApplicationReconciler) GenerateBlueprint(instances []modules.ModuleInstanceSpec, appContext *app.M4DApplication) app.BlueprintSpec {
 	var spec app.BlueprintSpec
 
-	// clone the selector
-	appContext.Spec.Selector.DeepCopyInto(&spec.Selector)
 	// Entrypoint is always the name of the application
 	appName := appContext.GetName()
 	spec.Entrypoint = appName
@@ -85,7 +83,7 @@ func (r *M4DApplicationReconciler) GenerateBlueprint(instances []modules.ModuleI
 
 		// Create a flow step
 		var step app.FlowStep
-		step.Name = appName + "-" + modulename + "-" + utils.Hash(moduleInstance.AssetID, 20) // Need unique name for each step so include ids for dataset
+		step.Name = modulename + "-" + utils.Hash(moduleInstance.AssetID, 10) // Need unique name for each step so include ids for dataset
 		step.Template = modulename
 
 		step.Arguments = *moduleInstance.Args

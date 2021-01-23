@@ -16,14 +16,11 @@ func resetConditions(application *app.M4DApplication) {
 	application.Status.Conditions[app.FailureConditionIndex] = app.Condition{Type: app.FailureCondition, Status: corev1.ConditionFalse}
 }
 
-func setCondition(application *app.M4DApplication, assetID string, msg string, receivedFrom string, fatalError bool) {
+func setCondition(application *app.M4DApplication, assetID string, msg string, fatalError bool) {
 	if len(application.Status.Conditions) == 0 {
 		resetConditions(application)
 	}
 	errMsg := "An error was received"
-	if receivedFrom != "" {
-		errMsg += " from " + receivedFrom
-	}
 	if assetID != "" {
 		errMsg += " for asset " + assetID + " . "
 	}

@@ -12,11 +12,11 @@ import (
 )
 
 // ConstructApplicationContext constructs ApplicationContext structure to send to Policy Compiler
-func ConstructApplicationContext(datasetID string, input *app.M4DApplication, operationType pb.AccessOperation_AccessType) *pb.ApplicationContext {
+func ConstructApplicationContext(datasetID string, input *app.M4DApplication, operation pb.AccessOperation) *pb.ApplicationContext {
 	return &pb.ApplicationContext{
 		AppInfo: &pb.ApplicationDetails{
 			Purpose:             input.Spec.AppInfo.Purpose,
-			ProcessingGeography: input.Spec.AppInfo.ProcessingGeography,
+			ProcessingGeography: operation.Destination, //TODO: Remove processing geography, destination is enough
 			Role:                string(input.Spec.AppInfo.Role),
 		},
 		AppId: utils.CreateAppIdentifier(input),
@@ -24,36 +24,25 @@ func ConstructApplicationContext(datasetID string, input *app.M4DApplication, op
 			Dataset: &pb.DatasetIdentifier{
 				DatasetId: datasetID,
 			},
-			Operation: &pb.AccessOperation{
-				Type:        operationType,
-				Destination: input.Spec.AppInfo.ProcessingGeography,
-			},
+			Operation: &operation,
 		}},
 	}
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
-func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, req *modules.DataInfo, input *app.M4DApplication, op pb.AccessOperation_AccessType) error {
+func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, input *app.M4DApplication, op pb.AccessOperation) (modules.Operations, error) {
 	// call external policy manager to get governance instructions for this operation
 	appContext := ConstructApplicationContext(datasetID, input, op)
-	var flow app.ModuleFlow
-	switch op {
-	case pb.AccessOperation_READ:
-		flow = app.Read
-	case pb.AccessOperation_COPY:
-		flow = app.Copy
-	case pb.AccessOperation_WRITE:
-		flow = app.Write
-	}
-
 	pcresponse, err := policyCompiler.GetPoliciesDecisions(appContext)
 	if err != nil {
-		return err
+		return modules.Operations{}, err
 	}
 
 	// initialize Actions structure
-	req.Actions[flow] = modules.Transformations{
+	res := modules.Operations{
 		Allowed:            true,
+		Message:            "",
+		Geo:                op.Destination,
 		EnforcementActions: make([]pb.EnforcementAction, 0),
 	}
 
@@ -61,35 +50,27 @@ func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, 
 		if datasetDecision.GetDataset().GetDatasetId() != datasetID {
 			continue // not our data set
 		}
-		var actions []pb.EnforcementAction
 		operationDecisions := datasetDecision.GetDecisions()
 		for _, operationDecision := range operationDecisions {
 			enforcementActions := operationDecision.GetEnforcementActions()
 			for _, action := range enforcementActions {
 				if utils.IsDenied(action.GetName()) {
-					var msg string
-					if operationDecision.Operation.Type == pb.AccessOperation_READ {
-						msg = app.ReadAccessDenied
-					} else {
-						msg = app.CopyNotAllowed
+					res.Allowed = false
+					switch operationDecision.Operation.Type {
+					case pb.AccessOperation_READ:
+						res.Message = app.ReadAccessDenied
+					case pb.AccessOperation_WRITE:
+						res.Message = app.WriteNotAllowed
 					}
-					req.Actions[flow] = modules.Transformations{
-						Allowed:            false,
-						Message:            msg,
-						EnforcementActions: make([]pb.EnforcementAction, 0),
-					}
-					return nil
+					return res, nil
 				}
+				res.Allowed = true
 				// Check if this is a real action (i.e. not Allow)
 				if utils.IsAction(action.GetName()) {
-					actions = append(actions, *action.DeepCopy())
+					res.EnforcementActions = append(res.EnforcementActions, *action.DeepCopy())
 				}
 			}
 		}
-		req.Actions[flow] = modules.Transformations{
-			Allowed:            true,
-			EnforcementActions: actions,
-		}
 	}
-	return nil
+	return res, nil
 }

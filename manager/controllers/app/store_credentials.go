@@ -22,7 +22,7 @@ func (r *M4DApplicationReconciler) RegisterCredentials(req *modules.DataInfo) er
 	if err := json.Unmarshal(jsonStr, &credentialsMap); err != nil {
 		return err
 	}
-	if _, err := utils.AddToVault(req.AssetID, credentialsMap, r.VaultClient); err != nil {
+	if _, err := utils.AddToVault(req.Context.DataSetID, credentialsMap, r.VaultClient); err != nil {
 		return err
 	}
 	return nil

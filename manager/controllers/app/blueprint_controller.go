@@ -6,8 +6,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -121,15 +119,15 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) (ctr
 	return ctrl.Result{}, nil
 }
 
-func getReleaseName(step app.FlowStep) string {
-	// we add the "r" character at the beginning of the release name, since it must begin with an alphabetic character
-	return "r" + utils.Hash(step.Name, 20)
+func getReleaseName(blueprintName string, step app.FlowStep) string {
+	fullName := blueprintName + "-" + step.Name
+	return utils.HelmConformName(fullName)
 }
 
 func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) error {
 	errs := make([]string, 0)
 	for _, step := range blueprint.Spec.Flow.Steps {
-		releaseName := getReleaseName(step)
+		releaseName := getReleaseName(blueprint.Name, step)
 		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus != nil || rel == nil {
 			continue
 		}
@@ -145,7 +143,7 @@ func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) 
 
 func (r *BlueprintReconciler) hasExternalResources(blueprint *app.Blueprint) bool {
 	for _, step := range blueprint.Spec.Flow.Steps {
-		releaseName := getReleaseName(step)
+		releaseName := getReleaseName(blueprint.Name, step)
 		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus == nil && rel != nil {
 			return true
 		}
@@ -162,18 +160,6 @@ func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.
 	}
 	nbytes, _ := yaml.Marshal(args)
 	log.Info(fmt.Sprintf("--- Values.yaml ---\n\n%s\n\n", nbytes))
-
-	// TODO: should change to use an ImagePullSecret referenced from the M4DModule resource
-	hostname := os.Getenv("DOCKER_HOSTNAME")
-	username := os.Getenv("DOCKER_USERNAME")
-	password := os.Getenv("DOCKER_PASSWORD")
-	insecure, _ := strconv.ParseBool(os.Getenv("DOCKER_INSECURE"))
-	if username != "" && password != "" {
-		err := r.Helmer.RegistryLogin(hostname, username, password, insecure)
-		if err != nil {
-			return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart login")
-		}
-	}
 
 	err := r.Helmer.ChartPull(chartSpec.Name)
 	if err != nil {
@@ -200,6 +186,7 @@ func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.
 	return ctrl.Result{}, nil
 }
 
+// CopyMap copies a map
 func CopyMap(m map[string]interface{}) map[string]interface{} {
 	cp := make(map[string]interface{})
 	for k, v := range m {
@@ -214,6 +201,7 @@ func CopyMap(m map[string]interface{}) map[string]interface{} {
 	return cp
 }
 
+// SetMapField updates a map
 func SetMapField(obj map[string]interface{}, k string, v interface{}) bool {
 	components := strings.Split(k, ".")
 	for n, component := range components {
@@ -265,7 +253,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
 
-		releaseName := getReleaseName(step)
+		releaseName := getReleaseName(blueprint.Name, step)
 		log.V(0).Info("Release name: " + releaseName)
 		numReleases++
 		// check the release status
