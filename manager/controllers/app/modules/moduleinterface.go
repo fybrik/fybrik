@@ -23,7 +23,7 @@ type Operations struct {
 	Geo string
 }
 
-// DataDetails is the information recieved from the catalog connector
+// DataDetails is the information received from the catalog connector
 type DataDetails struct {
 	// Name of the asset
 	Name string
