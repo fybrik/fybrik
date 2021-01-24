@@ -22,7 +22,7 @@ type CopyModuleArgs struct {
 
 	// Transformations are different types of processing that may be done to the data as it is copied.
 	// +optional
-	Transformations runtime.RawExtension `json:"transformations,omitempty"`
+	Transformations []runtime.RawExtension `json:"transformations,omitempty"`
 }
 
 // ReadModuleArgs define the input parameters for modules that read data from location A
@@ -38,7 +38,7 @@ type ReadModuleArgs struct {
 
 	// Transformations are different types of processing that may be done to the data
 	// +optional
-	Transformations runtime.RawExtension `json:"transformations,omitempty"`
+	Transformations []runtime.RawExtension `json:"transformations,omitempty"`
 }
 
 // WriteModuleArgs define the input parameters for modules that write data to location B
@@ -49,7 +49,7 @@ type WriteModuleArgs struct {
 
 	// Transformations are different types of processing that may be done to the data as it is written.
 	// +optional
-	Transformations runtime.RawExtension `json:"transformations,omitempty"`
+	Transformations []runtime.RawExtension `json:"transformations,omitempty"`
 }
 
 // ModuleArguments are the parameters passed to a component that runs in the data path

@@ -12,6 +12,7 @@ import (
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	"github.com/ibm/the-mesh-for-data/pkg/serde"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -183,7 +184,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 			return instances, nil
 		}
 		// append moduleinstances to the list
-		actions, err := serde.ToRawExtension(copySelector.Actions)
+		actions, err := actionsToRawExtentions(copySelector.Actions)
 		if err != nil {
 			return instances, err
 		}
@@ -191,7 +192,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 			Copy: &app.CopyModuleArgs{
 				Source:          *sourceDataStore,
 				Destination:     *sinkDataStore,
-				Transformations: *actions,
+				Transformations: actions,
 			},
 		}
 		copyCluster, err := copySelector.SelectCluster(item, m.Clusters)
@@ -211,7 +212,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 			readSource = *sinkDataStore
 		}
 
-		actions, err := serde.ToRawExtension(readSelector.Actions)
+		actions, err := actionsToRawExtentions(readSelector.Actions)
 		if err != nil {
 			return instances, err
 		}
@@ -219,7 +220,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 			{
 				Source:          readSource,
 				AssetID:         utils.CreateDataSetIdentifier(item.Context.DataSetID),
-				Transformations: *actions,
+				Transformations: actions,
 			},
 		}
 
@@ -285,4 +286,16 @@ func (m *ModuleManager) getCopyRequirements(item modules.DataInfo, readSelector 
 	}
 	copyRequired := !supportsDataSource || !supportsAllActions || transformAtSource || item.Context.Requirements.Copy.Required
 	return copyRequired, sources, actionsOnCopy
+}
+
+func actionsToRawExtentions(actions []*pb.EnforcementAction) ([]runtime.RawExtension, error) {
+	result := []runtime.RawExtension{}
+	for _, action := range actions {
+		raw, err := serde.ToRawExtension(action)
+		if err != nil {
+			return result, err
+		}
+		result = append(result, *raw)
+	}
+	return result, nil
 }
