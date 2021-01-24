@@ -40,7 +40,6 @@ func GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) erro
 
 	details := response.GetDetails()
 
-	// TODO(roee88): fill self structure [protocol, format, geo, JSON]
 	protocol, err := utils.GetProtocol(details)
 	if err != nil {
 		return err
