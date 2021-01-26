@@ -37,17 +37,11 @@ spec:
                   description: Actions are the data transformations that the module supports
                   items:
                     properties:
-                      args:
-                        additionalProperties:
-                          type: string
-                        type: object
                       id:
                         type: string
                       level:
                         format: int32
                         type: integer
-                      name:
-                        type: string
                     type: object
                   type: array
                 api:

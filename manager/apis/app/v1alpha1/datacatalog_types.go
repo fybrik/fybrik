@@ -1,10 +1,11 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-// Package v1alpha1 is used within the M4DApplication
 package v1alpha1
 
-import dc "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+import (
+	"k8s.io/apimachinery/pkg/runtime"
+)
 
 // DataStore contains the details for accesing the data that are sent by catalog connectors
 // Credentials for accesing the data are stored in Vault, in the location represented by CredentialLocation property.
@@ -15,7 +16,7 @@ type DataStore struct {
 	CredentialLocation string `json:"credentialLocation"`
 	// Connection has the relevant details for accesing the data (url, table, ssl, etc.)
 	// +required
-	Connection *dc.DataStore `json:"connection"`
+	Connection runtime.RawExtension `json:"connection"`
 	// Format represents data format (e.g. parquet) as received from catalog connectors
 	// +required
 	Format string `json:"format"`

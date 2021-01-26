@@ -298,13 +298,13 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 		// workload exists
 		// read policies for data that is processed in the workload geography
 		if req.Actions[pb.AccessOperation_READ], err = LookupPolicyDecisions(datasetID, r.PolicyCompiler, input,
-			pb.AccessOperation{Type: pb.AccessOperation_READ, Destination: workloadGeography}); err != nil {
+			&pb.AccessOperation{Type: pb.AccessOperation_READ, Destination: workloadGeography}); err != nil {
 			return AnalyzeError(input, r.Log, datasetID, err)
 		}
 
 		// write policies in case copy will be applied
 		if req.Actions[pb.AccessOperation_WRITE], err = LookupPolicyDecisions(datasetID, r.PolicyCompiler, input,
-			pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: workloadGeography}); err != nil {
+			&pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: workloadGeography}); err != nil {
 			return AnalyzeError(input, r.Log, datasetID, err)
 		}
 
@@ -317,7 +317,7 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 		// Otherwise, select any of the available geographies
 		if input.Spec.Selector.ClusterName != "" {
 			if req.Actions[pb.AccessOperation_WRITE], err = LookupPolicyDecisions(datasetID, r.PolicyCompiler, input,
-				pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: workloadGeography}); err != nil {
+				&pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: workloadGeography}); err != nil {
 				return AnalyzeError(input, r.Log, datasetID, err)
 			}
 			if !req.Actions[pb.AccessOperation_WRITE].Allowed {
@@ -326,7 +326,7 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 		} else {
 			excludedGeos := ""
 			for _, cluster := range clusters {
-				operation := pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: cluster.Metadata.Region}
+				operation := &pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: cluster.Metadata.Region}
 				if req.Actions[pb.AccessOperation_WRITE], err = LookupPolicyDecisions(datasetID, r.PolicyCompiler, input, operation); err != nil {
 					return AnalyzeError(input, r.Log, datasetID, err)
 				}

@@ -61,58 +61,6 @@ spec:
                                 properties:
                                   connection:
                                     description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
-                                    properties:
-                                      db2:
-                                        description: oneof location {   // should have been oneof but for technical rasons, a problem to translate it to JSON, we remove the oneof for now should have been local, db2, s3 without "location"  but had a problem to compile it in proto - collision with proto name DataLocationDb2
-                                        properties:
-                                          database:
-                                            type: string
-                                          port:
-                                            type: string
-                                          ssl:
-                                            type: string
-                                          table:
-                                            type: string
-                                          url:
-                                            type: string
-                                        type: object
-                                      kafka:
-                                        properties:
-                                          bootstrap_servers:
-                                            type: string
-                                          key_deserializer:
-                                            type: string
-                                          sasl_mechanism:
-                                            type: string
-                                          schema_registry:
-                                            type: string
-                                          security_protocol:
-                                            type: string
-                                          ssl_truststore:
-                                            type: string
-                                          ssl_truststore_password:
-                                            type: string
-                                          topic_name:
-                                            type: string
-                                          value_deserializer:
-                                            type: string
-                                        type: object
-                                      name:
-                                        type: string
-                                      s3:
-                                        properties:
-                                          bucket:
-                                            type: string
-                                          endpoint:
-                                            type: string
-                                          object_key:
-                                            type: string
-                                          region:
-                                            type: string
-                                        type: object
-                                      type:
-                                        format: int32
-                                        type: integer
                                     type: object
                                   credentialLocation:
                                     description: 'CredentialLocation is used to obtain the credentials from the credential management system - ex: vault'
@@ -130,58 +78,6 @@ spec:
                                 properties:
                                   connection:
                                     description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
-                                    properties:
-                                      db2:
-                                        description: oneof location {   // should have been oneof but for technical rasons, a problem to translate it to JSON, we remove the oneof for now should have been local, db2, s3 without "location"  but had a problem to compile it in proto - collision with proto name DataLocationDb2
-                                        properties:
-                                          database:
-                                            type: string
-                                          port:
-                                            type: string
-                                          ssl:
-                                            type: string
-                                          table:
-                                            type: string
-                                          url:
-                                            type: string
-                                        type: object
-                                      kafka:
-                                        properties:
-                                          bootstrap_servers:
-                                            type: string
-                                          key_deserializer:
-                                            type: string
-                                          sasl_mechanism:
-                                            type: string
-                                          schema_registry:
-                                            type: string
-                                          security_protocol:
-                                            type: string
-                                          ssl_truststore:
-                                            type: string
-                                          ssl_truststore_password:
-                                            type: string
-                                          topic_name:
-                                            type: string
-                                          value_deserializer:
-                                            type: string
-                                        type: object
-                                      name:
-                                        type: string
-                                      s3:
-                                        properties:
-                                          bucket:
-                                            type: string
-                                          endpoint:
-                                            type: string
-                                          object_key:
-                                            type: string
-                                          region:
-                                            type: string
-                                        type: object
-                                      type:
-                                        format: int32
-                                        type: integer
                                     type: object
                                   credentialLocation:
                                     description: 'CredentialLocation is used to obtain the credentials from the credential management system - ex: vault'
@@ -197,18 +93,6 @@ spec:
                               transformations:
                                 description: Transformations are different types of processing that may be done to the data as it is copied.
                                 items:
-                                  properties:
-                                    args:
-                                      additionalProperties:
-                                        type: string
-                                      type: object
-                                    id:
-                                      type: string
-                                    level:
-                                      format: int32
-                                      type: integer
-                                    name:
-                                      type: string
                                   type: object
                                 type: array
                             required:
@@ -228,58 +112,6 @@ spec:
                                   properties:
                                     connection:
                                       description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
-                                      properties:
-                                        db2:
-                                          description: oneof location {   // should have been oneof but for technical rasons, a problem to translate it to JSON, we remove the oneof for now should have been local, db2, s3 without "location"  but had a problem to compile it in proto - collision with proto name DataLocationDb2
-                                          properties:
-                                            database:
-                                              type: string
-                                            port:
-                                              type: string
-                                            ssl:
-                                              type: string
-                                            table:
-                                              type: string
-                                            url:
-                                              type: string
-                                          type: object
-                                        kafka:
-                                          properties:
-                                            bootstrap_servers:
-                                              type: string
-                                            key_deserializer:
-                                              type: string
-                                            sasl_mechanism:
-                                              type: string
-                                            schema_registry:
-                                              type: string
-                                            security_protocol:
-                                              type: string
-                                            ssl_truststore:
-                                              type: string
-                                            ssl_truststore_password:
-                                              type: string
-                                            topic_name:
-                                              type: string
-                                            value_deserializer:
-                                              type: string
-                                          type: object
-                                        name:
-                                          type: string
-                                        s3:
-                                          properties:
-                                            bucket:
-                                              type: string
-                                            endpoint:
-                                              type: string
-                                            object_key:
-                                              type: string
-                                            region:
-                                              type: string
-                                          type: object
-                                        type:
-                                          format: int32
-                                          type: integer
                                       type: object
                                     credentialLocation:
                                       description: 'CredentialLocation is used to obtain the credentials from the credential management system - ex: vault'
@@ -295,18 +127,6 @@ spec:
                                 transformations:
                                   description: Transformations are different types of processing that may be done to the data
                                   items:
-                                    properties:
-                                      args:
-                                        additionalProperties:
-                                          type: string
-                                        type: object
-                                      id:
-                                        type: string
-                                      level:
-                                        format: int32
-                                        type: integer
-                                      name:
-                                        type: string
                                     type: object
                                   type: array
                               required:
@@ -324,58 +144,6 @@ spec:
                                   properties:
                                     connection:
                                       description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
-                                      properties:
-                                        db2:
-                                          description: oneof location {   // should have been oneof but for technical rasons, a problem to translate it to JSON, we remove the oneof for now should have been local, db2, s3 without "location"  but had a problem to compile it in proto - collision with proto name DataLocationDb2
-                                          properties:
-                                            database:
-                                              type: string
-                                            port:
-                                              type: string
-                                            ssl:
-                                              type: string
-                                            table:
-                                              type: string
-                                            url:
-                                              type: string
-                                          type: object
-                                        kafka:
-                                          properties:
-                                            bootstrap_servers:
-                                              type: string
-                                            key_deserializer:
-                                              type: string
-                                            sasl_mechanism:
-                                              type: string
-                                            schema_registry:
-                                              type: string
-                                            security_protocol:
-                                              type: string
-                                            ssl_truststore:
-                                              type: string
-                                            ssl_truststore_password:
-                                              type: string
-                                            topic_name:
-                                              type: string
-                                            value_deserializer:
-                                              type: string
-                                          type: object
-                                        name:
-                                          type: string
-                                        s3:
-                                          properties:
-                                            bucket:
-                                              type: string
-                                            endpoint:
-                                              type: string
-                                            object_key:
-                                              type: string
-                                            region:
-                                              type: string
-                                          type: object
-                                        type:
-                                          format: int32
-                                          type: integer
                                       type: object
                                     credentialLocation:
                                       description: 'CredentialLocation is used to obtain the credentials from the credential management system - ex: vault'
@@ -391,18 +159,6 @@ spec:
                                 transformations:
                                   description: Transformations are different types of processing that may be done to the data as it is written.
                                   items:
-                                    properties:
-                                      args:
-                                        additionalProperties:
-                                          type: string
-                                        type: object
-                                      id:
-                                        type: string
-                                      level:
-                                        format: int32
-                                        type: integer
-                                      name:
-                                        type: string
                                     type: object
                                   type: array
                               required:

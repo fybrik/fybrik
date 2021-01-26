@@ -78,7 +78,7 @@ var _ = Describe("Blueprint Controller", func() {
 				if err := k8sClient.Get(context.Background(), key, f); err != nil {
 					return err
 				}
-				f.Spec.Flow.Steps[0].Arguments.Copy.Destination.Connection.S3.Bucket = "placeholder"
+				f.Spec.Flow.Steps[0].Arguments.Copy.Destination.Connection.Raw = []byte(`{"s3": {"bucket": "placeholder"}}`)
 				return k8sClient.Update(context.Background(), f)
 			}, timeout, interval).Should(Succeed())
 

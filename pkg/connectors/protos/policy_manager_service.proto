@@ -5,6 +5,7 @@ syntax = "proto3";
 
 package connectors;
 option java_package = "com.datmesh";
+option go_package = "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf";
 
 import "policy_manager_request.proto";
 import "policy_manager_response.proto";
