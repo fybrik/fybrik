@@ -91,6 +91,7 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		if result, err := r.reconcile(applicationContext); err != nil {
 			// another attempt will be done
 			// users should be informed in case of errors
+			// TODO(shlomitk1) delete external resources in case of errors
 			if !equality.Semantic.DeepEqual(&applicationContext.Status, observedStatus) {
 				// ignore an update error, a new reconcile will be made in any case
 				_ = r.Client.Status().Update(ctx, applicationContext)
@@ -252,10 +253,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	}
 	// generate blueprint specifications (per cluster)
 	blueprintPerClusterMap := r.GenerateBlueprints(instances, applicationContext)
-	resourceRef, err := r.ResourceInterface.CreateResourceReference(applicationContext.Name, applicationContext.Namespace)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
+	resourceRef := r.ResourceInterface.CreateResourceReference(applicationContext.Name, applicationContext.Namespace)
 	ownerRef := &app.ResourceReference{Name: applicationContext.Name, Namespace: applicationContext.Namespace}
 	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, blueprintPerClusterMap); err != nil {
 		r.Log.V(0).Info("Error creating " + resourceRef.Kind + " : " + err.Error())
