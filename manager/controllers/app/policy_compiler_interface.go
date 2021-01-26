@@ -12,7 +12,7 @@ import (
 )
 
 // ConstructApplicationContext constructs ApplicationContext structure to send to Policy Compiler
-func ConstructApplicationContext(datasetID string, input *app.M4DApplication, operation pb.AccessOperation) *pb.ApplicationContext {
+func ConstructApplicationContext(datasetID string, input *app.M4DApplication, operation *pb.AccessOperation) *pb.ApplicationContext {
 	return &pb.ApplicationContext{
 		AppInfo: &pb.ApplicationDetails{
 			Purpose:             input.Spec.AppInfo.Purpose,
@@ -24,13 +24,13 @@ func ConstructApplicationContext(datasetID string, input *app.M4DApplication, op
 			Dataset: &pb.DatasetIdentifier{
 				DatasetId: datasetID,
 			},
-			Operation: &operation,
+			Operation: operation,
 		}},
 	}
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
-func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, input *app.M4DApplication, op pb.AccessOperation) ([]*pb.EnforcementAction, error) {
+func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, input *app.M4DApplication, op *pb.AccessOperation) ([]*pb.EnforcementAction, error) {
 	// call external policy manager to get governance instructions for this operation
 	appContext := ConstructApplicationContext(datasetID, input, op)
 	pcresponse, err := policyCompiler.GetPoliciesDecisions(appContext)

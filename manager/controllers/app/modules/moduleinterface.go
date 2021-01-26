@@ -10,12 +10,25 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
-// DataInfo defines the information about the given data set that comes from the m4dapplication spec and from the connectors.
+// DataDetails is the information received from the catalog connector
+type DataDetails struct {
+	// Name of the asset
+	Name string
+	// Interface is the protocol and format
+	Interface app.InterfaceDetails
+	// Geography is the geo-location of the asset
+	Geography string
+	// Connection is the connection details in raw format as received from the connector
+	Connection runtime.RawExtension
+}
+
+// DataInfo defines all the information about the given data set that comes from the m4dapplication spec and from the connectors.
 type DataInfo struct {
 	// Source connection details
-	DataDetails *pb.DatasetDetails
+	DataDetails *DataDetails
 	// Data asset credentials
 	Credentials *pb.DatasetCredentials
 	// Pointer to the relevant data context in the M4D application spec
@@ -89,7 +102,7 @@ func (m *Selector) SupportsGovernanceActions(module *app.M4DModule, actions []*p
 		supportsAction := false
 		for j := range module.Spec.Capabilities.Actions {
 			transformation := &module.Spec.Capabilities.Actions[j]
-			if transformation.Id == action.Id && transformation.Level == action.Level {
+			if transformation.ID == action.Id && transformation.Level == action.Level {
 				supportsAction = true
 				break
 			}
@@ -106,7 +119,7 @@ func (m *Selector) SupportsGovernanceAction(module *app.M4DModule, action *pb.En
 	// Check that the governance actions match
 	for j := range module.Spec.Capabilities.Actions {
 		transformation := &module.Spec.Capabilities.Actions[j]
-		if transformation.Id == action.Id && transformation.Level == action.Level {
+		if transformation.ID == action.Id && transformation.Level == action.Level {
 			return true
 		}
 	}
@@ -206,7 +219,7 @@ func CheckDependencies(module *app.M4DModule, moduleMap map[string]*app.M4DModul
 // Copy is done at source when transformations are required, and at target - otherwise
 // Write is done at target
 func (m *Selector) SelectCluster(item DataInfo, clusters []multicluster.Cluster) (string, error) {
-	geo := item.DataDetails.Geo
+	geo := item.DataDetails.Geography
 	if m.Flow == app.Read {
 		geo = m.Geo
 	} else if m.Flow == app.Copy && len(m.Actions) == 0 {

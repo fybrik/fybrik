@@ -169,16 +169,22 @@ func CreateDb2ToS3CopyModule() *apiv1alpha1.M4DModule {
 						Flow:   apiv1alpha1.Copy,
 					},
 				},
-				Actions: make([]pb.EnforcementAction, 2),
+				Actions: []apiv1alpha1.SupportedAction{
+					{
+						ID:    "redact-ID",
+						Level: pb.EnforcementAction_COLUMN,
+					},
+					{
+						ID:    "encrypt-ID",
+						Level: pb.EnforcementAction_COLUMN,
+					},
+				},
 			},
 			Chart: apiv1alpha1.ChartSpec{
 				Name: "db2-chart",
 			},
 		},
 	}
-	// define actions
-	db2Module.Spec.Capabilities.Actions[0] = pb.EnforcementAction{Name: "redact", Id: "redact-ID", Level: pb.EnforcementAction_COLUMN}
-	db2Module.Spec.Capabilities.Actions[1] = pb.EnforcementAction{Name: "encrypt", Id: "encrypt-ID", Level: pb.EnforcementAction_COLUMN}
 	return db2Module
 }
 
@@ -200,15 +206,22 @@ func CreateS3ToS3CopyModule() *apiv1alpha1.M4DModule {
 						Sink:   &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
 					},
 				},
-				Actions: make([]pb.EnforcementAction, 2),
+				Actions: []apiv1alpha1.SupportedAction{
+					{
+						ID:    "redact-ID",
+						Level: pb.EnforcementAction_COLUMN,
+					},
+					{
+						ID:    "encrypt-ID",
+						Level: pb.EnforcementAction_COLUMN,
+					},
+				},
 			},
 			Chart: apiv1alpha1.ChartSpec{
 				Name: "s3-s3",
 			},
 		},
 	}
-	s3Module.Spec.Capabilities.Actions[0] = pb.EnforcementAction{Name: "redact", Id: "redact-ID", Level: pb.EnforcementAction_COLUMN}
-	s3Module.Spec.Capabilities.Actions[1] = pb.EnforcementAction{Name: "encrypt", Id: "encrypt-ID", Level: pb.EnforcementAction_COLUMN}
 	return s3Module
 }
 

@@ -14,6 +14,8 @@ import (
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	local "github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
+	"github.com/ibm/the-mesh-for-data/pkg/serde"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -57,19 +59,6 @@ Updates to add ingest:
    - Dependencies are checked but not added yet to the blueprint
 */
 
-// StructToInterfaceDetails constructs a valid InterfaceDetails object
-func StructToInterfaceDetails(item modules.DataInfo) (*app.InterfaceDetails, error) {
-	source := &app.InterfaceDetails{}
-	var err error
-	if source.Protocol, err = utils.GetProtocol(item.DataDetails); err != nil {
-		return nil, err
-	}
-	if source.DataFormat, err = utils.GetDataFormat(item.DataDetails); err != nil {
-		return nil, err
-	}
-	return source, nil
-}
-
 // GetCopyDestination creates a Dataset for bucket allocation by implicit copies or ingest.
 func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInterface *app.InterfaceDetails, geo string) (*app.DataStore, error) {
 	// provisioned storage for COPY
@@ -82,18 +71,23 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	m.Datasets = append(m.Datasets, dataset)
 	vaultPath := "/v1/" + utils.GetVaultDatasetHome() + dataset.Spec.Local["bucket"]
 	// TODO(shlomitk1): fetch the secret and register credentials
-	return &app.DataStore{
-		CredentialLocation: utils.GetFullCredentialsPath(vaultPath),
-		Connection: &pb.DataStore{
-			Type: pb.DataStore_S3,
-			Name: "S3",
-			S3: &pb.S3DataStore{
-				Bucket:    dataset.Spec.Local["bucket"],
-				Endpoint:  dataset.Spec.Local["endpoint"],
-				ObjectKey: originalAssetName + utils.Hash(originalAssetName, 10),
-			},
+	connection, err := serde.ToRawExtension(&pb.DataStore{
+		Type: pb.DataStore_S3,
+		Name: "S3",
+		S3: &pb.S3DataStore{
+			Bucket:    dataset.Spec.Local["bucket"],
+			Endpoint:  dataset.Spec.Local["endpoint"],
+			ObjectKey: originalAssetName + utils.Hash(originalAssetName, 10),
 		},
-		Format: string(destinationInterface.DataFormat),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &app.DataStore{
+		CredentialLocation: utils.GetFullCredentialsPath(utils.GetFullCredentialsPath(vaultPath)),
+		Connection:         *connection,
+		Format:             string(destinationInterface.DataFormat),
 	}, nil
 }
 
@@ -108,7 +102,7 @@ func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.
 	var readActions []*pb.EnforcementAction
 	var err error
 	readActions, err = LookupPolicyDecisions(item.Context.DataSetID, m.PolicyCompiler, appContext,
-		pb.AccessOperation{Type: pb.AccessOperation_READ, Destination: m.WorkloadGeography})
+		&pb.AccessOperation{Type: pb.AccessOperation_READ, Destination: m.WorkloadGeography})
 	if err != nil {
 		return nil, err
 	}
@@ -116,9 +110,9 @@ func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.
 	// actions are not checked since they are not necessarily done by the read module
 	readSelector := &modules.Selector{Flow: app.Read,
 		Destination:  &item.Context.Requirements.Interface,
-		Actions:      make([]*pb.EnforcementAction, 0),
+		Actions:      []*pb.EnforcementAction{},
 		Source:       nil,
-		Dependencies: make([]*app.M4DModule, 0),
+		Dependencies: []*app.M4DModule{},
 		Module:       nil,
 		Message:      "",
 		Geo:          m.WorkloadGeography,
@@ -154,18 +148,13 @@ func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.
 		return nil, err
 	}
 	actionsOnCopy = append(actionsOnCopy, additionalActions...)
-	source, err := StructToInterfaceDetails(item)
-	if err != nil {
-		return nil, err
-	}
-
 	m.Log.Info("Copy is required for " + item.Context.DataSetID)
 	var copySelector *modules.Selector
 	// select a module that supports COPY, supports required governance actions, has the required dependencies, with source in module sources and a non-empty intersection between requested and supported interfaces.
 	for _, copyDest := range interfaces {
 		copySelector = &modules.Selector{
 			Flow:         app.Copy,
-			Source:       source,
+			Source:       &item.DataDetails.Interface,
 			Actions:      actionsOnCopy,
 			Destination:  copyDest,
 			Dependencies: make([]*app.M4DModule, 0),
@@ -201,14 +190,14 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 
 	// Each selector receives source/sink interface and relevant actions
 	// Starting with the data location interface for source and the required interface for sink
-	var sourceDataStore, sinkDataStore *app.DataStore
-	sourceDataStore = &app.DataStore{
-		Connection:         item.DataDetails.GetDataStore(),
+	sourceDataStore := &app.DataStore{
+		Connection:         item.DataDetails.Connection,
 		CredentialLocation: utils.GetDatasetVaultPath(datasetID),
-		Format:             item.DataDetails.DataFormat,
+		Format:             string(item.DataDetails.Interface.DataFormat),
 	}
 	// DataStore for destination will be determined if an implicit copy is required
-	sinkDataStore = nil
+	var sinkDataStore *app.DataStore = nil
+
 	var readSelector, copySelector *modules.Selector
 	if readSelector, err = m.selectReadModule(item, appContext); err != nil {
 		m.Log.Info("Could not select a read module for " + datasetID + " : " + err.Error())
@@ -227,15 +216,16 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 			return instances, err
 		}
 		// append moduleinstances to the list
-		copyTransformations := []pb.EnforcementAction{}
-		for _, action := range copySelector.Actions {
-			copyTransformations = append(copyTransformations, *action)
+		actions, err := actionsToRawExtentions(copySelector.Actions)
+		if err != nil {
+			return instances, err
 		}
 		copyArgs := &app.ModuleArguments{
 			Copy: &app.CopyModuleArgs{
 				Source:          *sourceDataStore,
 				Destination:     *sinkDataStore,
-				Transformations: copyTransformations},
+				Transformations: actions,
+			},
 		}
 		copyCluster, err := copySelector.SelectCluster(item, m.Clusters)
 		if err != nil {
@@ -255,16 +245,18 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 			readSource = *sinkDataStore
 		}
 
-		readTransformations := []pb.EnforcementAction{}
-		for _, action := range readSelector.Actions {
-			readTransformations = append(readTransformations, *action)
+		actions, err := actionsToRawExtentions(readSelector.Actions)
+		if err != nil {
+			return instances, err
+		}
+		readInstructions := []app.ReadModuleArgs{
+			{
+				Source:          readSource,
+				AssetID:         utils.CreateDataSetIdentifier(item.Context.DataSetID),
+				Transformations: actions,
+			},
 		}
 
-		readInstructions := make([]app.ReadModuleArgs, 0)
-		readInstructions = append(readInstructions, app.ReadModuleArgs{
-			Source:          readSource,
-			AssetID:         utils.CreateDataSetIdentifier(item.Context.DataSetID),
-			Transformations: readTransformations})
 		readArgs := &app.ModuleArguments{
 			Read: readInstructions,
 		}
@@ -306,12 +298,11 @@ func (m *ModuleManager) getCopyRequirements(item modules.DataInfo, readSelector 
 	sources := GetSupportedReadSources(readSelector.GetModule())
 	utils.PrintStructure(sources, m.Log, "Read sources")
 	// check if read sources include the data source
-	source, _ := StructToInterfaceDetails(item)
-	supportsDataSource := utils.SupportsInterface(sources, source)
+	supportsDataSource := utils.SupportsInterface(sources, &item.DataDetails.Interface)
 	// check if read supports all governance actions
 	supportsAllActions := readSelector.SupportsGovernanceActions(readSelector.GetModule(), readSelector.Actions)
 	// Copy is required when data has to be transformed and read is done at another location
-	transformAtSource := len(readSelector.Actions) > 0 && item.DataDetails.Geo != readSelector.Geo
+	transformAtSource := len(readSelector.Actions) > 0 && item.DataDetails.Geography != readSelector.Geo
 	readActionsOnCopy := []*pb.EnforcementAction{}
 	if transformAtSource {
 		readActionsOnCopy = append(readActionsOnCopy, readSelector.Actions...)
@@ -340,14 +331,14 @@ func (m *ModuleManager) enforceWritePolicies(appContext *app.M4DApplication, dat
 	//	if the cluster selector is non-empty, the write will be done to the specified geography
 	if m.WorkloadGeography != "" {
 		if actions, err = LookupPolicyDecisions(datasetID, m.PolicyCompiler, appContext,
-			pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: m.WorkloadGeography}); err != nil {
+			&pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: m.WorkloadGeography}); err != nil {
 			return actions, geo, err
 		}
 		return actions, m.WorkloadGeography, nil
 	}
 	var excludedGeos string
 	for _, cluster := range m.Clusters {
-		operation := pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: cluster.Metadata.Region}
+		operation := &pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: cluster.Metadata.Region}
 		if actions, err = LookupPolicyDecisions(datasetID, m.PolicyCompiler, appContext, operation); err == nil {
 			return actions, cluster.Metadata.Region, nil
 		}
@@ -385,4 +376,16 @@ func (m *ModuleManager) GetProcessingGeography(applicationContext *app.M4DApplic
 		}
 	}
 	return "", errors.New("Unknown cluster: " + clusterName)
+}
+
+func actionsToRawExtentions(actions []*pb.EnforcementAction) ([]runtime.RawExtension, error) {
+	result := []runtime.RawExtension{}
+	for _, action := range actions {
+		raw, err := serde.ToRawExtension(action)
+		if err != nil {
+			return result, err
+		}
+		result = append(result, *raw)
+	}
+	return result, nil
 }
