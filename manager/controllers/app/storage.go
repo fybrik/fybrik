@@ -6,168 +6,95 @@ package app
 import (
 	"context"
 
+	"emperror.dev/errors"
 	"github.com/go-logr/logr"
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	statusErr "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	comv1alpha1 "github.com/IBM/dataset-lifecycle-framework/src/dataset-operator/pkg/apis/com/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dbuckets,verbs=get;list;watch;update;
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dbuckets/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dstorageaccounts,verbs=get;list;watch;update;
+// +kubebuilder:rbac:groups=com.ie.ibm.hpsys,resources=datasets,verbs=get;list;watch;create;update;patch;delete
 
-// FindAvailableBucket finds an available storage asset - in the relevant geo
-// TODO: Implement check for geo.  Needed for ingest
-func FindAvailableBucket(c client.Client, log logr.Logger, owner types.NamespacedName, id string, prefixBase string, canShare bool, geo string) *app.M4DBucket {
-	ctx := context.Background()
+// ProvisionInterface is an interface for managing Dataset resources
+type ProvisionInterface interface {
+	CreateDataset(dataset *comv1alpha1.Dataset) error
+	//DeleteDataset(namespaced types.NamespacedName) error
+	//GetStatus(namespaced types.NamespacedName) (*comv1alpha1.DatasetStatus, error)
+}
 
-	var buckets app.M4DBucketList
-	log.Info("Searching for an available bucket")
-	if err := c.List(ctx, &buckets); err != nil {
-		log.Info(err.Error())
-		return nil
+type ProvisionImpl struct {
+	Client client.Client
+}
+
+func NewProvisionImpl(c client.Client) *ProvisionImpl {
+	return &ProvisionImpl{
+		Client: c,
 	}
-	for _, bucket := range buckets.Items {
-		utils.PrintStructure(bucket, log, "Bucket ")
-		if IsBucketAvailable(&bucket, owner, id, canShare) {
-			AddOwner(&bucket, owner)
-			GetOrCreatePrefix(&bucket, id, prefixBase)
-			if err := c.Status().Update(ctx, &bucket); err != nil {
-				// the object has been updated by someone else - continue to the next one
-				if statusErr.IsConflict(err) {
-					log.Info("Conflict during an update of M4DBucket " + bucket.Name)
-				}
-				log.Info("Could not update M4DBucket " + bucket.Name)
-				continue
-			}
-			return &bucket
+}
+
+func (r *ProvisionImpl) CreateDataset(dataset *comv1alpha1.Dataset) error {
+	return r.Client.Create(context.Background(), dataset)
+}
+
+type ProvisionFake struct {
+	datasets []*comv1alpha1.Dataset
+}
+
+func NewProvisionFake() *ProvisionFake {
+	return &ProvisionFake{
+		datasets: []*comv1alpha1.Dataset{},
+	}
+}
+
+func (r *ProvisionFake) CreateDataset(dataset *comv1alpha1.Dataset) error {
+	for _, d := range r.datasets {
+		if d.Name == dataset.Name {
+			return errors.New("Dataset exists")
 		}
 	}
+	r.datasets = append(r.datasets, dataset)
 	return nil
 }
 
-// FreeStorageAssets removes the app identifier from the list of owners
-func (r *M4DApplicationReconciler) FreeStorageAssets(owner types.NamespacedName) error {
+// AllocateBucket allocates a bucket in the relevant geo
+func AllocateBucket(c client.Client, log logr.Logger, owner types.NamespacedName, id string, geo string) (*comv1alpha1.Dataset, error) {
 	ctx := context.Background()
-	var buckets app.M4DBucketList
-	if err := r.List(ctx, &buckets); err != nil {
-		return err
+	log.Info("Searching for a storage account matching the geography " + geo)
+	var accountList app.M4DStorageAccountList
+	if err := c.List(ctx, &accountList); err != nil {
+		log.Info(err.Error())
+		return nil, err
 	}
-	for _, bucket := range buckets.Items {
-		if !HasOwner(&bucket, owner) {
+	for _, account := range accountList.Items {
+		utils.PrintStructure(account, log, "Account ")
+		if account.Spec.Region != geo {
 			continue
 		}
-		RemoveOwner(&bucket, owner)
-		if !HasOwners(&bucket) {
-			bucket.Status.AssetPrefixPerDataset = map[string]string{}
+		genName := generateDatasetName(owner, id)
+		values := map[string]string{
+			"type":        "COS",
+			"secret-name": account.Spec.SecretRef,
+			"endpoint":    account.Spec.Endpoint,
+			"bucket":      genName,
+			"provision":   "true"}
+		dataset := &comv1alpha1.Dataset{ObjectMeta: metav1.ObjectMeta{
+			Name:      genName,
+			Namespace: utils.GetSystemNamespace(),
+			Labels:    map[string]string{"m4d.ibm.com/owner": owner.Namespace + "." + owner.Name},
+		},
+			Spec: comv1alpha1.DatasetSpec{Local: values},
 		}
-		if err := r.Client.Status().Update(ctx, &bucket); err != nil {
-			r.Log.V(0).Info("Error during an update of M4DBucket: " + err.Error())
-			// the object has been updated by someone else - continue to the next one
-			if statusErr.IsConflict(err) {
-				r.Log.V(0).Info("Conflict during an update of M4DBucket " + bucket.Name)
-				return err
-			}
-		}
+		return dataset, nil
 	}
-	return nil
+	return nil, errors.New("Could not allocate a bucket in " + geo)
 }
 
-// Utility functions
-
-// CreateOwnerID creates a string based on namespace and name values
-func CreateOwnerID(owner types.NamespacedName) string {
-	return owner.Namespace + "/" + owner.Name
-}
-
-// HasOwner checks whether the given owner owns the resource
-func HasOwner(resource *app.M4DBucket, owner types.NamespacedName) bool {
-	ownerID := CreateOwnerID(owner)
-	for _, val := range resource.Status.Owners {
-		if val == ownerID {
-			return true
-		}
-	}
-	return false
-}
-
-// AddOwner adds an owner to the resource
-func AddOwner(resource *app.M4DBucket, owner types.NamespacedName) {
-	if HasOwner(resource, owner) {
-		return
-	}
-	ownerID := CreateOwnerID(owner)
-	resource.Status.Owners = append(resource.Status.Owners, ownerID)
-}
-
-// RemoveOwner removes the owner from the resource
-func RemoveOwner(resource *app.M4DBucket, owner types.NamespacedName) {
-	ownerID := CreateOwnerID(owner)
-	newOwners := make([]string, 0)
-	for _, val := range resource.Status.Owners {
-		if val != ownerID {
-			newOwners = append(newOwners, val)
-		}
-	}
-	resource.Status.Owners = newOwners
-}
-
-// HasOwners checks whether there are any owners for the given resource
-func HasOwners(resource *app.M4DBucket) bool {
-	return len(resource.Status.Owners) != 0
-}
-
-// GetPrefix returns a prefix earlier generated for the given data set if exists, and empty string otherwise
-func GetPrefix(resource *app.M4DBucket, id string) string {
-	if resource.Status.AssetPrefixPerDataset == nil {
-		return ""
-	}
-	elem, ok := resource.Status.AssetPrefixPerDataset[id]
-	if !ok {
-		return ""
-	}
-	return elem
-}
-
-// AddPrefix adds a prefix generated for the given data set
-func AddPrefix(resource *app.M4DBucket, id string, prefix string) {
-	if resource.Status.AssetPrefixPerDataset == nil {
-		resource.Status.AssetPrefixPerDataset = make(map[string]string)
-	}
-	resource.Status.AssetPrefixPerDataset[id] = prefix
-}
-
-// GetOrCreatePrefix creates a new prefix for the given data set if none exists, based on the given name
-func GetOrCreatePrefix(resource *app.M4DBucket, id string, name string) string {
-	prefix := GetPrefix(resource, id)
-	if prefix != "" {
-		return prefix
-	}
-	prefix = name + utils.Hash(name, 10)
-	AddPrefix(resource, id, prefix)
-	return prefix
-}
-
-// RemovePrefix removes a prefix generated for the given data set
-func RemovePrefix(resource *app.M4DBucket, id string) {
-	delete(resource.Status.AssetPrefixPerDataset, id)
-}
-
-// IsBucketAvailable checks whether the bucket is available for use
-func IsBucketAvailable(resource *app.M4DBucket, owner types.NamespacedName, id string, canShare bool) bool {
-	// is owned by any resource?
-	if !HasOwners(resource) {
-		return true
-	}
-	// is owned by this resource only?
-	if HasOwner(resource, owner) && len(resource.Status.Owners) == 1 {
-		return true
-	}
-	// sharing available for the given data set
-	if canShare && GetPrefix(resource, id) != "" {
-		return true
-	}
-	return false
+func generateDatasetName(owner types.NamespacedName, id string) string {
+	name := owner.Name + "-" + owner.Namespace + "-" + utils.Hash(id, 20)
+	return utils.K8sConformName(name)
 }

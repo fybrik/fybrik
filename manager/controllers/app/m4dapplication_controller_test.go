@@ -23,9 +23,37 @@ import (
 const timeout = time.Second * 30
 const interval = time.Millisecond * 100
 
-// GetStorageSignature returns a signature of M4DBucket
-func GetStorageSignature() types.NamespacedName {
-	return types.NamespacedName{Name: "available-bucket", Namespace: "default"}
+func allocateStorageAccounts() {
+	accountUS := &apiv1alpha1.M4DStorageAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "account1",
+			Namespace: "m4d-system",
+		},
+		Spec: apiv1alpha1.M4DStorageAccountSpec{
+			Endpoint:  "http://endpoint1",
+			SecretRef: "secret1",
+			Region:    "US",
+		},
+	}
+	accountGermany := &apiv1alpha1.M4DStorageAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "account2",
+			Namespace: "m4d-system",
+		},
+		Spec: apiv1alpha1.M4DStorageAccountSpec{
+			Endpoint:  "http://endpoint2",
+			SecretRef: "secret2",
+			Region:    "Germany",
+		},
+	}
+
+	Expect(k8sClient.Create(context.Background(), accountUS)).Should(Succeed())
+	Expect(k8sClient.Create(context.Background(), accountGermany)).Should(Succeed())
+}
+
+func deleteStorageAccounts() {
+	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "account1", Namespace: "m4d-system"}})
+	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "account2", Namespace: "m4d-system"}})
 }
 
 // InitM4DApplication creates an empty resource with n cataloged data sets
@@ -193,8 +221,7 @@ var _ = Describe("M4DApplication Controller", func() {
 		AfterEach(func() {
 			// Add any teardown steps that needs to be executed after each test
 			// delete storage
-			storageSignature := GetStorageSignature()
-			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DBucket{ObjectMeta: metav1.ObjectMeta{Name: storageSignature.Name, Namespace: storageSignature.Namespace}})
+			deleteStorageAccounts()
 			// delete modules
 			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "implicit-copy-kafka-to-s3-stream", Namespace: "default"}})
 			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "read-path", Namespace: "default"}})
@@ -212,21 +239,6 @@ var _ = Describe("M4DApplication Controller", func() {
 		// This M4DApplication will become an owner of a storage-defining resource
 
 		It("Test reconcileFinalizers", func() {
-			// Create M4DBucket
-			storageSignature := GetStorageSignature()
-			storage := &apiv1alpha1.M4DBucket{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      storageSignature.Name,
-					Namespace: storageSignature.Namespace,
-				},
-				Spec: apiv1alpha1.M4DBucketSpec{
-					Name:      "test-bucket",
-					Endpoint:  "xxx",
-					VaultPath: "yyy",
-				},
-			}
-			Expect(k8sClient.Create(context.Background(), storage)).Should(Succeed())
-
 			// Load db2-s3 copy module
 			copyModule := CreateDb2ToS3CopyModule()
 			readPathModule := CreateReadPathModule()
@@ -263,11 +275,6 @@ var _ = Describe("M4DApplication Controller", func() {
 				f := &apiv1alpha1.M4DApplication{}
 				return k8sClient.Get(context.Background(), appSignature, f)
 			}, timeout, interval).ShouldNot(Succeed())
-
-			By("Expecting ownership on a bucket to be removed")
-			_ = k8sClient.Get(context.Background(), storageSignature, storage)
-			Expect(storage.Status.Owners).To(BeEmpty())
-
 		})
 		// Tests denial of the access to data
 
@@ -441,20 +448,7 @@ var _ = Describe("M4DApplication Controller", func() {
 
 		It("Test blueprint-created", func() {
 			// allocate storage
-			storageSignature := GetStorageSignature()
-			storage := &apiv1alpha1.M4DBucket{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      storageSignature.Name,
-					Namespace: storageSignature.Namespace,
-				},
-				Spec: apiv1alpha1.M4DBucketSpec{
-					Name:      "test-bucket",
-					Endpoint:  "xxx",
-					VaultPath: "yyy",
-				},
-			}
-			Expect(k8sClient.Create(context.Background(), storage)).Should(Succeed())
-
+			allocateStorageAccounts()
 			// Load s3-s3 copy module
 			s3Module := CreateS3ToS3CopyModule()
 			readPathModule := CreateReadPathModule()
@@ -513,20 +507,7 @@ var _ = Describe("M4DApplication Controller", func() {
 		})
 		It("Test multiple-blueprints", func() {
 			// allocate storage
-			storageSignature := GetStorageSignature()
-			storage := &apiv1alpha1.M4DBucket{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      storageSignature.Name,
-					Namespace: storageSignature.Namespace,
-				},
-				Spec: apiv1alpha1.M4DBucketSpec{
-					Name:      "test-bucket",
-					Endpoint:  "xxx",
-					VaultPath: "yyy",
-				},
-			}
-			Expect(k8sClient.Create(context.Background(), storage)).Should(Succeed())
-
+			allocateStorageAccounts()
 			// Load s3-s3 copy module
 			s3Module := CreateS3ToS3CopyModule()
 			readPathModule := CreateReadPathModule()
@@ -575,20 +556,7 @@ var _ = Describe("M4DApplication Controller", func() {
 
 		It("Test new data blueprint created", func() {
 			// allocate storage
-			storageSignature := GetStorageSignature()
-			storage := &apiv1alpha1.M4DBucket{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      storageSignature.Name,
-					Namespace: storageSignature.Namespace,
-				},
-				Spec: apiv1alpha1.M4DBucketSpec{
-					Name:      "newdata-bucket",
-					Endpoint:  "xxx",
-					VaultPath: "yyy",
-				},
-			}
-			Expect(k8sClient.Create(context.Background(), storage)).Should(Succeed())
-
+			allocateStorageAccounts()
 			// Load s3-s3 copy module
 			s3Module := CreateS3ToS3CopyModule()
 			Expect(k8sClient.Create(context.Background(), s3Module)).Should(Succeed())

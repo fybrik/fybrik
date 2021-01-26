@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	"emperror.dev/errors"
+	comv1alpha1 "github.com/IBM/dataset-lifecycle-framework/src/dataset-operator/pkg/apis/com/v1alpha1"
 	"github.com/go-logr/logr"
 	"github.com/hashicorp/vault/api"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -24,9 +24,7 @@ import (
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
-	local "github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
@@ -49,6 +47,7 @@ type M4DApplicationReconciler struct {
 	PolicyCompiler    pc.IPolicyCompiler
 	ResourceInterface ContextInterface
 	ClusterManager    multicluster.ClusterLister
+	Provision         ProvisionInterface
 }
 
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dapplications,verbs=get;list;watch;create;update;patch;delete
@@ -171,11 +170,7 @@ func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M
 }
 
 func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *app.M4DApplication) error {
-	// clear provisioned buckets
-	key, _ := client.ObjectKeyFromObject(applicationContext)
-	if err := r.FreeStorageAssets(key); err != nil {
-		return err
-	}
+	// TODO(shlomitk1): clear provisioned buckets
 
 	// delete the generated resource
 	if applicationContext.Status.Generated == nil {
@@ -202,14 +197,6 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	applicationContext.Status.DataAccessInstructions = ""
 	applicationContext.Status.Ready = false
 
-	key, _ := client.ObjectKeyFromObject(applicationContext)
-
-	// clear storage assets
-	// TODO: if implicit copy is still required for the same dataset, do not free the bucket
-	if err := r.FreeStorageAssets(key); err != nil {
-		return ctrl.Result{}, err
-	}
-
 	clusters, err := r.ClusterManager.GetClusters()
 	if err != nil {
 		return ctrl.Result{}, err
@@ -218,10 +205,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	var requirements []modules.DataInfo
 	for _, dataset := range applicationContext.Spec.Data {
 		req := modules.DataInfo{
-			DataDetails: nil,
-			Credentials: nil,
-			Actions:     make(map[pb.AccessOperation_AccessType]modules.Operations),
-			Context:     &dataset,
+			Context: &dataset,
 		}
 		if err := r.constructDataInfo(&req, applicationContext, clusters); err != nil {
 			return ctrl.Result{}, err
@@ -239,7 +223,15 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		return ctrl.Result{}, err
 	}
 	objectKey, _ := client.ObjectKeyFromObject(applicationContext)
-	moduleManager := &ModuleManager{Client: r.Client, Log: r.Log, Modules: moduleMap, Clusters: clusters, Owner: objectKey}
+	moduleManager := &ModuleManager{
+		Client:         r.Client,
+		Log:            r.Log,
+		Modules:        moduleMap,
+		Clusters:       clusters,
+		Owner:          objectKey,
+		PolicyCompiler: r.PolicyCompiler,
+		Datasets:       []*comv1alpha1.Dataset{},
+	}
 	instances := make([]modules.ModuleInstanceSpec, 0)
 	for _, item := range requirements {
 		instancesPerDataset, err := moduleManager.SelectModuleInstances(item, applicationContext)
@@ -251,6 +243,12 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	// check for errors
 	if hasError(applicationContext) {
 		return ctrl.Result{}, nil
+	}
+	// allocate buckets
+	for _, d := range moduleManager.Datasets {
+		if err := r.Provision.CreateDataset(d); err != nil {
+			return ctrl.Result{}, err
+		}
 	}
 	// generate blueprint specifications (per cluster)
 	blueprintPerClusterMap := r.GenerateBlueprints(instances, applicationContext)
@@ -287,67 +285,12 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 	if err = r.RegisterCredentials(req); err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err)
 	}
-
-	// policies for READ and WRITE operations based on the selected workload and data requirements
-	var workloadGeography string
-	if workloadGeography, err = r.GetProcessingGeography(input); err != nil {
-		return err
-	}
-
-	if input.Spec.Selector.WorkloadSelector.Size() > 0 {
-		// workload exists
-		// read policies for data that is processed in the workload geography
-		if req.Actions[pb.AccessOperation_READ], err = LookupPolicyDecisions(datasetID, r.PolicyCompiler, input,
-			pb.AccessOperation{Type: pb.AccessOperation_READ, Destination: workloadGeography}); err != nil {
-			return AnalyzeError(input, r.Log, datasetID, err)
-		}
-
-		// write policies in case copy will be applied
-		if req.Actions[pb.AccessOperation_WRITE], err = LookupPolicyDecisions(datasetID, r.PolicyCompiler, input,
-			pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: workloadGeography}); err != nil {
-			return AnalyzeError(input, r.Log, datasetID, err)
-		}
-
-		if !req.Actions[pb.AccessOperation_READ].Allowed {
-			setCondition(input, datasetID, req.Actions[pb.AccessOperation_READ].Message, true)
-		}
-	} else {
-		// workload is not selected
-		// if the cluster selector is non-empty, the write will be done to the specified geography
-		// Otherwise, select any of the available geographies
-		if input.Spec.Selector.ClusterName != "" {
-			if req.Actions[pb.AccessOperation_WRITE], err = LookupPolicyDecisions(datasetID, r.PolicyCompiler, input,
-				pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: workloadGeography}); err != nil {
-				return AnalyzeError(input, r.Log, datasetID, err)
-			}
-			if !req.Actions[pb.AccessOperation_WRITE].Allowed {
-				setCondition(input, datasetID, app.WriteNotAllowed, true)
-			}
-		} else {
-			excludedGeos := ""
-			for _, cluster := range clusters {
-				operation := pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: cluster.Metadata.Region}
-				if req.Actions[pb.AccessOperation_WRITE], err = LookupPolicyDecisions(datasetID, r.PolicyCompiler, input, operation); err != nil {
-					return AnalyzeError(input, r.Log, datasetID, err)
-				}
-				if req.Actions[pb.AccessOperation_WRITE].Allowed {
-					return nil // We found a geo to which we can write
-				}
-				if excludedGeos != "" {
-					excludedGeos += ", "
-				}
-				excludedGeos += cluster.Metadata.Region
-			}
-			// We haven't found any geographies to which we are allowed to write
-			setCondition(input, datasetID, "Writing to all geographies denied: "+excludedGeos, true)
-		}
-	}
 	return nil
 }
 
 // NewM4DApplicationReconciler creates a new reconciler for M4DApplications
 func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api.Client,
-	policyCompiler pc.IPolicyCompiler, cm multicluster.ClusterLister) *M4DApplicationReconciler {
+	policyCompiler pc.IPolicyCompiler, cm multicluster.ClusterLister, provision ProvisionInterface) *M4DApplicationReconciler {
 	return &M4DApplicationReconciler{
 		Client:            mgr.GetClient(),
 		Name:              name,
@@ -357,6 +300,7 @@ func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api
 		PolicyCompiler:    policyCompiler,
 		ResourceInterface: NewPlotterInterface(mgr.GetClient()),
 		ClusterManager:    cm,
+		Provision:         provision,
 	}
 }
 
@@ -422,28 +366,4 @@ func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, e
 		moduleMap[module.Name] = module.DeepCopy()
 	}
 	return moduleMap, nil
-}
-
-// GetProcessingGeography determines the geography of the workload cluster.
-// If no workload has been specified, a local cluster is assumed.
-func (r *M4DApplicationReconciler) GetProcessingGeography(applicationContext *app.M4DApplication) (string, error) {
-	clusterName := applicationContext.Spec.Selector.ClusterName
-	if clusterName == "" {
-		localClusterManager := local.NewManager(r.Client, utils.GetSystemNamespace())
-		clusters, err := localClusterManager.GetClusters()
-		if err != nil || len(clusters) != 1 {
-			return "", err
-		}
-		return clusters[0].Metadata.Region, nil
-	}
-	clusters, err := r.ClusterManager.GetClusters()
-	if err != nil {
-		return "", err
-	}
-	for _, cluster := range clusters {
-		if cluster.Name == clusterName {
-			return cluster.Metadata.Region, nil
-		}
-	}
-	return "", errors.New("Unknown cluster: " + clusterName)
 }

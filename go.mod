@@ -5,6 +5,7 @@ go 1.13
 require (
 	cloud.google.com/go v0.66.0 // indirect
 	emperror.dev/errors v0.7.0
+	github.com/IBM/dataset-lifecycle-framework/src/dataset-operator v0.0.0-20210121150402-6c75d4b7b0af
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/satcon-client-go v0.0.0-20210107134702-1be071817792
 	github.com/Microsoft/go-winio v0.4.15 // indirect
@@ -41,8 +42,8 @@ require (
 	istio.io/gogo-genproto v0.0.0-20191009201739-17d570f95998 // indirect
 	k8s.io/api v0.18.6
 	k8s.io/apimachinery v0.18.6
-	k8s.io/cli-runtime v0.18.4
-	k8s.io/client-go v0.18.6
+	k8s.io/cli-runtime v0.18.6
+	k8s.io/client-go v12.0.0+incompatible
 	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/cli-utils v0.20.4
 	sigs.k8s.io/controller-runtime v0.6.2
@@ -50,6 +51,50 @@ require (
 )
 
 replace helm.sh/helm/v3 v3.2.4 => github.com/the-mesh-for-data/helm/v3 v3.2.4-hunchback2
+
+replace k8s.io/api => k8s.io/api v0.18.6
+
+replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.6
+
+replace k8s.io/apimachinery => k8s.io/apimachinery v0.18.6
+
+replace k8s.io/cli-runtime => k8s.io/cli-runtime v0.18.6
+
+replace k8s.io/code-generator => k8s.io/code-generator v0.18.6
+
+replace k8s.io/kubectl => k8s.io/kubectl v0.18.6
+
+replace k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.18.6
+
+replace k8s.io/apiserver => k8s.io/apiserver v0.18.6
+
+replace k8s.io/component-base => k8s.io/component-base v0.18.6
+
+replace k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.18.6
+
+replace k8s.io/client-go => k8s.io/client-go v0.18.6
+
+replace k8s.io/cloud-provider => k8s.io/cloud-provider v0.18.6
+
+replace k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.18.6
+
+replace k8s.io/cri-api => k8s.io/cri-api v0.18.6
+
+replace k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.18.6
+
+replace k8s.io/kube-proxy => k8s.io/kube-proxy v0.18.6
+
+replace k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.18.6
+
+replace k8s.io/kubelet => k8s.io/kubelet v0.18.6
+
+replace k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.18.6
+
+replace k8s.io/metrics => k8s.io/metrics v0.18.6
+
+replace k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.18.6
+
+replace github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 
 replace github.com/onsi/gomega => github.com/onsi/gomega v1.10.0
 
