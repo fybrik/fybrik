@@ -11,7 +11,7 @@ resources:
 - bases/app.m4d.ibm.com_blueprints.yaml
 - bases/app.m4d.ibm.com_plotters.yaml
 - bases/app.m4d.ibm.com_m4dmodules.yaml
-- bases/app.m4d.ibm.com_m4dbuckets.yaml
+- bases/app.m4d.ibm.com_m4dstorageaccounts.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:
