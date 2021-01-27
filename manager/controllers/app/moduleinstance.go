@@ -204,7 +204,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 		return instances, err
 	}
 	if copySelector, err = m.selectCopyModule(item, appContext, readSelector); err != nil {
-		m.Log.Info("Could not select a read module for " + datasetID + " : " + err.Error())
+		m.Log.Info("Could not select a copy module for " + datasetID + " : " + err.Error())
 		return instances, err
 	}
 
@@ -296,7 +296,6 @@ func GetSupportedReadSources(module *app.M4DModule) []*app.InterfaceDetails {
 func (m *ModuleManager) getCopyRequirements(item modules.DataInfo, readSelector *modules.Selector) (bool, []*app.InterfaceDetails, []*pb.EnforcementAction) {
 	m.Log.Info("Checking supported read sources")
 	sources := GetSupportedReadSources(readSelector.GetModule())
-	utils.PrintStructure(sources, m.Log, "Read sources")
 	// check if read sources include the data source
 	supportsDataSource := utils.SupportsInterface(sources, &item.DataDetails.Interface)
 	// check if read supports all governance actions
@@ -319,6 +318,21 @@ func (m *ModuleManager) getCopyRequirements(item modules.DataInfo, readSelector 
 			}
 		}
 		readSelector.Actions = readActionsOnRead
+	}
+	// debug info
+	if !supportsDataSource {
+		m.Log.Info("Copy is required to support read-path module interface")
+		utils.PrintStructure(sources, m.Log, "Read sources")
+	}
+	if !supportsAllActions {
+		m.Log.Info("Copy is required because the read-path does not support all actions")
+		utils.PrintStructure(readActionsOnCopy, m.Log, "Unsupported actions")
+	}
+	if transformAtSource {
+		m.Log.Info("Copy is required because " + readSelector.Geo + " does not match " + item.DataDetails.Geography)
+	}
+	if item.Context.Requirements.Copy.Required {
+		m.Log.Info("Copy has been explicitly requested")
 	}
 	copyRequired := !supportsDataSource || !supportsAllActions || transformAtSource || item.Context.Requirements.Copy.Required
 	return copyRequired, sources, readActionsOnCopy
