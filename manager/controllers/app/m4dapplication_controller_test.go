@@ -47,13 +47,111 @@ func allocateStorageAccounts() {
 		},
 	}
 
-	Expect(k8sClient.Create(context.Background(), accountUS)).Should(Succeed())
-	Expect(k8sClient.Create(context.Background(), accountGermany)).Should(Succeed())
+	_ = k8sClient.Create(context.Background(), accountUS)
+	_ = k8sClient.Create(context.Background(), accountGermany)
 }
 
 func deleteStorageAccounts() {
 	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "account1", Namespace: "m4d-system"}})
 	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "account2", Namespace: "m4d-system"}})
+}
+
+func createModules() {
+	readModule := &apiv1alpha1.M4DModule{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "read-path",
+			Namespace: "m4d-system",
+		},
+		Spec: apiv1alpha1.M4DModuleSpec{
+			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Read},
+			Capabilities: apiv1alpha1.Capability{
+				CredentialsManagedBy: apiv1alpha1.SecretProvider,
+				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
+					{
+						Flow:   apiv1alpha1.Read,
+						Source: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
+					},
+				},
+				API: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
+			},
+			Chart: apiv1alpha1.ChartSpec{
+				Name: "s3-flight",
+			},
+		},
+	}
+	db2Module := &apiv1alpha1.M4DModule{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "implicit-copy-db2-to-s3",
+			Namespace: "m4d-system",
+		},
+		Spec: apiv1alpha1.M4DModuleSpec{
+			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Copy},
+			Capabilities: apiv1alpha1.Capability{
+				CredentialsManagedBy: apiv1alpha1.SecretProvider,
+				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
+					{
+						Source: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.JdbcDb2, DataFormat: apiv1alpha1.Table},
+						Sink:   &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
+						Flow:   apiv1alpha1.Copy,
+					},
+				},
+				Actions: []apiv1alpha1.SupportedAction{
+					{
+						ID:    "redact-ID",
+						Level: pb.EnforcementAction_COLUMN,
+					},
+					{
+						ID:    "encrypt-ID",
+						Level: pb.EnforcementAction_COLUMN,
+					},
+				},
+			},
+			Chart: apiv1alpha1.ChartSpec{
+				Name: "db2-chart",
+			},
+		},
+	}
+	s3Module := &apiv1alpha1.M4DModule{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "implicit-copy-s3-to-s3",
+			Namespace: "m4d-system",
+		},
+		Spec: apiv1alpha1.M4DModuleSpec{
+			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Copy},
+			Capabilities: apiv1alpha1.Capability{
+				CredentialsManagedBy: apiv1alpha1.Automatic,
+				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
+					{
+						Flow:   apiv1alpha1.Copy,
+						Source: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
+						Sink:   &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
+					},
+				},
+				Actions: []apiv1alpha1.SupportedAction{
+					{
+						ID:    "redact-ID",
+						Level: pb.EnforcementAction_COLUMN,
+					},
+					{
+						ID:    "encrypt-ID",
+						Level: pb.EnforcementAction_COLUMN,
+					},
+				},
+			},
+			Chart: apiv1alpha1.ChartSpec{
+				Name: "s3-s3",
+			},
+		},
+	}
+	_ = k8sClient.Create(context.Background(), readModule)
+	_ = k8sClient.Create(context.Background(), db2Module)
+	_ = k8sClient.Create(context.Background(), s3Module)
+}
+
+func deleteModules() {
+	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "implicit-copy-s3-to-s3", Namespace: "m4d-system"}})
+	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "implicit-copy-db2-to-s3", Namespace: "m4d-system"}})
+	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "read-path", Namespace: "m4d-system"}})
 }
 
 // InitM4DApplication creates an empty resource with n cataloged data sets
@@ -99,136 +197,12 @@ func DeleteM4DApplication(name string) {
 	}, timeout, interval).ShouldNot(Succeed())
 }
 
-// CreateReadPathModule creates a read-path module
-func CreateReadPathModule() *apiv1alpha1.M4DModule {
-	return &apiv1alpha1.M4DModule{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "read-path",
-			Namespace: "default",
-		},
-		Spec: apiv1alpha1.M4DModuleSpec{
-			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Read},
-			Capabilities: apiv1alpha1.Capability{
-				CredentialsManagedBy: apiv1alpha1.SecretProvider,
-				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
-					{
-						Flow:   apiv1alpha1.Read,
-						Source: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
-					},
-				},
-				API: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
-			},
-			Chart: apiv1alpha1.ChartSpec{
-				Name: "s3-flight",
-			},
-		},
-	}
-}
-
-// CreateKafkaToS3CopyModule creates a copy module kafka->s3
-func CreateKafkaToS3CopyModule() *apiv1alpha1.M4DModule {
-	return &apiv1alpha1.M4DModule{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "implicit-copy-kafka-to-s3-stream",
-			Namespace: "default",
-		},
-		Spec: apiv1alpha1.M4DModuleSpec{
-			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Copy},
-			Capabilities: apiv1alpha1.Capability{
-				CredentialsManagedBy: apiv1alpha1.SecretProvider,
-				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
-					{
-						Flow:   apiv1alpha1.Copy,
-						Source: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.Kafka, DataFormat: apiv1alpha1.JSON},
-						Sink:   &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
-					},
-				},
-			},
-			Chart: apiv1alpha1.ChartSpec{
-				Name: "xxx",
-			},
-		},
-	}
-}
-
-// CreateDb2ToS3CopyModule creates a copy module that copies db2 data to s3
-func CreateDb2ToS3CopyModule() *apiv1alpha1.M4DModule {
-	db2Module := &apiv1alpha1.M4DModule{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "implicit-copy-db2-to-s3",
-			Namespace: "default",
-		},
-		Spec: apiv1alpha1.M4DModuleSpec{
-			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Copy},
-			Capabilities: apiv1alpha1.Capability{
-				CredentialsManagedBy: apiv1alpha1.SecretProvider,
-				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
-					{
-						Source: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.JdbcDb2, DataFormat: apiv1alpha1.Table},
-						Sink:   &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
-						Flow:   apiv1alpha1.Copy,
-					},
-				},
-				Actions: []apiv1alpha1.SupportedAction{
-					{
-						ID:    "redact-ID",
-						Level: pb.EnforcementAction_COLUMN,
-					},
-					{
-						ID:    "encrypt-ID",
-						Level: pb.EnforcementAction_COLUMN,
-					},
-				},
-			},
-			Chart: apiv1alpha1.ChartSpec{
-				Name: "db2-chart",
-			},
-		},
-	}
-	return db2Module
-}
-
-// CreateS3ToS3CopyModule creates a copy module s3->s3
-func CreateS3ToS3CopyModule() *apiv1alpha1.M4DModule {
-	s3Module := &apiv1alpha1.M4DModule{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "implicit-copy-s3-to-s3",
-			Namespace: "default",
-		},
-		Spec: apiv1alpha1.M4DModuleSpec{
-			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Copy},
-			Capabilities: apiv1alpha1.Capability{
-				CredentialsManagedBy: apiv1alpha1.Automatic,
-				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
-					{
-						Flow:   apiv1alpha1.Copy,
-						Source: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
-						Sink:   &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
-					},
-				},
-				Actions: []apiv1alpha1.SupportedAction{
-					{
-						ID:    "redact-ID",
-						Level: pb.EnforcementAction_COLUMN,
-					},
-					{
-						ID:    "encrypt-ID",
-						Level: pb.EnforcementAction_COLUMN,
-					},
-				},
-			},
-			Chart: apiv1alpha1.ChartSpec{
-				Name: "s3-s3",
-			},
-		},
-	}
-	return s3Module
-}
-
 var _ = Describe("M4DApplication Controller", func() {
 	Context("M4DApplication", func() {
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test
+			allocateStorageAccounts()
+			createModules()
 		})
 
 		AfterEach(func() {
@@ -236,10 +210,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			// delete storage
 			deleteStorageAccounts()
 			// delete modules
-			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "implicit-copy-kafka-to-s3-stream", Namespace: "default"}})
-			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "read-path", Namespace: "default"}})
-			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "implicit-copy-db2-to-s3", Namespace: "default"}})
-			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "implicit-copy-s3-to-s3", Namespace: "default"}})
+			deleteModules()
 		})
 
 		// This test checks that the finalizers are properly reconciled upon creation and deletion of the resource
@@ -252,12 +223,6 @@ var _ = Describe("M4DApplication Controller", func() {
 		// This M4DApplication will become an owner of a storage-defining resource
 
 		It("Test reconcileFinalizers", func() {
-			// Load db2-s3 copy module
-			copyModule := CreateDb2ToS3CopyModule()
-			readPathModule := CreateReadPathModule()
-			Expect(k8sClient.Create(context.Background(), copyModule)).Should(Succeed())
-			Expect(k8sClient.Create(context.Background(), readPathModule)).Should(Succeed())
-
 			appSignature := types.NamespacedName{Name: "with-finalizers", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
@@ -338,8 +303,6 @@ var _ = Describe("M4DApplication Controller", func() {
 				DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"db2\"}",
 				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet}},
 			}
-			Expect(k8sClient.Create(context.Background(), CreateReadPathModule())).Should(Succeed())
-
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
 
@@ -370,9 +333,6 @@ var _ = Describe("M4DApplication Controller", func() {
 		// Result: an error
 
 		It("Test deny-on-copy", func() {
-			module := CreateReadPathModule()
-			Expect(k8sClient.Create(context.Background(), module)).Should(Succeed())
-
 			appSignature := types.NamespacedName{Name: "with-copy", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
@@ -406,23 +366,16 @@ var _ = Describe("M4DApplication Controller", func() {
 
 		// Assumptions on response from connectors:
 		// Two datasets:
-		// Db2 dataset, a copy is required.
+		// Kafka dataset, a copy is required.
 		// S3 dataset, no copy is needed
 		// Enforcement action for both operations and datasets: Allow
-		// Applied one copy module (kafka->s3), not the one we need for the first data set
+		// No copy module (kafka->s3)
 		// Result: an error
 		It("Test wrong-copy-module", func() {
-
-			// Load kafka-s3 copy module
-			module := CreateKafkaToS3CopyModule()
-			readPathModule := CreateReadPathModule()
-			Expect(k8sClient.Create(context.Background(), module)).Should(Succeed())
-			Expect(k8sClient.Create(context.Background(), readPathModule)).Should(Succeed())
-
 			appSignature := types.NamespacedName{Name: "wrong-copy", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 2)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"db2\"}",
+				DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"kafka\"}",
 				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
 			}
 			resource.Spec.Data[1] = apiv1alpha1.DataContext{
@@ -447,8 +400,6 @@ var _ = Describe("M4DApplication Controller", func() {
 			_ = k8sClient.Get(context.Background(), appSignature, resource)
 			Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.ModuleNotFound))
 			Expect(getErrorMessages(resource)).To(ContainSubstring("copy"))
-			_ = k8sClient.Delete(context.Background(), module)
-
 		})
 		// Assumptions on response from connectors:
 		// Two datasets:
@@ -460,19 +411,6 @@ var _ = Describe("M4DApplication Controller", func() {
 		// Result: blueprint is created successfully, a read module is applied once for both datasets
 
 		It("Test blueprint-created", func() {
-			// allocate storage
-			allocateStorageAccounts()
-			// Load s3-s3 copy module
-			s3Module := CreateS3ToS3CopyModule()
-			readPathModule := CreateReadPathModule()
-
-			Expect(k8sClient.Create(context.Background(), s3Module)).Should(Succeed())
-			Expect(k8sClient.Create(context.Background(), readPathModule)).Should(Succeed())
-
-			// Load db2-s3 copy module
-			db2Module := CreateDb2ToS3CopyModule()
-			Expect(k8sClient.Create(context.Background(), db2Module)).Should(Succeed())
-
 			appSignature := types.NamespacedName{Name: "m4d-test", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 2)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
@@ -511,7 +449,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			Expect(blueprint).NotTo(BeNil())
 			numReads := 0
 			for _, step := range blueprint.Flow.Steps {
-				if step.Template == readPathModule.Name {
+				if step.Template == "read-path" {
 					numReads++
 					Expect(len(step.Arguments.Read)).To(Equal(2))
 				}
@@ -519,19 +457,6 @@ var _ = Describe("M4DApplication Controller", func() {
 			Expect(numReads).To(Equal(1))
 		})
 		It("Test multiple-blueprints", func() {
-			// allocate storage
-			allocateStorageAccounts()
-			// Load s3-s3 copy module
-			s3Module := CreateS3ToS3CopyModule()
-			readPathModule := CreateReadPathModule()
-
-			Expect(k8sClient.Create(context.Background(), s3Module)).Should(Succeed())
-			Expect(k8sClient.Create(context.Background(), readPathModule)).Should(Succeed())
-
-			// Load db2-s3 copy module
-			db2Module := CreateDb2ToS3CopyModule()
-			Expect(k8sClient.Create(context.Background(), db2Module)).Should(Succeed())
-
 			appSignature := types.NamespacedName{Name: "multiple-regions", Namespace: "default"}
 			resource := InitM4DApplication(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
@@ -568,16 +493,6 @@ var _ = Describe("M4DApplication Controller", func() {
 		})
 
 		It("Test new data blueprint created", func() {
-			// allocate storage
-			allocateStorageAccounts()
-			// Load s3-s3 copy module
-			s3Module := CreateS3ToS3CopyModule()
-			Expect(k8sClient.Create(context.Background(), s3Module)).Should(Succeed())
-
-			// Load db2-s3 copy module
-			db2Module := CreateDb2ToS3CopyModule()
-			Expect(k8sClient.Create(context.Background(), db2Module)).Should(Succeed())
-
 			appSignature := types.NamespacedName{Name: "m4d-newdata-test", Namespace: "default"}
 			resource := InitM4DApplicationWithoutWorkload(appSignature.Name, 1)
 			resource.Spec.Data[0] = apiv1alpha1.DataContext{
@@ -617,7 +532,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			moduleMatch := false
 			for _, step := range blueprint.Flow.Steps {
 				numSteps++
-				if step.Template == s3Module.Name {
+				if step.Template == "implicit-copy-s3-to-s3" {
 					moduleMatch = true
 				}
 			}
