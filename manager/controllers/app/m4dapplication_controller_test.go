@@ -73,6 +73,12 @@ func createModules() {
 					},
 				},
 				API: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
+				Actions: []apiv1alpha1.SupportedAction{
+					{
+						ID:    "redact-ID",
+						Level: pb.EnforcementAction_COLUMN,
+					},
+				},
 			},
 			Chart: apiv1alpha1.ChartSpec{
 				Name: "s3-flight",
@@ -429,32 +435,38 @@ var _ = Describe("M4DApplication Controller", func() {
 			defer func() {
 				DeleteM4DApplication(appSignature.Name)
 			}()
+			if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
+				By("Expecting a dataset to be allocated")
+				Eventually(func() int {
+					_ = k8sClient.Get(context.Background(), appSignature, resource)
+					return len(resource.Status.ProvisionedStorage)
+				}, timeout, interval).Should(Equal(1))
+			} else {
+				By("Expecting plotter to be generated")
+				Eventually(func() *apiv1alpha1.ResourceReference {
+					_ = k8sClient.Get(context.Background(), appSignature, resource)
+					return resource.Status.Generated
+				}, timeout, interval).ShouldNot(BeNil())
+				plotter := &apiv1alpha1.Plotter{}
+				Eventually(func() error {
+					key := types.NamespacedName{Name: resource.Status.Generated.Name, Namespace: resource.Status.Generated.Namespace}
+					return k8sClient.Get(context.Background(), key, plotter)
+				}, timeout, interval).Should(Succeed())
 
-			By("Expecting a namespace to be allocated")
-			Eventually(func() *apiv1alpha1.ResourceReference {
-				_ = k8sClient.Get(context.Background(), appSignature, resource)
-				return resource.Status.Generated
-			}, timeout, interval).ShouldNot(BeNil())
-			By("Expecting plotter to be generated")
-			plotter := &apiv1alpha1.Plotter{}
-			Eventually(func() error {
-				key := types.NamespacedName{Name: resource.Status.Generated.Name, Namespace: resource.Status.Generated.Namespace}
-				return k8sClient.Get(context.Background(), key, plotter)
-			}, timeout, interval).Should(Succeed())
-
-			// Check the generated blueprint
-			// There should be a single read module with two datasets
-			Expect(len(plotter.Spec.Blueprints)).To(Equal(1))
-			blueprint := plotter.Spec.Blueprints["US-cluster"]
-			Expect(blueprint).NotTo(BeNil())
-			numReads := 0
-			for _, step := range blueprint.Flow.Steps {
-				if step.Template == "read-path" {
-					numReads++
-					Expect(len(step.Arguments.Read)).To(Equal(2))
+				// Check the generated blueprint
+				// There should be a single read module with two datasets
+				Expect(len(plotter.Spec.Blueprints)).To(Equal(1))
+				blueprint := plotter.Spec.Blueprints["US-cluster"]
+				Expect(blueprint).NotTo(BeNil())
+				numReads := 0
+				for _, step := range blueprint.Flow.Steps {
+					if step.Template == "read-path" {
+						numReads++
+						Expect(len(step.Arguments.Read)).To(Equal(2))
+					}
 				}
+				Expect(numReads).To(Equal(1))
 			}
-			Expect(numReads).To(Equal(1))
 		})
 		It("Test multiple-blueprints", func() {
 			appSignature := types.NamespacedName{Name: "multiple-regions", Namespace: "default"}
