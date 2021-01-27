@@ -169,6 +169,10 @@ type M4DApplicationStatus struct {
 	// Generated resource identifier
 	// +optional
 	Generated *ResourceReference `json:"generated,omitempty"`
+
+	// Provisioned storage (Dataset resources)
+	// +optional
+	ProvisionedStorage map[string]ResourceReference `json:"provisionedStorage,omitempty"`
 }
 
 // M4DApplication provides information about the application being used by a Data Scientist,

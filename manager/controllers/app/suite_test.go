@@ -101,7 +101,7 @@ var _ = BeforeSuite(func(done Done) {
 		policyCompiler := &mockup.MockPolicyCompiler{}
 		// Initiate the M4DApplication Controller
 		var clusterManager *mockup.ClusterLister
-		err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler, clusterManager, NewProvisionFake()).SetupWithManager(mgr)
+		err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler, clusterManager, NewProvisionTest()).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
 		err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())

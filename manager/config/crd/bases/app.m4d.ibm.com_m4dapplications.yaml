@@ -199,6 +199,26 @@ spec:
               description: ObservedGeneration is taken from the M4DApplication metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether the Blueprint status changed.
               format: int64
               type: integer
+            provisionedStorage:
+              additionalProperties:
+                description: ResourceReference contains resource identifier(name, namespace, kind)
+                properties:
+                  kind:
+                    description: Kind of the resource (Blueprint, Plotter)
+                    type: string
+                  name:
+                    description: Name of the resource
+                    type: string
+                  namespace:
+                    description: Namespace of the resource
+                    type: string
+                required:
+                - kind
+                - name
+                - namespace
+                type: object
+              description: Provisioned storage (Dataset resources)
+              type: object
             ready:
               description: Ready is true if a blueprint has been successfully orchestrated
               type: boolean

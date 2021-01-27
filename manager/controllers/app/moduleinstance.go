@@ -29,7 +29,8 @@ type ModuleManager struct {
 	Owner             types.NamespacedName
 	PolicyCompiler    pc.IPolicyCompiler
 	WorkloadGeography string
-	Datasets          []*comv1alpha1.Dataset
+	Provision         ProvisionInterface
+	Datasets          map[string]*comv1alpha1.Dataset
 }
 
 // SelectModuleInstances builds a list of required modules with the relevant arguments
@@ -68,7 +69,10 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	if dataset, err = AllocateBucket(m.Client, m.Log, m.Owner, item.Context.DataSetID, geo); err != nil {
 		return nil, err
 	}
-	m.Datasets = append(m.Datasets, dataset)
+	if err = m.Provision.CreateDataset(dataset); err != nil {
+		return nil, err
+	}
+	m.Datasets[item.Context.DataSetID] = dataset
 	vaultPath := "/v1/" + utils.GetVaultDatasetHome() + dataset.Spec.Local["bucket"]
 	// TODO(shlomitk1): fetch the secret and register credentials
 	connection, err := serde.ToRawExtension(&pb.DataStore{

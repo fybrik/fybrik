@@ -13,6 +13,7 @@ import (
 
 	comv1alpha1 "github.com/IBM/dataset-lifecycle-framework/src/dataset-operator/pkg/apis/com/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -20,11 +21,11 @@ import (
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dstorageaccounts,verbs=get;list;watch;update;
 // +kubebuilder:rbac:groups=com.ie.ibm.hpsys,resources=datasets,verbs=get;list;watch;create;update;patch;delete
 
-// ProvisionInterface is an interface for managing Dataset resources
+// ProvisionInterface is an interface for managing dynamically allocated Dataset resources
 type ProvisionInterface interface {
 	CreateDataset(dataset *comv1alpha1.Dataset) error
-	//DeleteDataset(namespaced types.NamespacedName) error
-	//GetStatus(namespaced types.NamespacedName) (*comv1alpha1.DatasetStatus, error)
+	DeleteDataset(ref *app.ResourceReference, force bool) error
+	GetDataset(ref *app.ResourceReference) (*comv1alpha1.Dataset, error)
 }
 
 type ProvisionImpl struct {
@@ -38,27 +39,85 @@ func NewProvisionImpl(c client.Client) *ProvisionImpl {
 }
 
 func (r *ProvisionImpl) CreateDataset(dataset *comv1alpha1.Dataset) error {
+	ref := &app.ResourceReference{Name: dataset.Name, Namespace: dataset.Namespace}
+	existing, err := r.GetDataset(ref)
+	if err == nil {
+		if equality.Semantic.DeepEqual(&existing.Spec, &dataset.Spec) {
+			// nothing is needed to be done
+			return nil
+		}
+		// re-create the dataset
+		if err = r.DeleteDataset(ref, true); err != nil {
+			return err
+		}
+	}
 	return r.Client.Create(context.Background(), dataset)
 }
 
-type ProvisionFake struct {
+func (r *ProvisionImpl) GetDataset(ref *app.ResourceReference) (*comv1alpha1.Dataset, error) {
+	existing := &comv1alpha1.Dataset{}
+	if err := r.Client.Get(context.Background(), types.NamespacedName{Name: ref.Name, Namespace: ref.Namespace}, existing); err != nil {
+		return nil, err
+	}
+	return existing, nil
+}
+
+func (r *ProvisionImpl) DeleteDataset(ref *app.ResourceReference, force bool) error {
+	existing, err := r.GetDataset(ref)
+	if err != nil {
+		return err
+	}
+	//TODO(shlomitk1) update datasets with the appropriate annotation to delete a bucket upon removal
+	return r.Client.Delete(context.Background(), existing)
+}
+
+type ProvisionTest struct {
 	datasets []*comv1alpha1.Dataset
 }
 
-func NewProvisionFake() *ProvisionFake {
-	return &ProvisionFake{
+func NewProvisionTest() *ProvisionTest {
+	return &ProvisionTest{
 		datasets: []*comv1alpha1.Dataset{},
 	}
 }
 
-func (r *ProvisionFake) CreateDataset(dataset *comv1alpha1.Dataset) error {
-	for _, d := range r.datasets {
+func (r *ProvisionTest) CreateDataset(dataset *comv1alpha1.Dataset) error {
+	for id, d := range r.datasets {
 		if d.Name == dataset.Name {
-			return errors.New("Dataset exists")
+			r.datasets[id] = dataset
+			return nil
 		}
 	}
 	r.datasets = append(r.datasets, dataset)
 	return nil
+}
+
+func (r *ProvisionTest) GetDataset(ref *app.ResourceReference) (*comv1alpha1.Dataset, error) {
+	for _, d := range r.datasets {
+		if d.Name == ref.Name {
+			d.Status.Provision.Status = "OK"
+			return d, nil
+		}
+	}
+	return nil, errors.New("NotFound")
+}
+
+func (r *ProvisionTest) DeleteDataset(ref *app.ResourceReference, force bool) error {
+	newDatasets := []*comv1alpha1.Dataset{}
+	found := false
+	for _, d := range r.datasets {
+		if d.Name == ref.Name {
+			found = true
+		} else {
+			newDatasets = append(newDatasets, d)
+		}
+	}
+	if found {
+		r.datasets = newDatasets
+		return nil
+	}
+	return errors.New("NotFound")
+
 }
 
 // AllocateBucket allocates a bucket in the relevant geo
@@ -95,6 +154,6 @@ func AllocateBucket(c client.Client, log logr.Logger, owner types.NamespacedName
 }
 
 func generateDatasetName(owner types.NamespacedName, id string) string {
-	name := owner.Name + "-" + owner.Namespace + "-" + utils.Hash(id, 20)
+	name := id + "-" + owner.Name + "-" + owner.Namespace
 	return utils.K8sConformName(name)
 }

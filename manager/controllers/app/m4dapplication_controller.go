@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"emperror.dev/errors"
 	comv1alpha1 "github.com/IBM/dataset-lifecycle-framework/src/dataset-operator/pkg/apis/com/v1alpha1"
 	"github.com/go-logr/logr"
 	"github.com/hashicorp/vault/api"
@@ -91,7 +92,7 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		if result, err := r.reconcile(applicationContext); err != nil {
 			// another attempt will be done
 			// users should be informed in case of errors
-			// TODO(shlomitk1) delete external resources in case of errors
+			_ = r.deleteExternalResources(applicationContext)
 			if !equality.Semantic.DeepEqual(&applicationContext.Status, observedStatus) {
 				// ignore an update error, a new reconcile will be made in any case
 				_ = r.Client.Status().Update(ctx, applicationContext)
@@ -171,8 +172,28 @@ func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M
 }
 
 func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *app.M4DApplication) error {
-	// TODO(shlomitk1): clear provisioned buckets
-
+	// clear provisioned storage
+	// do we need to clean the buckets as well?
+	// in case of errors we do, otherwise -if no registration is done (a permanent copy)
+	for datasetID, dataset := range applicationContext.Status.ProvisionedStorage {
+		deleteBuckets := true
+		if !hasError(applicationContext) {
+			for _, dataCtx := range applicationContext.Spec.Data {
+				if dataCtx.DataSetID == datasetID {
+					if dataCtx.Requirements.Copy.Catalog.CatalogID != "" {
+						deleteBuckets = false
+						break
+					}
+				}
+			}
+		}
+		if deleteBuckets {
+			r.Log.V(0).Info("Deleting buckets")
+		}
+		if err := r.Provision.DeleteDataset(&dataset, deleteBuckets); err != nil {
+			return err
+		}
+	}
 	// delete the generated resource
 	if applicationContext.Status.Generated == nil {
 		return nil
@@ -197,6 +218,9 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	resetConditions(applicationContext)
 	applicationContext.Status.DataAccessInstructions = ""
 	applicationContext.Status.Ready = false
+	if applicationContext.Status.ProvisionedStorage == nil {
+		applicationContext.Status.ProvisionedStorage = make(map[string]app.ResourceReference, 0)
+	}
 
 	clusters, err := r.ClusterManager.GetClusters()
 	if err != nil {
@@ -231,7 +255,8 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		Clusters:       clusters,
 		Owner:          objectKey,
 		PolicyCompiler: r.PolicyCompiler,
-		Datasets:       []*comv1alpha1.Dataset{},
+		Provision:      r.Provision,
+		Datasets:       make(map[string]*comv1alpha1.Dataset, 0),
 	}
 	instances := make([]modules.ModuleInstanceSpec, 0)
 	for _, item := range requirements {
@@ -245,11 +270,38 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	if hasError(applicationContext) {
 		return ctrl.Result{}, nil
 	}
-	// allocate buckets
-	for _, d := range moduleManager.Datasets {
-		if err := r.Provision.CreateDataset(d); err != nil {
-			return ctrl.Result{}, err
+	// update allocated storage in the status
+	// clean irrelevant buckets
+	for datasetID, ref := range applicationContext.Status.ProvisionedStorage {
+		if _, found := moduleManager.Datasets[datasetID]; !found {
+			r.Provision.DeleteDataset(&ref, true)
+			delete(applicationContext.Status.ProvisionedStorage, datasetID)
 		}
+	}
+	// add or update new buckets
+	for datasetID, dataset := range moduleManager.Datasets {
+		applicationContext.Status.ProvisionedStorage[datasetID] = app.ResourceReference{Name: dataset.Name, Namespace: dataset.Namespace, Kind: "Dataset"}
+	}
+	ready := true
+	var allocErr error
+	// check readiness
+	for id, ref := range applicationContext.Status.ProvisionedStorage {
+		res, err := r.Provision.GetDataset(&ref)
+		if err != nil {
+			ready = false
+			break
+		}
+		if res.Status.Provision.Status != "OK" {
+			ready = false
+			r.Log.V(0).Info("No bucket has been provisioned for " + id)
+			if res.Status.Provision.Status == "Pending" {
+				allocErr = errors.New(res.Status.Provision.Info)
+			}
+			break
+		}
+	}
+	if !ready {
+		return ctrl.Result{}, allocErr
 	}
 	// generate blueprint specifications (per cluster)
 	blueprintPerClusterMap := r.GenerateBlueprints(instances, applicationContext)
