@@ -82,7 +82,7 @@ func createModules() {
 				},
 			},
 			Chart: apiv1alpha1.ChartSpec{
-				Name: "s3-flight",
+				Name: "kind-registry:5000/m4d-system/m4d-template:0.1.0",
 			},
 		},
 	}
