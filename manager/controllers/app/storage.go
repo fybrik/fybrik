@@ -67,7 +67,7 @@ func (r *ProvisionImpl) DeleteDataset(ref *app.ResourceReference, force bool) er
 	if err != nil {
 		return err
 	}
-	//TODO(shlomitk1) update datasets with the appropriate annotation to delete a bucket upon removal
+	// TODO(shlomitk1): update datasets with the appropriate annotation to delete a bucket upon removal
 	return r.Client.Delete(context.Background(), existing)
 }
 

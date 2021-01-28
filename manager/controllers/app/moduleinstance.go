@@ -66,7 +66,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	originalAssetName := item.DataDetails.Name
 	var dataset *comv1alpha1.Dataset = nil
 	var err error
-	if dataset, err = AllocateBucket(m.Client, m.Log, m.Owner, item.Context.DataSetID, geo); err != nil {
+	if dataset, err = AllocateBucket(m.Client, m.Log, m.Owner, originalAssetName, geo); err != nil {
 		return nil, err
 	}
 	if err = m.Provision.CreateDataset(dataset); err != nil {
