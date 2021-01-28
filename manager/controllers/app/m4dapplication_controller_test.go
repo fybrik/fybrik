@@ -534,6 +534,7 @@ var _ = Describe("M4DApplication Controller", func() {
 					Expect(dataset.Spec.Local["endpoint"]).To(Equal("http://endpoint1"))
 					Expect(dataset.Spec.Local["provision"]).To(Equal("true"))
 				}
+			} else {
 				Eventually(func() *apiv1alpha1.ResourceReference {
 					_ = k8sClient.Get(context.Background(), appSignature, resource)
 					return resource.Status.Generated
