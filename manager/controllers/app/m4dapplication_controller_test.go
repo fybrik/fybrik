@@ -564,36 +564,9 @@ var _ = Describe("M4DApplication Controller", func() {
 			}
 			DeleteM4DApplication(appSignature.Name)
 		})
-	})
 
-	Context("M4DApplication e2e", func() {
-		BeforeEach(func() {
-			// Add any teardown steps that needs to be executed after each test
-			// delete modules
-			_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "arrow-flight-module", Namespace: "default"}})
-		})
-
-		It("Test end-to-end for M4DApplication with arrow-flight module", func() {
+		It("Test end-to-end for M4DApplication", func() {
 			var err error
-			readModuleYAML, err := ioutil.ReadFile("../../testdata/e2e/module-read.yaml")
-			Expect(err).ToNot(HaveOccurred())
-			module := &apiv1alpha1.M4DModule{}
-			err = yaml.Unmarshal(readModuleYAML, module)
-			Expect(err).ToNot(HaveOccurred())
-
-			moduleKey, err := client.ObjectKeyFromObject(module)
-			Expect(err).ToNot(HaveOccurred())
-
-			// Create M4DModule
-			Expect(k8sClient.Create(context.Background(), module)).Should(Succeed())
-
-			// Ensure getting cleaned up after tests finish
-			defer func() {
-				f := &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Namespace: moduleKey.Namespace, Name: moduleKey.Name}}
-				_ = k8sClient.Get(context.Background(), moduleKey, f)
-				_ = k8sClient.Delete(context.Background(), f)
-			}()
-
 			applicationYAML, err := ioutil.ReadFile("../../testdata/e2e/m4dapplication.yaml")
 			Expect(err).ToNot(HaveOccurred())
 			application := &apiv1alpha1.M4DApplication{}
@@ -626,23 +599,17 @@ var _ = Describe("M4DApplication Controller", func() {
 			// The plotter has to be created
 			plotter := &apiv1alpha1.Plotter{}
 			plotterObjectKey := client.ObjectKey{Namespace: application.Status.Generated.Namespace, Name: application.Status.Generated.Name}
-			By("Expect plotter to be created")
-			Eventually(func() error {
-				return k8sClient.Get(context.Background(), plotterObjectKey, plotter)
-			}, timeout, interval).Should(Succeed(), "Could not find Plotter "+application.Status.Generated.Namespace+"/"+application.Status.Generated.Name)
 			By("Expect plotter to be ready at some point")
 			Eventually(func() bool {
 				Expect(k8sClient.Get(context.Background(), plotterObjectKey, plotter)).To(Succeed())
 				return plotter.Status.ObservedState.Ready
 			}, timeout*10, interval).Should(BeTrue(), "plotter is not ready")
 
-			// Extra long timeout as deploying the arrow-flight module on a new cluster may take some time
-			// depending on the download speed
 			By("Expecting M4DApplication to eventually be ready")
 			Eventually(func() bool {
 				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
 				return application.Status.Ready
-			}, timeout*10, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
+			}, timeout, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
 		})
 	})
 })
