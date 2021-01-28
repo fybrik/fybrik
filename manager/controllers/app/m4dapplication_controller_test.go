@@ -12,6 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
+	comv1alpha1 "github.com/IBM/dataset-lifecycle-framework/src/dataset-operator/pkg/apis/com/v1alpha1"
 	apiv1alpha1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	. "github.com/onsi/ginkgo"
@@ -517,39 +518,49 @@ var _ = Describe("M4DApplication Controller", func() {
 
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
-
-			// Ensure getting cleaned up after tests finish
-			defer func() {
-				DeleteM4DApplication(appSignature.Name)
-			}()
-
-			Eventually(func() *apiv1alpha1.ResourceReference {
+			By("Expecting a dataset to be allocated")
+			Eventually(func() int {
 				_ = k8sClient.Get(context.Background(), appSignature, resource)
-				return resource.Status.Generated
-			}, timeout, interval).ShouldNot(BeNil())
-
-			By("Expecting plotter to be generated")
-			plotter := &apiv1alpha1.Plotter{}
-			Eventually(func() error {
-				key := types.NamespacedName{Name: resource.Status.Generated.Name, Namespace: resource.Status.Generated.Namespace}
-				return k8sClient.Get(context.Background(), key, plotter)
-			}, timeout, interval).Should(Succeed())
-
-			// Check the generated blueprint
-			// There should be a single copy module
-			Expect(len(plotter.Spec.Blueprints)).To(Equal(1))
-			blueprint := plotter.Spec.Blueprints["US-cluster"]
-			Expect(blueprint).NotTo(BeNil())
-			numSteps := 0
-			moduleMatch := false
-			for _, step := range blueprint.Flow.Steps {
-				numSteps++
-				if step.Template == "implicit-copy-s3-to-s3" {
-					moduleMatch = true
+				return len(resource.Status.ProvisionedStorage)
+			}, timeout, interval).Should(Equal(1))
+			if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
+				for _, ref := range resource.Status.ProvisionedStorage {
+					dataset := &comv1alpha1.Dataset{}
+					Eventually(func() error {
+						key := types.NamespacedName{Name: ref.Name, Namespace: ref.Namespace}
+						return k8sClient.Get(context.Background(), key, dataset)
+					}, timeout, interval).Should(Succeed())
+					Expect(dataset.Spec.Local["secret-name"]).To(Equal("secret1"))
+					Expect(dataset.Spec.Local["endpoint"]).To(Equal("http://endpoint1"))
+					Expect(dataset.Spec.Local["provision"]).To(Equal("true"))
 				}
+				Eventually(func() *apiv1alpha1.ResourceReference {
+					_ = k8sClient.Get(context.Background(), appSignature, resource)
+					return resource.Status.Generated
+				}, timeout, interval).ShouldNot(BeNil())
+				By("Expecting plotter to be generated")
+				plotter := &apiv1alpha1.Plotter{}
+				Eventually(func() error {
+					key := types.NamespacedName{Name: resource.Status.Generated.Name, Namespace: resource.Status.Generated.Namespace}
+					return k8sClient.Get(context.Background(), key, plotter)
+				}, timeout, interval).Should(Succeed())
+
+				// Check the generated blueprint
+				// There should be a single copy module
+				Expect(len(plotter.Spec.Blueprints)).To(Equal(1))
+				blueprint := plotter.Spec.Blueprints["US-cluster"]
+				Expect(blueprint).NotTo(BeNil())
+				numSteps := 0
+				moduleMatch := false
+				for _, step := range blueprint.Flow.Steps {
+					numSteps++
+					if step.Template == "implicit-copy-s3-to-s3" {
+						moduleMatch = true
+					}
+				}
+				Expect(numSteps).To(Equal(1))
+				Expect(moduleMatch).To(Equal(true))
 			}
-			Expect(numSteps).To(Equal(1))
-			Expect(moduleMatch).To(Equal(true))
 			DeleteM4DApplication(appSignature.Name)
 		})
 	})

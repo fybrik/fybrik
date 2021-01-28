@@ -82,9 +82,9 @@ func NewProvisionTest() *ProvisionTest {
 }
 
 func (r *ProvisionTest) CreateDataset(dataset *comv1alpha1.Dataset) error {
-	for id, d := range r.datasets {
+	for i, d := range r.datasets {
 		if d.Name == dataset.Name {
-			r.datasets[id] = dataset
+			r.datasets[i] = dataset
 			return nil
 		}
 	}
@@ -99,13 +99,15 @@ func (r *ProvisionTest) GetDataset(ref *app.ResourceReference) (*comv1alpha1.Dat
 			return d, nil
 		}
 	}
-	return nil, errors.New("NotFound")
+	return nil, errors.New("Could not get a dataset: " + ref.Name)
 }
 
 func (r *ProvisionTest) DeleteDataset(ref *app.ResourceReference, force bool) error {
 	newDatasets := []*comv1alpha1.Dataset{}
 	found := false
+	message := "Datasets:\n"
 	for _, d := range r.datasets {
+		message += " " + ref.Name + "\n"
 		if d.Name == ref.Name {
 			found = true
 		} else {
@@ -116,8 +118,7 @@ func (r *ProvisionTest) DeleteDataset(ref *app.ResourceReference, force bool) er
 		r.datasets = newDatasets
 		return nil
 	}
-	return errors.New("NotFound")
-
+	return errors.New("Could not delete a dataset: " + ref.Name + "\n" + message)
 }
 
 // AllocateBucket allocates a bucket in the relevant geo

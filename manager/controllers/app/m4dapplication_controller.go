@@ -175,6 +175,7 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 	// clear provisioned storage
 	// do we need to clean the buckets as well?
 	// in case of errors we do, otherwise -if no registration is done (a permanent copy)
+	utils.PrintStructure(applicationContext.Status, r.Log, "M4DApplication status")
 	for datasetID, dataset := range applicationContext.Status.ProvisionedStorage {
 		deleteBuckets := true
 		if !hasError(applicationContext) {
