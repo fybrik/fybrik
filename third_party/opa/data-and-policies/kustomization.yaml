@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+generatorOptions:
+  disableNameSuffixHash: true
+configMapGenerator:
+- name: opa-policy
+  files:
+  - data_policies/action_struct.rego
+  - data_policies/auditing_struct.rego
+  - data_policies/helper_functions.rego
+  - data_policies/input_reader.rego
+  - data_policies/taxonomies_unification.rego
+  - data_policies/verify_correct_input.rego
+  - wkcpolicy.rego

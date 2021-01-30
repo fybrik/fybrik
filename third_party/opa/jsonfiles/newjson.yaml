@@ -1,0 +1,23 @@
+apiVersion: v1
+data:
+  medical_taxonomies.json: |-
+    {
+        "MedicalRoles": ["ER", "doctor", "nurse"]
+    }
+  taxonomies.json: |-
+    {
+        "DataPurposes": ["audit&complience", "client Support", "marketing", "fraud detection", "analysis"],
+
+        "DataRoles": ["data scientist", "hr", "management", "security"],
+
+        "DataSensitivity": ["SPI", "SHI", "ECI"],
+
+        "DataAccessTypes": ["READ", "COPY", "WRITE"],
+
+        "DataGeoDestinations": ["NorthAmerica", "US"]
+    }
+kind: ConfigMap
+metadata:
+  labels:
+    openpolicyagent.org/data: opa
+  name: opa-json
