@@ -16,7 +16,7 @@ transform[action] {
 
 deny[action] {
 	description = "deny if role is not Data Scientist when purpose is Fraud Detection"
-	dp.correct_input
+	#dp.correct_input
     #user context and access type check
     #dp.check_access_type([dp.AccessTypes.READ])
 	dp.check_access_type(["READ"])
@@ -28,7 +28,7 @@ deny[action] {
 
 deny[action] {
 	description = "If Columns with Confidential tag deny access"
-	dp.correct_input
+	#dp.correct_input
     #user context and access type check
     #dp.check_access_type([dp.AccessTypes.READ])
 	dp.check_access_type(["READ"])
@@ -41,7 +41,7 @@ deny[action] {
 
 deny[action] {
 	description = "deny if role is not Business Analyst when purpose is Customer Behaviour Analysis"
-	dp.correct_input
+	#dp.correct_input
     #user context and access type check
     #dp.check_access_type([dp.AccessTypes.READ])
 	dp.check_access_type(["READ"])
@@ -53,7 +53,7 @@ deny[action] {
 
 deny[action] {
 	description = "If data residency is Turkey but processing geography is not Turkey then deny writing"
-	dp.correct_input
+	#dp.correct_input
     #user context and access type check
     #dp.check_access_type([dp.AccessTypes.WRITE])
 	dp.check_access_type(["WRITE"])
@@ -64,7 +64,7 @@ deny[action] {
 
 deny[action] {
 	description = "If data residency is not Turkey but processing geography is not Turkey or EEA then deny writing"
-	dp.correct_input
+	#dp.correct_input
     #user context and access type check
     #dp.check_access_type([dp.AccessTypes.WRITE])
 	dp.check_access_type(["WRITE"])

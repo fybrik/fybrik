@@ -134,7 +134,7 @@ data:
 
     GeoDestinations = { x | x = data.opa["opa-json"]["taxonomies.json"].DataGeoDestinations[_] }
   verify_correct_input.rego: "package data_policies\n\ncorrect_input {\n\tcount(incorrect_input)
-    > 0\n}\n\nincorrect_input[used_policy] {\n   not verify_access_type\n   used_policy
+    == 0\n}\n\nincorrect_input[used_policy] {\n   not verify_access_type\n   used_policy
     := build_action_from_policies(build_policy_from_description(\"unknown access type\"))\n}
     {\n    not verify_purpose\n    used_policy := build_action_from_policies(build_policy_from_description(\"unknown
     purpose\"))\n} {\n    not verify_role\n    used_policy := build_action_from_policies(build_policy_from_description(\"unknown
@@ -148,25 +148,25 @@ data:
     = Turkey\")\n    column_names := dp.column_with_tag(\"Confidential\")\n    action
     = dp.build_redact_column_action(column_names[_], dp.build_policy_from_description(description))\n}\n\ndeny[action]
     {\n\tdescription = \"deny if role is not Data Scientist when purpose is Fraud
-    Detection\"\n\tdp.correct_input\n    #user context and access type check\n    #dp.check_access_type([dp.AccessTypes.READ])\n\tdp.check_access_type(\"READ\")\n\tdp.check_purpose(\"Fraud
+    Detection\"\n\t#dp.correct_input\n    #user context and access type check\n    #dp.check_access_type([dp.AccessTypes.READ])\n\tdp.check_access_type([\"READ\"])\n\tdp.check_purpose(\"Fraud
     Detection\")\n\tdp.check_role_not(\"Data Scientist\")\n\tdp.dataset_has_tag(\"residency
     = Turkey\")\n    action = dp.build_deny_access_action(dp.build_policy_from_description(description))\n}\n\ndeny[action]
-    {\n\tdescription = \"If Columns with Confidential tag deny access\"\n\tdp.correct_input\n
-    \   #user context and access type check\n    #dp.check_access_type([dp.AccessTypes.READ])\n\tdp.check_access_type(\"READ\")\n\tdp.check_purpose(\"Customer
+    {\n\tdescription = \"If Columns with Confidential tag deny access\"\n\t#dp.correct_input\n
+    \   #user context and access type check\n    #dp.check_access_type([dp.AccessTypes.READ])\n\tdp.check_access_type([\"READ\"])\n\tdp.check_purpose(\"Customer
     Behaviour Analysis\")\n\tdp.check_role(\"Business Analyst\")\n\tdp.dataset_has_tag(\"residency
     = Turkey\")\n    dp.column_has_tag(\"Confidential\")\n    action = dp.build_deny_access_action(dp.build_policy_from_description(description))\n}\n\ndeny[action]
     {\n\tdescription = \"deny if role is not Business Analyst when purpose is Customer
-    Behaviour Analysis\"\n\tdp.correct_input\n    #user context and access type check\n
-    \   #dp.check_access_type([dp.AccessTypes.READ])\n\tdp.check_access_type(\"READ\")\n\tdp.check_purpose(\"Customer
+    Behaviour Analysis\"\n\t#dp.correct_input\n    #user context and access type check\n
+    \   #dp.check_access_type([dp.AccessTypes.READ])\n\tdp.check_access_type([\"READ\"])\n\tdp.check_purpose(\"Customer
     Behaviour Analysis\")\n\tdp.check_role_not(\"Business Analyst\")\n\tdp.dataset_has_tag(\"residency
     = Turkey\")\n    action = dp.build_deny_access_action(dp.build_policy_from_description(description))\n}\n\ndeny[action]
     {\n\tdescription = \"If data residency is Turkey but processing geography is not
-    Turkey then deny writing\"\n\tdp.correct_input\n    #user context and access type
-    check\n    #dp.check_access_type([dp.AccessTypes.WRITE])\n\tdp.check_access_type([\"WRITE\"])\n\tdp.dataset_has_tag(\"residency
+    Turkey then deny writing\"\n\t#dp.correct_input\n    #user context and access
+    type check\n    #dp.check_access_type([dp.AccessTypes.WRITE])\n\tdp.check_access_type([\"WRITE\"])\n\tdp.dataset_has_tag(\"residency
     = Turkey\")\n\tdp.check_processingGeo_not(\"Turkey\")\n    action = dp.build_deny_write_action(dp.build_policy_from_description(description))\n}\n\ndeny[action]
     {\n\tdescription = \"If data residency is not Turkey but processing geography
-    is not Turkey or EEA then deny writing\"\n\tdp.correct_input\n    #user context
-    and access type check\n    #dp.check_access_type([dp.AccessTypes.WRITE])\n\tdp.check_access_type(\"WRITE\")\n\tdp.dataset_has_tag_not(\"residency
+    is not Turkey or EEA then deny writing\"\n\t#dp.correct_input\n    #user context
+    and access type check\n    #dp.check_access_type([dp.AccessTypes.WRITE])\n\tdp.check_access_type([\"WRITE\"])\n\tdp.dataset_has_tag_not(\"residency
     = Turkey\")\n\tdp.check_processingGeo_not(\"Turkey\")\n\tdp.check_processingGeo_not(\"EEA\")\n
     \   action = dp.build_deny_write_action(dp.build_policy_from_description(description))\n}\n"
 kind: ConfigMap
