@@ -543,7 +543,7 @@ var _ = Describe("M4DApplication Controller", func() {
 						key := types.NamespacedName{Name: ref.Name, Namespace: ref.Namespace}
 						return k8sClient.Get(context.Background(), key, dataset)
 					}, timeout, interval).Should(Succeed())
-					Expect(dataset.Spec.Local["secret-name"]).To(Equal("secret1"))
+					Expect(dataset.Spec.Local["secret-name"]).To(Equal("dummy-secret"))
 					Expect(dataset.Spec.Local["endpoint"]).To(Equal("http://endpoint1"))
 					Expect(dataset.Spec.Local["provision"]).To(Equal("true"))
 				}
