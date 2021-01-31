@@ -4,9 +4,13 @@
 package app
 
 import (
+	"context"
+	"encoding/json"
+
 	"emperror.dev/errors"
 	comv1alpha1 "github.com/IBM/dataset-lifecycle-framework/src/dataset-operator/pkg/apis/com/v1alpha1"
 	"github.com/go-logr/logr"
+	vault "github.com/hashicorp/vault/api"
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	modules "github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
@@ -15,6 +19,7 @@ import (
 	local "github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"github.com/ibm/the-mesh-for-data/pkg/serde"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -30,6 +35,7 @@ type ModuleManager struct {
 	PolicyCompiler    pc.IPolicyCompiler
 	WorkloadGeography string
 	Provision         ProvisionInterface
+	VaultClient       *vault.Client
 	Datasets          map[string]*comv1alpha1.Dataset
 }
 
@@ -73,8 +79,11 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 		return nil, err
 	}
 	m.Datasets[item.Context.DataSetID] = dataset
-	vaultPath := "/v1/" + utils.GetVaultDatasetHome() + dataset.Spec.Local["bucket"]
-	// TODO(shlomitk1): fetch the secret and register credentials
+	bucketName := dataset.Spec.Local["bucket"]
+	secretRef := types.NamespacedName{Name: dataset.Spec.Local["secret-name"], Namespace: dataset.Spec.Local["secret-namespace"]}
+	if err = m.RegisterSecretInVault(bucketName, secretRef); err != nil {
+		return nil, err
+	}
 	connection, err := serde.ToRawExtension(&pb.DataStore{
 		Type: pb.DataStore_S3,
 		Name: "S3",
@@ -89,10 +98,35 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	}
 
 	return &app.DataStore{
-		CredentialLocation: utils.GetFullCredentialsPath(utils.GetFullCredentialsPath(vaultPath)),
+		CredentialLocation: utils.GetFullCredentialsPath(utils.GetDatasetVaultPath(bucketName)),
 		Connection:         *connection,
 		Format:             string(destinationInterface.DataFormat),
 	}, nil
+}
+
+func (m *ModuleManager) RegisterSecretInVault(id string, secretRef types.NamespacedName) error {
+	// fetch a secret
+	secret := &corev1.Secret{}
+	if err := m.Client.Get(context.Background(), secretRef, secret); err != nil {
+		return err
+	}
+
+	credentials := &pb.Credentials{AccessKey: string(secret.Data["accessKeyID"]), SecretKey: string(secret.Data["secretAccessKey"])}
+	if credentials.AccessKey == "" || credentials.SecretKey == "" {
+		return errors.New("accessKeyID and secretAccessKey must be specified in " + secretRef.Name)
+	}
+	jsonStr, err := json.Marshal(credentials)
+	if err != nil {
+		return err
+	}
+	credentialsMap := make(map[string]interface{})
+	if err := json.Unmarshal(jsonStr, &credentialsMap); err != nil {
+		return err
+	}
+	if _, err := utils.AddToVault(id, credentialsMap, m.VaultClient); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.M4DApplication) (*modules.Selector, error) {

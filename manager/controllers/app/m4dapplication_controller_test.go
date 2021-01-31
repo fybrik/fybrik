@@ -14,9 +14,11 @@ import (
 
 	comv1alpha1 "github.com/IBM/dataset-lifecycle-framework/src/dataset-operator/pkg/apis/com/v1alpha1"
 	apiv1alpha1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -25,25 +27,34 @@ const timeout = time.Second * 30
 const interval = time.Millisecond * 100
 
 func allocateStorageAccounts() {
+	dummySecret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "dummy-secret",
+			Namespace: utils.GetSystemNamespace(),
+		},
+		Data: map[string][]byte{"accessKeyID": []byte("value1"), "secretAccessKey": []byte("value2")},
+		Type: "Opaque",
+	}
+	_ = k8sClient.Create(context.Background(), dummySecret)
 	accountUS := &apiv1alpha1.M4DStorageAccount{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "account1",
-			Namespace: "m4d-system",
+			Namespace: utils.GetSystemNamespace(),
 		},
 		Spec: apiv1alpha1.M4DStorageAccountSpec{
 			Endpoint:  "http://endpoint1",
-			SecretRef: "secret1",
+			SecretRef: "dummy-secret",
 			Region:    "US",
 		},
 	}
 	accountGermany := &apiv1alpha1.M4DStorageAccount{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "account2",
-			Namespace: "m4d-system",
+			Namespace: utils.GetSystemNamespace(),
 		},
 		Spec: apiv1alpha1.M4DStorageAccountSpec{
 			Endpoint:  "http://endpoint2",
-			SecretRef: "secret2",
+			SecretRef: "dummy-secret",
 			Region:    "Germany",
 		},
 	}
@@ -53,15 +64,28 @@ func allocateStorageAccounts() {
 }
 
 func deleteStorageAccounts() {
-	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "account1", Namespace: "m4d-system"}})
-	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "account2", Namespace: "m4d-system"}})
+	_ = k8sClient.Delete(context.Background(), &corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "dummy-secret", Namespace: utils.GetSystemNamespace()}})
+	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "account1", Namespace: utils.GetSystemNamespace()}})
+	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "account2", Namespace: utils.GetSystemNamespace()}})
+	Eventually(func() error {
+		f := &apiv1alpha1.M4DStorageAccount{}
+		return k8sClient.Get(context.Background(), types.NamespacedName{Name: "account1", Namespace: utils.GetSystemNamespace()}, f)
+	}, timeout, interval).ShouldNot(Succeed())
+	Eventually(func() error {
+		f := &apiv1alpha1.M4DStorageAccount{}
+		return k8sClient.Get(context.Background(), types.NamespacedName{Name: "account2", Namespace: utils.GetSystemNamespace()}, f)
+	}, timeout, interval).ShouldNot(Succeed())
+	Eventually(func() error {
+		f := &corev1.Secret{}
+		return k8sClient.Get(context.Background(), types.NamespacedName{Name: "dummy-secret", Namespace: utils.GetSystemNamespace()}, f)
+	}, timeout, interval).ShouldNot(Succeed())
 }
 
 func createModules() {
 	readModule := &apiv1alpha1.M4DModule{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "read-path",
-			Namespace: "m4d-system",
+			Namespace: utils.GetSystemNamespace(),
 		},
 		Spec: apiv1alpha1.M4DModuleSpec{
 			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Read},
@@ -89,7 +113,7 @@ func createModules() {
 	db2Module := &apiv1alpha1.M4DModule{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "implicit-copy-db2-to-s3",
-			Namespace: "m4d-system",
+			Namespace: utils.GetSystemNamespace(),
 		},
 		Spec: apiv1alpha1.M4DModuleSpec{
 			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Copy},
@@ -121,7 +145,7 @@ func createModules() {
 	s3Module := &apiv1alpha1.M4DModule{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "implicit-copy-s3-to-s3",
-			Namespace: "m4d-system",
+			Namespace: utils.GetSystemNamespace(),
 		},
 		Spec: apiv1alpha1.M4DModuleSpec{
 			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Copy},
@@ -156,9 +180,9 @@ func createModules() {
 }
 
 func deleteModules() {
-	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "implicit-copy-s3-to-s3", Namespace: "m4d-system"}})
-	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "implicit-copy-db2-to-s3", Namespace: "m4d-system"}})
-	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "read-path", Namespace: "m4d-system"}})
+	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DModule{ObjectMeta: metav1.ObjectMeta{Name: "implicit-copy-s3-to-s3", Namespace: utils.GetSystemNamespace()}})
+	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "implicit-copy-db2-to-s3", Namespace: utils.GetSystemNamespace()}})
+	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "read-path", Namespace: utils.GetSystemNamespace()}})
 }
 
 // InitM4DApplication creates an empty resource with n cataloged data sets

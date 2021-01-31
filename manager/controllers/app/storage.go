@@ -174,11 +174,12 @@ func AllocateBucket(c client.Client, log logr.Logger, owner types.NamespacedName
 		}
 		genName := generateDatasetName(owner, id)
 		values := map[string]string{
-			"type":        "COS",
-			"secret-name": account.Spec.SecretRef,
-			"endpoint":    account.Spec.Endpoint,
-			"bucket":      genName,
-			"provision":   "true"}
+			"type":             "COS",
+			"secret-name":      account.Spec.SecretRef,
+			"secret-namespace": utils.GetSystemNamespace(),
+			"endpoint":         account.Spec.Endpoint,
+			"bucket":           genName,
+			"provision":        "true"}
 		dataset := &comv1alpha1.Dataset{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      genName,

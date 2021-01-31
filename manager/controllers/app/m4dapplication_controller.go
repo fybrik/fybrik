@@ -260,6 +260,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		Owner:          objectKey,
 		PolicyCompiler: r.PolicyCompiler,
 		Provision:      r.Provision,
+		VaultClient:    r.VaultClient,
 		Datasets:       make(map[string]*comv1alpha1.Dataset, 0),
 	}
 	instances := make([]modules.ModuleInstanceSpec, 0)

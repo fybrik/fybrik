@@ -15,6 +15,7 @@ import (
 
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	"k8s.io/apimachinery/pkg/api/equality"
 )
 
 // ContextInterface is an interface for communication with a generated resource (e.g. Blueprint)
@@ -69,13 +70,19 @@ func (c *PlotterInterface) GetResourceSignature(ref *app.ResourceReference) *app
 
 // CreateOrUpdateResource creates a new Plotter resource or updates an existing one
 func (c *PlotterInterface) CreateOrUpdateResource(owner *app.ResourceReference, ref *app.ResourceReference, blueprintPerClusterMap map[string]app.BlueprintSpec) error {
-	resource := c.GetResourceSignature(ref)
+	plotter := c.GetResourceSignature(ref)
 	if len(blueprintPerClusterMap) == 0 {
 		return errors.New("Invalid cluster configuration")
 	}
-	if _, err := ctrl.CreateOrUpdate(context.Background(), c.Client, resource, func() error {
-		resource.Spec.Blueprints = blueprintPerClusterMap
-		resource.Labels = ownerLabels(types.NamespacedName{Namespace: owner.Namespace, Name: owner.Name})
+	if err := c.Client.Get(context.Background(), types.NamespacedName{Namespace: ref.Namespace, Name: ref.Name}, plotter); err == nil {
+		if equality.Semantic.DeepEqual(&plotter.Spec.Blueprints, &blueprintPerClusterMap) {
+			// nothing needs to be done
+			return nil
+		}
+	}
+	if _, err := ctrl.CreateOrUpdate(context.Background(), c.Client, plotter, func() error {
+		plotter.Spec.Blueprints = blueprintPerClusterMap
+		plotter.Labels = ownerLabels(types.NamespacedName{Namespace: owner.Namespace, Name: owner.Name})
 		return nil
 	}); err != nil {
 		return err
