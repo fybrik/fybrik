@@ -24,36 +24,40 @@ import (
 // ProvisionInterface is an interface for managing dynamically allocated Dataset resources
 type ProvisionInterface interface {
 	CreateDataset(dataset *comv1alpha1.Dataset) error
-	DeleteDataset(ref *app.ResourceReference, force bool) error
+	DeleteDataset(ref *app.ResourceReference) error
 	GetDataset(ref *app.ResourceReference) (*comv1alpha1.Dataset, error)
 }
 
+// ProvisionImpl is an implementation of ProvisionInterface using Dataset CRDs
 type ProvisionImpl struct {
 	Client client.Client
 }
 
+// NewProvisionImpl returns a new ProvisionImpl object
 func NewProvisionImpl(c client.Client) *ProvisionImpl {
 	return &ProvisionImpl{
 		Client: c,
 	}
 }
 
+// CreateDataset generates a Dataset resource
 func (r *ProvisionImpl) CreateDataset(dataset *comv1alpha1.Dataset) error {
 	ref := &app.ResourceReference{Name: dataset.Name, Namespace: dataset.Namespace}
 	existing, err := r.GetDataset(ref)
 	if err == nil {
 		if equality.Semantic.DeepEqual(&existing.Spec, &dataset.Spec) {
-			// nothing is needed to be done
-			return nil
+			// labels could have been changed - update the dataset
+			return r.Client.Update(context.Background(), dataset)
 		}
 		// re-create the dataset
-		if err = r.DeleteDataset(ref, true); err != nil {
+		if err = r.DeleteDataset(ref); err != nil {
 			return err
 		}
 	}
 	return r.Client.Create(context.Background(), dataset)
 }
 
+// GetDataset returns an existing Dataset resource or nil if the dataset does not exist.
 func (r *ProvisionImpl) GetDataset(ref *app.ResourceReference) (*comv1alpha1.Dataset, error) {
 	existing := &comv1alpha1.Dataset{}
 	if err := r.Client.Get(context.Background(), types.NamespacedName{Name: ref.Name, Namespace: ref.Namespace}, existing); err != nil {
@@ -62,25 +66,28 @@ func (r *ProvisionImpl) GetDataset(ref *app.ResourceReference) (*comv1alpha1.Dat
 	return existing, nil
 }
 
-func (r *ProvisionImpl) DeleteDataset(ref *app.ResourceReference, force bool) error {
+// DeleteDataset deletes the existing Dataset resource
+func (r *ProvisionImpl) DeleteDataset(ref *app.ResourceReference) error {
 	existing, err := r.GetDataset(ref)
 	if err != nil {
 		return err
 	}
-	// TODO(shlomitk1): update datasets with the appropriate annotation to delete a bucket upon removal
 	return r.Client.Delete(context.Background(), existing)
 }
 
+// ProvisionTest is an implementation of ProvisionInterface used for testing
 type ProvisionTest struct {
 	datasets []*comv1alpha1.Dataset
 }
 
+// NewProvisionTest constructs a new ProvisionTest object
 func NewProvisionTest() *ProvisionTest {
 	return &ProvisionTest{
 		datasets: []*comv1alpha1.Dataset{},
 	}
 }
 
+// CreateDataset generates a new dataset
 func (r *ProvisionTest) CreateDataset(dataset *comv1alpha1.Dataset) error {
 	for i, d := range r.datasets {
 		if d.Name == dataset.Name {
@@ -92,6 +99,7 @@ func (r *ProvisionTest) CreateDataset(dataset *comv1alpha1.Dataset) error {
 	return nil
 }
 
+// GetDataset returns an existing dataset imitating a successful creation of the bucket
 func (r *ProvisionTest) GetDataset(ref *app.ResourceReference) (*comv1alpha1.Dataset, error) {
 	for _, d := range r.datasets {
 		if d.Name == ref.Name {
@@ -102,7 +110,8 @@ func (r *ProvisionTest) GetDataset(ref *app.ResourceReference) (*comv1alpha1.Dat
 	return nil, errors.New("Could not get a dataset: " + ref.Name)
 }
 
-func (r *ProvisionTest) DeleteDataset(ref *app.ResourceReference, force bool) error {
+// DeleteDataset removes an existing dataset
+func (r *ProvisionTest) DeleteDataset(ref *app.ResourceReference) error {
 	newDatasets := []*comv1alpha1.Dataset{}
 	found := false
 	message := "Datasets:\n"
@@ -122,6 +131,8 @@ func (r *ProvisionTest) DeleteDataset(ref *app.ResourceReference, force bool) er
 }
 
 // AllocateBucket allocates a bucket in the relevant geo
+// The buckets are created as temporary, i.e. to be removed after the owner Dataset is deleted
+// After a successful copy and registering a dataset, the bucket will become persistent
 func AllocateBucket(c client.Client, log logr.Logger, owner types.NamespacedName, id string, geo string) (*comv1alpha1.Dataset, error) {
 	ctx := context.Background()
 	log.Info("Searching for a storage account matching the geography " + geo)
@@ -142,11 +153,14 @@ func AllocateBucket(c client.Client, log logr.Logger, owner types.NamespacedName
 			"endpoint":    account.Spec.Endpoint,
 			"bucket":      genName,
 			"provision":   "true"}
-		dataset := &comv1alpha1.Dataset{ObjectMeta: metav1.ObjectMeta{
-			Name:      genName,
-			Namespace: utils.GetSystemNamespace(),
-			Labels:    map[string]string{"m4d.ibm.com/owner": owner.Namespace + "." + owner.Name},
-		},
+		dataset := &comv1alpha1.Dataset{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      genName,
+				Namespace: utils.GetSystemNamespace(),
+				Labels: map[string]string{
+					"m4d.ibm.com/owner": owner.Namespace + "." + owner.Name,
+					"remove-on-delete":  "true"},
+			},
 			Spec: comv1alpha1.DatasetSpec{Local: values},
 		}
 		return dataset, nil

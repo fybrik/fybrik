@@ -105,7 +105,9 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		if err != nil {
 			return ctrl.Result{}, err
 		}
-		checkResourceStatus(applicationContext, resourceStatus)
+		if err = r.checkReadiness(applicationContext, resourceStatus); err != nil {
+			return ctrl.Result{}, err
+		}
 	}
 
 	// Update CRD status in case of change (other than deletion, which was handled separately)
@@ -121,20 +123,43 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	return ctrl.Result{}, nil
 }
 
-func checkResourceStatus(applicationContext *app.M4DApplication, status app.ObservedState) {
+func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApplication, status app.ObservedState) error {
 	applicationContext.Status.DataAccessInstructions = ""
 	applicationContext.Status.Ready = false
 	if hasError(applicationContext) {
-		return
+		return nil
 	}
 	if status.Error != "" {
 		setCondition(applicationContext, "", status.Error, true)
-		return
+		return nil
 	}
-	if status.Ready {
-		applicationContext.Status.Ready = true
-		applicationContext.Status.DataAccessInstructions = status.DataAccessInstructions
+	if !status.Ready {
+		return nil
 	}
+	// register assets if necessary if the ready state has been received
+	for _, dataCtx := range applicationContext.Spec.Data {
+		if dataCtx.Requirements.Copy.Catalog.CatalogID != "" {
+			// TODO(shlomitk1) register the asset in the catalog
+			// mark the bucket as persistent
+			datasetRef, found := applicationContext.Status.ProvisionedStorage[dataCtx.DataSetID]
+			if !found {
+				message := "No copy has been created for the asset " + dataCtx.DataSetID + " required to be registered"
+				r.Log.V(0).Info(message)
+				return errors.New(message)
+			}
+			dataset, err := r.Provision.GetDataset(&datasetRef)
+			if err != nil {
+				return err
+			}
+			dataset.Labels["remove-on-delete"] = "false"
+			if err := r.Provision.CreateDataset(dataset); err != nil {
+				return err
+			}
+		}
+	}
+	applicationContext.Status.Ready = true
+	applicationContext.Status.DataAccessInstructions = status.DataAccessInstructions
+	return nil
 }
 
 // reconcileFinalizers reconciles finalizers for M4DApplication
@@ -173,25 +198,8 @@ func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M
 
 func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *app.M4DApplication) error {
 	// clear provisioned storage
-	// do we need to clean the buckets as well?
-	// in case of errors we do, otherwise -if no registration is done (a permanent copy)
-	utils.PrintStructure(applicationContext.Status, r.Log, "M4DApplication status")
-	for datasetID, dataset := range applicationContext.Status.ProvisionedStorage {
-		deleteBuckets := true
-		if !hasError(applicationContext) {
-			for _, dataCtx := range applicationContext.Spec.Data {
-				if dataCtx.DataSetID == datasetID {
-					if dataCtx.Requirements.Copy.Catalog.CatalogID != "" {
-						deleteBuckets = false
-						break
-					}
-				}
-			}
-		}
-		if deleteBuckets {
-			r.Log.V(0).Info("Deleting buckets")
-		}
-		if err := r.Provision.DeleteDataset(&dataset, deleteBuckets); err != nil {
+	for _, dataset := range applicationContext.Status.ProvisionedStorage {
+		if err := r.Provision.DeleteDataset(&dataset); err != nil {
 			return err
 		}
 	}
@@ -275,7 +283,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	// clean irrelevant buckets
 	for datasetID, ref := range applicationContext.Status.ProvisionedStorage {
 		if _, found := moduleManager.Datasets[datasetID]; !found {
-			r.Provision.DeleteDataset(&ref, true)
+			r.Provision.DeleteDataset(&ref)
 			delete(applicationContext.Status.ProvisionedStorage, datasetID)
 		}
 	}
@@ -285,7 +293,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	}
 	ready := true
 	var allocErr error
-	// check readiness
+	// check that the buckets have been created successfully using Dataset status
 	for id, ref := range applicationContext.Status.ProvisionedStorage {
 		res, err := r.Provision.GetDataset(&ref)
 		if err != nil {
