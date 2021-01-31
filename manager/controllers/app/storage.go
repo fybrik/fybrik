@@ -26,6 +26,7 @@ type ProvisionInterface interface {
 	CreateDataset(dataset *comv1alpha1.Dataset) error
 	DeleteDataset(ref *app.ResourceReference) error
 	GetDataset(ref *app.ResourceReference) (*comv1alpha1.Dataset, error)
+	UpdateLabel(ref *app.ResourceReference, key string, val string) error
 }
 
 // ProvisionImpl is an implementation of ProvisionInterface using Dataset CRDs
@@ -46,8 +47,8 @@ func (r *ProvisionImpl) CreateDataset(dataset *comv1alpha1.Dataset) error {
 	existing, err := r.GetDataset(ref)
 	if err == nil {
 		if equality.Semantic.DeepEqual(&existing.Spec, &dataset.Spec) {
-			// labels could have been changed - update the dataset
-			return r.Client.Update(context.Background(), dataset)
+			// nothing needs to be done
+			return nil
 		}
 		// re-create the dataset
 		if err = r.DeleteDataset(ref); err != nil {
@@ -55,6 +56,20 @@ func (r *ProvisionImpl) CreateDataset(dataset *comv1alpha1.Dataset) error {
 		}
 	}
 	return r.Client.Create(context.Background(), dataset)
+}
+
+// UpdateLabel updates a label of the existing Dataset resource
+func (r *ProvisionImpl) UpdateLabel(ref *app.ResourceReference, key string, val string) error {
+	existing, err := r.GetDataset(ref)
+	if err != nil {
+		return err
+	}
+	if existing.Labels == nil {
+		existing.Labels = map[string]string{key: val}
+	} else {
+		existing.Labels[key] = val
+	}
+	return r.Client.Update(context.Background(), existing)
 }
 
 // GetDataset returns an existing Dataset resource or nil if the dataset does not exist.
@@ -97,6 +112,17 @@ func (r *ProvisionTest) CreateDataset(dataset *comv1alpha1.Dataset) error {
 	}
 	r.datasets = append(r.datasets, dataset)
 	return nil
+}
+
+// UpdateLabel updates a label of the existing Dataset resource
+func (r *ProvisionTest) UpdateLabel(ref *app.ResourceReference, key string, val string) error {
+	for i, d := range r.datasets {
+		if d.Name == ref.Name {
+			r.datasets[i].Labels[key] = val
+			return nil
+		}
+	}
+	return errors.New("Could not update labels of a dataset: " + ref.Name)
 }
 
 // GetDataset returns an existing dataset imitating a successful creation of the bucket

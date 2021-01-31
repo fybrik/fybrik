@@ -147,12 +147,7 @@ func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApp
 				r.Log.V(0).Info(message)
 				return errors.New(message)
 			}
-			dataset, err := r.Provision.GetDataset(&datasetRef)
-			if err != nil {
-				return err
-			}
-			dataset.Labels["remove-on-delete"] = "false"
-			if err := r.Provision.CreateDataset(dataset); err != nil {
+			if err := r.Provision.UpdateLabel(&datasetRef, "remove-on-delete", "false"); err != nil {
 				return err
 			}
 		}
