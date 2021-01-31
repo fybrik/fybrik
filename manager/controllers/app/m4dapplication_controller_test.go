@@ -67,18 +67,6 @@ func deleteStorageAccounts() {
 	_ = k8sClient.Delete(context.Background(), &corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "dummy-secret", Namespace: utils.GetSystemNamespace()}})
 	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "account1", Namespace: utils.GetSystemNamespace()}})
 	_ = k8sClient.Delete(context.Background(), &apiv1alpha1.M4DStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "account2", Namespace: utils.GetSystemNamespace()}})
-	Eventually(func() error {
-		f := &apiv1alpha1.M4DStorageAccount{}
-		return k8sClient.Get(context.Background(), types.NamespacedName{Name: "account1", Namespace: utils.GetSystemNamespace()}, f)
-	}, timeout, interval).ShouldNot(Succeed())
-	Eventually(func() error {
-		f := &apiv1alpha1.M4DStorageAccount{}
-		return k8sClient.Get(context.Background(), types.NamespacedName{Name: "account2", Namespace: utils.GetSystemNamespace()}, f)
-	}, timeout, interval).ShouldNot(Succeed())
-	Eventually(func() error {
-		f := &corev1.Secret{}
-		return k8sClient.Get(context.Background(), types.NamespacedName{Name: "dummy-secret", Namespace: utils.GetSystemNamespace()}, f)
-	}, timeout, interval).ShouldNot(Succeed())
 }
 
 func createModules() {
@@ -242,6 +230,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			deleteStorageAccounts()
 			// delete modules
 			deleteModules()
+			time.Sleep(interval)
 		})
 
 		// This test checks that the finalizers are properly reconciled upon creation and deletion of the resource
