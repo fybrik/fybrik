@@ -33,7 +33,7 @@ spec:
             endpoint:
               description: Endpoint
               type: string
-            region:
+            regions:
               description: Regions
               items:
                 type: string
@@ -44,7 +44,7 @@ spec:
               type: string
           required:
           - endpoint
-          - region
+          - regions
           - secretRef
           type: object
         status:
