@@ -16,8 +16,9 @@ type M4DStorageAccountSpec struct {
 	// Endpoint
 	Endpoint string `json:"endpoint"`
 	// +required
-	// Region
-	Region string `json:"region"`
+	// +kubebuilder:validation:MinItems=1
+	// Regions
+	Regions []string `json:"region"`
 }
 
 // M4DStorageAccountStatus defines the observed state of M4DStorageAccount

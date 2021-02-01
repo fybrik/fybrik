@@ -140,6 +140,11 @@ func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApp
 	if !status.Ready {
 		return nil
 	}
+	// Plotter is ready - update the M4DApplication status
+	if applicationContext.Status.Ready {
+		// nothing to be done
+		return nil
+	}
 	// register assets if necessary if the ready state has been received
 	for _, dataCtx := range applicationContext.Spec.Data {
 		if dataCtx.Requirements.Copy.Catalog.CatalogID != "" {

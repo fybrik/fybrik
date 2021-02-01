@@ -34,8 +34,11 @@ spec:
               description: Endpoint
               type: string
             region:
-              description: Region
-              type: string
+              description: Regions
+              items:
+                type: string
+              minItems: 1
+              type: array
             secretRef:
               description: Secret including credentials for COS bucket
               type: string

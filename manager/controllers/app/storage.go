@@ -19,6 +19,15 @@ import (
 // +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dstorageaccounts,verbs=get;list;watch;update;
 // +kubebuilder:rbac:groups=com.ie.ibm.hpsys,resources=datasets,verbs=get;list;watch;create;update;patch;delete
 
+func includesGeography(array []string, element string) bool {
+	for _, geo := range array {
+		if geo == element {
+			return true
+		}
+	}
+	return false
+}
+
 // AllocateBucket allocates a bucket in the relevant geo
 // The buckets are created as temporary, i.e. to be removed after the owner Dataset is deleted
 // After a successful copy and registering a dataset, the bucket will become persistent
@@ -32,7 +41,7 @@ func AllocateBucket(c client.Client, log logr.Logger, owner types.NamespacedName
 	}
 	for _, account := range accountList.Items {
 		utils.PrintStructure(account, log, "Account ")
-		if account.Spec.Region != geo {
+		if !includesGeography(account.Spec.Regions, geo) {
 			continue
 		}
 		genName := generateDatasetName(owner, id)

@@ -44,7 +44,7 @@ func allocateStorageAccounts() {
 		Spec: apiv1alpha1.M4DStorageAccountSpec{
 			Endpoint:  "http://endpoint1",
 			SecretRef: "dummy-secret",
-			Region:    "US",
+			Regions:   []string{"US"},
 		},
 	}
 	accountGermany := &apiv1alpha1.M4DStorageAccount{
@@ -55,7 +55,7 @@ func allocateStorageAccounts() {
 		Spec: apiv1alpha1.M4DStorageAccountSpec{
 			Endpoint:  "http://endpoint2",
 			SecretRef: "dummy-secret",
-			Region:    "Germany",
+			Regions:   []string{"Germany"},
 		},
 	}
 
