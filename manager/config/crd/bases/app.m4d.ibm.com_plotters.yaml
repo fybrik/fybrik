@@ -75,10 +75,32 @@ spec:
                                         format:
                                           description: Format represents data format (e.g. parquet) as received from catalog connectors
                                           type: string
+                                        vault:
+                                          description: Holds details for retrieving credentials from Vault store.
+                                          properties:
+                                            address:
+                                              description: Address is Vault address
+                                              type: string
+                                            authPath:
+                                              description: AuthPath is the authentication method used to acees Vault i.e. kubernetes
+                                              type: string
+                                            path:
+                                              description: Path is the credentials path in Vault
+                                              type: string
+                                            role:
+                                              description: Role is the Vault role used to retrieving credentials
+                                              type: string
+                                          required:
+                                          - address
+                                          - authPath
+                                          - path
+                                          - role
+                                          type: object
                                       required:
                                       - connection
                                       - credentialLocation
                                       - format
+                                      - vault
                                       type: object
                                     source:
                                       description: Source is the where the data currently resides
@@ -92,10 +114,32 @@ spec:
                                         format:
                                           description: Format represents data format (e.g. parquet) as received from catalog connectors
                                           type: string
+                                        vault:
+                                          description: Holds details for retrieving credentials from Vault store.
+                                          properties:
+                                            address:
+                                              description: Address is Vault address
+                                              type: string
+                                            authPath:
+                                              description: AuthPath is the authentication method used to acees Vault i.e. kubernetes
+                                              type: string
+                                            path:
+                                              description: Path is the credentials path in Vault
+                                              type: string
+                                            role:
+                                              description: Role is the Vault role used to retrieving credentials
+                                              type: string
+                                          required:
+                                          - address
+                                          - authPath
+                                          - path
+                                          - role
+                                          type: object
                                       required:
                                       - connection
                                       - credentialLocation
                                       - format
+                                      - vault
                                       type: object
                                     transformations:
                                       description: Transformations are different types of processing that may be done to the data as it is copied.
@@ -126,10 +170,32 @@ spec:
                                           format:
                                             description: Format represents data format (e.g. parquet) as received from catalog connectors
                                             type: string
+                                          vault:
+                                            description: Holds details for retrieving credentials from Vault store.
+                                            properties:
+                                              address:
+                                                description: Address is Vault address
+                                                type: string
+                                              authPath:
+                                                description: AuthPath is the authentication method used to acees Vault i.e. kubernetes
+                                                type: string
+                                              path:
+                                                description: Path is the credentials path in Vault
+                                                type: string
+                                              role:
+                                                description: Role is the Vault role used to retrieving credentials
+                                                type: string
+                                            required:
+                                            - address
+                                            - authPath
+                                            - path
+                                            - role
+                                            type: object
                                         required:
                                         - connection
                                         - credentialLocation
                                         - format
+                                        - vault
                                         type: object
                                       transformations:
                                         description: Transformations are different types of processing that may be done to the data
@@ -158,10 +224,32 @@ spec:
                                           format:
                                             description: Format represents data format (e.g. parquet) as received from catalog connectors
                                             type: string
+                                          vault:
+                                            description: Holds details for retrieving credentials from Vault store.
+                                            properties:
+                                              address:
+                                                description: Address is Vault address
+                                                type: string
+                                              authPath:
+                                                description: AuthPath is the authentication method used to acees Vault i.e. kubernetes
+                                                type: string
+                                              path:
+                                                description: Path is the credentials path in Vault
+                                                type: string
+                                              role:
+                                                description: Role is the Vault role used to retrieving credentials
+                                                type: string
+                                            required:
+                                            - address
+                                            - authPath
+                                            - path
+                                            - role
+                                            type: object
                                         required:
                                         - connection
                                         - credentialLocation
                                         - format
+                                        - vault
                                         type: object
                                       transformations:
                                         description: Transformations are different types of processing that may be done to the data as it is written.

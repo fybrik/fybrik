@@ -95,9 +95,16 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	if err != nil {
 		return nil, err
 	}
-
+	vaultAuth, _ := utils.GetVaultAuthService()
+	vault := app.Vault{
+		Path:     utils.GetSecretPath(bucket.Spec.VaultPath),
+		Role:     utils.GetModulesRole(),
+		Address:  utils.GetVaultAddress(),
+		AuthPath: vaultAuth,
+	}
 	return &app.DataStore{
-		CredentialLocation: utils.GetDatasetVaultPath(bucket.Name),
+		CredentialLocation: utils.GetFullCredentialsPath(bucket.Spec.VaultPath),
+		Vault:              vault,
 		Connection:         *connection,
 		Format:             string(destinationInterface.DataFormat),
 	}, nil
@@ -227,9 +234,17 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 
 	// Each selector receives source/sink interface and relevant actions
 	// Starting with the data location interface for source and the required interface for sink
+	vaultAuth, _ := utils.GetVaultAuthService()
+	vault := app.Vault{
+		Path:     utils.GetSecretPath(datasetID),
+		Role:     utils.GetModulesRole(),
+		Address:  utils.GetVaultAddress(),
+		AuthPath: vaultAuth,
+	}
 	sourceDataStore := &app.DataStore{
 		Connection:         item.DataDetails.Connection,
 		CredentialLocation: utils.GetDatasetVaultPath(datasetID),
+		Vault:              vault,
 		Format:             string(item.DataDetails.Interface.DataFormat),
 	}
 	// DataStore for destination will be determined if an implicit copy is required

@@ -23,7 +23,8 @@ var httpClient = &http.Client{
 // LinkVaultPolicyToIdentity registers a policy for a given identity or role, meaning that when a person or service
 // of that identity logs into vault and tries to read or write a secret the provided policy
 // will determine whether that is allowed or not.
-func LinkVaultPolicyToIdentity(identity string, policyName string, vaultClient *api.Client) error {
+func LinkVaultPolicyToIdentity(identity string, policyName string,
+	serviceAccountBound string, namespaceBound string, vaultClient *api.Client) error {
 	if RunWithoutVaultHook() {
 		return nil
 	}
@@ -40,8 +41,8 @@ func LinkVaultPolicyToIdentity(identity string, policyName string, vaultClient *
 	params := map[string]interface{}{
 		"user_claim":                       "sub",
 		"role_type":                        auth,
-		"bound_service_account_names":      "secret-provider",
-		"bound_service_account_namespaces": GetSystemNamespace(),
+		"bound_service_account_names":      serviceAccountBound,
+		"bound_service_account_namespaces": namespaceBound,
 		"policies":                         policyName,
 		"ttl":                              GetVaultAuthTTL(),
 	}
@@ -249,6 +250,11 @@ func GetUserCredentialsVaultPath(namespace string, name string, system string) s
 func GetDatasetVaultPath(assetID string) string {
 	secretName := "/v1/" + GetVaultDatasetHome() + assetID
 	return GetFullCredentialsPath(secretName)
+}
+
+func GetSecretPath(assetID string) string {
+	secretName := "/v1/" + GetVaultDatasetHome() + assetID
+	return secretName
 }
 
 // InitVaultAuth initiates the authentication mechanism used to obtain vault tokens.
