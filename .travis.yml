@@ -16,8 +16,6 @@ addons:
       - conntrack
       - ethtool
       - apache2-utils
-  hosts:
-  - kind-registry
 
 os:
 - linux
@@ -72,7 +70,7 @@ jobs:
   - stage: Test
     name: "Integration tests for manager in kind"
     env:
-    - DOCKER_HOSTNAME=kind-registry:5000
+    - DOCKER_HOSTNAME=localhost:5000
     - DOCKER_NAMESPACE=m4d-system
     install:
     - make install-tools

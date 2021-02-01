@@ -21,7 +21,7 @@ test:
 	$(MAKE) -C manager test
 
 .PHONY: run-integration-tests
-run-integration-tests: export DOCKER_HOSTNAME?=kind-registry:5000
+run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
 run-integration-tests: export DOCKER_NAMESPACE?=m4d-system
 run-integration-tests:
 	$(MAKE) kind
