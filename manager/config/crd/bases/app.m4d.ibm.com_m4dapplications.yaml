@@ -201,23 +201,8 @@ spec:
               type: integer
             provisionedStorage:
               additionalProperties:
-                description: ResourceReference contains resource identifier(name, namespace, kind)
-                properties:
-                  kind:
-                    description: Kind of the resource (Blueprint, Plotter)
-                    type: string
-                  name:
-                    description: Name of the resource
-                    type: string
-                  namespace:
-                    description: Namespace of the resource
-                    type: string
-                required:
-                - kind
-                - name
-                - namespace
-                type: object
-              description: M4DApplication owns Dataset resources allocated for dynamic bucket provisioning. ProvisionedStorage maps a dataset (identified by DataSetID) to the Dataset resource that contains details of a new provisioned bucket. It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received.
+                type: string
+              description: ProvisionedStorage maps a dataset (identified by DataSetID) to the new provisioned bucket. It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received.
               type: object
             ready:
               description: Ready is true if a blueprint has been successfully orchestrated

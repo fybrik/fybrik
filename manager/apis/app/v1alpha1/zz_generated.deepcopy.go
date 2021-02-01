@@ -477,7 +477,7 @@ func (in *M4DApplicationStatus) DeepCopyInto(out *M4DApplicationStatus) {
 	}
 	if in.ProvisionedStorage != nil {
 		in, out := &in.ProvisionedStorage, &out.ProvisionedStorage
-		*out = make(map[string]ResourceReference, len(*in))
+		*out = make(map[string]string, len(*in))
 		for key, val := range *in {
 			(*out)[key] = val
 		}

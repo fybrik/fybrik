@@ -170,11 +170,10 @@ type M4DApplicationStatus struct {
 	// +optional
 	Generated *ResourceReference `json:"generated,omitempty"`
 
-	// M4DApplication owns Dataset resources allocated for dynamic bucket provisioning.
-	// ProvisionedStorage maps a dataset (identified by DataSetID) to the Dataset resource that contains details of a new provisioned bucket.
+	// ProvisionedStorage maps a dataset (identified by DataSetID) to the new provisioned bucket.
 	// It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received.
 	// +optional
-	ProvisionedStorage map[string]ResourceReference `json:"provisionedStorage,omitempty"`
+	ProvisionedStorage map[string]string `json:"provisionedStorage,omitempty"`
 }
 
 // M4DApplication provides information about the application being used by a Data Scientist,

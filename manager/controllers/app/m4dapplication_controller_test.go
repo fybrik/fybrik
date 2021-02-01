@@ -537,10 +537,10 @@ var _ = Describe("M4DApplication Controller", func() {
 				return len(resource.Status.ProvisionedStorage)
 			}, timeout, interval).Should(Equal(1))
 			if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
-				for _, ref := range resource.Status.ProvisionedStorage {
+				for _, name := range resource.Status.ProvisionedStorage {
 					dataset := &comv1alpha1.Dataset{}
 					Eventually(func() error {
-						key := types.NamespacedName{Name: ref.Name, Namespace: ref.Namespace}
+						key := types.NamespacedName{Name: name, Namespace: utils.GetSystemNamespace()}
 						return k8sClient.Get(context.Background(), key, dataset)
 					}, timeout, interval).Should(Succeed())
 					Expect(dataset.Spec.Local["secret-name"]).To(Equal("dummy-secret"))

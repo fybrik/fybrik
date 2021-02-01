@@ -11,6 +11,7 @@ import (
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/razee"
+	"github.com/ibm/the-mesh-for-data/pkg/storage"
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/motion"
 
@@ -131,7 +132,7 @@ func main() {
 		policyCompiler := pc.NewPolicyCompiler()
 
 		// Initiate the M4DApplication Controller
-		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, clusterManager, app.NewProvisionImpl(mgr.GetClient()))
+		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
 			os.Exit(1)

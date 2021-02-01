@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 
 	"emperror.dev/errors"
-	comv1alpha1 "github.com/IBM/dataset-lifecycle-framework/src/dataset-operator/pkg/apis/com/v1alpha1"
 	"github.com/go-logr/logr"
 	vault "github.com/hashicorp/vault/api"
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
@@ -19,6 +18,7 @@ import (
 	local "github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"github.com/ibm/the-mesh-for-data/pkg/serde"
+	"github.com/ibm/the-mesh-for-data/pkg/storage"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -27,16 +27,16 @@ import (
 
 // ModuleManager builds a set of modules based on the requirements (governance actions, data location) and the existing set of M4DModules
 type ModuleManager struct {
-	Client            client.Client
-	Log               logr.Logger
-	Modules           map[string]*app.M4DModule
-	Clusters          []multicluster.Cluster
-	Owner             types.NamespacedName
-	PolicyCompiler    pc.IPolicyCompiler
-	WorkloadGeography string
-	Provision         ProvisionInterface
-	VaultClient       *vault.Client
-	Datasets          map[string]*comv1alpha1.Dataset
+	Client             client.Client
+	Log                logr.Logger
+	Modules            map[string]*app.M4DModule
+	Clusters           []multicluster.Cluster
+	Owner              types.NamespacedName
+	PolicyCompiler     pc.IPolicyCompiler
+	WorkloadGeography  string
+	Provision          storage.ProvisionInterface
+	VaultClient        *vault.Client
+	ProvisionedStorage map[string]*storage.ProvisionedBucket
 }
 
 // SelectModuleInstances builds a list of required modules with the relevant arguments
@@ -70,27 +70,26 @@ Updates to add ingest:
 func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInterface *app.InterfaceDetails, geo string) (*app.DataStore, error) {
 	// provisioned storage for COPY
 	originalAssetName := item.DataDetails.Name
-	var dataset *comv1alpha1.Dataset = nil
+	var bucket *storage.ProvisionedBucket = nil
 	var err error
-	if dataset, err = AllocateBucket(m.Client, m.Log, m.Owner, originalAssetName, geo); err != nil {
+	if bucket, err = AllocateBucket(m.Client, m.Log, m.Owner, originalAssetName, geo); err != nil {
 		return nil, err
 	}
-	if err = m.Provision.CreateDataset(dataset); err != nil {
+	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
+	if err = m.Provision.CreateDataset(bucketRef, bucket, &m.Owner); err != nil {
 		return nil, err
 	}
-	m.Datasets[item.Context.DataSetID] = dataset
-	bucketName := dataset.Spec.Local["bucket"]
-	secretRef := types.NamespacedName{Name: dataset.Spec.Local["secret-name"], Namespace: dataset.Spec.Local["secret-namespace"]}
-	if err = m.RegisterSecretInVault(bucketName, secretRef); err != nil {
+	m.ProvisionedStorage[item.Context.DataSetID] = bucket
+	if err = m.RegisterSecretInVault(bucket.Name, bucket.SecretRef); err != nil {
 		return nil, err
 	}
 	connection, err := serde.ToRawExtension(&pb.DataStore{
 		Type: pb.DataStore_S3,
 		Name: "S3",
 		S3: &pb.S3DataStore{
-			Bucket:    dataset.Spec.Local["bucket"],
-			Endpoint:  dataset.Spec.Local["endpoint"],
-			ObjectKey: originalAssetName + utils.Hash(originalAssetName, 10),
+			Bucket:    bucket.Name,
+			Endpoint:  bucket.Endpoint,
+			ObjectKey: originalAssetName + utils.Hash(m.Owner.Name+m.Owner.Namespace, 10),
 		},
 	})
 	if err != nil {
@@ -98,7 +97,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	}
 
 	return &app.DataStore{
-		CredentialLocation: utils.GetFullCredentialsPath(utils.GetDatasetVaultPath(bucketName)),
+		CredentialLocation: utils.GetFullCredentialsPath(utils.GetDatasetVaultPath(bucket.Name)),
 		Connection:         *connection,
 		Format:             string(destinationInterface.DataFormat),
 	}, nil
