@@ -16,7 +16,6 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/motion"
 
 	"github.com/hashicorp/vault/api"
-	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -45,7 +44,6 @@ func init() {
 	_ = motionv1.AddToScheme(scheme)
 	_ = appv1.AddToScheme(scheme)
 	_ = comv1alpha1.SchemeBuilder.AddToScheme(scheme)
-	_ = networkingv1alpha3.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 }
 
