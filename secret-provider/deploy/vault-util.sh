@@ -139,9 +139,9 @@ configure_path() {
   export VAULT_TOKEN=$(kubectl get secrets vault-unseal-keys -n $KUBE_NAMESPACE -o jsonpath={.data.vault-root} | base64 --decode)
   
   # Enabling kv
-  # Vault dev mode is initiated with Key Value store mounted at secret/ path.
+  # NOTE: Vault dev mode is initiated with Key Value store mounted at secret/ path.
   # (https://www.vaultproject.io/docs/concepts/dev-server)
-  # enable_kv "$SECRET_PATH" "$VAULT_TOKEN"
+  enable_kv "$SECRET_PATH" "$VAULT_TOKEN"
   
   # creating allow-all policy
   create_policy "allow-all-$SECRET_PATH" "$SECRET_PATH/*" $VAULT_TOKEN
