@@ -126,7 +126,7 @@ testing direct definitions can be used but in a production environment credentia
 
 The secret provider can be accessed via a REST API using a role and a secret name. This secret name refers to a path in vault.
 At the movement operator shall not create any secrets in Kubernetes that contain any credentials and credentials shall only be maintained
-in memory. The fetching of secrets will be executed by the [datamover](https://github.ibm.com/data-mesh-research/datamover) component.
+in memory. The fetching of secrets will be executed by the [datamover]({{< mover_github_url >}}) component.
 The datamover component retrieves configuration from a JSON file that is passed on as a Kubernetes secret. 
 The goal is that vault paths can be specified in this JSON configuration file and will be substituted by values retrieved from the
 secret provider. The following example illustrates this mechanism:
@@ -367,10 +367,10 @@ The control layer of the data distribution is implemented following the operator
 
 # Relevant Code Repositories
 
-The [data distribution core libraries](https://github.ibm.com/data-mesh-research/datamover) that are Scala/Spark based
+The [data distribution core libraries]({{< mover_github_url >}}) that are Scala/Spark based
 
-The [data distribution operator](https://github.ibm.com/data-mesh-research/data-movement-operator) which is a Kubernetes
-operator written in go
+The [data distribution operator](https://{{< github_base >}}/{{< github_repo >}}) has been integrated into
+the mesh for data code and is part of the manager.
 
 
 # Roadmap

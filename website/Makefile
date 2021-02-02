@@ -13,6 +13,11 @@ CONNECTORS_PROTO := $(ROOT_DIR)/pkg/connectors/protos
 WEBSITE_BASEURL ?= https://ibm.github.io/the-mesh-for-data/
 WEBSITE_LOCAL_DIR ?= public
 
+.PHONY: server
+server: $(TOOLBIN)/hugo
+	$(ABSTOOLBIN)/hugo server --gc --minify \
+		--cleanDestinationDir --destination $(WEBSITE_LOCAL_DIR)
+
 .PHONY: gen-pages
 gen-pages: $(TOOLBIN)/hugo
 	$(ABSTOOLBIN)/hugo --gc --minify \
