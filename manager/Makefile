@@ -105,8 +105,6 @@ undeploy_mc: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/default/ku
 	$(TOOLBIN)/kustomize build --load_restrictor none config/movement-controller | $(TOOLBIN)/kubectl delete -f -
 
 deploy_it: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/default/kustomization.yaml 
-	make build-ca-certs
-	make deploy-custom-ca-secret
 	$(TOOLBIN)/kubectl create namespace ${KUBE_NAMESPACE} || true
 	$(TOOLBIN)/kubectl create namespace m4d-blueprints || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
@@ -115,8 +113,6 @@ deploy_it: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/default/kust
 	$(TOOLBIN)/kustomize build --load_restrictor none config/integration-tests | $(TOOLBIN)/kubectl apply -f -
 
 deploy_multi_it: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/default/kustomization.yaml
-	make build-ca-certs
-	make deploy-custom-ca-secret
 	$(TOOLBIN)/kubectl create namespace ${KUBE_NAMESPACE} || true
 	$(TOOLBIN)/kubectl create namespace m4d-blueprints || true
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME}
@@ -150,23 +146,6 @@ run-integration-tests: wait_for_manager
 
 .PHONY: main.deps
 main.deps: generate fmt vet manifests
-
-# Download CA certificates from manager image and add the CA certificate that was generated for the test.
-# This file is then uploaded to K8s as a secret and injected into the manager during deployment.
-# This way the image of the manger is not altered and still only contains the CA certificates from the base image.
-.PHONY: build-ca-certs
-build-ca-certs: $(TOOLBIN)/kubectl
-	rm $(ROOT_DIR)/hack/registry/ca-certificates.crt || true
-	# Hack to fetch CA certificates of base image
-	bash -c "docker cp $$(docker create --rm $(DOCKER_HOSTNAME)/$(DOCKER_NAMESPACE)/$(DOCKER_NAME):$(DOCKER_TAGNAME)):/etc/ssl/certs/ca-certificates.crt $(ROOT_DIR)/hack/registry/ca-certificates.crt"
-	cat $(ROOT_DIR)/hack/registry/themeshfordata-ca.crt >> $(ROOT_DIR)/hack/registry/ca-certificates.crt
-
-.PHONY: deploy-custom-ca-secret
-deploy-custom-ca-secret: $(TOOLBIN)/kubectl
-	$(ABSTOOLBIN)/kubectl create secret generic registry-ca-cert \
-		--from-file=../hack/registry/ca-certificates.crt \
-		--namespace ${KUBE_NAMESPACE} \
-		|| true
 
 DEBUG := ./debug.out
 

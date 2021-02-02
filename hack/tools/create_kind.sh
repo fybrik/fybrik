@@ -38,8 +38,6 @@ kind_create() {
     --image=kindest/node:$K8S_VERSION
   for node in $(kind get nodes --name $1); do
     bin/kubectl annotate node "${node}" "tilt.dev/registry=localhost:5000" --context kind-${1}
-    docker cp ../registry/themeshfordata-ca.crt "$node":/usr/local/share/ca-certificates
-    docker exec "$node" update-ca-certificates
   done
 }
 

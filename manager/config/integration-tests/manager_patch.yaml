@@ -31,13 +31,3 @@ spec:
           value: "false"
         - name: GODEBUG
           value: "x509ignoreCN=0"
-        volumeMounts:
-        - mountPath: /etc/ssl/certs/ca-certificates.crt
-          subPath: ca-certificates.crt
-          name: ca-cert
-          readOnly: true
-      volumes:
-      - name: ca-cert
-        secret:
-          defaultMode: 420
-          secretName: registry-ca-cert
