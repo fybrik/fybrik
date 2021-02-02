@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: integration-tests
-        image: alpine/socat:latest
+        image: alpine/socat:1.0.5
         command:
         - socat
         - TCP4-LISTEN:5000,fork
