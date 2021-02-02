@@ -20,11 +20,10 @@ import (
 // format into enforcement decisions format
 
 func TestMainOpaConnector(t *testing.T) {
-
-	timeOutSecs, catalogConnectorURL, opaServerUrl := tu.GetEnvironment()
+	timeOutSecs, catalogConnectorURL, opaServerURL := tu.GetEnvironment()
 	applicationContext := tu.GetApplicationContext("marketing")
 
-	srv := NewOpaReader(opaServerUrl)
+	srv := NewOpaReader(opaServerURL)
 	catalogReader := NewCatalogReader(catalogConnectorURL, timeOutSecs)
 	policiesDecisions, err := srv.GetOPADecisions(applicationContext, catalogReader)
 	assert.NilError(t, err)

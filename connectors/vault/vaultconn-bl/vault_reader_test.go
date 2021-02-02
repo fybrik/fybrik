@@ -23,7 +23,6 @@ func TestVaultConnectorNormalRun(t *testing.T) {
 
 	srv := &Server{}
 	appID := "mock-appID"
-	//datasetID := "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"f6d9bf8c-dd37-4747-bca9-8ca9d1a5bb8f\"}"
 	datasetID := "mock-datasetID"
 	objToSendForCredential := &pb.DatasetCredentialsRequest{AppId: appID, DatasetId: datasetID}
 
@@ -49,11 +48,9 @@ func TestVaultConnectorNormalRun(t *testing.T) {
 
 	connection.Client = client
 	userVaultPath := tu.GetEnvironment()
-	var vault vltutils.VaultConnection
-	vault = connection
 
 	fmt.Println("userVaultPath in vault_connector_test: ", userVaultPath)
-	credentialsInfo, _ := srv.GetCredentialsInfo(objToSendForCredential, vault, userVaultPath)
+	credentialsInfo, _ := srv.GetCredentialsInfo(objToSendForCredential, connection, userVaultPath)
 	expectedCredentials := tu.GetExpectedVaultCredentials(objToSendForCredential)
 	tu.EnsureDeepEqualCredentials(t, credentialsInfo, expectedCredentials)
 }
