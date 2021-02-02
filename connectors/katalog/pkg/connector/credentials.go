@@ -26,7 +26,7 @@ func (s *DataCredentialsService) GetCredentialsInfo(ctx context.Context, req *co
 	}
 
 	// Get the secret name from the asset
-	asset, err := getAsset(s.client, ctx, namespace, name)
+	asset, err := getAsset(ctx, s.client, namespace, name)
 	if err != nil {
 		return nil, err
 	}
