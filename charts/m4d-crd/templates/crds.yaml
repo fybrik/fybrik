@@ -1376,6 +1376,14 @@ spec:
                 changed.
               format: int64
               type: integer
+            provisionedStorage:
+              additionalProperties:
+                type: string
+              description: ProvisionedStorage maps a dataset (identified by DataSetID)
+                to the new provisioned bucket. It allows M4DApplication controller
+                to manage buckets in case the spec has been modified, an error has
+                occurred, or a delete event has been received.
+              type: object
             ready:
               description: Ready is true if a blueprint has been successfully orchestrated
               type: boolean
@@ -1439,6 +1447,8 @@ spec:
                   description: Actions are the data transformations that the module
                     supports
                   items:
+                    description: SupportedAction declares an action that the module
+                      supports (action identifier and its scope)
                     properties:
                       id:
                         type: string
@@ -1698,15 +1708,18 @@ spec:
             endpoint:
               description: Endpoint
               type: string
-            region:
-              description: Region
-              type: string
+            regions:
+              description: Regions
+              items:
+                type: string
+              minItems: 1
+              type: array
             secretRef:
               description: Secret including credentials for COS bucket
               type: string
           required:
           - endpoint
-          - region
+          - regions
           - secretRef
           type: object
         status:
