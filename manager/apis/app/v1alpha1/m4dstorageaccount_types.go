@@ -10,7 +10,8 @@ import (
 // M4DStorageAccountSpec defines the desired state of M4DStorageAccount
 type M4DStorageAccountSpec struct {
 	// +required
-	// Secret including credentials for COS bucket
+	// A name of k8s secret deployed in the control plane.
+	// This secret includes secretKey and accessKey credentials for S3 bucket
 	SecretRef string `json:"secretRef"`
 	// +required
 	// Endpoint
@@ -25,7 +26,8 @@ type M4DStorageAccountSpec struct {
 type M4DStorageAccountStatus struct {
 }
 
-// M4DStorageAccount defines a storage account used for copying data
+// M4DStorageAccount defines a storage account used for copying data.
+// Only S3 based storage is supported.
 // It contains endpoint, region and a reference to the credentials a
 // Owner of the asset is responsible to store the credentials
 // +kubebuilder:object:root=true

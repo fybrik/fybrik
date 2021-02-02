@@ -1,6 +1,11 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
+/*
+	This package defines an interface for managing dynamically allocated S3 buckets.
+	The current implementation manages buckets using Dataset resources.
+*/
+
 package storage
 
 import (
@@ -183,9 +188,9 @@ func (r *ProvisionTest) GetDatasetStatus(ref *types.NamespacedName) (*Provisione
 func (r *ProvisionTest) DeleteDataset(ref *types.NamespacedName) error {
 	newDatasets := []*ProvisionedBucket{}
 	found := false
-	message := "Datasets:\n"
+	errMessage := "The following datasets have been found:\n"
 	for _, d := range r.datasets {
-		message += " " + d.Name + "\n"
+		errMessage += " " + d.Name + "\n"
 		if d.Name == ref.Name {
 			found = true
 		} else {
@@ -196,5 +201,5 @@ func (r *ProvisionTest) DeleteDataset(ref *types.NamespacedName) error {
 		r.datasets = newDatasets
 		return nil
 	}
-	return errors.New("Could not delete a dataset: " + ref.Name + "\n" + message)
+	return errors.New("Could not delete a dataset " + ref.Name + "\n" + errMessage)
 }
