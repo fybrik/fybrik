@@ -10,14 +10,9 @@ CHART=banzaicloud-stable/vault-operator
 
 deploy() {
     kubectl create namespace $KUBE_NAMESPACE 2>/dev/null || true
-
-    $WITHOUT_OPENSHIFT || kubectl apply -f vault-openshift.yaml -n $KUBE_NAMESPACE
-
-    helm repo add $REPO $URL
-    helm upgrade --install $RELEASE $CHART -n $KUBE_NAMESPACE
-
-    kubectl apply -f vault-rbac.yaml -n $KUBE_NAMESPACE
-    kubectl apply -f vault.yaml -n $KUBE_NAMESPACE
+    cd ../../charts/
+    make vault
+    kubectl create secret generic vault-unseal-keys --from-literal=vault-root=root -n $KUBE_NAMESPACE
 }
 
 deploy-wait() {

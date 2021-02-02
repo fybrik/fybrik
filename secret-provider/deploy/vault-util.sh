@@ -110,7 +110,7 @@ enable_userpass_auth() {
 # $2 - path
 # $3 - vault-token
 create_policy() {
-  echo "creating policy $1, to access the secrets in: $2 "
+  echo "creating policy $1, to access the secrets in: $2 $3 "
   curl \
     --header "X-Vault-Token: $3" \
     --request PUT \
@@ -139,7 +139,9 @@ configure_path() {
   export VAULT_TOKEN=$(kubectl get secrets vault-unseal-keys -n $KUBE_NAMESPACE -o jsonpath={.data.vault-root} | base64 --decode)
   
   # Enabling kv
-  enable_kv "$SECRET_PATH" "$VAULT_TOKEN"
+  # Vault dev mode is initiated with Key Value store mounted at secret/ path.
+  # (https://www.vaultproject.io/docs/concepts/dev-server)
+  # enable_kv "$SECRET_PATH" "$VAULT_TOKEN"
   
   # creating allow-all policy
   create_policy "allow-all-$SECRET_PATH" "$SECRET_PATH/*" $VAULT_TOKEN
