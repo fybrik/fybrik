@@ -4,6 +4,12 @@
 /*
 	This package defines an interface for managing dynamically allocated S3 buckets.
 	The current implementation manages buckets using Dataset resources.
+	Convention: Dataset resources have the same name as the name of the provisioned bucket.
+	The following functionality is supported:
+	- allocating a bucket
+	- checking allocation status
+	- deleting a temporary bucket
+	- marking a bucket as persistent (will not be removed upon Dataset deletion)
 */
 
 package storage
