@@ -29,7 +29,7 @@ func (s *DataCatalogService) GetDatasetInfo(ctx context.Context, req *connectors
 	if err != nil {
 		return nil, err
 	}
-	asset, err := s.getAsset(ctx, namespace, name)
+	asset, err := getAsset(s.client, ctx, namespace, name)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func buildDataStore(asset *Asset) (*connectors.DataStore, error) {
 	}
 }
 
-func (s *DataCatalogService) getAsset(ctx context.Context, namespace string, name string) (*Asset, error) {
+func getAsset(client kclient.Client, ctx context.Context, namespace string, name string) (*Asset, error) {
 	// Read asset as unstructured
 	object := &unstructured.Unstructured{}
 	object.SetGroupVersionKind(schema.GroupVersionKind{Group: GroupVersion.Group, Version: GroupVersion.Version, Kind: "Asset"})
@@ -139,7 +139,7 @@ func (s *DataCatalogService) getAsset(ctx context.Context, namespace string, nam
 		return nil, err
 	}
 
-	err = s.client.Get(ctx, objectKey, object)
+	err = client.Get(ctx, objectKey, object)
 	if err != nil {
 		return nil, err
 	}

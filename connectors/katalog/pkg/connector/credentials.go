@@ -25,11 +25,19 @@ func (s *DataCredentialsService) GetCredentialsInfo(ctx context.Context, req *co
 		return nil, err
 	}
 
+	// Get the secret name from the asset
+	asset, err := getAsset(s.client, ctx, namespace, name)
+	if err != nil {
+		return nil, err
+	}
+
+	secretName := asset.Spec.SecretRef.Name
+
 	// Read the secret
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: namespace,
-			Name:      name,
+			Name:      secretName,
 		},
 	}
 	objectKey, err := kclient.ObjectKeyFromObject(secret)
