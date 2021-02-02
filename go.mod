@@ -37,9 +37,6 @@ require (
 	gopkg.in/yaml.v2 v2.3.0
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.2.4
-	istio.io/api v0.0.0-20200723170824-3c2193e74947 // indirect
-	istio.io/client-go v0.0.0-20200128004641-c87542c7dc1d
-	istio.io/gogo-genproto v0.0.0-20191009201739-17d570f95998 // indirect
 	k8s.io/api v0.18.6
 	k8s.io/apimachinery v0.18.6
 	k8s.io/cli-runtime v0.18.4
