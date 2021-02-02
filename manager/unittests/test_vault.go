@@ -140,7 +140,7 @@ func main() {
 	}
 
 	identity := "/role/demo"
-	err = utils.LinkVaultPolicyToIdentity(identity, policyName, vaultClient)
+	err = utils.LinkVaultPolicyToIdentity(identity, policyName, "secret-provider", utils.GetSystemNamespace(), vaultClient)
 	if err != nil {
 		log.Println("      Failed adding policy to identity " + identity + ": " + err.Error())
 	} else {
