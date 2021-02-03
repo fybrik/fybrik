@@ -407,8 +407,8 @@ spec:
     spec:
       containers:
       - args:
-      {{- if .Values.extraArgs }}
-{{ toYaml .Values.extraArgs | indent 8 }}
+      {{- if .Values.manager.extraArgs }}
+{{ toYaml .Values.manager.extraArgs | indent 8 }}
       {{- end }}
         env:
         - name: VAULT_TOKEN
@@ -419,13 +419,13 @@ spec:
         - name: ENABLE_WEBHOOKS
           value: "true"
         - name: MOVER_IMAGE
-          value: {{ .Values.image.mover }}
+          value: {{ include "m4d.image" ( tuple $ .Values.mover ) }}
         - name: IMAGE_PULL_POLICY
           value: Always
-      {{- if .Values.extraEnvs }}
-{{ toYaml .Values.extraEnvs | indent 8 }}
+      {{- if .Values.manager.extraEnvs }}
+{{ toYaml .Values.manager.extraEnvs | indent 8 }}
       {{- end }}
-        image: {{ .Values.image.manager }}
+        image: {{ include "m4d.image" ( tuple $ .Values.manager ) }}
         imagePullPolicy: Always
         name: manager
         resources:
