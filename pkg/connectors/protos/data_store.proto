@@ -1,0 +1,52 @@
+// Copyright 2020 IBM Corp.
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package connectors;
+option java_package = "com.datmesh";
+
+message Db2DataStore {
+    string url = 1;
+    string database = 2;
+    string table = 3;       // reformat to SCHEMA.TABLE struct
+    string port = 4;
+    string ssl = 5;          //Note that bool value if set to "false" does not appear in the struct at all
+}
+
+message S3DataStore {
+    string endpoint = 1;
+    string bucket = 2;
+    string object_key = 3; //can be object name or the prefix for dataset
+    string region = 4;     // WKC does not return it, it will stay empty in our case!!!
+}
+
+message KafkaDataStore {
+    string topic_name = 1;
+    string bootstrap_servers = 2;
+    string schema_registry = 3;
+    string key_deserializer = 4;
+    string value_deserializer = 5;
+    string security_protocol = 6;
+    string sasl_mechanism = 7;
+    string ssl_truststore = 8;
+    string ssl_truststore_password = 9;
+}
+
+message DataStore {
+    enum DataStoreType {
+        UNKNOWN = 0;
+        LOCAL = 1;
+        S3 = 2;
+        DB2 = 3;
+        KAFKA = 4;
+    }
+
+    DataStoreType type = 1;
+    string name = 2;      //for auditing and readability. Can be same as location type or can have more info if availble from catalog
+    // oneof location {   // should have been oneof but for technical rasons, a problem to translate it to JSON, we remove the oneof for now
+    //should have been local, db2, s3 without "location"  but had a problem to compile it in proto - collision with proto name DataLocationDb2
+    Db2DataStore db2 = 3;
+    S3DataStore  s3 = 4;
+    KafkaDataStore kafka = 5;
+}
