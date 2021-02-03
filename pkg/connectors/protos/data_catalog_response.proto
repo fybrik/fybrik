@@ -7,39 +7,7 @@ package connectors;
 option java_package = "com.datmesh";
 option go_package = "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf";
 
-import "data_store.proto";
-
-message DataComponentMetadata {
-    string component_type = 1; // e.g., column
-
-    //Named terms, that exist in Catalog toxonomy and the values for these terms
-    //for columns we will have "SchemaDetails" key, that will include technical schema details for this column
-    //TODO: Consider create special field for schema outside of metadata
-    map<string, string> named_metadata= 2;
-
-    //Tags - can be any free text added to a component (no taxonomy)
-	repeated string	tags = 3;
-}
-
-message DatasetMetadata {
-    map<string, string> dataset_named_metadata= 1;
-
-    //Tags - can be any free text added to a component (no taxonomy)
-	repeated string	dataset_tags = 2;
-
-    //metadata for each component in asset. In tabular data each column is a component, then we will have: column name -> column metadata
-	map<string, DataComponentMetadata>  components_metadata = 3;
-}
-
-message DatasetDetails {
-    string name = 1;            //name in Catalog
-    string data_owner = 2;       //inforamtion on the owner of data asset - can have different formats for different catalogs
-    DataStore data_store = 3;    //All info about the data store
-    string data_format = 4;
-    string geo = 5;             //geography location where data resides (if this information available)
-    //LocationType locationType = 10;  //publicCloud/privateCloud etc. Should be filled later when we understand better if we have a closed set of values and how they are used.
-    DatasetMetadata  metadata = 7;
-}
+import "dataset_details.proto";
 
 message CatalogDatasetInfo {
     string dataset_id = 1;

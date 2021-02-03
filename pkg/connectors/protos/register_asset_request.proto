@@ -8,11 +8,10 @@ option java_package = "com.datmesh";
 option go_package = "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf";
 
 import "credentials.proto";
-import "data_store.proto";
+import "dataset_details.proto";
 
 message RegisterAssetRequest {
-    string dataset_id = 1;           // identifier of the bucket created for registering asset
-	Credentials creds = 2;
-	DataStore data_store = 3; 	
-	string destination_catalog_id = 4;
+	Credentials creds = 1;
+	DatasetDetails dataset_details = 2; 	
+	string destination_catalog_id = 3;
 }
