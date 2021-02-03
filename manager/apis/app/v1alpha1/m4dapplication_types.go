@@ -201,3 +201,9 @@ type M4DApplicationList struct {
 func init() {
 	SchemeBuilder.Register(&M4DApplication{}, &M4DApplicationList{})
 }
+
+const (
+	ApplicationClusterLabel = "app.m4d.ibm.com/app_cluster"
+	ApplicationNamespaceLabel = "app.m4d.ibm.com/app_namespace"
+	ApplicationNameLabel = "app.m4d.ibm.com/app_name"
+)

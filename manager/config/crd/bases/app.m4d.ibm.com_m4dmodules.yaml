@@ -154,7 +154,7 @@ spec:
                 values:
                   additionalProperties:
                     type: string
-                  description: Values to pass to helm chart insallation
+                  description: Values to pass to helm chart installation
                   type: object
               required:
               - name

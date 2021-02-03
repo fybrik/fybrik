@@ -162,7 +162,7 @@ type ChartSpec struct {
 	// +required
 	Name string `json:"name"`
 
-	// Values to pass to helm chart insallation
+	// Values to pass to helm chart installation
 	// +optional
 	Values map[string]string `json:"values,omitempty"`
 }
