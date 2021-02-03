@@ -22,6 +22,8 @@ import (
 
 type DataCatalogService struct {
 	client kclient.Client
+
+	connectors.UnimplementedDataCatalogServiceServer
 }
 
 func (s *DataCatalogService) GetDatasetInfo(ctx context.Context, req *connectors.CatalogDatasetRequest) (*connectors.CatalogDatasetInfo, error) {
