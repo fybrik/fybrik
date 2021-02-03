@@ -254,7 +254,7 @@ func GetDatasetVaultPath(assetID string) string {
 
 func GetSecretPath(assetID string) string {
 	secretName := "/v1/" + GetVaultDatasetHome() + assetID
-	return secretName
+        return fmt.Sprintf("%s", url.QueryEscape(secretName))
 }
 
 // InitVaultAuth initiates the authentication mechanism used to obtain vault tokens.
