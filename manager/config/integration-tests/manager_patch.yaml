@@ -12,26 +12,22 @@ spec:
   template:
     spec:
       containers:
+      - name: integration-tests
+        image: alpine/socat:latest
+        command:
+        - socat
+        - TCP4-LISTEN:5000,fork
+        - TCP4:kind-registry:5000
       - name: manager
         imagePullPolicy: Always
         env:
         - name: ENABLE_WEBHOOKS
           value: "true"
         - name: MOVER_IMAGE
-          value: "kind-registry:5000/m4d-system/dummy-mover:latest"
+          value: "localhost:5000/m4d-system/dummy-mover:latest"
         - name: IMAGE_PULL_POLICY
           value: "IfNotPresent"
         - name: NO_FINALIZER
           value: "false"
         - name: GODEBUG
           value: "x509ignoreCN=0"
-        volumeMounts:
-        - mountPath: /etc/ssl/certs/ca-certificates.crt
-          subPath: ca-certificates.crt
-          name: ca-cert
-          readOnly: true
-      volumes:
-      - name: ca-cert
-        secret:
-          defaultMode: 420
-          secretName: registry-ca-cert

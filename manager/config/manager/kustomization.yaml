@@ -7,5 +7,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: ghcr.io/the-mesh-for-data/manager
+  newName: localhost:5000/m4d-system/manager
   newTag: latest
