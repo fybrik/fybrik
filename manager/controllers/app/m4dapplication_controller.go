@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
@@ -92,7 +93,6 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		if result, err := r.reconcile(applicationContext); err != nil {
 			// another attempt will be done
 			// users should be informed in case of errors
-			_ = r.deleteExternalResources(applicationContext)
 			if !equality.Semantic.DeepEqual(&applicationContext.Status, observedStatus) {
 				// ignore an update error, a new reconcile will be made in any case
 				_ = r.Client.Status().Update(ctx, applicationContext)
@@ -319,6 +319,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		if !res.Provisioned {
 			ready = false
 			r.Log.V(0).Info("No bucket has been provisioned for " + id)
+			// TODO(shlomitk1): analyze the error
 			if res.ErrorMsg != "" {
 				allocErr = errors.New(res.ErrorMsg)
 			}
@@ -326,7 +327,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		}
 	}
 	if !ready {
-		return ctrl.Result{}, allocErr
+		return ctrl.Result{RequeueAfter: 2 * time.Second}, allocErr
 	}
 	// generate blueprint specifications (per cluster)
 	blueprintPerClusterMap := r.GenerateBlueprints(instances, applicationContext)
