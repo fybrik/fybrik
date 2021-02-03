@@ -21,9 +21,9 @@ import (
 // most of the code in this file unnecessary.
 
 type DataCatalogService struct {
-	client kclient.Client
-
 	connectors.UnimplementedDataCatalogServiceServer
+
+	client kclient.Client
 }
 
 func (s *DataCatalogService) GetDatasetInfo(ctx context.Context, req *connectors.CatalogDatasetRequest) (*connectors.CatalogDatasetInfo, error) {

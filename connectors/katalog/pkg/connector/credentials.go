@@ -16,9 +16,9 @@ import (
 )
 
 type DataCredentialsService struct {
-	client kclient.Client
-
 	connectors.UnimplementedDataCredentialServiceServer
+
+	client kclient.Client
 }
 
 func (s *DataCredentialsService) GetCredentialsInfo(ctx context.Context, req *connectors.DatasetCredentialsRequest) (*connectors.DatasetCredentials, error) {
