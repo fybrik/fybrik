@@ -94,7 +94,7 @@ func createModules() {
 				},
 			},
 			Chart: apiv1alpha1.ChartSpec{
-				Name: "kind-registry:5000/m4d-system/m4d-template:0.1.0",
+				Name: "localhost:5000/m4d-system/m4d-template:0.1.0",
 			},
 		},
 	}
