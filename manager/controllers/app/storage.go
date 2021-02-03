@@ -55,6 +55,6 @@ func AllocateBucket(c client.Client, log logr.Logger, owner types.NamespacedName
 }
 
 func generateDatasetName(owner types.NamespacedName, id string) string {
-	name := id + "-" + owner.Name + "-" + owner.Namespace
+	name := owner.Name + "-" + owner.Namespace + utils.Hash(id, 10)
 	return utils.K8sConformName(name)
 }

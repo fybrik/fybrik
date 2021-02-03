@@ -5,7 +5,7 @@ go 1.13
 require (
 	cloud.google.com/go v0.66.0 // indirect
 	emperror.dev/errors v0.7.0
-	github.com/IBM/dataset-lifecycle-framework/src/dataset-operator v0.0.0-20210127162045-320890158564
+	github.com/IBM/dataset-lifecycle-framework/src/dataset-operator v0.0.0-20210201112050-4d77ac693ac1
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/satcon-client-go v0.0.0-20210107134702-1be071817792
 	github.com/Microsoft/go-winio v0.4.15 // indirect

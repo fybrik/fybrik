@@ -106,8 +106,8 @@ github.com/DataDog/datadog-go v2.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/Djarvur/go-err113 v0.0.0-20200511133814-5174e21577d5/go.mod h1:4UJr5HIiMZrwgkSPdsjy2uOQExX/WEILpIrO9UPGuXs=
 github.com/GoogleCloudPlatform/k8s-cloud-provider v0.0.0-20190822182118-27a4ced34534/go.mod h1:iroGtC8B3tQiqtds1l+mgk/BBOrxbqjH+eUfFQYRc14=
-github.com/IBM/dataset-lifecycle-framework/src/dataset-operator v0.0.0-20210127162045-320890158564 h1:WMi9Mz3WpkcYUofxOZVON2WdlSZXLy5Joi4nISz1OS0=
-github.com/IBM/dataset-lifecycle-framework/src/dataset-operator v0.0.0-20210127162045-320890158564/go.mod h1:0PMq2AjWBeGhpdOchqu8441DFCuWqqNop12/SeGscsw=
+github.com/IBM/dataset-lifecycle-framework/src/dataset-operator v0.0.0-20210201112050-4d77ac693ac1 h1:26gKoANvqMHsTB4vbzaaCNKzuteNWJoNGrxXJ2DDeW4=
+github.com/IBM/dataset-lifecycle-framework/src/dataset-operator v0.0.0-20210201112050-4d77ac693ac1/go.mod h1:0PMq2AjWBeGhpdOchqu8441DFCuWqqNop12/SeGscsw=
 github.com/IBM/go-sdk-core v1.1.0 h1:pV73lZqr9r1xKb3h08c1uNG3AphwoV5KzUzhS+pfEqY=
 github.com/IBM/go-sdk-core v1.1.0/go.mod h1:2pcx9YWsIsZ3I7kH+1amiAkXvLTZtAq9kbxsfXilSoY=
 github.com/IBM/go-sdk-core/v4 v4.8.0 h1:QA0GedzHgdvoCPxREItrfAWb5NMTnZjM3i7fEqC19Kg=
