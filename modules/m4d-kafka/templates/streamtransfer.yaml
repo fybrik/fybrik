@@ -31,6 +31,7 @@ spec:
       dataFormat: "{{ .Values.copy.destination.format }}"
       vaultPath: "{{ .Values.copy.destination.credentialLocation }}"
   transformation:
+  {{ if .Values.copy.transformations }}
   {{ range .Values.copy.transformations }}
   {{ if eq .id "redact-ID" }}
   - action: "RedactColumns"
@@ -43,6 +44,7 @@ spec:
   - action: "RemoveColumns"
     name: "redacting column: {{ .args.column_name }}"
     columns: [ "{{ .args.column_name }}" ]
+  {{ end }}
   {{ end }}
   {{ end }}
   triggerInterval: "10 seconds"
