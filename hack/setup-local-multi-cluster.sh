@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # This script is meant for local development with kind
 
-export DOCKER_HOSTNAME=kind-registry:5000
+export DOCKER_HOSTNAME=localhost:5000
 export DOCKER_NAMESPACE=m4d-system
 export HELM_EXPERIMENTAL_OCI=1
 

@@ -9,4 +9,4 @@ resources:
 - secret-provider-rbac.yaml
 images:
 - name: secret-provider
-  newName: kind-registry:5000/m4d-system/secret-provider
+  newName: localhost:5000/m4d-system/secret-provider

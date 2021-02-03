@@ -82,7 +82,7 @@ spec:
       name: "encrypt"
       level: 2 # column
   chart:
-    name: kind-registry:5000/m4d-system/m4d-db2wh:0.1.0
+    name: localhost:5000/m4d-system/m4d-db2wh:0.1.0
     values:
       image: ghcr.io/the-mesh-for-data/mover:latest
   statusIndicators:

@@ -31,7 +31,7 @@ spec:
       algo: md5
   secretProviderURL: "http://secret-provider.secret-provider.svc.cluster.local:5555/get-secret"
   secretProviderRole: demo
-  image: kind-registry:5000/m4d-system/dummy-mover:latest
+  image: localhost:5000/m4d-system/dummy-mover:latest
   imagePullPolicy: "IfNotPresent"
   maxFailedRetries: 0
   successfulJobHistoryLimit: 3
