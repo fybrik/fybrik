@@ -21,6 +21,8 @@ import (
 // most of the code in this file unnecessary.
 
 type DataCatalogService struct {
+	connectors.UnimplementedDataCatalogServiceServer
+
 	client kclient.Client
 }
 

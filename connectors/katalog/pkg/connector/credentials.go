@@ -16,6 +16,8 @@ import (
 )
 
 type DataCredentialsService struct {
+	connectors.UnimplementedDataCredentialServiceServer
+
 	client kclient.Client
 }
 
