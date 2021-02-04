@@ -33,12 +33,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const (
-	// OwnerLabelKey is a key to Labels map.
-	// All owned resources should be labeled using this key.
-	OwnerLabelKey string = "m4d.ibm.com/owner"
-)
-
 // M4DApplicationReconciler reconciles a M4DApplication object
 type M4DApplicationReconciler struct {
 	client.Client
@@ -388,15 +382,15 @@ func (r *M4DApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			if labels == nil {
 				return []reconcile.Request{}
 			}
-			label, ok := labels[OwnerLabelKey]
-			namespaced := strings.Split(label, ".")
-			if !ok || len(namespaced) != 2 {
+			namespace, foundNamespace := labels[app.ApplicationNamespaceLabel]
+			name, foundName := labels[app.ApplicationNameLabel]
+			if !foundNamespace || !foundName {
 				return []reconcile.Request{}
 			}
 			return []reconcile.Request{
 				{NamespacedName: types.NamespacedName{
-					Name:      namespaced[1],
-					Namespace: namespaced[0],
+					Name:      name,
+					Namespace: namespace,
 				}},
 			}
 		})
@@ -424,9 +418,8 @@ func AnalyzeError(app *app.M4DApplication, log logr.Logger, assetID string, err 
 
 func ownerLabels(id types.NamespacedName) map[string]string {
 	return map[string]string{
-		OwnerLabelKey: id.Namespace + "." + id.Name,
 		app.ApplicationNamespaceLabel: id.Namespace,
-		app.ApplicationNameLabel: id.Name,
+		app.ApplicationNameLabel:      id.Name,
 	}
 }
 
