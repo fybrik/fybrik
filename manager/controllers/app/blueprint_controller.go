@@ -161,9 +161,9 @@ func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.
 	}
 	labels := map[string]string{
 		app.ApplicationNamespaceLabel: blueprint.Labels[app.ApplicationNamespaceLabel],
-		app.ApplicationNameLabel: blueprint.Labels[app.ApplicationNameLabel],
-		app.BlueprintNamespaceLabel: kubeNamespace,
-		app.BlueprintNameLabel: blueprint.Name,
+		app.ApplicationNameLabel:      blueprint.Labels[app.ApplicationNameLabel],
+		app.BlueprintNamespaceLabel:   kubeNamespace,
+		app.BlueprintNameLabel:        blueprint.Name,
 	}
 	SetMapField(args, "labels", labels)
 	nbytes, _ := yaml.Marshal(args)

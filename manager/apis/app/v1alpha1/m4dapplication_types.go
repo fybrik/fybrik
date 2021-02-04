@@ -208,7 +208,7 @@ func init() {
 }
 
 const (
-	ApplicationClusterLabel = "app.m4d.ibm.com/appCluster"
+	ApplicationClusterLabel   = "app.m4d.ibm.com/appCluster"
 	ApplicationNamespaceLabel = "app.m4d.ibm.com/appNamespace"
-	ApplicationNameLabel = "app.m4d.ibm.com/appName"
+	ApplicationNameLabel      = "app.m4d.ibm.com/appName"
 )

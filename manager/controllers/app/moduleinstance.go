@@ -70,7 +70,7 @@ Updates to add ingest:
 func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInterface *app.InterfaceDetails, geo string) (*app.DataStore, error) {
 	// provisioned storage for COPY
 	originalAssetName := item.DataDetails.Name
-	var bucket *storage.ProvisionedBucket = nil
+	var bucket *storage.ProvisionedBucket
 	var err error
 	if bucket, err = AllocateBucket(m.Client, m.Log, m.Owner, originalAssetName, geo); err != nil {
 		return nil, err
@@ -233,7 +233,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 		Format:             string(item.DataDetails.Interface.DataFormat),
 	}
 	// DataStore for destination will be determined if an implicit copy is required
-	var sinkDataStore *app.DataStore = nil
+	var sinkDataStore *app.DataStore
 
 	var readSelector, copySelector *modules.Selector
 	if readSelector, err = m.selectReadModule(item, appContext); err != nil {
