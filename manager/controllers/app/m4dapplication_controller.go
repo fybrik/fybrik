@@ -423,7 +423,11 @@ func AnalyzeError(app *app.M4DApplication, log logr.Logger, assetID string, err 
 }
 
 func ownerLabels(id types.NamespacedName) map[string]string {
-	return map[string]string{OwnerLabelKey: id.Namespace + "." + id.Name}
+	return map[string]string{
+		OwnerLabelKey: id.Namespace + "." + id.Name,
+		app.ApplicationNamespaceLabel: id.Namespace,
+		app.ApplicationNameLabel: id.Name,
+	}
 }
 
 // GetAllModules returns all CRDs of the kind M4DModule mapped by their name

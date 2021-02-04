@@ -6,6 +6,9 @@ kind: Blueprint
 metadata:
   name: blueprint-ysqxbhyihk
   namespace: default
+  labels:
+    app.m4d.ibm.com/appNamespace: default
+    app.m4d.ibm.com/appName: notebook
 spec:
   selector:
     matchLabels:

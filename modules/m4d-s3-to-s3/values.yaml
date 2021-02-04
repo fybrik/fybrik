@@ -5,6 +5,13 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# blueprint_namespace: default
+# blueprint_name: mybp
+# app_name:
+# app_namespace:
+# app_cluster:
+labels: {}
+
 image: "ghcr.io/the-mesh-for-data/mover:latest"
 imagePullPolicy: null
 noFinalizer: "false"

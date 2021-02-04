@@ -89,6 +89,9 @@ func TestPlotterController(t *testing.T) {
 	dummyManager.DeployedBlueprints["kind-kind"].Status.ObservedState.Ready = true
 	dummyManager.DeployedBlueprints["kind-kind"].Status.ObservedState.DataAccessInstructions = "nop"
 
+	deployedBp := dummyManager.DeployedBlueprints["kind-kind"]
+	g.Expect(deployedBp.Labels[app.ApplicationNamespaceLabel]).To(gomega.Equal("default"))
+	g.Expect(deployedBp.Labels[app.ApplicationNameLabel]).To(gomega.Equal("notebook"))
 	res, err = r.Reconcile(req)
 	g.Expect(err).To(gomega.BeNil())
 

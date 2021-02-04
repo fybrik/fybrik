@@ -3,6 +3,7 @@ all: helm-all
 
 ROOT_DIR := ../..
 DOCKER_NAME := m4d-db2wh
+DOCKER_TAGNAME := 0.1.0
 HELM_VALUES := \
 	--values values.yaml.sample \
 	--set image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/mover:${DOCKER_TAGNAME}

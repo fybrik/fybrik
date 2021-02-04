@@ -151,13 +151,21 @@ func (r *BlueprintReconciler) hasExternalResources(blueprint *app.Blueprint) boo
 	return false
 }
 
-func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.ChartSpec, args map[string]interface{}, kubeNamespace string, releaseName string) (ctrl.Result, error) {
+func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.ChartSpec, args map[string]interface{}, blueprint *app.Blueprint, releaseName string) (ctrl.Result, error) {
 	log.Info(fmt.Sprintf("--- Chart Ref ---\n\n%v\n\n", chartSpec.Name))
+	kubeNamespace := blueprint.Namespace
 
 	args = CopyMap(args)
 	for k, v := range chartSpec.Values {
 		SetMapField(args, k, v)
 	}
+	labels := map[string]string{
+		app.ApplicationNamespaceLabel: blueprint.Labels[app.ApplicationNamespaceLabel],
+		app.ApplicationNameLabel: blueprint.Labels[app.ApplicationNameLabel],
+		app.BlueprintNamespaceLabel: kubeNamespace,
+		app.BlueprintNameLabel: blueprint.Name,
+	}
+	SetMapField(args, "labels", labels)
 	nbytes, _ := yaml.Marshal(args)
 	log.Info(fmt.Sprintf("--- Values.yaml ---\n\n%s\n\n", nbytes))
 
@@ -262,7 +270,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
 			// Process templates with arguments
 			chart := templateSpec.Chart
-			if _, err := r.applyChartResource(log, chart, args, blueprint.Namespace, releaseName); err != nil {
+			if _, err := r.applyChartResource(log, chart, args, blueprint, releaseName); err != nil {
 				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
 			}
 		} else if rel.Info.Status == release.StatusDeployed {

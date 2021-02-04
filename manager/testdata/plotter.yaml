@@ -6,6 +6,9 @@ kind: Plotter
 metadata:
   name: plotter
   namespace: m4d-system
+  labels:
+    app.m4d.ibm.com/appNamespace: default
+    app.m4d.ibm.com/appName: notebook
 spec:
   blueprints:
     kind-kind:

@@ -205,3 +205,8 @@ func CreateMetaBlueprintWithoutState(blueprint *Blueprint) MetaBlueprint {
 	}
 	return metaBlueprint
 }
+
+const (
+	BlueprintNamespaceLabel = "app.m4d.ibm.com/blueprintNamespace"
+	BlueprintNameLabel = "app.m4d.ibm.com/blueprintName"
+)
