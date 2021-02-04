@@ -159,10 +159,13 @@ func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.
 	for k, v := range chartSpec.Values {
 		SetMapField(args, k, v)
 	}
-	SetMapField(args, "blueprint_namespace", kubeNamespace)
-	SetMapField(args, "blueprint_name", blueprint.Name)
-	SetMapField(args, "app_name", blueprint.Labels[app.ApplicationNameLabel])
-	SetMapField(args, "app_namespace", blueprint.Labels[app.ApplicationNamespaceLabel])
+	labels := map[string]string{
+		app.ApplicationNamespaceLabel: blueprint.Labels[app.ApplicationNamespaceLabel],
+		app.ApplicationNameLabel: blueprint.Labels[app.ApplicationNameLabel],
+		app.BlueprintNamespaceLabel: kubeNamespace,
+		app.BlueprintNameLabel: blueprint.Name,
+	}
+	SetMapField(args, "labels", labels)
 	nbytes, _ := yaml.Marshal(args)
 	log.Info(fmt.Sprintf("--- Values.yaml ---\n\n%s\n\n", nbytes))
 
