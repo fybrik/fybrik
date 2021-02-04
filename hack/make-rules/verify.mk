@@ -74,7 +74,7 @@ GOLINT_LINTERS ?= \
 CODE_MAINT += lint
 .PHONY: lint
 lint: $(TOOLBIN)/golangci-lint
-	$(TOOLBIN)/golangci-lint run ${GOLINT_LINTERS} ./...
+	$(TOOLBIN)/golangci-lint run ${GOLINT_LINTERS} --timeout=5m ./...
 
 .PHONY: lint-fix
 lint-fix: $(TOOLBIN)/golangci-lint
