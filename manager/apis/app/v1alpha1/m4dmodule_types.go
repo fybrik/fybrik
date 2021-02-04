@@ -79,6 +79,7 @@ type Dependency struct {
 	Name string `json:"name"`
 }
 
+// SupportedAction declares an action that the module supports (action identifier and its scope)
 type SupportedAction struct {
 	// +required
 	ID string `json:"id,omitempty"`

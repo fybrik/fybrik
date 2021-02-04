@@ -35,7 +35,7 @@ func GetSystemNamespace() string {
 			return ns
 		}
 	}
-	return "default"
+	return "m4d-system"
 }
 
 // GetSecretProviderURL returns the path to secret provider

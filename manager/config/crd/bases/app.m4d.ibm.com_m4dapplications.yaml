@@ -199,6 +199,11 @@ spec:
               description: ObservedGeneration is taken from the M4DApplication metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether the Blueprint status changed.
               format: int64
               type: integer
+            provisionedStorage:
+              additionalProperties:
+                type: string
+              description: ProvisionedStorage maps a dataset (identified by DataSetID) to the new provisioned bucket. It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received.
+              type: object
             ready:
               description: Ready is true if a blueprint has been successfully orchestrated
               type: boolean

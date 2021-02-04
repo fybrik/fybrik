@@ -4,8 +4,8 @@
 package app
 
 import (
+	"emperror.dev/errors"
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
@@ -30,20 +30,13 @@ func ConstructApplicationContext(datasetID string, input *app.M4DApplication, op
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
-func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, input *app.M4DApplication, op *pb.AccessOperation) (modules.Operations, error) {
+func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, input *app.M4DApplication, op *pb.AccessOperation) ([]*pb.EnforcementAction, error) {
 	// call external policy manager to get governance instructions for this operation
 	appContext := ConstructApplicationContext(datasetID, input, op)
 	pcresponse, err := policyCompiler.GetPoliciesDecisions(appContext)
+	actions := []*pb.EnforcementAction{}
 	if err != nil {
-		return modules.Operations{}, err
-	}
-
-	// initialize Actions structure
-	res := modules.Operations{
-		Allowed:            true,
-		Message:            "",
-		Geo:                op.Destination,
-		EnforcementActions: []*pb.EnforcementAction{},
+		return actions, err
 	}
 
 	for _, datasetDecision := range pcresponse.GetDatasetDecisions() {
@@ -55,22 +48,21 @@ func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, 
 			enforcementActions := operationDecision.GetEnforcementActions()
 			for _, action := range enforcementActions {
 				if utils.IsDenied(action.GetName()) {
-					res.Allowed = false
+					var message string
 					switch operationDecision.Operation.Type {
 					case pb.AccessOperation_READ:
-						res.Message = app.ReadAccessDenied
+						message = app.ReadAccessDenied
 					case pb.AccessOperation_WRITE:
-						res.Message = app.WriteNotAllowed
+						message = app.WriteNotAllowed
 					}
-					return res, nil
+					return actions, errors.New(message)
 				}
-				res.Allowed = true
 				// Check if this is a real action (i.e. not Allow)
 				if utils.IsAction(action.GetName()) {
-					res.EnforcementActions = append(res.EnforcementActions, action)
+					actions = append(actions, action)
 				}
 			}
 		}
 	}
-	return res, nil
+	return actions, nil
 }

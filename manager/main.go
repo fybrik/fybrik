@@ -11,6 +11,7 @@ import (
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/razee"
+	"github.com/ibm/the-mesh-for-data/pkg/storage"
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/motion"
 
@@ -22,6 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
+	comv1alpha1 "github.com/IBM/dataset-lifecycle-framework/src/dataset-operator/pkg/apis/com/v1alpha1"
 	appv1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app"
@@ -41,6 +43,7 @@ func init() {
 
 	_ = motionv1.AddToScheme(scheme)
 	_ = appv1.AddToScheme(scheme)
+	_ = comv1alpha1.SchemeBuilder.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -127,7 +130,7 @@ func main() {
 		policyCompiler := pc.NewPolicyCompiler()
 
 		// Initiate the M4DApplication Controller
-		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, clusterManager)
+		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
 			os.Exit(1)

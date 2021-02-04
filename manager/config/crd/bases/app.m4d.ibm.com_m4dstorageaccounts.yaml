@@ -6,20 +6,18 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: m4dbuckets.app.m4d.ibm.com
+  name: m4dstorageaccounts.app.m4d.ibm.com
 spec:
   group: app.m4d.ibm.com
   names:
-    kind: M4DBucket
-    listKind: M4DBucketList
-    plural: m4dbuckets
-    singular: m4dbucket
+    kind: M4DStorageAccount
+    listKind: M4DStorageAccountList
+    plural: m4dstorageaccounts
+    singular: m4dstorageaccount
   scope: Namespaced
-  subresources:
-    status: {}
   validation:
     openAPIV3Schema:
-      description: M4DBucket defines a storage asset used for implicit copy destination It contains endpoint, bucket name, asset name and vault path where credentials are stored Owner of the asset is responsible to store the credentials in vault
+      description: M4DStorageAccount defines a storage account used for copying data. Only S3 based storage is supported. It contains endpoint, region and a reference to the credentials a Owner of the asset is responsible to store the credentials
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -30,35 +28,27 @@ spec:
         metadata:
           type: object
         spec:
-          description: M4DBucketSpec defines the desired state of M4DBucket
+          description: M4DStorageAccountSpec defines the desired state of M4DStorageAccount
           properties:
             endpoint:
               description: Endpoint
               type: string
-            name:
-              description: Provisioned bucket name
-              type: string
-            vaultPath:
-              description: Path where the credentials are stored
+            regions:
+              description: Regions
+              items:
+                type: string
+              minItems: 1
+              type: array
+            secretRef:
+              description: A name of k8s secret deployed in the control plane. This secret includes secretKey and accessKey credentials for S3 bucket
               type: string
           required:
           - endpoint
-          - name
-          - vaultPath
+          - regions
+          - secretRef
           type: object
         status:
-          description: M4DBucketStatus defines the observed state of M4DBucket
-          properties:
-            assetPrefixPerDataset:
-              additionalProperties:
-                type: string
-              description: Each data asset for which the bucket is provisioned is mapped to the destination data asset (prefix) This is used for sharing a single bucket by multiple applications for the same data asset The data asset is identified by a string combined from dataset and catalog ids
-              type: object
-            owners:
-              description: 'Owner list: each resource is identified by namespace/name'
-              items:
-                type: string
-              type: array
+          description: M4DStorageAccountStatus defines the observed state of M4DStorageAccount
           type: object
       type: object
   version: v1alpha1
