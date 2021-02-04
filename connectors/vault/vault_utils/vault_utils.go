@@ -22,7 +22,7 @@ const (
 	VaultPathKey          string = "USER_VAULT_PATH"
 	VaultConnectorPortKey string = "PORT_VAULT_CONNECTOR"
 	DefaultTimeout        string = "180"
-	DefaultPort           string = "50083" //synched with vault_connector.yaml
+	DefaultPort           string = "50083" // synced with vault_connector.yaml
 )
 
 func GetEnv(key string) string {

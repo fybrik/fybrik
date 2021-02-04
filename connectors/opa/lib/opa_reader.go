@@ -38,7 +38,7 @@ func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *Ca
 		return nil, fmt.Errorf("error in unmarshalling appInfoBytes: %v", err)
 	}
 
-	//to store the list of DatasetDecision
+	// to store the list of DatasetDecision
 	var datasetDecisionList []*pb.DatasetDecision
 	for i, datasetContext := range in.GetDatasets() {
 		dataset := datasetContext.GetDataset()
@@ -51,7 +51,7 @@ func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *Ca
 		}
 
 		operation := datasetContext.GetOperation()
-		//Encode operation in a map[string]interface
+		// Encode operation in a map[string]interface
 		operationBytes, err := json.MarshalIndent(operation, "", "\t")
 		log.Println("Operation Bytes: " + string(operationBytes))
 		if err != nil {
@@ -69,11 +69,11 @@ func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *Ca
 				inputMap[k] = v
 			}
 		}
-		//Combine with appInfoMap
+		// Combine with appInfoMap
 		for k, v := range appInfoMap {
 			inputMap[k] = v
 		}
-		//Printing the combined map
+		// Printing the combined map
 		toPrintBytes, _ := json.MarshalIndent(inputMap, "", "\t")
 		log.Println("********sending this to OPA : *******")
 		log.Println(string(toPrintBytes))
@@ -87,10 +87,10 @@ func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *Ca
 		if err != nil {
 			return nil, fmt.Errorf("error in GetOPAOperationDecision (i = %d): %v", i, err)
 		}
-		//add to a list
+		// Add to a list
 		var opaOperationDecisionList []*pb.OperationDecision
 		opaOperationDecisionList = append(opaOperationDecisionList, opaOperationDecision)
-		//Create a new *DatasetDecision
+		// Create a new *DatasetDecision
 		datasetDecison := &pb.DatasetDecision{Dataset: dataset, Decisions: opaOperationDecisionList}
 		datasetDecisionList = append(datasetDecisionList, datasetDecison)
 	}
@@ -154,7 +154,7 @@ func GetOPAOperationDecision(opaEval string, operation *pb.AccessOperation) (*pb
 		}
 	}
 
-	if len(enforcementActions) == 0 { //allow action
+	if len(enforcementActions) == 0 { // allow action
 		newEnforcementAction := &pb.EnforcementAction{Name: "Allow", Id: "Allow-ID", Level: pb.EnforcementAction_DATASET, Args: map[string]string{}}
 		enforcementActions = append(enforcementActions, newEnforcementAction)
 	}

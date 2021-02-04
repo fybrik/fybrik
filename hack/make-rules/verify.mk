@@ -74,8 +74,7 @@ GOLINT_LINTERS ?= \
 CODE_MAINT += lint
 .PHONY: lint
 lint: $(TOOLBIN)/golangci-lint
-	# FIXME: currently passing the test even so there are linting issues
-	$(TOOLBIN)/golangci-lint run ${GOLINT_LINTERS} ./... ||  true
+	$(TOOLBIN)/golangci-lint run ${GOLINT_LINTERS} --timeout=5m ./...
 
 .PHONY: lint-fix
 lint-fix: $(TOOLBIN)/golangci-lint

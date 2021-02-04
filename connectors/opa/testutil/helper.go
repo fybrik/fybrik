@@ -6,12 +6,13 @@ package testutil
 import (
 	"context"
 	"fmt"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"log"
 	"net"
 	"net/http"
 	"strconv"
 	"testing"
+
+	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
@@ -31,10 +32,10 @@ func GetEnvironment() (int, string, string) {
 	timeOutSecs, _ := strconv.Atoi(timeOutInSecs)
 
 	catalogConnectorURL := EnvValues["CATALOG_CONNECTOR_URL"]
-	opaServerUrl := EnvValues["OPA_SERVER_URL"]
+	opaServerURL := EnvValues["OPA_SERVER_URL"]
 	log.Printf("EnvVariables = %v\n", EnvValues)
 
-	return timeOutSecs, catalogConnectorURL, opaServerUrl
+	return timeOutSecs, catalogConnectorURL, opaServerURL
 }
 
 func GetApplicationContext(purpose string) *pb.ApplicationContext {
@@ -69,11 +70,6 @@ func ConstructRedactColumn(colName string) *pb.EnforcementAction {
 		Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": colName}}
 }
 
-/*func ConstructAllow() *pb.EnforcementAction {
-	return &pb.EnforcementAction{Name: "Allow", Id: "Allow-ID",
-		Level: pb.EnforcementAction_DATASET, Args: map[string]string{}}
-}*/
-
 func EnsureDeepEqualDecisions(t *testing.T, testedDecisions *pb.PoliciesDecisions, expectedDecisions *pb.PoliciesDecisions) {
 	assert.True(t, proto.Equal(testedDecisions, expectedDecisions), "Decisions we got from policyManager are not as expected. Expected: %v, Received: %v", expectedDecisions, testedDecisions)
 }
@@ -85,25 +81,19 @@ func GetExpectedOpaDecisions(purpose string, in *pb.ApplicationContext) *pb.Poli
 		operation := datasetContext.GetOperation()
 		enforcementActions := make([]*pb.EnforcementAction, 0)
 		usedPolicies := make([]*pb.Policy, 0)
-		operation = datasetContext.GetOperation()
 		fmt.Println("operation")
 		fmt.Println(operation)
 		var newUsedPolicy *pb.Policy
 		if purpose == "marketing" {
-			//newEnforcementAction := ConstructRedactColumn("nameDest")
 			newEnforcementAction := ConstructEncryptColumn("nameDest")
 			enforcementActions = append(enforcementActions, newEnforcementAction)
-			//newUsedPolicy = &pb.Policy{Description: "redact columns with name nameOrig and nameDest in datasets which have been tagged with Finance"}
 			newUsedPolicy = &pb.Policy{Description: "test for transactions dataset that encrypts some columns by name"}
 			usedPolicies = append(usedPolicies, newUsedPolicy)
 
-			//newEnforcementAction = ConstructRedactColumn("nameOrig")
 			newEnforcementAction = ConstructEncryptColumn("nameOrig")
 			enforcementActions = append(enforcementActions, newEnforcementAction)
-			//newUsedPolicy = &pb.Policy{Description: "redact columns with name nameOrig and nameDest in datasets which have been tagged with Finance"}
 			newUsedPolicy = &pb.Policy{Description: "test for transactions dataset that encrypts some columns by name"}
 			usedPolicies = append(usedPolicies, newUsedPolicy)
-			// newUsedPolicy = &pb.Policy{Description: "reduct columns with name nameOrig and nameDest  in datasets with Finance"}
 		} else {
 			newEnforcementAction := ConstructRemoveColumn("nameDest")
 			enforcementActions = append(enforcementActions, newEnforcementAction)
@@ -114,9 +104,7 @@ func GetExpectedOpaDecisions(purpose string, in *pb.ApplicationContext) *pb.Poli
 			enforcementActions = append(enforcementActions, newEnforcementAction)
 			newUsedPolicy = &pb.Policy{Description: "remove columns with name nameOrig and nameDest in datasets which have been tagged with Finance"}
 			usedPolicies = append(usedPolicies, newUsedPolicy)
-			// newUsedPolicy = &pb.Policy{Description: "remove columns with name nameOrig and nameDest  in datasets with Finance"}
 		}
-		//usedPolicies = append(usedPolicies, newUsedPolicy)
 		operationDecision := &pb.OperationDecision{Operation: operation,
 			EnforcementActions: enforcementActions,
 			UsedPolicies:       usedPolicies}
@@ -125,8 +113,7 @@ func GetExpectedOpaDecisions(purpose string, in *pb.ApplicationContext) *pb.Poli
 	return &pb.PoliciesDecisions{DatasetDecisions: []*pb.DatasetDecision{datasetDecison}}
 }
 
-/****************************/
-//Mocks for catalog-connector and OPA-connector
+// Mocks for catalog-connector and OPA-connector
 
 type connectorMockCatalog struct {
 	pb.UnimplementedDataCatalogServiceServer
@@ -136,14 +123,12 @@ func (s *connectorMockCatalog) GetDatasetInfo(ctx context.Context, req *pb.Catal
 	return GetCatalogInfo(req.GetAppId(), req.GetDatasetId()), nil
 }
 
-func GetCatalogInfo(appId string, datasetID string) *pb.CatalogDatasetInfo {
+func GetCatalogInfo(appID string, datasetID string) *pb.CatalogDatasetInfo {
 	var datasetInfo *pb.CatalogDatasetInfo
-	var componentsMetadata map[string]*pb.DataComponentMetadata
-	componentsMetadata = make(map[string]*pb.DataComponentMetadata)
+	componentsMetadata := make(map[string]*pb.DataComponentMetadata)
 	componentMetaData1 := &pb.DataComponentMetadata{}
 	componentsMetadata["first"] = componentMetaData1
-	var datasetNamedMetadata map[string]string
-	datasetNamedMetadata = make(map[string]string)
+	datasetNamedMetadata := make(map[string]string)
 
 	var datasetDetails *pb.DatasetDetails
 	datasetTags := []string{"Tag1"}
@@ -184,8 +169,6 @@ func MockCatalogConnector(port int) {
 
 func customOpaResponse(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: customOpaResponse")
-
-	//customeResponse := "{\"result\":{\"allow\":true,\"allowed_access_types\":[\"READ\",\"COPY\",\"WRITE\"],\"allowed_copy_destinations\":[\"NorthAmerica\",\"US\"],\"allowed_purposes\":[\"analysis\",\"fraud-detection\"],\"allowed_roles\":[\"DataScientist\",\"Security\"],\"deny\":[],\"transform\":[{\"arguments\":{\"column name\":\"nameDest\"},\"action_name\":\"redact column\",\"used_policy\":{\"description\":\"redact columns with name nameOrig and nameDest in datasets which have been tagged with Finance\"}},{\"arguments\":{\"column name\":\"nameOrig\"},\"action_name\":\"redact column\",\"used_policy\":{\"description\":\"redact columns with name nameOrig and nameDest in datasets which have been tagged with Finance\"}}]}}"
 
 	customeResponse := "{\"result\":{\"deny\":[],\"transform\":[{\"action_name\":\"encrypt column\",\"arguments\":{\"column_name\":\"nameDest\"},\"description\":\"Single column is encrypted with its own key\",\"used_policy\":{\"description\":\"test for transactions dataset that encrypts some columns by name\"}},{\"action_name\":\"encrypt column\",\"arguments\":{\"column_name\":\"nameOrig\"},\"description\":\"Single column is encrypted with its own key\",\"used_policy\":{\"description\":\"test for transactions dataset that encrypts some columns by name\"}}]}}"
 
