@@ -96,12 +96,12 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 		return nil, err
 	}
 	vault := app.Vault{
-		CredentialsPath: utils.GetSecretPath(bucket.Spec.VaultPath),
+		CredentialsPath: utils.GetSecretPath(utils.GetDatasetVaultPath(bucket.Name)),
 		Role:            utils.GetModulesRole(),
 		Address:         utils.GetVaultAddress(),
 	}
 	return &app.DataStore{
-		CredentialLocation: utils.GetFullCredentialsPath(bucket.Spec.VaultPath),
+		CredentialLocation: utils.GetFullCredentialsPath(utils.GetDatasetVaultPath(bucket.Name)),
 		Vault:              vault,
 		Connection:         *connection,
 		Format:             string(destinationInterface.DataFormat),
