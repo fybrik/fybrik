@@ -19,9 +19,9 @@ type ClusterManager interface {
 }
 
 type ClusterMetadata struct {
-	Region          string
-	Zone            string
-	VaultAuthMethod string
+	Region        string
+	Zone          string
+	VaultAuthPath string
 }
 
 type Cluster struct {
