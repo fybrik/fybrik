@@ -203,9 +203,9 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 					Name:        plotter.Name,
 					Namespace:   BlueprintNamespace,
 					ClusterName: cluster,
-					Labels:      map[string]string{
-						"razee/watch-resource": "debug",
-						app.ApplicationNameLabel: plotter.Labels[app.ApplicationNameLabel],
+					Labels: map[string]string{
+						"razee/watch-resource":        "debug",
+						app.ApplicationNameLabel:      plotter.Labels[app.ApplicationNameLabel],
 						app.ApplicationNamespaceLabel: plotter.Labels[app.ApplicationNamespaceLabel],
 					},
 				},
