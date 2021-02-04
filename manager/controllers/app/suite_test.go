@@ -135,7 +135,7 @@ var _ = BeforeSuite(func(done Done) {
 			"ClusterName":     "US-cluster",
 			"Region":          "US",
 			"Zone":            "North-America",
-			"VaultAuthMethod": "kubernetes",
+			"VaultAuthPath": "kubernetes",
 		},
 	}))
 	close(done)

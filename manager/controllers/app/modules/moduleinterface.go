@@ -227,7 +227,7 @@ func (m *Selector) SelectCluster(item DataInfo, clusters []multicluster.Cluster)
 	}
 	for _, cluster := range clusters {
 		if cluster.Metadata.Region == geo {
-			return cluster.Name, cluster.Metadata.VaultAuthMethod, nil
+			return cluster.Name, cluster.Metadata.VaultAuthPath, nil
 		}
 	}
 	return "", "", errors.New(app.InvalidClusterConfiguration + "\nNo clusters have been found for running " + m.Module.Name + " in " + geo)
