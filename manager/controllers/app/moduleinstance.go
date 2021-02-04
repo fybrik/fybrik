@@ -96,9 +96,9 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 		return nil, err
 	}
 	vault := app.Vault{
-		Path:    utils.GetSecretPath(bucket.Spec.VaultPath),
-		Role:    utils.GetModulesRole(),
-		Address: utils.GetVaultAddress(),
+		SecretPath: utils.GetSecretPath(bucket.Spec.VaultPath),
+		Role:       utils.GetModulesRole(),
+		Address:    utils.GetVaultAddress(),
 	}
 	return &app.DataStore{
 		CredentialLocation: utils.GetFullCredentialsPath(bucket.Spec.VaultPath),
@@ -233,9 +233,9 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 	// Each selector receives source/sink interface and relevant actions
 	// Starting with the data location interface for source and the required interface for sink
 	vault := app.Vault{
-		Path:    utils.GetSecretPath(datasetID),
-		Role:    utils.GetModulesRole(),
-		Address: utils.GetVaultAddress(),
+		SecretPath: utils.GetSecretPath(datasetID),
+		Role:       utils.GetModulesRole(),
+		Address:    utils.GetVaultAddress(),
 	}
 	sourceDataStore := &app.DataStore{
 		Connection:         item.DataDetails.Connection,

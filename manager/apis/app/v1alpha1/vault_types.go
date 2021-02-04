@@ -4,16 +4,16 @@ package v1alpha1
 
 // Holds details for retrieving credentials from Vault store.
 type Vault struct {
-	// Role is the Vault role used to retrieving credentials
+	// Role is the Vault role used for retrieving the credentials
 	// +required
 	Role string `json:"role"`
-	// Path is the credentials path in Vault
+	// SecretPath is the path of the secret holding the Credentials in Vault
 	// +required
-	Path string `json:"path"`
+	SecretPath string `json:"secretPath"`
 	// Address is Vault address
 	// +required
 	Address string `json:"address"`
-	// AuthPath is the authentication method used to acees Vault i.e. kubernetes
+	// AuthPath is the path to auth method i.e. kubernetes
 	// +required
 	AuthPath string `json:"authPath"`
 }
