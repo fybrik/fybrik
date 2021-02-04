@@ -95,12 +95,10 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	if err != nil {
 		return nil, err
 	}
-	vaultAuth, _ := utils.GetVaultAuthService()
 	vault := app.Vault{
-		Path:     utils.GetSecretPath(bucket.Spec.VaultPath),
-		Role:     utils.GetModulesRole(),
-		Address:  utils.GetVaultAddress(),
-		AuthPath: vaultAuth,
+		Path:    utils.GetSecretPath(bucket.Spec.VaultPath),
+		Role:    utils.GetModulesRole(),
+		Address: utils.GetVaultAddress(),
 	}
 	return &app.DataStore{
 		CredentialLocation: utils.GetFullCredentialsPath(bucket.Spec.VaultPath),
@@ -234,12 +232,10 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 
 	// Each selector receives source/sink interface and relevant actions
 	// Starting with the data location interface for source and the required interface for sink
-	vaultAuth, _ := utils.GetVaultAuthService()
 	vault := app.Vault{
-		Path:     utils.GetSecretPath(datasetID),
-		Role:     utils.GetModulesRole(),
-		Address:  utils.GetVaultAddress(),
-		AuthPath: vaultAuth,
+		Path:    utils.GetSecretPath(datasetID),
+		Role:    utils.GetModulesRole(),
+		Address: utils.GetVaultAddress(),
 	}
 	sourceDataStore := &app.DataStore{
 		Connection:         item.DataDetails.Connection,
@@ -267,6 +263,10 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 			m.Log.Info("Allocation failed: " + err.Error())
 			return instances, err
 		}
+
+		copyCluster, vaultAuthMethod, err := copySelector.SelectCluster(item, m.Clusters)
+		sourceDataStore.Vault.AuthPath = utils.GetAuthPath(vaultAuthMethod)
+		sinkDataStore.Vault.AuthPath = utils.GetAuthPath(vaultAuthMethod)
 		// append moduleinstances to the list
 		actions, err := actionsToRawExtentions(copySelector.Actions)
 		if err != nil {
@@ -279,7 +279,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 				Transformations: actions,
 			},
 		}
-		copyCluster, err := copySelector.SelectCluster(item, m.Clusters)
+
 		if err != nil {
 			m.Log.Info("Could not determine the cluster for copy: " + err.Error())
 			return instances, err
@@ -301,6 +301,8 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 		if err != nil {
 			return instances, err
 		}
+		readCluster, vaultAuthMethod, err := readSelector.SelectCluster(item, m.Clusters)
+		readSource.Vault.AuthPath = utils.GetAuthPath(vaultAuthMethod)
 		readInstructions := []app.ReadModuleArgs{
 			{
 				Source:          readSource,
@@ -312,7 +314,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 		readArgs := &app.ModuleArguments{
 			Read: readInstructions,
 		}
-		readCluster, err := readSelector.SelectCluster(item, m.Clusters)
+
 		if err != nil {
 			m.Log.Info("Could not determine the cluster for read: " + err.Error())
 			return instances, err
