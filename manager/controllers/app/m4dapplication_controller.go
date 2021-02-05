@@ -237,7 +237,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	applicationContext.Status.DataAccessInstructions = ""
 	applicationContext.Status.Ready = false
 	if applicationContext.Status.ProvisionedStorage == nil {
-		applicationContext.Status.ProvisionedStorage = make(map[string]string, 0)
+		applicationContext.Status.ProvisionedStorage = make(map[string]string)
 	}
 
 	clusters, err := r.ClusterManager.GetClusters()
@@ -275,7 +275,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		PolicyCompiler:     r.PolicyCompiler,
 		Provision:          r.Provision,
 		VaultClient:        r.VaultClient,
-		ProvisionedStorage: make(map[string]*storage.ProvisionedBucket, 0),
+		ProvisionedStorage: make(map[string]*storage.ProvisionedBucket),
 	}
 	instances := make([]modules.ModuleInstanceSpec, 0)
 	for _, item := range requirements {
@@ -293,7 +293,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	// clean irrelevant buckets
 	for datasetID, bucketName := range applicationContext.Status.ProvisionedStorage {
 		if _, found := moduleManager.ProvisionedStorage[datasetID]; !found {
-			r.Provision.DeleteDataset(getBucketResourceRef(bucketName))
+			_ = r.Provision.DeleteDataset(getBucketResourceRef(bucketName))
 			delete(applicationContext.Status.ProvisionedStorage, datasetID)
 		}
 	}
