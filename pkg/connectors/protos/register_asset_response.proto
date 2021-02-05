@@ -7,10 +7,6 @@ package connectors;
 option java_package = "com.datmesh";
 option go_package = "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf";
 
-import "dataset_details.proto";
-
-message CatalogDatasetInfo {
-    string dataset_id = 1;
-    DatasetDetails details = 3;
+message RegisterAssetResponse {
+    string asset_id = 1;           // Returns the id of the new asset registered in a catalog
 }
-
