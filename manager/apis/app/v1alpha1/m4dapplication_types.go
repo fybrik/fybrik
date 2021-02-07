@@ -151,6 +151,8 @@ type ResourceReference struct {
 type DatasetDetails struct {
 	// Reference to a Dataset resource containing the request to provision storage
 	DatasetRef string `json:"datasetRef,omitempty"`
+	// Reference to a secret where the credentials are stored
+	SecretRef string `json:"secretRef,omitempty"`
 	// Dataset information
 	Details runtime.RawExtension `json:"details,omitempty"`
 }

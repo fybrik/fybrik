@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
@@ -117,8 +119,13 @@ func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.Dat
 	if err := serde.FromRawExtention(info.Details, datasetDetails); err != nil {
 		return "", err
 	}
+	var creds *dc.Credentials
+	if creds, err = r.SecretToCredentials(info.SecretRef); err != nil {
+		return "", err
+	}
+
 	response, err := c.RegisterDatasetInfo(ctx, &dc.RegisterAssetRequest{
-		Creds:                &dc.Credentials{},
+		Creds:                creds,
 		DatasetDetails:       datasetDetails,
 		DestinationCatalogId: catalogID,
 	})
@@ -126,4 +133,31 @@ func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.Dat
 		return "", err
 	}
 	return response.GetAssetId(), nil
+}
+
+// SecretToCredentials fetches a secret and constructs Credentials structure
+func (r *M4DApplicationReconciler) SecretToCredentials(secretName string) (*dc.Credentials, error) {
+	// fetch a secret
+	secret := &corev1.Secret{}
+	if err := r.Client.Get(context.Background(), types.NamespacedName{Name: secretName, Namespace: utils.GetSystemNamespace()}, secret); err != nil {
+		return nil, err
+	}
+	creds := &dc.Credentials{}
+	for key, val := range secret.Data {
+		switch key {
+		case "accessKeyID":
+			creds.AccessKey = string(val)
+		case "accessKey":
+			creds.AccessKey = string(val)
+		case "secretAccessKey":
+			creds.SecretKey = string(val)
+		case "secretKey":
+			creds.SecretKey = string(val)
+		case "apiKey":
+			creds.ApiKey = string(val)
+		case "resourceInstanceId":
+			creds.ResourceInstanceId = string(val)
+		}
+	}
+	return creds, nil
 }

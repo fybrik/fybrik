@@ -313,6 +313,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		}
 		applicationContext.Status.ProvisionedStorage[datasetID] = app.DatasetDetails{
 			DatasetRef: info.Storage.Name,
+			SecretRef:  info.Storage.SecretRef.Name,
 			Details:    *raw,
 		}
 	}

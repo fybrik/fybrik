@@ -79,14 +79,17 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	var bucket *storage.ProvisionedBucket
 	var err error
 	if bucket, err = AllocateBucket(m.Client, m.Log, m.Owner, originalAssetName, geo); err != nil {
+		m.Log.Info("Bucket allocation failed: " + err.Error())
 		return nil, err
 	}
 	if err = m.registerSecretInVault(bucket.Name, bucket.SecretRef); err != nil {
+		m.Log.Info("Could not register secret in vault: " + err.Error())
 		return nil, err
 	}
 
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
 	if err = m.Provision.CreateDataset(bucketRef, bucket, &m.Owner); err != nil {
+		m.Log.Info("Dataset creation failed: " + err.Error())
 		return nil, err
 	}
 	datastore := &pb.DataStore{
@@ -100,12 +103,16 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	}
 	connection, err := serde.ToRawExtension(datastore)
 	if err != nil {
+		m.Log.Info("Could not convert connection details")
 		return nil, err
 	}
 	var metadata *pb.DatasetMetadata
-	err = serde.FromRawExtention(item.DataDetails.Metadata, metadata)
-	if err != nil {
-		return nil, err
+	if item.DataDetails.Metadata.Size() > 0 {
+		err = serde.FromRawExtention(item.DataDetails.Metadata, metadata)
+		if err != nil {
+			m.Log.Info("Could not convert metadata")
+			return nil, err
+		}
 	}
 	m.ProvisionedStorage[item.Context.DataSetID] = NewAssetInfo{
 		Storage: bucket,
