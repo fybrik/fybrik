@@ -158,3 +158,4 @@ metadata:
   resourceVersion: "129145412"
   selfLink: /api/v1/namespaces/irltest3/configmaps/opa-policy
   uid: bc0f10cb-78b4-494b-9b03-c483f4f84b67
+

@@ -5,7 +5,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: opa
-  namespace: irltest3
+  namespace: m4d-system
   labels:
     app: opa
 spec:
@@ -34,7 +34,7 @@ spec:
         image: openpolicyagent/kube-mgmt:0.11
         args:
         - --require-policy-label
-        - --policies=irltest3
+        - --policies=m4d-system
         - --enable-data
 ---
 kind: Service

@@ -11,4 +11,4 @@ configMapGenerator:
   - data_policies/input_reader.rego
   - data_policies/taxonomies_unification.rego
   - data_policies/verify_correct_input.rego
-  - wkcpolicy.rego
+  - sample_policies.rego

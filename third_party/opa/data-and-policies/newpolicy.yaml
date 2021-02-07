@@ -141,7 +141,7 @@ data:
     role\"))\n} {\n\tcheck_access_type([\"COPY\"])\n    not verify_geography\n    used_policy
     := build_action_from_policies(build_policy_from_description(\"unknown geography
     to copy the data\"))\n}"
-  wkcpolicy.rego: "package wkcpolicy\nimport data.data_policies as dp\n\ntransform[action]
+  sample_policies.rego: "package sample_policies\nimport data.data_policies as dp\n\ntransform[action]
     {\n\tdescription = \"Columns with Confidential tag to be redacted before read\"\n\tdp.correct_input\n
     \   #user context and access type check\n    #dp.check_access_type([dp.AccessTypes.READ])\n\tdp.check_access_type([\"READ\"])\n\tdp.check_purpose(\"Fraud
     Detection\")\n\tdp.check_role(\"Data Scientist\")\n\tdp.dataset_has_tag(\"residency

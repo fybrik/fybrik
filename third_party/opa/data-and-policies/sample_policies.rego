@@ -1,4 +1,4 @@
-package wkcpolicy
+package sample_policies
 import data.data_policies as dp
 
 transform[action] {
