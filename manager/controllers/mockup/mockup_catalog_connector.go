@@ -42,7 +42,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 						ObjectKey: "small.parq",
 					},
 				},
-				Metadata: &pb.DatasetMetadata{},
+				Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
 			},
 		}, nil
 	case "s3":
@@ -61,7 +61,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 						ObjectKey: "small.parq",
 					},
 				},
-				Metadata: &pb.DatasetMetadata{},
+				Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
 			},
 		}, nil
 	case "db2":
@@ -128,7 +128,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 					Ssl:      "false",
 				},
 			},
-			Metadata: &pb.DatasetMetadata{},
+			Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
 		},
 	}, nil
 }
@@ -140,6 +140,10 @@ func (s *server) GetCredentialsInfo(ctx context.Context, in *pb.DatasetCredentia
 		DatasetId: in.GetDatasetId(),
 		Creds:     &pb.Credentials{Username: "admin", Password: "pswd"},
 	}, nil
+}
+
+func (s *server) RegisterDatasetInfo(ctx context.Context, in *pb.RegisterAssetRequest) (*pb.RegisterAssetResponse, error) {
+	return &pb.RegisterAssetResponse{AssetId: "NewAsset"}, nil
 }
 
 // Creates a new mock connector or an error
