@@ -29,6 +29,7 @@ run-integration-tests:
 	$(MAKE) docker
 	$(MAKE) -C test/services docker-all
 	$(MAKE) cluster-prepare-wait
+	$(MAKE) configure-vault
 	$(MAKE) -C secret-provider configure-vault
 	$(MAKE) -C secret-provider deploy
 	$(MAKE) -C manager deploy-crd
@@ -49,6 +50,7 @@ run-deploy-tests:
 	$(MAKE) -C connectors deploy
 	kubectl get pod --all-namespaces
 	kubectl wait --for=condition=ready pod --all-namespaces --all --timeout=120s
+	$(MAKE) configure-vault
 
 .PHONY: cluster-prepare
 cluster-prepare:
@@ -149,3 +151,4 @@ endif
 include hack/make-rules/tools.mk
 include hack/make-rules/verify.mk
 include hack/make-rules/cluster.mk
+include hack/make-rules/vault.mk

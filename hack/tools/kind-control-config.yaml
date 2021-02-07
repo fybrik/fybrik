@@ -5,7 +5,19 @@ kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
 - role: control-plane
+  kubeadmConfigPatches:
+  - |
+    kind: InitConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "ingress-ready=true"
   extraPortMappings:
+  - containerPort: 80 # for Kind ingress
+    hostPort: 80
+    protocol: TCP
+  - containerPort: 443 # for Kind ingress
+    hostPort: 443
+    protocol: TCP
   - containerPort: 30333  # Razee dash API node port in K8s
     hostPort: 3333  # Razee dash API on host
   - containerPort: 30080  # Razee dash UI node port in K8s
