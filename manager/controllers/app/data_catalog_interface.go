@@ -92,3 +92,38 @@ func GetCredentials(req *modules.DataInfo, input *app.M4DApplication) error {
 
 	return nil
 }
+
+// RegisterAsset registers a new asset in the specified catalog
+// Input arguments:
+// - catalogID: the destination catalog identifier
+// - info: connection and credential details
+// Returns:
+// - an error if happened
+// - the new asset identifier
+func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.DatasetDetails) (string, error) {
+	// Set up a connection to the data catalog interface server.
+	conn, err := grpc.Dial(utils.GetDataCatalogServiceAddress(), grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		return "", err
+	}
+	defer conn.Close()
+	c := dc.NewDataCatalogServiceClient(conn)
+
+	// Contact the server and print out its response.
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	var datasetDetails *dc.DatasetDetails
+	if err := serde.FromRawExtention(info.Details, datasetDetails); err != nil {
+		return "", err
+	}
+	response, err := c.RegisterDatasetInfo(ctx, &dc.RegisterAssetRequest{
+		Creds:                &dc.Credentials{},
+		DatasetDetails:       datasetDetails,
+		DestinationCatalogId: catalogID,
+	})
+	if err != nil {
+		return "", err
+	}
+	return response.GetAssetId(), nil
+}

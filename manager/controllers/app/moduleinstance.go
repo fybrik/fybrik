@@ -25,6 +25,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// NewAssetInfo points to the provisoned storage and hold information about the new asset
+type NewAssetInfo struct {
+	Storage *storage.ProvisionedBucket
+	Details *pb.DatasetDetails
+}
+
 // ModuleManager builds a set of modules based on the requirements (governance actions, data location) and the existing set of M4DModules
 type ModuleManager struct {
 	Client             client.Client
@@ -36,7 +42,7 @@ type ModuleManager struct {
 	WorkloadGeography  string
 	Provision          storage.ProvisionInterface
 	VaultClient        *vault.Client
-	ProvisionedStorage map[string]*storage.ProvisionedBucket
+	ProvisionedStorage map[string]NewAssetInfo
 }
 
 // SelectModuleInstances builds a list of required modules with the relevant arguments
@@ -75,15 +81,15 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	if bucket, err = AllocateBucket(m.Client, m.Log, m.Owner, originalAssetName, geo); err != nil {
 		return nil, err
 	}
+	if err = m.registerSecretInVault(bucket.Name, bucket.SecretRef); err != nil {
+		return nil, err
+	}
+
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
 	if err = m.Provision.CreateDataset(bucketRef, bucket, &m.Owner); err != nil {
 		return nil, err
 	}
-	m.ProvisionedStorage[item.Context.DataSetID] = bucket
-	if err = m.RegisterSecretInVault(bucket.Name, bucket.SecretRef); err != nil {
-		return nil, err
-	}
-	connection, err := serde.ToRawExtension(&pb.DataStore{
+	datastore := &pb.DataStore{
 		Type: pb.DataStore_S3,
 		Name: "S3",
 		S3: &pb.S3DataStore{
@@ -91,10 +97,25 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 			Endpoint:  bucket.Endpoint,
 			ObjectKey: originalAssetName + utils.Hash(m.Owner.Name+m.Owner.Namespace, 10),
 		},
-	})
+	}
+	connection, err := serde.ToRawExtension(datastore)
 	if err != nil {
 		return nil, err
 	}
+	var metadata *pb.DatasetMetadata
+	err = serde.FromRawExtention(item.DataDetails.Metadata, metadata)
+	if err != nil {
+		return nil, err
+	}
+	m.ProvisionedStorage[item.Context.DataSetID] = NewAssetInfo{
+		Storage: bucket,
+		Details: &pb.DatasetDetails{
+			Name:       originalAssetName,
+			Metadata:   metadata,
+			Geo:        item.DataDetails.Geography,
+			DataFormat: string(destinationInterface.DataFormat),
+			DataStore:  datastore,
+		}}
 
 	return &app.DataStore{
 		CredentialLocation: utils.GetDatasetVaultPath(bucket.Name),
@@ -103,7 +124,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	}, nil
 }
 
-func (m *ModuleManager) RegisterSecretInVault(id string, secretRef types.NamespacedName) error {
+func (m *ModuleManager) registerSecretInVault(id string, secretRef types.NamespacedName) error {
 	// fetch a secret
 	secret := &corev1.Secret{}
 	if err := m.Client.Get(context.Background(), secretRef, secret); err != nil {
