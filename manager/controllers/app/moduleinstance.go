@@ -4,7 +4,6 @@
 package app
 
 import (
-	"context"
 	"encoding/json"
 
 	"emperror.dev/errors"
@@ -19,7 +18,6 @@ import (
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"github.com/ibm/the-mesh-for-data/pkg/serde"
 	"github.com/ibm/the-mesh-for-data/pkg/storage"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -132,13 +130,11 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 }
 
 func (m *ModuleManager) registerSecretInVault(id string, secretRef types.NamespacedName) error {
-	// fetch a secret
-	secret := &corev1.Secret{}
-	if err := m.Client.Get(context.Background(), secretRef, secret); err != nil {
+	var err error
+	var credentials *pb.Credentials
+	if credentials, err = SecretToCredentials(m.Client, secretRef.Name); err != nil {
 		return err
 	}
-
-	credentials := &pb.Credentials{AccessKey: string(secret.Data["accessKeyID"]), SecretKey: string(secret.Data["secretAccessKey"])}
 	if credentials.AccessKey == "" || credentials.SecretKey == "" {
 		return errors.New("accessKeyID and secretAccessKey must be specified in " + secretRef.Name)
 	}

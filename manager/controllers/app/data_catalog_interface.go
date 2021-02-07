@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
@@ -120,7 +121,7 @@ func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.Dat
 		return "", err
 	}
 	var creds *dc.Credentials
-	if creds, err = r.SecretToCredentials(info.SecretRef); err != nil {
+	if creds, err = SecretToCredentials(r.Client, info.SecretRef); err != nil {
 		return "", err
 	}
 
@@ -136,10 +137,10 @@ func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.Dat
 }
 
 // SecretToCredentials fetches a secret and constructs Credentials structure
-func (r *M4DApplicationReconciler) SecretToCredentials(secretName string) (*dc.Credentials, error) {
+func SecretToCredentials(cl client.Client, secretName string) (*dc.Credentials, error) {
 	// fetch a secret
 	secret := &corev1.Secret{}
-	if err := r.Client.Get(context.Background(), types.NamespacedName{Name: secretName, Namespace: utils.GetSystemNamespace()}, secret); err != nil {
+	if err := cl.Get(context.Background(), types.NamespacedName{Name: secretName, Namespace: utils.GetSystemNamespace()}, secret); err != nil {
 		return nil, err
 	}
 	creds := &dc.Credentials{}
