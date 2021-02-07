@@ -187,15 +187,8 @@ func initVaultConnection() (*api.Client, error) {
 
 	setupLog.Info("Assigning the policy to " + "/role/" + utils.GetSecretProviderRole())
 	// Link the policy to the authentication role (configured)
-	if err = utils.LinkVaultPolicyToIdentity("/role/"+utils.GetSecretProviderRole(), policyName,
-		"secret-provider", utils.GetSystemNamespace(), vaultClient); err != nil {
+	if err = utils.LinkVaultPolicyToIdentity("/role/"+utils.GetSecretProviderRole(), policyName, vaultClient); err != nil {
 		setupLog.Info("Could not create a role " + utils.GetSecretProviderRole() + " : " + err.Error())
-		return vaultClient, err
-	}
-	setupLog.Info("Assigning the policy to " + "/role/" + utils.GetModulesRole())
-	if err = utils.LinkVaultPolicyToIdentity("/role/"+utils.GetModulesRole(), policyName,
-		"*", app.BlueprintNamespace, vaultClient); err != nil {
-		setupLog.Info("Could not create a role " + utils.GetModulesRole() + " : " + err.Error())
 		return vaultClient, err
 	}
 	return vaultClient, nil

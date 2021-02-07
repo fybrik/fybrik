@@ -96,7 +96,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 		return nil, err
 	}
 	vault := app.Vault{
-		CredentialsPath: utils.GetSecretPath(utils.GetDatasetVaultPath(bucket.Name)),
+		SecretPath: utils.GetSecretPath(utils.GetDatasetVaultPath(bucket.Name)),
 		Role:            utils.GetModulesRole(),
 		Address:         utils.GetVaultAddress(),
 	}
@@ -233,7 +233,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 	// Each selector receives source/sink interface and relevant actions
 	// Starting with the data location interface for source and the required interface for sink
 	vault := app.Vault{
-		CredentialsPath: utils.GetSecretPath(datasetID),
+		SecretPath: utils.GetSecretPath(datasetID),
 		Role:            utils.GetModulesRole(),
 		Address:         utils.GetVaultAddress(),
 	}
