@@ -7,9 +7,9 @@ type Vault struct {
 	// Role is the Vault role used for retrieving the credentials
 	// +required
 	Role string `json:"role"`
-	// credentialsPath is the path of the secret holding the Credentials in Vault
+	// SecretPath is the path of the secret holding the Credentials in Vault
 	// +required
-	CredentialsPath string `json:"credentialsPath"`
+	SecretPath string `json:"secretPath"`
 	// Address is Vault address
 	// +required
 	Address string `json:"address"`
