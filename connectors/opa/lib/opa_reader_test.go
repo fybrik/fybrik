@@ -21,11 +21,12 @@ import (
 
 func TestMainOpaConnector(t *testing.T) {
 	timeOutSecs, catalogConnectorURL, opaServerURL := tu.GetEnvironment()
+	policyToBeEvaluated := "user_policies" 
 	applicationContext := tu.GetApplicationContext("marketing")
 
 	srv := NewOpaReader(opaServerURL)
 	catalogReader := NewCatalogReader(catalogConnectorURL, timeOutSecs)
-	policiesDecisions, err := srv.GetOPADecisions(applicationContext, catalogReader)
+	policiesDecisions, err := srv.GetOPADecisions(applicationContext, catalogReader, policyToBeEvaluated)
 	assert.NilError(t, err)
 	fmt.Println("policiesDecisions returned")
 	fmt.Println(policiesDecisions)

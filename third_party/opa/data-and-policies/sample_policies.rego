@@ -2,7 +2,7 @@ package sample_policies
 import data.data_policies as dp
 
 transform[action] {
-	description = "Columns with Confidential tag to be redacted before read"
+	description = "Columns with Confidential tag to be redacted before read action"
 	dp.correct_input
     #user context and access type check
     dp.check_access_type([dp.AccessTypes.READ])
@@ -14,7 +14,7 @@ transform[action] {
 }
 
 deny[action] {
-	description = "deny if role is not Data Scientist when purpose is Fraud Detection"
+	description = "Deny if role is not Data Scientist when purpose is Fraud Detection"
 	dp.correct_input
     #user context and access type check
     dp.check_access_type([dp.AccessTypes.READ])
@@ -25,7 +25,7 @@ deny[action] {
 }
 
 deny[action] {
-	description = "If Columns with Confidential tag deny access"
+	description = "If columns have Confidential tag deny read action"
 	dp.correct_input
     #user context and access type check
     dp.check_access_type([dp.AccessTypes.READ])
@@ -37,7 +37,7 @@ deny[action] {
 }
 
 deny[action] {
-	description = "deny if role is not Business Analyst when purpose is Customer Behaviour Analysis"
+	description = "Deny if role is not Business Analyst when purpose is Customer Behaviour Analysis"
 	dp.correct_input
     #user context and access type check
     dp.check_access_type([dp.AccessTypes.READ])
@@ -58,7 +58,7 @@ deny[action] {
 }
 
 deny[action] {
-	description = "If data residency is not Turkey but processing geography is not Turkey or EEA then deny writing"
+	description = "If data residency is not Turkey and processing geography is neither Turkey nor EEA then deny writing"
 	dp.correct_input
     #user context and access type check
     dp.check_access_type([dp.AccessTypes.WRITE])
