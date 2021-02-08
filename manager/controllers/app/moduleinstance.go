@@ -93,7 +93,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	}
 	var endpoint string
 	if strings.HasPrefix(bucket.Endpoint, "http://") {
-		endpoint = bucket.Endpoint[:7]
+		endpoint = bucket.Endpoint[7:]
 	} else {
 		endpoint = bucket.Endpoint
 	}
