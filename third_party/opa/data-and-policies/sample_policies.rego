@@ -47,6 +47,19 @@ deny[action] {
     action = dp.build_deny_access_action(dp.build_policy_from_description(description))
 }
 
+
+deny[action] {
+	description = "Deny if role is Data Scientist and purpose is Fraud Detection but the processing geography is not Trukey"
+	dp.correct_input
+    #user context and access type check
+    dp.check_access_type([dp.AccessTypes.READ])
+	dp.check_purpose("Fraud Detection")
+	dp.check_role_not("Data Scientist")
+	dp.dataset_has_tag("residency = Turkey")
+	dp.check_processingGeo_not("Turkey")
+    action = dp.build_deny_access_action(dp.build_policy_from_description(description))
+}
+
 deny[action] {
 	description = "If data residency is Turkey but processing geography is not Turkey then deny writing"
 	dp.correct_input
