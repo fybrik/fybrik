@@ -43,7 +43,7 @@ deny_access_struct = {
 }
 
 deny_write_struct = {
-    "action_name" : "deny writing",
+    "action_name" : "deny",
     "description" : "Writing of this data asset is denied",
     "arguments" : {},
     "used_policy" : "<used_policy_struct>"
