@@ -11,10 +11,10 @@ The information below is outdated
 
 {{< name >}} takes a **modular** approach to provide an open platform for controlling
  and securing the use of data across an organization. The figure below showcases the
-  current architecture of the {{< name >}} platform, running on top of OpenShift Container Platform. 
+  current architecture of the {{< name >}} platform, running on top of Kubernetes. 
  The storage systems shown in the lower half of the figure are merely an example.
 
-The core parts of the {{< name >}} are based on [Kubernetes operators](https://www.openshift.com/learn/topics/operators) 
+The core parts of {{< name >}} are based on [Kubernetes operators](https://www.openshift.com/learn/topics/operators) 
  and custom resource definition in order to define its work items and reconcile the state of
  them.
 
@@ -24,12 +24,12 @@ data should be used for which purpose. The following chart and description descr
 
 ![Architecture](workflow_multicluster.png)
 
-Before the data user can perform any actions a data operator has to install the {{< name >}} and modules
-that can be used by the user. [Modules](../modules) are a way that the {{< name >}} abstracts data access for
+Before the data user can perform any actions a data operator has to [install](../../setup/quickstart) the {{< name >}} and modules
+that can be used by the user. [Modules](../modules) are a way that {{< name >}} abstracts data access for
 users. Modules can provide read/write access or produce implicit copies that serve as lower latency caches of
 remote assets. Modules also enforce policies defined for data assets. A detailed description of them can be found [here](../modules).
 
-The {{< name >}} connects to external services to retrieve information about policies, available data and credentials.
+{{< name >}} connects to external services to retrieve information about policies, available data and credentials.
 Policies, assets and access credentials to the assets have to be defined before the user can create an application. The
 current abstraction knows 3 different connectors but depending on the implementation the underlying system
 could be the same (e.g. a data catalog could store asset definitions and credentials). More information about connectors
@@ -49,7 +49,9 @@ As data assets may reside in different systems the
 blueprints are compiled in a `Plotter` CRD (6) that specifies which blueprints have to be executed in which cluster.
 
 Depending on the setup the `PlotterController` will use various methods to distribute the blueprints. In a multi cluster
-setup [Razee](http://razee.io) is used for the control. The `PlotterController` will also collect statuses and distribute
+setup the default distribution implementation is using [Razee](http://razee.io) to control remote blueprints, but several multi-cloud tools
+could be used as a replacement.
+The `PlotterController` will also collect statuses and distribute
 updates of said blueprints. Once all the blueprints on all clusters are ready the plotter is marked as ready.
 
 A single [blueprint](../../reference/api/generated/app/#k8s-api-github-com-ibm-the-mesh-for-data-manager-apis-app-v1alpha1-blueprint) contains the specification of all assets that shall be accessed in a single cluster by a single application.
@@ -59,5 +61,5 @@ A read or write module is in ready state as soon as the proxy service such as th
 
 In this example an [implicit-copy module](../../reference/components/ddc) copies data from a remote postgres database into a S3 compatible ceph instance.
 The arrow-flight module then locally serves the data to the user via the Arrow flight protocol. Credentials are only handled
-by the modules (11) and are never exposed to the user. The application reads from and writes data to whitelisted targets. 
-Requests are handled by M4DModule instances(12). The application can not interact with non-whitelisted targets.
+by the modules (11) and are never exposed to the user. The application reads from and writes data to allowed targets. 
+Requests are handled by M4DModule instances(12). The application can not interact with not allowed targets.

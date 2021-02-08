@@ -50,11 +50,11 @@ Instead, modules are injected into the data path to handle access to data, inclu
 
 ## Multicluster
 
-The {{< name >}} supports data paths that access cluster external data stores
- such as cloud managed object stores or databases as well as cluster internal data stores.
+{{< name >}} supports data paths that access data stores that are external to the cluster
+ such as cloud managed object stores or databases as well as data stores within the cluster such as databases running in Kubernetes.
 All applications and modules however will run within a cluster that has {{< name >}} installed.
 
-Multi-cloud and hybrid cloud scenarios are supported out of the box by running the {{< name >}} in multiple
+Multi-cloud and hybrid cloud scenarios are supported out of the box by running {{< name >}} in multiple
 Kubernetes clusters and configuring the manager to use a multi cluster coordination mechanism such as razee.
 This enables cases such as running transformations on-prem while creating an implicit copy of an on-prem SoR table to a public cloud storage system.  
 
