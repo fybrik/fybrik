@@ -21,9 +21,12 @@ cert-manager:
 vault:
 	@echo "Installing vault ..."
 	helm repo add hashicorp https://helm.releases.hashicorp.com
-	helm install vault hashicorp/vault --version 0.8.0 \
+	helm install vault hashicorp/vault --version 0.9.0 \
                 --set "global.openshift=false" \
                 --set "server.dev.enabled=true" \
+	        --namespace m4d-system \
+                --set "server.extraEnvironmentVars.VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200" \
+                --set "-dev-root-token-id=root" \
 		--wait --timeout 120s
 
 .PHONY:

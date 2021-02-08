@@ -251,6 +251,16 @@ func GetDatasetVaultPath(assetID string) string {
 	return GetFullCredentialsPath(secretName)
 }
 
+func GetSecretPath(assetID string) string {
+	secretName := "/v1/" + GetVaultDatasetHome() + assetID
+	return fmt.Sprintf("%s", url.QueryEscape(secretName))
+}
+
+func GetAuthPath(authPath string) string {
+	fullAuthPath := fmt.Sprintf("/v1/auth/%s/login", authPath)
+	return fmt.Sprintf("%s", url.QueryEscape(fullAuthPath))
+}
+
 // InitVaultAuth initiates the authentication mechanism used to obtain vault tokens.
 // Vault supports multiple types of authentication.  The one used is set in the config for the m4d.
 func InitVaultAuth(vaultClient *api.Client) error {

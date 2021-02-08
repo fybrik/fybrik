@@ -17,7 +17,6 @@ kubectl apply -f manager/config/prod/deployment_configmap.yaml
 make cluster-prepare
 kubectl create secret generic user-vault-unseal-keys --from-literal=vault-root=$(kubectl get secrets vault-unseal-keys -o jsonpath={.data.vault-root} | base64 --decode) || true
 # Install third party components
-$WITHOUT_VAULT || make -C third_party/vault deploy
 $WITHOUT_EGERIA || make -C third_party/egeria deploy
 $WITHOUT_OPA || make -C third_party/opa deploy
 

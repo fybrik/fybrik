@@ -16,11 +16,11 @@ func (m *ClusterLister) GetClusters() ([]multicluster.Cluster, error) {
 	return []multicluster.Cluster{
 		{
 			Name:     "US-cluster",
-			Metadata: multicluster.ClusterMetadata{Region: "US"},
+			Metadata: multicluster.ClusterMetadata{Region: "US", VaultAuthPath: "US-cluster-auth"},
 		},
 		{
 			Name:     "Germany-cluster",
-			Metadata: multicluster.ClusterMetadata{Region: "Germany"},
+			Metadata: multicluster.ClusterMetadata{Region: "Germany", VaultAuthPath: "Germany-cluster-auth"},
 		},
 	}, nil
 }
