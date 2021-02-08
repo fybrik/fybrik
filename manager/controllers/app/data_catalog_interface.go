@@ -65,6 +65,7 @@ func GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) erro
 		},
 		Geography:  details.Geo,
 		Connection: *connection,
+		Metadata:   details.Metadata,
 	}
 
 	return nil

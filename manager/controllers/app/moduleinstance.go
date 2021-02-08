@@ -111,23 +111,17 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 		m.Log.Info("Could not convert connection details")
 		return nil, err
 	}
-	var metadata *pb.DatasetMetadata
-	if item.DataDetails.Metadata.Size() > 0 {
-		err = serde.FromRawExtention(item.DataDetails.Metadata, metadata)
-		if err != nil {
-			m.Log.Info("Could not convert metadata")
-			return nil, err
-		}
-	}
-	m.ProvisionedStorage[item.Context.DataSetID] = NewAssetInfo{
+	assetInfo := NewAssetInfo{
 		Storage: bucket,
 		Details: &pb.DatasetDetails{
 			Name:       originalAssetName,
-			Metadata:   metadata,
 			Geo:        item.DataDetails.Geography,
 			DataFormat: string(destinationInterface.DataFormat),
 			DataStore:  datastore,
+			Metadata:   item.DataDetails.Metadata,
 		}}
+	m.ProvisionedStorage[item.Context.DataSetID] = assetInfo
+	utils.PrintStructure(&assetInfo, m.Log, "ProvisionedStorage element")
 
 	return &app.DataStore{
 		CredentialLocation: utils.GetDatasetVaultPath(bucket.Name),
