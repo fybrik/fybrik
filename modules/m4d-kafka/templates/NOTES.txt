@@ -1,1 +1,0 @@
-Deployed {{ include "m4d-kafka.fullname" . }}

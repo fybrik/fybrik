@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 apiVersion: v2
-name: m4d-s3-to-s3
+name: m4d-implicit-copy-stream
 description: A Helm chart for Kubernetes
 
 # A chart can be either an 'application' or a 'library' chart.
