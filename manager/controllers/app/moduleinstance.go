@@ -5,6 +5,7 @@ package app
 
 import (
 	"encoding/json"
+	"strings"
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
@@ -90,12 +91,18 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 		m.Log.Info("Dataset creation failed: " + err.Error())
 		return nil, err
 	}
+	var endpoint string
+	if strings.HasPrefix(bucket.Endpoint, "http://") {
+		endpoint = bucket.Endpoint[:7]
+	} else {
+		endpoint = bucket.Endpoint
+	}
 	datastore := &pb.DataStore{
 		Type: pb.DataStore_S3,
 		Name: "S3",
 		S3: &pb.S3DataStore{
 			Bucket:    bucket.Name,
-			Endpoint:  bucket.Endpoint,
+			Endpoint:  endpoint,
 			ObjectKey: originalAssetName + utils.Hash(m.Owner.Name+m.Owner.Namespace, 10),
 		},
 	}

@@ -33,11 +33,11 @@ func GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) erro
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	response, err := c.GetDatasetInfo(ctx, &dc.CatalogDatasetRequest{
+	var response *dc.CatalogDatasetInfo
+	if response, err = c.GetDatasetInfo(ctx, &dc.CatalogDatasetRequest{
 		AppId:     utils.CreateAppIdentifier(input),
 		DatasetId: req.Context.DataSetID,
-	})
-	if err != nil {
+	}); err != nil {
 		return err
 	}
 
