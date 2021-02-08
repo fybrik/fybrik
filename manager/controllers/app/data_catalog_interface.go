@@ -117,7 +117,7 @@ func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.Dat
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	var datasetDetails *dc.DatasetDetails
+	datasetDetails := &dc.DatasetDetails{}
 	if err := serde.FromRawExtention(info.Details, datasetDetails); err != nil {
 		return "", err
 	}
