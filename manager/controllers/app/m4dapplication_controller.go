@@ -140,6 +140,9 @@ func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApp
 		// nothing to be done
 		return nil
 	}
+	if len(applicationContext.Status.CatalogedAssets) == 0 {
+		applicationContext.Status.CatalogedAssets = make(map[string]string)
+	}
 	// register assets if necessary if the ready state has been received
 	for _, dataCtx := range applicationContext.Spec.Data {
 		if dataCtx.Requirements.Copy.Catalog.CatalogID != "" {
@@ -154,7 +157,7 @@ func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApp
 				return err
 			}
 			// register the asset: experimental feature
-			if newAssetID, err := r.RegisterAsset(dataCtx.Requirements.Copy.Catalog.CatalogID, &provisionedBucketRef); err == nil {
+			if newAssetID, err := r.RegisterAsset(dataCtx.Requirements.Copy.Catalog.CatalogID, &provisionedBucketRef, applicationContext); err == nil {
 				applicationContext.Status.CatalogedAssets[dataCtx.DataSetID] = newAssetID
 			} else {
 				// log an error and make a new attempt to register the asset

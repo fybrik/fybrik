@@ -104,7 +104,7 @@ func GetCredentials(req *modules.DataInfo, input *app.M4DApplication) error {
 // Returns:
 // - an error if happened
 // - the new asset identifier
-func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.DatasetDetails) (string, error) {
+func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.DatasetDetails, input *app.M4DApplication) (string, error) {
 	// Set up a connection to the data catalog interface server.
 	conn, err := grpc.Dial(utils.GetDataCatalogServiceAddress(), grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
@@ -130,6 +130,7 @@ func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.Dat
 		Creds:                creds,
 		DatasetDetails:       datasetDetails,
 		DestinationCatalogId: catalogID,
+		AppId:                utils.CreateAppIdentifier(input),
 	})
 	if err != nil {
 		return "", err
