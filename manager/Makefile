@@ -60,11 +60,6 @@ charts:
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${IMG}
 	$(TOOLBIN)/kustomize build config/default > $(ROOT_DIR)/charts/m4d/templates/manager.yaml
 
-# Install CRDs into a charts/m4d-crds
-.PHONY: charts-crd
-charts-crd: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl manifests
-	$(TOOLBIN)/kustomize build config/crd > $(ROOT_DIR)/charts/m4d-crd/templates/crds.yaml
-
 .PHONY: deploy-crd
 deploy-crd:
 	kustomize build config/crd | kubectl apply -f -
