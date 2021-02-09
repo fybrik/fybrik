@@ -43,7 +43,7 @@ func performHTTPReq(standardClient *http.Client, address string, httpMethod stri
 	return res
 }
 
-func EvaluatePoliciesOnInput(inputMap map[string]interface{}, opaServerURL string) (string, error) {
+func EvaluatePoliciesOnInput(inputMap map[string]interface{}, opaServerURL string, policyToBeEvaluated string) (string, error) {
 	if !strings.HasPrefix(opaServerURL, "http://") {
 		opaServerURL = "http://" + opaServerURL + "/"
 	}
@@ -66,7 +66,7 @@ func EvaluatePoliciesOnInput(inputMap map[string]interface{}, opaServerURL strin
 	log.Println("opaServerURL")
 	log.Println(opaServerURL)
 
-	res := performHTTPReq(standardClient, opaServerURL+"v1/data/user_policies", httpMethod, inputJSON, contentType)
+	res := performHTTPReq(standardClient, opaServerURL+"v1/data/"+policyToBeEvaluated, httpMethod, inputJSON, contentType)
 	data, _ := ioutil.ReadAll(res.Body)
 	fmt.Printf("body from input http response: %s\n", data)
 	fmt.Printf("status from input http response: %d\n", res.StatusCode)
