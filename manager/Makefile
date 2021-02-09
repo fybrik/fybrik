@@ -42,7 +42,7 @@ generate: $(TOOLBIN)/controller-gen
 .PHONY: manifests
 manifests: $(TOOLBIN)/controller-gen
 	$(TOOLBIN)/controller-gen $(CRD_OPTIONS) webhook paths="./..." output:crd:artifacts:config=config/crd/bases
-	$(TOOLBIN)/controller-gen schemapatch:manifests=$(ROOT_DIR)/charts/m4d-crd/templates/ output:dir=$(ROOT_DIR)/charts/m4d-crd/templates/ paths=./apis/... 
+	$(TOOLBIN)/controller-gen $(CRD_OPTIONS) output:crd:artifacts:config=$(ROOT_DIR)/charts/m4d-crd/templates/ paths=./apis/...
 
 # Install CRDs into a cluster
 .PHONY: install
