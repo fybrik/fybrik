@@ -14,10 +14,11 @@ This website is only tested with Hugo extended version 0.70.0
 
 - Install [Hugo extended](https://gohugo.io/getting-started/installing/)
 - Install [asciidoctor](https://asciidoctor.org/docs/install-toolchain/) 
+- both are available in homebrew (`brew install hugo asciidoctor`)
 
 # Usage
 
 - Run `make gen-docs` to generate documentation pa  ges from the project APIs (protos and CRDs)
-- Run `hugo server` and browse http://localhost:1313/ to preview the website locally
+- Run `make server` and browse http://localhost:1313/ to preview the website locally
 
 The website is refreshed as you make content changes.

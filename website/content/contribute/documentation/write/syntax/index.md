@@ -45,6 +45,10 @@ fields needed to add an image:
     */>}}
 ```
 
+The best way to create images and diagrams for this documentation is to use [draw.io](http://draw.io) as it 
+allows users to later on edit the images/diagrams and is an open format. For this please use the web version or application
+to edit the file and make sure to commit the .drawio file as well as the exported image file that is used in the documentation (e.g. png). 
+
 The `src` and `caption` fields are required, but the shortcode also supports
 optional fields, for example:
 
