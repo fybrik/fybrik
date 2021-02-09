@@ -33,12 +33,12 @@ type Credentials struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	AccessKey          string `protobuf:"bytes,1,opt,name=access_key,json=accessKey,proto3" json:"access_key,omitempty"`
+	AccessKey          string `protobuf:"bytes,1,opt,name=access_key,json=accessKey,proto3" json:"access_key,omitempty"` //access credential for the bucket where the asset is stored
 	SecretKey          string `protobuf:"bytes,2,opt,name=secret_key,json=secretKey,proto3" json:"secret_key,omitempty"`
 	Username           string `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
 	Password           string `protobuf:"bytes,4,opt,name=password,proto3" json:"password,omitempty"`
-	ApiKey             string `protobuf:"bytes,5,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`
-	ResourceInstanceId string `protobuf:"bytes,6,opt,name=resource_instance_id,json=resourceInstanceId,proto3" json:"resource_instance_id,omitempty"`
+	ApiKey             string `protobuf:"bytes,5,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`                                       //api key assigned to the bucket in which the asset is stored
+	ResourceInstanceId string `protobuf:"bytes,6,opt,name=resource_instance_id,json=resourceInstanceId,proto3" json:"resource_instance_id,omitempty"` //resource instance id for the bucket
 }
 
 func (x *Credentials) Reset() {

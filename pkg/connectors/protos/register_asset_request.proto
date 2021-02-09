@@ -14,4 +14,5 @@ message RegisterAssetRequest {
 	Credentials creds = 1;
 	DatasetDetails dataset_details = 2; 	
 	string destination_catalog_id = 3;
+	string app_id = 4;   // reference to user credentials
 }
