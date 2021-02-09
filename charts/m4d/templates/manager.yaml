@@ -407,8 +407,9 @@ spec:
     spec:
       containers:
       - args:
-        - --enable-leader-election
-        - --enable-all-controllers
+      {{- if .Values.extraArgs }}
+{{ toYaml .Values.extraArgs | indent 8 }}
+      {{- end }}
         env:
         - name: VAULT_TOKEN
           valueFrom:
@@ -421,6 +422,9 @@ spec:
           value: {{ .Values.image.mover }}
         - name: IMAGE_PULL_POLICY
           value: Always
+      {{- if .Values.extraEnvs }}
+{{ toYaml .Values.extraEnvs | indent 8 }}
+      {{- end }}
         image: {{ .Values.image.manager }}
         imagePullPolicy: Always
         name: manager

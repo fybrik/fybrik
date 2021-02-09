@@ -12,3 +12,13 @@ image:
    secretProvider: ghcr.io/the-mesh-for-data/secret-provider:latest
    opaConnector: ghcr.io/the-mesh-for-data/opa-connector:latest
    opaConnectorPullPolicy: IfNotPresent
+
+# extraArgs to be passed to manager container
+extraArgs:
+  - --enable-leader-election
+  - --enable-all-controllers
+
+# extraEnvs to be set for manager container
+extraEnvs: []
+# - name: env_name
+#   value: env_value
