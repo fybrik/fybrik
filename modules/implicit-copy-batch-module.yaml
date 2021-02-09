@@ -5,26 +5,42 @@
 apiVersion: app.m4d.ibm.com/v1alpha1
 kind: M4DModule
 metadata:
-  name: implicit-copy-s3-to-s3-batch # module name
-  namespace: m4d-system  # In future, will be a parameter defined by admin
+  name: implicit-copy-batch
   labels:
-    name: implicit-copy-s3-to-s3-batch # module name
+    name: implicit-copy-batch
     version: 0.1.0 
-  annotations:
-    author: "Example Author (author@example.com)"
-    summary: "a short description of this module"
-    description: "a longer description of this module that might e.g. be used in contracts"
 spec:
   flows:  # one or more of copy, read, write 
   - copy  
   capabilities:
-    credentials-managed-by: secret-provider #secret-provider or data-mesh-auto i.e. module calls secret-provider, or credentils injected by data-mesh
+    credentials-managed-by: secret-provider
     supportedInterfaces:
-    - flow: copy      
-      source: 
+    - flow: copy
+      source:
+        protocol: jdbc-db2
+        dataformat: table
+      sink:
+        protocol: s3
+        dataformat: parquet
+    - flow: copy
+      source:
         protocol: s3
         dataformat: csv
-      sink: 
+      sink:
+        protocol: s3
+        dataformat: parquet
+    - flow: copy
+      source:
+        protocol: s3
+        dataformat: parquet
+      sink:
+        protocol: s3
+        dataformat: parquet
+    - flow: copy
+      source:
+        protocol: s3
+        dataformat: json
+      sink:
         protocol: s3
         dataformat: parquet
     actions:

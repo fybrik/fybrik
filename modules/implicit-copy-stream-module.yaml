@@ -1,0 +1,37 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: app.m4d.ibm.com/v1alpha1
+kind: M4DModule
+metadata:
+  name: implicit-copy-stream
+  labels:
+    name: implicit-copy-stream
+    version: 0.1.0 
+spec:
+  flows:
+  - copy  
+  capabilities:
+    credentials-managed-by: secret-provider
+    supportedInterfaces:
+    - flow: copy
+      source: 
+        protocol: kafka    
+        dataformat: json
+      sink: 
+        protocol: s3
+        dataformat: parquet
+    actions:
+    - id: redact-ID
+      level: 2  # column
+    - id: removed-ID
+      level: 2  # column
+  chart:
+    name: ghcr.io/the-mesh-for-data/m4d-implicit-copy-stream:0.1.0
+  statusIndicators:
+    - kind: StreamTransfer
+      successCondition: status.status == SUCCEEDED
+      failureCondition: status.status == FAILED
+      errorMessage: status.error
+
