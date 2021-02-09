@@ -20,7 +20,7 @@ func NewOpaReader(opasrvurl string) *OpaReader {
 	return &OpaReader{opaServerURL: opasrvurl}
 }
 
-func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *CatalogReader) (*pb.PoliciesDecisions, error) {
+func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *CatalogReader, policyToBeEvaluated string) (*pb.PoliciesDecisions,  error) {
 	datasetsMetadata, err := catalogReader.GetDatasetsMetadataFromCatalog(in)
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *Ca
 		toPrintBytes, _ := json.MarshalIndent(inputMap, "", "\t")
 		log.Println("********sending this to OPA : *******")
 		log.Println(string(toPrintBytes))
-		opaEval, err := EvaluatePoliciesOnInput(inputMap, r.opaServerURL)
+		opaEval, err := EvaluatePoliciesOnInput(inputMap, r.opaServerURL, policyToBeEvaluated)
 		if err != nil {
 			log.Printf("error in EvaluatePoliciesOnInput (i = %d): %v", i, err)
 			return nil, fmt.Errorf("error in EvaluatePoliciesOnInput (i = %d): %v", i, err)
