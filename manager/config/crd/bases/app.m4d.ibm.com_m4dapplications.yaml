@@ -156,6 +156,11 @@ spec:
         status:
           description: M4DApplicationStatus defines the observed state of M4DApplication.
           properties:
+            catalogedAssets:
+              additionalProperties:
+                type: string
+              description: CatalogedAssets provide the new asset identifiers after being registered in the enterprise catalog It maps the original asset id to the cataloged asset id.
+              type: object
             conditions:
               description: Conditions represent the possible error and failure conditions
               items:
@@ -201,8 +206,19 @@ spec:
               type: integer
             provisionedStorage:
               additionalProperties:
-                type: string
-              description: ProvisionedStorage maps a dataset (identified by DataSetID) to the new provisioned bucket. It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received.
+                description: DatasetDetails contain dataset connection and metadata required to register this dataset in the enterprise catalog
+                properties:
+                  datasetRef:
+                    description: Reference to a Dataset resource containing the request to provision storage
+                    type: string
+                  details:
+                    description: Dataset information
+                    type: object
+                  secretRef:
+                    description: Reference to a secret where the credentials are stored
+                    type: string
+                type: object
+              description: ProvisionedStorage maps a dataset (identified by DataSetID) to the new provisioned bucket. It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received. ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready
               type: object
             ready:
               description: Ready is true if a blueprint has been successfully orchestrated

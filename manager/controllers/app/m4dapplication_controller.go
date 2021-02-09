@@ -26,6 +26,7 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
+	"github.com/ibm/the-mesh-for-data/pkg/serde"
 	"github.com/ibm/the-mesh-for-data/pkg/storage"
 
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
@@ -117,8 +118,8 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	return ctrl.Result{}, nil
 }
 
-func getBucketResourceRef(bucketName string) *types.NamespacedName {
-	return &types.NamespacedName{Name: bucketName, Namespace: utils.GetSystemNamespace()}
+func getBucketResourceRef(name string) *types.NamespacedName {
+	return &types.NamespacedName{Name: name, Namespace: utils.GetSystemNamespace()}
 }
 
 func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApplication, status app.ObservedState) error {
@@ -142,16 +143,23 @@ func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApp
 	// register assets if necessary if the ready state has been received
 	for _, dataCtx := range applicationContext.Spec.Data {
 		if dataCtx.Requirements.Copy.Catalog.CatalogID != "" {
-			// TODO(shlomitk1) register the asset in the catalog
-			// mark the bucket as persistent
-			bucketName, found := applicationContext.Status.ProvisionedStorage[dataCtx.DataSetID]
+			// mark the bucket as persistent and register the asset
+			provisionedBucketRef, found := applicationContext.Status.ProvisionedStorage[dataCtx.DataSetID]
 			if !found {
 				message := "No copy has been created for the asset " + dataCtx.DataSetID + " required to be registered"
 				r.Log.V(0).Info(message)
 				return errors.New(message)
 			}
-			if err := r.Provision.SetPersistent(getBucketResourceRef(bucketName), true); err != nil {
+			if err := r.Provision.SetPersistent(getBucketResourceRef(provisionedBucketRef.DatasetRef), true); err != nil {
 				return err
+			}
+			// register the asset: experimental feature
+			if newAssetID, err := r.RegisterAsset(dataCtx.Requirements.Copy.Catalog.CatalogID, &provisionedBucketRef); err == nil {
+				applicationContext.Status.CatalogedAssets[dataCtx.DataSetID] = newAssetID
+			} else {
+				// log an error and make a new attempt to register the asset
+				r.Log.V(0).Info("Error while registering an asset: " + err.Error())
+				return nil
 			}
 		}
 	}
@@ -199,11 +207,11 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 	// References to buckets (Dataset resources) are deleted. Buckets that are persistent will not be removed upon Dataset deletion.
 	var deletedBuckets []string
 	var errMsgs []string
-	for _, bucketName := range applicationContext.Status.ProvisionedStorage {
-		if err := r.Provision.DeleteDataset(getBucketResourceRef(bucketName)); err != nil {
+	for _, datasetDetails := range applicationContext.Status.ProvisionedStorage {
+		if err := r.Provision.DeleteDataset(getBucketResourceRef(datasetDetails.DatasetRef)); err != nil {
 			errMsgs = append(errMsgs, err.Error())
 		} else {
-			deletedBuckets = append(deletedBuckets, bucketName)
+			deletedBuckets = append(deletedBuckets, datasetDetails.DatasetRef)
 		}
 	}
 	for _, bucket := range deletedBuckets {
@@ -237,7 +245,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	applicationContext.Status.DataAccessInstructions = ""
 	applicationContext.Status.Ready = false
 	if applicationContext.Status.ProvisionedStorage == nil {
-		applicationContext.Status.ProvisionedStorage = make(map[string]string)
+		applicationContext.Status.ProvisionedStorage = make(map[string]app.DatasetDetails)
 	}
 
 	clusters, err := r.ClusterManager.GetClusters()
@@ -275,7 +283,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		PolicyCompiler:     r.PolicyCompiler,
 		Provision:          r.Provision,
 		VaultClient:        r.VaultClient,
-		ProvisionedStorage: make(map[string]*storage.ProvisionedBucket),
+		ProvisionedStorage: make(map[string]NewAssetInfo),
 	}
 	instances := make([]modules.ModuleInstanceSpec, 0)
 	for _, item := range requirements {
@@ -291,21 +299,29 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	}
 	// update allocated storage in the status
 	// clean irrelevant buckets
-	for datasetID, bucketName := range applicationContext.Status.ProvisionedStorage {
+	for datasetID, details := range applicationContext.Status.ProvisionedStorage {
 		if _, found := moduleManager.ProvisionedStorage[datasetID]; !found {
-			_ = r.Provision.DeleteDataset(getBucketResourceRef(bucketName))
+			_ = r.Provision.DeleteDataset(getBucketResourceRef(details.DatasetRef))
 			delete(applicationContext.Status.ProvisionedStorage, datasetID)
 		}
 	}
 	// add or update new buckets
-	for datasetID, bucket := range moduleManager.ProvisionedStorage {
-		applicationContext.Status.ProvisionedStorage[datasetID] = bucket.Name
+	for datasetID, info := range moduleManager.ProvisionedStorage {
+		raw, err := serde.ToRawExtension(info.Details)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		applicationContext.Status.ProvisionedStorage[datasetID] = app.DatasetDetails{
+			DatasetRef: info.Storage.Name,
+			SecretRef:  info.Storage.SecretRef.Name,
+			Details:    *raw,
+		}
 	}
 	ready := true
 	var allocErr error
 	// check that the buckets have been created successfully using Dataset status
-	for id, bucketName := range applicationContext.Status.ProvisionedStorage {
-		res, err := r.Provision.GetDatasetStatus(getBucketResourceRef(bucketName))
+	for id, details := range applicationContext.Status.ProvisionedStorage {
+		res, err := r.Provision.GetDatasetStatus(getBucketResourceRef(details.DatasetRef))
 		if err != nil {
 			ready = false
 			break

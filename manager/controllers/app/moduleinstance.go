@@ -4,8 +4,8 @@
 package app
 
 import (
-	"context"
 	"encoding/json"
+	"strings"
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
@@ -19,11 +19,16 @@ import (
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"github.com/ibm/the-mesh-for-data/pkg/serde"
 	"github.com/ibm/the-mesh-for-data/pkg/storage"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+// NewAssetInfo points to the provisoned storage and hold information about the new asset
+type NewAssetInfo struct {
+	Storage *storage.ProvisionedBucket
+	Details *pb.DatasetDetails
+}
 
 // ModuleManager builds a set of modules based on the requirements (governance actions, data location) and the existing set of M4DModules
 type ModuleManager struct {
@@ -36,7 +41,7 @@ type ModuleManager struct {
 	WorkloadGeography  string
 	Provision          storage.ProvisionInterface
 	VaultClient        *vault.Client
-	ProvisionedStorage map[string]*storage.ProvisionedBucket
+	ProvisionedStorage map[string]NewAssetInfo
 }
 
 // SelectModuleInstances builds a list of required modules with the relevant arguments
@@ -73,28 +78,50 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	var bucket *storage.ProvisionedBucket
 	var err error
 	if bucket, err = AllocateBucket(m.Client, m.Log, m.Owner, originalAssetName, geo); err != nil {
+		m.Log.Info("Bucket allocation failed: " + err.Error())
 		return nil, err
 	}
+	if err = m.registerSecretInVault(bucket.Name, bucket.SecretRef); err != nil {
+		m.Log.Info("Could not register secret in vault: " + err.Error())
+		return nil, err
+	}
+
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
 	if err = m.Provision.CreateDataset(bucketRef, bucket, &m.Owner); err != nil {
+		m.Log.Info("Dataset creation failed: " + err.Error())
 		return nil, err
 	}
-	m.ProvisionedStorage[item.Context.DataSetID] = bucket
-	if err = m.RegisterSecretInVault(bucket.Name, bucket.SecretRef); err != nil {
-		return nil, err
+	var endpoint string
+	if strings.HasPrefix(bucket.Endpoint, "http://") {
+		endpoint = bucket.Endpoint[7:]
+	} else {
+		endpoint = bucket.Endpoint
 	}
-	connection, err := serde.ToRawExtension(&pb.DataStore{
+	datastore := &pb.DataStore{
 		Type: pb.DataStore_S3,
 		Name: "S3",
 		S3: &pb.S3DataStore{
 			Bucket:    bucket.Name,
-			Endpoint:  bucket.Endpoint,
+			Endpoint:  endpoint,
 			ObjectKey: originalAssetName + utils.Hash(m.Owner.Name+m.Owner.Namespace, 10),
 		},
-	})
+	}
+	connection, err := serde.ToRawExtension(datastore)
 	if err != nil {
+		m.Log.Info("Could not convert connection details")
 		return nil, err
 	}
+	assetInfo := NewAssetInfo{
+		Storage: bucket,
+		Details: &pb.DatasetDetails{
+			Name:       originalAssetName,
+			Geo:        item.DataDetails.Geography,
+			DataFormat: string(destinationInterface.DataFormat),
+			DataStore:  datastore,
+			Metadata:   item.DataDetails.Metadata,
+		}}
+	m.ProvisionedStorage[item.Context.DataSetID] = assetInfo
+	utils.PrintStructure(&assetInfo, m.Log, "ProvisionedStorage element")
 
 	return &app.DataStore{
 		CredentialLocation: utils.GetDatasetVaultPath(bucket.Name),
@@ -103,14 +130,12 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	}, nil
 }
 
-func (m *ModuleManager) RegisterSecretInVault(id string, secretRef types.NamespacedName) error {
-	// fetch a secret
-	secret := &corev1.Secret{}
-	if err := m.Client.Get(context.Background(), secretRef, secret); err != nil {
+func (m *ModuleManager) registerSecretInVault(id string, secretRef types.NamespacedName) error {
+	var err error
+	var credentials *pb.Credentials
+	if credentials, err = SecretToCredentials(m.Client, secretRef.Name); err != nil {
 		return err
 	}
-
-	credentials := &pb.Credentials{AccessKey: string(secret.Data["accessKeyID"]), SecretKey: string(secret.Data["secretAccessKey"])}
 	if credentials.AccessKey == "" || credentials.SecretKey == "" {
 		return errors.New("accessKeyID and secretAccessKey must be specified in " + secretRef.Name)
 	}

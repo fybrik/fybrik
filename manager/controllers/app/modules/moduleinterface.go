@@ -23,6 +23,8 @@ type DataDetails struct {
 	Geography string
 	// Connection is the connection details in raw format as received from the connector
 	Connection runtime.RawExtension
+	// Metadata
+	Metadata *pb.DatasetMetadata
 }
 
 // DataInfo defines all the information about the given data set that comes from the m4dapplication spec and from the connectors.
