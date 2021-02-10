@@ -20,7 +20,7 @@ func NewOpaReader(opasrvurl string) *OpaReader {
 	return &OpaReader{opaServerURL: opasrvurl}
 }
 
-func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *CatalogReader, policyToBeEvaluated string) (*pb.PoliciesDecisions,  error) {
+func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *CatalogReader, policyToBeEvaluated string) (*pb.PoliciesDecisions, error) {
 	datasetsMetadata, err := catalogReader.GetDatasetsMetadataFromCatalog(in)
 	if err != nil {
 		return nil, err
@@ -188,7 +188,7 @@ func buildNewEnfrocementAction(transformAction interface{}) (*pb.EnforcementActi
 				}
 			case "redact column":
 				if columnName, ok := extractArgument(action["arguments"], "column_name"); ok {
-					newEnforcementAction := &pb.EnforcementAction{Name: "redacted", Id: "redacted-ID",
+					newEnforcementAction := &pb.EnforcementAction{Name: "redact", Id: "redact-ID",
 						Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": columnName}}
 					return newEnforcementAction, newUsedPolicy, true
 				}

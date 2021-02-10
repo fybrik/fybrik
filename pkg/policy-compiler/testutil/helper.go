@@ -79,7 +79,7 @@ func ConstructEncryptColumn(colName string) *pb.EnforcementAction {
 }
 
 func ConstructRedactColumn(colName string) *pb.EnforcementAction {
-	return &pb.EnforcementAction{Name: "redacted", Id: "redacted-ID",
+	return &pb.EnforcementAction{Name: "redact", Id: "redact-ID",
 		Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": colName}}
 }
 
