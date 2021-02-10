@@ -1,7 +1,7 @@
 # Copyright 2020 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
-# Default values for m4d-kafka.
+# Default values for m4d-implicit-copy-stream.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 

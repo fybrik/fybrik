@@ -10,21 +10,18 @@ all:
 .PHONY: helm
 helm:
 	$(MAKE) -C m4d-template helm-all
-	$(MAKE) -C m4d-db2wh helm-all
-	$(MAKE) -C m4d-kafka helm-all
-	$(MAKE) -C m4d-s3-to-s3 helm-all
+	$(MAKE) -C m4d-implicit-copy-batch helm-all
+	$(MAKE) -C m4d-implicit-copy-stream helm-all
 
 
 .PHONY: helm-chart-push
 helm-chart-push:
 	$(MAKE) -C m4d-template helm-chart-push
-	$(MAKE) -C m4d-db2wh helm-chart-push
-	$(MAKE) -C m4d-kafka helm-chart-push
-	$(MAKE) -C m4d-s3-to-s3 helm-chart-push
+	$(MAKE) -C m4d-implicit-copy-batch helm-chart-push
+	$(MAKE) -C m4d-implicit-copy-stream helm-chart-push
 
 .PHONY: helm-uninstall
 helm-uninstall:
 	$(MAKE) -C m4d-template helm-uninstall
-	$(MAKE) -C m4d-db2wh helm-uninstall
-	$(MAKE) -C m4d-kafka helm-uninstall
-	$(MAKE) -C m4d-s3-to-s3 helm-uninstall
+	$(MAKE) -C m4d-implicit-copy-batch helm-uninstall
+	$(MAKE) -C m4d-implicit-copy-stream helm-uninstall
