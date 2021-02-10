@@ -43,14 +43,20 @@ func (r *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 		return nil, err
 	}
 	for _, c := range razeeClusters {
-		configMapJSON, err := r.con.Resources.ResourceContent(r.orgID, c.ClusterID, clusterMetadataConfigMapSL)
+		resourceContent, err := r.con.Resources.ResourceContent(r.orgID, c.ClusterID, clusterMetadataConfigMapSL)
 		if err != nil {
 			r.log.Error(err, "Could not fetch cluster information", "cluster", c.Name)
 			return nil, err
 		}
+		// If no content for the resource was found the cluster is not part of the mesh or not installed
+		// correctly. The mesh should ignore those clusters and continue.
+		if resourceContent == nil {
+			r.log.Info("Resource content returned is nil! Skipping cluster", "cluster", c.Name)
+			continue
+		}
 		scheme := runtime.NewScheme()
 		clusterMetadataConfigmap := v1.ConfigMap{}
-		err = multicluster.Decode(configMapJSON.Content, scheme, &clusterMetadataConfigmap)
+		err = multicluster.Decode(resourceContent.Content, scheme, &clusterMetadataConfigmap)
 		if err != nil {
 			return nil, err
 		}
