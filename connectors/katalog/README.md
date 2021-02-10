@@ -56,11 +56,19 @@ As always, create a `RoleBinding` to grant these permissions to assets in a spec
 
 ## Develop, Build and Deploy
 
-Katalog itself is just [`install/rbac.yaml`](install/rbac.yaml) and [`install/crds.gen.yaml`](install/crds.gen.yaml) that you can apply to your cluster directly. The file `install/crds.gen.yaml` is generated from the files in the [`manifests`](manifests) directory with `make generate`.
+The source of the `Asset` CRD are the files in the [`manifests`](manifests) directory. After modifying them run `make generate`.
 
-The rest of the code is the connector. Use `make build docker-build docker-push` to build and push the connector image and `make deploy` to deploy it to Kubernetes. Cleanup with `make clean` and `make undeploy`.
+Build and push the connector image with `make all` (cleanup with `make clean`).
 
-Alternatively use `make all` to build and deploy everything.
+Install with Helm as part of the standard Mesh for Data installation:
+- [m4d-crd](https://github.com/IBM/the-mesh-for-data/tree/master/charts/m4d-crd) Helm chart 
+  ```
+  helm install m4d-crd charts/m4d-crd
+  ```
+- [m4d](https://github.com/IBM/the-mesh-for-data/tree/master/charts/m4d) Helm chart with `katalogConnector.enabled=true` (default).
+  ```
+  helm install m4d charts/m4d-crd
+  ```
 
 ## Where is this going?
 
