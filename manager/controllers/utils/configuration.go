@@ -26,6 +26,7 @@ const (
 	VaultAuthKey                        string = "VAULT_AUTH"
 	SecretProviderURL                   string = "SECRET_PROVIDER_URL"
 	SecretProviderRole                  string = "SECRET_PROVIDER_ROLE"
+	ModulesRole                         string = "MODULES_ROLE"
 )
 
 // GetSystemNamespace returns the namespace of control plane
@@ -47,6 +48,11 @@ func GetSecretProviderURL() string {
 // GetSecretProviderRole returns the assigned authentification role for accessing dataset credentials
 func GetSecretProviderRole() string {
 	return os.Getenv(SecretProviderRole)
+}
+
+// GetModulesRole returns the modules assigned authentification role for accessing dataset credentials
+func GetModulesRole() string {
+	return os.Getenv(ModulesRole)
 }
 
 // GetVaultAuthTTL returns the amount of time the authorization issued by vault is valid

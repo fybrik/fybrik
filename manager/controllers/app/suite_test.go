@@ -136,9 +136,10 @@ var _ = BeforeSuite(func(done Done) {
 			Namespace: "m4d-system",
 		},
 		Data: map[string]string{
-			"ClusterName": "US-cluster",
-			"Region":      "US",
-			"Zone":        "North-America",
+			"ClusterName":   "US-cluster",
+			"Region":        "US",
+			"Zone":          "North-America",
+			"VaultAuthPath": "kind",
 		},
 	}))
 	close(done)
