@@ -82,7 +82,7 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	observedStatus := applicationContext.Status.DeepCopy()
 
 	// check if reconcile is required
-	// reconcile is required if the spec has been changed, or the previous reconcile has failed to allocate a Blueprint or a Plotter resource
+	// reconcile is required if the spec has been changed, or the previous reconcile has failed to allocate a Plotter resource
 	generationComplete := r.ResourceInterface.ResourceExists(applicationContext.Status.Generated)
 	if !generationComplete || observedStatus.ObservedGeneration != applicationContext.GetGeneration() {
 		if result, err := r.reconcile(applicationContext); err != nil {
@@ -136,13 +136,7 @@ func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApp
 		return nil
 	}
 	// Plotter is ready - update the M4DApplication status
-	if applicationContext.Status.Ready {
-		// nothing to be done
-		return nil
-	}
-	if len(applicationContext.Status.CatalogedAssets) == 0 {
-		applicationContext.Status.CatalogedAssets = make(map[string]string)
-	}
+
 	// register assets if necessary if the ready state has been received
 	for _, dataCtx := range applicationContext.Spec.Data {
 		if dataCtx.Requirements.Copy.Catalog.CatalogID != "" {
@@ -155,6 +149,10 @@ func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApp
 			}
 			if err := r.Provision.SetPersistent(getBucketResourceRef(provisionedBucketRef.DatasetRef), true); err != nil {
 				return err
+			}
+			if _, cataloged := applicationContext.Status.CatalogedAssets[dataCtx.DataSetID]; cataloged {
+				// the asset has been already cataloged
+				return nil
 			}
 			// register the asset: experimental feature
 			if newAssetID, err := r.RegisterAsset(dataCtx.Requirements.Copy.Catalog.CatalogID, &provisionedBucketRef, applicationContext); err == nil {
@@ -249,6 +247,9 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	applicationContext.Status.Ready = false
 	if applicationContext.Status.ProvisionedStorage == nil {
 		applicationContext.Status.ProvisionedStorage = make(map[string]app.DatasetDetails)
+	}
+	if applicationContext.Status.CatalogedAssets == nil {
+		applicationContext.Status.CatalogedAssets = make(map[string]string)
 	}
 
 	clusters, err := r.ClusterManager.GetClusters()
