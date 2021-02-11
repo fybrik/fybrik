@@ -125,6 +125,10 @@ func getBucketResourceRef(name string) *types.NamespacedName {
 func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApplication, status app.ObservedState) error {
 	applicationContext.Status.DataAccessInstructions = ""
 	applicationContext.Status.Ready = false
+	if applicationContext.Status.CatalogedAssets == nil {
+		applicationContext.Status.CatalogedAssets = make(map[string]string)
+	}
+
 	if hasError(applicationContext) {
 		return nil
 	}
@@ -247,9 +251,6 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	applicationContext.Status.Ready = false
 	if applicationContext.Status.ProvisionedStorage == nil {
 		applicationContext.Status.ProvisionedStorage = make(map[string]app.DatasetDetails)
-	}
-	if applicationContext.Status.CatalogedAssets == nil {
-		applicationContext.Status.CatalogedAssets = make(map[string]string)
 	}
 
 	clusters, err := r.ClusterManager.GetClusters()
