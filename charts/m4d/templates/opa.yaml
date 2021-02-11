@@ -1,4 +1,4 @@
-{{- if .Values.global.opa }}
+{{- if .Values.opaService.enabled }}
 apiVersion: v1
 data:
   action_struct.rego: "package data_policies\n\n#general enforcment action structure\nenforcement_action_struct

@@ -1,7 +1,7 @@
 # Copyright 2020 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
-{{- if .Values.global.opaConnector }}
+{{- if .Values.opaConnector.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -23,8 +23,8 @@ spec:
     spec:
       containers:
       - name: opa-connector
-        image: {{ .Values.image.opaConnector }}
-        imagePullPolicy: {{ .Values.image.opaConnectorPullPolicy }}
+        image: {{ .Values.opaConnector.image }}
+        imagePullPolicy: {{ .Values.opaConnector.imagePullPolicy }}
         ports:
         - name: opa-connector
           containerPort: 50082
