@@ -24,7 +24,7 @@ data:
   #EXTENSIONS_POLICY_MANAGER_NAME: "OPA"
 
   #internal vault related variables
-  VAULT_ADDRESS: "http://vault.m4d-system::8200/"
+  VAULT_ADDRESS: "http://vault.m4d-system:8200/"
   VAULT_DATASET_HOME: "m4d/dataset-creds/"
   VAULT_USER_HOME: "m4d/user-creds/"
   VAULT_DATASET_MOUNT: "v1/sys/mounts/m4d/dataset-creds"
