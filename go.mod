@@ -29,6 +29,7 @@ require (
 	github.com/onsi/gomega v1.10.3
 	github.com/pkg/errors v0.9.1
 	github.com/robfig/cron v1.2.0
+	github.com/shirou/gopsutil v3.20.11+incompatible // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
 	github.com/spf13/cobra v1.1.1
 	github.com/stretchr/testify v1.6.1
