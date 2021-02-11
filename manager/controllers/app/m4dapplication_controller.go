@@ -140,6 +140,10 @@ func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApp
 	// register assets if necessary if the ready state has been received
 	for _, dataCtx := range applicationContext.Spec.Data {
 		if dataCtx.Requirements.Copy.Catalog.CatalogID != "" {
+			if _, cataloged := applicationContext.Status.CatalogedAssets[dataCtx.DataSetID]; cataloged {
+				// the asset has been already cataloged
+				continue
+			}
 			// mark the bucket as persistent and register the asset
 			provisionedBucketRef, found := applicationContext.Status.ProvisionedStorage[dataCtx.DataSetID]
 			if !found {
@@ -149,10 +153,6 @@ func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApp
 			}
 			if err := r.Provision.SetPersistent(getBucketResourceRef(provisionedBucketRef.DatasetRef), true); err != nil {
 				return err
-			}
-			if _, cataloged := applicationContext.Status.CatalogedAssets[dataCtx.DataSetID]; cataloged {
-				// the asset has been already cataloged
-				return nil
 			}
 			// register the asset: experimental feature
 			if newAssetID, err := r.RegisterAsset(dataCtx.Requirements.Copy.Catalog.CatalogID, &provisionedBucketRef, applicationContext); err == nil {
