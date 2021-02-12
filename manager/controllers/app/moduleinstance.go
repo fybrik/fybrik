@@ -299,7 +299,6 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 				Transformations: actions,
 			},
 		}
-
 		copyCluster, err := copySelector.SelectCluster(item, m.Clusters)
 		if err != nil {
 			m.Log.Info("Could not determine the cluster for copy: " + err.Error())
@@ -330,7 +329,6 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 		if err != nil {
 			return instances, err
 		}
-
 		readCluster, err := readSelector.SelectCluster(item, m.Clusters)
 		if err != nil {
 			m.Log.Info("Could not determine the cluster for read: " + err.Error())
