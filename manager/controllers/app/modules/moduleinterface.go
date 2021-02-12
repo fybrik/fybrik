@@ -220,7 +220,7 @@ func CheckDependencies(module *app.M4DModule, moduleMap map[string]*app.M4DModul
 // Read is done at target (processing geography)
 // Copy is done at source when transformations are required, and at target - otherwise
 // Write is done at target
-func (m *Selector) SelectCluster(item DataInfo, clusters []multicluster.Cluster) (string, string, error) {
+func (m *Selector) SelectCluster(item DataInfo, clusters []multicluster.Cluster) (string, error) {
 	geo := item.DataDetails.Geography
 	if m.Flow == app.Read {
 		geo = m.Geo
@@ -229,8 +229,8 @@ func (m *Selector) SelectCluster(item DataInfo, clusters []multicluster.Cluster)
 	}
 	for _, cluster := range clusters {
 		if cluster.Metadata.Region == geo {
-			return cluster.Name, cluster.Metadata.VaultAuthPath, nil
+			return cluster.Name, nil
 		}
 	}
-	return "", "", errors.New(app.InvalidClusterConfiguration + "\nNo clusters have been found for running " + m.Module.Name + " in " + geo)
+	return "", errors.New(app.InvalidClusterConfiguration + "\nNo clusters have been found for running " + m.Module.Name + " in " + geo)
 }
