@@ -51,12 +51,24 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Create the name of the service account to use
-*/}}
 {{- define "m4d.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
 {{- default (include "m4d.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
+{{- end }}
+{{- end }}
+*/}}
+
+{{/*
+Create the value of an image field from hub, image and tag
+*/}}
+{{- define "m4d.image" -}}
+{{- $root := first . -}}
+{{- $ctx := last . -}}
+{{- if contains "/" $ctx.image }}
+{{- printf "%s" $ctx.image }}
+{{- else }}
+{{- printf "%s/%s:%s" ( $ctx.hub | default $root.Values.global.hub ) $ctx.image ( $ctx.tag | default $root.Values.global.tag | default $root.Chart.AppVersion ) }}
 {{- end }}
 {{- end }}

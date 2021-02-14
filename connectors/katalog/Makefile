@@ -4,11 +4,14 @@ include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 DOCKER_NAME=katalog-connector
 
-all: build docker-build docker-push deploy
+all: build docker-build docker-push
 
 .PHONY: generate
 generate: $(TOOLBIN)/oapi-codegen $(TOOLBIN)/crdoc $(TOOLBIN)/openapi2crd
-	go generate ./...
+	$(TOOLBIN)/oapi-codegen -generate "types,skip-prune" -package taxonomy -o pkg/taxonomy/taxonomy.gen.go ./manifests/taxonomy.yaml
+	$(TOOLBIN)/oapi-codegen -generate "types,skip-prune" -import-mapping=taxonomy.yaml:github.com/ibm/the-mesh-for-data/connectors/katalog/pkg/taxonomy -package api -o pkg/api/spec.gen.go ./manifests/spec.yaml
+	$(TOOLBIN)/openapi2crd manifests/spec.yaml -g katalog.m4d.ibm.com/v1alpha1/Asset -o $(ROOT_DIR)/charts/m4d-crd/templates/katalog.m4d.ibm.com_assets.yaml
+	$(TOOLBIN)/crdoc --template ./docs/main.tmpl -c ./docs/toc.yaml -r $(ROOT_DIR)/charts/m4d-crd/templates/ -o ./docs/README.md
 
 .PHONY: build
 build: generate
@@ -18,18 +21,6 @@ build: generate
 clean: docker-rmi
 	rm bin/*
 
-.PHONY: deploy
-deploy: install/kustomization.yaml
-	cd install && kustomize edit set image ${DOCKER_NAME}=${IMG}
-	kustomize build install | kubectl apply -f -
-
-.PHONY: undeploy
-undeploy:
-	kustomize build install | kubectl delete -f -
-
 .PHONY: run
 run: generate
 	go run main.go run
-
-install/kustomization.yaml: install/kustomization.yaml.in
-	cp $< $@
