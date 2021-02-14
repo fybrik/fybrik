@@ -1,12 +1,14 @@
 package multicluster
 
 import (
+	"testing"
+
 	"github.com/onsi/gomega"
 	apps "k8s.io/api/apps/v1"
-	"k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"testing"
 )
 
 func TestDecodeJsonToRuntimeObject(t *testing.T) {
@@ -54,8 +56,8 @@ func TestDecodeJsonToRuntimeObject(t *testing.T) {
 		},
 		Spec: apps.DeploymentSpec{
 			Replicas: &replicaNumber,
-			Template: v1.PodTemplateSpec{
-				Spec: v1.PodSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
 					Containers: []v1.Container{
 						{
 							Name:  "container",

@@ -5,13 +5,15 @@ package motion
 
 import (
 	"context"
+	"path"
+
 	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"path"
 
 	"encoding/json"
+
 	apps "k8s.io/api/apps/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 )

@@ -4,19 +4,21 @@
 package v1alpha1
 
 import (
-	"github.com/stretchr/testify/assert"
-	kv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/validation/field"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	kv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
 func TestValidBatchTransfer(t *testing.T) {
 	t.Parallel()
 	batchTransfer := BatchTransfer{
-		TypeMeta:   v1.TypeMeta{},
-		ObjectMeta: v1.ObjectMeta{},
+		TypeMeta:   metav1.TypeMeta{},
+		ObjectMeta: metav1.ObjectMeta{},
 		Spec: BatchTransferSpec{
 			Source: DataStore{
 				Database: &Database{

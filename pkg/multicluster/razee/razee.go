@@ -2,9 +2,10 @@ package razee
 
 import (
 	"context"
-	"github.com/machinebox/graphql"
 	"net/http"
 	"time"
+
+	"github.com/machinebox/graphql"
 )
 
 //nolint:golint,unused

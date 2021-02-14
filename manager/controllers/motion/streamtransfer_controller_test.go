@@ -6,8 +6,9 @@ package motion
 import (
 	"context"
 	"io/ioutil"
-	v1 "k8s.io/api/core/v1"
 	"time"
+
+	v1 "k8s.io/api/core/v1"
 
 	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	. "github.com/onsi/ginkgo"
