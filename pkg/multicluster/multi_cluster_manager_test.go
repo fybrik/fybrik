@@ -6,7 +6,6 @@ import (
 	"github.com/onsi/gomega"
 	apps "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -58,7 +57,7 @@ func TestDecodeJsonToRuntimeObject(t *testing.T) {
 			Replicas: &replicaNumber,
 			Template: corev1.PodTemplateSpec{
 				Spec: corev1.PodSpec{
-					Containers: []v1.Container{
+					Containers: []corev1.Container{
 						{
 							Name:  "container",
 							Image: "image",
