@@ -36,9 +36,6 @@ type PlotterReconciler struct {
 // BlueprintNamespace defines a namespace where blueprints and associated resources will be allocated
 const BlueprintNamespace = "m4d-blueprints"
 
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=plotters,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=plotters/status,verbs=get;update;patch
-
 // Reconcile receives a Plotter CRD
 //nolint:dupl
 func (r *PlotterReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {

@@ -21,13 +21,6 @@ type StreamTransferReconciler struct {
 	Reconciler
 }
 
-// +kubebuilder:rbac:groups=motion.m4d.ibm.com,resources=streamtransfers;streamtransfers/finalizers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=motion.m4d.ibm.com,resources=streamtransfers/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=apps,resources=deployments;deployments/finalizers;deployments/status,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="",resources=pods;pods/finalizers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="",resources=persistentvolumeclaims;persistentvolumeclaims/finalizers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="",resources=events;secrets;secrets/finalizers,verbs=create;delete;get;list;patch;update;watch
-
 // Reconcile StreamTransfers
 // A first version of this StreamTransfer is based on K8s Deployment objects.
 // These manage pod failures themselves and restart them in case of failure.

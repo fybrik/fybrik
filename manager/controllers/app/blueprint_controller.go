@@ -38,9 +38,6 @@ type BlueprintReconciler struct {
 	Helmer helm.Interface
 }
 
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=blueprints,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=blueprints/status,verbs=get;update;patch
-
 // Reconcile receives a Blueprint CRD
 //nolint:dupl
 func (r *BlueprintReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {

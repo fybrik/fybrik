@@ -16,9 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dstorageaccounts,verbs=get;list;watch;update;
-// +kubebuilder:rbac:groups=com.ie.ibm.hpsys,resources=datasets,verbs=get;list;watch;create;update;patch;delete
-
 func includesGeography(array []string, element string) bool {
 	for _, geo := range array {
 		if geo == element {
