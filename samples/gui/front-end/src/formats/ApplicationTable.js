@@ -21,7 +21,7 @@ const ApplicationTable = (props) => {
     onClose()
   }
 
-  // Show status success/in prgress/error
+  // Show status success/in progress/error, and display the data access instructions
   const TableCellStatus = (status) => {
     if (('ready' in status.status) && status.status.ready) {
       console.log(status.status.dataAccessInstructions)
@@ -36,7 +36,7 @@ const ApplicationTable = (props) => {
         </Table.Cell>
       )
     } else {
-      if ('conditions' in status.status && (status.status.conditions[0].status == "True" || status.status.conditions[1].status == "True")) {
+      if ('conditions' in status.status && (status.status.conditions[0].status === "True" || status.status.conditions[1].status === "True")) {
         return (
           <Table.Cell textAlign='center'>
             <Popup position='left center' pinned on='click' trigger={<Button basic icon='exclamation' flowing='true' color='red'/>}>

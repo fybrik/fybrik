@@ -5,8 +5,12 @@ Web UI application for use by data users to create an environment for running th
 The APIs and examples of their use are as follows:
   
   Create M4DApplication:
-	  curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion": "app.m4d.ibm.com/v1alpha1","kind": "M4DApplication","metadata": {"name": "unittest-notebook1"},"spec": {"selector": {"matchLabels":{"app": "notebook1"}},"appInfo": {"purpose": "fraud-detection","role": "Security"}, "data": [{"catalogID": "1c080331-72da-4cea-8d06-5f075405cf17", "dataSetID": "2d1b5352-1fbf-439b-8bb0-c1967ac484b9","ifDetails": {"protocol": "s3","dataformat": "parquet"}}]}}'
-	
+
+	curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion": "app.m4d.ibm.com/v1alpha1","kind": "M4DApplication","metadata": {"name": "unittest-notebook1", "namespace": "default", "labels": {"app": "unittest-notebook1"}},"spec": {"selector": {"clusterName": "US-cluster","workloadSelector": {"matchLabels": {"app": "unittest-notebook1"}}}, "appInfo": {"purpose": "fraud-detection","role": "Security"}, "data": [{ "dataSetID": "whatever", "requirements": {"interface": {"protocol": "s3","dataformat": "parquet"}}}]}}'
+
+
+curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion": "app.m4d.ibm.com/v1alpha1","kind": "M4DApplication", }'
+
 	Get list of M4DApplications
 	  curl -X GET -i http://localhost:8080/v1/dma/m4dapplication
 	
