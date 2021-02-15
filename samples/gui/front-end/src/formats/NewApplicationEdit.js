@@ -17,9 +17,11 @@ const NewApplicationEdit = props => {
   // parse matchLabels
   const parseMatchLabels = lables => {
     var result = {};
-    array.chunk(array.split(array.split(lables, ':'), ','), 2).forEach(a => {
-      result[a[0].trim()] = a[1].trim()
-    })
+    if (lables.length > 0) {
+      array.chunk(array.split(array.split(lables, ':'), ','), 2).forEach(a => {
+        result[a[0].trim()] = a[1].trim()
+      })
+    }
     return result
   }
 
@@ -30,21 +32,21 @@ const NewApplicationEdit = props => {
     }
     return result.slice(0,result.length-1)
   }
-
+ 
   // application instance
   const [application, setApplication] = useState({
     name: props.history.location.state.application.metadata.name,
-    labels: exists ? props.history.location.state.application.spec.selector.matchLabels : parseMatchLabels(props.history.location.state.application.spec.selector.matchLabels),
+    labels: exists ? props.history.location.state.application.spec.selector.workloadSelector : parseMatchLabels(props.history.location.state.application.spec.selector.workloadSelector.matchLabels),
     resourceVersion:  exists ? props.history.location.state.application.metadata.resourceVersion : '',
     role: exists ? props.history.location.state.application.spec.appInfo.role : '',
     purpose: exists ? props.history.location.state.application.spec.appInfo.purpose : '',
-    geography: exists ? props.history.location.state.application.geography : props.location.state.application.geography,
+    geography: exists ? props.history.location.state.application.geography : props.location.state.application.geography,  
   })
   //application instance data
   const [applicationData, setApplicationData] = useState(
     (exists
       ? props.history.location.state.application.spec.data
-      : [{ uid: uniqid(), dataSetID: '', ifDetails: { protocol: 's3', dataformat: 'parquet' } }]))
+      : [{ uid: uniqid(), dataSetID: '', requirements: { interface: { protocol: 's3', dataformat: 'parquet' } }}]))
   // error state
   const [errors, setErrors] = useState({ purpose: !exists, role: !exists, data: !exists })
   // message from request
@@ -52,7 +54,8 @@ const NewApplicationEdit = props => {
 
   // add new application instance data with default initial values
   const addDataRow = () => {
-    setApplicationData([...applicationData, { uid: uniqid(), dataSetID: '', ifDetails: { protocol: 's3', dataformat: 'parquet' } }])
+ //   setApplicationData([...applicationData, { uid: uniqid(), dataSetID: '', ifDetails: { protocol: 's3', dataformat: 'parquet' } }])
+    setApplicationData([...applicationData, { uid: uniqid(), dataSetID: '', requirements: { interface: { protocol: 's3', dataformat: 'parquet' } }}])
     setErrors({ ...errors, data: true })
   }
 
@@ -67,7 +70,7 @@ const NewApplicationEdit = props => {
   }
 
   const handleDetailsChange = (event, uid, name, value) => {
-    setApplicationData(applicationData.map(d => d.uid === uid ? { ...d, ifDetails: { ...d.ifDetails, [name]: value } } : d))
+     setApplicationData(applicationData.map(d => d.uid === uid ? { ...d, requirements: {interface: { ...d.requirements.interface, [name]: value } }} : d))
   }
 
   // handle change to input fields
@@ -90,9 +93,10 @@ const NewApplicationEdit = props => {
       data: {
         apiVersion: 'app.m4d.ibm.com/v1alpha1',
         kind: 'M4DApplication',
-        metadata: {
+        metadata: {  
           name: application.name,
-          resourceVersion: application.resourceVersion
+          resourceVersion: application.resourceVersion,
+          labels: application.labels,
         },
         spec: {
           appInfo: {
@@ -101,7 +105,9 @@ const NewApplicationEdit = props => {
           },
           selector: { 
             clusterName: application.geography,
-            matchLabels: application.labels
+            workloadSelector: {
+              matchLabels: application.labels
+            },
           },
           data: dataToSend
         }
@@ -158,7 +164,7 @@ const NewApplicationEdit = props => {
         disabled={true}
         defaultValue={application.name}
       />
-      <Form.Input
+     <Form.Input
         label='Workload selector'
         required formNoValidate
         disabled={true}

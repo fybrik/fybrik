@@ -99,7 +99,7 @@ const InputDataTable = props => {
                 selection
                 options={formatOptions}
                 name='dataformat'
-                value={data.ifDetails.dataformat}
+                value={data.requirements.interface.dataformat}
                 onChange={(e, { name, value }) => props.handleDetailsChange(e, data.uid, name, value)}
               />
             </Table.Cell>
@@ -108,7 +108,7 @@ const InputDataTable = props => {
                 selection
                 options={protocolOptions}
                 name='protocol'
-                value={data.ifDetails.protocol}
+                value={data.requirements.interface.protocol}
                 onChange={(e, { name, value }) => props.handleDetailsChange(e, data.uid, name, value)}
               />
             </Table.Cell>
