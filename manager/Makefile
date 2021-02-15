@@ -41,7 +41,7 @@ generate: $(TOOLBIN)/controller-gen
 # Generate code
 .PHONY: manifests
 manifests: $(TOOLBIN)/controller-gen
-	$(TOOLBIN)/controller-gen $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(TOOLBIN)/controller-gen $(CRD_OPTIONS) webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 # Install CRDs into a cluster
 .PHONY: install
