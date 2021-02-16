@@ -49,8 +49,8 @@ case "$op" in
         bin/vault login "$VAULT_TOKEN"
         enable_k8s_auth_for_cluster control "$CONTROL_CLUSTER_KUBE_HOST"
         enable_k8s_auth_for_cluster kind "$KIND_CLUSTER_KUBE_HOST"
-	configure_vault
-	add_role kind
+        configure_vault
+        add_role kind
         add_role control
         ;;
     *)
