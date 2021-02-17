@@ -4,8 +4,9 @@
 package motion
 
 import (
-	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	"os"
+
+	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )

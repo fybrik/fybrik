@@ -6,10 +6,11 @@ package motion
 import (
 	"context"
 	"fmt"
+
 	"github.com/go-logr/logr"
 	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	kbatch "k8s.io/api/batch/v1"
-	"k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/reference"
@@ -128,7 +129,7 @@ func (reconciler *BatchTransferReconciler) Reconcile(req ctrl.Request) (ctrl.Res
 	}
 
 	// Make sure that the secret exists
-	existingSecret := &v1.Secret{}
+	existingSecret := &corev1.Secret{}
 	if err := reconciler.Get(ctx, batchTransfer.ObjectKey(), existingSecret); err != nil {
 		if !kerrors.IsNotFound(err) {
 			log.Error(err, "could not fetch Secret for batchTransfer %s", batchTransfer.ObjectKey())
@@ -177,7 +178,7 @@ func (reconciler *BatchTransferReconciler) SetupWithManager(mgr ctrl.Manager) er
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&motionv1.BatchTransfer{}).
 		Owns(&kbatch.Job{}).
-		Owns(&v1.Pod{}).
+		Owns(&corev1.Pod{}).
 		Complete(reconciler)
 }
 
