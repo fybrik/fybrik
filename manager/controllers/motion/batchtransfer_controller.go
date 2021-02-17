@@ -35,16 +35,6 @@ type BatchTransferReconciler struct {
 	Reconciler
 }
 
-// annotation that allow this controller to access both BatchTransfers as well as Jobs and their status.
-// +kubebuilder:rbac:groups=motion.m4d.ibm.com,resources=batchtransfers;batchtransfers/finalizers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=motion.m4d.ibm.com,resources=batchtransfers/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=batch,resources=jobs;jobs/finalizers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="",resources=pods;pods/finalizers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=batch,resources=jobs/status,verbs=get
-// +kubebuilder:rbac:groups="",resources=events;secrets;secrets/finalizers,verbs=create;delete;get;list;patch;update;watch
-
-// the empty line above is really important, otherwise make manifests won't build the rbac/role.yaml
-
 // This is the main entry point of the controller. It reconciles BatchTransfer objects.
 // The batch transfer is implemented as a K8s Job or CronJob.
 // Reconciliation happens with the following steps:
