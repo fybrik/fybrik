@@ -116,7 +116,7 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		log.Info("Reconciled with errors: " + getErrorMessages(applicationContext))
 	}
 	if !applicationContext.Status.Ready {
-		return ctrl.Result{Requeue: true}, nil
+		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 	return ctrl.Result{}, nil
 }
