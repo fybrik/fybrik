@@ -317,7 +317,7 @@ func channelName(cluster string, name string) string {
 	return "m4d.ibm.com" + "-" + cluster + "-" + name
 }
 
-func NewRazeeManager(url string, login string, password string, orgID string) multicluster.ClusterManager {
+func NewRazeeManager(url string, login string, password string) (multicluster.ClusterManager, error) {
 	localAuth := &LocalAuthClient{
 		url:      url,
 		login:    login,
@@ -327,25 +327,47 @@ func NewRazeeManager(url string, login string, password string, orgID string) mu
 
 	con, _ := client.New(url, http.DefaultClient, localAuth)
 	logger := ctrl.Log.WithName("ClusterManager")
+	me, err := con.Users.Me()
+	if err != nil {
+		return nil, err
+	}
+
+	if me == nil {
+		return nil, errors.New("Could not retrieve login information of Razee!")
+	}
+
+	logger.Info("Initializing Razee local", "orgId", me.OrgId)
 
 	return &ClusterManager{
-		orgID: orgID,
+		orgID: me.OrgId,
 		con:   con,
 		log:   logger,
-	}
+	}, nil
 }
 
-func NewSatConfManager(apikey string, orgID string) multicluster.ClusterManager {
+func NewSatConfManager(apikey string) (multicluster.ClusterManager, error) {
 	authenticator := &core.IamAuthenticator{
 		ApiKey: apikey,
 	}
 
 	con, _ := client.New("https://config.satellite.cloud.ibm.com/graphql", http.DefaultClient, authenticator)
+
+	me, err := con.Users.Me()
+	if err != nil {
+		return nil, err
+	}
+
+	if me == nil {
+		return nil, errors.New("Could not retrieve login information of Razee!")
+	}
+
 	logger := ctrl.Log.WithName("RazeeManager")
 
+	logger.Info("Initializing Razee with IBM Satellite Config", "orgId", me.OrgId)
+
 	return &ClusterManager{
-		orgID: orgID,
+		orgID: me.OrgId,
 		con:   con,
 		log:   logger,
-	}
+	}, nil
 }

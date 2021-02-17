@@ -106,7 +106,10 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 		err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
-		SetupPlotterController(mgr, local.NewManager(mgr.GetClient(), "m4d-system"))
+		clusterMgr, err := local.NewManager(mgr.GetClient(), "m4d-system")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(clusterMgr).NotTo(BeNil())
+		SetupPlotterController(mgr, clusterMgr)
 
 		go func() {
 			err = mgr.Start(ctrl.SetupSignalHandler())
