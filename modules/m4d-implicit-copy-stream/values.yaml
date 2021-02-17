@@ -13,25 +13,25 @@ copy:
   # copies from source
   source:
     connection:
-      kafka:
-        bootstrap_servers: ""
-        schema_registry: ""
-        topic_name: ""
-        ssl_truststore: ""
-        ssl_truststore_password: ""
-        security_protocol: ""
-        sasl_mechanism: ""
-        key_deserializer: ""
-        value_deserializer: ""
-    credentialLocation: ""
-    format: ""
+      kafka: {}
+#        bootstrap_servers: ""
+#        schema_registry: ""
+#        topic_name: ""
+#        ssl_truststore: ""
+#        ssl_truststore_password: ""
+#        security_protocol: ""
+#        sasl_mechanism: ""
+#        key_deserializer: ""
+#        value_deserializer: ""
+#    credentialLocation: ""
+#    format: ""
 
   # copies to destination
   destination:
     connection:
-      s3:
-        endpoint: ""
-        bucket: ""
-        object_key: ""
-    format: ""
-    credentialLocation: ""
+      s3: {}
+#        endpoint: ""
+#        bucket: ""
+#        object_key: ""
+#    format: ""
+#    credentialLocation: ""
