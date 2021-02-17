@@ -24,8 +24,17 @@ const ApplicationTable = (props) => {
   // Show status success/in progress/error, and display the data access instructions
   const TableCellStatus = (status) => {
     if (('ready' in status.status) && status.status.ready) {
-      console.log(status.status.dataAccessInstructions)
-      let t0 = (<span style={{whiteSpace: "pre-line"}}>{status.status.dataAccessInstructions}</span>)
+      let feedback = ''
+      if (status.status.dataAccessInstructions) {
+        feedback += status.status.dataAccessInstructions
+      }
+      if (status.status.catalogedAssets) {
+        feedback += "Cataloged assets:\n"
+        for (const [key, value] of Object.entries(status.status.catalogedAssets)) {
+          feedback += "\n" + value 
+        }
+      }
+      let t0 = (<span style={{whiteSpace: "pre-line"}}>{feedback}</span>)
       return (
         <Table.Cell positive textAlign='center'>
           <Popup position='left center' pinned on='click' content={<div className="description">
