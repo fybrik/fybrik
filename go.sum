@@ -128,10 +128,6 @@ github.com/IBM/go-sdk-core v1.1.0 h1:pV73lZqr9r1xKb3h08c1uNG3AphwoV5KzUzhS+pfEqY
 github.com/IBM/go-sdk-core v1.1.0/go.mod h1:2pcx9YWsIsZ3I7kH+1amiAkXvLTZtAq9kbxsfXilSoY=
 github.com/IBM/go-sdk-core/v4 v4.8.0 h1:QA0GedzHgdvoCPxREItrfAWb5NMTnZjM3i7fEqC19Kg=
 github.com/IBM/go-sdk-core/v4 v4.8.0/go.mod h1:GECJ/p0r9Hs0XcOnCiGjZrt6M/rQc+gW8YkCsGJ+j5U=
-github.com/IBM/satcon-client-go v0.0.0-20210107134702-1be071817792 h1:AWqdZP2ZwG9VHIpgVgUPGZXXXqkiiVeUoWaEu2rem/k=
-github.com/IBM/satcon-client-go v0.0.0-20210107134702-1be071817792/go.mod h1:K9V1NwwCV8cXm5mEWK3s3+TpZwI/bWGPuT84C7jBecM=
-github.com/IBM/satcon-client-go v0.1.1 h1:hTXkza0YqbEpAFLTvHN6td0cyCCDYP0HXn6uu5+szOg=
-github.com/IBM/satcon-client-go v0.1.1/go.mod h1:p14cE7LZdNY+v3amHJ3ZaA4rYFfbK0efz6KspIhYAPI=
 github.com/IBM/satcon-client-go v0.1.2-0.20210210170826-405eaf53986f h1:lJHDhH8URJQkcu8bGDR+Low1RYmL3y3L6vnOzyjXoIE=
 github.com/IBM/satcon-client-go v0.1.2-0.20210210170826-405eaf53986f/go.mod h1:Ressk5uaqsgOzjHWT/8J+34doswsUwww5Gzs8P/zxGw=
 github.com/JeffAshton/win_pdh v0.0.0-20161109143554-76bb4ee9f0ab/go.mod h1:3VYc5hodBMJ5+l/7J4xAyMeuM2PNuepvHlGs8yilUCA=
@@ -1055,7 +1051,6 @@ github.com/heketi/rest v0.0.0-20180404230133-aa6a65207413/go.mod h1:BeS3M108VzVl
 github.com/heketi/tests v0.0.0-20151005000721-f3775cbcefd6/go.mod h1:xGMAM8JLi7UkZt1i4FQeQy0R2T8GLUwQhOP5M1gBhy4=
 github.com/heketi/utils v0.0.0-20170317161834-435bc5bdfa64/go.mod h1:RYlF4ghFZPPmk2TC5REt5OFwvfb6lzxFWrTWB+qs28s=
 github.com/helm/helm-2to3 v0.2.0/go.mod h1:jQUVAWB0bM7zNIqKPIfHFzuFSK0kHYovJrjO+hqcvRk=
-github.com/hokaccha/go-prettyjson v0.0.0-20190818114111-108c894c2c0e/go.mod h1:pFlLw2CfqZiIBOx6BuCeRLCrfxBJipTY0nIOF/VbGcI=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
 github.com/huandu/xstrings v1.2.0/go.mod h1:DvyZB1rfVYsBIigL8HwpZgxHwXozlTgGqn63UyNX5k4=
 github.com/huandu/xstrings v1.3.1 h1:4jgBlKK6tLKFvO8u5pmYjG91cqytmDCDvGh7ECVFfFs=

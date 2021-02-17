@@ -210,7 +210,6 @@ func NewClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error)
 		setupLog.Info("Using razee local at " + razeeURL)
 		return razee.NewRazeeManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password)
 	} else if apiKey, satConf := os.LookupEnv("IAM_API_KEY"); satConf {
-
 		setupLog.Info("Using IBM Satellite config")
 		return razee.NewSatConfManager(strings.TrimSpace(apiKey))
 	} else {

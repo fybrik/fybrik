@@ -333,7 +333,7 @@ func NewRazeeManager(url string, login string, password string) (multicluster.Cl
 	}
 
 	if me == nil {
-		return nil, errors.New("Could not retrieve login information of Razee!")
+		return nil, errors.New("could not retrieve login information of Razee")
 	}
 
 	logger.Info("Initializing Razee local", "orgId", me.OrgId)
@@ -358,7 +358,7 @@ func NewSatConfManager(apikey string) (multicluster.ClusterManager, error) {
 	}
 
 	if me == nil {
-		return nil, errors.New("Could not retrieve login information of Razee!")
+		return nil, errors.New("could not retrieve login information of Razee")
 	}
 
 	logger := ctrl.Log.WithName("RazeeManager")
