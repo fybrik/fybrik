@@ -20,21 +20,21 @@ noFinalizer: "false"
 copy:
   source:
     connection:
-      s3:
-        endpoint: ""
-        bucket: ""
-        object_key: ""
-    format: ""
-    credentialLocation: ""
+      s3: {}
+#        endpoint: ""
+#        bucket: ""
+#        object_key: ""
+#    format: ""
+#    credentialLocation: ""
 
   # copies to destination
   destination:
     connection:
-      s3:
-        endpoint: ""
-        bucket: ""
-        object_key: ""
-    format: ""
-    credentialLocation: ""
+      s3: {}
+#        endpoint: ""
+#        bucket: ""
+#        object_key: ""
+#    format: ""
+#    credentialLocation: ""
 
   transformations: []
