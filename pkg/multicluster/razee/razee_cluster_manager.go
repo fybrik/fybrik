@@ -9,6 +9,7 @@ import (
 
 	"github.com/IBM/satcon-client-go/client"
 	"github.com/IBM/satcon-client-go/client/auth/iam"
+	"github.com/IBM/satcon-client-go/client/auth/local"
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
 	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
@@ -318,13 +319,10 @@ func channelName(cluster string, name string) string {
 }
 
 func NewRazeeManager(url string, login string, password string) (multicluster.ClusterManager, error) {
-	localAuth := &LocalAuthClient{
-		url:      url,
-		login:    login,
-		password: password,
-		token:    "",
+	localAuth, err := local.NewClient(url, login, password)
+	if err != nil {
+		return nil, err
 	}
-
 	con, _ := client.New(url, http.DefaultClient, localAuth)
 	logger := ctrl.Log.WithName("ClusterManager")
 	me, err := con.Users.Me()
