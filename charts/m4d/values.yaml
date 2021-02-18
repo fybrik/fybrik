@@ -166,6 +166,16 @@ katalogConnector:
 
   affinity: {}
 
+razee: {}
+#  Razee local deployment requires the url, user and password parameters
+#  Razee deployment with oauth API key authentication requires the apiKey parameter
+#  Razee deployment with IBM Cloud Satellite Config requires the iamKey parameter
+#  url: ""
+#  user: ""
+#  password: ""
+#  apiKey: ""
+#  iamKey: ""
+
 # Overrides names
 nameOverride: ""
 fullnameOverride: ""
