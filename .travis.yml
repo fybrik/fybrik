@@ -80,7 +80,7 @@ jobs:
     deploy:
      skip_cleanup: true
      provider: script
-     script: make docker-retag-and-push-public && make helm-push-public
+     script: sudo chmod o+x /etc/docker && make docker-retag-and-push-public && make helm-push-public
      on:
        condition: $TRAVIS_PULL_REQUEST = false
        branch: master
