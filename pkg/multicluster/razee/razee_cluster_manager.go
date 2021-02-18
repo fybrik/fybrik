@@ -7,8 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/IBM/go-sdk-core/core"
 	"github.com/IBM/satcon-client-go/client"
+	"github.com/IBM/satcon-client-go/client/auth/iam"
+	"github.com/IBM/satcon-client-go/client/auth/local"
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
 	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
@@ -317,35 +318,57 @@ func channelName(cluster string, name string) string {
 	return "m4d.ibm.com" + "-" + cluster + "-" + name
 }
 
-func NewRazeeManager(url string, login string, password string, orgID string) multicluster.ClusterManager {
-	localAuth := &LocalAuthClient{
-		url:      url,
-		login:    login,
-		password: password,
-		token:    "",
+func NewRazeeManager(url string, login string, password string) (multicluster.ClusterManager, error) {
+	localAuth, err := local.NewClient(url, login, password)
+	if err != nil {
+		return nil, err
 	}
-
 	con, _ := client.New(url, http.DefaultClient, localAuth)
 	logger := ctrl.Log.WithName("ClusterManager")
+	me, err := con.Users.Me()
+	if err != nil {
+		return nil, err
+	}
+
+	if me == nil {
+		return nil, errors.New("could not retrieve login information of Razee")
+	}
+
+	logger.Info("Initializing Razee local", "orgId", me.OrgId)
 
 	return &ClusterManager{
-		orgID: orgID,
+		orgID: me.OrgId,
 		con:   con,
 		log:   logger,
-	}
+	}, nil
 }
 
-func NewSatConfManager(apikey string, orgID string) multicluster.ClusterManager {
-	authenticator := &core.IamAuthenticator{
-		ApiKey: apikey,
+func NewSatConfManager(apikey string) (multicluster.ClusterManager, error) {
+	iamClient, err := iam.NewIAMClient(apikey)
+	if err != nil {
+		return nil, err
+	}
+	if iamClient == nil {
+		return nil, errors.New("the IAMClient returned nil for IBM Cloud Satellite Config")
+	}
+	con, _ := client.New("https://config.satellite.cloud.ibm.com/graphql", http.DefaultClient, iamClient.Client)
+
+	me, err := con.Users.Me()
+	if err != nil {
+		return nil, err
 	}
 
-	con, _ := client.New("https://config.satellite.cloud.ibm.com/graphql", http.DefaultClient, authenticator)
+	if me == nil {
+		return nil, errors.New("could not retrieve login information of Razee")
+	}
+
 	logger := ctrl.Log.WithName("RazeeManager")
 
+	logger.Info("Initializing Razee with IBM Satellite Config", "orgId", me.OrgId)
+
 	return &ClusterManager{
-		orgID: orgID,
+		orgID: me.OrgId,
 		con:   con,
 		log:   logger,
-	}
+	}, nil
 }

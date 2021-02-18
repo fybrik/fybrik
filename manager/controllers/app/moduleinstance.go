@@ -439,7 +439,10 @@ func (m *ModuleManager) GetProcessingGeography(applicationContext *app.M4DApplic
 			return "", nil
 		}
 		// the workload runs in a local cluster
-		localClusterManager := local.NewManager(m.Client, utils.GetSystemNamespace())
+		localClusterManager, err := local.NewManager(m.Client, utils.GetSystemNamespace())
+		if err != nil {
+			return "", err
+		}
 		clusters, err := localClusterManager.GetClusters()
 		if err != nil || len(clusters) != 1 {
 			return "", err

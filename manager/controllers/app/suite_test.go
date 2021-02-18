@@ -81,6 +81,7 @@ var _ = BeforeSuite(func(done Done) {
 	if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
 		logf.Log.Info("Using existing controller in existing cluster...")
 		k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
+		Expect(err).ToNot(HaveOccurred())
 	} else {
 		// Mockup connectors
 		go mockup.CreateTestCatalogConnector(GinkgoT())
@@ -106,7 +107,10 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 		err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
-		SetupPlotterController(mgr, local.NewManager(mgr.GetClient(), "m4d-system"))
+		clusterMgr, err := local.NewManager(mgr.GetClient(), "m4d-system")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(clusterMgr).NotTo(BeNil())
+		SetupPlotterController(mgr, clusterMgr)
 
 		go func() {
 			err = mgr.Start(ctrl.SetupSignalHandler())

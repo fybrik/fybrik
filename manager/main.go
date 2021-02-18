@@ -110,11 +110,16 @@ func main() {
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrlOps)
 
-	// Initialize ClusterManager
-	clusterManager := NewClusterManager(mgr)
-
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
+		os.Exit(1)
+	}
+
+	// Initialize ClusterManager
+	clusterManager, err := NewClusterManager(mgr)
+
+	if err != nil {
+		setupLog.Error(err, "unable to initialize cluster manager")
 		os.Exit(1)
 	}
 
@@ -196,20 +201,17 @@ func initVaultConnection() (*api.Client, error) {
 
 // This method decides based on the environment variables that are set which
 // cluster manager instance should be initiated.
-func NewClusterManager(mgr manager.Manager) multicluster.ClusterManager {
+func NewClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error) {
 	setupLog := ctrl.Log.WithName("setup")
 	if user, razeeLocal := os.LookupEnv("RAZEE_USER"); razeeLocal {
 		razeeURL := strings.TrimSpace(os.Getenv("RAZEE_URL"))
 		password := strings.TrimSpace(os.Getenv("RAZEE_PASSWORD"))
-		orgID := strings.TrimSpace(os.Getenv("RAZEE_ORG_ID"))
 
-		setupLog.Info("Using razee at " + razeeURL + " orgId " + orgID)
-		return razee.NewRazeeManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password, orgID)
+		setupLog.Info("Using razee local at " + razeeURL)
+		return razee.NewRazeeManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password)
 	} else if apiKey, satConf := os.LookupEnv("IAM_API_KEY"); satConf {
-		orgID := strings.TrimSpace(os.Getenv("RAZEE_ORG_ID"))
-
-		setupLog.Info("Using IBM Satellite config with orgId " + orgID)
-		return razee.NewSatConfManager(strings.TrimSpace(apiKey), orgID)
+		setupLog.Info("Using IBM Satellite config")
+		return razee.NewSatConfManager(strings.TrimSpace(apiKey))
 	} else {
 		setupLog.Info("Using local cluster manager")
 		return local.NewManager(mgr.GetClient(), utils.GetSystemNamespace())

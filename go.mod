@@ -6,8 +6,7 @@ require (
 	cloud.google.com/go v0.66.0 // indirect
 	emperror.dev/errors v0.7.0
 	github.com/IBM/dataset-lifecycle-framework/src/dataset-operator v0.0.0-20210201112050-4d77ac693ac1
-	github.com/IBM/go-sdk-core v1.1.0
-	github.com/IBM/satcon-client-go v0.0.0-20210107134702-1be071817792
+	github.com/IBM/satcon-client-go v0.1.2-0.20210210170826-405eaf53986f
 	github.com/Microsoft/go-winio v0.4.15 // indirect
 	github.com/containerd/continuity v0.0.0-20201119173150-04c754faca46 // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
@@ -22,8 +21,6 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.6.7
 	github.com/hashicorp/vault v1.6.1
 	github.com/hashicorp/vault/api v1.0.5-0.20201001211907-38d91b749c77
-	github.com/machinebox/graphql v0.2.2
-	github.com/matryer/is v1.4.0 // indirect
 	github.com/mattn/go-runewidth v0.0.7 // indirect
 	github.com/onsi/ginkgo v1.14.2
 	github.com/onsi/gomega v1.10.3

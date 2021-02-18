@@ -55,7 +55,7 @@ export ORGAPIKEY=$(echo $CURLRESULT | jq .data.registerCluster.orgKey -r)
 export CLUSTERID=$(echo $CURLRESULT | jq .data.registerCluster.clusterId -r)
 
 kubectl create ns m4d-system || true
-kubectl -n m4d-system create secret generic razee-credentials --from-literal=RAZEE_ORG_ID=$ORGID --from-literal=RAZEE_URL="$RAZEEDASH_API/graphql" --from-literal=RAZEE_USER="$RAZEE_USER" --from-literal=RAZEE_PASSWORD=$RAZEE_PASSWORD
+kubectl -n m4d-system create secret generic razee-credentials --from-literal=RAZEE_URL="$RAZEEDASH_API/graphql" --from-literal=RAZEE_USER="$RAZEE_USER" --from-literal=RAZEE_PASSWORD=$RAZEE_PASSWORD
 
 if [ $ORGAPIKEY == "null" ]; then
   echo "Could not register cluster!"
