@@ -42,8 +42,19 @@ deny_access_struct = {
     "used_policy" : "<used_policy_struct>"
 }
 
+deny_write_struct = {
+    "action_name" : "deny",
+    "description" : "Writing of this data asset is denied",
+    "arguments" : {},
+    "used_policy" : "<used_policy_struct>"
+}
+
 build_deny_access_action(used_policies) = action {
     action = build_action(deny_access_struct.action_name, deny_access_struct.description, deny_access_struct.arguments, used_policies)
+}
+
+build_deny_write_action(used_policies) = action {
+    action = build_action(deny_write_struct.action_name, deny_write_struct.description, deny_write_struct.arguments, used_policies)
 }
 
 #remove column

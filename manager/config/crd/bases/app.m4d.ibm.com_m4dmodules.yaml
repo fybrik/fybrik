@@ -36,18 +36,13 @@ spec:
                 actions:
                   description: Actions are the data transformations that the module supports
                   items:
+                    description: SupportedAction declares an action that the module supports (action identifier and its scope)
                     properties:
-                      args:
-                        additionalProperties:
-                          type: string
-                        type: object
                       id:
                         type: string
                       level:
                         format: int32
                         type: integer
-                      name:
-                        type: string
                     type: object
                   type: array
                 api:
@@ -160,7 +155,7 @@ spec:
                 values:
                   additionalProperties:
                     type: string
-                  description: Values to pass to helm chart insallation
+                  description: Values to pass to helm chart installation
                   type: object
               required:
               - name

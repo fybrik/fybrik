@@ -4,7 +4,7 @@
 package v1alpha1
 
 import (
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	connectors "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -79,6 +79,14 @@ type Dependency struct {
 	Name string `json:"name"`
 }
 
+// SupportedAction declares an action that the module supports (action identifier and its scope)
+type SupportedAction struct {
+	// +required
+	ID string `json:"id,omitempty"`
+	// +optional
+	Level connectors.EnforcementAction_EnforcementActionLevel `json:"level,omitempty"`
+}
+
 // Capability declares what this module knows how to do and the types of data it knows how to handle
 type Capability struct {
 
@@ -100,7 +108,7 @@ type Capability struct {
 
 	// Actions are the data transformations that the module supports
 	// +optional
-	Actions []pb.EnforcementAction `json:"actions,omitempty"`
+	Actions []SupportedAction `json:"actions,omitempty"`
 }
 
 // ResourceStatusIndicator is used to determine the status of an orchestrated resource
@@ -155,7 +163,7 @@ type ChartSpec struct {
 	// +required
 	Name string `json:"name"`
 
-	// Values to pass to helm chart insallation
+	// Values to pass to helm chart installation
 	// +optional
 	Values map[string]string `json:"values,omitempty"`
 }

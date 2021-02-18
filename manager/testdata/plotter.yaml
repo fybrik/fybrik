@@ -6,6 +6,9 @@ kind: Plotter
 metadata:
   name: plotter
   namespace: m4d-system
+  labels:
+    app.m4d.ibm.com/appNamespace: default
+    app.m4d.ibm.com/appName: notebook
 spec:
   blueprints:
     kind-kind:
@@ -35,12 +38,12 @@ spec:
                     ssl: "true"
                 credentialLocation: "/v1/secret/data/db2/m4d"
                 format: table
-          name: implicit-copy-db2wh-to-s3-latest
-          template: implicit-copy-db2wh-to-s3-latest
+          name: implicit-copy-batch-latest
+          template: implicit-copy-batch-latest
       selector: {}
       templates:
       - kind: M4DModule
-        name: implicit-copy-db2wh-to-s3-latest
+        name: implicit-copy-batch-latest
         chart:
-          name: kind-registry:5000/m4d-system/m4d-db2wh:0.1.0
+          name: localhost:5000/m4d-system/m4d-implicit-copy-batch:0.1.0
   selector: {}

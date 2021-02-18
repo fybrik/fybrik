@@ -5,13 +5,20 @@ syntax = "proto3";
 
 package connectors;
 option java_package = "com.datmesh";
+option go_package = "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf";
 
 import "data_catalog_request.proto";
 
 import "data_catalog_response.proto";
 
+import "register_asset_request.proto";
+
+import "register_asset_response.proto";
+
 service DataCatalogService {
 	
 	rpc GetDatasetInfo (CatalogDatasetRequest) returns (CatalogDatasetInfo) {}
+
+	rpc RegisterDatasetInfo (RegisterAssetRequest) returns (RegisterAssetResponse) {}	
 
 } 

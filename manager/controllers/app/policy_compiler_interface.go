@@ -4,15 +4,15 @@
 package app
 
 import (
+	"emperror.dev/errors"
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 )
 
 // ConstructApplicationContext constructs ApplicationContext structure to send to Policy Compiler
-func ConstructApplicationContext(datasetID string, input *app.M4DApplication, operation pb.AccessOperation) *pb.ApplicationContext {
+func ConstructApplicationContext(datasetID string, input *app.M4DApplication, operation *pb.AccessOperation) *pb.ApplicationContext {
 	return &pb.ApplicationContext{
 		AppInfo: &pb.ApplicationDetails{
 			Purpose:             input.Spec.AppInfo.Purpose,
@@ -24,26 +24,19 @@ func ConstructApplicationContext(datasetID string, input *app.M4DApplication, op
 			Dataset: &pb.DatasetIdentifier{
 				DatasetId: datasetID,
 			},
-			Operation: &operation,
+			Operation: operation,
 		}},
 	}
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
-func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, input *app.M4DApplication, op pb.AccessOperation) (modules.Operations, error) {
+func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, input *app.M4DApplication, op *pb.AccessOperation) ([]*pb.EnforcementAction, error) {
 	// call external policy manager to get governance instructions for this operation
 	appContext := ConstructApplicationContext(datasetID, input, op)
 	pcresponse, err := policyCompiler.GetPoliciesDecisions(appContext)
+	actions := []*pb.EnforcementAction{}
 	if err != nil {
-		return modules.Operations{}, err
-	}
-
-	// initialize Actions structure
-	res := modules.Operations{
-		Allowed:            true,
-		Message:            "",
-		Geo:                op.Destination,
-		EnforcementActions: make([]pb.EnforcementAction, 0),
+		return actions, err
 	}
 
 	for _, datasetDecision := range pcresponse.GetDatasetDecisions() {
@@ -55,22 +48,21 @@ func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, 
 			enforcementActions := operationDecision.GetEnforcementActions()
 			for _, action := range enforcementActions {
 				if utils.IsDenied(action.GetName()) {
-					res.Allowed = false
+					var message string
 					switch operationDecision.Operation.Type {
 					case pb.AccessOperation_READ:
-						res.Message = app.ReadAccessDenied
+						message = app.ReadAccessDenied
 					case pb.AccessOperation_WRITE:
-						res.Message = app.WriteNotAllowed
+						message = app.WriteNotAllowed
 					}
-					return res, nil
+					return actions, errors.New(message)
 				}
-				res.Allowed = true
 				// Check if this is a real action (i.e. not Allow)
 				if utils.IsAction(action.GetName()) {
-					res.EnforcementActions = append(res.EnforcementActions, *action.DeepCopy())
+					actions = append(actions, action)
 				}
 			}
 		}
 	}
-	return res, nil
+	return actions, nil
 }

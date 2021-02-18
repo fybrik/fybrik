@@ -19,7 +19,7 @@ import (
 
 var opaServerURL = ""
 
-const defaultPort = "50082" //synched with opa_connector.yaml
+const defaultPort = "50082" // synced with opa_connector.yaml
 
 type server struct {
 	pb.UnimplementedPolicyManagerServiceServer
@@ -38,7 +38,7 @@ func getEnv(key string) string {
 func getEnvWithDefault(key string, defaultValue string) string {
 	value, exists := os.LookupEnv(key)
 	if !exists {
-		log.Printf("Env. variable not found, defualt value used: %s - %s\n", key, defaultValue)
+		log.Printf("Env. variable not found, default value used: %s - %s\n", key, defaultValue)
 		return defaultValue
 	}
 
@@ -47,10 +47,11 @@ func getEnvWithDefault(key string, defaultValue string) string {
 }
 
 func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationContext) (*pb.PoliciesDecisions, error) {
-
 	log.Println("Received ApplicationContext")
 	log.Println(in)
+
 	catalogConnectorAddress := getEnv("CATALOG_CONNECTOR_URL")
+	policyToBeEvaluated := getEnv("POLICY_TO_BE_EVALUATED")
 
 	timeOutInSecs := getEnv("CONNECTION_TIMEOUT")
 	timeOut, err := strconv.Atoi(timeOutInSecs)
@@ -60,7 +61,7 @@ func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationCon
 	}
 
 	catalogReader := opabl.NewCatalogReader(catalogConnectorAddress, timeOut)
-	eval, err := s.opaReader.GetOPADecisions(in, catalogReader)
+	eval, err := s.opaReader.GetOPADecisions(in, catalogReader, policyToBeEvaluated)
 	if err != nil {
 		log.Println("GetOPADecisions err:", err)
 		return nil, err

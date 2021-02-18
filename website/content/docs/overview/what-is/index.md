@@ -23,11 +23,12 @@ The inputs to {{< name >}} are declarative definitions with separation of aspect
 - Data users input definitions related to data usage in the business logic of their applications
 - Data operators input definitions related to infrastructure and available resources
 
-Upon creation or change of any definition, {{< name >}} compiles together relevant inputs into a blueprint of the data path (per application). 
+Upon creation or change of any definition, {{< name >}} compiles together relevant inputs into blueprints of the data path (per application). 
 The blueprint augments the application workload and data sources with additional services and functions packed as pluggable modules. This creates a data path that:
 
 - Integrates business logic with non-functional data centric requirements such as enabling data access regardless of its physical location, caching, lineage tracking, etc.
 - Enforce governance on the usage of data; including limiting what data the business logic can access, performing transformations as needed, controlling what the business logic can export and where to
+- Makes data available in locations where it is needed. Thus in a multi cluster scenario it may copy data from one location to another
 
 {{< name >}} is an open solution that can be extended to work with a wide range of tools and data stores. For example, the injectable [modules](../modules) and the [connectors](../connectors) to external systems (e.g., to a data catalog) can all be third party.
 
@@ -49,8 +50,18 @@ Instead, modules are injected into the data path to handle access to data, inclu
 
 ## Multicluster
 
-In the current implementation the data stores can be external to the cluster but the application and all injected modules must reside in the same cluster that {{< name >}} is installed to. 
+{{< name >}} supports data paths that access data stores that are external to the cluster
+ such as cloud managed object stores or databases as well as data stores within the cluster such as databases running in Kubernetes.
+All applications and modules however will run within a cluster that has {{< name >}} installed.
 
-A top priority goal of the project is to add support for creating data paths that span multiple clusters in multi-cloud and hybrid cloud scenarios. 
+Multi-cloud and hybrid cloud scenarios are supported out of the box by running {{< name >}} in multiple
+Kubernetes clusters and configuring the manager to use a multi cluster coordination mechanism such as razee.
+This enables cases such as running transformations on-prem while creating an implicit copy of an on-prem SoR table to a public cloud storage system.  
 
-For example, running transformations on-prem while creating an implicit copy of an on-prem SoR table to a public cloud storage system.
+The architecture of a multi cloud setup is described [here](../architecture). The installation options
+ for a multi cluster setup are described [here](../../setup/multicluster).
+
+
+
+
+

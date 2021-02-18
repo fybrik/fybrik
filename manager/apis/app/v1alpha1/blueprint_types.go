@@ -4,8 +4,8 @@
 package v1alpha1
 
 import (
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // CopyModuleArgs define the input parameters for modules that copy data from location A to location B
@@ -22,7 +22,7 @@ type CopyModuleArgs struct {
 
 	// Transformations are different types of processing that may be done to the data as it is copied.
 	// +optional
-	Transformations []pb.EnforcementAction `json:"transformations,omitempty"`
+	Transformations []runtime.RawExtension `json:"transformations,omitempty"`
 }
 
 // ReadModuleArgs define the input parameters for modules that read data from location A
@@ -38,7 +38,7 @@ type ReadModuleArgs struct {
 
 	// Transformations are different types of processing that may be done to the data
 	// +optional
-	Transformations []pb.EnforcementAction `json:"transformations,omitempty"`
+	Transformations []runtime.RawExtension `json:"transformations,omitempty"`
 }
 
 // WriteModuleArgs define the input parameters for modules that write data to location B
@@ -49,7 +49,7 @@ type WriteModuleArgs struct {
 
 	// Transformations are different types of processing that may be done to the data as it is written.
 	// +optional
-	Transformations []pb.EnforcementAction `json:"transformations,omitempty"`
+	Transformations []runtime.RawExtension `json:"transformations,omitempty"`
 }
 
 // ModuleArguments are the parameters passed to a component that runs in the data path
@@ -205,3 +205,8 @@ func CreateMetaBlueprintWithoutState(blueprint *Blueprint) MetaBlueprint {
 	}
 	return metaBlueprint
 }
+
+const (
+	BlueprintNamespaceLabel = "app.m4d.ibm.com/blueprintNamespace"
+	BlueprintNameLabel      = "app.m4d.ibm.com/blueprintName"
+)

@@ -17,34 +17,42 @@ const NewApplicationEdit = props => {
   // parse matchLabels
   const parseMatchLabels = lables => {
     var result = {};
-    array.chunk(array.split(array.split(lables, ':'), ','), 2).forEach(a => {
-      result[a[0].trim()] = a[1].trim()
-    })
+    console.log("Inside parseMatchLabels")
+    console.log(lables)
+    if (lables.length > 0) {
+      array.chunk(array.split(array.split(lables, ':'), ','), 2).forEach(a => {
+        result[a[0].trim()] = a[1].trim()
+      })
+    }
     return result
   }
 
   const parseSelector = selectorMap => {
     var result = ''
+    if (!selectorMap) {
+      return ''
+    }
     for (const [key, value] of Object.entries(selectorMap)) {
       result += key + ':' + value + ','
     }
     return result.slice(0,result.length-1)
   }
-
+ 
   // application instance
   const [application, setApplication] = useState({
     name: props.history.location.state.application.metadata.name,
-    labels: exists ? props.history.location.state.application.spec.selector.matchLabels : parseMatchLabels(props.history.location.state.application.spec.selector.matchLabels),
+    clusterName: props.history.location.state.application.spec.selector.clusterName,
+    labels:  exists ? parseSelector(props.history.location.state.application.spec.selector.workloadSelector.matchLabels) : props.history.location.state.application.spec.selector.workloadSelector.matchLabels,
     resourceVersion:  exists ? props.history.location.state.application.metadata.resourceVersion : '',
     role: exists ? props.history.location.state.application.spec.appInfo.role : '',
     purpose: exists ? props.history.location.state.application.spec.appInfo.purpose : '',
-    geography: exists ? props.history.location.state.application.geography : props.location.state.application.geography,
+    geography: exists ? props.history.location.state.application.geography : props.location.state.application.geography,  
   })
   //application instance data
   const [applicationData, setApplicationData] = useState(
     (exists
       ? props.history.location.state.application.spec.data
-      : [{ uid: uniqid(), dataSetID: '', ifDetails: { protocol: 's3', dataformat: 'parquet' } }]))
+      : [{ uid: uniqid(), dataSetID: '', requirements: { copy: {required: false, catalog: {catalogID: ''}}, interface: { protocol: 's3', dataformat: 'parquet' } }}]))
   // error state
   const [errors, setErrors] = useState({ purpose: !exists, role: !exists, data: !exists })
   // message from request
@@ -52,7 +60,8 @@ const NewApplicationEdit = props => {
 
   // add new application instance data with default initial values
   const addDataRow = () => {
-    setApplicationData([...applicationData, { uid: uniqid(), dataSetID: '', ifDetails: { protocol: 's3', dataformat: 'parquet' } }])
+    setApplicationData([...applicationData, { uid: uniqid(), dataSetID: '', 
+    requirements: { copy: {required: false, catalog: {catalogID: ''}}, interface: { protocol: 's3', dataformat: 'parquet' } }}])
     setErrors({ ...errors, data: true })
   }
 
@@ -67,7 +76,14 @@ const NewApplicationEdit = props => {
   }
 
   const handleDetailsChange = (event, uid, name, value) => {
-    setApplicationData(applicationData.map(d => d.uid === uid ? { ...d, ifDetails: { ...d.ifDetails, [name]: value } } : d))
+     setApplicationData(applicationData.map(d => d.uid === uid ? { ...d, requirements: {interface: { ...d.requirements.interface, [name]: value } }} : d))
+  }
+
+  const handleCatalogChange = (event, uid) => {
+    const { name, value } = event.target
+    setApplicationData(applicationData.map(d => d.uid === uid ? { ...d, requirements: 
+      {interface: {...d.requirements.interface}, 
+      copy: {required: value.length > 0, catalog: {catalogID: value }}}} : d))
   }
 
   // handle change to input fields
@@ -90,9 +106,9 @@ const NewApplicationEdit = props => {
       data: {
         apiVersion: 'app.m4d.ibm.com/v1alpha1',
         kind: 'M4DApplication',
-        metadata: {
+        metadata: {  
           name: application.name,
-          resourceVersion: application.resourceVersion
+          resourceVersion: application.resourceVersion,
         },
         spec: {
           appInfo: {
@@ -100,8 +116,10 @@ const NewApplicationEdit = props => {
             role: application.role,
           },
           selector: { 
-            clusterName: application.geography,
-            matchLabels: application.labels
+            clusterName: application.clusterName,
+            workloadSelector: {
+              matchLabels: parseMatchLabels(application.labels)
+            },
           },
           data: dataToSend
         }
@@ -158,11 +176,17 @@ const NewApplicationEdit = props => {
         disabled={true}
         defaultValue={application.name}
       />
-      <Form.Input
+     <Form.Input
         label='Workload selector'
         required formNoValidate
         disabled={true}
-        defaultValue={parseSelector(application.labels)}
+        defaultValue={application.labels}
+      />
+     <Form.Input
+        label='Workload cluster'
+        required formNoValidate
+        disabled={true}
+        defaultValue={application.clusterName}
       />
       <Form.Input
         label='Purpose'
@@ -187,7 +211,7 @@ const NewApplicationEdit = props => {
 
       <Divider hidden />
       <InputDataTable applicationData={applicationData} deleteDataRow={deleteDataRow} addDataRow={addDataRow}
-        handleIDChange={handleIDChange} handleDetailsChange={handleDetailsChange} />
+        handleIDChange={handleIDChange} handleDetailsChange={handleDetailsChange} handleCatalogChange={handleCatalogChange} />
       <Divider hidden />
 
       <Button icon labelPosition='left' as={Link} to="/" color='red'>

@@ -116,15 +116,6 @@ const StoreCredentials = props => {
           value={application.metadata.name}
         />
         <Divider hidden />
-        <Form.Input
-          required
-          label='Workload selector'
-          disabled={true}
-          color='black'
-          value={application.spec.selector.matchLabels}
-        />
-
-        <Divider hidden />
         {creds.map(cred => (<div key={cred.uid}>
           <Header as='h4'>{cred.system}
             {cred.labels.map(label =>

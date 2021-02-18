@@ -14,14 +14,14 @@ import java.util.Map;
 import java.util.HashMap;
 
 import com.datmesh.DataCatalogResponse.CatalogDatasetInfo;
-import com.datmesh.DataCatalogResponse.DatasetDetails;
-import com.datmesh.DataCatalogResponse.DatasetMetadata;
-import com.datmesh.DataCatalogResponse.Db2DataStore;
-import com.datmesh.DataCatalogResponse.KafkaDataStore;
-import com.datmesh.DataCatalogResponse.S3DataStore;
-import com.datmesh.DataCatalogResponse.DataStore.DataStoreType;
-import com.datmesh.DataCatalogResponse.DataComponentMetadata;
-import com.datmesh.DataCatalogResponse.DataStore;
+import com.datmesh.DatasetDetailsOuterClass.DatasetDetails;
+import com.datmesh.DatasetDetailsOuterClass.DatasetMetadata;
+import com.datmesh.DatasetDetailsOuterClass.Db2DataStore;
+import com.datmesh.DatasetDetailsOuterClass.KafkaDataStore;
+import com.datmesh.DatasetDetailsOuterClass.S3DataStore;
+import com.datmesh.DatasetDetailsOuterClass.DataStore.DataStoreType;
+import com.datmesh.DatasetDetailsOuterClass.DataComponentMetadata;
+import com.datmesh.DatasetDetailsOuterClass.DataStore;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;

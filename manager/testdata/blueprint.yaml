@@ -6,6 +6,9 @@ kind: Blueprint
 metadata:
   name: blueprint-ysqxbhyihk
   namespace: default
+  labels:
+    app.m4d.ibm.com/appNamespace: default
+    app.m4d.ibm.com/appName: notebook
 spec:
   selector:
     matchLabels:
@@ -45,11 +48,11 @@ spec:
             enforcementActionName: redact
         readargs: {}
         writeargs: {}
-      name: notebook-implicit-copy-db2wh-to-s3-latest-fgjzkfwykn
-      template: implicit-copy-db2wh-to-s3-latest
+      name: notebook-implicit-copy-batch-latest-fgjzkfwykn
+      template: implicit-copy-batch-latest
   templates:
-  - name: implicit-copy-db2wh-to-s3-latest
+  - name: implicit-copy-batch-latest
     kind: M4DModule
     flow: copy
     chart:
-      name: kind-registry:5000/m4d-system/m4d-db2wh:0.1.0
+      name: localhost:5000/m4d-system/m4d-implicit-copy-batch:0.1.0

@@ -95,27 +95,19 @@ rules:
 - apiGroups:
   - app.m4d.ibm.com
   resources:
-  - m4dbuckets
-  verbs:
-  - get
-  - list
-  - update
-  - watch
-- apiGroups:
-  - app.m4d.ibm.com
-  resources:
-  - m4dbuckets/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - app.m4d.ibm.com
-  resources:
   - m4dmodules
   verbs:
   - get
   - list
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - m4dstorageaccounts
+  verbs:
+  - get
+  - list
+  - update
   - watch
 - apiGroups:
   - app.m4d.ibm.com
@@ -170,6 +162,18 @@ rules:
   - jobs/status
   verbs:
   - get
+- apiGroups:
+  - com.ie.ibm.hpsys
+  resources:
+  - datasets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
   - ""
   resources:

@@ -21,11 +21,20 @@ const ApplicationTable = (props) => {
     onClose()
   }
 
-  // Show status success/in prgress/error
+  // Show status success/in progress/error, and display the data access instructions
   const TableCellStatus = (status) => {
     if (('ready' in status.status) && status.status.ready) {
-      console.log(status.status.dataAccessInstructions)
-      let t0 = (<span style={{whiteSpace: "pre-line"}}>{status.status.dataAccessInstructions}</span>)
+      let feedback = ''
+      if (status.status.dataAccessInstructions) {
+        feedback += status.status.dataAccessInstructions
+      }
+      if (status.status.catalogedAssets) {
+        feedback += "Cataloged assets:\n"
+        for (const [key, value] of Object.entries(status.status.catalogedAssets)) {
+          feedback += "\n" + value 
+        }
+      }
+      let t0 = (<span style={{whiteSpace: "pre-line"}}>{feedback}</span>)
       return (
         <Table.Cell positive textAlign='center'>
           <Popup position='left center' pinned on='click' content={<div className="description">
@@ -36,7 +45,7 @@ const ApplicationTable = (props) => {
         </Table.Cell>
       )
     } else {
-      if ('conditions' in status.status && (status.status.conditions[0].status == "True" || status.status.conditions[1].status == "True")) {
+      if ('conditions' in status.status && (status.status.conditions[0].status === "True" || status.status.conditions[1].status === "True")) {
         return (
           <Table.Cell textAlign='center'>
             <Popup position='left center' pinned on='click' trigger={<Button basic icon='exclamation' flowing='true' color='red'/>}>

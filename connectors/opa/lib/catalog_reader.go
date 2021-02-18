@@ -57,17 +57,17 @@ func (r *CatalogReader) GetDatasetsMetadataFromCatalog(in *pb.ApplicationContext
 	return datasetsMetadata, nil
 }
 
-func (c *CatalogReader) GetDatasetMetadata(ctx *context.Context, client pb.DataCatalogServiceClient, datasetID string, appID string) (map[string]interface{}, error) {
+func (r *CatalogReader) GetDatasetMetadata(ctx *context.Context, client pb.DataCatalogServiceClient, datasetID string, appID string) (map[string]interface{}, error) {
 	objToSend := &pb.CatalogDatasetRequest{AppId: appID, DatasetId: datasetID}
 	log.Printf("Sending request to External Catalog Connector: datasetID = %s", datasetID)
-	r, err := client.GetDatasetInfo(*ctx, objToSend)
+	info, err := client.GetDatasetInfo(*ctx, objToSend)
 	if err != nil {
 		return nil, fmt.Errorf("error sending data to External Catalog Connector (datasetID = %s): %v", datasetID, err)
 	}
 
 	log.Printf("Received Response from External Catalog Connector for  dataSetID: %s\n", datasetID)
 	log.Printf("Response received from External Catalog Connector is given below:")
-	responseBytes, errJSON := json.MarshalIndent(r, "", "\t")
+	responseBytes, errJSON := json.MarshalIndent(info, "", "\t")
 	if errJSON != nil {
 		return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
 	}

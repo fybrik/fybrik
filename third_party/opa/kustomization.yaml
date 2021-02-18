@@ -18,4 +18,4 @@ configMapGenerator:
   - data-and-policies/data_policies/verify_correct_input.rego
   - data-and-policies/data_policies/taxonomies.json
   - data-and-policies/data_policies/medical_taxonomies.json
-  - data-and-policies/user_policies.rego
+  - data-and-policies/sample_policies.rego

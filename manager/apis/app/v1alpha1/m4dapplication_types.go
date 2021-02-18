@@ -6,6 +6,7 @@ package v1alpha1
 import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // CatalogRequirements contain the specifics for catalogging the data asset
@@ -146,6 +147,16 @@ type ResourceReference struct {
 	Kind string `json:"kind"`
 }
 
+// DatasetDetails contain dataset connection and metadata required to register this dataset in the enterprise catalog
+type DatasetDetails struct {
+	// Reference to a Dataset resource containing the request to provision storage
+	DatasetRef string `json:"datasetRef,omitempty"`
+	// Reference to a secret where the credentials are stored
+	SecretRef string `json:"secretRef,omitempty"`
+	// Dataset information
+	Details runtime.RawExtension `json:"details,omitempty"`
+}
+
 // M4DApplicationStatus defines the observed state of M4DApplication.
 type M4DApplicationStatus struct {
 
@@ -161,6 +172,11 @@ type M4DApplicationStatus struct {
 	// +optional
 	DataAccessInstructions string `json:"dataAccessInstructions,omitempty"`
 
+	// CatalogedAssets provide the new asset identifiers after being registered in the enterprise catalog
+	// It maps the original asset id to the cataloged asset id.
+	// +optional
+	CatalogedAssets map[string]string `json:"catalogedAssets,omitempty"`
+
 	// ObservedGeneration is taken from the M4DApplication metadata.  This is used to determine during reconcile
 	// whether reconcile was called because the desired state changed, or whether the Blueprint status changed.
 	// +optional
@@ -169,6 +185,12 @@ type M4DApplicationStatus struct {
 	// Generated resource identifier
 	// +optional
 	Generated *ResourceReference `json:"generated,omitempty"`
+
+	// ProvisionedStorage maps a dataset (identified by DataSetID) to the new provisioned bucket.
+	// It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received.
+	// ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready
+	// +optional
+	ProvisionedStorage map[string]DatasetDetails `json:"provisionedStorage,omitempty"`
 }
 
 // M4DApplication provides information about the application being used by a Data Scientist,
@@ -201,3 +223,9 @@ type M4DApplicationList struct {
 func init() {
 	SchemeBuilder.Register(&M4DApplication{}, &M4DApplicationList{})
 }
+
+const (
+	ApplicationClusterLabel   = "app.m4d.ibm.com/appCluster"
+	ApplicationNamespaceLabel = "app.m4d.ibm.com/appNamespace"
+	ApplicationNameLabel      = "app.m4d.ibm.com/appName"
+)

@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
@@ -24,19 +25,13 @@ import (
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
-	local "github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
+	"github.com/ibm/the-mesh-for-data/pkg/serde"
+	"github.com/ibm/the-mesh-for-data/pkg/storage"
 
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-)
-
-const (
-	// OwnerLabelKey is a key to Labels map.
-	// All owned resources should be labeled using this key.
-	OwnerLabelKey string = "m4d.ibm.com/owner"
 )
 
 // M4DApplicationReconciler reconciles a M4DApplication object
@@ -49,16 +44,8 @@ type M4DApplicationReconciler struct {
 	PolicyCompiler    pc.IPolicyCompiler
 	ResourceInterface ContextInterface
 	ClusterManager    multicluster.ClusterLister
+	Provision         storage.ProvisionInterface
 }
-
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dapplications,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dapplications/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=blueprints,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=plotters,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core,resources=namespaces,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dmodules,verbs=get;list;watch
-
-// +kubebuilder:rbac:groups=*,resources=*,verbs=*
 
 // Reconcile reconciles M4DApplication CRD
 // It receives M4DApplication CRD and selects the appropriate modules that will run
@@ -86,7 +73,7 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	observedStatus := applicationContext.Status.DeepCopy()
 
 	// check if reconcile is required
-	// reconcile is required if the spec has been changed, or the previous reconcile has failed to allocate a Blueprint or a Plotter resource
+	// reconcile is required if the spec has been changed, or the previous reconcile has failed to allocate a Plotter resource
 	generationComplete := r.ResourceInterface.ResourceExists(applicationContext.Status.Generated)
 	if !generationComplete || observedStatus.ObservedGeneration != applicationContext.GetGeneration() {
 		if result, err := r.reconcile(applicationContext); err != nil {
@@ -104,7 +91,9 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		if err != nil {
 			return ctrl.Result{}, err
 		}
-		checkResourceStatus(applicationContext, resourceStatus)
+		if err = r.checkReadiness(applicationContext, resourceStatus); err != nil {
+			return ctrl.Result{}, err
+		}
 	}
 
 	// Update CRD status in case of change (other than deletion, which was handled separately)
@@ -117,23 +106,65 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	if hasError(applicationContext) {
 		log.Info("Reconciled with errors: " + getErrorMessages(applicationContext))
 	}
+	if !applicationContext.Status.Ready {
+		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
+	}
 	return ctrl.Result{}, nil
 }
 
-func checkResourceStatus(applicationContext *app.M4DApplication, status app.ObservedState) {
+func getBucketResourceRef(name string) *types.NamespacedName {
+	return &types.NamespacedName{Name: name, Namespace: utils.GetSystemNamespace()}
+}
+
+func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApplication, status app.ObservedState) error {
 	applicationContext.Status.DataAccessInstructions = ""
 	applicationContext.Status.Ready = false
+	if applicationContext.Status.CatalogedAssets == nil {
+		applicationContext.Status.CatalogedAssets = make(map[string]string)
+	}
+
 	if hasError(applicationContext) {
-		return
+		return nil
 	}
 	if status.Error != "" {
 		setCondition(applicationContext, "", status.Error, true)
-		return
+		return nil
 	}
-	if status.Ready {
-		applicationContext.Status.Ready = true
-		applicationContext.Status.DataAccessInstructions = status.DataAccessInstructions
+	if !status.Ready {
+		return nil
 	}
+	// Plotter is ready - update the M4DApplication status
+
+	// register assets if necessary if the ready state has been received
+	for _, dataCtx := range applicationContext.Spec.Data {
+		if dataCtx.Requirements.Copy.Catalog.CatalogID != "" {
+			if _, cataloged := applicationContext.Status.CatalogedAssets[dataCtx.DataSetID]; cataloged {
+				// the asset has been already cataloged
+				continue
+			}
+			// mark the bucket as persistent and register the asset
+			provisionedBucketRef, found := applicationContext.Status.ProvisionedStorage[dataCtx.DataSetID]
+			if !found {
+				message := "No copy has been created for the asset " + dataCtx.DataSetID + " required to be registered"
+				r.Log.V(0).Info(message)
+				return errors.New(message)
+			}
+			if err := r.Provision.SetPersistent(getBucketResourceRef(provisionedBucketRef.DatasetRef), true); err != nil {
+				return err
+			}
+			// register the asset: experimental feature
+			if newAssetID, err := r.RegisterAsset(dataCtx.Requirements.Copy.Catalog.CatalogID, &provisionedBucketRef, applicationContext); err == nil {
+				applicationContext.Status.CatalogedAssets[dataCtx.DataSetID] = newAssetID
+			} else {
+				// log an error and make a new attempt to register the asset
+				r.Log.V(0).Info("Error while registering an asset: " + err.Error())
+				return nil
+			}
+		}
+	}
+	applicationContext.Status.Ready = true
+	applicationContext.Status.DataAccessInstructions = status.DataAccessInstructions
+	return nil
 }
 
 // reconcileFinalizers reconciles finalizers for M4DApplication
@@ -171,12 +202,23 @@ func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M
 }
 
 func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *app.M4DApplication) error {
-	// clear provisioned buckets
-	key, _ := client.ObjectKeyFromObject(applicationContext)
-	if err := r.FreeStorageAssets(key); err != nil {
-		return err
+	// clear provisioned storage
+	// References to buckets (Dataset resources) are deleted. Buckets that are persistent will not be removed upon Dataset deletion.
+	var deletedBuckets []string
+	var errMsgs []string
+	for _, datasetDetails := range applicationContext.Status.ProvisionedStorage {
+		if err := r.Provision.DeleteDataset(getBucketResourceRef(datasetDetails.DatasetRef)); err != nil {
+			errMsgs = append(errMsgs, err.Error())
+		} else {
+			deletedBuckets = append(deletedBuckets, datasetDetails.DatasetRef)
+		}
 	}
-
+	for _, bucket := range deletedBuckets {
+		delete(applicationContext.Status.ProvisionedStorage, bucket)
+	}
+	if len(errMsgs) != 0 {
+		return errors.New(strings.Join(errMsgs, ";"))
+	}
 	// delete the generated resource
 	if applicationContext.Status.Generated == nil {
 		return nil
@@ -201,13 +243,8 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	resetConditions(applicationContext)
 	applicationContext.Status.DataAccessInstructions = ""
 	applicationContext.Status.Ready = false
-
-	key, _ := client.ObjectKeyFromObject(applicationContext)
-
-	// clear storage assets
-	// TODO: if implicit copy is still required for the same dataset, do not free the bucket
-	if err := r.FreeStorageAssets(key); err != nil {
-		return ctrl.Result{}, err
+	if applicationContext.Status.ProvisionedStorage == nil {
+		applicationContext.Status.ProvisionedStorage = make(map[string]app.DatasetDetails)
 	}
 
 	clusters, err := r.ClusterManager.GetClusters()
@@ -218,10 +255,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	var requirements []modules.DataInfo
 	for _, dataset := range applicationContext.Spec.Data {
 		req := modules.DataInfo{
-			DataDetails: nil,
-			Credentials: nil,
-			Actions:     make(map[pb.AccessOperation_AccessType]modules.Operations),
-			Context:     &dataset,
+			Context: &dataset,
 		}
 		if err := r.constructDataInfo(&req, applicationContext, clusters); err != nil {
 			return ctrl.Result{}, err
@@ -239,7 +273,17 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		return ctrl.Result{}, err
 	}
 	objectKey, _ := client.ObjectKeyFromObject(applicationContext)
-	moduleManager := &ModuleManager{Client: r.Client, Log: r.Log, Modules: moduleMap, Clusters: clusters, Owner: objectKey}
+	moduleManager := &ModuleManager{
+		Client:             r.Client,
+		Log:                r.Log,
+		Modules:            moduleMap,
+		Clusters:           clusters,
+		Owner:              objectKey,
+		PolicyCompiler:     r.PolicyCompiler,
+		Provision:          r.Provision,
+		VaultClient:        r.VaultClient,
+		ProvisionedStorage: make(map[string]NewAssetInfo),
+	}
 	instances := make([]modules.ModuleInstanceSpec, 0)
 	for _, item := range requirements {
 		instancesPerDataset, err := moduleManager.SelectModuleInstances(item, applicationContext)
@@ -252,12 +296,51 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	if hasError(applicationContext) {
 		return ctrl.Result{}, nil
 	}
+	// update allocated storage in the status
+	// clean irrelevant buckets
+	for datasetID, details := range applicationContext.Status.ProvisionedStorage {
+		if _, found := moduleManager.ProvisionedStorage[datasetID]; !found {
+			_ = r.Provision.DeleteDataset(getBucketResourceRef(details.DatasetRef))
+			delete(applicationContext.Status.ProvisionedStorage, datasetID)
+		}
+	}
+	// add or update new buckets
+	for datasetID, info := range moduleManager.ProvisionedStorage {
+		raw, err := serde.ToRawExtension(info.Details)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		applicationContext.Status.ProvisionedStorage[datasetID] = app.DatasetDetails{
+			DatasetRef: info.Storage.Name,
+			SecretRef:  info.Storage.SecretRef.Name,
+			Details:    *raw,
+		}
+	}
+	ready := true
+	var allocErr error
+	// check that the buckets have been created successfully using Dataset status
+	for id, details := range applicationContext.Status.ProvisionedStorage {
+		res, err := r.Provision.GetDatasetStatus(getBucketResourceRef(details.DatasetRef))
+		if err != nil {
+			ready = false
+			break
+		}
+		if !res.Provisioned {
+			ready = false
+			r.Log.V(0).Info("No bucket has been provisioned for " + id)
+			// TODO(shlomitk1): analyze the error
+			if res.ErrorMsg != "" {
+				allocErr = errors.New(res.ErrorMsg)
+			}
+			break
+		}
+	}
+	if !ready {
+		return ctrl.Result{RequeueAfter: 2 * time.Second}, allocErr
+	}
 	// generate blueprint specifications (per cluster)
 	blueprintPerClusterMap := r.GenerateBlueprints(instances, applicationContext)
-	resourceRef, err := r.ResourceInterface.CreateResourceReference(applicationContext.Name, applicationContext.Namespace)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
+	resourceRef := r.ResourceInterface.CreateResourceReference(applicationContext.Name, applicationContext.Namespace)
 	ownerRef := &app.ResourceReference{Name: applicationContext.Name, Namespace: applicationContext.Namespace}
 	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, blueprintPerClusterMap); err != nil {
 		r.Log.V(0).Info("Error creating " + resourceRef.Kind + " : " + err.Error())
@@ -287,67 +370,12 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 	if err = r.RegisterCredentials(req); err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err)
 	}
-
-	// policies for READ and WRITE operations based on the selected workload and data requirements
-	var workloadGeography string
-	if workloadGeography, err = r.GetProcessingGeography(input); err != nil {
-		return err
-	}
-
-	if input.Spec.Selector.WorkloadSelector.Size() > 0 {
-		// workload exists
-		// read policies for data that is processed in the workload geography
-		if req.Actions[pb.AccessOperation_READ], err = LookupPolicyDecisions(datasetID, r.PolicyCompiler, input,
-			pb.AccessOperation{Type: pb.AccessOperation_READ, Destination: workloadGeography}); err != nil {
-			return AnalyzeError(input, r.Log, datasetID, err)
-		}
-
-		// write policies in case copy will be applied
-		if req.Actions[pb.AccessOperation_WRITE], err = LookupPolicyDecisions(datasetID, r.PolicyCompiler, input,
-			pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: workloadGeography}); err != nil {
-			return AnalyzeError(input, r.Log, datasetID, err)
-		}
-
-		if !req.Actions[pb.AccessOperation_READ].Allowed {
-			setCondition(input, datasetID, req.Actions[pb.AccessOperation_READ].Message, true)
-		}
-	} else {
-		// workload is not selected
-		// if the cluster selector is non-empty, the write will be done to the specified geography
-		// Otherwise, select any of the available geographies
-		if input.Spec.Selector.ClusterName != "" {
-			if req.Actions[pb.AccessOperation_WRITE], err = LookupPolicyDecisions(datasetID, r.PolicyCompiler, input,
-				pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: workloadGeography}); err != nil {
-				return AnalyzeError(input, r.Log, datasetID, err)
-			}
-			if !req.Actions[pb.AccessOperation_WRITE].Allowed {
-				setCondition(input, datasetID, app.WriteNotAllowed, true)
-			}
-		} else {
-			excludedGeos := ""
-			for _, cluster := range clusters {
-				operation := pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: cluster.Metadata.Region}
-				if req.Actions[pb.AccessOperation_WRITE], err = LookupPolicyDecisions(datasetID, r.PolicyCompiler, input, operation); err != nil {
-					return AnalyzeError(input, r.Log, datasetID, err)
-				}
-				if req.Actions[pb.AccessOperation_WRITE].Allowed {
-					return nil // We found a geo to which we can write
-				}
-				if excludedGeos != "" {
-					excludedGeos += ", "
-				}
-				excludedGeos += cluster.Metadata.Region
-			}
-			// We haven't found any geographies to which we are allowed to write
-			setCondition(input, datasetID, "Writing to all geographies denied: "+excludedGeos, true)
-		}
-	}
 	return nil
 }
 
 // NewM4DApplicationReconciler creates a new reconciler for M4DApplications
 func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api.Client,
-	policyCompiler pc.IPolicyCompiler, cm multicluster.ClusterLister) *M4DApplicationReconciler {
+	policyCompiler pc.IPolicyCompiler, cm multicluster.ClusterLister, provision storage.ProvisionInterface) *M4DApplicationReconciler {
 	return &M4DApplicationReconciler{
 		Client:            mgr.GetClient(),
 		Name:              name,
@@ -357,6 +385,7 @@ func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api
 		PolicyCompiler:    policyCompiler,
 		ResourceInterface: NewPlotterInterface(mgr.GetClient()),
 		ClusterManager:    cm,
+		Provision:         provision,
 	}
 }
 
@@ -368,15 +397,15 @@ func (r *M4DApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			if labels == nil {
 				return []reconcile.Request{}
 			}
-			label, ok := labels[OwnerLabelKey]
-			namespaced := strings.Split(label, ".")
-			if !ok || len(namespaced) != 2 {
+			namespace, foundNamespace := labels[app.ApplicationNamespaceLabel]
+			name, foundName := labels[app.ApplicationNameLabel]
+			if !foundNamespace || !foundName {
 				return []reconcile.Request{}
 			}
 			return []reconcile.Request{
 				{NamespacedName: types.NamespacedName{
-					Name:      namespaced[1],
-					Namespace: namespaced[0],
+					Name:      name,
+					Namespace: namespace,
 				}},
 			}
 		})
@@ -403,7 +432,10 @@ func AnalyzeError(app *app.M4DApplication, log logr.Logger, assetID string, err 
 }
 
 func ownerLabels(id types.NamespacedName) map[string]string {
-	return map[string]string{OwnerLabelKey: id.Namespace + "." + id.Name}
+	return map[string]string{
+		app.ApplicationNamespaceLabel: id.Namespace,
+		app.ApplicationNameLabel:      id.Name,
+	}
 }
 
 // GetAllModules returns all CRDs of the kind M4DModule mapped by their name
@@ -422,28 +454,4 @@ func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, e
 		moduleMap[module.Name] = module.DeepCopy()
 	}
 	return moduleMap, nil
-}
-
-// GetProcessingGeography determines the geography of the workload cluster.
-// If no workload has been specified, a local cluster is assumed.
-func (r *M4DApplicationReconciler) GetProcessingGeography(applicationContext *app.M4DApplication) (string, error) {
-	clusterName := applicationContext.Spec.Selector.ClusterName
-	if clusterName == "" {
-		localClusterManager := local.NewManager(r.Client, utils.GetSystemNamespace())
-		clusters, err := localClusterManager.GetClusters()
-		if err != nil || len(clusters) != 1 {
-			return "", err
-		}
-		return clusters[0].Metadata.Region, nil
-	}
-	clusters, err := r.ClusterManager.GetClusters()
-	if err != nil {
-		return "", err
-	}
-	for _, cluster := range clusters {
-		if cluster.Name == clusterName {
-			return cluster.Metadata.Region, nil
-		}
-	}
-	return "", errors.New("Unknown cluster: " + clusterName)
 }

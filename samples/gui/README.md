@@ -4,9 +4,16 @@ Web UI application for use by data users to create an environment for running th
 
 The APIs and examples of their use are as follows:
   
-  Create M4DApplication:
-	  curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion": "app.m4d.ibm.com/v1alpha1","kind": "M4DApplication","metadata": {"name": "unittest-notebook1"},"spec": {"selector": {"matchLabels":{"app": "notebook1"}},"appInfo": {"purpose": "fraud-detection","role": "Security"}, "data": [{"catalogID": "1c080331-72da-4cea-8d06-5f075405cf17", "dataSetID": "2d1b5352-1fbf-439b-8bb0-c1967ac484b9","ifDetails": {"protocol": "s3","dataformat": "parquet"}}]}}'
-	
+  Create M4DApplication (to be used by the specific workload):
+
+	curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion": "app.m4d.ibm.com/v1alpha1","kind": "M4DApplication","metadata": {"name": "unittest-notebook1", "namespace": "default"},"spec": {"selector": {"clusterName": "US-cluster","workloadSelector": {"matchLabels": {"app": "unittest-notebook1"}}}, "appInfo": {"purpose": "fraud-detection","role": "Security"}, "data": [{ "dataSetID": "whatever", "requirements": {"interface": {"protocol": "s3","dataformat": "parquet"}}}]}}'
+
+  Create M4DApplication (to copy data and register in the public catalog):
+
+	curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion": "app.m4d.ibm.com/v1alpha1","kind": "M4DApplication","metadata": {"name": "unittest-copy", "namespace": "default"},"spec": {"selector": {"workloadSelector": {}, "appInfo": {"purpose": "copy data","role": "data owner"}, "data": [{ "dataSetID": "whatever", "requirements": {"copy": {"required": true, catalog: {catalogID: "Enterprise Catalog"}}, "interface": {"protocol": "s3","dataformat": "parquet"}}}]}}}'
+
+curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion": "app.m4d.ibm.com/v1alpha1","kind": "M4DApplication", }'
+
 	Get list of M4DApplications
 	  curl -X GET -i http://localhost:8080/v1/dma/m4dapplication
 	
@@ -57,12 +64,6 @@ go test
 
 ## Working in a cluster
 GUI is deployed in the namespace the workload is running in. This should also be your current namespace.
-Set the following environment variable prior to deploying the GUI. 
-
-```
-export WORKLOAD_NAMESPACE=<namespace>
-export DOCKER_HOSTNAME=<registry>
-```
 
 ## Creating docker images
 

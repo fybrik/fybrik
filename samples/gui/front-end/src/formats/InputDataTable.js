@@ -79,6 +79,8 @@ const InputDataTable = props => {
           <Table.HeaderCell>Protocol
           <Icon.Group><Icon name='asterisk' color='red' corner='top right' /></Icon.Group>
           </Table.HeaderCell>
+          <Table.HeaderCell>Destination Catalog
+          </Table.HeaderCell>
           <Table.HeaderCell></Table.HeaderCell>
         </Table.Row>
       </Table.Header>
@@ -99,7 +101,7 @@ const InputDataTable = props => {
                 selection
                 options={formatOptions}
                 name='dataformat'
-                value={data.ifDetails.dataformat}
+                value={data.requirements.interface.dataformat}
                 onChange={(e, { name, value }) => props.handleDetailsChange(e, data.uid, name, value)}
               />
             </Table.Cell>
@@ -108,8 +110,16 @@ const InputDataTable = props => {
                 selection
                 options={protocolOptions}
                 name='protocol'
-                value={data.ifDetails.protocol}
+                value={data.requirements.interface.protocol}
                 onChange={(e, { name, value }) => props.handleDetailsChange(e, data.uid, name, value)}
+              />
+            </Table.Cell>
+            <Table.Cell>
+              <Input
+                autoComplete='off'
+                name='catalogID'
+                value={data.requirements.copy.catalog.catalogID}
+                onChange={(e) => props.handleCatalogChange(e, data.uid)}
               />
             </Table.Cell>
             <Table.Cell textAlign='center'>

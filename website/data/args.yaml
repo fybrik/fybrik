@@ -11,3 +11,5 @@ github_base: "github.com/IBM"
 github_repo: "the-mesh-for-data"
 
 website: "website"
+
+mover_github_url: "https://github.com/IBM/the-mesh-for-data-mover"

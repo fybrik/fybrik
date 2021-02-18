@@ -1,0 +1,15 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ template "m4d.fullname" . }}-connector-ingress
+  labels:
+    {{- include "m4d.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      m4d.ibm.com/componentType: connector
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector: {}

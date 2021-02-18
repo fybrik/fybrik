@@ -11,11 +11,11 @@ import (
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/razee"
+	"github.com/ibm/the-mesh-for-data/pkg/storage"
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/motion"
 
 	"github.com/hashicorp/vault/api"
-	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -23,6 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
+	comv1alpha1 "github.com/IBM/dataset-lifecycle-framework/src/dataset-operator/pkg/apis/com/v1alpha1"
 	appv1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app"
@@ -42,7 +43,7 @@ func init() {
 
 	_ = motionv1.AddToScheme(scheme)
 	_ = appv1.AddToScheme(scheme)
-	_ = networkingv1alpha3.AddToScheme(scheme)
+	_ = comv1alpha1.SchemeBuilder.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -129,7 +130,7 @@ func main() {
 		policyCompiler := pc.NewPolicyCompiler()
 
 		// Initiate the M4DApplication Controller
-		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, clusterManager)
+		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
 			os.Exit(1)

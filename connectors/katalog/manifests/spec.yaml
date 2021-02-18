@@ -1,0 +1,83 @@
+# Copyright 2021 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+openapi: 3.0.1
+components:
+  schemas:
+    Asset:
+      type: object
+      properties:
+        spec:
+          $ref: '#/components/schemas/AssetSpec'
+      required:
+      - spec
+    AssetSpec:
+      type: object
+      properties:
+        secretRef:
+          $ref: '#/components/schemas/SecretRef'
+        assetMetadata:
+          $ref: '#/components/schemas/AssetMetadata'
+        assetDetails:
+          $ref: '#/components/schemas/AssetDetails'
+      required:
+      - secretRef
+      - assetMetadata
+      - assetDetails
+    SecretRef:
+      description: Reference to a Secret resource holding credentials for this asset
+      type: object
+      properties:
+        name:
+          description: Name of the Secret resource (must exist in the same namespace)
+          type: string
+      required:
+      - name
+    AssetDetails:
+      type: object
+      description: Asset details
+      properties:
+        connection:
+          $ref: 'taxonomy.yaml#/components/schemas/Connection'
+        dataFormat:
+          type: string
+      required:
+      - connection
+    AssetMetadata:
+      type: object
+      properties:
+        owner:
+          type: string
+        geography:
+          type: string
+        tags:
+          description: Tags associated with the asset
+          items:
+            type: string
+          type: array
+        namedMetadata:
+          additionalProperties:
+            type: string
+          type: object
+        componentsMetadata:
+          type: object
+          description: 'metadata for each component in asset (e.g., column)'
+          additionalProperties:
+            $ref: '#/components/schemas/ComponentMetadata'
+    ComponentMetadata:
+      type: object
+      properties:
+        componentType:
+          type: string
+        namedMetadata:
+          additionalProperties:
+            type: string
+          description: 'Named terms, that exist in Catalog toxonomy and the values
+            for these terms for columns we will have "SchemaDetails" key, that will
+            include technical schema details for this column TODO: Consider create
+            special field for schema outside of metadata'
+          type: object
+        tags:
+          description: Tags - can be any free text added to a component (no taxonomy)
+          items:
+            type: string
+          type: array

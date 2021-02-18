@@ -42,3 +42,4 @@ data:
   #external vault  variables
   USER_VAULT_ADDRESS: "http://vault:8200/"
   USER_VAULT_PATH: "external"
+  POLICY_TO_BE_EVALUATED: "sample_policies"

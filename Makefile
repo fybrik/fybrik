@@ -21,7 +21,7 @@ test:
 	$(MAKE) -C manager test
 
 .PHONY: run-integration-tests
-run-integration-tests: export DOCKER_HOSTNAME?=kind-registry:5000
+run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
 run-integration-tests: export DOCKER_NAMESPACE?=m4d-system
 run-integration-tests:
 	$(MAKE) kind
@@ -29,6 +29,7 @@ run-integration-tests:
 	$(MAKE) docker
 	$(MAKE) -C test/services docker-all
 	$(MAKE) cluster-prepare-wait
+	$(MAKE) configure-vault
 	$(MAKE) -C secret-provider configure-vault
 	$(MAKE) -C secret-provider deploy
 	$(MAKE) -C manager deploy-crd
@@ -49,17 +50,21 @@ run-deploy-tests:
 	$(MAKE) -C connectors deploy
 	kubectl get pod --all-namespaces
 	kubectl wait --for=condition=ready pod --all-namespaces --all --timeout=120s
+	$(MAKE) configure-vault
 
 .PHONY: cluster-prepare
 cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy
 	$(MAKE) -C third_party/registry deploy
 	$(MAKE) -C third_party/vault deploy
+	kubectl apply -f https://raw.githubusercontent.com/IBM/dataset-lifecycle-framework/master/release-tools/manifests/dlf.yaml
+
 
 .PHONY: cluster-prepare-wait
 cluster-prepare-wait:
 	$(MAKE) -C third_party/cert-manager deploy-wait
 	$(MAKE) -C third_party/vault deploy-wait
+	kubectl wait --for=condition=ready pod -n dlf --all --timeout=120s
 
 .PHONY: install
 install:
@@ -146,3 +151,4 @@ endif
 include hack/make-rules/tools.mk
 include hack/make-rules/verify.mk
 include hack/make-rules/cluster.mk
+include hack/make-rules/vault.mk

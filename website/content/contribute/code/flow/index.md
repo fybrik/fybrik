@@ -85,19 +85,6 @@ USE_EXISTING_CONTROLLER=true NO_SIMULATED_PROGRESS=true USE_EXISTING_CLUSTER=tru
 
 # Running integration tests
 
-## Pre requisite
-
-The integration tests make use of the local docker registry such enables using
-current docker images (rather than official images) during tests. The docker
-registry runs on localhost:5000 but in order that it be accessible from within
-the k8s cluster it has to be designated a FQDN named `kind-registry`.
-
-To support local image registry host resolution append the following to /etc/hosts:
-
-```
-127.0.0.1       kind-registry
-```
-
 ## Running in one step
 
 With the following you will then setup a kind cluster with the local registry,

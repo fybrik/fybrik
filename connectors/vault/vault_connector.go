@@ -17,7 +17,7 @@ import (
 )
 
 const defaultTimeout = "180"
-const defaultPort = "50083" //synched with vault_connector.yaml
+const defaultPort = "50083" // synced with vault_connector.yaml
 
 type server struct {
 	pb.UnimplementedDataCredentialServiceServer
@@ -44,6 +44,9 @@ func main() {
 	vaultAddress := vaultutils.GetEnv(vaultutils.VaultAddressKey)
 	timeOutInSecs := vaultutils.GetEnvWithDefault(vaultutils.VaultTimeoutKey, defaultTimeout)
 	timeOutSecs, err := strconv.Atoi(timeOutInSecs)
+	if err != nil {
+		log.Fatalf("Environment variable %s is not an integer: %v", vaultutils.VaultTimeoutKey, err)
+	}
 	port := vaultutils.GetEnvWithDefault(vaultutils.VaultConnectorPortKey, defaultPort)
 
 	log.Printf("Vault address env variable in %s: %s\n", vaultutils.VaultAddressKey, vaultAddress)

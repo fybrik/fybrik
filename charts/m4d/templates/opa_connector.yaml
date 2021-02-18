@@ -1,0 +1,45 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+{{- if .Values.opaConnector.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opa-connector
+  labels:
+    app: opa-connector
+spec:
+  selector:
+    matchLabels:
+      app: opa-connector
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
+      labels:
+        app: opa-connector
+        m4d.ibm.com/componentType: connector
+    spec:
+      containers:
+      - name: opa-connector
+        image: {{ .Values.opaConnector.image }}
+        imagePullPolicy: {{ .Values.opaConnector.imagePullPolicy }}
+        ports:
+        - name: opa-connector
+          containerPort: 50082
+        envFrom:
+        - configMapRef:
+            name: m4d-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: opa-connector
+spec:
+  selector:
+    app: opa-connector
+  ports:
+  - port: 50082
+    targetPort: opa-connector
+{{- end }}

@@ -1,0 +1,57 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: app.m4d.ibm.com/v1alpha1
+kind: M4DModule
+metadata:
+  name: implicit-copy-batch
+  labels:
+    name: implicit-copy-batch
+    version: 0.1.0 
+spec:
+  flows:  # one or more of copy, read, write 
+  - copy  
+  capabilities:
+    credentials-managed-by: secret-provider
+    supportedInterfaces:
+    - flow: copy
+      source:
+        protocol: jdbc-db2
+        dataformat: table
+      sink:
+        protocol: s3
+        dataformat: parquet
+    - flow: copy
+      source:
+        protocol: s3
+        dataformat: csv
+      sink:
+        protocol: s3
+        dataformat: parquet
+    - flow: copy
+      source:
+        protocol: s3
+        dataformat: parquet
+      sink:
+        protocol: s3
+        dataformat: parquet
+    - flow: copy
+      source:
+        protocol: s3
+        dataformat: json
+      sink:
+        protocol: s3
+        dataformat: parquet
+    actions:
+    - id: redact-ID
+      level: 2  # column
+    - id: removed-ID
+      level: 2  # column
+  chart:
+    name: ghcr.io/the-mesh-for-data/m4d-implicit-copy-batch:0.1.0
+  statusIndicators:
+    - kind: BatchTransfer
+      successCondition: status.status == SUCCEEDED
+      failureCondition: status.status == FAILED
+      errorMessage: status.error

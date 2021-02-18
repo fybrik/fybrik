@@ -5,10 +5,12 @@ package app
 
 import (
 	"context"
+	"io/ioutil"
+	"testing"
+
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/dummy"
 	"github.com/onsi/gomega"
-	"io/ioutil"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -18,7 +20,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/yaml"
-	"testing"
 )
 
 // TestBatchTransferController runs BatchTransferReconciler.Reconcile() against a
@@ -89,6 +90,9 @@ func TestPlotterController(t *testing.T) {
 	dummyManager.DeployedBlueprints["kind-kind"].Status.ObservedState.Ready = true
 	dummyManager.DeployedBlueprints["kind-kind"].Status.ObservedState.DataAccessInstructions = "nop"
 
+	deployedBp := dummyManager.DeployedBlueprints["kind-kind"]
+	g.Expect(deployedBp.Labels[app.ApplicationNamespaceLabel]).To(gomega.Equal("default"))
+	g.Expect(deployedBp.Labels[app.ApplicationNameLabel]).To(gomega.Equal("notebook"))
 	res, err = r.Reconcile(req)
 	g.Expect(err).To(gomega.BeNil())
 

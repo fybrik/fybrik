@@ -4,6 +4,7 @@
 syntax = "proto3";
 package connectors;
 option java_package = "com.datmesh";
+option go_package = "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf";
 
 message DatasetIdentifier {
     string dataset_id = 1;           // identifier of asset - always needed. JSON expected. Interpreted by the Connector, can contain any additional information as part of JSON

@@ -1,0 +1,45 @@
+image: localhost:5000/m4d-system/dummy-mover:latest
+
+copy:
+  source:
+    connection:
+      kafka:
+        bootstrap_servers: "broker1:9093"
+        schema_registry: "http://kafka-registry.strimzi.svc:8081/ccompat"
+        topic_name: "MY_TOPIC"
+        sasl_mechanism: "PLAIN"
+        key_deserializer: "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
+        value_deserializer: "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
+      db2:
+        database: BLUDB
+        port: "50000"
+        ssl: "false"
+        table: NQD60833.SMALL
+        url: dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net
+      name: db2
+      type: 3
+    credentialLocation: /v1/m4d/dataset-creds/87ffdca3-8b5d-4f77-99f9-0cb1fba1f73f/01c6f0f0-9ffe-4ccc-ac07-409523755e72
+    format: avro
+
+  destination:
+    connection:
+      name: s3
+      s3:
+        bucket: m4d-test-bucket
+        endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
+        object_key: car.data.parq
+      type: 2
+    credentialLocation: /v1/m4d/dataset-creds/m4d-test-bucket
+    format: parquet
+
+  transformations:
+  - args:
+      column: SSN
+    id: redact-ID
+    level: 2
+    name: redact
+  - args:
+      column: BLOOD_TYPE
+    id: encrypt-ID
+    level: 2
+    name: encrypt
