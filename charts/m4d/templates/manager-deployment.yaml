@@ -62,6 +62,10 @@ spec:
           envFrom:
             - configMapRef:
                 name: m4d-config
+            {{- if .Values.razee }}
+            - secretRef:
+                name: razee-credentials
+            {{- end }}
           env:
             - name: ENABLE_WEBHOOKS
               value: "true"
