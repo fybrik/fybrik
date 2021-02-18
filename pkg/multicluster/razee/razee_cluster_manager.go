@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/IBM/go-sdk-core/core"
 	"github.com/IBM/satcon-client-go/client"
+	"github.com/IBM/satcon-client-go/client/auth/iam"
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
 	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
@@ -346,11 +346,14 @@ func NewRazeeManager(url string, login string, password string) (multicluster.Cl
 }
 
 func NewSatConfManager(apikey string) (multicluster.ClusterManager, error) {
-	authenticator := &core.IamAuthenticator{
-		ApiKey: apikey,
+	iamClient, err := iam.NewIAMClient(apikey)
+	if err != nil {
+		return nil, err
 	}
-
-	con, _ := client.New("https://config.satellite.cloud.ibm.com/graphql", http.DefaultClient, authenticator)
+	if iamClient == nil {
+		return nil, errors.New("the IAMClient returned nil for IBM Cloud Satellite Config")
+	}
+	con, _ := client.New("https://config.satellite.cloud.ibm.com/graphql", http.DefaultClient, iamClient.Client)
 
 	me, err := con.Users.Me()
 	if err != nil {
