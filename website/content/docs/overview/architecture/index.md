@@ -61,5 +61,5 @@ A read or write module is in ready state as soon as the proxy service such as th
 
 In this example an [implicit-copy module](../../reference/components/ddc) copies data from a remote postgres database into a S3 compatible ceph instance.
 The arrow-flight module then locally serves the data to the user via the Arrow flight protocol. Credentials are handled
-by the modules (11) and are never exposed to the user. The application reads from and writes data to allowed targets. 
+by the modules (11) and are never exposed to the user. More information about handling dataset credentials can be found [here](../../setup/vault-configuration). The application reads from and writes data to allowed targets. 
 Requests are handled by M4DModule instances(12). The application can not interact with unauthorized targets.
