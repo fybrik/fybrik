@@ -1,6 +1,3 @@
-# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-CRD_OPTIONS ?= "crd:trivialVersions=true"
-
 ROOT_DIR := ..
 include $(ROOT_DIR)/Makefile.env
 #include Makefile.env
@@ -41,7 +38,8 @@ generate: $(TOOLBIN)/controller-gen
 # Generate code
 .PHONY: manifests
 manifests: $(TOOLBIN)/controller-gen
-	$(TOOLBIN)/controller-gen $(CRD_OPTIONS) webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(TOOLBIN)/controller-gen crd:trivialVersions=true webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(TOOLBIN)/controller-gen crd:trivialVersions=true output:crd:artifacts:config=$(ROOT_DIR)/charts/m4d-crd/templates/ paths=./apis/...
 
 # Install CRDs into a cluster
 .PHONY: install
@@ -58,11 +56,6 @@ uninstall: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl manifests
 charts:
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${IMG}
 	$(TOOLBIN)/kustomize build config/default > $(ROOT_DIR)/charts/m4d/templates/manager.yaml
-
-# Install CRDs into a charts/m4d-crds
-.PHONY: charts-crd
-charts-crd: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl manifests
-	$(TOOLBIN)/kustomize build config/crd > $(ROOT_DIR)/charts/m4d-crd/templates/crds.yaml
 
 .PHONY: deploy-crd
 deploy-crd:
