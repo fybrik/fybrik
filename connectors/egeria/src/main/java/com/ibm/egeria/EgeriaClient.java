@@ -55,7 +55,7 @@ public final class EgeriaClient {
     private String assetGuid;
     // at this point we make it a constant, this will change and should be passed as
     // credentials for Egeria
-    private final String userid = "calliequartile";
+    private final String userid = "garygeeke";
 
     private EgeriaProperties prop;
 
@@ -223,7 +223,7 @@ public final class EgeriaClient {
                             + "/servers/" + serverName
                             + "/open-metadata/common-services/" + serviceURLName
                             + "/connected-asset/users/"
-                            + userid + "/assets/" + schemaTypeGuid
+                            + userid + "/assets/schemas/" + schemaTypeGuid
                             + "/schema-attributes?elementStart=0&maxElements=0";
 
         HashMap<String, DataComponentMetadata> componentsMetadata = new HashMap<String, DataComponentMetadata>();
@@ -386,7 +386,7 @@ public final class EgeriaClient {
         LOGGER.info("assetMetaDataHelper : {}", assetMetaDataHelper.toString().replaceAll("[\r\n]", ""));
 
         String schemaTypeGuid = assetMetaDataHelper.getSchemaTypeGuid();
-        HashMap<String, DataComponentMetadata> componentsMetadata = callSchemaAttributesAPI(schemaTypeGuid);
+        HashMap<String, DataComponentMetadata> componentsMetadat     = callSchemaAttributesAPI(schemaTypeGuid);
         LOGGER.info("listOfColumns in getCatalogDatasetInfo: {}",
                                                     componentsMetadata.toString().replaceAll("[\r\n]", ""));
 
@@ -404,17 +404,23 @@ public final class EgeriaClient {
 
         DatasetDetails datasetDetails = null;
         String dataowner = assetMetaDataHelper.getOwner();
+        if (dataowner == null){
+            dataowner = "";
+        }
         String name = assetMetaDataHelper.getName();
         //String geo = null;
 
         String typeOfAsset = assetMetaDataHelper.getAssetType(); //maybe will be in additional properties
+        if (typeOfAsset == null){
+            typeOfAsset = "";
+        }
 
         //it can contain a direct link to the file or a json with remote object
         String qualifiedName = assetMetaDataHelper.getQualifiedName();
-        // fix for https://github.com/IBM/the-mesh-for-data/issues/122 - start 
+        // fix for https://github.com/IBM/the-mesh-for-data/issues/122 - start
         JsonObject storeJson = JsonParser.parseString(qualifiedName).getAsJsonObject();
         String geo = storeJson.get("data_location").getAsString();
-        // fix for https://github.com/IBM/the-mesh-for-data/issues/122 - end 
+        // fix for https://github.com/IBM/the-mesh-for-data/issues/122 - end
         DataStore dataStore = getAssetStore(qualifiedName);
 
         datasetDetails = DatasetDetails.newBuilder()
@@ -428,6 +434,14 @@ public final class EgeriaClient {
                         .build();
 
 
+        LOGGER.info("datasetDetails in getCatalogDatasetInfo: {}",
+                    datasetDetails.toString());
+        CatalogDatasetInfo  info = CatalogDatasetInfo.newBuilder()
+                                    .setDatasetId(assetIDJson)
+                                    .setDetails(datasetDetails)
+                                    .build();
+        LOGGER.info("CatalogDatasetInfo in getCatalogDatasetInfo: {}",
+                    info.toString());
         return CatalogDatasetInfo.newBuilder()
                .setDatasetId(assetIDJson)
                .setDetails(datasetDetails)
