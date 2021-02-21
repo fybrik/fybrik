@@ -1,6 +1,6 @@
 ---
-title: Vault Configuration
-linktitle: Vault Configuration
+title: Credential Store
+linktitle: Credential Store
 weight: 30
 ---
 
@@ -17,11 +17,17 @@ This page contains two sections:
 
 Module authentication is done by configuring Vault to use [Kubernetes auth method](https://www.vaultproject.io/docs/auth/kubernetes) in each cluster. Using this method the modules can authenticate to Vault by providing their service account token. Behind the scenes Vault authenticates the token by submitting TokenReview request to the API server of the kubernetes cluster where the module is running. 
 
-Some of the steps described below are not specific to the {{< name >}} project but rather are Vault specific and can be found in Vault related online tutorials.
+**Prerequisite for multi-cluster setup:**
+
+1. Vault should have connectivity to the remote clusters to allow it to communicate to the clusters API server.
+2. An [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) resource should be created in the coordinator cluster to enable communication to Vault service from the remote clusters.
+
+
+Some of the steps described below are not specific to the {{< name >}} project but rather are Vault specific and can be found in Vault related online tutorials. The steps were tested on Kind cluster version 8.28 and OpenShift Container Platform 4.5.
 
 It is assumed that Vault is deployed in the coordinator cluster in `m4d-system` namespace prior to executing the steps.
 
-1. Setup Ingress to Vault in the coordinator cluster for multi-cluster setup:
+1. Setup [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) to Vault service in the coordinator cluster for multi-cluster setup:
 In multi-cluster setup a kubernetes Ingress should be configured in the coordinator cluster to enable communication to Vault from remote clusters.
 The ingress should be deployed in the `m4d-system` namespace where Vault is deployed.
 
