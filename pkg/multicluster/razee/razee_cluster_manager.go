@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/IBM/go-sdk-core/core"
 	"github.com/IBM/satcon-client-go/client"
 	"github.com/IBM/satcon-client-go/client/auth/iam"
 	"github.com/IBM/satcon-client-go/client/auth/local"
