@@ -24,13 +24,14 @@ data:
   #EXTENSIONS_POLICY_MANAGER_NAME: "OPA"
 
   #internal vault related variables
-  VAULT_ADDRESS: "http://vault:8200/"
+  VAULT_ADDRESS: "http://vault.m4d-system:8200/"
   VAULT_DATASET_HOME: "m4d/dataset-creds/"
   VAULT_USER_HOME: "m4d/user-creds/"
   VAULT_DATASET_MOUNT: "v1/sys/mounts/m4d/dataset-creds"
   VAULT_USER_MOUNT: "v1/sys/mounts/m4d/user-creds"
   VAULT_TTL: "24h"
   VAULT_AUTH: "kubernetes"
+  MODULES_ROLE: "module"
 
   #timeout for all the connectors
   CONNECTION_TIMEOUT: "120"
