@@ -21,13 +21,23 @@ spec:
       bucket: "{{ .Values.copy.source.connection.s3.bucket }}"
       objectKey: "{{ .Values.copy.source.connection.s3.object_key }}"
       dataFormat: "{{ .Values.copy.source.format }}"
+      {{ if .Values.copy.source.credentialLocation }}
       vaultPath: "{{ .Values.copy.source.credentialLocation }}"
+      {{ end }}
+      {{ if .Values.copy.source.vault }}
+      vault: {{ toYaml .Values.copy.source.vault | indent 6 }}
+      {{ end }}
     {{ end }}
     {{ if .Values.copy.source.connection.db2 }}
     database:
       table: "{{ .Values.copy.source.connection.db2.table }}"
       db2URL: "jdbc:db2://{{ .Values.copy.source.connection.db2.url }}:{{ .Values.copy.source.connection.db2.port }}/{{ .Values.copy.source.connection.db2.database }}:sslConnection={{ .Values.copy.source.connection.db2.ssl }};"
+      {{ if .Values.copy.source.credentialLocation }}
       vaultPath: "{{ .Values.copy.source.credentialLocation }}"
+      {{ end }}
+      {{ if .Values.copy.source.vault }}
+      vault: {{ toYaml .Values.copy.source.vault | indent 6 }}
+      {{ end }}
     {{ end }}
   destination:
     {{ if .Values.copy.destination.connection.s3 }}
@@ -36,13 +46,23 @@ spec:
       bucket: "{{ .Values.copy.destination.connection.s3.bucket }}"
       objectKey: "{{ .Values.copy.destination.connection.s3.object_key }}"
       dataFormat: "{{ .Values.copy.destination.format }}"
+      {{ if .Values.copy.destination.credentialLocation }}
       vaultPath: "{{ .Values.copy.destination.credentialLocation }}"
+      {{ end }}
+      {{ if .Values.copy.destination.vault }}
+      vault: {{ toYaml .Values.copy.destination.vault | indent 6 }}
+      {{ end }}
     {{ end }}
     {{ if .Values.copy.destination.connection.db2 }}
     database:
       table: "{{ .Values.copy.destination.connection.db2.table }}"
       db2URL: "jdbc:db2://{{ .Values.copy.destination.connection.db2.url }}:{{ .Values.copy.destination.connection.db2.port }}/{{ .Values.copy.destination.connection.db2.database }}:sslConnection={{ .Values.copy.destination.connection.db2.ssl }};"
+      {{ if .Values.copy.destination.credentialLocation }}
       vaultPath: "{{ .Values.copy.destination.credentialLocation }}"
+      {{ end }}
+      {{ if .Values.copy.destination.vault }}
+      vault: {{ toYaml .Values.copy.destination.vault | indent 6 }}
+      {{ end }}
     {{ end }}
   {{ if .Values.copy.transformations }}
   transformation:
