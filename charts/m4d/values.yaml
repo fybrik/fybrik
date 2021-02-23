@@ -189,3 +189,36 @@ clusterScoped: true
 # Set to true to enable socat in the manager pod to forward
 # traffic from a localhost registry. Used only for development.
 integrationTests: false
+
+# Vault related values set in m4d-config ConfigMap.
+vault:
+
+  # Internal Vault server variables.
+  internal:
+    # Set to the Vault address.
+    vault_address: "http://vault.m4d-system:8200/"
+
+    # Set to the path where credentials of dataset accessed by the m4d are stored.
+    dataset_home: "m4d/dataset-creds/"
+
+    # Set to the path where the user credentials for external systems are stored.
+    user_home: "m4d/user-creds/"
+
+    # Set to the secret engine mount path for the dataset credentials.
+    dataset_mount: "v1/sys/mounts/m4d/dataset-creds"
+
+    # Set to the secret engine mount path for the user credentials for the external systems.
+    user_mount: "v1/sys/mounts/m4d/user-creds"
+
+    # Set to the amount of time the authorization issued by vault is valid.
+    ttl: "24h"
+
+  # External Vault variables: This relates to local Vault that acts as "user vault" which is
+  # user deployed vault that stores there credentials to data source for data assets.
+  external:
+    # Set to the Vault address that stores the credentials to data source for data assets.
+    user_vault_address: "http://vault:8200/"
+
+    # Set to the path where credentials to data source for data assets are stored.
+    user_vault_path: "external"
+

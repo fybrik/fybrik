@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: m4d-config
+data:
+  SECRET_PROVIDER_URL: "http://secret-provider.m4d-system:5555/get-secret"
+  SECRET_PROVIDER_ROLE: "demo"
+
+  {{- with .Values.vault }}
+  VAULT_ADDRESS: {{ .internal.vault_address }}
+  VAULT_DATASET_HOME: {{ .internal.dataset_home }}
+  VAULT_USER_HOME: {{ .internal.user_home }}
+  VAULT_DATASET_MOUNT: {{ .internal.dataset_mount }}
+  VAULT_USER_MOUNT: {{ .internal.user_mount }}
+  VAULT_TTL: {{ .internal.ttl }}
+  VAULT_AUTH: "kubernetes"
+  USER_VAULT_ADDRESS: {{ .external.user_vault_address }}
+  USER_VAULT_PATH: {{ .external.user_vault_path }}
+  {{- end }}
+
