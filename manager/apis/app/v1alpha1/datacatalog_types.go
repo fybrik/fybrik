@@ -14,6 +14,9 @@ type DataStore struct {
 	// the credentials from the credential management system - ex: vault
 	// +required
 	CredentialLocation string `json:"credentialLocation"`
+	// Holds details for retrieving credentials by the modules from Vault store.
+	// +required
+	Vault Vault `json:"vault"`
 	// Connection has the relevant details for accesing the data (url, table, ssl, etc.)
 	// +required
 	Connection runtime.RawExtension `json:"connection"`

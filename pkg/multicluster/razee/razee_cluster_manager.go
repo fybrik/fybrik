@@ -65,8 +65,9 @@ func (r *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 		cluster := multicluster.Cluster{
 			Name: clusterMetadataConfigmap.Data["ClusterName"],
 			Metadata: multicluster.ClusterMetadata{
-				Region: clusterMetadataConfigmap.Data["Region"],
-				Zone:   clusterMetadataConfigmap.Data["Zone"],
+				Region:        clusterMetadataConfigmap.Data["Region"],
+				Zone:          clusterMetadataConfigmap.Data["Zone"],
+				VaultAuthPath: clusterMetadataConfigmap.Data["VaultAuthPath"],
 			},
 		}
 		clusters = append(clusters, cluster)

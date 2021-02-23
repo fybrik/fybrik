@@ -125,8 +125,13 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 
 	return &app.DataStore{
 		CredentialLocation: utils.GetDatasetVaultPath(bucket.Name),
-		Connection:         *connection,
-		Format:             string(destinationInterface.DataFormat),
+		Vault: app.Vault{
+			SecretPath: utils.GetSecretPath(bucket.Name),
+			Role:       utils.GetModulesRole(),
+			Address:    utils.GetVaultAddress(),
+		},
+		Connection: *connection,
+		Format:     string(destinationInterface.DataFormat),
 	}, nil
 }
 
@@ -255,7 +260,12 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 	sourceDataStore := &app.DataStore{
 		Connection:         item.DataDetails.Connection,
 		CredentialLocation: utils.GetDatasetVaultPath(datasetID),
-		Format:             string(item.DataDetails.Interface.DataFormat),
+		Vault: app.Vault{
+			SecretPath: utils.GetSecretPath(datasetID),
+			Role:       utils.GetModulesRole(),
+			Address:    utils.GetVaultAddress(),
+		},
+		Format: string(item.DataDetails.Interface.DataFormat),
 	}
 	// DataStore for destination will be determined if an implicit copy is required
 	var sinkDataStore *app.DataStore
@@ -294,6 +304,14 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 			m.Log.Info("Could not determine the cluster for copy: " + err.Error())
 			return instances, err
 		}
+		for _, cluster := range m.Clusters {
+			if copyCluster == cluster.Name {
+				copyArgs.Copy.Destination.Vault.AuthPath = cluster.Metadata.VaultAuthPath
+				copyArgs.Copy.Source.Vault.AuthPath = cluster.Metadata.VaultAuthPath
+				break
+			}
+		}
+
 		m.Log.Info("Adding copy module")
 		instances = copySelector.AddModuleInstances(copyArgs, item, copyCluster)
 	}
@@ -311,6 +329,17 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 		if err != nil {
 			return instances, err
 		}
+		readCluster, err := readSelector.SelectCluster(item, m.Clusters)
+		if err != nil {
+			m.Log.Info("Could not determine the cluster for read: " + err.Error())
+			return instances, err
+		}
+		for _, cluster := range m.Clusters {
+			if readCluster == cluster.Name {
+				readSource.Vault.AuthPath = cluster.Metadata.VaultAuthPath
+				break
+			}
+		}
 		readInstructions := []app.ReadModuleArgs{
 			{
 				Source:          readSource,
@@ -322,11 +351,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 		readArgs := &app.ModuleArguments{
 			Read: readInstructions,
 		}
-		readCluster, err := readSelector.SelectCluster(item, m.Clusters)
-		if err != nil {
-			m.Log.Info("Could not determine the cluster for read: " + err.Error())
-			return instances, err
-		}
+
 		instances = append(instances, readSelector.AddModuleInstances(readArgs, item, readCluster)...)
 	}
 	return instances, nil
