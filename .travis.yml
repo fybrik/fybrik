@@ -16,7 +16,6 @@ addons:
       - conntrack
       - ethtool
       - apache2-utils
-      - yq
 
 os:
 - linux
