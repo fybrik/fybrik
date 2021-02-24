@@ -386,7 +386,7 @@ public final class EgeriaClient {
         LOGGER.info("assetMetaDataHelper : {}", assetMetaDataHelper.toString().replaceAll("[\r\n]", ""));
 
         String schemaTypeGuid = assetMetaDataHelper.getSchemaTypeGuid();
-        HashMap<String, DataComponentMetadata> componentsMetadat     = callSchemaAttributesAPI(schemaTypeGuid);
+        HashMap<String, DataComponentMetadata> componentsMetadata     = callSchemaAttributesAPI(schemaTypeGuid);
         LOGGER.info("listOfColumns in getCatalogDatasetInfo: {}",
                                                     componentsMetadata.toString().replaceAll("[\r\n]", ""));
 
@@ -403,10 +403,14 @@ public final class EgeriaClient {
                 .build();
 
         DatasetDetails datasetDetails = null;
-        String dataowner = assetMetaDataHelper.getOwner();
-        if (dataowner == null){
-            dataowner = "";
-        }
+        // data owner is not supported in Egeria 2.6 now.
+        //String dataowner = assetMetaDataHelper.getOwner();
+        // if (dataowner == null){
+        //     dataowner = "";
+        // }
+        String dataowner = "";
+        // data owner is not supported in Egeria 2.6 now.
+
         String name = assetMetaDataHelper.getName();
         //String geo = null;
 
@@ -435,13 +439,13 @@ public final class EgeriaClient {
 
 
         LOGGER.info("datasetDetails in getCatalogDatasetInfo: {}",
-                    datasetDetails.toString());
+                    datasetDetails.toString().replaceAll("[\r\n]", ""));
         CatalogDatasetInfo  info = CatalogDatasetInfo.newBuilder()
                                     .setDatasetId(assetIDJson)
                                     .setDetails(datasetDetails)
                                     .build();
         LOGGER.info("CatalogDatasetInfo in getCatalogDatasetInfo: {}",
-                    info.toString());
+                    info.toString().replaceAll("[\r\n]", ""));
         return CatalogDatasetInfo.newBuilder()
                .setDatasetId(assetIDJson)
                .setDetails(datasetDetails)

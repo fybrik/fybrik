@@ -24,9 +24,9 @@ public final class AssetMetaDataHelper {
         return assetMetaDataObject.getAsset().getGuid();
     }
 
-    public String getOwner() {
-        return assetMetaDataObject.getAsset().getOwner();
-    }
+    // public String getOwner() {
+    //     return assetMetaDataObject.getAsset().getOwner();
+    // }
 
     public String getName() {
         return assetMetaDataObject.getAsset().getDisplayName();
@@ -37,7 +37,10 @@ public final class AssetMetaDataHelper {
     }
 
     public String getAssetType() {
-        String dataFormat = assetMetaDataObject.getSchemaType().getEncodingStandard();
+        // getEncodingStandard() is not supported in Egeria 2.6 - start
+        String dataFormat = assetMetaDataObject.getAsset().getType().getElementTypeName();
+        //String dataFormat = assetMetaDataObject.getSchemaType().getEncodingStandard();
+        // getEncodingStandard() is not supported in Egeria 2.6 - end
         if ("CSVFile".equalsIgnoreCase(dataFormat)) { //csv we return in specific format expected by pilot
             return "csv";
         }
