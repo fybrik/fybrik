@@ -192,12 +192,12 @@ integrationTests: false
 
 # Cluster Metadata values defined in cluster-metadata ConfigMap
 clusterMetadata:
-   # Set to the name of the cluster.
-   # ClusterName: "US-cluster"
-   # Set to cluster region.
-   # Region: "US"
-   # Set to cluster zone.
-   # Zone: "North-America"
-   # Set to the name of the cluster Vault auth method path.
-   # VaultAuthPath: USClusterAuthPath
+  # Set to the name of the cluster.
+  clusterName:
+  # Set to cluster region.
+  region:
+  # Set to cluster zone.
+  zone:
+  # Set to the name of the cluster Vault auth method path.
+  vaultAuthPath: kubernetes
 

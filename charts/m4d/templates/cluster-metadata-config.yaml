@@ -1,20 +1,15 @@
-{{- if .Values.clusterMetadata }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cluster-metadata
 data:
-  {{- if .Values.clusterMetadata.ClusterName }}
-  ClusterName: {{ .Values.clusterMetadata.ClusterName }}
+  {{- if .Values.clusterMetadata.clusterName }}
+  ClusterName: {{ .Values.clusterMetadata.clusterName }}
   {{- end }}
-  {{- if .Values.clusterMetadata.Region }}
-  Region: {{ .Values.clusterMetadata.Region }}
+  {{- if .Values.clusterMetadata.region }}
+  Region: {{ .Values.clusterMetadata.region }}
   {{- end }}
-  {{- if .Values.clusterMetadata.Zone }}
-  Zone: {{ .Values.clusterMetadata.Zone }}
+  {{- if .Values.clusterMetadata.zone }}
+  Zone: {{ .Values.clusterMetadata.zone }}
   {{- end }}
-  {{- if .Values.clusterMetadata.VaultAuthPath }}
-  VaultAuthPath: {{ .Values.clusterMetadata.VaultAuthPath }} 
-  {{- end }}
-{{- end }}
-
+  VaultAuthPath: {{ .Values.clusterMetadata.vaultAuthPath }}
