@@ -189,3 +189,15 @@ clusterScoped: true
 # Set to true to enable socat in the manager pod to forward
 # traffic from a localhost registry. Used only for development.
 integrationTests: false
+
+# Cluster Metadata values defined in cluster-metadata ConfigMap
+clusterMetadata:
+   # Set to the name of the cluster.
+   # ClusterName: "US-cluster"
+   # Set to cluster region.
+   # Region: "US"
+   # Set to cluster zone.
+   # Zone: "North-America"
+   # Set to the name of the cluster Vault auth method path.
+   # VaultAuthPath: USClusterAuthPath
+
