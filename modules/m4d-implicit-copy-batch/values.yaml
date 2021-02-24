@@ -14,7 +14,7 @@ labels: {}
 
 image: "ghcr.io/the-mesh-for-data/mover:latest"
 imagePullPolicy: null
-noFinalizer: "false"
+noFinalizer: "true"
 
 # copies from source
 copy:
