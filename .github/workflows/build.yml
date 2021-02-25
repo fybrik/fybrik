@@ -101,8 +101,8 @@ jobs:
           ~/.m2/repository
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum')-test
-        restore-keys: ${{ runner.os }}-m2
+        key: ${{ runner.os }}-ut-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-ut-m2
     - run: ls -lah ${{ github.workspace }}/hack/tools/bin || true
     - name: Test
       run: make test
@@ -131,8 +131,8 @@ jobs:
           ~/.m2/repository
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum')-it
-        restore-keys: ${{ runner.os }}-m2
+        key: ${{ runner.os }}-it-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-it-m2
     - run: ls -lah ${{ github.workspace }}/hack/tools/bin || true
     - name: Install tools
       run: make install-tools
