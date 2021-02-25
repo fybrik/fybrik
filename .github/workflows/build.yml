@@ -41,6 +41,7 @@ jobs:
             ${{ github.workspace }}/hack/tools/bin
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-m2
+      - run: ls -lah ${{ github.workspace }}/hack/tools/bin || true
       - name: Install tools
         run: make install-tools
       - name: Verify
