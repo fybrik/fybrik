@@ -6,10 +6,10 @@ package vault
 import (
 	"encoding/json"
 	"fmt"
+	utils "github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
-	"github.com/stretchr/testify/assert"
-	utils "github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 )
 
 func Log(t *testing.T, label string, err error) {
@@ -19,12 +19,11 @@ func Log(t *testing.T, label string, err error) {
 	t.Logf("%s: %s", label, err)
 }
 
-
-func TestVaultInterface(t *testing.T) {
+func TestCredentialManagerInterface(t *testing.T) {
 	var err error
-	os.Setenv("RUN_WITHOUT_VAULT","0")
+	os.Setenv("RUN_WITHOUT_VAULT", "0")
 	t.Logf("Token = " + utils.GetVaultToken())
-	conn,err := InitConnection(utils.GetVaultAddress(),utils.GetVaultToken())
+	conn, err := InitConnection(utils.GetVaultAddress(), utils.GetVaultToken())
 	assert.Nil(t, err)
 	Log(t, "init vault", err)
 	err = conn.Mount("v1/sys/mounts/m4d/test")
@@ -35,18 +34,17 @@ func TestVaultInterface(t *testing.T) {
 		"username": "datasetuser1",
 		"password": "myfavoritepassword",
 	}
-	err = conn.AddSecret("m4d/test/123/456",credentials)
+	err = conn.AddSecret("m4d/test/123/456", credentials)
 	assert.Nil(t, err)
 	Log(t, "Add secret", err)
-	readCredentials :=""
-	readCredentials,err = conn.GetSecret("m4d/test/123/456")
-	assert.Nil(t, err)
-	Log(t, "Get secret", err)
+	readCredentials, errGet := conn.GetSecret("m4d/test/123/456")
+	assert.Nil(t, errGet)
+	Log(t, "Get secret", errGet)
 	writtenCredentials, _ := json.Marshal(credentials)
-	assert.Equal(t,string(writtenCredentials),readCredentials,"Read " + readCredentials + " instead of " + string(writtenCredentials))
+	assert.Equal(t, string(writtenCredentials), readCredentials, "Read "+readCredentials+" instead of "+string(writtenCredentials))
 	err = conn.DeleteSecret("m4d/test/123/456")
 	assert.Nil(t, err)
 	Log(t, "Delete secret", err)
-	readCredentials,err = conn.GetSecret("m4d/test/123/456")
+	_, err = conn.GetSecret("m4d/test/123/456")
 	assert.NotNil(t, err)
 }

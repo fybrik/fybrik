@@ -39,7 +39,7 @@ type ModuleManager struct {
 	PolicyCompiler     pc.IPolicyCompiler
 	WorkloadGeography  string
 	Provision          storage.ProvisionInterface
-	VaultConnection    vault.VaultInterface
+	VaultConnection    vault.CredentialManagerInterface
 	ProvisionedStorage map[string]NewAssetInfo
 }
 

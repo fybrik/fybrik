@@ -29,8 +29,8 @@ type Connection struct {
 type Dummy struct {
 }
 
-// VaultInterface provides vault functionality
-type VaultInterface interface {
+// CredentialManagerInterface provides vault functionality
+type CredentialManagerInterface interface {
 	LinkVaultPolicyToIdentity(identity string, policyName string, boundedNamespace string) error
 	RemoveVaultPolicyFromIdentity(identity string, policyName string) error
 	WriteVaultPolicy(policyName string, policy string) error
@@ -213,7 +213,7 @@ func GetIdentitiesVaultAuthPath() string {
 
 // InitConnection creates a new connection to vault.
 // Note that it assumes that the home path has been mounted during the vault setup.
-func InitConnection(addr string, token string) (VaultInterface, error) {
+func InitConnection(addr string, token string) (CredentialManagerInterface, error) {
 	if os.Getenv("RUN_WITHOUT_VAULT") == "1" {
 		return &Dummy{}, nil
 	}
@@ -290,7 +290,7 @@ func (c *Dummy) AddSecret(path string, credentials map[string]interface{}) error
 // Helper functions
 
 // AddSecretFromStruct constructs a vault secret from the given structure
-func AddSecretFromStruct(path string, creds interface{}, conn VaultInterface) error {
+func AddSecretFromStruct(path string, creds interface{}, conn CredentialManagerInterface) error {
 	jsonStr, err := json.Marshal(creds)
 	if err != nil {
 		return err
@@ -301,4 +301,3 @@ func AddSecretFromStruct(path string, creds interface{}, conn VaultInterface) er
 	}
 	return conn.AddSecret(path, credentialsMap)
 }
-

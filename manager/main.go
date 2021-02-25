@@ -169,7 +169,7 @@ func main() {
 }
 
 // init vault client and mount the base directory for storing credentials
-func initVaultConnection() (vault.VaultInterface, error) {
+func initVaultConnection() (vault.CredentialManagerInterface, error) {
 	vaultConn, err := vault.InitConnection(utils.GetVaultAddress(), utils.GetVaultToken())
 	if err != nil {
 		return vaultConn, err
