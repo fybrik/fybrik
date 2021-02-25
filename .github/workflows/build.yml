@@ -27,6 +27,8 @@ jobs:
         with:
           go-version: 1.13
       - uses: actions/checkout@v2
+      - run: echo $GOPATH
+      - run: echo $GOROOT
       - name: Cache Maven packages
         uses: actions/cache@v2
         with:
@@ -35,7 +37,7 @@ jobs:
             ~/go/pkg/mod
             ${{ github.workspace }}/hack/tools/bin
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
-    #          restore-keys: ${{ runner.os }}-m2
+          restore-keys: ${{ runner.os }}-m2
       - name: Install tools
         run: make install-tools
       - name: Verify
