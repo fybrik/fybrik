@@ -33,7 +33,7 @@ jobs:
           path: |
             ~/.m2/repository
             ~/go/pkg/mod
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml')-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
     #          restore-keys: ${{ runner.os }}-m2
       - name: Install tools
         run: make install-tools
