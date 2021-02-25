@@ -128,7 +128,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 
 	return &app.DataStore{
 		CredentialLocation: utils.GetDatasetVaultPath(bucket.Name),
-		Vault: app.Vault{
+		Vault: &app.Vault{
 			SecretPath: utils.GetSecretPath(bucket.Name),
 			Role:       utils.GetModulesRole(),
 			Address:    utils.GetVaultAddress(),
@@ -240,7 +240,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 	sourceDataStore := &app.DataStore{
 		Connection:         item.DataDetails.Connection,
 		CredentialLocation: utils.GetDatasetVaultPath(datasetID),
-		Vault: app.Vault{
+		Vault: &app.Vault{
 			SecretPath: utils.GetSecretPath(datasetID),
 			Role:       utils.GetModulesRole(),
 			Address:    utils.GetVaultAddress(),

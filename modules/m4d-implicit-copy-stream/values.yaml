@@ -7,7 +7,7 @@
 
 image: "ghcr.io/the-mesh-for-data/mover:latest"
 imagePullPolicy: null
-noFinalizer: "false"
+noFinalizer: "true"
 
 copy:
   # copies from source

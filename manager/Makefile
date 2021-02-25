@@ -37,9 +37,14 @@ generate: $(TOOLBIN)/controller-gen
 
 # Generate code
 .PHONY: manifests
-manifests: $(TOOLBIN)/controller-gen
+manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
 	$(TOOLBIN)/controller-gen crd:trivialVersions=true webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 	$(TOOLBIN)/controller-gen crd:trivialVersions=true output:crd:artifacts:config=$(ROOT_DIR)/charts/m4d-crd/templates/ paths=./apis/...
+	$(TOOLBIN)/controller-gen webhook paths=./apis/... output:stdout | \
+		$(TOOLBIN)/yq eval '.metadata.annotations."cert-manager.io/inject-ca-from" |= "{{ .Release.Namespace }}/serving-cert"' - | \
+		$(TOOLBIN)/yq eval '(.metadata.name | select(. == "mutating-webhook-configuration")) = "{{ .Release.Namespace }}-mutating-webhook"' - | \
+		$(TOOLBIN)/yq eval '(.metadata.name | select(. == "validating-webhook-configuration")) = "{{ .Release.Namespace }}-validating-webhook"' - | \
+		$(TOOLBIN)/yq eval '(.webhooks.[].clientConfig.service.namespace) = "{{ .Release.Namespace }}"' - > $(ROOT_DIR)/charts/m4d/templates/webhook-configs.yaml
 
 # Install CRDs into a cluster
 .PHONY: install
