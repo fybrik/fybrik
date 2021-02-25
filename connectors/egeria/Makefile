@@ -1,4 +1,4 @@
-ROOT_DIR := ../..
+ ROOT_DIR := ../..
 include $(ROOT_DIR)/Makefile.env
 include ${ROOT_DIR}/pkg/policy-compiler/policy-compiler.env
 
@@ -7,13 +7,13 @@ include $(ROOT_DIR)/hack/make-rules/docker.mk
 
 .PHONY: build
 build:
-	mvn clean package -DskipTests
+	mvn -B clean package -DskipTests
 
 docker-build: build
 
 .PHONY: test
 test:
-	mvn clean test
+	mvn -B clean test
 
 .PHONY: clean
 clean:
