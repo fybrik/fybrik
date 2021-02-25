@@ -29,6 +29,20 @@ type Connection struct {
 type Dummy struct {
 }
 
+// NewConnection returns a new Connection object
+func NewConnection(c *api.Client, addr string, token string) *Connection {
+	return &Connection{
+		Client: c,
+		Address: addr,
+		Token: token,
+	}
+}
+
+// NewDummyConnection returns a new Dummy object
+func NewDummyConnection() *Dummy {
+	return &Dummy{}
+}
+
 // CredentialManagerInterface provides vault functionality
 type CredentialManagerInterface interface {
 	LinkVaultPolicyToIdentity(identity string, policyName string, boundedNamespace string) error
@@ -39,6 +53,7 @@ type CredentialManagerInterface interface {
 	DeleteSecret(vaultPath string) error
 	GetSecret(vaultPath string) (string, error)
 	AddSecret(path string, credentials map[string]interface{}) error
+	AddSecretFromStruct(path string, creds interface{}) error
 }
 
 // LinkVaultPolicyToIdentity registers a policy for a given identity or role, meaning that when a person or service
@@ -179,6 +194,19 @@ func (c *Connection) AddSecret(path string, credentials map[string]interface{}) 
 	return nil
 }
 
+// AddSecretFromStruct constructs a vault secret from the given structure
+func (c *Connection) AddSecretFromStruct(path string, creds interface{}) error {
+	jsonStr, err := json.Marshal(creds)
+	if err != nil {
+		return err
+	}
+	credentialsMap := make(map[string]interface{})
+	if err := json.Unmarshal(jsonStr, &credentialsMap); err != nil {
+		return err
+	}
+	return c.AddSecret(path, credentialsMap)
+}
+
 // Mount mounts a key-value secret provider (kv version 1) to manage the storage of the secrets
 func (c *Connection) Mount(path string) error {
 	body := strings.NewReader(`{"type":"kv-v1"}`)
@@ -215,7 +243,7 @@ func GetIdentitiesVaultAuthPath() string {
 // Note that it assumes that the home path has been mounted during the vault setup.
 func InitConnection(addr string, token string) (CredentialManagerInterface, error) {
 	if os.Getenv("RUN_WITHOUT_VAULT") == "1" {
-		return &Dummy{}, nil
+		return NewDummyConnection(), nil
 	}
 	conf := &api.Config{
 		Address:    addr,
@@ -236,7 +264,7 @@ func InitConnection(addr string, token string) (CredentialManagerInterface, erro
 
 	client.SetToken(token)
 
-	return &Connection{Address: addr, Token: token, Client: client}, nil
+	return NewConnection(client,addr,token), nil
 }
 
 // GetVaultAuthTTL returns the amount of time the authorization issued by vault is valid
@@ -287,17 +315,7 @@ func (c *Dummy) AddSecret(path string, credentials map[string]interface{}) error
 	return nil
 }
 
-// Helper functions
-
-// AddSecretFromStruct constructs a vault secret from the given structure
-func AddSecretFromStruct(path string, creds interface{}, conn CredentialManagerInterface) error {
-	jsonStr, err := json.Marshal(creds)
-	if err != nil {
-		return err
-	}
-	credentialsMap := make(map[string]interface{})
-	if err := json.Unmarshal(jsonStr, &credentialsMap); err != nil {
-		return err
-	}
-	return conn.AddSecret(path, credentialsMap)
+func (c *Dummy) AddSecretFromStruct(path string, creds interface{}) error {
+	return nil
 }
+

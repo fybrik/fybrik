@@ -236,7 +236,6 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 // or a status update from the generated resource
 func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplication) (ctrl.Result, error) {
 	utils.PrintStructure(applicationContext.Spec, r.Log, "M4DApplication")
-
 	// Data User created or updated the M4DApplication
 
 	// clear status
@@ -367,7 +366,8 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 	}
 	// The received credentials are stored in vault
 	path := utils.GetVaultDatasetHome() + datasetID
-	if err = vault.AddSecretFromStruct(path, req.Credentials.GetCreds(), r.VaultConnection); err != nil {
+	r.Log.V(0).Info("Registering a secret to " + path)
+	if err = r.VaultConnection.AddSecretFromStruct(path, req.Credentials.GetCreds()); err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err)
 	}
 	return nil
