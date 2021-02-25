@@ -33,6 +33,7 @@ jobs:
           path: |
             ~/.m2/repository
             ~/go/pkg/mod
+            ${{ github.workspace }}/hack/tools/bin
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
     #          restore-keys: ${{ runner.os }}-m2
       - name: Install tools
