@@ -20,9 +20,10 @@ func Log(t *testing.T, label string, err error) {
 }
 
 
-func TestHelmCache(t *testing.T) {
+func TestVaultInterface(t *testing.T) {
 	var err error
 	os.Setenv("RUN_WITHOUT_VAULT","0")
+	t.Logf("Token = " + utils.GetVaultToken())
 	conn,err := InitConnection(utils.GetVaultAddress(),utils.GetVaultToken())
 	assert.Nil(t, err)
 	Log(t, "init vault", err)
