@@ -173,18 +173,38 @@ jobs:
       if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
       run: sudo chmod o+x /etc/docker && make docker-retag-and-push-public && make helm-push-public
 
-  website:
-    name: Publish website
+  build_website:
+    name: Build website
     runs-on: ubuntu-latest
     env:
       WEBSITE_LOCAL_DIR: public
-    needs: [verify, test, integration-tests]
+    needs: [ verify, test, integration-tests ]
     steps:
     - name: Install asciidoctor
       run: sudo apt-get -y install asciidoctor
     - uses: actions/checkout@v2
     - name: Create website
       run: make -C website
+    - name: Upload images
+#      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: website
+        path: website/${{ env.WEBSITE_LOCAL_DIR }}
+        retention-days: 1
+
+  publish_website:
+    name: Publish website
+    runs-on: ubuntu-latest
+    env:
+      WEBSITE_LOCAL_DIR: public
+    needs: [verify, test, integration-tests, build_website]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: website
     - name: Publish website
       if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
       uses: peaceiris/actions-gh-pages@v3
