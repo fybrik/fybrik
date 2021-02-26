@@ -142,15 +142,19 @@ jobs:
       run: make run-integration-tests
     - run: docker images
     - name: Save images
+      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
       run: make save-images
     - name: Upload images
+      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
       uses: actions/upload-artifact@v2
       with:
         name: images
         path: images.tar
+        retention-days: 1
 
   push_images:
     name: Push images
+    if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
     runs-on: ubuntu-latest
     env:
       DOCKER_HOSTNAME: "localhost:5000"
@@ -158,7 +162,7 @@ jobs:
     needs: [verify, test, integration-tests]
     steps:
     - uses: actions/checkout@v2
-    - name: Download images
+    - name: Download artifact
       uses: actions/download-artifact@v2
       with:
         name: images
@@ -176,6 +180,8 @@ jobs:
       WEBSITE_LOCAL_DIR: public
     needs: [verify, test, integration-tests]
     steps:
+    - name: Install asciidoctor
+      run: sudo apt-get -y install asciidoctor
     - uses: actions/checkout@v2
     - name: Create website
       run: make -C website
