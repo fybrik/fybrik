@@ -14,42 +14,6 @@ env:
   ACTIVE_CI: travisci # This parameter defines which CI should push to the docker repository
 
 jobs:
-#  build:
-#    name: Build all
-#    runs-on: ubuntu-latest
-#    env:
-#      DOCKER_HOSTNAME: "localhost:5000"
-#      DOCKER_NAMESPACE: m4d-system
-#    steps:
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v1
-#        with:
-#          java-version: 11
-#      - name: Install Go
-#        uses: actions/setup-go@v2
-#        with:
-#          go-version: 1.13
-#      - uses: actions/checkout@v2
-#      - run: echo $GOPATH
-#      - run: echo $GOROOT
-#      - name: Cache Maven packages
-#        uses: actions/cache@v2
-#        with:
-#          path: |
-#            ~/.m2/repository
-#            ~/go/pkg/mod
-#            ${{ github.workspace }}/hack/tools/bin
-#          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
-#          restore-keys: ${{ runner.os }}-m2
-#      - run: ls -lah ${{ github.workspace }}/hack/tools/bin || true
-#      - name: Install tools
-#        run: make install-tools
-#      - name: Verify
-#        run: make verify
-#      - name: Test
-#        run: make test
-#      - name: Integration tests
-#        run: make run-integration-tests
   verify:
     name: Verify
     runs-on: ubuntu-latest
@@ -76,6 +40,7 @@ jobs:
     - run: ls -lah ${{ github.workspace }}/hack/tools/bin || true
     - name: Verify
       run: make verify
+
   test:
     name: Unit tests
     runs-on: ubuntu-latest
@@ -106,6 +71,7 @@ jobs:
     - run: ls -lah ${{ github.workspace }}/hack/tools/bin || true
     - name: Test
       run: make test
+
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
@@ -163,10 +129,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Download artifact
+      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
       uses: actions/download-artifact@v2
       with:
         name: images
     - name: Load images
+      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
       run: docker load -i images.tar
     - run: docker images
     - name: Publish images
@@ -184,8 +152,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Create website
       run: make -C website
-    - name: Upload images
-#      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
+    - name: Upload website artifact
+      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
       uses: actions/upload-artifact@v2
       with:
         name: website
@@ -198,9 +166,11 @@ jobs:
     env:
       WEBSITE_LOCAL_DIR: public
     needs: [verify, test, integration-tests, build_website]
+    if: ${{ github.event_name != 'pull_request' }}
     steps:
     - uses: actions/checkout@v2
-    - name: Download artifact
+    - name: Download website artifact
+      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
       uses: actions/download-artifact@v2
       with:
         name: website
