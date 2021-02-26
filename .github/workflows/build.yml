@@ -178,7 +178,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WEBSITE_LOCAL_DIR: public
-    needs: [ verify, test, integration-tests ]
     steps:
     - name: Install asciidoctor
       run: sudo apt-get -y install asciidoctor
