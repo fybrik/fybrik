@@ -8,7 +8,7 @@ set -x
 # CHART=odpi-egeria-lab
 # RELEASE=lab
 NAMESPACE=egeria-catalog2
-TIMEOUT=16m
+TIMEOUT=8m
 VERSION="egeria-release-2.6"
 
 undeploy() {
@@ -45,7 +45,7 @@ deploy() {
 
         cd egeria/open-metadata-resources/open-metadata-deployment/charts
         helm dep update egeria-base
-        helm install egeria egeria-base --namespace=$NAMESPACE --wait --timeout=${TIMEOUT} -f ../../../../lab.yaml
+        helm install egeria egeria-base --namespace=$NAMESPACE 
         cd ../../../../
 
         # local chartpath=$(find . -name $CHART | grep charts)
