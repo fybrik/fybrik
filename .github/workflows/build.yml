@@ -150,6 +150,14 @@ jobs:
     - name: Install asciidoctor
       run: sudo apt-get -y install asciidoctor
     - uses: actions/checkout@v2
+    - name: Cache binaries
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/go/pkg/mod
+          ${{ github.workspace }}/hack/tools/bin
+        key: ${{ runner.os }}-web-${{ hashFiles('hack/tools/bin/*') }}
+        restore-keys: ${{ runner.os }}-it-m2
     - name: Create website
       run: make -C website
     - name: Upload website artifact
