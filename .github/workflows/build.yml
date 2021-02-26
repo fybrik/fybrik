@@ -154,12 +154,12 @@ jobs:
 
   push_images:
     name: Push images
-    if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
     runs-on: ubuntu-latest
     env:
       DOCKER_HOSTNAME: "localhost:5000"
       DOCKER_NAMESPACE: m4d-system
     needs: [verify, test, integration-tests]
+    if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
     steps:
     - uses: actions/checkout@v2
     - name: Download artifact
