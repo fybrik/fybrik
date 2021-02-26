@@ -157,7 +157,7 @@ jobs:
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
         key: ${{ runner.os }}-web-${{ hashFiles('hack/tools/bin/*') }}
-        restore-keys: ${{ runner.os }}-it-m2
+        restore-keys: ${{ runner.os }}-web
     - name: Create website
       run: make -C website
     - name: Upload website artifact
