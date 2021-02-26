@@ -134,7 +134,37 @@ jobs:
         key: ${{ runner.os }}-it-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-it-m2
     - run: ls -lah ${{ github.workspace }}/hack/tools/bin || true
+    - run: du -sh ~/go/pkg/mod || true
+    - run: du -sh ~/.m2/repository || true
     - name: Install tools
       run: make install-tools
     - name: Integration tests
       run: make run-integration-tests
+    - name: Publish images
+      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
+      run: sudo chmod o+x /etc/docker && make docker-retag-and-push-public && make helm-push-public
+    - run: docker images
+    - name: Save container
+      run: docker save -o manager.tar $(DOCKER_HOSTNAME)/$(DOCKER_NAMESPACE)/manager:latest
+    - name: Archive code coverage results
+      uses: actions/upload-artifact@v2
+      with:
+        name: images
+        path: manager.tar
+
+  push_images:
+    name: Push images
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_HOSTNAME: "localhost:5000"
+      DOCKER_NAMESPACE: m4d-system
+    needs: integration-tests
+    steps:
+    - uses: actions/checkout@v2
+    - name: Download images
+      uses: actions/download-artifact@v2
+      with:
+        name: images
+    - name: Load images
+      run: docker load -i manager.tar
+    - run: docker images
