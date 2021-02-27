@@ -190,35 +190,55 @@ clusterScoped: true
 # traffic from a localhost registry. Used only for development.
 integrationTests: false
 
-# Vault related values set in m4d-config ConfigMap.
-vault:
-
-  # Internal Vault server variables.
-  internal:
+# Values set in m4d-config ConfigMap.
+config:
+  # Vault related values set in m4d-config ConfigMap.
+  vault:
     # Set to the Vault address.
-    vault_address: "http://vault.m4d-system:8200/"
-
+    address: "http://vault.m4d-system:8200/"
     # Set to the path where credentials of dataset accessed by the m4d are stored.
-    dataset_home: "m4d/dataset-creds/"
-
-    # Set to the path where the user credentials for external systems are stored.
-    user_home: "m4d/user-creds/"
-
-    # Set to the secret engine mount path for the dataset credentials.
-    dataset_mount: "v1/sys/mounts/m4d/dataset-creds"
-
-    # Set to the secret engine mount path for the user credentials for the external systems.
-    user_mount: "v1/sys/mounts/m4d/user-creds"
-
-    # Set to the amount of time the authorization issued by vault is valid.
+    datasetHome: "m4d/dataset-creds/"
+    # Set to the dataset credentials secret engine mount path.
+    datasetMount: "v1/sys/mounts/m4d/dataset-creds"
+    # Set to the path where user credentials are stored.
+    userHome: "m4d/user-creds/"
+    # Set to the user credentials secret engine mount path.
+    userMount: "v1/sys/mounts/m4d/user-creds"
+    # Set to the amount of time the authorization issued by Vault is valid.
     ttl: "24h"
-
-  # External Vault variables: This relates to local Vault that acts as "user vault" which is
-  # user deployed vault that stores there credentials to data source for data assets.
-  external:
     # Set to the Vault address that stores the credentials to data source for data assets.
-    user_vault_address: "http://vault:8200/"
-
+    userVaultAddress: "http://vault:8200/"
     # Set to the path where credentials to data source for data assets are stored.
-    user_vault_path: "external"
+    userVaultPath: "external"
+    # Set to the name of the role that modules use to access dataset credentials.
+    modulesRole: "module"
 
+  catalog:
+    # Set to the catalog URL.
+    url: "https://lab-core.egeria-catalog:9443"
+    # Set to the catalog connector URL.
+    connectorUrl: "egr-connector:50084"
+    # Set to the catalog provider name.
+    name: "EGERIA"
+
+  policyManager:
+    # Set to policyManager URL.
+    url: "opa:8181"
+    # Set to the policy manager connector URL.
+    connectorUrl: "opa-connector:50082"
+    # Set to the policy manager connector name.
+    name: "OPA"
+    # Set to true if an extension policy manager is used.
+    extensionManager:
+      enabled: false
+      # Set to extension policy manager connector URL.
+      # connectorUrl: ""
+      # Set to extension policy manager name.
+      # name: ""
+
+  # Set to grpc connection timeout.
+  connectionTimeout: "120"
+
+  # extraEnvironmentVars is a list of extra environment variables to set.
+  extraEnvironmentVars:
+    OPA_POLICY_TO_BE_EVALUATED: "sample_policies"
