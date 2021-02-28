@@ -40,7 +40,7 @@ type M4DApplicationReconciler struct {
 	Name              string
 	Log               logr.Logger
 	Scheme            *runtime.Scheme
-	VaultConnection   vault.CredentialManagerInterface
+	VaultConnection   vault.Interface
 	PolicyCompiler    pc.IPolicyCompiler
 	ResourceInterface ContextInterface
 	ClusterManager    multicluster.ClusterLister
@@ -374,7 +374,7 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 }
 
 // NewM4DApplicationReconciler creates a new reconciler for M4DApplications
-func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultConnection vault.CredentialManagerInterface,
+func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultConnection vault.Interface,
 	policyCompiler pc.IPolicyCompiler, cm multicluster.ClusterLister, provision storage.ProvisionInterface) *M4DApplicationReconciler {
 	return &M4DApplicationReconciler{
 		Client:            mgr.GetClient(),

@@ -16,7 +16,7 @@ import (
 )
 
 var k8sClient *DMAClient
-var vaultConnection vault.CredentialManagerInterface
+var vaultConnection vault.Interface
 
 // UserCredentials contains the credentials needed to access a given system for the purpose of running a specific compute function.
 type UserCredentials struct {
@@ -171,9 +171,7 @@ func CreateCredentials(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, result)
 }
 
-func initVault() (vault.CredentialManagerInterface, error) {
-	token := utils.GetVaultToken()
-	log.Printf("GetVaultClient: token = " + token)
+func initVault() (vault.Interface, error) {
 	vaultConnection, err := vault.InitConnection(utils.GetVaultAddress(), utils.GetVaultToken())
 	if err != nil {
 		return nil, err

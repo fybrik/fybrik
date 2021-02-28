@@ -21,6 +21,8 @@ const (
 	VaultUserMountKey                   string = "VAULT_USER_MOUNT"
 	VaultUserHomeKey                    string = "VAULT_USER_HOME"
 	VaultDatasetHomeKey                 string = "VAULT_DATASET_HOME"
+	VaultTTLKey                         string = "VAULT_TTL"
+	VaultAuthKey                        string = "VAULT_AUTH"
 	SecretProviderURL                   string = "SECRET_PROVIDER_URL"
 	SecretProviderRole                  string = "SECRET_PROVIDER_ROLE"
 	ModulesRole                         string = "MODULES_ROLE"
@@ -84,6 +86,16 @@ func GetVaultDatasetMountPath() string {
 // GetVaultToken returns the token this module uses to authenticate with vault
 func GetVaultToken() string {
 	return os.Getenv(VaultSecretKey)
+}
+
+// GetVaultAuthTTL returns the amount of time the authorization issued by vault is valid
+func GetVaultAuthTTL() string {
+	return os.Getenv(VaultTTLKey)
+}
+
+// GetVaultAuth returns the authentication method for vault connection
+func GetVaultAuth() string {
+	return os.Getenv(VaultAuthKey)
 }
 
 // GetCredentialsManagerServiceAddress returns the address where credentials manager is running

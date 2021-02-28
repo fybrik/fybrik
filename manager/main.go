@@ -169,7 +169,7 @@ func main() {
 }
 
 // init vault client and mount the base directory for storing credentials
-func initVaultConnection() (vault.CredentialManagerInterface, error) {
+func initVaultConnection() (vault.Interface, error) {
 	vaultConn, err := vault.InitConnection(utils.GetVaultAddress(), utils.GetVaultToken())
 	if err != nil {
 		return vaultConn, err
@@ -186,21 +186,26 @@ func initVaultConnection() (vault.CredentialManagerInterface, error) {
 	policyName := "read-dataset-creds"
 
 	setupLog.Info("policyName: " + policyName + "  policy: " + policy)
-	if err = vaultConn.WriteVaultPolicy(policyName, policy); err != nil {
+	if err = vaultConn.WritePolicy(policyName, policy); err != nil {
 		setupLog.Info("      Failed writing policy: " + err.Error())
 		return vaultConn, err
 	}
 
 	setupLog.Info("Assigning the policy to " + "/role/" + utils.GetSecretProviderRole())
 	// Link the policy to the authentication role (configured)
-	if err = vaultConn.LinkVaultPolicyToIdentity("/role/"+utils.GetSecretProviderRole(), policyName, utils.GetSystemNamespace()); err != nil {
+	if err = vaultConn.LinkPolicyToIdentity("/role/"+utils.GetSecretProviderRole(),
+		policyName,
+		utils.GetSystemNamespace(),
+		"secret-provider",
+		utils.GetVaultAuth(),
+		utils.GetVaultAuthTTL()); err != nil {
 		setupLog.Info("Could not create a role " + utils.GetSecretProviderRole() + " : " + err.Error())
 		return vaultConn, err
 	}
 	return vaultConn, nil
 }
 
-// This method decides based on the environment variables that are set which
+// NewClusterManager decides based on the environment variables that are set which
 // cluster manager instance should be initiated.
 func NewClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error) {
 	setupLog := ctrl.Log.WithName("setup")
