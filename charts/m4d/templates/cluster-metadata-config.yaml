@@ -3,13 +3,7 @@ kind: ConfigMap
 metadata:
   name: cluster-metadata
 data:
-  {{- if .Values.clusterMetadata.clusterName }}
   ClusterName: {{ .Values.clusterMetadata.clusterName }}
-  {{- end }}
-  {{- if .Values.clusterMetadata.region }}
   Region: {{ .Values.clusterMetadata.region }}
-  {{- end }}
-  {{- if .Values.clusterMetadata.zone }}
   Zone: {{ .Values.clusterMetadata.zone }}
-  {{- end }}
   VaultAuthPath: {{ .Values.clusterMetadata.vaultAuthPath }}

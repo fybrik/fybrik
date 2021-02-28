@@ -193,11 +193,11 @@ integrationTests: false
 # Cluster Metadata values defined in cluster-metadata ConfigMap
 clusterMetadata:
   # Set to the name of the cluster.
-  clusterName:
+  clusterName: hobbiton
   # Set to cluster region.
-  region:
+  region: eriador
   # Set to cluster zone.
-  zone:
-  # Set to the name of the cluster Vault auth method path.
+  zone: theshire
+  # Set to the cluster Vault auth method path.
   vaultAuthPath: kubernetes
 
