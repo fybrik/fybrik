@@ -14,7 +14,7 @@ data:
   VAULT_TTL: {{ .vault.ttl }}
   USER_VAULT_ADDRESS: {{ .vault.userVaultAddress }}
   USER_VAULT_PATH: {{ .vault.userVaultPath }}
-  MODULES_VAULT_ROLE: {{ .vault.modulesRole }}
+  VAULT_MODULES_ROLE: {{ .vault.modulesRole }}
   CATALOG_CONNECTOR_URL: {{ .catalog.connectorUrl }}
   CATALOG_PROVIDER_NAME: {{ .catalog.name }}
   EGERIA_SERVER_URL: {{ .catalog.url }}
