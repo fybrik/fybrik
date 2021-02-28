@@ -15,11 +15,16 @@ import (
 )
 
 type OpaReader struct {
-	opaServerURL string
+	opaServerURL    string
+	vaultConnection vault.Interface
 }
 
 func NewOpaReader(opasrvurl string) *OpaReader {
-	return &OpaReader{opaServerURL: opasrvurl}
+	conn, err := vault.InitConnection(os.Getenv("VAULT_ADDRESS"), os.Getenv("VAULT_TOKEN"))
+	if err != nil {
+		fmt.Println("Error connecting to vault: " + err.Error())
+	}
+	return &OpaReader{opaServerURL: opasrvurl, vaultConnection: conn}
 }
 
 func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *CatalogReader, policyToBeEvaluated string) (*pb.PoliciesDecisions, error) {
@@ -40,12 +45,8 @@ func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *Ca
 		return nil, fmt.Errorf("error in unmarshalling appInfoBytes: %v", err)
 	}
 	// get other properties from vault
-	conn, err := vault.InitConnection(os.Getenv("VAULT_ADDRESS"), os.Getenv("VAULT_TOKEN"))
-	if err != nil {
-		return nil, err
-	}
 	var jsonStr string
-	if jsonStr, err = conn.GetSecret(os.Getenv("VAULT_USER_HOME") + in.AppId + "/" + os.Getenv("CATALOG_PROVIDER_NAME")); err != nil {
+	if jsonStr, err = r.vaultConnection.GetSecret(os.Getenv("VAULT_USER_HOME") + in.AppId + "/" + os.Getenv("CATALOG_PROVIDER_NAME")); err != nil {
 		return nil, err
 	}
 	creds := make(map[string]string)
