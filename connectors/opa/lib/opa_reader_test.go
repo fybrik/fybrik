@@ -29,7 +29,7 @@ func TestMainOpaConnector(t *testing.T) {
 	catalogReader := NewCatalogReader(catalogConnectorURL, timeOutSecs)
 	creds := make(map[string]interface{})
 	creds["role"] = "Security"
-	srv.vaultConnection.AddSecret(os.Getenv("VAULT_USER_HOME")+applicationContext.AppId+"/"+os.Getenv("CATALOG_PROVIDER_NAME"), creds)
+	assert.NilError(t, srv.vaultConnection.AddSecret(os.Getenv("VAULT_USER_HOME")+applicationContext.AppId+"/"+os.Getenv("CATALOG_PROVIDER_NAME"), creds))
 	policiesDecisions, err := srv.GetOPADecisions(applicationContext, catalogReader, policyToBeEvaluated)
 	assert.NilError(t, err)
 	fmt.Println("policiesDecisions returned")
