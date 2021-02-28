@@ -17,8 +17,7 @@ message DatasetContext {
 
 message ApplicationDetails {
     string purpose = 1;
-    string role = 2;
-    string processing_geography = 3;
+    string processing_geography = 2;
 }
 
 message AccessOperation {

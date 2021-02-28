@@ -26,6 +26,7 @@ const (
 	SecretProviderURL                   string = "SECRET_PROVIDER_URL"
 	SecretProviderRole                  string = "SECRET_PROVIDER_ROLE"
 	ModulesRole                         string = "MODULES_ROLE"
+	CatalogProviderName                 string = "CATALOG_PROVIDER_NAME"
 )
 
 // GetSystemNamespace returns the namespace of control plane
@@ -96,6 +97,11 @@ func GetVaultAuthTTL() string {
 // GetVaultAuth returns the authentication method for vault connection
 func GetVaultAuth() string {
 	return os.Getenv(VaultAuthKey)
+}
+
+// GetCatalogProviderName returns the name of the catalog provider
+func GetCatalogProviderName() string {
+	return os.Getenv(CatalogProviderName)
 }
 
 // GetCredentialsManagerServiceAddress returns the address where credentials manager is running

@@ -11,8 +11,8 @@ spec:
       matchLabels:
         app: kf-notebook
   appInfo:
-    purpose: fraud-detection
-    role: Security
+    intent: fraud-detection
+    userSecretRef: user-credentials
   data:
     - dataSetID: "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"ASSET_ID\"}"
       requirements:

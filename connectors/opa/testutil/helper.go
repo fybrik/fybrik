@@ -40,7 +40,7 @@ func GetEnvironment() (int, string, string) {
 
 func GetApplicationContext(purpose string) *pb.ApplicationContext {
 	datasetID := "mock-datasetID"
-	applicationDetails := &pb.ApplicationDetails{Purpose: purpose, Role: "Security", ProcessingGeography: "US"}
+	applicationDetails := &pb.ApplicationDetails{Purpose: purpose, ProcessingGeography: "US"}
 	datasets := []*pb.DatasetContext{}
 	datasets = append(datasets, createDatasetRead(datasetID))
 	applicationContext := &pb.ApplicationContext{AppInfo: applicationDetails, Datasets: datasets}

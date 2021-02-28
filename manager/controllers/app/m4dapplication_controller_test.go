@@ -19,6 +19,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -580,6 +581,14 @@ var _ = Describe("M4DApplication Controller", func() {
 
 		It("Test end-to-end for M4DApplication", func() {
 			var err error
+			secretYAML, err := ioutil.ReadFile("../../testdata/e2e/user-secret.yaml")
+			Expect(err).ToNot(HaveOccurred())
+			secret := &v1.Secret{}
+			err = yaml.Unmarshal(secretYAML, secret)
+			Expect(err).ToNot(HaveOccurred())
+			// Create secret
+			Expect(k8sClient.Create(context.Background(), secret)).Should(Succeed())
+
 			applicationYAML, err := ioutil.ReadFile("../../testdata/e2e/m4dapplication.yaml")
 			Expect(err).ToNot(HaveOccurred())
 			application := &apiv1alpha1.M4DApplication{}

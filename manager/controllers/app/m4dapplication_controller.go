@@ -249,6 +249,22 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	if err != nil {
 		return ctrl.Result{}, err
 	}
+	// Store user credentials in vault
+	if applicationContext.Spec.AppInfo.UserSecretRef != "" {
+		var data map[string]interface{}
+		if data, err = SecretToCredentialMap(r.Client,
+			types.NamespacedName{Name: applicationContext.Spec.AppInfo.UserSecretRef, Namespace: applicationContext.Namespace}); err != nil {
+			r.Log.V(0).Info("Error reading user secret: " + err.Error())
+			setCondition(applicationContext, "", err.Error(), true)
+			return ctrl.Result{}, err
+		}
+		path := utils.GenerateUserCredentialsSecretName(applicationContext.Namespace, applicationContext.Name, utils.GetCatalogProviderName())
+		if err = r.VaultConnection.AddSecret(path, data); err != nil {
+			r.Log.V(0).Info("Error storing user secret: " + err.Error())
+			setCondition(applicationContext, "", err.Error(), true)
+			return ctrl.Result{}, err
+		}
+	}
 	// create a list of requirements for creating a data flow (actions, interface to app, data format) per a single data set
 	var requirements []modules.DataInfo
 	for _, dataset := range applicationContext.Spec.Data {

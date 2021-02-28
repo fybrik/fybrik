@@ -44,8 +44,7 @@ const NewApplicationEdit = props => {
     clusterName: props.history.location.state.application.spec.selector.clusterName,
     labels:  exists ? parseSelector(props.history.location.state.application.spec.selector.workloadSelector.matchLabels) : props.history.location.state.application.spec.selector.workloadSelector.matchLabels,
     resourceVersion:  exists ? props.history.location.state.application.metadata.resourceVersion : '',
-    role: exists ? props.history.location.state.application.spec.appInfo.role : '',
-    purpose: exists ? props.history.location.state.application.spec.appInfo.purpose : '',
+    intent: exists ? props.history.location.state.application.spec.appInfo.intent : '',
     geography: exists ? props.history.location.state.application.geography : props.location.state.application.geography,  
   })
   //application instance data
@@ -54,7 +53,7 @@ const NewApplicationEdit = props => {
       ? props.history.location.state.application.spec.data
       : [{ uid: uniqid(), dataSetID: '', requirements: { copy: {required: false, catalog: {catalogID: ''}}, interface: { protocol: 's3', dataformat: 'parquet' } }}]))
   // error state
-  const [errors, setErrors] = useState({ purpose: !exists, role: !exists, data: !exists })
+  const [errors, setErrors] = useState({ intent: !exists, data: !exists })
   // message from request
   const [axiosMessage, setAxiosMessage] = useState({ message: '', error: true })
 
@@ -112,8 +111,7 @@ const NewApplicationEdit = props => {
         },
         spec: {
           appInfo: {
-            purpose: application.purpose,
-            role: application.role,
+            intent: application.intent,
           },
           selector: { 
             clusterName: application.clusterName,
@@ -189,26 +187,15 @@ const NewApplicationEdit = props => {
         defaultValue={application.clusterName}
       />
       <Form.Input
-        label='Purpose'
+        label='Intent'
         required formNoValidate
         autoComplete='off'
         fluid
-        placeholder='purpose'
+        placeholder='intent'
         onChange={handleChange}
-        name='purpose'
-        value={application.purpose}
+        name='intent'
+        value={application.intent}
       />
-      <Form.Input
-        label='Role'
-        required formNoValidate
-        autoComplete='off'
-        fluid
-        placeholder='role'
-        onChange={handleChange}
-        name='role'
-        value={application.role}
-      />
-
       <Divider hidden />
       <InputDataTable applicationData={applicationData} deleteDataRow={deleteDataRow} addDataRow={addDataRow}
         handleIDChange={handleIDChange} handleDetailsChange={handleDetailsChange} handleCatalogChange={handleCatalogChange} />
@@ -217,7 +204,7 @@ const NewApplicationEdit = props => {
       <Button icon labelPosition='left' as={Link} to="/" color='red'>
         <Icon name='left arrow' />Back
       </Button>
-      <Button disabled={errors.purpose || errors.role || errors.data} icon labelPosition='right' primary onClick={handleSubmit}>
+      <Button disabled={errors.intent || errors.data} icon labelPosition='right' primary onClick={handleSubmit}>
         <Icon name='down arrow' />Submit
       </Button>
       <SubmitResultLabel />

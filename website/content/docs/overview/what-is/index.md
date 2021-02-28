@@ -36,7 +36,7 @@ The blueprint augments the application workload and data sources with additional
 
 {{< name >}} considers applications as first level entities. Before running a workload, an application needs to be registred to a {{< name>}} control plane by applying a `M4DApplication` resource. This is the declarative definition provided by the data user. The registration provides context about the application such as the purpose for which it's running, the data assets that it needs, and a selector to identify the workload. Additional context such as geo-location is extracted from the platform. 
 
-<!-- Restricting the domain of context fields such as `purpose` for specific user accounts is currently out of scope. One way to place such restrictions on a per namespace basis is by using [OPA Gatekeeper](https://www.openpolicyagent.org/docs/latest/kubernetes-introduction/).  -->
+<!-- Restricting the domain of context fields such as `intent` for specific user accounts is currently out of scope. One way to place such restrictions on a per namespace basis is by using [OPA Gatekeeper](https://www.openpolicyagent.org/docs/latest/kubernetes-introduction/).  -->
 
 The actions taken by {{< name >}} are based on policies and the context of the application. Specifically, {{< name >}} does not consider end-users of an application. It is the responsibility of the application to implement mechanisms such as end user authentication if required, e.g. using Istio [authorization with JWT](https://istio.io/docs/tasks/security/authorization/authz-jwt/).
 
