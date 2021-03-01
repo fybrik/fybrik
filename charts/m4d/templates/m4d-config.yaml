@@ -6,6 +6,7 @@ data:
   {{- with .Values.config }}
   SECRET_PROVIDER_URL: "http://secret-provider.m4d-system:5555/get-secret"
   SECRET_PROVIDER_ROLE: "demo"
+  VAULT_AUTH: "kubernetes"
   VAULT_ADDRESS: {{ .vault.address }}
   VAULT_DATASET_HOME: {{ .vault.datasetHome }}
   VAULT_DATASET_MOUNT: {{ .vault.datasetMount }}
