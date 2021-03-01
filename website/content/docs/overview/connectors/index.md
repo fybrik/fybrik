@@ -44,7 +44,7 @@ The catalog provides metadata about the asset such as security tags. It also pro
 ## Policy manager
 
 Enforcing data governance policies requires a Policy Decision Point (PDP) that dictates what enforcement actions need to take place.
-{{< name>}} supports a wide and extendible set of enforcement actions to perform on data read, write or copy. These include transformation of data, verification of the data, and verious restrictions on the external activity of an application that can acceess the data.
+{{< name>}} supports a wide and extendible set of enforcement actions to perform on data read, write or copy. These include transformation of data, verification of the data, and various restrictions on the external activity of an application that can acceess the data.
 
 A PDP returns a list of enforcement actions given a set of policies and specific context about the application and the data it uses. 
 {{< name >}} includes a PDP that is powered by [Open Policy Agent](https://www.openpolicyagent.org/) (OPA). However, the PDP can also use external policy managers via connectors, to cover some or even all policy types. 
