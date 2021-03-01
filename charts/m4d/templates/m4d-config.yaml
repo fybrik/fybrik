@@ -22,12 +22,10 @@ data:
   MAIN_POLICY_MANAGER_CONNECTOR_URL: {{ .policyManager.connectorUrl }}
   MAIN_POLICY_MANAGER_NAME: {{ .policyManager.name }}
   OPA_SERVER_URL: {{ .policyManager.url }}
+  USE_EXTENSIONPOLICY_MANAGER: "{{ .policyManager.extensionManager.enabled }}"
   {{- if .policyManager.extensionManager.enabled }}
-  USE_EXTENSIONPOLICY_MANAGER: "true"
   EXTENSIONS_POLICY_MANAGER_CONNECTOR_URL: {{ .policyManager.extensionManager.connectorUrl }}
   EXTENSIONS_POLICY_MANAGER_NAME: {{ .policyManager.extensionManager.name }}
-  {{- else }}
-  USE_EXTENSIONPOLICY_MANAGER: "false"
   {{- end }}
   CONNECTION_TIMEOUT: "{{ .connectionTimeout }}"
   {{- end }}
