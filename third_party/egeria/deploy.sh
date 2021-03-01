@@ -52,7 +52,7 @@ deploy() {
 }
 
 config() {
-        echo "Executing Egaria Lab configuration"
+        echo "Executing Egeria Lab configuration"
         local pod=$(kubectl -n $NAMESPACE get pods \
             -l app.kubernetes.io/component=jupyter,app.kubernetes.io/name=$CHART,app.kubernetes.io/instance=$RELEASE \
             -o=jsonpath='{.items[0].metadata.name}')
