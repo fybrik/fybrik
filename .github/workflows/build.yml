@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - github_actions_tests # Added for testing CI. TODO remove before merging
   pull_request:
     branches:
       - master
@@ -12,6 +13,7 @@ env:
   DOCKER_HOSTNAME: ghcr.io
   DOCKER_USERNAME: the-mesh-for-data
   ACTIVE_CI: travisci # This parameter defines which CI should push to the docker repository
+  GO_VERSION: 1.13
 
 jobs:
   verify:
@@ -24,7 +26,7 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.13
+        go-version: ${{ env.GO_VERSION }}
     - uses: actions/checkout@v2
     - name: Cache dependencies
       uses: actions/cache@v2
@@ -52,7 +54,7 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.13
+        go-version: ${{ env.GO_VERSION }}
     - uses: actions/checkout@v2
     - name: Cache dependencies
       uses: actions/cache@v2
@@ -80,7 +82,7 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.13
+        go-version: ${{ env.GO_VERSION }}
     - uses: actions/checkout@v2
     - name: Cache dependencies
       uses: actions/cache@v2
@@ -128,7 +130,7 @@ jobs:
     - run: docker images
     - name: Publish images
       if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
-      run: sudo chmod o+x /etc/docker && make docker-retag-and-push-public && make helm-push-public
+      run: make docker-retag-and-push-public && make helm-push-public
 
   build_website:
     name: Build website
