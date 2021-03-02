@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: m4d-config
+data:
+  {{- with .Values.config }}
+  SECRET_PROVIDER_URL: "http://secret-provider.m4d-system:5555/get-secret"
+  SECRET_PROVIDER_ROLE: "demo"
+  VAULT_AUTH: "kubernetes"
+  VAULT_ADDRESS: {{ .vault.address }}
+  VAULT_DATASET_HOME: {{ .vault.datasetHome }}
+  VAULT_DATASET_MOUNT: {{ .vault.datasetMount }}
+  VAULT_USER_HOME: {{ .vault.userHome }}
+  VAULT_USER_MOUNT: {{ .vault.userMount }}
+  VAULT_TTL: {{ .vault.ttl }}
+  USER_VAULT_ADDRESS: {{ .vault.userVaultAddress }}
+  USER_VAULT_PATH: {{ .vault.userVaultPath }}
+  VAULT_MODULES_ROLE: {{ .vault.modulesRole }}
+  CATALOG_CONNECTOR_URL: {{ .catalog.connectorUrl }}
+  CATALOG_PROVIDER_NAME: {{ .catalog.name }}
+  EGERIA_SERVER_URL: {{ .catalog.url }}
+  MAIN_POLICY_MANAGER_CONNECTOR_URL: {{ .policyManager.connectorUrl }}
+  MAIN_POLICY_MANAGER_NAME: {{ .policyManager.name }}
+  OPA_SERVER_URL: {{ .policyManager.url }}
+  USE_EXTENSIONPOLICY_MANAGER: "{{ .policyManager.extensionManager.enabled }}"
+  {{- if .policyManager.extensionManager.enabled }}
+  EXTENSIONS_POLICY_MANAGER_CONNECTOR_URL: {{ .policyManager.extensionManager.connectorUrl }}
+  EXTENSIONS_POLICY_MANAGER_NAME: {{ .policyManager.extensionManager.name }}
+  {{- end }}
+  CONNECTION_TIMEOUT: "{{ .connectionTimeout }}"
+  {{- end }}
+  {{- include "config.extraEnvironmentVars" . }}
