@@ -75,9 +75,29 @@ spec:
                                         format:
                                           description: Format represents data format (e.g. parquet) as received from catalog connectors
                                           type: string
+                                        vault:
+                                          description: Holds details for retrieving credentials by the modules from Vault store.
+                                          properties:
+                                            address:
+                                              description: Address is Vault address
+                                              type: string
+                                            authPath:
+                                              description: AuthPath is the path to auth method i.e. kubernetes
+                                              type: string
+                                            role:
+                                              description: Role is the Vault role used for retrieving the credentials
+                                              type: string
+                                            secretPath:
+                                              description: SecretPath is the path of the secret holding the Credentials in Vault
+                                              type: string
+                                          required:
+                                          - address
+                                          - authPath
+                                          - role
+                                          - secretPath
+                                          type: object
                                       required:
                                       - connection
-                                      - credentialLocation
                                       - format
                                       type: object
                                     source:
@@ -92,9 +112,29 @@ spec:
                                         format:
                                           description: Format represents data format (e.g. parquet) as received from catalog connectors
                                           type: string
+                                        vault:
+                                          description: Holds details for retrieving credentials by the modules from Vault store.
+                                          properties:
+                                            address:
+                                              description: Address is Vault address
+                                              type: string
+                                            authPath:
+                                              description: AuthPath is the path to auth method i.e. kubernetes
+                                              type: string
+                                            role:
+                                              description: Role is the Vault role used for retrieving the credentials
+                                              type: string
+                                            secretPath:
+                                              description: SecretPath is the path of the secret holding the Credentials in Vault
+                                              type: string
+                                          required:
+                                          - address
+                                          - authPath
+                                          - role
+                                          - secretPath
+                                          type: object
                                       required:
                                       - connection
-                                      - credentialLocation
                                       - format
                                       type: object
                                     transformations:
@@ -126,9 +166,29 @@ spec:
                                           format:
                                             description: Format represents data format (e.g. parquet) as received from catalog connectors
                                             type: string
+                                          vault:
+                                            description: Holds details for retrieving credentials by the modules from Vault store.
+                                            properties:
+                                              address:
+                                                description: Address is Vault address
+                                                type: string
+                                              authPath:
+                                                description: AuthPath is the path to auth method i.e. kubernetes
+                                                type: string
+                                              role:
+                                                description: Role is the Vault role used for retrieving the credentials
+                                                type: string
+                                              secretPath:
+                                                description: SecretPath is the path of the secret holding the Credentials in Vault
+                                                type: string
+                                            required:
+                                            - address
+                                            - authPath
+                                            - role
+                                            - secretPath
+                                            type: object
                                         required:
                                         - connection
-                                        - credentialLocation
                                         - format
                                         type: object
                                       transformations:
@@ -158,9 +218,29 @@ spec:
                                           format:
                                             description: Format represents data format (e.g. parquet) as received from catalog connectors
                                             type: string
+                                          vault:
+                                            description: Holds details for retrieving credentials by the modules from Vault store.
+                                            properties:
+                                              address:
+                                                description: Address is Vault address
+                                                type: string
+                                              authPath:
+                                                description: AuthPath is the path to auth method i.e. kubernetes
+                                                type: string
+                                              role:
+                                                description: Role is the Vault role used for retrieving the credentials
+                                                type: string
+                                              secretPath:
+                                                description: SecretPath is the path of the secret holding the Credentials in Vault
+                                                type: string
+                                            required:
+                                            - address
+                                            - authPath
+                                            - role
+                                            - secretPath
+                                            type: object
                                         required:
                                         - connection
-                                        - credentialLocation
                                         - format
                                         type: object
                                       transformations:

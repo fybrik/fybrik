@@ -13,11 +13,11 @@ import (
 
 var (
 	credserverurl = "http://localhost:8080/v1/creds/usercredentials"
-	cred1         = "{\"System\": \"Egaria\",\"M4DApplicationID\": \"notebook1\",\"Credentials\": {\"username\": \"user1\"}}"
-	cred2         = "{\"System\": \"Egaria\",\"M4DApplicationID\": \"notebook2\",\"Credentials\": {\"username\": \"user2\"}}"
+	cred1         = "{\"System\": \"Egeria\",\"M4DApplicationID\": \"notebook1\",\"Credentials\": {\"username\": \"user1\"}}"
+	cred2         = "{\"System\": \"Egeria\",\"M4DApplicationID\": \"notebook2\",\"Credentials\": {\"username\": \"user2\"}}"
 	namespace     = "default"
-	cred1path     = namespace + "/notebook1/Egaria"
-	cred2path     = namespace + "/notebook2/Egaria"
+	cred1path     = namespace + "/notebook1/Egeria"
+	cred2path     = namespace + "/notebook2/Egeria"
 )
 
 func storeCredentials(t *testing.T, cred string) {

@@ -201,3 +201,55 @@ clusterMetadata:
   # Set to the cluster Vault auth method path.
   vaultAuthPath: kubernetes
 
+# Values set in m4d-config ConfigMap.
+config:
+  # Vault related values set in m4d-config ConfigMap.
+  vault:
+    # Set to the Vault address.
+    address: "http://vault.m4d-system:8200/"
+    # Set to the path where credentials of dataset accessed by the m4d are stored.
+    datasetHome: "m4d/dataset-creds/"
+    # Set to the dataset credentials secret engine mount path.
+    datasetMount: "v1/sys/mounts/m4d/dataset-creds"
+    # Set to the path where user credentials are stored.
+    userHome: "m4d/user-creds/"
+    # Set to the user credentials secret engine mount path.
+    userMount: "v1/sys/mounts/m4d/user-creds"
+    # Set to the amount of time the authorization issued by Vault is valid.
+    ttl: "24h"
+    # Set to the Vault address that stores the credentials to data source for data assets.
+    userVaultAddress: "http://vault:8200/"
+    # Set to the path where credentials to data source for data assets are stored.
+    userVaultPath: "external"
+    # Set to the name of the role that modules use to access dataset credentials.
+    modulesRole: "module"
+
+  catalog:
+    # Set to the catalog URL.
+    url: "https://lab-core.egeria-catalog:9443"
+    # Set to the catalog connector URL.
+    connectorUrl: "egr-connector:50084"
+    # Set to the catalog provider name.
+    name: "EGERIA"
+
+  policyManager:
+    # Set to policyManager URL.
+    url: "opa:8181"
+    # Set to the policy manager connector URL.
+    connectorUrl: "opa-connector:50082"
+    # Set to the policy manager connector name.
+    name: "OPA"
+    # Set to true if an extension policy manager is used.
+    extensionManager:
+      enabled: false
+      # Set to extension policy manager connector URL.
+      # connectorUrl: ""
+      # Set to extension policy manager name.
+      # name: ""
+
+  # Set to grpc connection timeout.
+  connectionTimeout: "120"
+
+  # extraEnvironmentVars is a list of extra environment variables to set.
+  extraEnvironmentVars:
+    OPA_POLICY_TO_BE_EVALUATED: "sample_policies"

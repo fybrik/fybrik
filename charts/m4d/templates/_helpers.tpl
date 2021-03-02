@@ -72,3 +72,14 @@ Create the value of an image field from hub, image and tag
 {{- printf "%s/%s:%s" ( $ctx.hub | default $root.Values.global.hub ) $ctx.image ( $ctx.tag | default $root.Values.global.tag | default $root.Chart.AppVersion ) }}
 {{- end }}
 {{- end }}
+
+{{/*
+Inject extra environment vars if populated
+*/}}
+{{- define "config.extraEnvironmentVars" -}}
+{{- if .Values.config.extraEnvironmentVars -}}
+{{- range $key, $value := .Values.config.extraEnvironmentVars }}
+  {{ $key | quote }} : {{ $value | quote }}
+{{- end }}
+{{- end -}}
+{{- end -}}

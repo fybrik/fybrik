@@ -12,10 +12,10 @@ import (
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/razee"
 	"github.com/ibm/the-mesh-for-data/pkg/storage"
+	"github.com/ibm/the-mesh-for-data/pkg/vault"
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/motion"
 
-	"github.com/hashicorp/vault/api"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -125,7 +125,7 @@ func main() {
 
 	if enableApplicationController || enableAllControllers {
 		// Initiate vault client
-		vaultClient, errVaultSetup := initVaultConnection()
+		vaultConn, errVaultSetup := initVaultConnection()
 		if errVaultSetup != nil {
 			setupLog.Error(errVaultSetup, "Error setting up vault")
 			os.Exit(1)
@@ -135,7 +135,7 @@ func main() {
 		policyCompiler := pc.NewPolicyCompiler()
 
 		// Initiate the M4DApplication Controller
-		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
+		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultConn, policyCompiler, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
 			os.Exit(1)
@@ -169,37 +169,43 @@ func main() {
 }
 
 // init vault client and mount the base directory for storing credentials
-func initVaultConnection() (*api.Client, error) {
-	token := utils.GetVaultToken()
-	if err := utils.MountDatasetVault(token); err != nil {
-		return nil, err
-	}
-	vaultClient, err := utils.InitVault(token)
+func initVaultConnection() (vault.Interface, error) {
+	vaultConn, err := vault.InitConnection(utils.GetVaultAddress(), utils.GetVaultToken())
 	if err != nil {
-		return nil, err
+		return vaultConn, err
 	}
-
+	if err = vaultConn.Mount(utils.GetVaultDatasetMountPath()); err != nil {
+		return vaultConn, err
+	}
+	if err = vaultConn.Mount(utils.GetVaultUserMountPath()); err != nil {
+		return vaultConn, err
+	}
 	// Create and save a vault policy
 	path := utils.GetVaultDatasetHome() + "*"
 	policy := "path \"" + path + "\"" + " {\n	capabilities = [\"read\"]\n }"
 	policyName := "read-dataset-creds"
 
 	setupLog.Info("policyName: " + policyName + "  policy: " + policy)
-	if err = utils.WriteVaultPolicy(policyName, policy, vaultClient); err != nil {
+	if err = vaultConn.WritePolicy(policyName, policy); err != nil {
 		setupLog.Info("      Failed writing policy: " + err.Error())
-		return vaultClient, err
+		return vaultConn, err
 	}
 
 	setupLog.Info("Assigning the policy to " + "/role/" + utils.GetSecretProviderRole())
 	// Link the policy to the authentication role (configured)
-	if err = utils.LinkVaultPolicyToIdentity("/role/"+utils.GetSecretProviderRole(), policyName, vaultClient); err != nil {
+	if err = vaultConn.LinkPolicyToIdentity("/role/"+utils.GetSecretProviderRole(),
+		policyName,
+		utils.GetSystemNamespace(),
+		"secret-provider",
+		utils.GetVaultAuth(),
+		utils.GetVaultAuthTTL()); err != nil {
 		setupLog.Info("Could not create a role " + utils.GetSecretProviderRole() + " : " + err.Error())
-		return vaultClient, err
+		return vaultConn, err
 	}
-	return vaultClient, nil
+	return vaultConn, nil
 }
 
-// This method decides based on the environment variables that are set which
+// NewClusterManager decides based on the environment variables that are set which
 // cluster manager instance should be initiated.
 func NewClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error) {
 	setupLog := ctrl.Log.WithName("setup")
