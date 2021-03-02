@@ -190,6 +190,17 @@ clusterScoped: true
 # traffic from a localhost registry. Used only for development.
 integrationTests: false
 
+# Cluster Metadata values defined in cluster-metadata ConfigMap
+clusterMetadata:
+  # Set to the name of the cluster.
+  clusterName: hobbiton
+  # Set to cluster region.
+  region: eriador
+  # Set to cluster zone.
+  zone: theshire
+  # Set to the cluster Vault auth method path.
+  vaultAuthPath: kubernetes
+
 # Values set in m4d-config ConfigMap.
 config:
   # Vault related values set in m4d-config ConfigMap.
