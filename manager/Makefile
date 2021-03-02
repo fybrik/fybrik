@@ -19,7 +19,7 @@ config/default/kustomization.yaml: config/default/kustomization.yaml.in
 	cp $< $@
 
 # Run tests
-test: generate manifests
+test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
 	go test ./... -coverprofile cover.out
 
 # Build manager binary
