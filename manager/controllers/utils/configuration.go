@@ -25,7 +25,7 @@ const (
 	VaultAuthKey                        string = "VAULT_AUTH"
 	SecretProviderURL                   string = "SECRET_PROVIDER_URL"
 	SecretProviderRole                  string = "SECRET_PROVIDER_ROLE"
-	VaultModulesRole                         string = "VAULT_MODULES_ROLE"
+	VaultModulesRole                    string = "VAULT_MODULES_ROLE"
 )
 
 // GetSystemNamespace returns the namespace of control plane

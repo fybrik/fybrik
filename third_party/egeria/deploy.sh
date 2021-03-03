@@ -58,11 +58,11 @@ deploy() {
         rm -rf egeria
 }
 
-# config() {
-#         echo "Executing Egaria Lab configuration"
-#         local pod=$(kubectl -n $NAMESPACE get pods \
-#             -l app.kubernetes.io/component=jupyter,app.kubernetes.io/name=$CHART,app.kubernetes.io/instance=$RELEASE \
-#             -o=jsonpath='{.items[0].metadata.name}')
+config() {
+        echo "Executing Egeria Lab configuration"
+        local pod=$(kubectl -n $NAMESPACE get pods \
+            -l app.kubernetes.io/component=jupyter,app.kubernetes.io/name=$CHART,app.kubernetes.io/instance=$RELEASE \
+            -o=jsonpath='{.items[0].metadata.name}')
 
 #         kubectl exec -n $NAMESPACE -it $pod -- \
 #             jupyter nbconvert --execute egeria-server-config.ipynb

@@ -286,8 +286,8 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 		}
 		for _, cluster := range m.Clusters {
 			if copyCluster == cluster.Name {
-				copyArgs.Copy.Destination.Vault.AuthPath = cluster.Metadata.VaultAuthPath
-				copyArgs.Copy.Source.Vault.AuthPath = cluster.Metadata.VaultAuthPath
+				copyArgs.Copy.Destination.Vault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
+				copyArgs.Copy.Source.Vault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
 				break
 			}
 		}
@@ -316,7 +316,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 		}
 		for _, cluster := range m.Clusters {
 			if readCluster == cluster.Name {
-				readSource.Vault.AuthPath = cluster.Metadata.VaultAuthPath
+				readSource.Vault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
 				break
 			}
 		}
