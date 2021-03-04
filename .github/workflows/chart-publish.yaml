@@ -1,0 +1,41 @@
+name: Update Charts
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Update Charts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v2
+        with:
+          path: main
+      - name: Checkout charts repository
+        uses: actions/checkout@v2
+        with:
+          repository: mesh-for-data/charts
+          path: charts-repo
+      - run: |
+          rm -rf charts-repo/charts/m4d-crd
+          rm -rf charts-repo/charts/m4d
+          cp -r main/charts/m4d-crd charts-repo/charts
+          cp -r main/charts/m4d charts-repo/charts
+      - uses: tibdex/github-app-token@v1
+        id: generate-token
+        with:
+          app_id: ${{ secrets.CHARTS_APP_ID }}
+          private_key: ${{ secrets.CHARTS_APP_PRIVATE_KEY }}
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          path: charts-repo
+          signoff: true
+          token: ${{ steps.generate-token.outputs.token }}
+          title: 'Update charts to new release'
+          commit-message: Update charts
+          committer: GitHub <noreply@github.com>
+          delete-branch: true
