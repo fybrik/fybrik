@@ -70,7 +70,13 @@ func (f *K8sClient) ListApplications(opts meta_v1.ListOptions) (*app.M4DApplicat
 
 // CreateSecret makes a new Secret
 func (f *K8sClient) CreateSecret(obj *corev1.Secret) (*corev1.Secret, error) {
-	err := f.client.Create(context.Background(), obj)
+	var result corev1.Secret
+	key, _ := kclient.ObjectKeyFromObject(obj)
+	err := f.client.Get(context.Background(), key, &result)
+	if err == nil {
+		return f.UpdateSecret(obj.Name, obj)
+	}
+	err = f.client.Create(context.Background(), obj)
 	if err != nil {
 		return nil, err
 	}

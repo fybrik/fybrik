@@ -10,14 +10,14 @@ const ApplicationTable = (props) => {
   const onOpen = () => setOpen({ open: true })
 
   // identifying info for deleting application instance
-  const [deleteApplication, setDeleteApplication] = useState({ uid: '', name: '' })
+  const [deleteApplication, setDeleteApplication] = useState({ uid: '', name: '', secret: '' })
   // save identifying info for deleting application instance
-  const onDeleteClicked = (uid, name) => {
-    setDeleteApplication({ ...deleteApplication, uid: uid, name: name })
+  const onDeleteClicked = (uid, name, secret) => {
+    setDeleteApplication({ ...deleteApplication, uid: uid, name: name, secret: secret })
   }
   // delete application instance
   const onDelete = () => {
-    props.deleteApplication(deleteApplication.uid, deleteApplication.name)
+    props.deleteApplication(deleteApplication.uid, deleteApplication.name, deleteApplication.secret)
     onClose()
   }
 
@@ -73,7 +73,7 @@ const ApplicationTable = (props) => {
   // remove/edit/add credentials buttons
   const TableCellActions = (data) => {
     return (<Table.Cell textAlign='center'>
-      <Modal trigger={<Button basic icon='remove circle' data-tooltip='delete' onClick={() => onDeleteClicked(data.application.metadata.uid, data.application.metadata.name)} />}
+      <Modal trigger={<Button basic icon='remove circle' data-tooltip='delete' onClick={() => onDeleteClicked(data.application.metadata.uid, data.application.metadata.name, data.application.spec.userSecretRef)} />}
         size={'tiny'}
         open={openQ.open}
         onOpen={onOpen}

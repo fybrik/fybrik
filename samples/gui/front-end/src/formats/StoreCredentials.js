@@ -45,7 +45,9 @@ const StoreCredentials = props => {
   const handleStore = (event, uid) => {
     creds.forEach(cred => {
       if (cred.uid === uid) {
-        let secretName = exists ? application.spec.userSecretRef : application.metadata.name
+        let secretName = (application.spec.userSecretRef === undefined || application.spec.userSecretRef.length === 0) ? 
+          application.metadata.name : application.spec.userSecretRef 
+        console.log("Secret name is " + secretName)
         const credentials = array.omitBy({ username: cred.userName, password: cred.password, ownerId: cred.userID }, array.isEmpty)
         axios({
           method: 'post',

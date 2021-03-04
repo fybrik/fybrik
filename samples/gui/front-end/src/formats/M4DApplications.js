@@ -73,7 +73,7 @@ const M4DApplications = props => {
     return (array.compact(array.union([process.env.REACT_APP_POLICY_MANAGER_SERVICE_SYSTEM,
                                        process.env.REACT_APP_CATALOG_CONNECTOR_SYSTEM,
                                        process.env.REACT_APP_CREDENTIALS_MANAGER_SYSTEM])).map(sys =>
-      axios.delete(process.env.REACT_APP_BACKEND_ADDRESS + `/v1/creds/usercredentials/${namespace}/${name}/${sys}`)))
+      axios.delete(process.env.REACT_APP_BACKEND_ADDRESS + `/v1/creds/usercredentials/${name}`)))
   }
 
   const deleteCredentials = (name) => {
@@ -89,7 +89,7 @@ const M4DApplications = props => {
   }
 
   // send request to delete application, remove row from table upon success
-  const deleteApplication = (uid, name) => {
+  const deleteApplication = (uid, name, secret) => {
     const axios = require('axios')
     axios.delete(process.env.REACT_APP_BACKEND_ADDRESS + `/v1/dma/m4dapplication/${name}`)
       .then(async (response) => {
@@ -97,7 +97,9 @@ const M4DApplications = props => {
         // remove app from table, does not guarantee that kubernetes deletion
         setApplications(applications.filter((app) => app.metadata.uid !== uid))
         setAxiosMessage({ ...axiosMessage, message: `Application was deleted: ${response.statusText}`, error: false })
-        deleteCredentials(name)
+        if (secret !== undefined && secret.length > 0) {
+          deleteCredentials(secret)
+        }
       })
       .catch(error => {
         console.log(error);

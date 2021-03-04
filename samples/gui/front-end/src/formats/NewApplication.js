@@ -5,7 +5,7 @@ import { Form, Divider } from 'semantic-ui-react'
 
 const NewApplication = props => {
   const [st, setState] = useState({ valid_label: false, valid_app_name: false, unique_app_name: true, color: 'green', message: 'Please enter a name' })
-  const [application, setApplication] = useState({ metadata: { name: ''}, spec: { selector: { clusterName: '', workloadSelector: {matchLabels: ''}}}})
+  const [application, setApplication] = useState({ metadata: { name: ''}, spec: { userSecretRef: '', selector: { clusterName: '', workloadSelector: {matchLabels: ''}}}})
 
   const handleNameChange = event => {
     const { name, value } = event.target
