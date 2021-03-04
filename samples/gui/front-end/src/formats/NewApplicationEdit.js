@@ -44,8 +44,9 @@ const NewApplicationEdit = props => {
     clusterName: props.history.location.state.application.spec.selector.clusterName,
     labels:  exists ? parseSelector(props.history.location.state.application.spec.selector.workloadSelector.matchLabels) : props.history.location.state.application.spec.selector.workloadSelector.matchLabels,
     resourceVersion:  exists ? props.history.location.state.application.metadata.resourceVersion : '',
-    role: exists ? props.history.location.state.application.spec.appInfo.role : '',
-    purpose: exists ? props.history.location.state.application.spec.appInfo.purpose : '',
+    role: exists ? props.history.location.state.application.spec.appInfo["role"] : '',
+    purpose: exists ? props.history.location.state.application.spec.appInfo["intent"] : '',
+    secret: exists ? props.history.location.state.application.spec.userSecretRef : props.history.location.state.application.metadata.name,
     geography: exists ? props.history.location.state.application.geography : props.location.state.application.geography,  
   })
   //application instance data
@@ -111,9 +112,10 @@ const NewApplicationEdit = props => {
           resourceVersion: application.resourceVersion,
         },
         spec: {
+          userSecretRef: application.secret,
           appInfo: {
-            purpose: application.purpose,
-            role: application.role,
+            "intent": application.purpose,
+            "role": application.role,
           },
           selector: { 
             clusterName: application.clusterName,
@@ -189,7 +191,7 @@ const NewApplicationEdit = props => {
         defaultValue={application.clusterName}
       />
       <Form.Input
-        label='Purpose'
+        label='Intent'
         required formNoValidate
         autoComplete='off'
         fluid

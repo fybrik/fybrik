@@ -45,13 +45,13 @@ const StoreCredentials = props => {
   const handleStore = (event, uid) => {
     creds.forEach(cred => {
       if (cred.uid === uid) {
+        let secretName = exists ? application.spec.userSecretRef : application.metadata.name
         const credentials = array.omitBy({ username: cred.userName, password: cred.password, ownerId: cred.userID }, array.isEmpty)
         axios({
           method: 'post',
           url: process.env.REACT_APP_BACKEND_ADDRESS + '/v1/creds/usercredentials',
           data: {
-            System: cred.system,
-            M4DApplicationID: application.metadata.name,
+            SecretName: secretName,
             Credentials: credentials 
           }
         })

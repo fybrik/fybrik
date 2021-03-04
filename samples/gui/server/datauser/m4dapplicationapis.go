@@ -113,6 +113,7 @@ func UpdateM4DApplication(w http.ResponseWriter, r *http.Request) {
 
 	m4dapplicationID := chi.URLParam(r, "m4dapplicationID")
 	// Call kubernetes to update the M4DApplication CRD
+	dmaStruct.Namespace = dmaClient.namespace
 	dma, err := dmaClient.UpdateApplication(m4dapplicationID, &dmaStruct)
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))

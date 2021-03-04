@@ -44,23 +44,20 @@ curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion
 
 export KUBECONFIG=$HOME/.kube/config
 export GEOGRAPHY=US-cluster
+make build
+./datauserserver
 
-go run samples/gui/server/main.go
-
-## Test locally
-Assuming rest server is running (see run locally)
-From within samples/gui/server/datauser 
-go test
+## Test locally (assuming datauserserver is not running)
+From within samples/gui/server
+make test
 
 ## Working in a cluster
 GUI is deployed in the namespace the workload is running in. This should also be your current namespace.
 
 ## Creating docker images
-
-Backend image creation is done from the main directory of the project.
-
+Backend image creation
 ```
-docker build . -t $DOCKER_HOSTNAME/$WORKLOAD_NAMESPACE/datauserserver:latest -f samples/gui/server/Dockerfile.datauserserver
+make docker-build
 ```
 Frontend image creation
 
@@ -71,7 +68,7 @@ Ensure that .env has a correct configuration
 export NODE_OPTIONS=--max_old_space_size=4096
 rm -rf build
 npm run build
-docker build . -t $DOCKER_HOSTNAME/$WORKLOAD_NAMESPACE/datauserclient:latest
+docker build . -t $DOCKER_HOSTNAME/$DOCKER_NAMESPACE/datauserclient:latest
 ```
 ## Deployment
   ```

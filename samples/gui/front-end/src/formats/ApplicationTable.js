@@ -103,7 +103,7 @@ const ApplicationTable = (props) => {
         <Table.Row>
           <Table.HeaderCell>Application environment</Table.HeaderCell >
           <Table.HeaderCell>Role</Table.HeaderCell>
-          <Table.HeaderCell>Purpose</Table.HeaderCell>
+          <Table.HeaderCell>Intent</Table.HeaderCell>
           <Table.HeaderCell>Status</Table.HeaderCell>
           <Table.HeaderCell></Table.HeaderCell>
         </Table.Row>
@@ -114,8 +114,8 @@ const ApplicationTable = (props) => {
           props.applications.map(application => (
             <Table.Row key={application.metadata.uid}>
               <Table.Cell>{application.metadata.name} </Table.Cell>
-              <Table.Cell>{application.spec.appInfo.role}</Table.Cell>
-              <Table.Cell>{application.spec.appInfo.purpose}</Table.Cell>
+              <Table.Cell>{application.spec.appInfo["role"]}</Table.Cell>
+              <Table.Cell>{application.spec.appInfo["intent"]}</Table.Cell>
               <TableCellStatus status={application.status} />
               <TableCellActions application={application} />
             </Table.Row>
