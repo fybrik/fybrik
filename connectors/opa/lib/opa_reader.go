@@ -37,7 +37,7 @@ func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *Ca
 	if err != nil {
 		return nil, fmt.Errorf("error in unmarshalling appInfoBytes: %v", err)
 	}
-	
+
 	// to store the list of DatasetDecision
 	var datasetDecisionList []*pb.DatasetDecision
 	for i, datasetContext := range in.GetDatasets() {

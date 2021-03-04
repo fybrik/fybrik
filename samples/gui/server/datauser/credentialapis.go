@@ -71,10 +71,7 @@ func GetCredentials(w http.ResponseWriter, r *http.Request) {
 func UpdateCredentials(w http.ResponseWriter, r *http.Request) {
 	log.Println("In UpdateCredentials")
 	if k8sClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("No client set")))
-		if suberr != nil {
-			log.Printf(suberr.Error() + " upon no client set")
-		}
+		_ = render.Render(w, r, ErrConfigProblem(errors.New("No client set")))
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -84,10 +81,7 @@ func UpdateCredentials(w http.ResponseWriter, r *http.Request) {
 	// Create the golang structure from the json
 	err := decoder.Decode(&secretStruct)
 	if err != nil {
-		suberr := render.Render(w, r, ErrInvalidRequest(err))
-		if suberr != nil {
-			log.Printf(suberr.Error() + " upon " + err.Error())
-		}
+		_ = render.Render(w, r, ErrInvalidRequest(err))
 		return
 	}
 
@@ -95,10 +89,7 @@ func UpdateCredentials(w http.ResponseWriter, r *http.Request) {
 	// Call kubernetes to update the CRD
 	secret, err := k8sClient.UpdateSecret(secretName, &secretStruct)
 	if err != nil {
-		suberr := render.Render(w, r, ErrRender(err))
-		if suberr != nil {
-			log.Printf(suberr.Error() + " upon " + err.Error())
-		}
+		_ = render.Render(w, r, ErrRender(err))
 		return
 	}
 
