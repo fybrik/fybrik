@@ -19,7 +19,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -185,6 +184,7 @@ func InitM4DApplication(name string, n int) *apiv1alpha1.M4DApplication {
 		},
 		Spec: apiv1alpha1.M4DApplicationSpec{
 			Selector: apiv1alpha1.Selector{ClusterName: "US-cluster", WorkloadSelector: metav1.LabelSelector{MatchLabels: labels}},
+			AppInfo:  map[string]string{"intent": "Fraud Detection", "role": "Data Scientist"},
 			Data:     make([]apiv1alpha1.DataContext, n),
 		},
 	}
@@ -200,6 +200,7 @@ func InitM4DApplicationWithoutWorkload(name string, n int) *apiv1alpha1.M4DAppli
 		},
 		Spec: apiv1alpha1.M4DApplicationSpec{
 			Selector: apiv1alpha1.Selector{ClusterName: "US-cluster"},
+			AppInfo:  map[string]string{},
 			Data:     make([]apiv1alpha1.DataContext, n),
 		},
 	}
@@ -581,14 +582,6 @@ var _ = Describe("M4DApplication Controller", func() {
 
 		It("Test end-to-end for M4DApplication", func() {
 			var err error
-			secretYAML, err := ioutil.ReadFile("../../testdata/e2e/user-secret.yaml")
-			Expect(err).ToNot(HaveOccurred())
-			secret := &v1.Secret{}
-			err = yaml.Unmarshal(secretYAML, secret)
-			Expect(err).ToNot(HaveOccurred())
-			// Create secret
-			Expect(k8sClient.Create(context.Background(), secret)).Should(Succeed())
-
 			applicationYAML, err := ioutil.ReadFile("../../testdata/e2e/m4dapplication.yaml")
 			Expect(err).ToNot(HaveOccurred())
 			application := &apiv1alpha1.M4DApplication{}

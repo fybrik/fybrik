@@ -30,12 +30,6 @@ spec:
         envFrom:
         - configMapRef:
             name: m4d-config
-        env:
-        - name: VAULT_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: vault-unseal-keys
-              key: vault-root          
 ---
 apiVersion: v1
 kind: Service

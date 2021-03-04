@@ -250,10 +250,10 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		return ctrl.Result{}, err
 	}
 	// Store user credentials in vault
-	if applicationContext.Spec.AppInfo.UserSecretRef != "" {
+	if applicationContext.Spec.UserSecretRef != "" {
 		var data map[string]interface{}
 		if data, err = SecretToCredentialMap(r.Client,
-			types.NamespacedName{Name: applicationContext.Spec.AppInfo.UserSecretRef, Namespace: applicationContext.Namespace}); err != nil {
+			types.NamespacedName{Name: applicationContext.Spec.UserSecretRef, Namespace: applicationContext.Namespace}); err != nil {
 			r.Log.V(0).Info("Error reading user secret: " + err.Error())
 			setCondition(applicationContext, "", err.Error(), true)
 			return ctrl.Result{}, err

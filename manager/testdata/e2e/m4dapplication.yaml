@@ -16,7 +16,6 @@ spec:
         app: notebook
   appInfo:
     intent: fraud-detection
-    userSecretRef: user-credentials
   data:
     - dataSetID: '{"asset_id": "xxx", "catalog_id": "s3"}'
       requirements:

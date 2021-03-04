@@ -33,17 +33,9 @@ spec:
           description: M4DApplicationSpec defines the desired state of M4DApplication.
           properties:
             appInfo:
+              additionalProperties:
+                type: string
               description: AppInfo contains information describing the reasons for the processing that will be done by the Data Scientist's application.
-              properties:
-                intent:
-                  description: Intent indicates the reason for the processing and the use of the data by the Data Scientist's application.
-                  type: string
-                userSecretRef:
-                  description: UserSecretRef points to the secret that holds user role and credentials. The secret is deployed in M4dApplication namespace.
-                  type: string
-              required:
-              - intent
-              - userSecretRef
               type: object
             data:
               description: Data contains the identifiers of the data to be used by the Data Scientist's application, and the protocol used to access it and the format expected.
@@ -150,6 +142,9 @@ spec:
               required:
               - workloadSelector
               type: object
+            userSecretRef:
+              description: UserSecretRef points to the secret that holds user role and credentials. The secret is deployed in M4dApplication namespace.
+              type: string
           required:
           - appInfo
           - data

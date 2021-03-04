@@ -15,8 +15,8 @@ import (
 func ConstructApplicationContext(datasetID string, input *app.M4DApplication, operation *pb.AccessOperation) *pb.ApplicationContext {
 	return &pb.ApplicationContext{
 		AppInfo: &pb.ApplicationDetails{
-			Purpose:             input.Spec.AppInfo.Intent,
 			ProcessingGeography: operation.Destination,
+			Properties:          input.Spec.AppInfo,
 		},
 		AppId: utils.CreateAppIdentifier(input),
 		Datasets: []*pb.DatasetContext{{

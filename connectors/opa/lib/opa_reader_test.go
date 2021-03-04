@@ -20,16 +20,12 @@ import (
 // format into enforcement decisions format
 
 func TestMainOpaConnector(t *testing.T) {
-	os.Setenv("RUN_WITHOUT_VAULT", "1")
 	timeOutSecs, catalogConnectorURL, opaServerURL := tu.GetEnvironment()
 	policyToBeEvaluated := "user_policies"
 	applicationContext := tu.GetApplicationContext("marketing")
 
 	srv := NewOpaReader(opaServerURL)
 	catalogReader := NewCatalogReader(catalogConnectorURL, timeOutSecs)
-	creds := make(map[string]interface{})
-	creds["role"] = "Security"
-	assert.NilError(t, srv.vaultConnection.AddSecret(os.Getenv("VAULT_USER_HOME")+applicationContext.AppId+"/"+os.Getenv("CATALOG_PROVIDER_NAME"), creds))
 	policiesDecisions, err := srv.GetOPADecisions(applicationContext, catalogReader, policyToBeEvaluated)
 	assert.NilError(t, err)
 	fmt.Println("policiesDecisions returned")

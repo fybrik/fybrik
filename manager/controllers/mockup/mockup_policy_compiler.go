@@ -19,9 +19,12 @@ type MockPolicyCompiler struct {
 // GetPoliciesDecisions implements the PolicyCompiler interface
 func (s *MockPolicyCompiler) GetPoliciesDecisions(in *pb.ApplicationContext) (*pb.PoliciesDecisions, error) {
 	log.Printf("Received: ")
-	log.Printf("Purpose: " + in.GetAppInfo().GetPurpose())
-	log.Printf("ProcessingGeography: " + in.GetAppInfo().GetProcessingGeography())
+	log.Printf("ProcessingGeography: " + in.AppInfo.GetProcessingGeography())
 	log.Printf("AppID: " + in.GetAppId())
+	log.Printf("Properties:")
+	for key, val := range in.AppInfo.GetProperties() {
+		log.Printf(key + " : " + val)
+	}
 	var externalComponents []*pb.ComponentVersion
 	externalComponents = append(externalComponents, &pb.ComponentVersion{Id: "PC1", Version: "1.0", Name: "PolicyCompiler"})
 	var dataSetWithActions []*pb.DatasetDecision

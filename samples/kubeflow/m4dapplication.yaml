@@ -12,7 +12,6 @@ spec:
         app: kf-notebook
   appInfo:
     intent: fraud-detection
-    userSecretRef: user-credentials
   data:
     - dataSetID: "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"ASSET_ID\"}"
       requirements:

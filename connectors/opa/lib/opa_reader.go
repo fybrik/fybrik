@@ -8,23 +8,16 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
-	"github.com/ibm/the-mesh-for-data/pkg/vault"
 )
 
 type OpaReader struct {
-	opaServerURL    string
-	vaultConnection vault.Interface
+	opaServerURL string
 }
 
 func NewOpaReader(opasrvurl string) *OpaReader {
-	conn, err := vault.InitConnection(os.Getenv("VAULT_ADDRESS"), os.Getenv("VAULT_TOKEN"))
-	if err != nil {
-		fmt.Println("Error connecting to vault: " + err.Error())
-	}
-	return &OpaReader{opaServerURL: opasrvurl, vaultConnection: conn}
+	return &OpaReader{opaServerURL: opasrvurl}
 }
 
 func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *CatalogReader, policyToBeEvaluated string) (*pb.PoliciesDecisions, error) {
@@ -44,16 +37,6 @@ func (r *OpaReader) GetOPADecisions(in *pb.ApplicationContext, catalogReader *Ca
 	if err != nil {
 		return nil, fmt.Errorf("error in unmarshalling appInfoBytes: %v", err)
 	}
-	// get other properties from vault
-	var jsonStr string
-	if jsonStr, err = r.vaultConnection.GetSecret(os.Getenv("VAULT_USER_HOME") + in.AppId + "/" + os.Getenv("CATALOG_PROVIDER_NAME")); err != nil {
-		return nil, err
-	}
-	creds := make(map[string]string)
-	if err = json.Unmarshal([]byte(jsonStr), &creds); err != nil {
-		return nil, err
-	}
-	appInfoMap["role"] = creds["role"]
 	// to store the list of DatasetDecision
 	var datasetDecisionList []*pb.DatasetDecision
 	for i, datasetContext := range in.GetDatasets() {

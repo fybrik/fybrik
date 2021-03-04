@@ -64,15 +64,7 @@ type DataContext struct {
 // ApplicationDetails provides information about the Data Scientist's application, which is deployed separately.
 // The information provided is used to determine if the data should be altered in any way prior to its use,
 // based on policies and rules defined in an external data policy manager.
-type ApplicationDetails struct {
-	// Intent indicates the reason for the processing and the use of the data by the Data Scientist's application.
-	// +required
-	Intent string `json:"intent"`
-	// UserSecretRef points to the secret that holds user role and credentials.
-	// The secret is deployed in M4dApplication namespace.
-	// +required
-	UserSecretRef string `json:"userSecretRef"`
-}
+type ApplicationDetails map[string]string
 
 // M4DApplicationSpec defines the desired state of M4DApplication.
 type M4DApplicationSpec struct {
@@ -82,6 +74,11 @@ type M4DApplicationSpec struct {
 	// For some flows the selector may not be used.
 	// +optional
 	Selector Selector `json:"selector"`
+
+	// UserSecretRef points to the secret that holds user role and credentials.
+	// The secret is deployed in M4dApplication namespace.
+	// +optional
+	UserSecretRef string `json:"userSecretRef,omitempty"`
 
 	// AppInfo contains information describing the reasons for the processing
 	// that will be done by the Data Scientist's application.
