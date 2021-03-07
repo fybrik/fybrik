@@ -55,7 +55,7 @@ public final class EgeriaClient {
     private String assetGuid;
     // at this point we make it a constant, this will change and should be passed as
     // credentials for Egeria
-    private final String userid = "garygeeke";
+    private String userid;
 
     private EgeriaProperties prop;
 
@@ -79,6 +79,10 @@ public final class EgeriaClient {
         strbuilder.append("assetID: ");
         strbuilder.append(assetIDJson);
         return strbuilder.toString();
+    }
+
+    public void setEgeriaDefaultUserName(String defaultUserName){
+        this.userid = defaultUserName;
     }
 
     // https://stackoverflow.com/questions/50462157/android-https-urls-are-not-working-in-okhttp3
@@ -373,6 +377,7 @@ public final class EgeriaClient {
 
     public CatalogDatasetInfo getCatalogDatasetInfo() throws CustomException, Exception {
         LOGGER.info("Call Asset API");
+        LOGGER.info("userid in Egeria: " + userid);
 
         String fullUrl = prop.getEgeriaServiseURL()
                         + "/servers/" + serverName

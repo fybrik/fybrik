@@ -40,6 +40,7 @@ deploy() {
 
         # scc permissions for egeria pods to execute
         # this is done as per guidelines mentioned in https://github.com/odpi/egeria/issues/2790#issuecomment-674879248
+        $WITHOUT_OPENSHIFT || oc adm policy add-scc-to-group anyuid system:authenticated
         $WITHOUT_OPENSHIFT || oc create -f egeria-scc.yaml
         $WITHOUT_OPENSHIFT || oc adm policy add-scc-to-user egeria-restricted -z default -n $NAMESPACE
 
@@ -57,20 +58,6 @@ deploy() {
 
         rm -rf egeria
 }
-
-config() {
-        echo "Executing Egeria Lab configuration"
-        local pod=$(kubectl -n $NAMESPACE get pods \
-            -l app.kubernetes.io/component=jupyter,app.kubernetes.io/name=$CHART,app.kubernetes.io/instance=$RELEASE \
-            -o=jsonpath='{.items[0].metadata.name}')
-
-#         kubectl exec -n $NAMESPACE -it $pod -- \
-#             jupyter nbconvert --execute egeria-server-config.ipynb
-
-#         kubectl exec -n $NAMESPACE -it $pod -- \
-#             jupyter nbconvert --execute egeria-server-start.ipynb \
-#             --ExecutePreprocessor.timeout=-1
-#     }
 
 case "$1" in
     deploy)
