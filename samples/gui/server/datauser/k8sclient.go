@@ -64,7 +64,7 @@ func (f *K8sClient) GetApplication(name string) (*app.M4DApplication, error) {
 // ListApplications gets the list of existing M4DApplication CRDs
 func (f *K8sClient) ListApplications(opts meta_v1.ListOptions) (*app.M4DApplicationList, error) {
 	var result app.M4DApplicationList
-	err := f.client.List(context.Background(), &result)
+	err := f.client.List(context.Background(), &result, kclient.InNamespace(k8sClient.namespace))
 	return &result, err
 }
 

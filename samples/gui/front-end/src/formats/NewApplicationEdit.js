@@ -77,7 +77,7 @@ const NewApplicationEdit = props => {
   }
 
   const handleDetailsChange = (event, uid, name, value) => {
-     setApplicationData(applicationData.map(d => d.uid === uid ? { ...d, requirements: {interface: { ...d.requirements.interface, [name]: value } }} : d))
+     setApplicationData(applicationData.map(d => d.uid === uid ? { ...d, requirements: {copy: d.requirements.copy, interface: { ...d.requirements.interface, [name]: value } }} : d))
   }
 
   const handleCatalogChange = (event, uid) => {

@@ -118,7 +118,7 @@ const InputDataTable = props => {
               <Input
                 autoComplete='off'
                 name='catalogID'
-                value={data.requirements.copy.catalog.catalogID}
+                value={data.requirements.copy && data.requirements.catalog && data.requirements.catalogID ? data.requirements.catalog.catalogID : ''}
                 onChange={(e) => props.handleCatalogChange(e, data.uid)}
               />
             </Table.Cell>

@@ -57,7 +57,7 @@ GUI is deployed in the namespace the workload is running in. This should also be
 ## Creating docker images
 Backend image creation
 ```
-make docker-build
+make docker-all
 ```
 Frontend image creation
 
@@ -68,7 +68,7 @@ Ensure that .env has a correct configuration
 export NODE_OPTIONS=--max_old_space_size=4096
 rm -rf build
 npm run build
-docker build . -t $DOCKER_HOSTNAME/$DOCKER_NAMESPACE/datauserclient:latest
+make docker-all
 ```
 ## Deployment
   ```
