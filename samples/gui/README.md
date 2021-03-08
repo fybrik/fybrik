@@ -25,10 +25,10 @@ curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion
 	
 	
 	Create Credentials
-	  curl -X POST -i http://localhost:8080/v1/creds/usercredentials --data '{"SecretName": "user-creds","Credentials": {"username": "admin"}}'
+	  curl -X POST -i http://localhost:8080/v1/creds/usercredentials --data '{"SecretName": "user-creds","System": "Egeria", "Credentials": {"username": "admin"}}'
 	
 	Get Credentials
-	  curl -X GET -i http://localhost:8080/v1/creds/usercredentials/user-creds
+	  curl -X GET -i http://localhost:8080/v1/creds/usercredentials/user-creds/Egeria
 	  ==> returns: "{\"username\":\"admin\"}"
 	
 	Delete Credentials

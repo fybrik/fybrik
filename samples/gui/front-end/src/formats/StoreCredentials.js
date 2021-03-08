@@ -47,13 +47,13 @@ const StoreCredentials = props => {
       if (cred.uid === uid) {
         let secretName = (application.spec.userSecretRef === undefined || application.spec.userSecretRef.length === 0) ? 
           application.metadata.name : application.spec.userSecretRef 
-        console.log("Secret name is " + secretName)
         const credentials = array.omitBy({ username: cred.userName, password: cred.password, ownerId: cred.userID }, array.isEmpty)
         axios({
           method: 'post',
           url: process.env.REACT_APP_BACKEND_ADDRESS + '/v1/creds/usercredentials',
           data: {
             SecretName: secretName,
+            System: cred.system,
             Credentials: credentials 
           }
         })

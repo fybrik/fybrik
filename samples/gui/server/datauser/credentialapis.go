@@ -20,6 +20,7 @@ var k8sClient *K8sClient
 // UserCredentials contains the credentials needed to access a given system for the purpose of running a specific compute function.
 type UserCredentials struct {
 	SecretName  string                 `json:"secretName"`
+	System      string                 `json:"system"`      // system to access using the credentials, e.g. Egeria
 	Credentials map[string]interface{} `json:"credentials"` // often username and password, but could be token or other types of credentials
 }
 
@@ -28,10 +29,9 @@ func CredentialRoutes(client *K8sClient) *chi.Mux {
 	k8sClient = client // global variable used by all funcs in this package
 
 	router := chi.NewRouter()
-	router.Get("/{secret}", GetCredentials)
+	router.Get("/{secret}/{system}", GetCredentials)
 	router.Delete("/{secret}", DeleteCredentials)
-	router.Post("/", CreateCredentials)
-	router.Put("/", UpdateCredentials)
+	router.Post("/", StoreCredentials)
 	router.Options("/*", CredentialOptions)
 	return router
 }
@@ -53,6 +53,7 @@ func GetCredentials(w http.ResponseWriter, r *http.Request) {
 	}
 
 	secretName := chi.URLParam(r, "secret")
+	system := chi.URLParam(r, "system")
 
 	// Call kubernetes to get the M4DApplication CRD
 	secret, err := k8sClient.GetSecret(secretName)
@@ -63,39 +64,9 @@ func GetCredentials(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-
-	render.JSON(w, r, secret) // Return the secret as json
-}
-
-// UpdateCredentials updates the secret
-func UpdateCredentials(w http.ResponseWriter, r *http.Request) {
-	log.Println("In UpdateCredentials")
-	if k8sClient == nil {
-		_ = render.Render(w, r, ErrConfigProblem(errors.New("No client set")))
-	}
-
-	decoder := json.NewDecoder(r.Body)
-	decoder.DisallowUnknownFields()
-	var secretStruct v1.Secret
-
-	// Create the golang structure from the json
-	err := decoder.Decode(&secretStruct)
-	if err != nil {
-		_ = render.Render(w, r, ErrInvalidRequest(err))
-		return
-	}
-
-	secretName := chi.URLParam(r, "secret")
-	// Call kubernetes to update the CRD
-	secret, err := k8sClient.UpdateSecret(secretName, &secretStruct)
-	if err != nil {
-		_ = render.Render(w, r, ErrRender(err))
-		return
-	}
-
-	render.Status(r, http.StatusOK)
-	result := CredsSuccessResponse{Name: secret.Name, Secret: *secret, Message: "Updated!!"}
-	render.JSON(w, r, result)
+	var creds string
+	creds = string(secret.Data[system])
+	render.JSON(w, r, creds) // Return the credentials as json
 }
 
 // DeleteCredentials deletes the secret
@@ -125,11 +96,11 @@ func DeleteCredentials(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, result)
 }
 
-// CreateCredentials stores the credentials
-func CreateCredentials(w http.ResponseWriter, r *http.Request) {
+// StoreCredentials stores the credentials
+func StoreCredentials(w http.ResponseWriter, r *http.Request) {
 	var err error
 
-	log.Println("In CreateCredentials")
+	log.Println("In StoreCredentials")
 	if k8sClient == nil {
 		suberr := render.Render(w, r, ErrConfigProblem(errors.New("No k8sClient set")))
 		if suberr != nil {
@@ -157,20 +128,15 @@ func CreateCredentials(w http.ResponseWriter, r *http.Request) {
 		StringData: map[string]string{},
 		Type:       "Opaque",
 	}
+
 	bytes, err := json.Marshal(userCredentials.Credentials)
 	if err != nil {
 		log.Print("err = " + err.Error())
 		_ = render.Render(w, r, ErrInvalidRequest(err))
 		return
 	}
-	err = json.Unmarshal(bytes, &secretStruct.StringData)
-	if err != nil {
-		log.Print("err = " + err.Error())
-		_ = render.Render(w, r, ErrInvalidRequest(err))
-		return
-	}
-
-	secret, err := k8sClient.CreateSecret(&secretStruct)
+	secretStruct.StringData[userCredentials.System] = string(bytes)
+	secret, err := k8sClient.CreateOrUpdateSecret(&secretStruct)
 	if err != nil {
 		log.Print("err = " + err.Error())
 		_ = render.Render(w, r, ErrConfigProblem(err))
@@ -188,7 +154,7 @@ func CreateCredentials(w http.ResponseWriter, r *http.Request) {
 // CredsSuccessResponse - Structure returned when REST API is successful
 type CredsSuccessResponse struct {
 	// JSON representation of the Secret
-	Secret v1.Secret `json:"jsonDMA,omitempty"`
+	Secret string `json:"jsonDMA,omitempty"`
 
 	// Secret name
 	Name string `json:"name,omitempty"`

@@ -68,36 +68,37 @@ func (f *K8sClient) ListApplications(opts meta_v1.ListOptions) (*app.M4DApplicat
 	return &result, err
 }
 
-// CreateSecret makes a new Secret
-func (f *K8sClient) CreateSecret(obj *corev1.Secret) (*corev1.Secret, error) {
-	var result corev1.Secret
+// CreateOrUpdateSecret makes a new Secret or updates an existing one using received credentials
+func (f *K8sClient) CreateOrUpdateSecret(obj *corev1.Secret) (*corev1.Secret, error) {
+	var existing corev1.Secret
 	key, _ := kclient.ObjectKeyFromObject(obj)
-	err := f.client.Get(context.Background(), key, &result)
+	err := f.client.Get(context.Background(), key, &existing)
 	if err == nil {
-		return f.UpdateSecret(obj.Name, obj)
+		// update (add new properties on top of the existing)
+		if existing.Data == nil {
+			existing.Data = map[string][]byte{}
+		}
+		if existing.StringData == nil {
+			existing.StringData = map[string]string{}
+		}
+		for key, val := range obj.Data {
+			existing.Data[key] = val
+		}
+		for key, val := range obj.StringData {
+			existing.StringData[key] = val
+		}
+		err = f.client.Update(context.Background(), &existing)
+		if err != nil {
+			return nil, err
+		}
+		return &existing, nil
 	}
+	// create
 	err = f.client.Create(context.Background(), obj)
 	if err != nil {
 		return nil, err
 	}
 	return obj, nil
-}
-
-// UpdateSecret updates an existing secret
-func (f *K8sClient) UpdateSecret(name string, obj *corev1.Secret) (*corev1.Secret, error) {
-	var result corev1.Secret
-	key, _ := kclient.ObjectKeyFromObject(obj)
-	err := f.client.Get(context.Background(), key, &result)
-	if err != nil {
-		return nil, err
-	}
-	result.Data = obj.Data
-	result.StringData = obj.StringData
-	err = f.client.Update(context.Background(), &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
 }
 
 // DeleteSecret deletes the existing secret
