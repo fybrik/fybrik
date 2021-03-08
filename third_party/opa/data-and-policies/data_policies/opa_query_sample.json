@@ -1,0 +1,33 @@
+{
+    "$schema": "./opa_query_schema.json",
+     "requester": {  
+        "intent": "Fraud Detection",
+        "role": "Data Scientist"
+    },
+    "action": {
+        "type": "read",
+        "processingLocation": "Turkey"
+    },
+    "resource": {
+        "name": "Data Set 123",  
+	    "category": "tabular",
+        "location": "Turkey",
+        "tags": [
+            "personal",
+            "residency=turkey"
+        ],
+        "columns": [{
+            "name": "Column1",
+            "tags": [
+                "tag1"
+            ]
+        },
+        {
+            "name": "Column2",
+            "tags": [
+                "tag2"
+            ]
+        }
+    ]
+    }
+}

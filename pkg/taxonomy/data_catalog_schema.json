@@ -1,0 +1,82 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "https://github.com/IBM/the-mesh-for-data/pkg/taxonomy/data_catalog_schema.json",
+    "title": "Data Catalog Taxonomy",
+    "description": "Portion of the taxonomy owned by the data catalog.",
+    "definitions": {
+        "data_sensitivity": {
+            "type": "string",
+            "description": "Level of sensitivity of the data.",
+            "enum": ["confidential", "personal", "special personal"]
+        },
+        "geography_type": {
+            "type": "string",
+            "description": "Geographical resolution",
+            "enum": ["union", "country", "state", "city", "region"]
+        },
+        "geography": {
+            "type": "string",
+            "description": "Name of the geography"
+        },
+        "data_format": {
+            "type": "string",
+            "description": "Format in which the data is stored.",
+            "enum": ["parquet", "csv", "arrow", "json", "table", "avro", "binary"]
+        },
+        "data_type": {
+            "type": "string",
+            "description": "Type of data.",
+            "enum": ["image", "text", "voice", "video"]
+        },
+        "resource": {
+            "type": "object",
+            "description": "Data set or other type of resource.",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Unique name of the data set",
+                    "uniqueItems": true  
+                },
+                "category": {
+                    "type": "string",
+                    "description": "Type of data",
+                    "enum": ["tabular"]
+                },
+                "location": {
+                    "type": "string",
+                    "description": "Geographical location in which the data is stored."
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Metadata tags that provide additional information about the data set. They may be individual tags or key value pairs.",
+                    "items": {
+                        "type": "string",
+                        "uniqueItems": true
+                    }
+                },
+                "columns": {
+                    "type": "array",
+                    "description": "List of column names in the data set with their associated tags.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "name of column or component"
+                            },
+                            "tags": {
+                                "type":"array",
+                                "description": "List of component level tags",
+                                "items": {
+                                    "type": "string",
+                                    "uniqueItems": true
+                                }
+                            }
+                        },
+                        "uniqueItems": true
+                    }
+                }
+            }
+        }
+    }
+}
