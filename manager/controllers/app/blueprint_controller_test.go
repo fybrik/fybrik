@@ -59,17 +59,18 @@ var _ = Describe("Blueprint Controller", func() {
 				_ = k8sClient.Delete(context.Background(), f)
 			}()
 
-			/*
-				By("Expecting BatchTransfer to be created")
-				Eventually(func() error {
-					name := utils.Hash(blueprint.Spec.Flow.Steps[0].Name, 20)
-					expectedObject := utils.CreateUnstructured("motion.m4d.ibm.com", "v1alpha1", "BatchTransfer",
-						name, blueprint.Namespace)
-					expectedObjectKey, err := client.ObjectKeyFromObject(expectedObject)
-					Expect(err).ToNot(HaveOccurred())
-					return k8sClient.Get(context.Background(), expectedObjectKey, expectedObject)
-				}, timeout, interval).Should(Succeed())
-			*/
+			// Check number of releases - should be two
+			By("Expecting to reconcile successfully")
+			Eventually(func() int {
+				f := &app.Blueprint{}
+				if err := k8sClient.Get(context.Background(), key, f); err != nil {
+					return 0
+				}
+				if f.Status.Releases == nil {
+					return 0
+				}
+				return len(f.Status.Releases)
+			}, timeout, interval).Should(Equal(2))
 
 			// Update
 			By("Expecting to update successfully")
@@ -78,9 +79,24 @@ var _ = Describe("Blueprint Controller", func() {
 				if err := k8sClient.Get(context.Background(), key, f); err != nil {
 					return err
 				}
-				f.Spec.Flow.Steps[0].Arguments.Copy.Destination.Connection.Raw = []byte(`{"s3": {"bucket": "placeholder"}}`)
+				// remove copy module
+				f.Spec.Flow.Steps = f.Spec.Flow.Steps[1:]
+				f.Spec.Templates = f.Spec.Templates[1:]
 				return k8sClient.Update(context.Background(), f)
 			}, timeout, interval).Should(Succeed())
+
+			// Check number of releases - should be only one
+			By("Expecting to reconcile successfully")
+			Eventually(func() int {
+				f := &app.Blueprint{}
+				if err := k8sClient.Get(context.Background(), key, f); err != nil {
+					return 0
+				}
+				if f.Status.Releases == nil {
+					return 0
+				}
+				return len(f.Status.Releases)
+			}, timeout, interval).Should(Equal(1))
 
 			// Delete
 			By("Expecting to delete successfully")

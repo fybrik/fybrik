@@ -18,7 +18,6 @@ spec:
     name: notebook
     steps:
     - arguments:
-        flow: copy
         copy:
           destination:
             connection:
@@ -46,13 +45,32 @@ spec:
             enforcementActionID: redact-ID
             enforcementActionLevel: 2
             enforcementActionName: redact
-        readargs: {}
-        writeargs: {}
       name: notebook-implicit-copy-batch-latest-fgjzkfwykn
       template: implicit-copy-batch-latest
+    - arguments:
+        read:
+          - source:
+              connection:
+                name: S3
+                s3:
+                  bucket: m4d-test-bucket
+                  endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
+                  object_key: small.kp.encrypted.parq
+                type: 2
+              credentialLocation: /v1/m4d/dataset-creds/m4d-test-bucket
+              format: parquet
+            assetID: xyz
+      name: notebook-read-module
+      template: read-module
   templates:
   - name: implicit-copy-batch-latest
     kind: M4DModule
     flow: copy
     chart:
       name: localhost:5000/m4d-system/m4d-implicit-copy-batch:0.1.0
+  - name: read-module
+    kind: M4DModule
+    flow: read
+    chart:
+      name: localhost:5000/m4d-system/m4d-template:0.1.0
+
