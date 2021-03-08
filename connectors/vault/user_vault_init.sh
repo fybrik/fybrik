@@ -28,6 +28,8 @@ export USER_VAULT_KAFKA_ASSET_CRED="my_kafka_credentials"
 # export USER_VAULT_EGERIA_ASSET_KEY="{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"24cd3ed9-4084-43b9-9e91-5fe1f4fbd6b7\"}"
 export USER_VAULT_EGERIA_ASSET_KEY="{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"1e2a0403-1946-4e89-a10b-fd96eda5a5dc\"}"
 export USER_VAULT_EGERIA_ASSET_CRED=@creds.json
+export DATA_PROVIDER_USERNAME=data_provider
+export DATA_PROVIDER_PASSWORD=password
 
 echo "VAULT_BIN env variable is set to $VAULT_BIN"
 echo "USER_VAULT_PATH env variable is set to $USER_VAULT_PATH"
@@ -43,3 +45,12 @@ $VAULT_BIN kv get -address=$USER_VAULT_ADDRESS   $USER_VAULT_PATH/$USER_VAULT_KA
 #$VAULT_BIN kv put -address=$USER_VAULT_ADDRESS   $USER_VAULT_PATH/$USER_VAULT_EGERIA_ASSET_KEY  credentials=$USER_VAULT_EGERIA_ASSET_CRED
 $VAULT_BIN kv put -address=$USER_VAULT_ADDRESS   $USER_VAULT_PATH/$USER_VAULT_EGERIA_ASSET_KEY  @creds.json
 $VAULT_BIN kv get -address=$USER_VAULT_ADDRESS   $USER_VAULT_PATH/$USER_VAULT_EGERIA_ASSET_KEY
+
+$VAULT_BIN policy write -address=$USER_VAULT_ADDRESS allow-all-$USER_VAULT_PATH - <<EOF
+        path "$USER_VAULT_PATH/*" {
+        capabilities = ["create", "read", "update", "delete", "list"]
+        }
+EOF
+
+$VAULT_BIN auth enable -address=$USER_VAULT_ADDRESS userpass
+$VAULT_BIN write -address=$USER_VAULT_ADDRESS auth/userpass/users/$DATA_PROVIDER_USERNAME password=$DATA_PROVIDER_PASSWORD policies=allow-all-$USER_VAULT_PATH
