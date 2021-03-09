@@ -6,7 +6,7 @@ set -x
 : ${WITHOUT_OPENSHIFT=false}
 : ${DONOT_DELETE_PERSISTENT_STORAGE=false}
 
-NAMESPACE=irltest1
+NAMESPACE=egeria-catalog2
 TIMEOUT=8m
 VERSION="egeria-release-2.6"
 
