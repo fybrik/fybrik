@@ -36,8 +36,6 @@ var _ = Describe("Blueprint Controller", func() {
 	// test Kubernetes API server, which isn't the goal here.
 	Context("Blueprint", func() {
 		It("Should create successfully", func() {
-			// randomized := randomStringWithCharset(10, charset)
-
 			// Load
 			var err error
 			blueprintYAML, err := ioutil.ReadFile("../../testdata/blueprint.yaml")
@@ -60,7 +58,7 @@ var _ = Describe("Blueprint Controller", func() {
 			}()
 
 			// Check number of releases - should be two
-			By("Expecting to reconcile successfully")
+			By("Expecting to reconcile successfully with copy and read module releases")
 			Eventually(func() int {
 				f := &app.Blueprint{}
 				if err := k8sClient.Get(context.Background(), key, f); err != nil {
@@ -79,25 +77,28 @@ var _ = Describe("Blueprint Controller", func() {
 				if err := k8sClient.Get(context.Background(), key, f); err != nil {
 					return err
 				}
-				// remove copy module
+				// remove copy module (the first one in the flow)
 				f.Spec.Flow.Steps = f.Spec.Flow.Steps[1:]
 				f.Spec.Templates = f.Spec.Templates[1:]
 				return k8sClient.Update(context.Background(), f)
 			}, timeout, interval).Should(Succeed())
 
 			// Check number of releases - should be only one
-			By("Expecting to reconcile successfully")
+			By("Expecting to reconcile successfully with a single read-module release")
+			var releaseNames []string
 			Eventually(func() int {
 				f := &app.Blueprint{}
+				releaseNames = []string{}
 				if err := k8sClient.Get(context.Background(), key, f); err != nil {
 					return 0
 				}
-				if f.Status.Releases == nil {
-					return 0
+				for release := range f.Status.Releases {
+					releaseNames = append(releaseNames, release)
 				}
-				return len(f.Status.Releases)
+				return len(releaseNames)
 			}, timeout, interval).Should(Equal(1))
 
+			Expect(releaseNames[0]).Should(ContainSubstring("read"))
 			// Delete
 			By("Expecting to delete successfully")
 			Eventually(func() error {
