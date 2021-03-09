@@ -6,7 +6,7 @@ set -x
 : ${WITHOUT_OPENSHIFT=false}
 : ${DONOT_DELETE_PERSISTENT_STORAGE=false}
 
-NAMESPACE=egeria-catalog2
+NAMESPACE=egeria-catalog
 TIMEOUT=8m
 VERSION="egeria-release-2.6"
 
@@ -18,8 +18,8 @@ undeploy() {
 
         rm -rf egeria
         helm delete egeria --namespace=$NAMESPACE --timeout=${TIMEOUT} 2>/dev/null || true
-        result=$(kubectl get pvc  -o=jsonpath='{.items..metadata.name}')
-        $DONOT_DELETE_PERSISTENT_STORAGE || kubectl delete pvc $result 2>/dev/null || true
+        result=$(kubectl get pvc --namespace=$NAMESPACE -o=jsonpath='{.items..metadata.name}')
+        $DONOT_DELETE_PERSISTENT_STORAGE || kubectl delete pvc --namespace=$NAMESPACE $result 2>/dev/null || true
 }
 
 deploy() {
