@@ -52,33 +52,34 @@ TAGS=$2
 echo "Create new asset from json: $ASSET_JSON"
 echo "Create Tags and add them to the asset: $TAGS"
 
-USER=calliequartile
+USER=garygeeke
 : ${EGERIA_URL:=localhost:9443}
 
 echo "EGERIA_URL: $EGERIA_URL"
 
 
-GUID=$(curl -k -X POST "https://${EGERIA_URL}/servers/cocoMDS3/open-metadata/access-services/asset-owner/users/${USER}/assets/data-files/csv" -H  "accept: */*" -H  "Content-Type: application/json"  --data "@$ASSET_JSON" | jq -r ".guids[-1]" )
+GUID=$(curl -k -X POST "https://${EGERIA_URL}/servers/mds1/open-metadata/access-services/asset-owner/users/${USER}/assets/data-files/csv" -H  "accept: */*" -H  "Content-Type: application/json"  --data "@$ASSET_JSON" | jq -r ".guids[-1]" )
 
 echo "GUID:"  $GUID
 
-echo https://${EGERIA_URL}/servers/cocoMDS3/open-metadata/access-services/asset-consumer/users/${USER}/tags
+echo https://${EGERIA_URL}/servers/mds1/open-metadata/access-services/asset-consumer/users/${USER}/tags
 
 for TAG in $TAGS
 do
 	echo "TAG: $TAG"
 	
-	TAG_JSON="{\"public\": true, \"class\": \"TagRequestBody\",\"tagName\": \"$TAG\",\"tagDescription\": \"$TAG related data\"}"
+	TAG_JSON="{\"isPublic\": true, \"class\": \"TagRequestBody\",\"name\": \"$TAG\",\"description\": \"$TAG related data\"}"
 	echo "JSON: $TAG_JSON"
 	echo ""
 	
-	TAG_GUID=$(curl -k -X POST "https://${EGERIA_URL}/servers/cocoMDS3/open-metadata/access-services/asset-consumer/users/${USER}/tags" -H  "accept: */*" -H  "Content-Type: application/json"  --data "$TAG_JSON" | jq -r ".guid" )
+	TAG_GUID=$(curl -k -X POST "https://${EGERIA_URL}/servers/mds1/open-metadata/access-services/asset-consumer/users/${USER}/tags" -H  "accept: */*" -H  "Content-Type: application/json"  --data "$TAG_JSON" | jq -r ".guid" )
+	echo "curl -k -X POST \"https://${EGERIA_URL}/servers/mds1/open-metadata/access-services/asset-consumer/users/${USER}/tags\" -H  \"accept: */*\" -H  \"Content-Type: application/json\"  --data \"$TAG_JSON\" | jq -r \".guid\" "
 
 	echo "TAG GUID: $TAG_GUID"
 	echo "Adding this tag to asset using URL:"
-	echo "https://${EGERIA_URL}/servers/cocoMDS3/open-metadata/access-services/asset-consumer/users/${USER}/assets/${GUID}/tags/${TAG_GUID}"
+	echo "https://${EGERIA_URL}/servers/mds1/open-metadata/access-services/asset-consumer/users/${USER}/assets/${GUID}/tags/${TAG_GUID}"
 
-	curl -k -X POST "https://${EGERIA_URL}/servers/cocoMDS3/open-metadata/access-services/asset-consumer/users/${USER}/assets/${GUID}/tags/${TAG_GUID}" -H  "accept: */*" -H  "Content-Type: application/json"  --data "{\"public\":true, \"class\":\"FeedbackRequestBody\"}"
+	curl -k -X POST "https://${EGERIA_URL}/servers/mds1/open-metadata/access-services/asset-consumer/users/${USER}/assets/${GUID}/tags/${TAG_GUID}" -H  "accept: */*" -H  "Content-Type: application/json"  --data "{\"public\":true, \"class\":\"FeedbackRequestBody\"}"
 	echo " "
 	echo "Added tag $TAG to the asset"
 done

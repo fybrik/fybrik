@@ -36,12 +36,23 @@ public final class EgeriaConnector {
   /* The port on which the server should run */
   private int port;
   private Server server;
+  private String egeriaDefaultUserName;
 
   public String toString() {
       StringBuilder strbuilder = new StringBuilder();
       strbuilder.append("port: ");
       strbuilder.append(String.valueOf(port));
+      strbuilder.append("egeriaDefaultUserName: ");
+      strbuilder.append(egeriaDefaultUserName);
       return strbuilder.toString();
+  }
+
+  public void setEgeriaDefaultUserName(final String egeriaDefaultUserName) {
+    this.egeriaDefaultUserName = egeriaDefaultUserName;
+  }
+
+  public String getEgeriaDefaultUserName() {
+    return this.egeriaDefaultUserName;
   }
 
   public void setPort(final int prt) {
@@ -50,6 +61,14 @@ public final class EgeriaConnector {
 
   public int getPort() {
     return this.port;
+  }
+
+  private String getProperty(final String name) {
+    String val = System.getenv(name);
+    if (val == null) {
+        throw new AssertionError(name + " not set as environment variable");
+    }
+    return val;
   }
 
   private void start() throws Exception {
@@ -102,6 +121,7 @@ public final class EgeriaConnector {
         // particular request and may also help when we test scenarios where multiple
         // simultaneous requests can come to EgeriaConnector.
         EgeriaClient egeriaClient = new EgeriaClient(datasetID);
+        egeriaClient.setEgeriaDefaultUserName(egeriaDefaultUserName);
         reply = egeriaClient.getCatalogDatasetInfo();
         LOGGER.info(
           "Reply Got from EgeriaClient: {}. Sending the Catalog Dataset Info response. ",
@@ -146,9 +166,11 @@ public final class EgeriaConnector {
     //properties set from the environment variables
     EgeriaProperties properties = EgeriaProperties.getEgeriaProperties();
     int port = -1;
+    String egeriaDefaultUserName = null;
 
     try {
       port = properties.getConnectorPort();
+      egeriaDefaultUserName = properties.getEgeriaDefaultUserName();
     } catch (Exception e) {
       LOGGER.info("Error during parsing {} env variable.", EgeriaProperties.EGERIA_CONNECTOR_PORT_KEY);
       throw e;
@@ -157,6 +179,7 @@ public final class EgeriaConnector {
     final EgeriaConnector server = new EgeriaConnector();
     try {
       server.setPort(port);
+      server.setEgeriaDefaultUserName(egeriaDefaultUserName);
       LOGGER.info("Using port number {} to start the EgeriaConnector Server",
                   String.valueOf(port));
 
