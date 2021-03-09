@@ -75,7 +75,8 @@ type M4DApplicationSpec struct {
 	// +optional
 	Selector Selector `json:"selector"`
 
-	// UserSecretRef points to the secret that holds user role and credentials.
+	// UserSecretRef points to the secret that holds user credentials for each system the user has been authenticated with.
+	// In this secret, the key is the system name which is mapped to the corresponding credentials, e.g. "Egeria" -> '{"username": "user1"}'
 	// The secret is deployed in M4dApplication namespace.
 	// +optional
 	UserSecretRef string `json:"userSecretRef,omitempty"`
