@@ -64,8 +64,7 @@ func GetCredentials(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	var creds string
-	creds = string(secret.Data[system])
+	creds := string(secret.Data[system])
 	render.JSON(w, r, creds) // Return the credentials as json
 }
 
