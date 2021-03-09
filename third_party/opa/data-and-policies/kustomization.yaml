@@ -12,3 +12,4 @@ configMapGenerator:
   - data_policies/taxonomies_unification.rego
   - data_policies/verify_correct_input.rego
   - sample_policies.rego
+  - user_policies.rego
