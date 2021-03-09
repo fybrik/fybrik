@@ -118,29 +118,6 @@ data:
     | input.details.metadata.components_metadata[column_name].tags[_] == tags[_]]\n}\n\ncolumn_with_any_name(names)
     = column_names {\n\tall_column_names := {column_name | input.details.metadata.components_metadata[column_name]
     }\n    column_names := all_column_names & names\n}"
-  taxonomies_unification.rego: |-
-    package data_policies
-
-    #In data part we provide set of general and industry specific taxonomies, also the user can add more taxonomies specific for his needs.
-    #Here is the place when for each category user chooses what taxonomies should be used
-
-    Purposes = { x | x = data.opa["opa-json"]["taxonomies.json"].DataPurposes[_] }
-
-    Roles = { x | x = data.opa["opa-json"]["taxonomies.json"].DataRoles[_] } | { x | x = data.opa["opa-json"]["medical_taxonomies.json"].MedicalRoles[_] }
-
-    Sensitivity = { x | x = data.opa["opa-json"]["taxonomies.json"].DataSensitivity[_] }
-
-    AccessTypes = { x | x = data.opa["opa-json"]["taxonomies.json"].DataAccessTypes[_] }
-
-    GeoDestinations = { x | x = data.opa["opa-json"]["taxonomies.json"].DataGeoDestinations[_] }
-  verify_correct_input.rego: "package data_policies\n\ncorrect_input {\n\tcount(incorrect_input)
-    == 0\n}\n\nincorrect_input[used_policy] {\n   not verify_access_type\n   used_policy
-    := build_action_from_policies(build_policy_from_description(\"unknown access type\"))\n}
-    {\n    not verify_purpose\n    used_policy := build_action_from_policies(build_policy_from_description(\"unknown
-    purpose\"))\n} {\n    not verify_role\n    used_policy := build_action_from_policies(build_policy_from_description(\"unknown
-    role\"))\n} {\n\tcheck_access_type([\"COPY\"])\n    not verify_geography\n    used_policy
-    := build_action_from_policies(build_policy_from_description(\"unknown geography
-    to copy the data\"))\n}"
   sample_policies.rego: "package sample_policies\nimport data.data_policies as dp\n\ntransform[action]
     {\n\tdescription = \"Columns with Confidential tag to be redacted before read\"\n\tdp.correct_input\n
     \   #user context and access type check\n    #dp.check_access_type([dp.AccessTypes.READ])\n\tdp.check_access_type([\"READ\"])\n\tdp.check_purpose(\"Fraud
@@ -169,6 +146,60 @@ data:
     and access type check\n    #dp.check_access_type([dp.AccessTypes.WRITE])\n\tdp.check_access_type([\"WRITE\"])\n\tdp.dataset_has_tag_not(\"residency
     = Turkey\")\n\tdp.check_processingGeo_not(\"Turkey\")\n\tdp.check_processingGeo_not(\"EEA\")\n
     \   action = dp.build_deny_write_action(dp.build_policy_from_description(description))\n}\n"
+  taxonomies_unification.rego: |-
+    package data_policies
+
+    #In data part we provide set of general and industry specific taxonomies, also the user can add more taxonomies specific for his needs.
+    #Here is the place when for each category user chooses what taxonomies should be used
+
+    Purposes = { x | x = data.irltest1["opa-json"]["taxonomies.json"].DataPurposes[_] }
+
+    Roles = { x | x = data.irltest1["opa-json"]["taxonomies.json"].DataRoles[_] } | { x | x = data.irltest1["opa-json"]["medical_taxonomies.json"].MedicalRoles[_] }
+
+    Sensitivity = { x | x = data.irltest1["opa-json"]["taxonomies.json"].DataSensitivity[_] }
+
+    AccessTypes = { x | x = data.irltest1["opa-json"]["taxonomies.json"].DataAccessTypes[_] }
+
+    GeoDestinations = { x | x = data.irltest1["opa-json"]["taxonomies.json"].DataGeoDestinations[_] }
+  user_policies.rego: "package user_policies\n\nimport data.data_policies as dp\n\n#Example
+    of data policies that use \"data_policies\" package to create easily data policies
+    that deny access or transform the data accordingly\n\ntransform[action] {\n\tdescription
+    = \"location data should be removed before copy\"\n\n\tdp.correct_input\n    \n
+    \   #user context and access type check\n    dp.check_access_type([dp.AccessTypes.COPY])\n
+    \   \n    column_names := dp.column_with_tag(\"location\")\n    action = dp.build_remove_column_action(column_names[_],
+    dp.build_policy_from_description(description))\n}  \n\ntransform[action] {\n\tdescription
+    = \"sensitive columns in health data should be removed\"\n\n\tdp.correct_input\n
+    \   \n    #user context and access type check\n    dp.check_access_type([dp.AccessTypes.COPY,
+    dp.AccessTypes.READ])\n    \n    dp.dataset_has_tag(\"HealthData\")\n    \n    column_names
+    := dp.column_with_tag(\"SPI\")\n    action = dp.build_remove_column_action(column_names[_],
+    dp.build_policy_from_description(description))\n} \n\ntransform[action] {\n\tdescription
+    = \"encrypt sensitive personal and health data on COPY out of united states for
+    health data assets\"\n    \n\tdp.correct_input\n    \n    #user context and access
+    type check\n    dp.check_access_type(dp.AccessTypes.COPY)\n    \n    dp.dataset_has_tag(\"HealthData\")\n
+    \   not dp.check_destination([dp.GeoDestinations.US])\n    \n    column_names
+    := dp.column_with_any_tag([\"SPI\", \"SMI\"])\n    #action = dp.build_encrypt_column_action(column_names[_],
+    dp.build_policy_from_description(description))\n    action = dp.build_redact_column_action(column_names[_],
+    dp.build_policy_from_description(description))\n}\n\n#for transactions dataset\ntransform[action]
+    {\n\t#description = \"test for transactions dataset that encrypts some columns
+    by name\"\n    description = \"test for transactions dataset that redacts some
+    columns by name\"\n    \n\tdp.correct_input\n    \n    #user context and access
+    type check\n    dp.check_access_type([dp.AccessTypes.READ])\n    \n    dp.dataset_has_tag(\"finance\")\n
+    \   \n    column_names := dp.column_with_any_name({\"nameOrig\", \"nameDest\",
+    \"nameDest::6\", \"nameOrig::3\"})\n    #action = dp.build_encrypt_column_action(column_names[_],
+    dp.build_policy_from_description(description))\n    action = dp.build_redact_column_action(column_names[_],
+    dp.build_policy_from_description(description))    \n    \n}\n\n#for transactions
+    dataset\ndeny[action] {\n\tdescription = \"test for transactions dataset with
+    deny\"\n    \n\tdp.correct_input\n    \n    #user context and access type check\n
+    \   dp.check_access_type([dp.AccessTypes.COPY])\n    \n    dp.dataset_has_tag(\"Finance\")\n
+    \   \n    action = dp.build_deny_access_action(dp.build_policy_from_description(description))\n}"
+  verify_correct_input.rego: "package data_policies\n\ncorrect_input {\n\tcount(incorrect_input)
+    == 0\n}\n\nincorrect_input[used_policy] {\n   not verify_access_type\n   used_policy
+    := build_action_from_policies(build_policy_from_description(\"unknown access type\"))\n}
+    {\n    not verify_purpose\n    used_policy := build_action_from_policies(build_policy_from_description(\"unknown
+    purpose\"))\n} {\n    not verify_role\n    used_policy := build_action_from_policies(build_policy_from_description(\"unknown
+    role\"))\n} {\n\tcheck_access_type([\"COPY\"])\n    not verify_geography\n    used_policy
+    := build_action_from_policies(build_policy_from_description(\"unknown geography
+    to copy the data\"))\n}"
 kind: ConfigMap
 metadata:
   labels:

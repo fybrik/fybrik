@@ -56,9 +56,9 @@ transform[action] {
     #user context and access type check
     dp.check_access_type([dp.AccessTypes.READ])
     
-    dp.dataset_has_tag("Finance")
+    dp.dataset_has_tag("finance")
     
-    column_names := dp.column_with_any_name({"nameOrig", "nameDest"})
+    column_names := dp.column_with_any_name({"nameOrig", "nameDest", "nameDest::6", "nameOrig::3"})
     #action = dp.build_encrypt_column_action(column_names[_], dp.build_policy_from_description(description))
     action = dp.build_redact_column_action(column_names[_], dp.build_policy_from_description(description))    
     
