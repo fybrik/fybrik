@@ -391,7 +391,8 @@ public final class EgeriaClient {
         LOGGER.info("assetMetaDataHelper : {}", assetMetaDataHelper.toString().replaceAll("[\r\n]", ""));
 
         String schemaTypeGuid = assetMetaDataHelper.getSchemaTypeGuid();
-        HashMap<String, DataComponentMetadata> componentsMetadata     = callSchemaAttributesAPI(schemaTypeGuid);
+        HashMap<String, DataComponentMetadata> componentsMetadata = 
+                                                callSchemaAttributesAPI(schemaTypeGuid);
         LOGGER.info("listOfColumns in getCatalogDatasetInfo: {}",
                                                     componentsMetadata.toString().replaceAll("[\r\n]", ""));
 
@@ -409,15 +410,10 @@ public final class EgeriaClient {
 
         DatasetDetails datasetDetails = null;
         // data owner is not supported in Egeria 2.6 now.
-        //String dataowner = assetMetaDataHelper.getOwner();
-        // if (dataowner == null){
-        //     dataowner = "";
-        // }
         String dataowner = "";
         // data owner is not supported in Egeria 2.6 now.
 
         String name = assetMetaDataHelper.getName();
-        //String geo = null;
 
         String typeOfAsset = assetMetaDataHelper.getAssetType(); //maybe will be in additional properties
         if (typeOfAsset == null){
@@ -437,7 +433,6 @@ public final class EgeriaClient {
                         .setDataOwner(dataowner)
                         .setMetadata(metadata)
                         .setDataStore(dataStore)
-                        //.setGeo("geo not supported yet") //should be in additionalProperties
                         .setGeo(geo)
                         .setDataFormat(typeOfAsset)
                         .build();

@@ -4,12 +4,12 @@ set -e
 set -x
 
 : ${WITHOUT_OPENSHIFT=false}
+: ${DONOT_DELETE_PERSISTENT_STORAGE=false}
 
-# CHART=odpi-egeria-lab
-# RELEASE=lab
-NAMESPACE=egeria-catalog2
+NAMESPACE=irltest1
 TIMEOUT=8m
 VERSION="egeria-release-2.6"
+
 
 undeploy() {
         # scc permissions for egeria pods to execute
@@ -17,11 +17,9 @@ undeploy() {
         $WITHOUT_OPENSHIFT || oc delete securitycontextconstraints --ignore-not-found egeria-restricted
 
         rm -rf egeria
-        helm delete egeria --namespace=$NAMESPACE --timeout=${TIMEOUT} || true
-        # helm delete $RELEASE \
-        #     --namespace=$NAMESPACE \
-        #     2>/dev/null \
-        #     || true
+        helm delete egeria --namespace=$NAMESPACE --timeout=${TIMEOUT} 2>/dev/null || true
+        result=$(kubectl get pvc  -o=jsonpath='{.items..metadata.name}')
+        $DONOT_DELETE_PERSISTENT_STORAGE || kubectl delete pvc $result 2>/dev/null || true
 }
 
 deploy() {
@@ -48,14 +46,6 @@ deploy() {
         helm dep update egeria-base
         helm install egeria egeria-base --namespace=$NAMESPACE 
         cd ../../../../
-
-        # local chartpath=$(find . -name $CHART | grep charts)
-        # helm dep update $chartpath
-        # helm install $RELEASE $chartpath \
-        #     -f lab.yaml \
-        #     --namespace=$NAMESPACE \
-        #     --wait --timeout=${TIMEOUT}
-
         rm -rf egeria
 }
 
