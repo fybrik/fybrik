@@ -92,7 +92,8 @@ var _ = Describe("Blueprint Controller", func() {
 				if err := k8sClient.Get(context.Background(), key, f); err != nil {
 					return 0
 				}
-				for release := range f.Status.Releases {
+				for release, version := range f.Status.Releases {
+					Expect(version).To(Equal(f.Status.ObservedGeneration))
 					releaseNames = append(releaseNames, release)
 				}
 				return len(releaseNames)
