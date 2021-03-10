@@ -1,82 +1,141 @@
 {
-    "noteLogsCount" : 0,
-    "likeCount" : 0,
-    "certificationCount" : 0,
-    "licenseCount" : 0,
-    "relatedHTTPCode" : 200,
-    "informalTagCount" : 0,
-    "knownLocationsCount" : 0,
-    "relatedMediaReferenceCount" : 0,
-    "asset" : {
-       "latestChange" : "New Zone Setting",
-       "extendedProperties" : {
-          "fileType" : "csv",
-          "quoteCharacter" : "\"",
-          "delimiterCharacter" : ","
-       },
-       "description" : "List of patients registered for the drop foot clinical trial.",
-       "owner" : "tanyatidie",
-       "type" : {
-          "elementOrigin" : "LOCAL_COHORT",
-          "elementTypeId" : "2ccb2117-9cee-47ca-8150-9b3a543adcec",
-          "elementHomeMetadataCollectionId" : "d79a7e23-5739-4cdc-98a9-9157146434bc",
-          "elementTypeDescription" : "A description of a comma separated value (CSV) file",
-          "elementTypeVersion" : 1,
-          "elementTypeName" : "CSVFile",
-          "class" : "ElementType",
-          "elementSuperTypeNames" : [
-             "DataFile",
-             "DataStore",
-             "Asset",
-             "Referenceable"
-          ],
-          "elementSourceServer" : "cocoMDS1"
-       },
-       "ownerType" : "USER_ID",
-       "guid" : "6360b8a5-b327-4d2f-8ca4-c2b61304951a",
-       "zoneMembership" : [
-          "data-lake",
-          "clinical-trials"
-       ],
-       "displayName" : "Drop Foot Clinical Trial Patients",
-       "qualifiedName" : "file://secured/research/clinical-trials/drop-foot/Patients.csv",
-       "class" : "Asset"
+    "asset": {
+        "class": "Asset",
+        "classifications": [
+            {
+                "class": "ElementClassification",
+                "classificationName": "LatestChange",
+                "classificationOrigin": "ASSIGNED",
+                "classificationProperties": {
+                    "attachmentGUID": "14a8dd87-5d2c-4761-a03e-a55ca2fa9588",
+                    "attachmentType": "InformalTag",
+                    "changeAction": null,
+                    "changeTarget": null,
+                    "description": "Linking Asset 557b699f-0ce0-484d-bf1e-fec2c8f198c8 to InformalTag 14a8dd87-5d2c-4761-a03e-a55ca2fa9588",
+                    "relationshipType": "AttachedTag",
+                    "user": "garygeeke"
+                },
+                "classificationTypeVersion": 0,
+                "elementCreatedBy": "OMAGServer",
+                "elementCreateTime": "2021-02-19T08:04:49.315+00:00",
+                "elementMetadataCollectionId": "08c4bcd4-7485-4364-8275-1afce66e7653",
+                "elementMetadataCollectionName": "mds1",
+                "elementOrigin": "LOCAL_COHORT",
+                "elementSourceServer": "mds1",
+                "elementUpdatedBy": "OMAGServer",
+                "elementUpdateTime": "2021-02-19T08:05:35.540+00:00",
+                "elementVersion": 31,
+                "headerVersion": 0,
+                "status": "ACTIVE"
+            }
+        ],
+        "description": "Synthetic Financial Dataset For Fraud Detection",
+        "displayName": "transactions.csv",
+        "extendedProperties": {
+            "delimiterCharacter": ",",
+            "fileType": "csv\", \"region\":\"eu\", \"data_location\": \"US\"}",
+            "quoteCharacter": "\""
+        },
+        "guid": "557b699f-0ce0-484d-bf1e-fec2c8f198c8",
+        "headerVersion": 0,
+        "ownerType": "OTHER",
+        "qualifiedName": "{\"data_store\":\"S3\", \"bucket\":\"mybucket\", \"endpoint\":\"s3.eu-de.cloud-object-storage.appdomain.cloud\", \"object_key\":\"transactions.csv\", \"region\":\"eu\", \"data_location\": \"US\"}",
+        "referenceData": false,
+        "type": {
+            "class": "ElementType",
+            "elementCreatedBy": "garygeeke",
+            "elementCreateTime": "2021-02-19T08:04:45.779+00:00",
+            "elementMetadataCollectionId": "08c4bcd4-7485-4364-8275-1afce66e7653",
+            "elementMetadataCollectionName": "mds1",
+            "elementOrigin": "LOCAL_COHORT",
+            "elementSourceServer": "mds1",
+            "elementSuperTypeNames": [
+                "DataFile",
+                "DataStore",
+                "Asset",
+                "Referenceable",
+                "OpenMetadataRoot"
+            ],
+            "elementTypeDescription": "A description of a comma separated value (CSV) file",
+            "elementTypeId": "2ccb2117-9cee-47ca-8150-9b3a543adcec",
+            "elementTypeName": "CSVFile",
+            "elementTypeVersion": 1,
+            "elementUpdatedBy": "OMAGServer",
+            "elementUpdateTime": "2021-02-19T08:05:35.540+00:00",
+            "elementVersion": 17,
+            "headerVersion": 0,
+            "status": "ACTIVE"
+        }
     },
-    "class" : "AssetResponse",
-    "commentCount" : 1,
-    "externalReferencesCount" : 0,
-    "externalIdentifierCount" : 0,
-    "connectionCount" : 1,
-    "schemaType" : {
-       "versionNumber" : "1.0",
-       "displayName" : "Drop Foot Clinical Trial Patients Tabular Schema",
-       "encodingStandard" : "CSVFile",
-       "attributeCount" : 0,
-       "class" : "ComplexSchemaType",
-       "qualifiedName" : "file://secured/research/clinical-trials/drop-foot/Patients.csv:TabularSchema",
-       "extendedProperties" : {
-          "isDeprecated" : false
-       },
-       "deprecated" : false,
-       "guid" : "62a4f033-109c-437f-9d12-681d94536342",
-       "type" : {
-          "elementSourceServer" : "cocoMDS1",
-          "elementSuperTypeNames" : [
-             "ComplexSchemaType",
-             "SchemaType",
-             "SchemaElement",
-             "Referenceable"
-          ],
-          "class" : "ElementType",
-          "elementTypeName" : "TabularSchemaType",
-          "elementTypeVersion" : 1,
-          "elementHomeMetadataCollectionId" : "d79a7e23-5739-4cdc-98a9-9157146434bc",
-          "elementTypeDescription" : "A schema type for a table oriented data structure.",
-          "elementTypeId" : "248975ec-8019-4b8a-9caf-084c8b724233",
-          "elementOrigin" : "LOCAL_COHORT"
-       },
-       "author" : "peterprofile"
-    },
-    "relatedAssetCount" : 1,
-    "ratingsCount" : 0
- }
+    "certificationCount": 0,
+    "class": "AssetResponse",
+    "commentCount": 0,
+    "connectionCount": 1,
+    "externalIdentifierCount": 0,
+    "externalReferencesCount": 0,
+    "informalTagCount": 1,
+    "keywordCount": 0,
+    "knownLocationsCount": 0,
+    "licenseCount": 0,
+    "likeCount": 0,
+    "noteLogsCount": 0,
+    "ratingsCount": 0,
+    "relatedAssetCount": 0,
+    "relatedHTTPCode": 200,
+    "relatedMediaReferenceCount": 0,
+    "schemaType": {
+        "attributeCount": 11,
+        "calculatedValue": false,
+        "class": "ComplexSchemaType",
+        "classifications": [
+            {
+                "class": "ElementClassification",
+                "classificationName": "Anchors",
+                "classificationOrigin": "ASSIGNED",
+                "classificationProperties": {
+                    "anchorGUID": "557b699f-0ce0-484d-bf1e-fec2c8f198c8"
+                },
+                "classificationTypeVersion": 0,
+                "elementCreatedBy": "garygeeke",
+                "elementCreateTime": "2021-02-19T08:04:55.959+00:00",
+                "elementMetadataCollectionId": "08c4bcd4-7485-4364-8275-1afce66e7653",
+                "elementMetadataCollectionName": "mds1",
+                "elementOrigin": "LOCAL_COHORT",
+                "elementSourceServer": "mds1",
+                "elementVersion": 1,
+                "headerVersion": 0,
+                "status": "ACTIVE"
+            }
+        ],
+        "extendedProperties": {
+            "isDeprecated": false,
+            "qualifiedName": "SchemaOf:{\"data_store\":\"S3\", \"bucket\":\"mybucket\", \"endpoint\":\"s3.eu-de.cloud-object-storage.appdomain.cloud\", \"object_key\":\"transactions.csv\", \"region\":\"eu\", \"data_location\": \"US\"}"
+        },
+        "guid": "7c2909e4-be17-41aa-9bb5-d25156833b83",
+        "headerVersion": 0,
+        "isDeprecated": false,
+        "type": {
+            "class": "ElementType",
+            "elementCreatedBy": "garygeeke",
+            "elementCreateTime": "2021-02-19T08:04:55.970+00:00",
+            "elementMetadataCollectionId": "08c4bcd4-7485-4364-8275-1afce66e7653",
+            "elementMetadataCollectionName": "mds1",
+            "elementOrigin": "LOCAL_COHORT",
+            "elementSourceServer": "mds1",
+            "elementSuperTypeNames": [
+                "ComplexSchemaType",
+                "SchemaType",
+                "SchemaElement",
+                "Referenceable",
+                "OpenMetadataRoot"
+            ],
+            "elementTypeDescription": "A schema type for a table oriented data structure.",
+            "elementTypeId": "248975ec-8019-4b8a-9caf-084c8b724233",
+            "elementTypeName": "TabularSchemaType",
+            "elementTypeVersion": 1,
+            "elementVersion": 1,
+            "headerVersion": 0,
+            "status": "ACTIVE"
+        }
+    }
+}
