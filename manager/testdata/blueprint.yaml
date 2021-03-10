@@ -18,7 +18,6 @@ spec:
     name: notebook
     steps:
     - arguments:
-        flow: copy
         copy:
           destination:
             connection:
@@ -40,19 +39,33 @@ spec:
                 ssl: "true"
             credentialLocation: "/v1/secret/data/db2/m4d"
             format: table
-          transformations:
-          - enforcementActionArgs:
-              column: name-orig2
-            enforcementActionID: redact-ID
-            enforcementActionLevel: 2
-            enforcementActionName: redact
-        readargs: {}
-        writeargs: {}
-      name: notebook-implicit-copy-batch-latest-fgjzkfwykn
-      template: implicit-copy-batch-latest
+          transformations: []
+      name: notebook-copy-batch
+      template: copy-batch
+    - arguments:
+        read:
+          - source:
+              connection:
+                name: S3
+                s3:
+                  bucket: m4d-test-bucket
+                  endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
+                  object_key: small.kp.encrypted.parq
+                type: 2
+              credentialLocation: /v1/m4d/dataset-creds/m4d-test-bucket
+              format: parquet
+            assetID: xyz
+      name: notebook-read-module
+      template: read-module
   templates:
-  - name: implicit-copy-batch-latest
+  - name: copy-batch
     kind: M4DModule
     flow: copy
     chart:
-      name: localhost:5000/m4d-system/m4d-implicit-copy-batch:0.1.0
+      name: ghcr.io/the-mesh-for-data/m4d-implicit-copy-batch:0.1.0
+  - name: read-module
+    kind: M4DModule
+    flow: read
+    chart:
+      name: ghcr.io/the-mesh-for-data/m4d-template:0.1.0
+
