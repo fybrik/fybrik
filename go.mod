@@ -49,6 +49,7 @@ require (
 )
 
 replace (
+	github.com/IBM/satcon-client-go => github.com/froesef/satcon-client-go v0.1.2-0.20210311130314-dd1215eaeda0
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 	github.com/google/addlicense => github.com/the-mesh-for-data/addlicense v0.0.0-20200913135744-636c44b42906
 	github.com/onsi/gomega => github.com/onsi/gomega v1.10.0
