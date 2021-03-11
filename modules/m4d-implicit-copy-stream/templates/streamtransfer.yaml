@@ -8,28 +8,40 @@ metadata:
 spec:
   source:
     kafka:
-      kafkaBrokers: "{{ .Values.copy.source.connection.kafka.bootstrap_servers }}"
-      schemaRegistryURL: "{{ .Values.copy.source.connection.kafka.schema_registry }}"
-      kafkaTopic: "{{ .Values.copy.source.connection.kafka.topic_name }}"
-      dataFormat: "{{ .Values.copy.source.format }}"
+      kafkaBrokers: {{ .Values.copy.source.connection.kafka.bootstrap_servers | quote }}
+      schemaRegistryURL: {{ .Values.copy.source.connection.kafka.schema_registry | quote }}
+      kafkaTopic: {{ .Values.copy.source.connection.kafka.topic_name | quote }}
+      dataFormat: {{ .Values.copy.source.format | quote }}
       # user: "demo-consumer" # can be taken from vault
       # password: "" # can be taken from vault
       createSnapshot: false
-      sslTruststore: "{{ .Values.copy.source.connection.kafka.ssl_truststore }}"
+      sslTruststore: {{ .Values.copy.source.connection.kafka.ssl_truststore | quote }}
       sslTruststoreLocation: /opt/spark/work-dir/ca.p12
-      sslTruststorePassword: "{{ .Values.copy.source.connection.kafka.ssl_truststore_password }}"
-      securityProtocol: "{{ .Values.copy.source.connection.kafka.security_protocol }}"
-      saslMechanism: "{{ .Values.copy.source.connection.kafka.sasl_mechanism }}"
-      keyDeserializer: "{{ .Values.copy.source.connection.kafka.key_deserializer }}"
-      valueDeserializer: "{{ .Values.copy.source.connection.kafka.value_deserializer }}"
-      vaultPath: "{{ .Values.copy.source.credentialLocation }}"
+      sslTruststorePassword: {{ .Values.copy.source.connection.kafka.ssl_truststore_password | quote }}
+      securityProtocol: {{ .Values.copy.source.connection.kafka.security_protocol | quote }}
+      saslMechanism: {{ .Values.copy.source.connection.kafka.sasl_mechanism | quote }}
+      keyDeserializer: {{ .Values.copy.source.connection.kafka.key_deserializer | quote }}
+      valueDeserializer: {{ .Values.copy.source.connection.kafka.value_deserializer | quote }}
+      {{ if .Values.copy.source.credentialLocation }}
+      vaultPath: {{ .Values.copy.source.credentialLocation | quote }}
+      {{ end }}
+      {{ if .Values.copy.source.vault }}
+      vault:
+{{ toYaml .Values.copy.source.vault | indent 8 }}
+      {{ end }}
   destination:
     s3:
-      endpoint: "{{ .Values.copy.destination.connection.s3.endpoint }}"
-      bucket: "{{ .Values.copy.destination.connection.s3.bucket }}"
-      objectKey: "{{ .Values.copy.destination.connection.s3.object_key }}"
-      dataFormat: "{{ .Values.copy.destination.format }}"
-      vaultPath: "{{ .Values.copy.destination.credentialLocation }}"
+      endpoint: {{ .Values.copy.destination.connection.s3.endpoint | quote }}
+      bucket: {{ .Values.copy.destination.connection.s3.bucket | quote}}
+      objectKey: {{ .Values.copy.destination.connection.s3.object_key | quote }}
+      dataFormat: {{ .Values.copy.destination.format | quote}}
+      {{ if .Values.copy.destination.credentialLocation }}
+      vaultPath: {{ .Values.copy.destination.credentialLocation | quote }}
+      {{ end }}
+      {{ if .Values.copy.destination.vault }}
+      vault:
+{{ toYaml .Values.copy.destination.vault | indent 8 }}
+      {{ end }}
   {{ if .Values.copy.transformations }}
   transformation:
   {{ range .Values.copy.transformations }}
