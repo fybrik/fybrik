@@ -17,14 +17,17 @@ cert-manager:
 		--namespace cert-manager \
 		--wait --timeout 120s
 
-.PHONY: vault
-vault:
-	@echo "Installing vault ..."
-	helm repo add hashicorp https://helm.releases.hashicorp.com
-	helm install vault hashicorp/vault --version 0.8.0 \
-                --set "global.openshift=false" \
-                --set "server.dev.enabled=true" \
-		--wait --timeout 120s
+.PHONY: install_vault
+install-vault:
+	make -C vault install
+
+.PHONY: install_vault_wait
+install-vault-wait:
+	make -C vault wait-for-vault
+
+.PHONY: uninstall_vault
+uninstall-vault:
+	make -C vault uninstall
 
 .PHONY:
 vault-setup:

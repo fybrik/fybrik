@@ -1,0 +1,3 @@
+global:
+  # If deploying to OpenShift
+  openshift: true
