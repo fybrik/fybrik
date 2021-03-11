@@ -18,12 +18,12 @@ spec:
     spec:
       containers:
       - name: datauserclient
-        image: "$DOCKER_HOSTNAME"/"$WORKLOAD_NAMESPACE"/datauserclient:latest
+        image: "$DOCKER_HOSTNAME"/"$DOCKER_NAMESPACE"/datauserclient:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
       - name: datauserserver
-        image: "$DOCKER_HOSTNAME"/"$WORKLOAD_NAMESPACE"/datauserserver:latest
+        image: "$DOCKER_HOSTNAME"/"$DOCKER_NAMESPACE"/datauserserver:latest
         imagePullPolicy: Always
         envFrom:
         - configMapRef:

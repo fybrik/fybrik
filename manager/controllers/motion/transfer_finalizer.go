@@ -5,8 +5,9 @@ package motion
 
 import (
 	"context"
+
 	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
-	"k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -32,33 +33,33 @@ func (reconciler *Reconciler) submitFinalizerPod(transfer motionv1.Transfer) err
 	annotations := make(map[string]string)
 	annotations["sidecar.istio.io/inject"] = "false"
 
-	pod := &v1.Pod{
+	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        transfer.FinalizerPodName(),
 			Namespace:   transfer.GetNamespace(),
 			Annotations: annotations,
 		},
-		Spec: v1.PodSpec{
-			Volumes: []v1.Volume{{
+		Spec: corev1.PodSpec{
+			Volumes: []corev1.Volume{{
 				Name: motionv1.ConfigSecretVolumeName,
-				VolumeSource: v1.VolumeSource{
-					Secret: &v1.SecretVolumeSource{
+				VolumeSource: corev1.VolumeSource{
+					Secret: &corev1.SecretVolumeSource{
 						SecretName: transfer.GetName(),
 					},
 				},
 			}},
-			Containers: []v1.Container{{
+			Containers: []corev1.Container{{
 				Name:            "transfer",
 				Image:           transfer.GetImage(),
 				ImagePullPolicy: transfer.GetImagePullPolicy(),
 				Command:         []string{motionv1.BatchtransferFinalizerBinary},
 				Args:            []string{motionv1.ConfigSecretMountPath + "/conf.json"},
-				VolumeMounts: []v1.VolumeMount{{
+				VolumeMounts: []corev1.VolumeMount{{
 					Name:      motionv1.ConfigSecretVolumeName,
 					MountPath: motionv1.ConfigSecretMountPath,
 				}},
 			}},
-			RestartPolicy: v1.RestartPolicyNever,
+			RestartPolicy: corev1.RestartPolicyNever,
 		},
 	}
 
@@ -91,7 +92,7 @@ func (reconciler *Reconciler) handleFinalizer(transfer motionv1.Transfer) error 
 
 	// Handle actual finalizer logic
 
-	var existingPod v1.Pod
+	var existingPod corev1.Pod
 	if err := reconciler.Get(context.Background(), transfer.FinalizerPodKey(), &existingPod); err != nil {
 		if kerrors.IsNotFound(err) {
 			// Finalizer pod is not found. Create it
@@ -104,13 +105,13 @@ func (reconciler *Reconciler) handleFinalizer(transfer motionv1.Transfer) error 
 
 	// Handle Finalizer pod run
 	switch {
-	case existingPod.Status.Phase == v1.PodSucceeded:
+	case existingPod.Status.Phase == corev1.PodSucceeded:
 		reconciler.Log.Info("Finalizer finished successfully")
 		// Pod succeeded. Remove finalizer and let crd be deleted
 		if err := reconciler.removeFinalizer(transfer); err != nil {
 			return err
 		}
-	case existingPod.Status.Phase == v1.PodFailed:
+	case existingPod.Status.Phase == corev1.PodFailed:
 		reconciler.Log.Info("Finalizer pod failed!!")
 		// Pod failed. Remove finalizer and let crd be deleted as blocking is also not an option.
 		if err := reconciler.removeFinalizer(transfer); err != nil {

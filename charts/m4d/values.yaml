@@ -1,14 +1,255 @@
-# Default values for m4d.
+# Default values for Mesh for Data.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 global:
-  opa: true
-  opaConnector: true
+  # Default hub for Mesh for Data images.
+  hub: ghcr.io/the-mesh-for-data
+  # Default tag for Mesh for Data images.
+  # If no value is set, the chart's appVersion will be used.
+  tag: ""
+  # Default image pull policy for Mesh for Data images
+  # Default behavior: latest images will be Always else IfNotPresent.
+  # ref: https://kubernetes.io/docs/concepts/containers/images/#updating-images
+  imagePullPolicy: ""
+  # Reference to one or more secrets to be used when pulling images
+  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  imagePullSecrets: []
 
-image:
-   mover: ghcr.io/the-mesh-for-data/mover:latest
-   manager: ghcr.io/the-mesh-for-data/manager:latest
-   secretProvider: ghcr.io/the-mesh-for-data/secret-provider:latest
-   opaConnector: ghcr.io/the-mesh-for-data/opa-connector:latest
-   opaConnectorPullPolicy: IfNotPresent
+manager:
+  # Image name or a hub/image[:tag]
+  image: "manager"
+  # Overrides global.imagePullPolicy
+  imagePullPolicy: ""
+
+  # Arguments to be passed to manager container
+  args:
+    - --enable-all-controllers
+
+  # Extra environment variables to be set for manager container
+  extraEnvs:
+  # - name: env_name
+  #   value: env_value
+
+  replicaCount: 1
+  
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use
+    name: manager
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  prometheus: false
+
+mover:
+  # Image name or a hub/image[:tag]
+  image: "mover"
+  # Overrides global.imagePullPolicy
+  imagePullPolicy: ""
+
+secretProvider:
+  # Image name or a hub/image[:tag]
+  image: "secret-provider"
+  # Overrides global.imagePullPolicy
+  imagePullPolicy: ""
+
+opaConnector:
+  # Set to false to skip deploying OPA connector
+  enabled: true
+  # Image name or a hub/image[:tag]
+  image: "opa-connector"
+  # Overrides global.imagePullPolicy
+  imagePullPolicy: ""
+
+opaService:
+  # Set to false to skip deploying OPA service
+  enabled: true
+  # Image name or a hub/image[:tag]
+  image: "openpolicyagent/opa:latest"
+  # Overrides global.imagePullPolicy
+  imagePullPolicy: ""
+
+katalogConnector:
+  # Set to false to skip deploying Katalog related resources
+  enabled: true
+  
+  # Image name or a hub/image[:tag]
+  image: "katalog-connector"
+
+  # Overrides global.imagePullPolicy
+  imagePullPolicy: ""
+
+  # Used if autoscaling is not enabled 
+  replicaCount: 1
+  
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use
+    name: katalog-connector
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage:
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+razee: {}
+#  Razee local deployment requires the url, user and password parameters
+#  Razee deployment with oauth API key authentication requires the apiKey parameter
+#  Razee deployment with IBM Cloud Satellite Config requires the iamKey parameter
+#  url: ""
+#  user: ""
+#  password: ""
+#  apiKey: ""
+#  iamKey: ""
+
+# Overrides names
+nameOverride: ""
+fullnameOverride: ""
+
+# Set to false to disable deploying cluster scoped resources.
+# Note that these resources are still required for a valid
+# deployment. Only set this to false if you deployed cluster
+# scoped resources using a different method.
+clusterScoped: true
+
+# Set to true to enable socat in the manager pod to forward
+# traffic from a localhost registry. Used only for development.
+integrationTests: false
+
+# Cluster Metadata values defined in cluster-metadata ConfigMap
+clusterMetadata:
+  # Set to the name of the cluster.
+  clusterName: hobbiton
+  # Set to cluster region.
+  region: eriador
+  # Set to cluster zone.
+  zone: theshire
+  # Set to the cluster Vault auth method path.
+  vaultAuthPath: kubernetes
+
+# Values set in m4d-config ConfigMap.
+config:
+  # Vault related values set in m4d-config ConfigMap.
+  vault:
+    # Set to the Vault address.
+    address: "http://vault.m4d-system:8200/"
+    # Set to the path where credentials of dataset accessed by the m4d are stored.
+    datasetHome: "m4d/dataset-creds/"
+    # Set to the dataset credentials secret engine mount path.
+    datasetMount: "v1/sys/mounts/m4d/dataset-creds"
+    # Set to the path where user credentials are stored.
+    userHome: "m4d/user-creds/"
+    # Set to the user credentials secret engine mount path.
+    userMount: "v1/sys/mounts/m4d/user-creds"
+    # Set to the amount of time the authorization issued by Vault is valid.
+    ttl: "24h"
+    # Set to the Vault address that stores the credentials to data source for data assets.
+    userVaultAddress: "http://vault:8200/"
+    # Set to the path where credentials to data source for data assets are stored.
+    userVaultPath: "external"
+    # Set to the name of the role that modules use to access dataset credentials.
+    modulesRole: "module"
+
+  catalog:
+    # Set to the catalog URL.
+    url: "https://lab-core.egeria-catalog:9443"
+    # Set to the catalog connector URL.
+    connectorUrl: "egr-connector:50084"
+    # Set to the catalog provider name.
+    name: "EGERIA"
+
+  policyManager:
+    # Set to policyManager URL.
+    url: "opa:8181"
+    # Set to the policy manager connector URL.
+    connectorUrl: "opa-connector:50082"
+    # Set to the policy manager connector name.
+    name: "OPA"
+    # Set to true if an extension policy manager is used.
+    extensionManager:
+      enabled: false
+      # Set to extension policy manager connector URL.
+      # connectorUrl: ""
+      # Set to extension policy manager name.
+      # name: ""
+
+  # Set to grpc connection timeout.
+  connectionTimeout: "120"
+
+  # extraEnvironmentVars is a list of extra environment variables to set.
+  extraEnvironmentVars:
+    OPA_POLICY_TO_BE_EVALUATED: "sample_policies"

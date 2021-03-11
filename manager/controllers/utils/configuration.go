@@ -8,7 +8,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hashicorp/vault/api"
 	"github.com/onsi/ginkgo"
 )
 
@@ -26,6 +25,7 @@ const (
 	VaultAuthKey                        string = "VAULT_AUTH"
 	SecretProviderURL                   string = "SECRET_PROVIDER_URL"
 	SecretProviderRole                  string = "SECRET_PROVIDER_ROLE"
+	VaultModulesRole                    string = "VAULT_MODULES_ROLE"
 )
 
 // GetSystemNamespace returns the namespace of control plane
@@ -49,20 +49,9 @@ func GetSecretProviderRole() string {
 	return os.Getenv(SecretProviderRole)
 }
 
-// GetVaultAuthTTL returns the amount of time the authorization issued by vault is valid
-func GetVaultAuthTTL() string {
-	return os.Getenv(VaultTTLKey)
-}
-
-// GetVaultAuthService returns the authentication service that was chosen for use with vault,
-// and the configuration options for it.
-// Vault support multiple different types of authentication such as java web tokens (jwt), github, aws ...
-func GetVaultAuthService() (string, api.EnableAuthOptions) {
-	auth := os.Getenv(VaultAuthKey)
-	options := api.EnableAuthOptions{
-		Type: auth,
-	}
-	return auth, options
+// GetModulesRole returns the modules assigned authentification role for accessing dataset credentials
+func GetModulesRole() string {
+	return os.Getenv(VaultModulesRole)
 }
 
 // GetVaultAddress returns the address and port of the vault system,
@@ -99,6 +88,16 @@ func GetVaultToken() string {
 	return os.Getenv(VaultSecretKey)
 }
 
+// GetVaultAuthTTL returns the amount of time the authorization issued by vault is valid
+func GetVaultAuthTTL() string {
+	return os.Getenv(VaultTTLKey)
+}
+
+// GetVaultAuth returns the authentication method for vault connection
+func GetVaultAuth() string {
+	return os.Getenv(VaultAuthKey)
+}
+
 // GetCredentialsManagerServiceAddress returns the address where credentials manager is running
 func GetCredentialsManagerServiceAddress() string {
 	return os.Getenv(CredentialsManagerServiceAddressKey)
@@ -125,8 +124,6 @@ func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
 	SetIfNotSet(VaultUserMountKey, "v1/sys/mounts/m4d/user-creds", t)
 	SetIfNotSet(VaultDatasetHomeKey, "m4d/dataset-creds/", t)
 	SetIfNotSet(VaultUserHomeKey, "m4d/user-creds/", t)
-	SetIfNotSet(VaultTTLKey, "24h", t)
-	SetIfNotSet(VaultAuthKey, "kubernetes", t)
 	SetIfNotSet("RUN_WITHOUT_VAULT", "1", t)
 	SetIfNotSet("ENABLE_WEBHOOKS", "false", t)
 	SetIfNotSet("CONNECTION_TIMEOUT", "120", t)

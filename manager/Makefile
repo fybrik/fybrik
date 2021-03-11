@@ -1,6 +1,3 @@
-# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-CRD_OPTIONS ?= "crd:trivialVersions=true"
-
 ROOT_DIR := ..
 include $(ROOT_DIR)/Makefile.env
 #include Makefile.env
@@ -22,7 +19,7 @@ config/default/kustomization.yaml: config/default/kustomization.yaml.in
 	cp $< $@
 
 # Run tests
-test: generate manifests
+test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
 	go test ./... -coverprofile cover.out
 
 # Build manager binary
@@ -40,8 +37,14 @@ generate: $(TOOLBIN)/controller-gen
 
 # Generate code
 .PHONY: manifests
-manifests: $(TOOLBIN)/controller-gen
-	$(TOOLBIN)/controller-gen $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
+	$(TOOLBIN)/controller-gen crd:trivialVersions=true webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(TOOLBIN)/controller-gen crd:trivialVersions=true output:crd:artifacts:config=$(ROOT_DIR)/charts/m4d-crd/templates/ paths=./apis/...
+	$(TOOLBIN)/controller-gen webhook paths=./apis/... output:stdout | \
+		$(TOOLBIN)/yq eval '.metadata.annotations."cert-manager.io/inject-ca-from" |= "{{ .Release.Namespace }}/serving-cert"' - | \
+		$(TOOLBIN)/yq eval '(.metadata.name | select(. == "mutating-webhook-configuration")) = "{{ .Release.Namespace }}-mutating-webhook"' - | \
+		$(TOOLBIN)/yq eval '(.metadata.name | select(. == "validating-webhook-configuration")) = "{{ .Release.Namespace }}-validating-webhook"' - | \
+		$(TOOLBIN)/yq eval '(.webhooks.[].clientConfig.service.namespace) = "{{ .Release.Namespace }}"' - > $(ROOT_DIR)/charts/m4d/templates/webhook-configs.yaml
 
 # Install CRDs into a cluster
 .PHONY: install
@@ -58,11 +61,6 @@ uninstall: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl manifests
 charts:
 	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${IMG}
 	$(TOOLBIN)/kustomize build config/default > $(ROOT_DIR)/charts/m4d/templates/manager.yaml
-
-# Install CRDs into a charts/m4d-crds
-.PHONY: charts-crd
-charts-crd: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl manifests
-	$(TOOLBIN)/kustomize build config/crd > $(ROOT_DIR)/charts/m4d-crd/templates/crds.yaml
 
 .PHONY: deploy-crd
 deploy-crd:

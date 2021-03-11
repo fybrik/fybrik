@@ -12,8 +12,11 @@ import (
 type DataStore struct {
 	// CredentialLocation is used to obtain
 	// the credentials from the credential management system - ex: vault
-	// +required
-	CredentialLocation string `json:"credentialLocation"`
+	// +optional
+	CredentialLocation string `json:"credentialLocation,omitempty"`
+	// Holds details for retrieving credentials by the modules from Vault store.
+	// +optional
+	Vault *Vault `json:"vault,omitempty"`
 	// Connection has the relevant details for accesing the data (url, table, ssl, etc.)
 	// +required
 	Connection runtime.RawExtension `json:"connection"`

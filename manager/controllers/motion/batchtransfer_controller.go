@@ -6,10 +6,11 @@ package motion
 import (
 	"context"
 	"fmt"
+
 	"github.com/go-logr/logr"
 	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	kbatch "k8s.io/api/batch/v1"
-	"k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/reference"
@@ -33,16 +34,6 @@ type Reconciler struct {
 type BatchTransferReconciler struct {
 	Reconciler
 }
-
-// annotation that allow this controller to access both BatchTransfers as well as Jobs and their status.
-// +kubebuilder:rbac:groups=motion.m4d.ibm.com,resources=batchtransfers;batchtransfers/finalizers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=motion.m4d.ibm.com,resources=batchtransfers/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=batch,resources=jobs;jobs/finalizers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="",resources=pods;pods/finalizers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=batch,resources=jobs/status,verbs=get
-// +kubebuilder:rbac:groups="",resources=events;secrets;secrets/finalizers,verbs=create;delete;get;list;patch;update;watch
-
-// the empty line above is really important, otherwise make manifests won't build the rbac/role.yaml
 
 // This is the main entry point of the controller. It reconciles BatchTransfer objects.
 // The batch transfer is implemented as a K8s Job or CronJob.
@@ -128,7 +119,7 @@ func (reconciler *BatchTransferReconciler) Reconcile(req ctrl.Request) (ctrl.Res
 	}
 
 	// Make sure that the secret exists
-	existingSecret := &v1.Secret{}
+	existingSecret := &corev1.Secret{}
 	if err := reconciler.Get(ctx, batchTransfer.ObjectKey(), existingSecret); err != nil {
 		if !kerrors.IsNotFound(err) {
 			log.Error(err, "could not fetch Secret for batchTransfer %s", batchTransfer.ObjectKey())
@@ -177,7 +168,7 @@ func (reconciler *BatchTransferReconciler) SetupWithManager(mgr ctrl.Manager) er
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&motionv1.BatchTransfer{}).
 		Owns(&kbatch.Job{}).
-		Owns(&v1.Pod{}).
+		Owns(&corev1.Pod{}).
 		Complete(reconciler)
 }
 

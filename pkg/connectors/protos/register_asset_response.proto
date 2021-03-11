@@ -1,0 +1,12 @@
+// Copyright 2020 IBM Corp.
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package connectors;
+option java_package = "com.datmesh";
+option go_package = "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf";
+
+message RegisterAssetResponse {
+    string asset_id = 1;           // Returns the id of the new asset registered in a catalog
+}

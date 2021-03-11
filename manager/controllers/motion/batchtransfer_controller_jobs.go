@@ -6,14 +6,15 @@ package motion
 import (
 	"context"
 	"encoding/json"
+	"path"
+	"sort"
+
 	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	kbatch "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"path"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sort"
 )
 
 // Returns the volume configuration for a BatchTransfer.

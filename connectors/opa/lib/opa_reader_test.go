@@ -21,7 +21,7 @@ import (
 
 func TestMainOpaConnector(t *testing.T) {
 	timeOutSecs, catalogConnectorURL, opaServerURL := tu.GetEnvironment()
-	policyToBeEvaluated := "user_policies" 
+	policyToBeEvaluated := "user_policies"
 	applicationContext := tu.GetApplicationContext("marketing")
 
 	srv := NewOpaReader(opaServerURL)

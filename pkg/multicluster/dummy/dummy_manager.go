@@ -2,6 +2,7 @@ package dummy
 
 import (
 	"errors"
+
 	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 )

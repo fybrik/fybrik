@@ -11,7 +11,6 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
-	"github.com/hashicorp/vault/api"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -26,17 +25,13 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
+	"github.com/ibm/the-mesh-for-data/pkg/serde"
 	"github.com/ibm/the-mesh-for-data/pkg/storage"
+	"github.com/ibm/the-mesh-for-data/pkg/vault"
 
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-)
-
-const (
-	// OwnerLabelKey is a key to Labels map.
-	// All owned resources should be labeled using this key.
-	OwnerLabelKey string = "m4d.ibm.com/owner"
 )
 
 // M4DApplicationReconciler reconciles a M4DApplication object
@@ -45,21 +40,12 @@ type M4DApplicationReconciler struct {
 	Name              string
 	Log               logr.Logger
 	Scheme            *runtime.Scheme
-	VaultClient       *api.Client
+	VaultConnection   vault.Interface
 	PolicyCompiler    pc.IPolicyCompiler
 	ResourceInterface ContextInterface
 	ClusterManager    multicluster.ClusterLister
 	Provision         storage.ProvisionInterface
 }
-
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dapplications,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dapplications/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=blueprints,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=plotters,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core,resources=namespaces,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=app.m4d.ibm.com,resources=m4dmodules,verbs=get;list;watch
-
-// +kubebuilder:rbac:groups=*,resources=*,verbs=*
 
 // Reconcile reconciles M4DApplication CRD
 // It receives M4DApplication CRD and selects the appropriate modules that will run
@@ -87,7 +73,7 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	observedStatus := applicationContext.Status.DeepCopy()
 
 	// check if reconcile is required
-	// reconcile is required if the spec has been changed, or the previous reconcile has failed to allocate a Blueprint or a Plotter resource
+	// reconcile is required if the spec has been changed, or the previous reconcile has failed to allocate a Plotter resource
 	generationComplete := r.ResourceInterface.ResourceExists(applicationContext.Status.Generated)
 	if !generationComplete || observedStatus.ObservedGeneration != applicationContext.GetGeneration() {
 		if result, err := r.reconcile(applicationContext); err != nil {
@@ -120,16 +106,23 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	if hasError(applicationContext) {
 		log.Info("Reconciled with errors: " + getErrorMessages(applicationContext))
 	}
+	if !applicationContext.Status.Ready {
+		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
+	}
 	return ctrl.Result{}, nil
 }
 
-func getBucketResourceRef(bucketName string) *types.NamespacedName {
-	return &types.NamespacedName{Name: bucketName, Namespace: utils.GetSystemNamespace()}
+func getBucketResourceRef(name string) *types.NamespacedName {
+	return &types.NamespacedName{Name: name, Namespace: utils.GetSystemNamespace()}
 }
 
 func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApplication, status app.ObservedState) error {
 	applicationContext.Status.DataAccessInstructions = ""
 	applicationContext.Status.Ready = false
+	if applicationContext.Status.CatalogedAssets == nil {
+		applicationContext.Status.CatalogedAssets = make(map[string]string)
+	}
+
 	if hasError(applicationContext) {
 		return nil
 	}
@@ -141,23 +134,31 @@ func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApp
 		return nil
 	}
 	// Plotter is ready - update the M4DApplication status
-	if applicationContext.Status.Ready {
-		// nothing to be done
-		return nil
-	}
+
 	// register assets if necessary if the ready state has been received
 	for _, dataCtx := range applicationContext.Spec.Data {
 		if dataCtx.Requirements.Copy.Catalog.CatalogID != "" {
-			// TODO(shlomitk1) register the asset in the catalog
-			// mark the bucket as persistent
-			bucketName, found := applicationContext.Status.ProvisionedStorage[dataCtx.DataSetID]
+			if _, cataloged := applicationContext.Status.CatalogedAssets[dataCtx.DataSetID]; cataloged {
+				// the asset has been already cataloged
+				continue
+			}
+			// mark the bucket as persistent and register the asset
+			provisionedBucketRef, found := applicationContext.Status.ProvisionedStorage[dataCtx.DataSetID]
 			if !found {
 				message := "No copy has been created for the asset " + dataCtx.DataSetID + " required to be registered"
 				r.Log.V(0).Info(message)
 				return errors.New(message)
 			}
-			if err := r.Provision.SetPersistent(getBucketResourceRef(bucketName), true); err != nil {
+			if err := r.Provision.SetPersistent(getBucketResourceRef(provisionedBucketRef.DatasetRef), true); err != nil {
 				return err
+			}
+			// register the asset: experimental feature
+			if newAssetID, err := r.RegisterAsset(dataCtx.Requirements.Copy.Catalog.CatalogID, &provisionedBucketRef, applicationContext); err == nil {
+				applicationContext.Status.CatalogedAssets[dataCtx.DataSetID] = newAssetID
+			} else {
+				// log an error and make a new attempt to register the asset
+				r.Log.V(0).Info("Error while registering an asset: " + err.Error())
+				return nil
 			}
 		}
 	}
@@ -205,11 +206,11 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 	// References to buckets (Dataset resources) are deleted. Buckets that are persistent will not be removed upon Dataset deletion.
 	var deletedBuckets []string
 	var errMsgs []string
-	for _, bucketName := range applicationContext.Status.ProvisionedStorage {
-		if err := r.Provision.DeleteDataset(getBucketResourceRef(bucketName)); err != nil {
+	for _, datasetDetails := range applicationContext.Status.ProvisionedStorage {
+		if err := r.Provision.DeleteDataset(getBucketResourceRef(datasetDetails.DatasetRef)); err != nil {
 			errMsgs = append(errMsgs, err.Error())
 		} else {
-			deletedBuckets = append(deletedBuckets, bucketName)
+			deletedBuckets = append(deletedBuckets, datasetDetails.DatasetRef)
 		}
 	}
 	for _, bucket := range deletedBuckets {
@@ -235,7 +236,6 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 // or a status update from the generated resource
 func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplication) (ctrl.Result, error) {
 	utils.PrintStructure(applicationContext.Spec, r.Log, "M4DApplication")
-
 	// Data User created or updated the M4DApplication
 
 	// clear status
@@ -243,9 +243,8 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	applicationContext.Status.DataAccessInstructions = ""
 	applicationContext.Status.Ready = false
 	if applicationContext.Status.ProvisionedStorage == nil {
-		applicationContext.Status.ProvisionedStorage = make(map[string]string)
+		applicationContext.Status.ProvisionedStorage = make(map[string]app.DatasetDetails)
 	}
-
 	clusters, err := r.ClusterManager.GetClusters()
 	if err != nil {
 		return ctrl.Result{}, err
@@ -280,8 +279,8 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		Owner:              objectKey,
 		PolicyCompiler:     r.PolicyCompiler,
 		Provision:          r.Provision,
-		VaultClient:        r.VaultClient,
-		ProvisionedStorage: make(map[string]*storage.ProvisionedBucket),
+		VaultConnection:    r.VaultConnection,
+		ProvisionedStorage: make(map[string]NewAssetInfo),
 	}
 	instances := make([]modules.ModuleInstanceSpec, 0)
 	for _, item := range requirements {
@@ -297,21 +296,29 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	}
 	// update allocated storage in the status
 	// clean irrelevant buckets
-	for datasetID, bucketName := range applicationContext.Status.ProvisionedStorage {
+	for datasetID, details := range applicationContext.Status.ProvisionedStorage {
 		if _, found := moduleManager.ProvisionedStorage[datasetID]; !found {
-			_ = r.Provision.DeleteDataset(getBucketResourceRef(bucketName))
+			_ = r.Provision.DeleteDataset(getBucketResourceRef(details.DatasetRef))
 			delete(applicationContext.Status.ProvisionedStorage, datasetID)
 		}
 	}
 	// add or update new buckets
-	for datasetID, bucket := range moduleManager.ProvisionedStorage {
-		applicationContext.Status.ProvisionedStorage[datasetID] = bucket.Name
+	for datasetID, info := range moduleManager.ProvisionedStorage {
+		raw, err := serde.ToRawExtension(info.Details)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		applicationContext.Status.ProvisionedStorage[datasetID] = app.DatasetDetails{
+			DatasetRef: info.Storage.Name,
+			SecretRef:  info.Storage.SecretRef.Name,
+			Details:    *raw,
+		}
 	}
 	ready := true
 	var allocErr error
 	// check that the buckets have been created successfully using Dataset status
-	for id, bucketName := range applicationContext.Status.ProvisionedStorage {
-		res, err := r.Provision.GetDatasetStatus(getBucketResourceRef(bucketName))
+	for id, details := range applicationContext.Status.ProvisionedStorage {
+		res, err := r.Provision.GetDatasetStatus(getBucketResourceRef(details.DatasetRef))
 		if err != nil {
 			ready = false
 			break
@@ -358,21 +365,23 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 		return AnalyzeError(input, r.Log, datasetID, err)
 	}
 	// The received credentials are stored in vault
-	if err = r.RegisterCredentials(req); err != nil {
+	path := utils.GetVaultDatasetHome() + datasetID
+	r.Log.V(0).Info("Registering a secret to " + path)
+	if err = r.VaultConnection.AddSecretFromStruct(path, req.Credentials.GetCreds()); err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err)
 	}
 	return nil
 }
 
 // NewM4DApplicationReconciler creates a new reconciler for M4DApplications
-func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api.Client,
+func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultConnection vault.Interface,
 	policyCompiler pc.IPolicyCompiler, cm multicluster.ClusterLister, provision storage.ProvisionInterface) *M4DApplicationReconciler {
 	return &M4DApplicationReconciler{
 		Client:            mgr.GetClient(),
 		Name:              name,
 		Log:               ctrl.Log.WithName("controllers").WithName(name),
 		Scheme:            mgr.GetScheme(),
-		VaultClient:       vaultClient,
+		VaultConnection:   vaultConnection,
 		PolicyCompiler:    policyCompiler,
 		ResourceInterface: NewPlotterInterface(mgr.GetClient()),
 		ClusterManager:    cm,
@@ -388,15 +397,15 @@ func (r *M4DApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			if labels == nil {
 				return []reconcile.Request{}
 			}
-			label, ok := labels[OwnerLabelKey]
-			namespaced := strings.Split(label, ".")
-			if !ok || len(namespaced) != 2 {
+			namespace, foundNamespace := labels[app.ApplicationNamespaceLabel]
+			name, foundName := labels[app.ApplicationNameLabel]
+			if !foundNamespace || !foundName {
 				return []reconcile.Request{}
 			}
 			return []reconcile.Request{
 				{NamespacedName: types.NamespacedName{
-					Name:      namespaced[1],
-					Namespace: namespaced[0],
+					Name:      name,
+					Namespace: namespace,
 				}},
 			}
 		})
@@ -424,7 +433,6 @@ func AnalyzeError(app *app.M4DApplication, log logr.Logger, assetID string, err 
 
 func ownerLabels(id types.NamespacedName) map[string]string {
 	return map[string]string{
-		OwnerLabelKey:                 id.Namespace + "." + id.Name,
 		app.ApplicationNamespaceLabel: id.Namespace,
 		app.ApplicationNameLabel:      id.Name,
 	}

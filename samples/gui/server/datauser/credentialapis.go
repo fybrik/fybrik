@@ -11,12 +11,12 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
-	"github.com/hashicorp/vault/api"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	"github.com/ibm/the-mesh-for-data/pkg/vault"
 )
 
 var k8sClient *DMAClient
-var vaultClient *api.Client
+var vaultConnection vault.Interface
 
 // UserCredentials contains the credentials needed to access a given system for the purpose of running a specific compute function.
 type UserCredentials struct {
@@ -56,8 +56,8 @@ func GetCredentials(w http.ResponseWriter, r *http.Request) {
 			log.Printf(suberr.Error() + " upon No k8sClient set")
 		}
 	}
-	if vaultClient == nil {
-		vaultClient, err = getVaultClient()
+	if vaultConnection == nil {
+		vaultConnection, err = initVault()
 		if err != nil {
 			suberr := render.Render(w, r, ErrConfigProblem(errors.New("No vault client set")))
 			if suberr != nil {
@@ -67,7 +67,7 @@ func GetCredentials(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Call vault to get the credentials
-	creds, err2 := utils.GetUserCredentialsFromVault(chi.URLParam(r, "namespace"), chi.URLParam(r, "m4dapplicationID"), chi.URLParam(r, "system"), vaultClient)
+	creds, err2 := vaultConnection.GetSecret(utils.GenerateUserCredentialsSecretName(chi.URLParam(r, "namespace"), chi.URLParam(r, "m4dapplicationID"), chi.URLParam(r, "system")))
 	if err2 != nil {
 		suberr := render.Render(w, r, SysErrRender(err2))
 		if suberr != nil {
@@ -92,8 +92,8 @@ func DeleteCredentials(w http.ResponseWriter, r *http.Request) {
 
 	// Call vault to delete the user credentials
 	var err error
-	if vaultClient == nil {
-		vaultClient, err = getVaultClient()
+	if vaultConnection == nil {
+		vaultConnection, err = initVault()
 		if err != nil {
 			suberr := render.Render(w, r, ErrConfigProblem(errors.New("No vault client set")))
 			if suberr != nil {
@@ -102,7 +102,7 @@ func DeleteCredentials(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err2 := utils.DeleteUserCredentialsFromVault(chi.URLParam(r, "namespace"), chi.URLParam(r, "m4dapplicationID"), chi.URLParam(r, "system"), vaultClient)
+	err2 := vaultConnection.DeleteSecret(utils.GenerateUserCredentialsSecretName(chi.URLParam(r, "namespace"), chi.URLParam(r, "m4dapplicationID"), chi.URLParam(r, "system")))
 	if err2 != nil {
 		suberr := render.Render(w, r, ErrConfigProblem(err2))
 		if suberr != nil {
@@ -128,8 +128,8 @@ func CreateCredentials(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if vaultClient == nil {
-		vaultClient, err = getVaultClient()
+	if vaultConnection == nil {
+		vaultConnection, err = initVault()
 		if err != nil {
 			suberr := render.Render(w, r, ErrConfigProblem(errors.New("No vault client set")))
 			if suberr != nil {
@@ -153,7 +153,8 @@ func CreateCredentials(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write the credentials to vault
-	vaultPath, err2 := utils.AddUserCredentialsToVault(k8sClient.namespace, userCredentials.M4DApplicationID, userCredentials.System, userCredentials.Credentials, vaultClient)
+	vaultPath := utils.GenerateUserCredentialsSecretName(k8sClient.namespace, userCredentials.M4DApplicationID, userCredentials.System)
+	err2 := vaultConnection.AddSecret(vaultPath, userCredentials.Credentials)
 	log.Printf("vaultPath = " + vaultPath)
 	if err2 != nil {
 		log.Print("err = " + err.Error())
@@ -170,21 +171,12 @@ func CreateCredentials(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, result)
 }
 
-// getVaultClient makes sure that vault is mounted and returns the vaultClient used for accessing it
-func getVaultClient() (*api.Client, error) {
-	token := utils.GetVaultToken()
-	log.Printf("GetVaultClient: token = " + token)
-	/* Done during installation */
-	if err := utils.MountUserVault(token); err != nil {
-		return nil, err
-	}
-
-	vaultClient, err := utils.InitVault(token)
+func initVault() (vault.Interface, error) {
+	vaultConnection, err := vault.InitConnection(utils.GetVaultAddress(), utils.GetVaultToken())
 	if err != nil {
 		return nil, err
 	}
-
-	return vaultClient, nil
+	return vaultConnection, nil
 }
 
 // ---------------- Responses -----------------------------------------

@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: manager
+  labels:
+    control-plane: controller-manager
+    app.kubernetes.io/component: manager
+    {{- include "m4d.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.manager.replicaCount }}
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+      app.kubernetes.io/component: manager
+      {{- include "m4d.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.manager.podAnnotations }}
+      annotations:
+        sidecar.istio.io/inject: "true"
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        control-plane: controller-manager
+        m4d.ibm.com/componentType: manager
+        app.kubernetes.io/component: manager
+        {{- include "m4d.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ .Values.manager.serviceAccount.name }}
+      securityContext:
+        {{- toYaml .Values.manager.podSecurityContext | nindent 8 }}
+      containers:
+        {{- if .Values.integrationTests }}
+        - name: integration-tests
+          image: alpine/socat:latest
+          command:
+          - socat
+          - TCP4-LISTEN:5000,fork
+          - TCP4:kind-registry:5000
+        {{- end }}
+        - name: kube-rbac-proxy
+          image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
+          args:
+            - "--secure-listen-address=0.0.0.0:8443"
+            - "--upstream=http://127.0.0.1:8080/"
+            - "--logtostderr=true"
+            - "--v=10"
+          ports:
+          - containerPort: 8443
+            name: https
+        - name: manager
+          image: {{ include "m4d.image" ( tuple $ .Values.manager ) }}
+          imagePullPolicy: {{ .Values.manager.imagePullPolicy | default .Values.global.imagePullPolicy }}
+          args:
+            - "--metrics-addr=127.0.0.1:8080"
+            - "--enable-leader-election"
+            {{- toYaml .Values.manager.args | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: m4d-config
+            {{- if .Values.razee }}
+            - secretRef:
+                name: razee-credentials
+            {{- end }}
+          env:
+            - name: ENABLE_WEBHOOKS
+              value: "true"
+            - name: MOVER_IMAGE
+              value: {{ include "m4d.image" ( tuple $ .Values.mover ) }}
+            - name: IMAGE_PULL_POLICY
+              value: {{ .Values.mover.imagePullPolicy | default .Values.global.imagePullPolicy }}
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: vault-unseal-keys
+                  key: vault-root
+            {{- if .Values.manager.extraEnvs }}
+            {{- toYaml .Values.manager.extraEnvs | nindent 12 }}
+            {{- end }}
+          ports:
+            - containerPort: 9443
+              name: webhook-server
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /tmp/k8s-webhook-server/serving-certs
+              name: cert
+              readOnly: true
+          securityContext:
+            {{- toYaml .Values.manager.securityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.manager.resources | nindent 12 }}
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: webhook-server-cert
+      {{- with .Values.manager.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.manager.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.manager.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

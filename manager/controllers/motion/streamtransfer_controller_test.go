@@ -6,8 +6,9 @@ package motion
 import (
 	"context"
 	"io/ioutil"
-	v1 "k8s.io/api/core/v1"
 	"time"
+
+	corev1 "k8s.io/api/core/v1"
 
 	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	. "github.com/onsi/ginkgo"
@@ -67,11 +68,11 @@ var _ = Describe("StreamTransfer Controller", func() {
 
 			By("Expecting Secret to be created")
 			Eventually(func() error {
-				secret := &v1.Secret{}
+				secret := &corev1.Secret{}
 				return k8sClient.Get(context.Background(), key, secret)
 			}, timeout, interval).Should(Succeed())
 
-			pvc := &v1.PersistentVolumeClaim{}
+			pvc := &corev1.PersistentVolumeClaim{}
 			By("Expecting PVC to be created")
 			Eventually(func() error {
 				return k8sClient.Get(context.Background(), key, pvc)
@@ -117,7 +118,7 @@ var _ = Describe("StreamTransfer Controller", func() {
 				return k8sClient.Delete(context.Background(), f)
 			}, timeout, interval).Should(Succeed())
 
-			finalizerPod := &v1.Pod{}
+			finalizerPod := &corev1.Pod{}
 			By("Expect finalizer pod to be started")
 			Eventually(func() error {
 
@@ -127,7 +128,7 @@ var _ = Describe("StreamTransfer Controller", func() {
 
 			if !noSimulatedProgress {
 				// Simulate a succeeded finalizer
-				finalizerPod.Status.Phase = v1.PodSucceeded
+				finalizerPod.Status.Phase = corev1.PodSucceeded
 				Expect(k8sClient.Status().Update(context.Background(), finalizerPod)).Should(Succeed())
 			}
 

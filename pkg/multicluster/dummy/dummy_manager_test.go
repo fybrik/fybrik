@@ -2,11 +2,12 @@ package dummy
 
 import (
 	"errors"
+	"testing"
+
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	"github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 )
 
 var _ multicluster.ClusterManager = &ClusterManager{}

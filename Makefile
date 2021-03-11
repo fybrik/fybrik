@@ -29,6 +29,7 @@ run-integration-tests:
 	$(MAKE) docker
 	$(MAKE) -C test/services docker-all
 	$(MAKE) cluster-prepare-wait
+	$(MAKE) configure-vault
 	$(MAKE) -C secret-provider configure-vault
 	$(MAKE) -C secret-provider deploy
 	$(MAKE) -C manager deploy-crd
@@ -49,6 +50,7 @@ run-deploy-tests:
 	$(MAKE) -C connectors deploy
 	kubectl get pod --all-namespaces
 	kubectl wait --for=condition=ready pod --all-namespaces --all --timeout=120s
+	$(MAKE) configure-vault
 
 .PHONY: cluster-prepare
 cluster-prepare:
@@ -145,7 +147,16 @@ ifneq (${TRAVIS_TAG},)
 	DOCKER_HOSTNAME=${DOCKER_PUBLIC_HOSTNAME} DOCKER_NAMESPACE=${DOCKER_PUBLIC_NAMESPACE} DOCKER_TAGNAME=${TRAVIS_TAG} make -C modules helm-chart-push
 endif
 
+.PHONY: save-images
+save-images:
+	docker save -o images.tar ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME} \
+		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/secret-provider:${DOCKER_TAGNAME} \
+		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/egr-connector:${DOCKER_TAGNAME} \
+		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/dummy-mover:${DOCKER_TAGNAME} \
+		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:${DOCKER_TAGNAME} \
+		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/vault-connector:${DOCKER_TAGNAME}
 
 include hack/make-rules/tools.mk
 include hack/make-rules/verify.mk
 include hack/make-rules/cluster.mk
+include hack/make-rules/vault.mk

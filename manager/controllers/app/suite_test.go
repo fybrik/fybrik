@@ -35,6 +35,7 @@ import (
 	"github.com/ibm/the-mesh-for-data/pkg/helm"
 	local "github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 	"github.com/ibm/the-mesh-for-data/pkg/storage"
+	"github.com/ibm/the-mesh-for-data/pkg/vault"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -81,6 +82,7 @@ var _ = BeforeSuite(func(done Done) {
 	if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
 		logf.Log.Info("Using existing controller in existing cluster...")
 		k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
+		Expect(err).ToNot(HaveOccurred())
 	} else {
 		// Mockup connectors
 		go mockup.CreateTestCatalogConnector(GinkgoT())
@@ -102,11 +104,15 @@ var _ = BeforeSuite(func(done Done) {
 		policyCompiler := &mockup.MockPolicyCompiler{}
 		// Initiate the M4DApplication Controller
 		var clusterManager *mockup.ClusterLister
-		err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler, clusterManager, storage.NewProvisionTest()).SetupWithManager(mgr)
+		conn, _ := vault.NewDummyConnection()
+		err = NewM4DApplicationReconciler(mgr, "M4DApplication", conn, policyCompiler, clusterManager, storage.NewProvisionTest()).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
 		err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
-		SetupPlotterController(mgr, local.NewManager(mgr.GetClient(), "m4d-system"))
+		clusterMgr, err := local.NewManager(mgr.GetClient(), "m4d-system")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(clusterMgr).NotTo(BeNil())
+		SetupPlotterController(mgr, clusterMgr)
 
 		go func() {
 			err = mgr.Start(ctrl.SetupSignalHandler())
@@ -132,9 +138,10 @@ var _ = BeforeSuite(func(done Done) {
 			Namespace: "m4d-system",
 		},
 		Data: map[string]string{
-			"ClusterName": "US-cluster",
-			"Region":      "US",
-			"Zone":        "North-America",
+			"ClusterName":   "US-cluster",
+			"Region":        "US",
+			"Zone":          "North-America",
+			"VaultAuthPath": "kind",
 		},
 	}))
 	close(done)

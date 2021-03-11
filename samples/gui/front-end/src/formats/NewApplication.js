@@ -5,7 +5,7 @@ import { Form, Divider } from 'semantic-ui-react'
 
 const NewApplication = props => {
   const [st, setState] = useState({ valid_label: false, valid_app_name: false, unique_app_name: true, color: 'green', message: 'Please enter a name' })
-  const [application, setApplication] = useState({ geography: props.location.state.applications.geography, metadata: { name: '' }, spec: { selector: { matchLabels: ''}} })
+  const [application, setApplication] = useState({ metadata: { name: ''}, spec: { selector: { clusterName: '', workloadSelector: {matchLabels: ''}}}})
 
   const handleNameChange = event => {
     const { name, value } = event.target
@@ -21,7 +21,18 @@ const NewApplication = props => {
     const { name, value } = event.target
     setState({ ...st, valid_label: value.length > 0 })
     // set labels
-    setApplication({...application, spec: {...application.spec, selector: { ...application.spec.selector, [name]: value } } })
+    setApplication({...application, spec: {...application.spec, 
+      selector: { clusterName: application.spec.selector.clusterName,
+        workloadSelector: { ...application.spec.selector.workloadSelector, [name]: value } }}})
+  }
+
+  const handleClusterChange = event => {
+    const { name, value } = event.target
+    setState({ ...st, valid_label: value.length > 0 })
+    // set cluster
+    setApplication({...application, spec: {...application.spec, 
+      selector: { clusterName: value,
+        workloadSelector: { ...application.spec.selector.workloadSelector} }}})
   }
 
   return (
@@ -37,9 +48,16 @@ const NewApplication = props => {
 
       <Divider hidden />
 
-      <Form.Field required>
+      <Form.Field>
         <label >Workload selector</label>
-        <input placeholder='enter selector label' autoComplete='off' name='matchLabels' value={application.spec.selector.matchLabels} onChange={handleLabelChange} />
+        <input placeholder='enter selector label' autoComplete='off' name='matchLabels' value={application.spec.selector.workloadSelector.matchLabels} onChange={handleLabelChange} />
+      </Form.Field>
+
+      <Divider hidden />
+
+      <Form.Field>
+        <label >Workload cluster</label>
+        <input placeholder='enter cluster name' autoComplete='off' name='clusterName' value={application.spec.selector.clusterName} onChange={handleClusterChange} />
       </Form.Field>
 
       <Divider hidden />
@@ -47,8 +65,8 @@ const NewApplication = props => {
       <Button icon labelPosition='left' as={Link} to="/" color='red'>
         <Icon name='left arrow' />Back
       </Button>
-      <Link style={{ pointerEvents: st.valid_app_name && st.valid_label ? 'auto' : 'none' }} to={{ pathname: '/credentials', state: { application: application } }} >
-        <Button icon labelPosition='right' disabled={!st.valid_app_name || !st.valid_label} color='green'>
+       <Link style={{ pointerEvents: st.valid_app_name ? 'auto' : 'none' }} to={{ pathname: '/credentials', state: { application: application } }} >
+        <Button icon labelPosition='right' disabled={!st.valid_app_name } color='green'>
           <Icon name='right arrow' />Next
         </Button>
       </Link>

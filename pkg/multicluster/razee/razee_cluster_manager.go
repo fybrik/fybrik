@@ -3,8 +3,13 @@ package razee
 import (
 	"errors"
 	"fmt"
-	"github.com/IBM/go-sdk-core/core"
+	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/IBM/satcon-client-go/client"
+	"github.com/IBM/satcon-client-go/client/auth/iam"
+	"github.com/IBM/satcon-client-go/client/auth/local"
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
 	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
@@ -12,10 +17,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"net/http"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"strconv"
-	"strings"
 )
 
 const (
@@ -43,22 +45,29 @@ func (r *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 		return nil, err
 	}
 	for _, c := range razeeClusters {
-		configMapJSON, err := r.con.Resources.ResourceContent(r.orgID, c.ClusterID, clusterMetadataConfigMapSL)
+		resourceContent, err := r.con.Resources.ResourceContent(r.orgID, c.ClusterID, clusterMetadataConfigMapSL)
 		if err != nil {
 			r.log.Error(err, "Could not fetch cluster information", "cluster", c.Name)
 			return nil, err
 		}
+		// If no content for the resource was found the cluster is not part of the mesh or not installed
+		// correctly. The mesh should ignore those clusters and continue.
+		if resourceContent == nil {
+			r.log.Info("Resource content returned is nil! Skipping cluster", "cluster", c.Name)
+			continue
+		}
 		scheme := runtime.NewScheme()
 		clusterMetadataConfigmap := v1.ConfigMap{}
-		err = multicluster.Decode(configMapJSON.Content, scheme, &clusterMetadataConfigmap)
+		err = multicluster.Decode(resourceContent.Content, scheme, &clusterMetadataConfigmap)
 		if err != nil {
 			return nil, err
 		}
 		cluster := multicluster.Cluster{
 			Name: clusterMetadataConfigmap.Data["ClusterName"],
 			Metadata: multicluster.ClusterMetadata{
-				Region: clusterMetadataConfigmap.Data["Region"],
-				Zone:   clusterMetadataConfigmap.Data["Zone"],
+				Region:        clusterMetadataConfigmap.Data["Region"],
+				Zone:          clusterMetadataConfigmap.Data["Zone"],
+				VaultAuthPath: clusterMetadataConfigmap.Data["VaultAuthPath"],
 			},
 		}
 		clusters = append(clusters, cluster)
@@ -310,35 +319,57 @@ func channelName(cluster string, name string) string {
 	return "m4d.ibm.com" + "-" + cluster + "-" + name
 }
 
-func NewRazeeManager(url string, login string, password string, orgID string) multicluster.ClusterManager {
-	localAuth := &LocalAuthClient{
-		url:      url,
-		login:    login,
-		password: password,
-		token:    "",
+func NewRazeeManager(url string, login string, password string) (multicluster.ClusterManager, error) {
+	localAuth, err := local.NewClient(url, login, password)
+	if err != nil {
+		return nil, err
 	}
-
 	con, _ := client.New(url, http.DefaultClient, localAuth)
 	logger := ctrl.Log.WithName("ClusterManager")
+	me, err := con.Users.Me()
+	if err != nil {
+		return nil, err
+	}
+
+	if me == nil {
+		return nil, errors.New("could not retrieve login information of Razee")
+	}
+
+	logger.Info("Initializing Razee local", "orgId", me.OrgId)
 
 	return &ClusterManager{
-		orgID: orgID,
+		orgID: me.OrgId,
 		con:   con,
 		log:   logger,
-	}
+	}, nil
 }
 
-func NewSatConfManager(apikey string, orgID string) multicluster.ClusterManager {
-	authenticator := &core.IamAuthenticator{
-		ApiKey: apikey,
+func NewSatConfManager(apikey string) (multicluster.ClusterManager, error) {
+	iamClient, err := iam.NewIAMClient(apikey)
+	if err != nil {
+		return nil, err
+	}
+	if iamClient == nil {
+		return nil, errors.New("the IAMClient returned nil for IBM Cloud Satellite Config")
+	}
+	con, _ := client.New("https://config.satellite.cloud.ibm.com/graphql", http.DefaultClient, iamClient.Client)
+
+	me, err := con.Users.Me()
+	if err != nil {
+		return nil, err
 	}
 
-	con, _ := client.New("https://config.satellite.cloud.ibm.com/graphql", http.DefaultClient, authenticator)
+	if me == nil {
+		return nil, errors.New("could not retrieve login information of Razee")
+	}
+
 	logger := ctrl.Log.WithName("RazeeManager")
 
+	logger.Info("Initializing Razee with IBM Satellite Config", "orgId", me.OrgId)
+
 	return &ClusterManager{
-		orgID: orgID,
+		orgID: me.OrgId,
 		con:   con,
 		log:   logger,
-	}
+	}, nil
 }

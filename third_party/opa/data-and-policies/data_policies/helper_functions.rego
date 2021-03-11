@@ -34,6 +34,9 @@ check_destination(destinations) {
     compare_str(DestinationGeo(), destinations[_])
 }
 
+check_processingGeo_not(processingGeo) {
+	compare_str_not(processingGeo, ProcessingGeo())
+}
 
 clean_string(str) = result {
     str2 := lower(str)

@@ -5,14 +5,15 @@ package motion
 
 import (
 	"context"
+	"testing"
+
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-	"testing"
 
 	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 
 	kbatch "k8s.io/api/batch/v1"
-	"k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -109,7 +110,7 @@ func TestBatchTransferController(t *testing.T) {
 	}
 
 	// Check if the secret has been created
-	secret := &v1.Secret{}
+	secret := &corev1.Secret{}
 	err = cl.Get(context.TODO(), req.NamespacedName, secret)
 	if err != nil {
 		t.Fatalf("get secret: (%v)", err)

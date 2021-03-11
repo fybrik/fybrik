@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ template "m4d.fullname" . }}-leader-election-rb
+  labels:
+    {{- include "m4d.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ template "m4d.fullname" . }}-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.manager.serviceAccount.name | default "default" }}
+  namespace: {{ .Release.Namespace }}
