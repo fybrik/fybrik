@@ -15,8 +15,6 @@ var (
 	credserverurl = "http://localhost:8080/v1/creds/usercredentials"
 	cred1         = "{\"SecretName\": \"notebook\",\"System\": \"Egeria\",\"Credentials\": {\"username\": \"user1\"}}"
 	cred2         = "{\"SecretName\": \"notebook\",\"System\": \"OPA\", \"Credentials\": {\"username\": \"user2\"}}"
-	path1         = "notebook/Egeria"
-	path2         = "notebook/OPA"
 	name          = "notebook"
 )
 
@@ -56,7 +54,6 @@ func deleteCredentials(t *testing.T, path string) {
 func TestCredentialAPIs(t *testing.T) {
 	storeCredentials(t, cred1)
 	storeCredentials(t, cred2)
-	readCredentials(t, path1)
-	readCredentials(t, path2)
+	readCredentials(t, name)
 	deleteCredentials(t, name)
 }

@@ -5,14 +5,12 @@ package app
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -251,12 +249,6 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	// Store user credentials in vault
-	if err := r.storeUserCredentials(applicationContext); err != nil {
-		r.Log.V(0).Info("Error storing user secret: " + err.Error())
-		setCondition(applicationContext, "", err.Error(), true)
-		return ctrl.Result{}, err
-	}
 	// create a list of requirements for creating a data flow (actions, interface to app, data format) per a single data set
 	var requirements []modules.DataInfo
 	for _, dataset := range applicationContext.Spec.Data {
@@ -377,30 +369,6 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 	r.Log.V(0).Info("Registering a secret to " + path)
 	if err = r.VaultConnection.AddSecretFromStruct(path, req.Credentials.GetCreds()); err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err)
-	}
-	return nil
-}
-
-func (r *M4DApplicationReconciler) storeUserCredentials(input *app.M4DApplication) error {
-	secretName := input.Spec.UserSecretRef
-	if secretName == "" {
-		// no secret to store
-		return nil
-	}
-	// fetch a secret
-	secret := &corev1.Secret{}
-	if err := r.Client.Get(context.Background(), types.NamespacedName{Name: secretName, Namespace: input.Namespace}, secret); err != nil {
-		return err
-	}
-	credentialsMap := make(map[string]interface{})
-	for system, creds := range secret.Data {
-		path := utils.GenerateUserCredentialsSecretName(input.Namespace, input.Name, system)
-		if err := json.Unmarshal(creds, &credentialsMap); err != nil {
-			return err
-		}
-		if err := r.VaultConnection.AddSecret(path, credentialsMap); err != nil {
-			return err
-		}
 	}
 	return nil
 }

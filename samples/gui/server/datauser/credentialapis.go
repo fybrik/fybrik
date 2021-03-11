@@ -29,7 +29,7 @@ func CredentialRoutes(client *K8sClient) *chi.Mux {
 	k8sClient = client // global variable used by all funcs in this package
 
 	router := chi.NewRouter()
-	router.Get("/{secret}/{system}", GetCredentials)
+	router.Get("/{secret}", GetCredentials)
 	router.Delete("/{secret}", DeleteCredentials)
 	router.Post("/", StoreCredentials)
 	router.Options("/*", CredentialOptions)
@@ -51,9 +51,7 @@ func GetCredentials(w http.ResponseWriter, r *http.Request) {
 			log.Printf(err.Error() + " upon No k8sClient set")
 		}
 	}
-
 	secretName := chi.URLParam(r, "secret")
-	system := chi.URLParam(r, "system")
 
 	// Call kubernetes to get the M4DApplication CRD
 	secret, err := k8sClient.GetSecret(secretName)
@@ -64,8 +62,7 @@ func GetCredentials(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	creds := string(secret.Data[system])
-	render.JSON(w, r, creds) // Return the credentials as json
+	render.JSON(w, r, secret.Data) // Return the credentials as json
 }
 
 // DeleteCredentials deletes the secret
@@ -124,17 +121,21 @@ func StoreCredentials(w http.ResponseWriter, r *http.Request) {
 		Name:      userCredentials.SecretName,
 		Namespace: k8sClient.namespace,
 	},
-		StringData: map[string]string{},
-		Type:       "Opaque",
+		Data: map[string][]byte{},
+		Type: "Opaque",
 	}
 
-	bytes, err := json.Marshal(userCredentials.Credentials)
-	if err != nil {
-		log.Print("err = " + err.Error())
-		_ = render.Render(w, r, ErrInvalidRequest(err))
-		return
+	// add system name as prefix to the credentials
+	for key, val := range userCredentials.Credentials {
+		bytes, err := json.Marshal(val)
+		if err != nil {
+			log.Print("err = " + err.Error())
+			_ = render.Render(w, r, ErrConfigProblem(err))
+			return
+		}
+		secretStruct.Data[userCredentials.System+"_"+key] = bytes
 	}
-	secretStruct.StringData[userCredentials.System] = string(bytes)
+
 	secret, err := k8sClient.CreateOrUpdateSecret(&secretStruct)
 	if err != nil {
 		log.Print("err = " + err.Error())
