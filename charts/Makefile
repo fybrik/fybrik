@@ -17,15 +17,15 @@ cert-manager:
 		--namespace cert-manager \
 		--wait --timeout 120s
 
-.PHONY: install_vault
+.PHONY: install-vault
 install-vault:
 	make -C vault install
 
-.PHONY: install_vault_wait
-install-vault-wait:
+.PHONY: wait-for-vault
+wait-for-vault:
 	make -C vault wait-for-vault
 
-.PHONY: uninstall_vault
+.PHONY: uninstall-vault
 uninstall-vault:
 	make -C vault uninstall
 
