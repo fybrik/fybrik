@@ -1,32 +1,27 @@
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: m4d-config
 data:
-  {{- with .Values.config }}
-  SECRET_PROVIDER_URL: "http://secret-provider.m4d-system:5555/get-secret"
-  SECRET_PROVIDER_ROLE: "demo"
-  VAULT_AUTH: "kubernetes"
-  VAULT_ADDRESS: {{ .vault.address }}
-  VAULT_DATASET_HOME: {{ .vault.datasetHome }}
-  VAULT_DATASET_MOUNT: {{ .vault.datasetMount }}
-  VAULT_USER_HOME: {{ .vault.userHome }}
-  VAULT_USER_MOUNT: {{ .vault.userMount }}
-  VAULT_TTL: {{ .vault.ttl }}
-  USER_VAULT_ADDRESS: {{ .vault.userVaultAddress }}
-  USER_VAULT_PATH: {{ .vault.userVaultPath }}
-  VAULT_MODULES_ROLE: {{ .vault.modulesRole }}
-  CATALOG_CONNECTOR_URL: {{ .catalog.connectorUrl }}
-  CATALOG_PROVIDER_NAME: {{ .catalog.name }}
-  EGERIA_SERVER_URL: {{ .catalog.url }}
-  MAIN_POLICY_MANAGER_CONNECTOR_URL: {{ .policyManager.connectorUrl }}
-  MAIN_POLICY_MANAGER_NAME: {{ .policyManager.name }}
-  OPA_SERVER_URL: {{ .policyManager.url }}
-  USE_EXTENSIONPOLICY_MANAGER: "{{ .policyManager.extensionManager.enabled }}"
-  {{- if .policyManager.extensionManager.enabled }}
-  EXTENSIONS_POLICY_MANAGER_CONNECTOR_URL: {{ .policyManager.extensionManager.connectorUrl }}
-  EXTENSIONS_POLICY_MANAGER_NAME: {{ .policyManager.extensionManager.name }}
+  {{- if .Values.coordinator.enabled }}
+  CONNECTION_TIMEOUT: {{ .Values.manager.connectionTimeout | default .Values.global.connectionTimeout | quote }}
+  CATALOG_PROVIDER_NAME: {{ .Values.coordinator.catalog | quote }}
+  CATALOG_CONNECTOR_URL: {{ .Values.coordinator.catalogConnectorURL | default (printf "%s-connector" .Values.coordinator.catalog) | quote }}
+  MAIN_POLICY_MANAGER_NAME: {{ .Values.coordinator.policyManager | quote }}
+  MAIN_POLICY_MANAGER_CONNECTOR_URL: {{ .Values.coordinator.policyManagerConnectorURL | default (printf "%s-connector" .Values.coordinator.policyManager) | quote }}
+  USE_EXTENSIONPOLICY_MANAGER: "false" # deprecated
+  VAULT_ADDRESS: {{ .Values.coordinator.vault.address | quote }}
+  VAULT_DATASET_HOME: {{ .Values.coordinator.vault.datasetHome | quote }} # temporary
+  VAULT_DATASET_MOUNT: {{ printf "v1/sys/mounts/%s" .Values.coordinator.vault.datasetHome | quote }} # temporary
+  VAULT_USER_HOME: {{ .Values.coordinator.vault.userHome | quote}} # temporary
+  VAULT_USER_MOUNT: {{ printf "v1/sys/mounts/%s" .Values.coordinator.vault.userHome | quote }} # temporary
+  USER_VAULT_ADDRESS: {{ .Values.coordinator.vault.address | quote }} # deprecated
+  USER_VAULT_PATH: "external" # deprecated
+  SECRET_PROVIDER_URL: "http://secret-provider.m4d-system:5555/get-secret" # deprecated
+  SECRET_PROVIDER_ROLE: "demo" # deprecated
+  VAULT_AUTH: "kubernetes" # deprecated
+  VAULT_TTL: "24h" # temporary
+  VAULT_MODULES_ROLE: "module" # temporary
   {{- end }}
-  CONNECTION_TIMEOUT: "{{ .connectionTimeout }}"
-  {{- end }}
-  {{- include "config.extraEnvironmentVars" . }}
+{{- end }}
