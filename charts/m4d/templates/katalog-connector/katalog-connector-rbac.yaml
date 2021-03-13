@@ -1,4 +1,4 @@
-{{- $autoFlag := and .Values.manager.enabled .Values.coordinator (eq .Values.coordinator.catalog "katalog") }}
+{{- $autoFlag := and .Values.manager.enabled .Values.coordinator.enabled (eq .Values.coordinator.catalog "katalog") }}
 {{- if include "m4d.isEnabled" (tuple .Values.katalogConnector.enabled $autoFlag) }}
 # Grant katalog-connector the katalog-editor Role.
 kind: ClusterRoleBinding
