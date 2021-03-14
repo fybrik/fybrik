@@ -48,7 +48,7 @@ In a multi-cluster setup the Vault address should be the Ingress address describ
 
 3. Setup Kubernetes Vault auth backend for each cluster:
 
-   1. Create a token reviewer service account called vault-auth in the default namespace and give it permissions to create tokenreviews.authentication.k8s.io at the cluster scope:
+   1. Create a token reviewer service account called vault-auth in the m4d-system namespace and give it permissions to create tokenreviews.authentication.k8s.io at the cluster scope:
 
 ```bash
 apiVersion: v1
@@ -88,7 +88,7 @@ vault auth enable -path=<auth path> kubernetes
 
   3. Use the /config endpoint to configure Vault to talk to Kubernetes:
 ```bash
-TOKEN_REVIEW_JWT=$(kubectl get secret vault-auth -n default -o jsonpath="{.data.token}" | base64 --decode)
+TOKEN_REVIEW_JWT=$(kubectl get secret vault-auth -n m4d-system -o jsonpath="{.data.token}" | base64 --decode)
 vault write auth/<auth path>/config \
     token_reviewer_jwt="$TOKEN_REVIEW_JWT" \
     kubernetes_host=<Kubernetes api server address> \
@@ -100,7 +100,7 @@ More details on the parameters in the command above can be found [here](https://
 ```bash
 vault write auth/<auth path>/role/module \
     bound_service_account_names="*" \
-    bound_service_account_namespaces="m4d-blueprints \
+    bound_service_account_namespaces=m4d-blueprints \
     policies="read-dataset-creds" \
     ttl=24h
 ```
