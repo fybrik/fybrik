@@ -214,7 +214,24 @@ spec:
                     description: Reference to a secret where the credentials are stored
                     type: string
                 type: object
-              description: ProvisionedStorage maps a dataset (identified by DataSetID) to the new provisioned bucket. It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received. ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready
+              description: ProvisionedStorage maps a dataset (identified by AssetID) to the new provisioned bucket. It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received. ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready
+              type: object
+            readEndpointsMap:
+              additionalProperties:
+                description: The spec of the endpoint exposed by the module
+                properties:
+                  Scheme:
+                    description: 'For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc'
+                    type: string
+                  endpointName:
+                    type: string
+                  port:
+                    format: int32
+                    type: integer
+                required:
+                - port
+                type: object
+              description: ReadEndpointsMap maps a AssetDetails object to the endpoint spec from which the asset will be served to the application
               type: object
             ready:
               description: Ready is true if a blueprint has been successfully orchestrated

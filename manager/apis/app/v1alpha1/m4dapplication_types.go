@@ -42,10 +42,8 @@ type DataRequirements struct {
 	Copy CopyRequirements `json:"copy,omitempty"`
 }
 
-// DataContext indicates data set chosen by the Data Scientist to be used by his application,
-// and includes information about the data format and technologies used by the application
-// to access the data.
-type DataContext struct {
+// AssetDetails provides all details required to fully identify an asset - the datasetID and the catalog details
+type AssetDetails struct {
 	// DataSetID is a unique identifier of the dataset chosen from the data catalog for processing by the data user application.
 	// +required
 	// +kubebuilder:validation:MinLength=1
@@ -55,7 +53,14 @@ type DataContext struct {
 	// If not specified, the enterprise catalog service will be used.
 	// +optional
 	CatalogService string `json:"catalogService,omitempty"`
+}
 
+// DataContext indicates data set chosen by the Data Scientist to be used by his application,
+// and includes information about the data format and technologies used by the application
+// to access the data.
+type DataContext struct {
+	// +required
+	AssetDetails `json:",inline"`
 	// Requirements from the system
 	// +required
 	Requirements DataRequirements `json:"requirements"`
@@ -179,11 +184,14 @@ type M4DApplicationStatus struct {
 	// +optional
 	Generated *ResourceReference `json:"generated,omitempty"`
 
-	// ProvisionedStorage maps a dataset (identified by DataSetID) to the new provisioned bucket.
+	// ProvisionedStorage maps a dataset (identified by AssetID) to the new provisioned bucket.
 	// It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received.
 	// ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready
 	// +optional
 	ProvisionedStorage map[string]DatasetDetails `json:"provisionedStorage,omitempty"`
+
+	// ReadEndpointsMap maps a AssetDetails object to the endpoint spec from which the asset will be served to the application
+	ReadEndpointsMap map[string]EndpointSpec `json:"readEndpointsMap,omitempty"`
 }
 
 // M4DApplication provides information about the application being used by a Data Scientist,

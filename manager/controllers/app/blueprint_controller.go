@@ -116,15 +116,10 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) (ctr
 	return ctrl.Result{}, nil
 }
 
-func getReleaseName(blueprintName string, step app.FlowStep) string {
-	fullName := blueprintName + "-" + step.Name
-	return utils.HelmConformName(fullName)
-}
-
 func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) error {
 	errs := make([]string, 0)
 	for _, step := range blueprint.Spec.Flow.Steps {
-		releaseName := getReleaseName(blueprint.Name, step)
+		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNameLabel], step)
 		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus != nil || rel == nil {
 			continue
 		}
@@ -140,7 +135,7 @@ func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) 
 
 func (r *BlueprintReconciler) hasExternalResources(blueprint *app.Blueprint) bool {
 	for _, step := range blueprint.Spec.Flow.Steps {
-		releaseName := getReleaseName(blueprint.Name, step)
+		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNameLabel], step)
 		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus == nil && rel != nil {
 			return true
 		}
@@ -260,8 +255,8 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		if err != nil {
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
-
-		releaseName := getReleaseName(blueprint.Name, step)
+		log.Info("Step name: " + step.Name)
+		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNameLabel], step)
 		log.V(0).Info("Release name: " + releaseName)
 		numReleases++
 		// check the release status

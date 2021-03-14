@@ -118,6 +118,27 @@ func CreateDataSetIdentifier(datasetID string) string {
 	return id[:len(id)-1]
 }
 
+// Generating release name from step
+func GetReleaseName(applicationName string, namespace string, step app.FlowStep) string {
+	return GetReleaseNameByStepName(applicationName, namespace, step.Name)
+}
+
+// Generate release name from step name
+func GetReleaseNameByStepName(applicationName string, namespace string, stepName string) string {
+	fullName := applicationName + "-" + namespace + "-" + Hash(applicationName, 5) + "-" + Hash(namespace, 5) + "-" + stepName
+	return HelmConformName(fullName)
+}
+
+// Generate fqdn for a module
+func GenerateModuleEndpointFQDN(releaseName string, originalEndpointSpec app.EndpointSpec, blueprintNamespace string) string {
+	return releaseName + "-" + originalEndpointSpec.Hostname + "." + blueprintNamespace + ".svc.cluster.local"
+}
+
+// CreateAppIdentifier constructs an identifier for a m4d application: namespace/name.
+func CreateAppIdentifier(application *app.M4DApplication) string {
+	return application.Namespace + "/" + application.Name
+}
+
 // Some k8s objects only allow for a length of 63 characters.
 // This method shortens the name keeping a prefix and using the last 5 characters of the
 // new name for the hash of the postfix.
@@ -128,6 +149,12 @@ func K8sConformName(name string) string {
 // Helm has stricter restrictions than K8s and restricts release names to 53 characters
 func HelmConformName(name string) string {
 	return ShortenedName(name, 53, 5)
+}
+
+// Create a name for a step in a blueprint.
+// Since this is part of the name of a release, this should be done in a central location to make testing easier
+func CreateStepName(moduleName string, assetID string) string {
+	return moduleName + "-" + Hash(assetID, 10)
 }
 
 // This function shortens a name to the maximum length given and uses rest of the string that is too long

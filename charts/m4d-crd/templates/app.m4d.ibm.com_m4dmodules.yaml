@@ -59,6 +59,20 @@ spec:
                       - binary
                       - arrow
                       type: string
+                    endpointSpec:
+                      description: The spec of the endpoint exposed by the module
+                      properties:
+                        Scheme:
+                          description: 'For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc'
+                          type: string
+                        endpointName:
+                          type: string
+                        port:
+                          format: int32
+                          type: integer
+                      required:
+                      - port
+                      type: object
                     protocol:
                       description: IFProtocol defines interface protocol for data transactions
                       enum:

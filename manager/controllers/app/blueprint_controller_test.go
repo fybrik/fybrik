@@ -5,6 +5,7 @@ package app
 
 import (
 	"context"
+	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"time"
 
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
@@ -123,6 +124,10 @@ var _ = Describe("Blueprint Controller", func() {
 			blueprint := app.Blueprint{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "appns-app-mybp",
+					Labels: map[string]string{
+						app.ApplicationNameLabel:      "my-app",
+						app.ApplicationNamespaceLabel: "default",
+					},
 				},
 				Spec: app.BlueprintSpec{
 					Flow: app.DataFlow{
@@ -134,14 +139,18 @@ var _ = Describe("Blueprint Controller", func() {
 				},
 			}
 
-			relName := getReleaseName(blueprint.Name, blueprint.Spec.Flow.Steps[0])
-			Expect(relName).To(Equal("appns-app-mybp-mystep"))
+			relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Flow.Steps[0])
+			Expect(relName).To(Equal("my-app-default-4c9a7-37a8e-mystep"))
 		})
 
 		It("Should limit the release name if it is too long", func() {
 			blueprint := app.Blueprint{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "appnsisalreadylong-appnameisevenlonger-myblueprintnameisreallytakingitoverthetopkubernetescantevendealwithit",
+					Labels: map[string]string{
+						app.ApplicationNameLabel:      "my-app",
+						app.ApplicationNamespaceLabel: "default",
+					},
 				},
 				Spec: app.BlueprintSpec{
 					Flow: app.DataFlow{
@@ -153,13 +162,13 @@ var _ = Describe("Blueprint Controller", func() {
 				},
 			}
 
-			relName := getReleaseName(blueprint.Name, blueprint.Spec.Flow.Steps[0])
-			Expect(relName).To(Equal("appnsisalreadylong-appnameisevenlonger-mybluepr-3c184"))
+			relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Flow.Steps[0])
+			Expect(relName).To(Equal("my-app-default-4c9a7-37a8e-ohandnottoforgetthef-a0329"))
 			Expect(relName).To(HaveLen(53))
 
 			// Make sure that calling the same method again results in the same result
-			relName2 := getReleaseName(blueprint.Name, blueprint.Spec.Flow.Steps[0])
-			Expect(relName2).To(Equal("appnsisalreadylong-appnameisevenlonger-mybluepr-3c184"))
+			relName2 := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Flow.Steps[0])
+			Expect(relName2).To(Equal("my-app-default-4c9a7-37a8e-ohandnottoforgetthef-a0329"))
 			Expect(relName2).To(HaveLen(53))
 		})
 	})
