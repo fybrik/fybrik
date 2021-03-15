@@ -103,6 +103,9 @@ spec:
                 type: object
               minItems: 1
               type: array
+            secretRef:
+              description: SecretRef points to the secret that holds credentials for each system the user has been authenticated with. The secret is deployed in M4dApplication namespace.
+              type: string
             selector:
               description: Selector enables to connect the resource to the application Application labels should match the labels in the selector. For some flows the selector may not be used.
               properties:
@@ -142,9 +145,6 @@ spec:
               required:
               - workloadSelector
               type: object
-            userSecretRef:
-              description: 'UserSecretRef points to the secret that holds user credentials for each system the user has been authenticated with. In this secret, the key is the system name which is mapped to the corresponding credentials, e.g. "Egeria" -> ''{"username": "user1"}'' The secret is deployed in M4dApplication namespace.'
-              type: string
           required:
           - appInfo
           - data
