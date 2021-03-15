@@ -4,9 +4,6 @@ include $(ROOT_DIR)/Makefile.env
 DOCKER_NAME ?= serverpolicycompiler-mock
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 
-.PHONY: all
-all: docker-build docker-push
-
 .PHONY: docker-build
 docker-build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o serverpolicycompiler serverpolicycompiler.go

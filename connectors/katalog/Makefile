@@ -24,13 +24,4 @@ run: generate
 
 .PHONY: test
 test:
-ifeq ($(NEED_TEST_COVERAGE_STATISTICS),1)
-	go test -v ./... -coverprofile=coverage.out
-	go tool cover -func=coverage.out
-    ifeq ($(NEED_TEST_COVERAGE_STATISTICS_IN_HTML),1)
-		go tool cover -html=coverage.out
-    endif
-	rm coverage.out
-else
 	go test -v ./...
-endif

@@ -27,7 +27,7 @@ run-integration-tests:
 	$(MAKE) kind
 	$(MAKE) cluster-prepare
 	$(MAKE) docker
-	$(MAKE) -C test/services docker-build-and-push
+	$(MAKE) -C test/services docker-build docker-push
 	$(MAKE) cluster-prepare-wait
 	$(MAKE) configure-vault
 	$(MAKE) -C secret-provider configure-vault
@@ -92,7 +92,7 @@ docker-minimal-it:
 	$(MAKE) -C manager docker-build docker-push
 	$(MAKE) -C secret-provider docker-build docker-push
 	$(MAKE) -C test/dummy-mover docker-build docker-push
-	$(MAKE) -C test/services docker-build-and-push
+	$(MAKE) -C test/services docker-build docker-push
 
 .PHONY: docker-build
 docker-build:
