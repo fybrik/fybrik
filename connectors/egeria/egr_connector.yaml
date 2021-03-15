@@ -27,6 +27,9 @@ spec:
         ports:
         - name: egr-connector
           containerPort: 50084
+        env:
+          - name: EGERIA_DEFAULT_USERNAME
+            value: "garygeeke"
         envFrom:
         - configMapRef:
             name: m4d-config

@@ -66,6 +66,27 @@ spec:
                     username:
                       description: Cloudant user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
                       type: string
+                    vault:
+                      description: Define secrets that are fetched from a Vault instance
+                      properties:
+                        address:
+                          description: Address is Vault address
+                          type: string
+                        authPath:
+                          description: AuthPath is the path to auth method i.e. kubernetes
+                          type: string
+                        role:
+                          description: Role is the Vault role used for retrieving the credentials
+                          type: string
+                        secretPath:
+                          description: SecretPath is the path of the secret holding the Credentials in Vault
+                          type: string
+                      required:
+                      - address
+                      - authPath
+                      - role
+                      - secretPath
+                      type: object
                     vaultPath:
                       description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
                       type: string
@@ -91,6 +112,27 @@ spec:
                     user:
                       description: Database user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
                       type: string
+                    vault:
+                      description: Define secrets that are fetched from a Vault instance
+                      properties:
+                        address:
+                          description: Address is Vault address
+                          type: string
+                        authPath:
+                          description: AuthPath is the path to auth method i.e. kubernetes
+                          type: string
+                        role:
+                          description: Role is the Vault role used for retrieving the credentials
+                          type: string
+                        secretPath:
+                          description: SecretPath is the path of the secret holding the Credentials in Vault
+                          type: string
+                      required:
+                      - address
+                      - authPath
+                      - role
+                      - secretPath
+                      type: object
                     vaultPath:
                       description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
                       type: string
@@ -152,6 +194,27 @@ spec:
                     valueDeserializer:
                       description: Deserializer to be used for the values of the topic
                       type: string
+                    vault:
+                      description: Define secrets that are fetched from a Vault instance
+                      properties:
+                        address:
+                          description: Address is Vault address
+                          type: string
+                        authPath:
+                          description: AuthPath is the path to auth method i.e. kubernetes
+                          type: string
+                        role:
+                          description: Role is the Vault role used for retrieving the credentials
+                          type: string
+                        secretPath:
+                          description: SecretPath is the path of the secret holding the Credentials in Vault
+                          type: string
+                      required:
+                      - address
+                      - authPath
+                      - role
+                      - secretPath
+                      type: object
                     vaultPath:
                       description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
                       type: string
@@ -192,6 +255,27 @@ spec:
                     secretKey:
                       description: Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
                       type: string
+                    vault:
+                      description: Define secrets that are fetched from a Vault instance
+                      properties:
+                        address:
+                          description: Address is Vault address
+                          type: string
+                        authPath:
+                          description: AuthPath is the path to auth method i.e. kubernetes
+                          type: string
+                        role:
+                          description: Role is the Vault role used for retrieving the credentials
+                          type: string
+                        secretPath:
+                          description: SecretPath is the path of the secret holding the Credentials in Vault
+                          type: string
+                      required:
+                      - address
+                      - authPath
+                      - role
+                      - secretPath
+                      type: object
                     vaultPath:
                       description: Vault path where the accessKey/secretKey are stored. If not specified accessKey and secretKey have to be specified!
                       type: string
@@ -262,6 +346,27 @@ spec:
                     username:
                       description: Cloudant user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
                       type: string
+                    vault:
+                      description: Define secrets that are fetched from a Vault instance
+                      properties:
+                        address:
+                          description: Address is Vault address
+                          type: string
+                        authPath:
+                          description: AuthPath is the path to auth method i.e. kubernetes
+                          type: string
+                        role:
+                          description: Role is the Vault role used for retrieving the credentials
+                          type: string
+                        secretPath:
+                          description: SecretPath is the path of the secret holding the Credentials in Vault
+                          type: string
+                      required:
+                      - address
+                      - authPath
+                      - role
+                      - secretPath
+                      type: object
                     vaultPath:
                       description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
                       type: string
@@ -287,6 +392,27 @@ spec:
                     user:
                       description: Database user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
                       type: string
+                    vault:
+                      description: Define secrets that are fetched from a Vault instance
+                      properties:
+                        address:
+                          description: Address is Vault address
+                          type: string
+                        authPath:
+                          description: AuthPath is the path to auth method i.e. kubernetes
+                          type: string
+                        role:
+                          description: Role is the Vault role used for retrieving the credentials
+                          type: string
+                        secretPath:
+                          description: SecretPath is the path of the secret holding the Credentials in Vault
+                          type: string
+                      required:
+                      - address
+                      - authPath
+                      - role
+                      - secretPath
+                      type: object
                     vaultPath:
                       description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
                       type: string
@@ -348,6 +474,27 @@ spec:
                     valueDeserializer:
                       description: Deserializer to be used for the values of the topic
                       type: string
+                    vault:
+                      description: Define secrets that are fetched from a Vault instance
+                      properties:
+                        address:
+                          description: Address is Vault address
+                          type: string
+                        authPath:
+                          description: AuthPath is the path to auth method i.e. kubernetes
+                          type: string
+                        role:
+                          description: Role is the Vault role used for retrieving the credentials
+                          type: string
+                        secretPath:
+                          description: SecretPath is the path of the secret holding the Credentials in Vault
+                          type: string
+                      required:
+                      - address
+                      - authPath
+                      - role
+                      - secretPath
+                      type: object
                     vaultPath:
                       description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
                       type: string
@@ -388,6 +535,27 @@ spec:
                     secretKey:
                       description: Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
                       type: string
+                    vault:
+                      description: Define secrets that are fetched from a Vault instance
+                      properties:
+                        address:
+                          description: Address is Vault address
+                          type: string
+                        authPath:
+                          description: AuthPath is the path to auth method i.e. kubernetes
+                          type: string
+                        role:
+                          description: Role is the Vault role used for retrieving the credentials
+                          type: string
+                        secretPath:
+                          description: SecretPath is the path of the secret holding the Credentials in Vault
+                          type: string
+                      required:
+                      - address
+                      - authPath
+                      - role
+                      - secretPath
+                      type: object
                     vaultPath:
                       description: Vault path where the accessKey/secretKey are stored. If not specified accessKey and secretKey have to be specified!
                       type: string

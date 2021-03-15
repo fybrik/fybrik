@@ -235,6 +235,9 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 	blueprint.Status.ObservedState.Ready = false
 	blueprint.Status.ObservedState.Error = ""
 	blueprint.Status.ObservedState.DataAccessInstructions = ""
+	if blueprint.Status.Releases == nil {
+		blueprint.Status.Releases = map[string]int64{}
+	}
 
 	// count the overall number of Helm releases and how many of them are ready
 	numReleases, numReady := 0, 0
@@ -279,6 +282,18 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 				blueprint.Status.ObservedState.Error += "ResourceAllocationFailure: " + errMsg + "\n"
 			} else if status == corev1.ConditionTrue {
 				numReady++
+			}
+		}
+		blueprint.Status.Releases[releaseName] = blueprint.Status.ObservedGeneration
+	}
+	// clean-up
+	for release, version := range blueprint.Status.Releases {
+		if version != blueprint.Status.ObservedGeneration {
+			_, err := r.Helmer.Uninstall(blueprint.Namespace, release)
+			if err != nil {
+				log.V(0).Info("Error uninstalling release " + release + " : " + err.Error())
+			} else {
+				delete(blueprint.Status.Releases, release)
 			}
 		}
 	}

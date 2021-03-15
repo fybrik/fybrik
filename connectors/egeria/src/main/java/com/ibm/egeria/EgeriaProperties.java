@@ -7,9 +7,11 @@ package com.ibm.egeria;
 public final class EgeriaProperties {
     public static final String EGERIA_SERVER_URL_KEY  = "EGERIA_SERVER_URL";
     public static final String EGERIA_CONNECTOR_PORT_KEY  = "PORT_EGERIA_CONNECTOR";
+    public static final String EGERIA_DEFAULT_USERNAME  = "EGERIA_DEFAULT_USERNAME";
 
     private String egeriaServiseURL;
     private String connectorPort;
+    private String egeriaDefaultUserName;
 
     //Singelton as the properties are set from env. variables and always the same
     private static EgeriaProperties instance;
@@ -26,6 +28,7 @@ public final class EgeriaProperties {
         if (this.connectorPort == null) {
             this.connectorPort = EgeriaConnector.EGERIA_DEFAULT_PORT;
         }
+        this.egeriaDefaultUserName = getProperty(EGERIA_DEFAULT_USERNAME, false);
     }
 
     private String getProperty(final String name, final boolean required) {
@@ -42,5 +45,9 @@ public final class EgeriaProperties {
 
     public int getConnectorPort() {
         return Integer.parseInt(connectorPort);
+    }
+
+    public String getEgeriaDefaultUserName() {
+        return egeriaDefaultUserName;
     }
 }

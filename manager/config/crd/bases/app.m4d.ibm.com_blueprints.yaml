@@ -316,6 +316,12 @@ spec:
                   description: Ready represents that the modules have been orchestrated successfully and the data is ready for usage
                   type: boolean
               type: object
+            releases:
+              additionalProperties:
+                format: int64
+                type: integer
+              description: Releases map each release to the observed generation of the blueprint containing this release. At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.
+              type: object
           type: object
       type: object
   version: v1alpha1
