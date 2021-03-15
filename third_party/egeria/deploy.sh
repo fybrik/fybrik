@@ -3,7 +3,7 @@
 set -e
 set -x
 
-: ${WITHOUT_OPENSHIFT=false}
+: ${WITHOUT_OPENSHIFT=true}
 : ${DONOT_DELETE_PERSISTENT_STORAGE=false}
 
 NAMESPACE=egeria-catalog
