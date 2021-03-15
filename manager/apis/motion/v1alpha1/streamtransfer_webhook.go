@@ -112,10 +112,6 @@ func (r *StreamTransfer) validateStreamTransfer() error {
 	var allErrs field.ErrorList
 	specField := field.NewPath("spec")
 
-	if err := validateObjectName(&r.ObjectMeta); err != nil {
-		allErrs = append(allErrs, err)
-	}
-
 	if r.Spec.DataFlowType == Batch {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("dataFlowType"), r.Spec.DataFlowType, "'dataFlowType' must be 'Stream' for a StreamTransfer!"))
 	}
