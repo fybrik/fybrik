@@ -253,7 +253,7 @@ func getReadModulesEndpoints(applicationContext *app.M4DApplication, blueprintsM
 				}
 			}
 		}
-		// We found a blueprint with a read modules, we can go home
+		// We found a blueprint with read modules
 		if foundReadEndpoints {
 			return
 		}
