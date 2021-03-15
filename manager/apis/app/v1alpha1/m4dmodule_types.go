@@ -86,7 +86,7 @@ type EndpointSpec struct {
 	Scheme string `json:"Scheme,omitempty"`
 }
 
-type ModuleApi struct {
+type ModuleAPI struct {
 	// +required
 	InterfaceDetails `json:",inline"`
 	// +optional
@@ -105,7 +105,7 @@ type Capability struct {
 
 	// API indicates to the application how to access/write the data
 	// +optional
-	API *ModuleApi `json:"api,omitempty"`
+	API *ModuleAPI `json:"api,omitempty"`
 
 	// Actions are the data transformations that the module supports
 	// +optional

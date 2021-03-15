@@ -85,7 +85,7 @@ func createModules() {
 						Source: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
 					},
 				},
-				API: &apiv1alpha1.ModuleApi{
+				API: &apiv1alpha1.ModuleAPI{
 					InterfaceDetails: apiv1alpha1.InterfaceDetails{
 						Protocol:   apiv1alpha1.ArrowFlight,
 						DataFormat: apiv1alpha1.Arrow,
