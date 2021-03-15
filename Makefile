@@ -13,6 +13,7 @@ docker-mirror-read:
 .PHONY: build
 build:
 	$(MAKE) -C pkg/policy-compiler build
+	$(MAKE) -C connectors/katalog build
 	$(MAKE) -C manager manager
 
 .PHONY: test
@@ -75,6 +76,7 @@ deploy:
 	$(MAKE) -C secret-provider deploy
 	$(MAKE) -C manager deploy
 	$(MAKE) -C connectors deploy
+	$(MAKE) -C connectors/katalog deploy
 
 .PHONY: undeploy
 undeploy:
@@ -82,12 +84,14 @@ undeploy:
 	$(MAKE) -C manager undeploy
 	$(MAKE) -C manager undeploy-crd
 	$(MAKE) -C connectors undeploy
+	$(MAKE) -C connectors/katalog undeploy
 
 .PHONY: docker
 docker:
 	$(MAKE) -C manager docker-all
 	$(MAKE) -C secret-provider docker-all
 	$(MAKE) -C connectors docker-all
+	$(MAKE) -C connectors/katalog docker-all
 	$(MAKE) -C test/dummy-mover docker-all
 
 # Build only the docker images needed for integration testing
@@ -103,6 +107,7 @@ docker-build:
 	$(MAKE) -C manager docker-build
 	$(MAKE) -C secret-provider docker-build
 	$(MAKE) -C connectors docker-build
+	$(MAKE) -C connectors/katalog docker-build
 	$(MAKE) -C test/dummy-mover docker-build
 
 .PHONY: docker-push
@@ -110,6 +115,7 @@ docker-push:
 	$(MAKE) -C manager docker-push
 	$(MAKE) -C secret-provider docker-push
 	$(MAKE) -C connectors docker-push
+	$(MAKE) -C connectors/katalog docker-push
 	$(MAKE) -C test/dummy-mover docker-push
 
 .PHONY: helm
@@ -124,7 +130,8 @@ DOCKER_PUBLIC_NAMES := \
 	egr-connector \
 	dummy-mover \
 	opa-connector \
-	vault-connector
+	vault-connector \
+	katalog-connector
  
 define do-docker-retag-and-push-public
 	for name in ${DOCKER_PUBLIC_NAMES}; do \
