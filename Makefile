@@ -76,7 +76,6 @@ deploy:
 	$(MAKE) -C secret-provider deploy
 	$(MAKE) -C manager deploy
 	$(MAKE) -C connectors deploy
-	$(MAKE) -C connectors/katalog deploy
 
 .PHONY: undeploy
 undeploy:
@@ -84,7 +83,6 @@ undeploy:
 	$(MAKE) -C manager undeploy
 	$(MAKE) -C manager undeploy-crd
 	$(MAKE) -C connectors undeploy
-	$(MAKE) -C connectors/katalog undeploy
 
 .PHONY: docker
 docker:
@@ -130,8 +128,7 @@ DOCKER_PUBLIC_NAMES := \
 	egr-connector \
 	dummy-mover \
 	opa-connector \
-	vault-connector \
-	katalog-connector
+	vault-connector
  
 define do-docker-retag-and-push-public
 	for name in ${DOCKER_PUBLIC_NAMES}; do \
