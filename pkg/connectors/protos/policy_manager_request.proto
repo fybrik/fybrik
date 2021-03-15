@@ -16,9 +16,8 @@ message DatasetContext {
 }
 
 message ApplicationDetails {
-    string purpose = 1;
-    string role = 2;
-    string processing_geography = 3;
+    string processing_geography = 1;
+    map<string, string> properties = 2;
 }
 
 message AccessOperation {
@@ -30,11 +29,11 @@ message AccessOperation {
     }
 
     AccessType type = 1;
-    string destination = 2;     //Destination for transfer or write. other parameters?
+    string destination = 2;     //Destination for transfer or write. 
 }
 
 message ApplicationContext {
-    string app_id = 1;                // string that identifies the application (namespace + appID) that will be used against secretProvider to obtain the realted credetnials
+    string app_id = 1;   // string that identifies the application (namespace + appID) that will be used against secretProvider to obtain the realted credetnials
     ApplicationDetails app_info = 2;
     repeated DatasetContext datasets = 3;
     repeated AccessOperation general_operations = 4;

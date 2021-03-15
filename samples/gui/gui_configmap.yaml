@@ -6,11 +6,5 @@ kind: ConfigMap
 metadata:
   name: m4dgui-config
 data:
-  #internal vault related variables
-  VAULT_ADDRESS: "http://vault.m4d-system.svc.cluster.local:8200/"
-  VAULT_USER_HOME: "m4d/user-creds/"
-  VAULT_USER_MOUNT: "v1/sys/mounts/m4d/user-creds"
-  VAULT_TTL: "24h"
-  VAULT_AUTH: "kubernetes"
   GEOGRAPHY: "NetherlandsCloud"
 
