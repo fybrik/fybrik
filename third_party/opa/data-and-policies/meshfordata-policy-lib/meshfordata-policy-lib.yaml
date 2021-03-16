@@ -14,8 +14,8 @@ data:
     access\ndeny_access_struct = {\n    \"action_name\" : \"deny access\",\n    \"description\"
     : \"Access to this data asset is denied\",\n    \"arguments\" : {},\n    \"used_policy\"
     : \"<used_policy_struct>\"\n}\n\ndeny_write_struct = {\n    \"action_name\" :
-    \"deny writing\",\n    \"description\" : \"Writing this data asset is denied\",\n
-    \   \"arguments\" : {},\n    \"used_policy\" : \"<used_policy_struct>\"\n}\n\nbuild_deny_access_action(used_policies)
+    \"deny\",\n    \"description\" : \"Writing of this data asset is denied\",\n    \"arguments\"
+    : {},\n    \"used_policy\" : \"<used_policy_struct>\"\n}\n\nbuild_deny_access_action(used_policies)
     = action {\n    action = build_action(deny_access_struct.action_name, deny_access_struct.description,
     deny_access_struct.arguments, used_policies)\n}\n\nbuild_deny_write_action(used_policies)
     = action {\n    action = build_action(deny_write_struct.action_name, deny_write_struct.description,
@@ -84,8 +84,9 @@ data:
     {\n    compare_str(tag,  DatasetTags()[_])\n}\n\ndataset_has_tag_not(tag) {\n
     \   compare_str_not(tag,  DatasetTags()[_])\n}\n\ncheck_access_type(access_types)
     {\n    compare_str(AccessType(), access_types[_])\n}\n\ncheck_destination(destinations)
-    {\n    compare_str(DestinationGeo(), destinations[_])\n}\n\n\nclean_string(str)
-    = result {\n    str2 := lower(str)\n    str3 = replace(str2, \" \", \"\")\n    str4
+    {\n    compare_str(DestinationGeo(), destinations[_])\n}\n\ncheck_processingGeo_not(processingGeo)
+    {\n\tcompare_str_not(processingGeo, ProcessingGeo())\n}\n\nclean_string(str) =
+    result {\n    str2 := lower(str)\n    str3 = replace(str2, \" \", \"\")\n    str4
     := replace(str3, \"-\", \"\")\n    str5 := replace(str4, \"_\", \"\")\n\n    result=str5\n}\n\ncompare_str(str1,
     str2) {\n    clean_string(str1) == clean_string(str2)\n}\n\n\ncolumn_has_tag(tag)
     {\n\tcompare_str(tag, input.details.metadata.components_metadata[_].tags[_])\n}\n\ncheck_purpose(purpose)
@@ -118,80 +119,21 @@ data:
     | input.details.metadata.components_metadata[column_name].tags[_] == tags[_]]\n}\n\ncolumn_with_any_name(names)
     = column_names {\n\tall_column_names := {column_name | input.details.metadata.components_metadata[column_name]
     }\n    column_names := all_column_names & names\n}"
-  sample_policies.rego: "package sample_policies\nimport data.data_policies as dp\n\ntransform[action]
-    {\n\tdescription = \"Columns with Confidential tag to be redacted before read\"\n\tdp.correct_input\n
-    \   #user context and access type check\n    #dp.check_access_type([dp.AccessTypes.READ])\n\tdp.check_access_type([\"READ\"])\n\tdp.check_purpose(\"Fraud
-    Detection\")\n\tdp.check_role(\"Data Scientist\")\n\tdp.dataset_has_tag(\"residency
-    = Turkey\")\n    column_names := dp.column_with_tag(\"Confidential\")\n    action
-    = dp.build_redact_column_action(column_names[_], dp.build_policy_from_description(description))\n}\n\ndeny[action]
-    {\n\tdescription = \"deny if role is not Data Scientist when purpose is Fraud
-    Detection\"\n\t#dp.correct_input\n    #user context and access type check\n    #dp.check_access_type([dp.AccessTypes.READ])\n\tdp.check_access_type([\"READ\"])\n\tdp.check_purpose(\"Fraud
-    Detection\")\n\tdp.check_role_not(\"Data Scientist\")\n\tdp.dataset_has_tag(\"residency
-    = Turkey\")\n    action = dp.build_deny_access_action(dp.build_policy_from_description(description))\n}\n\ndeny[action]
-    {\n\tdescription = \"If Columns with Confidential tag deny access\"\n\t#dp.correct_input\n
-    \   #user context and access type check\n    #dp.check_access_type([dp.AccessTypes.READ])\n\tdp.check_access_type([\"READ\"])\n\tdp.check_purpose(\"Customer
-    Behaviour Analysis\")\n\tdp.check_role(\"Business Analyst\")\n\tdp.dataset_has_tag(\"residency
-    = Turkey\")\n    dp.column_has_tag(\"Confidential\")\n    action = dp.build_deny_access_action(dp.build_policy_from_description(description))\n}\n\ndeny[action]
-    {\n\tdescription = \"deny if role is not Business Analyst when purpose is Customer
-    Behaviour Analysis\"\n\t#dp.correct_input\n    #user context and access type check\n
-    \   #dp.check_access_type([dp.AccessTypes.READ])\n\tdp.check_access_type([\"READ\"])\n\tdp.check_purpose(\"Customer
-    Behaviour Analysis\")\n\tdp.check_role_not(\"Business Analyst\")\n\tdp.dataset_has_tag(\"residency
-    = Turkey\")\n    action = dp.build_deny_access_action(dp.build_policy_from_description(description))\n}\n\ndeny[action]
-    {\n\tdescription = \"If data residency is Turkey but processing geography is not
-    Turkey then deny writing\"\n\t#dp.correct_input\n    #user context and access
-    type check\n    #dp.check_access_type([dp.AccessTypes.WRITE])\n\tdp.check_access_type([\"WRITE\"])\n\tdp.dataset_has_tag(\"residency
-    = Turkey\")\n\tdp.check_processingGeo_not(\"Turkey\")\n    action = dp.build_deny_write_action(dp.build_policy_from_description(description))\n}\n\ndeny[action]
-    {\n\tdescription = \"If data residency is not Turkey but processing geography
-    is not Turkey or EEA then deny writing\"\n\t#dp.correct_input\n    #user context
-    and access type check\n    #dp.check_access_type([dp.AccessTypes.WRITE])\n\tdp.check_access_type([\"WRITE\"])\n\tdp.dataset_has_tag_not(\"residency
-    = Turkey\")\n\tdp.check_processingGeo_not(\"Turkey\")\n\tdp.check_processingGeo_not(\"EEA\")\n
-    \   action = dp.build_deny_write_action(dp.build_policy_from_description(description))\n}\n"
   taxonomies_unification.rego: |-
     package data_policies
 
     #In data part we provide set of general and industry specific taxonomies, also the user can add more taxonomies specific for his needs.
     #Here is the place when for each category user chooses what taxonomies should be used
 
-    Purposes = { x | x = data.irltest1["opa-json"]["taxonomies.json"].DataPurposes[_] }
+    Purposes = { x | x = data.irltest1["meshfordata-external-data"]["taxonomies.json"].DataPurposes[_] }
 
-    Roles = { x | x = data.irltest1["opa-json"]["taxonomies.json"].DataRoles[_] } | { x | x = data.irltest1["opa-json"]["medical_taxonomies.json"].MedicalRoles[_] }
+    Roles = { x | x = data.irltest1["meshfordata-external-data"]["taxonomies.json"].DataRoles[_] } | { x | x = data.irltest1["meshfordata-external-data"]["medical_taxonomies.json"].MedicalRoles[_] }
 
-    Sensitivity = { x | x = data.irltest1["opa-json"]["taxonomies.json"].DataSensitivity[_] }
+    Sensitivity = { x | x = data.irltest1["meshfordata-external-data"]["taxonomies.json"].DataSensitivity[_] }
 
-    AccessTypes = { x | x = data.irltest1["opa-json"]["taxonomies.json"].DataAccessTypes[_] }
+    AccessTypes = { x | x = data.irltest1["meshfordata-external-data"]["taxonomies.json"].DataAccessTypes[_] }
 
-    GeoDestinations = { x | x = data.irltest1["opa-json"]["taxonomies.json"].DataGeoDestinations[_] }
-  user_policies.rego: "package user_policies\n\nimport data.data_policies as dp\n\n#Example
-    of data policies that use \"data_policies\" package to create easily data policies
-    that deny access or transform the data accordingly\n\ntransform[action] {\n\tdescription
-    = \"location data should be removed before copy\"\n\n\tdp.correct_input\n    \n
-    \   #user context and access type check\n    dp.check_access_type([dp.AccessTypes.COPY])\n
-    \   \n    column_names := dp.column_with_tag(\"location\")\n    action = dp.build_remove_column_action(column_names[_],
-    dp.build_policy_from_description(description))\n}  \n\ntransform[action] {\n\tdescription
-    = \"sensitive columns in health data should be removed\"\n\n\tdp.correct_input\n
-    \   \n    #user context and access type check\n    dp.check_access_type([dp.AccessTypes.COPY,
-    dp.AccessTypes.READ])\n    \n    dp.dataset_has_tag(\"HealthData\")\n    \n    column_names
-    := dp.column_with_tag(\"SPI\")\n    action = dp.build_remove_column_action(column_names[_],
-    dp.build_policy_from_description(description))\n} \n\ntransform[action] {\n\tdescription
-    = \"encrypt sensitive personal and health data on COPY out of united states for
-    health data assets\"\n    \n\tdp.correct_input\n    \n    #user context and access
-    type check\n    dp.check_access_type(dp.AccessTypes.COPY)\n    \n    dp.dataset_has_tag(\"HealthData\")\n
-    \   not dp.check_destination([dp.GeoDestinations.US])\n    \n    column_names
-    := dp.column_with_any_tag([\"SPI\", \"SMI\"])\n    #action = dp.build_encrypt_column_action(column_names[_],
-    dp.build_policy_from_description(description))\n    action = dp.build_redact_column_action(column_names[_],
-    dp.build_policy_from_description(description))\n}\n\n#for transactions dataset\ntransform[action]
-    {\n\t#description = \"test for transactions dataset that encrypts some columns
-    by name\"\n    description = \"test for transactions dataset that redacts some
-    columns by name\"\n    \n\tdp.correct_input\n    \n    #user context and access
-    type check\n    dp.check_access_type([dp.AccessTypes.READ])\n    \n    dp.dataset_has_tag(\"finance\")\n
-    \   \n    column_names := dp.column_with_any_name({\"nameOrig\", \"nameDest\",
-    \"nameDest::6\", \"nameOrig::3\"})\n    #action = dp.build_encrypt_column_action(column_names[_],
-    dp.build_policy_from_description(description))\n    action = dp.build_redact_column_action(column_names[_],
-    dp.build_policy_from_description(description))    \n    \n}\n\n#for transactions
-    dataset\ndeny[action] {\n\tdescription = \"test for transactions dataset with
-    deny\"\n    \n\tdp.correct_input\n    \n    #user context and access type check\n
-    \   dp.check_access_type([dp.AccessTypes.COPY])\n    \n    dp.dataset_has_tag(\"Finance\")\n
-    \   \n    action = dp.build_deny_access_action(dp.build_policy_from_description(description))\n}"
+    GeoDestinations = { x | x = data.irltest1["meshfordata-external-data"]["taxonomies.json"].DataGeoDestinations[_] }
   verify_correct_input.rego: "package data_policies\n\ncorrect_input {\n\tcount(incorrect_input)
     == 0\n}\n\nincorrect_input[used_policy] {\n   not verify_access_type\n   used_policy
     := build_action_from_policies(build_policy_from_description(\"unknown access type\"))\n}
@@ -204,4 +146,4 @@ kind: ConfigMap
 metadata:
   labels:
     openpolicyagent.org/policy: rego
-  name: opa-policy
+  name: meshfordata-policy-lib

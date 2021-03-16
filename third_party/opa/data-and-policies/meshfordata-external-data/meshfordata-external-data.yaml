@@ -20,4 +20,4 @@ kind: ConfigMap
 metadata:
   labels:
     openpolicyagent.org/data: opa
-  name: opa-json
+  name: meshfordata-external-data
