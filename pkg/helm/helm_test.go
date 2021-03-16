@@ -79,6 +79,11 @@ func TestHelmCache(t *testing.T) {
 }
 
 func TestHelmRegistry(t *testing.T) {
+	// Test should only run as integration test if registry is available
+	if host, isSet := os.LookupEnv("DOCKER_HOSTNAME"); !isSet || host != "localhost:5000" {
+		t.Skip("No integration environment found. Skipping test...")
+	}
+
 	var err error
 	origChart := buildTestChart()
 
@@ -109,6 +114,10 @@ func TestHelmRegistry(t *testing.T) {
 }
 
 func TestHelmRelease(t *testing.T) {
+	// Test should only run as integration test if registry is available
+	if host, isSet := os.LookupEnv("DOCKER_HOSTNAME"); !isSet || host != "localhost:5000" {
+		t.Skip("No integration environment found. Skipping test...")
+	}
 	var err error
 	origChart := buildTestChart()
 

@@ -37,6 +37,7 @@ run-integration-tests:
 	$(MAKE) -C manager deploy_it
 	$(MAKE) -C manager wait_for_manager
 	$(MAKE) helm
+	$(MAKE) -C pkg/helm test
 	$(MAKE) -C manager run-integration-tests
 
 .PHONY: run-deploy-tests
