@@ -27,7 +27,7 @@ run-integration-tests:
 	$(MAKE) kind
 	$(MAKE) cluster-prepare
 	$(MAKE) docker
-	$(MAKE) -C test/services docker-all
+	$(MAKE) -C test/services docker-build docker-push
 	$(MAKE) cluster-prepare-wait
 	$(MAKE) configure-vault
 	$(MAKE) -C secret-provider configure-vault
@@ -84,19 +84,15 @@ undeploy:
 	$(MAKE) -C connectors undeploy
 
 .PHONY: docker
-docker:
-	$(MAKE) -C manager docker-all
-	$(MAKE) -C secret-provider docker-all
-	$(MAKE) -C connectors docker-all
-	$(MAKE) -C test/dummy-mover docker-all
+docker: docker-build docker-push
 
 # Build only the docker images needed for integration testing
 .PHONY: docker-minimal-it
 docker-minimal-it:
-	$(MAKE) -C manager docker-all
-	$(MAKE) -C secret-provider docker-all
-	$(MAKE) -C test/dummy-mover docker-all
-	$(MAKE) -C test/services docker-all
+	$(MAKE) -C manager docker-build docker-push
+	$(MAKE) -C secret-provider docker-build docker-push
+	$(MAKE) -C test/dummy-mover docker-build docker-push
+	$(MAKE) -C test/services docker-build docker-push
 
 .PHONY: docker-build
 docker-build:
