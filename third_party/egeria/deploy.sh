@@ -3,8 +3,8 @@
 set -e
 set -x
 
-: ${WITHOUT_OPENSHIFT=false}
-: ${DONOT_DELETE_PERSISTENT_STORAGE=false}
+: ${WITHOUT_OPENSHIFT:=true}
+: ${DONOT_DELETE_PERSISTENT_STORAGE:=false}
 
 NAMESPACE=egeria-catalog
 TIMEOUT=8m
