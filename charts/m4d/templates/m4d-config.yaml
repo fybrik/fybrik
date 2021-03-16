@@ -8,6 +8,8 @@ data:
   CONNECTION_TIMEOUT: {{ .Values.manager.connectionTimeout | default .Values.global.connectionTimeout | quote }}
   CATALOG_PROVIDER_NAME: {{ .Values.coordinator.catalog | quote }}
   CATALOG_CONNECTOR_URL: {{ .Values.coordinator.catalogConnectorURL | default (printf "%s-connector" .Values.coordinator.catalog) | quote }}
+  CREDENTIALS_PROVIDER_NAME: {{ .Values.coordinator.credentialsManager | quote }}
+  CREDENTIALS_CONNECTOR_URL: {{ .Values.coordinator.credentialsManagerConnectorURL | default (printf "%s-connector" .Values.coordinator.catalog) | quote }}
   MAIN_POLICY_MANAGER_NAME: {{ .Values.coordinator.policyManager | quote }}
   MAIN_POLICY_MANAGER_CONNECTOR_URL: {{ .Values.coordinator.policyManagerConnectorURL | default (printf "%s-connector" .Values.coordinator.policyManager) | quote }}
   USE_EXTENSIONPOLICY_MANAGER: "false" # deprecated
