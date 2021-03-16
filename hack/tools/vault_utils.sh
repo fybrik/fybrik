@@ -14,7 +14,7 @@ create_role() {
         bin/vault write auth/"$3"/role/"$1" \
         bound_service_account_names="*" \
         bound_service_account_namespaces="$4" \
-        policies=$1 \
+        policies=$2 \
         ttl=24h
 
 }
