@@ -22,6 +22,7 @@ func Log(t *testing.T, label string, err error) {
 
 func TestCredentialManagerInterface(t *testing.T) {
 	var err error
+	// TODO add environment variables to test against a real vault instance
 	os.Setenv("RUN_WITHOUT_VAULT", "1")
 	t.Logf("Token = " + utils.GetVaultToken())
 	conn, err := InitConnection(utils.GetVaultAddress(), utils.GetVaultToken())

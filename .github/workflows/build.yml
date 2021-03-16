@@ -42,9 +42,6 @@ jobs:
   test:
     name: Unit tests
     runs-on: ubuntu-latest
-    env:
-      DOCKER_HOSTNAME: "localhost:5000"
-      DOCKER_NAMESPACE: m4d-system
     steps:
     - name: Set up JDK
       uses: actions/setup-java@v1
