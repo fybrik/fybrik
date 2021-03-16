@@ -8,6 +8,16 @@ metadata:
   name: create-m4d-role
 rules:
 - apiGroups:
+  - ""  
+  resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - patch
+  - update
+- apiGroups:
   - app.m4d.ibm.com
   resources:
   - m4dapplications

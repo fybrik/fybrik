@@ -6,7 +6,6 @@ package app
 import (
 	"context"
 	"math"
-	"os"
 	"reflect"
 	"strings"
 	"time"
@@ -21,7 +20,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 // PlotterReconciler reconciles a Plotter object
@@ -285,16 +283,6 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 
 	// TODO Once a better notification mechanism exists in razee switch to that
 	return ctrl.Result{RequeueAfter: 5 * time.Second}, errorCollection
-}
-
-// SetupPlotterController registers a new controller for Plotter resources
-func SetupPlotterController(mgr manager.Manager, clusterManager multicluster.ClusterManager) {
-	setupLog := ctrl.Log.WithName("setup")
-
-	if err := NewPlotterReconciler(mgr, "PlotterController", clusterManager).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Plotter")
-		os.Exit(1)
-	}
 }
 
 // NewPlotterReconciler creates a new reconciler for Plotter resources

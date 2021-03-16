@@ -38,9 +38,9 @@ func GetEnvironment() (int, string, string) {
 	return timeOutSecs, catalogConnectorURL, opaServerURL
 }
 
-func GetApplicationContext(purpose string) *pb.ApplicationContext {
+func GetApplicationContext(intent string) *pb.ApplicationContext {
 	datasetID := "mock-datasetID"
-	applicationDetails := &pb.ApplicationDetails{Purpose: purpose, Role: "Security", ProcessingGeography: "US"}
+	applicationDetails := &pb.ApplicationDetails{Properties: map[string]string{"intent": intent, "role": "Security"}, ProcessingGeography: "US"}
 	datasets := []*pb.DatasetContext{}
 	datasets = append(datasets, createDatasetRead(datasetID))
 	applicationContext := &pb.ApplicationContext{AppInfo: applicationDetails, Datasets: datasets}
@@ -74,7 +74,7 @@ func EnsureDeepEqualDecisions(t *testing.T, testedDecisions *pb.PoliciesDecision
 	assert.True(t, proto.Equal(testedDecisions, expectedDecisions), "Decisions we got from policyManager are not as expected. Expected: %v, Received: %v", expectedDecisions, testedDecisions)
 }
 
-func GetExpectedOpaDecisions(purpose string, in *pb.ApplicationContext) *pb.PoliciesDecisions {
+func GetExpectedOpaDecisions(intent string, in *pb.ApplicationContext) *pb.PoliciesDecisions {
 	var dataset = &pb.DatasetIdentifier{DatasetId: "mock-datasetID"}
 	var datasetDecison *pb.DatasetDecision
 	for _, datasetContext := range in.GetDatasets() {
@@ -84,7 +84,7 @@ func GetExpectedOpaDecisions(purpose string, in *pb.ApplicationContext) *pb.Poli
 		fmt.Println("operation")
 		fmt.Println(operation)
 		var newUsedPolicy *pb.Policy
-		if purpose == "marketing" {
+		if intent == "marketing" {
 			newEnforcementAction := ConstructEncryptColumn("nameDest")
 			enforcementActions = append(enforcementActions, newEnforcementAction)
 			newUsedPolicy = &pb.Policy{Description: "test for transactions dataset that encrypts some columns by name"}

@@ -78,7 +78,14 @@ func main() {
 	flag.StringVar(&namespace, "namespace", "", "The namespace to which this controller manager is limited.")
 	flag.Parse()
 
-	if !enableAllControllers && !enableApplicationController && !enableBlueprintController && !enableMotionController {
+	if enableAllControllers {
+		enableApplicationController = true
+		enableBlueprintController = true
+		enablePlotterController = true
+		enableMotionController = true
+	}
+
+	if !enableApplicationController && !enablePlotterController && !enableBlueprintController && !enableMotionController {
 		setupLog.Info("At least one controller flag must be set!")
 		os.Exit(1)
 	}
@@ -116,14 +123,16 @@ func main() {
 	}
 
 	// Initialize ClusterManager
-	clusterManager, err := NewClusterManager(mgr)
-
-	if err != nil {
-		setupLog.Error(err, "unable to initialize cluster manager")
-		os.Exit(1)
+	var clusterManager multicluster.ClusterManager
+	if enableApplicationController || enablePlotterController {
+		clusterManager, err = NewClusterManager(mgr)
+		if err != nil {
+			setupLog.Error(err, "unable to initialize cluster manager")
+			os.Exit(1)
+		}
 	}
 
-	if enableApplicationController || enableAllControllers {
+	if enableApplicationController {
 		// Initiate vault client
 		vaultConn, errVaultSetup := initVaultConnection()
 		if errVaultSetup != nil {
@@ -142,7 +151,16 @@ func main() {
 		}
 	}
 
-	if enableBlueprintController || enableAllControllers {
+	if enablePlotterController {
+		// Initiate the Plotter Controller
+		plotterController := app.NewPlotterReconciler(mgr, "Plotter", clusterManager)
+		if err := plotterController.SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", plotterController.Name)
+			os.Exit(1)
+		}
+	}
+
+	if enableBlueprintController {
 		// Initiate the Blueprint Controller
 		blueprintController := app.NewBlueprintReconciler(mgr, "Blueprint", new(helm.Impl))
 		if err := blueprintController.SetupWithManager(mgr); err != nil {
@@ -151,11 +169,7 @@ func main() {
 		}
 	}
 
-	if enablePlotterController || enableAllControllers {
-		app.SetupPlotterController(mgr, clusterManager)
-	}
-
-	if enableMotionController || enableAllControllers {
+	if enableMotionController {
 		motion.SetupMotionControllers(mgr)
 	}
 

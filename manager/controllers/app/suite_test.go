@@ -87,32 +87,35 @@ var _ = BeforeSuite(func(done Done) {
 		// Mockup connectors
 		go mockup.CreateTestCatalogConnector(GinkgoT())
 
-		// Fake helm client. Release name is from arrow-flight module
-		fakeHelm := helm.NewFake(
-			&release.Release{
-				Name: "ra8afad067a6a96084dcb",
-				Info: &release.Info{Status: release.StatusDeployed},
-			}, []*unstructured.Unstructured{},
-		)
-
 		mgr, err = ctrl.NewManager(cfg, ctrl.Options{
 			Scheme:             scheme.Scheme,
 			MetricsBindAddress: "localhost:8086",
 		})
 		Expect(err).ToNot(HaveOccurred())
 
+		// Setup application controller
+		var clusterLister *mockup.ClusterLister
 		policyCompiler := &mockup.MockPolicyCompiler{}
-		// Initiate the M4DApplication Controller
-		var clusterManager *mockup.ClusterLister
 		conn, _ := vault.NewDummyConnection()
-		err = NewM4DApplicationReconciler(mgr, "M4DApplication", conn, policyCompiler, clusterManager, storage.NewProvisionTest()).SetupWithManager(mgr)
+		err = NewM4DApplicationReconciler(mgr, "M4DApplication", conn, policyCompiler, clusterLister, storage.NewProvisionTest()).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
+
+		// Setup blueprint controller
+		fakeHelm := helm.NewFake(
+			&release.Release{
+				Name: "ra8afad067a6a96084dcb", // Release name is from arrow-flight module
+				Info: &release.Info{Status: release.StatusDeployed},
+			}, []*unstructured.Unstructured{},
+		)
 		err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
+
+		// Setup plotter controller
 		clusterMgr, err := local.NewManager(mgr.GetClient(), "m4d-system")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(clusterMgr).NotTo(BeNil())
-		SetupPlotterController(mgr, clusterMgr)
+		err = NewPlotterReconciler(mgr, "Plotter", clusterMgr).SetupWithManager(mgr)
+		Expect(err).ToNot(HaveOccurred())
 
 		go func() {
 			err = mgr.Start(ctrl.SetupSignalHandler())

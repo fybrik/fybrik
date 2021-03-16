@@ -16,7 +16,6 @@ import (
 	"github.com/robfig/cron"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	validationutils "k8s.io/apimachinery/pkg/util/validation"
@@ -159,9 +158,6 @@ func (r *BatchTransfer) ValidateDelete() error {
 func (r *BatchTransfer) validateBatchTransfer() error {
 	var allErrs field.ErrorList
 	specField := field.NewPath("spec")
-	if err := validateObjectName(&r.ObjectMeta); err != nil {
-		allErrs = append(allErrs, err)
-	}
 	if err := r.validateBatchTransferSpec(); err != nil {
 		allErrs = append(allErrs, err)
 	}
@@ -299,20 +295,6 @@ func (r *BatchTransfer) validateBatchTransferSpec() *field.Error {
 func validateScheduleFormat(schedule string, fldPath *field.Path) *field.Error {
 	if _, err := cron.ParseStandard(schedule); err != nil {
 		return field.Invalid(fldPath, schedule, err.Error())
-	}
-	return nil
-}
-
-// Validates that the object name does comply with K8s name standards
-func validateObjectName(r *metav1.ObjectMeta) *field.Error {
-	if len(r.Name) > validationutils.DNS1035LabelMaxLength-11 {
-		// The job name length is 63 character like all Kubernetes objects
-		// (which must fit in a DNS subdomain). The BatchTransfer controller appends
-		// a 11-character suffix to the BatchTransfer (`-$TIMESTAMP`) when creating
-		// a job. The job name length limit is 63 characters. Therefore BatchTransfer
-		// names must have length <= 63-11=52. If we don't validate this here,
-		// then job creation will fail later.
-		return field.Invalid(field.NewPath("metadata").Child("name"), r.Name, "must be no more than 52 characters")
 	}
 	return nil
 }
