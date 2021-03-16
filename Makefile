@@ -17,7 +17,8 @@ build:
 
 .PHONY: test
 test:
-	$(MAKE) -C pkg/policy-compiler test
+	$(MAKE) -C connectors test
+	$(MAKE) -C pkg test
 	$(MAKE) -C manager test
 
 .PHONY: run-integration-tests

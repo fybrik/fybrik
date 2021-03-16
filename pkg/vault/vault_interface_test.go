@@ -6,10 +6,11 @@ package vault
 import (
 	"encoding/json"
 	"fmt"
-	utils "github.com/ibm/the-mesh-for-data/manager/controllers/utils"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+
+	utils "github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	"github.com/stretchr/testify/assert"
 )
 
 func Log(t *testing.T, label string, err error) {
@@ -21,7 +22,7 @@ func Log(t *testing.T, label string, err error) {
 
 func TestCredentialManagerInterface(t *testing.T) {
 	var err error
-	os.Setenv("RUN_WITHOUT_VAULT", "0")
+	os.Setenv("RUN_WITHOUT_VAULT", "1")
 	t.Logf("Token = " + utils.GetVaultToken())
 	conn, err := InitConnection(utils.GetVaultAddress(), utils.GetVaultToken())
 	assert.Nil(t, err)
