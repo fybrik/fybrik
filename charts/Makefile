@@ -1,6 +1,8 @@
 ROOT_DIR := ..
 include $(ROOT_DIR)/Makefile.env
 
+WITHOUT_OPENSHIFT ?= true
+
 .PHONY: kind
 kind: export ROOT_DIR := .
 kind:
@@ -22,14 +24,19 @@ vault:
 	@echo "Installing vault ..."
 	kubectl create namespace m4d-system || true
 	helm repo add hashicorp https://helm.releases.hashicorp.com
-	helm install vault hashicorp/vault --version 0.8.0 \
-                --set "global.openshift=false" \
+	helm install vault hashicorp/vault --version 0.9.1 \
+                --set "global.openshift=$(WITHOUT_OPENSHIFT)" \
                 --set "server.dev.enabled=true" \
+		--values ../third_party/vault/values/plugin-secrets-kubernetes-reader.yaml \
 		--namespace m4d-system \
 		--wait --timeout 120s
 	# Create a secret to hold Vault Token. This token is used when configuaring Vault.
 	# default token in dev mode is "root".
 	kubectl create secret generic vault-unseal-keys --from-literal=vault-root=root -n m4d-system || true
+	# To enable Vault to read kuberenetes secrets clusterrole and clusterrolebinding should be added.
+	kubectl apply -f ../third_party/vault/clusterrole.yaml -n m4d-system || true
+	kubectl apply -f ../third_party/vault/clusterrolebinding.yaml -n m4d-system || true
+
 
 .PHONY:
 vault-setup:
