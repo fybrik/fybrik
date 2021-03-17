@@ -37,7 +37,6 @@ vault:
 	kubectl apply -f ../third_party/vault/clusterrole.yaml -n m4d-system || true
 	kubectl apply -f ../third_party/vault/clusterrolebinding.yaml -n m4d-system || true
 
-
 .PHONY:
 vault-setup:
 	cd ../secret-provider && $(MAKE) configure-vault
