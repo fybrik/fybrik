@@ -8,7 +8,6 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -84,14 +83,8 @@ func (cm *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Bl
 	if localCluster, err := cm.GetLocalClusterName(); err != nil || localCluster != cluster {
 		return errors.New("Unregistered cluster: " + cluster)
 	}
-	resource := &v1alpha1.Blueprint{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      blueprint.Name,
-			Namespace: blueprint.Namespace,
-		},
-	}
-	if _, err := ctrl.CreateOrUpdate(context.Background(), cm.Client, resource, func() error {
-		resource.Spec = blueprint.Spec
+	// We use the identity transformation: f(x) = x
+	if _, err := ctrl.CreateOrUpdate(context.Background(), cm.Client, blueprint, func() error {
 		return nil
 	}); err != nil {
 		return err

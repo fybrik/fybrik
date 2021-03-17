@@ -233,6 +233,7 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 }
 
 // getReadModulesEndpoints populates the ReadEndpointsMap map in the status of the m4dapplication
+// Current implementation assumes there is only one cluster with read modules (which is the same cluster the user's workload)
 func getReadModulesEndpoints(applicationContext *app.M4DApplication, blueprintsMap map[string]app.BlueprintSpec, moduleMap map[string]*app.M4DModule) {
 	var foundReadEndpoints = false
 	for _, blueprintSpec := range blueprintsMap {
