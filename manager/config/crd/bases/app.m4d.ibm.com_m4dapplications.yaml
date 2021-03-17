@@ -231,7 +231,7 @@ spec:
                 required:
                 - port
                 type: object
-              description: ReadEndpointsMap maps a AssetDetails object to the endpoint spec from which the asset will be served to the application
+              description: ReadEndpointsMap maps an datasetID (after parsing from json to a string with dashes) to the endpoint spec from which the asset will be served to the application
               type: object
             ready:
               description: Ready is true if a blueprint has been successfully orchestrated
