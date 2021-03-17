@@ -8,22 +8,10 @@ import (
 	"net/url"
 )
 
-// GenerateUserCredentialsSecretName creates a secret name for storing user credentials in vault
-func GenerateUserCredentialsSecretName(namespace string, name string, system string) string {
-	return GetVaultUserHome() + namespace + "/" + name + "/" + system
-}
-
 // GetFullCredentialsPath returns the path to be used for credentials retrieval
 func GetFullCredentialsPath(secretName string) string {
 	base := GetSecretProviderURL() + "?role=" + GetSecretProviderRole() + "&secret_name="
 	return fmt.Sprintf("%s%s", base, url.QueryEscape(secretName))
-}
-
-// GetUserCredentialsVaultPath returns the path that can be used externally to retrieve user credentials for a specific system and label (associated with compute)
-// It is of the form <secret-provider-url>/v1/m4d-system/user-creds/{namespace}/{name}/{system}
-func GetUserCredentialsVaultPath(namespace string, name string, system string) string {
-	secretName := "/v1/" + GenerateUserCredentialsSecretName(namespace, name, system)
-	return GetFullCredentialsPath(secretName)
 }
 
 // GetDatasetVaultPath returns the path that can be used externally to retrieve a dataset's credentials

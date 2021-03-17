@@ -62,6 +62,6 @@ func GetEnvInfo(w http.ResponseWriter, r *http.Request) {
 
 	// Get the format for the data set identifier (specific to the data catalog)
 	envInfo.DataSetIDFormat = "{\"ServerName\":\"---\",\"AssetGuid\":\"---\"}"
-
+	log.Println("GetEnvInfo: geography = " + envInfo.Geography)
 	render.JSON(w, r, envInfo) // Return the environment info as json
 }

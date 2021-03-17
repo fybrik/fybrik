@@ -66,7 +66,7 @@ func constructInputParameters() *pb.ApplicationContext {
 		datasetIDJson = "{\"catalog_id\":\"" + catalogID + "\",\"asset_id\":\"" + datasetID + "\"}"
 	}
 
-	applicationDetails := &pb.ApplicationDetails{Purpose: "fraud-detection", Role: "Security", ProcessingGeography: "US"}
+	applicationDetails := &pb.ApplicationDetails{Properties: map[string]string{"intent": "fraud-detection"}, ProcessingGeography: "US"}
 
 	appID := "datauser1/notebook-with-kafka"
 	// credentialsStr := "v1/m4d/user-creds/datauser1/notebook-with-kafka/WKC"

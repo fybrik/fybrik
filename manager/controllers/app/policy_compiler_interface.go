@@ -15,9 +15,8 @@ import (
 func ConstructApplicationContext(datasetID string, input *app.M4DApplication, operation *pb.AccessOperation) *pb.ApplicationContext {
 	return &pb.ApplicationContext{
 		AppInfo: &pb.ApplicationDetails{
-			Purpose:             input.Spec.AppInfo.Purpose,
-			ProcessingGeography: operation.Destination, //TODO: Remove processing geography, destination is enough
-			Role:                string(input.Spec.AppInfo.Role),
+			ProcessingGeography: operation.Destination,
+			Properties:          input.Spec.AppInfo,
 		},
 		AppId: utils.CreateAppIdentifier(input),
 		Datasets: []*pb.DatasetContext{{

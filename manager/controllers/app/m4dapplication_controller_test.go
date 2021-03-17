@@ -184,6 +184,7 @@ func InitM4DApplication(name string, n int) *apiv1alpha1.M4DApplication {
 		},
 		Spec: apiv1alpha1.M4DApplicationSpec{
 			Selector: apiv1alpha1.Selector{ClusterName: "US-cluster", WorkloadSelector: metav1.LabelSelector{MatchLabels: labels}},
+			AppInfo:  map[string]string{"intent": "Fraud Detection", "role": "Data Scientist"},
 			Data:     make([]apiv1alpha1.DataContext, n),
 		},
 	}
@@ -199,6 +200,7 @@ func InitM4DApplicationWithoutWorkload(name string, n int) *apiv1alpha1.M4DAppli
 		},
 		Spec: apiv1alpha1.M4DApplicationSpec{
 			Selector: apiv1alpha1.Selector{ClusterName: "US-cluster"},
+			AppInfo:  map[string]string{},
 			Data:     make([]apiv1alpha1.DataContext, n),
 		},
 	}

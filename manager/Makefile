@@ -7,9 +7,6 @@ all: manager
 
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 DOCKER_NAME ?= manager
-DOCKER_TAGNAME ?= latest
-DOCKER_FILE = Dockerfile
-DOCKER_CONTEXT = .
 GO_OUTPUT_FILE = manager
 KUBE_NAMESPACE ?= m4d-system
 include $(ROOT_DIR)/hack/make-rules/docker.mk
@@ -80,10 +77,6 @@ deploy: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/default/kustomi
 # Delete controller in the configured Kubernetes cluster in ~/.kube/config
 undeploy: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl manifests config/default/kustomization.yaml
 	$(TOOLBIN)/kustomize build config/default | $(TOOLBIN)/kubectl delete -f -
-
-# Build manager binary as linux binary
-build-linux: generate vet
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
 
 # Overwrite docker-build from docker.mk
 docker-build: generate

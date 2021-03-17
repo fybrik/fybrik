@@ -10,11 +10,11 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/render"
-	dma "github.com/ibm/the-mesh-for-data/samples/gui/server/datauser"
+	datauser "github.com/ibm/the-mesh-for-data/samples/gui/server/datauser"
 )
 
 // Routes are the REST endpoints for CRUD operations on M4DApplication CRDS
-func Routes(client *dma.DMAClient) *chi.Mux {
+func Routes(k8sclient *datauser.K8sClient) *chi.Mux {
 	router := chi.NewRouter()
 	router.Use(
 		middleware.SetHeader("Access-Control-Allow-Origin", "*"), // Allow any client to access these APIs
@@ -28,15 +28,15 @@ func Routes(client *dma.DMAClient) *chi.Mux {
 	)
 
 	router.Route("/v1/dma", func(r chi.Router) {
-		r.Mount("/m4dapplication", dma.DMARoutes(client))
+		r.Mount("/m4dapplication", datauser.DMARoutes(k8sclient))
 	})
 
 	router.Route("/v1/creds", func(r chi.Router) {
-		r.Mount("/usercredentials", dma.CredentialRoutes(client))
+		r.Mount("/usercredentials", datauser.CredentialRoutes(k8sclient))
 	})
 
 	router.Route("/v1/env", func(r chi.Router) {
-		r.Mount("/datauserenv", dma.EnvironmentRoutes())
+		r.Mount("/datauserenv", datauser.EnvironmentRoutes())
 	})
 
 	return router
@@ -46,17 +46,17 @@ func Routes(client *dma.DMAClient) *chi.Mux {
 func main() {
 	// Init kubernetes config.  It is assumed that the GUI runs inside the same cluster and namespace
 	// as the compute deployed by the user.
-	dmaClient, err := dma.K8sInit()
+	k8sclient, err := datauser.K8sInit()
 	if err != nil {
 		panic(err.Error())
 	}
 
-	if dmaClient == nil {
+	if k8sclient == nil {
 		panic("Failed getting kubernetes client!")
 	}
 
 	// REST APIs provided
-	router := Routes(dmaClient)
+	router := Routes(k8sclient)
 	//	credrouter := CredentialRoutes()
 
 	// Print out all the APIs

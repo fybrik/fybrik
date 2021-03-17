@@ -37,15 +37,3 @@ test: policy-compiler-test
 	$(MAKE) -C $(ROOT_DIR)/connectors test
 	$(MAKE) -C $(ROOT_DIR)/test/services/pilot/catalog-credential-mock test
 	$(MAKE) -C $(ROOT_DIR)/test/services/pilot/policy-manager-mock test
-
-.PHONY: docker-all
-docker-all:
-	$(MAKE) -C $(ROOT_DIR)/connectors docker-all
-	$(MAKE) -C $(ROOT_DIR)/test/services/pilot/catalog-credential-mock docker-all
-	$(MAKE) -C $(ROOT_DIR)/test/services/pilot/policy-manager-mock docker-all
-
-.PHONY: docker-rmi
-docker-rmi:
-	$(MAKE) -C $(ROOT_DIR)/connectors docker-rmi
-	$(MAKE) -C $(ROOT_DIR)/test/services/pilot/catalog-credential-mock docker-rmi
-	$(MAKE) -C $(ROOT_DIR)/test/services/pilot/policy-manager-mock docker-rmi

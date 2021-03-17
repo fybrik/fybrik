@@ -20,11 +20,16 @@ cert-manager:
 .PHONY: vault
 vault:
 	@echo "Installing vault ..."
+	kubectl create namespace m4d-system || true
 	helm repo add hashicorp https://helm.releases.hashicorp.com
 	helm install vault hashicorp/vault --version 0.8.0 \
                 --set "global.openshift=false" \
                 --set "server.dev.enabled=true" \
+		--namespace m4d-system \
 		--wait --timeout 120s
+	# Create a secret to hold Vault Token. This token is used when configuaring Vault.
+	# default token in dev mode is "root".
+	kubectl create secret generic vault-unseal-keys --from-literal=vault-root=root -n m4d-system || true
 
 .PHONY:
 vault-setup:

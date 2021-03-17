@@ -61,22 +61,10 @@ type DataContext struct {
 	Requirements DataRequirements `json:"requirements"`
 }
 
-// AppUserRole indicates the role required to use the application
-type AppUserRole string
-
 // ApplicationDetails provides information about the Data Scientist's application, which is deployed separately.
 // The information provided is used to determine if the data should be altered in any way prior to its use,
 // based on policies and rules defined in an external data policy manager.
-type ApplicationDetails struct {
-	// Purpose indicates the reason for the processing and the use of the data by the Data Scientist's application.
-	// +required
-	Purpose string `json:"purpose,omitempty"`
-
-	// Role indicates the position held or role filled by the Data Scientist as it relates to the processing of the
-	// data he has chosen.
-	// +required
-	Role AppUserRole `json:"role"`
-}
+type ApplicationDetails map[string]string
 
 // M4DApplicationSpec defines the desired state of M4DApplication.
 type M4DApplicationSpec struct {
@@ -87,7 +75,12 @@ type M4DApplicationSpec struct {
 	// +optional
 	Selector Selector `json:"selector"`
 
-	// AppInfo contains information describing the reasons and geography of the processing
+	// SecretRef points to the secret that holds credentials for each system the user has been authenticated with.
+	// The secret is deployed in M4dApplication namespace.
+	// +optional
+	SecretRef string `json:"secretRef,omitempty"`
+
+	// AppInfo contains information describing the reasons for the processing
 	// that will be done by the Data Scientist's application.
 	// +required
 	AppInfo ApplicationDetails `json:"appInfo"`
