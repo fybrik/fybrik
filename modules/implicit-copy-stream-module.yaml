@@ -13,7 +13,7 @@ spec:
   flows:
   - copy  
   capabilities:
-    credentials-managed-by: secret-provider
+    credentials-managed-by: hashicorp-vault
     supportedInterfaces:
     - flow: copy
       source: 

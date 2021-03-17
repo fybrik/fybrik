@@ -16,7 +16,7 @@ spec:
   flows:
     - read
   capabilities:
-    credentials-managed-by: secret-provider
+    credentials-managed-by: hashicorp-vault
     api:
       protocol: m4d-arrow-flight
       dataformat: arrow

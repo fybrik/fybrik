@@ -78,7 +78,7 @@ func createModules() {
 		Spec: apiv1alpha1.M4DModuleSpec{
 			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Read},
 			Capabilities: apiv1alpha1.Capability{
-				CredentialsManagedBy: apiv1alpha1.SecretProvider,
+				CredentialsManagedBy: apiv1alpha1.HashicorpVault,
 				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
 					{
 						Flow:   apiv1alpha1.Read,
@@ -106,7 +106,7 @@ func createModules() {
 		Spec: apiv1alpha1.M4DModuleSpec{
 			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Copy},
 			Capabilities: apiv1alpha1.Capability{
-				CredentialsManagedBy: apiv1alpha1.SecretProvider,
+				CredentialsManagedBy: apiv1alpha1.HashicorpVault,
 				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
 					{
 						Source: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.JdbcDb2, DataFormat: apiv1alpha1.Table},

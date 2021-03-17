@@ -38,14 +38,15 @@ const (
 	Read ModuleFlow = "read"
 )
 
-// CredentialManagementType indicates whether this module queries the SecretProvider by itself to get
-// credentials, or whether it assumes that the data-mesh will inject them.
+// CredentialManagementType indicates how this module gets the credentials:
+// In HashicorpVault option the module should use Hashicorp Vault client to retrieve the credentials.
+// Automatic option assumes that the data-mesh will inject the credentials to the modules.
 // +kubebuilder:validation:Enum=secret-provider;automatic
 type CredentialManagementType string
 
 const (
-	// SecretProvider is set when the module uses the Secret Provider
-	SecretProvider CredentialManagementType = "secret-provider"
+	// HashicorpVault is set when the module uses Hashicorp Vault client to get the credentials
+	HashicorpVault CredentialManagementType = "hashicorp-vault"
 
 	// Automatic is set when credential management is handled elsewhere
 	Automatic CredentialManagementType = "automatic"
