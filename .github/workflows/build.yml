@@ -9,8 +9,6 @@ on:
       - master
 
 env:
-  DOCKER_HOSTNAME: ghcr.io
-  DOCKER_USERNAME: the-mesh-for-data
   GO_VERSION: 1.13
   JAVA_VERSION: 11
 
