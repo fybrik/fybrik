@@ -1,7 +1,7 @@
 ROOT_DIR := ..
 include $(ROOT_DIR)/Makefile.env
 
-WITHOUT_OPENSHIFT ?= true
+WITH_OPENSHIFT ?= false
 
 .PHONY: kind
 kind: export ROOT_DIR := .
@@ -25,7 +25,7 @@ vault:
 	kubectl create namespace m4d-system || true
 	helm repo add hashicorp https://helm.releases.hashicorp.com
 	helm install vault hashicorp/vault --version 0.9.1 \
-                --set "global.openshift=$(WITHOUT_OPENSHIFT)" \
+                --set "global.openshift=$(WITH_OPENSHIFT)" \
                 --set "server.dev.enabled=true" \
 		--values ../third_party/vault/values/plugin-secrets-kubernetes-reader.yaml \
 		--namespace m4d-system \
