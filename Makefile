@@ -17,9 +17,8 @@ build:
 
 .PHONY: test
 test:
-	$(MAKE) -C connectors test
-	$(MAKE) -C pkg test
-	$(MAKE) -C manager test
+	go test -v ./...
+	# The tests for connectors/egeria are dropped because there are none
 
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
