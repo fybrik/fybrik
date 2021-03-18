@@ -11,7 +11,6 @@ on:
 env:
   DOCKER_HOSTNAME: ghcr.io
   DOCKER_USERNAME: the-mesh-for-data
-  ACTIVE_CI: travisci # This parameter defines which CI should push to the docker repository
   GO_VERSION: 1.13
   JAVA_VERSION: 11
 
@@ -99,10 +98,10 @@ jobs:
       run: make run-integration-tests
     - run: docker images
     - name: Save images
-      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
+      if: ${{ github.event_name != 'pull_request' }}
       run: make save-images
     - name: Upload images
-      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
+      if: ${{ github.event_name != 'pull_request' }}
       uses: actions/upload-artifact@v2
       with:
         name: images
@@ -120,16 +119,16 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Download artifact
-      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
+      if: ${{ github.event_name != 'pull_request' }}
       uses: actions/download-artifact@v2
       with:
         name: images
     - name: Load images
-      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
+      if: ${{ github.event_name != 'pull_request' }}
       run: docker load -i images.tar
     - run: docker images
     - name: Publish images
-      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
+      if: ${{ github.event_name != 'pull_request' }}
       run: make docker-retag-and-push-public && make helm-push-public
 
   build_website:
@@ -152,7 +151,7 @@ jobs:
     - name: Create website
       run: make -C website
     - name: Upload website artifact
-      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
+      if: ${{ github.event_name != 'pull_request' }}
       uses: actions/upload-artifact@v2
       with:
         name: website
@@ -169,12 +168,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Download website artifact
-      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
+      if: ${{ github.event_name != 'pull_request' }}
       uses: actions/download-artifact@v2
       with:
         name: website
     - name: Publish website
-      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
+      if: ${{ github.event_name != 'pull_request' }}
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
