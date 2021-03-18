@@ -41,7 +41,7 @@ make undeploy
 ### Port forward OPA
 
 ```bash
-kubectl port-forward deployment/opa 8181
+kubectl port-forward -n  <OPA_NAMESPACE> deployment/opa 8181
 ```
 
 ### Send an OPA query

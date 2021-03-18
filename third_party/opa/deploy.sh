@@ -12,8 +12,8 @@ undeploy() {
     kubectl delete --namespace=$NAMESPACE  -f opa.yaml || true
 
     unloadpolicy data-and-policies/meshfordata-policy-lib || true
-    unloadpolicy data-and-policies/user1-policies || true
-    unloadpolicy data-and-policies/user2-policies || true
+    unloadpolicy data-and-policies/user-created-policy-1 || true
+    unloadpolicy data-and-policies/user-created-policy-2 || true
 
     unloaddata data-and-policies/meshfordata-external-data || true
 }

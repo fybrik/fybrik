@@ -11,11 +11,11 @@ undeploy: $(TOOLBIN)/kubectl
 	./deploy.sh undeploy
 
 .PHONY: loadpolicy
-loadpolicy: $(TOOLBIN)/kubectl deploy
+loadpolicy: $(TOOLBIN)/kubectl
 	./deploy.sh loadpolicy $(ARGS)
 
 .PHONY: loaddata
-loaddata: $(TOOLBIN)/kubectl deploy
+loaddata: $(TOOLBIN)/kubectl
 	./deploy.sh loaddata $(ARGS)
 
 .PHONY: unloadpolicy
