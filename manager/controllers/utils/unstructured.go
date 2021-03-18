@@ -53,7 +53,10 @@ func (c UnstructuredAsLabels) Get(label string) string {
 		return valStr
 	}
 	// convert a received interface into a string
-	val, _, _ := unstructured.NestedFieldNoCopy(obj, fields...)
+	val, _, err := unstructured.NestedFieldNoCopy(obj, fields...)
+	if err != nil {
+		return ""
+	}
 	valToBytes, err := json.Marshal(val)
 	if err != nil {
 		return ""
