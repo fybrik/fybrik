@@ -30,7 +30,7 @@ Example: make loaddata ARGS=data-and-policies/meshfordata-external-data
 ```bash
 make unloaddata ARGS=<POLICYDATAFOLDER>
 
-Example: make unloadpolicy ARGS=data-and-policies/meshfordata-external-data
+Example: make unloaddata ARGS=data-and-policies/meshfordata-external-data
 ```
 
 ### UnDeploy OPA
