@@ -3,7 +3,7 @@
 set -e
 set -x
 
-NAMESPACE=irltest1
+NAMESPACE=m4d-system
 TIMEOUT=8m
 
 undeploy() {
