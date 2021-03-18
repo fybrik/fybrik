@@ -251,5 +251,5 @@ config:
   connectionTimeout: "120"
 
   # extraEnvironmentVars is a list of extra environment variables to set.
-  extraEnvironmentVars:
-    OPA_POLICY_TO_BE_EVALUATED: "sample_policies"
+  # extraEnvironmentVars:
+  #   OPA_POLICY_TO_BE_EVALUATED: "sample_policies"
