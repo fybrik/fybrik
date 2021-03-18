@@ -1,4 +1,4 @@
-package user_policies
+package dataapi.authz
 
 import data.data_policies as dp
 

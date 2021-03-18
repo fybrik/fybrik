@@ -1,4 +1,4 @@
-package sample_policies
+package dataapi.authz
 import data.data_policies as dp
 
 transform[action] {

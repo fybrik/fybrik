@@ -1,6 +1,6 @@
 apiVersion: v1
 data:
-  sample_policies.rego: "package sample_policies\nimport data.data_policies as dp\n\ntransform[action]
+  sample_policies.rego: "package dataapi.authz\nimport data.data_policies as dp\n\ntransform[action]
     {\n\tdescription = \"Columns with Confidential tag to be redacted before read
     action\"\n\tdp.correct_input\n    #user context and access type check\n    dp.check_access_type([dp.AccessTypes.READ])\n\tdp.check_purpose(\"Fraud
     Detection\")\n\tdp.check_role(\"Data Scientist\")\n\tdp.dataset_has_tag(\"residency
