@@ -21,7 +21,22 @@ The module workload is associated with a specific user workload and is deployed 
 
 ### Credential management
 
-Modules that access or write data need credentials in order to access the data store.  Rather than pass them between components, the control plane stores the credentials in an internal credential management system and passes to the module a link to the credentials.  The module must call the control plane's internal credential management interface, known as the Secret Provider, using the API described in [secret-provider/README.md](https://{{< github_base >}}/{{< github_repo >}}/blob/master/secret-provider/README.md).
+Modules that access or write data need credentials in order to access the data store. The credentials are retrieved from [HashiCorp Vault](https://www.vaultproject.io/) and the modules must use Vault client using [Vault parameters]({{< baseurl >}}/docs/reference/api/generated/app/#k8s-api-github-com-ibm-the-mesh-for-data-manager-apis-app-v1alpha1-vault) sent to them upon deployment to get the credentials from Vault server.
+
+The module should retrieve the credentials by doing two API calls to Vault server:
+First call is the [Vault Login API call](https://www.vaultproject.io/api-docs/auth/kubernetes#login). The response to this call contains a Vault token. Second call is the [Vault Read Secret API call](https://www.vaultproject.io/api/secret/kv/kv-v1#read-secret).
+
+An example for Vault Login API call which uses the Vault parameters is as follows:
+
+`
+$ curl -v --request POST <address>/<authPath> -H "Content-Type: application/json" --data '{"jwt": <module service account token>, "role": <role>}'
+`
+
+An example for Vault Read Secret API call which uses the Vault parameters is as follows:
+
+`
+$  curl --header "X-Vault-Token: ..." https://<address>/<secretPath>
+`
 
 ## Module Helm Chart
 
@@ -110,9 +125,6 @@ flows: # Indicate the data flow(s) in which the control plane should consider us
 
 ### `spec.capabilities`
 
-`capabilites.credentials-managed-by` may be either `secret-provider` or `automatic`.  Currently only `secret-provider` is supported, meaning that the module will receive a link to the data set credentials and must use the Secret Provider API to obtain the credentials. 
-TODO: Add API link
-
 `capabilites.supportedInterfaces` lists the supported data services from which the module can read data and to which it can write 
 * `flow` field can be `read`, `write` or `copy`
 * `protocol` field can take a value such as `kafka`, `s3`, `jdbc-db2`, `m4d-arrow-flight`, etc.
@@ -125,7 +137,6 @@ An example for a module that copies data from a db2 database table to an s3 buck
 
 ```yaml
 capabilities:
-    credentials-managed-by: secret-provider
     supportedInterfaces:
     - flow: copy  
       source:
@@ -140,7 +151,6 @@ An example for a module that has an API for reading data, and supports reading b
 
 ```yaml
 capabilities:
-    credentials-managed-by: secret-provider
     api:
       protocol: m4d-arrow-flight
       dataformat: arrow
