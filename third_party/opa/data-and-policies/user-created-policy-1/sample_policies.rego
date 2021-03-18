@@ -8,7 +8,7 @@ transform[action] {
     dp.check_access_type([dp.AccessTypes.READ])
 	dp.check_purpose("Fraud Detection")
 	dp.check_role("Data Scientist")
-	dp.dataset_has_tag("residency = Turkey")	
+	dp.dataset_has_tag("residency = Turkey")
 	dp.check_processingGeo_not("Turkey")
     column_names := dp.column_with_tag("Confidential")
     action = dp.build_redact_column_action(column_names[_], dp.build_policy_from_description(description))
