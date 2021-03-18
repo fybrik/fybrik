@@ -2,26 +2,26 @@
 
 ### Deploy OPA
 ```bash
-make deploy 
+make deploy
 ```
 
 ### Add a policy
 ```bash
 make loadpolicy ARGS=<POLICYFOLDER>
 
-Example: make loadpolicy ARGS=data-and-policies/user1-policies
+Example: make loadpolicy ARGS=data-and-policies/user-created-policy-1
 ```
 
 ### Remove a policy
 ```bash
 make unloadpolicy ARGS=<POLICYFOLDER>
 
-Example: make unloadpolicy ARGS=data-and-policies/user1-policies
+Example: make unloadpolicy ARGS=data-and-policies/user-created-policy-1
 ```
 
 ### Add a policy data folder
 ```bash
-make loadpolicy ARGS=<POLICYDATAFOLDER>
+make loaddata ARGS=<POLICYDATAFOLDER>
 
 Example: make loaddata ARGS=data-and-policies/meshfordata-external-data
 ```
@@ -35,7 +35,7 @@ Example: make unloadpolicy ARGS=data-and-policies/meshfordata-external-data
 
 ### UnDeploy OPA
 ```bash
-make undeploy 
+make undeploy
 ```
 
 ### Port forward OPA
