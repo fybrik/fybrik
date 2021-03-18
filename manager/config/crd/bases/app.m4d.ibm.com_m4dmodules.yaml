@@ -70,12 +70,6 @@ spec:
                   required:
                   - protocol
                   type: object
-                credentials-managed-by:
-                  description: Type provides information used in determining how to instantiate the component
-                  enum:
-                  - secret-provider
-                  - automatic
-                  type: string
                 supportedInterfaces:
                   description: Copy should have one or more instances in the list, and its content should have source and sink Read should have one or more instances in the list, each with source populated Write should have one or more instances in the list, each with sink populated TODO - In the future if we have a module type that doesn't interface directly with data then this list could be empty
                   items:
@@ -143,7 +137,6 @@ spec:
                     type: object
                   type: array
               required:
-              - credentials-managed-by
               - supportedInterfaces
               type: object
             chart:

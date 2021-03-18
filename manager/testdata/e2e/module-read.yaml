@@ -16,7 +16,6 @@ spec:
   flows:
     - read
   capabilities:
-    credentials-managed-by: secret-provider
     api:
       protocol: m4d-arrow-flight
       dataformat: arrow

@@ -13,7 +13,6 @@ spec:
   flows:
   - copy  
   capabilities:
-    credentials-managed-by: secret-provider
     supportedInterfaces:
     - flow: copy
       source: 
