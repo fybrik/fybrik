@@ -24,17 +24,17 @@ kubectl create -f policy-editor-rolebinding.yaml
 kubectl create -f opa.yaml
 
 cd data-and-policies/meshfordata-external-data
-kubectl kustomize ./ |kubectl label -f- --dry-run=client -o yaml --local openpolicyagent.org/data=opa > meshfordata-external-data.yaml
-kubectl create -f meshfordata-external-data.yaml
+kubectl create configmap meshfordata-external-data --from-file=taxonomies.json --from-file=medical_taxonomies.json
+kubectl label configmap meshfordata-external-data   openpolicyagent.org/data=opa
 
 cd ../meshfordata-policy-lib
-kubectl kustomize ./ |kubectl label -f- --dry-run=client -o yaml --local openpolicyagent.org/policy=rego > meshfordata-policy-lib.yaml
-kubectl create -f meshfordata-policy-lib.yaml
+kubectl create configmap meshfordata-policy-lib --from-file=./
+kubectl label configmap meshfordata-policy-lib  openpolicyagent.org/policy=rego
 
 cd ../user1-policies
-kubectl kustomize ./ |kubectl label -f- --dry-run=client -o yaml --local openpolicyagent.org/policy=rego > user1-policies.yaml
-kubectl create -f user1-policies.yaml
+kubectl create configmap user1-policies --from-file=./
+kubectl label configmap user1-policies openpolicyagent.org/policy=rego
 
 cd ../user2-policies
-kubectl kustomize ./ |kubectl label -f- --dry-run=client -o yaml --local openpolicyagent.org/policy=rego > user2-policies.yaml
-kubectl create -f user2-policies.yaml
+kubectl create configmap user2-policies --from-file=./
+kubectl label configmap user2-policies openpolicyagent.org/policy=rego
