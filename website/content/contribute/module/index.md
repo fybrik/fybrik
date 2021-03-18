@@ -125,10 +125,6 @@ flows: # Indicate the data flow(s) in which the control plane should consider us
 
 ### `spec.capabilities`
 
-`capabilites.credentials-managed-by` may be either `hashicorp-vault` or `automatic`.  Currently only `hashicorp-vault` is supported. hashicorp-vault` means that the module will receive the details to setup Hashicorp Vault client to obtain the credentials.
-
-
-
 `capabilites.supportedInterfaces` lists the supported data services from which the module can read data and to which it can write 
 * `flow` field can be `read`, `write` or `copy`
 * `protocol` field can take a value such as `kafka`, `s3`, `jdbc-db2`, `m4d-arrow-flight`, etc.
@@ -141,7 +137,6 @@ An example for a module that copies data from a db2 database table to an s3 buck
 
 ```yaml
 capabilities:
-    credentials-managed-by: hashicorp-vault
     supportedInterfaces:
     - flow: copy  
       source:
@@ -156,7 +151,6 @@ An example for a module that has an API for reading data, and supports reading b
 
 ```yaml
 capabilities:
-    credentials-managed-by: hashicorp-vault
     api:
       protocol: m4d-arrow-flight
       dataformat: arrow

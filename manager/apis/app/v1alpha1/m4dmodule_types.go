@@ -38,20 +38,6 @@ const (
 	Read ModuleFlow = "read"
 )
 
-// CredentialManagementType indicates how this module gets the credentials:
-// In HashicorpVault option the module should use Hashicorp Vault client to retrieve the credentials.
-// Automatic option assumes that the data-mesh will inject the credentials to the modules.
-// +kubebuilder:validation:Enum=secret-provider;automatic
-type CredentialManagementType string
-
-const (
-	// HashicorpVault is set when the module uses Hashicorp Vault client to get the credentials
-	HashicorpVault CredentialManagementType = "hashicorp-vault"
-
-	// Automatic is set when credential management is handled elsewhere
-	Automatic CredentialManagementType = "automatic"
-)
-
 // ModuleInOut specifies the protocol and format of the data input and output by the module - if any
 type ModuleInOut struct {
 
@@ -90,11 +76,6 @@ type SupportedAction struct {
 
 // Capability declares what this module knows how to do and the types of data it knows how to handle
 type Capability struct {
-
-	// Type provides information used in determining how to instantiate the component
-	// +required
-	CredentialsManagedBy CredentialManagementType `json:"credentials-managed-by"`
-
 	// Copy should have one or more instances in the list, and its content should have source and sink
 	// Read should have one or more instances in the list, each with source populated
 	// Write should have one or more instances in the list, each with sink populated
