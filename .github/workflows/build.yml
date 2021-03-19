@@ -114,6 +114,8 @@ jobs:
     env:
       DOCKER_HOSTNAME: "localhost:5000"
       DOCKER_NAMESPACE: m4d-system
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     needs: [verify, test, integration-tests]
     if: ${{ github.event_name != 'pull_request' }}
     steps:
