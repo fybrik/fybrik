@@ -1,4 +1,5 @@
-{{- if .Values.katalogConnector.enabled }}
+{{- $autoFlag := and .Values.manager.enabled .Values.coordinator.enabled (eq .Values.coordinator.catalog "katalog") }}
+{{- if include "m4d.isEnabled" (tuple .Values.katalogConnector.enabled $autoFlag) }}
 # ClusterRole katalog-editor allows managing assets.
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1

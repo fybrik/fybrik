@@ -1,4 +1,7 @@
-{{- if .Values.opaService.enabled }}
+
+{{- $autoFlag := and .Values.manager.enabled .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
+{{- $opaConnectorEnabled := include "m4d.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
+{{- if include "m4d.isEnabled" (tuple .Values.opaServer.enabled $opaConnectorEnabled) }}
 apiVersion: v1
 data:
   action_struct.rego: "package data_policies\n\n#general enforcment action structure\nenforcement_action_struct
@@ -223,6 +226,8 @@ spec:
         - /policies
         image: openpolicyagent/opa:latest
         imagePullPolicy: Always
+        image: {{ .Values.opaServer.image }}
+        imagePullPolicy: {{ .Values.opaServer.imagePullPolicy | default .Values.global.imagePullPolicy }}
         name: opa
         ports:
         - containerPort: 8181

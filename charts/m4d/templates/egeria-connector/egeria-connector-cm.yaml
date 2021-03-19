@@ -1,0 +1,11 @@
+{{- $autoFlag := and .Values.manager.enabled .Values.coordinator.enabled (eq .Values.coordinator.catalog "egeria") }}
+{{- if include "m4d.isEnabled" (tuple .Values.egeriaConnector.enabled $autoFlag) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: egeria-connector-config
+data:
+  EGERIA_SERVER_URL: {{ .Values.egeriaConnector.serverURL | quote }}
+  CONNECTION_TIMEOUT: {{ .Values.egeriaConnector.connectionTimeout | default .Values.global.connectionTimeout | quote }}
+  EGERIA_DEFAULT_USERNAME: {{ .Values.egeriaConnector.username | quote }}
+{{- end }}

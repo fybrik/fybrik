@@ -1,0 +1,63 @@
+{{- $autoFlag := and .Values.manager.enabled .Values.coordinator.enabled (eq .Values.coordinator.catalog "egeria") }}
+{{- if include "m4d.isEnabled" (tuple .Values.egeriaConnector.enabled $autoFlag) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: egeria-connector
+  labels:
+    app.kubernetes.io/component: egeria-connector
+    {{- include "m4d.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.egeriaConnector.autoscaling.enabled }}
+  replicas: {{ .Values.egeriaConnector.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: egeria-connector
+      {{- include "m4d.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.egeriaConnector.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        m4d.ibm.com/componentType: connector
+        app.kubernetes.io/component: egeria-connector
+        {{- include "m4d.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ .Values.egeriaConnector.serviceAccount.name }}
+      securityContext:
+        {{- toYaml .Values.egeriaConnector.podSecurityContext | nindent 8 }}
+      containers:
+        - name: egeria-connector
+          securityContext:
+            {{- toYaml .Values.egeriaConnector.securityContext | nindent 12 }}
+          image: {{ include "m4d.image" ( tuple $ .Values.egeriaConnector ) }}
+          imagePullPolicy: {{ .Values.egeriaConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 50084
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: egeria-connector-config
+          resources:
+            {{- toYaml .Values.egeriaConnector.resources | nindent 12 }}
+      {{- with .Values.egeriaConnector.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.egeriaConnector.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.egeriaConnector.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
