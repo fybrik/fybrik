@@ -1,10 +1,4 @@
-# Copyright 2020 IBM Corp.
-# SPDX-License-Identifier: Apache-2.0
-
-# The following manifests contain a self-signed issuer CR and a certificate CR.
-# More document can be found at https://docs.cert-manager.io
-# WARNING: Targets CertManager 0.11 check https://docs.cert-manager.io/en/latest/tasks/upgrading/index.html for breaking changes
----
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
 apiVersion: cert-manager.io/v1alpha2
 kind: Issuer
 metadata:
@@ -27,3 +21,4 @@ spec:
     kind: Issuer
     name: selfsigned-issuer
   secretName: webhook-server-cert
+{{- end }}

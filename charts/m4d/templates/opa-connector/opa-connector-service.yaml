@@ -1,0 +1,20 @@
+{{- $autoFlag := and .Values.manager.enabled .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
+{{- if include "m4d.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: "opa-connector"
+  labels:
+    app.kubernetes.io/component: opa-connector
+    {{- include "m4d.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.opaConnector.service.type }}
+  ports:
+    - port: {{ .Values.opaConnector.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/component: opa-connector
+    {{- include "m4d.selectorLabels" . | nindent 4 }}
+{{- end }}

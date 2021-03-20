@@ -77,13 +77,13 @@ jobs:
     script:
     - make docker-mirror-read
     - make run-integration-tests
-    deploy:
-     skip_cleanup: true
-     provider: script
-     script: sudo chmod o+x /etc/docker && make docker-retag-and-push-public && make helm-push-public
-     on:
-       condition: $TRAVIS_PULL_REQUEST = false
-       branch: master
+#    deploy:
+#     skip_cleanup: true
+#     provider: script
+#     script: sudo chmod o+x /etc/docker && make docker-retag-and-push-public && make helm-push-public
+#     on:
+#       condition: $TRAVIS_PULL_REQUEST = false
+#       branch: master
 
   - stage: Publish
     name: "Build and publish website"
@@ -91,22 +91,22 @@ jobs:
     - WEBSITE_LOCAL_DIR=public
     script:
     - make -C website
-    deploy:
-      skip_cleanup: true
-      provider: pages
-      local_dir: website/$WEBSITE_LOCAL_DIR
-      github_token: $GITHUB_TOKEN # generate with: public_repo or repo scope (for personal repo)
-      on:
-        branch: master
+#    deploy:
+#      skip_cleanup: true
+#      provider: pages
+#      local_dir: website/$WEBSITE_LOCAL_DIR
+#      github_token: $GITHUB_TOKEN # generate with: public_repo or repo scope (for personal repo)
+#      on:
+#        branch: master
 
-  - stage: Deploy
-    name: "Kind deploy"
-    install:
-    - make install-tools
-    script:
-    - make docker-mirror-read
-    - make run-deploy-tests
-    if: branch = master AND type = push
+#  - stage: Deploy
+#    name: "Kind deploy"
+#    install:
+#    - make install-tools
+#    script:
+#    - make docker-mirror-read
+#    - make run-deploy-tests
+#    if: branch = master AND type = push
 
 notifications:
   email: false
