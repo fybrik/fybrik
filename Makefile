@@ -56,14 +56,13 @@ run-deploy-tests:
 cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy
 	$(MAKE) -C third_party/registry deploy
-	$(MAKE) -C third_party/vault deploy
+	$(MAKE) -C charts vault
 	kubectl apply -f https://raw.githubusercontent.com/IBM/dataset-lifecycle-framework/master/release-tools/manifests/dlf.yaml
 
 
 .PHONY: cluster-prepare-wait
 cluster-prepare-wait:
 	$(MAKE) -C third_party/cert-manager deploy-wait
-	$(MAKE) -C third_party/vault deploy-wait
 	kubectl wait --for=condition=ready pod -n dlf --all --timeout=120s
 
 .PHONY: install
