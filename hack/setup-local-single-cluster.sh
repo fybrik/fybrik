@@ -8,12 +8,12 @@ export HELM_EXPERIMENTAL_OCI=1
 
 make kind
 kubectl config use-context kind-control
-make cluster-prepare
+make -C charts vault
+make -C charts cert-manager
+kubectl apply -f https://raw.githubusercontent.com/IBM/dataset-lifecycle-framework/master/release-tools/manifests/dlf.yaml
 make docker-minimal-it
 make cluster-prepare-wait
 make -C secret-provider configure-vault
-make -C secret-provider deploy
-make -C manager deploy-crd
-make -C manager deploy_it
+make -C charts m4d
 make -C manager wait_for_manager
 make -C modules helm-chart-push
