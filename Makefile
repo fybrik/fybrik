@@ -17,6 +17,7 @@ build:
 
 .PHONY: test
 test:
+	$(MAKE) -C manager pre-test
 	go test -v ./...
 	# The tests for connectors/egeria are dropped because there are none
 

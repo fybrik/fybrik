@@ -15,6 +15,8 @@ include $(ROOT_DIR)/hack/make-rules/verify.mk
 config/default/kustomization.yaml: config/default/kustomization.yaml.in
 	cp $< $@
 
+pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
+
 # Run tests
 test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
 	go test ./... -coverprofile cover.out
