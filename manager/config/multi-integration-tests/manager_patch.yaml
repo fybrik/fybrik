@@ -23,8 +23,6 @@ spec:
           value: "IfNotPresent"
         - name: NO_FINALIZER
           value: "false"
-        - name: MULTICLUSTER_GROUP
-          value: local
         - name: GODEBUG
           value: "x509ignoreCN=0"
         envFrom:

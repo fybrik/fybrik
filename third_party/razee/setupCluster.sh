@@ -69,7 +69,7 @@ curl --request POST \
   --data "{\"query\":\"mutation{groupClusters(orgId: \\\"$ORGID\\\", uuid: \\\"$GROUPID\\\", clusters: [\\\"$CLUSTERID\\\"]) {modified}}\"}"
 
 kubectl create ns m4d-system || true
-kubectl -n m4d-system create secret generic razee-credentials --from-literal=RAZEE_URL="$RAZEEDASH_API/graphql" --from-literal=RAZEE_USER="$RAZEE_USER" --from-literal=RAZEE_PASSWORD=$RAZEE_PASSWORD
+kubectl -n m4d-system create secret generic razee-credentials --from-literal=MULTICLUSTER_GROUP=local --from-literal=RAZEE_URL="$RAZEEDASH_API/graphql" --from-literal=RAZEE_USER="$RAZEE_USER" --from-literal=RAZEE_PASSWORD=$RAZEE_PASSWORD
 
 if [ $ORGAPIKEY == "null" ]; then
   echo "Could not register cluster!"
