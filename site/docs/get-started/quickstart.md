@@ -32,8 +32,8 @@ Run the following to install vault and the plugin in development mode:
     helm repo add hashicorp https://helm.releases.hashicorp.com
     helm install vault hashicorp/vault --version 0.9.1 --create-namespace -n m4d-system \
         --set "server.dev.enabled=true" \
-        --values https://raw.githubusercontent.com/IBM/the-mesh-for-data/master/third_party/vault/plugin-secrets-kubernetes-reader/values.yaml
-		--wait --timeout 120s
+        --values https://raw.githubusercontent.com/IBM/the-mesh-for-data/master/third_party/vault/plugin-secrets-kubernetes-reader/values.yaml \
+        --wait --timeout 120s
     ```
 
 === "OpenShift"
@@ -43,8 +43,8 @@ Run the following to install vault and the plugin in development mode:
     helm install vault hashicorp/vault --version 0.9.1 --create-namespace -n m4d-system \
         --set "global.openshift=true" \
         --set "server.dev.enabled=true" \
-        --values https://raw.githubusercontent.com/IBM/the-mesh-for-data/master/third_party/vault/plugin-secrets-kubernetes-reader/values.yaml
-		--wait --timeout 120s
+        --values https://raw.githubusercontent.com/IBM/the-mesh-for-data/master/third_party/vault/plugin-secrets-kubernetes-reader/values.yaml \
+        --wait --timeout 120s
     ```
 
 ## Install control plane
