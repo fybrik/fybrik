@@ -24,8 +24,8 @@ func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationCon
 }
 
 func main() {
-	address := utils.ListeningAddress(50090)
-	log.Printf("Listening on address " + address)
+	address := utils.ListeningAddress(50082)
+	log.Printf("Starting mock policy compiler server on address " + address)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatalf("Error in listening: %v", err)

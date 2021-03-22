@@ -16,14 +16,14 @@ fullnameOverride: ""
 # Global configuration applies to multiple components installed by this chart
 global:
   # Default hub for Mesh for Data images.
-  hub: ghcr.io/the-mesh-for-data
+  hub: localhost:5000/m4d-system
   # Default tag for Mesh for Data images.
   # If no value is set, the chart's appVersion will be used.
-  tag: ""
+  tag: "latest"
   # Default image pull policy for Mesh for Data images
   # Default behavior: latest images will be Always else IfNotPresent.
   # ref: https://kubernetes.io/docs/concepts/containers/images/#updating-images
-  imagePullPolicy: ""
+  imagePullPolicy: "Always"
   # Reference to one or more secrets to be used when pulling images.
   # ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: []
@@ -123,8 +123,8 @@ manager:
   imagePullPolicy: ""
 
   # Set to true to enable socat in the manager pod to forward
-  # traffic from a localhost registry. Used only for development.
-  socat: false
+  # traffic from a localhost registry. Used only for development and integration tests.
+  socat: true
 
   # Overrides arguments to be passed to manager container
   overrideArgs:
@@ -203,7 +203,7 @@ opaConnector:
   connectionTimeout:
 
   # Image name or a hub/image[:tag]
-  image: "opa-connector"
+  image: "serverpolicycompiler-mock"
 
   # Overrides `.global.imagePullPolicy`
   imagePullPolicy: ""
@@ -281,7 +281,7 @@ katalogConnector:
   enabled: auto
 
   # Image name or a hub/image[:tag]
-  image: "katalog-connector"
+  image: "data-catalog-mock"
 
   # Overrides global.imagePullPolicy
   imagePullPolicy: ""
@@ -344,7 +344,7 @@ katalogConnector:
 egeriaConnector:
   # Set to true to deploy the egeria connector or false to skip its deployment.
   # Defaults to true if `coordinator.catalog` is set to "egeria"
-  enabled: auto
+  enabled: false
 
   # Set to the URL of the Egeria API.
   serverURL: "https://egeria-platform.egeria-catalog:9443"

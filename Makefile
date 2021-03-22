@@ -23,17 +23,18 @@ test:
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
 run-integration-tests: export DOCKER_NAMESPACE?=m4d-system
+run-integration-tests: export VALUES_FILE=m4d/integration-tests.values.yaml
 run-integration-tests:
 	$(MAKE) kind
-	$(MAKE) cluster-prepare
+	$(MAKE) -C charts vault
+	$(MAKE) -C charts cert-manager
+	kubectl apply -f https://raw.githubusercontent.com/IBM/dataset-lifecycle-framework/master/release-tools/manifests/dlf.yaml
 	$(MAKE) docker
 	$(MAKE) -C test/services docker-build docker-push
 	$(MAKE) cluster-prepare-wait
 	$(MAKE) configure-vault
 	$(MAKE) -C secret-provider configure-vault
-	$(MAKE) -C secret-provider deploy
-	$(MAKE) -C manager deploy-crd
-	$(MAKE) -C manager deploy_it
+	$(MAKE) -C charts m4d
 	$(MAKE) -C manager wait_for_manager
 	$(MAKE) helm
 	$(MAKE) -C manager run-integration-tests

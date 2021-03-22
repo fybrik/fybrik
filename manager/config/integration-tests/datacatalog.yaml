@@ -25,7 +25,7 @@ spec:
         imagePullPolicy: Always
         ports:
         - name: data-catalog
-          containerPort: 50085
+          containerPort: 8080
       terminationGracePeriodSeconds: 10
 
 ---
@@ -37,5 +37,5 @@ spec:
   selector:
     app: data-catalog
   ports:
-  - port: 50085
+  - port: 80
     targetPort: data-catalog

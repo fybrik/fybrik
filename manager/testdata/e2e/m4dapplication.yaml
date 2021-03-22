@@ -10,7 +10,7 @@ metadata:
     app: notebook
 spec:
   selector:
-    clusterName: US-cluster
+    clusterName: thegreendragon
     workloadSelector:
       matchLabels:
         app: notebook
