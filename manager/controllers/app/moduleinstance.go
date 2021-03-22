@@ -80,13 +80,8 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 		m.Log.Info("Bucket allocation failed: " + err.Error())
 		return nil, err
 	}
-	credsMap, err := SecretToCredentialMap(m.Client, bucket.SecretRef)
 	if err != nil {
 		m.Log.Info("Could not fetch credentials: " + err.Error())
-		return nil, err
-	}
-	if err = m.VaultConnection.AddSecret(utils.GetVaultDatasetHome()+bucket.Name, credsMap); err != nil {
-		m.Log.Info("Could not register secret in vault: " + err.Error())
 		return nil, err
 	}
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
@@ -126,12 +121,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	m.ProvisionedStorage[item.Context.DataSetID] = assetInfo
 	utils.PrintStructure(&assetInfo, m.Log, "ProvisionedStorage element")
 
-	var vaultSecretPath string
-	if item.VaultSecretPath == "" {
-		vaultSecretPath = utils.GetSecretPath(bucket.Name)
-	} else {
-		vaultSecretPath = item.VaultSecretPath
-	}
+	vaultSecretPath := utils.GetVaultPathForReadingKubernetesSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
 	return &app.DataStore{
 		CredentialLocation: utils.GetDatasetVaultPath(bucket.Name),
 		Vault: &app.Vault{
@@ -241,10 +231,13 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 		return nil, err
 	}
 
+	// Temporary check: VaultSecretPath should come only from
+	// the catalog connector.
 	var vaultSecretPath string
 	if item.VaultSecretPath == "" {
 		vaultSecretPath = utils.GetSecretPath(datasetID)
 	} else {
+		// Set the value received from the catalog connector.
 		vaultSecretPath = item.VaultSecretPath
 	}
 

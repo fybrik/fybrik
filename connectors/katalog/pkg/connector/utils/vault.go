@@ -8,7 +8,7 @@ import (
 
 // The path of the Vault plugin to use to retrieve the dataset credential.
 // vault-plugin-secrets-kubernetes-reader plugin is used for this purpose and is enabled
-// in kubernetes-secrets path.
+// in kubernetes-secrets path. (https://github.com/mesh-for-data/vault-plugin-secrets-kubernetes-reader)
 const vaultPluginPath = "kubernetes-secrets"
 
 // VaultSecretPath returns the path to Vault secret that holds the dataset credential.

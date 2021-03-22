@@ -6,12 +6,11 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/pkg/errors"
-
 	"log"
 
 	utils "github.com/ibm/the-mesh-for-data/connectors/katalog/pkg/connector/utils"
 	connectors "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"

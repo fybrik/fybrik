@@ -70,7 +70,6 @@ func GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) erro
 	}
 
 	req.VaultSecretPath = details.CredentialsInfo.VaultSecretPath
-
 	return nil
 }
 

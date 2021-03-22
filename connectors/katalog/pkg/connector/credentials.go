@@ -60,7 +60,7 @@ func (s *DataCredentialsService) GetCredentialsInfo(ctx context.Context, req *co
 		"password":   "Password",
 	}
 
-	// Get the data fields as strings
+	// Get the data fields as strings and
 	// convert secret into a map matching Credentials structure
 	data := map[string]string{}
 	for key, value := range secret.Data {
