@@ -31,6 +31,6 @@ func GetSecretPath(assetID string) string {
 // GetAuthPath returns the auth method path to use
 // It is of the form v1/auth/<auth path>/login
 func GetAuthPath(authPath string) string {
-	fullAuthPath := fmt.Sprintf("v1/auth/%s/login", authPath)
+	fullAuthPath := fmt.Sprintf("/v1/auth/%s/login", authPath)
 	return fullAuthPath
 }

@@ -42,6 +42,9 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 						ObjectKey: "small.parq",
 					},
 				},
+				CredentialsInfo: &pb.CredentialsInfo{
+					VaultSecretPath: "/v1/my-catalog-plugin/s3-bucket-creds",
+				},
 				Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
 			},
 		}, nil
@@ -60,6 +63,9 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 						Bucket:    "m4d-test-bucket",
 						ObjectKey: "small.parq",
 					},
+				},
+				CredentialsInfo: &pb.CredentialsInfo{
+					VaultSecretPath: "/v1/my-catalog-plugin/creds-to-s3-bucket",
 				},
 				Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
 			},
@@ -81,6 +87,9 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 						Port:     "50000",
 						Ssl:      "false",
 					},
+				},
+				CredentialsInfo: &pb.CredentialsInfo{
+					VaultSecretPath: "/v1/my-catalog-plugin/creds-to-db2-instance",
 				},
 				Metadata: &pb.DatasetMetadata{},
 			},
@@ -107,6 +116,9 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 						ValueDeserializer:     "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer",
 					},
 				},
+				CredentialsInfo: &pb.CredentialsInfo{
+					VaultSecretPath: "/v1/my-catalog-plugin/kafka-creds",
+				},
 				Metadata: &pb.DatasetMetadata{},
 			},
 		}, nil
@@ -128,11 +140,15 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 					Ssl:      "false",
 				},
 			},
+			CredentialsInfo: &pb.CredentialsInfo{
+				VaultSecretPath: "/v1/my-catalog-plugin/db2-creds",
+			},
 			Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
 		},
 	}, nil
 }
 
+//TODO: remove this!
 func (s *server) GetCredentialsInfo(ctx context.Context, in *pb.DatasetCredentialsRequest) (*pb.DatasetCredentials, error) {
 	log.Printf("Received: ")
 	log.Printf("DataSetID: " + in.GetDatasetId())
@@ -142,6 +158,7 @@ func (s *server) GetCredentialsInfo(ctx context.Context, in *pb.DatasetCredentia
 	}, nil
 }
 
+//TODO: remove this!
 func (s *server) RegisterDatasetInfo(ctx context.Context, in *pb.RegisterAssetRequest) (*pb.RegisterAssetResponse, error) {
 	return &pb.RegisterAssetResponse{AssetId: "NewAsset"}, nil
 }

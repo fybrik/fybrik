@@ -126,10 +126,16 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	m.ProvisionedStorage[item.Context.DataSetID] = assetInfo
 	utils.PrintStructure(&assetInfo, m.Log, "ProvisionedStorage element")
 
+	var vaultSecretPath string
+	if item.VaultSecretPath == "" {
+		vaultSecretPath = utils.GetSecretPath(bucket.Name)
+	} else {
+		vaultSecretPath = item.VaultSecretPath
+	}
 	return &app.DataStore{
 		CredentialLocation: utils.GetDatasetVaultPath(bucket.Name),
 		Vault: &app.Vault{
-			SecretPath: utils.GetSecretPath(bucket.Name),
+			SecretPath: vaultSecretPath,
 			Role:       utils.GetModulesRole(),
 			Address:    utils.GetVaultAddress(),
 		},
@@ -235,13 +241,20 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 		return nil, err
 	}
 
+	var vaultSecretPath string
+	if item.VaultSecretPath == "" {
+		vaultSecretPath = utils.GetSecretPath(datasetID)
+	} else {
+		vaultSecretPath = item.VaultSecretPath
+	}
+
 	// Each selector receives source/sink interface and relevant actions
 	// Starting with the data location interface for source and the required interface for sink
 	sourceDataStore := &app.DataStore{
 		Connection:         item.DataDetails.Connection,
 		CredentialLocation: utils.GetDatasetVaultPath(datasetID),
 		Vault: &app.Vault{
-			SecretPath: utils.GetSecretPath(datasetID),
+			SecretPath: vaultSecretPath,
 			Role:       utils.GetModulesRole(),
 			Address:    utils.GetVaultAddress(),
 		},
