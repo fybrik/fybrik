@@ -4,13 +4,13 @@
 
 Kubernetes  [`NetworkPolicies`](https://kubernetes.io/docs/concepts/services-networking/network-policies/) and optionally [Istio](https://istio.io/) are used to protect components of the control plane. Specifically, traffic to connectors that run as part of the control plane must be secured. Follow this page to enable control plane security.
 
-# Ingress traffic policy
+## Ingress traffic policy
 
 The installation of Mesh for Data applies a Kubernetes [`NetworkPolicy`](https://kubernetes.io/docs/concepts/services-networking/network-policies/) resource to the `m4d-system` namespace. This resource ensures that ingress traffic to connectors is only allowed from workloads that run in the `m4d-system` namespace and thus disallow access to connectors from other namespaces or external parties.
 
 The `NetworkPolicy` is always created. However, your Kubernetes cluster must have a [Network Plugin](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/) with `NetworkPolicy` support. Otherwise, `NetworkPolicy` resources will have no affect. While most Kubernetes distributions include a network plugin that enfoces network policies, some like [Kind](https://kind.sigs.k8s.io/) do not and require you to install a separate network plugin instead.
 
-# Mutual TLS
+## Mutual TLS
 
 If Istio is installed in the cluster then you can use [automatic mutual TLS](https://istio.io/latest/docs/tasks/security/authentication/authn-policy/#auto-mutual-tls) to encrypt the traffic to the connectors.
 
