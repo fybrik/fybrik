@@ -1,0 +1,14 @@
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled .Values.coordinator.enabled) }}
+{{- if .Capabilities.APIVersions.Has "networking.istio.io/v1alpha3" }}
+apiVersion: networking.istio.io/v1alpha3
+kind: Sidecar
+metadata:
+  name: sidecar-default
+spec:
+  egress:
+  - hosts:
+    - "*/*"
+  outboundTrafficPolicy:
+    mode: ALLOW_ANY
+{{- end }}
+{{- end }}

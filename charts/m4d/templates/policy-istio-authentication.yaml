@@ -1,0 +1,11 @@
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled .Values.coordinator.enabled) }}
+{{- if .Capabilities.APIVersions.Has "security.istio.io/v1beta1" }}
+apiVersion: "security.istio.io/v1beta1"
+kind: "PeerAuthentication"
+metadata:
+  name: "premissive-mtls-in-control-plane"
+spec:
+  mtls:
+    mode: PERMISSIVE
+{{- end }}
+{{- end }}
