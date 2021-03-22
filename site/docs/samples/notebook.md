@@ -1,162 +1,219 @@
-# Kubeflow Notebook Sample
+# Notebook sample
 
-This sample shows how to run a Kubeflow notebook with Mesh for Data and demonstrates how polices are seamlessly applied when accessing a dataset.
+This sample shows how Mesh for Data enables a Jupyter notebook workload to access a dataset.
+It demonstrates how policies are seamlessly applied when accessing the dataset. 
 
 ## Before you begin
 
-Ensure that you have the following:
+- Install Mesh for Data using the [Quick Start](../get-started/quickstart.md) guide.
+  This sample assumes the use of the built-in catalog, Open Policy Agent (OPA) and flight module.
+- A web browser.
 
-- `kubectl` with access to a Kubernetes cluster (this guide was tested with kind v0.10.0 and OpenShift 4.3)
-- Mesh for Data installed on your Kubernetes cluster
-- S3 Object storage account (e.g., Ceph, Minio, IBM Cloud Object Storage)
-- [Kubeflow](https://www.kubeflow.org/) installed on your cluster (this guide was tested with Kubeflow v1.0.2)
-- Web browser
+## Create a namespace for the sample
 
+Create a new Kubernetes namespace and set it as the active namespace:
 
-!!! tip "Installing Kubeflow"
-    You can install Kubeflow on Kind by running [install_kubeflow.sh](https://github.com/ibm/the-mesh-for-data/blob/master/samples/kubeflow/install/kubeflow/install_kubeflow.sh). 
-    For OpenShift follow [KF_OPENSHIFT.md](https://github.com/ibm/the-mesh-for-data/blob/master/samples/kubeflow/install/kubeflow/KF_OPENSHIFT.md).
+```bash
+kubectl create namespace m4d-notebook-sample
+kubectl config set-context --current --namespace=m4d-notebook-sample
+```
 
-## About this sample
-In this sample guide you will run a Kubeflow notebook with Mesh for Data and demonstrate that data read polices that are defined in Open Policy Agent (OPA) are seamlessly applied when reading a dataset.
+This enables easy [cleanup](#cleanup) once you're done experimenting with the sample.
 
-In this sample guide you will:
+## Prepare a dataset to be accessed by the notebook
 
-1. Prepare a dataset to be accessed by the notebook
-1. Register the dataset in ODPi Egeria catalog
-1. Register the dataset credentials in Vault
-1. Deploy a Kubeflow notebook
-1. Create a Mesh for Data runtime environment for the notebook
-1. Read the dataset and observe policies applied seamlessly
+This sample uses the [Synthetic Financial Datasets For Fraud Detection](https://www.kaggle.com/ntnu-testimon/paysim1/data) dataset[^1] as the data that the notebook needs to read. Download and extract the file to your machine. You should now see a file named `PS_20174392719_1491204439457_log.csv`. Alternatively, you may download [`data.csv`](https://github.com/ibm/the-mesh-for-data/blob/master/samples/kubeflow/data.csv) which includes just the first 100 lines of this dataset.
 
-## Getting started
+[^1]: Created by NTNU and shared under the ***CC BY-SA 4.0*** license.
 
-Completed all the steps in [quick start guide](../get-started/quickstart.md).
+Upload the CSV file to an object storage of your choice such as AWS S3, IBM Cloud Object Storage or Ceph.
+Make a note of the service endpoint, bucket name, and access credentials. You will need them later.
 
-## Prepare the dataset for the sample notebook
+??? tip "Setup and upload to MinIO"
 
-1. Upload [data.csv](https://github.com/ibm/the-mesh-for-data/blob/master/samples/kubeflow/data.csv) to an object storage of your choice
-    `data.csv` contains the first 100 rows from the following [data set](https://www.kaggle.com/ntnu-testimon/paysim1/data) created by NTNU, and it is shared under the ***CC BY-SA 4.0*** license.
-1. Update ```samples/kubeflow/example_transactions.csv.json``` with the location of the dataset, The location is encoded in the `fullPath` field as follows:
-    - Bucket: Change the `bucket` value from `m4d-bucket-example` to the bucket name where the dataset reside.
-    - endpoint: Change the S3 endpoint name from `s3.eu-de.cloud-object-storage.appdomain.cloud` to the object storage endpoint
-    - object_key: If needed, change object_key from `data.csv` to the object name that you used in the previous step.
-    For more information on the content please see the comments in [third_pary/egeria/usage/create_new_asset.sh](https://github.com/ibm/the-mesh-for-data/blob/master//third_party/egeria/usage/create_new_asset.sh) for more details.
-1. Register the dataset in the catalog
-
-    - Setup port forwarding for communicating with Egeria
-
-        ```bash
-        cd third_party/egeria/usage
-        kubectl port-forward -n egeria-catalog svc/lab-core 9443:9443 &
-        ```
-    - Wait for the port-forward to take effect.
-
-    - Register the dataset in the catalog with the tag 'finance'.
+    For experimentation you can install MinIO to your cluster instead of using a cloud service.
     
-        ```bash
-        ./create_new_asset.sh ../../../samples/kubeflow/example_transactions.csv.json 'finance'
-        ```
-    - Cleanup the port forwarding using the following.
+    1. Install Minio to the currently active namespace:
+      ```bash
+      helm repo add minio https://helm.min.io
+      helm install --wait minio minio/minio
+      ```
+    1. Create a port-forward to connect to MinIO UI:
+      ```bash
+      kubectl port-forward svc/minio 9000 &
+      ```
+    1. Open [http://localhost:9000](http://localhost:9000) and login with the printed access key and secret key:
+      ```
+      ACCESS_KEY=$(kubectl get secret minio -o jsonpath="{.data.accesskey}" | base64 --decode)
+      SECRET_KEY=$(kubectl get secret minio -o jsonpath="{.data.secretkey}" | base64 --decode)
+      echo "Access Key: ${ACCESS_KEY}"
+      echo "Secret Key: ${SECRET_KEY}"
+      ```
+    1. Click the :fontawesome-solid-plus-circle: button in the bottom right corner and then **Create bucket** to create a bucket (e.g. "demo").
+    1. Click the :fontawesome-solid-plus-circle: button again and then **Upload files** to upload the CSV file to the newly created bucket.
     
-        ```bash
-        cd -
-        kill $!
-        ```
-1. Record the asset id for the dataset. It will be displayed as part of the output from the previous step and export it to environment variable. An example for an asset id is `5de27155-48d3-4d78-8767-73e7b264e394`
-    ```
-    export ASSET_ID=<asset-id>
-    ```
-1. Store the object dataset credentials in Vault to make them available for Mesh for Data. Currently only hmac credentials are supported, and the `access_key` (a.k.a `access_key_id`) and `secret_key` (a.k.a `secret_access_key`) should be associated with the asset id.
+## Register the dataset in a data catalog
 
-    You can register the credentials using a browser and Vault's UI to upload the credentials.
+Register the credentials required for accessing the dataset. Replace the values for `accessKey` and `secretKey` with the values from the object storage service that you used and run:
 
-    - Setup port forwarding to communicate with Vault.
-        ```bash
-        kubectl port-forward -n m4d-system svc/vault 8200:8200 &
-        ```
-    - Open `http://localhost:8200` a your browser, select `method` as `username` and login using username `data_provider` and password `password`.
+```yaml
+cat << EOF | kubectl apply -f -
+apiVersion: v1
+kind: Secret
+metadata:
+  name: data-csv
+type: Opaque
+stringData:
+  access_key: "${ACCESS_KEY}"
+  secret_key: "${SECRET_KEY}"
+EOF
+```
 
-    - Click `/external` and then `Create secret`
+Then, register the data asset itself in the catalog. Replace the values for `endpoint`, `bucket` and `objectKey` with values from the object storage service that you used and run:
 
-    - Create the following secret:
-        - Path for this secret: `{"ServerName":"mds1","AssetGuid":"<asset ID>"}`. For example, `{"ServerName":"mds1" , "AssetGuid":"5de27155-48d3-4d78-8767-73e7b264e394"}`
-        - Secret data key: `<access-key-id>`
-        - Secrey data value: `<secret-access-key>`
-    - Click `save`
-    
-    Note: The path is a reference to the Egeria metadata server and asset id. In the default Egeria installation `mds1` is the metadata server name.
+```yaml
+cat << EOF | kubectl apply -f -
+apiVersion: katalog.m4d.ibm.com/v1alpha1
+kind: Asset
+metadata:
+  name: data-csv
+spec:
+  secretRef: 
+    name: data-csv
+  assetDetails:
+    dataFormat: csv
+    connection:
+      type: s3
+      s3:
+        endpoint: "http://minio.m4d-notebook-sample.svc.cluster.local:9000"
+        bucket: "demo"
+        objectKey: "data.csv"
+  assetMetadata:
+    geography: us-south
+    tags:
+    - finance
+    componentsMetadata:
+      nameOrig: 
+        tags:
+        - PII
+      oldbalanceOrg:
+        tags:
+        - sensitive
+      newbalanceOrig:
+        tags:
+        - sensitive
+EOF
+```
 
-    - Finally, kill the port-forward
+The asset is now registered in the catalog. The identifier of the asset is `m4d-notebook-sample/data-csv` (i.e. `<namespace>/<name>`). You will use that name in the `M4DApplication` later.
 
-        ```bash
-        kill $!
-        ```
+Notice the `assetMetadata` field above. It specifies the dataset geography and tags. These attributes are later used in policies.
 
-## Reviewing the policies for the dataset
+
+## Define data access policies
 
 Currently predefined policies are included as part of the OPA deployment.
 Included are policies that are triggered for datasets that are tagged with 'finance' and have columns `nameOrig` and `nameDest`. The policies indicate that these columns must be redacted (masked) when data is read.
 
 The policies can be found at `third_party/opa/opa-policy.rego`.
 
-## Setup the notebook
+## Deploy a Jupyter notebook
 
-Next you will create a Kubeflow notebook server and a notebook with the business logic for creating a fraud detection model.
+In this sample a Jupyter notebook is used as the user workload and its business logic requires reading the asset that we registered (e.g., for creating a fraud detection model). Deploy a notebook to your cluster:
 
-1. Create a port-forward to communicate with Kubeflow:
-    ```bash
-    kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80 &
-    cd samples/kubeflow/
-    ```
+=== "JupyterLab"
 
-1. Upload the notebook:
-    - Open your browser and go to `http://localhost:8080`.
-    - Click **Start Setup** and then **Finish** (use the `anonymous` namespace).
-    - Click **Notebook Servers** (in the left).
-    - In the notebooks page select in the top left the `anonymous` namespace and then click **New Server**.
-    - In the notebook server creation page, set `kf-notebook` in the **Name** box and then click **Launch**. Wait for the server to become ready.
-    - Click **Connect** and upload `kfM4DPolicySample.ipynb` notebook to the server.
-
-## Run the notebook with Mesh for Data
-
-Now you will deploy a Mesh for Data runtime environment for the notebook by creating a `M4DApplication` resource that references the `data.csv` data set that was registered in the data catalog.
-This allows the code in the notebook to read the data and policies to seamlessly be applied before the data reaches the notebook server.
-
-1. Create the `M4DApplication` resource which will deploy Mesh for Data runtime environment by running the following:
-    ```bash
-    cat m4dapplication.yaml | sed "s/ASSET_ID/$ASSET_ID/g" | kubectl -n anonymous apply -f -
-    cd -
-    ```
-
-1. Before running the notebook you need to modify the following statements in the `Get Data` cell in the notebook:
-    ```python
-    ...
-    client = fl.connect("grpc://<arrow-flight-module-service>.<arrow-flight-module-ns>.svc.  cluster.local:80")
-
-    request = {
-    "asset": "<bucket-name>/<file-name>.csv", 
-    "columns": ["step", "type", "amount", "nameOrig", "oldbalanceOrg", "newbalanceOrig", "nameDest", "oldbalanceDest", "newbalanceDest", "isFraud", "isFlaggedFraud"]
-    }
-    ...
-    ``` 
-
-    - Edit the `client = fl.connect(...)` command to point to the right service and namespace of the arrow-flight-module.
-    - To find the service and namespace run:
+    1. Deploy JupyterLab:
         ```bash
-        kubectl get svc -l app.kubernetes.io/name=arrow-flight-module --all-namespaces
+        kubectl create deployment my-notebook --image=jupyter/base-notebook --port=8888 -- start.sh jupyter lab --LabApp.token=''
+        kubectl set env deployment my-notebook JUPYTER_ENABLE_LAB=yes
+        kubectl label deployment my-notebook app.kubernetes.io/name=my-notebook
+        kubectl expose deployment my-notebook --port=80 --target-port=8888
         ```
+    1. Create a port-forward to communicate with JupyterLab:
+        ```bash
+        kubectl port-forward svc/my-notebook 8080:80 &
+        ```
+    1. Open your browser and go to [http://localhost:8080/](http://localhost:8080/).
+    1. Create a new notebook in the server
 
-    - Edit `"asset": "<bucket-name>/<file-name>.csv"` in the second command to point to your bucket and the name of the dataset.
 
-1. Run the notebook
+=== "Kubeflow"
 
-    You should observe in the cell `Get Data` the data from the dataset.
+    1. Ensure that [Kubeflow](https://www.kubeflow.org/) is installed in your cluster
+    1. Create a port-forward to communicate with Kubeflow:
+        ```bash
+        kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80 &
+        ```
+    1. Open your browser and go to [http://localhost:8080/](http://localhost:8080/).
+    1. Click **Start Setup** and then **Finish** (use the `anonymous` namespace).
+    1. Click **Notebook Servers** (in the left).
+    1. In the notebooks page select in the top left the `anonymous` namespace and then click **New Server**.
+    1. In the notebook server creation page, set `my-notebook` in the **Name** box and then click **Launch**. Wait for the server to become ready.
+    1. Click **Connect** and create a new notebook in the server.
 
-1. Finally, kill the port-forward
+
+## Create a `M4DApplication` resource for the notebook
+
+
+Create a [`M4DApplication`](../reference/crds.md#m4dapplication) resource to register the notebook workload to the control plane of Mesh for Data: 
+
+<!-- TODO: role field removed but code still requires it -->
+```yaml
+cat <<EOF | kubectl apply -f -
+apiVersion: app.m4d.ibm.com/v1alpha1
+kind: M4DApplication
+metadata:
+  name: my-notebook
+  labels:
+    app: my-notebook
+spec:
+  selector:
+    workloadSelector:
+      matchLabels:
+        app: my-notebook
+  appInfo:
+    intent: fraud-detection
+  data:
+    - dataSetID: "m4d-notebook-sample/data-csv"
+      requirements:
+        interface: 
+          protocol: m4d-arrow-flight
+          dataformat: arrow
+EOF
+```
+
+Notice that:
+
+* The `selector` field match the labels of our Jupyter notebook workload.
+* The `data` field includes a `dataSetID` that matches the asset identifier in the catalog.
+* The `protocol` and `dataformat` indicate that the developer wants to consume the data using Apache Arrow Flight.
+
+Wait util the `M4DApplication` is ready:
+```bash
+while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}') != "True" ]]; do echo "waiting" && sleep 1; done
+```
+
+## Read the dataset from the notebook
+
+In your notebook insert and run a cell to install pandas and pyarrow packages:
+
+```python
+%pip install pandas pyarrow
+```
+
+Then insert a new cell to read the data. The code to use is available as part of the `M4DApplication` and can be printed with:
+
+```bash
+printf "$(kubectl get m4dapplication my-notebook -o jsonpath={.status.dataAccessInstructions})"
+```
+
+## Cleanup
+
+When you’re finished experimenting with the notebook sample, clean it up:
+
+1. Stop `kubectl port-forward` processes (e.g., using `pkill kubectl`)
+1. Delete the namespace created for this sample:
     ```bash
-    kill $!
+    kubectl delete namespace m4d-notebook-sample
     ```
-
-# Next steps
-You have completed an execution of a notebook with Mesh for Data and are now ready to continue exploring.
