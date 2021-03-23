@@ -16,7 +16,10 @@ source ./vault_utils.sh
 : ${MODULE_NAMESPACE:="m4d-blueprints"}
 : ${SECRET_PATH:=m4d/dataset-creds}
 : ${ROLE:=module}
-
+# Add policy and role for modules running in m4d-blueprints namespace to
+# use the vault-plugin-secrets-kubernetes-reader plugin enabled in Vault
+# path kubernetes-secrets.
+: ${PLUGIN_PATH:=kubernetes-secrets}
 
 # $1 - cluster name
 # $2 - kube host of the cluster
@@ -30,12 +33,14 @@ enable_k8s_auth_for_cluster() {
 configure_vault() {
 	enable_kv "$SECRET_PATH"
 	create_policy "allow-all-$SECRET_PATH" "$SECRET_PATH/*"
+	create_policy "allow-all-$PLUGIN_PATH" "$PLUGIN_PATH/*"
 }
 
 
 # $1 - cluster name
 add_role() {
 	create_role "$ROLE" "allow-all-$SECRET_PATH" "$1" "$MODULE_NAMESPACE"
+	create_role "$ROLE" "allow-all-$PLUGIN_PATH"  "$1" "$MODULE_NAMESPACE"
 }
 
 case "$op" in
