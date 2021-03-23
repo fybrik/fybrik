@@ -36,9 +36,8 @@ WITHOUT_PORT_FORWARD=true make -C secret-provider configure-vault
 
 # Configure Vault kubernetes auth path and add a policy and a role to allow the
 # modules running in m4d-blueprints to access dataset credentials in Vault.
-cd hack/tools/
-WITHOUT_PORT_FORWARD=true ./configure_vault_single_cluster.sh
-cd -
+WITHOUT_PORT_FORWARD=true make configure-vault
+
 make install
 
 # Kill the port-forward
