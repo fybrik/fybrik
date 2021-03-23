@@ -3,7 +3,7 @@ vault-setup: $(TOOLBIN)/vault $(TOOLBIN)/kubectl
 	cd $(TOOLS_DIR); ./configure_vault_single_cluster.sh
 
 .PHONY: vault-setup-kind-multi
-vault-setup-multi: $(TOOLBIN)/vault $(TOOLBIN)/kubectl
+vault-setup-kind-multi: $(TOOLBIN)/vault $(TOOLBIN)/kubectl
 	cd $(TOOLS_DIR); ./configure_vault_kind.sh multi
 
 .PHONY: vault-cleanup
