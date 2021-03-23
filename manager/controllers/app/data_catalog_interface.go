@@ -68,8 +68,10 @@ func GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) erro
 		Connection: *connection,
 		Metadata:   details.Metadata,
 	}
-
-	req.VaultSecretPath = details.CredentialsInfo.VaultSecretPath
+	req.VaultSecretPath = ""
+	if details.CredentialsInfo != nil {
+		req.VaultSecretPath = details.CredentialsInfo.VaultSecretPath
+	}
 	return nil
 }
 
