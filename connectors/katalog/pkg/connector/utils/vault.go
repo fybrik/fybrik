@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-// The path of the Vault plugin to use to retrieve the dataset credential.
+// The path of the Vault plugin to use to retrieve dataset credential stored in kubernetes secret.
 // vault-plugin-secrets-kubernetes-reader plugin is used for this purpose and is enabled
 // in kubernetes-secrets path. (https://github.com/mesh-for-data/vault-plugin-secrets-kubernetes-reader)
 const vaultPluginPath = "kubernetes-secrets"

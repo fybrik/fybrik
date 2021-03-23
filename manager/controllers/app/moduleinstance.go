@@ -121,7 +121,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	m.ProvisionedStorage[item.Context.DataSetID] = assetInfo
 	utils.PrintStructure(&assetInfo, m.Log, "ProvisionedStorage element")
 
-	vaultSecretPath := utils.GetVaultPathForReadingKubernetesSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
+	vaultSecretPath := utils.VaultPathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
 	return &app.DataStore{
 		CredentialLocation: utils.GetDatasetVaultPath(bucket.Name),
 		Vault: &app.Vault{

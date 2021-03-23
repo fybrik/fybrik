@@ -8,8 +8,7 @@ import (
 	"net/url"
 )
 
-// The path of the Vault plugin to use to retrieve the dataset credential that are
-// stored in kubernetes secret.
+// The path of the Vault plugin to use to retrieve dataset credentials stored in kubernetes secret.
 // vault-plugin-secrets-kubernetes-reader plugin is used for this purpose and is enabled
 // in kubernetes-secrets path. (https://github.com/mesh-for-data/vault-plugin-secrets-kubernetes-reader)
 // TODO: pass the plugin path in m4d-config ConfigMap
@@ -35,17 +34,17 @@ func GetSecretPath(assetID string) string {
 	return fmt.Sprintf("%s%s", base, url.PathEscape(assetID))
 }
 
-// GetVaultPathForReadingKubernetesSecret returns the path to Vault secret that holds the dataset credentials
-// which are stored in kubernetes secret.
-// Vault plugin vault-plugin-secrets-kubernetes-reader is used for reading the kubernetes secret and return
-// the dataset credentials.
+// VaultPathForReadingKubeSecret returns the path to Vault secret that holds dataset credentials
+// stored in kubernetes secret.
+// Vault plugin vault-plugin-secrets-kubernetes-reader is used for reading the kubernetes secret and
+// returning the dataset credentials.
 // The path contains the following parts:
 // - pluginPath is the Vault path where vault-plugin-secrets-kubernetes-reader plugin is enabled.
 // - secret name
 // - secret namespace
 // for example, for secret name my-secret and namespace default it will be of the form:
 // "/v1/kubernetes-secrets/my-secret?namespace=default"
-func GetVaultPathForReadingKubernetesSecret(secretNamespace string, secretName string) string {
+func VaultPathForReadingKubeSecret(secretNamespace string, secretName string) string {
 	pluginPath := "/v1/" + vaultPluginPath + "/"
 	// Construct the path to the secret in Vault that holds the dataset credentials
 	secretPath := fmt.Sprintf("%s%s?namespace=%s", pluginPath, secretName, secretNamespace)

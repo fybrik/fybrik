@@ -43,7 +43,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 					},
 				},
 				CredentialsInfo: &pb.CredentialsInfo{
-					VaultSecretPath: "/v1/my-catalog-plugin/s3-bucket-creds",
+					VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
 				},
 				Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
 			},
@@ -65,7 +65,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 					},
 				},
 				CredentialsInfo: &pb.CredentialsInfo{
-					VaultSecretPath: "/v1/my-catalog-plugin/creds-to-s3-bucket",
+					VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
 				},
 				Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
 			},
@@ -89,7 +89,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 					},
 				},
 				CredentialsInfo: &pb.CredentialsInfo{
-					VaultSecretPath: "/v1/my-catalog-plugin/creds-to-db2-instance",
+					VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
 				},
 				Metadata: &pb.DatasetMetadata{},
 			},
@@ -117,7 +117,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 					},
 				},
 				CredentialsInfo: &pb.CredentialsInfo{
-					VaultSecretPath: "/v1/my-catalog-plugin/kafka-creds",
+					VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
 				},
 				Metadata: &pb.DatasetMetadata{},
 			},
@@ -141,7 +141,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 				},
 			},
 			CredentialsInfo: &pb.CredentialsInfo{
-				VaultSecretPath: "/v1/my-catalog-plugin/db2-creds",
+				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
 			},
 			Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
 		},
