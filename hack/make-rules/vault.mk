@@ -4,7 +4,7 @@ vault-setup: $(TOOLBIN)/vault $(TOOLBIN)/kubectl
 
 .PHONY: vault-setup-kind-multi
 vault-setup-kind-multi: $(TOOLBIN)/vault $(TOOLBIN)/kubectl
-	cd $(TOOLS_DIR); ./configure_vault_kind.sh multi
+	cd $(TOOLS_DIR); ./configure_vault_kind_multi.sh
 
 .PHONY: vault-cleanup
 vault-cleanup: $(TOOLBIN)/vault $(TOOLBIN)/kubectl
