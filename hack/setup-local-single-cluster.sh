@@ -10,8 +10,8 @@ make kind
 kubectl config use-context kind-control
 make -C charts vault
 make -C charts cert-manager
-kubectl apply -f https://raw.githubusercontent.com/IBM/dataset-lifecycle-framework/master/release-tools/manifests/dlf.yaml
-make docker-minimal-it
+make -C third_party/datashim deploy
+make docker
 make cluster-prepare-wait
 make -C secret-provider configure-vault
 make -C charts m4d

@@ -14,7 +14,7 @@ make -C third_party/razee all
 kubectl config use-context kind-control
 make -C charts vault
 make -C charts cert-manager
-kubectl apply -f https://raw.githubusercontent.com/IBM/dataset-lifecycle-framework/master/release-tools/manifests/dlf.yaml
+make -C third_party/datashim deploy
 make docker-minimal-it
 make cluster-prepare-wait
 make -C secret-provider configure-vault
@@ -26,7 +26,7 @@ export VALUES_FILE=m4d/kind-kind.values.yaml
 kubectl config use-context kind-kind
 make -C charts vault
 make -C charts cert-manager
-kubectl apply -f https://raw.githubusercontent.com/IBM/dataset-lifecycle-framework/master/release-tools/manifests/dlf.yaml
+make -C third_party/datashim deploy
 make cluster-prepare-wait
 make -C secret-provider configure-vault
 make -C charts m4d

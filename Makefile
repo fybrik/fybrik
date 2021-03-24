@@ -28,7 +28,7 @@ run-integration-tests:
 	$(MAKE) kind
 	$(MAKE) -C charts vault
 	$(MAKE) -C charts cert-manager
-	kubectl apply -f https://raw.githubusercontent.com/IBM/dataset-lifecycle-framework/master/release-tools/manifests/dlf.yaml
+	$(MAKE) -C third_party/datashim deploy
 	$(MAKE) docker
 	$(MAKE) -C test/services docker-build docker-push
 	$(MAKE) cluster-prepare-wait
@@ -58,13 +58,12 @@ cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy
 	$(MAKE) -C third_party/registry deploy
 	$(MAKE) -C charts vault
-	kubectl apply -f https://raw.githubusercontent.com/IBM/dataset-lifecycle-framework/master/release-tools/manifests/dlf.yaml
-
+	$(MAKE) -C third_party/datashim deploy
 
 .PHONY: cluster-prepare-wait
 cluster-prepare-wait:
 	$(MAKE) -C third_party/cert-manager deploy-wait
-	kubectl wait --for=condition=ready pod -n dlf --all --timeout=120s
+	$(MAKE) -C third_party/datashim deploy-wait
 
 .PHONY: install
 install:
