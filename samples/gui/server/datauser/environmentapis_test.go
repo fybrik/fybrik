@@ -34,7 +34,7 @@ func TestEnvironmentAPIs(t *testing.T) {
 	sysMap["Egeria"] = []string{"username"}
 	expectedObj := EnvironmentInfo{
 		Namespace:       "default",
-		Geography:       "US-cluster",
+		Geography:       "thegreendragon",
 		Systems:         sysMap,
 		DataSetIDFormat: "{\"ServerName\":\"---\",\"AssetGuid\":\"---\"}",
 	}

@@ -2,6 +2,7 @@ ROOT_DIR := ..
 include $(ROOT_DIR)/Makefile.env
 
 WITH_OPENSHIFT ?= false
+VALUES_FILE ?= "m4d/values.yaml"
 
 .PHONY: kind
 kind: export ROOT_DIR := .
@@ -50,9 +51,9 @@ vault-setup:
 m4d:
 	@echo "installing m4d ..."
 	kubectl create namespace m4d-system || true
-	helm install m4d-crd m4d-crd \
+	helm install m4d-crd m4d-crd  \
 		--namespace m4d-system --wait --timeout 120s
-	helm install m4d m4d \
+	helm install m4d m4d --values $(VALUES_FILE) \
 		--namespace m4d-system --wait --timeout 120s
 
 .PHONY: run-integration-tests

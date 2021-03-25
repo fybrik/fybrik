@@ -25,7 +25,7 @@ spec:
         imagePullPolicy: Always
         ports:
         - name: policycompiler
-          containerPort: 50090
+          containerPort: 50082
       terminationGracePeriodSeconds: 10
 
 ---
@@ -37,5 +37,5 @@ spec:
   selector:
     app: policycompiler
   ports:
-  - port: 50090
+  - port: 50082
     targetPort: policycompiler

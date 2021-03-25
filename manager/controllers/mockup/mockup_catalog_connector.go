@@ -51,7 +51,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 			Details: &pb.DatasetDetails{
 				Name:       "xxx",
 				DataFormat: "parquet",
-				Geo:        "US",
+				Geo:        "theshire",
 				DataStore: &pb.DataStore{
 					Type: pb.DataStore_S3,
 					Name: "cos",
@@ -70,7 +70,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 			Details: &pb.DatasetDetails{
 				Name:       "yyy",
 				DataFormat: "table",
-				Geo:        "US",
+				Geo:        "theshire",
 				DataStore: &pb.DataStore{
 					Type: pb.DataStore_DB2,
 					Name: "db2",
@@ -91,7 +91,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 			Details: &pb.DatasetDetails{
 				Name:       "Cars",
 				DataFormat: "json",
-				Geo:        "US",
+				Geo:        "theshire",
 				DataStore: &pb.DataStore{
 					Type: pb.DataStore_KAFKA,
 					Name: "kafka",
@@ -116,7 +116,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 		Details: &pb.DatasetDetails{
 			Name:       "yyy",
 			DataFormat: "table",
-			Geo:        "US",
+			Geo:        "theshire",
 			DataStore: &pb.DataStore{
 				Type: pb.DataStore_DB2,
 				Name: "db2",
@@ -165,13 +165,13 @@ func createMockCatalogConnector(port int) error {
 
 // MockCatalogConnector returns fake data location details based on the catalog id
 func MockCatalogConnector() {
-	if err := createMockCatalogConnector(50085); err != nil {
+	if err := createMockCatalogConnector(8080); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func CreateTestCatalogConnector(t ginkgo.GinkgoTInterface) {
-	if err := createMockCatalogConnector(50085); err != nil {
+	if err := createMockCatalogConnector(8080); err != nil {
 		t.Fatal(err)
 	}
 }

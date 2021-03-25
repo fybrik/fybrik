@@ -133,20 +133,20 @@ var _ = BeforeSuite(func(done Done) {
 				Name: "m4d-blueprints",
 			},
 		}))
+		Expect(k8sClient.Create(context.Background(), &v1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "cluster-metadata",
+				Namespace: "m4d-system",
+			},
+			Data: map[string]string{
+				"ClusterName":   "thegreendragon",
+				"Zone":          "hobbiton",
+				"Region":        "theshire",
+				"VaultAuthPath": "kind",
+			},
+		}))
 	}
 	Expect(k8sClient).ToNot(BeNil())
-	Expect(k8sClient.Create(context.Background(), &v1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "cluster-metadata",
-			Namespace: "m4d-system",
-		},
-		Data: map[string]string{
-			"ClusterName":   "US-cluster",
-			"Region":        "US",
-			"Zone":          "North-America",
-			"VaultAuthPath": "kind",
-		},
-	}))
 	close(done)
 }, 60)
 
