@@ -122,8 +122,6 @@ github.com/DataDog/datadog-go v3.2.0+incompatible h1:qSG2N4FghB1He/r2mFrWKCaL7dX
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/Djarvur/go-err113 v0.0.0-20200511133814-5174e21577d5/go.mod h1:4UJr5HIiMZrwgkSPdsjy2uOQExX/WEILpIrO9UPGuXs=
 github.com/GoogleCloudPlatform/k8s-cloud-provider v0.0.0-20190822182118-27a4ced34534/go.mod h1:iroGtC8B3tQiqtds1l+mgk/BBOrxbqjH+eUfFQYRc14=
-github.com/IBM/dataset-lifecycle-framework/src/dataset-operator v0.0.0-20210201112050-4d77ac693ac1 h1:26gKoANvqMHsTB4vbzaaCNKzuteNWJoNGrxXJ2DDeW4=
-github.com/IBM/dataset-lifecycle-framework/src/dataset-operator v0.0.0-20210201112050-4d77ac693ac1/go.mod h1:0PMq2AjWBeGhpdOchqu8441DFCuWqqNop12/SeGscsw=
 github.com/IBM/go-sdk-core/v4 v4.8.0 h1:QA0GedzHgdvoCPxREItrfAWb5NMTnZjM3i7fEqC19Kg=
 github.com/IBM/go-sdk-core/v4 v4.8.0/go.mod h1:GECJ/p0r9Hs0XcOnCiGjZrt6M/rQc+gW8YkCsGJ+j5U=
 github.com/IBM/satcon-client-go v0.1.2-0.20210210170826-405eaf53986f h1:lJHDhH8URJQkcu8bGDR+Low1RYmL3y3L6vnOzyjXoIE=
@@ -398,6 +396,9 @@ github.com/cznic/sortutil v0.0.0-20150617083342-4c7342852e65/go.mod h1:q2w6Bg5je
 github.com/cznic/strutil v0.0.0-20171016134553-529a34b1c186/go.mod h1:AHHPPPXTw0h6pVabbcbyGRK1DckRn7r/STdZEeIDzZc=
 github.com/cznic/zappy v0.0.0-20160723133515-2533cb5b45cc/go.mod h1:Y1SNZ4dRUOKXshKUbwUapqNncRrho4mkjQebgEHZLj8=
 github.com/daixiang0/gci v0.2.4/go.mod h1:+AV8KmHTGxxwp/pY84TLQfFKp2vuKXXJVzF3kD/hfR4=
+github.com/datashim-io/datashim v0.0.0-20210322095623-e5d70b250696 h1:hvjsJsrE3OZe9uO4bx4Q8i69RQMoTb15tCDH5L1fOAI=
+github.com/datashim-io/datashim/src/dataset-operator v0.0.0-20210322095623-e5d70b250696 h1:hl0BZZnWrJyETKYZ85Kf5aa4hkQxUsvctrRuCYa7e9E=
+github.com/datashim-io/datashim/src/dataset-operator v0.0.0-20210322095623-e5d70b250696/go.mod h1:bXtbTeU+0HSdGRITAGNEsd/6Iplxkh+5jdkm8VXTdwI=
 github.com/davecgh/go-spew v0.0.0-20151105211317-5215b55f46b2/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

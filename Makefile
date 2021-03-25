@@ -57,8 +57,7 @@ cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy
 	$(MAKE) -C third_party/registry deploy
 	$(MAKE) -C charts vault
-	kubectl apply -f https://raw.githubusercontent.com/IBM/dataset-lifecycle-framework/master/release-tools/manifests/dlf.yaml
-
+	kubectl apply -f https://raw.githubusercontent.com/datashim-io/datashim/master/release-tools/manifests/dlf.yaml
 
 .PHONY: cluster-prepare-wait
 cluster-prepare-wait:
