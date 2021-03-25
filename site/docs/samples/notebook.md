@@ -185,11 +185,11 @@ EOF
 
 Notice that:
 
-* The `selector` field match the labels of our Jupyter notebook workload.
+* The `selector` field matches the labels of our Jupyter notebook workload.
 * The `data` field includes a `dataSetID` that matches the asset identifier in the catalog.
 * The `protocol` and `dataformat` indicate that the developer wants to consume the data using Apache Arrow Flight.
 
-Wait util the `M4DApplication` is ready:
+Wait until the `M4DApplication` is ready:
 ```bash
 while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}') != "True" ]]; do echo "waiting" && sleep 1; done
 ```
