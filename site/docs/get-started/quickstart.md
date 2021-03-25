@@ -14,10 +14,15 @@ Ensure that you have the following:
 ## Install cert-manager
 
 Mesh for Data requires [cert-manager](https://cert-manager.io) to be installed to your cluster. 
-Many clusters already include cert-manager. Run the following to install cert-manager only if it's missing:
+Many clusters already include cert-manager. Check if `cert-manager` namespace exists in your cluster and only run the following if it doesn't exist:
 
 ```bash
-kubectl get namespace cert-manager || kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.yaml
+helm install cert-manager jetstack/cert-manager \
+    --namespace cert-manager \
+    --version v1.2.0 \
+    --create-namespace \
+    --set installCRDs=true \
+    --wait --timeout 120s
 ``` 
 
 ## Install Hashicorp Vault and plugins
