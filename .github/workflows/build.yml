@@ -9,8 +9,6 @@ on:
       - master
 
 env:
-  DOCKER_HOSTNAME: ghcr.io
-  DOCKER_USERNAME: the-mesh-for-data
   GO_VERSION: 1.13
   JAVA_VERSION: 11
 
@@ -18,9 +16,6 @@ jobs:
   verify:
     name: Verify
     runs-on: ubuntu-latest
-    env:
-      DOCKER_HOSTNAME: "localhost:5000"
-      DOCKER_NAMESPACE: m4d-system
     steps:
     - name: Install Go
       uses: actions/setup-go@v2
@@ -42,9 +37,6 @@ jobs:
   test:
     name: Unit tests
     runs-on: ubuntu-latest
-    env:
-      DOCKER_HOSTNAME: "localhost:5000"
-      DOCKER_NAMESPACE: m4d-system
     steps:
     - name: Set up JDK
       uses: actions/setup-java@v1
