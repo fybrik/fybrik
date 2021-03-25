@@ -16,13 +16,13 @@ components:
         password:
           description: Password for basic authentication
           type: string
-        apiKey:
+        api_key:
           description: API key used in various IAM enabled services
           type: string
-        accessKey:
+        access_key:
           description: Access key also known as AccessKeyId
           type: string
-        secretKey:
+        secret_key:
           description: Secret key also known as SecretAccessKey
           type: string
     Connection:
