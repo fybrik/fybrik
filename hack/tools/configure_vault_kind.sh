@@ -32,15 +32,13 @@ enable_k8s_auth_for_cluster() {
 
 configure_vault() {
 	enable_kv "$SECRET_PATH"
-	create_policy "allow-all-$SECRET_PATH" "$SECRET_PATH/*"
-	create_policy "allow-all-$PLUGIN_PATH" "$PLUGIN_PATH/*"
+	create_policy_with_plugin_path "allow-all-$ROLE" "$SECRET_PATH/*" "$PLUGIN_PATH/*"
 }
 
 
 # $1 - cluster name
 add_role() {
-	create_role "$ROLE" "allow-all-$SECRET_PATH" "$1" "$MODULE_NAMESPACE"
-	create_role "$ROLE" "allow-all-$PLUGIN_PATH"  "$1" "$MODULE_NAMESPACE"
+	create_role "$ROLE" "allow-all-$ROLE" "$1" "$MODULE_NAMESPACE"
 }
 
 case "$op" in
