@@ -17,8 +17,9 @@ build:
 
 .PHONY: test
 test:
-	$(MAKE) -C pkg/policy-compiler test
-	$(MAKE) -C manager test
+	$(MAKE) -C manager pre-test
+	go test -v ./...
+	# The tests for connectors/egeria are dropped because there are none
 
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
@@ -36,6 +37,7 @@ run-integration-tests:
 	$(MAKE) -C manager deploy_it
 	$(MAKE) -C manager wait_for_manager
 	$(MAKE) helm
+	$(MAKE) -C pkg/helm test
 	$(MAKE) -C manager run-integration-tests
 
 .PHONY: run-deploy-tests

@@ -6,14 +6,29 @@ package datauser
 import (
 	"encoding/json"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
+func SkipOnClosedSocket(address string, t *testing.T) {
+	timeout := time.Second
+	conn, err := net.DialTimeout("tcp", address, timeout)
+	if err != nil {
+		t.Skip("Skipping test as server is not running...")
+	}
+	if conn != nil {
+		defer conn.Close()
+	}
+}
+
 func TestEnvironmentAPIs(t *testing.T) {
 	envserverurl := "http://localhost:8080/v1/env/datauserenv"
+
+	SkipOnClosedSocket("localhost:8080", t)
 
 	sysMap := make(map[string][]string)
 	sysMap["Egeria"] = []string{"username"}
