@@ -44,7 +44,7 @@ func allocateStorageAccounts() {
 		Spec: apiv1alpha1.M4DStorageAccountSpec{
 			Endpoint:  "http://endpoint1",
 			SecretRef: "dummy-secret",
-			Regions:   []string{"US"},
+			Regions:   []string{"theshire"},
 		},
 	}
 	accountGermany := &apiv1alpha1.M4DStorageAccount{
@@ -180,7 +180,7 @@ func InitM4DApplication(name string, n int) *apiv1alpha1.M4DApplication {
 			Namespace: appSignature.Namespace,
 		},
 		Spec: apiv1alpha1.M4DApplicationSpec{
-			Selector: apiv1alpha1.Selector{ClusterName: "US-cluster", WorkloadSelector: metav1.LabelSelector{MatchLabels: labels}},
+			Selector: apiv1alpha1.Selector{ClusterName: "thegreendragon", WorkloadSelector: metav1.LabelSelector{MatchLabels: labels}},
 			AppInfo:  map[string]string{"intent": "Fraud Detection", "role": "Data Scientist"},
 			Data:     make([]apiv1alpha1.DataContext, n),
 		},
@@ -196,7 +196,7 @@ func InitM4DApplicationWithoutWorkload(name string, n int) *apiv1alpha1.M4DAppli
 			Namespace: appSignature.Namespace,
 		},
 		Spec: apiv1alpha1.M4DApplicationSpec{
-			Selector: apiv1alpha1.Selector{ClusterName: "US-cluster"},
+			Selector: apiv1alpha1.Selector{ClusterName: "thegreendragon"},
 			AppInfo:  map[string]string{},
 			Data:     make([]apiv1alpha1.DataContext, n),
 		},
@@ -469,7 +469,7 @@ var _ = Describe("M4DApplication Controller", func() {
 				// Check the generated blueprint
 				// There should be a single read module with two datasets
 				Expect(len(plotter.Spec.Blueprints)).To(Equal(1))
-				blueprint := plotter.Spec.Blueprints["US-cluster"]
+				blueprint := plotter.Spec.Blueprints["thegreendragon"]
 				Expect(blueprint).NotTo(BeNil())
 				numReads := 0
 				for _, step := range blueprint.Flow.Steps {
@@ -561,7 +561,7 @@ var _ = Describe("M4DApplication Controller", func() {
 				// Check the generated blueprint
 				// There should be a single copy module
 				Expect(len(plotter.Spec.Blueprints)).To(Equal(1))
-				blueprint := plotter.Spec.Blueprints["US-cluster"]
+				blueprint := plotter.Spec.Blueprints["thegreendragon"]
 				Expect(blueprint).NotTo(BeNil())
 				numSteps := 0
 				moduleMatch := false

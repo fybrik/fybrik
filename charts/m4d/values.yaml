@@ -33,11 +33,11 @@ global:
 # Cluster metadata values
 cluster:
   # Set to the name of the cluster.
-  name: hobbiton
-  # Set to cluster region.
-  region: eriador
+  name: thegreendragon
   # Set to cluster zone.
-  zone: theshire
+  zone: hobbiton
+  # Set to cluster region.
+  region: theshire
   # Set to the cluster Vault auth method path.
   vaultAuthPath: kubernetes
 

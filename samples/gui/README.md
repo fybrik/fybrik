@@ -6,7 +6,7 @@ The APIs and examples of their use are as follows:
   
   Create M4DApplication (to be used by the specific workload):
 
-	curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion": "app.m4d.ibm.com/v1alpha1","kind": "M4DApplication","metadata": {"name": "unittest-notebook1", "namespace": "default"},"spec": {"selector": {"clusterName": "US-cluster","workloadSelector": {"matchLabels": {"app": "unittest-notebook1"}}}, "appInfo": {"intent": "fraud-detection"}, "data": [{ "dataSetID": "whatever", "requirements": {"interface": {"protocol": "s3","dataformat": "parquet"}}}]}}'
+	curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion": "app.m4d.ibm.com/v1alpha1","kind": "M4DApplication","metadata": {"name": "unittest-notebook1", "namespace": "default"},"spec": {"selector": {"clusterName": "thegreendragon","workloadSelector": {"matchLabels": {"app": "unittest-notebook1"}}}, "appInfo": {"intent": "fraud-detection"}, "data": [{ "dataSetID": "whatever", "requirements": {"interface": {"protocol": "s3","dataformat": "parquet"}}}]}}'
 
   Create M4DApplication (to copy data and register in the public catalog):
 
@@ -43,7 +43,7 @@ curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion
 ## Run server locally - run vault as well as REST API server
 
 export KUBECONFIG=$HOME/.kube/config
-export GEOGRAPHY=US-cluster
+export GEOGRAPHY=hobbiton
 make build
 ./datauserserver
 
