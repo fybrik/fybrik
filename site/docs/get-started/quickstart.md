@@ -49,8 +49,8 @@ Run the following to install vault and the plugin in development mode:
 
 ## Install control plane
 
-The control plane includes a `manager` service that connects to a data catalog and to a policy manger. 
-Install the latest release of Mesh for Data with a built-in data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manger:
+The control plane includes a `manager` service that connects to a data catalog and to a policy manager. 
+Install the latest release of Mesh for Data with a built-in data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
 
 ```bash
 helm repo add m4d-charts https://mesh-for-data.github.io/charts
