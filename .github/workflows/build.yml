@@ -16,9 +16,6 @@ jobs:
   verify:
     name: Verify
     runs-on: ubuntu-latest
-    env:
-      DOCKER_HOSTNAME: "localhost:5000"
-      DOCKER_NAMESPACE: m4d-system
     steps:
     - name: Install Go
       uses: actions/setup-go@v2

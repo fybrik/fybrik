@@ -18,7 +18,7 @@ config/default/kustomization.yaml: config/default/kustomization.yaml.in
 pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
 
 # Run tests
-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
+test: pre-test
 	go test ./... -coverprofile cover.out
 
 # Build manager binary
