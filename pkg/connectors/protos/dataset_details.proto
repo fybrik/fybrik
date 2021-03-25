@@ -80,7 +80,7 @@ message CredentialsInfo {
 
 message DatasetDetails {
     string name = 1;            //name in Catalog
-    string data_owner = 2;       //inforamtion on the owner of data asset - can have different formats for different catalogs
+    string data_owner = 2;       //information on the owner of data asset - can have different formats for different catalogs
     DataStore data_store = 3;    //All info about the data store
     string data_format = 4;
     string geo = 5;             //geography location where data resides (if this information available)

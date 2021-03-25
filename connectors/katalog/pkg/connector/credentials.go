@@ -8,7 +8,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/ibm/the-mesh-for-data/connectors/katalog/pkg/connector/utils"
 	"github.com/ibm/the-mesh-for-data/connectors/katalog/pkg/taxonomy"
 	connectors "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/pkg/errors"
@@ -23,7 +22,7 @@ type DataCredentialsService struct {
 }
 
 func (s *DataCredentialsService) GetCredentialsInfo(ctx context.Context, req *connectors.DatasetCredentialsRequest) (*connectors.DatasetCredentials, error) {
-	namespace, name, err := utils.SplitNamespacedName(req.DatasetId)
+	namespace, name, err := splitNamespacedName(req.DatasetId)
 	if err != nil {
 		return nil, err
 	}
@@ -52,30 +51,17 @@ func (s *DataCredentialsService) GetCredentialsInfo(ctx context.Context, req *co
 		return nil, err
 	}
 
-	var translationMap = map[string]string{
-		"access_key": "AccessKey",
-		"secret_key": "SecretKey",
-		"api_key":    "ApiKey",
-		"username":   "Username",
-		"password":   "Password",
-	}
-
-	// Get the data fields as strings and
-	// convert secret into a map matching Credentials structure
+	// Get the data fields as strings
 	data := map[string]string{}
 	for key, value := range secret.Data {
-		if translated, found := translationMap[key]; found {
-			data[translated] = string(value)
-		} else {
-			data[key] = string(value)
-		}
+		data[key] = string(value)
 	}
 
 	// Decode into Authentication structure
 	authn := &taxonomy.Authentication{}
 	switch secret.Type {
 	case corev1.SecretTypeOpaque:
-		err = utils.DecodeToStruct(data, authn)
+		err = decodeToStruct(data, authn)
 		if err != nil {
 			return nil, errors.Wrap(err, "Invalid fields in Secret data")
 		}
@@ -93,10 +79,10 @@ func (s *DataCredentialsService) GetCredentialsInfo(ctx context.Context, req *co
 	return &connectors.DatasetCredentials{
 		DatasetId: req.DatasetId,
 		Creds: &connectors.Credentials{
-			AccessKey: utils.EmptyIfNil(authn.AccessKey),
-			SecretKey: utils.EmptyIfNil(authn.SecretKey),
-			ApiKey:    utils.EmptyIfNil(authn.ApiKey),
-			Username:  utils.EmptyIfNil(authn.Username),
-			Password:  utils.EmptyIfNil(authn.Password),
+			AccessKey: emptyIfNil(authn.AccessKey),
+			SecretKey: emptyIfNil(authn.SecretKey),
+			ApiKey:    emptyIfNil(authn.ApiKey),
+			Username:  emptyIfNil(authn.Username),
+			Password:  emptyIfNil(authn.Password),
 		}}, nil
 }

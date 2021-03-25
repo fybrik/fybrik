@@ -8,8 +8,8 @@ import (
 
 	"log"
 
-	utils "github.com/ibm/the-mesh-for-data/connectors/katalog/pkg/connector/utils"
 	connectors "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	vault "github.com/ibm/the-mesh-for-data/pkg/vault"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -29,7 +29,7 @@ type DataCatalogService struct {
 }
 
 func (s *DataCatalogService) GetDatasetInfo(ctx context.Context, req *connectors.CatalogDatasetRequest) (*connectors.CatalogDatasetInfo, error) {
-	namespace, name, err := utils.SplitNamespacedName(req.DatasetId)
+	namespace, name, err := splitNamespacedName(req.DatasetId)
 	if err != nil {
 		return nil, err
 	}
@@ -44,17 +44,17 @@ func (s *DataCatalogService) GetDatasetInfo(ctx context.Context, req *connectors
 		return nil, err
 	}
 
-	log.Printf("In GetDatasetInfo: VaultSecretPath is " + utils.VaultSecretPath(namespace, asset.Spec.SecretRef.Name))
+	log.Printf("In GetDatasetInfo: VaultSecretPath is " + vault.PathForReadingKubeSecret(namespace, asset.Spec.SecretRef.Name))
 	return &connectors.CatalogDatasetInfo{
 		DatasetId: req.DatasetId,
 		Details: &connectors.DatasetDetails{
 			Name:       req.DatasetId,
-			DataOwner:  utils.EmptyIfNil(asset.Spec.AssetMetadata.Owner),
-			DataFormat: utils.EmptyIfNil(asset.Spec.AssetDetails.DataFormat),
-			Geo:        utils.EmptyIfNil(asset.Spec.AssetMetadata.Geography),
+			DataOwner:  emptyIfNil(asset.Spec.AssetMetadata.Owner),
+			DataFormat: emptyIfNil(asset.Spec.AssetDetails.DataFormat),
+			Geo:        emptyIfNil(asset.Spec.AssetMetadata.Geography),
 			DataStore:  datastore,
 			CredentialsInfo: &connectors.CredentialsInfo{
-				VaultSecretPath: utils.VaultSecretPath(namespace, asset.Spec.SecretRef.Name),
+				VaultSecretPath: vault.PathForReadingKubeSecret(namespace, asset.Spec.SecretRef.Name),
 			},
 			Metadata: buildDatasetMetadata(asset),
 		},
@@ -77,13 +77,13 @@ func buildDatasetMetadata(asset *Asset) *connectors.DatasetMetadata {
 		}
 		componentsMetadata[componentName] = &connectors.DataComponentMetadata{
 			ComponentType: "column",
-			Tags:          utils.EmptyArrayIfNil(componentValue.Tags),
+			Tags:          emptyArrayIfNil(componentValue.Tags),
 			NamedMetadata: componentNamedMetadata,
 		}
 	}
 
 	return &connectors.DatasetMetadata{
-		DatasetTags:          utils.EmptyArrayIfNil(assetMetadata.Tags),
+		DatasetTags:          emptyArrayIfNil(assetMetadata.Tags),
 		DatasetNamedMetadata: namedMetadata,
 		ComponentsMetadata:   componentsMetadata,
 	}
@@ -100,7 +100,7 @@ func buildDataStore(asset *Asset) (*connectors.DataStore, error) {
 				Endpoint:  connection.S3.Endpoint,
 				Bucket:    connection.S3.Bucket,
 				ObjectKey: connection.S3.ObjectKey,
-				Region:    utils.EmptyIfNil(connection.S3.Region),
+				Region:    emptyIfNil(connection.S3.Region),
 			},
 		}, nil
 	case "kafka":
@@ -108,15 +108,15 @@ func buildDataStore(asset *Asset) (*connectors.DataStore, error) {
 			Type: connectors.DataStore_KAFKA,
 			Name: asset.Name,
 			Kafka: &connectors.KafkaDataStore{
-				TopicName:             utils.EmptyIfNil(connection.Kafka.TopicName),
-				BootstrapServers:      utils.EmptyIfNil(connection.Kafka.BootstrapServers),
-				SchemaRegistry:        utils.EmptyIfNil(connection.Kafka.SchemaRegistry),
-				KeyDeserializer:       utils.EmptyIfNil(connection.Kafka.KeyDeserializer),
-				ValueDeserializer:     utils.EmptyIfNil(connection.Kafka.ValueDeserializer),
-				SecurityProtocol:      utils.EmptyIfNil(connection.Kafka.SecurityProtocol),
-				SaslMechanism:         utils.EmptyIfNil(connection.Kafka.SaslMechanism),
-				SslTruststore:         utils.EmptyIfNil(connection.Kafka.SslTruststore),
-				SslTruststorePassword: utils.EmptyIfNil(connection.Kafka.SslTruststorePassword),
+				TopicName:             emptyIfNil(connection.Kafka.TopicName),
+				BootstrapServers:      emptyIfNil(connection.Kafka.BootstrapServers),
+				SchemaRegistry:        emptyIfNil(connection.Kafka.SchemaRegistry),
+				KeyDeserializer:       emptyIfNil(connection.Kafka.KeyDeserializer),
+				ValueDeserializer:     emptyIfNil(connection.Kafka.ValueDeserializer),
+				SecurityProtocol:      emptyIfNil(connection.Kafka.SecurityProtocol),
+				SaslMechanism:         emptyIfNil(connection.Kafka.SaslMechanism),
+				SslTruststore:         emptyIfNil(connection.Kafka.SslTruststore),
+				SslTruststorePassword: emptyIfNil(connection.Kafka.SslTruststorePassword),
 			},
 		}, nil
 	case "db2":
@@ -124,11 +124,11 @@ func buildDataStore(asset *Asset) (*connectors.DataStore, error) {
 			Type: connectors.DataStore_DB2,
 			Name: asset.Name,
 			Db2: &connectors.Db2DataStore{
-				Url:      utils.EmptyIfNil(connection.Db2.Url),
-				Database: utils.EmptyIfNil(connection.Db2.Database),
-				Table:    utils.EmptyIfNil(connection.Db2.Table),
-				Port:     utils.EmptyIfNil(connection.Db2.Port),
-				Ssl:      utils.EmptyIfNil(connection.Db2.Ssl),
+				Url:      emptyIfNil(connection.Db2.Url),
+				Database: emptyIfNil(connection.Db2.Database),
+				Table:    emptyIfNil(connection.Db2.Table),
+				Port:     emptyIfNil(connection.Db2.Port),
+				Ssl:      emptyIfNil(connection.Db2.Ssl),
 			},
 		}, nil
 	default:

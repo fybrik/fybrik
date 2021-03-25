@@ -80,10 +80,6 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 		m.Log.Info("Bucket allocation failed: " + err.Error())
 		return nil, err
 	}
-	if err != nil {
-		m.Log.Info("Could not fetch credentials: " + err.Error())
-		return nil, err
-	}
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
 	if err = m.Provision.CreateDataset(bucketRef, bucket, &m.Owner); err != nil {
 		m.Log.Info("Dataset creation failed: " + err.Error())
@@ -121,7 +117,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	m.ProvisionedStorage[item.Context.DataSetID] = assetInfo
 	utils.PrintStructure(&assetInfo, m.Log, "ProvisionedStorage element")
 
-	vaultSecretPath := utils.VaultPathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
+	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
 	return &app.DataStore{
 		CredentialLocation: utils.GetDatasetVaultPath(bucket.Name),
 		Vault: &app.Vault{
