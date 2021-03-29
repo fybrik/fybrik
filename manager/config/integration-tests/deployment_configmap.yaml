@@ -9,15 +9,15 @@ data:
   SECRET_PROVIDER_URL: "http://secret-provider.m4d-system:5555/get-secret"
   SECRET_PROVIDER_ROLE: "demo"
   #catalog connector
-  CATALOG_CONNECTOR_URL: "data-catalog:50085"
+  CATALOG_CONNECTOR_URL: "data-catalog:80"
   CATALOG_PROVIDER_NAME: "EGERIA"
 
   #credentials manager connector
-  CREDENTIALS_CONNECTOR_URL: "data-catalog:50085"
+  CREDENTIALS_CONNECTOR_URL: "data-catalog:80"
   CREDENTIALS_PROVIDER_NAME: "VAULT"
 
   #policy-compiler and policy manager connectors
-  MAIN_POLICY_MANAGER_CONNECTOR_URL: "policycompiler:50090"
+  MAIN_POLICY_MANAGER_CONNECTOR_URL: "policycompiler:50082"
   MAIN_POLICY_MANAGER_NAME: "MOCK"
   USE_EXTENSIONPOLICY_MANAGER: "false"
   #EXTENSIONS_POLICY_MANAGER_CONNECTOR_URL: "opa-connector:50082"

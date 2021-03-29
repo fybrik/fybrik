@@ -3,7 +3,10 @@
 
 package vault
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"errors"
+)
 
 // Dummy implementation for testing
 type Dummy struct {
@@ -36,12 +39,15 @@ func (c *Dummy) Mount(path string) error {
 }
 
 func (c *Dummy) DeleteSecret(vaultPath string) error {
-	c.values[vaultPath] = ""
+	delete(c.values, vaultPath)
 	return nil
 }
 
 func (c *Dummy) GetSecret(vaultPath string) (string, error) {
-	return c.values[vaultPath], nil
+	if s, hasKey := c.values[vaultPath]; hasKey {
+		return s, nil
+	}
+	return "", errors.New("could not find key")
 }
 
 func (c *Dummy) AddSecret(path string, credentials map[string]interface{}) error {

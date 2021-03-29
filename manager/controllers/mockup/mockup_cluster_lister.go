@@ -15,8 +15,8 @@ type ClusterLister struct {
 func (m *ClusterLister) GetClusters() ([]multicluster.Cluster, error) {
 	return []multicluster.Cluster{
 		{
-			Name:     "US-cluster",
-			Metadata: multicluster.ClusterMetadata{Region: "US", VaultAuthPath: "us-cluster"},
+			Name:     "thegreendragon",
+			Metadata: multicluster.ClusterMetadata{Region: "theshire", VaultAuthPath: "us-cluster"},
 		},
 		{
 			Name:     "Germany-cluster",

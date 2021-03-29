@@ -2,6 +2,7 @@ ROOT_DIR := ..
 include $(ROOT_DIR)/Makefile.env
 
 WITH_OPENSHIFT ?= false
+VALUES_FILE ?= "m4d/values.yaml"
 
 .PHONY: kind
 kind: export ROOT_DIR := .
@@ -36,6 +37,11 @@ vault:
 	# To enable Vault to read kuberenetes secrets clusterrole and clusterrolebinding should be added.
 	kubectl apply -f ../third_party/vault/plugin-secrets-kubernetes-reader/clusterrole.yaml -n m4d-system || true
 	kubectl apply -f ../third_party/vault/plugin-secrets-kubernetes-reader/clusterrolebinding.yaml -n m4d-system || true
+	# The following should be removed after secret-provider cleanup:
+	# Secret provider configure_vault function configures Vault kubernetes auth path by binding Vault service account to ClusterRole
+	# system:auth-delegator. This is changed to use a new created service account instead of Vault service account.
+	# This way Vault auth path is configured in a similar way in all the clusters regardless if Vault deployed on the cluster.
+	kubectl apply -f ../third_party/vault/vault-rbac.yaml -n m4d-system || true
 
 .PHONY:
 vault-setup:
@@ -45,9 +51,9 @@ vault-setup:
 m4d:
 	@echo "installing m4d ..."
 	kubectl create namespace m4d-system || true
-	helm install m4d-crd m4d-crd \
+	helm install m4d-crd m4d-crd  \
 		--namespace m4d-system --wait --timeout 120s
-	helm install m4d m4d \
+	helm install m4d m4d --values $(VALUES_FILE) \
 		--namespace m4d-system --wait --timeout 120s
 
 .PHONY: run-integration-tests

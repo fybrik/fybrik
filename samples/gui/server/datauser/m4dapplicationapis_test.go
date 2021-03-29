@@ -61,6 +61,8 @@ func deleteApplication(t *testing.T, name string) {
 }
 
 func TestApplicationAPIs(t *testing.T) {
+	SkipOnClosedSocket("localhost:8080", t)
+
 	createApplication(t, dm1, dm1name)
 	createApplication(t, dm2, dm2name)
 	listApplications(t)

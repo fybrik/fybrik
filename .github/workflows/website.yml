@@ -1,0 +1,40 @@
+name: Build website
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+env:
+  GO_VERSION: 1.13
+
+jobs:
+  website:
+    name: Build and publish website
+    runs-on: ubuntu-latest
+    env:
+      WEBSITE_LOCAL_DIR: public
+    steps:
+    - name: Install asciidoctor
+      run: sudo apt-get -y install asciidoctor
+    - uses: actions/checkout@v2
+    - name: Cache binaries
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/go/pkg/mod
+          ${{ github.workspace }}/hack/tools/bin
+        key: ${{ runner.os }}-web-${{ hashFiles('hack/tools/bin/*') }}
+        restore-keys: ${{ runner.os }}-web
+    - name: Create website
+      run: make -C website
+    - name: Publish website
+      if: ${{ github.event_name != 'pull_request' }}
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: website/${{ env.WEBSITE_LOCAL_DIR }}
+        publish_branch: gh-pages
