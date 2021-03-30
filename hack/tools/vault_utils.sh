@@ -60,6 +60,25 @@ create_policy() {
 EOF
 }
 
+# Create a policy to allow access to Vault plugin path as well as
+# for the path where dataset credentials resides. This is temporary
+# until dataset credentials path become obselete.
+# $1 - policy name
+# $2 - path
+# $3 - plugin path
+create_policy_with_plugin_path() {
+        echo "creating policy $1, to access the secrets in: $2"
+        bin/vault policy write "$1" - <<EOF
+        path "$2" {
+        capabilities = ["create", "read", "update", "delete", "list"]
+        }
+        path "$3" {
+        capabilities = ["create", "read", "update", "delete", "list"]
+        }
+EOF
+}
+
+
 # Do port-forwarding
 port_forward() {
         # Port forward, so we could access vault

@@ -7,16 +7,16 @@ package taxonomy
 type Authentication struct {
 
 	// Access key also known as AccessKeyId
-	AccessKey *string `json:"accessKey,omitempty"`
+	AccessKey *string `json:"access_key,omitempty"`
 
 	// API key used in various IAM enabled services
-	ApiKey *string `json:"apiKey,omitempty"`
+	ApiKey *string `json:"api_key,omitempty"`
 
 	// Password for basic authentication
 	Password *string `json:"password,omitempty"`
 
 	// Secret key also known as SecretAccessKey
-	SecretKey *string `json:"secretKey,omitempty"`
+	SecretKey *string `json:"secret_key,omitempty"`
 
 	// Username for basic authentication
 	Username *string `json:"username,omitempty"`
