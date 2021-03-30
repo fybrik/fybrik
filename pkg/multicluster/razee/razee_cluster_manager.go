@@ -362,7 +362,7 @@ func NewRazeeManager(url string, login string, password string, clusterGroup str
 }
 
 func NewSatConfManager(apikey string, clusterGroup string) (multicluster.ClusterManager, error) {
-	iamClient, err := iam.NewIAMClient(apikey)
+	iamClient, err := iam.NewIAMClient(apikey, "")
 	if err != nil {
 		return nil, err
 	}

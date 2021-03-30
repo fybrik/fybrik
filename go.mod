@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go v0.66.0 // indirect
 	emperror.dev/errors v0.7.0
 	github.com/IBM/dataset-lifecycle-framework/src/dataset-operator v0.0.0-20210201112050-4d77ac693ac1
-	github.com/IBM/satcon-client-go v0.1.2-0.20210210170826-405eaf53986f
+	github.com/IBM/satcon-client-go v0.1.2-0.20210329192404-b8fa1c732712
 	github.com/Microsoft/go-winio v0.4.15 // indirect
 	github.com/containerd/continuity v0.0.0-20201119173150-04c754faca46 // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
@@ -49,7 +49,6 @@ require (
 )
 
 replace (
-	github.com/IBM/satcon-client-go => github.com/froesef/satcon-client-go v0.1.2-0.20210315081252-fa7dcbeff065
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 	github.com/google/addlicense => github.com/the-mesh-for-data/addlicense v0.0.0-20200913135744-636c44b42906
 	github.com/onsi/gomega => github.com/onsi/gomega v1.10.0
