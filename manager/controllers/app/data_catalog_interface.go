@@ -39,7 +39,7 @@ func GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) erro
 	var response *dc.CatalogDatasetInfo
 	var credentialPath string
 	if input.Spec.SecretRef != "" {
-		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
 
 	if response, err = c.GetDatasetInfo(ctx, &dc.CatalogDatasetRequest{
