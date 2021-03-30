@@ -16,6 +16,7 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	dc "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/ibm/the-mesh-for-data/pkg/serde"
+	"github.com/ibm/the-mesh-for-data/pkg/vault"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -36,9 +37,14 @@ func GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) erro
 	defer cancel()
 
 	var response *dc.CatalogDatasetInfo
+	var credentialPath string
+	if input.Spec.SecretRef != "" {
+		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+	}
+
 	if response, err = c.GetDatasetInfo(ctx, &dc.CatalogDatasetRequest{
-		AppId:     utils.CreateAppIdentifier(input),
-		DatasetId: req.Context.DataSetID,
+		CredentialPath: credentialPath,
+		DatasetId:      req.Context.DataSetID,
 	}); err != nil {
 		return err
 	}

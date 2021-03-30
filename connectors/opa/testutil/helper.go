@@ -120,7 +120,7 @@ type connectorMockCatalog struct {
 }
 
 func (s *connectorMockCatalog) GetDatasetInfo(ctx context.Context, req *pb.CatalogDatasetRequest) (*pb.CatalogDatasetInfo, error) {
-	return GetCatalogInfo(req.GetAppId(), req.GetDatasetId()), nil
+	return GetCatalogInfo(req.GetCredentialPath(), req.GetDatasetId()), nil
 }
 
 func GetCatalogInfo(appID string, datasetID string) *pb.CatalogDatasetInfo {
