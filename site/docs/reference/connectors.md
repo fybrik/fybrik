@@ -88,7 +88,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| app_id | [string](#string) |  | string that identifies the application (namespace + appID) that will be used against secretProvider to obtain the realted credetnials |
+| credential_path | [string](#string) |  | link to vault plugin for reading k8s secret with user credentials |
 | dataset_id | [string](#string) |  | identifier of asset - always needed. JSON expected. Interpreted by the Connector, can contain any additional information as part of JSON |
 
 
@@ -329,7 +329,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| app_id | [string](#string) |  | string that identifies the application (namespace + appID) that will be used against secretProvider to obtain the realted credetnials |
+| credential_path | [string](#string) |  | link to vault plugin for reading k8s secret with user credentials |
 | dataset_id | [string](#string) |  | identifier of asset - always needed. JSON expected. Interpreted by the Connector, can contain any additional information as part of JSON |
 
 
@@ -377,7 +377,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| app_id | [string](#string) |  | string that identifies the application (namespace + appID) that will be used against secretProvider to obtain the realted credetnials |
+| credential_path | [string](#string) |  | link to vault plugin for reading k8s secret with user credentials |
 | app_info | [ApplicationDetails](#connectors.ApplicationDetails) |  |  |
 | datasets | [DatasetContext](#connectors.DatasetContext) | repeated |  |
 | general_operations | [AccessOperation](#connectors.AccessOperation) | repeated |  |
