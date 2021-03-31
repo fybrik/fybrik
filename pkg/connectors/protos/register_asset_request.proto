@@ -14,5 +14,5 @@ message RegisterAssetRequest {
 	Credentials creds = 1;
 	DatasetDetails dataset_details = 2; 	
 	string destination_catalog_id = 3;
-	string app_id = 4;   // reference to user credentials
+    string credential_path = 4;   // link to vault plugin for reading k8s secret with user credentials
 }

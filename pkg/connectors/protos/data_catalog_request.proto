@@ -10,5 +10,5 @@ option go_package = "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf";
 
 message CatalogDatasetRequest {
     string credential_path = 1;   // link to vault plugin for reading k8s secret with user credentials
-    string dataset_id = 2;           // identifier of asset - always needed. JSON expected. Interpreted by the Connector, can contain any additional information as part of JSON
+    string dataset_id = 2;        // identifier of asset - always needed. JSON expected. Interpreted by the Connector, can contain any additional information as part of JSON
 }

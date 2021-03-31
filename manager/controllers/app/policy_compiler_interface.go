@@ -16,7 +16,7 @@ import (
 func ConstructApplicationContext(datasetID string, input *app.M4DApplication, operation *pb.AccessOperation) *pb.ApplicationContext {
 	var credentialPath string
 	if input.Spec.SecretRef != "" {
-		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
 	return &pb.ApplicationContext{
 		AppInfo: &pb.ApplicationDetails{
