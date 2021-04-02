@@ -17,25 +17,28 @@ build:
 
 .PHONY: test
 test:
-	$(MAKE) -C pkg/policy-compiler test
-	$(MAKE) -C manager test
+	$(MAKE) -C manager pre-test
+	go test -v ./...
+	# The tests for connectors/egeria are dropped because there are none
 
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
 run-integration-tests: export DOCKER_NAMESPACE?=m4d-system
+run-integration-tests: export VALUES_FILE=m4d/integration-tests.values.yaml
 run-integration-tests:
 	$(MAKE) kind
-	$(MAKE) cluster-prepare
+	$(MAKE) -C charts vault
+	$(MAKE) -C charts cert-manager
+	$(MAKE) -C third_party/datashim deploy
 	$(MAKE) docker
 	$(MAKE) -C test/services docker-build docker-push
 	$(MAKE) cluster-prepare-wait
 	$(MAKE) configure-vault
 	$(MAKE) -C secret-provider configure-vault
-	$(MAKE) -C secret-provider deploy
-	$(MAKE) -C manager deploy-crd
-	$(MAKE) -C manager deploy_it
+	$(MAKE) -C charts m4d
 	$(MAKE) -C manager wait_for_manager
 	$(MAKE) helm
+	$(MAKE) -C pkg/helm test
 	$(MAKE) -C manager run-integration-tests
 
 .PHONY: run-deploy-tests
@@ -57,13 +60,12 @@ cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy
 	$(MAKE) -C third_party/registry deploy
 	$(MAKE) -C charts vault
-	kubectl apply -f https://raw.githubusercontent.com/IBM/dataset-lifecycle-framework/master/release-tools/manifests/dlf.yaml
-
+	$(MAKE) -C third_party/datashim deploy
 
 .PHONY: cluster-prepare-wait
 cluster-prepare-wait:
 	$(MAKE) -C third_party/cert-manager deploy-wait
-	kubectl wait --for=condition=ready pod -n dlf --all --timeout=120s
+	$(MAKE) -C third_party/datashim deploy-wait
 
 .PHONY: install
 install:

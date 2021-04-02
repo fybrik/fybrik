@@ -6,9 +6,11 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/pkg/errors"
+	"log"
 
 	connectors "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	vault "github.com/ibm/the-mesh-for-data/pkg/vault"
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -31,6 +33,7 @@ func (s *DataCatalogService) GetDatasetInfo(ctx context.Context, req *connectors
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("In GetDatasetInfo: asset namespace is " + namespace + " asset name is " + name)
 	asset, err := getAsset(ctx, s.client, namespace, name)
 	if err != nil {
 		return nil, err
@@ -41,6 +44,7 @@ func (s *DataCatalogService) GetDatasetInfo(ctx context.Context, req *connectors
 		return nil, err
 	}
 
+	log.Printf("In GetDatasetInfo: VaultSecretPath is " + vault.PathForReadingKubeSecret(namespace, asset.Spec.SecretRef.Name))
 	return &connectors.CatalogDatasetInfo{
 		DatasetId: req.DatasetId,
 		Details: &connectors.DatasetDetails{
@@ -49,7 +53,10 @@ func (s *DataCatalogService) GetDatasetInfo(ctx context.Context, req *connectors
 			DataFormat: emptyIfNil(asset.Spec.AssetDetails.DataFormat),
 			Geo:        emptyIfNil(asset.Spec.AssetMetadata.Geography),
 			DataStore:  datastore,
-			Metadata:   buildDatasetMetadata(asset),
+			CredentialsInfo: &connectors.CredentialsInfo{
+				VaultSecretPath: vault.PathForReadingKubeSecret(namespace, asset.Spec.SecretRef.Name),
+			},
+			Metadata: buildDatasetMetadata(asset),
 		},
 	}, nil
 }

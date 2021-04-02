@@ -1,0 +1,25 @@
+# Default values for Mesh for Data.
+# This is a YAML-formatted file.
+# It overrides values that are different from the default values.yaml
+
+# Global configuration applies to multiple components installed by this chart
+global:
+  hub: localhost:5000/m4d-system
+  tag: "latest"
+  imagePullPolicy: "Always"
+
+# Manager component
+manager:
+  # Set to true to enable socat in the manager pod to forward
+  # traffic from a localhost registry. Used only for development and integration tests.
+  socat: true
+
+# OPA connector component
+opaConnector:
+  # Using mock image until opa policies for tests are implemented
+  image: "serverpolicycompiler-mock"
+
+# Katalog connector component
+katalogConnector:
+  # Using mock image until data assets for tests are implemented
+  image: "data-catalog-mock"

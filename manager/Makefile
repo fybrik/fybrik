@@ -15,8 +15,10 @@ include $(ROOT_DIR)/hack/make-rules/verify.mk
 config/default/kustomization.yaml: config/default/kustomization.yaml.in
 	cp $< $@
 
+pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
+
 # Run tests
-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
+test: pre-test
 	go test ./... -coverprofile cover.out
 
 # Build manager binary
@@ -126,7 +128,7 @@ undeploy_control_plane_security: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/
 
 .PHONY: wait_for_manager
 wait_for_manager: $(TOOLBIN)/kubectl
-	$(TOOLBIN)/kubectl wait --for=condition=available -n ${KUBE_NAMESPACE} deployment/m4d-controller-manager --timeout=120s
+	$(TOOLBIN)/kubectl wait --for=condition=available -n ${KUBE_NAMESPACE} deployment/manager --timeout=120s
 
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000

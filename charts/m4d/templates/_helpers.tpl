@@ -66,6 +66,7 @@ Create the value of an image field from hub, image and tag
 {{/*
 isEnabled evaluates an enabled flag that might be set to "auto".
 Returns true if one of the following is true:
+The return value when using `include` is always a String.
 1. The flag is set to "true"
 2. The flag is set to true
 3. The flag is set to "auto" and the second parameter to this function is true 
@@ -73,12 +74,16 @@ Returns true if one of the following is true:
 {{- define "m4d.isEnabled" -}}
 {{- $flag := toString (first .) -}}
 {{- $condition := last . -}}
-{{- or (eq $flag "true") (and (eq $flag "auto") $condition) }}
+{{- if or (eq $flag "true") (and (eq $flag "auto") $condition) }}
+true
+{{- end -}}
 {{- end }}
 
 {{/*
 isRazeeEnabled checks if razee configuration is enabled
 */}}
 {{- define "m4d.isRazeeEnabled" -}}
-{{- or .Values.coordinator.razee.user .Values.coordinator.razee.apiKey .Values.coordinator.razee.iamKey  }}
+{{- if or .Values.coordinator.razee.user .Values.coordinator.razee.apiKey .Values.coordinator.razee.iamKey -}}
+true
+{{- end -}}
 {{- end }}
