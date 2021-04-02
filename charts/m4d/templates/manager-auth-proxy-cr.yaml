@@ -1,4 +1,5 @@
 {{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+{{- if eq .Values.clusterScoped "false"}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -13,3 +14,5 @@ rules:
   - subjectaccessreviews
   verbs: ["create"]
 {{- end }}
+{{- end}}
+
