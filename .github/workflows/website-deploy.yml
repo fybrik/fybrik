@@ -1,0 +1,28 @@
+name: Website Deploy
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - master
+    paths:
+      - site/**
+      - pkg/connectors/protos/**
+      - charts/m4d-crd/templates/**
+
+jobs:
+  website-deploy:
+    if: false # skip for now
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+      - name: Install Material for MkDocs
+        run: |
+          pip install mkdocs-material
+      - name: Build and Deploy
+        working-directory: ./site
+        run: mkdocs gh-deploy --force -r origin
