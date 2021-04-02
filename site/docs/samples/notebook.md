@@ -80,12 +80,12 @@ Completed all the steps in [quick start guide](../get-started/quickstart.md).
     - Click `/external` and then `Create secret`
 
     - Create the following secret:
-        - Path for this secret: `{"ServerName":"cocoMDS3","AssetGuid":"<asset ID>"}`. For example, `{"ServerName":"cocoMDS3" , "AssetGuid":"5de27155-48d3-4d78-8767-73e7b264e394"}`
+        - Path for this secret: `{"ServerName":"mds1","AssetGuid":"<asset ID>"}`. For example, `{"ServerName":"mds1" , "AssetGuid":"5de27155-48d3-4d78-8767-73e7b264e394"}`
         - Secret data key: `<access-key-id>`
         - Secrey data value: `<secret-access-key>`
     - Click `save`
     
-    Note: The path is a reference to the Egeria metadata server and asset id. In the default Egeria installation `cocoMDS3` is the metadata server name.
+    Note: The path is a reference to the Egeria metadata server and asset id. In the default Egeria installation `mds1` is the metadata server name.
 
     - Finally, kill the port-forward
 
