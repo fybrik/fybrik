@@ -10,8 +10,8 @@ fullnameOverride: ""
 # Note that these resources are still required for a valid
 # deployment. Only set this to false if you deployed cluster
 # scoped resources using a different method.
-# TODO(roee.shlomo): not implemented yet, comparing this approach to using a base chart.
-# clusterScoped: true
+
+clusterScoped: true
 
 # Global configuration applies to multiple components installed by this chart
 global:
