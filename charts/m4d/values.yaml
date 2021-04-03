@@ -84,6 +84,10 @@ coordinator:
 
   # Configures the Razee instance to be used by the coordinator manager in a multicluster setup
   razee:
+    # Overrides the multicluster group that should be used.
+    # Using Razee one can bundle clusters in a group. The controller is then limited to all
+    # the clusters registered in this group.
+    multiclusterGroup: ""
     # URL for Razee local deployment
     url: ""
     # Usernane for Razee local deployment
