@@ -1,5 +1,4 @@
 {{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
-{{- if .Values.clusterScoped}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -16,5 +15,4 @@ spec:
     control-plane: controller-manager
     {{- include "m4d.selectorLabels" . | nindent 4 }}
 {{- end }}
-{{- end}}
 
