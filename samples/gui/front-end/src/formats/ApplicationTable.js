@@ -73,7 +73,7 @@ const ApplicationTable = (props) => {
   // remove/edit/add credentials buttons
   const TableCellActions = (data) => {
     return (<Table.Cell textAlign='center'>
-      <Modal trigger={<Button basic icon='remove circle' data-tooltip='delete' onClick={() => onDeleteClicked(data.application.metadata.uid, data.application.metadata.name, data.application.spec.userSecretRef)} />}
+      <Modal trigger={<Button basic icon='remove circle' data-tooltip='delete' onClick={() => onDeleteClicked(data.application.metadata.uid, data.application.metadata.name, data.application.spec.secretRef)} />}
         size={'tiny'}
         open={openQ.open}
         onOpen={onOpen}

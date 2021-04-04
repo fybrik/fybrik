@@ -118,11 +118,6 @@ func CreateDataSetIdentifier(datasetID string) string {
 	return id[:len(id)-1]
 }
 
-// CreateAppIdentifier constructs an identifier for a m4d application: namespace/name.
-func CreateAppIdentifier(application *app.M4DApplication) string {
-	return application.Namespace + "/" + application.Name
-}
-
 // Some k8s objects only allow for a length of 63 characters.
 // This method shortens the name keeping a prefix and using the last 5 characters of the
 // new name for the hash of the postfix.
