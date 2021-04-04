@@ -38,7 +38,7 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "description": "Unique name of the data set"
+                    "description": "Name of the data set"
                 },
                 "tags": { "$ref": "catalog.values.schema.json#/definitions/valid_metadata"},
                 "columns": {

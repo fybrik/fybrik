@@ -4,11 +4,6 @@
     "title": "Data Catalog Values",
     "description": "Values defined in the data catalog.",
     "definitions": {
-        "data_sensitivity": {
-            "type": "string",
-            "description": "Level of sensitivity of the data.",
-            "enum": ["confidential", "personal", "special personal"]
-        },
         "geography_name": {
             "type": "string",
             "description": "Name of the geography",
@@ -34,22 +29,20 @@
             "description": "A list of valid key value metadata pairs describing aspects of the data.  Values must be one of the items indicated.",
             "items": {
                 "properties": {
-                    "data_sensitivity": {"$ref": "#/definitions/data_sensitivity"},
                     "geography_name": {"$ref": "#/definitions/geography_name"},
                     "data_type": {"$ref": "#/definitions/data_type"},
                     "geography": {"$ref": "catalog.structs.schema.json#/definitions/geography"}
                 },
-                "additionalProperties": false
+                "additionalProperties": true
             }           
         }
     },
     "properties": {
-        "geography_name": {"type": "string", "$ref": "#/definitions/geography_name"},
-        "geography_type": {"type": "string", "$ref": "#/definitions/geography_type"},
-        "data_sensitivity": { "type": "string", "$ref": "#/definitions/data_sensitivity"},
-        "data_format": { "type": "string", "$ref": "#/definitions/data_format"},
-        "data_type": { "type": "string", "$ref":"#/definitions/data_type"},
-        "valid_metadata": {"type": "object", "$ref:": "#/defintions/valid_metadata"}
+        "geography_name": {"$ref": "#/definitions/geography_name"},
+        "geography_type": {"$ref": "#/definitions/geography_type"},
+        "data_format": {"$ref": "#/definitions/data_format"},
+        "data_type": {"$ref":"#/definitions/data_type"},
+        "valid_metadata": {"$ref:": "#/defintions/valid_metadata"}
     },
     "additionalProperties": false
 

@@ -20,16 +20,11 @@ var (
 	geographyGood2 = "{\"geography\": {\"name\": \"Turkey\"}}"
 	geographyBad1  = "{\"geography\": {\"name\": \"BlaBla\", \"geography_type\": \"country\"}}"
 
-	dataSensitivityGood = "{\"data_sensitivity\":\"confidential\"}"
-	dataSensitivityBad  = "{\"data_sensitivity\":\"whatever\"}"
-
 	dataFormatGood = "{\"data_format\":\"arrow\"}"
 	dataFormatBad  = "{\"data_format\":\"whatever\"}"
 
 	dataTypeGood = "{\"data_type\":\"tabular\"}"
 	dataTypeBad  = "{\"data_format\":\"whatever\"}"
-
-	//	resourceGood1 = "{\"resource\": {\"name\":\"file1\", \"tags\":[{\"a\":\"confidential\"}, \"confidential\", {\"category\":\"tabular\"}, {\"location\":{\"name\":\"Turkey\"}}], \"columns\":[{\"name\":\"col1\"}, {\"name\":\"col2\",\"tags\":[{\"data_sensitivity\":\"confidential\"}]}]}}"
 
 	// {"resource":{"name":"file1"}}
 	resourceGoodNameOnly = "{\"resource\": {\"name\":\"file1\"}}"
@@ -40,8 +35,8 @@ var (
 	// {"resource":{"name":"file1", "tags":[{"geography":{"name":"Turkey"}}], "columns":[{"name":"col1"}, {"name":"col2"}]}}
 	resourceGoodCols = "{\"resource\":{\"name\":\"file1\", \"tags\":[{\"geography\":{\"name\":\"Turkey\"}}], \"columns\":[{\"name\":\"col1\"}, {\"name\":\"col2\"}]}}"
 
-	// {"resource":{"name":"file1", "tags":[{"geography":{"name":"Turkey"}}], "columns":[{"name":"col1", "tags":[{"data_sensitivity":"confidential"}]}, {"name":"col2"}]}}
-	resourceGoodColsTags = "{\"resource\":{\"name\":\"file1\", \"tags\":[{\"geography\":{\"name\":\"Turkey\"}}], \"columns\":[{\"name\":\"col1\", \"tags\":[{\"data_sensitivity\":\"confidential\"}]}, {\"name\":\"col2\"}]}}"
+	// {"resource":{"name":"file1", "tags":[{"geography":{"name":"Turkey"}}], "columns":[{"name":"col1", "tags":[{"geography_name":"Turkey"}]}, {"name":"col2"}]}}
+	resourceGoodColsTags = "{\"resource\":{\"name\":\"file1\", \"tags\":[{\"geography\":{\"name\":\"Turkey\"}}], \"columns\":[{\"name\":\"col1\", \"tags\":[{\"geography_name\":\"Turkey\"}]}, {\"name\":\"col2\"}]}}"
 
 	// {"resource":{"tags":[{"geography":{"name":"Turkey"}}]}}
 	resourceBadNoName = "{\"resource\": {\"tags\":[{\"geography\":{\"name\":\"Turkey\"}}]}}"
@@ -49,11 +44,11 @@ var (
 	// {"resource":{"name":"file1", "tags":[{"geography":{"name":"xxx"}}]}}
 	resourceBadInvalidGeo = "{\"resource\":{\"name\":\"file1\", \"tags\":[{\"geography\":{\"name\":\"xxx\"}}]}}"
 
-	// {"resource":{"name":"file1", "tags":[{"geography":{"name":"Turkey"}}], "columns":[{"name":"col1", "tags":[{"data_sensitivity":"xxx"}]}, {"name":"col2"}]}}
-	resourceBadInvalidTagVal = "{\"resource\":{\"name\":\"file1\", \"tags\":[{\"geography\":{\"name\":\"Turkey\"}}], \"columns\":[{\"name\":\"col1\", \"tags\":[{\"data_sensitivity\":\"xxx\"}]}, {\"name\":\"col2\"}]}}"
+	// {"resource":{"name":"file1", "tags":[{"geography":{"name":"Turkey"}}], "columns":[{"name":"col1", "tags":[{"geography_name":"xxx"}]}, {"name":"col2"}]}}
+	resourceBadInvalidTagVal = "{\"resource\":{\"name\":\"file1\", \"tags\":[{\"geography\":{\"name\":\"Turkey\"}}], \"columns\":[{\"name\":\"col1\", \"tags\":[{\"geography_name\":\"xxx\"}]}, {\"name\":\"col2\"}]}}"
 
-	// {"resource":{"name":"file1", "tags":[{"geography":{"name":"Turkey"}}], "columns":[{"name":"col1", "tags":[{"badkey":"confidential"}]}, {"name":"col2"}]}}
-	resourceBadInvalidTagKey = "{\"resource\":{\"name\":\"file1\", \"tags\":[{\"geography\":{\"name\":\"Turkey\"}}], \"columns\":[{\"name\":\"col1\", \"tags\":[{\"badkey\":\"confidential\"}]}, {\"name\":\"col2\"}]}}"
+	// {"resource":{"name":"file1", "tags":[{"geography":{"name":"Turkey"}}], "columns":[{"name":"col1", "tags":[{"badkey":"Turkey"}]}, {"name":"col2"}]}}
+	resourceGoodInvalidTagKey = "{\"resource\":{\"name\":\"file1\", \"tags\":[{\"geography\":{\"name\":\"Turkey\"}}], \"columns\":[{\"name\":\"col1\", \"tags\":[{\"badkey\":\"Turkey\"}]}, {\"name\":\"col2\"}]}}"
 )
 
 // validateTaxonomy loads a json schema taxonomy from the indicated file, and validates the jsonData against the taxonomy.
@@ -83,9 +78,6 @@ func validateTaxonomy(t *testing.T, taxonomyFile string, jsonData string, testNa
 }
 
 func TestCatalogTaxonomy(t *testing.T) {
-	validateTaxonomy(t, catalogTaxValsName, dataSensitivityGood, "dataSensitivityGood", true)
-	validateTaxonomy(t, catalogTaxValsName, dataSensitivityBad, "dataSensitivityBad", false)
-
 	validateTaxonomy(t, catalogTaxValsName, dataFormatGood, "dataFormatGood", true)
 	validateTaxonomy(t, catalogTaxValsName, dataFormatBad, "dataFormatBad", false)
 
@@ -104,5 +96,5 @@ func TestCatalogTaxonomy(t *testing.T) {
 	validateTaxonomy(t, catalogTaxStructsName, resourceBadNoName, "resourceBadNoName", false)
 	validateTaxonomy(t, catalogTaxStructsName, resourceBadInvalidGeo, "resourceBadInvalidGeo", false)
 	validateTaxonomy(t, catalogTaxStructsName, resourceBadInvalidTagVal, "resourceBadInvalidTagVal", false)
-	validateTaxonomy(t, catalogTaxStructsName, resourceBadInvalidTagKey, "resourceBadInvalidTagKey", false)
+	validateTaxonomy(t, catalogTaxStructsName, resourceGoodInvalidTagKey, "resourceBadInvalidTagKey", true)
 }
