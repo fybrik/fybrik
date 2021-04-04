@@ -1,5 +1,6 @@
 {{- $autoFlag := and .Values.manager.enabled .Values.coordinator.enabled (eq .Values.coordinator.catalog "katalog") }}
 {{- if include "m4d.isEnabled" (tuple .Values.katalogConnector.enabled $autoFlag) }}
+{{- if .Values.clusterScoped }}
 # Grant katalog-connector the katalog-editor Role.
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -13,4 +14,5 @@ subjects:
 - kind: ServiceAccount
   name: {{ .Values.katalogConnector.serviceAccount.name | default "default" }}
   namespace: {{ .Release.Namespace }}
+{{- end }}
 {{- end }}

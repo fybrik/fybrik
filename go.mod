@@ -5,7 +5,7 @@ go 1.13
 require (
 	cloud.google.com/go v0.66.0 // indirect
 	emperror.dev/errors v0.7.0
-	github.com/IBM/satcon-client-go v0.1.2-0.20210210170826-405eaf53986f
+	github.com/IBM/satcon-client-go v0.1.2-0.20210329192404-b8fa1c732712
 	github.com/Microsoft/go-winio v0.4.15 // indirect
 	github.com/containerd/continuity v0.0.0-20201119173150-04c754faca46 // indirect
 	github.com/datashim-io/datashim/src/dataset-operator v0.0.0-20210322095623-e5d70b250696
