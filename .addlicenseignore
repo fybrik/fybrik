@@ -1,10 +1,10 @@
-website/*
-website/*/*
-website/*/*/*
-website/*/*/*/*
-website/*/*/*/*/*
-website/*/*/*/*/*/*
-website/*/*/*/*/*/*/*
+site/*
+site/*/*
+site/*/*/*
+site/*/*/*/*
+site/*/*/*/*/*
+site/*/*/*/*/*/*
+site/*/*/*/*/*/*/*
 
 samples/*
 samples/*/*
