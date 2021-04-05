@@ -49,8 +49,7 @@
                         "properties": {
                             "name": {
                                 "type": "string",
-                                "description": "name of column or component",
-                                "uniqueItems": true
+                                "description": "name of column or component"
                             },
                             "tags": { "$ref": "catalog.values.schema.json#/definitions/valid_metadata"}
                         },
