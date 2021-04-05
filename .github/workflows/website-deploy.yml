@@ -7,21 +7,37 @@ on:
       - master
     paths:
       - site/**
+      - .github/workflows/website-*
       - pkg/connectors/protos/**
       - charts/m4d-crd/templates/**
-
+  workflow_dispatch:
 jobs:
   website-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - id: version
+        name: Infer version
+        run: echo ::set-output name=version::${GITHUB_REF#refs/*/}
       - name: Install Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.x
+          python-version: 3.8
       - name: Install Material for MkDocs
         run: |
           pip install mkdocs-material
-      - name: Build and Deploy
+          pip install mike
+      - name: setup git config
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "noreply@github.com"
+      - name: Build and Deploy (dev)
+        if: github.ref == 'refs/heads/master'
         working-directory: ./site
-        run: mkdocs gh-deploy --force -r origin
+        run: mike deploy --push --remote origin --branch site dev
+      - name: Build and Deploy (tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        working-directory: ./site
+        run: mike deploy --push --remote origin --branch site ${{ steps.version.outputs.version }} latest
