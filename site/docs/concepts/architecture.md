@@ -11,7 +11,7 @@ The primary interaction object for a data user is the `M4DApplication` CRD where
 
 ![Architecture](../static/workflow_multicluster.svg)
 
-Before the data user can perform any actions a data operator has to [install](../get-started/quickstart-v2.md) the Mesh for Data and modules. 
+Before the data user can perform any actions a data operator has to [install](../get-started/quickstart.md) the Mesh for Data and modules. 
 [Modules](./modules.md) are an extensible mechanism for processing data.
 Modules can provide read/write access or produce implicit copies that serve as lower latency caches of remote assets. Modules also enforce policies defined for data assets.
 
