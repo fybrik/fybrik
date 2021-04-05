@@ -1,0 +1,32 @@
+{{- $autoFlag := and .Values.manager.enabled .Values.coordinator.enabled (eq .Values.coordinator.catalog "katalog") }}
+{{- if include "m4d.isEnabled" (tuple .Values.katalogConnector.enabled $autoFlag) }}
+{{- if .Values.katalogConnector.autoscaling.enabled }}
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: katalog-connector
+  labels:
+    app.kubernetes.io/component: katalog-connector
+    {{- include "m4d.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: katalog-connector
+  minReplicas: {{ .Values.katalogConnector.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.katalogConnector.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.katalogConnector.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: {{ .Values.katalogConnector.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.katalogConnector.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        targetAverageUtilization: {{ .Values.katalogConnector.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}
+{{- end }}

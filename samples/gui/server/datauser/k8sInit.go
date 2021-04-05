@@ -4,52 +4,21 @@
 package datauser
 
 import (
-	"flag"
 	"io/ioutil"
-	"os"
 	"strings"
 
+	"emperror.dev/errors"
+	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	kclient "sigs.k8s.io/controller-runtime/pkg/client"
+	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-const (
-	// CRDPlural is the plural name of the resource
-	CRDPlural string = "m4dapplications"
-
-	// CRDGroup is the group with which the resource is associated
-	CRDGroup string = "app.m4d.ibm.com"
-
-	// CRDVersion version of the resource's implementation
-	CRDVersion string = "v1alpha1"
-
-	// FullCRDName is the concatenation of the plural name + the group
-	FullCRDName string = CRDPlural + "." + CRDGroup
-)
-
-// K8sInit assumes we are running within the kubernetes cluster
-func K8sInit() (*DMAClient, error) {
-	// For local testing set KUBECONFIG to $HOME/.kube/config
-	// It is unset for deployment
-
-	kubeconfigArg := ""
-	if kubeconfigpath := os.Getenv("KUBECONFIG"); kubeconfigpath != "" {
-		kubeconf := flag.String("kubeconf", kubeconfigpath, "Path to a kube config. Only required if out-of-cluster.")
-		flag.Parse()
-		kubeconfigArg = *kubeconf
-	}
-
-	config, err := GetClientConfig(kubeconfigArg)
-
-	if err != nil {
-		return nil, err
-	}
-
-	dmaClient, err := NewForConfig(config)
-	return dmaClient, err
+// K8sClient contains the contextual info about the REST client for k8s
+type K8sClient struct {
+	client    kclient.Client
+	namespace string
 }
 
 // GetCurrentNamespace returns the namespace in which the REST api service is deployed - which should be a user namespace
@@ -62,27 +31,15 @@ func GetCurrentNamespace() string {
 	return "default"
 }
 
-// GetClientConfig returns config for accessing kubernetes
-func GetClientConfig(kubeconfig string) (*rest.Config, error) {
-	if kubeconfig != "" {
-		return clientcmd.BuildConfigFromFlags("", kubeconfig)
-	}
-	return rest.InClusterConfig()
-}
+// K8sInit initializes a client to communicate with kubernetes
+func K8sInit() (*K8sClient, error) {
+	newScheme := runtime.NewScheme()
+	_ = clientgoscheme.AddToScheme(newScheme)
+	_ = app.AddToScheme(newScheme)
 
-// NewForConfig configures the client
-func NewForConfig(cfg *rest.Config) (*DMAClient, error) {
-	config := *cfg
-	config.ContentConfig.GroupVersion = &schema.GroupVersion{Group: CRDGroup, Version: CRDVersion}
-	config.APIPath = "/apis"
-	config.ContentType = runtime.ContentTypeJSON
-	config.UserAgent = rest.DefaultKubernetesUserAgent()
-	config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
-
-	client, err := rest.RESTClientFor(&config)
+	client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: newScheme})
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Failed to create client")
 	}
-
-	return &DMAClient{client: client, namespace: GetCurrentNamespace(), plural: CRDPlural, codec: runtime.NewParameterCodec(scheme.Scheme)}, nil
+	return &K8sClient{client: client, namespace: GetCurrentNamespace()}, nil
 }

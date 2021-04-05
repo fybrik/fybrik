@@ -7,9 +7,6 @@ all: manager
 
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 DOCKER_NAME ?= manager
-DOCKER_TAGNAME ?= latest
-DOCKER_FILE = Dockerfile
-DOCKER_CONTEXT = .
 GO_OUTPUT_FILE = manager
 KUBE_NAMESPACE ?= m4d-system
 include $(ROOT_DIR)/hack/make-rules/docker.mk
@@ -18,8 +15,10 @@ include $(ROOT_DIR)/hack/make-rules/verify.mk
 config/default/kustomization.yaml: config/default/kustomization.yaml.in
 	cp $< $@
 
+pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
+
 # Run tests
-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
+test: pre-test
 	go test ./... -coverprofile cover.out
 
 # Build manager binary
@@ -44,7 +43,7 @@ manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
 		$(TOOLBIN)/yq eval '.metadata.annotations."cert-manager.io/inject-ca-from" |= "{{ .Release.Namespace }}/serving-cert"' - | \
 		$(TOOLBIN)/yq eval '(.metadata.name | select(. == "mutating-webhook-configuration")) = "{{ .Release.Namespace }}-mutating-webhook"' - | \
 		$(TOOLBIN)/yq eval '(.metadata.name | select(. == "validating-webhook-configuration")) = "{{ .Release.Namespace }}-validating-webhook"' - | \
-		$(TOOLBIN)/yq eval '(.webhooks.[].clientConfig.service.namespace) = "{{ .Release.Namespace }}"' - > $(ROOT_DIR)/charts/m4d/templates/webhook-configs.yaml
+		$(TOOLBIN)/yq eval '(.webhooks.[].clientConfig.service.namespace) = "{{ .Release.Namespace }}"' - > $(ROOT_DIR)/charts/m4d/files/webhook-configs.yaml
 
 # Install CRDs into a cluster
 .PHONY: install
@@ -80,10 +79,6 @@ deploy: manifests $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/default/kustomi
 # Delete controller in the configured Kubernetes cluster in ~/.kube/config
 undeploy: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl manifests config/default/kustomization.yaml
 	$(TOOLBIN)/kustomize build config/default | $(TOOLBIN)/kubectl delete -f -
-
-# Build manager binary as linux binary
-build-linux: generate vet
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
 
 # Overwrite docker-build from docker.mk
 docker-build: generate
@@ -133,7 +128,7 @@ undeploy_control_plane_security: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl config/
 
 .PHONY: wait_for_manager
 wait_for_manager: $(TOOLBIN)/kubectl
-	$(TOOLBIN)/kubectl wait --for=condition=available -n ${KUBE_NAMESPACE} deployment/m4d-controller-manager --timeout=120s
+	$(TOOLBIN)/kubectl wait --for=condition=available -n ${KUBE_NAMESPACE} deployment/manager --timeout=120s
 
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000

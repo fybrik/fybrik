@@ -5,6 +5,10 @@ DOCKER_NAME ?= secret-provider
 DOCKER_TAGNAME ?= latest
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 
+.PHONY: docker-build
+docker-build:
+	docker build . -t ${IMG}
+
 .PHONY: deploy
 deploy:
 	cd deploy && ./deploy.sh deploy

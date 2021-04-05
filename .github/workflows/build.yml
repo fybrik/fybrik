@@ -9,9 +9,6 @@ on:
       - master
 
 env:
-  DOCKER_HOSTNAME: ghcr.io
-  DOCKER_USERNAME: the-mesh-for-data
-  ACTIVE_CI: travisci # This parameter defines which CI should push to the docker repository
   GO_VERSION: 1.13
   JAVA_VERSION: 11
 
@@ -19,9 +16,6 @@ jobs:
   verify:
     name: Verify
     runs-on: ubuntu-latest
-    env:
-      DOCKER_HOSTNAME: "localhost:5000"
-      DOCKER_NAMESPACE: m4d-system
     steps:
     - name: Install Go
       uses: actions/setup-go@v2
@@ -43,9 +37,6 @@ jobs:
   test:
     name: Unit tests
     runs-on: ubuntu-latest
-    env:
-      DOCKER_HOSTNAME: "localhost:5000"
-      DOCKER_NAMESPACE: m4d-system
     steps:
     - name: Set up JDK
       uses: actions/setup-java@v1
@@ -99,10 +90,10 @@ jobs:
       run: make run-integration-tests
     - run: docker images
     - name: Save images
-      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
+      if: ${{ github.event_name != 'pull_request' }}
       run: make save-images
     - name: Upload images
-      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
+      if: ${{ github.event_name != 'pull_request' }}
       uses: actions/upload-artifact@v2
       with:
         name: images
@@ -115,68 +106,21 @@ jobs:
     env:
       DOCKER_HOSTNAME: "localhost:5000"
       DOCKER_NAMESPACE: m4d-system
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     needs: [verify, test, integration-tests]
     if: ${{ github.event_name != 'pull_request' }}
     steps:
     - uses: actions/checkout@v2
     - name: Download artifact
-      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
+      if: ${{ github.event_name != 'pull_request' }}
       uses: actions/download-artifact@v2
       with:
         name: images
     - name: Load images
-      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
+      if: ${{ github.event_name != 'pull_request' }}
       run: docker load -i images.tar
     - run: docker images
     - name: Publish images
-      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
+      if: ${{ github.event_name != 'pull_request' }}
       run: make docker-retag-and-push-public && make helm-push-public
-
-  build_website:
-    name: Build website
-    runs-on: ubuntu-latest
-    env:
-      WEBSITE_LOCAL_DIR: public
-    steps:
-    - name: Install asciidoctor
-      run: sudo apt-get -y install asciidoctor
-    - uses: actions/checkout@v2
-    - name: Cache binaries
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/go/pkg/mod
-          ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-web-${{ hashFiles('hack/tools/bin/*') }}
-        restore-keys: ${{ runner.os }}-web
-    - name: Create website
-      run: make -C website
-    - name: Upload website artifact
-      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: website
-        path: website/${{ env.WEBSITE_LOCAL_DIR }}
-        retention-days: 1
-
-  publish_website:
-    name: Publish website
-    runs-on: ubuntu-latest
-    env:
-      WEBSITE_LOCAL_DIR: public
-    needs: [verify, test, integration-tests, build_website]
-    if: ${{ github.event_name != 'pull_request' }}
-    steps:
-    - uses: actions/checkout@v2
-    - name: Download website artifact
-      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
-      uses: actions/download-artifact@v2
-      with:
-        name: website
-    - name: Publish website
-      if: ${{ github.event_name != 'pull_request' && env.ACTIVE_CI == 'gh_actions' }}
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: website/${{ env.WEBSITE_LOCAL_DIR }}
-        publish_branch: gh-pages

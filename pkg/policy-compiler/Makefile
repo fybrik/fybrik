@@ -26,26 +26,8 @@ clean:
 	$(MAKE) -C $(ROOT_DIR)/test/services/pilot/catalog-credential-mock clean
 	$(MAKE) -C $(ROOT_DIR)/test/services/pilot/policy-manager-mock clean
 
-.PHONY: policy-compiler-test
-policy-compiler-test:
-	go test ./... -coverprofile=coverage.out
-	go tool cover -func=coverage.out
-	#go tool cover -html=coverage.out
-
 .PHONY: test
-test: policy-compiler-test
-	$(MAKE) -C $(ROOT_DIR)/connectors test
-	$(MAKE) -C $(ROOT_DIR)/test/services/pilot/catalog-credential-mock test
-	$(MAKE) -C $(ROOT_DIR)/test/services/pilot/policy-manager-mock test
-
-.PHONY: docker-all
-docker-all:
-	$(MAKE) -C $(ROOT_DIR)/connectors docker-all
-	$(MAKE) -C $(ROOT_DIR)/test/services/pilot/catalog-credential-mock docker-all
-	$(MAKE) -C $(ROOT_DIR)/test/services/pilot/policy-manager-mock docker-all
-
-.PHONY: docker-rmi
-docker-rmi:
-	$(MAKE) -C $(ROOT_DIR)/connectors docker-rmi
-	$(MAKE) -C $(ROOT_DIR)/test/services/pilot/catalog-credential-mock docker-rmi
-	$(MAKE) -C $(ROOT_DIR)/test/services/pilot/policy-manager-mock docker-rmi
+test: 
+	go test ./... -coverprofile=coverage.out
+	#go tool cover -func=coverage.out
+	#go tool cover -html=coverage.out

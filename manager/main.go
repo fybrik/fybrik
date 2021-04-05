@@ -23,7 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	comv1alpha1 "github.com/IBM/dataset-lifecycle-framework/src/dataset-operator/pkg/apis/com/v1alpha1"
+	comv1alpha1 "github.com/datashim-io/datashim/src/dataset-operator/pkg/apis/com/v1alpha1"
 	appv1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app"
@@ -78,7 +78,14 @@ func main() {
 	flag.StringVar(&namespace, "namespace", "", "The namespace to which this controller manager is limited.")
 	flag.Parse()
 
-	if !enableAllControllers && !enableApplicationController && !enableBlueprintController && !enableMotionController {
+	if enableAllControllers {
+		enableApplicationController = true
+		enableBlueprintController = true
+		enablePlotterController = true
+		enableMotionController = true
+	}
+
+	if !enableApplicationController && !enablePlotterController && !enableBlueprintController && !enableMotionController {
 		setupLog.Info("At least one controller flag must be set!")
 		os.Exit(1)
 	}
@@ -116,14 +123,16 @@ func main() {
 	}
 
 	// Initialize ClusterManager
-	clusterManager, err := NewClusterManager(mgr)
-
-	if err != nil {
-		setupLog.Error(err, "unable to initialize cluster manager")
-		os.Exit(1)
+	var clusterManager multicluster.ClusterManager
+	if enableApplicationController || enablePlotterController {
+		clusterManager, err = NewClusterManager(mgr)
+		if err != nil {
+			setupLog.Error(err, "unable to initialize cluster manager")
+			os.Exit(1)
+		}
 	}
 
-	if enableApplicationController || enableAllControllers {
+	if enableApplicationController {
 		// Initiate vault client
 		vaultConn, errVaultSetup := initVaultConnection()
 		if errVaultSetup != nil {
@@ -142,7 +151,16 @@ func main() {
 		}
 	}
 
-	if enableBlueprintController || enableAllControllers {
+	if enablePlotterController {
+		// Initiate the Plotter Controller
+		plotterController := app.NewPlotterReconciler(mgr, "Plotter", clusterManager)
+		if err := plotterController.SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", plotterController.Name)
+			os.Exit(1)
+		}
+	}
+
+	if enableBlueprintController {
 		// Initiate the Blueprint Controller
 		blueprintController := app.NewBlueprintReconciler(mgr, "Blueprint", new(helm.Impl))
 		if err := blueprintController.SetupWithManager(mgr); err != nil {
@@ -151,11 +169,7 @@ func main() {
 		}
 	}
 
-	if enablePlotterController || enableAllControllers {
-		app.SetupPlotterController(mgr, clusterManager)
-	}
-
-	if enableMotionController || enableAllControllers {
+	if enableMotionController {
 		motion.SetupMotionControllers(mgr)
 	}
 
@@ -209,15 +223,16 @@ func initVaultConnection() (vault.Interface, error) {
 // cluster manager instance should be initiated.
 func NewClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error) {
 	setupLog := ctrl.Log.WithName("setup")
+	multiClusterGroup := os.Getenv("MULTICLUSTER_GROUP")
 	if user, razeeLocal := os.LookupEnv("RAZEE_USER"); razeeLocal {
 		razeeURL := strings.TrimSpace(os.Getenv("RAZEE_URL"))
 		password := strings.TrimSpace(os.Getenv("RAZEE_PASSWORD"))
 
 		setupLog.Info("Using razee local at " + razeeURL)
-		return razee.NewRazeeManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password)
+		return razee.NewRazeeManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password, multiClusterGroup)
 	} else if apiKey, satConf := os.LookupEnv("IAM_API_KEY"); satConf {
 		setupLog.Info("Using IBM Satellite config")
-		return razee.NewSatConfManager(strings.TrimSpace(apiKey))
+		return razee.NewSatConfManager(strings.TrimSpace(apiKey), multiClusterGroup)
 	} else {
 		setupLog.Info("Using local cluster manager")
 		return local.NewManager(mgr.GetClient(), utils.GetSystemNamespace())

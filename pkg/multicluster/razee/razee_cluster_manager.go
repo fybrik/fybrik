@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/IBM/satcon-client-go/client/types"
+
 	"github.com/IBM/satcon-client-go/client"
 	"github.com/IBM/satcon-client-go/client/auth/iam"
 	"github.com/IBM/satcon-client-go/client/auth/local"
@@ -33,17 +35,31 @@ func init() {
 }
 
 type ClusterManager struct {
-	orgID string
-	con   client.SatCon
-	log   logr.Logger
+	orgID        string
+	clusterGroup string
+	con          client.SatCon
+	log          logr.Logger
 }
 
 func (r *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	var clusters []multicluster.Cluster
-	razeeClusters, err := r.con.Clusters.ClustersByOrgID(r.orgID)
-	if err != nil {
-		return nil, err
+	var razeeClusters []types.Cluster
+	var err error
+	if r.clusterGroup != "" {
+		r.log.Info("Using clusterGroup to fetch cluster info", "clusterGroup", r.clusterGroup)
+		group, err := r.con.Groups.GroupByName(r.orgID, r.clusterGroup)
+		if err != nil {
+			return nil, err
+		}
+		razeeClusters = group.Clusters
+	} else {
+		r.log.Info("Using all clusters in organization as reference clusters.")
+		razeeClusters, err = r.con.Clusters.ClustersByOrgID(r.orgID)
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	for _, c := range razeeClusters {
 		resourceContent, err := r.con.Resources.ResourceContent(r.orgID, c.ClusterID, clusterMetadataConfigMapSL)
 		if err != nil {
@@ -319,7 +335,7 @@ func channelName(cluster string, name string) string {
 	return "m4d.ibm.com" + "-" + cluster + "-" + name
 }
 
-func NewRazeeManager(url string, login string, password string) (multicluster.ClusterManager, error) {
+func NewRazeeManager(url string, login string, password string, clusterGroup string) (multicluster.ClusterManager, error) {
 	localAuth, err := local.NewClient(url, login, password)
 	if err != nil {
 		return nil, err
@@ -335,17 +351,18 @@ func NewRazeeManager(url string, login string, password string) (multicluster.Cl
 		return nil, errors.New("could not retrieve login information of Razee")
 	}
 
-	logger.Info("Initializing Razee local", "orgId", me.OrgId)
+	logger.Info("Initializing Razee local", "orgId", me.OrgId, "clusterGroup", clusterGroup)
 
 	return &ClusterManager{
-		orgID: me.OrgId,
-		con:   con,
-		log:   logger,
+		orgID:        me.OrgId,
+		clusterGroup: clusterGroup,
+		con:          con,
+		log:          logger,
 	}, nil
 }
 
-func NewSatConfManager(apikey string) (multicluster.ClusterManager, error) {
-	iamClient, err := iam.NewIAMClient(apikey)
+func NewSatConfManager(apikey string, clusterGroup string) (multicluster.ClusterManager, error) {
+	iamClient, err := iam.NewIAMClient(apikey, "")
 	if err != nil {
 		return nil, err
 	}
@@ -365,11 +382,12 @@ func NewSatConfManager(apikey string) (multicluster.ClusterManager, error) {
 
 	logger := ctrl.Log.WithName("RazeeManager")
 
-	logger.Info("Initializing Razee with IBM Satellite Config", "orgId", me.OrgId)
+	logger.Info("Initializing Razee with IBM Satellite Config", "orgId", me.OrgId, "clusterGroup", clusterGroup)
 
 	return &ClusterManager{
-		orgID: me.OrgId,
-		con:   con,
-		log:   logger,
+		orgID:        me.OrgId,
+		clusterGroup: clusterGroup,
+		con:          con,
+		log:          logger,
 	}, nil
 }

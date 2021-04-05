@@ -1,0 +1,47 @@
+# Default values for Mesh for Data.
+# This is a YAML-formatted file.
+# It overrides values that are different from the default values.yaml
+
+# Global configuration applies to multiple components installed by this chart
+global:
+  hub: localhost:5000/m4d-system
+  tag: "latest"
+  imagePullPolicy: "Always"
+
+# Cluster metadata values
+cluster:
+  # Set to the name of the cluster.
+  name: kind-kind
+  # Set to cluster zone.
+  zone: localhost
+  # Set to cluster region.
+  region: homeoffice
+  # Set to the cluster Vault auth method path.
+  vaultAuthPath: kubernetes
+
+# Configuration when deploying to a coordinator cluster.
+coordinator:
+  # Configures the Razee instance to be used by the coordinator manager in a multicluster setup
+  razee:
+    # URL for Razee local deployment
+    url: "http://control-control-plane:30333"
+    # Usernane for Razee local deployment (dev only - fake login)
+    user: "razee-dev@example.com"
+    # Password for Razee local deployment (dev only - fake password)
+    password: "password123"
+
+# Manager component
+manager:
+  # Set to true to enable socat in the manager pod to forward
+  # traffic from a localhost registry. Used only for development and integration tests.
+  socat: true
+
+# OPA connector component
+opaConnector:
+  # Image name or a hub/image[:tag]
+  image: "serverpolicycompiler-mock"
+
+# Katalog connector component
+katalogConnector:
+  # Image name or a hub/image[:tag]
+  image: "data-catalog-mock"

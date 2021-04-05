@@ -10,6 +10,7 @@ build:
 	mvn -B clean package -DskipTests
 
 docker-build: build
+	docker build . -t ${IMG}
 
 .PHONY: test
 test:

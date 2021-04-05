@@ -1,0 +1,32 @@
+{{- $autoFlag := and .Values.manager.enabled .Values.coordinator.enabled (eq .Values.coordinator.catalog "egeria") }}
+{{- if include "m4d.isEnabled" (tuple .Values.egeriaConnector.enabled $autoFlag) }}
+{{- if .Values.egeriaConnector.autoscaling.enabled }}
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: egeria-connector
+  labels:
+    app.kubernetes.io/component: egeria-connector
+    {{- include "m4d.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: egeria-connector
+  minReplicas: {{ .Values.egeriaConnector.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.egeriaConnector.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.egeriaConnector.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: {{ .Values.egeriaConnector.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.egeriaConnector.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        targetAverageUtilization: {{ .Values.egeriaConnector.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}
+{{- end }}

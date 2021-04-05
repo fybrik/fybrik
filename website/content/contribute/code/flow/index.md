@@ -116,7 +116,7 @@ make cluster-prepare
 make docker
 
 # build the mock/test docker images and push them to local registry
-make -C test/services docker-all
+make -C test/services docker-build docker-push
 
 # wait until cluster-prepare setup really completed
 make cluster-prepare-wait

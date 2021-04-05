@@ -4,6 +4,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -35,7 +36,7 @@ func (c UnstructuredAsLabels) Has(label string) bool {
 	obj := c.Data.UnstructuredContent()
 	fields := strings.Split(label, ".")
 	// value is not returned
-	_, exists, err := unstructured.NestedString(obj, fields...)
+	_, exists, err := unstructured.NestedFieldNoCopy(obj, fields...)
 	if err != nil || !exists {
 		return false
 	}
@@ -47,6 +48,18 @@ func (c UnstructuredAsLabels) Get(label string) string {
 	obj := c.Data.UnstructuredContent()
 	fields := strings.Split(label, ".")
 	// not checking whether the label exists and is valid. Assuming Get is called after Has in labels package evaluation
-	val, _, _ := unstructured.NestedString(obj, fields...)
-	return val
+	// fetch a string value
+	if valStr, _, err := unstructured.NestedString(obj, fields...); err == nil {
+		return valStr
+	}
+	// convert a received interface into a string
+	val, _, err := unstructured.NestedFieldNoCopy(obj, fields...)
+	if err != nil {
+		return ""
+	}
+	valToBytes, err := json.Marshal(val)
+	if err != nil {
+		return ""
+	}
+	return string(valToBytes)
 }

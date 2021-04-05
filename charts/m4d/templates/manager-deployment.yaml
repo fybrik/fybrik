@@ -1,3 +1,4 @@
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -34,7 +35,7 @@ spec:
       securityContext:
         {{- toYaml .Values.manager.podSecurityContext | nindent 8 }}
       containers:
-        {{- if .Values.integrationTests }}
+        {{- if .Values.manager.socat }}
         - name: integration-tests
           image: alpine/socat:latest
           command:
@@ -56,13 +57,24 @@ spec:
           image: {{ include "m4d.image" ( tuple $ .Values.manager ) }}
           imagePullPolicy: {{ .Values.manager.imagePullPolicy | default .Values.global.imagePullPolicy }}
           args:
+            {{- if .Values.manager.overrideArgs }}
+            {{- toYaml .Values.manager.overrideArgs | nindent 12 }}
+            {{- else }}
             - "--metrics-addr=127.0.0.1:8080"
             - "--enable-leader-election"
-            {{- toYaml .Values.manager.args | nindent 12 }}
+            {{- if .Values.coordinator.enabled}}
+            - "--enable-application-controller"
+            - "--enable-plotter-controller"
+            {{- end}}
+            {{- if .Values.worker.enabled}}
+            - "--enable-blueprint-controller"
+            - "--enable-motion-controller"
+            {{- end}}
+            {{- end }}
           envFrom:
             - configMapRef:
                 name: m4d-config
-            {{- if .Values.razee }}
+            {{- if include "m4d.isRazeeEnabled" . }}
             - secretRef:
                 name: razee-credentials
             {{- end }}
@@ -111,3 +123,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}

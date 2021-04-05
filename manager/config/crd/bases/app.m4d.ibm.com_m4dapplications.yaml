@@ -33,16 +33,9 @@ spec:
           description: M4DApplicationSpec defines the desired state of M4DApplication.
           properties:
             appInfo:
-              description: AppInfo contains information describing the reasons and geography of the processing that will be done by the Data Scientist's application.
-              properties:
-                purpose:
-                  description: Purpose indicates the reason for the processing and the use of the data by the Data Scientist's application.
-                  type: string
-                role:
-                  description: Role indicates the position held or role filled by the Data Scientist as it relates to the processing of the data he has chosen.
-                  type: string
-              required:
-              - role
+              additionalProperties:
+                type: string
+              description: AppInfo contains information describing the reasons for the processing that will be done by the Data Scientist's application.
               type: object
             data:
               description: Data contains the identifiers of the data to be used by the Data Scientist's application, and the protocol used to access it and the format expected.
@@ -110,6 +103,9 @@ spec:
                 type: object
               minItems: 1
               type: array
+            secretRef:
+              description: SecretRef points to the secret that holds credentials for each system the user has been authenticated with. The secret is deployed in M4dApplication namespace.
+              type: string
             selector:
               description: Selector enables to connect the resource to the application Application labels should match the labels in the selector. For some flows the selector may not be used.
               properties:

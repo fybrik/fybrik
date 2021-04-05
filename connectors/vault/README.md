@@ -5,7 +5,7 @@ For each of the tasks related to the vault connector, execute the corresponding 
 
 * Build the connector: `make build`
 
-* Build the docker images: `make docker-all`
+* Build and push the docker images: `make docker-build docker-push`
 
 * Run the connectors locally: `make run`
 

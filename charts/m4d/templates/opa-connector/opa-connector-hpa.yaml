@@ -1,0 +1,32 @@
+{{- $autoFlag := and .Values.manager.enabled .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
+{{- if include "m4d.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
+{{- if .Values.opaConnector.autoscaling.enabled }}
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: opa-connector
+  labels:
+    app.kubernetes.io/component: opa-connector
+    {{- include "m4d.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: opa-connector
+  minReplicas: {{ .Values.opaConnector.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.opaConnector.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.opaConnector.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: {{ .Values.opaConnector.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.opaConnector.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        targetAverageUtilization: {{ .Values.opaConnector.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}
+{{- end }}

@@ -66,30 +66,21 @@ const M4DApplications = props => {
     setUpdate(update + 1)
   }
 
-  // Delete all credentials for application instance (name)
-  const getDeleteCredentials = (name) => {
-    const axios = require('axios')
-    // construct all delete credentials requests
-    return (array.compact(array.union([process.env.REACT_APP_POLICY_MANAGER_SERVICE_SYSTEM,
-                                       process.env.REACT_APP_CATALOG_CONNECTOR_SYSTEM,
-                                       process.env.REACT_APP_CREDENTIALS_MANAGER_SYSTEM])).map(sys =>
-      axios.delete(process.env.REACT_APP_BACKEND_ADDRESS + `/v1/creds/usercredentials/${namespace}/${name}/${sys}`)))
-  }
-
   const deleteCredentials = (name) => {
-    Promise.all(getDeleteCredentials(name))
-      .then(responses => {
-        console.log(responses);
+    const axios = require('axios')
+    axios.delete(process.env.REACT_APP_BACKEND_ADDRESS + `/v1/creds/usercredentials/${name}`) 
+    .then(async (response) => {
+      console.log(response);
         setAxiosMessage({ ...axiosMessage, message: 'Application and credential were deleted', error: false })
       })
-      .catch(errors => {
-        console.error(errors)
+      .catch(error => {
+        console.error(error)
         setAxiosMessage({ ...axiosMessage, message: 'Credentials were not deleted', error: true })
       })
   }
 
   // send request to delete application, remove row from table upon success
-  const deleteApplication = (uid, name) => {
+  const deleteApplication = (uid, name, secret) => {
     const axios = require('axios')
     axios.delete(process.env.REACT_APP_BACKEND_ADDRESS + `/v1/dma/m4dapplication/${name}`)
       .then(async (response) => {
@@ -97,7 +88,9 @@ const M4DApplications = props => {
         // remove app from table, does not guarantee that kubernetes deletion
         setApplications(applications.filter((app) => app.metadata.uid !== uid))
         setAxiosMessage({ ...axiosMessage, message: `Application was deleted: ${response.statusText}`, error: false })
-        deleteCredentials(name)
+        if (secret !== undefined && secret.length > 0) {
+          deleteCredentials(secret)
+        }
       })
       .catch(error => {
         console.log(error);

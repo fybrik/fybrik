@@ -12,7 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	comv1alpha1 "github.com/IBM/dataset-lifecycle-framework/src/dataset-operator/pkg/apis/com/v1alpha1"
+	comv1alpha1 "github.com/datashim-io/datashim/src/dataset-operator/pkg/apis/com/v1alpha1"
 	apiv1alpha1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
@@ -44,7 +44,7 @@ func allocateStorageAccounts() {
 		Spec: apiv1alpha1.M4DStorageAccountSpec{
 			Endpoint:  "http://endpoint1",
 			SecretRef: "dummy-secret",
-			Regions:   []string{"US"},
+			Regions:   []string{"theshire"},
 		},
 	}
 	accountGermany := &apiv1alpha1.M4DStorageAccount{
@@ -78,7 +78,6 @@ func createModules() {
 		Spec: apiv1alpha1.M4DModuleSpec{
 			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Read},
 			Capabilities: apiv1alpha1.Capability{
-				CredentialsManagedBy: apiv1alpha1.SecretProvider,
 				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
 					{
 						Flow:   apiv1alpha1.Read,
@@ -106,7 +105,6 @@ func createModules() {
 		Spec: apiv1alpha1.M4DModuleSpec{
 			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Copy},
 			Capabilities: apiv1alpha1.Capability{
-				CredentialsManagedBy: apiv1alpha1.SecretProvider,
 				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
 					{
 						Source: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.JdbcDb2, DataFormat: apiv1alpha1.Table},
@@ -138,7 +136,6 @@ func createModules() {
 		Spec: apiv1alpha1.M4DModuleSpec{
 			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Copy},
 			Capabilities: apiv1alpha1.Capability{
-				CredentialsManagedBy: apiv1alpha1.Automatic,
 				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
 					{
 						Flow:   apiv1alpha1.Copy,
@@ -183,7 +180,8 @@ func InitM4DApplication(name string, n int) *apiv1alpha1.M4DApplication {
 			Namespace: appSignature.Namespace,
 		},
 		Spec: apiv1alpha1.M4DApplicationSpec{
-			Selector: apiv1alpha1.Selector{ClusterName: "US-cluster", WorkloadSelector: metav1.LabelSelector{MatchLabels: labels}},
+			Selector: apiv1alpha1.Selector{ClusterName: "thegreendragon", WorkloadSelector: metav1.LabelSelector{MatchLabels: labels}},
+			AppInfo:  map[string]string{"intent": "Fraud Detection", "role": "Data Scientist"},
 			Data:     make([]apiv1alpha1.DataContext, n),
 		},
 	}
@@ -198,7 +196,8 @@ func InitM4DApplicationWithoutWorkload(name string, n int) *apiv1alpha1.M4DAppli
 			Namespace: appSignature.Namespace,
 		},
 		Spec: apiv1alpha1.M4DApplicationSpec{
-			Selector: apiv1alpha1.Selector{ClusterName: "US-cluster"},
+			Selector: apiv1alpha1.Selector{ClusterName: "thegreendragon"},
+			AppInfo:  map[string]string{},
 			Data:     make([]apiv1alpha1.DataContext, n),
 		},
 	}
@@ -470,7 +469,7 @@ var _ = Describe("M4DApplication Controller", func() {
 				// Check the generated blueprint
 				// There should be a single read module with two datasets
 				Expect(len(plotter.Spec.Blueprints)).To(Equal(1))
-				blueprint := plotter.Spec.Blueprints["US-cluster"]
+				blueprint := plotter.Spec.Blueprints["thegreendragon"]
 				Expect(blueprint).NotTo(BeNil())
 				numReads := 0
 				for _, step := range blueprint.Flow.Steps {
@@ -562,7 +561,7 @@ var _ = Describe("M4DApplication Controller", func() {
 				// Check the generated blueprint
 				// There should be a single copy module
 				Expect(len(plotter.Spec.Blueprints)).To(Equal(1))
-				blueprint := plotter.Spec.Blueprints["US-cluster"]
+				blueprint := plotter.Spec.Blueprints["thegreendragon"]
 				Expect(blueprint).NotTo(BeNil())
 				numSteps := 0
 				moduleMatch := false

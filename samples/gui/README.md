@@ -6,11 +6,11 @@ The APIs and examples of their use are as follows:
   
   Create M4DApplication (to be used by the specific workload):
 
-	curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion": "app.m4d.ibm.com/v1alpha1","kind": "M4DApplication","metadata": {"name": "unittest-notebook1", "namespace": "default"},"spec": {"selector": {"clusterName": "US-cluster","workloadSelector": {"matchLabels": {"app": "unittest-notebook1"}}}, "appInfo": {"purpose": "fraud-detection","role": "Security"}, "data": [{ "dataSetID": "whatever", "requirements": {"interface": {"protocol": "s3","dataformat": "parquet"}}}]}}'
+	curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion": "app.m4d.ibm.com/v1alpha1","kind": "M4DApplication","metadata": {"name": "unittest-notebook1", "namespace": "default"},"spec": {"selector": {"clusterName": "thegreendragon","workloadSelector": {"matchLabels": {"app": "unittest-notebook1"}}}, "appInfo": {"intent": "fraud-detection"}, "data": [{ "dataSetID": "whatever", "requirements": {"interface": {"protocol": "s3","dataformat": "parquet"}}}]}}'
 
   Create M4DApplication (to copy data and register in the public catalog):
 
-	curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion": "app.m4d.ibm.com/v1alpha1","kind": "M4DApplication","metadata": {"name": "unittest-copy", "namespace": "default"},"spec": {"selector": {"workloadSelector": {}, "appInfo": {"purpose": "copy data","role": "data owner"}, "data": [{ "dataSetID": "whatever", "requirements": {"copy": {"required": true, catalog: {catalogID: "Enterprise Catalog"}}, "interface": {"protocol": "s3","dataformat": "parquet"}}}]}}}'
+	curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion": "app.m4d.ibm.com/v1alpha1","kind": "M4DApplication","metadata": {"name": "unittest-copy", "namespace": "default"},"spec": {"selector": {"workloadSelector": {}, "appInfo": {"intent": "copy data"}, "data": [{ "dataSetID": "whatever", "requirements": {"copy": {"required": true, catalog: {catalogID: "Enterprise Catalog"}}, "interface": {"protocol": "s3","dataformat": "parquet"}}}]}}}'
 
 curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion": "app.m4d.ibm.com/v1alpha1","kind": "M4DApplication", }'
 
@@ -25,14 +25,14 @@ curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion
 	
 	
 	Create Credentials
-	  curl -X POST -i http://localhost:8080/v1/creds/usercredentials --data '{"System": "Egeria","Name": "my-notebook","Credentials": {"username": "admin"}}'
+	  curl -X POST -i http://localhost:8080/v1/creds/usercredentials --data '{"SecretName": "user-creds","System": "Egeria", "Credentials": {"username": "admin"}}'
 	
 	Get Credentials
-	  curl -X GET -i http://localhost:8080/v1/creds/usercredentials/default/my-notebook/Egeria
-	  ==> returns: "{\"username\":\"admin\"}"
+	  curl -X GET -i http://localhost:8080/v1/creds/usercredentials/user-creds
+	  ==> returns: "{\"Egeria_username\":\"admin\"}"
 	
 	Delete Credentials
-	  curl -X DELETE -i http://localhost:8080/v1/creds/usercredentials/default/my-notebook/Egeria
+	  curl -X DELETE -i http://localhost:8080/v1/creds/usercredentials/user-creds
 
 
 
@@ -41,36 +41,23 @@ curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion
 
 
 ## Run server locally - run vault as well as REST API server
-vault server -dev
 
 export KUBECONFIG=$HOME/.kube/config
+export GEOGRAPHY=hobbiton
+make build
+./datauserserver
 
-export VAULT_AUTH=JWT
-export VAULT_TTL=5h
-export VAULT_USER_MOUNT=v1/sys/mounts/m4d/user_creds
-export VAULT_DATASET_MOUNT=v1/sys/mounts/m4d/dataset_creds
-export VAULT_TOKEN= <take from local vault environment>
-export VAULT_ADDRESS=http://127.0.0.1:8200/
-export VAULT_USER_HOME=m4d/user_creds/
-export VAULT_DATASET_HOME=m4d/dataset_creds/
-export GEOGRAPHY=US-cluster
-
-go run m4d/samples/gui/server/main.go
-
-## Test locally
-Assuming rest server is running (see run locally)
-From within samples/gui/server/datauser 
-go test
+## Test locally (assuming datauserserver is not running)
+From within samples/gui/server
+make test
 
 ## Working in a cluster
 GUI is deployed in the namespace the workload is running in. This should also be your current namespace.
 
 ## Creating docker images
-
-Backend image creation is done from the main directory of the project.
-
+Backend image creation
 ```
-docker build . -t $DOCKER_HOSTNAME/$WORKLOAD_NAMESPACE/datauserserver:latest -f samples/gui/server/Dockerfile.datauserserver
+make docker-all
 ```
 Frontend image creation
 
@@ -81,7 +68,7 @@ Ensure that .env has a correct configuration
 export NODE_OPTIONS=--max_old_space_size=4096
 rm -rf build
 npm run build
-docker build . -t $DOCKER_HOSTNAME/$WORKLOAD_NAMESPACE/datauserclient:latest
+make docker-all
 ```
 ## Deployment
   ```

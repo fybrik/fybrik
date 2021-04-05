@@ -17,25 +17,28 @@ build:
 
 .PHONY: test
 test:
-	$(MAKE) -C pkg/policy-compiler test
-	$(MAKE) -C manager test
+	$(MAKE) -C manager pre-test
+	go test -v ./...
+	# The tests for connectors/egeria are dropped because there are none
 
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
 run-integration-tests: export DOCKER_NAMESPACE?=m4d-system
+run-integration-tests: export VALUES_FILE=m4d/integration-tests.values.yaml
 run-integration-tests:
 	$(MAKE) kind
-	$(MAKE) cluster-prepare
+	$(MAKE) -C charts vault
+	$(MAKE) -C charts cert-manager
+	$(MAKE) -C third_party/datashim deploy
 	$(MAKE) docker
-	$(MAKE) -C test/services docker-all
+	$(MAKE) -C test/services docker-build docker-push
 	$(MAKE) cluster-prepare-wait
 	$(MAKE) configure-vault
 	$(MAKE) -C secret-provider configure-vault
-	$(MAKE) -C secret-provider deploy
-	$(MAKE) -C manager deploy-crd
-	$(MAKE) -C manager deploy_it
+	$(MAKE) -C charts m4d
 	$(MAKE) -C manager wait_for_manager
 	$(MAKE) helm
+	$(MAKE) -C pkg/helm test
 	$(MAKE) -C manager run-integration-tests
 
 .PHONY: run-deploy-tests
@@ -56,15 +59,13 @@ run-deploy-tests:
 cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy
 	$(MAKE) -C third_party/registry deploy
-	$(MAKE) -C third_party/vault deploy
-	kubectl apply -f https://raw.githubusercontent.com/IBM/dataset-lifecycle-framework/master/release-tools/manifests/dlf.yaml
-
+	$(MAKE) -C charts vault
+	$(MAKE) -C third_party/datashim deploy
 
 .PHONY: cluster-prepare-wait
 cluster-prepare-wait:
 	$(MAKE) -C third_party/cert-manager deploy-wait
-	$(MAKE) -C third_party/vault deploy-wait
-	kubectl wait --for=condition=ready pod -n dlf --all --timeout=120s
+	$(MAKE) -C third_party/datashim deploy-wait
 
 .PHONY: install
 install:
@@ -84,19 +85,15 @@ undeploy:
 	$(MAKE) -C connectors undeploy
 
 .PHONY: docker
-docker:
-	$(MAKE) -C manager docker-all
-	$(MAKE) -C secret-provider docker-all
-	$(MAKE) -C connectors docker-all
-	$(MAKE) -C test/dummy-mover docker-all
+docker: docker-build docker-push
 
 # Build only the docker images needed for integration testing
 .PHONY: docker-minimal-it
 docker-minimal-it:
-	$(MAKE) -C manager docker-all
-	$(MAKE) -C secret-provider docker-all
-	$(MAKE) -C test/dummy-mover docker-all
-	$(MAKE) -C test/services docker-all
+	$(MAKE) -C manager docker-build docker-push
+	$(MAKE) -C secret-provider docker-build docker-push
+	$(MAKE) -C test/dummy-mover docker-build docker-push
+	$(MAKE) -C test/services docker-build docker-push
 
 .PHONY: docker-build
 docker-build:
@@ -121,8 +118,9 @@ DOCKER_PUBLIC_NAMESPACE ?= the-mesh-for-data
 DOCKER_PUBLIC_NAMES := \
 	manager \
 	secret-provider \
-	egr-connector \
 	dummy-mover \
+	egr-connector \
+	katalog-connector \
 	opa-connector \
 	vault-connector
  
@@ -151,8 +149,9 @@ endif
 save-images:
 	docker save -o images.tar ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME} \
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/secret-provider:${DOCKER_TAGNAME} \
-		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/egr-connector:${DOCKER_TAGNAME} \
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/dummy-mover:${DOCKER_TAGNAME} \
+		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/egr-connector:${DOCKER_TAGNAME} \
+		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/katalog-connector:${DOCKER_TAGNAME} \
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:${DOCKER_TAGNAME} \
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/vault-connector:${DOCKER_TAGNAME}
 

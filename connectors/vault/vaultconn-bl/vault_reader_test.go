@@ -22,9 +22,8 @@ func TestVaultConnectorNormalRun(t *testing.T) {
 	defer ln.Close()
 
 	srv := &Server{}
-	appID := "mock-appID"
 	datasetID := "mock-datasetID"
-	objToSendForCredential := &pb.DatasetCredentialsRequest{AppId: appID, DatasetId: datasetID}
+	objToSendForCredential := &pb.DatasetCredentialsRequest{DatasetId: datasetID}
 
 	config := vltutils.VaultConfig{
 		Token:   "token",

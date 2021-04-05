@@ -1,0 +1,82 @@
+strict: false
+
+site_name: Mesh for Data
+site_description: A cloud-native platform to control data usage
+copyright: Made with ❤️ by Mesh for Data contributors.
+repo_name: ibm/the-mesh-for-data
+repo_url: https://github.com/ibm/the-mesh-for-data
+edit_uri: edit/master/site/docs/
+
+nav:
+- About: index.md
+- Get Started:
+  - get-started/quickstart.md
+  - samples/notebook.md
+- Concepts:
+  - concepts/introduction.md
+  - concepts/architecture.md
+  - Plugins:
+    - concepts/connectors.md
+    - concepts/modules.md
+- Tasks:
+  - tasks/control-plane-security.md
+  - tasks/using-opa.md
+- Reference:
+  - reference/crds.md
+  - Connectors API: reference/connectors.md
+  - Components: 
+    - reference/ddc.md
+    - reference/katalog.md
+- Contribute:
+  - About: contribute/index.md
+  - contribute/environment.md
+  - contribute/build-test.md
+  - contribute/flow.md
+  - Documentation:
+    - contribute/documentation/index.md
+    - contribute/documentation/formatting.md
+    - contribute/documentation/style.md
+  - Plugins:
+    - contribute/modules.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/ibm/the-mesh-for-data
+
+theme:
+  name: material
+  language: en
+  custom_dir: overrides
+  include_search_page: false
+  search_index_only: true
+  palette:
+    primary: light blue
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.tabs
+  favicon: static/logo.svg # this icon appears in the browser's tab
+  logo: static/logo.svg # this icon appears in the top left corner on each page
+    
+markdown_extensions:
+  - toc:
+      permalink: false
+  - footnotes
+  - admonition
+  - meta
+  - pymdownx.highlight
+  - pymdownx.details
+  - pymdownx.tabbed
+  - pymdownx.superfences
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+plugins:
+  # disable temporarely because its freezing the page
+  - search:
+      prebuild_index: python
+      lang:
+      - en

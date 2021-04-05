@@ -7,6 +7,7 @@ REPO=banzaicloud-stable
 URL=https://kubernetes-charts.banzaicloud.com 
 RELEASE=vault-operator
 CHART=banzaicloud-stable/vault-operator 
+VERSION=1.11.2
 
 deploy() {
     kubectl create namespace $KUBE_NAMESPACE 2>/dev/null || true
@@ -14,7 +15,7 @@ deploy() {
     $WITHOUT_OPENSHIFT || kubectl apply -f vault-openshift.yaml -n $KUBE_NAMESPACE
 
     helm repo add $REPO $URL
-    helm upgrade --install $RELEASE $CHART -n $KUBE_NAMESPACE
+    helm upgrade --install $RELEASE $CHART --version $VERSION -n $KUBE_NAMESPACE
 
     kubectl apply -f vault-rbac.yaml -n $KUBE_NAMESPACE
     kubectl apply -f vault.yaml -n $KUBE_NAMESPACE
