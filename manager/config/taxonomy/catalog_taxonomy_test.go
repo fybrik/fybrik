@@ -74,7 +74,6 @@ func validateTaxonomy(t *testing.T, taxonomyFile string, jsonData string, testNa
 		}
 		fmt.Printf("\n")
 	}
-
 }
 
 func TestCatalogTaxonomy(t *testing.T) {
