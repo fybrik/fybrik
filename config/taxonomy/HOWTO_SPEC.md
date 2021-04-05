@@ -6,9 +6,19 @@ This document lists the requirements for writing such schemas.
 ## What spec to follow?
 
 We use a subset of json schema DRAFT 4 that is described in this document. 
-The goals are to preserve compatibility with json schema DRAFT 4, OpenAPI 3.0, and Kubernetes CRDs (all are based on json schema DRAFT 4), and code generation tools.
 
+You SHOULD declare the schema version in the document:
+
+```json
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    ...
+}
+```
+
+The goal is to preserve compatibility with json schema DRAFT 4, OpenAPI 3.0, and Kubernetes CRDs (all are based on json schema DRAFT 4), and code generation tools.
 We hope that newer json schema specs will be supported in the future as we improve our tooling.
+
 
 ## Schema properties
 
