@@ -51,7 +51,7 @@ func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationCon
 	log.Println(in)
 
 	catalogConnectorAddress := getEnv("CATALOG_CONNECTOR_URL")
-	policyToBeEvaluated := getEnv("POLICY_TO_BE_EVALUATED")
+	policyToBeEvaluated := "dataapi/authz"
 
 	timeOutInSecs := getEnv("CONNECTION_TIMEOUT")
 	timeOut, err := strconv.Atoi(timeOutInSecs)
