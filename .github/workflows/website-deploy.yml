@@ -7,6 +7,7 @@ on:
       - master
     paths:
       - site/**
+      - .github/workflows/website-*
       - pkg/connectors/protos/**
       - charts/m4d-crd/templates/**
   workflow_dispatch:
@@ -32,11 +33,11 @@ jobs:
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "noreply@github.com"
-      - name: Build and Deploy
-        env:
-          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+      - name: Build and Deploy (dev)
+        if: github.ref == 'refs/heads/master'
         working-directory: ./site
-        run: mike deploy --push --remote origin --branch site ${RELEASE_VERSION}
-      - name: Set version alias
+        run: mike deploy --push --remote origin --branch site dev
+      - name: Build and Deploy (tag)
         if: startsWith(github.ref, 'refs/tags/')
-        run: mike alias ${RELEASE_VERSION} latest
+        working-directory: ./site
+        run: mike deploy --push --remote origin --branch site ${{ steps.version.outputs.version }} latest
