@@ -1,0 +1,1241 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A cloud-native platform to control data usage">
+      
+      
+      
+      
+      <link rel="icon" href="../../static/logo.svg">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.1.0">
+    
+    
+      
+        <title>Kubeflow Notebook Sample - Mesh for Data</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.33e2939f.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ef6f36e2.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#02a6f2">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="light-blue" data-md-color-accent="">
+  
+    
+    <script>function __prefix(e){return new URL("../..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#kubeflow-notebook-sample" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Mesh for Data" class="md-header__button md-logo" aria-label="Mesh for Data" data-md-component="logo">
+      
+  <img src="../../static/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Mesh for Data
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Kubeflow Notebook Sample
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/ibm/the-mesh-for-data/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ibm/the-mesh-for-data
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      About
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../get-started/quickstart/" class="md-tabs__link md-tabs__link--active">
+        Get Started
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../concepts/introduction/" class="md-tabs__link">
+        Concepts
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tasks/control-plane-security/" class="md-tabs__link">
+        Tasks
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../reference/crds/" class="md-tabs__link">
+        Reference
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contribute/" class="md-tabs__link">
+        Contribute
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Mesh for Data" class="md-nav__button md-logo" aria-label="Mesh for Data" data-md-component="logo">
+      
+  <img src="../../static/logo.svg" alt="logo">
+
+    </a>
+    Mesh for Data
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/ibm/the-mesh-for-data/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ibm/the-mesh-for-data
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        About
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      <label class="md-nav__link" for="__nav_2">
+        Get Started
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Get Started" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Get Started
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/quickstart/" class="md-nav__link">
+        Quick Start Guide
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Kubeflow Notebook Sample
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Kubeflow Notebook Sample
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#before-you-begin" class="md-nav__link">
+    Before you begin
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#about-this-sample" class="md-nav__link">
+    About this sample
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    Getting started
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prepare-the-dataset-for-the-sample-notebook" class="md-nav__link">
+    Prepare the dataset for the sample notebook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reviewing-the-policies-for-the-dataset" class="md-nav__link">
+    Reviewing the policies for the dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup-the-notebook" class="md-nav__link">
+    Setup the notebook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-the-notebook-with-mesh-for-data" class="md-nav__link">
+    Run the notebook with Mesh for Data
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      <label class="md-nav__link" for="__nav_3">
+        Concepts
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Concepts" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Concepts
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/introduction/" class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/architecture/" class="md-nav__link">
+        Architecture
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_3" type="checkbox" id="__nav_3_3" >
+      
+      <label class="md-nav__link" for="__nav_3_3">
+        Plugins
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Plugins" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_3">
+          <span class="md-nav__icon md-icon"></span>
+          Plugins
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/connectors/" class="md-nav__link">
+        Connectors
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/modules/" class="md-nav__link">
+        Modules
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      <label class="md-nav__link" for="__nav_4">
+        Tasks
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Tasks" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Tasks
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/control-plane-security/" class="md-nav__link">
+        Enable Control Plane Security
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/using-opa/" class="md-nav__link">
+        Using OPA
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      <label class="md-nav__link" for="__nav_5">
+        Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/crds/" class="md-nav__link">
+        API Reference
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/connectors/" class="md-nav__link">
+        Connectors API
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_3" type="checkbox" id="__nav_5_3" >
+      
+      <label class="md-nav__link" for="__nav_5_3">
+        Components
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Components" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_3">
+          <span class="md-nav__icon md-icon"></span>
+          Components
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/ddc/" class="md-nav__link">
+        Data Distribution Controller
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/katalog/" class="md-nav__link">
+        Katalog
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      <label class="md-nav__link" for="__nav_6">
+        Contribute
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Contribute" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Contribute
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/" class="md-nav__link">
+        About
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/environment/" class="md-nav__link">
+        Development Environment
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/build-test/" class="md-nav__link">
+        Build and Test
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/flow/" class="md-nav__link">
+        GitHub Workflow
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_5" type="checkbox" id="__nav_6_5" >
+      
+      <label class="md-nav__link" for="__nav_6_5">
+        Documentation
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Documentation" data-md-level="2">
+        <label class="md-nav__title" for="__nav_6_5">
+          <span class="md-nav__icon md-icon"></span>
+          Documentation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/documentation/" class="md-nav__link">
+        Contribute Documentation
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/documentation/formatting/" class="md-nav__link">
+        Formatting Standards
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/documentation/style/" class="md-nav__link">
+        Style Guide
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_6" type="checkbox" id="__nav_6_6" >
+      
+      <label class="md-nav__link" for="__nav_6_6">
+        Plugins
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Plugins" data-md-level="2">
+        <label class="md-nav__title" for="__nav_6_6">
+          <span class="md-nav__icon md-icon"></span>
+          Plugins
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/modules/" class="md-nav__link">
+        Module Development
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#before-you-begin" class="md-nav__link">
+    Before you begin
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#about-this-sample" class="md-nav__link">
+    About this sample
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    Getting started
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prepare-the-dataset-for-the-sample-notebook" class="md-nav__link">
+    Prepare the dataset for the sample notebook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reviewing-the-policies-for-the-dataset" class="md-nav__link">
+    Reviewing the policies for the dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup-the-notebook" class="md-nav__link">
+    Setup the notebook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-the-notebook-with-mesh-for-data" class="md-nav__link">
+    Run the notebook with Mesh for Data
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/ibm/the-mesh-for-data/edit/master/site/docs/samples/notebook.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                <h1 id="kubeflow-notebook-sample">Kubeflow Notebook Sample</h1>
+<p>This sample shows how to run a Kubeflow notebook with Mesh for Data and demonstrates how polices are seamlessly applied when accessing a dataset.</p>
+<h2 id="before-you-begin">Before you begin</h2>
+<p>Ensure that you have the following:</p>
+<ul>
+<li><code>kubectl</code> with access to a Kubernetes cluster (this guide was tested with kind v0.10.0 and OpenShift 4.3)</li>
+<li>Mesh for Data installed on your Kubernetes cluster</li>
+<li>S3 Object storage account (e.g., Ceph, Minio, IBM Cloud Object Storage)</li>
+<li><a href="https://www.kubeflow.org/">Kubeflow</a> installed on your cluster (this guide was tested with Kubeflow v1.0.2)</li>
+<li>Web browser</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Installing Kubeflow</p>
+<p>You can install Kubeflow on Kind by running <a href="https://github.com/ibm/the-mesh-for-data/blob/master/samples/kubeflow/install/kubeflow/install_kubeflow.sh">install_kubeflow.sh</a>. 
+For OpenShift follow <a href="https://github.com/ibm/the-mesh-for-data/blob/master/samples/kubeflow/install/kubeflow/KF_OPENSHIFT.md">KF_OPENSHIFT.md</a>.</p>
+</div>
+<h2 id="about-this-sample">About this sample</h2>
+<p>In this sample guide you will run a Kubeflow notebook with Mesh for Data and demonstrate that data read polices that are defined in Open Policy Agent (OPA) are seamlessly applied when reading a dataset.</p>
+<p>In this sample guide you will:</p>
+<ol>
+<li>Prepare a dataset to be accessed by the notebook</li>
+<li>Register the dataset in ODPi Egeria catalog</li>
+<li>Register the dataset credentials in Vault</li>
+<li>Deploy a Kubeflow notebook</li>
+<li>Create a Mesh for Data runtime environment for the notebook</li>
+<li>Read the dataset and observe policies applied seamlessly</li>
+</ol>
+<h2 id="getting-started">Getting started</h2>
+<p>Completed all the steps in <a href="../../get-started/quickstart/">quick start guide</a>.</p>
+<h2 id="prepare-the-dataset-for-the-sample-notebook">Prepare the dataset for the sample notebook</h2>
+<ol>
+<li>Upload <a href="https://github.com/ibm/the-mesh-for-data/blob/master/samples/kubeflow/data.csv">data.csv</a> to an object storage of your choice
+    <code>data.csv</code> contains the first 100 rows from the following <a href="https://www.kaggle.com/ntnu-testimon/paysim1/data">data set</a> created by NTNU, and it is shared under the <strong><em>CC BY-SA 4.0</em></strong> license.</li>
+<li>Update <code>samples/kubeflow/example_transactions.csv.json</code> with the location of the dataset, The location is encoded in the <code>fullPath</code> field as follows:<ul>
+<li>Bucket: Change the <code>bucket</code> value from <code>m4d-bucket-example</code> to the bucket name where the dataset reside.</li>
+<li>endpoint: Change the S3 endpoint name from <code>s3.eu-de.cloud-object-storage.appdomain.cloud</code> to the object storage endpoint</li>
+<li>object_key: If needed, change object_key from <code>data.csv</code> to the object name that you used in the previous step.
+For more information on the content please see the comments in <a href="https://github.com/ibm/the-mesh-for-data/blob/master//third_party/egeria/usage/create_new_asset.sh">third_pary/egeria/usage/create_new_asset.sh</a> for more details.</li>
+</ul>
+</li>
+<li>
+<p>Register the dataset in the catalog</p>
+<ul>
+<li>
+<p>Setup port forwarding for communicating with Egeria</p>
+<p><div class="highlight"><pre><span></span><code><span class="nb">cd</span> third_party/egeria/usage
+kubectl port-forward -n egeria-catalog svc/lab-core <span class="m">9443</span>:9443 <span class="p">&amp;</span>
+</code></pre></div>
+    - Wait for the port-forward to take effect.</p>
+</li>
+<li>
+<p>Register the dataset in the catalog with the tag 'finance'.</p>
+<p><div class="highlight"><pre><span></span><code>./create_new_asset.sh ../../../samples/kubeflow/example_transactions.csv.json <span class="s1">&#39;finance&#39;</span>
+</code></pre></div>
+    - Cleanup the port forwarding using the following.</p>
+<p><div class="highlight"><pre><span></span><code><span class="nb">cd</span> -
+<span class="nb">kill</span> <span class="nv">$!</span>
+</code></pre></div>
+1. Record the asset id for the dataset. It will be displayed as part of the output from the previous step and export it to environment variable. An example for an asset id is <code>5de27155-48d3-4d78-8767-73e7b264e394</code>
+    <div class="highlight"><pre><span></span><code>export ASSET_ID=&lt;asset-id&gt;
+</code></pre></div>
+1. Store the object dataset credentials in Vault to make them available for Mesh for Data. Currently only hmac credentials are supported, and the <code>access_key</code> (a.k.a <code>access_key_id</code>) and <code>secret_key</code> (a.k.a <code>secret_access_key</code>) should be associated with the asset id.</p>
+</li>
+</ul>
+<p>You can register the credentials using a browser and Vault's UI to upload the credentials.</p>
+<ul>
+<li>Setup port forwarding to communicate with Vault.
+    <div class="highlight"><pre><span></span><code>kubectl port-forward -n m4d-system svc/vault <span class="m">8200</span>:8200 <span class="p">&amp;</span>
+</code></pre></div></li>
+<li>
+<p>Open <code>http://localhost:8200</code> a your browser, select <code>method</code> as <code>username</code> and login using username <code>data_provider</code> and password <code>password</code>.</p>
+</li>
+<li>
+<p>Click <code>/external</code> and then <code>Create secret</code></p>
+</li>
+<li>
+<p>Create the following secret:</p>
+<ul>
+<li>Path for this secret: <code>{"ServerName":"mds1","AssetGuid":"&lt;asset ID&gt;"}</code>. For example, <code>{"ServerName":"mds1" , "AssetGuid":"5de27155-48d3-4d78-8767-73e7b264e394"}</code></li>
+<li>Secret data key: <code>&lt;access-key-id&gt;</code></li>
+<li>Secrey data value: <code>&lt;secret-access-key&gt;</code></li>
+</ul>
+</li>
+<li>Click <code>save</code></li>
+</ul>
+<p>Note: The path is a reference to the Egeria metadata server and asset id. In the default Egeria installation <code>mds1</code> is the metadata server name.</p>
+<ul>
+<li>
+<p>Finally, kill the port-forward</p>
+<div class="highlight"><pre><span></span><code><span class="nb">kill</span> <span class="nv">$!</span>
+</code></pre></div>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="reviewing-the-policies-for-the-dataset">Reviewing the policies for the dataset</h2>
+<p>Currently predefined policies are included as part of the OPA deployment.
+Included are policies that are triggered for datasets that are tagged with 'finance' and have columns <code>nameOrig</code> and <code>nameDest</code>. The policies indicate that these columns must be redacted (masked) when data is read.</p>
+<p>The policies can be found at <code>third_party/opa/opa-policy.rego</code>.</p>
+<h2 id="setup-the-notebook">Setup the notebook</h2>
+<p>Next you will create a Kubeflow notebook server and a notebook with the business logic for creating a fraud detection model.</p>
+<ol>
+<li>
+<p>Create a port-forward to communicate with Kubeflow:
+    <div class="highlight"><pre><span></span><code>kubectl port-forward svc/istio-ingressgateway -n istio-system <span class="m">8080</span>:80 <span class="p">&amp;</span>
+<span class="nb">cd</span> samples/kubeflow/
+</code></pre></div></p>
+</li>
+<li>
+<p>Upload the notebook:</p>
+<ul>
+<li>Open your browser and go to <code>http://localhost:8080</code>.</li>
+<li>Click <strong>Start Setup</strong> and then <strong>Finish</strong> (use the <code>anonymous</code> namespace).</li>
+<li>Click <strong>Notebook Servers</strong> (in the left).</li>
+<li>In the notebooks page select in the top left the <code>anonymous</code> namespace and then click <strong>New Server</strong>.</li>
+<li>In the notebook server creation page, set <code>kf-notebook</code> in the <strong>Name</strong> box and then click <strong>Launch</strong>. Wait for the server to become ready.</li>
+<li>Click <strong>Connect</strong> and upload <code>kfM4DPolicySample.ipynb</code> notebook to the server.</li>
+</ul>
+</li>
+</ol>
+<h2 id="run-the-notebook-with-mesh-for-data">Run the notebook with Mesh for Data</h2>
+<p>Now you will deploy a Mesh for Data runtime environment for the notebook by creating a <code>M4DApplication</code> resource that references the <code>data.csv</code> data set that was registered in the data catalog.
+This allows the code in the notebook to read the data and policies to seamlessly be applied before the data reaches the notebook server.</p>
+<ol>
+<li>
+<p>Create the <code>M4DApplication</code> resource which will deploy Mesh for Data runtime environment by running the following:
+    <div class="highlight"><pre><span></span><code>cat m4dapplication.yaml <span class="p">|</span> sed <span class="s2">&quot;s/ASSET_ID/</span><span class="nv">$ASSET_ID</span><span class="s2">/g&quot;</span> <span class="p">|</span> kubectl -n anonymous apply -f -
+<span class="nb">cd</span> -
+</code></pre></div></p>
+</li>
+<li>
+<p>Before running the notebook you need to modify the following statements in the <code>Get Data</code> cell in the notebook:
+    <div class="highlight"><pre><span></span><code><span class="o">...</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">fl</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;grpc://&lt;arrow-flight-module-service&gt;.&lt;arrow-flight-module-ns&gt;.svc.  cluster.local:80&quot;</span><span class="p">)</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="p">{</span>
+<span class="s2">&quot;asset&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;bucket-name&gt;/&lt;file-name&gt;.csv&quot;</span><span class="p">,</span> 
+<span class="s2">&quot;columns&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;step&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;amount&quot;</span><span class="p">,</span> <span class="s2">&quot;nameOrig&quot;</span><span class="p">,</span> <span class="s2">&quot;oldbalanceOrg&quot;</span><span class="p">,</span> <span class="s2">&quot;newbalanceOrig&quot;</span><span class="p">,</span> <span class="s2">&quot;nameDest&quot;</span><span class="p">,</span> <span class="s2">&quot;oldbalanceDest&quot;</span><span class="p">,</span> <span class="s2">&quot;newbalanceDest&quot;</span><span class="p">,</span> <span class="s2">&quot;isFraud&quot;</span><span class="p">,</span> <span class="s2">&quot;isFlaggedFraud&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+<span class="o">...</span>
+</code></pre></div></p>
+<ul>
+<li>Edit the <code>client = fl.connect(...)</code> command to point to the right service and namespace of the arrow-flight-module.</li>
+<li>
+<p>To find the service and namespace run:
+    <div class="highlight"><pre><span></span><code>kubectl get svc -l app.kubernetes.io/name<span class="o">=</span>arrow-flight-module --all-namespaces
+</code></pre></div></p>
+</li>
+<li>
+<p>Edit <code>"asset": "&lt;bucket-name&gt;/&lt;file-name&gt;.csv"</code> in the second command to point to your bucket and the name of the dataset.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Run the notebook</p>
+<p>You should observe in the cell <code>Get Data</code> the data from the dataset.</p>
+</li>
+<li>
+<p>Finally, kill the port-forward
+    <div class="highlight"><pre><span></span><code><span class="nb">kill</span> <span class="nv">$!</span>
+</code></pre></div></p>
+</li>
+</ol>
+<h1 id="next-steps">Next steps</h1>
+<p>You have completed an execution of a notebook with Mesh for Data and are now ready to continue exploring.</p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        <a href="../../get-started/quickstart/" class="md-footer__link md-footer__link--prev" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Quick Start Guide
+            </div>
+          </div>
+        </a>
+      
+      
+        <a href="../../concepts/introduction/" class="md-footer__link md-footer__link--next" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Introduction
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Made with ❤️ by Mesh for Data contributors.
+          </div>
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+  <div class="md-footer-social">
+    
+      
+      
+        
+        
+      
+      <a href="https://github.com/ibm/the-mesh-for-data" target="_blank" rel="noopener" title="github.com" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"/></svg>
+      </a>
+    
+  </div>
+
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../../assets/javascripts/workers/search.fe42c31b.min.js", "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d892486b.min.js"></script>
+      
+    
+  </body>
+</html>
