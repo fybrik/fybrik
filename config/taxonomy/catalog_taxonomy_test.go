@@ -4,12 +4,7 @@
 package taxonomy
 
 import (
-	"fmt"
-	"path/filepath"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/xeipuuv/gojsonschema"
 )
 
 var (
@@ -51,49 +46,24 @@ var (
 	resourceGoodInvalidTagKey = "{\"resource\":{\"name\":\"file1\", \"tags\":[{\"geography\":{\"name\":\"Turkey\"}}], \"columns\":[{\"name\":\"col1\", \"tags\":[{\"badkey\":\"Turkey\"}]}, {\"name\":\"col2\"}]}}"
 )
 
-// validateTaxonomy loads a json schema taxonomy from the indicated file, and validates the jsonData against the taxonomy.
-func validateTaxonomy(t *testing.T, taxonomyFile string, jsonData string, testName string, expectedValid bool) {
-	path, err := filepath.Abs(taxonomyFile)
-	assert.Nil(t, err)
-
-	taxonomyLoader := gojsonschema.NewReferenceLoader("file://" + path)
-	documentLoader := gojsonschema.NewStringLoader(jsonData)
-	result, err := gojsonschema.Validate(taxonomyLoader, documentLoader)
-	assert.Nil(t, err)
-
-	if expectedValid {
-		assert.True(t, result.Valid())
-	} else {
-		assert.False(t, result.Valid())
-	}
-
-	if (result.Valid() && !expectedValid) || (!result.Valid() && expectedValid) {
-		fmt.Printf("%s unexpected result.  Taxonomy file %s.  Discrepencies: \n", testName, taxonomyFile)
-		for _, disc := range result.Errors() {
-			fmt.Printf("- %s\n", disc)
-		}
-		fmt.Printf("\n")
-	}
-}
-
 func TestCatalogTaxonomy(t *testing.T) {
-	validateTaxonomy(t, catalogTaxValsName, dataFormatGood, "dataFormatGood", true)
-	validateTaxonomy(t, catalogTaxValsName, dataFormatBad, "dataFormatBad", false)
+	ValidateTaxonomy(t, catalogTaxValsName, dataFormatGood, "dataFormatGood", true)
+	ValidateTaxonomy(t, catalogTaxValsName, dataFormatBad, "dataFormatBad", false)
 
-	validateTaxonomy(t, catalogTaxValsName, dataTypeGood, "dataTypeGood", true)
-	validateTaxonomy(t, catalogTaxValsName, dataTypeBad, "dataTypeBad", false)
+	ValidateTaxonomy(t, catalogTaxValsName, dataTypeGood, "dataTypeGood", true)
+	ValidateTaxonomy(t, catalogTaxValsName, dataTypeBad, "dataTypeBad", false)
 
-	validateTaxonomy(t, catalogTaxStructsName, geographyGood1, "geographyGood1", true)
-	validateTaxonomy(t, catalogTaxStructsName, geographyGood2, "geographyGood2", true)
-	validateTaxonomy(t, catalogTaxStructsName, geographyBad1, "geographyBad1", false)
+	ValidateTaxonomy(t, catalogTaxStructsName, geographyGood1, "geographyGood1", true)
+	ValidateTaxonomy(t, catalogTaxStructsName, geographyGood2, "geographyGood2", true)
+	ValidateTaxonomy(t, catalogTaxStructsName, geographyBad1, "geographyBad1", false)
 
-	validateTaxonomy(t, catalogTaxStructsName, resourceGoodNameOnly, "resourceGoodNameOnly", true)
-	validateTaxonomy(t, catalogTaxStructsName, resourceGoodNameGeo, "resourceGoodNameGeo", true)
-	validateTaxonomy(t, catalogTaxStructsName, resourceGoodCols, "resourceGoodCols", true)
-	validateTaxonomy(t, catalogTaxStructsName, resourceGoodColsTags, "resourceGoodColsTags", true)
+	ValidateTaxonomy(t, catalogTaxStructsName, resourceGoodNameOnly, "resourceGoodNameOnly", true)
+	ValidateTaxonomy(t, catalogTaxStructsName, resourceGoodNameGeo, "resourceGoodNameGeo", true)
+	ValidateTaxonomy(t, catalogTaxStructsName, resourceGoodCols, "resourceGoodCols", true)
+	ValidateTaxonomy(t, catalogTaxStructsName, resourceGoodColsTags, "resourceGoodColsTags", true)
 
-	validateTaxonomy(t, catalogTaxStructsName, resourceBadNoName, "resourceBadNoName", false)
-	validateTaxonomy(t, catalogTaxStructsName, resourceBadInvalidGeo, "resourceBadInvalidGeo", false)
-	validateTaxonomy(t, catalogTaxStructsName, resourceBadInvalidTagVal, "resourceBadInvalidTagVal", false)
-	validateTaxonomy(t, catalogTaxStructsName, resourceGoodInvalidTagKey, "resourceBadInvalidTagKey", true)
+	ValidateTaxonomy(t, catalogTaxStructsName, resourceBadNoName, "resourceBadNoName", false)
+	ValidateTaxonomy(t, catalogTaxStructsName, resourceBadInvalidGeo, "resourceBadInvalidGeo", false)
+	ValidateTaxonomy(t, catalogTaxStructsName, resourceBadInvalidTagVal, "resourceBadInvalidTagVal", false)
+	ValidateTaxonomy(t, catalogTaxStructsName, resourceGoodInvalidTagKey, "resourceBadInvalidTagKey", true)
 }
