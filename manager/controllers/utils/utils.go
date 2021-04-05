@@ -125,18 +125,13 @@ func GetReleaseName(applicationName string, namespace string, step app.FlowStep)
 
 // Generate release name from step name
 func GetReleaseNameByStepName(applicationName string, namespace string, stepName string) string {
-	fullName := applicationName + "-" + namespace + "-" + Hash(applicationName, 5) + "-" + Hash(namespace, 5) + "-" + stepName
+	fullName := applicationName + "-" + namespace + "-" + stepName
 	return HelmConformName(fullName)
 }
 
 // Generate fqdn for a module
-func GenerateModuleEndpointFQDN(releaseName string, originalEndpointSpec app.EndpointSpec, blueprintNamespace string) string {
-	return releaseName + "-" + originalEndpointSpec.Hostname + "." + blueprintNamespace + ".svc.cluster.local"
-}
-
-// CreateAppIdentifier constructs an identifier for a m4d application: namespace/name.
-func CreateAppIdentifier(application *app.M4DApplication) string {
-	return application.Namespace + "/" + application.Name
+func GenerateModuleEndpointFQDN(releaseName string, blueprintNamespace string) string {
+	return releaseName + "." + blueprintNamespace + ".svc.cluster.local"
 }
 
 // Some k8s objects only allow for a length of 63 characters.

@@ -220,16 +220,17 @@ spec:
               additionalProperties:
                 description: The spec of the endpoint exposed by the module
                 properties:
-                  Scheme:
-                    description: 'For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc'
-                    type: string
-                  endpointName:
+                  hostname:
                     type: string
                   port:
                     format: int32
                     type: integer
+                  scheme:
+                    description: 'For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc'
+                    type: string
                 required:
                 - port
+                - scheme
                 type: object
               description: ReadEndpointsMap maps an datasetID (after parsing from json to a string with dashes) to the endpoint spec from which the asset will be served to the application
               type: object

@@ -140,7 +140,7 @@ var _ = Describe("Blueprint Controller", func() {
 			}
 
 			relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Flow.Steps[0])
-			Expect(relName).To(Equal("my-app-default-4c9a7-37a8e-mystep"))
+			Expect(relName).To(Equal("my-app-default-mystep"))
 		})
 
 		It("Should limit the release name if it is too long", func() {
@@ -163,12 +163,12 @@ var _ = Describe("Blueprint Controller", func() {
 			}
 
 			relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Flow.Steps[0])
-			Expect(relName).To(Equal("my-app-default-4c9a7-37a8e-ohandnottoforgetthef-a0329"))
+			Expect(relName).To(Equal("my-app-default-ohandnottoforgettheflowstepnamet-a7569"))
 			Expect(relName).To(HaveLen(53))
 
 			// Make sure that calling the same method again results in the same result
 			relName2 := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Flow.Steps[0])
-			Expect(relName2).To(Equal("my-app-default-4c9a7-37a8e-ohandnottoforgetthef-a0329"))
+			Expect(relName2).To(Equal("my-app-default-ohandnottoforgettheflowstepnamet-a7569"))
 			Expect(relName2).To(HaveLen(53))
 		})
 	})

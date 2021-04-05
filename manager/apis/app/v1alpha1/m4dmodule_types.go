@@ -76,21 +76,21 @@ type SupportedAction struct {
 
 // The spec of the endpoint exposed by the module
 type EndpointSpec struct {
+	// +optional
+	Hostname string `json:"hostname"`
 	// +required
-	Hostname string `json:"endpointName,omitempty"`
-	// +required
-	Port int32 `json:"port" protobuf:"varint,3,opt,name=port"`
+	Port int32 `json:"port"`
 
 	// For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc
 	// +required
-	Scheme string `json:"Scheme,omitempty"`
+	Scheme string `json:"scheme"`
 }
 
 type ModuleAPI struct {
 	// +required
 	InterfaceDetails `json:",inline"`
 	// +optional
-	Endpoint EndpointSpec `json:"endpointSpec,omitempty"`
+	Endpoint EndpointSpec `json:"endpoint,omitempty"`
 }
 
 // Capability declares what this module knows how to do and the types of data it knows how to handle

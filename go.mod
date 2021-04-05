@@ -64,6 +64,7 @@ require (
 	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/cli-utils v0.20.4
 	sigs.k8s.io/controller-runtime v0.6.2
+	sigs.k8s.io/controller-tools v0.3.0 // indirect
 	sigs.k8s.io/yaml v1.2.0
 )
 
