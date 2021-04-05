@@ -80,6 +80,15 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 		m.Log.Info("Bucket allocation failed: " + err.Error())
 		return nil, err
 	}
+	credsMap, err := SecretToCredentialMap(m.Client, bucket.SecretRef)
+	if err != nil {
+		m.Log.Info("Could not fetch credentials: " + err.Error())
+		return nil, err
+	}
+	if err = m.VaultConnection.AddSecret(utils.GetVaultDatasetHome()+bucket.Name, credsMap); err != nil {
+		m.Log.Info("Could not register secret in vault: " + err.Error())
+		return nil, err
+	}
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
 	if err = m.Provision.CreateDataset(bucketRef, bucket, &m.Owner); err != nil {
 		m.Log.Info("Dataset creation failed: " + err.Error())
