@@ -154,5 +154,6 @@ var _ = AfterSuite(func() {
 	By("tearing down the test environment")
 	gexec.KillAndWait(5 * time.Second)
 	err := testEnv.Stop()
+	mockup.KillServer()
 	Expect(err).ToNot(HaveOccurred())
 })

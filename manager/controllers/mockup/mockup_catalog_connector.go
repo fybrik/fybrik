@@ -5,6 +5,7 @@ package mockup
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -163,8 +164,13 @@ func (s *server) RegisterDatasetInfo(ctx context.Context, in *pb.RegisterAssetRe
 	return &pb.RegisterAssetResponse{AssetId: "NewAsset"}, nil
 }
 
+var connector *grpc.Server = nil
+
 // Creates a new mock connector or an error
 func createMockCatalogConnector(port int) error {
+	if connector != nil {
+		return errors.New("A catalog connector was already started!")
+	}
 	address := utils.ListeningAddress(port)
 	log.Printf("Starting mock catalog connector on " + address)
 	lis, err := net.Listen("tcp", address)
@@ -172,6 +178,7 @@ func createMockCatalogConnector(port int) error {
 		return fmt.Errorf("Error when setting up mock catalog connector: %v", err)
 	}
 	s := grpc.NewServer()
+	connector = s
 	pb.RegisterDataCatalogServiceServer(s, &server{})
 	pb.RegisterDataCredentialServiceServer(s, &server{})
 	if err := s.Serve(lis); err != nil {
@@ -188,7 +195,13 @@ func MockCatalogConnector() {
 }
 
 func CreateTestCatalogConnector(t ginkgo.GinkgoTInterface) {
-	if err := createMockCatalogConnector(8080); err != nil {
+	if err := createMockCatalogConnector(50085); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func KillServer() {
+	log.Print("Killing server...")
+	connector.Stop()
+	connector = nil
 }
