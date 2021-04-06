@@ -610,7 +610,7 @@ type DatasetDetails struct {
 	unknownFields protoimpl.UnknownFields
 
 	Name       string     `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`                            //name in Catalog
-	DataOwner  string     `protobuf:"bytes,2,opt,name=data_owner,json=dataOwner,proto3" json:"data_owner,omitempty"` //inforamtion on the owner of data asset - can have different formats for different catalogs
+	DataOwner  string     `protobuf:"bytes,2,opt,name=data_owner,json=dataOwner,proto3" json:"data_owner,omitempty"` //information on the owner of data asset - can have different formats for different catalogs
 	DataStore  *DataStore `protobuf:"bytes,3,opt,name=data_store,json=dataStore,proto3" json:"data_store,omitempty"` //All info about the data store
 	DataFormat string     `protobuf:"bytes,4,opt,name=data_format,json=dataFormat,proto3" json:"data_format,omitempty"`
 	Geo        string     `protobuf:"bytes,5,opt,name=geo,proto3" json:"geo,omitempty"` //geography location where data resides (if this information available)

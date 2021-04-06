@@ -19,9 +19,9 @@ var k8sClient *K8sClient
 
 // UserCredentials contains the credentials needed to access a given system for the purpose of running a specific compute function.
 type UserCredentials struct {
-	SecretName  string                 `json:"secretName"`
-	System      string                 `json:"system"`      // system to access using the credentials, e.g. Egeria
-	Credentials map[string]interface{} `json:"credentials"` // often username and password, but could be token or other types of credentials
+	SecretName  string            `json:"secretName"`
+	System      string            `json:"system"`      // system to access using the credentials, e.g. Egeria
+	Credentials map[string]string `json:"credentials"` // often username and password, but could be token or other types of credentials
 }
 
 // CredentialRoutes is a list of the REST APIs supported by the backend of the Data User GUI
@@ -127,13 +127,7 @@ func StoreCredentials(w http.ResponseWriter, r *http.Request) {
 
 	// add system name as prefix to the credentials
 	for key, val := range userCredentials.Credentials {
-		bytes, err := json.Marshal(val)
-		if err != nil {
-			log.Print("err = " + err.Error())
-			_ = render.Render(w, r, ErrConfigProblem(err))
-			return
-		}
-		secretStruct.Data[userCredentials.System+"_"+key] = bytes
+		secretStruct.Data[userCredentials.System+"_"+key] = []byte(val)
 	}
 
 	secret, err := k8sClient.CreateOrUpdateSecret(&secretStruct)

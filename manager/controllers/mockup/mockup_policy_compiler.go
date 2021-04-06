@@ -20,7 +20,7 @@ type MockPolicyCompiler struct {
 func (s *MockPolicyCompiler) GetPoliciesDecisions(in *pb.ApplicationContext) (*pb.PoliciesDecisions, error) {
 	log.Printf("Received: ")
 	log.Printf("ProcessingGeography: " + in.AppInfo.GetProcessingGeography())
-	log.Printf("AppID: " + in.GetAppId())
+	log.Printf("Secret: " + in.GetCredentialPath())
 	log.Printf("Properties:")
 	for key, val := range in.AppInfo.GetProperties() {
 		log.Printf(key + " : " + val)

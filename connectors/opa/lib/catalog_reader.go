@@ -36,7 +36,7 @@ func (r *CatalogReader) GetDatasetsMetadataFromCatalog(in *pb.ApplicationContext
 	defer conn.Close()
 	client := pb.NewDataCatalogServiceClient(conn)
 
-	appID := in.GetAppId()
+	creds := in.GetCredentialPath()
 
 	// datasetID -> metadata of dataset in form of map
 	datasetsMetadata := make(map[string]interface{})
@@ -45,7 +45,7 @@ func (r *CatalogReader) GetDatasetsMetadataFromCatalog(in *pb.ApplicationContext
 		datasetID := dataset.GetDatasetId()
 
 		if _, present := datasetsMetadata[datasetID]; !present {
-			metadataMap, err := r.GetDatasetMetadata(&ctx, client, datasetID, appID)
+			metadataMap, err := r.GetDatasetMetadata(&ctx, client, datasetID, creds)
 
 			if err != nil {
 				return nil, err
@@ -57,8 +57,8 @@ func (r *CatalogReader) GetDatasetsMetadataFromCatalog(in *pb.ApplicationContext
 	return datasetsMetadata, nil
 }
 
-func (r *CatalogReader) GetDatasetMetadata(ctx *context.Context, client pb.DataCatalogServiceClient, datasetID string, appID string) (map[string]interface{}, error) {
-	objToSend := &pb.CatalogDatasetRequest{AppId: appID, DatasetId: datasetID}
+func (r *CatalogReader) GetDatasetMetadata(ctx *context.Context, client pb.DataCatalogServiceClient, datasetID string, creds string) (map[string]interface{}, error) {
+	objToSend := &pb.CatalogDatasetRequest{CredentialPath: creds, DatasetId: datasetID}
 	log.Printf("Sending request to External Catalog Connector: datasetID = %s", datasetID)
 	info, err := client.GetDatasetInfo(*ctx, objToSend)
 	if err != nil {

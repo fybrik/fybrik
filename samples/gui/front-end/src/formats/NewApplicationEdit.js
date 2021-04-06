@@ -46,7 +46,7 @@ const NewApplicationEdit = props => {
     resourceVersion:  exists ? props.history.location.state.application.metadata.resourceVersion : '',
     role: exists ? props.history.location.state.application.spec.appInfo["role"] : '',
     purpose: exists ? props.history.location.state.application.spec.appInfo["intent"] : '',
-    secret: exists ? props.history.location.state.application.spec.userSecretRef : props.history.location.state.application.metadata.name,
+    secret: exists ? props.history.location.state.application.spec.secretRef : props.history.location.state.application.metadata.name,
     geography: exists ? props.history.location.state.application.geography : props.location.state.application.geography,  
   })
   //application instance data
@@ -112,7 +112,7 @@ const NewApplicationEdit = props => {
           resourceVersion: application.resourceVersion,
         },
         spec: {
-          userSecretRef: application.secret,
+          secretRef: application.secret,
           appInfo: {
             "intent": application.purpose,
             "role": application.role,

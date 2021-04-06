@@ -65,11 +65,6 @@ $(TOOLBIN)/protoc-gen-doc:
 	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get -u github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@v1.4.1
 	$(call post-install-check)
 
-INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-docs
-$(TOOLBIN)/protoc-gen-docs:
-	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get istio.io/tools/cmd/protoc-gen-docs@1.6.8
-	$(call post-install-check)
-
 INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-go
 $(TOOLBIN)/protoc-gen-go:
 	# FIXME: using `go install` to fix broken deps but needs to be reverted back to `go get`

@@ -56,9 +56,7 @@ func GetMetadata(datasetID string) error {
 
 	c := pb.NewDataCatalogServiceClient(conn)
 
-	// catalogCredentials := "v1/m4d/user-creds/datauser1/notebook-with-kafka/WKC"
-	appID := "datauser1/notebook-with-kafka"
-	objToSend := &pb.CatalogDatasetRequest{AppId: appID, DatasetId: datasetID}
+	objToSend := &pb.CatalogDatasetRequest{DatasetId: datasetID}
 
 	log.Printf("Sending CatalogDatasetRequest: ")
 	catDataReqStr, _ := json.MarshalIndent(objToSend, "", "\t")
@@ -119,9 +117,7 @@ func GetCredentials(datasetID string) error {
 
 	c1 := pb.NewDataCredentialServiceClient(conn)
 
-	// userCredentials := "v1/m4d/user-creds/datauser1/notebook-with-kafka/WKC"
-	appID := "datauser1/notebook-with-kafka"
-	objToSendForCredential := &pb.DatasetCredentialsRequest{AppId: appID, DatasetId: datasetID}
+	objToSendForCredential := &pb.DatasetCredentialsRequest{DatasetId: datasetID}
 
 	log.Printf("Sending DatasetCredentialsRequest: ")
 	dataCredReqStr, _ := json.MarshalIndent(objToSendForCredential, "", "\t")

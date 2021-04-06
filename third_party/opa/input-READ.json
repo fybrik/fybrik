@@ -1,0 +1,109 @@
+{ "input": {
+	"dataset_id": "{\"ServerName\":\"mds1\", \"AssetGuid\":\"deda6bf9-e758-4b36-8444-82a718562656\"}",
+	"details": {
+		"data_format": "csv",
+		"data_store": {
+			"name": "object store",
+			"s3": {
+				"bucket": "mybucket",
+				"endpoint": "s3.eu-de.cloud-object-storage.appdomain.cloud",
+				"object_key": "transactions.csv",
+				"region": "eu"
+			},
+			"type": 2
+		},
+		"geo": "US",
+		"metadata": {
+			"components_metadata": {
+				"amount::2": {
+					"component_type": "column",
+					"named_metadata": {
+						"elementPosition": "2",
+						"guid": "aa4619fc-27d7-4138-b049-2e4923a9e977"
+					}
+				},
+				"isFlaggedFraud::10": {
+					"component_type": "column",
+					"named_metadata": {
+						"elementPosition": "10",
+						"guid": "9eeb4727-fbfe-4049-bfcc-a3686d73cb80"
+					}
+				},
+				"isFraud::9": {
+					"component_type": "column",
+					"named_metadata": {
+						"elementPosition": "9",
+						"guid": "12d57d52-a576-40c7-8379-0be806f9c417"
+					}
+				},
+				"nameDest::6": {
+					"component_type": "column",
+					"named_metadata": {
+						"elementPosition": "6",
+						"guid": "75430598-c01e-4680-bff5-0fa9d819514e"
+					}
+				},
+				"nameOrig::3": {
+					"component_type": "column",
+					"named_metadata": {
+						"elementPosition": "3",
+						"guid": "b3aa7352-0d3d-4e21-9059-8d69f8b07cf0"
+					}
+				},
+				"newbalanceDest::8": {
+					"component_type": "column",
+					"named_metadata": {
+						"elementPosition": "8",
+						"guid": "5b86123e-2f33-47d6-b4e7-50a725fed054"
+					}
+				},
+				"newbalanceOrig::5": {
+					"component_type": "column",
+					"named_metadata": {
+						"elementPosition": "5",
+						"guid": "ec324708-a426-4f09-aea9-cceb1ceb44a9"
+					}
+				},
+				"oldbalanceDest::7": {
+					"component_type": "column",
+					"named_metadata": {
+						"elementPosition": "7",
+						"guid": "3b770e27-d7e0-41d3-92b9-959a81d07d07"
+					}
+				},
+				"oldbalanceOrg::4": {
+					"component_type": "column",
+					"named_metadata": {
+						"elementPosition": "4",
+						"guid": "3861bcbb-4fcd-4c9f-aa2f-8399899058c0"
+					}
+				},
+				"step::0": {
+					"component_type": "column",
+					"named_metadata": {
+						"elementPosition": "0",
+						"guid": "fd7191cc-a936-4982-b90f-cb1014c15fff"
+					}
+				},
+				"type::1": {
+					"component_type": "column",
+					"named_metadata": {
+						"elementPosition": "1",
+						"guid": "83b1e51c-0def-4f60-8fff-635121e98b82"
+					}
+				}
+			},
+			"dataset_named_metadata": {
+				"description": "Synthetic Financial Dataset For Fraud Detection"
+			},
+			"dataset_tags": [
+				"finance"
+			]
+		},
+		"name": "transactions.csv"
+	},
+	"processing_geography": "Netherlands",
+	"purpose": "Fraud Detection",
+	"role": "Data Scientist",
+	"type": "READ"
+} }

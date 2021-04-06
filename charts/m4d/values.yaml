@@ -77,6 +77,10 @@ coordinator:
   vault:
     # Set to the Vault address. 
     address: "http://vault.m4d-system:8200"
+    # Login method to Vault
+    login:
+      # Token authentication
+      token: "root"
     # Set to the path where credentials of dataset accessed by the m4d are stored.
     datasetHome: "m4d/dataset-creds/"
     # Set to the path where user credentials are stored.
@@ -84,6 +88,10 @@ coordinator:
 
   # Configures the Razee instance to be used by the coordinator manager in a multicluster setup
   razee:
+    # Overrides the multicluster group that should be used.
+    # Using Razee one can bundle clusters in a group. The controller is then limited to all
+    # the clusters registered in this group.
+    multiclusterGroup: ""
     # URL for Razee local deployment
     url: ""
     # Usernane for Razee local deployment

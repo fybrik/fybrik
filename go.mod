@@ -3,9 +3,8 @@ module github.com/ibm/the-mesh-for-data
 go 1.13
 
 require (
-	cloud.google.com/go v0.66.0 // indirect
 	emperror.dev/errors v0.7.0
-	github.com/IBM/satcon-client-go v0.1.2-0.20210210170826-405eaf53986f
+	github.com/IBM/satcon-client-go v0.1.2-0.20210329192404-b8fa1c732712
 	github.com/Microsoft/go-winio v0.4.15 // indirect
 	github.com/containerd/continuity v0.0.0-20201119173150-04c754faca46 // indirect
 	github.com/datashim-io/datashim/src/dataset-operator v0.0.0-20210322095623-e5d70b250696
@@ -15,8 +14,7 @@ require (
 	github.com/go-logr/logr v0.1.0
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/gogo/protobuf v1.3.1
-	github.com/golang/protobuf v1.4.2
-	github.com/google/uuid v1.1.2 // indirect
+	github.com/golang/protobuf v1.4.3
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/hashicorp/go-retryablehttp v0.6.7
 	github.com/hashicorp/vault v1.6.1
@@ -30,18 +28,18 @@ require (
 	github.com/sirupsen/logrus v1.7.0 // indirect
 	github.com/spf13/cobra v1.1.1
 	github.com/stretchr/testify v1.6.1
-	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b // indirect
-	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68 // indirect
-	google.golang.org/grpc v1.31.1
+	github.com/xeipuuv/gojsonschema v1.2.0
+	google.golang.org/grpc v1.36.0
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/ini.v1 v1.51.1 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.2.4
-	k8s.io/api v0.18.6
-	k8s.io/apimachinery v0.18.6
+	k8s.io/api v0.19.7
+	k8s.io/apimachinery v0.19.7
 	k8s.io/cli-runtime v0.18.6
 	k8s.io/client-go v12.0.0+incompatible
+	knative.dev/pkg v0.0.0-20210315160101-6a33a1ab29ac
 	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/cli-utils v0.20.4
 	sigs.k8s.io/controller-runtime v0.6.2

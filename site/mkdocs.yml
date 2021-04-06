@@ -40,6 +40,8 @@ nav:
     - contribute/modules.md
 
 extra:
+  version:
+    provider: mike
   social:
     - icon: fontawesome/brands/github-alt
       link: https://github.com/ibm/the-mesh-for-data

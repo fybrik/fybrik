@@ -14,7 +14,7 @@ spec:
     intent: fraud-detection
     role: Security
   data:
-    - dataSetID: "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"ASSET_ID\"}"
+    - dataSetID: "{\"ServerName\":\"mds1\",\"AssetGuid\":\"ASSET_ID\"}"
       requirements:
         interface: 
           protocol: m4d-arrow-flight

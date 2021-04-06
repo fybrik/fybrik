@@ -16,6 +16,7 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	dc "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/ibm/the-mesh-for-data/pkg/serde"
+	"github.com/ibm/the-mesh-for-data/pkg/vault"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -36,9 +37,14 @@ func GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) erro
 	defer cancel()
 
 	var response *dc.CatalogDatasetInfo
+	var credentialPath string
+	if input.Spec.SecretRef != "" {
+		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+	}
+
 	if response, err = c.GetDatasetInfo(ctx, &dc.CatalogDatasetRequest{
-		AppId:     utils.CreateAppIdentifier(input),
-		DatasetId: req.Context.DataSetID,
+		CredentialPath: credentialPath,
+		DatasetId:      req.Context.DataSetID,
 	}); err != nil {
 		return err
 	}
@@ -89,10 +95,14 @@ func GetCredentials(req *modules.DataInfo, input *app.M4DApplication) error {
 	// Contact the server and print out its response.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
+	var credentialPath string
+	if input.Spec.SecretRef != "" {
+		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+	}
 
 	dataCredentials, err := c.GetCredentialsInfo(ctx, &dc.DatasetCredentialsRequest{
-		DatasetId: req.Context.DataSetID,
-		AppId:     utils.CreateAppIdentifier(input)})
+		DatasetId:      req.Context.DataSetID,
+		CredentialPath: credentialPath})
 	if err != nil {
 		return err
 	}
@@ -129,12 +139,16 @@ func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.Dat
 	if creds, err = SecretToCredentials(r.Client, types.NamespacedName{Name: info.SecretRef, Namespace: utils.GetSystemNamespace()}); err != nil {
 		return "", err
 	}
+	var credentialPath string
+	if input.Spec.SecretRef != "" {
+		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+	}
 
 	response, err := c.RegisterDatasetInfo(ctx, &dc.RegisterAssetRequest{
 		Creds:                creds,
 		DatasetDetails:       datasetDetails,
 		DestinationCatalogId: catalogID,
-		AppId:                utils.CreateAppIdentifier(input),
+		CredentialPath:       credentialPath,
 	})
 	if err != nil {
 		return "", err
