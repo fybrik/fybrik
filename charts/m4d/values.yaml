@@ -77,6 +77,10 @@ coordinator:
   vault:
     # Set to the Vault address. 
     address: "http://vault.m4d-system:8200"
+    # Login method to Vault
+    login:
+      # Token authentication
+      token: "root"
     # Set to the path where credentials of dataset accessed by the m4d are stored.
     datasetHome: "m4d/dataset-creds/"
     # Set to the path where user credentials are stored.
