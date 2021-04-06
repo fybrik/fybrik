@@ -201,7 +201,9 @@ func CreateTestCatalogConnector(t ginkgo.GinkgoTInterface) {
 }
 
 func KillServer() {
-	log.Print("Killing server...")
-	connector.Stop()
-	connector = nil
+	if connector != nil {
+		log.Print("Killing server...")
+		connector.Stop()
+		connector = nil
+	}
 }
