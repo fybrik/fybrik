@@ -169,7 +169,7 @@ var connector *grpc.Server = nil
 // Creates a new mock connector or an error
 func createMockCatalogConnector(port int) error {
 	if connector != nil {
-		return errors.New("A catalog connector was already started!")
+		return errors.New("a catalog connector was already started")
 	}
 	address := utils.ListeningAddress(port)
 	log.Printf("Starting mock catalog connector on " + address)
