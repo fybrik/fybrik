@@ -188,7 +188,7 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	// Check if channel exists
 	existingChannel, err := r.con.Channels.ChannelByName(r.orgID, channelName)
 	if err != nil {
-		if !strings.HasPrefix(err.Error(), "Query channelByName error. Could not find the channel with name") {
+		if !strings.HasPrefix(err.Error(), "Query channelByName error.") {
 			return err
 		}
 	}
