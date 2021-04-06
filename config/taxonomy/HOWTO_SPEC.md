@@ -19,7 +19,6 @@ You SHOULD declare the schema version in the document:
 The goal is to preserve compatibility with json schema DRAFT 4, OpenAPI 3.0, and Kubernetes CRDs (all are based on json schema DRAFT 4), and code generation tools.
 We hope that newer json schema specs will be supported in the future as we improve our tooling.
 
-
 ## Schema properties
 
 In this section we describe all schema properties that can be used. We categorize the properties to [structural properties](#structural-properties) and [validation properties](#validation-properties).
@@ -231,23 +230,31 @@ UUID | `string` | `uuid` | a UUID
 
 Any time a schema object can be used, a reference object can be used in its place. This allows referencing definitions instead of defining them inline.
 
+Assume that all schema files are mounted in a common folder so you can reference other taxonomy JSON files by their name. 
+
+### Examples
+
+A reference to a schema defined in an external file:
+
 ```json
-// a reference to a schema defined in an external file
 {
-  "$ref": "definitions.json#/Pet"
+  "$ref": "another.json#/definitions/Pet"
 }
 ```
 
+A reference to a schema defined in the same file:
+
 ```json
-// a reference to a schema defined in the same file
 {
   "$ref": "#/definitions/Pet"
 }
 ```
 
+A more complete example:
+
 ```json
-// a more complete example
 {
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "definitions": {
         "Part": {
             "type": "string",
@@ -264,6 +271,7 @@ Any time a schema object can be used, a reference object can be used in its plac
                 }
             }
         }
+    }
 }
 ```
 
