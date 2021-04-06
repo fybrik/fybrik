@@ -6,8 +6,6 @@ kind: ConfigMap
 metadata:
   name: m4d-config
 data:
-  SECRET_PROVIDER_URL: "http://secret-provider.m4d-system:5555/get-secret"
-  SECRET_PROVIDER_ROLE: "demo"
   #catalog connector
   CATALOG_CONNECTOR_URL: "data-catalog:80"
   CATALOG_PROVIDER_NAME: "EGERIA"

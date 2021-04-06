@@ -8,7 +8,7 @@ set -e
 : ${WITHOUT_EGERIA:=false}
 : ${WITHOUT_OPA:=false}
 
-source secret-provider/deploy/vault-util.sh
+source hack/tools/vault_utils.sh
 
 kubectl create ns $KUBE_NAMESPACE || true
 kubectl config set-context --current --namespace=$KUBE_NAMESPACE
@@ -23,12 +23,12 @@ $WITHOUT_OPA || make -C third_party/opa deploy
 # Perform a port-forward to communicate with Vault
 port_forward
 
-# Install the manager, the connectors and the secret-provider
+# Install the manager and the connectors
 # This also configures the "external" endpoint for mimicking an external Vault installation
 WITHOUT_PORT_FORWARD=true WITHOUT_VAULT=false make deploy
 
 # Configure the internal m4d endpoint in vault (the "secret" endpoint)
-WITHOUT_PORT_FORWARD=true make -C secret-provider configure-vault
+WITHOUT_PORT_FORWARD=true make configure-vault
 
 make install
 

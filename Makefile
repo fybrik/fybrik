@@ -4,7 +4,7 @@ export DOCKER_TAGNAME ?= latest
 .PHONY: license
 license: $(TOOLBIN)/license_finder
 	$(call license_go,.)
-	$(call license_python,secret-provider)
+	$(call license_python)
 
 .PHONY: docker-mirror-read
 docker-mirror-read:
@@ -34,7 +34,6 @@ run-integration-tests:
 	$(MAKE) -C test/services docker-build docker-push
 	$(MAKE) cluster-prepare-wait
 	$(MAKE) configure-vault
-	$(MAKE) -C secret-provider configure-vault
 	$(MAKE) -C charts m4d
 	$(MAKE) -C manager wait_for_manager
 	$(MAKE) helm
@@ -71,13 +70,11 @@ install:
 
 .PHONY: deploy
 deploy:
-	$(MAKE) -C secret-provider deploy
 	$(MAKE) -C manager deploy
 	$(MAKE) -C connectors deploy
 
 .PHONY: undeploy
 undeploy:
-	$(MAKE) -C secret-provider undeploy
 	$(MAKE) -C manager undeploy
 	$(MAKE) -C manager undeploy-crd
 	$(MAKE) -C connectors undeploy
@@ -89,21 +86,18 @@ docker: docker-build docker-push
 .PHONY: docker-minimal-it
 docker-minimal-it:
 	$(MAKE) -C manager docker-build docker-push
-	$(MAKE) -C secret-provider docker-build docker-push
 	$(MAKE) -C test/dummy-mover docker-build docker-push
 	$(MAKE) -C test/services docker-build docker-push
 
 .PHONY: docker-build
 docker-build:
 	$(MAKE) -C manager docker-build
-	$(MAKE) -C secret-provider docker-build
 	$(MAKE) -C connectors docker-build
 	$(MAKE) -C test/dummy-mover docker-build
 
 .PHONY: docker-push
 docker-push:
 	$(MAKE) -C manager docker-push
-	$(MAKE) -C secret-provider docker-push
 	$(MAKE) -C connectors docker-push
 	$(MAKE) -C test/dummy-mover docker-push
 
@@ -115,7 +109,6 @@ DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
 DOCKER_PUBLIC_NAMESPACE ?= the-mesh-for-data
 DOCKER_PUBLIC_NAMES := \
 	manager \
-	secret-provider \
 	dummy-mover \
 	egr-connector \
 	katalog-connector \
@@ -150,7 +143,6 @@ endif
 .PHONY: save-images
 save-images:
 	docker save -o images.tar ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME} \
-		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/secret-provider:${DOCKER_TAGNAME} \
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/dummy-mover:${DOCKER_TAGNAME} \
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/egr-connector:${DOCKER_TAGNAME} \
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/katalog-connector:${DOCKER_TAGNAME} \

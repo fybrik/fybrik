@@ -22,9 +22,6 @@ const (
 	VaultUserHomeKey                    string = "VAULT_USER_HOME"
 	VaultDatasetHomeKey                 string = "VAULT_DATASET_HOME"
 	VaultTTLKey                         string = "VAULT_TTL"
-	VaultAuthKey                        string = "VAULT_AUTH"
-	SecretProviderURL                   string = "SECRET_PROVIDER_URL"
-	SecretProviderRole                  string = "SECRET_PROVIDER_ROLE"
 	VaultModulesRole                    string = "VAULT_MODULES_ROLE"
 )
 
@@ -36,17 +33,6 @@ func GetSystemNamespace() string {
 		}
 	}
 	return "m4d-system"
-}
-
-// GetSecretProviderURL returns the path to secret provider
-// A credentials path should begin with this URL
-func GetSecretProviderURL() string {
-	return os.Getenv(SecretProviderURL)
-}
-
-// GetSecretProviderRole returns the assigned authentification role for accessing dataset credentials
-func GetSecretProviderRole() string {
-	return os.Getenv(SecretProviderRole)
 }
 
 // GetModulesRole returns the modules assigned authentification role for accessing dataset credentials
@@ -93,11 +79,6 @@ func GetVaultAuthTTL() string {
 	return os.Getenv(VaultTTLKey)
 }
 
-// GetVaultAuth returns the authentication method for vault connection
-func GetVaultAuth() string {
-	return os.Getenv(VaultAuthKey)
-}
-
 // GetCredentialsManagerServiceAddress returns the address where credentials manager is running
 func GetCredentialsManagerServiceAddress() string {
 	return os.Getenv(CredentialsManagerServiceAddressKey)
@@ -130,6 +111,4 @@ func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
 	SetIfNotSet("MAIN_POLICY_MANAGER_CONNECTOR_URL", "localhost:50090", t)
 	SetIfNotSet("MAIN_POLICY_MANAGER_NAME", "MOCK", t)
 	SetIfNotSet("USE_EXTENSIONPOLICY_MANAGER", "false", t)
-	SetIfNotSet("SECRET_PROVIDER_URL", "http://secret-provider.m4d-system.svc.cluster.local:5555/get-secret", t)
-	SetIfNotSet("SECRET_PROVIDER_ROLE", "demo", t)
 }
