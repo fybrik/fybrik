@@ -103,7 +103,9 @@
 		"name": "transactions.csv"
 	},
 	"processing_geography": "Netherlands",
-	"purpose": "Fraud Detection",
-	"role": "Data Scientist",
+	"properties": {
+		"intent": "Fraud Detection",
+		"role": "Data Scientist"
+	},
 	"type": "READ"
 } }
