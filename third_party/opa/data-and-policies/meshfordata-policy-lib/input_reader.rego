@@ -44,10 +44,11 @@ package data_policies
 # 		},
 # 	}
 # }
+Properties() = input.properties
 
-Purpose() = input.purpose 
+Purpose() = Properties().intent 
 
-Role() = input.role 
+Role() = Properties().role
 
 AccessType() = input.type 
 
