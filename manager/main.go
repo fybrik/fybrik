@@ -229,10 +229,15 @@ func NewClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error)
 		password := strings.TrimSpace(os.Getenv("RAZEE_PASSWORD"))
 
 		setupLog.Info("Using razee local at " + razeeURL)
-		return razee.NewRazeeManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password, multiClusterGroup)
+		return razee.NewRazeeLocalManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password, multiClusterGroup)
 	} else if apiKey, satConf := os.LookupEnv("IAM_API_KEY"); satConf {
 		setupLog.Info("Using IBM Satellite config")
 		return razee.NewSatConfManager(strings.TrimSpace(apiKey), multiClusterGroup)
+	} else if apiKey, razeeOauth := os.LookupEnv("API_KEY"); razeeOauth {
+		setupLog.Info("Using Razee oauth")
+
+		razeeURL := strings.TrimSpace(os.Getenv("RAZEE_URL"))
+		return razee.NewRazeeOAuthManager(strings.TrimSpace(razeeURL), strings.TrimSpace(apiKey), multiClusterGroup)
 	} else {
 		setupLog.Info("Using local cluster manager")
 		return local.NewManager(mgr.GetClient(), utils.GetSystemNamespace())
