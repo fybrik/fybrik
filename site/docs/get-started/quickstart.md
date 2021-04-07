@@ -54,6 +54,18 @@ Run the following to install vault and the plugin in development mode:
 
 ## Install control plane
 
+??? tip "Install development version"
+
+    The published Helm charts are only available for released versions. 
+    To install the `dev` version install the charts from the source code.
+    For example:
+    ```bash
+    git clone https://github.com/IBM/the-mesh-for-data.git
+    cd the-mesh-for-data
+    helm install m4d-crd m4d-charts/m4d-crd -n m4d-system --wait
+    helm install m4d m4d-charts/m4d -n m4d-system --wait
+    ```
+
 The control plane includes a `manager` service that connects to a data catalog and to a policy manager. 
 Install the latest release of Mesh for Data with a built-in data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
 
