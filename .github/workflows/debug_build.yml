@@ -42,5 +42,5 @@ jobs:
         key: ${{ runner.os }}-custom-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-custom
     - run: echo "Pushing images to ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}"
-#    - name: Build and push docker images
-#      run: make docker
+    - name: Build and push docker images
+      run: make docker
