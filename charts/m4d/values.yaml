@@ -81,10 +81,6 @@ coordinator:
     login:
       # Token authentication
       token: "root"
-    # Set to the path where credentials of dataset accessed by the m4d are stored.
-    datasetHome: "m4d/dataset-creds/"
-    # Set to the path where user credentials are stored.
-    userHome: "m4d/user-creds/"
 
   # Configures the Razee instance to be used by the coordinator manager in a multicluster setup
   razee:
@@ -193,7 +189,7 @@ secretProvider:
 
   # Image name or a hub/image[:tag]
   image: "secret-provider"
-  
+
   # Overrides global.imagePullPolicy
   imagePullPolicy: ""
 
