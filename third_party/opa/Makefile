@@ -26,3 +26,7 @@ unloadpolicy: $(TOOLBIN)/kubectl
 unloaddata: $(TOOLBIN)/kubectl
 	./deploy.sh unloaddata $(ARGS)
 
+.PHONY: charts
+charts:
+	cp data-and-policies/meshfordata-external-data/** $(ROOT_DIR)/charts/m4d/files/opa-server/external-data
+	cp data-and-policies/meshfordata-policy-lib/** $(ROOT_DIR)/charts/m4d/files/opa-server/policy-lib
