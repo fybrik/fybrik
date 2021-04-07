@@ -44,3 +44,5 @@ jobs:
     - run: echo "Pushing images to ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE} from branch ${{ github.ref }}"
     - name: Build and push docker images
       run: make docker
+    - name: Push helm charts
+      run: make -C modules helm-chart-push
