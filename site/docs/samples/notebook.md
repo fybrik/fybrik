@@ -54,7 +54,7 @@ Make a note of the service endpoint, bucket name, and access credentials. You wi
     
 ## Register the dataset in a data catalog
 
-Register the credentials required for accessing the dataset. Replace the values for `accessKey` and `secretKey` with the values from the object storage service that you used and run:
+Register the credentials required for accessing the dataset. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
 
 ```yaml
 cat << EOF | kubectl apply -f -
