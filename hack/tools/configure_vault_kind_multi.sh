@@ -52,7 +52,7 @@ add_role() {
 
 add_userpass_auth_method() {
 	kubectl config use-context kind-control
-        enable_userpass_auth "$DATA_PROVIDER_USERNAME" "$DATA_PROVIDER_PASSWORD" "allow-all-dataset-creds"
+	enable_userpass_auth "$DATA_PROVIDER_USERNAME" "$DATA_PROVIDER_PASSWORD" "allow-all-dataset-creds"
 }
 
 case "$op" in
