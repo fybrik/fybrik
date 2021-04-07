@@ -123,7 +123,9 @@ DOCKER_PUBLIC_NAMES := \
 	katalog-connector \
 	opa-connector \
 	vault-connector
- 
+
+TRAVIS_TAG := $(shell echo "$${GITHUB_REF\#refs/*/}")
+
 define do-docker-retag-and-push-public
 	for name in ${DOCKER_PUBLIC_NAMES}; do \
 		docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$$name:${DOCKER_TAGNAME} ${DOCKER_PUBLIC_HOSTNAME}/${DOCKER_PUBLIC_NAMESPACE}/$$name:$1; \
@@ -134,14 +136,14 @@ endef
 .PHONY: docker-retag-and-push-public
 docker-retag-and-push-public:
 	$(call do-docker-retag-and-push-public,latest)
-ifneq (${TRAVIS_TAG},)
-	$(call do-docker-retag-and-push-public,${TRAVIS_TAG})
+ifneq (,$(findstring tags,$(GITHUB_REF)))
+	$(call do-docker-retag-and-push-public,$(TRAVIS_TAG))
 endif
 
 .PHONY: helm-push-public
 helm-push-public:
 	DOCKER_HOSTNAME=${DOCKER_PUBLIC_HOSTNAME} DOCKER_NAMESPACE=${DOCKER_PUBLIC_NAMESPACE} make -C modules helm-chart-push
-ifneq (${TRAVIS_TAG},)
+ifneq (,$(findstring tags,$(GITHUB_REF)))
 	DOCKER_HOSTNAME=${DOCKER_PUBLIC_HOSTNAME} DOCKER_NAMESPACE=${DOCKER_PUBLIC_NAMESPACE} DOCKER_TAGNAME=${TRAVIS_TAG} make -C modules helm-chart-push
 endif
 
