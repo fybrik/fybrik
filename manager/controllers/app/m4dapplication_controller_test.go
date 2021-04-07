@@ -342,45 +342,6 @@ var _ = Describe("M4DApplication Controller", func() {
 			Expect(getErrorMessages(resource)).To(ContainSubstring("read"))
 		})
 
-		// Tests denial of the necessary copy operation
-
-		// Assumptions on response from connectors:
-		// s3 dataset
-		// Read module with source=s3,parquet exists
-		// Copy to s3 is required by the user
-		// Enforcement action for write operation: Deny
-		// Result: an error
-
-		It("Test deny-on-copy", func() {
-			appSignature := types.NamespacedName{Name: "with-copy", Namespace: "default"}
-			resource := InitM4DApplication(appSignature.Name, 1)
-			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID: "{\"asset_id\": \"deny-on-copy\", \"catalog_id\": \"s3\"}",
-				Requirements: apiv1alpha1.DataRequirements{
-					Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
-					Copy:      apiv1alpha1.CopyRequirements{Required: true},
-				},
-			}
-
-			// Create M4DApplication
-			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
-
-			// Ensure getting cleaned up after tests finish
-			defer func() {
-				DeleteM4DApplication(appSignature.Name)
-			}()
-
-			By("Expecting an error")
-			Eventually(func() string {
-				f := &apiv1alpha1.M4DApplication{}
-				_ = k8sClient.Get(context.Background(), appSignature, f)
-				return getErrorMessages(f)
-			}, timeout, interval).ShouldNot(BeEmpty())
-
-			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.CopyNotAllowed))
-		})
-
 		// Tests finding a module for copy
 
 		// Assumptions on response from connectors:
