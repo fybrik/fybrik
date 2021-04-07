@@ -228,7 +228,9 @@
 		"name": "ingest-asset"
 	},
 	"processing_geography": "Netherlands",
-	"purpose": "Fraud Detection",
-	"role": "Data Scientist",
-	"type": "READ"
+	"properties": {
+		"intent": "Fraud Detection",
+		"role": "Data Scientist"
+	},
+	"type": "WRITE"
 } }
