@@ -45,13 +45,13 @@ enable_k8s_auth_for_cluster() {
 # and creates policy to access them
 configure_vault() {
 	enable_kv "$SECRET_PATH"
-	create_policy_with_plugin_path "allow-all-$ROLE" "$SECRET_PATH/*" "$PLUGIN_PATH/*"
+	create_policy_with_plugin_path "allow-all-dataset-creds" "$SECRET_PATH/*" "$PLUGIN_PATH/*"
 }
 
 # add_role adds a role to bind policy to identity.
 # $1 - cluster name
 add_role() {
-	create_role "$ROLE" "allow-all-$ROLE" "$1" "$MODULE_NAMESPACE"
+	create_role "$ROLE" "allow-all-dataset-creds" "$1" "$MODULE_NAMESPACE"
 }
 
 add_userpass_auth_method() {
