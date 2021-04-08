@@ -107,15 +107,37 @@ EOF
 
 The asset is now registered in the catalog. The identifier of the asset is `m4d-notebook-sample/data-csv` (i.e. `<namespace>/<name>`). You will use that name in the `M4DApplication` later.
 
-Notice the `assetMetadata` field above. It specifies the dataset geography and tags. These attributes are later used in policies.
+Notice the `assetMetadata` field above. It specifies the dataset geography and tags. These attributes can later be used in policies.
 
 
 ## Define data access policies
 
-Currently predefined policies are included as part of the OPA deployment.
-Included are policies that are triggered for datasets that are tagged with 'finance' and have columns `nameOrig` and `nameDest`. The policies indicate that these columns must be redacted (masked) when data is read.
+Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to redact the columns `nameOrig` and `nameDest` for datasets tagged as `finance`. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
 
-The policies can be found at `third_party/opa/opa-policy.rego`.
+```rego
+package dataapi.authz
+
+import data.data_policies as dp
+
+transform[action] {
+  description = "Redact sensitive columns in finance datasets"
+
+  dp.check_access_type([dp.AccessTypes.READ])
+  dp.dataset_has_tag("finance")
+  column_names := dp.column_with_any_name({"nameOrig", "nameDest"})
+
+  action = dp.build_redact_column_action(column_names[_], dp.build_policy_from_description(description))
+}
+```
+
+In this sample only the policy above is applied. Copy the policy to a file named `sample-policy.rego` and then run:
+
+```bash
+kubectl -n m4d-system create configmap sample-policy --from-file=sample-policy.rego
+kubectl -n m4d-system label configmap sample-policy openpolicyagent.org/policy=rego
+```
+
+You can similarly apply a directory holding multiple rego files.
 
 ## Deploy a Jupyter notebook
 
