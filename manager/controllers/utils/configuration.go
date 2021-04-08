@@ -117,8 +117,8 @@ func SetIfNotSet(key string, value string, t ginkgo.GinkgoTInterface) {
 }
 
 func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
-	SetIfNotSet(CatalogConnectorServiceAddressKey, "localhost:8080", t)
-	SetIfNotSet(CredentialsManagerServiceAddressKey, "localhost:8080", t)
+	SetIfNotSet(CatalogConnectorServiceAddressKey, "localhost:50085", t)
+	SetIfNotSet(CredentialsManagerServiceAddressKey, "localhost:50085", t)
 	SetIfNotSet(VaultAddressKey, "http://127.0.0.1:8200/", t)
 	SetIfNotSet(VaultDatasetMountKey, "v1/sys/mounts/m4d/dataset-creds", t)
 	SetIfNotSet(VaultUserMountKey, "v1/sys/mounts/m4d/user-creds", t)

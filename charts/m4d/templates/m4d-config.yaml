@@ -14,10 +14,10 @@ data:
   MAIN_POLICY_MANAGER_CONNECTOR_URL: {{ .Values.coordinator.policyManagerConnectorURL | default (printf "%s-connector:80" .Values.coordinator.policyManager) | quote }}
   USE_EXTENSIONPOLICY_MANAGER: "false" # deprecated
   VAULT_ADDRESS: {{ .Values.coordinator.vault.address | quote }}
-  VAULT_DATASET_HOME: {{ .Values.coordinator.vault.datasetHome | quote }} # temporary
-  VAULT_DATASET_MOUNT: {{ printf "/v1/sys/mounts/%s" .Values.coordinator.vault.datasetHome | quote }} # temporary
-  VAULT_USER_HOME: {{ .Values.coordinator.vault.userHome | quote}} # temporary
-  VAULT_USER_MOUNT: {{ printf "/v1/sys/mounts/%s" .Values.coordinator.vault.userHome | quote }} # temporary
+  VAULT_DATASET_HOME: {{ printf "m4d/dataset-creds/" | quote }} # temporary
+  VAULT_DATASET_MOUNT: {{ printf "/v1/sys/mounts/m4d/dataset-creds" | quote }} # temporary
+  VAULT_USER_HOME: {{ printf "m4d/user-creds/" | quote}} # temporary
+  VAULT_USER_MOUNT: {{ printf "/v1/sys/mounts/m4d/user-creds" | quote }} # temporary
   USER_VAULT_ADDRESS: {{ .Values.coordinator.vault.address | quote }} # deprecated
   USER_VAULT_PATH: "external" # deprecated
   SECRET_PROVIDER_URL: "http://secret-provider.m4d-system:5555/get-secret" # deprecated

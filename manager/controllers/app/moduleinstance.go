@@ -187,13 +187,15 @@ func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.
 	if !copyRequired {
 		return nil, nil
 	}
+	actionsOnCopy := []*pb.EnforcementAction{}
+	geo := m.WorkloadGeography
 	// WRITE actions
-	actionsOnCopy, geo, err := m.enforceWritePolicies(appContext, item.Context.DataSetID)
-	if err != nil {
-		if readSelector != nil && err.Error() == app.WriteNotAllowed {
-			return nil, errors.New(app.CopyNotAllowed)
+	if readSelector == nil {
+		var err error
+		actionsOnCopy, geo, err = m.enforceWritePolicies(appContext, item.Context.DataSetID)
+		if err != nil {
+			return nil, err
 		}
-		return nil, err
 	}
 	actionsOnCopy = append(actionsOnCopy, additionalActions...)
 	m.Log.Info("Copy is required for " + item.Context.DataSetID)
@@ -417,16 +419,14 @@ func (m *ModuleManager) getCopyRequirements(item modules.DataInfo, readSelector 
 }
 
 func (m *ModuleManager) enforceWritePolicies(appContext *app.M4DApplication, datasetID string) ([]*pb.EnforcementAction, string, error) {
-	var geo string
 	var err error
 	actions := []*pb.EnforcementAction{}
-	//	if the cluster selector is non-empty, the write will be done to the specified geography
+	//	if the cluster selector is non-empty, the write will be done to the specified geography if possible
 	if m.WorkloadGeography != "" {
 		if actions, err = LookupPolicyDecisions(datasetID, m.PolicyCompiler, appContext,
-			&pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: m.WorkloadGeography}); err != nil {
-			return actions, geo, err
+			&pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: m.WorkloadGeography}); err == nil {
+			return actions, m.WorkloadGeography, nil
 		}
-		return actions, m.WorkloadGeography, nil
 	}
 	var excludedGeos string
 	for _, cluster := range m.Clusters {
@@ -434,13 +434,13 @@ func (m *ModuleManager) enforceWritePolicies(appContext *app.M4DApplication, dat
 		if actions, err = LookupPolicyDecisions(datasetID, m.PolicyCompiler, appContext, operation); err == nil {
 			return actions, cluster.Metadata.Region, nil
 		}
+		if err.Error() != app.WriteNotAllowed {
+			return actions, "", err
+		}
 		if excludedGeos != "" {
 			excludedGeos += ", "
 		}
 		excludedGeos += cluster.Metadata.Region
-		if err.Error() != app.WriteNotAllowed {
-			return actions, "", err
-		}
 	}
 	return actions, "", errors.New("Writing to all geographies is denied: " + excludedGeos)
 }

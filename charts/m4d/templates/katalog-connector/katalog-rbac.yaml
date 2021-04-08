@@ -11,7 +11,7 @@ rules:
   resources: ["assets"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
 - apiGroups: [""]
-  resources: ["secret"]
+  resources: ["secrets"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
 ---
 # ClusterRole katalog-viewer allows viewing assets.
