@@ -4,7 +4,6 @@ export DOCKER_TAGNAME ?= latest
 .PHONY: license
 license: $(TOOLBIN)/license_finder
 	$(call license_go,.)
-	$(call license_python)
 
 .PHONY: docker-mirror-read
 docker-mirror-read:
