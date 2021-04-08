@@ -135,16 +135,18 @@ endef
 
 .PHONY: docker-retag-and-push-public
 docker-retag-and-push-public:
-	$(call do-docker-retag-and-push-public,latest)
 ifneq (,$(findstring tags,$(GITHUB_REF)))
 	$(call do-docker-retag-and-push-public,$(TRAVIS_TAG))
+else
+	$(call do-docker-retag-and-push-public,latest)
 endif
 
 .PHONY: helm-push-public
 helm-push-public:
-	DOCKER_HOSTNAME=${DOCKER_PUBLIC_HOSTNAME} DOCKER_NAMESPACE=${DOCKER_PUBLIC_NAMESPACE} make -C modules helm-chart-push
 ifneq (,$(findstring tags,$(GITHUB_REF)))
 	DOCKER_HOSTNAME=${DOCKER_PUBLIC_HOSTNAME} DOCKER_NAMESPACE=${DOCKER_PUBLIC_NAMESPACE} DOCKER_TAGNAME=${TRAVIS_TAG} make -C modules helm-chart-push
+else
+	DOCKER_HOSTNAME=${DOCKER_PUBLIC_HOSTNAME} DOCKER_NAMESPACE=${DOCKER_PUBLIC_NAMESPACE} make -C modules helm-chart-push
 endif
 
 .PHONY: save-images
