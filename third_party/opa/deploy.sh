@@ -14,7 +14,6 @@ undeploy() {
     unloadpolicy data-and-policies/meshfordata-policy-lib || true
     unloadpolicy data-and-policies/user-created-policy-1 || true
     unloadpolicy data-and-policies/user-created-policy-2 || true
-    unloadpolicy data-and-policies/default-policy || true
 
     unloaddata data-and-policies/meshfordata-external-data || true
 }
@@ -108,7 +107,6 @@ deploy() {
     # default library and external data loading
     loaddata data-and-policies/meshfordata-external-data
     loadpolicy data-and-policies/meshfordata-policy-lib
-    loadpolicy data-and-policies/default-policy
 }
 
 case "$1" in
