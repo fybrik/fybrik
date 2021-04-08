@@ -86,5 +86,5 @@ helm install m4d m4d-charts/m4d -n m4d-system --wait
 Install the [arrow flight module](https://github.com/ibm/the-mesh-for-data-flight-module):
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data-flight-module/master/module.yaml
+kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data-flight-module/master/module.yaml -n m4d-system
 ```
