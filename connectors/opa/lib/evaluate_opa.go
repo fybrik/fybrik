@@ -91,7 +91,7 @@ func EvaluatePoliciesOnInput(inputMap map[string]interface{}, opaServerURL strin
 
 	currentData := string(data)
 	decisionid, flag := doesOpaHaveUserPoliciesLoaded(string(data))
-	if flag {
+	if !flag {
 		// simulating ALlow Enforcement Action
 		// if deny and transform rules are empty, allow will be returned from opa connector
 		currentData = "{\"decision_id\":\"" + decisionid + "\"," + "\"result\": { \"deny\": [], \"transform\": []}" + "}"
