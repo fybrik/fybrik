@@ -213,7 +213,7 @@ Notice that:
 
 Wait until the `M4DApplication` is ready:
 ```bash
-while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}') != "True" ]]; do echo "waiting" && sleep 1; done
+while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting" && sleep 1; done
 ```
 
 ## Read the dataset from the notebook
