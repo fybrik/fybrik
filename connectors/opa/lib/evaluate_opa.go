@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/buger/jsonparser"
 	"github.com/hashicorp/go-retryablehttp"
 )
 
@@ -41,6 +42,19 @@ func performHTTPReq(standardClient *http.Client, address string, httpMethod stri
 	fmt.Println(httpMethod + " succeeded")
 
 	return res
+}
+
+func doesOpaHaveUserPoliciesLoaded(responsedata string) (string, bool) {
+	decisionid, _ := jsonparser.GetString([]byte(responsedata), "decision_id")
+
+	fmt.Printf("decision_id: %s", decisionid)
+	if value, _, _, err := jsonparser.Get([]byte(responsedata), "result"); err == nil {
+		fmt.Printf("result: %s", value)
+	} else {
+		fmt.Printf("Result Key does not exist implying no policies are loaded in opa")
+		return decisionid, false
+	}
+	return decisionid, true
 }
 
 func EvaluatePoliciesOnInput(inputMap map[string]interface{}, opaServerURL string, policyToBeEvaluated string) (string, error) {
@@ -75,5 +89,15 @@ func EvaluatePoliciesOnInput(inputMap map[string]interface{}, opaServerURL strin
 	log.Println("responsestring data")
 	log.Println(string(data))
 
-	return string(data), nil
+	currentData := string(data)
+	decisionid, flag := doesOpaHaveUserPoliciesLoaded(string(data))
+	if flag {
+		// simulating ALlow Enforcement Action
+		// if deny and transform rules are empty, allow will be returned from opa connector
+		currentData = "{\"decision_id\":\"" + decisionid + "\"," + "\"result\": { \"deny\": [], \"transform\": []}" + "}"
+		log.Println("currentData - modified")
+		log.Println(currentData)
+	}
+
+	return currentData, nil
 }
