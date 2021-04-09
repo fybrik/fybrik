@@ -1,0 +1,1238 @@
+---
+# Source: m4d/templates/m4d-blueprints-ns.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: m4d-blueprints
+---
+# Source: m4d/templates/policy-connector-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: RELEASE-NAME-m4d-connector-ingress
+  labels:
+    helm.sh/chart: m4d-0.0.0
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  podSelector:
+    matchLabels:
+      m4d.ibm.com/componentType: connector
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector: {}
+---
+# Source: m4d/templates/katalog-connector/katalog-connector-serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: katalog-connector
+  labels:
+    app.kubernetes.io/component: katalog-connector
+    helm.sh/chart: m4d-0.0.0
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: m4d/templates/manager-serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: manager
+  labels:
+    app.kubernetes.io/component: manager
+    helm.sh/chart: m4d-0.0.0
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: m4d/templates/opa-connector/opa-connector-serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: opa-connector
+  labels:
+    app.kubernetes.io/component: opa-connector
+    helm.sh/chart: m4d-0.0.0
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: m4d/templates/opa-server/opa-serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: opa
+  labels:
+    app.kubernetes.io/component: opa
+    helm.sh/chart: m4d-0.0.0
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: m4d/templates/secret-provider.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: secret-provider
+  namespace: m4d-system
+---
+# Source: m4d/templates/vault-credentials.yaml
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: vault-credentials
+data:
+  
+  VAULT_TOKEN: cm9vdA==
+---
+# Source: m4d/templates/cluster-metadata-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-metadata
+data:
+  ClusterName: "thegreendragon"
+  Region: "theshire"
+  Zone: "hobbiton"
+  VaultAuthPath: "kubernetes"
+---
+# Source: m4d/templates/m4d-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: m4d-config
+data:
+  CONNECTION_TIMEOUT: "120"
+  CATALOG_PROVIDER_NAME: "katalog"
+  CATALOG_CONNECTOR_URL: "katalog-connector:80"
+  CREDENTIALS_PROVIDER_NAME: "katalog"
+  CREDENTIALS_CONNECTOR_URL: "katalog-connector:80"
+  MAIN_POLICY_MANAGER_NAME: "opa"
+  MAIN_POLICY_MANAGER_CONNECTOR_URL: "opa-connector:80"
+  USE_EXTENSIONPOLICY_MANAGER: "false" # deprecated
+  VAULT_ADDRESS: "http://vault.m4d-system:8200"
+  VAULT_DATASET_HOME: "m4d/dataset-creds/" # temporary
+  VAULT_DATASET_MOUNT: "/v1/sys/mounts/m4d/dataset-creds" # temporary
+  VAULT_USER_HOME: "m4d/user-creds/" # temporary
+  VAULT_USER_MOUNT: "/v1/sys/mounts/m4d/user-creds" # temporary
+  USER_VAULT_ADDRESS: "http://vault.m4d-system:8200" # deprecated
+  USER_VAULT_PATH: "external" # deprecated
+  SECRET_PROVIDER_URL: "http://secret-provider.m4d-system:5555/get-secret" # deprecated
+  SECRET_PROVIDER_ROLE: "demo" # deprecated
+  VAULT_AUTH: "kubernetes" # deprecated
+  VAULT_TTL: "24h" # temporary
+  VAULT_MODULES_ROLE: "module" # temporary
+---
+# Source: m4d/templates/opa-connector/opa-connector-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opa-connector-config
+data:
+  CONNECTION_TIMEOUT: "120"
+  OPA_SERVER_URL: "opa:8181"
+  CATALOG_CONNECTOR_URL: "katalog-connector:80"
+  POLICY_TO_BE_EVALUATED: "sample_policies" # TODO: standarize entrypoint for data policies
+---
+# Source: m4d/templates/opa-server/opa-files-data-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opa-m4d-data
+  labels:
+    openpolicyagent.org/data: opa
+data:
+  medical_taxonomies.json: |-
+    {
+        "MedicalRoles": ["ER", "doctor", "nurse"]
+    }
+  taxonomies.json: |-
+    {
+        "DataPurposes": ["audit&complience", "client Support", "marketing", "Fraud Detection", "Customer Behaviour Analysis"],
+  
+        "DataRoles": ["Data Scientist", "Business Analyst", "hr", "management", "security"],
+  
+        "DataSensitivity": ["SPI", "SHI", "ECI", "Confidential"],
+  
+        "DataAccessTypes": ["READ", "COPY", "WRITE"],
+  
+        "DataGeoDestinations": ["NorthAmerica", "US", "Turkey", "Netherlands"]
+    }
+---
+# Source: m4d/templates/opa-server/opa-files-policy-lib-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opa-m4d-policy-lib
+  labels:
+    openpolicyagent.org/policy: rego
+data:
+  action_struct.rego: "package data_policies\n\n#general enforcment action structure\nenforcement_action_struct
+    = {\n    \"action_name\" : \"<name of action>\",\n    \"desription\" : \"<free text
+    description of the action>\",\n    \"arguments\" : \"<arguments set can be different
+    for each action>\",\n    \"used_policy\" : \"<used_policy_struct>\"\n}\n\nbuild_action_from_policies(used_policy)
+    = action {\n    action = {\n        \"used_policy\" : used_policy\n    }\n}\n\nbuild_action_from_name(action_name,
+    used_policy) = action {\n    action = {\n        \"action_name\" : action_name,\n
+    \       \"desription\" : action_name,\n        \"arguments\" :[],\n        \"used_policy\"
+    : used_policy\n    }\n}\n\nbuild_action(action_name, description, arguments, used_policy)
+    = action {\n    action = {\n        \"action_name\" : action_name,\n        \"description\"
+    : description,\n        \"arguments\" :arguments,\n        \"used_policy\" : used_policy\n
+    \   }\n}\n\n################################### Enforcement Actions #######################################\n\n#deny
+    access\ndeny_access_struct = {\n    \"action_name\" : \"deny access\",\n    \"description\"
+    : \"Access to this data asset is denied\",\n    \"arguments\" : {},\n    \"used_policy\"
+    : \"<used_policy_struct>\"\n}\n\ndeny_write_struct = {\n    \"action_name\" : \"deny\",\n
+    \   \"description\" : \"Writing of this data asset is denied\",\n    \"arguments\"
+    : {},\n    \"used_policy\" : \"<used_policy_struct>\"\n}\n\nbuild_deny_access_action(used_policies)
+    = action {\n    action = build_action(deny_access_struct.action_name, deny_access_struct.description,
+    deny_access_struct.arguments, used_policies)\n}\n\nbuild_deny_write_action(used_policies)
+    = action {\n    action = build_action(deny_write_struct.action_name, deny_write_struct.description,
+    deny_write_struct.arguments, used_policies)\n}\n\n#remove column\nremove_column_struct
+    = {\n    \"action_name\" : \"remove column\",\n    \"description\" : \"Single column
+    is removed\",\n    \"arguments\" : { \n        \"column_name\": \"<column name>\"\n
+    \   },\n    \"used_policy\" : \"<used_policy_struct>\"\n}\n\nbuild_remove_column_action(column_name,
+    used_policies) = action {\n    args := { \n       \"column_name\" : column_name\n
+    \   }\n    action = build_action(remove_column_struct.action_name, remove_column_struct.description,
+    args, used_policies)\n}\n\n#encrypt colmn\nencrypt_column_struct = {\n    \"action_name\"
+    : \"encrypt column\",\n    \"description\" : \"Single column is encrypted with its
+    own key\",\n    \"arguments\" : { \n        \"column_name\": \"<column name>\"\n
+    \   },\n    \"used_policy\" : \"<used_policy_struct>\"\n}\n\nbuild_encrypt_column_action(column_name,
+    used_policies) = action {\n    args := { \n       \"column_name\" : column_name\n
+    \   }\n    action = build_action(encrypt_column_struct.action_name, encrypt_column_struct.description,
+    args, used_policies)\n}\n\n#mask_redact_column\nredact_column_struct = {\n    \"action_name\"
+    : \"redact column\",\n    \"description\" : \"Single column is obfuscated with XXX
+    instead of values\",\n    \"arguments\" : { \n        \"column_name\": \"<column
+    name>\"\n    },\n    \"used_policy\" : \"<used_policy_struct>\"\n}\n\nbuild_redact_column_action(column_name,
+    used_policies) = action {\n    args := { \n       \"column_name\" : column_name\n
+    \   }\n    action = build_action(redact_column_struct.action_name, redact_column_struct.description,
+    args, used_policies)\n}\n\n#periodic_blackout\nperiodic_blackout_struct = {\n    \"action_name\"
+    : \"periodic blackout\",\n    \"description\" : \"Access to dataset is denied based
+    on date of the access\",\n    \"arguments\" : { \n        #only one of the arguments
+    should be filled in\n        \"monthly_days_end\": \"<number of days before the
+    end of month when data is denied>\",\n        \"yearly_days_end\": \"<number of
+    days before the end of year when data is denied>\",\n    },\n    \"used_policy\"
+    : \"<used_policy_struct>\"\n}\n\nbuild_monthly_periodic_blackout_action(days_before_month_end,
+    used_policies) = action {\n    args := { \n       \"monthly_days_end\" : days_before_month_end\n
+    \   }\n    action = build_action(periodic_blackout_struct.action_name, periodic_blackout_struct.description,
+    args, used_policies)\n}\n\nbuild_yearly_periodic_blackout_action(days_before_year_end,
+    used_policies) = action {\n    args := { \n       \"yearly_days_end\" : days_before_year_end\n
+    \   }\n    action = build_action(periodic_blackout_struct.action_name, periodic_blackout_struct.description,
+    args, used_policies)\n}"
+  auditing_struct.rego: |-
+    package data_policies
+  
+    #general structure ofused policy for auditing
+    used_policy_struct = {
+        "policy_id" : "<unique id>",
+        "description" : "<free text description of the policy reason>",
+        "policy_type" : "<classification of policy itslef>",
+        "hierarchy" : "<relation to other policies>"
+    }
+  
+    build_policy_from_id(id) = policy {
+        policy = { "policy_id" : id }
+    }
+  
+    build_policy_from_description(desc) = policy {
+        policy = { "description" : desc }
+    }
+  
+    build_policy(id, desc, type, hierarchy) = policy {
+        policy = {
+            "policy_id" : id,
+            "description" : desc,
+            "policy_type" : type,
+            "hierarchy" : hierarchy
+        }
+    }
+  helper_functions.rego: "package data_policies\n\n#general functions that make data-policies
+    composing easier\n\nverify_access_type {\n\t\tcompare_str(AccessType(), AccessTypes[_])\n}\n\nverify_purpose
+    {\n\t\tcompare_str(Purpose(), Purposes[_])\n}\n\nverify_role {\n\tcompare_str(Role(),
+    Roles[_])\n}\n\nverify_geography {\n    compare_str(ProcessingGeo(), GeoDestinations[_])\n}\n\ndataset_has_tag(tag)
+    {\n    compare_str(tag,  DatasetTags()[_])\n}\n\ndataset_has_tag_not(tag) {\n    compare_str_not(tag,
+    \ DatasetTags()[_])\n}\n\ncheck_access_type(access_types) {\n    compare_str(AccessType(),
+    access_types[_])\n}\n\ncheck_destination(destinations) {\n    compare_str(DestinationGeo(),
+    destinations[_])\n}\n\ncheck_processingGeo_not(processingGeo) {\n\tcompare_str_not(processingGeo,
+    ProcessingGeo())\n}\n\nclean_string(str) = result {\n    str2 := lower(str)\n    str3
+    = replace(str2, \" \", \"\")\n    str4 := replace(str3, \"-\", \"\")\n    str5 :=
+    replace(str4, \"_\", \"\")\n\n    result=str5\n}\n\ncompare_str(str1, str2) {\n
+    \   clean_string(str1) == clean_string(str2)\n}\n\n\ncolumn_has_tag(tag) {\n\tcompare_str(tag,
+    input.details.metadata.components_metadata[_].tags[_])\n}\n\ncheck_purpose(purpose)
+    {\n    compare_str(purpose, Purpose())\n}\n\ncheck_role(role) {\n    compare_str(role,
+    Role())\n}\n\ncheck_role_not(role) {\n    compare_str_not(role, Role())\n}\n\ncheck_processingGeo_not(processingGeo)
+    {\n\tcompare_str_not(processingGeo, ProcessingGeo())\n}\n\ncompare_str_not(str1,
+    str2) {\n    clean_string(str1) != clean_string(str2)\n}"
+  input_reader.rego: "package data_policies\n\n#this file assumes input to be provided
+    in specific format, in this case how data mesh provides it \n#similar file can be
+    built for Egeria, at least for the metadata part, or any other catalog when we show
+    how the input should be  parsed correctly\n\n#Example structure:\n# {\n# \t\"name\":
+    \"<name>\"\n# \t\"destination\": \"<destination>\",\n# \t\"processing_geography\":
+    \"<processing_geography>\",\n# \t\"purpose\": \"<purpose>\",\n# \t\"role\": \"<role>\",\n#
+    \t\"type\": \"<access type>\",\n# \t\"details\": {\n# \t\t\"data_format\": \"<data_format>\",\n#
+    \t\t\"data_store\": {\n# \t\t\t\"name\": \"<datastore name>\"\n# \t\t},\n# \t\t\"geo\":
+    \"<geo>\",\n# \t\t\"metadata\": {\n# \t\t\t\"components_metadata\": {\n# \t\t\t\t\"<column
+    name1>\": {\n# \t\t\t\t\t\"component_type\": \"column\",\n# \t\t\t\t\t\"named_metadata\":
+    {\n# \t\t\t\t\t\t\"type\": \"length=10.0,nullable=true,type=date,scale=0.0,signed=false\"\n#
+    \t\t\t\t\t}\n# \t\t\t\t},\n# \t\t\t\t\"<column name2>\": {\n# \t\t\t\t\t\"component_type\":
+    \"column\",\n# \t\t\t\t\t\"named_metadata\": {\n# \t\t\t\t\t\t\"type\": \"length=3.0,nullable=true,type=char,scale=0.0,signed=false\"\n#
+    \t\t\t\t\t},\n# \t\t\t\t\t\"tags\": [\"<tag1>\", \"<tag2>\"]\n# \t\t\t\t}\n# \t\t\t},\n#
+    \t\t\t\"dataset_named_metadata\": {\n# \t\t\t\t\"<term1 name>\": \"<term1 value>\",\n#
+    \t\t\t\t\"<term2 name>\": \"<term2 value>\"\n# \t\t\t},\n# \t\t\t\"dataset_tags\":
+    [\n# \t\t\t\t\"<tag1>\",\n# \t\t\t\t\"<tag2>\"\n# \t\t\t]\n# \t\t},\n# \t}\n# }\nProperties()
+    = input.properties\n\nPurpose() = Properties().intent \n\nRole() = Properties().role\n\nAccessType()
+    = input.type \n\nDatasetTags() = input.details.metadata.dataset_tags\n\nProcessingGeo()
+    = input.processing_geography\n\nDestinationGeo() = input.destination\n\n\n\ncolumn_with_tag(tag)
+    = column_names {\n\tcolumn_names := [column_name | input.details.metadata.components_metadata[column_name].tags[_]
+    == tag]\n}\n\ncolumn_with_any_tag(tags) = column_names {\n\tcolumn_names := [column_name
+    | input.details.metadata.components_metadata[column_name].tags[_] == tags[_]]\n}\n\ncolumn_with_any_name(names)
+    = column_names {\n\tall_column_names := {column_name | input.details.metadata.components_metadata[column_name]
+    }\n    column_names := all_column_names & names\n}"
+  taxonomies_unification.rego: |-
+    package data_policies
+  
+    #In data part we provide set of general and industry specific taxonomies, also the user can add more taxonomies specific for his needs.
+    #Here is the place when for each category user chooses what taxonomies should be used
+  
+    Purposes = { x | x = data["m4d-system"]["meshfordata-external-data"]["taxonomies.json"].DataPurposes[_] }
+  
+    Roles = { x | x = data["m4d-system"]["meshfordata-external-data"]["taxonomies.json"].DataRoles[_] } | { x | x = data["m4d-system"]["meshfordata-external-data"]["medical_taxonomies.json"].MedicalRoles[_] }
+  
+    Sensitivity = { x | x = data["m4d-system"]["meshfordata-external-data"]["taxonomies.json"].DataSensitivity[_] }
+  
+    AccessTypes = { x | x = data["m4d-system"]["meshfordata-external-data"]["taxonomies.json"].DataAccessTypes[_] }
+  
+    GeoDestinations = { x | x = data["m4d-system"]["meshfordata-external-data"]["taxonomies.json"].DataGeoDestinations[_] }
+  verify_correct_input.rego: "package data_policies\n\ncorrect_input {\n\tcount(incorrect_input)
+    == 0\n}\n\nincorrect_input[used_policy] {\n   not verify_access_type\n   used_policy
+    := build_action_from_policies(build_policy_from_description(\"unknown access type\"))\n}
+    {\n    not verify_purpose\n    used_policy := build_action_from_policies(build_policy_from_description(\"unknown
+    purpose\"))\n} {\n    not verify_role\n    used_policy := build_action_from_policies(build_policy_from_description(\"unknown
+    role\"))\n} {\n\tcheck_access_type([\"COPY\"])\n    not verify_geography\n    used_policy
+    := build_action_from_policies(build_policy_from_description(\"unknown geography
+    to copy the data\"))\n}"
+---
+# Source: m4d/templates/secret-provider.yaml
+apiVersion: v1
+data:
+  config.conf: |
+    vault_address = "http://vault.m4d-system.svc.cluster.local:8200"
+    vault_path = "/v1/auth/kubernetes/login"
+    iam_endpoint = "https://iam.cloud.ibm.com/identity/token"
+    jwt_location = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+kind: ConfigMap
+metadata:
+  name: secret-provider-configmap
+  namespace: m4d-system
+---
+# Source: m4d/templates/katalog-connector/katalog-rbac.yaml
+# ClusterRole katalog-editor allows managing assets.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: katalog-editor
+rules:
+- apiGroups: ["katalog.m4d.ibm.com"]
+  resources: ["assets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
+---
+# Source: m4d/templates/katalog-connector/katalog-rbac.yaml
+# ClusterRole katalog-viewer allows viewing assets.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: katalog-viewer
+rules:
+- apiGroups: ["katalog.m4d.ibm.com"]
+  resources: ["assets"]
+  verbs: ["get", "list", "watch"]
+---
+# Source: m4d/templates/manager-auth-proxy-cr.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: RELEASE-NAME-m4d-proxy-cr
+rules:
+- apiGroups: ["authentication.k8s.io"]
+  resources:
+  - tokenreviews
+  verbs: ["create"]
+- apiGroups: ["authorization.k8s.io"]
+  resources:
+  - subjectaccessreviews
+  verbs: ["create"]
+---
+# Source: m4d/templates/manager-cr.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: RELEASE-NAME-m4d-manager-cr
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  - secrets
+  - secrets/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  - persistentvolumeclaims/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - pods/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - blueprints
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - blueprints/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - m4dapplications
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - m4dapplications/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - m4dmodules
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - m4dstorageaccounts
+  verbs:
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - plotters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - plotters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - deployments/finalizers
+  - deployments/status
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  - jobs/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs/status
+  verbs:
+  - get
+- apiGroups:
+  - com.ie.ibm.hpsys
+  resources:
+  - datasets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - motion.m4d.ibm.com
+  resources:
+  - batchtransfers
+  - batchtransfers/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - motion.m4d.ibm.com
+  resources:
+  - batchtransfers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - motion.m4d.ibm.com
+  resources:
+  - streamtransfers
+  - streamtransfers/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - motion.m4d.ibm.com
+  resources:
+  - streamtransfers/status
+  verbs:
+  - get
+  - patch
+  - update
+---
+# Source: m4d/templates/katalog-connector/katalog-connector-rbac.yaml
+# Grant katalog-connector the katalog-editor Role.
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name:  katalog-connector-editor
+roleRef:
+  kind: ClusterRole
+  name: katalog-editor
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: katalog-connector
+  namespace: nanopore-2945
+---
+# Source: m4d/templates/manager-auth-proxy-crb.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: RELEASE-NAME-m4d-proxy-crb
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: RELEASE-NAME-m4d-proxy-cr
+subjects:
+- kind: ServiceAccount
+  name: manager
+  namespace: nanopore-2945
+---
+# Source: m4d/templates/manager-crb.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: RELEASE-NAME-m4d-manager-crb
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: RELEASE-NAME-m4d-manager-cr
+subjects:
+- kind: ServiceAccount
+  name: manager
+  namespace: nanopore-2945
+---
+# Source: m4d/templates/manager-leader-election-role.yaml
+# permissions to do leader election.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: RELEASE-NAME-m4d-leader-election-role
+  labels:
+    helm.sh/chart: m4d-0.0.0
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - configmaps/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+---
+# Source: m4d/templates/opa-server/opa-server-rbac.yaml
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: opa-policy-editor
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch", "update", "patch"]
+---
+# Source: m4d/templates/manager-leader-election-rb.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: RELEASE-NAME-m4d-leader-election-rb
+  labels:
+    helm.sh/chart: m4d-0.0.0
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: RELEASE-NAME-m4d-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: manager
+  namespace: nanopore-2945
+---
+# Source: m4d/templates/opa-server/opa-server-rbac.yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: policy-editor
+roleRef:
+  kind: Role
+  name: opa-policy-editor
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: opa
+  namespace: nanopore-2945
+---
+# Source: m4d/templates/katalog-connector/katalog-connector-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: "katalog-connector"
+  labels:
+    app.kubernetes.io/component: katalog-connector
+    helm.sh/chart: m4d-0.0.0
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/component: katalog-connector
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: m4d/templates/manager-auth-proxy-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-m4d-metrics-service
+  labels:
+    helm.sh/chart: m4d-0.0.0
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+    control-plane: controller-manager
+spec:
+  ports:
+  - name: https
+    port: 8443
+    targetPort: https
+  selector:
+    control-plane: controller-manager
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: m4d/templates/opa-connector/opa-connector-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: "opa-connector"
+  labels:
+    app.kubernetes.io/component: opa-connector
+    helm.sh/chart: m4d-0.0.0
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/component: opa-connector
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: m4d/templates/opa-server/opa-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: "opa"
+  labels:
+    app.kubernetes.io/component: opa
+    helm.sh/chart: m4d-0.0.0
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8181
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/component: opa
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: m4d/templates/secret-provider.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: secret-provider
+  name: secret-provider
+  namespace: m4d-system
+spec:
+  ports:
+  - name: http
+    port: 5555
+  selector:
+    app: secret-provider
+---
+# Source: m4d/templates/webhook-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: webhook-service
+  namespace: nanopore-2945
+spec:
+  ports:
+  - port: 443
+    targetPort: 9443
+  selector:
+    control-plane: controller-manager
+---
+# Source: m4d/templates/katalog-connector/katalog-connector-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: katalog-connector
+  labels:
+    app.kubernetes.io/component: katalog-connector
+    helm.sh/chart: m4d-0.0.0
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: katalog-connector
+      app.kubernetes.io/name: m4d
+      app.kubernetes.io/instance: RELEASE-NAME
+  template:
+    metadata:
+      labels:
+        m4d.ibm.com/componentType: connector
+        app.kubernetes.io/component: katalog-connector
+        app.kubernetes.io/name: m4d
+        app.kubernetes.io/instance: RELEASE-NAME
+    spec:
+      serviceAccountName: katalog-connector
+      securityContext:
+        {}
+      containers:
+        - name: katalog-connector
+          securityContext:
+            {}
+          image: ghcr.io/the-mesh-for-data/katalog-connector:latest
+          imagePullPolicy: 
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            {}
+---
+# Source: m4d/templates/manager-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: manager
+  labels:
+    control-plane: controller-manager
+    app.kubernetes.io/component: manager
+    helm.sh/chart: m4d-0.0.0
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+      app.kubernetes.io/component: manager
+      app.kubernetes.io/name: m4d
+      app.kubernetes.io/instance: RELEASE-NAME
+  template:
+    metadata:
+      labels:
+        control-plane: controller-manager
+        m4d.ibm.com/componentType: manager
+        app.kubernetes.io/component: manager
+        app.kubernetes.io/name: m4d
+        app.kubernetes.io/instance: RELEASE-NAME
+    spec:
+      serviceAccountName: manager
+      securityContext:
+        {}
+      containers:
+        - name: kube-rbac-proxy
+          image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
+          args:
+            - "--secure-listen-address=0.0.0.0:8443"
+            - "--upstream=http://127.0.0.1:8080/"
+            - "--logtostderr=true"
+            - "--v=10"
+          ports:
+          - containerPort: 8443
+            name: https
+        - name: manager
+          image: ghcr.io/the-mesh-for-data/manager:latest
+          imagePullPolicy: 
+          args:
+            - "--metrics-addr=127.0.0.1:8080"
+            - "--enable-leader-election"
+            - "--enable-application-controller"
+            - "--enable-plotter-controller"
+            - "--enable-blueprint-controller"
+            - "--enable-motion-controller"
+          envFrom:
+            - configMapRef:
+                name: m4d-config
+            - secretRef:
+                name: vault-credentials
+          env:
+            - name: ENABLE_WEBHOOKS
+              value: "true"
+            - name: MOVER_IMAGE
+              value: ghcr.io/the-mesh-for-data/mover:latest
+            - name: IMAGE_PULL_POLICY
+              value: 
+          ports:
+            - containerPort: 9443
+              name: webhook-server
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /tmp/k8s-webhook-server/serving-certs
+              name: cert
+              readOnly: true
+          securityContext:
+            {}
+          resources:
+            {}
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: webhook-server-cert
+---
+# Source: m4d/templates/opa-connector/opa-connector-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opa-connector
+  labels:
+    app.kubernetes.io/component: opa-connector
+    helm.sh/chart: m4d-0.0.0
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: opa-connector
+      app.kubernetes.io/name: m4d
+      app.kubernetes.io/instance: RELEASE-NAME
+  template:
+    metadata:
+      labels:
+        m4d.ibm.com/componentType: connector
+        app.kubernetes.io/component: opa-connector
+        app.kubernetes.io/name: m4d
+        app.kubernetes.io/instance: RELEASE-NAME
+    spec:
+      serviceAccountName: opa-connector
+      securityContext:
+        {}
+      containers:
+        - name: opa-connector
+          securityContext:
+            {}
+          image: ghcr.io/the-mesh-for-data/opa-connector:latest
+          imagePullPolicy: 
+          ports:
+            - name: http
+              containerPort: 50082
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: opa-connector-config
+          resources:
+            {}
+---
+# Source: m4d/templates/opa-server/opa-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opa
+  labels:
+    app.kubernetes.io/component: opa
+    helm.sh/chart: m4d-0.0.0
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: opa
+      app.kubernetes.io/name: m4d
+      app.kubernetes.io/instance: RELEASE-NAME
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: opa
+        app.kubernetes.io/name: m4d
+        app.kubernetes.io/instance: RELEASE-NAME
+    spec:
+      serviceAccountName: opa
+      securityContext:
+        {}
+      containers:
+        - name: opa
+          securityContext:
+            {}
+          image: openpolicyagent/opa:latest
+          imagePullPolicy: 
+          args:
+            - run
+            - --server
+            - --log-level=debug
+            - --set=decision_logs.console=true
+          ports:
+            - name: http
+              containerPort: 8181
+              protocol: TCP
+          resources:
+            {}
+        - name: kube-mgmt
+          image: openpolicyagent/kube-mgmt:0.11
+          args:
+          - --require-policy-label
+          - --policies=nanopore-2945
+          - --enable-data
+---
+# Source: m4d/templates/secret-provider.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: secret-provider
+  namespace: m4d-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: secret-provider
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
+      labels:
+        app: secret-provider
+    spec:
+      containers:
+      - args:
+        - --config
+        - /run/secret-provider/config.conf
+        - --logging
+        - info
+        command:
+        - python3
+        - server.py
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        image: ghcr.io/the-mesh-for-data/secret-provider:latest
+        imagePullPolicy: 
+        name: server
+        volumeMounts:
+        - mountPath: /run/secret-provider
+          name: secret-provider-config
+          readOnly: true
+      serviceAccountName: secret-provider
+      volumes:
+      - configMap:
+          name: secret-provider-configmap
+        name: secret-provider-config
+---
+# Source: m4d/templates/webhook-certificates.yaml
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: serving-cert
+  namespace: nanopore-2945
+spec:
+  dnsNames:
+  - webhook-service.nanopore-2945.svc
+  - webhook-service.nanopore-2945.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: selfsigned-issuer
+  secretName: webhook-server-cert
+---
+# Source: m4d/templates/webhook-certificates.yaml
+apiVersion: cert-manager.io/v1alpha2
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+  namespace: nanopore-2945
+spec:
+  selfSigned: {}
+---
+# Source: m4d/templates/webhook-configs.yaml
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: 'nanopore-2945-mutating-webhook'
+  annotations:
+    cert-manager.io/inject-ca-from: 'nanopore-2945/serving-cert'
+webhooks:
+  - clientConfig:
+      caBundle: Cg==
+      service:
+        name: webhook-service
+        namespace: 'nanopore-2945'
+        path: /mutate-motion-m4d-ibm-com-v1alpha1-batchtransfer
+    failurePolicy: Fail
+    name: mbatchtransfer.kb.io
+    rules:
+      - apiGroups:
+          - motion.m4d.ibm.com
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - batchtransfers
+  - clientConfig:
+      caBundle: Cg==
+      service:
+        name: webhook-service
+        namespace: 'nanopore-2945'
+        path: /mutate-motion-m4d-ibm-com-v1alpha1-streamtransfer
+    failurePolicy: Fail
+    name: mstreamtransfer.kb.io
+    rules:
+      - apiGroups:
+          - motion.m4d.ibm.com
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - streamtransfers
+---
+# Source: m4d/templates/webhook-configs.yaml
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: 'nanopore-2945-validating-webhook'
+  annotations:
+    cert-manager.io/inject-ca-from: 'nanopore-2945/serving-cert'
+webhooks:
+  - clientConfig:
+      caBundle: Cg==
+      service:
+        name: webhook-service
+        namespace: 'nanopore-2945'
+        path: /validate-motion-m4d-ibm-com-v1alpha1-batchtransfer
+    failurePolicy: Fail
+    name: vbatchtransfer.kb.io
+    rules:
+      - apiGroups:
+          - motion.m4d.ibm.com
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - batchtransfers
+  - clientConfig:
+      caBundle: Cg==
+      service:
+        name: webhook-service
+        namespace: 'nanopore-2945'
+        path: /validate-motion-m4d-ibm-com-v1alpha1-streamtransfer
+    failurePolicy: Fail
+    name: vstreamtransfer.kb.io
+    rules:
+      - apiGroups:
+          - motion.m4d.ibm.com
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - streamtransfers
