@@ -191,9 +191,6 @@ func initVaultConnection() (vault.Interface, error) {
 	if err = vaultConn.Mount(utils.GetVaultDatasetMountPath()); err != nil {
 		return vaultConn, err
 	}
-	if err = vaultConn.Mount(utils.GetVaultUserMountPath()); err != nil {
-		return vaultConn, err
-	}
 	return vaultConn, nil
 }
 
