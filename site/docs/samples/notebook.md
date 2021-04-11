@@ -112,7 +112,7 @@ Notice the `assetMetadata` field above. It specifies the dataset geography and t
 
 ## Define data access policies
 
-Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to redact the columns `nameOrig` and `nameDest` for datasets tagged as `finance`. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
+Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to redact the `nameOrig` column for datasets tagged as `finance`. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
 
 ```rego
 package dataapi.authz
@@ -124,7 +124,7 @@ transform[action] {
 
   dp.check_access_type([dp.AccessTypes.READ])
   dp.dataset_has_tag("finance")
-  column_names := dp.column_with_any_name({"nameOrig", "nameDest"})
+  column_names := dp.column_with_any_name({"nameOrig"})
 
   action = dp.build_redact_column_action(column_names[_], dp.build_policy_from_description(description))
 }
@@ -224,7 +224,7 @@ In your notebook insert and run a cell to install pandas and pyarrow packages:
 %pip install pandas pyarrow
 ```
 
-Then insert a new cell to read the data. The code to use is available as part of the `M4DApplication` and can be printed with:
+Then insert a new cell to read the data. The code to use is available as part of the `M4DApplication` and can be printed from your terminal with:
 
 ```bash
 printf "$(kubectl get m4dapplication my-notebook -o jsonpath={.status.dataAccessInstructions})"
