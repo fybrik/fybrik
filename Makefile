@@ -58,7 +58,6 @@ run-deploy-tests:
 .PHONY: cluster-prepare
 cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy
-	$(MAKE) -C third_party/registry deploy
 	$(MAKE) -C charts vault
 	$(MAKE) -C third_party/datashim deploy
 
