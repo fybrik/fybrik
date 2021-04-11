@@ -4,7 +4,7 @@ Holds source files for the project documentation and the website hosting it
 
 ## Contribute 
 
-Read the [Contribution guidelines](https://ibm.github.io/the-mesh-for-data/contribute/documentation/)
+Read the [Contribution guidelines](https://ibm.github.io/the-mesh-for-data/dev/contribute/documentation/)
 
 ## Requirements
 
