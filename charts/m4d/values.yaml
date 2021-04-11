@@ -107,9 +107,11 @@ worker:
 
 # Mover configuration used in the Mostion API controllers
 mover:
-  # Image name or a hub/image[:tag]
-  image: "mover"
-  # Overrides global.imagePullPolicy
+  # Default image for mover (format: hub/image[:tag])
+  image: "ghcr.io/mesh-for-data/mover:latest"
+  
+  # Default image pull policy for mover.
+  # Overrides global.imagePullPolicy.
   imagePullPolicy: ""
 
 # Manager component

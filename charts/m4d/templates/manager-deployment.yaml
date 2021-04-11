@@ -86,7 +86,7 @@ spec:
             - name: ENABLE_WEBHOOKS
               value: "true"
             - name: MOVER_IMAGE
-              value: {{ include "m4d.image" ( tuple $ .Values.mover ) }}
+              value: {{ .Values.mover.image }}
             - name: IMAGE_PULL_POLICY
               value: {{ .Values.mover.imagePullPolicy | default .Values.global.imagePullPolicy }}
             {{- if .Values.manager.extraEnvs }}

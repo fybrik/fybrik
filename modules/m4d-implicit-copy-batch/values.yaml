@@ -12,7 +12,7 @@
 # app_cluster:
 labels: {}
 
-image: "ghcr.io/the-mesh-for-data/mover:latest"
+image: ""
 imagePullPolicy: null
 noFinalizer: "true"
 
