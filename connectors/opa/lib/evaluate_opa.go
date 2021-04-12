@@ -5,13 +5,13 @@ package lib
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
 
+	"github.com/buger/jsonparser"
 	"github.com/hashicorp/go-retryablehttp"
 )
 
@@ -38,9 +38,22 @@ func performHTTPReq(standardClient *http.Client, address string, httpMethod stri
 	if err != nil {
 		log.Fatal("Error:", err)
 	}
-	fmt.Println(httpMethod + " succeeded")
+	log.Println(httpMethod + " succeeded")
 
 	return res
+}
+
+func doesOpaHaveUserPoliciesLoaded(responsedata []byte) (string, bool) {
+	decisionid, _ := jsonparser.GetString(responsedata, "decision_id")
+
+	log.Printf("decision_id: %s", decisionid)
+	if value, _, _, err := jsonparser.Get(responsedata, "result"); err == nil {
+		log.Printf("result: %s", value)
+	} else {
+		log.Printf("Result Key does not exist implying no policies are loaded in opa")
+		return decisionid, false
+	}
+	return decisionid, true
 }
 
 func EvaluatePoliciesOnInput(inputMap map[string]interface{}, opaServerURL string, policyToBeEvaluated string) (string, error) {
@@ -68,12 +81,22 @@ func EvaluatePoliciesOnInput(inputMap map[string]interface{}, opaServerURL strin
 
 	res := performHTTPReq(standardClient, opaServerURL+"v1/data/"+policyToBeEvaluated, httpMethod, inputJSON, contentType)
 	data, _ := ioutil.ReadAll(res.Body)
-	fmt.Printf("body from input http response: %s\n", data)
-	fmt.Printf("status from input http response: %d\n", res.StatusCode)
+	log.Printf("body from input http response: %s\n", data)
+	log.Printf("status from input http response: %d\n", res.StatusCode)
 	res.Body.Close()
 
 	log.Println("responsestring data")
 	log.Println(string(data))
 
-	return string(data), nil
+	currentData := string(data)
+	decisionid, flag := doesOpaHaveUserPoliciesLoaded(data)
+	if !flag {
+		// simulating ALlow Enforcement Action
+		// if deny and transform rules are empty, allow will be returned from opa connector
+		currentData = "{\"decision_id\":\"" + decisionid + "\"," + "\"result\": { \"deny\": [], \"transform\": []}" + "}"
+		log.Println("currentData - modified")
+		log.Println(currentData)
+	}
+
+	return currentData, nil
 }
