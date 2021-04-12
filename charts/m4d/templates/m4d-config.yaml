@@ -16,8 +16,6 @@ data:
   VAULT_ADDRESS: {{ .Values.coordinator.vault.address | quote }}
   VAULT_DATASET_HOME: {{ printf "m4d/dataset-creds/" | quote }} # temporary
   VAULT_DATASET_MOUNT: {{ printf "/v1/sys/mounts/m4d/dataset-creds" | quote }} # temporary
-  VAULT_USER_HOME: {{ printf "m4d/user-creds/" | quote}} # temporary
-  VAULT_USER_MOUNT: {{ printf "/v1/sys/mounts/m4d/user-creds" | quote }} # temporary
   USER_VAULT_ADDRESS: {{ .Values.coordinator.vault.address | quote }} # deprecated
   USER_VAULT_PATH: "external" # deprecated
   VAULT_TTL: "24h" # temporary
