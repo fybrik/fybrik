@@ -38,9 +38,9 @@ Run the following to install vault and the plugin in development mode:
     helm repo add hashicorp https://helm.releases.hashicorp.com
     helm install vault hashicorp/vault --version 0.9.1 --create-namespace -n m4d-system \
         --set "server.dev.enabled=true" \
-        --values https://raw.githubusercontent.com/IBM/the-mesh-for-data/cab39857b1e0ab5c779c0e55cfab326b1bba0767/third_party/vault/vault-single-cluster/values.yaml \
+        --values https://raw.githubusercontent.com/IBM/the-mesh-for-data/a3f951087eada4aed4b1cee9390bed5d71c35970/third_party/vault/vault-single-cluster/values.yaml \
         --wait --timeout 120s
-    kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data/cab39857b1e0ab5c779c0e55cfab326b1bba0767/third_party/vault/vault-single-cluster/vault-rbac.yaml -n m4d-system
+    kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data/a3f951087eada4aed4b1cee9390bed5d71c35970/third_party/vault/vault-single-cluster/vault-rbac.yaml -n m4d-system
     ```
 
 === "OpenShift"
@@ -50,9 +50,9 @@ Run the following to install vault and the plugin in development mode:
     helm install vault hashicorp/vault --version 0.9.1 --create-namespace -n m4d-system \
         --set "global.openshift=true" \
         --set "server.dev.enabled=true" \
-        --values https://raw.githubusercontent.com/IBM/the-mesh-for-data/cab39857b1e0ab5c779c0e55cfab326b1bba0767/third_party/vault/vault-single-cluster/values.yaml \
+        --values https://raw.githubusercontent.com/IBM/the-mesh-for-data/a3f951087eada4aed4b1cee9390bed5d71c35970/third_party/vault/vault-single-cluster/values.yaml \
         --wait --timeout 120s
-    kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data/cab39857b1e0ab5c779c0e55cfab326b1bba0767/third_party/vault/vault-single-cluster/vault-rbac.yaml -n m4d-system
+    kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data/a3f951087eada4aed4b1cee9390bed5d71c35970/third_party/vault/vault-single-cluster/vault-rbac.yaml -n m4d-system
     ```
 
 ## Install control plane
