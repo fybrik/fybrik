@@ -60,9 +60,10 @@ spec:
                       - arrow
                       type: string
                     endpoint:
-                      description: The spec of the endpoint exposed by the module
+                      description: EndpointSpec is used both by the module creator and by the status of the m4dapplication
                       properties:
                         hostname:
+                          description: Can be left empty when declaring a module, currently this field is only used by the status of the m4dapplication
                           type: string
                         port:
                           format: int32
