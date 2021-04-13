@@ -1,3 +1,3 @@
 # Kubeflow notebook sample
 
-See [https://ibm.github.io/the-mesh-for-data/docs/usage/notebook-sample/](https://ibm.github.io/the-mesh-for-data/docs/usage/notebook-sample/).
+See in the [website](https://ibm.github.io/the-mesh-for-data/dev/samples/notebook/)
