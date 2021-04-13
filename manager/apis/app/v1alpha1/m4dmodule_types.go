@@ -74,10 +74,11 @@ type SupportedAction struct {
 	Level connectors.EnforcementAction_EnforcementActionLevel `json:"level,omitempty"`
 }
 
-// The spec of the endpoint exposed by the module
+// EndpointSpec is used both by the module creator and by the status of the m4dapplication
 type EndpointSpec struct {
+	// Can be left empty when declaring a module, currently this field is only used by the status of the m4dapplication
 	// +optional
-	Hostname string `json:"hostname"`
+	Hostname string `json:"hostname,omitempty"`
 	// +required
 	Port int32 `json:"port"`
 
