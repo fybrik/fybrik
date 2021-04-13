@@ -342,7 +342,7 @@ func NewRazeeLocalManager(url string, login string, password string, clusterGrou
 		return nil, err
 	}
 	con, _ := client.New(url, http.DefaultClient, localAuth)
-	logger := ctrl.Log.WithName("ClusterManager")
+	logger := ctrl.Log.WithName("RazeeManager")
 	me, err := con.Users.Me()
 	if err != nil {
 		return nil, err
@@ -368,7 +368,7 @@ func NewRazeeOAuthManager(url string, apiKey string, clusterGroup string) (multi
 		return nil, err
 	}
 	con, _ := client.New(url, http.DefaultClient, auth)
-	logger := ctrl.Log.WithName("ClusterManager")
+	logger := ctrl.Log.WithName("RazeeManager")
 	me, err := con.Users.Me()
 	if err != nil {
 		return nil, err
