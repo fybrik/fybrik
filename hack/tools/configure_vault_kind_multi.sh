@@ -2,7 +2,7 @@
 # Copyright 2020 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
-# This script configures Vault which is deployed on the control-plane namespace
+# This script configures Vault which is deployed on the control-plane namespace (usually m4d-system)
 # in multi clusters setup which includes two kind clusters.
 # It defines Vault role for modules running in m4d-blueprints namespace to authentication against
 # Vault to retrieve dataset credentials.
