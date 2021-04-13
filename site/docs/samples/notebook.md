@@ -89,7 +89,7 @@ spec:
         bucket: "demo"
         objectKey: "data.csv"
   assetMetadata:
-    geography: us-south
+    geography: theshire
     tags:
     - finance
     componentsMetadata:
