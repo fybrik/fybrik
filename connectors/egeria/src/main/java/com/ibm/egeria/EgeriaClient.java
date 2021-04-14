@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 import com.datmesh.DataCatalogResponse.CatalogDatasetInfo;
+import com.datmesh.DatasetDetailsOuterClass.CredentialsInfo;
 import com.datmesh.DatasetDetailsOuterClass.DatasetDetails;
 import com.datmesh.DatasetDetailsOuterClass.DatasetMetadata;
 import com.datmesh.DatasetDetailsOuterClass.Db2DataStore;
@@ -391,7 +392,7 @@ public final class EgeriaClient {
         LOGGER.info("assetMetaDataHelper : {}", assetMetaDataHelper.toString().replaceAll("[\r\n]", ""));
 
         String schemaTypeGuid = assetMetaDataHelper.getSchemaTypeGuid();
-        HashMap<String, DataComponentMetadata> componentsMetadata = 
+        HashMap<String, DataComponentMetadata> componentsMetadata =
                                                 callSchemaAttributesAPI(schemaTypeGuid);
         LOGGER.info("listOfColumns in getCatalogDatasetInfo: {}",
                                                     componentsMetadata.toString().replaceAll("[\r\n]", ""));
@@ -426,6 +427,28 @@ public final class EgeriaClient {
         JsonObject storeJson = JsonParser.parseString(qualifiedName).getAsJsonObject();
         String geo = storeJson.get("data_location").getAsString();
         // fix for https://github.com/IBM/the-mesh-for-data/issues/122 - end
+
+        String credSecretRef = storeJson.get("credentials-secret-ref").getAsString();
+        String secretNamespace = credSecretRef.split("/")[0];
+        String secretName = credSecretRef.split("/")[1];
+        String vaultPluginPath = "kubernetes-secrets";
+        String vaultSecretPath = "/v1/" + vaultPluginPath
+                                 + "/" + secretName
+                                 + "?namespace=" + secretNamespace;
+        LOGGER.info("credSecretRef: {} ",
+        credSecretRef.toString().replaceAll("[\r\n]", ""));
+        LOGGER.info("secretNamespace: {} ",
+        secretNamespace.toString().replaceAll("[\r\n]", ""));
+        LOGGER.info("secretName: {} ",
+        secretName.toString().replaceAll("[\r\n]", ""));
+        LOGGER.info("vaultPluginPath: {} ",
+        vaultPluginPath.toString().replaceAll("[\r\n]", ""));
+        LOGGER.info("vaultSecretPath: {} ",
+        vaultSecretPath.toString().replaceAll("[\r\n]", ""));
+
+        CredentialsInfo credInfo = CredentialsInfo.newBuilder()
+        .setVaultSecretPath(vaultSecretPath)
+        .build();
         DataStore dataStore = getAssetStore(qualifiedName);
 
         datasetDetails = DatasetDetails.newBuilder()
@@ -435,6 +458,7 @@ public final class EgeriaClient {
                         .setDataStore(dataStore)
                         .setGeo(geo)
                         .setDataFormat(typeOfAsset)
+                        .setCredentialsInfo(credInfo)
                         .build();
 
 
