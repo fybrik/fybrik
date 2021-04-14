@@ -10,6 +10,7 @@ import (
 	"github.com/IBM/satcon-client-go/client/types"
 
 	"github.com/IBM/satcon-client-go/client"
+	"github.com/IBM/satcon-client-go/client/auth/apikey"
 	"github.com/IBM/satcon-client-go/client/auth/iam"
 	"github.com/IBM/satcon-client-go/client/auth/local"
 	"github.com/ghodss/yaml"
@@ -335,13 +336,13 @@ func channelName(cluster string, name string) string {
 	return "m4d.ibm.com" + "-" + cluster + "-" + name
 }
 
-func NewRazeeManager(url string, login string, password string, clusterGroup string) (multicluster.ClusterManager, error) {
+func NewRazeeLocalManager(url string, login string, password string, clusterGroup string) (multicluster.ClusterManager, error) {
 	localAuth, err := local.NewClient(url, login, password)
 	if err != nil {
 		return nil, err
 	}
 	con, _ := client.New(url, http.DefaultClient, localAuth)
-	logger := ctrl.Log.WithName("ClusterManager")
+	logger := ctrl.Log.WithName("RazeeManager")
 	me, err := con.Users.Me()
 	if err != nil {
 		return nil, err
@@ -352,6 +353,32 @@ func NewRazeeManager(url string, login string, password string, clusterGroup str
 	}
 
 	logger.Info("Initializing Razee local", "orgId", me.OrgId, "clusterGroup", clusterGroup)
+
+	return &ClusterManager{
+		orgID:        me.OrgId,
+		clusterGroup: clusterGroup,
+		con:          con,
+		log:          logger,
+	}, nil
+}
+
+func NewRazeeOAuthManager(url string, apiKey string, clusterGroup string) (multicluster.ClusterManager, error) {
+	auth, err := apikey.NewClient(apiKey)
+	if err != nil {
+		return nil, err
+	}
+	con, _ := client.New(url, http.DefaultClient, auth)
+	logger := ctrl.Log.WithName("RazeeManager")
+	me, err := con.Users.Me()
+	if err != nil {
+		return nil, err
+	}
+
+	if me == nil {
+		return nil, errors.New("could not retrieve login information of Razee")
+	}
+
+	logger.Info("Initializing Razee using oauth", "orgId", me.OrgId, "clusterGroup", clusterGroup)
 
 	return &ClusterManager{
 		orgID:        me.OrgId,
