@@ -17,7 +17,5 @@ spec:
         env:
         - name: ENABLE_WEBHOOKS
           value: "true"
-        - name: IMAGE_PULL_POLICY
-          value: "Always"
         - name: NO_FINALIZER
           value: "true"
