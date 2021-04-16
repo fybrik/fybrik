@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: opa
+    app.kubernetes.io/instance: m4d
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/version: latest
+    helm.sh/chart: m4d-0.0.0
+  name: opa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: opa
+      app.kubernetes.io/instance: m4d
+      app.kubernetes.io/name: m4d
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: opa
+        app.kubernetes.io/instance: m4d
+        app.kubernetes.io/name: m4d
+    spec:
+      containers:
+      - args:
+        - run
+        - --server
+        - --log-level=debug
+        - --set=decision_logs.console=true
+        image: openpolicyagent/opa:latest
+        imagePullPolicy: null
+        name: opa
+        ports:
+        - containerPort: 8181
+          name: http
+          protocol: TCP
+        resources: {}
+        securityContext: {}
+      - args:
+        - --require-policy-label
+        - --policies=m4d-system
+        - --enable-data
+        image: openpolicyagent/kube-mgmt:0.11
+        name: kube-mgmt
+      securityContext: {}
+      serviceAccountName: opa

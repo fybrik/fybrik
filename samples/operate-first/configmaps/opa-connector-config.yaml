@@ -1,0 +1,9 @@
+apiVersion: v1
+data:
+  CATALOG_CONNECTOR_URL: katalog-connector:80
+  CONNECTION_TIMEOUT: '120'
+  OPA_SERVER_URL: opa:8181
+  POLICY_TO_BE_EVALUATED: sample_policies
+kind: ConfigMap
+metadata:
+  name: opa-connector-config

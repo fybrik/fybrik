@@ -1,0 +1,25 @@
+apiVersion: v1
+data:
+  CATALOG_CONNECTOR_URL: katalog-connector:80
+  CATALOG_PROVIDER_NAME: katalog
+  CONNECTION_TIMEOUT: '120'
+  CREDENTIALS_CONNECTOR_URL: katalog-connector:80
+  CREDENTIALS_PROVIDER_NAME: katalog
+  MAIN_POLICY_MANAGER_CONNECTOR_URL: opa-connector:80
+  MAIN_POLICY_MANAGER_NAME: opa
+  SECRET_PROVIDER_ROLE: demo
+  SECRET_PROVIDER_URL: http://secret-provider.m4d-system:5555/get-secret
+  USER_VAULT_ADDRESS: http://vault.m4d-system:8200
+  USER_VAULT_PATH: external
+  USE_EXTENSIONPOLICY_MANAGER: 'false'
+  VAULT_ADDRESS: http://vault.m4d-system:8200
+  VAULT_AUTH: kubernetes
+  VAULT_DATASET_HOME: m4d/dataset-creds/
+  VAULT_DATASET_MOUNT: /v1/sys/mounts/m4d/dataset-creds
+  VAULT_MODULES_ROLE: module
+  VAULT_TTL: 24h
+  VAULT_USER_HOME: m4d/user-creds/
+  VAULT_USER_MOUNT: /v1/sys/mounts/m4d/user-creds
+kind: ConfigMap
+metadata:
+  name: m4d-config

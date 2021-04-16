@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: policy-editor
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: opa-policy-editor
+subjects:
+- kind: ServiceAccount
+  name: opa
+  namespace: m4d-system

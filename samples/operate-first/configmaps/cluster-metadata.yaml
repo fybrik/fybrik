@@ -1,0 +1,9 @@
+apiVersion: v1
+data:
+  ClusterName: thegreendragon
+  Region: theshire
+  VaultAuthPath: kubernetes
+  Zone: hobbiton
+kind: ConfigMap
+metadata:
+  name: cluster-metadata
