@@ -1,0 +1,15 @@
+apiVersion: v1
+data:
+  medical_taxonomies.json: "{\n    \"MedicalRoles\": [\"ER\", \"doctor\", \"nurse\"\
+    ]\n}"
+  taxonomies.json: "{\n    \"DataPurposes\": [\"audit&complience\", \"client Support\"\
+    , \"marketing\", \"Fraud Detection\", \"Customer Behaviour Analysis\"],\n\n  \
+    \  \"DataRoles\": [\"Data Scientist\", \"Business Analyst\", \"hr\", \"management\"\
+    , \"security\"],\n\n    \"DataSensitivity\": [\"SPI\", \"SHI\", \"ECI\", \"Confidential\"\
+    ],\n\n    \"DataAccessTypes\": [\"READ\", \"COPY\", \"WRITE\"],\n\n    \"DataGeoDestinations\"\
+    : [\"NorthAmerica\", \"US\", \"Turkey\", \"Netherlands\"]\n}"
+kind: ConfigMap
+metadata:
+  labels:
+    openpolicyagent.org/data: opa
+  name: opa-m4d-data

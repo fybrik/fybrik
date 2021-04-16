@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/component: opa
+    app.kubernetes.io/instance: m4d
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: m4d
+    app.kubernetes.io/version: latest
+    helm.sh/chart: m4d-0.0.0
+  name: opa

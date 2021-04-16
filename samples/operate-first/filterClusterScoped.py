@@ -21,6 +21,8 @@ def main():
     splitToYamls('m4d.yaml')
     splitToYamls('m4d-crd.yaml')
 
+    print("Successfully split files into yamls and wrote to appropriate directories")
+
 if __name__ == "__main__":
     main()
     
