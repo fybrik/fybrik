@@ -10,6 +10,7 @@ def splitToYamls(yamlFile):
             if yml:
                 filename = yml['metadata']['name']
                 outputFolder = yml['kind'].lower()+'s'
+                outputFolder = os.path.join(outputFolder, 'm4d-system')
                 outputPath = os.path.join(outputFolder, filename + ".yaml")
                 if not os.path.exists(os.path.dirname(outputPath)):
                     os.mkdir(os.path.dirname(outputPath))
