@@ -10,6 +10,10 @@ Ensure that you have the following:
 - `make`
 - `kubectl` version 1.16 and above
 - `helm` version 3.3 and above
+- `nc`
+- `kustomize`
+- `go`
+- `gcc`
 
 ## About this guide
 
