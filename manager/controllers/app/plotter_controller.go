@@ -120,7 +120,7 @@ func (r *PlotterReconciler) reconcileFinalizers(plotter *app.Plotter) error {
 
 func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []error) {
 	if plotter.Status.Blueprints == nil {
-		plotter.Status.Blueprints = make(map[string]app.MetaBlueprint)
+		plotter.Status.Blueprints = make(map[string]*app.MetaBlueprint)
 	}
 
 	plotter.Status.ObservedState.Error = "" // Reset error state

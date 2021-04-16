@@ -193,21 +193,21 @@ func init() {
 }
 
 // CreateMetaBlueprint creates MetaBlueprint structure of the given blueprint
-func CreateMetaBlueprint(blueprint *Blueprint) MetaBlueprint {
+func CreateMetaBlueprint(blueprint *Blueprint) *MetaBlueprint {
 	metaBlueprint := MetaBlueprint{
 		ObjectMeta: blueprint.ObjectMeta,
 		Status:     blueprint.Status,
 	}
-	return metaBlueprint
+	return &metaBlueprint
 }
 
 // CreateMetaBlueprintWithoutState creates the MetaBlueprint structure with an empty state
-func CreateMetaBlueprintWithoutState(blueprint *Blueprint) MetaBlueprint {
+func CreateMetaBlueprintWithoutState(blueprint *Blueprint) *MetaBlueprint {
 	metaBlueprint := MetaBlueprint{
 		ObjectMeta: blueprint.ObjectMeta,
 		Status:     BlueprintStatus{},
 	}
-	return metaBlueprint
+	return &metaBlueprint
 }
 
 const (

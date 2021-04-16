@@ -904,9 +904,17 @@ func (in *PlotterStatus) DeepCopyInto(out *PlotterStatus) {
 	out.ObservedState = in.ObservedState
 	if in.Blueprints != nil {
 		in, out := &in.Blueprints, &out.Blueprints
-		*out = make(map[string]MetaBlueprint, len(*in))
+		*out = make(map[string]*MetaBlueprint, len(*in))
 		for key, val := range *in {
-			(*out)[key] = *val.DeepCopy()
+			var outVal *MetaBlueprint
+			if val == nil {
+				(*out)[key] = nil
+			} else {
+				in, out := &val, &outVal
+				*out = new(MetaBlueprint)
+				(*in).DeepCopyInto(*out)
+			}
+			(*out)[key] = outVal
 		}
 	}
 	if in.ReadyTimestamp != nil {

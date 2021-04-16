@@ -37,7 +37,7 @@ type PlotterStatus struct {
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 
 	// + optional
-	Blueprints map[string]MetaBlueprint `json:"blueprints,omitempty"`
+	Blueprints map[string]*MetaBlueprint `json:"blueprints,omitempty"`
 
 	// + optional
 	ReadyTimestamp *metav1.Time `json:"readyTimestamp,omitempty"`

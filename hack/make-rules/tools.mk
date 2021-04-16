@@ -7,7 +7,7 @@ endef
 
 INSTALL_TOOLS += $(TOOLBIN)/controller-gen
 $(TOOLBIN)/controller-gen:
-	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.3.0
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.5.0
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/crd-ref-docs
