@@ -33,25 +33,29 @@ Make a note of the service endpoint, bucket name, and access credentials. You wi
 
     For experimentation you can install MinIO to your cluster instead of using a cloud service.
     
-    1. Install Minio to the currently active namespace:
+    1. Define variables for access key and secret key
       ```bash
-      helm repo add minio https://helm.min.io
-      helm install --wait minio minio/minio
+      export ACCESS_KEY="myaccesskey"
+      export SECRET_KEY="mysecretkey"
       ```
-    1. Create a port-forward to connect to MinIO UI:
+    2. Install Minio to the currently active namespace:
+      ```bash
+      kubectl create deployment minio --image=minio/minio:RELEASE.2021-02-14T04-01-33Z -- /bin/sh -ce "/usr/bin/docker-entrypoint.sh minio -S /etc/minio/certs/ server /export"
+      kubectl set env deployment/minio MINIO_ACCESS_KEY=${ACCESS_KEY} MINIO_SECRET_KEY=${SECRET_KEY}
+      kubectl wait --for=condition=available --timeout=120s deployment/minio
+      ```
+    3. Create a service to expose MinIO:
+      ```bash
+      kubectl expose deployment minio --port 9000
+      ```
+    4. Create a port-forward to connect to MinIO UI:
       ```bash
       kubectl port-forward svc/minio 9000 &
       ```
-    1. Open [http://localhost:9000](http://localhost:9000) and login with the printed access key and secret key:
-      ```
-      ACCESS_KEY=$(kubectl get secret minio -o jsonpath="{.data.accesskey}" | base64 --decode)
-      SECRET_KEY=$(kubectl get secret minio -o jsonpath="{.data.secretkey}" | base64 --decode)
-      echo "Access Key: ${ACCESS_KEY}"
-      echo "Secret Key: ${SECRET_KEY}"
-      ```
-    1. Click the :fontawesome-solid-plus-circle: button in the bottom right corner and then **Create bucket** to create a bucket (e.g. "demo").
-    1. Click the :fontawesome-solid-plus-circle: button again and then **Upload files** to upload the CSV file to the newly created bucket.
-    
+    5. Open [http://localhost:9000](http://localhost:9000) and login with the access key and secret key defined in step 1
+    6. Click the :fontawesome-solid-plus-circle: button in the bottom right corner and then **Create bucket** to create a bucket (e.g. "demo").
+    7. Click the :fontawesome-solid-plus-circle: button again and then **Upload files** to upload a file to the newly created bucket.
+
 ## Register the dataset in a data catalog
 
 Register the credentials required for accessing the dataset. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
