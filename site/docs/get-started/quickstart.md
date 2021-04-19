@@ -18,6 +18,8 @@ Mesh for Data requires [cert-manager](https://cert-manager.io) to be installed t
 Many clusters already include cert-manager. Check if `cert-manager` namespace exists in your cluster and only run the following if it doesn't exist:
 
 ```bash
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
 helm install cert-manager jetstack/cert-manager \
     --namespace cert-manager \
     --version v1.2.0 \
@@ -36,6 +38,7 @@ Run the following to install vault and the plugin in development mode:
 
     ```bash
     helm repo add hashicorp https://helm.releases.hashicorp.com
+    helm repo update
     helm install vault hashicorp/vault --version 0.9.1 --create-namespace -n m4d-system \
         --set "server.dev.enabled=true" \
         --values https://raw.githubusercontent.com/IBM/the-mesh-for-data/a3f951087eada4aed4b1cee9390bed5d71c35970/third_party/vault/vault-single-cluster/values.yaml \
@@ -57,7 +60,7 @@ Run the following to install vault and the plugin in development mode:
 
 ## Install control plane
 
-??? tip "Install development version"
+??? tip "Install latest development version from GitHub"
 
     The published Helm charts are only available for released versions. 
     To install the `dev` version install the charts from the source code.
@@ -74,6 +77,7 @@ Install the latest release of Mesh for Data with a built-in data catalog and wit
 
 ```bash
 helm repo add m4d-charts https://mesh-for-data.github.io/charts
+helm repo update
 helm install m4d-crd m4d-charts/m4d-crd -n m4d-system --wait
 helm install m4d m4d-charts/m4d -n m4d-system --wait
 ```
