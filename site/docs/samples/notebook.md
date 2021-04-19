@@ -3,6 +3,12 @@
 This sample shows how Mesh for Data enables a Jupyter notebook workload to access a dataset.
 It demonstrates how policies are seamlessly applied when accessing the dataset. 
 
+In this sample you play multiple roles:
+
+1. As a data ower you upload a dataset and register it in a data catalog
+2. As a data steward you setup data governance policies
+3. As a data user you specify your data usage requirements and use a notebook to consume the data
+
 ## Before you begin
 
 - Install Mesh for Data using the [Quick Start](../get-started/quickstart.md) guide.
@@ -179,7 +185,6 @@ In this sample a Jupyter notebook is used as the user workload and its business 
 
 ## Create a `M4DApplication` resource for the notebook
 
-
 Create a [`M4DApplication`](../reference/crds.md#m4dapplication) resource to register the notebook workload to the control plane of Mesh for Data: 
 
 <!-- TODO: role field removed but code still requires it -->
@@ -231,6 +236,8 @@ Then insert a new cell to read the data. The code to use is available as part of
 ```bash
 printf "$(kubectl get m4dapplication my-notebook -o jsonpath={.status.dataAccessInstructions})"
 ```
+
+Execute the cell and notice that the `nameOrig` column is redacted.
 
 ## Cleanup
 
