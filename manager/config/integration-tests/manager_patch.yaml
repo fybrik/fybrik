@@ -23,10 +23,6 @@ spec:
         env:
         - name: ENABLE_WEBHOOKS
           value: "true"
-        - name: MOVER_IMAGE
-          value: "localhost:5000/m4d-system/dummy-mover:latest"
-        - name: IMAGE_PULL_POLICY
-          value: "IfNotPresent"
         - name: NO_FINALIZER
           value: "false"
         - name: GODEBUG

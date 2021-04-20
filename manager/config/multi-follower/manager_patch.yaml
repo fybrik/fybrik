@@ -22,8 +22,6 @@ spec:
         env:
         - name: ENABLE_WEBHOOKS
           value: "true"
-        - name: IMAGE_PULL_POLICY
-          value: "IfNotPresent"
         - name: NO_FINALIZER
           value: "false"
         - name: GODEBUG

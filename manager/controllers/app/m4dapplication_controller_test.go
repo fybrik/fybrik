@@ -125,6 +125,9 @@ func createModules() {
 			},
 			Chart: apiv1alpha1.ChartSpec{
 				Name: "db2-chart",
+				Values: map[string]string{
+					"image": "localhost:5000/m4d-system/dummy-mover:latest",
+				},
 			},
 		},
 	}
@@ -156,6 +159,9 @@ func createModules() {
 			},
 			Chart: apiv1alpha1.ChartSpec{
 				Name: "s3-s3",
+				Values: map[string]string{
+					"image": "localhost:5000/m4d-system/dummy-mover:latest",
+				},
 			},
 		},
 	}
