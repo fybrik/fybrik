@@ -13,8 +13,8 @@ The rest of this README describes the directory structure.
 ## `apis`
 
 Holds the Customer Resource Definitions (CRDs) of the project:
-- [app.m4d.ibm.com/v1alpha1](https://ibm.github.io/the-mesh-for-data/docs/reference/api/generated/app/#k8s-api-app-m4d-ibm-com-v1alpha1): Includes `M4DApplication`, administrator APIs `M4DModule` and `M4DBucket`, and internal CRDs `Blueprint` and `Plotter`.
-- [motion.m4d.ibm.com/v1alpha1](https://ibm.github.io/the-mesh-for-data/docs/reference/api/generated/motion/#k8s-api-motion-m4d-ibm-com-v1alpha1): Includes data movements APIs `BatchTransfer` and `StreamTransfer`. Usually not used directly but rather invoked as a module.
+- `app.m4d.ibm.com/v1alpha1`: Includes `M4DApplication`, administrator APIs `M4DModule` and `M4DBucket`, and internal CRDs `Blueprint` and `Plotter`.
+- `motion.m4d.ibm.com/v1alpha1`: Includes data movements APIs `BatchTransfer` and `StreamTransfer`. Usually not used directly but rather invoked as a module.
 
 ## `controllers`
 

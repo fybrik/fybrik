@@ -105,13 +105,6 @@ worker:
   # Set to false to disable worker components in manager.
   enabled: true
 
-# Mover configuration used in the Mostion API controllers
-mover:
-  # Image name or a hub/image[:tag]
-  image: "mover"
-  # Overrides global.imagePullPolicy
-  imagePullPolicy: ""
-
 # Manager component
 manager:
   # Set to true to deploy the manager component or false to skip its deployment.
