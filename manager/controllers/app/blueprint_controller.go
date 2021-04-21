@@ -18,6 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -226,6 +227,19 @@ func SetMapField(obj map[string]interface{}, k string, v interface{}) bool {
 	return true
 }
 
+func (r *BlueprintReconciler) overrideDefaultValues(template *app.ComponentTemplate, name string) {
+	// look for the M4DModule deployed in the current cluster
+	module := app.M4DModule{}
+	if err := r.Get(context.Background(), types.NamespacedName{Name: name, Namespace: utils.GetSystemNamespace()}, &module); err != nil {
+		return
+	}
+	r.Log.V(0).Info("Deployment of " + name + " has been found in the cluster.")
+	for key, val := range module.Spec.Chart.Values {
+		template.Chart.Values[key] = val
+		r.Log.V(0).Info("Overriding " + key + " with " + val)
+	}
+}
+
 func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, blueprint *app.Blueprint) (ctrl.Result, error) {
 	// Gather all templates and process them into a list of resources to apply
 	// force-update if the blueprint spec is different
@@ -269,6 +283,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		// unexisting release or a failed release - re-apply the chart
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
 			// Process templates with arguments
+			r.overrideDefaultValues(templateSpec, templateName)
 			chart := templateSpec.Chart
 			if _, err := r.applyChartResource(log, chart, args, blueprint, releaseName); err != nil {
 				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
