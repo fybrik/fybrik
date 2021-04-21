@@ -9,7 +9,6 @@ require (
 	github.com/buger/jsonparser v1.1.1
 	github.com/containerd/continuity v0.0.0-20201119173150-04c754faca46 // indirect
 	github.com/datashim-io/datashim/src/dataset-operator v0.0.0-20210322095623-e5d70b250696
-	github.com/deepmap/oapi-codegen v1.4.2 // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-chi/render v1.0.1
@@ -65,6 +64,7 @@ require (
 	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/cli-utils v0.20.4
 	sigs.k8s.io/controller-runtime v0.6.2
+	sigs.k8s.io/controller-tools v0.3.0 // indirect
 	sigs.k8s.io/yaml v1.2.0
 )
 

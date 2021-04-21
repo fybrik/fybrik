@@ -45,6 +45,7 @@ type M4DApplicationReconciler struct {
 	ResourceInterface ContextInterface
 	ClusterManager    multicluster.ClusterLister
 	Provision         storage.ProvisionInterface
+	DataCatalog       DataCatalog
 }
 
 // Reconcile reconciles M4DApplication CRD
@@ -357,11 +358,11 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 	datasetID := req.Context.DataSetID
 	var err error
 	// Call the DataCatalog service to get info about the dataset
-	if err = GetConnectionDetails(req, input); err != nil {
+	if err = r.DataCatalog.GetConnectionDetails(req, input); err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err)
 	}
 	// Call the CredentialsManager service to get info about the dataset
-	if err = GetCredentials(req, input); err != nil {
+	if err = r.DataCatalog.GetCredentials(req, input); err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err)
 	}
 	// The received credentials are stored in vault
@@ -386,6 +387,7 @@ func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultConnection 
 		ResourceInterface: NewPlotterInterface(mgr.GetClient()),
 		ClusterManager:    cm,
 		Provision:         provision,
+		DataCatalog:       &DataCatalogImpl{},
 	}
 }
 

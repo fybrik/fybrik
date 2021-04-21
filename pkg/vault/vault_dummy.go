@@ -14,8 +14,8 @@ type Dummy struct {
 }
 
 // NewDummyConnection returns a new Dummy object
-func NewDummyConnection() (*Dummy, error) {
-	return &Dummy{values: make(map[string]string)}, nil
+func NewDummyConnection() *Dummy {
+	return &Dummy{values: make(map[string]string)}
 }
 
 func (c *Dummy) LinkPolicyToIdentity(identity string, policyName string, boundedNamespace string, serviceAccount string, auth string, ttl string) error {

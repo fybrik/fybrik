@@ -5,6 +5,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"encoding/json"
@@ -22,8 +23,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+type DataCatalog interface {
+	GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) error
+	GetCredentials(req *modules.DataInfo, input *app.M4DApplication) error
+}
+
+type DataCatalogImpl struct {
+}
+
 // GetConnectionDetails calls the data catalog service
-func GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) error {
+func (d *DataCatalogImpl) GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) error {
 	// Set up a connection to the data catalog interface server.
 	conn, err := grpc.Dial(utils.GetDataCatalogServiceAddress(), grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
@@ -83,7 +92,7 @@ func GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) erro
 
 // GetCredentials calls the credentials manager service
 // TODO: Choose appropriate catalog connector based on the datacatalog service indicated as part of datasetID
-func GetCredentials(req *modules.DataInfo, input *app.M4DApplication) error {
+func (d *DataCatalogImpl) GetCredentials(req *modules.DataInfo, input *app.M4DApplication) error {
 	// Set up a connection to the data catalog interface server.
 	conn, err := grpc.Dial(utils.GetCredentialsManagerServiceAddress(), grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
@@ -109,6 +118,32 @@ func GetCredentials(req *modules.DataInfo, input *app.M4DApplication) error {
 	req.Credentials = dataCredentials
 
 	return nil
+}
+
+type DataCatalogDummy struct {
+	credentials map[string]dc.Credentials
+	dataDetails map[string]modules.DataDetails
+}
+
+func (d *DataCatalogDummy) GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) error {
+	dataDetails, found := d.dataDetails[req.Context.DataSetID]
+	if found {
+		req.DataDetails = &dataDetails
+		return nil
+	}
+	return errors.New("could not find data details")
+}
+
+func (d *DataCatalogDummy) GetCredentials(req *modules.DataInfo, input *app.M4DApplication) error {
+	credentials, found := d.credentials[req.Context.DataSetID]
+	if found {
+		req.Credentials = &dc.DatasetCredentials{
+			DatasetId: req.Context.DataSetID,
+			Creds:     &credentials,
+		}
+		return nil
+	}
+	return errors.New("could not find credentials")
 }
 
 // RegisterAsset registers a new asset in the specified catalog
