@@ -128,8 +128,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 
 	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
 	return &app.DataStore{
-		CredentialLocation: utils.GetDatasetVaultPath(bucket.Name),
-		Vault: &app.Vault{
+		Vault: app.Vault{
 			SecretPath: vaultSecretPath,
 			Role:       utils.GetModulesRole(),
 			Address:    utils.GetVaultAddress(),
@@ -251,9 +250,8 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 	// Each selector receives source/sink interface and relevant actions
 	// Starting with the data location interface for source and the required interface for sink
 	sourceDataStore := &app.DataStore{
-		Connection:         item.DataDetails.Connection,
-		CredentialLocation: utils.GetDatasetVaultPath(datasetID),
-		Vault: &app.Vault{
+		Connection: item.DataDetails.Connection,
+		Vault: app.Vault{
 			SecretPath: vaultSecretPath,
 			Role:       utils.GetModulesRole(),
 			Address:    utils.GetVaultAddress(),

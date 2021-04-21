@@ -74,11 +74,8 @@ make -C test/services docker-build docker-push
 # wait until cluster-prepare setup really completed
 make cluster-prepare-wait
 
-# init vault for the secret-provider
-make -C secret-provider configure-vault
-
-# deploy the secret-provider service to the kind cluster
-make -C secret-provider deploy
+# configure Vault
+make configure-vault
 
 # deploy the m4d CRDs to the kind cluster
 make -C manager deploy-crd
