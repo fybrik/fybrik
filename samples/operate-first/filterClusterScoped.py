@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import yaml
 import os
 
@@ -11,25 +11,22 @@ def splitToYamls(yamlFile):
                 filename = yml['metadata']['name']
                 outputFolder = yml['kind'].lower()+'s'
                 outputPath = os.path.join(outputFolder, 'm4d-system', filename + ".yaml")
-                if not os.path.exists(os.path.dirname(outputPath)):
-                    os.mkdir(os.path.dirname(outputPath))
-                f = open(outputPath, "w") 
-                documents = yaml.dump(yml, f)
-                f.close()       
+                os.makedirs(os.path.dirname(outputPath), exist_ok = True)
+                with open(outputPath,'w') as f:
+                    yaml.dump(yml, f)    
 
 def createKustomizations():
     dirs = [name for name in os.listdir(".") if os.path.isdir(name)]
     for subdir in dirs:
         outputPath = os.path.join(subdir,'m4d-system','kustomization.yaml')
-        f = open(outputPath,'w')
         kustomizationString = "---\napiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization" + "\n\nresources:\n"
         subdirPath = os.path.join(".", subdir,'m4d-system')
         for root, subdirs, files in os.walk(subdirPath):
             for file in files:
                 if file != 'kustomization.yaml':
-                    kustomizationString += "\t- " + file +'\n'
-        f.write(kustomizationString)
-        f.close()
+                    kustomizationString += "  - " + file +'\n'
+        with open (outputPath, 'w') as f:
+            f.write(kustomizationString)
     
       
 
