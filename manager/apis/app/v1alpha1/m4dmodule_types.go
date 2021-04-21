@@ -76,7 +76,7 @@ type SupportedAction struct {
 
 // EndpointSpec is used both by the module creator and by the status of the m4dapplication
 type EndpointSpec struct {
-	// Can be left empty when declaring a module, currently this field is only used by the status of the m4dapplication
+	// Always equals the release name. Can be omitted.
 	// +optional
 	Hostname string `json:"hostname,omitempty"`
 	// +required
@@ -90,8 +90,8 @@ type EndpointSpec struct {
 type ModuleAPI struct {
 	// +required
 	InterfaceDetails `json:",inline"`
-	// +optional
-	Endpoint EndpointSpec `json:"endpoint,omitempty"`
+	// +required
+	Endpoint EndpointSpec `json:"endpoint"`
 }
 
 // Capability declares what this module knows how to do and the types of data it knows how to handle
