@@ -1,6 +1,18 @@
-# Copyright 2020 IBM Corp.
-# SPDX-License-Identifier: Apache-2.0
+{{- if .Values.secureControlPlane }}
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Sidecar
+metadata:
+  name: sidecar-default
+  namespace: system
+spec:
+  egress:
+  - hosts:
+    - "*/*"
+  outboundTrafficPolicy:
+    mode: ALLOW_ANY
 
+---
 apiVersion: "security.istio.io/v1beta1"
 # This policy enables mutual TLS traffic between every two workloads that have sidecar.
 kind: "PeerAuthentication"
@@ -11,3 +23,4 @@ spec:
   mtls:
     # PERMISSIVE: Workloads accept both mutual TLS and plain text traffic
     mode: PERMISSIVE
+{{- end }}

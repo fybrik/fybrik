@@ -13,6 +13,9 @@ fullnameOverride: ""
 
 clusterScoped: true
 
+# Secures the control plane
+secureControlPlane: false
+
 # Global configuration applies to multiple components installed by this chart
 global:
   # Default hub for Mesh for Data images.

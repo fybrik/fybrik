@@ -67,7 +67,7 @@ var _ = BeforeSuite(func(done Done) {
 		noSimulatedProgress = true
 	}
 	testEnv = &envtest.Environment{
-		CRDDirectoryPaths: []string{filepath.Join("..", "..", "config", "crd", "bases")},
+		CRDDirectoryPaths: []string{filepath.Join("..", "..", "..", "charts", "m4d-crd", "templates")},
 		//AttachControlPlaneOutput: true,
 	}
 
