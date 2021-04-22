@@ -10,122 +10,123 @@ import (
 	"log"
 	"net"
 
+	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
+
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/onsi/ginkgo"
 	"google.golang.org/grpc"
 )
 
-type server struct {
-	pb.UnimplementedDataCatalogServiceServer
-	pb.UnimplementedDataCredentialServiceServer
+type DataCatalogDummy struct {
+	credentials map[string]pb.Credentials
+	dataDetails map[string]pb.CatalogDatasetInfo
 }
 
-func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetRequest) (*pb.CatalogDatasetInfo, error) {
-	log.Printf("Received: ")
-	log.Printf("DataSetID: " + in.GetDatasetId())
+func (d *DataCatalogDummy) GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) error {
+	return d.GetConnectionDetailsByID(req, req.Context.DataSetID)
+}
 
-	catalogID := utils.GetAttribute("catalog_id", in.GetDatasetId())
-	switch catalogID {
-	case "s3-external":
-		return &pb.CatalogDatasetInfo{
-			DatasetId: in.GetDatasetId(),
-			Details: &pb.DatasetDetails{
-				Name:       "xxx",
-				DataFormat: "parquet",
-				Geo:        "Germany",
-				DataStore: &pb.DataStore{
-					Type: pb.DataStore_S3,
-					Name: "cos",
-					S3: &pb.S3DataStore{
-						Endpoint:  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
-						Bucket:    "m4d-test-bucket",
-						ObjectKey: "small.parq",
-					},
-				},
-				CredentialsInfo: &pb.CredentialsInfo{
-					VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
-				},
-				Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
-			},
-		}, nil
-	case "s3":
-		return &pb.CatalogDatasetInfo{
-			DatasetId: in.GetDatasetId(),
-			Details: &pb.DatasetDetails{
-				Name:       "xxx",
-				DataFormat: "parquet",
-				Geo:        "theshire",
-				DataStore: &pb.DataStore{
-					Type: pb.DataStore_S3,
-					Name: "cos",
-					S3: &pb.S3DataStore{
-						Endpoint:  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
-						Bucket:    "m4d-test-bucket",
-						ObjectKey: "small.parq",
-					},
-				},
-				CredentialsInfo: &pb.CredentialsInfo{
-					VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
-				},
-				Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
-			},
-		}, nil
-	case "db2":
-		return &pb.CatalogDatasetInfo{
-			DatasetId: in.GetDatasetId(),
-			Details: &pb.DatasetDetails{
-				Name:       "yyy",
-				DataFormat: "table",
-				Geo:        "theshire",
-				DataStore: &pb.DataStore{
-					Type: pb.DataStore_DB2,
-					Name: "db2",
-					Db2: &pb.Db2DataStore{
-						Database: "BLUDB",
-						Table:    "NQD60833.SMALL",
-						Url:      "dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net",
-						Port:     "50000",
-						Ssl:      "false",
-					},
-				},
-				CredentialsInfo: &pb.CredentialsInfo{
-					VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
-				},
-				Metadata: &pb.DatasetMetadata{},
-			},
-		}, nil
-	case "kafka":
-		return &pb.CatalogDatasetInfo{
-			DatasetId: in.GetDatasetId(),
-			Details: &pb.DatasetDetails{
-				Name:       "Cars",
-				DataFormat: "json",
-				Geo:        "theshire",
-				DataStore: &pb.DataStore{
-					Type: pb.DataStore_KAFKA,
-					Name: "kafka",
-					Kafka: &pb.KafkaDataStore{
-						TopicName:             "topic",
-						SecurityProtocol:      "SASL_SSL",
-						SaslMechanism:         "SCRAM-SHA-512",
-						SslTruststore:         "xyz123",
-						SslTruststorePassword: "passwd",
-						SchemaRegistry:        "kafka-registry",
-						BootstrapServers:      "http://kafka-servers",
-						KeyDeserializer:       "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer",
-						ValueDeserializer:     "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer",
-					},
-				},
-				CredentialsInfo: &pb.CredentialsInfo{
-					VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
-				},
-				Metadata: &pb.DatasetMetadata{},
-			},
-		}, nil
+func (d *DataCatalogDummy) GetCredentials(req *modules.DataInfo, input *app.M4DApplication) error {
+	return d.GetCredentialsByID(req, req.Context.DataSetID)
+}
+
+func (d *DataCatalogDummy) GetConnectionDetailsByID(req *modules.DataInfo, datasetID string) error {
+	dataDetails, found := d.dataDetails[datasetID]
+	if found {
+		details, err := modules.CatalogDatasetToDataDetails(&dataDetails)
+		if err != nil {
+			return err
+		}
+		req.DataDetails = details
+		return nil
 	}
-	return &pb.CatalogDatasetInfo{
-		DatasetId: in.GetDatasetId(),
+	return errors.New("could not find data details")
+}
+
+func (d *DataCatalogDummy) GetCredentialsByID(req *modules.DataInfo, datasetID string) error {
+	credentials, found := d.credentials[datasetID]
+	if found {
+		req.Credentials = &pb.DatasetCredentials{
+			DatasetId: req.Context.DataSetID,
+			Creds:     &credentials,
+		}
+		return nil
+	}
+	return errors.New("could not find credentials")
+}
+
+func NewTestCatalog() *DataCatalogDummy {
+	dummyCatalog := DataCatalogDummy{
+		credentials: make(map[string]pb.Credentials),
+		dataDetails: make(map[string]pb.CatalogDatasetInfo),
+	}
+	dummyCatalog.dataDetails["s3-external"] = pb.CatalogDatasetInfo{
+		DatasetId: "s3-external",
+		Details: &pb.DatasetDetails{
+			Name:       "xxx",
+			DataFormat: "parquet",
+			Geo:        "Germany",
+			DataStore: &pb.DataStore{
+				Type: pb.DataStore_S3,
+				Name: "cos",
+				S3: &pb.S3DataStore{
+					Endpoint:  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
+					Bucket:    "m4d-test-bucket",
+					ObjectKey: "small.parq",
+				},
+			},
+			CredentialsInfo: &pb.CredentialsInfo{
+				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
+			},
+			Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
+		},
+	}
+	dummyCatalog.dataDetails["s3"] = pb.CatalogDatasetInfo{
+		DatasetId: "s3",
+		Details: &pb.DatasetDetails{
+			Name:       "xxx",
+			DataFormat: "parquet",
+			Geo:        "theshire",
+			DataStore: &pb.DataStore{
+				Type: pb.DataStore_S3,
+				Name: "cos",
+				S3: &pb.S3DataStore{
+					Endpoint:  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
+					Bucket:    "m4d-test-bucket",
+					ObjectKey: "small.parq",
+				},
+			},
+			CredentialsInfo: &pb.CredentialsInfo{
+				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
+			},
+			Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
+		},
+	}
+	dummyCatalog.dataDetails["s3-csv"] = pb.CatalogDatasetInfo{
+		DatasetId: "s3-csv",
+		Details: &pb.DatasetDetails{
+			Name:       "small.csv",
+			DataFormat: "csv",
+			Geo:        "theshire",
+			DataStore: &pb.DataStore{
+				Type: pb.DataStore_S3,
+				Name: "cos",
+				S3: &pb.S3DataStore{
+					Endpoint:  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
+					Bucket:    "m4d-test-bucket",
+					ObjectKey: "small.csv",
+				},
+			},
+			CredentialsInfo: &pb.CredentialsInfo{
+				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
+			},
+			Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
+		},
+	}
+	dummyCatalog.dataDetails["db2"] = pb.CatalogDatasetInfo{
+		DatasetId: "db2",
 		Details: &pb.DatasetDetails{
 			Name:       "yyy",
 			DataFormat: "table",
@@ -144,9 +145,58 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 			CredentialsInfo: &pb.CredentialsInfo{
 				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
 			},
-			Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
+			Metadata: &pb.DatasetMetadata{},
 		},
-	}, nil
+	}
+	dummyCatalog.dataDetails["kafka"] = pb.CatalogDatasetInfo{
+		DatasetId: "kafka",
+		Details: &pb.DatasetDetails{
+			Name:       "Cars",
+			DataFormat: "json",
+			Geo:        "theshire",
+			DataStore: &pb.DataStore{
+				Type: pb.DataStore_KAFKA,
+				Name: "kafka",
+				Kafka: &pb.KafkaDataStore{
+					TopicName:             "topic",
+					SecurityProtocol:      "SASL_SSL",
+					SaslMechanism:         "SCRAM-SHA-512",
+					SslTruststore:         "xyz123",
+					SslTruststorePassword: "passwd",
+					SchemaRegistry:        "kafka-registry",
+					BootstrapServers:      "http://kafka-servers",
+					KeyDeserializer:       "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer",
+					ValueDeserializer:     "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer",
+				},
+			},
+			CredentialsInfo: &pb.CredentialsInfo{
+				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
+			},
+			Metadata: &pb.DatasetMetadata{},
+		},
+	}
+	dummyCatalog.credentials["s3-csv"] = pb.Credentials{Username: "admin", Password: "pswd"}
+
+	return &dummyCatalog
+}
+
+type server struct {
+	pb.UnimplementedDataCatalogServiceServer
+	pb.UnimplementedDataCredentialServiceServer
+	c *DataCatalogDummy
+}
+
+func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetRequest) (*pb.CatalogDatasetInfo, error) {
+	log.Printf("Received: ")
+	log.Printf("DataSetID: " + in.GetDatasetId())
+
+	catalogID := utils.GetAttribute("catalog_id", in.GetDatasetId())
+
+	dataDetails, found := s.c.dataDetails[catalogID]
+	if found {
+		return &dataDetails, nil
+	}
+	return nil, errors.New("catalog item not found")
 }
 
 //TODO: remove this!
@@ -179,8 +229,9 @@ func createMockCatalogConnector(port int) error {
 	}
 	s := grpc.NewServer()
 	connector = s
-	pb.RegisterDataCatalogServiceServer(s, &server{})
-	pb.RegisterDataCredentialServiceServer(s, &server{})
+	dummyCatalog := NewTestCatalog()
+	pb.RegisterDataCatalogServiceServer(s, &server{c: dummyCatalog})
+	pb.RegisterDataCredentialServiceServer(s, &server{c: dummyCatalog})
 	if err := s.Serve(lis); err != nil {
 		return fmt.Errorf("Cannot serve mock catalog connector: %v", err)
 	}

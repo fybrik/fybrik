@@ -5,7 +5,6 @@ package app
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"encoding/json"
@@ -59,30 +58,11 @@ func (d *DataCatalogImpl) GetConnectionDetails(req *modules.DataInfo, input *app
 	}
 
 	details := response.GetDetails()
-	protocol, err := utils.GetProtocol(details)
+	dataDetails, err := modules.CatalogDatasetToDataDetails(response)
 	if err != nil {
 		return err
 	}
-	format, err := utils.GetDataFormat(details)
-	if err != nil {
-		return err
-	}
-
-	connection, err := serde.ToRawExtension(details.DataStore)
-	if err != nil {
-		return err
-	}
-
-	req.DataDetails = &modules.DataDetails{
-		Name: details.Name,
-		Interface: app.InterfaceDetails{
-			Protocol:   protocol,
-			DataFormat: format,
-		},
-		Geography:  details.Geo,
-		Connection: *connection,
-		Metadata:   details.Metadata,
-	}
+	req.DataDetails = dataDetails
 	req.VaultSecretPath = ""
 	if details.CredentialsInfo != nil {
 		req.VaultSecretPath = details.CredentialsInfo.VaultSecretPath
@@ -118,32 +98,6 @@ func (d *DataCatalogImpl) GetCredentials(req *modules.DataInfo, input *app.M4DAp
 	req.Credentials = dataCredentials
 
 	return nil
-}
-
-type DataCatalogDummy struct {
-	credentials map[string]dc.Credentials
-	dataDetails map[string]modules.DataDetails
-}
-
-func (d *DataCatalogDummy) GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) error {
-	dataDetails, found := d.dataDetails[req.Context.DataSetID]
-	if found {
-		req.DataDetails = &dataDetails
-		return nil
-	}
-	return errors.New("could not find data details")
-}
-
-func (d *DataCatalogDummy) GetCredentials(req *modules.DataInfo, input *app.M4DApplication) error {
-	credentials, found := d.credentials[req.Context.DataSetID]
-	if found {
-		req.Credentials = &dc.DatasetCredentials{
-			DatasetId: req.Context.DataSetID,
-			Creds:     &credentials,
-		}
-		return nil
-	}
-	return errors.New("could not find credentials")
 }
 
 // RegisterAsset registers a new asset in the specified catalog

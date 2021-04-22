@@ -13,10 +13,6 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
-
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
-
 	"github.com/ibm/the-mesh-for-data/manager/controllers/mockup"
 	"github.com/ibm/the-mesh-for-data/pkg/storage"
 
@@ -50,9 +46,8 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 		namespace = "default"
 	)
 
-	application, err := readApplication("../../testdata/e2e/m4dapplication.yaml")
+	application, err := readApplication("../../testdata/unittests/m4dcopyapp-csv.yaml")
 	g.Expect(err).To(gomega.BeNil(), "Cannot read m4dapplication file for test")
-	application.Spec.Data[0].Requirements.Copy.Required = true // Require copy to enforce creation of copy module
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
@@ -67,19 +62,16 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
-	copyModule, err := readModule("../../../modules/implicit-copy-batch-module.yaml")
+	copyModule, err := readModule("../../testdata/unittests/implicit-copy-batch-module-csv.yaml")
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	// Create module in fake K8s agent
 	err = cl.Create(context.Background(), copyModule)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	readModule, err := readModule("../../testdata/e2e/module-read.yaml")
+	readModule, err := readModule("../../testdata/unittests/module-read-csv.yaml")
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(readModule).NotTo(gomega.BeNil())
-
-	readModule.Spec.Capabilities.SupportedInterfaces = readModule.Spec.Capabilities.SupportedInterfaces[1:] // remove parquet interface
-	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	// Create module in fake K8s agent
 	err = cl.Create(context.Background(), readModule)
@@ -111,26 +103,7 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 	err = cl.Create(context.Background(), dummySecret)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	dummyCatalog := DataCatalogDummy{
-		credentials: make(map[string]pb.Credentials),
-		dataDetails: make(map[string]modules.DataDetails),
-	}
-
-	dummyCatalog.credentials[application.Spec.Data[0].DataSetID] = pb.Credentials{ApiKey: "1234"}
-	dummyCatalog.dataDetails[application.Spec.Data[0].DataSetID] = modules.DataDetails{
-		Name: application.Spec.Data[0].DataSetID,
-		Interface: app.InterfaceDetails{
-			Protocol:   app.S3,
-			DataFormat: app.CSV,
-		},
-		Geography:  "theshire",
-		Connection: runtime.RawExtension{},
-		Metadata: &pb.DatasetMetadata{
-			DatasetNamedMetadata: nil,
-			DatasetTags:          nil,
-			ComponentsMetadata:   nil,
-		},
-	}
+	dummyCatalog := mockup.NewTestCatalog()
 
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
 	r := &M4DApplicationReconciler{
@@ -145,7 +118,7 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 		},
 		ClusterManager: &mockup.ClusterLister{},
 		Provision:      &storage.ProvisionTest{},
-		DataCatalog:    &dummyCatalog,
+		DataCatalog:    dummyCatalog,
 	}
 
 	// Mock request to simulate Reconcile() being called on an event for a
@@ -156,6 +129,7 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 			Namespace: namespace,
 		},
 	}
+
 	res, err := r.Reconcile(req)
 	g.Expect(err).To(gomega.BeNil())
 
@@ -195,7 +169,7 @@ func readModule(f string) (*app.M4DModule, error) {
 }
 
 func readApplication(f string) (*app.M4DApplication, error) {
-	applicationYAML, err := ioutil.ReadFile("../../testdata/e2e/m4dapplication.yaml")
+	applicationYAML, err := ioutil.ReadFile(f)
 	if err != nil {
 		return nil, err
 	}

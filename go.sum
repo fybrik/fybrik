@@ -663,8 +663,6 @@ github.com/gobuffalo/flect v0.1.0/go.mod h1:d2ehjJqGOH/Kjqcoz+F7jHTBbmDb38yXA598
 github.com/gobuffalo/flect v0.1.1/go.mod h1:8JCgGVbRjJhVgD6399mQr4fx5rRfGKVzFjbj6RE/9UI=
 github.com/gobuffalo/flect v0.1.3/go.mod h1:8JCgGVbRjJhVgD6399mQr4fx5rRfGKVzFjbj6RE/9UI=
 github.com/gobuffalo/flect v0.1.5/go.mod h1:W3K3X9ksuZfir8f/LrfVtWmCDQFfayuylOJ7sz/Fj80=
-github.com/gobuffalo/flect v0.2.0 h1:EWCvMGGxOjsgwlWaP+f4+Hh6yrrte7JeFL2S6b+0hdM=
-github.com/gobuffalo/flect v0.2.0/go.mod h1:W3K3X9ksuZfir8f/LrfVtWmCDQFfayuylOJ7sz/Fj80=
 github.com/gobuffalo/genny v0.0.0-20190329151137-27723ad26ef9/go.mod h1:rWs4Z12d1Zbf19rlsn0nurr75KqhYp52EAGGxTbBhNk=
 github.com/gobuffalo/genny v0.0.0-20190403191548-3ca520ef0d9e/go.mod h1:80lIj3kVJWwOrXWWMRzzdhW3DsrdjILVil/SFKBzF28=
 github.com/gobuffalo/genny v0.1.0/go.mod h1:XidbUqzak3lHdS//TPu2OgiFB+51Ur5f7CSnXZ/JDvo=
@@ -2473,8 +2471,6 @@ sigs.k8s.io/controller-runtime v0.5.1/go.mod h1:Uojny7gvg55YLQnEGnPzRE3dC4ik2tRl
 sigs.k8s.io/controller-runtime v0.6.2 h1:jkAnfdTYBpFwlmBn3pS5HFO06SfxvnTZ1p5PeEF/zAA=
 sigs.k8s.io/controller-runtime v0.6.2/go.mod h1:vhcq/rlnENJ09SIRp3EveTaZ0yqH526hjf9iJdbUJ/E=
 sigs.k8s.io/controller-tools v0.2.4/go.mod h1:m/ztfQNocGYBgTTCmFdnK94uVvgxeZeE3LtJvd/jIzA=
-sigs.k8s.io/controller-tools v0.3.0 h1:y3YD99XOyWaXkiF1kd41uRvfp/64teWcrEZFuHxPhJ4=
-sigs.k8s.io/controller-tools v0.3.0/go.mod h1:enhtKGfxZD1GFEoMgP8Fdbu+uKQ/cq1/WGJhdVChfvI=
 sigs.k8s.io/kustomize v2.0.3+incompatible h1:JUufWFNlI44MdtnjUqVnvh29rR37PQFzPbLXqhyOyX0=
 sigs.k8s.io/kustomize v2.0.3+incompatible/go.mod h1:MkjgH3RdOWrievjo6c9T245dYlB5QeXV4WCbnt/PEpU=
 sigs.k8s.io/kustomize/kyaml v0.9.1/go.mod h1:UTm64bSWVdBUA8EQoYCxVOaBQxUdIOr5LKWxA4GNbkw=
