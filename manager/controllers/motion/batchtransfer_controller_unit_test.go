@@ -44,11 +44,10 @@ func TestBatchTransferController(t *testing.T) {
 		Spec: motionv1.BatchTransferSpec{
 			Source: motionv1.DataStore{
 				Database: &motionv1.Database{
-					Db2URL:    "jdbc:db2://host:1234/DB",
-					Table:     "MY.TABLE",
-					User:      "user",
-					Password:  "password",
-					VaultPath: nil,
+					Db2URL:   "jdbc:db2://host:1234/DB",
+					Table:    "MY.TABLE",
+					User:     "user",
+					Password: "password",
 				},
 			},
 			Destination: motionv1.DataStore{
@@ -60,7 +59,6 @@ func TestBatchTransferController(t *testing.T) {
 					SecretKey:  "cd",
 					ObjectKey:  "obj.parq",
 					DataFormat: "parquet",
-					VaultPath:  nil,
 				},
 			},
 		},
