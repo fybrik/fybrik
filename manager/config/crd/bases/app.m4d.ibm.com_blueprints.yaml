@@ -62,9 +62,6 @@ spec:
                                   connection:
                                     description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
                                     type: object
-                                  credentialLocation:
-                                    description: 'CredentialLocation is used to obtain the credentials from the credential management system - ex: vault'
-                                    type: string
                                   format:
                                     description: Format represents data format (e.g. parquet) as received from catalog connectors
                                     type: string
@@ -92,6 +89,7 @@ spec:
                                 required:
                                 - connection
                                 - format
+                                - vault
                                 type: object
                               source:
                                 description: Source is the where the data currently resides
@@ -99,9 +97,6 @@ spec:
                                   connection:
                                     description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
                                     type: object
-                                  credentialLocation:
-                                    description: 'CredentialLocation is used to obtain the credentials from the credential management system - ex: vault'
-                                    type: string
                                   format:
                                     description: Format represents data format (e.g. parquet) as received from catalog connectors
                                     type: string
@@ -129,6 +124,7 @@ spec:
                                 required:
                                 - connection
                                 - format
+                                - vault
                                 type: object
                               transformations:
                                 description: Transformations are different types of processing that may be done to the data as it is copied.
@@ -153,9 +149,6 @@ spec:
                                     connection:
                                       description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
                                       type: object
-                                    credentialLocation:
-                                      description: 'CredentialLocation is used to obtain the credentials from the credential management system - ex: vault'
-                                      type: string
                                     format:
                                       description: Format represents data format (e.g. parquet) as received from catalog connectors
                                       type: string
@@ -183,6 +176,7 @@ spec:
                                   required:
                                   - connection
                                   - format
+                                  - vault
                                   type: object
                                 transformations:
                                   description: Transformations are different types of processing that may be done to the data
@@ -205,9 +199,6 @@ spec:
                                     connection:
                                       description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
                                       type: object
-                                    credentialLocation:
-                                      description: 'CredentialLocation is used to obtain the credentials from the credential management system - ex: vault'
-                                      type: string
                                     format:
                                       description: Format represents data format (e.g. parquet) as received from catalog connectors
                                       type: string
@@ -235,6 +226,7 @@ spec:
                                   required:
                                   - connection
                                   - format
+                                  - vault
                                   type: object
                                 transformations:
                                   description: Transformations are different types of processing that may be done to the data as it is written.

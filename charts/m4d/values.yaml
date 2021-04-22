@@ -174,18 +174,6 @@ manager:
 
   prometheus: false
 
-# Secret provider component deployed as part of manager
-secretProvider:
-  # Set to true to deploy the secret provider or false to skip its deployment.
-  # Defaults to true if `.manager.enabled` is set to true
-  enabled: auto
-
-  # Image name or a hub/image[:tag]
-  image: "secret-provider"
-
-  # Overrides global.imagePullPolicy
-  imagePullPolicy: ""
-
 # OPA connector component
 opaConnector:
   # Set to true to deploy the opa connector or false to skip its deployment.
