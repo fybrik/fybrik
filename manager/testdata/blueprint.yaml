@@ -27,7 +27,8 @@ spec:
                 endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
                 object_key: small.kp.encrypted.parq
             type: 2
-            credentialLocation: /v1/m4d/dataset-creds/m4d-test-bucket
+            vault:
+              secretPath: /v1/m4d/dataset-creds/m4d-test-bucket
             format: parquet
           source:
             connection:
@@ -52,7 +53,8 @@ spec:
                   endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
                   object_key: small.kp.encrypted.parq
                 type: 2
-              credentialLocation: /v1/m4d/dataset-creds/m4d-test-bucket
+              vault:
+                secretPath: /v1/m4d/dataset-creds/m4d-test-bucket
               format: parquet
             assetID: xyz
       name: notebook-read-module

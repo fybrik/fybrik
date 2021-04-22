@@ -26,7 +26,8 @@ spec:
                     endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
                     object_key: my-object
                   type: 2
-                credentialLocation: /v1/m4d/dataset-creds/m4d-test-bucket
+                vault:
+                  secretPath: /v1/m4d/dataset-creds/m4d-test-bucket
                 format: parquet
               source:
                 connection:
@@ -36,7 +37,8 @@ spec:
                     database: MYDB
                     url: mydb
                     ssl: "true"
-                credentialLocation: "/v1/secret/data/db2/m4d"
+                vault:
+                  secretPath: "/v1/secret/data/db2/m4d"
                 format: table
           name: implicit-copy-batch-latest
           template: implicit-copy-batch-latest

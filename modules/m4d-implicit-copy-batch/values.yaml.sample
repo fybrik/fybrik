@@ -12,7 +12,6 @@ copy:
         endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
         object_key: car.data.copy.parq
       type: 2
-    credentialLocation: /v1/m4d/dataset-creds/m4d-test-bucket
     format: parquet
 
   destination:
@@ -23,7 +22,6 @@ copy:
         endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
         object_key: car.data.parq
       type: 2
-    credentialLocation: /v1/m4d/dataset-creds/m4d-test-bucket
     format: parquet
 
   transformations:
