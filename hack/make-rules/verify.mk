@@ -11,13 +11,6 @@ define license_java
 	($(ABSTOOLBIN)/license_finder || true)
 endef
 
-define license_python
-	echo && cd $1 && \
-	(sudo pip3 install pip==18.1 || true) && \
-	(sudo pip3 install -r requirements.txt || true) && \
-	($(ABSTOOLBIN)/license_finder --python-version=3 || true)
-endef
-
 GO_VERSION:=1.13
 CODE_MAINT += go-version
 .PHONY: go-version

@@ -180,8 +180,6 @@ func TestInvalidS3Bucket(t *testing.T) {
 
 func TestDefaultingS3Bucket(t *testing.T) {
 	t.Parallel()
-	_ = os.Setenv("IMAGE_PULL_POLICY", "Always")
-	_ = os.Setenv("MOVER_IMAGE", "mover-test:latest")
 	_ = os.Setenv("SECRET_PROVIDER_URL", "mysecrets:123")
 	_ = os.Setenv("SECRET_PROVIDER_ROLE", "demo")
 
@@ -230,8 +228,8 @@ func TestDefaultingS3Bucket(t *testing.T) {
 
 	batchTransfer.Default()
 
-	assert.Equal(t, corev1.PullAlways, batchTransfer.Spec.ImagePullPolicy)
-	assert.Equal(t, "mover-test:latest", batchTransfer.Spec.Image)
+	assert.Equal(t, corev1.PullIfNotPresent, batchTransfer.Spec.ImagePullPolicy)
+	assert.Equal(t, "ghcr.io/mesh-for-data/mover:latest", batchTransfer.Spec.Image)
 	assert.Equal(t, "mysecrets:123", batchTransfer.Spec.SecretProviderURL)
 	assert.Equal(t, "demo", batchTransfer.Spec.SecretProviderRole)
 	assert.Equal(t, false, batchTransfer.Spec.Suspend)
@@ -243,8 +241,6 @@ func TestDefaultingS3Bucket(t *testing.T) {
 	assert.Equal(t, LogData, batchTransfer.Spec.ReadDataType)
 	assert.Equal(t, LogData, batchTransfer.Spec.WriteDataType)
 	assert.Equal(t, Overwrite, batchTransfer.Spec.WriteOperation)
-	_ = os.Unsetenv("IMAGE_PULL_POLICY")
-	_ = os.Unsetenv("MOVER_IMAGE")
 	_ = os.Unsetenv("SECRET_PROVIDER_URL")
 	_ = os.Unsetenv("SECRET_PROVIDER_ROLE")
 }

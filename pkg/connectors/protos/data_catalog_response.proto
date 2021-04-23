@@ -11,6 +11,6 @@ import "dataset_details.proto";
 
 message CatalogDatasetInfo {
     string dataset_id = 1;
-    DatasetDetails details = 3;
+    DatasetDetails details = 2;
 }
 

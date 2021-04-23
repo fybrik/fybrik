@@ -1,6 +1,6 @@
 FROM gcr.io/distroless/static:nonroot
 WORKDIR /
-COPY bin/katalog .
+COPY katalog .
 USER nonroot:nonroot
 
 ENTRYPOINT ["/katalog"]

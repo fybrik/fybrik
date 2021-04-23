@@ -32,9 +32,10 @@ func TestLocalClusterManager(t *testing.T) {
 	}
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	namespace := "m4d-system"
-	cm := NewManager(cl, namespace)
+	cm, err := NewManager(cl, namespace)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(cm).NotTo(gomega.BeNil())
 	var actualClusters []multicluster.Cluster
-	var err error
 	if actualClusters, err = cm.GetClusters(); err != nil {
 		t.Errorf("unexpected error in GetClusters: %v", err)
 	}

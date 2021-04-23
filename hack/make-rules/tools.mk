@@ -60,9 +60,9 @@ $(TOOLBIN)/protoc:
 	cd $(TOOLS_DIR); ./install_protoc.sh
 	$(call post-install-check)
 
-INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-docs
-$(TOOLBIN)/protoc-gen-docs:
-	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get istio.io/tools/cmd/protoc-gen-docs@1.6.8
+INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-doc
+$(TOOLBIN)/protoc-gen-doc:
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get -u github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@v1.4.1
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-go
@@ -123,6 +123,11 @@ $(TOOLBIN)/openapi2crd:
 INSTALL_TOOLS += $(TOOLBIN)/crdoc
 $(TOOLBIN)/crdoc:
 	curl -sfL https://raw.githubusercontent.com/mesh-for-data/crdoc/main/hack/get-crdoc.sh | sh -s -- -b $(ABSTOOLBIN) -d v0.1.2
+
+INSTALL_TOOLS += $(TOOLBIN)/yq
+$(TOOLBIN)/yq:
+	cd $(TOOLS_DIR); ./install_yq.sh
+	$(call post-install-check)
 
 .PHONY: install-tools
 install-tools: $(INSTALL_TOOLS)

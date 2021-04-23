@@ -33,6 +33,8 @@ type DataInfo struct {
 	DataDetails *DataDetails
 	// Data asset credentials
 	Credentials *pb.DatasetCredentials
+	// The path to Vault secret which holds the dataset credentials
+	VaultSecretPath string
 	// Pointer to the relevant data context in the M4D application spec
 	Context *app.DataContext
 }

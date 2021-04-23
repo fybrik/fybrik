@@ -12,10 +12,10 @@ import (
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/razee"
 	"github.com/ibm/the-mesh-for-data/pkg/storage"
+	"github.com/ibm/the-mesh-for-data/pkg/vault"
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/motion"
 
-	"github.com/hashicorp/vault/api"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -23,7 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	comv1alpha1 "github.com/IBM/dataset-lifecycle-framework/src/dataset-operator/pkg/apis/com/v1alpha1"
+	comv1alpha1 "github.com/datashim-io/datashim/src/dataset-operator/pkg/apis/com/v1alpha1"
 	appv1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app"
@@ -78,7 +78,14 @@ func main() {
 	flag.StringVar(&namespace, "namespace", "", "The namespace to which this controller manager is limited.")
 	flag.Parse()
 
-	if !enableAllControllers && !enableApplicationController && !enableBlueprintController && !enableMotionController {
+	if enableAllControllers {
+		enableApplicationController = true
+		enableBlueprintController = true
+		enablePlotterController = true
+		enableMotionController = true
+	}
+
+	if !enableApplicationController && !enablePlotterController && !enableBlueprintController && !enableMotionController {
 		setupLog.Info("At least one controller flag must be set!")
 		os.Exit(1)
 	}
@@ -110,17 +117,24 @@ func main() {
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrlOps)
 
-	// Initialize ClusterManager
-	clusterManager := NewClusterManager(mgr)
-
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
 	}
 
-	if enableApplicationController || enableAllControllers {
+	// Initialize ClusterManager
+	var clusterManager multicluster.ClusterManager
+	if enableApplicationController || enablePlotterController {
+		clusterManager, err = NewClusterManager(mgr)
+		if err != nil {
+			setupLog.Error(err, "unable to initialize cluster manager")
+			os.Exit(1)
+		}
+	}
+
+	if enableApplicationController {
 		// Initiate vault client
-		vaultClient, errVaultSetup := initVaultConnection()
+		vaultConn, errVaultSetup := initVaultConnection()
 		if errVaultSetup != nil {
 			setupLog.Error(errVaultSetup, "Error setting up vault")
 			os.Exit(1)
@@ -130,14 +144,23 @@ func main() {
 		policyCompiler := pc.NewPolicyCompiler()
 
 		// Initiate the M4DApplication Controller
-		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultClient, policyCompiler, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
+		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultConn, policyCompiler, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
 			os.Exit(1)
 		}
 	}
 
-	if enableBlueprintController || enableAllControllers {
+	if enablePlotterController {
+		// Initiate the Plotter Controller
+		plotterController := app.NewPlotterReconciler(mgr, "Plotter", clusterManager)
+		if err := plotterController.SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", plotterController.Name)
+			os.Exit(1)
+		}
+	}
+
+	if enableBlueprintController {
 		// Initiate the Blueprint Controller
 		blueprintController := app.NewBlueprintReconciler(mgr, "Blueprint", new(helm.Impl))
 		if err := blueprintController.SetupWithManager(mgr); err != nil {
@@ -146,11 +169,7 @@ func main() {
 		}
 	}
 
-	if enablePlotterController || enableAllControllers {
-		app.SetupPlotterController(mgr, clusterManager)
-	}
-
-	if enableMotionController || enableAllControllers {
+	if enableMotionController {
 		motion.SetupMotionControllers(mgr)
 	}
 
@@ -164,52 +183,36 @@ func main() {
 }
 
 // init vault client and mount the base directory for storing credentials
-func initVaultConnection() (*api.Client, error) {
-	token := utils.GetVaultToken()
-	if err := utils.MountDatasetVault(token); err != nil {
-		return nil, err
-	}
-	vaultClient, err := utils.InitVault(token)
+func initVaultConnection() (vault.Interface, error) {
+	vaultConn, err := vault.InitConnection(utils.GetVaultAddress(), utils.GetVaultToken())
 	if err != nil {
-		return nil, err
+		return vaultConn, err
 	}
-
-	// Create and save a vault policy
-	path := utils.GetVaultDatasetHome() + "*"
-	policy := "path \"" + path + "\"" + " {\n	capabilities = [\"read\"]\n }"
-	policyName := "read-dataset-creds"
-
-	setupLog.Info("policyName: " + policyName + "  policy: " + policy)
-	if err = utils.WriteVaultPolicy(policyName, policy, vaultClient); err != nil {
-		setupLog.Info("      Failed writing policy: " + err.Error())
-		return vaultClient, err
+	if err = vaultConn.Mount(utils.GetVaultDatasetMountPath()); err != nil {
+		return vaultConn, err
 	}
-
-	setupLog.Info("Assigning the policy to " + "/role/" + utils.GetSecretProviderRole())
-	// Link the policy to the authentication role (configured)
-	if err = utils.LinkVaultPolicyToIdentity("/role/"+utils.GetSecretProviderRole(), policyName, vaultClient); err != nil {
-		setupLog.Info("Could not create a role " + utils.GetSecretProviderRole() + " : " + err.Error())
-		return vaultClient, err
-	}
-	return vaultClient, nil
+	return vaultConn, nil
 }
 
-// This method decides based on the environment variables that are set which
+// NewClusterManager decides based on the environment variables that are set which
 // cluster manager instance should be initiated.
-func NewClusterManager(mgr manager.Manager) multicluster.ClusterManager {
+func NewClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error) {
 	setupLog := ctrl.Log.WithName("setup")
+	multiClusterGroup := os.Getenv("MULTICLUSTER_GROUP")
 	if user, razeeLocal := os.LookupEnv("RAZEE_USER"); razeeLocal {
 		razeeURL := strings.TrimSpace(os.Getenv("RAZEE_URL"))
 		password := strings.TrimSpace(os.Getenv("RAZEE_PASSWORD"))
-		orgID := strings.TrimSpace(os.Getenv("RAZEE_ORG_ID"))
 
-		setupLog.Info("Using razee at " + razeeURL + " orgId " + orgID)
-		return razee.NewRazeeManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password, orgID)
+		setupLog.Info("Using razee local at " + razeeURL)
+		return razee.NewRazeeLocalManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password, multiClusterGroup)
 	} else if apiKey, satConf := os.LookupEnv("IAM_API_KEY"); satConf {
-		orgID := strings.TrimSpace(os.Getenv("RAZEE_ORG_ID"))
+		setupLog.Info("Using IBM Satellite config")
+		return razee.NewSatConfManager(strings.TrimSpace(apiKey), multiClusterGroup)
+	} else if apiKey, razeeOauth := os.LookupEnv("API_KEY"); razeeOauth {
+		setupLog.Info("Using Razee oauth")
 
-		setupLog.Info("Using IBM Satellite config with orgId " + orgID)
-		return razee.NewSatConfManager(strings.TrimSpace(apiKey), orgID)
+		razeeURL := strings.TrimSpace(os.Getenv("RAZEE_URL"))
+		return razee.NewRazeeOAuthManager(strings.TrimSpace(razeeURL), strings.TrimSpace(apiKey), multiClusterGroup)
 	} else {
 		setupLog.Info("Using local cluster manager")
 		return local.NewManager(mgr.GetClient(), utils.GetSystemNamespace())

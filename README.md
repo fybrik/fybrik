@@ -1,5 +1,6 @@
-[![Build Status](https://travis-ci.com/IBM/the-mesh-for-data.svg?branch=master)](https://travis-ci.com/IBM/the-mesh-for-data "Travis")
+[![GitHub Actions Build](https://github.com/IBM/the-mesh-for-data/actions/workflows/build.yml/badge.svg)](https://github.com/IBM/the-mesh-for-data/actions/workflows/build.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/IBM/the-mesh-for-data)](https://goreportcard.com/report/github.com/IBM/the-mesh-for-data)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # Mesh for Data
 

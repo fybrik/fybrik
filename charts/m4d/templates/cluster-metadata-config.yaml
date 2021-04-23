@@ -1,0 +1,11 @@
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-metadata
+data:
+  ClusterName: {{ required "cluster name must be set" .Values.cluster.name | quote }}
+  Region: {{ required "cluster region must be set" .Values.cluster.region | quote }}
+  Zone: {{ .Values.cluster.zone | quote }}
+  VaultAuthPath: {{ required "vaultAuthPath must be set" .Values.cluster.vaultAuthPath | quote }}
+{{- end }}

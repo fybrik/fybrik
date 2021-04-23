@@ -7,13 +7,14 @@ include $(ROOT_DIR)/hack/make-rules/docker.mk
 
 .PHONY: build
 build:
-	mvn clean package -DskipTests
+	mvn -B clean package -DskipTests
 
 docker-build: build
+	docker build . -t ${IMG}
 
 .PHONY: test
 test:
-	mvn clean test
+	mvn -B clean test
 
 .PHONY: clean
 clean:

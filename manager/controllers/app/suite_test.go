@@ -15,7 +15,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	comv1alpha1 "github.com/IBM/dataset-lifecycle-framework/src/dataset-operator/pkg/apis/com/v1alpha1"
+	comv1alpha1 "github.com/datashim-io/datashim/src/dataset-operator/pkg/apis/com/v1alpha1"
 	appapi "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 
 	. "github.com/onsi/ginkgo"
@@ -35,6 +35,7 @@ import (
 	"github.com/ibm/the-mesh-for-data/pkg/helm"
 	local "github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 	"github.com/ibm/the-mesh-for-data/pkg/storage"
+	"github.com/ibm/the-mesh-for-data/pkg/vault"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -81,17 +82,10 @@ var _ = BeforeSuite(func(done Done) {
 	if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
 		logf.Log.Info("Using existing controller in existing cluster...")
 		k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
+		Expect(err).ToNot(HaveOccurred())
 	} else {
 		// Mockup connectors
 		go mockup.CreateTestCatalogConnector(GinkgoT())
-
-		// Fake helm client. Release name is from arrow-flight module
-		fakeHelm := helm.NewFake(
-			&release.Release{
-				Name: "ra8afad067a6a96084dcb",
-				Info: &release.Info{Status: release.StatusDeployed},
-			}, []*unstructured.Unstructured{},
-		)
 
 		mgr, err = ctrl.NewManager(cfg, ctrl.Options{
 			Scheme:             scheme.Scheme,
@@ -99,14 +93,29 @@ var _ = BeforeSuite(func(done Done) {
 		})
 		Expect(err).ToNot(HaveOccurred())
 
+		// Setup application controller
+		var clusterLister *mockup.ClusterLister
 		policyCompiler := &mockup.MockPolicyCompiler{}
-		// Initiate the M4DApplication Controller
-		var clusterManager *mockup.ClusterLister
-		err = NewM4DApplicationReconciler(mgr, "M4DApplication", nil, policyCompiler, clusterManager, storage.NewProvisionTest()).SetupWithManager(mgr)
+		conn, _ := vault.NewDummyConnection()
+		err = NewM4DApplicationReconciler(mgr, "M4DApplication", conn, policyCompiler, clusterLister, storage.NewProvisionTest()).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
+
+		// Setup blueprint controller
+		fakeHelm := helm.NewFake(
+			&release.Release{
+				Name: "ra8afad067a6a96084dcb", // Release name is from arrow-flight module
+				Info: &release.Info{Status: release.StatusDeployed},
+			}, []*unstructured.Unstructured{},
+		)
 		err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
-		SetupPlotterController(mgr, local.NewManager(mgr.GetClient(), "m4d-system"))
+
+		// Setup plotter controller
+		clusterMgr, err := local.NewManager(mgr.GetClient(), "m4d-system")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(clusterMgr).NotTo(BeNil())
+		err = NewPlotterReconciler(mgr, "Plotter", clusterMgr).SetupWithManager(mgr)
+		Expect(err).ToNot(HaveOccurred())
 
 		go func() {
 			err = mgr.Start(ctrl.SetupSignalHandler())
@@ -124,19 +133,20 @@ var _ = BeforeSuite(func(done Done) {
 				Name: "m4d-blueprints",
 			},
 		}))
+		Expect(k8sClient.Create(context.Background(), &v1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "cluster-metadata",
+				Namespace: "m4d-system",
+			},
+			Data: map[string]string{
+				"ClusterName":   "thegreendragon",
+				"Zone":          "hobbiton",
+				"Region":        "theshire",
+				"VaultAuthPath": "kind",
+			},
+		}))
 	}
 	Expect(k8sClient).ToNot(BeNil())
-	Expect(k8sClient.Create(context.Background(), &v1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "cluster-metadata",
-			Namespace: "m4d-system",
-		},
-		Data: map[string]string{
-			"ClusterName": "US-cluster",
-			"Region":      "US",
-			"Zone":        "North-America",
-		},
-	}))
 	close(done)
 }, 60)
 
@@ -144,5 +154,6 @@ var _ = AfterSuite(func() {
 	By("tearing down the test environment")
 	gexec.KillAndWait(5 * time.Second)
 	err := testEnv.Stop()
+	mockup.KillServer()
 	Expect(err).ToNot(HaveOccurred())
 })

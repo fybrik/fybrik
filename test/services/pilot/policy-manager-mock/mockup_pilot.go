@@ -60,17 +60,12 @@ func constructInputParameters() *pb.ApplicationContext {
 
 	var datasetIDJson string
 	if getEnv("CATALOG_PROVIDER_NAME") == "EGERIA" {
-		// datasetIDJson = "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"24cd3ed9-4084-43b9-9e91-5fe1f4fbd6b7\"}"
-		datasetIDJson = "{\"ServerName\":\"cocoMDS3\",\"AssetGuid\":\"1e2a0403-1946-4e89-a10b-fd96eda5a5dc\"}"
+		datasetIDJson = "{\"ServerName\":\"mds1\",\"AssetGuid\":\"1e2a0403-1946-4e89-a10b-fd96eda5a5dc\"}"
 	} else {
 		datasetIDJson = "{\"catalog_id\":\"" + catalogID + "\",\"asset_id\":\"" + datasetID + "\"}"
 	}
 
-	applicationDetails := &pb.ApplicationDetails{Purpose: "fraud-detection", Role: "Security", ProcessingGeography: "US"}
-
-	appID := "datauser1/notebook-with-kafka"
-	// credentialsStr := "v1/m4d/user-creds/datauser1/notebook-with-kafka/WKC"
-	// policyManagerCredentials := &pb.PolicyManagerCredentials{Credentials: credentialsStr}
+	applicationDetails := &pb.ApplicationDetails{Properties: map[string]string{"intent": "fraud-detection"}, ProcessingGeography: "US"}
 
 	datasets := []*pb.DatasetContext{}
 	datasets = append(datasets, createDatasetRead(datasetIDJson))
@@ -82,7 +77,7 @@ func constructInputParameters() *pb.ApplicationContext {
 	// datasets = append(datasets, createDatasetTransferSecond(catalogIDDb2, datasetIDDb2))
 
 	// applicationContext := &pb.ApplicationContext{PolicyManagerCredentials: policyManagerCredentials, AppInfo: applicationDetails, Datasets: datasets}
-	applicationContext := &pb.ApplicationContext{AppId: appID, AppInfo: applicationDetails, Datasets: datasets}
+	applicationContext := &pb.ApplicationContext{AppInfo: applicationDetails, Datasets: datasets}
 	log.Printf("Sending Application Context: ")
 	appContextStr, _ := json.MarshalIndent(applicationContext, "", "\t")
 	log.Print(string(appContextStr))

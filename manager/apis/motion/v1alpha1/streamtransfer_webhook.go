@@ -32,17 +32,13 @@ var _ webhook.Defaulter = &StreamTransfer{}
 func (r *StreamTransfer) Default() {
 	log.Printf("Defaulting streamtransfer %s", r.Name)
 	if r.Spec.Image == "" {
-		if env, b := os.LookupEnv("MOVER_IMAGE"); b {
-			r.Spec.Image = env
-		}
+		// TODO check if can be removed after upgrading controller-gen to 0.5.0
+		r.Spec.Image = "ghcr.io/mesh-for-data/mover:latest"
 	}
 
 	if r.Spec.ImagePullPolicy == "" {
-		if env, b := os.LookupEnv("IMAGE_PULL_POLICY"); b {
-			r.Spec.ImagePullPolicy = v1.PullPolicy(env)
-		} else {
-			r.Spec.ImagePullPolicy = v1.PullIfNotPresent
-		}
+		// TODO check if can be removed after upgrading controller-gen to 0.5.0
+		r.Spec.ImagePullPolicy = v1.PullIfNotPresent
 	}
 
 	if r.Spec.SecretProviderURL == "" {
@@ -111,10 +107,6 @@ func (r *StreamTransfer) ValidateDelete() error {
 func (r *StreamTransfer) validateStreamTransfer() error {
 	var allErrs field.ErrorList
 	specField := field.NewPath("spec")
-
-	if err := validateObjectName(&r.ObjectMeta); err != nil {
-		allErrs = append(allErrs, err)
-	}
 
 	if r.Spec.DataFlowType == Batch {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("dataFlowType"), r.Spec.DataFlowType, "'dataFlowType' must be 'Stream' for a StreamTransfer!"))

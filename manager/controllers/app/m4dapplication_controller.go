@@ -11,7 +11,6 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
-	"github.com/hashicorp/vault/api"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -28,6 +27,7 @@ import (
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	"github.com/ibm/the-mesh-for-data/pkg/serde"
 	"github.com/ibm/the-mesh-for-data/pkg/storage"
+	"github.com/ibm/the-mesh-for-data/pkg/vault"
 
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
@@ -40,7 +40,7 @@ type M4DApplicationReconciler struct {
 	Name              string
 	Log               logr.Logger
 	Scheme            *runtime.Scheme
-	VaultClient       *api.Client
+	VaultConnection   vault.Interface
 	PolicyCompiler    pc.IPolicyCompiler
 	ResourceInterface ContextInterface
 	ClusterManager    multicluster.ClusterLister
@@ -236,7 +236,6 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 // or a status update from the generated resource
 func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplication) (ctrl.Result, error) {
 	utils.PrintStructure(applicationContext.Spec, r.Log, "M4DApplication")
-
 	// Data User created or updated the M4DApplication
 
 	// clear status
@@ -246,7 +245,6 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	if applicationContext.Status.ProvisionedStorage == nil {
 		applicationContext.Status.ProvisionedStorage = make(map[string]app.DatasetDetails)
 	}
-
 	clusters, err := r.ClusterManager.GetClusters()
 	if err != nil {
 		return ctrl.Result{}, err
@@ -281,7 +279,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		Owner:              objectKey,
 		PolicyCompiler:     r.PolicyCompiler,
 		Provision:          r.Provision,
-		VaultClient:        r.VaultClient,
+		VaultConnection:    r.VaultConnection,
 		ProvisionedStorage: make(map[string]NewAssetInfo),
 	}
 	instances := make([]modules.ModuleInstanceSpec, 0)
@@ -367,21 +365,23 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 		return AnalyzeError(input, r.Log, datasetID, err)
 	}
 	// The received credentials are stored in vault
-	if err = r.RegisterCredentials(req); err != nil {
+	path := utils.GetVaultDatasetHome() + datasetID
+	r.Log.V(0).Info("Registering a secret to " + path)
+	if err = r.VaultConnection.AddSecretFromStruct(path, req.Credentials.GetCreds()); err != nil {
 		return AnalyzeError(input, r.Log, datasetID, err)
 	}
 	return nil
 }
 
 // NewM4DApplicationReconciler creates a new reconciler for M4DApplications
-func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api.Client,
+func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultConnection vault.Interface,
 	policyCompiler pc.IPolicyCompiler, cm multicluster.ClusterLister, provision storage.ProvisionInterface) *M4DApplicationReconciler {
 	return &M4DApplicationReconciler{
 		Client:            mgr.GetClient(),
 		Name:              name,
 		Log:               ctrl.Log.WithName("controllers").WithName(name),
 		Scheme:            mgr.GetScheme(),
-		VaultClient:       vaultClient,
+		VaultConnection:   vaultConnection,
 		PolicyCompiler:    policyCompiler,
 		ResourceInterface: NewPlotterInterface(mgr.GetClient()),
 		ClusterManager:    cm,

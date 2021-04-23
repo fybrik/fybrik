@@ -6,7 +6,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: controller-manager
+  name: manager
   namespace: system
 spec:
   template:
@@ -17,7 +17,5 @@ spec:
         env:
         - name: ENABLE_WEBHOOKS
           value: "true"
-        - name: IMAGE_PULL_POLICY
-          value: "IfNotPresent"
         - name: NO_FINALIZER
           value: "false"

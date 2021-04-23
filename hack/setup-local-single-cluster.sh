@@ -8,12 +8,12 @@ export HELM_EXPERIMENTAL_OCI=1
 
 make kind
 kubectl config use-context kind-control
-make cluster-prepare
-make docker-minimal-it
+make -C charts vault
+make -C charts cert-manager
+make -C third_party/datashim deploy
+make docker
 make cluster-prepare-wait
-make -C secret-provider configure-vault
-make -C secret-provider deploy
-make -C manager deploy-crd
-make -C manager deploy_it
+make configure-vault
+make -C charts m4d
 make -C manager wait_for_manager
 make -C modules helm-chart-push

@@ -4,6 +4,7 @@
 package v1alpha1
 
 import (
+	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -162,6 +163,10 @@ type Database struct {
 	// Define a secret import definition.
 	// +optional
 	SecretImport *string `json:"secretImport,omitempty"`
+
+	// Define secrets that are fetched from a Vault instance
+	// +optional
+	Vault *v1alpha1.Vault `json:"vault,omitempty"`
 }
 
 // A minimalistic database connection definition.
@@ -188,6 +193,10 @@ type Cloudant struct {
 	// Define a secret import definition.
 	// +optional
 	SecretImport *string `json:"secretImport,omitempty"`
+
+	// Define secrets that are fetched from a Vault instance
+	// +optional
+	Vault *v1alpha1.Vault `json:"vault,omitempty"`
 }
 
 // An S3/COS endpoint. Besides the mandatory parameters such as
@@ -234,6 +243,10 @@ type S3 struct {
 	// Define a secret import definition.
 	// +optional
 	SecretImport *string `json:"secretImport,omitempty"`
+
+	// Define secrets that are fetched from a Vault instance
+	// +optional
+	Vault *v1alpha1.Vault `json:"vault,omitempty"`
 }
 
 // An extended kafka endpoint for storing KTables that also
@@ -318,6 +331,10 @@ type Kafka struct {
 	// Define a secret import definition.
 	// +optional
 	SecretImport *string `json:"secretImport,omitempty"`
+
+	// Define secrets that are fetched from a Vault instance
+	// +optional
+	Vault *v1alpha1.Vault `json:"vault,omitempty"`
 }
 
 // to be refined...

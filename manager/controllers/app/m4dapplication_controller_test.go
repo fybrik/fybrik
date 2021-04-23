@@ -12,7 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	comv1alpha1 "github.com/IBM/dataset-lifecycle-framework/src/dataset-operator/pkg/apis/com/v1alpha1"
+	comv1alpha1 "github.com/datashim-io/datashim/src/dataset-operator/pkg/apis/com/v1alpha1"
 	apiv1alpha1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
@@ -44,7 +44,7 @@ func allocateStorageAccounts() {
 		Spec: apiv1alpha1.M4DStorageAccountSpec{
 			Endpoint:  "http://endpoint1",
 			SecretRef: "dummy-secret",
-			Regions:   []string{"US"},
+			Regions:   []string{"theshire"},
 		},
 	}
 	accountGermany := &apiv1alpha1.M4DStorageAccount{
@@ -78,7 +78,6 @@ func createModules() {
 		Spec: apiv1alpha1.M4DModuleSpec{
 			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Read},
 			Capabilities: apiv1alpha1.Capability{
-				CredentialsManagedBy: apiv1alpha1.SecretProvider,
 				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
 					{
 						Flow:   apiv1alpha1.Read,
@@ -106,7 +105,6 @@ func createModules() {
 		Spec: apiv1alpha1.M4DModuleSpec{
 			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Copy},
 			Capabilities: apiv1alpha1.Capability{
-				CredentialsManagedBy: apiv1alpha1.SecretProvider,
 				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
 					{
 						Source: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.JdbcDb2, DataFormat: apiv1alpha1.Table},
@@ -127,6 +125,9 @@ func createModules() {
 			},
 			Chart: apiv1alpha1.ChartSpec{
 				Name: "db2-chart",
+				Values: map[string]string{
+					"image": "localhost:5000/m4d-system/dummy-mover:latest",
+				},
 			},
 		},
 	}
@@ -138,7 +139,6 @@ func createModules() {
 		Spec: apiv1alpha1.M4DModuleSpec{
 			Flows: []apiv1alpha1.ModuleFlow{apiv1alpha1.Copy},
 			Capabilities: apiv1alpha1.Capability{
-				CredentialsManagedBy: apiv1alpha1.Automatic,
 				SupportedInterfaces: []apiv1alpha1.ModuleInOut{
 					{
 						Flow:   apiv1alpha1.Copy,
@@ -159,6 +159,9 @@ func createModules() {
 			},
 			Chart: apiv1alpha1.ChartSpec{
 				Name: "s3-s3",
+				Values: map[string]string{
+					"image": "localhost:5000/m4d-system/dummy-mover:latest",
+				},
 			},
 		},
 	}
@@ -183,7 +186,8 @@ func InitM4DApplication(name string, n int) *apiv1alpha1.M4DApplication {
 			Namespace: appSignature.Namespace,
 		},
 		Spec: apiv1alpha1.M4DApplicationSpec{
-			Selector: apiv1alpha1.Selector{ClusterName: "US-cluster", WorkloadSelector: metav1.LabelSelector{MatchLabels: labels}},
+			Selector: apiv1alpha1.Selector{ClusterName: "thegreendragon", WorkloadSelector: metav1.LabelSelector{MatchLabels: labels}},
+			AppInfo:  map[string]string{"intent": "Fraud Detection", "role": "Data Scientist"},
 			Data:     make([]apiv1alpha1.DataContext, n),
 		},
 	}
@@ -198,7 +202,8 @@ func InitM4DApplicationWithoutWorkload(name string, n int) *apiv1alpha1.M4DAppli
 			Namespace: appSignature.Namespace,
 		},
 		Spec: apiv1alpha1.M4DApplicationSpec{
-			Selector: apiv1alpha1.Selector{ClusterName: "US-cluster"},
+			Selector: apiv1alpha1.Selector{ClusterName: "thegreendragon"},
+			AppInfo:  map[string]string{},
 			Data:     make([]apiv1alpha1.DataContext, n),
 		},
 	}
@@ -343,45 +348,6 @@ var _ = Describe("M4DApplication Controller", func() {
 			Expect(getErrorMessages(resource)).To(ContainSubstring("read"))
 		})
 
-		// Tests denial of the necessary copy operation
-
-		// Assumptions on response from connectors:
-		// s3 dataset
-		// Read module with source=s3,parquet exists
-		// Copy to s3 is required by the user
-		// Enforcement action for write operation: Deny
-		// Result: an error
-
-		It("Test deny-on-copy", func() {
-			appSignature := types.NamespacedName{Name: "with-copy", Namespace: "default"}
-			resource := InitM4DApplication(appSignature.Name, 1)
-			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID: "{\"asset_id\": \"deny-on-copy\", \"catalog_id\": \"s3\"}",
-				Requirements: apiv1alpha1.DataRequirements{
-					Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
-					Copy:      apiv1alpha1.CopyRequirements{Required: true},
-				},
-			}
-
-			// Create M4DApplication
-			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
-
-			// Ensure getting cleaned up after tests finish
-			defer func() {
-				DeleteM4DApplication(appSignature.Name)
-			}()
-
-			By("Expecting an error")
-			Eventually(func() string {
-				f := &apiv1alpha1.M4DApplication{}
-				_ = k8sClient.Get(context.Background(), appSignature, f)
-				return getErrorMessages(f)
-			}, timeout, interval).ShouldNot(BeEmpty())
-
-			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.CopyNotAllowed))
-		})
-
 		// Tests finding a module for copy
 
 		// Assumptions on response from connectors:
@@ -470,7 +436,7 @@ var _ = Describe("M4DApplication Controller", func() {
 				// Check the generated blueprint
 				// There should be a single read module with two datasets
 				Expect(len(plotter.Spec.Blueprints)).To(Equal(1))
-				blueprint := plotter.Spec.Blueprints["US-cluster"]
+				blueprint := plotter.Spec.Blueprints["thegreendragon"]
 				Expect(blueprint).NotTo(BeNil())
 				numReads := 0
 				for _, step := range blueprint.Flow.Steps {
@@ -562,7 +528,7 @@ var _ = Describe("M4DApplication Controller", func() {
 				// Check the generated blueprint
 				// There should be a single copy module
 				Expect(len(plotter.Spec.Blueprints)).To(Equal(1))
-				blueprint := plotter.Spec.Blueprints["US-cluster"]
+				blueprint := plotter.Spec.Blueprints["thegreendragon"]
 				Expect(blueprint).NotTo(BeNil())
 				numSteps := 0
 				moduleMatch := false

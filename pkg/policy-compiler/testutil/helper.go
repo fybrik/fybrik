@@ -45,7 +45,7 @@ func GetEnvironment() (string, string, int, string, string) {
 
 func GetApplicationContext(purpose string) *pb.ApplicationContext {
 	datasetID := "mock-datasetID"
-	applicationDetails := &pb.ApplicationDetails{Purpose: purpose, Role: "Security", ProcessingGeography: "US"}
+	applicationDetails := &pb.ApplicationDetails{Properties: map[string]string{"intent": purpose, "role": "Security"}, ProcessingGeography: "US"}
 	datasets := []*pb.DatasetContext{}
 	datasets = append(datasets, createDatasetRead(datasetID))
 	datasets = append(datasets, createDatasetTransferFirst(datasetID))
@@ -180,9 +180,9 @@ func GetMainPMDecisions(purpose string) *pb.PoliciesDecisions {
 
 func (s *connectorMockMain) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationContext) (*pb.PoliciesDecisions, error) {
 	fmt.Println("Output for applicationContext")
-	fmt.Println(in.GetAppInfo().GetPurpose())
+	fmt.Println(in.AppInfo.Properties["intent"])
 
-	return GetMainPMDecisions(in.GetAppInfo().GetPurpose()), nil
+	return GetMainPMDecisions(in.AppInfo.Properties["intent"]), nil
 }
 
 func MockMainConnector(port int) {
@@ -229,7 +229,7 @@ func GetExtPMDecisions(purpose string) *pb.PoliciesDecisions {
 }
 
 func (s *connectorMockExt) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationContext) (*pb.PoliciesDecisions, error) {
-	return GetExtPMDecisions(in.GetAppInfo().GetPurpose()), nil
+	return GetExtPMDecisions(in.AppInfo.Properties["intent"]), nil
 }
 
 func MockExtConnector(port int) {

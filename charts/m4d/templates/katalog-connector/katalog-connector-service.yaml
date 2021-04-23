@@ -1,0 +1,20 @@
+{{- $autoFlag := and .Values.manager.enabled .Values.coordinator.enabled (eq .Values.coordinator.catalog "katalog") }}
+{{- if include "m4d.isEnabled" (tuple .Values.katalogConnector.enabled $autoFlag) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: "katalog-connector"
+  labels:
+    app.kubernetes.io/component: katalog-connector
+    {{- include "m4d.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.katalogConnector.service.type }}
+  ports:
+    - port: {{ .Values.katalogConnector.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/component: katalog-connector
+    {{- include "m4d.selectorLabels" . | nindent 4 }}
+{{- end }}

@@ -1,0 +1,68 @@
+{{- $autoFlag := and .Values.manager.enabled .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
+{{- $opaConnectorEnabled := include "m4d.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
+{{- if include "m4d.isEnabled" (tuple .Values.opaServer.enabled $opaConnectorEnabled) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opa
+  labels:
+    app.kubernetes.io/component: opa
+    {{- include "m4d.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.opaServer.autoscaling.enabled }}
+  replicas: {{ .Values.opaServer.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: opa
+      {{- include "m4d.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.opaServer.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/component: opa
+        {{- include "m4d.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ .Values.opaServer.serviceAccount.name }}
+      securityContext:
+        {{- toYaml .Values.opaServer.podSecurityContext | nindent 8 }}
+      containers:
+        - name: opa
+          securityContext:
+            {{- toYaml .Values.opaServer.securityContext | nindent 12 }}
+          image: {{ .Values.opaServer.image }}
+          imagePullPolicy: {{ .Values.opaServer.imagePullPolicy | default .Values.global.imagePullPolicy }}
+          args:
+            {{- toYaml .Values.opaServer.args | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: 8181
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.opaServer.resources | nindent 12 }}
+        - name: kube-mgmt
+          image: {{ .Values.opaServer.kubemgmt.image }}
+          args:
+          - --require-policy-label
+          - --policies={{ .Release.Namespace }}
+          - --enable-data
+      {{- with .Values.opaServer.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.opaServer.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.opaServer.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

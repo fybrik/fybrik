@@ -5,7 +5,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: controller-manager
+  name: manager
   namespace: system
   labels:
     control-plane: controller-manager
@@ -31,10 +31,6 @@ spec:
         env:
           - name: ENABLE_WEBHOOKS
             value: "true"
-          - name: MOVER_IMAGE
-            value: "ghcr.io/the-mesh-for-data/mover:latest"
-          - name: IMAGE_PULL_POLICY
-            value: "Always"
         resources:
           limits:
             cpu: 500m

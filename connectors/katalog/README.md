@@ -19,17 +19,17 @@ Access credenditals are stored in Kubernetes `Secret` resources. You can use [Ba
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>accessKey</b></td>
+        <td><b>access_key</b></td>
         <td>string</td>
         <td>Access key also known as AccessKeyId</td>
         <td>false</td>
       </tr><tr>
-        <td><b>secretKey</b></td>
+        <td><b>secret_key</b></td>
         <td>string</td>
         <td>Secret key also known as SecretAccessKey</td>
         <td>false</td>
       </tr><tr>
-        <td><b>apiKey</b></td>
+        <td><b>api_key</b></td>
         <td>string</td>
         <td>API key used in various IAM enabled services</td>
         <td>false</td>

@@ -51,16 +51,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-{{- define "m4d.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "m4d.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}
-*/}}
-
-{{/*
 Create the value of an image field from hub, image and tag
 */}}
 {{- define "m4d.image" -}}
@@ -71,4 +61,29 @@ Create the value of an image field from hub, image and tag
 {{- else }}
 {{- printf "%s/%s:%s" ( $ctx.hub | default $root.Values.global.hub ) $ctx.image ( $ctx.tag | default $root.Values.global.tag | default $root.Chart.AppVersion ) }}
 {{- end }}
+{{- end }}
+
+{{/*
+isEnabled evaluates an enabled flag that might be set to "auto".
+Returns true if one of the following is true:
+The return value when using `include` is always a String.
+1. The flag is set to "true"
+2. The flag is set to true
+3. The flag is set to "auto" and the second parameter to this function is true 
+*/}}
+{{- define "m4d.isEnabled" -}}
+{{- $flag := toString (first .) -}}
+{{- $condition := last . -}}
+{{- if or (eq $flag "true") (and (eq $flag "auto") $condition) }}
+true
+{{- end -}}
+{{- end }}
+
+{{/*
+isRazeeEnabled checks if razee configuration is enabled
+*/}}
+{{- define "m4d.isRazeeEnabled" -}}
+{{- if or .Values.coordinator.razee.user .Values.coordinator.razee.apiKey .Values.coordinator.razee.iamKey -}}
+true
+{{- end -}}
 {{- end }}

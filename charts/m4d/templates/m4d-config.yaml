@@ -1,0 +1,24 @@
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: m4d-config
+data:
+  {{- if .Values.coordinator.enabled }}
+  CONNECTION_TIMEOUT: {{ .Values.manager.connectionTimeout | default .Values.global.connectionTimeout | quote }}
+  CATALOG_PROVIDER_NAME: {{ .Values.coordinator.catalog | quote }}
+  CATALOG_CONNECTOR_URL: {{ .Values.coordinator.catalogConnectorURL | default (printf "%s-connector:80" .Values.coordinator.catalog) | quote }}
+  CREDENTIALS_PROVIDER_NAME: {{ .Values.coordinator.credentialsManager | quote }}
+  CREDENTIALS_CONNECTOR_URL: {{ .Values.coordinator.credentialsManagerConnectorURL | default (printf "%s-connector:80" .Values.coordinator.catalog) | quote }}
+  MAIN_POLICY_MANAGER_NAME: {{ .Values.coordinator.policyManager | quote }}
+  MAIN_POLICY_MANAGER_CONNECTOR_URL: {{ .Values.coordinator.policyManagerConnectorURL | default (printf "%s-connector:80" .Values.coordinator.policyManager) | quote }}
+  USE_EXTENSIONPOLICY_MANAGER: "false" # deprecated
+  VAULT_ADDRESS: {{ .Values.coordinator.vault.address | quote }}
+  VAULT_DATASET_HOME: {{ printf "m4d/dataset-creds/" | quote }} # temporary
+  VAULT_DATASET_MOUNT: {{ printf "/v1/sys/mounts/m4d/dataset-creds" | quote }} # temporary
+  USER_VAULT_ADDRESS: {{ .Values.coordinator.vault.address | quote }} # deprecated
+  USER_VAULT_PATH: "external" # deprecated
+  VAULT_TTL: "24h" # temporary
+  VAULT_MODULES_ROLE: "module" # temporary
+  {{- end }}
+{{- end }}

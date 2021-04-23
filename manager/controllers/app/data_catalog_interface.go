@@ -7,16 +7,19 @@ import (
 	"context"
 	"time"
 
+	"encoding/json"
+
 	"google.golang.org/grpc"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	dc "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/ibm/the-mesh-for-data/pkg/serde"
+	"github.com/ibm/the-mesh-for-data/pkg/vault"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // GetConnectionDetails calls the data catalog service
@@ -34,15 +37,19 @@ func GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) erro
 	defer cancel()
 
 	var response *dc.CatalogDatasetInfo
+	var credentialPath string
+	if input.Spec.SecretRef != "" {
+		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+	}
+
 	if response, err = c.GetDatasetInfo(ctx, &dc.CatalogDatasetRequest{
-		AppId:     utils.CreateAppIdentifier(input),
-		DatasetId: req.Context.DataSetID,
+		CredentialPath: credentialPath,
+		DatasetId:      req.Context.DataSetID,
 	}); err != nil {
 		return err
 	}
 
 	details := response.GetDetails()
-
 	protocol, err := utils.GetProtocol(details)
 	if err != nil {
 		return err
@@ -67,7 +74,10 @@ func GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) erro
 		Connection: *connection,
 		Metadata:   details.Metadata,
 	}
-
+	req.VaultSecretPath = ""
+	if details.CredentialsInfo != nil {
+		req.VaultSecretPath = details.CredentialsInfo.VaultSecretPath
+	}
 	return nil
 }
 
@@ -85,10 +95,14 @@ func GetCredentials(req *modules.DataInfo, input *app.M4DApplication) error {
 	// Contact the server and print out its response.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
+	var credentialPath string
+	if input.Spec.SecretRef != "" {
+		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+	}
 
 	dataCredentials, err := c.GetCredentialsInfo(ctx, &dc.DatasetCredentialsRequest{
-		DatasetId: req.Context.DataSetID,
-		AppId:     utils.CreateAppIdentifier(input)})
+		DatasetId:      req.Context.DataSetID,
+		CredentialPath: credentialPath})
 	if err != nil {
 		return err
 	}
@@ -122,15 +136,19 @@ func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.Dat
 		return "", err
 	}
 	var creds *dc.Credentials
-	if creds, err = SecretToCredentials(r.Client, info.SecretRef); err != nil {
+	if creds, err = SecretToCredentials(r.Client, types.NamespacedName{Name: info.SecretRef, Namespace: utils.GetSystemNamespace()}); err != nil {
 		return "", err
+	}
+	var credentialPath string
+	if input.Spec.SecretRef != "" {
+		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
 
 	response, err := c.RegisterDatasetInfo(ctx, &dc.RegisterAssetRequest{
 		Creds:                creds,
 		DatasetDetails:       datasetDetails,
 		DestinationCatalogId: catalogID,
-		AppId:                utils.CreateAppIdentifier(input),
+		CredentialPath:       credentialPath,
 	})
 	if err != nil {
 		return "", err
@@ -138,29 +156,46 @@ func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.Dat
 	return response.GetAssetId(), nil
 }
 
-// SecretToCredentials fetches a secret and constructs Credentials structure
-func SecretToCredentials(cl client.Client, secretName string) (*dc.Credentials, error) {
+var translationMap = map[string]string{
+	"accessKeyID":        "access_key",
+	"accessKey":          "access_key",
+	"secretAccessKey":    "secret_key",
+	"SecretKey":          "secret_key",
+	"apiKey":             "api_key",
+	"resourceInstanceId": "resource_instance_id",
+}
+
+// SecretToCredentialMap fetches a secret and converts into a map matching credentials proto
+func SecretToCredentialMap(cl client.Client, secretRef types.NamespacedName) (map[string]interface{}, error) {
 	// fetch a secret
 	secret := &corev1.Secret{}
-	if err := cl.Get(context.Background(), types.NamespacedName{Name: secretName, Namespace: utils.GetSystemNamespace()}, secret); err != nil {
+	if err := cl.Get(context.Background(), secretRef, secret); err != nil {
 		return nil, err
 	}
-	creds := &dc.Credentials{}
+	credsMap := make(map[string]interface{})
 	for key, val := range secret.Data {
-		switch key {
-		case "accessKeyID":
-			creds.AccessKey = string(val)
-		case "accessKey":
-			creds.AccessKey = string(val)
-		case "secretAccessKey":
-			creds.SecretKey = string(val)
-		case "secretKey":
-			creds.SecretKey = string(val)
-		case "apiKey":
-			creds.ApiKey = string(val)
-		case "resourceInstanceId":
-			creds.ResourceInstanceId = string(val)
+		if translated, found := translationMap[key]; found {
+			credsMap[translated] = string(val)
+		} else {
+			credsMap[key] = string(val)
 		}
 	}
-	return creds, nil
+	return credsMap, nil
+}
+
+// SecretToCredentials fetches a secret and constructs Credentials structure
+func SecretToCredentials(cl client.Client, secretRef types.NamespacedName) (*dc.Credentials, error) {
+	credsMap, err := SecretToCredentialMap(cl, secretRef)
+	if err != nil {
+		return nil, err
+	}
+	jsonStr, err := json.Marshal(credsMap)
+	if err != nil {
+		return nil, err
+	}
+	var creds dc.Credentials
+	if err := json.Unmarshal(jsonStr, &creds); err != nil {
+		return nil, err
+	}
+	return &creds, nil
 }

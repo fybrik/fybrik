@@ -5,6 +5,7 @@ package mockup
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -42,6 +43,9 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 						ObjectKey: "small.parq",
 					},
 				},
+				CredentialsInfo: &pb.CredentialsInfo{
+					VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
+				},
 				Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
 			},
 		}, nil
@@ -51,7 +55,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 			Details: &pb.DatasetDetails{
 				Name:       "xxx",
 				DataFormat: "parquet",
-				Geo:        "US",
+				Geo:        "theshire",
 				DataStore: &pb.DataStore{
 					Type: pb.DataStore_S3,
 					Name: "cos",
@@ -60,6 +64,9 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 						Bucket:    "m4d-test-bucket",
 						ObjectKey: "small.parq",
 					},
+				},
+				CredentialsInfo: &pb.CredentialsInfo{
+					VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
 				},
 				Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
 			},
@@ -70,7 +77,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 			Details: &pb.DatasetDetails{
 				Name:       "yyy",
 				DataFormat: "table",
-				Geo:        "US",
+				Geo:        "theshire",
 				DataStore: &pb.DataStore{
 					Type: pb.DataStore_DB2,
 					Name: "db2",
@@ -82,6 +89,9 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 						Ssl:      "false",
 					},
 				},
+				CredentialsInfo: &pb.CredentialsInfo{
+					VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
+				},
 				Metadata: &pb.DatasetMetadata{},
 			},
 		}, nil
@@ -91,7 +101,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 			Details: &pb.DatasetDetails{
 				Name:       "Cars",
 				DataFormat: "json",
-				Geo:        "US",
+				Geo:        "theshire",
 				DataStore: &pb.DataStore{
 					Type: pb.DataStore_KAFKA,
 					Name: "kafka",
@@ -107,6 +117,9 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 						ValueDeserializer:     "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer",
 					},
 				},
+				CredentialsInfo: &pb.CredentialsInfo{
+					VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
+				},
 				Metadata: &pb.DatasetMetadata{},
 			},
 		}, nil
@@ -116,7 +129,7 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 		Details: &pb.DatasetDetails{
 			Name:       "yyy",
 			DataFormat: "table",
-			Geo:        "US",
+			Geo:        "theshire",
 			DataStore: &pb.DataStore{
 				Type: pb.DataStore_DB2,
 				Name: "db2",
@@ -128,11 +141,15 @@ func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetReques
 					Ssl:      "false",
 				},
 			},
+			CredentialsInfo: &pb.CredentialsInfo{
+				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
+			},
 			Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
 		},
 	}, nil
 }
 
+//TODO: remove this!
 func (s *server) GetCredentialsInfo(ctx context.Context, in *pb.DatasetCredentialsRequest) (*pb.DatasetCredentials, error) {
 	log.Printf("Received: ")
 	log.Printf("DataSetID: " + in.GetDatasetId())
@@ -142,12 +159,18 @@ func (s *server) GetCredentialsInfo(ctx context.Context, in *pb.DatasetCredentia
 	}, nil
 }
 
+//TODO: remove this!
 func (s *server) RegisterDatasetInfo(ctx context.Context, in *pb.RegisterAssetRequest) (*pb.RegisterAssetResponse, error) {
 	return &pb.RegisterAssetResponse{AssetId: "NewAsset"}, nil
 }
 
+var connector *grpc.Server = nil
+
 // Creates a new mock connector or an error
 func createMockCatalogConnector(port int) error {
+	if connector != nil {
+		return errors.New("a catalog connector was already started")
+	}
 	address := utils.ListeningAddress(port)
 	log.Printf("Starting mock catalog connector on " + address)
 	lis, err := net.Listen("tcp", address)
@@ -155,6 +178,7 @@ func createMockCatalogConnector(port int) error {
 		return fmt.Errorf("Error when setting up mock catalog connector: %v", err)
 	}
 	s := grpc.NewServer()
+	connector = s
 	pb.RegisterDataCatalogServiceServer(s, &server{})
 	pb.RegisterDataCredentialServiceServer(s, &server{})
 	if err := s.Serve(lis); err != nil {
@@ -165,7 +189,7 @@ func createMockCatalogConnector(port int) error {
 
 // MockCatalogConnector returns fake data location details based on the catalog id
 func MockCatalogConnector() {
-	if err := createMockCatalogConnector(50085); err != nil {
+	if err := createMockCatalogConnector(8080); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -173,5 +197,13 @@ func MockCatalogConnector() {
 func CreateTestCatalogConnector(t ginkgo.GinkgoTInterface) {
 	if err := createMockCatalogConnector(50085); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func KillServer() {
+	if connector != nil {
+		log.Print("Killing server...")
+		connector.Stop()
+		connector = nil
 	}
 }

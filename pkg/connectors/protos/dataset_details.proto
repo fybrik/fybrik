@@ -74,12 +74,17 @@ message DataStore {
     KafkaDataStore kafka = 5;
 }
 
+message CredentialsInfo {
+  string vault_secret_path = 1; // the path to Vault secret which is used to retrive the dataset credentials from the catalog.
+}
+
 message DatasetDetails {
     string name = 1;            //name in Catalog
-    string data_owner = 2;       //inforamtion on the owner of data asset - can have different formats for different catalogs
+    string data_owner = 2;       //information on the owner of data asset - can have different formats for different catalogs
     DataStore data_store = 3;    //All info about the data store
     string data_format = 4;
     string geo = 5;             //geography location where data resides (if this information available)
     //LocationType locationType = 10;  //publicCloud/privateCloud etc. Should be filled later when we understand better if we have a closed set of values and how they are used.
     DatasetMetadata  metadata = 7;
+    CredentialsInfo credentials_info = 11;   // information about how to retrive dataset credentials from the catalog.
 }
