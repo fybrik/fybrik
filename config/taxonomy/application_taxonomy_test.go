@@ -38,7 +38,7 @@ var (
 	interfaceBadKafka = "{\"interface\":{\"protocol\":\"whatever\", \"data_format\":\"avro\"}}"
 )
 
-func TestPolicyManagerTaxonomy(t *testing.T) {
+func TestApplicationTaxonomy(t *testing.T) {
 	ValidateTaxonomy(t, m4dAppValsName, intentGood, "intentGood", true)
 	ValidateTaxonomy(t, m4dAppValsName, intentBad, "intentBad", false)
 	ValidateTaxonomy(t, m4dAppValsName, roleGood, "roleGood", true)
