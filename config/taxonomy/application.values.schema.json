@@ -1,0 +1,84 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "application.values.schema.json",
+    "title": "Application Values Taxonomy",
+    "description": "Values contributed to by the mesh for data applications.",
+    "definitions": {
+        "intent": {"$ref": "policymanager.structs.schema.json#/definitions/intent"},
+        "role": {"$ref": "policymanager.structs.schema.json#/definitions/intent"},
+        "app_info": {
+            "type": "object",
+            "properties": {
+                "intent": { "$ref": "#/definitions/intent" },
+                "role": { "$ref": "#/definitions/role" }
+            },
+            "required": ["intent"]
+        },
+        "interface": {
+            "type": "object",
+            "description": "Contains protocol and data format for arrow-flight",
+            "properties": {
+                "protocol": {
+                    "type": "string",
+                    "description": "The mechanism via which the data will be accessed."
+                },
+                "data_format": {
+                    "type":"string",
+                    "description": "The data format"
+                }
+            },
+            "anyOf": [{
+                "type": "object",
+                "properties": {
+                    "protocol": {
+                        "enum":["m4d-arrow-flight"]
+                    },
+                    "data_format": {
+        
+                        "enum":["arrow"] 
+                    }
+                }
+            },
+            {
+                "type": "object",
+                "properties": {
+                    "protocol": {
+                        "type":"string",
+                        "enum":["kafka"]
+                    },
+                    "data_format": {
+                        "type": "string",
+                        "enum":["json", "avro"] 
+                    }
+                }
+            },
+            {
+                "type": "object",
+                "properties": {
+                    "protocol": {
+                        "type":"string",
+                        "enum":["s3"]
+                    },
+                    "data_format": {
+                        "type": "string",
+                        "enum":["csv", "parquet"] 
+                    }
+                }
+            },
+            {
+                "type": "object",
+                "properties": {
+                    "protocol": {
+                        "type":"string",
+                        "enum":["db2-jdbc"]
+                    },
+                    "data_format": {
+                        "type": "string",
+                        "enum":["db2-jdbc"] 
+                    }
+                }
+            }
+            ]
+        }
+    }
+} 
