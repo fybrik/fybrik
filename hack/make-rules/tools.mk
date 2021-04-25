@@ -25,11 +25,6 @@ $(TOOLBIN)/helm:
 	cd $(TOOLS_DIR); ./install_helm.sh
 	$(call post-install-check)
 
-INSTALL_TOOLS += $(TOOLBIN)/hugo
-$(TOOLBIN)/hugo:
-	cd $(TOOLS_DIR); ./install_hugo.sh
-	$(call post-install-check)
-
 INSTALL_TOOLS += $(TOOLBIN)/golangci-lint
 $(TOOLBIN)/golangci-lint:
 	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.31.0

@@ -253,7 +253,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	var requirements []modules.DataInfo
 	for _, dataset := range applicationContext.Spec.Data {
 		req := modules.DataInfo{
-			Context: &dataset,
+			Context: dataset.DeepCopy(),
 		}
 		if err := r.constructDataInfo(&req, applicationContext, clusters); err != nil {
 			return ctrl.Result{}, err
