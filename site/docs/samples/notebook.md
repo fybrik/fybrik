@@ -1,7 +1,7 @@
 # Notebook sample
 
 This sample shows how Mesh for Data enables a Jupyter notebook workload to access a dataset.
-It demonstrates how policies are seamlessly applied when accessing the dataset. 
+It demonstrates how policies are seamlessly applied when accessing the dataset classified as financial data.
 
 In this sample you play multiple roles:
 
@@ -28,7 +28,7 @@ This enables easy [cleanup](#cleanup) once you're done experimenting with the sa
 
 ## Prepare a dataset to be accessed by the notebook
 
-This sample uses the [Synthetic Financial Datasets For Fraud Detection](https://www.kaggle.com/ntnu-testimon/paysim1/data) dataset[^1] as the data that the notebook needs to read. Download and extract the file to your machine. You should now see a file named `PS_20174392719_1491204439457_log.csv`. Alternatively, you may download [`data.csv`](https://github.com/ibm/the-mesh-for-data/blob/master/samples/kubeflow/data.csv) which includes just the first 100 lines of this dataset.
+This sample uses the [Synthetic Financial Datasets For Fraud Detection](https://www.kaggle.com/ntnu-testimon/paysim1/data) dataset[^1] as the data that the notebook needs to read. Download and extract the file to your machine. You should now see a file named `PS_20174392719_1491204439457_log.csv`. Alternatively, use a sample of 100 lines of the same dataset by downloading [`PS_20174392719_1491204439457_log.csv`](https://raw.githubusercontent.com/IBM/the-mesh-for-data/master/samples/notebook/PS_20174392719_1491204439457_log.csv) from GitHub.
 
 [^1]: Created by NTNU and shared under the ***CC BY-SA 4.0*** license.
 
@@ -71,7 +71,7 @@ cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Secret
 metadata:
-  name: data-csv
+  name: paysim-csv
 type: Opaque
 stringData:
   access_key: "${ACCESS_KEY}"
@@ -86,10 +86,10 @@ cat << EOF | kubectl apply -f -
 apiVersion: katalog.m4d.ibm.com/v1alpha1
 kind: Asset
 metadata:
-  name: data-csv
+  name: paysim-csv
 spec:
   secretRef: 
-    name: data-csv
+    name: paysim-csv
   assetDetails:
     dataFormat: csv
     connection:
@@ -97,7 +97,7 @@ spec:
       s3:
         endpoint: "http://minio.m4d-notebook-sample.svc.cluster.local:9000"
         bucket: "demo"
-        objectKey: "data.csv"
+        objectKey: "PS_20174392719_1491204439457_log.csv"
   assetMetadata:
     geography: theshire
     tags:
@@ -115,7 +115,7 @@ spec:
 EOF
 ```
 
-The asset is now registered in the catalog. The identifier of the asset is `m4d-notebook-sample/data-csv` (i.e. `<namespace>/<name>`). You will use that name in the `M4DApplication` later.
+The asset is now registered in the catalog. The identifier of the asset is `m4d-notebook-sample/paysim-csv` (i.e. `<namespace>/<name>`). You will use that name in the `M4DApplication` later.
 
 Notice the `assetMetadata` field above. It specifies the dataset geography and tags. These attributes can later be used in policies.
 
@@ -204,7 +204,7 @@ spec:
   appInfo:
     intent: fraud-detection
   data:
-    - dataSetID: "m4d-notebook-sample/data-csv"
+    - dataSetID: "m4d-notebook-sample/paysim-csv"
       requirements:
         interface: 
           protocol: m4d-arrow-flight
@@ -218,26 +218,30 @@ Notice that:
 * The `data` field includes a `dataSetID` that matches the asset identifier in the catalog.
 * The `protocol` and `dataformat` indicate that the developer wants to consume the data using Apache Arrow Flight.
 
-Wait until the `M4DApplication` is ready:
+
+Run the following command to wait until the `M4DApplication` is ready:
+
 ```bash
 while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting" && sleep 1; done
 ```
 
 ## Read the dataset from the notebook
 
-In your notebook insert and run a cell to install pandas and pyarrow packages:
+1. Insert a new notebook cell to install pandas and pyarrow packages:
+  ```python
+  %pip install pandas pyarrow
+  ```
+2. In your **terminal**, run the following command to print the code to use for reading the data. It fetches the code from the `M4DApplication` resource:
+  ```bash
+  printf "$(kubectl get m4dapplication my-notebook -o jsonpath={.status.dataAccessInstructions})"
+  ```
+3. Insert a new notebook cell and paste in it the code for reading data as printed in the previous step.
+4. Insert a new notebook cell with the following command to visualize the result:
+  ```
+  df
+  ```
+5. Execute all notebook cells and notice that the `nameOrig` column appears redacted.
 
-```python
-%pip install pandas pyarrow
-```
-
-Then insert a new cell to read the data. The code to use is available as part of the `M4DApplication` and can be printed from your terminal with:
-
-```bash
-printf "$(kubectl get m4dapplication my-notebook -o jsonpath={.status.dataAccessInstructions})"
-```
-
-Execute the cell and notice that the `nameOrig` column is redacted.
 
 ## Cleanup
 
