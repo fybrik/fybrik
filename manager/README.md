@@ -61,7 +61,7 @@ If you plan to run manager from the command line,
 then run the following to export all of the variables:
 
 ```bash
-export $(xargs < ./.env)
+set -a; . .env; set +a
 ```
 
 ### Run the manager

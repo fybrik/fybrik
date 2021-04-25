@@ -1,8 +1,9 @@
 ROOT_DIR := ../..
+DOCKER_NAME = katalog-connector
+
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/hack/make-rules/tools.mk
-DOCKER_NAME=katalog-connector
 
 all: docker-build docker-push
 
@@ -15,7 +16,7 @@ generate: $(TOOLBIN)/oapi-codegen $(TOOLBIN)/crdoc $(TOOLBIN)/openapi2crd
 
 docker-build: generate
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o katalog main.go
-	docker build . -t ${IMG} -f Dockerfile
+	docker build . -t ${IMG}
 	rm katalog
 
 .PHONY: run

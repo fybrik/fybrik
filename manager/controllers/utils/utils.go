@@ -65,15 +65,6 @@ func IsDenied(actionName string) bool {
 	return (actionName == "Deny") // TODO FIX THIS
 }
 
-// GetAttribute parses a JSON string and returns the required attribute value
-func GetAttribute(attribute string, jsonStr string) string {
-	obj := make(map[string]string)
-	if err := json.Unmarshal([]byte(jsonStr), &obj); err != nil {
-		return ""
-	}
-	return obj[attribute]
-}
-
 // StructToMap converts a struct to a map using JSON marshal
 func StructToMap(data interface{}) (map[string]interface{}, error) {
 	dataBytes, err := json.Marshal(data)

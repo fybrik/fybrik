@@ -1,10 +1,12 @@
 ROOT_DIR := ../../../..
 DOCKER_NAME = ctlg-cred-mock
-DOCKER_CONTEXT = $(ROOT_DIR)
-DOCKER_FILE = $(DOCKER_CONTEXT)/test/services/pilot/catalog-credential-mock/Dockerfile
 
 include $(ROOT_DIR)/hack/make-rules/docker.mk
-include $(ROOT_DIR)/pkg/policy-compiler/policy-compiler.env
+
+docker-build:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o catalog-credential-mock
+	docker build . -t $(IMG)
+	rm catalog-credential-mock
 
 .PHONY: build
 build:
@@ -23,3 +25,6 @@ clean:
 
 .PHONY: test
 test:
+
+-include ${ROOT_DIR}/.env
+.EXPORT_ALL_VARIABLES:

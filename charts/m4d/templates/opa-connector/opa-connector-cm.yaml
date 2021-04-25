@@ -8,5 +8,4 @@ data:
   CONNECTION_TIMEOUT: {{ .Values.opaConnector.connectionTimeout | default .Values.global.connectionTimeout | quote }}
   OPA_SERVER_URL: {{ .Values.opaConnector.serverURL | default (printf "opa:%d" (int .Values.opaServer.service.port) ) | quote }}
   CATALOG_CONNECTOR_URL: {{ .Values.coordinator.catalogConnectorURL | default (printf "%s-connector:80" .Values.coordinator.catalog) | quote }}
-  POLICY_TO_BE_EVALUATED: "sample_policies" # TODO: standarize entrypoint for data policies
 {{- end }}

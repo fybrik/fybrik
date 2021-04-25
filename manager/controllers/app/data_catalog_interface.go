@@ -5,12 +5,10 @@ package app
 
 import (
 	"context"
-	"io"
 	"time"
 
 	"encoding/json"
 
-	"emperror.dev/errors"
 	"google.golang.org/grpc"
 
 	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
@@ -21,44 +19,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
-
-// DataCatalog is an interface of a facade to a data catalog.
-type DataCatalog interface {
-	pb.DataCatalogServiceServer
-	io.Closer
-}
-
-type DataCatalogImpl struct {
-	catalogClient     pb.DataCatalogServiceClient
-	catalogConnection *grpc.ClientConn
-}
-
-func NewGrpcDataCatalog() (*DataCatalogImpl, error) {
-	catalogConnection, err := grpc.Dial(utils.GetDataCatalogServiceAddress(), grpc.WithInsecure(), grpc.WithBlock())
-	if err != nil {
-		return nil, err
-	}
-
-	return &DataCatalogImpl{
-		catalogClient:     pb.NewDataCatalogServiceClient(catalogConnection),
-		catalogConnection: catalogConnection,
-	}, nil
-}
-
-func (d *DataCatalogImpl) GetDatasetInfo(ctx context.Context, req *pb.CatalogDatasetRequest) (*pb.CatalogDatasetInfo, error) {
-	result, err := d.catalogClient.GetDatasetInfo(ctx, req)
-	return result, errors.Wrap(err, "get dataset info failed")
-}
-
-func (d *DataCatalogImpl) RegisterDatasetInfo(ctx context.Context, req *pb.RegisterAssetRequest) (*pb.RegisterAssetResponse, error) {
-	result, err := d.catalogClient.RegisterDatasetInfo(ctx, req)
-	return result, errors.Wrap(err, "register dataset info failed")
-}
-
-func (d *DataCatalogImpl) Close() error {
-	err := d.catalogConnection.Close()
-	return err
-}
 
 // RegisterAsset registers a new asset in the specified catalog
 // Input arguments:

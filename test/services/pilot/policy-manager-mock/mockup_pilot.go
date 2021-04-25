@@ -4,16 +4,24 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
+	"time"
 
+	"emperror.dev/errors"
+	connectors "github.com/mesh-for-data/mesh-for-data/pkg/connectors/clients"
 	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
-	pc "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	ctrl "sigs.k8s.io/controller-runtime"
+)
+
+var (
+	setupLog = ctrl.Log.WithName("setup")
 )
 
 func getEnv(key string) string {
@@ -85,11 +93,52 @@ func constructInputParameters() *pb.ApplicationContext {
 
 	return applicationContext
 }
+
+// TODO: newPolicyManager is a duplicate of newPolicyManager from main.go
+
+func newPolicyManager() (connectors.PolicyManager, error) {
+	connectionTimeout := os.Getenv("CONNECTION_TIMEOUT")
+	timeOutInSeconds, err := strconv.Atoi(connectionTimeout)
+	if err != nil {
+		return nil, errors.Wrap(err, "Atoi conversion of CONNECTION_TIMEOUT failed")
+	}
+
+	mainPolicyManagerName := os.Getenv("MAIN_POLICY_MANAGER_NAME")
+	mainPolicyManagerURL := os.Getenv("MAIN_POLICY_MANAGER_CONNECTOR_URL")
+	policyManager, err := connectors.NewGrpcPolicyManager(
+		mainPolicyManagerName, mainPolicyManagerURL, time.Duration(timeOutInSeconds)*time.Second)
+	setupLog.Info("setting main policy manager", "Name", mainPolicyManagerName, "URL", mainPolicyManagerURL, "Timeout (sec)", timeOutInSeconds)
+	if err != nil {
+		return nil, err
+	}
+
+	useExtensionPolicyManager, err := strconv.ParseBool(os.Getenv("USE_EXTENSIONPOLICY_MANAGER"))
+	if useExtensionPolicyManager && err == nil {
+		extensionPolicyManagerName := os.Getenv("EXTENSIONS_POLICY_MANAGER_NAME")
+		extensionPolicyManagerURL := os.Getenv("EXTENSIONS_POLICY_MANAGER_CONNECTOR_URL")
+		extensionPolicyManager, err := connectors.NewGrpcPolicyManager(
+			extensionPolicyManagerName, extensionPolicyManagerURL, time.Duration(timeOutInSeconds)*time.Second)
+		setupLog.Info("setting extension policy manager", "Name", extensionPolicyManagerName, "URL", extensionPolicyManagerURL, "Timeout (sec)", timeOutInSeconds)
+		if err != nil {
+			return nil, err
+		}
+
+		policyManager = connectors.NewMultiPolicyManager(policyManager, extensionPolicyManager)
+	}
+
+	return policyManager, nil
+}
+
 func main() {
 	applicationContext := constructInputParameters()
 
-	policyCompiler := pc.NewPolicyCompiler()
-	r, err := policyCompiler.GetPoliciesDecisions(applicationContext)
+	policyManager, err := newPolicyManager()
+	if err != nil {
+		setupLog.Error(err, "unable to create policy manager facade")
+		os.Exit(1)
+	}
+
+	r, err := policyManager.GetPoliciesDecisions(context.Background(), applicationContext)
 
 	if err != nil {
 		errStatus, _ := status.FromError(err)
@@ -110,7 +159,7 @@ func main() {
 	}
 
 	fmt.Println("*********************************invoking new request *****************************")
-	r, err = policyCompiler.GetPoliciesDecisions(applicationContext)
+	r, err = policyManager.GetPoliciesDecisions(context.Background(), applicationContext)
 
 	if err != nil {
 		errStatus, _ := status.FromError(err)

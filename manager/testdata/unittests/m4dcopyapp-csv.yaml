@@ -17,7 +17,7 @@ spec:
   appInfo:
     intent: fraud-detection
   data:
-  - dataSetID: '{"asset_id": "xxx", "catalog_id": "s3-csv"}'
+  - dataSetID: "s3-csv/allow-dataset"
     requirements:
       interface:
         protocol: m4d-arrow-flight

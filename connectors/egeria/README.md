@@ -1,18 +1,52 @@
 # Egeria Connector
+
 For each of the tasks related to the egeria connector, execute the corresponding commands from this directory.
 
-* Verify and Export environment variables: `source  ../policy-compiler.env`
 
-* Build the connector: `make build`
+## Build the connector
 
-* Build the docker images: `make docker`
+```bash
+make build
+```
 
-* Run the connectors locally: `make run`
+Cleanup with `make clean`
 
-* Terminate the connector: `make terminate`
+## Build and push the connector image
 
-* Clean the docker images: `make docker-clean`
+Set the following environment variables to point to a container registry: `DOCKER_USERNAME`, `DOCKER_PASSWORD`, `DOCKER_HOSTNAME` (defaults to "ghcr.io"), `DOCKER_NAMESPACE` (defaults to "mesh-for-date"), `DOCKER_TAGNAME` (defaults to "latest").
+Then run:
 
-* Clean the connector build: `make clean`
+```bash
+make docker-build docker-push
+```
 
-* Run the connector test cases: `make test`
+Cleanup with `make clean docker-rmi`
+
+## Running tests
+
+```bash
+make test
+```
+
+## Running locally
+
+To run the connector locally the `EGERIA_SERVER_URL` environment variable needs to be set to a URL of a running Egeria server. We recommend to create a file named `.env` in the root directory of the project and set the variable there. For example:
+
+```bash
+EGERIA_SERVER_URL=https://localhost:9443
+```
+
+To run the connector locally:
+
+```bash
+make run
+```
+
+To terminate the process:
+
+```bash
+make terminate
+```
+
+Note that by default the connector binds to port 50084.
+You can change it by setting the `PORT_EGERIA_CONNECTOR` environment variable (e.g., adding it to `.env`).

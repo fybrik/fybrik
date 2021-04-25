@@ -1,1 +1,2 @@
 kustomization.yaml
+*.log
