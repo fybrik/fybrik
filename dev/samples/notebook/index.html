@@ -16,7 +16,7 @@
     
     
       
-        <title>Kubeflow Notebook Sample - Mesh for Data</title>
+        <title>Notebook sample - Mesh for Data</title>
       
     
     
@@ -65,7 +65,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#kubeflow-notebook-sample" class="md-skip">
+        <a href="#notebook-sample" class="md-skip">
           Skip to content
         </a>
       
@@ -94,7 +94,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Kubeflow Notebook Sample
+              Notebook sample
             
           </span>
         </div>
@@ -364,12 +364,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Kubeflow Notebook Sample
+          Notebook sample
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Kubeflow Notebook Sample
+        Notebook sample
       </a>
       
         
@@ -394,43 +394,57 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#about-this-sample" class="md-nav__link">
-    About this sample
+  <a href="#create-a-namespace-for-the-sample" class="md-nav__link">
+    Create a namespace for the sample
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#getting-started" class="md-nav__link">
-    Getting started
+  <a href="#prepare-a-dataset-to-be-accessed-by-the-notebook" class="md-nav__link">
+    Prepare a dataset to be accessed by the notebook
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#prepare-the-dataset-for-the-sample-notebook" class="md-nav__link">
-    Prepare the dataset for the sample notebook
+  <a href="#register-the-dataset-in-a-data-catalog" class="md-nav__link">
+    Register the dataset in a data catalog
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#reviewing-the-policies-for-the-dataset" class="md-nav__link">
-    Reviewing the policies for the dataset
+  <a href="#define-data-access-policies" class="md-nav__link">
+    Define data access policies
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#setup-the-notebook" class="md-nav__link">
-    Setup the notebook
+  <a href="#deploy-a-jupyter-notebook" class="md-nav__link">
+    Deploy a Jupyter notebook
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#run-the-notebook-with-mesh-for-data" class="md-nav__link">
-    Run the notebook with Mesh for Data
+  <a href="#create-a-m4dapplication-resource-for-the-notebook" class="md-nav__link">
+    Create a M4DApplication resource for the notebook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-the-dataset-from-the-notebook" class="md-nav__link">
+    Read the dataset from the notebook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cleanup" class="md-nav__link">
+    Cleanup
   </a>
   
 </li>
@@ -926,43 +940,57 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#about-this-sample" class="md-nav__link">
-    About this sample
+  <a href="#create-a-namespace-for-the-sample" class="md-nav__link">
+    Create a namespace for the sample
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#getting-started" class="md-nav__link">
-    Getting started
+  <a href="#prepare-a-dataset-to-be-accessed-by-the-notebook" class="md-nav__link">
+    Prepare a dataset to be accessed by the notebook
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#prepare-the-dataset-for-the-sample-notebook" class="md-nav__link">
-    Prepare the dataset for the sample notebook
+  <a href="#register-the-dataset-in-a-data-catalog" class="md-nav__link">
+    Register the dataset in a data catalog
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#reviewing-the-policies-for-the-dataset" class="md-nav__link">
-    Reviewing the policies for the dataset
+  <a href="#define-data-access-policies" class="md-nav__link">
+    Define data access policies
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#setup-the-notebook" class="md-nav__link">
-    Setup the notebook
+  <a href="#deploy-a-jupyter-notebook" class="md-nav__link">
+    Deploy a Jupyter notebook
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#run-the-notebook-with-mesh-for-data" class="md-nav__link">
-    Run the notebook with Mesh for Data
+  <a href="#create-a-m4dapplication-resource-for-the-notebook" class="md-nav__link">
+    Create a M4DApplication resource for the notebook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-the-dataset-from-the-notebook" class="md-nav__link">
+    Read the dataset from the notebook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cleanup" class="md-nav__link">
+    Cleanup
   </a>
   
 </li>
@@ -984,171 +1012,216 @@
                   </a>
                 
                 
-                <h1 id="kubeflow-notebook-sample">Kubeflow Notebook Sample</h1>
-<p>This sample shows how to run a Kubeflow notebook with Mesh for Data and demonstrates how polices are seamlessly applied when accessing a dataset.</p>
+                <h1 id="notebook-sample">Notebook sample</h1>
+<p>This sample shows how Mesh for Data enables a Jupyter notebook workload to access a dataset.
+It demonstrates how policies are seamlessly applied when accessing the dataset classified as financial data.</p>
+<p>In this sample you play multiple roles:</p>
+<ol>
+<li>As a data ower you upload a dataset and register it in a data catalog</li>
+<li>As a data steward you setup data governance policies</li>
+<li>As a data user you specify your data usage requirements and use a notebook to consume the data</li>
+</ol>
 <h2 id="before-you-begin">Before you begin</h2>
-<p>Ensure that you have the following:</p>
 <ul>
-<li><code>kubectl</code> with access to a Kubernetes cluster (this guide was tested with kind v0.10.0 and OpenShift 4.3)</li>
-<li>Mesh for Data installed on your Kubernetes cluster</li>
-<li>S3 Object storage account (e.g., Ceph, Minio, IBM Cloud Object Storage)</li>
-<li><a href="https://www.kubeflow.org/">Kubeflow</a> installed on your cluster (this guide was tested with Kubeflow v1.0.2)</li>
-<li>Web browser</li>
+<li>Install Mesh for Data using the <a href="../../get-started/quickstart/">Quick Start</a> guide.
+  This sample assumes the use of the built-in catalog, Open Policy Agent (OPA) and flight module.</li>
+<li>A web browser.</li>
 </ul>
-<div class="admonition tip">
-<p class="admonition-title">Installing Kubeflow</p>
-<p>You can install Kubeflow on Kind by running <a href="https://github.com/ibm/the-mesh-for-data/blob/master/samples/kubeflow/install/kubeflow/install_kubeflow.sh">install_kubeflow.sh</a>. 
-For OpenShift follow <a href="https://github.com/ibm/the-mesh-for-data/blob/master/samples/kubeflow/install/kubeflow/KF_OPENSHIFT.md">KF_OPENSHIFT.md</a>.</p>
-</div>
-<h2 id="about-this-sample">About this sample</h2>
-<p>In this sample guide you will run a Kubeflow notebook with Mesh for Data and demonstrate that data read polices that are defined in Open Policy Agent (OPA) are seamlessly applied when reading a dataset.</p>
-<p>In this sample guide you will:</p>
+<h2 id="create-a-namespace-for-the-sample">Create a namespace for the sample</h2>
+<p>Create a new Kubernetes namespace and set it as the active namespace:</p>
+<div class="highlight"><pre><span></span><code>kubectl create namespace m4d-notebook-sample
+kubectl config set-context --current --namespace<span class="o">=</span>m4d-notebook-sample
+</code></pre></div>
+<p>This enables easy <a href="#cleanup">cleanup</a> once you're done experimenting with the sample.</p>
+<h2 id="prepare-a-dataset-to-be-accessed-by-the-notebook">Prepare a dataset to be accessed by the notebook</h2>
+<p>This sample uses the <a href="https://www.kaggle.com/ntnu-testimon/paysim1/data">Synthetic Financial Datasets For Fraud Detection</a> dataset<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> as the data that the notebook needs to read. Download and extract the file to your machine. You should now see a file named <code>PS_20174392719_1491204439457_log.csv</code>. Alternatively, use a sample of 100 lines of the same dataset by downloading <a href="https://raw.githubusercontent.com/IBM/the-mesh-for-data/master/samples/notebook/PS_20174392719_1491204439457_log.csv"><code>PS_20174392719_1491204439457_log.csv</code></a> from GitHub.</p>
+<p>Upload the CSV file to an object storage of your choice such as AWS S3, IBM Cloud Object Storage or Ceph.
+Make a note of the service endpoint, bucket name, and access credentials. You will need them later.</p>
+<details class="tip"><summary>Setup and upload to MinIO</summary><p>For experimentation you can install MinIO to your cluster instead of using a cloud service.</p>
 <ol>
-<li>Prepare a dataset to be accessed by the notebook</li>
-<li>Register the dataset in ODPi Egeria catalog</li>
-<li>Register the dataset credentials in Vault</li>
-<li>Deploy a Kubeflow notebook</li>
-<li>Create a Mesh for Data runtime environment for the notebook</li>
-<li>Read the dataset and observe policies applied seamlessly</li>
-</ol>
-<h2 id="getting-started">Getting started</h2>
-<p>Completed all the steps in <a href="../../get-started/quickstart/">quick start guide</a>.</p>
-<h2 id="prepare-the-dataset-for-the-sample-notebook">Prepare the dataset for the sample notebook</h2>
-<ol>
-<li>Upload <a href="https://github.com/ibm/the-mesh-for-data/blob/master/samples/kubeflow/data.csv">data.csv</a> to an object storage of your choice
-    <code>data.csv</code> contains the first 100 rows from the following <a href="https://www.kaggle.com/ntnu-testimon/paysim1/data">data set</a> created by NTNU, and it is shared under the <strong><em>CC BY-SA 4.0</em></strong> license.</li>
-<li>Update <code>samples/kubeflow/example_transactions.csv.json</code> with the location of the dataset, The location is encoded in the <code>fullPath</code> field as follows:<ul>
-<li>Bucket: Change the <code>bucket</code> value from <code>m4d-bucket-example</code> to the bucket name where the dataset reside.</li>
-<li>endpoint: Change the S3 endpoint name from <code>s3.eu-de.cloud-object-storage.appdomain.cloud</code> to the object storage endpoint</li>
-<li>object_key: If needed, change object_key from <code>data.csv</code> to the object name that you used in the previous step.
-For more information on the content please see the comments in <a href="https://github.com/ibm/the-mesh-for-data/blob/master//third_party/egeria/usage/create_new_asset.sh">third_pary/egeria/usage/create_new_asset.sh</a> for more details.</li>
-</ul>
-</li>
-<li>
-<p>Register the dataset in the catalog</p>
-<ul>
-<li>
-<p>Setup port forwarding for communicating with Egeria</p>
-<p><div class="highlight"><pre><span></span><code><span class="nb">cd</span> third_party/egeria/usage
-kubectl port-forward -n egeria-catalog svc/lab-core <span class="m">9443</span>:9443 <span class="p">&amp;</span>
-</code></pre></div>
-    - Wait for the port-forward to take effect.</p>
-</li>
-<li>
-<p>Register the dataset in the catalog with the tag 'finance'.</p>
-<p><div class="highlight"><pre><span></span><code>./create_new_asset.sh ../../../samples/kubeflow/example_transactions.csv.json <span class="s1">&#39;finance&#39;</span>
-</code></pre></div>
-    - Cleanup the port forwarding using the following.</p>
-<p><div class="highlight"><pre><span></span><code><span class="nb">cd</span> -
-<span class="nb">kill</span> <span class="nv">$!</span>
-</code></pre></div>
-1. Record the asset id for the dataset. It will be displayed as part of the output from the previous step and export it to environment variable. An example for an asset id is <code>5de27155-48d3-4d78-8767-73e7b264e394</code>
-    <div class="highlight"><pre><span></span><code>export ASSET_ID=&lt;asset-id&gt;
-</code></pre></div>
-1. Store the object dataset credentials in Vault to make them available for Mesh for Data. Currently only hmac credentials are supported, and the <code>access_key</code> (a.k.a <code>access_key_id</code>) and <code>secret_key</code> (a.k.a <code>secret_access_key</code>) should be associated with the asset id.</p>
-</li>
-</ul>
-<p>You can register the credentials using a browser and Vault's UI to upload the credentials.</p>
-<ul>
-<li>Setup port forwarding to communicate with Vault.
-    <div class="highlight"><pre><span></span><code>kubectl port-forward -n m4d-system svc/vault <span class="m">8200</span>:8200 <span class="p">&amp;</span>
+<li>Define variables for access key and secret key
+  <div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;myaccesskey&quot;</span>
+<span class="nb">export</span> <span class="nv">SECRET_KEY</span><span class="o">=</span><span class="s2">&quot;mysecretkey&quot;</span>
 </code></pre></div></li>
-<li>
-<p>Open <code>http://localhost:8200</code> a your browser, select <code>method</code> as <code>username</code> and login using username <code>data_provider</code> and password <code>password</code>.</p>
-</li>
-<li>
-<p>Click <code>/external</code> and then <code>Create secret</code></p>
-</li>
-<li>
-<p>Create the following secret:</p>
-<ul>
-<li>Path for this secret: <code>{"ServerName":"mds1","AssetGuid":"&lt;asset ID&gt;"}</code>. For example, <code>{"ServerName":"mds1" , "AssetGuid":"5de27155-48d3-4d78-8767-73e7b264e394"}</code></li>
-<li>Secret data key: <code>&lt;access-key-id&gt;</code></li>
-<li>Secrey data value: <code>&lt;secret-access-key&gt;</code></li>
-</ul>
-</li>
-<li>Click <code>save</code></li>
-</ul>
-<p>Note: The path is a reference to the Egeria metadata server and asset id. In the default Egeria installation <code>mds1</code> is the metadata server name.</p>
-<ul>
-<li>
-<p>Finally, kill the port-forward</p>
-<div class="highlight"><pre><span></span><code><span class="nb">kill</span> <span class="nv">$!</span>
-</code></pre></div>
-</li>
-</ul>
-</li>
+<li>Install Minio to the currently active namespace:
+  <div class="highlight"><pre><span></span><code>kubectl create deployment minio --image<span class="o">=</span>minio/minio:RELEASE.2021-02-14T04-01-33Z -- /bin/sh -ce <span class="s2">&quot;/usr/bin/docker-entrypoint.sh minio -S /etc/minio/certs/ server /export&quot;</span>
+kubectl <span class="nb">set</span> env deployment/minio <span class="nv">MINIO_ACCESS_KEY</span><span class="o">=</span><span class="si">${</span><span class="nv">ACCESS_KEY</span><span class="si">}</span> <span class="nv">MINIO_SECRET_KEY</span><span class="o">=</span><span class="si">${</span><span class="nv">SECRET_KEY</span><span class="si">}</span>
+kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>available --timeout<span class="o">=</span>120s deployment/minio
+</code></pre></div></li>
+<li>Create a service to expose MinIO:
+  <div class="highlight"><pre><span></span><code>kubectl expose deployment minio --port <span class="m">9000</span>
+</code></pre></div></li>
+<li>Create a port-forward to connect to MinIO UI:
+  <div class="highlight"><pre><span></span><code>kubectl port-forward svc/minio <span class="m">9000</span> <span class="p">&amp;</span>
+</code></pre></div></li>
+<li>Open <a href="http://localhost:9000">http://localhost:9000</a> and login with the access key and secret key defined in step 1</li>
+<li>Click the <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm144 276c0 6.6-5.4 12-12 12h-92v92c0 6.6-5.4 12-12 12h-56c-6.6 0-12-5.4-12-12v-92h-92c-6.6 0-12-5.4-12-12v-56c0-6.6 5.4-12 12-12h92v-92c0-6.6 5.4-12 12-12h56c6.6 0 12 5.4 12 12v92h92c6.6 0 12 5.4 12 12v56z"/></svg></span> button in the bottom right corner and then <strong>Create bucket</strong> to create a bucket (e.g. "demo").</li>
+<li>Click the <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm144 276c0 6.6-5.4 12-12 12h-92v92c0 6.6-5.4 12-12 12h-56c-6.6 0-12-5.4-12-12v-92h-92c-6.6 0-12-5.4-12-12v-56c0-6.6 5.4-12 12-12h92v-92c0-6.6 5.4-12 12-12h56c6.6 0 12 5.4 12 12v92h92c6.6 0 12 5.4 12 12v56z"/></svg></span> button again and then <strong>Upload files</strong> to upload a file to the newly created bucket.</li>
 </ol>
-<h2 id="reviewing-the-policies-for-the-dataset">Reviewing the policies for the dataset</h2>
-<p>Currently predefined policies are included as part of the OPA deployment.
-Included are policies that are triggered for datasets that are tagged with 'finance' and have columns <code>nameOrig</code> and <code>nameDest</code>. The policies indicate that these columns must be redacted (masked) when data is read.</p>
-<p>The policies can be found at <code>third_party/opa/opa-policy.rego</code>.</p>
-<h2 id="setup-the-notebook">Setup the notebook</h2>
-<p>Next you will create a Kubeflow notebook server and a notebook with the business logic for creating a fraud detection model.</p>
+</details>
+<h2 id="register-the-dataset-in-a-data-catalog">Register the dataset in a data catalog</h2>
+<p>Register the credentials required for accessing the dataset. Replace the values for <code>access_key</code> and <code>secret_key</code> with the values from the object storage service that you used and run:</p>
+<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span>
+<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Secret</span>
+<span class="nt">metadata</span><span class="p">:</span>
+  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">paysim-csv</span>
+<span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Opaque</span>
+<span class="nt">stringData</span><span class="p">:</span>
+  <span class="nt">access_key</span><span class="p">:</span> <span class="s">&quot;${ACCESS_KEY}&quot;</span>
+  <span class="nt">secret_key</span><span class="p">:</span> <span class="s">&quot;${SECRET_KEY}&quot;</span>
+<span class="l l-Scalar l-Scalar-Plain">EOF</span>
+</code></pre></div>
+<p>Then, register the data asset itself in the catalog. Replace the values for <code>endpoint</code>, <code>bucket</code> and <code>objectKey</code> with values from the object storage service that you used and run:</p>
+<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span>
+<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">katalog.m4d.ibm.com/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Asset</span>
+<span class="nt">metadata</span><span class="p">:</span>
+  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">paysim-csv</span>
+<span class="nt">spec</span><span class="p">:</span>
+  <span class="nt">secretRef</span><span class="p">:</span> 
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">paysim-csv</span>
+  <span class="nt">assetDetails</span><span class="p">:</span>
+    <span class="nt">dataFormat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">csv</span>
+    <span class="nt">connection</span><span class="p">:</span>
+      <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">s3</span>
+      <span class="nt">s3</span><span class="p">:</span>
+        <span class="nt">endpoint</span><span class="p">:</span> <span class="s">&quot;http://minio.m4d-notebook-sample.svc.cluster.local:9000&quot;</span>
+        <span class="nt">bucket</span><span class="p">:</span> <span class="s">&quot;demo&quot;</span>
+        <span class="nt">objectKey</span><span class="p">:</span> <span class="s">&quot;PS_20174392719_1491204439457_log.csv&quot;</span>
+  <span class="nt">assetMetadata</span><span class="p">:</span>
+    <span class="nt">geography</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">theshire</span>
+    <span class="nt">tags</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">finance</span>
+    <span class="nt">componentsMetadata</span><span class="p">:</span>
+      <span class="nt">nameOrig</span><span class="p">:</span> 
+        <span class="nt">tags</span><span class="p">:</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">PII</span>
+      <span class="nt">oldbalanceOrg</span><span class="p">:</span>
+        <span class="nt">tags</span><span class="p">:</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">sensitive</span>
+      <span class="nt">newbalanceOrig</span><span class="p">:</span>
+        <span class="nt">tags</span><span class="p">:</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">sensitive</span>
+<span class="l l-Scalar l-Scalar-Plain">EOF</span>
+</code></pre></div>
+<p>The asset is now registered in the catalog. The identifier of the asset is <code>m4d-notebook-sample/paysim-csv</code> (i.e. <code>&lt;namespace&gt;/&lt;name&gt;</code>). You will use that name in the <code>M4DApplication</code> later.</p>
+<p>Notice the <code>assetMetadata</code> field above. It specifies the dataset geography and tags. These attributes can later be used in policies.</p>
+<h2 id="define-data-access-policies">Define data access policies</h2>
+<p>Define an <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a> policy to redact the <code>nameOrig</code> column for datasets tagged as <code>finance</code>. Below is the policy (written in <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego">Rego</a> language):</p>
+<div class="highlight"><pre><span></span><code>package dataapi.authz
+
+import data.data_policies as dp
+
+transform[action] {
+  description := &quot;Redact sensitive columns in finance datasets&quot;
+  dp.AccessType() == &quot;READ&quot;
+  dp.dataset_has_tag(&quot;finance&quot;)
+  column_names := dp.column_with_any_name({&quot;nameOrig&quot;})
+  action = dp.build_redact_column_action(column_names[_], dp.build_policy_from_description(description))
+}
+</code></pre></div>
+<p>In this sample only the policy above is applied. Copy the policy to a file named <code>sample-policy.rego</code> and then run:</p>
+<div class="highlight"><pre><span></span><code>kubectl -n m4d-system create configmap sample-policy --from-file<span class="o">=</span>sample-policy.rego
+kubectl -n m4d-system label configmap sample-policy openpolicyagent.org/policy<span class="o">=</span>rego
+</code></pre></div>
+<p>You can similarly apply a directory holding multiple rego files.</p>
+<h2 id="deploy-a-jupyter-notebook">Deploy a Jupyter notebook</h2>
+<p>In this sample a Jupyter notebook is used as the user workload and its business logic requires reading the asset that we registered (e.g., for creating a fraud detection model). Deploy a notebook to your cluster:</p>
+<div class="tabbed-set" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">JupyterLab</label><div class="tabbed-content">
 <ol>
-<li>
-<p>Create a port-forward to communicate with Kubeflow:
+<li>Deploy JupyterLab:
+    <div class="highlight"><pre><span></span><code>kubectl create deployment my-notebook --image<span class="o">=</span>jupyter/base-notebook --port<span class="o">=</span><span class="m">8888</span> -- start.sh jupyter lab --LabApp.token<span class="o">=</span><span class="s1">&#39;&#39;</span>
+kubectl <span class="nb">set</span> env deployment my-notebook <span class="nv">JUPYTER_ENABLE_LAB</span><span class="o">=</span>yes
+kubectl label deployment my-notebook app.kubernetes.io/name<span class="o">=</span>my-notebook
+kubectl expose deployment my-notebook --port<span class="o">=</span><span class="m">80</span> --target-port<span class="o">=</span><span class="m">8888</span>
+</code></pre></div></li>
+<li>Create a port-forward to communicate with JupyterLab:
+    <div class="highlight"><pre><span></span><code>kubectl port-forward svc/my-notebook <span class="m">8080</span>:80 <span class="p">&amp;</span>
+</code></pre></div></li>
+<li>Open your browser and go to <a href="http://localhost:8080/">http://localhost:8080/</a>.</li>
+<li>Create a new notebook in the server</li>
+</ol>
+</div>
+<input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><label for="__tabbed_1_2">Kubeflow</label><div class="tabbed-content">
+<ol>
+<li>Ensure that <a href="https://www.kubeflow.org/">Kubeflow</a> is installed in your cluster</li>
+<li>Create a port-forward to communicate with Kubeflow:
     <div class="highlight"><pre><span></span><code>kubectl port-forward svc/istio-ingressgateway -n istio-system <span class="m">8080</span>:80 <span class="p">&amp;</span>
-<span class="nb">cd</span> samples/kubeflow/
-</code></pre></div></p>
-</li>
-<li>
-<p>Upload the notebook:</p>
-<ul>
-<li>Open your browser and go to <code>http://localhost:8080</code>.</li>
+</code></pre></div></li>
+<li>Open your browser and go to <a href="http://localhost:8080/">http://localhost:8080/</a>.</li>
 <li>Click <strong>Start Setup</strong> and then <strong>Finish</strong> (use the <code>anonymous</code> namespace).</li>
 <li>Click <strong>Notebook Servers</strong> (in the left).</li>
 <li>In the notebooks page select in the top left the <code>anonymous</code> namespace and then click <strong>New Server</strong>.</li>
-<li>In the notebook server creation page, set <code>kf-notebook</code> in the <strong>Name</strong> box and then click <strong>Launch</strong>. Wait for the server to become ready.</li>
-<li>Click <strong>Connect</strong> and upload <code>kfM4DPolicySample.ipynb</code> notebook to the server.</li>
-</ul>
-</li>
+<li>In the notebook server creation page, set <code>my-notebook</code> in the <strong>Name</strong> box and then click <strong>Launch</strong>. Wait for the server to become ready.</li>
+<li>Click <strong>Connect</strong> and create a new notebook in the server.</li>
 </ol>
-<h2 id="run-the-notebook-with-mesh-for-data">Run the notebook with Mesh for Data</h2>
-<p>Now you will deploy a Mesh for Data runtime environment for the notebook by creating a <code>M4DApplication</code> resource that references the <code>data.csv</code> data set that was registered in the data catalog.
-This allows the code in the notebook to read the data and policies to seamlessly be applied before the data reaches the notebook server.</p>
-<ol>
-<li>
-<p>Create the <code>M4DApplication</code> resource which will deploy Mesh for Data runtime environment by running the following:
-    <div class="highlight"><pre><span></span><code>cat m4dapplication.yaml <span class="p">|</span> sed <span class="s2">&quot;s/ASSET_ID/</span><span class="nv">$ASSET_ID</span><span class="s2">/g&quot;</span> <span class="p">|</span> kubectl -n anonymous apply -f -
-<span class="nb">cd</span> -
-</code></pre></div></p>
-</li>
-<li>
-<p>Before running the notebook you need to modify the following statements in the <code>Get Data</code> cell in the notebook:
-    <div class="highlight"><pre><span></span><code><span class="o">...</span>
-<span class="n">client</span> <span class="o">=</span> <span class="n">fl</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;grpc://&lt;arrow-flight-module-service&gt;.&lt;arrow-flight-module-ns&gt;.svc.  cluster.local:80&quot;</span><span class="p">)</span>
-
-<span class="n">request</span> <span class="o">=</span> <span class="p">{</span>
-<span class="s2">&quot;asset&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;bucket-name&gt;/&lt;file-name&gt;.csv&quot;</span><span class="p">,</span> 
-<span class="s2">&quot;columns&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;step&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;amount&quot;</span><span class="p">,</span> <span class="s2">&quot;nameOrig&quot;</span><span class="p">,</span> <span class="s2">&quot;oldbalanceOrg&quot;</span><span class="p">,</span> <span class="s2">&quot;newbalanceOrig&quot;</span><span class="p">,</span> <span class="s2">&quot;nameDest&quot;</span><span class="p">,</span> <span class="s2">&quot;oldbalanceDest&quot;</span><span class="p">,</span> <span class="s2">&quot;newbalanceDest&quot;</span><span class="p">,</span> <span class="s2">&quot;isFraud&quot;</span><span class="p">,</span> <span class="s2">&quot;isFlaggedFraud&quot;</span><span class="p">]</span>
-<span class="p">}</span>
-<span class="o">...</span>
-</code></pre></div></p>
+</div>
+</div>
+<h2 id="create-a-m4dapplication-resource-for-the-notebook">Create a <code>M4DApplication</code> resource for the notebook</h2>
+<p>Create a <a href="../../reference/crds/#m4dapplication"><code>M4DApplication</code></a> resource to register the notebook workload to the control plane of Mesh for Data: </p>
+<!-- TODO: role field removed but code still requires it -->
+<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt;EOF | kubectl apply -f -</span>
+<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">app.m4d.ibm.com/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">M4DApplication</span>
+<span class="nt">metadata</span><span class="p">:</span>
+  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">my-notebook</span>
+  <span class="nt">labels</span><span class="p">:</span>
+    <span class="nt">app</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">my-notebook</span>
+<span class="nt">spec</span><span class="p">:</span>
+  <span class="nt">selector</span><span class="p">:</span>
+    <span class="nt">workloadSelector</span><span class="p">:</span>
+      <span class="nt">matchLabels</span><span class="p">:</span>
+        <span class="nt">app</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">my-notebook</span>
+  <span class="nt">appInfo</span><span class="p">:</span>
+    <span class="nt">intent</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fraud-detection</span>
+  <span class="nt">data</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">dataSetID</span><span class="p">:</span> <span class="s">&quot;m4d-notebook-sample/paysim-csv&quot;</span>
+      <span class="nt">requirements</span><span class="p">:</span>
+        <span class="nt">interface</span><span class="p">:</span> 
+          <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">m4d-arrow-flight</span>
+          <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">arrow</span>
+<span class="l l-Scalar l-Scalar-Plain">EOF</span>
+</code></pre></div>
+<p>Notice that:</p>
 <ul>
-<li>Edit the <code>client = fl.connect(...)</code> command to point to the right service and namespace of the arrow-flight-module.</li>
-<li>
-<p>To find the service and namespace run:
-    <div class="highlight"><pre><span></span><code>kubectl get svc -l app.kubernetes.io/name<span class="o">=</span>arrow-flight-module --all-namespaces
-</code></pre></div></p>
-</li>
-<li>
-<p>Edit <code>"asset": "&lt;bucket-name&gt;/&lt;file-name&gt;.csv"</code> in the second command to point to your bucket and the name of the dataset.</p>
-</li>
+<li>The <code>selector</code> field matches the labels of our Jupyter notebook workload.</li>
+<li>The <code>data</code> field includes a <code>dataSetID</code> that matches the asset identifier in the catalog.</li>
+<li>The <code>protocol</code> and <code>dataformat</code> indicate that the developer wants to consume the data using Apache Arrow Flight.</li>
 </ul>
-</li>
-<li>
-<p>Run the notebook</p>
-<p>You should observe in the cell <code>Get Data</code> the data from the dataset.</p>
-</li>
-<li>
-<p>Finally, kill the port-forward
-    <div class="highlight"><pre><span></span><code><span class="nb">kill</span> <span class="nv">$!</span>
-</code></pre></div></p>
+<p>Run the following command to wait until the <code>M4DApplication</code> is ready:</p>
+<div class="highlight"><pre><span></span><code><span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get m4dapplication my-notebook -o <span class="s1">&#39;jsonpath={.status.ready}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s2">&quot;true&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">1</span><span class="p">;</span> <span class="k">done</span>
+</code></pre></div>
+<h2 id="read-the-dataset-from-the-notebook">Read the dataset from the notebook</h2>
+<ol>
+<li>Insert a new notebook cell to install pandas and pyarrow packages:
+  <div class="highlight"><pre><span></span><code><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">pandas</span> <span class="n">pyarrow</span>
+</code></pre></div></li>
+<li>In your <strong>terminal</strong>, run the following command to print the code to use for reading the data. It fetches the code from the <code>M4DApplication</code> resource:
+  <div class="highlight"><pre><span></span><code><span class="nb">printf</span> <span class="s2">&quot;</span><span class="k">$(</span>kubectl get m4dapplication my-notebook -o <span class="nv">jsonpath</span><span class="o">={</span>.status.dataAccessInstructions<span class="o">}</span><span class="k">)</span><span class="s2">&quot;</span>
+</code></pre></div></li>
+<li>Insert a new notebook cell and paste in it the code for reading data as printed in the previous step.</li>
+<li>Insert a new notebook cell with the following command to visualize the result:
+  <div class="highlight"><pre><span></span><code>df
+</code></pre></div></li>
+<li>Execute all notebook cells and notice that the <code>nameOrig</code> column appears redacted.</li>
+</ol>
+<h2 id="cleanup">Cleanup</h2>
+<p>When you’re finished experimenting with the notebook sample, clean it up:</p>
+<ol>
+<li>Stop <code>kubectl port-forward</code> processes (e.g., using <code>pkill kubectl</code>)</li>
+<li>Delete the namespace created for this sample:
+    <div class="highlight"><pre><span></span><code>kubectl delete namespace m4d-notebook-sample
+</code></pre></div></li>
+</ol>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>Created by NTNU and shared under the <strong><em>CC BY-SA 4.0</em></strong> license.&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
 </li>
 </ol>
-<h1 id="next-steps">Next steps</h1>
-<p>You have completed an execution of a notebook with Mesh for Data and are now ready to continue exploring.</p>
+</div>
                 
               
               
