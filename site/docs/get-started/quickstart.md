@@ -50,6 +50,7 @@ Run the following to install vault and the plugin in development mode:
 
     ```bash
     helm repo add hashicorp https://helm.releases.hashicorp.com
+    helm repo update
     helm install vault hashicorp/vault --version 0.9.1 --create-namespace -n m4d-system \
         --set "global.openshift=true" \
         --set "server.dev.enabled=true" \
