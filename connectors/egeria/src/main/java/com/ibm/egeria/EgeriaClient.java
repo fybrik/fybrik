@@ -428,23 +428,36 @@ public final class EgeriaClient {
         String geo = storeJson.get("data_location").getAsString();
         // fix for https://github.com/IBM/the-mesh-for-data/issues/122 - end
 
-        String credSecretRef = storeJson.get("credentials_secret_ref").getAsString();
-        String secretNamespace = credSecretRef.split("/")[0];
-        String secretName = credSecretRef.split("/")[1];
-        String vaultPluginPath = "kubernetes-secrets";
-        String vaultSecretPath = "/v1/" + vaultPluginPath
-                                 + "/" + secretName
-                                 + "?namespace=" + secretNamespace;
-        LOGGER.info("credSecretRef: {} ",
-        credSecretRef.toString().replaceAll("[\r\n]", ""));
-        LOGGER.info("secretNamespace: {} ",
-        secretNamespace.toString().replaceAll("[\r\n]", ""));
-        LOGGER.info("secretName: {} ",
-        secretName.toString().replaceAll("[\r\n]", ""));
-        LOGGER.info("vaultPluginPath: {} ",
-        vaultPluginPath.toString().replaceAll("[\r\n]", ""));
-        LOGGER.info("vaultSecretPath: {} ",
-        vaultSecretPath.toString().replaceAll("[\r\n]", ""));
+        String vaultSecretPath = "";
+        LOGGER.info("constructing the  vaultSecretPath using "
+                    + "credentials_secret_ref in fullPath key in Egeria Asset Json");
+        if (storeJson.has("credentials_secret_ref")) {
+            String credSecretRef = storeJson.get("credentials_secret_ref").getAsString();
+            String[] credSecretRefSplit = credSecretRef.split("/");
+            if (credSecretRefSplit.length == 2) {
+                String secretNamespace = credSecretRefSplit[0];
+                String secretName = credSecretRefSplit[1];
+                String vaultPluginPath = "kubernetes-secrets";
+                vaultSecretPath = "/v1/" + vaultPluginPath
+                                        + "/" + secretName
+                                        + "?namespace=" + secretNamespace;
+                LOGGER.info("credSecretRef: {} ",
+                credSecretRef.toString().replaceAll("[\r\n]", ""));
+                LOGGER.info("secretNamespace: {} ",
+                secretNamespace.toString().replaceAll("[\r\n]", ""));
+                LOGGER.info("secretName: {} ",
+                secretName.toString().replaceAll("[\r\n]", ""));
+                LOGGER.info("vaultPluginPath: {} ",
+                vaultPluginPath.toString().replaceAll("[\r\n]", ""));
+                LOGGER.info("vaultSecretPath: {} ",
+                vaultSecretPath.toString().replaceAll("[\r\n]", ""));
+            }
+            else {
+                LOGGER.info("credentials_secret_ref is not in correct format in the fullPath key ");
+            }
+        } else {
+            LOGGER.info("credentials_secret_ref not found in JSON built under fullPath key ");
+        }
 
         CredentialsInfo credInfo = CredentialsInfo.newBuilder()
         .setVaultSecretPath(vaultSecretPath)
