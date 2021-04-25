@@ -24,7 +24,7 @@ func containsTemplate(templateList []app.ComponentTemplate, moduleName string) b
 // Copy modules are left unchanged.
 func (r *M4DApplicationReconciler) RefineInstances(instances []modules.ModuleInstanceSpec) []modules.ModuleInstanceSpec {
 	newInstances := make([]modules.ModuleInstanceSpec, 0)
-	//map instances to be unified, according to the cluster and module
+	// map instances to be unified, according to the cluster and module
 	instanceMap := make(map[string]modules.ModuleInstanceSpec)
 	for _, moduleInstance := range instances {
 		if moduleInstance.Args.Copy != nil {
