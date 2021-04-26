@@ -82,7 +82,7 @@ public final class EgeriaClient {
         return strbuilder.toString();
     }
 
-    public void setEgeriaDefaultUserName(String defaultUserName){
+    public void setEgeriaDefaultUserName(final String defaultUserName) {
         this.userid = defaultUserName;
     }
 
@@ -378,7 +378,7 @@ public final class EgeriaClient {
 
     public CatalogDatasetInfo getCatalogDatasetInfo() throws CustomException, Exception {
         LOGGER.info("Call Asset API");
-        LOGGER.info("userid in Egeria: " + userid);
+        LOGGER.info("userid in Egeria: {}", userid.replaceAll("[\r\n]", ""));
 
         String fullUrl = prop.getEgeriaServiseURL()
                         + "/servers/" + serverName
@@ -417,7 +417,7 @@ public final class EgeriaClient {
         String name = assetMetaDataHelper.getName();
 
         String typeOfAsset = assetMetaDataHelper.getAssetType(); //maybe will be in additional properties
-        if (typeOfAsset == null){
+        if (typeOfAsset == null) {
             typeOfAsset = "";
         }
 
@@ -442,18 +442,21 @@ public final class EgeriaClient {
                                         + "/" + secretName
                                         + "?namespace=" + secretNamespace;
                 LOGGER.info("credSecretRef: {} ",
-                credSecretRef.toString().replaceAll("[\r\n]", ""));
+                credSecretRef.replaceAll("[\r\n]", ""));
                 LOGGER.info("secretNamespace: {} ",
-                secretNamespace.toString().replaceAll("[\r\n]", ""));
+                secretNamespace.replaceAll("[\r\n]", ""));
                 LOGGER.info("secretName: {} ",
-                secretName.toString().replaceAll("[\r\n]", ""));
+                secretName.replaceAll("[\r\n]", ""));
                 LOGGER.info("vaultPluginPath: {} ",
-                vaultPluginPath.toString().replaceAll("[\r\n]", ""));
+                vaultPluginPath.replaceAll("[\r\n]", ""));
                 LOGGER.info("vaultSecretPath: {} ",
-                vaultSecretPath.toString().replaceAll("[\r\n]", ""));
-            }
-            else {
+                vaultSecretPath.replaceAll("[\r\n]", ""));
+            } else {
                 LOGGER.info("credentials_secret_ref is not in correct format in the fullPath key ");
+                throw new CustomException(
+                    "credentials_secret_ref is not in correct format in the fullPath key."
+                    + " credentials_secret_ref value got is :"
+                    + credSecretRef.replaceAll("[\r\n]", ""));
             }
         } else {
             LOGGER.info("credentials_secret_ref not found in JSON built under fullPath key ");
