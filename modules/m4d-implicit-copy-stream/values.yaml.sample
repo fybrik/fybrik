@@ -10,15 +10,12 @@ copy:
         sasl_mechanism: "PLAIN"
         key_deserializer: "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
         value_deserializer: "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
-      db2:
-        database: BLUDB
-        port: "50000"
-        ssl: "false"
-        table: NQD60833.SMALL
-        url: dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net
-      name: db2
-      type: 3
     format: avro
+    vault:
+      address: http://vault.m4d-system:8200
+      authPath: /v1/auth/kubernetes/login
+      role: module
+      secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
 
   destination:
     connection:
@@ -29,6 +26,11 @@ copy:
         object_key: car.data.parq
       type: 2
     format: parquet
+    vault:
+      address: http://vault.m4d-system:8200
+      authPath: /v1/auth/kubernetes/login
+      role: module
+      secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
 
   transformations:
   - args:

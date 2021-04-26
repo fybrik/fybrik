@@ -27,7 +27,10 @@ spec:
                     object_key: my-object
                   type: 2
                 vault:
-                  secretPath: /v1/m4d/dataset-creds/m4d-test-bucket
+                  address: http://vault.m4d-system:8200
+                  authPath: /v1/auth/kubernetes/login
+                  role: module
+                  secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
                 format: parquet
               source:
                 connection:
@@ -38,7 +41,10 @@ spec:
                     url: mydb
                     ssl: "true"
                 vault:
-                  secretPath: "/v1/secret/data/db2/m4d"
+                  address: http://vault.m4d-system:8200
+                  authPath: /v1/auth/kubernetes/login
+                  role: module
+                  secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
                 format: table
           name: implicit-copy-batch-latest
           template: implicit-copy-batch-latest

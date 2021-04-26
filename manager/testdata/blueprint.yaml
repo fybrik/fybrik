@@ -28,7 +28,10 @@ spec:
                 object_key: small.kp.encrypted.parq
             type: 2
             vault:
-              secretPath: /v1/m4d/dataset-creds/m4d-test-bucket
+              address: http://vault.m4d-system:8200
+              authPath: /v1/auth/kubernetes/login
+              role: module
+              secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
             format: parquet
           source:
             connection:
@@ -38,7 +41,11 @@ spec:
                 database: NQD60833
                 url: dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net
                 ssl: "true"
-            credentialLocation: "/v1/secret/data/db2/m4d"
+            vault:
+              address: http://vault.m4d-system:8200
+              authPath: /v1/auth/kubernetes/login
+              role: module
+              secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
             format: table
           transformations: []
       name: notebook-copy-batch
@@ -54,7 +61,10 @@ spec:
                   object_key: small.kp.encrypted.parq
                 type: 2
               vault:
-                secretPath: /v1/m4d/dataset-creds/m4d-test-bucket
+                address: http://vault.m4d-system:8200
+                authPath: /v1/auth/kubernetes/login
+                role: module
+                secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
               format: parquet
             assetID: xyz
       name: notebook-read-module
