@@ -1,4 +1,4 @@
-# Multicluster
+# Multicluster setup
 
 Mesh for data is dynamic in its multi cluster capabilities in that it has abstractions to support multiple
 different cross-cluster orchestration mechanisms. Currently only one multi cluster orchestration mechanism is implemented
@@ -18,7 +18,7 @@ In general there is a need for the following Razee components to be installed:
 
 * Razee watch keeper (installed on all clusters)
 * Razee cluster subscription manager (installed on all clusters)
-* RazeeDash API (installed on controller cluster/as cloud service)
+* RazeeDash API (installed on coordinator cluster/as cloud service)
 
 Both methods below describe how the above components can be installed depending on what RazeeDash deployment method
 is used.

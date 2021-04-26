@@ -12,7 +12,6 @@ nav:
 - Get Started:
   - get-started/quickstart.md
   - samples/notebook.md
-  - get-started/multicluster.md
 - Concepts:
   - concepts/introduction.md
   - concepts/architecture.md
@@ -22,6 +21,7 @@ nav:
 - Tasks:
   - tasks/control-plane-security.md
   - tasks/using-opa.md
+  - tasks/multicluster.md
 - Reference:
   - reference/crds.md
   - Connectors API: reference/connectors.md
