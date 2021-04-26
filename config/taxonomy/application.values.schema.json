@@ -28,52 +28,41 @@
                 }
             },
             "anyOf": [{
-                "type": "object",
                 "properties": {
                     "protocol": {
                         "enum":["m4d-arrow-flight"]
                     },
                     "data_format": {
-        
                         "enum":["arrow"] 
                     }
                 }
             },
             {
-                "type": "object",
                 "properties": {
                     "protocol": {
-                        "type":"string",
                         "enum":["kafka"]
                     },
                     "data_format": {
-                        "type": "string",
                         "enum":["json", "avro"] 
                     }
                 }
             },
             {
-                "type": "object",
                 "properties": {
                     "protocol": {
-                        "type":"string",
                         "enum":["s3"]
                     },
                     "data_format": {
-                        "type": "string",
                         "enum":["csv", "parquet"] 
                     }
                 }
             },
             {
-                "type": "object",
                 "properties": {
                     "protocol": {
-                        "type":"string",
                         "enum":["db2-jdbc"]
                     },
                     "data_format": {
-                        "type": "string",
                         "enum":["db2-jdbc"] 
                     }
                 }
