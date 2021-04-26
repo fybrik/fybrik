@@ -221,7 +221,7 @@ spec:
                 description: EndpointSpec is used both by the module creator and by the status of the m4dapplication
                 properties:
                   hostname:
-                    description: Can be left empty when declaring a module, currently this field is only used by the status of the m4dapplication
+                    description: Always equals the release name. Can be omitted.
                     type: string
                   port:
                     format: int32
