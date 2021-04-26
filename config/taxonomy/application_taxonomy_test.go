@@ -49,5 +49,5 @@ func TestApplicationTaxonomy(t *testing.T) {
 	ValidateTaxonomy(t, m4dAppValsName, interfaceGoodFlight, "interfaceGoodFlight", true)
 	ValidateTaxonomy(t, m4dAppValsName, interfaceBadFlight, "interfaceBadFlight", false)
 	ValidateTaxonomy(t, m4dAppValsName, interfaceGoodKafka, "interfaceGoodKafka", true)
-	ValidateTaxonomy(t, m4dAppValsName, interfaceBadKafka, "nterfaceBadKafka", false)
+	ValidateTaxonomy(t, m4dAppValsName, interfaceBadKafka, "interfaceBadKafka", false)
 }
