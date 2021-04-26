@@ -10,56 +10,61 @@ import (
 	"log"
 	"net"
 
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
-
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/onsi/ginkgo"
 	"google.golang.org/grpc"
 )
 
+// This dummy catalog can serve as both a grpc server implementation that serves a dummy catalog
+// with dummy datasets and dummy credentials as well as a drop in for the DataCatalog interface
+// without any network traffic.
 type DataCatalogDummy struct {
-	credentials map[string]pb.Credentials
+	pb.UnimplementedDataCatalogServiceServer
+	pb.UnimplementedDataCredentialServiceServer
+	credentials map[string]pb.DatasetCredentials
 	dataDetails map[string]pb.CatalogDatasetInfo
 }
 
-func (d *DataCatalogDummy) GetConnectionDetails(req *modules.DataInfo, input *app.M4DApplication) error {
-	return d.GetConnectionDetailsByID(req, req.Context.DataSetID)
-}
+func (d *DataCatalogDummy) GetDatasetInfo(ctx context.Context, req *pb.CatalogDatasetRequest) (*pb.CatalogDatasetInfo, error) {
+	log.Printf("Received: ")
+	log.Printf("DataSetID: " + req.GetDatasetId())
 
-func (d *DataCatalogDummy) GetCredentials(req *modules.DataInfo, input *app.M4DApplication) error {
-	return d.GetCredentialsByID(req, req.Context.DataSetID)
-}
+	catalogID := utils.GetAttribute("catalog_id", req.GetDatasetId())
 
-func (d *DataCatalogDummy) GetConnectionDetailsByID(req *modules.DataInfo, datasetID string) error {
-	dataDetails, found := d.dataDetails[datasetID]
+	dataDetails, found := d.dataDetails[catalogID]
 	if found {
-		details, err := modules.CatalogDatasetToDataDetails(&dataDetails)
-		if err != nil {
-			return err
-		}
-		req.DataDetails = details
-		return nil
+		return &dataDetails, nil
 	}
-	return errors.New("could not find data details")
+
+	return nil, errors.New("could not find data details")
 }
 
-func (d *DataCatalogDummy) GetCredentialsByID(req *modules.DataInfo, datasetID string) error {
-	credentials, found := d.credentials[datasetID]
+func (d *DataCatalogDummy) RegisterDatasetInfo(ctx context.Context, req *pb.RegisterAssetRequest) (*pb.RegisterAssetResponse, error) {
+	return nil, errors.New("functionality not yet supported")
+}
+
+func (d *DataCatalogDummy) GetCredentialsInfo(ctx context.Context, req *pb.DatasetCredentialsRequest) (*pb.DatasetCredentials, error) {
+	log.Printf("Received: ")
+	log.Printf("DataSetID: " + req.GetDatasetId())
+
+	catalogID := utils.GetAttribute("catalog_id", req.GetDatasetId())
+
+	credDetails, found := d.credentials[catalogID]
 	if found {
-		req.Credentials = &pb.DatasetCredentials{
-			DatasetId: req.Context.DataSetID,
-			Creds:     &credentials,
-		}
-		return nil
+		return &credDetails, nil
 	}
-	return errors.New("could not find credentials")
+
+	return nil, errors.New("could not find credentials")
+}
+
+func (d *DataCatalogDummy) Close() error {
+	return nil
 }
 
 func NewTestCatalog() *DataCatalogDummy {
 	dummyCatalog := DataCatalogDummy{
-		credentials: make(map[string]pb.Credentials),
+		credentials: make(map[string]pb.DatasetCredentials),
 		dataDetails: make(map[string]pb.CatalogDatasetInfo),
 	}
 	dummyCatalog.dataDetails["s3-external"] = pb.CatalogDatasetInfo{
@@ -175,43 +180,28 @@ func NewTestCatalog() *DataCatalogDummy {
 			Metadata: &pb.DatasetMetadata{},
 		},
 	}
-	dummyCatalog.credentials["s3-csv"] = pb.Credentials{Username: "admin", Password: "pswd"}
+	dummyCatalog.credentials["s3-csv"] = pb.DatasetCredentials{
+		DatasetId: "s3-csv",
+		Creds:     &pb.Credentials{AccessKey: "ak", SecretKey: "sk"},
+	}
+	dummyCatalog.credentials["s3"] = pb.DatasetCredentials{
+		DatasetId: "s3",
+		Creds:     &pb.Credentials{AccessKey: "sk", SecretKey: "sk"},
+	}
+	dummyCatalog.credentials["s3-external"] = pb.DatasetCredentials{
+		DatasetId: "s3-external",
+		Creds:     &pb.Credentials{AccessKey: "sk", SecretKey: "sk"},
+	}
+	dummyCatalog.credentials["db2"] = pb.DatasetCredentials{
+		DatasetId: "db2",
+		Creds:     &pb.Credentials{Username: "admin", Password: "pswd"},
+	}
+	dummyCatalog.credentials["kafka"] = pb.DatasetCredentials{
+		DatasetId: "kafka",
+		Creds:     &pb.Credentials{Username: "admin", Password: "pswd"},
+	}
 
 	return &dummyCatalog
-}
-
-type server struct {
-	pb.UnimplementedDataCatalogServiceServer
-	pb.UnimplementedDataCredentialServiceServer
-	c *DataCatalogDummy
-}
-
-func (s *server) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetRequest) (*pb.CatalogDatasetInfo, error) {
-	log.Printf("Received: ")
-	log.Printf("DataSetID: " + in.GetDatasetId())
-
-	catalogID := utils.GetAttribute("catalog_id", in.GetDatasetId())
-
-	dataDetails, found := s.c.dataDetails[catalogID]
-	if found {
-		return &dataDetails, nil
-	}
-	return nil, errors.New("catalog item not found")
-}
-
-//TODO: remove this!
-func (s *server) GetCredentialsInfo(ctx context.Context, in *pb.DatasetCredentialsRequest) (*pb.DatasetCredentials, error) {
-	log.Printf("Received: ")
-	log.Printf("DataSetID: " + in.GetDatasetId())
-	return &pb.DatasetCredentials{
-		DatasetId: in.GetDatasetId(),
-		Creds:     &pb.Credentials{Username: "admin", Password: "pswd"},
-	}, nil
-}
-
-//TODO: remove this!
-func (s *server) RegisterDatasetInfo(ctx context.Context, in *pb.RegisterAssetRequest) (*pb.RegisterAssetResponse, error) {
-	return &pb.RegisterAssetResponse{AssetId: "NewAsset"}, nil
 }
 
 var connector *grpc.Server = nil
@@ -230,8 +220,8 @@ func createMockCatalogConnector(port int) error {
 	s := grpc.NewServer()
 	connector = s
 	dummyCatalog := NewTestCatalog()
-	pb.RegisterDataCatalogServiceServer(s, &server{c: dummyCatalog})
-	pb.RegisterDataCredentialServiceServer(s, &server{c: dummyCatalog})
+	pb.RegisterDataCatalogServiceServer(s, dummyCatalog)
+	pb.RegisterDataCredentialServiceServer(s, dummyCatalog)
 	if err := s.Serve(lis); err != nil {
 		return fmt.Errorf("Cannot serve mock catalog connector: %v", err)
 	}
