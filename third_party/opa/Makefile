@@ -28,5 +28,7 @@ unloaddata: $(TOOLBIN)/kubectl
 
 .PHONY: charts
 charts:
-	cp data-and-policies/meshfordata-external-data/** $(ROOT_DIR)/charts/m4d/files/opa-server/external-data
+	rm -rf $(ROOT_DIR)/charts/m4d/files/opa-server/
+	mkdir -p $(ROOT_DIR)/charts/m4d/files/opa-server/policy-lib
 	cp data-and-policies/meshfordata-policy-lib/** $(ROOT_DIR)/charts/m4d/files/opa-server/policy-lib
+	rm $(ROOT_DIR)/charts/m4d/files/opa-server/policy-lib/taxonomies_*

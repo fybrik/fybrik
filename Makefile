@@ -106,6 +106,8 @@ helm:
 
 DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
 DOCKER_PUBLIC_NAMESPACE ?= the-mesh-for-data
+DOCKER_PUBLIC_TAGNAME ?= latest
+
 DOCKER_PUBLIC_NAMES := \
 	manager \
 	dummy-mover \
@@ -114,30 +116,20 @@ DOCKER_PUBLIC_NAMES := \
 	opa-connector \
 	vault-connector
 
-TRAVIS_TAG := $(shell echo "$${GITHUB_REF\#refs/*/}")
-
 define do-docker-retag-and-push-public
 	for name in ${DOCKER_PUBLIC_NAMES}; do \
-		docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$$name:${DOCKER_TAGNAME} ${DOCKER_PUBLIC_HOSTNAME}/${DOCKER_PUBLIC_NAMESPACE}/$$name:$1; \
+		docker tag ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$$name:${DOCKER_TAGNAME} ${DOCKER_PUBLIC_HOSTNAME}/${DOCKER_PUBLIC_NAMESPACE}/$$name:${DOCKER_PUBLIC_TAGNAME}; \
 	done
-	DOCKER_HOSTNAME=${DOCKER_PUBLIC_HOSTNAME} DOCKER_NAMESPACE=${DOCKER_PUBLIC_NAMESPACE} DOCKER_TAGNAME=$1 $(MAKE) docker-push
+	DOCKER_HOSTNAME=${DOCKER_PUBLIC_HOSTNAME} DOCKER_NAMESPACE=${DOCKER_PUBLIC_NAMESPACE} DOCKER_TAGNAME=${DOCKER_PUBLIC_TAGNAME} $(MAKE) docker-push
 endef
 
 .PHONY: docker-retag-and-push-public
 docker-retag-and-push-public:
-ifneq (,$(findstring tags,$(GITHUB_REF)))
-	$(call do-docker-retag-and-push-public,$(TRAVIS_TAG))
-else
-	$(call do-docker-retag-and-push-public,latest)
-endif
+	$(call do-docker-retag-and-push-public)
 
 .PHONY: helm-push-public
 helm-push-public:
-ifneq (,$(findstring tags,$(GITHUB_REF)))
-	DOCKER_HOSTNAME=${DOCKER_PUBLIC_HOSTNAME} DOCKER_NAMESPACE=${DOCKER_PUBLIC_NAMESPACE} DOCKER_TAGNAME=${TRAVIS_TAG} make -C modules helm-chart-push
-else
-	DOCKER_HOSTNAME=${DOCKER_PUBLIC_HOSTNAME} DOCKER_NAMESPACE=${DOCKER_PUBLIC_NAMESPACE} make -C modules helm-chart-push
-endif
+	DOCKER_HOSTNAME=${DOCKER_PUBLIC_HOSTNAME} DOCKER_NAMESPACE=${DOCKER_PUBLIC_NAMESPACE} DOCKER_TAGNAME=${DOCKER_PUBLIC_TAGNAME} make -C modules helm-chart-push
 
 .PHONY: save-images
 save-images:
