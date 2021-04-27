@@ -34,7 +34,7 @@ registry_create() {
   # docker hub download limits by allowing to set a separate docker hub login.
   proxy_running="$(docker inspect -f '{{.State.Running}}' "kind-registry-proxy" 2>/dev/null || true)"
   if [ "${proxy_running}" != 'true' ]; then
-    if [ ! -z "${DOCKERHUB_USERNAME}" ]; then
+    if [ -v DOCKERHUB_USERNAME ]; then
       echo "Creating proxy with user login"
       docker run \
           -d --restart=always -p "5001:5000" --name "kind-registry-proxy" \
