@@ -1,0 +1,15 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "opa.schema.json",
+    "title": "OPA input Taxonomy",
+    "description": "This is the OPA taxonomy.",
+    "definitions": {
+        "opaGovernanceRequest":{"$ref":"policymanager.structs.schema.json#/definitions/governance_decision_request"},
+        "opaGovernanceResponse":{"$ref":"policymanager.structs.schema.json#/definitions/governance_decision_response"}
+        },
+    "properties": {
+        "opaGovernanceRequest": {"$ref": "#/definitions/opaGovernanceRequest"},
+        "opaGovernanceResponse": {"$ref": "#/definitions/opaGovernanceResponse"}
+    },
+    "additionalProperties": false
+}
