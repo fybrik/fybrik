@@ -21,7 +21,6 @@ source ./vault_utils.sh
 : ${KIND_CLUSTER_KUBE_HOST:=https://kind-control-plane:6443}
 : ${CONTROL_CLUSTER_KUBE_HOST:=https://control-control-plane:6443}
 : ${MODULE_NAMESPACE:="m4d-blueprints"}
-: ${SECRET_PATH:=m4d/dataset-creds}
 : ${ROLE:=module}
 # Add policy and role for modules running in m4d-blueprints namespace to
 # use the vault-plugin-secrets-kubernetes-reader plugin enabled in Vault
@@ -40,8 +39,7 @@ enable_k8s_auth_for_cluster() {
 }
 
 configure_vault() {
-	enable_kv "$SECRET_PATH"
-        create_policy_with_plugin_path "allow-all-dataset-creds" "$SECRET_PATH/*" "$PLUGIN_PATH/*"
+        create_policy_with_plugin_path "allow-all-dataset-creds" "$PLUGIN_PATH/*"
 }
 
 
