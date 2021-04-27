@@ -919,6 +919,13 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#credentialsinfo" class="md-nav__link">
+    CredentialsInfo
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#datacomponentmetadata" class="md-nav__link">
     DataComponentMetadata
   </a>
@@ -1615,6 +1622,13 @@
   
     <nav class="md-nav" aria-label="dataset_details.proto">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#credentialsinfo" class="md-nav__link">
+    CredentialsInfo
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#datacomponentmetadata" class="md-nav__link">
@@ -2585,6 +2599,26 @@
 <h2 id="dataset_detailsproto">dataset_details.proto</h2>
 <!-- end services -->
 
+<p><a name="connectors.CredentialsInfo"></a></p>
+<h3 id="credentialsinfo">CredentialsInfo</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vault_secret_path</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>the path to Vault secret which is used to retrive the dataset credentials from the catalog.</td>
+</tr>
+</tbody>
+</table>
 <p><a name="connectors.DataComponentMetadata"></a></p>
 <h3 id="datacomponentmetadata">DataComponentMetadata</h3>
 <table>
@@ -2709,7 +2743,7 @@
 <td>data_owner</td>
 <td><a href="#string">string</a></td>
 <td></td>
-<td>inforamtion on the owner of data asset - can have different formats for different catalogs</td>
+<td>information on the owner of data asset - can have different formats for different catalogs</td>
 </tr>
 <tr>
 <td>data_store</td>
@@ -2734,6 +2768,12 @@
 <td><a href="#connectors.DatasetMetadata">DatasetMetadata</a></td>
 <td></td>
 <td>LocationType locationType = 10; //publicCloud/privateCloud etc. Should be filled later when we understand better if we have a closed set of values and how they are used.</td>
+</tr>
+<tr>
+<td>credentials_info</td>
+<td><a href="#connectors.CredentialsInfo">CredentialsInfo</a></td>
+<td></td>
+<td>information about how to retrive dataset credentials from the catalog.</td>
 </tr>
 </tbody>
 </table>
@@ -3052,10 +3092,10 @@
 <td></td>
 </tr>
 <tr>
-<td>app_id</td>
+<td>credential_path</td>
 <td><a href="#string">string</a></td>
 <td></td>
-<td>reference to user credentials</td>
+<td>link to vault plugin for reading k8s secret with user credentials</td>
 </tr>
 </tbody>
 </table>

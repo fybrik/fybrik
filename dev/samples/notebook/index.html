@@ -1124,6 +1124,7 @@ transform[action] {
 <p>In this sample only the policy above is applied. Copy the policy to a file named <code>sample-policy.rego</code> and then run:</p>
 <div class="highlight"><pre><span></span><code>kubectl -n m4d-system create configmap sample-policy --from-file<span class="o">=</span>sample-policy.rego
 kubectl -n m4d-system label configmap sample-policy openpolicyagent.org/policy<span class="o">=</span>rego
+<span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get cm sample-policy -n m4d-system -o <span class="s1">&#39;jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s1">&#39;{&quot;status&quot;:&quot;ok&quot;}&#39;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for policy to be applied&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
 </code></pre></div>
 <p>You can similarly apply a directory holding multiple rego files.</p>
 <h2 id="deploy-a-jupyter-notebook">Deploy a Jupyter notebook</h2>
@@ -1134,6 +1135,7 @@ kubectl -n m4d-system label configmap sample-policy openpolicyagent.org/policy<s
     <div class="highlight"><pre><span></span><code>kubectl create deployment my-notebook --image<span class="o">=</span>jupyter/base-notebook --port<span class="o">=</span><span class="m">8888</span> -- start.sh jupyter lab --LabApp.token<span class="o">=</span><span class="s1">&#39;&#39;</span>
 kubectl <span class="nb">set</span> env deployment my-notebook <span class="nv">JUPYTER_ENABLE_LAB</span><span class="o">=</span>yes
 kubectl label deployment my-notebook app.kubernetes.io/name<span class="o">=</span>my-notebook
+kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>available --timeout<span class="o">=</span>120s deployment/my-notebook
 kubectl expose deployment my-notebook --port<span class="o">=</span><span class="m">80</span> --target-port<span class="o">=</span><span class="m">8888</span>
 </code></pre></div></li>
 <li>Create a port-forward to communicate with JupyterLab:
@@ -1190,7 +1192,7 @@ kubectl expose deployment my-notebook --port<span class="o">=</span><span class=
 <li>The <code>protocol</code> and <code>dataformat</code> indicate that the developer wants to consume the data using Apache Arrow Flight.</li>
 </ul>
 <p>Run the following command to wait until the <code>M4DApplication</code> is ready:</p>
-<div class="highlight"><pre><span></span><code><span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get m4dapplication my-notebook -o <span class="s1">&#39;jsonpath={.status.ready}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s2">&quot;true&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">1</span><span class="p">;</span> <span class="k">done</span>
+<div class="highlight"><pre><span></span><code><span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get m4dapplication my-notebook -o <span class="s1">&#39;jsonpath={.status.ready}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s2">&quot;true&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for M4DApplication&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
 </code></pre></div>
 <h2 id="read-the-dataset-from-the-notebook">Read the dataset from the notebook</h2>
 <ol>
