@@ -1186,7 +1186,14 @@ helm chart push &lt;registry&gt;/&lt;path&gt;:&lt;version&gt;
 * <code>protocol</code> field can take a value such as <code>kafka</code>, <code>s3</code>, <code>jdbc-db2</code>, <code>m4d-arrow-flight</code>, etc.
 * <code>format</code> field can take a value such as <code>avro</code>, <code>parquet</code>, <code>json</code>, or <code>csv</code>.
 Note that a module that targets copy flows will omit the <code>api</code> field and contain just <code>source</code> and <code>sink</code>, a module that only supports reading data assets will omit the <code>sink</code> field and only contain <code>api</code> and <code>source</code></p>
-<p><code>capabilites.api</code> indicates the protocol and data format supported for reading or writing data from the user's workload.</p>
+<p><code>capabilites.api</code> describes the api exposed by the module for reading or writing data from the user's workload:
+* <code>protocol</code> field can take a value such as <code>kafka</code>, <code>s3</code>, <code>jdbc-db2</code>, <code>m4d-arrow-flight</code>, etc 
+* <code>dataformat</code> field can take a value such as <code>parquet</code>, <code>csv</code>, <code>arrow</code>, etc
+* <code>endpoint</code> field describes the endpoint exposed the module</p>
+<p><code>capabilites.api.endpoint</code> describes the endpoint from a networking perspective:
+* <code>hostname</code> field is the hostname to be used when accessing the module. Equals the release name. Can be omitted.
+* <code>port</code> field is the port of the service exposed by the module.
+* <code>scheme</code> field can take a value such as <code>http</code>, <code>https</code>, <code>grpc</code>, <code>grpc+tls</code>, <code>jdbc:oracle:thin:@</code>, etc</p>
 <p>An example for a module that copies data from a db2 database table to an s3 bucket in parquet format.</p>
 <div class="highlight"><pre><span></span><code><span class="nt">capabilities</span><span class="p">:</span>
     <span class="nt">supportedInterfaces</span><span class="p">:</span>
@@ -1203,6 +1210,9 @@ Note that a module that targets copy flows will omit the <code>api</code> field 
     <span class="nt">api</span><span class="p">:</span>
       <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">m4d-arrow-flight</span>
       <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">arrow</span>
+      <span class="nt">endpoint</span><span class="p">:</span>
+        <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">80</span>
+        <span class="nt">scheme</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">grpc</span>
     <span class="nt">supportedInterfaces</span><span class="p">:</span>
     <span class="p p-Indicator">-</span> <span class="nt">flow</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">read</span>
       <span class="nt">source</span><span class="p">:</span>
