@@ -232,6 +232,35 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 	return nil
 }
 
+// setReadModulesEndpoints populates the ReadEndpointsMap map in the status of the m4dapplication
+// Current implementation assumes there is only one cluster with read modules (which is the same cluster the user's workload)
+func setReadModulesEndpoints(applicationContext *app.M4DApplication, blueprintsMap map[string]app.BlueprintSpec, moduleMap map[string]*app.M4DModule) {
+	var foundReadEndpoints = false
+	for _, blueprintSpec := range blueprintsMap {
+		for _, step := range blueprintSpec.Flow.Steps {
+			if step.Arguments.Read != nil {
+				// We found a read module
+				foundReadEndpoints = true
+				releaseName := utils.GetReleaseName(applicationContext.ObjectMeta.Name, applicationContext.ObjectMeta.Namespace, step)
+				moduleName := step.Template
+				originalEndpointSpec := moduleMap[moduleName].Spec.Capabilities.API.Endpoint
+				fqdn := utils.GenerateModuleEndpointFQDN(releaseName, BlueprintNamespace)
+				for _, arg := range step.Arguments.Read {
+					applicationContext.Status.ReadEndpointsMap[arg.AssetID] = app.EndpointSpec{
+						Hostname: fqdn,
+						Port:     originalEndpointSpec.Port,
+						Scheme:   originalEndpointSpec.Scheme,
+					}
+				}
+			}
+		}
+		// We found a blueprint with read modules
+		if foundReadEndpoints {
+			return
+		}
+	}
+}
+
 // reconcile receives either M4DApplication CRD
 // or a status update from the generated resource
 func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplication) (ctrl.Result, error) {
@@ -245,6 +274,8 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	if applicationContext.Status.ProvisionedStorage == nil {
 		applicationContext.Status.ProvisionedStorage = make(map[string]app.DatasetDetails)
 	}
+	applicationContext.Status.ReadEndpointsMap = make(map[string]app.EndpointSpec)
+
 	clusters, err := r.ClusterManager.GetClusters()
 	if err != nil {
 		return ctrl.Result{}, err
@@ -338,6 +369,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	}
 	// generate blueprint specifications (per cluster)
 	blueprintPerClusterMap := r.GenerateBlueprints(instances, applicationContext)
+	setReadModulesEndpoints(applicationContext, blueprintPerClusterMap, moduleMap)
 	resourceRef := r.ResourceInterface.CreateResourceReference(applicationContext.Name, applicationContext.Namespace)
 	ownerRef := &app.ResourceReference{Name: applicationContext.Name, Namespace: applicationContext.Namespace}
 	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, blueprintPerClusterMap); err != nil {

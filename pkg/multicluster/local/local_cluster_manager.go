@@ -92,6 +92,7 @@ func (cm *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Bl
 	}
 	if _, err := ctrl.CreateOrUpdate(context.Background(), cm.Client, resource, func() error {
 		resource.Spec = blueprint.Spec
+		resource.ObjectMeta.Labels = blueprint.ObjectMeta.Labels
 		return nil
 	}); err != nil {
 		return err
