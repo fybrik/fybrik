@@ -27,3 +27,7 @@ containerdConfigPatches:
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:5000"]
     endpoint = ["http://kind-registry:5000"]
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+    endpoint = ["http://kind-registry-proxy:5001"]
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry-1.docker.io"]
+    endpoint = ["http://kind-registry-proxy:5001"]
