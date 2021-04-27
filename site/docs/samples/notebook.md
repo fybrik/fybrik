@@ -143,6 +143,7 @@ In this sample only the policy above is applied. Copy the policy to a file named
 ```bash
 kubectl -n m4d-system create configmap sample-policy --from-file=sample-policy.rego
 kubectl -n m4d-system label configmap sample-policy openpolicyagent.org/policy=rego
+while [[ $(kubectl get cm sample-policy -n m4d-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
 ```
 
 You can similarly apply a directory holding multiple rego files.
@@ -158,6 +159,7 @@ In this sample a Jupyter notebook is used as the user workload and its business 
         kubectl create deployment my-notebook --image=jupyter/base-notebook --port=8888 -- start.sh jupyter lab --LabApp.token=''
         kubectl set env deployment my-notebook JUPYTER_ENABLE_LAB=yes
         kubectl label deployment my-notebook app.kubernetes.io/name=my-notebook
+        kubectl wait --for=condition=available --timeout=120s deployment/my-notebook
         kubectl expose deployment my-notebook --port=80 --target-port=8888
         ```
     1. Create a port-forward to communicate with JupyterLab:
@@ -222,7 +224,7 @@ Notice that:
 Run the following command to wait until the `M4DApplication` is ready:
 
 ```bash
-while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting" && sleep 1; done
+while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for M4DApplication" && sleep 5; done
 ```
 
 ## Read the dataset from the notebook

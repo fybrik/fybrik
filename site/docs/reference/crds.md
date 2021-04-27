@@ -273,16 +273,6 @@ Destination is the data store to which the data will be copied
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>credentialLocation</b></td>
-        <td>string</td>
-        <td>CredentialLocation is used to obtain the credentials from the credential management system - ex: vault</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecflowstepsindexargumentscopydestinationvault">vault</a></b></td>
-        <td>object</td>
-        <td>Holds details for retrieving credentials by the modules from Vault store.</td>
-        <td>false</td>
-      </tr><tr>
         <td><b>connection</b></td>
         <td>object</td>
         <td>Connection has the relevant details for accesing the data (url, table, ssl, etc.)</td>
@@ -291,6 +281,11 @@ Destination is the data store to which the data will be copied
         <td><b>format</b></td>
         <td>string</td>
         <td>Format represents data format (e.g. parquet) as received from catalog connectors</td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecflowstepsindexargumentscopydestinationvault">vault</a></b></td>
+        <td>object</td>
+        <td>Holds details for retrieving credentials by the modules from Vault store.</td>
         <td>true</td>
       </tr></tbody>
 </table>
@@ -353,16 +348,6 @@ Source is the where the data currently resides
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>credentialLocation</b></td>
-        <td>string</td>
-        <td>CredentialLocation is used to obtain the credentials from the credential management system - ex: vault</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecflowstepsindexargumentscopysourcevault">vault</a></b></td>
-        <td>object</td>
-        <td>Holds details for retrieving credentials by the modules from Vault store.</td>
-        <td>false</td>
-      </tr><tr>
         <td><b>connection</b></td>
         <td>object</td>
         <td>Connection has the relevant details for accesing the data (url, table, ssl, etc.)</td>
@@ -371,6 +356,11 @@ Source is the where the data currently resides
         <td><b>format</b></td>
         <td>string</td>
         <td>Format represents data format (e.g. parquet) as received from catalog connectors</td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecflowstepsindexargumentscopysourcevault">vault</a></b></td>
+        <td>object</td>
+        <td>Holds details for retrieving credentials by the modules from Vault store.</td>
         <td>true</td>
       </tr></tbody>
 </table>
@@ -468,16 +458,6 @@ Source of the read path module
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>credentialLocation</b></td>
-        <td>string</td>
-        <td>CredentialLocation is used to obtain the credentials from the credential management system - ex: vault</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecflowstepsindexargumentsreadindexsourcevault">vault</a></b></td>
-        <td>object</td>
-        <td>Holds details for retrieving credentials by the modules from Vault store.</td>
-        <td>false</td>
-      </tr><tr>
         <td><b>connection</b></td>
         <td>object</td>
         <td>Connection has the relevant details for accesing the data (url, table, ssl, etc.)</td>
@@ -486,6 +466,11 @@ Source of the read path module
         <td><b>format</b></td>
         <td>string</td>
         <td>Format represents data format (e.g. parquet) as received from catalog connectors</td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecflowstepsindexargumentsreadindexsourcevault">vault</a></b></td>
+        <td>object</td>
+        <td>Holds details for retrieving credentials by the modules from Vault store.</td>
         <td>true</td>
       </tr></tbody>
 </table>
@@ -578,16 +563,6 @@ Destination is the data store to which the data will be written
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>credentialLocation</b></td>
-        <td>string</td>
-        <td>CredentialLocation is used to obtain the credentials from the credential management system - ex: vault</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecflowstepsindexargumentswriteindexdestinationvault">vault</a></b></td>
-        <td>object</td>
-        <td>Holds details for retrieving credentials by the modules from Vault store.</td>
-        <td>false</td>
-      </tr><tr>
         <td><b>connection</b></td>
         <td>object</td>
         <td>Connection has the relevant details for accesing the data (url, table, ssl, etc.)</td>
@@ -596,6 +571,11 @@ Destination is the data store to which the data will be written
         <td><b>format</b></td>
         <td>string</td>
         <td>Format represents data format (e.g. parquet) as received from catalog connectors</td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecflowstepsindexargumentswriteindexdestinationvault">vault</a></b></td>
+        <td>object</td>
+        <td>Holds details for retrieving credentials by the modules from Vault store.</td>
         <td>true</td>
       </tr></tbody>
 </table>
@@ -2004,16 +1984,6 @@ Destination is the data store to which the data will be copied
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>credentialLocation</b></td>
-        <td>string</td>
-        <td>CredentialLocation is used to obtain the credentials from the credential management system - ex: vault</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecblueprintskeyflowstepsindexargumentscopydestinationvault">vault</a></b></td>
-        <td>object</td>
-        <td>Holds details for retrieving credentials by the modules from Vault store.</td>
-        <td>false</td>
-      </tr><tr>
         <td><b>connection</b></td>
         <td>object</td>
         <td>Connection has the relevant details for accesing the data (url, table, ssl, etc.)</td>
@@ -2022,6 +1992,11 @@ Destination is the data store to which the data will be copied
         <td><b>format</b></td>
         <td>string</td>
         <td>Format represents data format (e.g. parquet) as received from catalog connectors</td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecblueprintskeyflowstepsindexargumentscopydestinationvault">vault</a></b></td>
+        <td>object</td>
+        <td>Holds details for retrieving credentials by the modules from Vault store.</td>
         <td>true</td>
       </tr></tbody>
 </table>
@@ -2084,16 +2059,6 @@ Source is the where the data currently resides
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>credentialLocation</b></td>
-        <td>string</td>
-        <td>CredentialLocation is used to obtain the credentials from the credential management system - ex: vault</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecblueprintskeyflowstepsindexargumentscopysourcevault">vault</a></b></td>
-        <td>object</td>
-        <td>Holds details for retrieving credentials by the modules from Vault store.</td>
-        <td>false</td>
-      </tr><tr>
         <td><b>connection</b></td>
         <td>object</td>
         <td>Connection has the relevant details for accesing the data (url, table, ssl, etc.)</td>
@@ -2102,6 +2067,11 @@ Source is the where the data currently resides
         <td><b>format</b></td>
         <td>string</td>
         <td>Format represents data format (e.g. parquet) as received from catalog connectors</td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecblueprintskeyflowstepsindexargumentscopysourcevault">vault</a></b></td>
+        <td>object</td>
+        <td>Holds details for retrieving credentials by the modules from Vault store.</td>
         <td>true</td>
       </tr></tbody>
 </table>
@@ -2199,16 +2169,6 @@ Source of the read path module
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>credentialLocation</b></td>
-        <td>string</td>
-        <td>CredentialLocation is used to obtain the credentials from the credential management system - ex: vault</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecblueprintskeyflowstepsindexargumentsreadindexsourcevault">vault</a></b></td>
-        <td>object</td>
-        <td>Holds details for retrieving credentials by the modules from Vault store.</td>
-        <td>false</td>
-      </tr><tr>
         <td><b>connection</b></td>
         <td>object</td>
         <td>Connection has the relevant details for accesing the data (url, table, ssl, etc.)</td>
@@ -2217,6 +2177,11 @@ Source of the read path module
         <td><b>format</b></td>
         <td>string</td>
         <td>Format represents data format (e.g. parquet) as received from catalog connectors</td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecblueprintskeyflowstepsindexargumentsreadindexsourcevault">vault</a></b></td>
+        <td>object</td>
+        <td>Holds details for retrieving credentials by the modules from Vault store.</td>
         <td>true</td>
       </tr></tbody>
 </table>
@@ -2309,16 +2274,6 @@ Destination is the data store to which the data will be written
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>credentialLocation</b></td>
-        <td>string</td>
-        <td>CredentialLocation is used to obtain the credentials from the credential management system - ex: vault</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecblueprintskeyflowstepsindexargumentswriteindexdestinationvault">vault</a></b></td>
-        <td>object</td>
-        <td>Holds details for retrieving credentials by the modules from Vault store.</td>
-        <td>false</td>
-      </tr><tr>
         <td><b>connection</b></td>
         <td>object</td>
         <td>Connection has the relevant details for accesing the data (url, table, ssl, etc.)</td>
@@ -2327,6 +2282,11 @@ Destination is the data store to which the data will be written
         <td><b>format</b></td>
         <td>string</td>
         <td>Format represents data format (e.g. parquet) as received from catalog connectors</td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecblueprintskeyflowstepsindexargumentswriteindexdestinationvault">vault</a></b></td>
+        <td>object</td>
+        <td>Holds details for retrieving credentials by the modules from Vault store.</td>
         <td>true</td>
       </tr></tbody>
 </table>
