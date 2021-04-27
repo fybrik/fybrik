@@ -93,15 +93,15 @@ cleanup)
   ;;
 multi)
   header_text "Installing kind multi-cluster"
-  registry_create
   kind_create kind kind-config.yaml &
   kind_create control kind-control-config.yaml &
   wait
+  registry_create
   install_nginx_ingress control &
   ;;
 *)
   header_text "Installing kind cluster"
-  registry_create
   kind_create kind kind-config.yaml
+  registry_create
   ;;
 esac
