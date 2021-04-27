@@ -63,6 +63,21 @@ Name | Description | M4DModule
 
 <!-- implicit-copy-module is not listed because it's still only available as part of the project tests -->
 
+## How to configure cluster specific settings within a module?
+
+In a multi-cluster setup the control plane determines in which cluster the selected module will be deployed, based on various factors, such as governance policies, data location, etc. In some cases module settings depend on the cluster where the module will be deployed,    e.g. URL of an external component deployed in the remote cluster.
+
+To configure cluster specific settings, the administrator should register the module in each one of the remote clusters in the `m4d-system` namespace, when the cluster specific setting is configured differently, based on the particular cluster, in `spec.chart.values`.
+
+In the `M4DModule` below 'instance-url' field is configured based on the cluster where the `M4DModule` is deployed.
+```
+spec:
+  chart: 
+    name: "<helm chart link>" # e.g.: ghcr.io/username/chartname:chartversion
+    values:
+      instance-url: <cluster specific value>
+```
+
 ## Contributing
 
 Read  [Module Development](../contribute/modules.md) for details on the components that make up a module and how to create a module.

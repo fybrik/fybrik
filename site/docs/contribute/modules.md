@@ -79,7 +79,8 @@ This is a link to a the Helm chart stored in the [image registry]( https://helm.
 
 ```
 spec:
-  chart: "<helm chart link>" # e.g.: ghcr.io/username/chartname:chartversion
+  chart: 
+    name: "<helm chart link>" # e.g.: ghcr.io/username/chartname:chartversion
 ```
 
 ### `spec.statusIndicators`
