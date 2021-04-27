@@ -1,61 +1,95 @@
 # Quick Start Guide
 
-This guide lets you quickly evaluate Mesh for Data. 
+Follow this guide to install Mesh for Data using default parameters that are suitable for experimentation on a single cluster.
+
+<!-- For a full installation refer to the [full installation guide](./setup/install) instead. -->
 
 ## Before you begin
 
 Ensure that you have the following:
 
-- `git`
-- `make`
-- `kubectl` version 1.16 and above
-- `helm` version 3.3 and above
+- [Helm](https://helm.sh/) 3.3 or newer must be installed and configured on your machine.
+- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) 1.16 or newer must be installed on your machine.
+- Access to a Kubernetes cluster such as [Kind](http://kind.sigs.k8s.io/) as a cluster administrator.
 
-## About this guide
+## Install cert-manager
 
-By the end of this guide you will have the following installed to your Kubernetes cluster:
+Mesh for Data requires [cert-manager](https://cert-manager.io) to be installed to your cluster. 
+Many clusters already include cert-manager. Check if `cert-manager` namespace exists in your cluster and only run the following if it doesn't exist:
 
-- The control plane of Mesh for Data
-- Hashicorp Vault and connector as the credentials manager 
-- ODPi Egeria lab and connectors as the data catalog
-- Open Policy Agent (OPA) and connector as the policy manager.
-- Arrow-Flight data access module for reading Parquet and CSV datasets
+```bash
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+helm install cert-manager jetstack/cert-manager \
+    --namespace cert-manager \
+    --version v1.2.0 \
+    --create-namespace \
+    --set installCRDs=true \
+    --wait --timeout 120s
+``` 
 
-## Prepare for installing Mesh for Data
+## Install Hashicorp Vault and plugins
 
-1.  Obtain a local copy of Mesh for Data repository
+[Hashicorp Vault](https://www.vaultproject.io/) and a [secrets-kubernetes-reader](https://github.com/mesh-for-data/vault-plugin-secrets-kubernetes-reader) plugin are used by Mesh for Data for credential management.
+
+Run the following to install vault and the plugin in development mode:
+
+=== "Kubernetes" 
+
     ```bash
-    git clone https://github.com/ibm/the-mesh-for-data.git
+    helm repo add hashicorp https://helm.releases.hashicorp.com
+    helm repo update
+    helm install vault hashicorp/vault --version 0.9.1 --create-namespace -n m4d-system \
+        --set "server.dev.enabled=true" \
+        --values https://raw.githubusercontent.com/IBM/the-mesh-for-data/a3f951087eada4aed4b1cee9390bed5d71c35970/third_party/vault/vault-single-cluster/values.yaml \
+        --wait --timeout 120s
+    kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data/a3f951087eada4aed4b1cee9390bed5d71c35970/third_party/vault/vault-single-cluster/vault-rbac.yaml -n m4d-system
     ```
-1.  Change to the root directory of the repository
+
+=== "OpenShift"
+
     ```bash
+    helm repo add hashicorp https://helm.releases.hashicorp.com
+    helm repo update
+    helm install vault hashicorp/vault --version 0.9.1 --create-namespace -n m4d-system \
+        --set "global.openshift=true" \
+        --set "server.dev.enabled=true" \
+        --values https://raw.githubusercontent.com/IBM/the-mesh-for-data/a3f951087eada4aed4b1cee9390bed5d71c35970/third_party/vault/vault-single-cluster/values.yaml \
+        --wait --timeout 120s
+    kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data/a3f951087eada4aed4b1cee9390bed5d71c35970/third_party/vault/vault-single-cluster/vault-rbac.yaml -n m4d-system
+    ```
+
+## Install control plane
+
+??? tip "Install latest development version from GitHub"
+
+    The published Helm charts are only available for released versions. 
+    To install the `dev` version install the charts from the source code.
+    For example:
+    ```bash
+    git clone https://github.com/IBM/the-mesh-for-data.git
     cd the-mesh-for-data
+    helm install m4d-crd charts/m4d-crd -n m4d-system --wait
+    helm install m4d charts/m4d -n m4d-system --wait
     ```
 
-## Install Mesh for Data
+The control plane includes a `manager` service that connects to a data catalog and to a policy manager. 
+Install the latest release of Mesh for Data with a built-in data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
 
-1. Set the current namespace to `m4d-system`
+```bash
+helm repo add m4d-charts https://mesh-for-data.github.io/charts
+helm repo update
+helm install m4d-crd m4d-charts/m4d-crd -n m4d-system --wait
+helm install m4d m4d-charts/m4d -n m4d-system --wait
+```
 
-    ```bash
-    kubectl config set-context --current --namespace=m4d-system
-    ```
 
-1. Run the quick install script to install the control plane elements.
+## Install modules
 
-    ```bash
-    ./hack/install.sh
-    ```
+[Modules](../concepts/modules.md) are plugins that the control plane deploys whenever required. 
 
-    to install on OpenShift you need to run ```WITHOUT_OPENSHIFT=false ./hack/install.sh``` instead.
+Install the [arrow flight module](https://github.com/ibm/the-mesh-for-data-flight-module):
 
-1. Enable the use of the [arrow flight module](https://github.com/ibm/the-mesh-for-data-flight-module)
-
-    ```
-    kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data-flight-module/master/module.yaml
-    ```
-
-## Next steps
-
-You can now start using Mesh for Data. For samples please see:
-
-- [Sample Kubeflow notebook with Mesh for Data](../samples/notebook.md)
+```bash
+kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data-flight-module/master/module.yaml -n m4d-system
+```
