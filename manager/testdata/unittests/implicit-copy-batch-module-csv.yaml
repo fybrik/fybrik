@@ -5,39 +5,31 @@
 apiVersion: app.m4d.ibm.com/v1alpha1
 kind: M4DModule
 metadata:
-  name: implicit-copy-stream
+  name: implicit-copy-batch
   labels:
-    name: implicit-copy-stream
+    name: implicit-copy-batch
     version: 0.1.0 
 spec:
-  flows:
+  flows:  # one or more of copy, read, write 
   - copy  
   capabilities:
     supportedInterfaces:
     - flow: copy
-      source: 
-        protocol: kafka    
-        dataformat: json
-      sink: 
-        protocol: s3
-        dataformat: parquet
-    - flow: copy
       source:
-        protocol: kafka
-        dataformat: avro
+        protocol: s3
+        dataformat: csv
       sink:
         protocol: s3
-        dataformat: parquet
+        dataformat: csv
     actions:
     - id: redact-ID
       level: 2  # column
     - id: removed-ID
       level: 2  # column
   chart:
-    name: ghcr.io/the-mesh-for-data/m4d-implicit-copy-stream:0.1.0
+    name: ghcr.io/the-mesh-for-data/m4d-implicit-copy-batch:0.1.0
   statusIndicators:
-    - kind: StreamTransfer
+    - kind: BatchTransfer
       successCondition: status.status == SUCCEEDED
       failureCondition: status.status == FAILED
       errorMessage: status.error
-

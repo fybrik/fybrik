@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -45,6 +47,7 @@ type M4DApplicationReconciler struct {
 	ResourceInterface ContextInterface
 	ClusterManager    multicluster.ClusterLister
 	Provision         storage.ProvisionInterface
+	DataCatalog       DataCatalog
 }
 
 // Reconcile reconciles M4DApplication CRD
@@ -389,13 +392,47 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 	datasetID := req.Context.DataSetID
 	var err error
 	// Call the DataCatalog service to get info about the dataset
-	if err = GetConnectionDetails(req, input); err != nil {
-		return AnalyzeError(input, r.Log, datasetID, err)
+
+	var response *pb.CatalogDatasetInfo
+	var credentialPath string
+	if input.Spec.SecretRef != "" {
+		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	if response, err = r.DataCatalog.GetDatasetInfo(ctx, &pb.CatalogDatasetRequest{
+		CredentialPath: credentialPath,
+		DatasetId:      req.Context.DataSetID,
+	}); err != nil {
+		return err
+	}
+
+	details := response.GetDetails()
+	dataDetails, err := modules.CatalogDatasetToDataDetails(response)
+	if err != nil {
+		return err
+	}
+	req.DataDetails = dataDetails
+	req.VaultSecretPath = ""
+	if details.CredentialsInfo != nil {
+		req.VaultSecretPath = details.CredentialsInfo.VaultSecretPath
+	}
+
+	if input.Spec.SecretRef != "" {
+		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+	}
+
 	// Call the CredentialsManager service to get info about the dataset
-	if err = GetCredentials(req, input); err != nil {
-		return AnalyzeError(input, r.Log, datasetID, err)
+	dataCredentials, err := r.DataCatalog.GetCredentialsInfo(ctx, &pb.DatasetCredentialsRequest{
+		DatasetId:      req.Context.DataSetID,
+		CredentialPath: credentialPath})
+	if err != nil {
+		return err
 	}
+	req.Credentials = dataCredentials
+
 	// The received credentials are stored in vault
 	path := utils.GetVaultDatasetHome() + datasetID
 	r.Log.V(0).Info("Registering a secret to " + path)
@@ -407,7 +444,11 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 
 // NewM4DApplicationReconciler creates a new reconciler for M4DApplications
 func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultConnection vault.Interface,
-	policyCompiler pc.IPolicyCompiler, cm multicluster.ClusterLister, provision storage.ProvisionInterface) *M4DApplicationReconciler {
+	policyCompiler pc.IPolicyCompiler, cm multicluster.ClusterLister, provision storage.ProvisionInterface) (*M4DApplicationReconciler, error) {
+	catalog, err := NewGrpcDataCatalog()
+	if err != nil {
+		return nil, err
+	}
 	return &M4DApplicationReconciler{
 		Client:            mgr.GetClient(),
 		Name:              name,
@@ -418,7 +459,8 @@ func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultConnection 
 		ResourceInterface: NewPlotterInterface(mgr.GetClient()),
 		ClusterManager:    cm,
 		Provision:         provision,
-	}
+		DataCatalog:       catalog,
+	}, nil
 }
 
 // SetupWithManager registers M4DApplication controller
