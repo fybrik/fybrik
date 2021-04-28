@@ -25,6 +25,7 @@ is used.
 
 ### Installing Razee on Kubernetes
 
+#### Coordinator cluster
 An installation of the open source components is described [here](https://razee.io/#get-razee).
 Please follow the instructions in the Razee documentation to install [RazeeDash](https://github.com/razee-io/Razee/blob/master/README.md#installing-razeedash),
 [Watch keeper](https://github.com/razee-io/Razee/blob/master/README.md#installing-watch-keeper-in-every-cluster-that-you-want-to-monitor) and
@@ -53,6 +54,17 @@ coordinator:
     multiclusterGroup: "<your group name>"
 ```
 
+#### Remote cluster
+
+The remote clusters only need the watch keeper and cluster subscription agents installed. The remote clusters do not need the coordinator component
+of mesh for data. It's enough to follow [this guide](https://github.com/razee-io/Razee/blob/master/README.md#installing-watch-keeper-in-every-cluster-that-you-want-to-monitor)
+to install the agents and configure a group via the RazeeDash UI if needed.
+The coordinator configuration would look like the following:
+```
+coordinator:
+    enabled: false
+```
+
 ### Installing using IBM Satellite Config
 
 When using [IBM Satellite Config](https://cloud.ibm.com/satellite) the RazeeDash API is running as a service in the
@@ -68,7 +80,7 @@ Prerequisites:
 ![IBM Satellite config](ibm_satellite_conf_cluster.png)
 
 The step below has to be executed for each cluster that should be added to
-the Mesh for data instance.
+the Mesh for data instance. This step is the same for coordinator and remote clusters.
 
 1. In the IBM Satellite Cloud service under the **Clusters** tab click on **Attach cluster**.
 2. Enter a cluster name in the popup dialog and click **Register cluster**. (Please don't use spaces in the name)
@@ -79,7 +91,7 @@ the Mesh for data instance.
 The next step is to configure Mesh for data to use IBM Satellite config as multicluster orchestrator. This configuration is done via a 
 Kubernetes secret that is created by the helm chart. Overwriting the `coordinator.razee` values in your deployment will make use of the
 multicluster tooling.
-A configuration using IBM Satellite Config would look like the following:
+A configuration using IBM Satellite Config would look like the following for the coordinator cluster:
 ```
 coordinator:
   # Configures the Razee instance to be used by the coordinator manager in a multicluster setup
@@ -87,4 +99,10 @@ coordinator:
     # IBM Cloud IAM API Key of a user or service account that have access to IBM Cloud Satellite Config
     iamKey: "<your IAM API KEY key>"
     multiclusterGroup: "<your group name>"
+```
+
+For the remote cluster the coordinator will be disabled:
+```
+coordinator:
+    enabled: false
 ```
