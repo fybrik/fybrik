@@ -55,12 +55,6 @@ install: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl manifests
 uninstall: $(TOOLBIN)/kustomize $(TOOLBIN)/kubectl manifests
 	$(TOOLBIN)/kustomize build config/crd | $(TOOLBIN)/kubectl delete -f -
 
-# Install core into charts/m4d
-.PHONY: charts
-charts:
-	cd config/manager && $(ABSTOOLBIN)/kustomize edit set image controller=${IMG}
-	$(TOOLBIN)/kustomize build config/default > $(ROOT_DIR)/charts/m4d/templates/manager.yaml
-
 .PHONY: deploy-crd
 deploy-crd:
 	kustomize build config/crd | kubectl apply -f -
