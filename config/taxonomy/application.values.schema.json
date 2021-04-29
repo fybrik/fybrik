@@ -12,60 +12,6 @@
             },
             "required": ["intent"]
         },
-        "interface": {
-            "type": "object",
-            "description": "Contains protocol and data format for arrow-flight",
-            "properties": {
-                "protocol": {
-                    "type": "string",
-                    "description": "The mechanism via which the data will be accessed."
-                },
-                "data_format": {
-                    "type":"string",
-                    "description": "The data format"
-                }
-            },
-            "anyOf": [{
-                "properties": {
-                    "protocol": {
-                        "enum":["m4d-arrow-flight"]
-                    },
-                    "data_format": {
-                        "enum":["arrow"] 
-                    }
-                }
-            },
-            {
-                "properties": {
-                    "protocol": {
-                        "enum":["kafka"]
-                    },
-                    "data_format": {
-                        "enum":["json", "avro"] 
-                    }
-                }
-            },
-            {
-                "properties": {
-                    "protocol": {
-                        "enum":["s3"]
-                    },
-                    "data_format": {
-                        "enum":["csv", "parquet"] 
-                    }
-                }
-            },
-            {
-                "properties": {
-                    "protocol": {
-                        "enum":["db2-jdbc"]
-                    },
-                    "data_format": {
-                        "enum":["db2-jdbc"] 
-                    }
-                }
-            }
-            ]
-        }
+        "interface": { "$ref": "module.values.schema.json#/definitions/interface" }
     }
 } 

@@ -10,11 +10,11 @@ import (
 var (
 	m4dAppValsName = "application.values.schema.json"
 
-	intentGood = "{\"intent\":\"Marketing\"}"
-	intentBad  = "{\"intent\":\"whatever\"}"
+	intentValid   = "{\"intent\":\"Marketing\"}"
+	intentInvalid = "{\"intent\":\"whatever\"}"
 
-	roleGood = "{\"role\":\"Data Scientist\"}"
-	roleBad  = "{\"role\":\"whatever\"}"
+	roleValid   = "{\"role\":\"Data Scientist\"}"
+	roleInvalid = "{\"role\":\"whatever\"}"
 
 	// {"app_info":{"intent":"Marketing", "role":"Data Scientist"}}
 	appInfoGood = "{\"app_info\":{\"intent\":\"Marketing\", \"role\":\"Data Scientist\"}}"
@@ -39,10 +39,10 @@ var (
 )
 
 func TestApplicationTaxonomy(t *testing.T) {
-	ValidateTaxonomy(t, m4dAppValsName, intentGood, "intentGood", true)
-	ValidateTaxonomy(t, m4dAppValsName, intentBad, "intentBad", false)
-	ValidateTaxonomy(t, m4dAppValsName, roleGood, "roleGood", true)
-	ValidateTaxonomy(t, m4dAppValsName, roleBad, "roleBad", false)
+	ValidateTaxonomy(t, m4dAppValsName, intentValid, "intentValid", true)
+	ValidateTaxonomy(t, m4dAppValsName, intentInvalid, "intentInvalid", false)
+	ValidateTaxonomy(t, m4dAppValsName, roleValid, "roleValid", true)
+	ValidateTaxonomy(t, m4dAppValsName, roleInvalid, "roleInvalid", false)
 	ValidateTaxonomy(t, m4dAppValsName, appInfoGood, "appInfoGood", true)
 	ValidateTaxonomy(t, m4dAppValsName, appInfoGoodExtraProps, "appInfoGoodExtraProps", true)
 	ValidateTaxonomy(t, m4dAppValsName, appInfoBadNoIntent, "appInfoBadNoIntent", false)
