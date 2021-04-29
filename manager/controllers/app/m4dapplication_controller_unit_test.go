@@ -54,11 +54,7 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 	}
 
 	// Register operator types with the runtime scheme.
-	s := runtime.NewScheme()
-	err = corev1.AddToScheme(s)
-	g.Expect(err).NotTo(gomega.HaveOccurred())
-	err = app.AddToScheme(s)
-	g.Expect(err).NotTo(gomega.HaveOccurred())
+	s := utils.NewScheme(g)
 
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)

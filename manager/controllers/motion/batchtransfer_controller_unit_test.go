@@ -7,6 +7,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+
 	"github.com/onsi/gomega"
 
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -72,12 +74,7 @@ func TestBatchTransferController(t *testing.T) {
 	}
 
 	// Register operator types with the runtime scheme.
-	s := runtime.NewScheme()
-	err := corev1.AddToScheme(s)
-	g.Expect(err).NotTo(gomega.HaveOccurred())
-	err = kbatch.AddToScheme(s)
-	g.Expect(err).NotTo(gomega.HaveOccurred())
-	s.AddKnownTypes(motionv1.GroupVersion, batchTransfer)
+	s := utils.NewScheme(g)
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	// Create a BatchTransferReconciler object with the scheme and fake client.

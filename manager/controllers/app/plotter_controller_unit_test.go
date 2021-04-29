@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/dummy"
 	"github.com/onsi/gomega"
@@ -49,8 +51,7 @@ func TestPlotterController(t *testing.T) {
 	}
 
 	// Register operator types with the runtime scheme.
-	s := runtime.NewScheme()
-	s.AddKnownTypes(app.GroupVersion, plotter)
+	s := utils.NewScheme(g)
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	dummyManager := &dummy.ClusterManager{
