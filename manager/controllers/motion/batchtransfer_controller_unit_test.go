@@ -7,6 +7,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+
+	"github.com/onsi/gomega"
+
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
@@ -17,7 +21,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -31,6 +34,7 @@ func TestBatchTransferController(t *testing.T) {
 	t.Parallel()
 	// Set the logger to development mode for verbose logs.
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+	g := gomega.NewGomegaWithT(t)
 
 	var (
 		name      = "sample-transfer"
@@ -70,8 +74,7 @@ func TestBatchTransferController(t *testing.T) {
 	}
 
 	// Register operator types with the runtime scheme.
-	s := scheme.Scheme
-	s.AddKnownTypes(motionv1.GroupVersion, batchTransfer)
+	s := utils.NewScheme(g)
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	// Create a BatchTransferReconciler object with the scheme and fake client.

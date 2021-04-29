@@ -22,7 +22,6 @@ import (
 	"github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -55,9 +54,7 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 	}
 
 	// Register operator types with the runtime scheme.
-	s := scheme.Scheme
-	err = app.AddToScheme(scheme.Scheme)
-	g.Expect(err).NotTo(gomega.HaveOccurred())
+	s := utils.NewScheme(g)
 
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
