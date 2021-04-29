@@ -7,8 +7,8 @@
         "app_info": {
             "type": "object",
             "properties": {
-                "intent": { "$ref": "policymanager.structs.schema.json#/definitions/intent"},
-                "role": { "$ref": "policymanager.structs.schema.json#/definitions/role"}
+                "intent": { "$ref": "policymanager.values.schema.json#/definitions/intent"},
+                "role": { "$ref": "policymanager.values.schema.json#/definitions/role"}
             },
             "required": ["intent"]
         },
