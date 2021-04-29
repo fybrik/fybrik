@@ -46,7 +46,7 @@ func CredentialOptions(w http.ResponseWriter, r *http.Request) {
 func GetCredentials(w http.ResponseWriter, r *http.Request) {
 	log.Println("In GetCredentials")
 	if k8sClient == nil {
-		err := render.Render(w, r, ErrConfigProblem(errors.New("No k8sClient set")))
+		err := render.Render(w, r, ErrConfigProblem(errors.New("no k8sClient set")))
 		if err != nil {
 			log.Printf(err.Error() + " upon No k8sClient set")
 		}
@@ -69,7 +69,7 @@ func GetCredentials(w http.ResponseWriter, r *http.Request) {
 func DeleteCredentials(w http.ResponseWriter, r *http.Request) {
 	log.Println("In DeleteCredentials")
 	if k8sClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("No client set")))
+		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no client set")))
 		if suberr != nil {
 			log.Printf(suberr.Error() + " upon no client set")
 		}
@@ -98,7 +98,7 @@ func StoreCredentials(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("In StoreCredentials")
 	if k8sClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("No k8sClient set")))
+		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no k8sClient set")))
 		if suberr != nil {
 			log.Printf(suberr.Error() + " upon No k8sClient set")
 		}

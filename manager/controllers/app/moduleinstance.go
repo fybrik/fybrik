@@ -216,7 +216,7 @@ func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.
 		}
 	}
 	if copySelector == nil {
-		return nil, errors.New("No copy module has been found supporting required source interface")
+		return nil, errors.New("no copy module has been found supporting required source interface")
 	}
 	if copySelector.GetModule() == nil {
 		m.Log.Info("Could not find copy module for " + item.Context.DataSetID)
@@ -440,7 +440,7 @@ func (m *ModuleManager) enforceWritePolicies(appContext *app.M4DApplication, dat
 		}
 		excludedGeos += cluster.Metadata.Region
 	}
-	return actions, "", errors.New("Writing to all geographies is denied: " + excludedGeos)
+	return actions, "", errors.New("writing to all geographies is denied: " + excludedGeos)
 }
 
 // GetProcessingGeography determines the geography of the workload cluster.

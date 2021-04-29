@@ -1,12 +1,12 @@
 package razee
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"emperror.dev/errors"
 	"github.com/IBM/satcon-client-go/client/types"
 
 	"github.com/IBM/satcon-client-go/client"
@@ -151,12 +151,10 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	r.log.Info("Blueprint content to create: " + string(content))
 	rCluster, err := r.con.Clusters.ClusterByName(r.orgID, cluster)
 	if err != nil {
-		r.log.Error(err, "Error while fetching cluster by name")
-		return err
+		return errors.Wrap(err, "error while fetching cluster by name")
 	}
 	if rCluster == nil {
-		err = fmt.Errorf("No cluster found for orgID %v and cluster name %v", r.orgID, cluster)
-		return err
+		return fmt.Errorf("no cluster found for orgID %v and cluster name %v", r.orgID, cluster)
 	}
 
 	// check group exists
@@ -254,12 +252,12 @@ func (r *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	max := 0
 	channelInfo, err := r.con.Channels.ChannelByName(r.orgID, channelName)
 	if err != nil {
-		return errors.New("cannot fetch channel info for channel '" + channelName + "'")
+		return fmt.Errorf("cannot fetch channel info for channel '%s'", channelName)
 	}
 	for _, version := range channelInfo.Versions {
 		v, err := strconv.Atoi(version.Name)
 		if err != nil {
-			return errors.New("Cannot parse version name " + version.Name)
+			return fmt.Errorf("cannot parse version name %s", version.Name)
 		} else if max < v {
 			max = v
 		}

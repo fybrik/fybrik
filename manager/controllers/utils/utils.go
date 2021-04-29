@@ -34,7 +34,7 @@ func GetDataFormat(info *dc.DatasetDetails) (app.DataFormatType, error) {
 	case "arrow":
 		return app.Arrow, nil
 	}
-	return app.Binary, errors.New("Unknown format " + info.DataFormat)
+	return app.Binary, fmt.Errorf("unknown format %s", info.DataFormat)
 }
 
 // GetProtocol returns the existing data protocol
@@ -47,7 +47,7 @@ func GetProtocol(info *dc.DatasetDetails) (app.IFProtocol, error) {
 	case dc.DataStore_DB2:
 		return app.JdbcDb2, nil
 	}
-	return app.S3, errors.New("Unknown protocol ")
+	return app.S3, errors.New("unknown protocol")
 }
 
 // IsTransformation returns true if the data transformation is required

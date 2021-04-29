@@ -14,8 +14,8 @@ import (
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/proto"
 
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"google.golang.org/grpc"
@@ -172,7 +172,7 @@ func customOpaResponse(w http.ResponseWriter, r *http.Request) {
 
 	customeResponse := "{\"result\":{\"deny\":[],\"transform\":[{\"action_name\":\"encrypt column\",\"arguments\":{\"column_name\":\"nameDest\"},\"description\":\"Single column is encrypted with its own key\",\"used_policy\":{\"description\":\"test for transactions dataset that encrypts some columns by name\"}},{\"action_name\":\"encrypt column\",\"arguments\":{\"column_name\":\"nameOrig\"},\"description\":\"Single column is encrypted with its own key\",\"used_policy\":{\"description\":\"test for transactions dataset that encrypts some columns by name\"}}]}}"
 
-	fmt.Fprintf(w, customeResponse)
+	fmt.Fprint(w, customeResponse)
 }
 
 func MockOpaServer(port int) {

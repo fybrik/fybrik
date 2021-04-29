@@ -5,11 +5,12 @@ package vault
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
+	"emperror.dev/errors"
 	"github.com/hashicorp/vault/api"
 )
 
@@ -33,14 +34,12 @@ func NewConnection(addr string, token string) (*Connection, error) {
 
 	client, err := api.NewClient(conf)
 	if err != nil {
-		msg := "Error creating vault client: " + err.Error()
-		return nil, errors.New(msg)
+		return nil, errors.Wrap(err, "error creating vault client")
 	}
 
 	// Get the vault token stored in config
 	if token == "" {
-		msg := "No vault token found.  Cannot authenticate with vault."
-		return nil, errors.New(msg)
+		return nil, errors.New("no vault token found. Cannot authenticate with vault.")
 	}
 
 	client.SetToken(token)
@@ -59,8 +58,7 @@ func (c *Connection) LinkPolicyToIdentity(identity string, policyName string, bo
 
 	logicalClient := c.Client.Logical()
 	if logicalClient == nil {
-		msg := "No logical client received when linking policy " + policyName + " to idenity " + identity
-		return errors.New(msg)
+		return fmt.Errorf("no logical client received when linking policy %s to idenity %s", policyName, identity)
 	}
 
 	params := map[string]interface{}{
@@ -74,8 +72,7 @@ func (c *Connection) LinkPolicyToIdentity(identity string, policyName string, bo
 
 	_, err := logicalClient.Write(identityPath, params)
 	if err != nil {
-		msg := "Error linking policy " + policyName + " to identity " + identity + ":" + err.Error()
-		return errors.New(msg)
+		return errors.Wrapf(err, "error linking policy %s to identity %s", policyName, identity)
 	}
 
 	return nil
@@ -88,13 +85,11 @@ func (c *Connection) RemovePolicyFromIdentity(identity string, policyName string
 
 	logicalClient := c.Client.Logical()
 	if logicalClient == nil {
-		msg := "No logical client received when deleting policy " + policyName + " from idenity " + identity
-		return errors.New(msg)
+		return fmt.Errorf("no logical client received when deleting policy %s from idenity %s", policyName, identity)
 	}
 	_, err := logicalClient.Delete(identityPath)
 	if err != nil {
-		msg := "Error deleting policy " + policyName + " from identity " + identity + ":" + err.Error()
-		return errors.New(msg)
+		return errors.Wrapf(err, "error deleting policy %s from identity %s", policyName, identity)
 	}
 
 	return nil
@@ -109,8 +104,7 @@ func (c *Connection) WritePolicy(policyName string, policy string) error {
 
 	err := sys.PutPolicy(policyName, policy)
 	if err != nil {
-		msg := "Error writing policy name " + policyName + " with rules: " + policy + ":" + err.Error()
-		return errors.New(msg)
+		return errors.Wrapf(err, "error writing policy name %s with rules: %s", policyName, policy)
 	}
 
 	return nil
@@ -122,8 +116,7 @@ func (c *Connection) DeletePolicy(policyName string) error {
 
 	err := sys.DeletePolicy(policyName)
 	if err != nil {
-		msg := "Error deleting policy " + policyName + ":" + err.Error()
-		return errors.New(msg)
+		return errors.Wrapf(err, "error deleting policy %s", policyName)
 	}
 
 	return nil
@@ -133,13 +126,11 @@ func (c *Connection) DeletePolicy(policyName string) error {
 func (c *Connection) DeleteSecret(vaultPath string) error {
 	logicalClient := c.Client.Logical()
 	if logicalClient == nil {
-		msg := "No logical client received when deleting credentials from vault"
-		return errors.New(msg)
+		return errors.New("no logical client received when deleting credentials from vault")
 	}
 	_, err := logicalClient.Delete(vaultPath)
 	if err != nil {
-		msg := "Error deleting credentials from vault for " + vaultPath + ":" + err.Error()
-		return errors.New(msg)
+		return errors.Wrapf(err, "error deleting credentials from vault for %s", vaultPath)
 	}
 	return nil
 }
@@ -148,25 +139,21 @@ func (c *Connection) DeleteSecret(vaultPath string) error {
 func (c *Connection) GetSecret(vaultPath string) (string, error) {
 	logicalClient := c.Client.Logical()
 	if logicalClient == nil {
-		msg := "No logical client received when retrieving credentials from vault"
-		return "", errors.New(msg)
+		return "", errors.New("no logical client received when retrieving credentials from vault")
 	}
 
 	data, err := logicalClient.Read(vaultPath)
 	if err != nil {
-		msg := "Error reading credentials from vault for " + vaultPath + ":" + err.Error()
-		return "", errors.New(msg)
+		return "", errors.Wrapf(err, "error reading credentials from vault for %s", vaultPath)
 	}
 
 	if data == nil || data.Data == nil {
-		msg := "No data received for credentials from vault for " + vaultPath
-		return "", errors.New(msg)
+		return "", fmt.Errorf("no data received for credentials from vault for %s", vaultPath)
 	}
 
 	b, jsonErr := json.Marshal(data.Data)
 	if jsonErr != nil {
-		msg := "Error marshaling credentials to json for " + vaultPath + ":" + jsonErr.Error()
-		return "", errors.New(msg)
+		return "", errors.Wrapf(err, "error marshaling credentials to json for %s", vaultPath)
 	}
 
 	return string(b), nil
@@ -176,14 +163,12 @@ func (c *Connection) GetSecret(vaultPath string) (string, error) {
 func (c *Connection) AddSecret(path string, credentials map[string]interface{}) error {
 	logicalClient := c.Client.Logical()
 	if logicalClient == nil {
-		msg := "No logical client received when adding secrets to vault"
-		return errors.New(msg)
+		return errors.New("no logical client received when adding secrets to vault")
 	}
 
 	_, err := logicalClient.Write(path, credentials)
 	if err != nil {
-		msg := "Error adding credentials to vault to " + path + ":" + err.Error()
-		return errors.New(msg)
+		return errors.Wrapf(err, "error adding credentials to vault to %s", path)
 	}
 	return nil
 }
@@ -208,16 +193,14 @@ func (c *Connection) Mount(path string) error {
 
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
-		msg := "Error creating request to mount vault for " + url + ":" + err.Error()
-		return errors.New(msg)
+		return errors.Wrapf(err, "error creating request to mount vault for %s", url)
 	}
 	req.Header.Set("X-Vault-Token", c.Token)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		msg := "Error mounting vault for " + url + ":" + err.Error()
-		return errors.New(msg)
+		return errors.Wrapf(err, "error mounting vault for %s", url)
 	}
 	defer resp.Body.Close()
 
