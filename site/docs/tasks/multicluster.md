@@ -77,7 +77,7 @@ Prerequisites:
 * IBM Cloud Satellite service
 * IAM API Keys with access to IBM Cloud Satellite service
 
-![IBM Satellite config](ibm_satellite_conf_cluster.png)
+![IBM Satellite config](../static/ibm_satellite_conf_cluster.png)
 
 The step below has to be executed for each cluster that should be added to
 the Mesh for data instance. This step is the same for coordinator and remote clusters.
