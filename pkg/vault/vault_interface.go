@@ -24,7 +24,7 @@ type Interface interface {
 // Note that it assumes that the home path has been mounted during the vault setup.
 func InitConnection(addr string, token string) (Interface, error) {
 	if os.Getenv("RUN_WITHOUT_VAULT") == "1" {
-		return NewDummyConnection()
+		return NewDummyConnection(), nil
 	}
 	return NewConnection(addr, token)
 }

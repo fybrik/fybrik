@@ -35,4 +35,12 @@ This installs additional dependencies to `hack/tools/bin`. The `make` targets (e
 
 The project is predominantly written in Go so we recommend [Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-vscode.Go) for its good Go support. Alternatively you can select from [Editors](https://golang.org/doc/editors.html)
 
+## Docker hub rate limits
+As docker hub introduced rate limits on docker image downloads this may effect development using the local kind setup.
+One option to fix the limit is to use a docker hub login for downloading the images. The environment will run
+a docker registry as a proxy for all public images. This registry runs in a docker container next to the kind clusters. 
 
+```shell
+export DOCKERHUB_USERNAME='your docker hub username'
+export DOCKERHUB_PASSWORD='your password'
+```

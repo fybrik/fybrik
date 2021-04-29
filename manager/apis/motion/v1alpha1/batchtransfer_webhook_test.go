@@ -21,11 +21,10 @@ func TestValidBatchTransfer(t *testing.T) {
 		Spec: BatchTransferSpec{
 			Source: DataStore{
 				Database: &Database{
-					Db2URL:    "jdbc:db2://host:1234/DB",
-					Table:     "MY.TABLE",
-					User:      "user",
-					Password:  "password",
-					VaultPath: nil,
+					Db2URL:   "jdbc:db2://host:1234/DB",
+					Table:    "MY.TABLE",
+					User:     "user",
+					Password: "password",
 				},
 				S3:    nil,
 				Kafka: nil,
@@ -40,7 +39,6 @@ func TestValidBatchTransfer(t *testing.T) {
 					SecretKey:  "cd",
 					ObjectKey:  "obj.parq",
 					DataFormat: "parquet",
-					VaultPath:  nil,
 				},
 				Kafka: nil,
 			},
@@ -70,11 +68,10 @@ func TestValidBatchTransferKafka(t *testing.T) {
 		Spec: BatchTransferSpec{
 			Source: DataStore{
 				Database: &Database{
-					Db2URL:    "jdbc:db2://host:1234/DB",
-					Table:     "MY.TABLE",
-					User:      "user",
-					Password:  "password",
-					VaultPath: nil,
+					Db2URL:   "jdbc:db2://host:1234/DB",
+					Table:    "MY.TABLE",
+					User:     "user",
+					Password: "password",
 				},
 				S3:    nil,
 				Kafka: nil,
@@ -88,7 +85,6 @@ func TestValidBatchTransferKafka(t *testing.T) {
 					Password:          "pwd",
 					KafkaTopic:        "topic",
 					CreateSnapshot:    false,
-					VaultPath:         nil,
 				},
 			},
 			Transformation:            nil,
@@ -120,7 +116,6 @@ func TestInValidKafkaConfiguration(t *testing.T) {
 			Password:          "pwd",
 			KafkaTopic:        "topic",
 			CreateSnapshot:    false,
-			VaultPath:         nil,
 		},
 	}
 
@@ -146,7 +141,6 @@ func TestInvalidS3Bucket(t *testing.T) {
 			SecretKey:  "cd",
 			ObjectKey:  "obj.parq",
 			DataFormat: "parquet",
-			VaultPath:  nil,
 		},
 		Kafka: nil,
 	}
@@ -189,11 +183,10 @@ func TestDefaultingS3Bucket(t *testing.T) {
 		Spec: BatchTransferSpec{
 			Source: DataStore{
 				Database: &Database{
-					Db2URL:    "jdbc:db2://host:1234/DB",
-					Table:     "MY.TABLE",
-					User:      "user",
-					Password:  "password",
-					VaultPath: nil,
+					Db2URL:   "jdbc:db2://host:1234/DB",
+					Table:    "MY.TABLE",
+					User:     "user",
+					Password: "password",
 				},
 				S3:    nil,
 				Kafka: nil,
@@ -208,7 +201,6 @@ func TestDefaultingS3Bucket(t *testing.T) {
 					SecretKey:  "cd",
 					ObjectKey:  "obj.parq",
 					DataFormat: "parquet",
-					VaultPath:  nil,
 				},
 				Kafka: nil,
 			},

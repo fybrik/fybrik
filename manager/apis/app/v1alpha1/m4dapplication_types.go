@@ -55,7 +55,6 @@ type DataContext struct {
 	// If not specified, the enterprise catalog service will be used.
 	// +optional
 	CatalogService string `json:"catalogService,omitempty"`
-
 	// Requirements from the system
 	// +required
 	Requirements DataRequirements `json:"requirements"`
@@ -179,11 +178,14 @@ type M4DApplicationStatus struct {
 	// +optional
 	Generated *ResourceReference `json:"generated,omitempty"`
 
-	// ProvisionedStorage maps a dataset (identified by DataSetID) to the new provisioned bucket.
+	// ProvisionedStorage maps a dataset (identified by AssetID) to the new provisioned bucket.
 	// It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received.
 	// ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready
 	// +optional
 	ProvisionedStorage map[string]DatasetDetails `json:"provisionedStorage,omitempty"`
+
+	// ReadEndpointsMap maps an datasetID (after parsing from json to a string with dashes) to the endpoint spec from which the asset will be served to the application
+	ReadEndpointsMap map[string]EndpointSpec `json:"readEndpointsMap,omitempty"`
 }
 
 // M4DApplication provides information about the application being used by a Data Scientist,

@@ -1,0 +1,27 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: app.m4d.ibm.com/v1alpha1
+kind: M4DApplication
+metadata:
+  name: notebook
+  namespace: default
+  labels:
+    app: notebook
+spec:
+  selector:
+    clusterName: thegreendragon
+    workloadSelector:
+      matchLabels:
+        app: notebook
+  appInfo:
+    intent: fraud-detection
+  data:
+  - dataSetID: '{"asset_id": "xxx", "catalog_id": "s3-csv"}'
+    requirements:
+      interface:
+        protocol: m4d-arrow-flight
+        dataformat: arrow
+      copy:
+        required: true
+

@@ -2,22 +2,6 @@ package data_policies
 
 #general functions that make data-policies composing easier
 
-verify_access_type {
-		compare_str(AccessType(), AccessTypes[_])
-}
-
-verify_purpose {
-		compare_str(Purpose(), Purposes[_])
-}
-
-verify_role {
-	compare_str(Role(), Roles[_])
-}
-
-verify_geography {
-    compare_str(ProcessingGeo(), GeoDestinations[_])
-}
-
 dataset_has_tag(tag) {
     compare_str(tag,  DatasetTags()[_])
 }
