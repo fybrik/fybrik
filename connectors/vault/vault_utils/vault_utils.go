@@ -95,7 +95,7 @@ func (vlt *VaultConnection) InitVault() (*api.Client, error) {
 
 	// Get the vault token stored in config
 	if token == "" {
-		return nil, errors.New("no vault token found. cannot authenticate with vault.")
+		return nil, errors.New("cannot authenticate with vault: no vault token found")
 	}
 
 	client.SetToken(token)
