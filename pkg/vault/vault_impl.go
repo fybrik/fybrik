@@ -39,7 +39,7 @@ func NewConnection(addr string, token string) (*Connection, error) {
 
 	// Get the vault token stored in config
 	if token == "" {
-		return nil, errors.New("no vault token found. Cannot authenticate with vault.")
+		return nil, errors.New("cannot authenticate with vault: no vault token found")
 	}
 
 	client.SetToken(token)
