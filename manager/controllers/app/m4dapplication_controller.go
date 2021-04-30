@@ -396,7 +396,7 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 	var response *pb.CatalogDatasetInfo
 	var credentialPath string
 	if input.Spec.SecretRef != "" {
-		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
@@ -418,10 +418,6 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 	req.VaultSecretPath = ""
 	if details.CredentialsInfo != nil {
 		req.VaultSecretPath = details.CredentialsInfo.VaultSecretPath
-	}
-
-	if input.Spec.SecretRef != "" {
-		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
 
 	// Call the CredentialsManager service to get info about the dataset

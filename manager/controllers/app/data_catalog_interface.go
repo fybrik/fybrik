@@ -107,7 +107,7 @@ func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.Dat
 	}
 	var credentialPath string
 	if input.Spec.SecretRef != "" {
-		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
 
 	response, err := c.RegisterDatasetInfo(ctx, &pb.RegisterAssetRequest{
