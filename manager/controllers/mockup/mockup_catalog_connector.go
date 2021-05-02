@@ -72,7 +72,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		Details: &pb.DatasetDetails{
 			Name:       "xxx",
 			DataFormat: "parquet",
-			Geo:        "Germany",
+			Geo:        "neverland",
 			DataStore: &pb.DataStore{
 				Type: pb.DataStore_S3,
 				Name: "cos",

@@ -37,7 +37,7 @@ func allocateStorageAccounts() {
 		Type: "Opaque",
 	}
 	_ = k8sClient.Create(context.Background(), dummySecret)
-	accountUS := &apiv1alpha1.M4DStorageAccount{
+	account1 := &apiv1alpha1.M4DStorageAccount{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "account1",
 			Namespace: utils.GetSystemNamespace(),
@@ -48,7 +48,7 @@ func allocateStorageAccounts() {
 			Regions:   []string{"theshire"},
 		},
 	}
-	accountGermany := &apiv1alpha1.M4DStorageAccount{
+	account2 := &apiv1alpha1.M4DStorageAccount{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "account2",
 			Namespace: utils.GetSystemNamespace(),
@@ -56,12 +56,12 @@ func allocateStorageAccounts() {
 		Spec: apiv1alpha1.M4DStorageAccountSpec{
 			Endpoint:  "http://endpoint2",
 			SecretRef: "dummy-secret",
-			Regions:   []string{"Germany"},
+			Regions:   []string{"neverland"},
 		},
 	}
 
-	_ = k8sClient.Create(context.Background(), accountUS)
-	_ = k8sClient.Create(context.Background(), accountGermany)
+	_ = k8sClient.Create(context.Background(), account1)
+	_ = k8sClient.Create(context.Background(), account2)
 }
 
 func deleteStorageAccounts() {
@@ -249,155 +249,6 @@ var _ = Describe("M4DApplication Controller", func() {
 			time.Sleep(interval)
 		})
 
-		// This test checks that the finalizers are properly reconciled upon creation and deletion of the resource
-		// M4DBucket is used to demonstrate freeing owned objects
-
-		// Assumptions on response from connectors:
-		// Db2 dataset, will be received in parquet format - thus, a copy is required.
-		// Transformations are required
-		// Copy is required, thus a storage for destination is allocated
-		// This M4DApplication will become an owner of a storage-defining resource
-
-		It("Test reconcileFinalizers", func() {
-			appSignature := types.NamespacedName{Name: "with-finalizers", Namespace: "default"}
-			resource := InitM4DApplication(appSignature.Name, 1)
-			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID:    "{\"asset_id\": \"123\", \"catalog_id\": \"db2\"}",
-				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet}},
-			}
-			// Create M4DApplication
-			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
-
-			By("Expecting reconcilers to be added")
-			Eventually(func() []string {
-				f := &apiv1alpha1.M4DApplication{}
-				_ = k8sClient.Get(context.Background(), appSignature, f)
-				return f.Finalizers
-			}, timeout, interval).ShouldNot(BeEmpty())
-
-			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			_ = k8sClient.Delete(context.Background(), resource)
-			By("Expecting reconcilers to be removed")
-			Eventually(func() []string {
-				f := &apiv1alpha1.M4DApplication{}
-				_ = k8sClient.Get(context.Background(), appSignature, f)
-				return f.Finalizers
-			}, timeout, interval).Should(BeEmpty())
-
-			By("Expecting delete to finish")
-			Eventually(func() error {
-				f := &apiv1alpha1.M4DApplication{}
-				return k8sClient.Get(context.Background(), appSignature, f)
-			}, timeout, interval).ShouldNot(Succeed())
-		})
-		// Tests denial of the access to data
-
-		// Assumptions on response from connectors:
-		// S3 dataset, needs to be consumed in the same way
-		// Enforcement action for read operation: Deny
-		// Result: an error
-
-		It("Test deny-on-read", func() {
-
-			appSignature := types.NamespacedName{Name: "deny-on-read", Namespace: "default"}
-			resource := InitM4DApplication(appSignature.Name, 1)
-			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID:    "{\"asset_id\": \"deny-dataset\", \"catalog_id\": \"s3\"}",
-				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet}},
-			}
-
-			// Create M4DApplication
-			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
-
-			// Ensure getting cleaned up after tests finish
-			defer func() {
-				DeleteM4DApplication(appSignature.Name)
-			}()
-
-			By("Expecting access denied on read")
-			Eventually(func() string {
-				f := &apiv1alpha1.M4DApplication{}
-				_ = k8sClient.Get(context.Background(), appSignature, f)
-				return getErrorMessages(f)
-			}, timeout, interval).ShouldNot(BeEmpty())
-
-			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.ReadAccessDenied))
-		})
-		// Tests selection of read-path module
-
-		// Assumptions on response from connectors:
-		// db2 dataset, will be received in s3/parquet
-		// Read module does not have api for s3/parquet
-		// Result: an error
-
-		It("Test no-read-path", func() {
-			appSignature := types.NamespacedName{Name: "read-expected", Namespace: "default"}
-			resource := InitM4DApplication(appSignature.Name, 1)
-
-			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"db2\"}",
-				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet}},
-			}
-			// Create M4DApplication
-			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
-
-			// Ensure getting cleaned up after tests finish
-			defer func() {
-				DeleteM4DApplication(appSignature.Name)
-			}()
-
-			By("Expecting an error")
-			Eventually(func() string {
-				f := &apiv1alpha1.M4DApplication{}
-				_ = k8sClient.Get(context.Background(), appSignature, f)
-				return getErrorMessages(f)
-			}, timeout, interval).ShouldNot(BeEmpty())
-
-			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.ModuleNotFound))
-			Expect(getErrorMessages(resource)).To(ContainSubstring("read"))
-		})
-
-		// Tests finding a module for copy
-
-		// Assumptions on response from connectors:
-		// Two datasets:
-		// Kafka dataset, a copy is required.
-		// S3 dataset, no copy is needed
-		// Enforcement action for both operations and datasets: Allow
-		// No copy module (kafka->s3)
-		// Result: an error
-		It("Test wrong-copy-module", func() {
-			appSignature := types.NamespacedName{Name: "wrong-copy", Namespace: "default"}
-			resource := InitM4DApplication(appSignature.Name, 2)
-			resource.Spec.Data[0] = apiv1alpha1.DataContext{
-				DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"kafka\"}",
-				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
-			}
-			resource.Spec.Data[1] = apiv1alpha1.DataContext{
-				DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
-				Requirements: apiv1alpha1.DataRequirements{Interface: apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow}},
-			}
-
-			// Create M4DApplication
-			Expect(k8sClient.Create(context.Background(), resource)).Should(Succeed())
-			// Ensure getting cleaned up after tests finish
-			defer func() {
-				DeleteM4DApplication(appSignature.Name)
-			}()
-
-			By("Expecting an error")
-			Eventually(func() string {
-				f := &apiv1alpha1.M4DApplication{}
-				_ = k8sClient.Get(context.Background(), appSignature, f)
-				return getErrorMessages(f)
-			}, timeout, interval).ShouldNot(BeEmpty())
-
-			_ = k8sClient.Get(context.Background(), appSignature, resource)
-			Expect(getErrorMessages(resource)).To(ContainSubstring(apiv1alpha1.ModuleNotFound))
-			Expect(getErrorMessages(resource)).To(ContainSubstring("copy"))
-		})
 		// Assumptions on response from connectors:
 		// Two datasets:
 		// Db2 dataset, a copy is required.
