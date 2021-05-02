@@ -389,7 +389,6 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 }
 
 func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, input *app.M4DApplication, clusters []multicluster.Cluster) error {
-	datasetID := req.Context.DataSetID
 	var err error
 	// Call the DataCatalog service to get info about the dataset
 
@@ -418,10 +417,6 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 	req.VaultSecretPath = ""
 	if details.CredentialsInfo != nil {
 		req.VaultSecretPath = details.CredentialsInfo.VaultSecretPath
-	}
-
-	if input.Spec.SecretRef != "" {
-		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
 
 	return nil
@@ -514,4 +509,3 @@ func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, e
 	}
 	return moduleMap, nil
 }
-

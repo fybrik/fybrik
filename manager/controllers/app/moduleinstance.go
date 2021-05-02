@@ -229,7 +229,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 	}
 
 	// Set the value received from the catalog connector.
-	vaultSecretPath = item.VaultSecretPath
+	vaultSecretPath := item.VaultSecretPath
 
 	// Each selector receives source/sink interface and relevant actions
 	// Starting with the data location interface for source and the required interface for sink
