@@ -71,7 +71,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		DatasetId: "s3-external",
 		Details: &pb.DatasetDetails{
 			Name:       "xxx",
-			DataFormat: "parquet",
+			DataFormat: "csv",
 			Geo:        "neverland",
 			DataStore: &pb.DataStore{
 				Type: pb.DataStore_S3,
@@ -79,7 +79,7 @@ func NewTestCatalog() *DataCatalogDummy {
 				S3: &pb.S3DataStore{
 					Endpoint:  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
 					Bucket:    "m4d-test-bucket",
-					ObjectKey: "small.parq",
+					ObjectKey: "test.csv",
 				},
 			},
 			CredentialsInfo: &pb.CredentialsInfo{

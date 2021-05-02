@@ -9,12 +9,12 @@ import (
 	"testing"
 	"time"
 
-	corev1 "k8s.io/api/core/v1"
-
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/mockup"
+	"github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/ibm/the-mesh-for-data/pkg/storage"
 
 	"github.com/ibm/the-mesh-for-data/pkg/vault"
@@ -96,17 +96,7 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	// Create storage account
-	accountShire := &app.M4DStorageAccount{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "account1",
-			Namespace: utils.GetSystemNamespace(),
-		},
-		Spec: app.M4DStorageAccountSpec{
-			Endpoint:  "http://endpoint1",
-			SecretRef: "dummy-secret",
-			Regions:   []string{"theshire"},
-		},
-	}
+	accountShire := createStorageAccount("theshire")
 	err = cl.Create(context.Background(), accountShire)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
@@ -139,8 +129,8 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 
 	// Check if Application generated a plotter
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
-	g.Expect(err).To(gomega.BeNil(), "Can fetch plotter")
-	g.Expect(application.Status.Generated.Kind).To(gomega.Equal("Plotter"))
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(application.Status.Generated).NotTo(gomega.BeNil())
 
 	plotterObjectKey := types.NamespacedName{
 		Namespace: "m4d-system",
@@ -193,6 +183,21 @@ func createM4DApplication(objectKey types.NamespacedName, n int) *app.M4DApplica
 			Selector: app.Selector{ClusterName: "thegreendragon", WorkloadSelector: metav1.LabelSelector{MatchLabels: labels}},
 			AppInfo:  map[string]string{"intent": "Testing"},
 			Data:     make([]app.DataContext, n),
+		},
+	}
+}
+
+func createStorageAccount(region string) *app.M4DStorageAccount {
+	// Create storage account
+	return &app.M4DStorageAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-account",
+			Namespace: utils.GetSystemNamespace(),
+		},
+		Spec: app.M4DStorageAccountSpec{
+			Endpoint:  "http://endpoint1",
+			SecretRef: "dummy-secret",
+			Regions:   []string{region},
 		},
 	}
 }
@@ -258,8 +263,8 @@ func TestM4DApplicationFinalizers(t *testing.T) {
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	namespaced := types.NamespacedName{
-		Namespace: "test-finalizers",
-		Name:      "default",
+		Name:      "test-finalizers",
+		Namespace: "default",
 	}
 	application := createM4DApplication(namespaced, 1)
 	// Objects to track in the fake client.
@@ -295,8 +300,8 @@ func TestDenyOnRead(t *testing.T) {
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	namespaced := types.NamespacedName{
-		Namespace: "test-deny-on-read",
-		Name:      "default",
+		Name:      "test-deny-on-read",
+		Namespace: "default",
 	}
 	application := createM4DApplication(namespaced, 1)
 	application.Spec.Data[0] = app.DataContext{
@@ -340,8 +345,8 @@ func TestNoReadPath(t *testing.T) {
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	namespaced := types.NamespacedName{
-		Namespace: "test-no-read-path",
-		Name:      "default",
+		Name:      "test-no-read-path",
+		Namespace: "default",
 	}
 	application := createM4DApplication(namespaced, 1)
 	application.Spec.Data[0] = app.DataContext{
@@ -384,7 +389,7 @@ func TestNoReadPath(t *testing.T) {
 // Two datasets:
 // Kafka dataset, a copy is required.
 // S3 dataset, no copy is needed
-// Enforcement action for both operations and datasets: Allow
+// Enforcement action for both datasets: Allow
 // No copy module (kafka->s3)
 // Result: an error
 func TestWrongCopyModule(t *testing.T) {
@@ -394,8 +399,8 @@ func TestWrongCopyModule(t *testing.T) {
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	namespaced := types.NamespacedName{
-		Namespace: "no-copy-module",
-		Name:      "default",
+		Name:      "no-copy-module",
+		Namespace: "default",
 	}
 	application := createM4DApplication(namespaced, 2)
 	application.Spec.Data[0] = app.DataContext{
@@ -437,4 +442,318 @@ func TestWrongCopyModule(t *testing.T) {
 	// Expect an error
 	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring(app.ModuleNotFound))
 	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring("copy"))
+}
+
+// Tests finding a module for copy supporting actions
+// Assumptions on response from connectors:
+// db2 dataset
+// Enforcement action: Redact
+// copy (db2->s3) and read modules do not support redact action
+// Result: an error
+func TestActionSupport(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "no-enforcement",
+		Namespace: "default",
+	}
+	application := createM4DApplication(namespaced, 2)
+	application.Spec.Data[0] = app.DataContext{
+		DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
+		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+	}
+	application.Spec.Data[1] = app.DataContext{
+		DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"kafka\"}",
+		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+	}
+
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Read module
+	readModule := createReadModule(&app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet})
+	copyModule := createCopyModule(&app.InterfaceDetails{Protocol: app.JdbcDb2, DataFormat: app.Table}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet})
+	g.Expect(cl.Create(context.TODO(), readModule)).To(gomega.BeNil(), "the read module could not be created")
+	g.Expect(cl.Create(context.TODO(), copyModule)).To(gomega.BeNil(), "the copy db2->s3 module could not be created")
+	// Create a M4DApplicationReconciler object with the scheme and fake client.
+	r := createM4DApplicationController(cl, s)
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	// Expect an error
+	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring(app.ModuleNotFound))
+}
+
+// Assumptions on response from connectors:
+// Two datasets:
+// Db2 dataset, a copy is required.
+// S3 dataset, no copy is needed
+// Enforcement actions for the first dataset: redact
+// Enforcement action for the second dataset: Allow
+// Applied copy module s3->s3 and db2->s3 supporting redact action
+// Result: plotter with a single blueprint is created successfully, a read module is applied once for both datasets
+
+func TestMultipleDatasets(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "multiple-datasets",
+		Namespace: "default",
+	}
+	application := createM4DApplication(namespaced, 2)
+	application.Spec.Data[0] = app.DataContext{
+		DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
+		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+	}
+	application.Spec.Data[1] = app.DataContext{
+		DataSetID:    "{\"asset_id\": \"redact-dataset\", \"catalog_id\": \"db2\"}",
+		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+	}
+
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Read module
+	readModule := createReadModule(&app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet})
+	copyModule := createCopyModule(&app.InterfaceDetails{Protocol: app.JdbcDb2, DataFormat: app.Table}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet})
+	copyModule.Spec.Capabilities.Actions = []app.SupportedAction{{ID: "redact-ID", Level: protobuf.EnforcementAction_COLUMN}}
+	g.Expect(cl.Create(context.TODO(), readModule)).To(gomega.BeNil(), "the read module could not be created")
+	g.Expect(cl.Create(context.TODO(), copyModule)).To(gomega.BeNil(), "the copy db2->s3 module could not be created")
+	// Create storage account
+	accountShire := createStorageAccount("theshire")
+	g.Expect(cl.Create(context.Background(), accountShire)).NotTo(gomega.HaveOccurred())
+
+	dummySecret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "dummy-secret",
+			Namespace: utils.GetSystemNamespace(),
+		},
+		Data: map[string][]byte{"accessKeyID": []byte("value1"), "secretAccessKey": []byte("value2")},
+		Type: "Opaque",
+	}
+	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
+
+	// Create a M4DApplicationReconciler object with the scheme and fake client.
+	r := createM4DApplicationController(cl, s)
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	// check provisioned storage
+	g.Expect(application.Status.ProvisionedStorage["{\"asset_id\": \"redact-dataset\", \"catalog_id\": \"db2\"}"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
+	// check plotter creation
+	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
+	plotterObjectKey := types.NamespacedName{
+		Namespace: application.Status.Generated.Namespace,
+		Name:      application.Status.Generated.Name,
+	}
+	plotter := &app.Plotter{}
+	err = cl.Get(context.Background(), plotterObjectKey, plotter)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(len(plotter.Spec.Blueprints)).To(gomega.Equal(1))
+	// Check the generated blueprint
+	// There should be a single read module with two datasets
+	blueprint := plotter.Spec.Blueprints["thegreendragon"]
+	g.Expect(blueprint).NotTo(gomega.BeNil())
+	numReads := 0
+	for _, step := range blueprint.Flow.Steps {
+		if step.Template == "read-path" {
+			numReads++
+			g.Expect(len(step.Arguments.Read)).To(gomega.Equal(2))
+		}
+	}
+	g.Expect(numReads).To(gomega.Equal(1))
+}
+
+// This test checks the case where data comes from another regions, and should be redacted.
+// In this case a read module will be deployed close to the compute, while a copy module - close to the data.
+func TestMultipleRegions(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "multiple-blueprints",
+		Namespace: "default",
+	}
+	application := createM4DApplication(namespaced, 1)
+	application.Spec.Data[0] = app.DataContext{
+		DataSetID:    "{\"asset_id\": \"redact-dataset\", \"catalog_id\": \"s3-external\"}",
+		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+	}
+
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Read module
+	readModule := createReadModule(&app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet})
+	copyModule := createCopyModule(&app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet})
+	copyModule.Spec.Capabilities.Actions = []app.SupportedAction{{ID: "redact-ID", Level: protobuf.EnforcementAction_COLUMN}}
+	g.Expect(cl.Create(context.TODO(), readModule)).To(gomega.BeNil(), "the read module could not be created")
+	g.Expect(cl.Create(context.TODO(), copyModule)).To(gomega.BeNil(), "the copy s3->s3 module could not be created")
+	// Create storage account
+	accountShire := createStorageAccount("theshire")
+	g.Expect(cl.Create(context.Background(), accountShire)).NotTo(gomega.HaveOccurred())
+
+	dummySecret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "dummy-secret",
+			Namespace: utils.GetSystemNamespace(),
+		},
+		Data: map[string][]byte{"accessKeyID": []byte("value1"), "secretAccessKey": []byte("value2")},
+		Type: "Opaque",
+	}
+	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
+
+	// Create a M4DApplicationReconciler object with the scheme and fake client.
+	r := createM4DApplicationController(cl, s)
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	// check provisioned storage
+	g.Expect(application.Status.ProvisionedStorage["{\"asset_id\": \"redact-dataset\", \"catalog_id\": \"s3-external\"}"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
+	// check plotter creation
+	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
+	plotterObjectKey := types.NamespacedName{
+		Namespace: application.Status.Generated.Namespace,
+		Name:      application.Status.Generated.Name,
+	}
+	plotter := &app.Plotter{}
+	err = cl.Get(context.Background(), plotterObjectKey, plotter)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(len(plotter.Spec.Blueprints)).To(gomega.Equal(2))
+}
+
+// This test checks the ingest scenario - copy is required, no workload specified.
+func TestCopyData(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	objectKey := types.NamespacedName{
+		Name:      "ingest",
+		Namespace: "default",
+	}
+	application := &app.M4DApplication{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      objectKey.Name,
+			Namespace: objectKey.Namespace,
+		},
+		Spec: app.M4DApplicationSpec{
+			AppInfo: map[string]string{"intent": "Testing"},
+			Data: []app.DataContext{
+				{
+					DataSetID: "{\"asset_id\": \"allow-theshire\", \"catalog_id\": \"s3-external\"}",
+					Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV},
+						Copy: app.CopyRequirements{Required: true,
+							Catalog: app.CatalogRequirements{CatalogID: "ingest_test", CatalogService: "Katalog"},
+						},
+					},
+				},
+			},
+		},
+	}
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	copyModule := createCopyModule(&app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV})
+	g.Expect(cl.Create(context.TODO(), copyModule)).To(gomega.BeNil(), "the copy s3->s3 module could not be created")
+	// Create storage account
+	accountShire := createStorageAccount("theshire")
+	g.Expect(cl.Create(context.Background(), accountShire)).NotTo(gomega.HaveOccurred())
+
+	dummySecret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "dummy-secret",
+			Namespace: utils.GetSystemNamespace(),
+		},
+		Data: map[string][]byte{"accessKeyID": []byte("value1"), "secretAccessKey": []byte("value2")},
+		Type: "Opaque",
+	}
+	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
+
+	// Create a M4DApplicationReconciler object with the scheme and fake client.
+	r := createM4DApplicationController(cl, s)
+	req := reconcile.Request{
+		NamespacedName: objectKey,
+	}
+
+	_, err := r.Reconcile(req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	// check provisioned storage
+	g.Expect(application.Status.ProvisionedStorage["{\"asset_id\": \"allow-theshire\", \"catalog_id\": \"s3-external\"}"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
+	// check plotter creation
+	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
+	plotterObjectKey := types.NamespacedName{
+		Namespace: application.Status.Generated.Namespace,
+		Name:      application.Status.Generated.Name,
+	}
+	plotter := &app.Plotter{}
+	err = cl.Get(context.Background(), plotterObjectKey, plotter)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	// There should be a single copy module
+	g.Expect(len(plotter.Spec.Blueprints)).To(gomega.Equal(1))
+	blueprint := plotter.Spec.Blueprints["thegreendragon"]
+	g.Expect(blueprint).NotTo(gomega.BeNil())
+	g.Expect(len(blueprint.Flow.Steps)).To(gomega.Equal(1))
 }
