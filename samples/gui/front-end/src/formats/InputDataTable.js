@@ -28,6 +28,11 @@ const formatOptions = [
     value: 'avro'
   },
   {
+    key: 'orc',
+    text: 'orc',
+    value: 'orc'
+  },
+  {
     key: 'binary',
     text: 'binary',
     value: 'binary'
