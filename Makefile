@@ -38,6 +38,7 @@ run-integration-tests:
 	$(MAKE) helm
 	$(MAKE) -C pkg/helm test
 	$(MAKE) -C manager run-integration-tests
+	$(MAKE) -C modules test
 
 .PHONY: run-deploy-tests
 run-deploy-tests: export KUBE_NAMESPACE?=m4d-system
