@@ -757,3 +757,79 @@ func TestCopyData(t *testing.T) {
 	g.Expect(blueprint).NotTo(gomega.BeNil())
 	g.Expect(len(blueprint.Flow.Steps)).To(gomega.Equal(1))
 }
+
+// This test checks the ingest scenario
+// A storage account has been defined for the region where the dataset can not be written to according to governance policies.
+// An error is received.
+func TestCopyDataNotAllowed(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	objectKey := types.NamespacedName{
+		Name:      "ingest",
+		Namespace: "default",
+	}
+	application := &app.M4DApplication{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      objectKey.Name,
+			Namespace: objectKey.Namespace,
+		},
+		Spec: app.M4DApplicationSpec{
+			AppInfo: map[string]string{"intent": "Testing"},
+			Data: []app.DataContext{
+				{
+					DataSetID: "{\"asset_id\": \"deny-theshire\", \"catalog_id\": \"s3-external\"}",
+					Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV},
+						Copy: app.CopyRequirements{Required: true,
+							Catalog: app.CatalogRequirements{CatalogID: "ingest_test", CatalogService: "Katalog"},
+						},
+					},
+				},
+			},
+		},
+	}
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	copyModule := createCopyModule(&app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV})
+	g.Expect(cl.Create(context.TODO(), copyModule)).To(gomega.BeNil(), "the copy s3->s3 module could not be created")
+	// Create storage account
+	accountShire := createStorageAccount("theshire")
+	g.Expect(cl.Create(context.Background(), accountShire)).NotTo(gomega.HaveOccurred())
+
+	dummySecret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "dummy-secret",
+			Namespace: utils.GetSystemNamespace(),
+		},
+		Data: map[string][]byte{"accessKeyID": []byte("value1"), "secretAccessKey": []byte("value2")},
+		Type: "Opaque",
+	}
+	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
+
+	// Create a M4DApplicationReconciler object with the scheme and fake client.
+	r := createM4DApplicationController(cl, s)
+	req := reconcile.Request{
+		NamespacedName: objectKey,
+	}
+
+	_, err := r.Reconcile(req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	// check provisioned storage
+	g.Expect(application.Status.ProvisionedStorage).To(gomega.BeEmpty())
+	// check errors
+	g.Expect(getErrorMessages(application)).NotTo(gomega.BeEmpty())
+}
