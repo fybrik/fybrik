@@ -5,171 +5,137 @@ package app
 
 import (
 	"context"
+	"io/ioutil"
+	"testing"
+
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
-	"time"
+	"github.com/ibm/the-mesh-for-data/pkg/helm"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-
-	"io/ioutil"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/onsi/gomega"
+	"k8s.io/apimachinery/pkg/runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/yaml"
 )
 
-var _ = Describe("Blueprint Controller", func() {
+func readBlueprint(f string) (*app.Blueprint, error) {
+	blueprintYAML, err := ioutil.ReadFile(f)
+	if err != nil {
+		return nil, err
+	}
+	blueprint := &app.Blueprint{}
+	err = yaml.Unmarshal(blueprintYAML, blueprint)
+	if err != nil {
+		return nil, err
+	}
+	return blueprint, nil
+}
 
-	const timeout = time.Second * 30
-	const interval = time.Millisecond * 100
+func TestBlueprintReconcile(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
-	BeforeEach(func() {
-		// Add any setup steps that needs to be executed before each test
-	})
+	blueprint, err := readBlueprint("../../testdata/blueprint.yaml")
+	g.Expect(err).To(gomega.BeNil(), "Cannot read blueprint file for test")
 
-	AfterEach(func() {
-		// Add any teardown steps that needs to be executed after each test
-	})
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		blueprint,
+	}
 
-	// Avoid adding tests for vanilla CRUD operations because they would
-	// test Kubernetes API server, which isn't the goal here.
-	Context("Blueprint", func() {
-		It("Should create successfully", func() {
-			// Load
-			var err error
-			blueprintYAML, err := ioutil.ReadFile("../../testdata/blueprint.yaml")
-			Expect(err).ToNot(HaveOccurred())
-			blueprint := &app.Blueprint{}
-			err = yaml.Unmarshal(blueprintYAML, blueprint)
-			Expect(err).ToNot(HaveOccurred())
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
 
-			key, err := client.ObjectKeyFromObject(blueprint)
-			Expect(err).ToNot(HaveOccurred())
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
 
-			// Create Blueprint
-			Expect(k8sClient.Create(context.Background(), blueprint)).Should(Succeed())
+	r := &BlueprintReconciler{
+		Client: cl,
+		Name:   "BlueprintTestController",
+		Log:    ctrl.Log.WithName("test-blueprint-controller"),
+		Scheme: s,
+		Helmer: helm.NewEmptyFake(),
+	}
+	ns, _ := client.ObjectKeyFromObject(blueprint)
 
-			// Ensure getting cleaned up after tests finish
-			defer func() {
-				f := &app.Blueprint{ObjectMeta: metav1.ObjectMeta{Namespace: key.Namespace, Name: key.Name}}
-				_ = k8sClient.Get(context.Background(), key, f)
-				_ = k8sClient.Delete(context.Background(), f)
-			}()
+	// Mock request to simulate Reconcile() being called on an event for a
+	// watched resource .
+	req := reconcile.Request{
+		NamespacedName: ns,
+	}
 
-			// Check number of releases - should be two
-			By("Expecting to reconcile successfully with copy and read module releases")
-			Eventually(func() int {
-				f := &app.Blueprint{}
-				if err := k8sClient.Get(context.Background(), key, f); err != nil {
-					return 0
-				}
-				if f.Status.Releases == nil {
-					return 0
-				}
-				return len(f.Status.Releases)
-			}, timeout, interval).Should(Equal(2))
+	res, err := r.Reconcile(req)
+	g.Expect(err).To(gomega.BeNil())
 
-			// Update
-			By("Expecting to update successfully")
-			Eventually(func() error {
-				f := &app.Blueprint{}
-				if err := k8sClient.Get(context.Background(), key, f); err != nil {
-					return err
-				}
-				// remove copy module (the first one in the flow)
-				f.Spec.Flow.Steps = f.Spec.Flow.Steps[1:]
-				f.Spec.Templates = f.Spec.Templates[1:]
-				return k8sClient.Update(context.Background(), f)
-			}, timeout, interval).Should(Succeed())
+	// Check the result of reconciliation to make sure it has the desired state.
+	g.Expect(res.Requeue).To(gomega.BeFalse(), "reconcile did not requeue request as expected")
+	g.Expect(cl.Get(context.TODO(), ns, blueprint)).To(gomega.BeNil(), "could not fetch the blueprint")
+	g.Expect(blueprint.Status.Releases).To(gomega.HaveLen(2))
+	g.Expect(blueprint.Status.Releases).Should(gomega.HaveKeyWithValue("notebook-default-notebook-copy-batch", blueprint.Status.ObservedGeneration))
+	g.Expect(blueprint.Status.Releases).Should(gomega.HaveKeyWithValue("notebook-default-notebook-read-module", blueprint.Status.ObservedGeneration))
+}
 
-			// Check number of releases - should be only one
-			By("Expecting to reconcile successfully with a single read-module release")
-			var releaseNames []string
-			Eventually(func() int {
-				f := &app.Blueprint{}
-				releaseNames = []string{}
-				if err := k8sClient.Get(context.Background(), key, f); err != nil {
-					return 0
-				}
-				for release, version := range f.Status.Releases {
-					Expect(version).To(Equal(f.Status.ObservedGeneration))
-					releaseNames = append(releaseNames, release)
-				}
-				return len(releaseNames)
-			}, timeout, interval).Should(Equal(1))
+// This test checks that a short release name is not truncated
+func TestShortReleaseName(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
 
-			Expect(releaseNames[0]).Should(ContainSubstring("read"))
-			// Delete
-			By("Expecting to delete successfully")
-			Eventually(func() error {
-				f := &app.Blueprint{}
-				if err := k8sClient.Get(context.Background(), key, f); err != nil {
-					return err
-				}
-				return k8sClient.Delete(context.Background(), f)
-			}, timeout, interval).Should(Succeed())
+	blueprint := app.Blueprint{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "appns-app-mybp",
+			Labels: map[string]string{
+				app.ApplicationNameLabel:      "my-app",
+				app.ApplicationNamespaceLabel: "default",
+			},
+		},
+		Spec: app.BlueprintSpec{
+			Flow: app.DataFlow{
+				Name: "dataflow",
+				Steps: []app.FlowStep{{Name: "mystep",
+					Template:  "template",
+					Arguments: app.ModuleArguments{}}},
+			},
+		},
+	}
+	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Flow.Steps[0])
+	g.Expect(relName).To(gomega.Equal("my-app-default-mystep"))
+}
 
-			By("Expecting delete to finish")
-			Eventually(func() error {
-				f := &app.Blueprint{}
-				return k8sClient.Get(context.Background(), key, f)
-			}, timeout, interval).ShouldNot(Succeed())
-		})
-	})
+// This test checks that a long release name is shortened
+func TestLongReleaseName(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	blueprint := app.Blueprint{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "appnsisalreadylong-appnameisevenlonger-myblueprintnameisreallytakingitoverthetopkubernetescantevendealwithit",
+			Labels: map[string]string{
+				app.ApplicationNameLabel:      "my-app",
+				app.ApplicationNamespaceLabel: "default",
+			},
+		},
+		Spec: app.BlueprintSpec{
+			Flow: app.DataFlow{
+				Name: "dataflow",
+				Steps: []app.FlowStep{{Name: "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff",
+					Template:  "template",
+					Arguments: app.ModuleArguments{}}},
+			},
+		},
+	}
 
-	Context("Release name", func() {
-		It("Should form a name when name is short", func() {
-			blueprint := app.Blueprint{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "appns-app-mybp",
-					Labels: map[string]string{
-						app.ApplicationNameLabel:      "my-app",
-						app.ApplicationNamespaceLabel: "default",
-					},
-				},
-				Spec: app.BlueprintSpec{
-					Flow: app.DataFlow{
-						Name: "dataflow",
-						Steps: []app.FlowStep{{Name: "mystep",
-							Template:  "template",
-							Arguments: app.ModuleArguments{}}},
-					},
-				},
-			}
+	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Flow.Steps[0])
+	g.Expect(relName).To(gomega.Equal("my-app-default-ohandnottoforgettheflowstepnamet-a7569"))
+	g.Expect(relName).To(gomega.HaveLen(53))
 
-			relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Flow.Steps[0])
-			Expect(relName).To(Equal("my-app-default-mystep"))
-		})
-
-		It("Should limit the release name if it is too long", func() {
-			blueprint := app.Blueprint{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "appnsisalreadylong-appnameisevenlonger-myblueprintnameisreallytakingitoverthetopkubernetescantevendealwithit",
-					Labels: map[string]string{
-						app.ApplicationNameLabel:      "my-app",
-						app.ApplicationNamespaceLabel: "default",
-					},
-				},
-				Spec: app.BlueprintSpec{
-					Flow: app.DataFlow{
-						Name: "dataflow",
-						Steps: []app.FlowStep{{Name: "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff",
-							Template:  "template",
-							Arguments: app.ModuleArguments{}}},
-					},
-				},
-			}
-
-			relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Flow.Steps[0])
-			Expect(relName).To(Equal("my-app-default-ohandnottoforgettheflowstepnamet-a7569"))
-			Expect(relName).To(HaveLen(53))
-
-			// Make sure that calling the same method again results in the same result
-			relName2 := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Flow.Steps[0])
-			Expect(relName2).To(Equal("my-app-default-ohandnottoforgettheflowstepnamet-a7569"))
-			Expect(relName2).To(HaveLen(53))
-		})
-	})
-})
+	// Make sure that calling the same method again results in the same result
+	relName2 := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Flow.Steps[0])
+	g.Expect(relName2).To(gomega.Equal("my-app-default-ohandnottoforgettheflowstepnamet-a7569"))
+	g.Expect(relName2).To(gomega.HaveLen(53))
+}
