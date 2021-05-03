@@ -96,19 +96,7 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	// Create storage account
-	accountShire := createStorageAccount("theshire")
-	err = cl.Create(context.Background(), accountShire)
-	g.Expect(err).NotTo(gomega.HaveOccurred())
-
-	dummySecret := &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "dummy-secret",
-			Namespace: utils.GetSystemNamespace(),
-		},
-		Data: map[string][]byte{"accessKeyID": []byte("value1"), "secretAccessKey": []byte("value2")},
-		Type: "Opaque",
-	}
-	err = cl.Create(context.Background(), dummySecret)
+	err = createStorageAccount(cl, "theshire")
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	r := createM4DApplicationController(cl, s)
@@ -187,19 +175,35 @@ func createM4DApplication(objectKey types.NamespacedName, n int) *app.M4DApplica
 	}
 }
 
-func createStorageAccount(region string) *app.M4DStorageAccount {
+// create a storage account and a secret with credentials for this account
+func createStorageAccount(cl client.Client, region string) error {
 	// Create storage account
-	return &app.M4DStorageAccount{
+	accountName := "account" + utils.Hash(region, 10)
+	secretName := "secret" + utils.Hash(region, 10)
+	account := &app.M4DStorageAccount{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test-account",
+			Name:      accountName,
 			Namespace: utils.GetSystemNamespace(),
 		},
 		Spec: app.M4DStorageAccountSpec{
 			Endpoint:  "http://endpoint1",
-			SecretRef: "dummy-secret",
+			SecretRef: secretName,
 			Regions:   []string{region},
 		},
 	}
+
+	dummySecret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      secretName,
+			Namespace: utils.GetSystemNamespace(),
+		},
+		Data: map[string][]byte{"accessKeyID": []byte("value1"), "secretAccessKey": []byte("value2")},
+		Type: "Opaque",
+	}
+	if err := cl.Create(context.Background(), dummySecret); err != nil {
+		return err
+	}
+	return cl.Create(context.Background(), account)
 }
 
 func createReadModule(api *app.InterfaceDetails, source *app.InterfaceDetails) *app.M4DModule {
@@ -548,18 +552,7 @@ func TestMultipleDatasets(t *testing.T) {
 	g.Expect(cl.Create(context.TODO(), readModule)).To(gomega.BeNil(), "the read module could not be created")
 	g.Expect(cl.Create(context.TODO(), copyModule)).To(gomega.BeNil(), "the copy db2->s3 module could not be created")
 	// Create storage account
-	accountShire := createStorageAccount("theshire")
-	g.Expect(cl.Create(context.Background(), accountShire)).NotTo(gomega.HaveOccurred())
-
-	dummySecret := &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "dummy-secret",
-			Namespace: utils.GetSystemNamespace(),
-		},
-		Data: map[string][]byte{"accessKeyID": []byte("value1"), "secretAccessKey": []byte("value2")},
-		Type: "Opaque",
-	}
-	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
+	g.Expect(createStorageAccount(cl, "theshire")).NotTo(gomega.HaveOccurred())
 
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
 	r := createM4DApplicationController(cl, s)
@@ -634,19 +627,7 @@ func TestMultipleRegions(t *testing.T) {
 	g.Expect(cl.Create(context.TODO(), readModule)).To(gomega.BeNil(), "the read module could not be created")
 	g.Expect(cl.Create(context.TODO(), copyModule)).To(gomega.BeNil(), "the copy s3->s3 module could not be created")
 	// Create storage account
-	accountShire := createStorageAccount("theshire")
-	g.Expect(cl.Create(context.Background(), accountShire)).NotTo(gomega.HaveOccurred())
-
-	dummySecret := &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "dummy-secret",
-			Namespace: utils.GetSystemNamespace(),
-		},
-		Data: map[string][]byte{"accessKeyID": []byte("value1"), "secretAccessKey": []byte("value2")},
-		Type: "Opaque",
-	}
-	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
-
+	g.Expect(createStorageAccount(cl, "theshire")).NotTo(gomega.HaveOccurred())
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
 	r := createM4DApplicationController(cl, s)
 	req := reconcile.Request{
@@ -673,6 +654,7 @@ func TestMultipleRegions(t *testing.T) {
 }
 
 // This test checks the ingest scenario - copy is required, no workload specified.
+// Two storage accounts are created. Data cannot be stored in one of them according to governance policies.
 func TestCopyData(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -683,6 +665,7 @@ func TestCopyData(t *testing.T) {
 		Name:      "ingest",
 		Namespace: "default",
 	}
+	assetName := "{\"asset_id\": \"allow-theshire\", \"catalog_id\": \"s3-external\"}"
 	application := &app.M4DApplication{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      objectKey.Name,
@@ -692,7 +675,7 @@ func TestCopyData(t *testing.T) {
 			AppInfo: map[string]string{"intent": "Testing"},
 			Data: []app.DataContext{
 				{
-					DataSetID: "{\"asset_id\": \"allow-theshire\", \"catalog_id\": \"s3-external\"}",
+					DataSetID: assetName,
 					Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV},
 						Copy: app.CopyRequirements{Required: true,
 							Catalog: app.CatalogRequirements{CatalogID: "ingest_test", CatalogService: "Katalog"},
@@ -716,18 +699,8 @@ func TestCopyData(t *testing.T) {
 	copyModule := createCopyModule(&app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV})
 	g.Expect(cl.Create(context.TODO(), copyModule)).To(gomega.BeNil(), "the copy s3->s3 module could not be created")
 	// Create storage account
-	accountShire := createStorageAccount("theshire")
-	g.Expect(cl.Create(context.Background(), accountShire)).NotTo(gomega.HaveOccurred())
-
-	dummySecret := &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "dummy-secret",
-			Namespace: utils.GetSystemNamespace(),
-		},
-		Data: map[string][]byte{"accessKeyID": []byte("value1"), "secretAccessKey": []byte("value2")},
-		Type: "Opaque",
-	}
-	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
+	g.Expect(createStorageAccount(cl, "neverland")).NotTo(gomega.HaveOccurred())
+	g.Expect(createStorageAccount(cl, "theshire")).NotTo(gomega.HaveOccurred())
 
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
 	r := createM4DApplicationController(cl, s)
@@ -741,7 +714,9 @@ func TestCopyData(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
 	// check provisioned storage
-	g.Expect(application.Status.ProvisionedStorage["{\"asset_id\": \"allow-theshire\", \"catalog_id\": \"s3-external\"}"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
+	g.Expect(application.Status.ProvisionedStorage[assetName].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
+	expectedSecretName := "secret" + utils.Hash("theshire", 10)
+	g.Expect(application.Status.ProvisionedStorage[assetName].SecretRef).To(gomega.Equal(expectedSecretName), "Incorrect storage was selected")
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 	plotterObjectKey := types.NamespacedName{
@@ -804,19 +779,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	copyModule := createCopyModule(&app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV})
 	g.Expect(cl.Create(context.TODO(), copyModule)).To(gomega.BeNil(), "the copy s3->s3 module could not be created")
 	// Create storage account
-	accountShire := createStorageAccount("theshire")
-	g.Expect(cl.Create(context.Background(), accountShire)).NotTo(gomega.HaveOccurred())
-
-	dummySecret := &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "dummy-secret",
-			Namespace: utils.GetSystemNamespace(),
-		},
-		Data: map[string][]byte{"accessKeyID": []byte("value1"), "secretAccessKey": []byte("value2")},
-		Type: "Opaque",
-	}
-	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
-
+	g.Expect(createStorageAccount(cl, "theshire")).NotTo(gomega.HaveOccurred())
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
 	r := createM4DApplicationController(cl, s)
 	req := reconcile.Request{
