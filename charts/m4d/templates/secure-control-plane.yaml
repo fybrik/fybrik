@@ -23,4 +23,21 @@ spec:
   mtls:
     # PERMISSIVE: Workloads accept both mutual TLS and plain text traffic
     mode: PERMISSIVE
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: connector-ingress-security
+  namespace: system
+spec:
+  podSelector:
+    matchLabels:
+      m4d.ibm.com/componentType: connector
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector: {}
+
 {{- end }}
