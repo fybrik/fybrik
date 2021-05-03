@@ -33,7 +33,7 @@ import (
 )
 
 // create M4DApplication controller with mockup interfaces
-func createM4DApplicationController(cl client.Client, s *runtime.Scheme) *M4DApplicationReconciler {
+func createTestM4DApplicationController(cl client.Client, s *runtime.Scheme) *M4DApplicationReconciler {
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
 	return &M4DApplicationReconciler{
 		Client:          cl,
@@ -99,7 +99,7 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 	err = createStorageAccount(cl, "theshire")
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	r := createM4DApplicationController(cl, s)
+	r := createTestM4DApplicationController(cl, s)
 	// Mock request to simulate Reconcile() being called on an event for a
 	// watched resource .
 	req := reconcile.Request{
@@ -283,7 +283,7 @@ func TestM4DApplicationFinalizers(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createM4DApplicationController(cl, s)
+	r := createTestM4DApplicationController(cl, s)
 
 	g.Expect(r.reconcileFinalizers(application)).To(gomega.BeNil())
 	g.Expect(application.Finalizers).NotTo(gomega.BeEmpty(), "finalizers have not been created")
@@ -325,7 +325,7 @@ func TestDenyOnRead(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createM4DApplicationController(cl, s)
+	r := createTestM4DApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -373,7 +373,7 @@ func TestNoReadPath(t *testing.T) {
 	readModule := createReadModule(&app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet})
 	g.Expect(cl.Create(context.TODO(), readModule)).To(gomega.BeNil(), "the read module could not be created")
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createM4DApplicationController(cl, s)
+	r := createTestM4DApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -433,7 +433,7 @@ func TestWrongCopyModule(t *testing.T) {
 	g.Expect(cl.Create(context.TODO(), readModule)).To(gomega.BeNil(), "the read module could not be created")
 	g.Expect(cl.Create(context.TODO(), copyModule)).To(gomega.BeNil(), "the copy db2->s3 module could not be created")
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createM4DApplicationController(cl, s)
+	r := createTestM4DApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -491,7 +491,7 @@ func TestActionSupport(t *testing.T) {
 	g.Expect(cl.Create(context.TODO(), readModule)).To(gomega.BeNil(), "the read module could not be created")
 	g.Expect(cl.Create(context.TODO(), copyModule)).To(gomega.BeNil(), "the copy db2->s3 module could not be created")
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createM4DApplicationController(cl, s)
+	r := createTestM4DApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -555,7 +555,7 @@ func TestMultipleDatasets(t *testing.T) {
 	g.Expect(createStorageAccount(cl, "theshire")).NotTo(gomega.HaveOccurred())
 
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createM4DApplicationController(cl, s)
+	r := createTestM4DApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -629,7 +629,7 @@ func TestMultipleRegions(t *testing.T) {
 	// Create storage account
 	g.Expect(createStorageAccount(cl, "theshire")).NotTo(gomega.HaveOccurred())
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createM4DApplicationController(cl, s)
+	r := createTestM4DApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -703,7 +703,7 @@ func TestCopyData(t *testing.T) {
 	g.Expect(createStorageAccount(cl, "theshire")).NotTo(gomega.HaveOccurred())
 
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createM4DApplicationController(cl, s)
+	r := createTestM4DApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: objectKey,
 	}
@@ -781,7 +781,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	// Create storage account
 	g.Expect(createStorageAccount(cl, "theshire")).NotTo(gomega.HaveOccurred())
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createM4DApplicationController(cl, s)
+	r := createTestM4DApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: objectKey,
 	}

@@ -12,7 +12,6 @@ import (
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
-	"github.com/onsi/ginkgo"
 	"google.golang.org/grpc"
 )
 
@@ -232,19 +231,5 @@ func createMockCatalogConnector(port int) error {
 func MockCatalogConnector() {
 	if err := createMockCatalogConnector(8080); err != nil {
 		log.Fatal(err)
-	}
-}
-
-func CreateTestCatalogConnector(t ginkgo.GinkgoTInterface) {
-	if err := createMockCatalogConnector(50085); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func KillServer() {
-	if connector != nil {
-		log.Print("Killing server...")
-		connector.Stop()
-		connector = nil
 	}
 }
