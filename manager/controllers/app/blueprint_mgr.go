@@ -24,18 +24,22 @@ func containsTemplate(templateList []app.ComponentTemplate, moduleName string) b
 // Copy modules are left unchanged.
 func (r *M4DApplicationReconciler) RefineInstances(instances []modules.ModuleInstanceSpec) []modules.ModuleInstanceSpec {
 	newInstances := make([]modules.ModuleInstanceSpec, 0)
+	// map instances to be unified, according to the cluster and module
 	instanceMap := make(map[string]modules.ModuleInstanceSpec)
 	for _, moduleInstance := range instances {
 		if moduleInstance.Args.Copy != nil {
 			newInstances = append(newInstances, moduleInstance)
 			continue
 		}
-		modulename := moduleInstance.Module.GetName()
-		if _, ok := instanceMap[modulename]; !ok {
-			instanceMap[modulename] = moduleInstance
+		key := moduleInstance.Module.GetName() + "," + moduleInstance.ClusterName
+		if instance, ok := instanceMap[key]; !ok {
+			instanceMap[key] = moduleInstance
 		} else {
-			instanceMap[modulename].Args.Read = append(instanceMap[modulename].Args.Read, moduleInstance.Args.Read...)
-			instanceMap[modulename].Args.Write = append(instanceMap[modulename].Args.Write, moduleInstance.Args.Write...)
+			instance.Args.Read = append(instance.Args.Read, moduleInstance.Args.Read...)
+			instance.Args.Write = append(instance.Args.Write, moduleInstance.Args.Write...)
+			// AssetID is used for step name generation
+			instance.AssetID += "," + moduleInstance.AssetID
+			instanceMap[key] = instance
 		}
 	}
 	for _, moduleInstance := range instanceMap {
@@ -83,7 +87,7 @@ func (r *M4DApplicationReconciler) GenerateBlueprint(instances []modules.ModuleI
 
 		// Create a flow step
 		var step app.FlowStep
-		step.Name = modulename + "-" + utils.Hash(moduleInstance.AssetID, 10) // Need unique name for each step so include ids for dataset
+		step.Name = utils.CreateStepName(modulename, moduleInstance.AssetID) // Need unique name for each step so include ids for dataset
 		step.Template = modulename
 
 		step.Arguments = *moduleInstance.Args

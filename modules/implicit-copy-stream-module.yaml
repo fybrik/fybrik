@@ -21,6 +21,13 @@ spec:
       sink: 
         protocol: s3
         dataformat: parquet
+    - flow: copy
+      source:
+        protocol: kafka
+        dataformat: avro
+      sink:
+        protocol: s3
+        dataformat: parquet
     actions:
     - id: redact-ID
       level: 2  # column

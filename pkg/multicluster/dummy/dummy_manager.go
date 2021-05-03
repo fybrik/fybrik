@@ -26,7 +26,7 @@ func (m *ClusterManager) GetBlueprint(cluster string, namespace string, name str
 	if found {
 		return blueprint, nil
 	}
-	return nil, errors.New("Blueprint not found")
+	return nil, errors.New("blueprint not found")
 }
 
 func (m *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {

@@ -39,7 +39,7 @@ func K8sInit() (*K8sClient, error) {
 
 	client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: newScheme})
 	if err != nil {
-		return nil, errors.Wrap(err, "Failed to create client")
+		return nil, errors.Wrap(err, "failed to create client")
 	}
 	return &K8sClient{client: client, namespace: GetCurrentNamespace()}, nil
 }

@@ -35,7 +35,7 @@ func GetMetadata(datasetID string) error {
 	timeoutInSeconds, err := strconv.Atoi(timeoutInSecs)
 	if err != nil {
 		log.Printf("Atoi conversion of timeoutinseconds failed: %v", err)
-		return errors.Wrap(err, "Atoi conversion of timeoutinseconds failed")
+		return errors.Wrap(err, "conversion of timeoutinseconds failed")
 	}
 
 	fmt.Println("timeoutInSeconds: ", timeoutInSeconds)
@@ -73,7 +73,7 @@ func GetMetadata(datasetID string) error {
 		fmt.Println("Message:", errStatus.Message())
 		// lets print the error code which is `INVALID_ARGUMENT`
 		fmt.Println("Code:", errStatus.Code())
-		return errors.Wrap(err, "Error sending data to Catalog Connector")
+		return errors.Wrap(err, "error sending data to Catalog Connector")
 	}
 
 	fmt.Println("***************************************************************")
@@ -95,7 +95,7 @@ func GetCredentials(datasetID string) error {
 
 	if err != nil {
 		log.Printf("Atoi conversion of timeoutinseconds failed: %v", err)
-		return errors.Wrap(err, "Atoi conversion of timeoutinseconds failed in GetCredentials")
+		return errors.Wrap(err, "conversion of timeoutinseconds failed in GetCredentials")
 	}
 
 	fmt.Println("timeoutInSeconds: ", timeoutInSeconds)
@@ -111,7 +111,7 @@ func GetCredentials(datasetID string) error {
 		fmt.Println(errStatus.Message())
 
 		fmt.Println(errStatus.Code())
-		return errors.Wrap(err, "Connection to Credentials Connector failed")
+		return errors.Wrap(err, "connection to credentials connector failed")
 	}
 	defer conn.Close()
 
@@ -134,7 +134,7 @@ func GetCredentials(datasetID string) error {
 		log.Println("Message:", errCredentialStatus.Message())
 		// lets print the error code which is `INVALID_ARGUMENT`
 		log.Println("Code:", errCredentialStatus.Code())
-		return errors.Wrap(err, "Error sending data to Credentials Connector in GetCredentials")
+		return errors.Wrap(err, "error sending data to credentials connector in GetCredentials")
 	}
 
 	log.Println("***************************************************************")

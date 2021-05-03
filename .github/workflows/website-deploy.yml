@@ -40,4 +40,4 @@ jobs:
       - name: Build and Deploy (tag)
         if: steps.version.outputs.version != 'master'
         working-directory: ./site
-        run: mike deploy --push --remote origin --branch site ${{ steps.version.outputs.version }} latest
+        run: mike deploy --push --update-aliases --remote origin --branch site ${{ steps.version.outputs.version }} latest
