@@ -42,7 +42,7 @@ func decodeToStruct(m interface{}, s interface{}) error {
 func splitNamespacedName(value string) (namespace string, name string, err error) {
 	identifier := strings.SplitN(value, "/", 2)
 	if len(identifier) != 2 {
-		err = fmt.Errorf("Expected <namespace>/<name> format but got %s", value)
+		err = fmt.Errorf("expected <namespace>/<name> format but got %s", value)
 		return
 	}
 	namespace, name = identifier[0], identifier[1]

@@ -5,11 +5,10 @@ package mockup
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"log"
 	"net"
 
+	"emperror.dev/errors"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/onsi/ginkgo"
@@ -215,7 +214,7 @@ func createMockCatalogConnector(port int) error {
 	log.Printf("Starting mock catalog connector on " + address)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
-		return fmt.Errorf("Error when setting up mock catalog connector: %v", err)
+		return errors.Wrap(err, "failed setting up mock catalog connector")
 	}
 	s := grpc.NewServer()
 	connector = s
@@ -223,7 +222,7 @@ func createMockCatalogConnector(port int) error {
 	pb.RegisterDataCatalogServiceServer(s, dummyCatalog)
 	pb.RegisterDataCredentialServiceServer(s, dummyCatalog)
 	if err := s.Serve(lis); err != nil {
-		return fmt.Errorf("Cannot serve mock catalog connector: %v", err)
+		return errors.Wrap(err, "failed in serve of mock catalog connector")
 	}
 	return nil
 }
