@@ -32,6 +32,10 @@
                 }
             }
         },
+		"tag": {
+			"type": "object",
+			"additionalProperties": true
+		},
         "resource": {
             "type": "object",
             "description": "Data set or other type of resource.",
@@ -40,8 +44,8 @@
                     "type": "string",
                     "description": "Name of the data set"
                 },
-                "tags": { "$ref": "catalog.values.schema.json#/definitions/valid_metadata"},
-                "columns": {
+				"tags": {"$ref": "#/definitions/tag"},
+				"columns": {
                     "type": "array",
                     "description": "List of column names in the data set with their associated tags. They must be key value pairs.",
                     "items": {
@@ -51,18 +55,46 @@
                                 "type": "string",
                                 "description": "name of column or component"
                             },
-                            "tags": { "$ref": "catalog.values.schema.json#/definitions/valid_metadata"}
+                            "tags": {"$ref": "#/definitions/tag"}
                         },
                         "required":["name"]
                     }
-                }
+                },
+				"metadata": {
+					"type": "object",
+					"description": "Some additional metadata from the asset",
+					"properties": {
+						"creationTime": {
+							"type": "string",
+							"description": "Time when the asset was created"
+						},
+						"CreatedBy": {
+							"type": "string",
+							"description": "Owner Id for the user who created the asset"
+
+						},
+						"updationTime": {
+							"type": "string",
+							"description": "Time when the dataset got updated"
+						},
+						"updatedBy": {
+							"type": "string",
+							"description": "Indicates who updted the asset"
+						},
+						"totalRatings": {
+							"type": "string",
+							"description": "Indicates the total rating of the asset"
+						}
+					}
+				}
             },
             "required":["name"],
-            "additionalProperties": false
+			"additionalProperties": false
         }
     },
     "properties": {
         "geography": { "$ref": "#/definitions/geography"},
+		"tag": { "$ref": "#/definitions/tag"},
         "resource": { "$ref": "#/definitions/resource"},
         "geography_group": { "$ref": "#/definitions/geography_group"}
     },

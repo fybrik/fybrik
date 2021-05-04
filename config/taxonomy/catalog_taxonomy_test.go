@@ -25,25 +25,31 @@ var (
 	resourceGoodNameOnly = "{\"resource\": {\"name\":\"file1\"}}"
 
 	// {"resource":{"name":"file1", "tags":[{"geography":{"name":"Turkey"}}]}}
-	resourceGoodNameGeo = "{\"resource\": {\"name\":\"file1\", \"tags\":[{\"geography\":{\"name\":\"Turkey\"}}]}}"
+	resourceGoodNameGeo = "{\"resource\": {\"name\":\"file1\", \"tags\":{\"residency\":\"Turkey\", \"asset\":\"PII\"}}}"
 
 	// {"resource":{"name":"file1", "tags":[{"geography":{"name":"Turkey"}}], "columns":[{"name":"col1"}, {"name":"col2"}]}}
-	resourceGoodCols = "{\"resource\":{\"name\":\"file1\", \"tags\":[{\"geography\":{\"name\":\"Turkey\"}}], \"columns\":[{\"name\":\"col1\"}, {\"name\":\"col2\"}]}}"
+	resourceGoodCols = "{\"resource\":{\"name\":\"file1\", \"tags\":{\"residency\":\"Turkey\", \"asset\":\"PII\"}, \"columns\":[{\"name\":\"col1\"}, {\"name\":\"col2\"}]}}"
 
 	// {"resource":{"name":"file1", "tags":[{"geography":{"name":"Turkey"}}], "columns":[{"name":"col1", "tags":[{"geography_name":"Turkey"}]}, {"name":"col2"}]}}
-	resourceGoodColsTags = "{\"resource\":{\"name\":\"file1\", \"tags\":[{\"geography\":{\"name\":\"Turkey\"}}], \"columns\":[{\"name\":\"col1\", \"tags\":[{\"geography_name\":\"Turkey\"}]}, {\"name\":\"col2\"}]}}"
+	resourceGoodColsTags = "{\"resource\":{\"name\":\"file1\", \"tags\":{\"residency\":\"Turkey\", \"asset\":\"PII\"}, \"columns\":[{\"name\":\"col1\", \"tags\":{\"residency\":\"Turkey\"}}, {\"name\":\"col2\"}]}}"
 
 	// {"resource":{"tags":[{"geography":{"name":"Turkey"}}]}}
-	resourceBadNoName = "{\"resource\": {\"tags\":[{\"geography\":{\"name\":\"Turkey\"}}]}}"
+	resourceBadNoName = "{\"resource\": {\"tags\":{\"residency\":\"Turkey\", \"asset\":\"PII\"}}}"
 
 	// {"resource":{"name":"file1", "tags":[{"geography":{"name":"xxx"}}]}}
-	resourceBadInvalidGeo = "{\"resource\":{\"name\":\"file1\", \"tags\":[{\"geography\":{\"name\":\"xxx\"}}]}}"
+	//resourceBadInvalidGeo = "{\"resource\":{\"name\":\"file1\", \"tags\":{\"residency\": 12, \"asset\":\"PII\"}}}"
 
 	// {"resource":{"name":"file1", "tags":[{"geography":{"name":"Turkey"}}], "columns":[{"name":"col1", "tags":[{"geography_name":"xxx"}]}, {"name":"col2"}]}}
-	resourceBadInvalidTagVal = "{\"resource\":{\"name\":\"file1\", \"tags\":[{\"geography\":{\"name\":\"Turkey\"}}], \"columns\":[{\"name\":\"col1\", \"tags\":[{\"geography_name\":\"xxx\"}]}, {\"name\":\"col2\"}]}}"
+	//resourceBadInvalidTagVal = "{\"resource\":{\"name\":\"file1\", \"tags\":[\"residency\":\"Turkey\", \"asset\":\"PII\"], \"columns\":[{\"name\":\"col1\", \"tags\":[\"residency\":\"Turkey\"]}, {\"name\":\"col2\"}]}}"
 
 	// {"resource":{"name":"file1", "tags":[{"geography":{"name":"Turkey"}}], "columns":[{"name":"col1", "tags":[{"badkey":"Turkey"}]}, {"name":"col2"}]}}
-	resourceGoodInvalidTagKey = "{\"resource\":{\"name\":\"file1\", \"tags\":[{\"geography\":{\"name\":\"Turkey\"}}], \"columns\":[{\"name\":\"col1\", \"tags\":[{\"badkey\":\"Turkey\"}]}, {\"name\":\"col2\"}]}}"
+	//resourceGoodInvalidTagKey = "{\"resource\":{\"name\":\"file1\", \"tags\":[residency:\"Turkey\", \"asset\":\"PII\"], \"columns\":[{\"name\":\"col1\", \"tags\":{residency:\"Turkey\"}}, {\"name\":\"col2\"}]}}"
+	
+	//"{\"resource\":{\"name\":\"file1\", \"tags\":[{\"geography\":{\"name\":\"Turkey\"}}], \"columns\":[{\"name\":\"col1\", \"tags\":[{\"geography_name\":\"Turkey\"}]}, {\"name\":\"col2\"}]}}"
+	resourceGoodmetadata = "{\"resource\":{\"name\":\"file1\", \"metadata\":{\"creationTime\":\"1620022174006\", \"createdBy\":\"1000\", \"updationTime\":\"1620022175000\", \"updatedBy\":\"1002\", \"totalRating\": \"4.7\"}}}"
+
+	// {\"resource\":{\"name\":\"file1\", \"tags\":[{\"geography\":{\"name\":\"Turkey\"}}], \"columns\":[{\"name\":\"col1\", \"tags\":[{\"badkey\":\"Turkey\"}]}, {\"name\":\"col2\"}]}}
+	resourceBadmetadata = "{\"resource\":{\"name\":\"file1\", \"metadata\":{\"creationTime\": 1620022174006, \"createdBy\":\"1000\", \"updationTime\":\"1620022175000\", \"updatedBy\":\"1002\", \"totalRating\": \"4.7\"}}}"
 )
 
 func TestCatalogTaxonomy(t *testing.T) {
@@ -63,7 +69,11 @@ func TestCatalogTaxonomy(t *testing.T) {
 	ValidateTaxonomy(t, catalogTaxStructsName, resourceGoodColsTags, "resourceGoodColsTags", true)
 
 	ValidateTaxonomy(t, catalogTaxStructsName, resourceBadNoName, "resourceBadNoName", false)
-	ValidateTaxonomy(t, catalogTaxStructsName, resourceBadInvalidGeo, "resourceBadInvalidGeo", false)
-	ValidateTaxonomy(t, catalogTaxStructsName, resourceBadInvalidTagVal, "resourceBadInvalidTagVal", false)
-	ValidateTaxonomy(t, catalogTaxStructsName, resourceGoodInvalidTagKey, "resourceBadInvalidTagKey", true)
+	//ValidateTaxonomy(t, catalogTaxStructsName, resourceBadInvalidGeo, "resourceBadInvalidGeo", false)
+	//ValidateTaxonomy(t, catalogTaxStructsName, resourceBadInvalidTagVal, "resourceBadInvalidTagVal", false)
+	//ValidateTaxonomy(t, catalogTaxStructsName, resourceGoodInvalidTagKey, "resourceBadInvalidTagKey", true)
+
+	ValidateTaxonomy(t, catalogTaxStructsName, resourceGoodmetadata, "resourceGoodmetadata", true)
+	ValidateTaxonomy(t, catalogTaxStructsName, resourceBadmetadata, "resourceBadmetadata", false)
+
 }
