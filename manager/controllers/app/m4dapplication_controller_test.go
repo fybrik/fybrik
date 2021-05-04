@@ -25,6 +25,7 @@ import (
 
 const timeout = time.Second * 30
 const interval = time.Millisecond * 100
+const ReadPathModuleName = "read-path"
 
 func allocateStorageAccounts() {
 	dummySecret := &corev1.Secret{
@@ -72,7 +73,7 @@ func deleteStorageAccounts() {
 func createModules() {
 	readModule := &apiv1alpha1.M4DModule{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "read-path",
+			Name:      ReadPathModuleName,
 			Namespace: utils.GetSystemNamespace(),
 		},
 		Spec: apiv1alpha1.M4DModuleSpec{
@@ -84,7 +85,17 @@ func createModules() {
 						Source: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.S3, DataFormat: apiv1alpha1.Parquet},
 					},
 				},
-				API: &apiv1alpha1.InterfaceDetails{Protocol: apiv1alpha1.ArrowFlight, DataFormat: apiv1alpha1.Arrow},
+				API: &apiv1alpha1.ModuleAPI{
+					InterfaceDetails: apiv1alpha1.InterfaceDetails{
+						Protocol:   apiv1alpha1.ArrowFlight,
+						DataFormat: apiv1alpha1.Arrow,
+					},
+					Endpoint: apiv1alpha1.EndpointSpec{
+						Hostname: "arrow-flight",
+						Port:     80,
+						Scheme:   "grpc",
+					},
+				},
 				Actions: []apiv1alpha1.SupportedAction{
 					{
 						ID:    "redact-ID",
@@ -125,6 +136,9 @@ func createModules() {
 			},
 			Chart: apiv1alpha1.ChartSpec{
 				Name: "db2-chart",
+				Values: map[string]string{
+					"image": "localhost:5000/m4d-system/dummy-mover:latest",
+				},
 			},
 		},
 	}
@@ -156,6 +170,9 @@ func createModules() {
 			},
 			Chart: apiv1alpha1.ChartSpec{
 				Name: "s3-s3",
+				Values: map[string]string{
+					"image": "localhost:5000/m4d-system/dummy-mover:latest",
+				},
 			},
 		},
 	}
@@ -582,6 +599,15 @@ var _ = Describe("M4DApplication Controller", func() {
 				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
 				return application.Status.Ready
 			}, timeout, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
+
+			By("Status should contain the details of the endpoint")
+			Expect(len(application.Status.ReadEndpointsMap)).To(Equal(1))
+			fqdn := "notebook-default-read-path-ffea578653.m4d-blueprints.svc.cluster.local"
+			Expect(application.Status.ReadEndpointsMap["asset_id-xxx-catalog_id-s3"]).To(Equal(apiv1alpha1.EndpointSpec{
+				Hostname: fqdn,
+				Port:     80,
+				Scheme:   "grpc",
+			}))
 		})
 	})
 })

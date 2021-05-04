@@ -105,13 +105,6 @@ worker:
   # Set to false to disable worker components in manager.
   enabled: true
 
-# Mover configuration used in the Mostion API controllers
-mover:
-  # Image name or a hub/image[:tag]
-  image: "mover"
-  # Overrides global.imagePullPolicy
-  imagePullPolicy: ""
-
 # Manager component
 manager:
   # Set to true to deploy the manager component or false to skip its deployment.
@@ -180,18 +173,6 @@ manager:
   affinity: {}
 
   prometheus: false
-
-# Secret provider component deployed as part of manager
-secretProvider:
-  # Set to true to deploy the secret provider or false to skip its deployment.
-  # Defaults to true if `.manager.enabled` is set to true
-  enabled: auto
-
-  # Image name or a hub/image[:tag]
-  image: "secret-provider"
-
-  # Overrides global.imagePullPolicy
-  imagePullPolicy: ""
 
 # OPA connector component
 opaConnector:

@@ -8,19 +8,6 @@ import (
 	"net/url"
 )
 
-// GetFullCredentialsPath returns the path to be used for credentials retrieval
-func GetFullCredentialsPath(secretName string) string {
-	base := GetSecretProviderURL() + "?role=" + GetSecretProviderRole() + "&secret_name="
-	return fmt.Sprintf("%s%s", base, url.QueryEscape(secretName))
-}
-
-// GetDatasetVaultPath returns the path that can be used externally to retrieve a dataset's credentials
-// It is of the form <secret-provider-url>/v1/m4d-system/dataset-creds/...
-func GetDatasetVaultPath(assetID string) string {
-	secretName := "/v1/" + GetVaultDatasetHome() + assetID
-	return GetFullCredentialsPath(secretName)
-}
-
 // GetSecretPath returns the path to the secret that holds the dataset's credentials
 // It is of the form /v1/m4d-system/dataset-creds/...
 func GetSecretPath(assetID string) string {

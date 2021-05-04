@@ -4,12 +4,22 @@
 
 : ${PORT_TO_FORWARD:=8200}
 
+
+# Enable userpass auth method
+# $1 user name
+# $2 password
+# $3 policy
+enable_userpass_auth() {
+	vault auth enable userpass
+	vault write auth/userpass/users/"$1" password="$2" policies="$3"
+}
+
+
 # $1 role name
 # $2 policy name
 # $3 path to auth method
 # $4 bound_service_account_namespaces
 create_role() {
-        # Configure a role for the secret-provider
         echo "creating role $1 in k8s auth"
         bin/vault write auth/"$3"/role/"$1" \
         bound_service_account_names="*" \

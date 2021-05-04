@@ -80,6 +80,7 @@ spec:
                               - csv
                               - json
                               - avro
+                              - orc
                               - binary
                               - arrow
                               type: string
@@ -214,7 +215,26 @@ spec:
                       description: Reference to a secret where the credentials are stored
                       type: string
                   type: object
-                description: ProvisionedStorage maps a dataset (identified by DataSetID) to the new provisioned bucket. It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received. ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready
+                description: ProvisionedStorage maps a dataset (identified by AssetID) to the new provisioned bucket. It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received. ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready
+                type: object
+              readEndpointsMap:
+                additionalProperties:
+                  description: EndpointSpec is used both by the module creator and by the status of the m4dapplication
+                  properties:
+                    hostname:
+                      description: Always equals the release name. Can be omitted.
+                      type: string
+                    port:
+                      format: int32
+                      type: integer
+                    scheme:
+                      description: 'For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc'
+                      type: string
+                  required:
+                  - port
+                  - scheme
+                  type: object
+                description: ReadEndpointsMap maps an datasetID (after parsing from json to a string with dashes) to the endpoint spec from which the asset will be served to the application
                 type: object
               ready:
                 description: Ready is true if a blueprint has been successfully orchestrated

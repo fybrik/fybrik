@@ -67,5 +67,5 @@ func TestDummyMultiClusterManager(t *testing.T) {
 	getBlueprint, err = manager.GetBlueprint("kind-kind", "ns", "n")
 	g.Expect(getBlueprint).To(gomega.BeNil())
 	g.Expect(err).To(gomega.Not(gomega.BeNil()))
-	g.Expect(err).To(gomega.Equal(errors.New("Blueprint not found")))
+	g.Expect(err).To(gomega.Equal(errors.New("blueprint not found")))
 }

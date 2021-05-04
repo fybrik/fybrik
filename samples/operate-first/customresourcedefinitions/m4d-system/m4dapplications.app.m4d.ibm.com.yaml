@@ -1,0 +1,299 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.3.0
+  creationTimestamp: null
+  name: m4dapplications.app.m4d.ibm.com
+spec:
+  group: app.m4d.ibm.com
+  names:
+    kind: M4DApplication
+    listKind: M4DApplicationList
+    plural: m4dapplications
+    singular: m4dapplication
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: M4DApplication provides information about the application being
+        used by a Data Scientist, the nature of the processing, and the data sets
+        that the Data Scientist has chosen for processing by the application. The
+        M4DApplication controller (aka pilot) obtains instructions regarding any governance
+        related changes that must be performed on the data, identifies the modules
+        capable of performing such changes, and finally generates the Blueprint which
+        defines the secure runtime environment and all the components in it.  This
+        runtime environment provides the Data Scientist's application with access
+        to the data requested in a secure manner and without having to provide any
+        credentials for the data sets.  The credentials are obtained automatically
+        by the manager from an external credential management system, which may or
+        may not be part of a data catalog.
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: M4DApplicationSpec defines the desired state of M4DApplication.
+          properties:
+            appInfo:
+              additionalProperties:
+                type: string
+              description: AppInfo contains information describing the reasons for
+                the processing that will be done by the Data Scientist's application.
+              type: object
+            data:
+              description: Data contains the identifiers of the data to be used by
+                the Data Scientist's application, and the protocol used to access
+                it and the format expected.
+              items:
+                description: DataContext indicates data set chosen by the Data Scientist
+                  to be used by his application, and includes information about the
+                  data format and technologies used by the application to access the
+                  data.
+                properties:
+                  catalogService:
+                    description: CatalogService represents the catalog service for
+                      accessing the requested dataset. If not specified, the enterprise
+                      catalog service will be used.
+                    type: string
+                  dataSetID:
+                    description: DataSetID is a unique identifier of the dataset chosen
+                      from the data catalog for processing by the data user application.
+                    minLength: 1
+                    type: string
+                  requirements:
+                    description: Requirements from the system
+                    properties:
+                      copy:
+                        description: CopyRequrements include the requirements for
+                          copying the data
+                        properties:
+                          catalog:
+                            description: Catalog indicates that the data asset must
+                              be cataloged.
+                            properties:
+                              catalogID:
+                                description: CatalogID specifies the catalog where
+                                  the data will be cataloged.
+                                type: string
+                              service:
+                                description: CatalogService specifies the datacatalog
+                                  service that will be used for catalogging the data
+                                  into.
+                                type: string
+                            type: object
+                          required:
+                            description: Required indicates that the data must be
+                              copied.
+                            type: boolean
+                        type: object
+                      interface:
+                        description: Interface indicates the protocol and format expected
+                          by the data user
+                        properties:
+                          dataformat:
+                            description: DataFormatType defines data format type
+                            enum:
+                            - parquet
+                            - table
+                            - csv
+                            - json
+                            - avro
+                            - binary
+                            - arrow
+                            type: string
+                          protocol:
+                            description: IFProtocol defines interface protocol for
+                              data transactions
+                            enum:
+                            - s3
+                            - kafka
+                            - jdbc-db2
+                            - m4d-arrow-flight
+                            type: string
+                        required:
+                        - protocol
+                        type: object
+                    required:
+                    - interface
+                    type: object
+                required:
+                - dataSetID
+                - requirements
+                type: object
+              minItems: 1
+              type: array
+            secretRef:
+              description: SecretRef points to the secret that holds credentials for
+                each system the user has been authenticated with. The secret is deployed
+                in M4dApplication namespace.
+              type: string
+            selector:
+              description: Selector enables to connect the resource to the application
+                Application labels should match the labels in the selector. For some
+                flows the selector may not be used.
+              properties:
+                clusterName:
+                  description: Cluster name
+                  type: string
+                workloadSelector:
+                  description: WorkloadSelector enables to connect the resource to
+                    the application Application labels should match the labels in
+                    the selector.
+                  properties:
+                    matchExpressions:
+                      description: matchExpressions is a list of label selector requirements.
+                        The requirements are ANDed.
+                      items:
+                        description: A label selector requirement is a selector that
+                          contains values, a key, and an operator that relates the
+                          key and values.
+                        properties:
+                          key:
+                            description: key is the label key that the selector applies
+                              to.
+                            type: string
+                          operator:
+                            description: operator represents a key's relationship
+                              to a set of values. Valid operators are In, NotIn, Exists
+                              and DoesNotExist.
+                            type: string
+                          values:
+                            description: values is an array of string values. If the
+                              operator is In or NotIn, the values array must be non-empty.
+                              If the operator is Exists or DoesNotExist, the values
+                              array must be empty. This array is replaced during a
+                              strategic merge patch.
+                            items:
+                              type: string
+                            type: array
+                        required:
+                        - key
+                        - operator
+                        type: object
+                      type: array
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: matchLabels is a map of {key,value} pairs. A single
+                        {key,value} in the matchLabels map is equivalent to an element
+                        of matchExpressions, whose key field is "key", the operator
+                        is "In", and the values array contains only "value". The requirements
+                        are ANDed.
+                      type: object
+                  type: object
+              required:
+              - workloadSelector
+              type: object
+          required:
+          - appInfo
+          - data
+          type: object
+        status:
+          description: M4DApplicationStatus defines the observed state of M4DApplication.
+          properties:
+            catalogedAssets:
+              additionalProperties:
+                type: string
+              description: CatalogedAssets provide the new asset identifiers after
+                being registered in the enterprise catalog It maps the original asset
+                id to the cataloged asset id.
+              type: object
+            conditions:
+              description: Conditions represent the possible error and failure conditions
+              items:
+                description: Condition describes the state of a M4DApplication at
+                  a certain point.
+                properties:
+                  message:
+                    description: Message contains the details of the current condition
+                    type: string
+                  status:
+                    description: 'Status of the condition: true or false'
+                    type: string
+                  type:
+                    description: Type of the condition
+                    type: string
+                required:
+                - status
+                - type
+                type: object
+              type: array
+            dataAccessInstructions:
+              description: DataAccessInstructions indicate how the data user or his
+                application may access the data. Instructions are available upon successful
+                orchestration.
+              type: string
+            generated:
+              description: Generated resource identifier
+              properties:
+                kind:
+                  description: Kind of the resource (Blueprint, Plotter)
+                  type: string
+                name:
+                  description: Name of the resource
+                  type: string
+                namespace:
+                  description: Namespace of the resource
+                  type: string
+              required:
+              - kind
+              - name
+              - namespace
+              type: object
+            observedGeneration:
+              description: ObservedGeneration is taken from the M4DApplication metadata.  This
+                is used to determine during reconcile whether reconcile was called
+                because the desired state changed, or whether the Blueprint status
+                changed.
+              format: int64
+              type: integer
+            provisionedStorage:
+              additionalProperties:
+                description: DatasetDetails contain dataset connection and metadata
+                  required to register this dataset in the enterprise catalog
+                properties:
+                  datasetRef:
+                    description: Reference to a Dataset resource containing the request
+                      to provision storage
+                    type: string
+                  details:
+                    description: Dataset information
+                    type: object
+                  secretRef:
+                    description: Reference to a secret where the credentials are stored
+                    type: string
+                type: object
+              description: ProvisionedStorage maps a dataset (identified by DataSetID)
+                to the new provisioned bucket. It allows M4DApplication controller
+                to manage buckets in case the spec has been modified, an error has
+                occurred, or a delete event has been received. ProvisionedStorage
+                has the information required to register the dataset once the owned
+                plotter resource is ready
+              type: object
+            ready:
+              description: Ready is true if a blueprint has been successfully orchestrated
+              type: boolean
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ''
+    plural: ''
+  conditions: []
+  storedVersions: []

@@ -5,7 +5,7 @@ package vaultutils
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/vault/api"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -89,14 +90,12 @@ func (vlt *VaultConnection) InitVault() (*api.Client, error) {
 
 	client, err := api.NewClient(conf)
 	if err != nil {
-		msg := "Error creating vault client: " + err.Error()
-		return nil, errors.New(msg)
+		return nil, errors.Wrap(err, "error creating vault client")
 	}
 
 	// Get the vault token stored in config
 	if token == "" {
-		msg := "No vault token found.  Cannot authenticate with vault."
-		return nil, errors.New(msg)
+		return nil, errors.New("cannot authenticate with vault: no vault token found")
 	}
 
 	client.SetToken(token)
@@ -111,8 +110,7 @@ func (vlt *VaultConnection) GetFromVault(vaultPathKey string, innerVaultPath str
 
 	logicalClient := vlt.Client.Logical()
 	if logicalClient == nil {
-		msg := "No logical client received when retrieving credentials from vault"
-		return "", errors.New(msg)
+		return "", errors.New("no logical client received when retrieving credentials from vault")
 	}
 
 	// logicalClient does not work with paths that start with /v1/ so we need to remove the prefix
@@ -122,19 +120,16 @@ func (vlt *VaultConnection) GetFromVault(vaultPathKey string, innerVaultPath str
 
 	data, err := logicalClient.Read(vaultPath)
 	if err != nil {
-		msg := "Error reading credentials from vault for " + vaultPath + ":" + err.Error()
-		return "", errors.New(msg)
+		return "", errors.Wrapf(err, "error reading credentials from vault for %s", vaultPath)
 	}
 
 	if data == nil || data.Data == nil {
-		msg := "No data received for credentials from vault for " + vaultPath
-		return "", errors.New(msg)
+		return "", fmt.Errorf("no data received for credentials from vault for %s", vaultPath)
 	}
 
 	b, jsonErr := json.Marshal(data.Data)
 	if jsonErr != nil {
-		msg := "Error marshaling credentials to json for " + vaultPath + ":" + jsonErr.Error()
-		return "", errors.New(msg)
+		return "", errors.Wrapf(err, "error marshaling credentials to json for %s", vaultPath)
 	}
 
 	return string(b), nil
@@ -147,15 +142,13 @@ func (vlt *VaultConnection) AddToVault(innerVaultPath string, credentialsMap map
 	// Add credentials to vault, and return vaultPath where they are stored
 	logicalClient := vlt.Client.Logical()
 	if logicalClient == nil {
-		msg := "No logical client received when adding data set credentials to vault"
-		return vaultDatasetPath, errors.New(msg)
+		return vaultDatasetPath, errors.New("no logical client received when adding data set credentials to vault")
 	}
 
 	log.Printf("vaultDatasetPath in AddToVault: %s\n", vaultDatasetPath)
 	_, err := logicalClient.Write(vaultDatasetPath, credentialsMap)
 	if err != nil {
-		msg := "Error adding credentials to vault to " + vaultDatasetPath + ":" + err.Error()
-		return vaultDatasetPath, errors.New(msg)
+		return vaultDatasetPath, errors.Wrapf(err, "error adding credentials to vault to %s", vaultDatasetPath)
 	}
 	return vaultDatasetPath, nil
 }

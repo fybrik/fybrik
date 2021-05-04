@@ -75,7 +75,7 @@ func (reconciler *BatchTransferReconciler) Reconcile(ctx context.Context, req ct
 		job := &kbatch.Job{}
 		if err := reconciler.Get(ctx, batchTransfer.ObjectKey(), job); err != nil {
 			if !kerrors.IsNotFound(err) {
-				log.Error(err, "could not fetch Job for batchTransfer %s", batchTransfer.ObjectKey())
+				log.Error(err, "could not fetch Job for batchTransfer %s", "batchTransfer", batchTransfer.ObjectKey())
 				return ctrl.Result{}, err
 			}
 			// If job was not found just continue...

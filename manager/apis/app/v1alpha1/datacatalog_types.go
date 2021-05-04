@@ -8,15 +8,10 @@ import (
 )
 
 // DataStore contains the details for accesing the data that are sent by catalog connectors
-// Credentials for accesing the data are stored in Vault, in the location represented by CredentialLocation property.
+// Credentials for accesing the data are stored in Vault, in the location represented by Vault property.
 type DataStore struct {
-	// CredentialLocation is used to obtain
-	// the credentials from the credential management system - ex: vault
-	// +optional
-	CredentialLocation string `json:"credentialLocation,omitempty"`
 	// Holds details for retrieving credentials by the modules from Vault store.
-	// +optional
-	Vault *Vault `json:"vault,omitempty"`
+	Vault Vault `json:"vault"`
 	// Connection has the relevant details for accesing the data (url, table, ssl, etc.)
 	// +required
 	Connection runtime.RawExtension `json:"connection"`

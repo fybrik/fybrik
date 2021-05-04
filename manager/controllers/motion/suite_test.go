@@ -4,7 +4,6 @@
 package motion
 
 import (
-	"flag"
 	"os"
 	"path/filepath"
 	"testing"
@@ -61,12 +60,7 @@ func TestMotionAPIs(t *testing.T) {
 //   should be used. E.g. in integration tests running against an existing setup a controller is already existing
 //   in the Kubernetes cluster and should not be started by the test as two controllers competing may influence the test.
 var _ = BeforeSuite(func(done Done) {
-	opts := zap.Options{
-		Development: true,
-	}
-	opts.BindFlags(flag.CommandLine)
-	flag.Parse()
-	logf.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 	By("bootstrapping test environment")
 	if os.Getenv("NO_SIMULATED_PROGRESS") == "true" {
 		noSimulatedProgress = true

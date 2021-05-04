@@ -7,8 +7,8 @@ import (
 	"log"
 	"testing"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/proto"
 
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 )

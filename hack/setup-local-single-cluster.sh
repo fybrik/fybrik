@@ -14,7 +14,7 @@ make -C charts cert-manager
 make -C third_party/datashim deploy
 make docker
 make cluster-prepare-wait
-make -C secret-provider configure-vault
+make configure-vault
 make -C charts m4d
 make -C manager wait_for_manager
 make -C modules helm-chart-push

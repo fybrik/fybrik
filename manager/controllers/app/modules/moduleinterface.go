@@ -6,6 +6,8 @@ package modules
 import (
 	"errors"
 
+	"github.com/ibm/the-mesh-for-data/pkg/serde"
+
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
@@ -235,4 +237,34 @@ func (m *Selector) SelectCluster(item DataInfo, clusters []multicluster.Cluster)
 		}
 	}
 	return "", errors.New(app.InvalidClusterConfiguration + "\nNo clusters have been found for running " + m.Module.Name + " in " + geo)
+}
+
+// Transforms a CatalogDatasetInfo into a DataDetails struct
+// TODO Think about getting rid of one or the other and reuse
+func CatalogDatasetToDataDetails(response *pb.CatalogDatasetInfo) (*DataDetails, error) {
+	details := response.GetDetails()
+	protocol, err := utils.GetProtocol(details)
+	if err != nil {
+		return nil, err
+	}
+	format, err := utils.GetDataFormat(details)
+	if err != nil {
+		return nil, err
+	}
+
+	connection, err := serde.ToRawExtension(details.DataStore)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DataDetails{
+		Name: details.Name,
+		Interface: app.InterfaceDetails{
+			Protocol:   protocol,
+			DataFormat: format,
+		},
+		Geography:  details.Geo,
+		Connection: *connection,
+		Metadata:   details.Metadata,
+	}, nil
 }

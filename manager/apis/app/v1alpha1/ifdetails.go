@@ -8,7 +8,7 @@ package v1alpha1
 type IFProtocol string
 
 // DataFormatType defines data format type
-// +kubebuilder:validation:Enum=parquet;table;csv;json;avro;binary;arrow
+// +kubebuilder:validation:Enum=parquet;table;csv;json;avro;orc;binary;arrow
 type DataFormatType string
 
 // DataFormatType valid values
@@ -18,6 +18,7 @@ const (
 	CSV     DataFormatType = "csv"
 	JSON    DataFormatType = "json"
 	AVRO    DataFormatType = "avro"
+	ORC     DataFormatType = "orc"
 	Binary  DataFormatType = "binary"
 	Arrow   DataFormatType = "arrow"
 )

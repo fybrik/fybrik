@@ -19,12 +19,12 @@ func Start(address string) error {
 
 	client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: scheme})
 	if err != nil {
-		return errors.Wrap(err, "Failed to create client")
+		return errors.Wrap(err, "failed to create client")
 	}
 
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
-		return errors.Wrap(err, "Failed to create a listerning socket")
+		return errors.Wrap(err, "failed to create a listerning socket")
 	}
 
 	server := grpc.NewServer()
@@ -32,7 +32,7 @@ func Start(address string) error {
 	connectors.RegisterDataCredentialServiceServer(server, &DataCredentialsService{client: client})
 
 	if err := server.Serve(listener); err != nil {
-		return errors.Wrap(err, "Connector server errored")
+		return errors.Wrap(err, "connector server errored")
 	}
 
 	return nil
