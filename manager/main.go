@@ -17,7 +17,6 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/motion"
 
 	kruntime "k8s.io/apimachinery/pkg/runtime"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -39,8 +38,6 @@ var (
 )
 
 func init() {
-	_ = clientgoscheme.AddToScheme(scheme)
-
 	_ = motionv1.AddToScheme(scheme)
 	_ = appv1.AddToScheme(scheme)
 	_ = comv1alpha1.SchemeBuilder.AddToScheme(scheme)
@@ -62,8 +59,8 @@ func main() {
 	var enableAllControllers bool
 	var namespace string
 	address := utils.ListeningAddress(8085)
-	flag.StringVar(&metricsAddr, "metrics-addr", address, "The address the metric endpoint binds to.")
-	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
+	flag.StringVar(&metricsAddr, "metrics-bind-addr", address, "The address the metric endpoint binds to.")
+	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
 	flag.BoolVar(&enableApplicationController, "enable-application-controller", false,
 		"Enable application controller of the manager. This manages CRDs of type M4DApplication.")

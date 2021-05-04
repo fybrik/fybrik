@@ -50,8 +50,7 @@ type M4DApplicationReconciler struct {
 // Reconcile reconciles M4DApplication CRD
 // It receives M4DApplication CRD and selects the appropriate modules that will run
 // The outcome is either a single Blueprint running on the same cluster or a Plotter containing multiple Blueprints that may run on different clusters
-func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
+func (r *M4DApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("m4dapplication", req.NamespacedName)
 	// obtain M4DApplication resource
 	applicationContext := &app.M4DApplication{}
@@ -270,7 +269,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	objectKey, _ := client.ObjectKeyFromObject(applicationContext)
+	objectKey := client.ObjectKeyFromObject(applicationContext)
 	moduleManager := &ModuleManager{
 		Client:             r.Client,
 		Log:                r.Log,
@@ -391,30 +390,29 @@ func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultConnection 
 
 // SetupWithManager registers M4DApplication controller
 func (r *M4DApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	mapFn := handler.ToRequestsFunc(
-		func(a handler.MapObject) []reconcile.Request {
-			labels := a.Meta.GetLabels()
-			if labels == nil {
-				return []reconcile.Request{}
-			}
-			namespace, foundNamespace := labels[app.ApplicationNamespaceLabel]
-			name, foundName := labels[app.ApplicationNameLabel]
-			if !foundNamespace || !foundName {
-				return []reconcile.Request{}
-			}
-			return []reconcile.Request{
-				{NamespacedName: types.NamespacedName{
-					Name:      name,
-					Namespace: namespace,
-				}},
-			}
-		})
+
+	mapFn := func(a client.Object) []reconcile.Request {
+		labels := a.GetLabels()
+		if labels == nil {
+			return []reconcile.Request{}
+		}
+		namespace, foundNamespace := labels[app.ApplicationNamespaceLabel]
+		name, foundName := labels[app.ApplicationNameLabel]
+		if !foundNamespace || !foundName {
+			return []reconcile.Request{}
+		}
+		return []reconcile.Request{
+			{NamespacedName: types.NamespacedName{
+				Name:      name,
+				Namespace: namespace,
+			}},
+		}
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&app.M4DApplication{}).
-		Watches(&source.Kind{Type: r.ResourceInterface.GetManagedObject()},
-			&handler.EnqueueRequestsFromMapFunc{
-				ToRequests: mapFn,
-			}).Complete(r)
+		Watches(&source.Kind{
+			Type: &app.Plotter{},
+		}, handler.EnqueueRequestsFromMapFunc(mapFn)).Complete(r)
 }
 
 // AnalyzeError analyzes whether the given error is fatal, or a retrial attempt can be made.

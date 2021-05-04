@@ -53,8 +53,7 @@ var _ = Describe("StreamTransfer Controller", func() {
 			err = yaml.Unmarshal(streamTransferYAML, streamTransfer)
 			Expect(err).ToNot(HaveOccurred())
 
-			key, err := client.ObjectKeyFromObject(streamTransfer)
-			Expect(err).ToNot(HaveOccurred())
+			key := client.ObjectKeyFromObject(streamTransfer)
 
 			// Create StreamTransfer
 			Expect(k8sClient.Create(context.Background(), streamTransfer)).Should(Succeed())

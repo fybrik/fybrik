@@ -1,19 +1,16 @@
 module github.com/ibm/the-mesh-for-data
 
-go 1.13
+go 1.15
 
 require (
 	emperror.dev/errors v0.7.0
 	github.com/IBM/satcon-client-go v0.1.2-0.20210329192404-b8fa1c732712
-	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/Microsoft/go-winio v0.4.15 // indirect
 	github.com/buger/jsonparser v1.1.1
-	github.com/containerd/continuity v0.0.0-20201119173150-04c754faca46 // indirect
-	github.com/datashim-io/datashim/src/dataset-operator v0.0.0-20210322095623-e5d70b250696
+	github.com/datashim-io/datashim/src/dataset-operator v0.0.0-20210421141459-334795d082bd
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-chi/render v1.0.1
-	github.com/go-logr/logr v0.1.0
+	github.com/go-logr/logr v0.3.0
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/spec v0.19.6 // indirect
 	github.com/go-openapi/swag v0.19.7 // indirect
@@ -39,49 +36,43 @@ require (
 	github.com/prometheus/common v0.19.0 // indirect
 	github.com/robfig/cron v1.2.0
 	github.com/shirou/gopsutil v3.20.11+incompatible // indirect
-	github.com/sirupsen/logrus v1.7.0 // indirect
 	github.com/spf13/cobra v1.1.1
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/zap v1.16.0 // indirect
 	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc // indirect
 	golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5 // indirect
-	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a // indirect
-	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
-	gomodules.xyz/jsonpatch/v2 v2.1.0 // indirect
 	google.golang.org/api v0.36.0 // indirect
 	google.golang.org/genproto v0.0.0-20210415145412-64678f1ae2d5 // indirect
 	google.golang.org/grpc v1.36.1
 	google.golang.org/protobuf v1.26.0
 	gopkg.in/ini.v1 v1.51.1 // indirect
 	gopkg.in/yaml.v2 v2.3.0
-	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 	gotest.tools v2.2.0+incompatible
-	helm.sh/helm/v3 v3.2.4
+	helm.sh/helm/v3 v3.5.2
 	k8s.io/api v0.20.2
-	k8s.io/apiextensions-apiserver v0.20.2 // indirect
 	k8s.io/apimachinery v0.20.2
-	k8s.io/cli-runtime v0.18.6
+	k8s.io/cli-runtime v0.20.2
 	k8s.io/client-go v12.0.0+incompatible
-	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/cli-utils v0.20.4
-	sigs.k8s.io/controller-runtime v0.6.2
+	sigs.k8s.io/controller-runtime v0.7.2
 	sigs.k8s.io/yaml v1.2.0
 )
 
 replace (
-	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
+	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
+	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 	github.com/google/addlicense => github.com/the-mesh-for-data/addlicense v0.0.0-20200913135744-636c44b42906
 	github.com/onsi/gomega => github.com/onsi/gomega v1.10.0
-	helm.sh/helm/v3 v3.2.4 => github.com/the-mesh-for-data/helm/v3 v3.2.4-hunchback2
-	k8s.io/api => k8s.io/api v0.18.6
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.6
-	k8s.io/apimachinery => k8s.io/apimachinery v0.18.6
-	k8s.io/apiserver => k8s.io/apiserver v0.18.6
-	k8s.io/cli-runtime => k8s.io/cli-runtime v0.18.6
-	k8s.io/client-go => k8s.io/client-go v0.18.6
+	helm.sh/helm/v3 v3.5.2 => /Users/ffr/go/src/github.com/the-mesh-for-data/helm
+	k8s.io/api => k8s.io/api v0.19.2
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.19.2
+	k8s.io/apimachinery => k8s.io/apimachinery v0.19.2
+	k8s.io/apiserver => k8s.io/apiserver v0.19.2
+	k8s.io/cli-runtime => k8s.io/cli-runtime v0.19.2
+	k8s.io/client-go => k8s.io/client-go v0.19.2
 	k8s.io/cloud-provider => k8s.io/cloud-provider v0.18.6
 	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.18.6
 	k8s.io/code-generator => k8s.io/code-generator v0.18.6
@@ -92,7 +83,7 @@ replace (
 	k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.18.6
 	k8s.io/kube-proxy => k8s.io/kube-proxy v0.18.6
 	k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.18.6
-	k8s.io/kubectl => k8s.io/kubectl v0.18.6
+	k8s.io/kubectl => k8s.io/kubectl v0.19.2
 	k8s.io/kubelet => k8s.io/kubelet v0.18.6
 	k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.18.6
 	k8s.io/metrics => k8s.io/metrics v0.18.6

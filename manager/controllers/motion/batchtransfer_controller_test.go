@@ -53,8 +53,7 @@ var _ = Describe("BatchTransfer Controller", func() {
 			err = yaml.Unmarshal(batchTransferYAML, batchTransfer)
 			Expect(err).ToNot(HaveOccurred())
 
-			key, err := client.ObjectKeyFromObject(batchTransfer)
-			Expect(err).ToNot(HaveOccurred())
+			key := client.ObjectKeyFromObject(batchTransfer)
 
 			// Create BatchTransfer
 			Expect(k8sClient.Create(context.Background(), batchTransfer)).Should(Succeed())

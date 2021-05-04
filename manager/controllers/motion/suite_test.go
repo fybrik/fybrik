@@ -4,6 +4,7 @@
 package motion
 
 import (
+	"flag"
 	"os"
 	"path/filepath"
 	"testing"
@@ -17,7 +18,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"k8s.io/client-go/kubernetes/scheme"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
@@ -61,7 +61,12 @@ func TestMotionAPIs(t *testing.T) {
 //   should be used. E.g. in integration tests running against an existing setup a controller is already existing
 //   in the Kubernetes cluster and should not be started by the test as two controllers competing may influence the test.
 var _ = BeforeSuite(func(done Done) {
-	logf.SetLogger(zap.LoggerTo(GinkgoWriter, true))
+	opts := zap.Options{
+		Development: true,
+	}
+	opts.BindFlags(flag.CommandLine)
+	flag.Parse()
+	logf.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 	By("bootstrapping test environment")
 	if os.Getenv("NO_SIMULATED_PROGRESS") == "true" {
 		noSimulatedProgress = true
@@ -76,7 +81,6 @@ var _ = BeforeSuite(func(done Done) {
 	Expect(err).ToNot(HaveOccurred())
 	Expect(cfg).ToNot(BeNil())
 
-	_ = clientgoscheme.AddToScheme(scheme.Scheme)
 	err = motionv1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 

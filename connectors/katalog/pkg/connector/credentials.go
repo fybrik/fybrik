@@ -42,7 +42,7 @@ func (s *DataCredentialsService) GetCredentialsInfo(ctx context.Context, req *co
 			Name:      secretName,
 		},
 	}
-	objectKey, err := kclient.ObjectKeyFromObject(secret)
+	objectKey := kclient.ObjectKeyFromObject(secret)
 	if err != nil {
 		return nil, err
 	}

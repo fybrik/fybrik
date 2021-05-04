@@ -44,8 +44,7 @@ var _ = Describe("Blueprint Controller", func() {
 			err = yaml.Unmarshal(blueprintYAML, blueprint)
 			Expect(err).ToNot(HaveOccurred())
 
-			key, err := client.ObjectKeyFromObject(blueprint)
-			Expect(err).ToNot(HaveOccurred())
+			key := client.ObjectKeyFromObject(blueprint)
 
 			// Create Blueprint
 			Expect(k8sClient.Create(context.Background(), blueprint)).Should(Succeed())

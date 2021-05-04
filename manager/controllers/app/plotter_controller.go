@@ -36,8 +36,7 @@ const BlueprintNamespace = "m4d-blueprints"
 
 // Reconcile receives a Plotter CRD
 //nolint:dupl
-func (r *PlotterReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
+func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("plotter", req.NamespacedName)
 
 	plotter := app.Plotter{}

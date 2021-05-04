@@ -546,8 +546,7 @@ var _ = Describe("M4DApplication Controller", func() {
 			err = yaml.Unmarshal(applicationYAML, application)
 			Expect(err).ToNot(HaveOccurred())
 
-			applicationKey, err := client.ObjectKeyFromObject(application)
-			Expect(err).ToNot(HaveOccurred())
+			applicationKey := client.ObjectKeyFromObject(application)
 
 			// Create M4DApplication
 			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
