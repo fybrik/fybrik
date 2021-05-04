@@ -195,11 +195,16 @@ func TestValidS3Bucket(t *testing.T) {
 	assert.Nil(t, err)
 
 	// test http endpoint
+	datastore.S3.Endpoint = "http://localhost"
+	err = validateDataStore(path, &datastore)
+	assert.Nil(t, err)
+
+	// test http endpoint with host
 	datastore.S3.Endpoint = "http://localhost:9090"
 	err = validateDataStore(path, &datastore)
 	assert.Nil(t, err)
 
-	// test https endpoint
+	// test https endpoint with host
 	datastore.S3.Endpoint = "https://localhost:9091"
 	err = validateDataStore(path, &datastore)
 	assert.Nil(t, err)
