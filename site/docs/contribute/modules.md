@@ -126,7 +126,15 @@ flows: # Indicate the data flow(s) in which the control plane should consider us
 * `format` field can take a value such as `avro`, `parquet`, `json`, or `csv`.
 Note that a module that targets copy flows will omit the `api` field and contain just `source` and `sink`, a module that only supports reading data assets will omit the `sink` field and only contain `api` and `source`
 
-`capabilites.api` indicates the protocol and data format supported for reading or writing data from the user's workload.
+`capabilites.api` describes the api exposed by the module for reading or writing data from the user's workload:
+* `protocol` field can take a value such as `kafka`, `s3`, `jdbc-db2`, `m4d-arrow-flight`, etc 
+* `dataformat` field can take a value such as `parquet`, `csv`, `arrow`, etc
+* `endpoint` field describes the endpoint exposed the module
+
+`capabilites.api.endpoint` describes the endpoint from a networking perspective:
+* `hostname` field is the hostname to be used when accessing the module. Equals the release name. Can be omitted.
+* `port` field is the port of the service exposed by the module.
+* `scheme` field can take a value such as `http`, `https`, `grpc`, `grpc+tls`, `jdbc:oracle:thin:@`, etc
 
 An example for a module that copies data from a db2 database table to an s3 bucket in parquet format.
 
@@ -149,6 +157,9 @@ capabilities:
     api:
       protocol: m4d-arrow-flight
       dataformat: arrow
+      endpoint:
+        port: 80
+        scheme: grpc
     supportedInterfaces:
     - flow: read
       source:

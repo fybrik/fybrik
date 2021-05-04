@@ -47,8 +47,8 @@ public final class EgeriaConnector {
       return strbuilder.toString();
   }
 
-  public void setEgeriaDefaultUserName(final String egeriaDefaultUserName) {
-    this.egeriaDefaultUserName = egeriaDefaultUserName;
+  public void setEgeriaDefaultUserName(final String egeriaDefUserName) {
+    this.egeriaDefaultUserName = egeriaDefUserName;
   }
 
   public String getEgeriaDefaultUserName() {
@@ -61,14 +61,6 @@ public final class EgeriaConnector {
 
   public int getPort() {
     return this.port;
-  }
-
-  private String getProperty(final String name) {
-    String val = System.getenv(name);
-    if (val == null) {
-        throw new AssertionError(name + " not set as environment variable");
-    }
-    return val;
   }
 
   private void start() throws Exception {

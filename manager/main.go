@@ -144,7 +144,11 @@ func main() {
 		policyCompiler := pc.NewPolicyCompiler()
 
 		// Initiate the M4DApplication Controller
-		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultConn, policyCompiler, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
+		applicationController, err := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultConn, policyCompiler, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
+		if err != nil {
+			setupLog.Error(err, "unable to create controller")
+			os.Exit(1)
+		}
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
 			os.Exit(1)

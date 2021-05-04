@@ -42,6 +42,34 @@ spec:
       sink:
         protocol: s3
         dataformat: parquet
+    - flow: copy
+      source:
+        protocol: s3
+        dataformat: orc
+      sink:
+        protocol: s3
+        dataformat: parquet
+    - flow: copy
+      source:
+        protocol: s3
+        dataformat: csv
+      sink:
+        protocol: s3
+        dataformat: csv
+    - flow: copy
+      source:
+        protocol: s3
+        dataformat: json
+      sink:
+        protocol: s3
+        dataformat: json
+    - flow: copy
+      source:
+        protocol: s3
+        dataformat: orc
+      sink:
+        protocol: s3
+        dataformat: orc
     actions:
     - id: redact-ID
       level: 2  # column

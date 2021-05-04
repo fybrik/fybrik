@@ -63,7 +63,7 @@ func (s *DataCredentialsService) GetCredentialsInfo(ctx context.Context, req *co
 	case corev1.SecretTypeOpaque:
 		err = decodeToStruct(data, authn)
 		if err != nil {
-			return nil, errors.Wrap(err, "Invalid fields in Secret data")
+			return nil, errors.Wrap(err, "invalid fields in Secret data")
 		}
 	case corev1.SecretTypeBasicAuth:
 		username := data[corev1.BasicAuthUsernameKey]

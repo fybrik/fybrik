@@ -23,8 +23,8 @@ copy:
 #        sasl_mechanism: ""
 #        key_deserializer: ""
 #        value_deserializer: ""
-#    credentialLocation: ""
 #    format: ""
+#    vault: {}
 
   # copies to destination
   destination:
@@ -34,4 +34,4 @@ copy:
 #        bucket: ""
 #        object_key: ""
 #    format: ""
-#    credentialLocation: ""
+#    vault: {}
