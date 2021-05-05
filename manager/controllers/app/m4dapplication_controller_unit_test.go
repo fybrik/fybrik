@@ -139,21 +139,6 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(bpSpec.Flow.Steps[0].Arguments.Copy.Destination.Format).To(gomega.Equal(bpSpec.Flow.Steps[1].Arguments.Read[0].Source.Format))
 }
 
-func createM4DApplication(objectKey types.NamespacedName, n int) *app.M4DApplication {
-	labels := map[string]string{"app": "workload"}
-	return &app.M4DApplication{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      objectKey.Name,
-			Namespace: objectKey.Namespace,
-		},
-		Spec: app.M4DApplicationSpec{
-			Selector: app.Selector{ClusterName: "thegreendragon", WorkloadSelector: metav1.LabelSelector{MatchLabels: labels}},
-			AppInfo:  map[string]string{"intent": "Testing"},
-			Data:     make([]app.DataContext, n),
-		},
-	}
-}
-
 // This test checks proper reconciliation of M4DApplication finalizers
 func TestM4DApplicationFinalizers(t *testing.T) {
 	t.Parallel()
@@ -161,11 +146,9 @@ func TestM4DApplicationFinalizers(t *testing.T) {
 	// Set the logger to development mode for verbose logs.
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
-	namespaced := types.NamespacedName{
-		Name:      "test-finalizers",
-		Namespace: "default",
-	}
-	application := createM4DApplication(namespaced, 1)
+	application := &app.M4DApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
+
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -199,10 +182,11 @@ func TestDenyOnRead(t *testing.T) {
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	namespaced := types.NamespacedName{
-		Name:      "test-deny-on-read",
+		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := createM4DApplication(namespaced, 1)
+	application := &app.M4DApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "{\"asset_id\": \"deny-dataset\", \"catalog_id\": \"s3\"}",
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet}},
@@ -244,10 +228,11 @@ func TestNoReadPath(t *testing.T) {
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	namespaced := types.NamespacedName{
-		Name:      "test-no-read-path",
+		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := createM4DApplication(namespaced, 1)
+	application := &app.M4DApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"db2\"}",
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.JdbcDb2, DataFormat: app.Table}},
@@ -299,17 +284,20 @@ func TestWrongCopyModule(t *testing.T) {
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	namespaced := types.NamespacedName{
-		Name:      "no-copy-module",
+		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := createM4DApplication(namespaced, 2)
-	application.Spec.Data[0] = app.DataContext{
-		DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
-		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
-	}
-	application.Spec.Data[1] = app.DataContext{
-		DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"kafka\"}",
-		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+	application := &app.M4DApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.Spec.Data = []app.DataContext{
+		{
+			DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+		},
+		{
+			DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"kafka\"}",
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+		},
 	}
 
 	// Objects to track in the fake client.
@@ -359,10 +347,11 @@ func TestActionSupport(t *testing.T) {
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	namespaced := types.NamespacedName{
-		Name:      "no-enforcement",
+		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := createM4DApplication(namespaced, 1)
+	application := &app.M4DApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "{\"asset_id\": \"redact-dataset\", \"catalog_id\": \"db2\"}",
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
@@ -417,17 +406,20 @@ func TestMultipleDatasets(t *testing.T) {
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	namespaced := types.NamespacedName{
-		Name:      "multiple-datasets",
+		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := createM4DApplication(namespaced, 2)
-	application.Spec.Data[0] = app.DataContext{
-		DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
-		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
-	}
-	application.Spec.Data[1] = app.DataContext{
-		DataSetID:    "{\"asset_id\": \"redact-dataset\", \"catalog_id\": \"db2\"}",
-		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+	application := &app.M4DApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.Spec.Data = []app.DataContext{
+		{
+			DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+		},
+		{
+			DataSetID:    "{\"asset_id\": \"redact-dataset\", \"catalog_id\": \"db2\"}",
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+		},
 	}
 
 	// Objects to track in the fake client.
@@ -502,10 +494,11 @@ func TestMultipleRegions(t *testing.T) {
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	namespaced := types.NamespacedName{
-		Name:      "multiple-blueprints",
+		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := createM4DApplication(namespaced, 1)
+	application := &app.M4DApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "{\"asset_id\": \"redact-dataset\", \"catalog_id\": \"s3-external\"}",
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
@@ -570,30 +563,14 @@ func TestCopyData(t *testing.T) {
 	// Set the logger to development mode for verbose logs.
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
-	objectKey := types.NamespacedName{
+	assetName := "{\"asset_id\": \"allow-theshire\", \"catalog_id\": \"s3-external\"}"
+	namespaced := types.NamespacedName{
 		Name:      "ingest",
 		Namespace: "default",
 	}
-	assetName := "{\"asset_id\": \"allow-theshire\", \"catalog_id\": \"s3-external\"}"
-	application := &app.M4DApplication{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      objectKey.Name,
-			Namespace: objectKey.Namespace,
-		},
-		Spec: app.M4DApplicationSpec{
-			AppInfo: map[string]string{"intent": "Testing"},
-			Data: []app.DataContext{
-				{
-					DataSetID: assetName,
-					Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV},
-						Copy: app.CopyRequirements{Required: true,
-							Catalog: app.CatalogRequirements{CatalogID: "ingest_test", CatalogService: "Katalog"},
-						},
-					},
-				},
-			},
-		},
-	}
+	application := &app.M4DApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.Spec.Data[0].DataSetID = assetName
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -624,7 +601,7 @@ func TestCopyData(t *testing.T) {
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
 	r := createTestM4DApplicationController(cl, s)
 	req := reconcile.Request{
-		NamespacedName: objectKey,
+		NamespacedName: namespaced,
 	}
 
 	_, err := r.Reconcile(req)
@@ -660,29 +637,14 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	// Set the logger to development mode for verbose logs.
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
-	objectKey := types.NamespacedName{
+	assetName := "{\"asset_id\": \"deny-theshire\", \"catalog_id\": \"s3-external\"}"
+	namespaced := types.NamespacedName{
 		Name:      "ingest",
 		Namespace: "default",
 	}
-	application := &app.M4DApplication{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      objectKey.Name,
-			Namespace: objectKey.Namespace,
-		},
-		Spec: app.M4DApplicationSpec{
-			AppInfo: map[string]string{"intent": "Testing"},
-			Data: []app.DataContext{
-				{
-					DataSetID: "{\"asset_id\": \"deny-theshire\", \"catalog_id\": \"s3-external\"}",
-					Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV},
-						Copy: app.CopyRequirements{Required: true,
-							Catalog: app.CatalogRequirements{CatalogID: "ingest_test", CatalogService: "Katalog"},
-						},
-					},
-				},
-			},
-		},
-	}
+	application := &app.M4DApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.Spec.Data[0].DataSetID = assetName
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -708,7 +670,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
 	r := createTestM4DApplicationController(cl, s)
 	req := reconcile.Request{
-		NamespacedName: objectKey,
+		NamespacedName: namespaced,
 	}
 
 	_, err := r.Reconcile(req)
