@@ -5,9 +5,9 @@
 apiVersion: app.m4d.ibm.com/v1alpha1
 kind: M4DModule
 metadata:
-  name: implicit-copy-batch
+  name: implicit-copy-batch-db2
   labels:
-    name: implicit-copy-batch
+    name: implicit-copy-batch-db2
     version: 0.1.0 
 spec:
   flows:  # one or more of copy, read, write 

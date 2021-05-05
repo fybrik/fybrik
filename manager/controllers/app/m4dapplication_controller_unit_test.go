@@ -362,13 +362,9 @@ func TestActionSupport(t *testing.T) {
 		Name:      "no-enforcement",
 		Namespace: "default",
 	}
-	application := createM4DApplication(namespaced, 2)
+	application := createM4DApplication(namespaced, 1)
 	application.Spec.Data[0] = app.DataContext{
-		DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
-		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
-	}
-	application.Spec.Data[1] = app.DataContext{
-		DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"kafka\"}",
+		DataSetID:    "{\"asset_id\": \"redact-dataset\", \"catalog_id\": \"db2\"}",
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
 	}
 
@@ -388,7 +384,7 @@ func TestActionSupport(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	copyModule := &app.M4DModule{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet-no-transforms.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
 	r := createTestM4DApplicationController(cl, s)

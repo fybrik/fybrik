@@ -5,10 +5,7 @@
 apiVersion: app.m4d.ibm.com/v1alpha1
 kind: M4DModule
 metadata:
-  name: implicit-copy-batch-s3
-  labels:
-    name: implicit-copy-batch-s3
-    version: 0.1.0 
+  name: implicit-copy-batch-db2
 spec:
   flows:  # one or more of copy, read, write 
   - copy  
@@ -16,16 +13,11 @@ spec:
     supportedInterfaces:
     - flow: copy
       source:
-        protocol: s3
-        dataformat: csv
+        protocol: jdbc-db2
+        dataformat: table
       sink:
         protocol: s3
         dataformat: parquet
-    actions:
-    - id: redact-ID
-      level: 2  # column
-    - id: removed-ID
-      level: 2  # column
   chart:
     name: ghcr.io/the-mesh-for-data/m4d-implicit-copy-batch:0.1.0
   statusIndicators:
