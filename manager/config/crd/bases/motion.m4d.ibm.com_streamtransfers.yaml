@@ -556,6 +556,7 @@ spec:
                         type: string
                       description: Additional options for this transformation.
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                   type: object
                 type: array
               triggerInterval:

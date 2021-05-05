@@ -573,6 +573,7 @@ spec:
                       type: string
                     description: Additional options for Spark configuration.
                     type: object
+                    x-kubernetes-preserve-unknown-fields: true
                   shufflePartitions:
                     description: Number of shuffle partitions for Spark
                     type: integer
@@ -613,6 +614,7 @@ spec:
                         type: string
                       description: Additional options for this transformation.
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                   type: object
                 type: array
               writeDataType:

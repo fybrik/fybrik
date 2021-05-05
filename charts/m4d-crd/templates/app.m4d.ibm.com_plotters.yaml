@@ -338,9 +338,10 @@ spec:
                 additionalProperties:
                   description: MetaBlueprint defines blueprint metadata (name, namespace) and status
                   properties:
-                    metadata:
-                      type: object
-                      x-kubernetes-preserve-unknown-fields: true
+                    name:
+                      type: string
+                    namespace:
+                      type: string
                     status:
                       description: BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators forthe Kubernetes resources owned by the Blueprint for cleanup and status monitoring
                       properties:
@@ -368,6 +369,10 @@ spec:
                           description: Releases map each release to the observed generation of the blueprint containing this release. At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.
                           type: object
                       type: object
+                  required:
+                  - name
+                  - namespace
+                  - status
                   type: object
                 type: object
               observedGeneration:

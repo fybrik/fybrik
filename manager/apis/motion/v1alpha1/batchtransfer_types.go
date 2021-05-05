@@ -336,6 +336,7 @@ type Transformation struct {
 
 	// Additional options for this transformation.
 	// +optional
+	//+kubebuilder:pruning:PreserveUnknownFields
 	Options map[string]string `json:"options,omitempty"`
 }
 
@@ -419,6 +420,7 @@ type Spark struct {
 
 	// Additional options for Spark configuration.
 	// +optional
+	//+kubebuilder:pruning:PreserveUnknownFields
 	AdditionalOptions map[string]string `json:"options,omitempty"`
 }
 
