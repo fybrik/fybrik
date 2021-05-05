@@ -460,7 +460,6 @@ func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultConnection 
 
 // SetupWithManager registers M4DApplication controller
 func (r *M4DApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
-
 	mapFn := func(a client.Object) []reconcile.Request {
 		labels := a.GetLabels()
 		if labels == nil {

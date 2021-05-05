@@ -340,6 +340,7 @@ spec:
                   properties:
                     metadata:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     status:
                       description: BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators forthe Kubernetes resources owned by the Blueprint for cleanup and status monitoring
                       properties:

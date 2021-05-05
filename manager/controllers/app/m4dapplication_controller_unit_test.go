@@ -127,7 +127,7 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 		},
 	}
 
-	res, err := r.Reconcile(req)
+	res, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	// Check the result of reconciliation to make sure it has the desired state.

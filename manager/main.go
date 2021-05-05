@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 
+	corev1 "k8s.io/api/core/v1"
+
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster/razee"
@@ -29,6 +31,8 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	"github.com/ibm/the-mesh-for-data/pkg/helm"
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
+	kapps "k8s.io/api/apps/v1"
+	kbatch "k8s.io/api/batch/v1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -41,6 +45,9 @@ func init() {
 	_ = motionv1.AddToScheme(scheme)
 	_ = appv1.AddToScheme(scheme)
 	_ = comv1alpha1.SchemeBuilder.AddToScheme(scheme)
+	_ = corev1.AddToScheme(scheme)
+	_ = kbatch.AddToScheme(scheme)
+	_ = kapps.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 }
 

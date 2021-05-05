@@ -63,6 +63,7 @@ var _ = BeforeSuite(func(done Done) {
 		CRDDirectoryPaths: []string{
 			filepath.Join("..", "..", "config", "crd", "bases"),
 		},
+		ErrorIfCRDPathMissing: true,
 	}
 
 	utils.DefaultTestConfiguration(GinkgoT())

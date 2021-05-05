@@ -174,8 +174,11 @@ type Blueprint struct {
 
 // MetaBlueprint defines blueprint metadata (name, namespace) and status
 type MetaBlueprint struct {
+	//+kubebuilder:pruning:PreserveUnknownFields
+	// +required
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
+	// +required
 	Status BlueprintStatus `json:"status,omitempty"`
 }
 

@@ -2,20 +2,20 @@
 # Copyright 2020 The Kubernetes Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-
 source ./common.sh
 
 version=2.3.1
 
-header_text "Checking for bin/kubebuilder"
-[[ -f bin/kubebuilder ]] && exit 0
+header_text "Checking for bin/etcd"
+[[ -f bin/etcd ]] && exit 0
 
-header_text "Installing bin/kubebuilder"
+header_text "Installing bin/etcd"
 mkdir -p ./bin
-curl -L -O "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${version}/kubebuilder_${version}_${os}_${arch}.tar.gz"
 
-tar -zxvf kubebuilder_${version}_${os}_${arch}.tar.gz
-mv kubebuilder_${version}_${os}_${arch}/bin/* bin
+K8S_VERSION=1.19.2
+curl -sSLo envtest-bins.tar.gz "https://storage.googleapis.com/kubebuilder-tools/kubebuilder-tools-${K8S_VERSION}-$(go env GOOS)-$(go env GOARCH).tar.gz"
 
-rm kubebuilder_${version}_${os}_${arch}.tar.gz
-rm -r kubebuilder_${version}_${os}_${arch}
+tar -zvxf envtest-bins.tar.gz
+mv kubebuilder/bin/* bin
+rm envtest-bins.tar.gz
+rm -r kubebuilder

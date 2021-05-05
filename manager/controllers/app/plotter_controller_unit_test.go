@@ -85,6 +85,9 @@ func TestPlotterController(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Can fetch plotter")
 
 	g.Expect(plotter.Status.Blueprints).To(gomega.HaveKey("thegreendragon"))
+	blueprintMeta := plotter.Status.Blueprints["thegreendragon"]
+	g.Expect(blueprintMeta.Name).To(gomega.Equal(plotter.Name))
+	g.Expect(blueprintMeta.Namespace).To(gomega.Equal(BlueprintNamespace))
 
 	// Simulate that blueprint changes state to Ready=true
 	dummyManager.DeployedBlueprints["thegreendragon"].Status.ObservedState.Ready = true
