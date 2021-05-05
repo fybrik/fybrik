@@ -14,7 +14,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/ibm/the-mesh-for-data/manager/controllers/mockup"
-	"github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	"github.com/ibm/the-mesh-for-data/pkg/storage"
 
 	"github.com/ibm/the-mesh-for-data/pkg/vault"
@@ -155,59 +154,6 @@ func createM4DApplication(objectKey types.NamespacedName, n int) *app.M4DApplica
 	}
 }
 
-func createReadModule(api *app.InterfaceDetails, source *app.InterfaceDetails) *app.M4DModule {
-	return &app.M4DModule{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "read-path",
-		},
-		Spec: app.M4DModuleSpec{
-			Flows: []app.ModuleFlow{app.Read},
-			Capabilities: app.Capability{
-				SupportedInterfaces: []app.ModuleInOut{
-					{
-						Flow:   app.Read,
-						Source: source,
-					},
-				},
-				API: &app.ModuleAPI{
-					InterfaceDetails: *api,
-					Endpoint: app.EndpointSpec{
-						Hostname: "read",
-						Port:     80,
-						Scheme:   "grpc",
-					},
-				},
-			},
-			Chart: app.ChartSpec{
-				Name: "read-module-chart",
-			},
-		},
-	}
-}
-
-func createCopyModule(source *app.InterfaceDetails, sink *app.InterfaceDetails) *app.M4DModule {
-	return &app.M4DModule{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "copy-module",
-		},
-		Spec: app.M4DModuleSpec{
-			Flows: []app.ModuleFlow{app.Copy},
-			Capabilities: app.Capability{
-				SupportedInterfaces: []app.ModuleInOut{
-					{
-						Flow:   app.Copy,
-						Source: source,
-						Sink:   sink,
-					},
-				},
-			},
-			Chart: app.ChartSpec{
-				Name: "copy-module-chart",
-			},
-		},
-	}
-}
-
 // This test checks proper reconciliation of M4DApplication finalizers
 func TestM4DApplicationFinalizers(t *testing.T) {
 	t.Parallel()
@@ -319,8 +265,9 @@ func TestNoReadPath(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := createReadModule(&app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet})
-	g.Expect(cl.Create(context.TODO(), readModule)).To(gomega.BeNil(), "the read module could not be created")
+	readModule := &app.M4DModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
 	r := createTestM4DApplicationController(cl, s)
 	req := reconcile.Request{
@@ -377,10 +324,12 @@ func TestWrongCopyModule(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := createReadModule(&app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet})
-	copyModule := createCopyModule(&app.InterfaceDetails{Protocol: app.JdbcDb2, DataFormat: app.Table}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet})
-	g.Expect(cl.Create(context.TODO(), readModule)).To(gomega.BeNil(), "the read module could not be created")
-	g.Expect(cl.Create(context.TODO(), copyModule)).To(gomega.BeNil(), "the copy db2->s3 module could not be created")
+	readModule := &app.M4DModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
+	copyModule := &app.M4DModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
 	r := createTestM4DApplicationController(cl, s)
 	req := reconcile.Request{
@@ -435,10 +384,12 @@ func TestActionSupport(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := createReadModule(&app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet})
-	copyModule := createCopyModule(&app.InterfaceDetails{Protocol: app.JdbcDb2, DataFormat: app.Table}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet})
-	g.Expect(cl.Create(context.TODO(), readModule)).To(gomega.BeNil(), "the read module could not be created")
-	g.Expect(cl.Create(context.TODO(), copyModule)).To(gomega.BeNil(), "the copy db2->s3 module could not be created")
+	readModule := &app.M4DModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
+	copyModule := &app.M4DModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
 	r := createTestM4DApplicationController(cl, s)
 	req := reconcile.Request{
@@ -460,7 +411,7 @@ func TestActionSupport(t *testing.T) {
 // S3 dataset, no copy is needed
 // Enforcement actions for the first dataset: redact
 // Enforcement action for the second dataset: Allow
-// Applied copy module s3->s3 and db2->s3 supporting redact action
+// Applied copy module db2->s3 supporting redact action
 // Result: plotter with a single blueprint is created successfully, a read module is applied once for both datasets
 
 func TestMultipleDatasets(t *testing.T) {
@@ -495,11 +446,12 @@ func TestMultipleDatasets(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := createReadModule(&app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet})
-	copyModule := createCopyModule(&app.InterfaceDetails{Protocol: app.JdbcDb2, DataFormat: app.Table}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet})
-	copyModule.Spec.Capabilities.Actions = []app.SupportedAction{{ID: "redact-ID", Level: protobuf.EnforcementAction_COLUMN}}
-	g.Expect(cl.Create(context.TODO(), readModule)).To(gomega.BeNil(), "the read module could not be created")
-	g.Expect(cl.Create(context.TODO(), copyModule)).To(gomega.BeNil(), "the copy db2->s3 module could not be created")
+	readModule := &app.M4DModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
+	copyModule := &app.M4DModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create storage account
 	dummySecret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
@@ -530,19 +482,19 @@ func TestMultipleDatasets(t *testing.T) {
 	plotter := &app.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Expect(len(plotter.Spec.Blueprints)).To(gomega.Equal(1))
+	g.Expect(len(plotter.Spec.Blueprints)).To(gomega.Equal(1), "A single blueprint should be created")
 	// Check the generated blueprint
 	// There should be a single read module with two datasets
 	blueprint := plotter.Spec.Blueprints["thegreendragon"]
 	g.Expect(blueprint).NotTo(gomega.BeNil())
 	numReads := 0
 	for _, step := range blueprint.Flow.Steps {
-		if step.Template == "read-path" {
+		if len(step.Arguments.Read) > 0 {
 			numReads++
-			g.Expect(len(step.Arguments.Read)).To(gomega.Equal(2))
+			g.Expect(len(step.Arguments.Read)).To(gomega.Equal(2), "A read module should support both datasets")
 		}
 	}
-	g.Expect(numReads).To(gomega.Equal(1))
+	g.Expect(numReads).To(gomega.Equal(1), "A single read module should be instantiated")
 }
 
 // This test checks the case where data comes from another regions, and should be redacted.
@@ -575,11 +527,12 @@ func TestMultipleRegions(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := createReadModule(&app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet})
-	copyModule := createCopyModule(&app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet})
-	copyModule.Spec.Capabilities.Actions = []app.SupportedAction{{ID: "redact-ID", Level: protobuf.EnforcementAction_COLUMN}}
-	g.Expect(cl.Create(context.TODO(), readModule)).To(gomega.BeNil(), "the read module could not be created")
-	g.Expect(cl.Create(context.TODO(), copyModule)).To(gomega.BeNil(), "the copy s3->s3 module could not be created")
+	readModule := &app.M4DModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
+	copyModule := &app.M4DModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/copy-csv-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create storage account
 	dummySecret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
@@ -655,9 +608,9 @@ func TestCopyData(t *testing.T) {
 
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
-
-	copyModule := createCopyModule(&app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV})
-	g.Expect(cl.Create(context.TODO(), copyModule)).To(gomega.BeNil(), "the copy s3->s3 module could not be created")
+	copyModule := &app.M4DModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create storage accounts
 	secret1 := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-neverland.yaml", secret1)).NotTo(gomega.HaveOccurred())
@@ -744,16 +697,17 @@ func TestCopyDataNotAllowed(t *testing.T) {
 
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
+	copyModule := &app.M4DModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 
-	copyModule := createCopyModule(&app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV}, &app.InterfaceDetails{Protocol: app.S3, DataFormat: app.CSV})
-	g.Expect(cl.Create(context.TODO(), copyModule)).To(gomega.BeNil(), "the copy s3->s3 module could not be created")
 	// Create storage account
 	dummySecret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
-	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
+	g.Expect(cl.Create(context.TODO(), dummySecret)).NotTo(gomega.HaveOccurred())
 	account := &app.M4DStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
-	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
+	g.Expect(cl.Create(context.TODO(), account)).NotTo(gomega.HaveOccurred())
 
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
 	r := createTestM4DApplicationController(cl, s)

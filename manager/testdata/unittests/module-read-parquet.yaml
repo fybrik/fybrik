@@ -4,11 +4,8 @@
 apiVersion: app.m4d.ibm.com/v1alpha1
 kind: M4DModule
 metadata:
-  name: arrow-flight-module
+  name: read-parquet
   namespace: m4d-system
-  labels:
-    name: arrow-flight-module
-    version: 0.0.1  # semantic version
 spec:
   chart:
     name: localhost:5000/m4d-system/m4d-template:0.1.0
@@ -27,6 +24,5 @@ spec:
     - flow: read
       source:
         protocol: s3
-        dataformat: csv
-
+        dataformat: parquet
 
