@@ -3,8 +3,6 @@
 package connector
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -21,22 +19,6 @@ func emptyArrayIfNil(val *[]string) []string {
 		return []string{}
 	}
 	return *val
-}
-
-func decodeToStruct(m interface{}, s interface{}) error {
-	data, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-
-	dec := json.NewDecoder(bytes.NewReader(data))
-	dec.DisallowUnknownFields()
-
-	err = dec.Decode(s)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func splitNamespacedName(value string) (namespace string, name string, err error) {

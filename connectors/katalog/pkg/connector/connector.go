@@ -31,7 +31,6 @@ func Start(address string) error {
 
 	server := grpc.NewServer()
 	connectors.RegisterDataCatalogServiceServer(server, &DataCatalogService{client: client})
-	connectors.RegisterDataCredentialServiceServer(server, &DataCredentialsService{client: client})
 
 	if err := server.Serve(listener); err != nil {
 		return errors.Wrap(err, "connector server errored")
