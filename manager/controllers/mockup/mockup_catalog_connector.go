@@ -11,7 +11,6 @@ import (
 	"emperror.dev/errors"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
-	"github.com/onsi/ginkgo"
 	"google.golang.org/grpc"
 )
 
@@ -53,15 +52,15 @@ func NewTestCatalog() *DataCatalogDummy {
 		DatasetId: "s3-external",
 		Details: &pb.DatasetDetails{
 			Name:       "xxx",
-			DataFormat: "parquet",
-			Geo:        "Germany",
+			DataFormat: "csv",
+			Geo:        "neverland",
 			DataStore: &pb.DataStore{
 				Type: pb.DataStore_S3,
 				Name: "cos",
 				S3: &pb.S3DataStore{
 					Endpoint:  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
 					Bucket:    "m4d-test-bucket",
-					ObjectKey: "small.parq",
+					ObjectKey: "test.csv",
 				},
 			},
 			CredentialsInfo: &pb.CredentialsInfo{
@@ -193,19 +192,5 @@ func createMockCatalogConnector(port int) error {
 func MockCatalogConnector() {
 	if err := createMockCatalogConnector(8080); err != nil {
 		log.Fatal(err)
-	}
-}
-
-func CreateTestCatalogConnector(t ginkgo.GinkgoTInterface) {
-	if err := createMockCatalogConnector(50085); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func KillServer() {
-	if connector != nil {
-		log.Print("Killing server...")
-		connector.Stop()
-		connector = nil
 	}
 }
