@@ -7,7 +7,7 @@ metadata:
     cert-manager.io/inject-ca-from: '{{ .Release.Namespace }}/serving-cert'
 webhooks:
   - admissionReviewVersions:
-      - v1beta1
+      - v1
     clientConfig:
       service:
         name: webhook-service
@@ -27,7 +27,7 @@ webhooks:
           - batchtransfers
     sideEffects: None
   - admissionReviewVersions:
-      - v1beta1
+      - v1
     clientConfig:
       service:
         name: webhook-service
@@ -56,7 +56,7 @@ metadata:
     cert-manager.io/inject-ca-from: '{{ .Release.Namespace }}/serving-cert'
 webhooks:
   - admissionReviewVersions:
-      - v1beta1
+      - v1
     clientConfig:
       service:
         name: webhook-service
@@ -76,7 +76,7 @@ webhooks:
           - batchtransfers
     sideEffects: None
   - admissionReviewVersions:
-      - v1beta1
+      - v1
     clientConfig:
       service:
         name: webhook-service
