@@ -26,15 +26,12 @@ import (
 // DataCatalog is an interface of a facade to a data catalog.
 type DataCatalog interface {
 	pb.DataCatalogServiceServer
-	pb.DataCredentialServiceServer
 	io.Closer
 }
 
 type DataCatalogImpl struct {
-	catalogClient        pb.DataCatalogServiceClient
-	credentialClient     pb.DataCredentialServiceClient
-	catalogConnection    *grpc.ClientConn
-	credentialConnection *grpc.ClientConn
+	catalogClient     pb.DataCatalogServiceClient
+	catalogConnection *grpc.ClientConn
 }
 
 func NewGrpcDataCatalog() (*DataCatalogImpl, error) {
@@ -43,16 +40,9 @@ func NewGrpcDataCatalog() (*DataCatalogImpl, error) {
 		return nil, err
 	}
 
-	credentialConnection, err := grpc.Dial(utils.GetCredentialsManagerServiceAddress(), grpc.WithInsecure(), grpc.WithBlock())
-	if err != nil {
-		return nil, err
-	}
-
 	return &DataCatalogImpl{
-		catalogClient:        pb.NewDataCatalogServiceClient(catalogConnection),
-		credentialClient:     pb.NewDataCredentialServiceClient(credentialConnection),
-		catalogConnection:    catalogConnection,
-		credentialConnection: credentialConnection,
+		catalogClient:     pb.NewDataCatalogServiceClient(catalogConnection),
+		catalogConnection: catalogConnection,
 	}, nil
 }
 
@@ -66,15 +56,9 @@ func (d *DataCatalogImpl) RegisterDatasetInfo(ctx context.Context, req *pb.Regis
 	return result, errors.Wrap(err, "register dataset info failed")
 }
 
-func (d *DataCatalogImpl) GetCredentialsInfo(ctx context.Context, req *pb.DatasetCredentialsRequest) (*pb.DatasetCredentials, error) {
-	result, err := d.credentialClient.GetCredentialsInfo(ctx, req)
-	return result, errors.Wrap(err, "get credentials info failed")
-}
-
 func (d *DataCatalogImpl) Close() error {
-	err1 := d.catalogConnection.Close()
-	err2 := d.credentialConnection.Close()
-	return errors.Combine(err1, err2)
+	err := d.catalogConnection.Close()
+	return err
 }
 
 // RegisterAsset registers a new asset in the specified catalog

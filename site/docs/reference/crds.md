@@ -1139,7 +1139,12 @@ M4DApplicationStatus defines the observed state of M4DApplication.
       </tr><tr>
         <td><b><a href="#m4dapplicationstatusprovisionedstoragekey">provisionedStorage</a></b></td>
         <td>map[string]object</td>
-        <td>ProvisionedStorage maps a dataset (identified by DataSetID) to the new provisioned bucket. It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received. ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready</td>
+        <td>ProvisionedStorage maps a dataset (identified by AssetID) to the new provisioned bucket. It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received. ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready</td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#m4dapplicationstatusreadendpointsmapkey">readEndpointsMap</a></b></td>
+        <td>map[string]object</td>
+        <td>ReadEndpointsMap maps an datasetID (after parsing from json to a string with dashes) to the endpoint spec from which the asset will be served to the application</td>
         <td>false</td>
       </tr><tr>
         <td><b>ready</b></td>
@@ -1251,6 +1256,41 @@ DatasetDetails contain dataset connection and metadata required to register this
         <td>string</td>
         <td>Reference to a secret where the credentials are stored</td>
         <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### M4DApplication.status.readEndpointsMap[key]
+<sup><sup>[↩ Parent](#m4dapplicationstatus)</sup></sup>
+
+
+
+EndpointSpec is used both by the module creator and by the status of the m4dapplication
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>hostname</b></td>
+        <td>string</td>
+        <td>Always equals the release name. Can be omitted.</td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>port</b></td>
+        <td>integer</td>
+        <td></td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>scheme</b></td>
+        <td>string</td>
+        <td>For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc</td>
+        <td>true</td>
       </tr></tbody>
 </table>
 
@@ -1501,9 +1541,49 @@ API indicates to the application how to access/write the data
         <td>DataFormatType defines data format type [parquet table csv json avro binary arrow]</td>
         <td>false</td>
       </tr><tr>
+        <td><b><a href="#m4dmodulespeccapabilitiesapiendpoint">endpoint</a></b></td>
+        <td>object</td>
+        <td>EndpointSpec is used both by the module creator and by the status of the m4dapplication</td>
+        <td>true</td>
+      </tr><tr>
         <td><b>protocol</b></td>
         <td>enum</td>
         <td>IFProtocol defines interface protocol for data transactions [s3 kafka jdbc-db2 m4d-arrow-flight]</td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### M4DModule.spec.capabilities.api.endpoint
+<sup><sup>[↩ Parent](#m4dmodulespeccapabilitiesapi)</sup></sup>
+
+
+
+EndpointSpec is used both by the module creator and by the status of the m4dapplication
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>hostname</b></td>
+        <td>string</td>
+        <td>Always equals the release name. Can be omitted.</td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>port</b></td>
+        <td>integer</td>
+        <td></td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>scheme</b></td>
+        <td>string</td>
+        <td>For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc</td>
         <td>true</td>
       </tr></tbody>
 </table>
@@ -3394,7 +3474,7 @@ IBM Cloudant. Needs cloudant legacy credentials.
     <tbody><tr>
         <td><b>password</b></td>
         <td>string</td>
-        <td>Cloudant password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Cloudant password. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>secretImport</b></td>
@@ -3404,17 +3484,12 @@ IBM Cloudant. Needs cloudant legacy credentials.
       </tr><tr>
         <td><b>username</b></td>
         <td>string</td>
-        <td>Cloudant user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Cloudant user. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#batchtransferspecdestinationcloudantvault">vault</a></b></td>
         <td>object</td>
         <td>Define secrets that are fetched from a Vault instance</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>vaultPath</b></td>
-        <td>string</td>
-        <td>Vault path where the user name/password are stored. If not specified user and password have to be specified!</td>
         <td>false</td>
       </tr><tr>
         <td><b>database</b></td>
@@ -3489,7 +3564,7 @@ Database data store. For the moment only Db2 is supported.
     <tbody><tr>
         <td><b>password</b></td>
         <td>string</td>
-        <td>Database password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Database password. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>secretImport</b></td>
@@ -3499,17 +3574,12 @@ Database data store. For the moment only Db2 is supported.
       </tr><tr>
         <td><b>user</b></td>
         <td>string</td>
-        <td>Database user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Database user. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#batchtransferspecdestinationdatabasevault">vault</a></b></td>
         <td>object</td>
         <td>Define secrets that are fetched from a Vault instance</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>vaultPath</b></td>
-        <td>string</td>
-        <td>Vault path where the user name/password are stored. If not specified user and password have to be specified!</td>
         <td>false</td>
       </tr><tr>
         <td><b>db2URL</b></td>
@@ -3599,7 +3669,7 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
       </tr><tr>
         <td><b>password</b></td>
         <td>string</td>
-        <td>Kafka user password Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Kafka user password Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>saslMechanism</b></td>
@@ -3639,7 +3709,7 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
       </tr><tr>
         <td><b>user</b></td>
         <td>string</td>
-        <td>Kafka user name. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Kafka user name. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>valueDeserializer</b></td>
@@ -3650,11 +3720,6 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         <td><b><a href="#batchtransferspecdestinationkafkavault">vault</a></b></td>
         <td>object</td>
         <td>Define secrets that are fetched from a Vault instance</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>vaultPath</b></td>
-        <td>string</td>
-        <td>Vault path where the user name/password are stored. If not specified user and password have to be specified!</td>
         <td>false</td>
       </tr><tr>
         <td><b>kafkaBrokers</b></td>
@@ -3734,7 +3799,7 @@ An object store data store that is compatible with S3. This can be a COS bucket.
     <tbody><tr>
         <td><b>accessKey</b></td>
         <td>string</td>
-        <td>Access key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Access key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>dataFormat</b></td>
@@ -3759,17 +3824,12 @@ An object store data store that is compatible with S3. This can be a COS bucket.
       </tr><tr>
         <td><b>secretKey</b></td>
         <td>string</td>
-        <td>Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#batchtransferspecdestinations3vault">vault</a></b></td>
         <td>object</td>
         <td>Define secrets that are fetched from a Vault instance</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>vaultPath</b></td>
-        <td>string</td>
-        <td>Vault path where the accessKey/secretKey are stored. If not specified accessKey and secretKey have to be specified!</td>
         <td>false</td>
       </tr><tr>
         <td><b>bucket</b></td>
@@ -3894,7 +3954,7 @@ IBM Cloudant. Needs cloudant legacy credentials.
     <tbody><tr>
         <td><b>password</b></td>
         <td>string</td>
-        <td>Cloudant password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Cloudant password. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>secretImport</b></td>
@@ -3904,17 +3964,12 @@ IBM Cloudant. Needs cloudant legacy credentials.
       </tr><tr>
         <td><b>username</b></td>
         <td>string</td>
-        <td>Cloudant user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Cloudant user. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#batchtransferspecsourcecloudantvault">vault</a></b></td>
         <td>object</td>
         <td>Define secrets that are fetched from a Vault instance</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>vaultPath</b></td>
-        <td>string</td>
-        <td>Vault path where the user name/password are stored. If not specified user and password have to be specified!</td>
         <td>false</td>
       </tr><tr>
         <td><b>database</b></td>
@@ -3989,7 +4044,7 @@ Database data store. For the moment only Db2 is supported.
     <tbody><tr>
         <td><b>password</b></td>
         <td>string</td>
-        <td>Database password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Database password. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>secretImport</b></td>
@@ -3999,17 +4054,12 @@ Database data store. For the moment only Db2 is supported.
       </tr><tr>
         <td><b>user</b></td>
         <td>string</td>
-        <td>Database user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Database user. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#batchtransferspecsourcedatabasevault">vault</a></b></td>
         <td>object</td>
         <td>Define secrets that are fetched from a Vault instance</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>vaultPath</b></td>
-        <td>string</td>
-        <td>Vault path where the user name/password are stored. If not specified user and password have to be specified!</td>
         <td>false</td>
       </tr><tr>
         <td><b>db2URL</b></td>
@@ -4099,7 +4149,7 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
       </tr><tr>
         <td><b>password</b></td>
         <td>string</td>
-        <td>Kafka user password Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Kafka user password Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>saslMechanism</b></td>
@@ -4139,7 +4189,7 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
       </tr><tr>
         <td><b>user</b></td>
         <td>string</td>
-        <td>Kafka user name. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Kafka user name. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>valueDeserializer</b></td>
@@ -4150,11 +4200,6 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         <td><b><a href="#batchtransferspecsourcekafkavault">vault</a></b></td>
         <td>object</td>
         <td>Define secrets that are fetched from a Vault instance</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>vaultPath</b></td>
-        <td>string</td>
-        <td>Vault path where the user name/password are stored. If not specified user and password have to be specified!</td>
         <td>false</td>
       </tr><tr>
         <td><b>kafkaBrokers</b></td>
@@ -4234,7 +4279,7 @@ An object store data store that is compatible with S3. This can be a COS bucket.
     <tbody><tr>
         <td><b>accessKey</b></td>
         <td>string</td>
-        <td>Access key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Access key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>dataFormat</b></td>
@@ -4259,17 +4304,12 @@ An object store data store that is compatible with S3. This can be a COS bucket.
       </tr><tr>
         <td><b>secretKey</b></td>
         <td>string</td>
-        <td>Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#batchtransferspecsources3vault">vault</a></b></td>
         <td>object</td>
         <td>Define secrets that are fetched from a Vault instance</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>vaultPath</b></td>
-        <td>string</td>
-        <td>Vault path where the accessKey/secretKey are stored. If not specified accessKey and secretKey have to be specified!</td>
         <td>false</td>
       </tr><tr>
         <td><b>bucket</b></td>
@@ -4803,7 +4843,7 @@ IBM Cloudant. Needs cloudant legacy credentials.
     <tbody><tr>
         <td><b>password</b></td>
         <td>string</td>
-        <td>Cloudant password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Cloudant password. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>secretImport</b></td>
@@ -4813,17 +4853,12 @@ IBM Cloudant. Needs cloudant legacy credentials.
       </tr><tr>
         <td><b>username</b></td>
         <td>string</td>
-        <td>Cloudant user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Cloudant user. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#streamtransferspecdestinationcloudantvault">vault</a></b></td>
         <td>object</td>
         <td>Define secrets that are fetched from a Vault instance</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>vaultPath</b></td>
-        <td>string</td>
-        <td>Vault path where the user name/password are stored. If not specified user and password have to be specified!</td>
         <td>false</td>
       </tr><tr>
         <td><b>database</b></td>
@@ -4898,7 +4933,7 @@ Database data store. For the moment only Db2 is supported.
     <tbody><tr>
         <td><b>password</b></td>
         <td>string</td>
-        <td>Database password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Database password. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>secretImport</b></td>
@@ -4908,17 +4943,12 @@ Database data store. For the moment only Db2 is supported.
       </tr><tr>
         <td><b>user</b></td>
         <td>string</td>
-        <td>Database user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Database user. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#streamtransferspecdestinationdatabasevault">vault</a></b></td>
         <td>object</td>
         <td>Define secrets that are fetched from a Vault instance</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>vaultPath</b></td>
-        <td>string</td>
-        <td>Vault path where the user name/password are stored. If not specified user and password have to be specified!</td>
         <td>false</td>
       </tr><tr>
         <td><b>db2URL</b></td>
@@ -5008,7 +5038,7 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
       </tr><tr>
         <td><b>password</b></td>
         <td>string</td>
-        <td>Kafka user password Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Kafka user password Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>saslMechanism</b></td>
@@ -5048,7 +5078,7 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
       </tr><tr>
         <td><b>user</b></td>
         <td>string</td>
-        <td>Kafka user name. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Kafka user name. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>valueDeserializer</b></td>
@@ -5059,11 +5089,6 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         <td><b><a href="#streamtransferspecdestinationkafkavault">vault</a></b></td>
         <td>object</td>
         <td>Define secrets that are fetched from a Vault instance</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>vaultPath</b></td>
-        <td>string</td>
-        <td>Vault path where the user name/password are stored. If not specified user and password have to be specified!</td>
         <td>false</td>
       </tr><tr>
         <td><b>kafkaBrokers</b></td>
@@ -5143,7 +5168,7 @@ An object store data store that is compatible with S3. This can be a COS bucket.
     <tbody><tr>
         <td><b>accessKey</b></td>
         <td>string</td>
-        <td>Access key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Access key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>dataFormat</b></td>
@@ -5168,17 +5193,12 @@ An object store data store that is compatible with S3. This can be a COS bucket.
       </tr><tr>
         <td><b>secretKey</b></td>
         <td>string</td>
-        <td>Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#streamtransferspecdestinations3vault">vault</a></b></td>
         <td>object</td>
         <td>Define secrets that are fetched from a Vault instance</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>vaultPath</b></td>
-        <td>string</td>
-        <td>Vault path where the accessKey/secretKey are stored. If not specified accessKey and secretKey have to be specified!</td>
         <td>false</td>
       </tr><tr>
         <td><b>bucket</b></td>
@@ -5303,7 +5323,7 @@ IBM Cloudant. Needs cloudant legacy credentials.
     <tbody><tr>
         <td><b>password</b></td>
         <td>string</td>
-        <td>Cloudant password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Cloudant password. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>secretImport</b></td>
@@ -5313,17 +5333,12 @@ IBM Cloudant. Needs cloudant legacy credentials.
       </tr><tr>
         <td><b>username</b></td>
         <td>string</td>
-        <td>Cloudant user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Cloudant user. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#streamtransferspecsourcecloudantvault">vault</a></b></td>
         <td>object</td>
         <td>Define secrets that are fetched from a Vault instance</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>vaultPath</b></td>
-        <td>string</td>
-        <td>Vault path where the user name/password are stored. If not specified user and password have to be specified!</td>
         <td>false</td>
       </tr><tr>
         <td><b>database</b></td>
@@ -5398,7 +5413,7 @@ Database data store. For the moment only Db2 is supported.
     <tbody><tr>
         <td><b>password</b></td>
         <td>string</td>
-        <td>Database password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Database password. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>secretImport</b></td>
@@ -5408,17 +5423,12 @@ Database data store. For the moment only Db2 is supported.
       </tr><tr>
         <td><b>user</b></td>
         <td>string</td>
-        <td>Database user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Database user. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#streamtransferspecsourcedatabasevault">vault</a></b></td>
         <td>object</td>
         <td>Define secrets that are fetched from a Vault instance</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>vaultPath</b></td>
-        <td>string</td>
-        <td>Vault path where the user name/password are stored. If not specified user and password have to be specified!</td>
         <td>false</td>
       </tr><tr>
         <td><b>db2URL</b></td>
@@ -5508,7 +5518,7 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
       </tr><tr>
         <td><b>password</b></td>
         <td>string</td>
-        <td>Kafka user password Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Kafka user password Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>saslMechanism</b></td>
@@ -5548,7 +5558,7 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
       </tr><tr>
         <td><b>user</b></td>
         <td>string</td>
-        <td>Kafka user name. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Kafka user name. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>valueDeserializer</b></td>
@@ -5559,11 +5569,6 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         <td><b><a href="#streamtransferspecsourcekafkavault">vault</a></b></td>
         <td>object</td>
         <td>Define secrets that are fetched from a Vault instance</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>vaultPath</b></td>
-        <td>string</td>
-        <td>Vault path where the user name/password are stored. If not specified user and password have to be specified!</td>
         <td>false</td>
       </tr><tr>
         <td><b>kafkaBrokers</b></td>
@@ -5643,7 +5648,7 @@ An object store data store that is compatible with S3. This can be a COS bucket.
     <tbody><tr>
         <td><b>accessKey</b></td>
         <td>string</td>
-        <td>Access key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Access key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b>dataFormat</b></td>
@@ -5668,17 +5673,12 @@ An object store data store that is compatible with S3. This can be a COS bucket.
       </tr><tr>
         <td><b>secretKey</b></td>
         <td>string</td>
-        <td>Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.</td>
+        <td>Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vault parameter and is thus optional.</td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#streamtransferspecsources3vault">vault</a></b></td>
         <td>object</td>
         <td>Define secrets that are fetched from a Vault instance</td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>vaultPath</b></td>
-        <td>string</td>
-        <td>Vault path where the accessKey/secretKey are stored. If not specified accessKey and secretKey have to be specified!</td>
         <td>false</td>
       </tr><tr>
         <td><b>bucket</b></td>
