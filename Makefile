@@ -64,17 +64,6 @@ cluster-prepare:
 cluster-prepare-wait:
 	$(MAKE) -C third_party/datashim deploy-wait
 
-.PHONY: deploy
-deploy:
-	#$(MAKE) -C manager deploy
-	$(MAKE) -C connectors deploy
-
-.PHONY: undeploy
-undeploy:
-	#$(MAKE) -C manager undeploy
-	#$(MAKE) -C manager undeploy-crd
-	$(MAKE) -C connectors undeploy
-
 .PHONY: docker
 docker: docker-build docker-push
 
