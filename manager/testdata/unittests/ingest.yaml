@@ -1,0 +1,22 @@
+apiVersion: app.m4d.ibm.com/v1alpha1
+kind: M4DApplication
+metadata:
+  name: ingest
+  namespace: default
+spec:
+  selector:
+   workloadSelector:
+     matchLabels: {}
+  appInfo:
+    purpose: Ingest
+    role: Data Owner
+  data:
+    - dataSetID: '{"asset_id": "xxx", "catalog_id": "s3-external"}'
+      requirements:
+        copy:
+          required: true
+          catalog:
+            catalogID: "ingest_test"
+        interface: 
+          protocol: s3
+          dataformat: csv

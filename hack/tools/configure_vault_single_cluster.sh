@@ -22,7 +22,6 @@ source ./vault_utils.sh
 
 : ${KUBE_NAMESPACE:=m4d-system}
 : ${MODULE_NAMESPACE:="m4d-blueprints"}
-: ${SECRET_PATH:=m4d/dataset-creds}
 : ${ROLE:=module}
 : ${WITHOUT_PORT_FORWARD:=false}
 # Add policy and role for modules running in m4d-blueprints namespace to
@@ -44,8 +43,7 @@ enable_k8s_auth_for_cluster() {
 # configure_vault enables kv secret engine to hold the dataset credentails
 # and creates policy to access them
 configure_vault() {
-	enable_kv "$SECRET_PATH"
-	create_policy_with_plugin_path "allow-all-dataset-creds" "$SECRET_PATH/*" "$PLUGIN_PATH/*"
+	create_policy_with_plugin_path "allow-all-dataset-creds" "$PLUGIN_PATH/*"
 }
 
 # add_role adds a role to bind policy to identity.

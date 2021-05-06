@@ -49,37 +49,37 @@ func (s *MockPolicyCompiler) GetPoliciesDecisions(in *pb.ApplicationContext) (*p
 				Name: "Deny",
 				Id:   "Deny-ID",
 			})
-		case "deny-on-copy":
-			if element.GetOperation().GetType() == pb.AccessOperation_WRITE {
+		case "allow-theshire":
+			if element.GetOperation().Destination == "theshire" {
+				enforcementActions = append(enforcementActions, &pb.EnforcementAction{
+					Name: "Allow",
+					Id:   "Allow-ID",
+				})
+			} else {
 				enforcementActions = append(enforcementActions, &pb.EnforcementAction{
 					Name: "Deny",
 					Id:   "Deny-ID",
 				})
-			} else {
-				args["column"] = "SSN"
+			}
+		case "deny-theshire":
+			if element.GetOperation().Destination != "theshire" {
 				enforcementActions = append(enforcementActions, &pb.EnforcementAction{
-					Name:  "redact",
-					Id:    "redact-ID",
-					Level: pb.EnforcementAction_COLUMN,
-					Args:  args,
+					Name: "Allow",
+					Id:   "Allow-ID",
+				})
+			} else {
+				enforcementActions = append(enforcementActions, &pb.EnforcementAction{
+					Name: "Deny",
+					Id:   "Deny-ID",
 				})
 			}
 		default:
-			if element.GetOperation().GetType() == pb.AccessOperation_READ {
-				args["column"] = "SSN"
-				enforcementActions = append(enforcementActions, &pb.EnforcementAction{
-					Name:  "redact",
-					Id:    "redact-ID",
-					Level: pb.EnforcementAction_COLUMN,
-					Args:  args})
-			} else {
-				args["column"] = "BLOOD_TYPE"
-				enforcementActions = append(enforcementActions, &pb.EnforcementAction{
-					Name:  "encrypt",
-					Id:    "encrypt-ID",
-					Level: pb.EnforcementAction_COLUMN,
-					Args:  args})
-			}
+			args["column"] = "SSN"
+			enforcementActions = append(enforcementActions, &pb.EnforcementAction{
+				Name:  "redact",
+				Id:    "redact-ID",
+				Level: pb.EnforcementAction_COLUMN,
+				Args:  args})
 		}
 		operationDecisions = append(operationDecisions, &pb.OperationDecision{Operation: in.GetDatasets()[0].GetOperation(), EnforcementActions: enforcementActions})
 		dataSetWithActions = append(dataSetWithActions, &pb.DatasetDecision{

@@ -31,11 +31,8 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	"github.com/ibm/the-mesh-for-data/manager/controllers/mockup"
 	"github.com/ibm/the-mesh-for-data/pkg/helm"
 	local "github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
-	"github.com/ibm/the-mesh-for-data/pkg/storage"
-	"github.com/ibm/the-mesh-for-data/pkg/vault"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -61,7 +58,7 @@ var _ = BeforeSuite(func(done Done) {
 	By("bootstrapping test environment")
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{
-			filepath.Join("..", "..", "config", "crd", "bases"),
+			filepath.Join("..", "..", "..", "charts", "m4d-crd", "templates"),
 		},
 		ErrorIfCRDPathMissing: true,
 	}
@@ -85,9 +82,6 @@ var _ = BeforeSuite(func(done Done) {
 		k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 		Expect(err).ToNot(HaveOccurred())
 	} else {
-		// Mockup connectors
-		go mockup.CreateTestCatalogConnector(GinkgoT())
-
 		mgr, err = ctrl.NewManager(cfg, ctrl.Options{
 			Scheme:             scheme.Scheme,
 			MetricsBindAddress: "localhost:8086",
@@ -95,11 +89,7 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 
 		// Setup application controller
-		var clusterLister *mockup.ClusterLister
-		policyCompiler := &mockup.MockPolicyCompiler{}
-		conn := vault.NewDummyConnection()
-		reconciler, err := NewM4DApplicationReconciler(mgr, "M4DApplication", conn, policyCompiler, clusterLister, storage.NewProvisionTest())
-		Expect(err).ToNot(HaveOccurred())
+		reconciler := createTestM4DApplicationController(mgr.GetClient(), mgr.GetScheme())
 		err = reconciler.SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
 
@@ -157,6 +147,5 @@ var _ = AfterSuite(func() {
 	By("tearing down the test environment")
 	gexec.KillAndWait(5 * time.Second)
 	err := testEnv.Stop()
-	mockup.KillServer()
 	Expect(err).ToNot(HaveOccurred())
 })

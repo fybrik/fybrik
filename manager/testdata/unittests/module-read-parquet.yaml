@@ -4,11 +4,12 @@
 apiVersion: app.m4d.ibm.com/v1alpha1
 kind: M4DModule
 metadata:
-  name: read-module-test-e2e
+  name: read-parquet
   namespace: m4d-system
 spec:
   chart:
     name: localhost:5000/m4d-system/m4d-template:0.1.0
+  type: service
   flows:
     - read
   capabilities:
@@ -16,6 +17,7 @@ spec:
       protocol: m4d-arrow-flight
       dataformat: arrow
       endpoint:
+        hostname: read-path
         port: 80
         scheme: grpc
     supportedInterfaces:
@@ -23,14 +25,4 @@ spec:
       source:
         protocol: s3
         dataformat: parquet
-    - flow: read
-      source:
-        protocol: s3
-        dataformat: csv
-    actions:
-      - id: redact-ID
-        level: 2  # column
-      - id: removed-ID
-        level: 2  # column
-
 

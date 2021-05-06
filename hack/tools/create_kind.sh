@@ -10,14 +10,17 @@ source ./common.sh
 
 K8S_VERSION=${K8S_VERSION:-v1.19.1}
 : ${KUBE_NAMESPACE:=m4d-system}
+: ${KEEP_PROXY:=true}
 
 registry_delete() {
   docker network disconnect kind kind-registry
   docker kill kind-registry
   docker rm -f kind-registry
-  docker network disconnect kind kind-registry-proxy
-  docker kill kind-registry-proxy
-  docker rm -f kind-registry-proxy
+  if [ "${KEEP_PROXY}" != true ]; then
+    docker network disconnect kind kind-registry-proxy
+    docker kill kind-registry-proxy
+    docker rm -f kind-registry-proxy
+  fi
 }
 
 registry_create() {

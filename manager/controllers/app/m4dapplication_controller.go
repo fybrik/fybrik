@@ -388,7 +388,6 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 }
 
 func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, input *app.M4DApplication, clusters []multicluster.Cluster) error {
-	datasetID := req.Context.DataSetID
 	var err error
 	// Call the DataCatalog service to get info about the dataset
 
@@ -419,21 +418,6 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 		req.VaultSecretPath = details.CredentialsInfo.VaultSecretPath
 	}
 
-	// Call the CredentialsManager service to get info about the dataset
-	dataCredentials, err := r.DataCatalog.GetCredentialsInfo(ctx, &pb.DatasetCredentialsRequest{
-		DatasetId:      req.Context.DataSetID,
-		CredentialPath: credentialPath})
-	if err != nil {
-		return err
-	}
-	req.Credentials = dataCredentials
-
-	// The received credentials are stored in vault
-	path := utils.GetVaultDatasetHome() + datasetID
-	r.Log.V(0).Info("Registering a secret to " + path)
-	if err = r.VaultConnection.AddSecretFromStruct(path, req.Credentials.GetCreds()); err != nil {
-		return AnalyzeError(input, r.Log, datasetID, err)
-	}
 	return nil
 }
 

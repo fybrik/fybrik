@@ -190,13 +190,11 @@ func main() {
 	}
 }
 
-// init vault client and mount the base directory for storing credentials
+// init vault client
+// TODO: the vault client should be used to add roles for the modules.
 func initVaultConnection() (vault.Interface, error) {
 	vaultConn, err := vault.InitConnection(utils.GetVaultAddress(), utils.GetVaultToken())
 	if err != nil {
-		return vaultConn, err
-	}
-	if err = vaultConn.Mount(utils.GetVaultDatasetMountPath()); err != nil {
 		return vaultConn, err
 	}
 	return vaultConn, nil

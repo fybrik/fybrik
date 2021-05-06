@@ -3,10 +3,13 @@ module github.com/ibm/the-mesh-for-data
 go 1.15
 
 require (
+	cloud.google.com/go v0.72.0 // indirect
 	emperror.dev/errors v0.7.0
 	github.com/IBM/satcon-client-go v0.1.2-0.20210329192404-b8fa1c732712
 	github.com/buger/jsonparser v1.1.1
 	github.com/datashim-io/datashim/src/dataset-operator v0.0.0-20210421141459-334795d082bd
+	github.com/docker/docker v17.12.0-ce-rc1.0.20200309214505-aa6a9891b09c+incompatible // indirect
+	github.com/form3tech-oss/jwt-go v3.2.2+incompatible // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-chi/render v1.0.1
@@ -14,41 +17,46 @@ require (
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/spec v0.19.6 // indirect
 	github.com/go-openapi/swag v0.19.7 // indirect
-	github.com/gogo/protobuf v1.3.2
+	github.com/go-test/deep v1.0.7 // indirect
+	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.2.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/hashicorp/go-retryablehttp v0.6.7
-	github.com/hashicorp/vault v1.6.1
+	github.com/hashicorp/hcl v1.0.1-vault // indirect
 	github.com/hashicorp/vault/api v1.0.5-0.20201001211907-38d91b749c77
+	github.com/hashicorp/vault/sdk v0.1.14-0.20201214222404-d8fffe05d2f4 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
+	github.com/kr/pretty v0.2.1 // indirect
 	github.com/mailru/easyjson v0.7.1-0.20191009090205-6c0755d89d1e // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-runewidth v0.0.7 // indirect
-	github.com/miekg/dns v1.1.17 // indirect
 	github.com/mitchellh/copystructure v1.1.2 // indirect
+	github.com/mitchellh/mapstructure v1.3.3 // indirect
+	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/onsi/ginkgo v1.14.2
 	github.com/onsi/gomega v1.10.3
+	github.com/opencontainers/runc v1.0.0-rc9 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.9.0 // indirect
 	github.com/prometheus/common v0.19.0 // indirect
 	github.com/robfig/cron v1.2.0
-	github.com/shirou/gopsutil v3.20.11+incompatible // indirect
 	github.com/spf13/cobra v1.1.1
 	github.com/stretchr/testify v1.7.0
+	github.com/tidwall/pretty v1.0.1 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
+	go.mongodb.org/mongo-driver v1.4.2 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/zap v1.16.0 // indirect
-	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc // indirect
+	golang.org/x/crypto v0.0.0-20210503195802-e9a32991a82e // indirect
 	golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5 // indirect
-	google.golang.org/api v0.36.0 // indirect
-	google.golang.org/genproto v0.0.0-20210415145412-64678f1ae2d5 // indirect
+	google.golang.org/appengine v1.6.7 // indirect
+	google.golang.org/genproto v0.0.0-20210503173045-b96a97608f20 // indirect
 	google.golang.org/grpc v1.36.1
 	google.golang.org/protobuf v1.26.0
-	gopkg.in/ini.v1 v1.51.1 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.5.2

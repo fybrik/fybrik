@@ -12,7 +12,7 @@ kubectl config use-context kind-control
 make -C charts vault
 make -C charts cert-manager
 make -C third_party/datashim deploy
-make docker
+make docker-minimal-it
 make cluster-prepare-wait
 make configure-vault
 make -C charts m4d
