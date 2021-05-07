@@ -309,7 +309,7 @@ func (r *Impl) GetResources(kubeNamespace string, releaseName string) ([]*unstru
 		if unstr, ok := obj.(*unstructured.Unstructured); ok {
 			resources = append(resources, unstr)
 		} else {
-			return resources, errors.New("Invalid runtime object")
+			return resources, errors.New("invalid runtime object")
 		}
 	}
 	return resources, nil

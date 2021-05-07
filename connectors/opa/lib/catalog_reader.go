@@ -31,7 +31,7 @@ func (r *CatalogReader) GetDatasetsMetadataFromCatalog(in *pb.ApplicationContext
 	defer cancel()
 	conn, err := grpc.DialContext(ctx, r.catalogConnectorAddress, grpc.WithInsecure())
 	if err != nil {
-		return nil, fmt.Errorf("Connection to External Catalog Connector failed: %v", err)
+		return nil, fmt.Errorf("connection to external catalog connector failed: %v", err)
 	}
 	defer conn.Close()
 	client := pb.NewDataCatalogServiceClient(conn)

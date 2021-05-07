@@ -5,14 +5,12 @@ package mockup
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"log"
 	"net"
 
+	"emperror.dev/errors"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
-	"github.com/onsi/ginkgo"
 	"google.golang.org/grpc"
 )
 
@@ -21,8 +19,6 @@ import (
 // without any network traffic.
 type DataCatalogDummy struct {
 	pb.UnimplementedDataCatalogServiceServer
-	pb.UnimplementedDataCredentialServiceServer
-	credentials map[string]pb.DatasetCredentials
 	dataDetails map[string]pb.CatalogDatasetInfo
 }
 
@@ -44,42 +40,27 @@ func (d *DataCatalogDummy) RegisterDatasetInfo(ctx context.Context, req *pb.Regi
 	return nil, errors.New("functionality not yet supported")
 }
 
-func (d *DataCatalogDummy) GetCredentialsInfo(ctx context.Context, req *pb.DatasetCredentialsRequest) (*pb.DatasetCredentials, error) {
-	log.Printf("Received: ")
-	log.Printf("DataSetID: " + req.GetDatasetId())
-
-	catalogID := utils.GetAttribute("catalog_id", req.GetDatasetId())
-
-	credDetails, found := d.credentials[catalogID]
-	if found {
-		return &credDetails, nil
-	}
-
-	return nil, errors.New("could not find credentials")
-}
-
 func (d *DataCatalogDummy) Close() error {
 	return nil
 }
 
 func NewTestCatalog() *DataCatalogDummy {
 	dummyCatalog := DataCatalogDummy{
-		credentials: make(map[string]pb.DatasetCredentials),
 		dataDetails: make(map[string]pb.CatalogDatasetInfo),
 	}
 	dummyCatalog.dataDetails["s3-external"] = pb.CatalogDatasetInfo{
 		DatasetId: "s3-external",
 		Details: &pb.DatasetDetails{
 			Name:       "xxx",
-			DataFormat: "parquet",
-			Geo:        "Germany",
+			DataFormat: "csv",
+			Geo:        "neverland",
 			DataStore: &pb.DataStore{
 				Type: pb.DataStore_S3,
 				Name: "cos",
 				S3: &pb.S3DataStore{
 					Endpoint:  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
 					Bucket:    "m4d-test-bucket",
-					ObjectKey: "small.parq",
+					ObjectKey: "test.csv",
 				},
 			},
 			CredentialsInfo: &pb.CredentialsInfo{
@@ -180,26 +161,6 @@ func NewTestCatalog() *DataCatalogDummy {
 			Metadata: &pb.DatasetMetadata{},
 		},
 	}
-	dummyCatalog.credentials["s3-csv"] = pb.DatasetCredentials{
-		DatasetId: "s3-csv",
-		Creds:     &pb.Credentials{AccessKey: "ak", SecretKey: "sk"},
-	}
-	dummyCatalog.credentials["s3"] = pb.DatasetCredentials{
-		DatasetId: "s3",
-		Creds:     &pb.Credentials{AccessKey: "sk", SecretKey: "sk"},
-	}
-	dummyCatalog.credentials["s3-external"] = pb.DatasetCredentials{
-		DatasetId: "s3-external",
-		Creds:     &pb.Credentials{AccessKey: "sk", SecretKey: "sk"},
-	}
-	dummyCatalog.credentials["db2"] = pb.DatasetCredentials{
-		DatasetId: "db2",
-		Creds:     &pb.Credentials{Username: "admin", Password: "pswd"},
-	}
-	dummyCatalog.credentials["kafka"] = pb.DatasetCredentials{
-		DatasetId: "kafka",
-		Creds:     &pb.Credentials{Username: "admin", Password: "pswd"},
-	}
 
 	return &dummyCatalog
 }
@@ -215,15 +176,14 @@ func createMockCatalogConnector(port int) error {
 	log.Printf("Starting mock catalog connector on " + address)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
-		return fmt.Errorf("Error when setting up mock catalog connector: %v", err)
+		return errors.Wrap(err, "failed setting up mock catalog connector")
 	}
 	s := grpc.NewServer()
 	connector = s
 	dummyCatalog := NewTestCatalog()
 	pb.RegisterDataCatalogServiceServer(s, dummyCatalog)
-	pb.RegisterDataCredentialServiceServer(s, dummyCatalog)
 	if err := s.Serve(lis); err != nil {
-		return fmt.Errorf("Cannot serve mock catalog connector: %v", err)
+		return errors.Wrap(err, "failed in serve of mock catalog connector")
 	}
 	return nil
 }
@@ -232,19 +192,5 @@ func createMockCatalogConnector(port int) error {
 func MockCatalogConnector() {
 	if err := createMockCatalogConnector(8080); err != nil {
 		log.Fatal(err)
-	}
-}
-
-func CreateTestCatalogConnector(t ginkgo.GinkgoTInterface) {
-	if err := createMockCatalogConnector(50085); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func KillServer() {
-	if connector != nil {
-		log.Print("Killing server...")
-		connector.Stop()
-		connector = nil
 	}
 }

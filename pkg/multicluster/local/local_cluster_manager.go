@@ -2,9 +2,9 @@ package local
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
+	"emperror.dev/errors"
 	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	corev1 "k8s.io/api/core/v1"
@@ -31,8 +31,7 @@ func (cm *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 		Namespace: cm.Namespace,
 	}
 	if err := cm.Client.Get(context.Background(), namespacedName, &clusterMetadataConfigmap); err != nil {
-		wrappedError := fmt.Errorf("Error in GetClusters: %w", err)
-		return nil, wrappedError
+		return nil, errors.Wrap(err, "error in GetClusters")
 	}
 	var clusters []multicluster.Cluster
 	cluster := multicluster.Cluster{
@@ -62,7 +61,7 @@ func (cm *ClusterManager) GetLocalClusterName() (string, error) {
 // GetBlueprint returns a blueprint matching the given name, namespace and cluster details
 func (cm *ClusterManager) GetBlueprint(cluster string, namespace string, name string) (*v1alpha1.Blueprint, error) {
 	if localCluster, err := cm.GetLocalClusterName(); err != nil || localCluster != cluster {
-		return nil, errors.New("Unregistered cluster: " + cluster)
+		return nil, fmt.Errorf("unregistered cluster: %s", cluster)
 	}
 	blueprint := &v1alpha1.Blueprint{}
 	namespacedName := client.ObjectKey{
@@ -82,7 +81,7 @@ func (cm *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Bl
 // UpdateBlueprint updates the given blueprint or creates a new one if does not exist
 func (cm *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	if localCluster, err := cm.GetLocalClusterName(); err != nil || localCluster != cluster {
-		return errors.New("Unregistered cluster: " + cluster)
+		return fmt.Errorf("unregistered cluster: %s", cluster)
 	}
 	resource := &v1alpha1.Blueprint{
 		ObjectMeta: metav1.ObjectMeta{
