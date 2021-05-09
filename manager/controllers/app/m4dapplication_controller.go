@@ -74,11 +74,12 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	}
 
 	observedStatus := applicationContext.Status.DeepCopy()
+	appVersion := applicationContext.GetGeneration()
 
 	// check if reconcile is required
 	// reconcile is required if the spec has been changed, or the previous reconcile has failed to allocate a Plotter resource
-	generationComplete := r.ResourceInterface.ResourceExists(applicationContext.Status.Generated)
-	if !generationComplete || observedStatus.ObservedGeneration != applicationContext.GetGeneration() {
+	generationComplete := r.ResourceInterface.ResourceExists(observedStatus.Generated) && (observedStatus.Generated.AppVersion == appVersion)
+	if (!generationComplete) || (observedStatus.ObservedGeneration != appVersion) {
 		if result, err := r.reconcile(applicationContext); err != nil {
 			// another attempt will be done
 			// users should be informed in case of errors
@@ -88,7 +89,7 @@ func (r *M4DApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 			}
 			return result, err
 		}
-		applicationContext.Status.ObservedGeneration = applicationContext.GetGeneration()
+		applicationContext.Status.ObservedGeneration = appVersion
 	} else {
 		resourceStatus, err := r.ResourceInterface.GetResourceStatus(applicationContext.Status.Generated)
 		if err != nil {
@@ -122,13 +123,11 @@ func getBucketResourceRef(name string) *types.NamespacedName {
 func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApplication, status app.ObservedState) error {
 	applicationContext.Status.DataAccessInstructions = ""
 	applicationContext.Status.Ready = false
+	resetConditions(applicationContext)
 	if applicationContext.Status.CatalogedAssets == nil {
 		applicationContext.Status.CatalogedAssets = make(map[string]string)
 	}
 
-	if hasError(applicationContext) {
-		return nil
-	}
 	if status.Error != "" {
 		setCondition(applicationContext, "", status.Error, true)
 		return nil
@@ -374,6 +373,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	blueprintPerClusterMap := r.GenerateBlueprints(instances, applicationContext)
 	setReadModulesEndpoints(applicationContext, blueprintPerClusterMap, moduleMap)
 	resourceRef := r.ResourceInterface.CreateResourceReference(applicationContext.Name, applicationContext.Namespace)
+	resourceRef.AppVersion = applicationContext.GetGeneration()
 	ownerRef := &app.ResourceReference{Name: applicationContext.Name, Namespace: applicationContext.Namespace}
 	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, blueprintPerClusterMap); err != nil {
 		r.Log.V(0).Info("Error creating " + resourceRef.Kind + " : " + err.Error())
