@@ -5,7 +5,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"testing"
 	"time"
@@ -764,56 +763,4 @@ func TestPlotterUpdate(t *testing.T) {
 	err = cl.Get(context.Background(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
 	g.Expect(application.Status.Ready).To(gomega.BeTrue())
-}
-
-// This test checks that the older plotter state does not propagate into the m4dapp state
-func TestSyncWithPlotter(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewGomegaWithT(t)
-	// Set the logger to development mode for verbose logs.
-	logf.SetLogger(zap.New(zap.UseDevMode(true)))
-
-	namespaced := types.NamespacedName{
-		Name:      "notebook",
-		Namespace: "default",
-	}
-	application := &app.M4DApplication{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/m4dcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
-	// imitate a ready phase for the earlier generation
-	application.SetGeneration(2)
-	application.Status.Generated = &app.ResourceReference{Name: "plotter", Namespace: "m4d-system", Kind: "Plotter", AppVersion: 1}
-	application.Status.Ready = true
-	application.Status.ObservedGeneration = 1
-
-	// Objects to track in the fake client.
-	objs := []runtime.Object{
-		application,
-	}
-
-	// Register operator types with the runtime scheme.
-	s := utils.NewScheme(g)
-
-	// Create a fake client to mock API calls.
-	cl := fake.NewFakeClientWithScheme(s, objs...)
-
-	plotter := &app.Plotter{}
-	g.Expect(readObjectFromFile("../../testdata/plotter.yaml", plotter)).NotTo(gomega.HaveOccurred())
-	plotter.Status.ObservedState.Ready = true
-	g.Expect(cl.Create(context.Background(), plotter)).NotTo(gomega.HaveOccurred())
-
-	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createTestM4DApplicationController(cl, s)
-	req := reconcile.Request{
-		NamespacedName: namespaced,
-	}
-
-	_, err := r.Reconcile(req)
-	g.Expect(err).To(gomega.BeNil())
-
-	err = cl.Get(context.TODO(), req.NamespacedName, application)
-	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
-	bytes, _ := yaml.Marshal(application)
-	fmt.Println(string(bytes))
-	g.Expect(getErrorMessages(application)).NotTo(gomega.BeEmpty())
-	g.Expect(application.Status.Ready).NotTo(gomega.BeTrue())
 }
