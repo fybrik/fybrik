@@ -5,13 +5,14 @@
 export DOCKER_HOSTNAME=localhost:5000
 export DOCKER_NAMESPACE=m4d-system
 export HELM_EXPERIMENTAL_OCI=1
+export VALUES_FILE=m4d/integration-tests.values.yaml
 
 make kind
 kubectl config use-context kind-control
 make -C charts vault
 make -C charts cert-manager
 make -C third_party/datashim deploy
-make docker
+make docker-minimal-it
 make cluster-prepare-wait
 make configure-vault
 make -C charts m4d
