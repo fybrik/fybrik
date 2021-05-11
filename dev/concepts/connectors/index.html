@@ -12,7 +12,7 @@
       
       
       <link rel="icon" href="../../static/logo.svg">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.1.3">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.1.4">
     
     
       
@@ -20,7 +20,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.e35208c4.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.bde7dde4.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ef6f36e2.min.css">
@@ -505,13 +505,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#credentials-manager" class="md-nav__link">
-    Credentials manager
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#policy-manager" class="md-nav__link">
     Policy manager
   </a>
@@ -961,13 +954,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#credentials-manager" class="md-nav__link">
-    Credentials manager
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#policy-manager" class="md-nav__link">
     Policy manager
   </a>
@@ -1000,7 +986,7 @@
 <p>The project currently has two extension mechanisms, namely connectors and modules. 
 This page describes what connectors are and what connectors are installed using the default Mesh for Data installation.</p>
 <h2 id="what-are-connectors">What are connectors?</h2>
-<p>Connectors are GRPC services that the Mesh for Data control plane uses to connect to external systems. Specifically, the control plane needs connectors to data catalog, policy manager, and credentials manager. These connector GRPC services are deployed alongside the control plane.</p>
+<p>Connectors are GRPC services that the Mesh for Data control plane uses to connect to external systems. Specifically, the control plane needs connectors to data catalog and policy manager. These connector GRPC services are deployed alongside the control plane.</p>
 <h2 id="can-i-write-my-own-connectors">Can I write my own connectors?</h2>
 <p>Yes. Mesh for Data provides some default connectors described in this page but anyone can develop their own connectors.</p>
 <p>A connector needs to implement one or more of the GRPC interfaces described in the <a href="../../reference/connectors/">API documentation</a>, depending on the connector type. Note that a single Kubernetes service can implement all GRPC interfaces if the system it connects to supports the required functionality, but it can also be different services.</p>
@@ -1013,8 +999,6 @@ This page describes what connectors are and what connectors are installed using 
 <p>The catalog provides metadata about the asset such as security tags. It also provides connection information to describe how to connect to the data source to consume the data. Mesh for Data uses the metadata provided by the catalog both to enable seamless connectivity to the data and as input to making policy decisions. The data user is not concerned with any of it and just selects the data that it needs regardless of where the data resides.</p>
 <p>Mesh for Data is not a data catalog. Instead, it links to existing data catalogs using connectors.
 The default installation of Mesh for Data installs <a href="../../reference/katalog/">Katalog</a>, a built-in data catalog using Kubernetes CRDs used for evaluation. A connector to <a href="https://www.odpi.org/projects/egeria">ODPi Egeria</a> is also available.</p>
-<h3 id="credentials-manager">Credentials manager</h3>
-<p>Mesh for Data assumes that data access credentials of cataloged assets are securely stored in an enterprise credentials manager and are referenced from the data catalog. Mesh for Data links to existing credential managers using connectors for reading data access credentials. The default installation of Mesh for Data installs a connector to <a href="../../reference/katalog/">Katalog</a> and uses Kubernetes Secrets for credentials. A connector to <a href="https://www.vaultproject.io/">HashiCorp Vault</a> is also available.</p>
 <h3 id="policy-manager">Policy manager</h3>
 <p>Enforcing data governance policies requires a Policy Decision Point (PDP) that dictates what enforcement actions need to take place.
 Mesh for Data supports a wide and extendible set of enforcement actions to perform on data read, write or copy. These include transformation of data, verification of the data, and various restrictions on the external activity of an application that can acceess the data.</p>
@@ -1106,10 +1090,10 @@ Mesh for Data includes a PDP that is powered by <a href="https://www.openpolicya
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../../assets/javascripts/workers/search.fe42c31b.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../../assets/javascripts/workers/search.4fa0e4ee.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.4ea5477f.min.js"></script>
+      <script src="../../assets/javascripts/bundle.1d3bfcf1.min.js"></script>
       
     
   </body>
