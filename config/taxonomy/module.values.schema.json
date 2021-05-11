@@ -9,20 +9,10 @@
             "description": "Type of modules supported by the M4D manager.",
             "enum": ["copy", "read", "write"]
         },
-        "transformation_name": {
-            "description": "Transformation that can be performed on data.",
+        "governance_decision_name": {
+            "description": "Governance decision enforced on data.",
             "type": "string",
-            "enum": ["mask", "redact", "encrypt"]
-        },
-        "data_level_name": {
-            "type":"string",
-            "enum":["UNKNOWN", "DATASET", "COLUMN", "ROW", "CELL"]
-        },
-        "data_level_code": {
-            "type":"integer",
-            "description":"0=unknown, 1=dataset, 2=column, 3=row, 4=cell",
-            "minimum": 0,
-            "maximum": 4          
+			"enum": ["DenyAccess", "DenyWriting", "RemoveColumn", "RedactColumn", "EncryptColumn", "PeriodicBlackout", "FilterRows"]
         },
         "protocol": {
             "type":"string",
@@ -32,9 +22,7 @@
     },
     "properties": {
         "module_type": { "$ref": "#/definitions/module_type"},
-        "transformation_name": { "$ref": "#/definitions/transformation_name"},
-        "data_level_name": { "$ref": "#/definitions/data_level_name"},
-        "data_level_code": {  "$ref": "#/definitions/data_level_code"},
+        "governance_decision_name": { "$ref": "#/definitions/governance_decision_name"},
         "protocol": {"$ref": "#/definitions/protocol"}
     },
     "additionalProperties": false

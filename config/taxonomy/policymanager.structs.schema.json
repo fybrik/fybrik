@@ -30,25 +30,24 @@
             "type": "object",
             "description": "Root level decision plus list of optional transforms that may be required on the root or sub-items of the data",
             "properties": {
-                "resource" : { "$ref": "catalog.structs.schema.json#/definitions/resource"},
-                "governance_decision" : { "$ref": "policymanager.values.schema.json#/definitions/governance_decision"},
-                "transformations" : { 
-                    "type": "array",
-                    "items": {
-                        "properties": {
-                            "transformation": {"$ref": "module.structs.schema.json#/definitions/transformation"}
-                        }                 
-                    }
-                },
-                "used_policies": {
-                    "description" : "The list of policies on which the decision was based.",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            },
-            "required": ["resource", "governance_decision"]
+				"decision_id": {
+					"description": "This is the id returned by the governance engine",
+					"type": "string"
+				},
+				"governance_actions" : { 
+					"type": "array",
+					"items": {
+						"properties": {
+							"actions": {"$ref": "module.structs.schema.json#/definitions/governance_decision"},
+							"used_policy": {
+								"description" : "The list of policies on which the decision was based.",
+								"type": "string"
+							}
+						}                 
+					}
+				}
+			},
+            "required": ["decision_id", "governance_actions"]
         }
     },
     "properties": {

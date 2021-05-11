@@ -26,19 +26,13 @@
             "type": "string",
              "description": "The action to be taken on the data.  A mandatory object used by the M4D controller's logic",
             "enum": ["read", "write", "delete"]
-        },
-        "governance_decision": {
-            "type": "string",
-            "description": "Result of the policy engine evaluation of rules for a given request.  A mandatory object used by the M4D controller's logic",
-            "enum": ["allow", "deny", "transform"]
         }
     },
     "properties": {
         "intent": { "$ref": "#/definitions/intent"},
         "role": { "$ref": "#/definitions/role"},
         "request_context": { "$ref": "#/definitions/request_context"},
-        "action_type": { "$ref": "#/definitions/action_type"},
-        "governance_decision": { "$ref":"#/definitions/governance_decision"}
+        "action_type": { "$ref": "#/definitions/action_type"}
     },
     "additionalProperties": false
 }
