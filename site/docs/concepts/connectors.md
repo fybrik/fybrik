@@ -5,7 +5,7 @@ This page describes what connectors are and what connectors are installed using 
 
 ## What are connectors?
 
-Connectors are GRPC services that the Mesh for Data control plane uses to connect to external systems. Specifically, the control plane needs connectors to data catalog, policy manager, and credentials manager. These connector GRPC services are deployed alongside the control plane.
+Connectors are GRPC services that the Mesh for Data control plane uses to connect to external systems. Specifically, the control plane needs connectors to data catalog and policy manager. These connector GRPC services are deployed alongside the control plane.
 
 ## Can I write my own connectors?
 
@@ -28,10 +28,6 @@ The catalog provides metadata about the asset such as security tags. It also pro
 
 Mesh for Data is not a data catalog. Instead, it links to existing data catalogs using connectors.
 The default installation of Mesh for Data installs [Katalog](../reference/katalog.md), a built-in data catalog using Kubernetes CRDs used for evaluation. A connector to [ODPi Egeria](https://www.odpi.org/projects/egeria) is also available.
-
-### Credentials manager
-
-Mesh for Data assumes that data access credentials of cataloged assets are securely stored in an enterprise credentials manager and are referenced from the data catalog. Mesh for Data links to existing credential managers using connectors for reading data access credentials. The default installation of Mesh for Data installs a connector to [Katalog](../reference/katalog.md) and uses Kubernetes Secrets for credentials. A connector to [HashiCorp Vault](https://www.vaultproject.io/) is also available.
 
 ### Policy manager
 
