@@ -209,8 +209,9 @@ func validateDataStore(path *field.Path, store *DataStore) []*field.Error {
 
 	if store.S3 != nil {
 		s3Path := path.Child("s3")
-		if msgs := validationutils.IsDNS1123Subdomain(store.S3.Endpoint); len(msgs) != 0 {
-			allErrs = append(allErrs, field.Invalid(s3Path.Child("endpoint"), store.S3.Endpoint, "Invalid endpoint! Expecting a valid domain!"))
+		_, err := url.Parse(store.S3.Endpoint)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(s3Path.Child("endpoint"), store.S3.Endpoint, "Invalid endpoint! Expecting a endpoint URL!"))
 		}
 
 		if len(store.S3.Bucket) == 0 {

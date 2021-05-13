@@ -4,8 +4,7 @@
 apiVersion: app.m4d.ibm.com/v1alpha1
 kind: Blueprint
 metadata:
-  name: blueprint-ysqxbhyihk
-  namespace: default
+  name: blueprint-with-copy
   labels:
     app.m4d.ibm.com/appNamespace: default
     app.m4d.ibm.com/appName: notebook

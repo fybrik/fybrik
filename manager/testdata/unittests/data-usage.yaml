@@ -1,0 +1,18 @@
+apiVersion: app.m4d.ibm.com/v1alpha1
+kind: M4DApplication
+metadata:
+  name: read-test
+  namespace: default
+spec:
+  selector:
+   clusterName: thegreendragon 
+   workloadSelector:
+     matchLabels: {run: notebook}
+  appInfo:
+    intent: Testing
+  data:
+    - dataSetID: '{"asset_id": "redact-dataset", "catalog_id": "s3"}'
+      requirements:
+        interface: 
+          protocol: m4d-arrow-flight
+          dataformat: arrow

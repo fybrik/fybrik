@@ -86,67 +86,6 @@ func GetMetadata(datasetID string) error {
 	return nil
 }
 
-func GetCredentials(datasetID string) error {
-	credentialsConnectorURL := getEnv("CREDENTIALS_CONNECTOR_URL")
-	credentialsProviderName := getEnv("CREDENTIALS_PROVIDER_NAME")
-
-	timeoutInSecs := getEnv("CONNECTION_TIMEOUT")
-	timeoutInSeconds, err := strconv.Atoi(timeoutInSecs)
-
-	if err != nil {
-		log.Printf("Atoi conversion of timeoutinseconds failed: %v", err)
-		return errors.Wrap(err, "conversion of timeoutinseconds failed in GetCredentials")
-	}
-
-	fmt.Println("timeoutInSeconds: ", timeoutInSeconds)
-	fmt.Println("credentialsConnectorURL: ", credentialsConnectorURL)
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutInSeconds)*time.Second)
-	defer cancel()
-	conn, err := grpc.DialContext(ctx, credentialsConnectorURL, grpc.WithInsecure())
-
-	if err != nil {
-		log.Printf("Connection to "+credentialsProviderName+" Credentials Connector failed: %v", err)
-		errStatus, _ := status.FromError(err)
-		fmt.Println(errStatus.Message())
-
-		fmt.Println(errStatus.Code())
-		return errors.Wrap(err, "connection to credentials connector failed")
-	}
-	defer conn.Close()
-
-	c1 := pb.NewDataCredentialServiceClient(conn)
-
-	objToSendForCredential := &pb.DatasetCredentialsRequest{DatasetId: datasetID}
-
-	log.Printf("Sending DatasetCredentialsRequest: ")
-	dataCredReqStr, _ := json.MarshalIndent(objToSendForCredential, "", "\t")
-	log.Print(string(dataCredReqStr))
-	log.Println("1***************************************************************")
-
-	log.Println("Sending request to " + credentialsProviderName + " Connector Server")
-	responseCredential, errCredential := c1.GetCredentialsInfo(ctx, objToSendForCredential)
-
-	// updated for better exception handling using standard GRPC codes
-	if errCredential != nil {
-		log.Printf("Error sending data to "+credentialsProviderName+" Credentials Connector: %v", errCredential)
-		errCredentialStatus, _ := status.FromError(errCredential)
-		log.Println("Message:", errCredentialStatus.Message())
-		// lets print the error code which is `INVALID_ARGUMENT`
-		log.Println("Code:", errCredentialStatus.Code())
-		return errors.Wrap(err, "error sending data to credentials connector in GetCredentials")
-	}
-
-	log.Println("***************************************************************")
-	log.Printf("Received Response for GetCredentialsInfo with datasetID: %s\n", responseCredential.GetDatasetId())
-	log.Println("***************************************************************")
-	log.Printf("Response received from %s is given below:", credentialsProviderName)
-	sCredential, _ := json.MarshalIndent(responseCredential, "", "\t")
-	log.Print(string(sCredential))
-	log.Println("***************************************************************")
-	return nil
-}
-
 func main() {
 	// example 1: remote parquet
 	// datasetID := "10a9fba1-b049-40d9-bac9-1a608c1e4774"
@@ -178,19 +117,10 @@ func main() {
 
 	err := GetMetadata(datasetIDJson)
 	if err != nil {
-		fmt.Printf("Error in GetCredentials:\n %v\n\n", err)
-		fmt.Printf("Error in GetCredentials Details:\n%+v\n\n", err)
+		fmt.Printf("Error in GetMetadata:\n %v\n\n", err)
+		fmt.Printf("Error in GetMetadata Details:\n%+v\n\n", err)
 		// errors.Cause() provides access to original error.
-		fmt.Printf("Error in GetCredentials Cause: %v\n", errors.Cause(err))
-		fmt.Printf("Error in GetCredentials Extended Cause:\n%+v\n", errors.Cause(err))
-	}
-
-	err = GetCredentials(datasetIDJson)
-	if err != nil {
-		fmt.Printf("Error in GetCredentials: \n %v\n\n", err)
-		fmt.Printf("Error in GetCredentials Details: \n%+v\n\n", err)
-		// errors.Cause() provides access to original error.
-		fmt.Printf("Error in GetCredentials Cause: %v\n", errors.Cause(err))
-		fmt.Printf("Error in GetCredentials Details Extended Cause:\n%+v\n", errors.Cause(err))
+		fmt.Printf("Error in GetMetadata Cause: %v\n", errors.Cause(err))
+		fmt.Printf("Error in GetMetadata Extended Cause:\n%+v\n", errors.Cause(err))
 	}
 }

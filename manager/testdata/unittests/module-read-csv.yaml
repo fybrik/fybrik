@@ -19,15 +19,14 @@ spec:
     api:
       protocol: m4d-arrow-flight
       dataformat: arrow
+      endpoint:
+        hostname: read-path
+        port: 80
+        scheme: grpc
     supportedInterfaces:
     - flow: read
       source:
         protocol: s3
         dataformat: csv
-    actions:
-      - id: redact-ID
-        level: 2  # column
-      - id: removed-ID
-        level: 2  # column
 
 
