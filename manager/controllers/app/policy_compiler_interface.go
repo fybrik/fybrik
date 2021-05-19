@@ -5,11 +5,11 @@ package app
 
 import (
 	"emperror.dev/errors"
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
-	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
-	"github.com/ibm/the-mesh-for-data/pkg/vault"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	pc "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/policy-compiler"
+	"github.com/mesh-for-data/mesh-for-data/pkg/vault"
 )
 
 // ConstructApplicationContext constructs ApplicationContext structure to send to Policy Compiler

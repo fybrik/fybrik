@@ -8,8 +8,8 @@ import (
 
 	"log"
 
-	connectors "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
-	vault "github.com/ibm/the-mesh-for-data/pkg/vault"
+	connectors "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	vault "github.com/mesh-for-data/mesh-for-data/pkg/vault"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
