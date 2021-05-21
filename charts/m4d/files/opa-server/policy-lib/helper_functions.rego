@@ -40,8 +40,8 @@ column_has_tag(tag) {
 	compare_str(tag, input.details.metadata.components_metadata[_].tags[_])
 }
 
-check_purpose(purpose) {
-    compare_str(purpose, Purpose())
+check_intent(intent) {
+    compare_str(intent, Intent())
 }
 
 check_role(role) {

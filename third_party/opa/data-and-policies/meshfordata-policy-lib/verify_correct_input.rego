@@ -8,8 +8,8 @@ incorrect_input[used_policy] {
    not verify_access_type
    used_policy := build_action_from_policies(build_policy_from_description("unknown access type"))
 } {
-    not verify_purpose
-    used_policy := build_action_from_policies(build_policy_from_description("unknown purpose"))
+    not verify_intent
+    used_policy := build_action_from_policies(build_policy_from_description("unknown intent"))
 } {
     not verify_role
     used_policy := build_action_from_policies(build_policy_from_description("unknown role"))

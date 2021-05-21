@@ -1,5 +1,5 @@
 {
-    "DataPurposes": ["audit&complience", "client Support", "marketing", "Fraud Detection", "Customer Behaviour Analysis"],
+    "DataIntents": ["audit&complience", "client Support", "marketing", "Fraud Detection", "Customer Behaviour Analysis"],
 
     "DataRoles": ["Data Scientist", "Business Analyst", "hr", "management", "security"],
 
