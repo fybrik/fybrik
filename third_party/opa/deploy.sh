@@ -6,18 +6,6 @@ set -x
 NAMESPACE=m4d-system
 TIMEOUT=8m
 
-undeploy() {
-    kubectl delete --namespace=$NAMESPACE -f policy-editor.yaml || true
-    kubectl delete --namespace=$NAMESPACE  -f policy-editor-rolebinding.yaml || true
-    kubectl delete --namespace=$NAMESPACE  -f opa.yaml || true
-
-    unloadpolicy data-and-policies/meshfordata-policy-lib || true
-    unloadpolicy data-and-policies/user-created-policy-1 || true
-    unloadpolicy data-and-policies/user-created-policy-2 || true
-
-    unloaddata data-and-policies/meshfordata-external-data || true
-}
-
 check_valid_data_folder(){
     count=`ls -1 *.json 2>/dev/null | wc -l`
     count="$(echo -e "${count}" | tr -d '[:space:]')"
@@ -98,22 +86,7 @@ loaddata(){
     cd -
 }
 
-deploy() {
-    # install opa with required permissions for kube-mgmt
-    kubectl create --namespace=$NAMESPACE -f policy-editor.yaml
-    kubectl create --namespace=$NAMESPACE -f policy-editor-rolebinding.yaml
-    kubectl create --namespace=$NAMESPACE -f opa.yaml
-
-    # default library and external data loading
-    loaddata data-and-policies/meshfordata-external-data
-    loadpolicy data-and-policies/meshfordata-policy-lib
-}
-
 case "$1" in
-    deploy)
-        undeploy
-        deploy
-        ;;
     loadpolicy)
         loadpolicy "$2"
         ;;
@@ -125,9 +98,6 @@ case "$1" in
         ;;
     unloaddata)
         unloaddata "$2"
-        ;;
-    undeploy)
-        undeploy
         ;;
     *)
         echo "usage: $0 [deploy|undeploy|loadpolicy <policydir>|loaddata <datadir>|unloadpolicy <policydir>|unloaddata <datadir>]"
