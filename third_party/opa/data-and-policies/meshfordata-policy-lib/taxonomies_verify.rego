@@ -4,8 +4,8 @@ verify_access_type {
 		compare_str(AccessType(), AccessTypes[_])
 }
 
-verify_purpose {
-		compare_str(Purpose(), Purposes[_])
+verify_intent {
+		compare_str(Intent(), Intents[_])
 }
 
 verify_role {

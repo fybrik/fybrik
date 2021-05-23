@@ -1,6 +1,6 @@
 package data_policies
 
-#this file assumes input to be provided in specific format, in this case how data mesh provides it 
+#this file assumes input to be provided in specific format, in this case how data mesh provides it
 #similar file can be built for Egeria, at least for the metadata part, or any other catalog when we show how the input should be  parsed correctly
 
 #Example structure:
@@ -46,11 +46,11 @@ package data_policies
 # }
 Properties() = input.properties
 
-Purpose() = Properties().intent 
+Intent() = Properties().intent
 
 Role() = Properties().role
 
-AccessType() = input.type 
+AccessType() = input.type
 
 DatasetTags() = input.details.metadata.dataset_tags
 
