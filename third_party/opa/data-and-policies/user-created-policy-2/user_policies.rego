@@ -7,10 +7,8 @@ import data.data_policies as dp
 transform[action] {
 	description = "location data should be removed before copy"
 
-	dp.correct_input
-
     #user context and access type check
-    dp.check_access_type([dp.AccessTypes.COPY])
+    dp.check_access_type(["COPY"])
 
     column_names := dp.column_with_tag("location")
     action = dp.build_remove_column_action(column_names[_], dp.build_policy_from_description(description))
@@ -19,10 +17,8 @@ transform[action] {
 transform[action] {
 	description = "sensitive columns in health data should be removed"
 
-	dp.correct_input
-
     #user context and access type check
-    dp.check_access_type([dp.AccessTypes.COPY, dp.AccessTypes.READ])
+    dp.check_access_type(["COPY", "READ"])
 
     dp.dataset_has_tag("HealthData")
 
@@ -33,10 +29,8 @@ transform[action] {
 transform[action] {
 	description = "encrypt sensitive personal and health data on COPY out of united states for health data assets"
 
-	dp.correct_input
-
     #user context and access type check
-    dp.check_access_type(dp.AccessTypes.COPY)
+    dp.check_access_type("COPY")
 
     dp.dataset_has_tag("HealthData")
     not dp.check_destination([dp.GeoDestinations.US])
@@ -51,10 +45,8 @@ transform[action] {
 	#description = "test for transactions dataset that encrypts some columns by name"
     description = "test for transactions dataset that redacts some columns by name"
 
-	dp.correct_input
-
     #user context and access type check
-    dp.check_access_type([dp.AccessTypes.READ])
+    dp.check_access_type(["READ"])
 
     dp.dataset_has_tag("finance")
 
@@ -68,10 +60,8 @@ transform[action] {
 deny[action] {
 	description = "test for transactions dataset with deny"
 
-	dp.correct_input
-
     #user context and access type check
-    dp.check_access_type([dp.AccessTypes.COPY])
+    dp.check_access_type(["COPY"])
 
     dp.dataset_has_tag("Finance")
 
