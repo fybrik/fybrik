@@ -5,8 +5,25 @@
     "description": "This taxonomy defines the structure of response received from Policy Agent policy engine with enforcements.",
 	"type": "object",
 	"properties": {
-		"governance_decision_response":{"$ref":"policymanager.structs.schema.json#/definitions/governance_decision_response"}
+		"decision_id": {
+			"description": "This is the id returned by the governance engine",
+			"type": "string"
+		},
+		"result" : { 
+			"type": "array",
+			"description": "While showing the result, action contains the action type and the associated entity on which action has been taken.",
+			"items": {
+				"properties": {
+					"action": {"$ref": "module.structs.schema.json#/definitions/action"},
+					"used_policy": {
+						"description" : "The list of policies on which the decision was based.",
+						"type": "string"
+					}
+				},
+				"required":["action","used_policy"]                 
+			}
+		}
 	},
 	"additionalProperties": false,
-	"required": ["governance_decision_response"]
+	"required": ["result"]
 }

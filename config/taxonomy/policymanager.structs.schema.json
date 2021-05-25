@@ -25,44 +25,12 @@
                 "resource": { "$ref": "catalog.structs.schema.json#/definitions/resource"}
             },
             "required": ["action", "resource"]
-        },
-        "governance_decision_response": {
-            "type": "object",
-            "description": "Governance decisions on the asset based on the enforced policies",
-            "properties": {
-				"decision_id": {
-					"description": "This is the id returned by the governance engine",
-					"type": "string"
-				},
-				"result" : { 
-					"type": "array",
-					"items": {
-						"properties": {
-							"action": {"$ref": "module.values.schema.json#/definitions/action"},
-							"params": {
-								"type": "array",
-								"description": "List of optional parameters provided to the transform function.",
-								"items": {
-									"type":"string"
-								}
-							},
-							"used_policy": {
-								"description" : "The list of policies on which the decision was based.",
-								"type": "string"
-							}
-						},
-						"required":["action","used_policy"]                 
-					}
-				}
-			},
-            "required": ["result"]
         }
     },
     "properties": {
         "request_context": { "$ref": "#/definitions/request_context"},
         "action": { "$ref":"#/definitions/action"},
-        "governance_decision_request": { "$ref":"#/definitions/governance_decision_request"},
-        "governance_decision_response": { "$ref":"#/definitions/governance_decision_response"}
+        "governance_decision_request": { "$ref":"#/definitions/governance_decision_request"}
     },
     "additionalProperties": false
 }

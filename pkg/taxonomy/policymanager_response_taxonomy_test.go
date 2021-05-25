@@ -12,10 +12,10 @@ var (
 	OPAResponseTaxValsName = "../../config/taxonomy/policymanager_response.structs.schema.json"
 
 	// {\"governance_decision_response\": {\"decision_id\":\"abcde1234\", \"governance_actions\":[{\"actions\":\"\", \"used_policy\":\"policyID112233\"}]}}
-	governanceResponseBadNoDecision = "{\"governance_decision_response\": {\"decision_id\":\"abcde1234\", \"result\":[{\"action\": {\"name\":\"\"}, \"used_policy\":\"policyID112233\"}]}}"
+	governanceResponseBadNoDecision = "{\"decision_id\":\"abcde1234\", \"result\":[{\"action\": {\"name\":\"\"}, \"used_policy\":\"policyID112233\"}]}"
 
 	// {"governance_decision_response": {"resource":{"name":"file1"}, "governance_decision":"allow"}}
-	governanceResponseGood = "{\"governance_decision_response\": {\"decision_id\":\"abcde1234\", \"result\":[{\"action\": {\"name\":\"RedactColumn\", \"columns\":[\"nameOrig\"]}, \"used_policy\":\"policyID112233\"}]}}"
+	governanceResponseGood = "{\"decision_id\":\"abcde1234\", \"result\":[{\"action\": {\"name\":\"RedactColumn\", \"columns\":[\"nameOrig\"]}, \"used_policy\":\"policyID112233\"}]}"
 )
 
 func TestOPAResponseTaxonomy(t *testing.T) {

@@ -8,40 +8,39 @@ import (
 )
 
 var (
-	// ModuleTaxStructsName = "module.structs.schema.json"
-	ModuleTaxValsName = "module.values.schema.json"
+	ModuleTaxStructsName = "module.structs.schema.json"
+	ModuleTaxValsName    = "module.values.schema.json"
 
 	moduleTypeGood = "{\"module_type\":\"read\"}"
 	moduleTypeBad  = "{\"module_type\":\"xxx\"}"
 
-	// governanceDecisionNameGood = "{\"action_name\":\"RedactColumn\"}"
-	// governanceDecisionNameBad  = "{\"action_name\":\"xxx\"}"
+	actionNameColumnsGood = "{\"action_name_columns\":\"RedactColumn\"}"
+	actionNameColumnsBad  = "{\"action_name_columns\":\"DenyWriting\"}"
+
+	actionNameDatasetGood = "{\"action_name_dataset\":\"DenyAccess\"}"
+	actionNameDatasetBad  = "{\"action_name_dataet\":\"RedactColumn\"}"
 
 	protocolGood = "{\"protocol\":\"m4d-arrow-flight\"}"
 	protocolBad  = "{\"protocol\":\"xxx\"}"
 
-	// {"transformation": {"name":"mask"}}
-	// governanceDecisionBaseGood = "{\"action\": {\"name\":\"RedactColumn\"}}"
+	actionNameGood = "{\"action\": {\"name\":\"DenyAccess\"}}"
+	actionNameBad  = "{\"action\": {\"name\":\"xxx\", \"columns\":[\"nameOrig\"]}}"
 
-	// {"transformation": {"name":"xxx"}}
-	// governanceDecisionBaseBad = "{\"action\": {\"name\":\"xxx\"}}"
-
-	// {"transformation": {"name":"mask", "params":["param1", "params2"]}}
-	// governanceDecisionGoodParams = "{\"action\": {\"name\":\"RemoveColumn\", \"params\":[\"Column 1\", \"params2\"]}}"
-
-	// {"transformation": {"params":["param1", "params2"]}}
-	// governanceDecisionBadNoName = "{\"action\": {\"params\":[\"Column 1\", \"params2\"]}}"
+	actionGoodRequiredField    = "{\"action\": {\"name\":\"RedactColumn\", \"columns\":[\"nameOrig\"]}}"
+	actionMissingRequiredField = "{\"action\": {\"name\":\"RemoveColumn\"}}"
 )
 
 func TestModuleTaxonomy(t *testing.T) {
 	ValidateTaxonomy(t, ModuleTaxValsName, moduleTypeGood, "moduleTypeGood", true)
 	ValidateTaxonomy(t, ModuleTaxValsName, moduleTypeBad, "moduleTypeBad", false)
-	// ValidateTaxonomy(t, ModuleTaxValsName, governanceDecisionNameGood, "governanceDecisionNameGood", true)
-	// ValidateTaxonomy(t, ModuleTaxValsName, governanceDecisionNameBad, "governanceDecisionNameBad", false)
+	ValidateTaxonomy(t, ModuleTaxValsName, actionNameColumnsGood, "actionNameColumnsGood", true)
+	ValidateTaxonomy(t, ModuleTaxValsName, actionNameColumnsBad, "actionNameColumnsBad", false)
+	ValidateTaxonomy(t, ModuleTaxValsName, actionNameDatasetGood, "actionNameDatasetGood", true)
+	ValidateTaxonomy(t, ModuleTaxValsName, actionNameDatasetBad, "actionNameDatasetBad", false)
 	ValidateTaxonomy(t, ModuleTaxValsName, protocolGood, "protocolGood", true)
 	ValidateTaxonomy(t, ModuleTaxValsName, protocolBad, "protocolBad", false)
-	// ValidateTaxonomy(t, ModuleTaxStructsName, governanceDecisionBaseGood, "governanceDecisionBaseGood", true)
-	// ValidateTaxonomy(t, ModuleTaxStructsName, governanceDecisionBaseBad, "governanceDecisionBaseBad", false)
-	// ValidateTaxonomy(t, ModuleTaxStructsName, governanceDecisionGoodParams, "governanceDecisionGoodParams", true)
-	// ValidateTaxonomy(t, ModuleTaxStructsName, governanceDecisionBadNoName, "governanceDecisionBadNoName", false)
+	ValidateTaxonomy(t, ModuleTaxStructsName, actionNameGood, "actionNameGood", true)
+	ValidateTaxonomy(t, ModuleTaxStructsName, actionNameBad, "actionNameBad", false)
+	ValidateTaxonomy(t, ModuleTaxStructsName, actionGoodRequiredField, "actionGoodRequiredField", true)
+	ValidateTaxonomy(t, ModuleTaxStructsName, actionMissingRequiredField, "actionMissingRequiredField", false)
 }
