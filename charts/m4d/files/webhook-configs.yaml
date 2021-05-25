@@ -1,0 +1,89 @@
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: '{{ .Release.Namespace }}-mutating-webhook'
+  annotations:
+    cert-manager.io/inject-ca-from: '{{ .Release.Namespace }}/serving-cert'
+webhooks:
+  - clientConfig:
+      caBundle: Cg==
+      service:
+        name: webhook-service
+        namespace: '{{ .Release.Namespace }}'
+        path: /mutate-motion-m4d-ibm-com-v1alpha1-batchtransfer
+    failurePolicy: Fail
+    name: mbatchtransfer.kb.io
+    rules:
+      - apiGroups:
+          - motion.m4d.ibm.com
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - batchtransfers
+  - clientConfig:
+      caBundle: Cg==
+      service:
+        name: webhook-service
+        namespace: '{{ .Release.Namespace }}'
+        path: /mutate-motion-m4d-ibm-com-v1alpha1-streamtransfer
+    failurePolicy: Fail
+    name: mstreamtransfer.kb.io
+    rules:
+      - apiGroups:
+          - motion.m4d.ibm.com
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - streamtransfers
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: '{{ .Release.Namespace }}-validating-webhook'
+  annotations:
+    cert-manager.io/inject-ca-from: '{{ .Release.Namespace }}/serving-cert'
+webhooks:
+  - clientConfig:
+      caBundle: Cg==
+      service:
+        name: webhook-service
+        namespace: '{{ .Release.Namespace }}'
+        path: /validate-motion-m4d-ibm-com-v1alpha1-batchtransfer
+    failurePolicy: Fail
+    name: vbatchtransfer.kb.io
+    rules:
+      - apiGroups:
+          - motion.m4d.ibm.com
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - batchtransfers
+  - clientConfig:
+      caBundle: Cg==
+      service:
+        name: webhook-service
+        namespace: '{{ .Release.Namespace }}'
+        path: /validate-motion-m4d-ibm-com-v1alpha1-streamtransfer
+    failurePolicy: Fail
+    name: vstreamtransfer.kb.io
+    rules:
+      - apiGroups:
+          - motion.m4d.ibm.com
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - streamtransfers

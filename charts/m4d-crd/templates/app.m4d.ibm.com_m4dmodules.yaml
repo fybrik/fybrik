@@ -56,9 +56,26 @@ spec:
                       - csv
                       - json
                       - avro
+                      - orc
                       - binary
                       - arrow
                       type: string
+                    endpoint:
+                      description: EndpointSpec is used both by the module creator and by the status of the m4dapplication
+                      properties:
+                        hostname:
+                          description: Always equals the release name. Can be omitted.
+                          type: string
+                        port:
+                          format: int32
+                          type: integer
+                        scheme:
+                          description: 'For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc'
+                          type: string
+                      required:
+                      - port
+                      - scheme
+                      type: object
                     protocol:
                       description: IFProtocol defines interface protocol for data transactions
                       enum:
@@ -68,14 +85,9 @@ spec:
                       - m4d-arrow-flight
                       type: string
                   required:
+                  - endpoint
                   - protocol
                   type: object
-                credentials-managed-by:
-                  description: Type provides information used in determining how to instantiate the component
-                  enum:
-                  - secret-provider
-                  - automatic
-                  type: string
                 supportedInterfaces:
                   description: Copy should have one or more instances in the list, and its content should have source and sink Read should have one or more instances in the list, each with source populated Write should have one or more instances in the list, each with sink populated TODO - In the future if we have a module type that doesn't interface directly with data then this list could be empty
                   items:
@@ -99,6 +111,7 @@ spec:
                             - csv
                             - json
                             - avro
+                            - orc
                             - binary
                             - arrow
                             type: string
@@ -124,6 +137,7 @@ spec:
                             - csv
                             - json
                             - avro
+                            - orc
                             - binary
                             - arrow
                             type: string
@@ -143,7 +157,6 @@ spec:
                     type: object
                   type: array
               required:
-              - credentials-managed-by
               - supportedInterfaces
               type: object
             chart:

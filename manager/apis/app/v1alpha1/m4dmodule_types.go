@@ -38,19 +38,6 @@ const (
 	Read ModuleFlow = "read"
 )
 
-// CredentialManagementType indicates whether this module queries the SecretProvider by itself to get
-// credentials, or whether it assumes that the data-mesh will inject them.
-// +kubebuilder:validation:Enum=secret-provider;automatic
-type CredentialManagementType string
-
-const (
-	// SecretProvider is set when the module uses the Secret Provider
-	SecretProvider CredentialManagementType = "secret-provider"
-
-	// Automatic is set when credential management is handled elsewhere
-	Automatic CredentialManagementType = "automatic"
-)
-
 // ModuleInOut specifies the protocol and format of the data input and output by the module - if any
 type ModuleInOut struct {
 
@@ -87,13 +74,28 @@ type SupportedAction struct {
 	Level connectors.EnforcementAction_EnforcementActionLevel `json:"level,omitempty"`
 }
 
+// EndpointSpec is used both by the module creator and by the status of the m4dapplication
+type EndpointSpec struct {
+	// Always equals the release name. Can be omitted.
+	// +optional
+	Hostname string `json:"hostname,omitempty"`
+	// +required
+	Port int32 `json:"port"`
+
+	// For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc
+	// +required
+	Scheme string `json:"scheme"`
+}
+
+type ModuleAPI struct {
+	// +required
+	InterfaceDetails `json:",inline"`
+	// +required
+	Endpoint EndpointSpec `json:"endpoint"`
+}
+
 // Capability declares what this module knows how to do and the types of data it knows how to handle
 type Capability struct {
-
-	// Type provides information used in determining how to instantiate the component
-	// +required
-	CredentialsManagedBy CredentialManagementType `json:"credentials-managed-by"`
-
 	// Copy should have one or more instances in the list, and its content should have source and sink
 	// Read should have one or more instances in the list, each with source populated
 	// Write should have one or more instances in the list, each with sink populated
@@ -104,7 +106,7 @@ type Capability struct {
 
 	// API indicates to the application how to access/write the data
 	// +optional
-	API *InterfaceDetails `json:"api,omitempty"`
+	API *ModuleAPI `json:"api,omitempty"`
 
 	// Actions are the data transformations that the module supports
 	// +optional

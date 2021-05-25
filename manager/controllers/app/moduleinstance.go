@@ -4,12 +4,10 @@
 package app
 
 import (
-	"encoding/json"
 	"strings"
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
-	vault "github.com/hashicorp/vault/api"
 	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	modules "github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
@@ -19,6 +17,7 @@ import (
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"github.com/ibm/the-mesh-for-data/pkg/serde"
 	"github.com/ibm/the-mesh-for-data/pkg/storage"
+	vault "github.com/ibm/the-mesh-for-data/pkg/vault"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -40,7 +39,7 @@ type ModuleManager struct {
 	PolicyCompiler     pc.IPolicyCompiler
 	WorkloadGeography  string
 	Provision          storage.ProvisionInterface
-	VaultClient        *vault.Client
+	VaultConnection    vault.Interface
 	ProvisionedStorage map[string]NewAssetInfo
 }
 
@@ -81,11 +80,6 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 		m.Log.Info("Bucket allocation failed: " + err.Error())
 		return nil, err
 	}
-	if err = m.registerSecretInVault(bucket.Name, bucket.SecretRef); err != nil {
-		m.Log.Info("Could not register secret in vault: " + err.Error())
-		return nil, err
-	}
-
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
 	if err = m.Provision.CreateDataset(bucketRef, bucket, &m.Owner); err != nil {
 		m.Log.Info("Dataset creation failed: " + err.Error())
@@ -123,39 +117,16 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	m.ProvisionedStorage[item.Context.DataSetID] = assetInfo
 	utils.PrintStructure(&assetInfo, m.Log, "ProvisionedStorage element")
 
+	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
 	return &app.DataStore{
-		CredentialLocation: utils.GetDatasetVaultPath(bucket.Name),
-		Vault: &app.Vault{
-			SecretPath: utils.GetSecretPath(bucket.Name),
+		Vault: app.Vault{
+			SecretPath: vaultSecretPath,
 			Role:       utils.GetModulesRole(),
 			Address:    utils.GetVaultAddress(),
 		},
 		Connection: *connection,
 		Format:     string(destinationInterface.DataFormat),
 	}, nil
-}
-
-func (m *ModuleManager) registerSecretInVault(id string, secretRef types.NamespacedName) error {
-	var err error
-	var credentials *pb.Credentials
-	if credentials, err = SecretToCredentials(m.Client, secretRef.Name); err != nil {
-		return err
-	}
-	if credentials.AccessKey == "" || credentials.SecretKey == "" {
-		return errors.New("accessKeyID and secretAccessKey must be specified in " + secretRef.Name)
-	}
-	jsonStr, err := json.Marshal(credentials)
-	if err != nil {
-		return err
-	}
-	credentialsMap := make(map[string]interface{})
-	if err := json.Unmarshal(jsonStr, &credentialsMap); err != nil {
-		return err
-	}
-	if _, err := utils.AddToVault(id, credentialsMap, m.VaultClient); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.M4DApplication) (*modules.Selector, error) {
@@ -206,13 +177,15 @@ func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.
 	if !copyRequired {
 		return nil, nil
 	}
+	actionsOnCopy := []*pb.EnforcementAction{}
+	geo := m.WorkloadGeography
 	// WRITE actions
-	actionsOnCopy, geo, err := m.enforceWritePolicies(appContext, item.Context.DataSetID)
-	if err != nil {
-		if readSelector != nil && err.Error() == app.WriteNotAllowed {
-			return nil, errors.New(app.CopyNotAllowed)
+	if readSelector == nil {
+		var err error
+		actionsOnCopy, geo, err = m.enforceWritePolicies(appContext, item.Context.DataSetID)
+		if err != nil {
+			return nil, err
 		}
-		return nil, err
 	}
 	actionsOnCopy = append(actionsOnCopy, additionalActions...)
 	m.Log.Info("Copy is required for " + item.Context.DataSetID)
@@ -234,7 +207,7 @@ func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.
 		}
 	}
 	if copySelector == nil {
-		return nil, errors.New("No copy module has been found supporting required source interface")
+		return nil, errors.New("no copy module has been found supporting required source interface")
 	}
 	if copySelector.GetModule() == nil {
 		m.Log.Info("Could not find copy module for " + item.Context.DataSetID)
@@ -255,13 +228,15 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 		return nil, err
 	}
 
+	// Set the value received from the catalog connector.
+	vaultSecretPath := item.VaultSecretPath
+
 	// Each selector receives source/sink interface and relevant actions
 	// Starting with the data location interface for source and the required interface for sink
 	sourceDataStore := &app.DataStore{
-		Connection:         item.DataDetails.Connection,
-		CredentialLocation: utils.GetDatasetVaultPath(datasetID),
-		Vault: &app.Vault{
-			SecretPath: utils.GetSecretPath(datasetID),
+		Connection: item.DataDetails.Connection,
+		Vault: app.Vault{
+			SecretPath: vaultSecretPath,
 			Role:       utils.GetModulesRole(),
 			Address:    utils.GetVaultAddress(),
 		},
@@ -306,8 +281,8 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 		}
 		for _, cluster := range m.Clusters {
 			if copyCluster == cluster.Name {
-				copyArgs.Copy.Destination.Vault.AuthPath = cluster.Metadata.VaultAuthPath
-				copyArgs.Copy.Source.Vault.AuthPath = cluster.Metadata.VaultAuthPath
+				copyArgs.Copy.Destination.Vault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
+				copyArgs.Copy.Source.Vault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
 				break
 			}
 		}
@@ -336,7 +311,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 		}
 		for _, cluster := range m.Clusters {
 			if readCluster == cluster.Name {
-				readSource.Vault.AuthPath = cluster.Metadata.VaultAuthPath
+				readSource.Vault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
 				break
 			}
 		}
@@ -426,16 +401,14 @@ func (m *ModuleManager) getCopyRequirements(item modules.DataInfo, readSelector 
 }
 
 func (m *ModuleManager) enforceWritePolicies(appContext *app.M4DApplication, datasetID string) ([]*pb.EnforcementAction, string, error) {
-	var geo string
 	var err error
 	actions := []*pb.EnforcementAction{}
-	//	if the cluster selector is non-empty, the write will be done to the specified geography
+	//	if the cluster selector is non-empty, the write will be done to the specified geography if possible
 	if m.WorkloadGeography != "" {
 		if actions, err = LookupPolicyDecisions(datasetID, m.PolicyCompiler, appContext,
-			&pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: m.WorkloadGeography}); err != nil {
-			return actions, geo, err
+			&pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: m.WorkloadGeography}); err == nil {
+			return actions, m.WorkloadGeography, nil
 		}
-		return actions, m.WorkloadGeography, nil
 	}
 	var excludedGeos string
 	for _, cluster := range m.Clusters {
@@ -443,15 +416,15 @@ func (m *ModuleManager) enforceWritePolicies(appContext *app.M4DApplication, dat
 		if actions, err = LookupPolicyDecisions(datasetID, m.PolicyCompiler, appContext, operation); err == nil {
 			return actions, cluster.Metadata.Region, nil
 		}
+		if err.Error() != app.WriteNotAllowed {
+			return actions, "", err
+		}
 		if excludedGeos != "" {
 			excludedGeos += ", "
 		}
 		excludedGeos += cluster.Metadata.Region
-		if err.Error() != app.WriteNotAllowed {
-			return actions, "", err
-		}
 	}
-	return actions, "", errors.New("Writing to all geographies is denied: " + excludedGeos)
+	return actions, "", errors.New("writing to all geographies is denied: " + excludedGeos)
 }
 
 // GetProcessingGeography determines the geography of the workload cluster.

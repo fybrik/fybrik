@@ -9,17 +9,21 @@ import (
 	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
 	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
+	"github.com/ibm/the-mesh-for-data/pkg/vault"
 )
 
 // ConstructApplicationContext constructs ApplicationContext structure to send to Policy Compiler
 func ConstructApplicationContext(datasetID string, input *app.M4DApplication, operation *pb.AccessOperation) *pb.ApplicationContext {
+	var credentialPath string
+	if input.Spec.SecretRef != "" {
+		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+	}
 	return &pb.ApplicationContext{
 		AppInfo: &pb.ApplicationDetails{
-			Purpose:             input.Spec.AppInfo.Purpose,
-			ProcessingGeography: operation.Destination, //TODO: Remove processing geography, destination is enough
-			Role:                string(input.Spec.AppInfo.Role),
+			ProcessingGeography: operation.Destination,
+			Properties:          input.Spec.AppInfo,
 		},
-		AppId: utils.CreateAppIdentifier(input),
+		CredentialPath: credentialPath,
 		Datasets: []*pb.DatasetContext{{
 			Dataset: &pb.DatasetIdentifier{
 				DatasetId: datasetID,

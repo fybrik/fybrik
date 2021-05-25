@@ -16,7 +16,6 @@ import (
 	"github.com/robfig/cron"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	validationutils "k8s.io/apimachinery/pkg/util/validation"
@@ -44,17 +43,13 @@ const DefaultSuccessfulJobHistoryLimit = 5
 func (r *BatchTransfer) Default() {
 	log.Printf("Defaulting batchtransfer %s", r.Name)
 	if r.Spec.Image == "" {
-		if env, b := os.LookupEnv("MOVER_IMAGE"); b {
-			r.Spec.Image = env
-		}
+		// TODO check if can be removed after upgrading controller-gen to 0.5.0
+		r.Spec.Image = "ghcr.io/mesh-for-data/mover:latest"
 	}
 
 	if r.Spec.ImagePullPolicy == "" {
-		if env, b := os.LookupEnv("IMAGE_PULL_POLICY"); b {
-			r.Spec.ImagePullPolicy = v1.PullPolicy(env)
-		} else {
-			r.Spec.ImagePullPolicy = v1.PullIfNotPresent
-		}
+		// TODO check if can be removed after upgrading controller-gen to 0.5.0
+		r.Spec.ImagePullPolicy = v1.PullIfNotPresent
 	}
 
 	if r.Spec.SecretProviderURL == "" {
@@ -159,9 +154,6 @@ func (r *BatchTransfer) ValidateDelete() error {
 func (r *BatchTransfer) validateBatchTransfer() error {
 	var allErrs field.ErrorList
 	specField := field.NewPath("spec")
-	if err := validateObjectName(&r.ObjectMeta); err != nil {
-		allErrs = append(allErrs, err)
-	}
 	if err := r.validateBatchTransferSpec(); err != nil {
 		allErrs = append(allErrs, err)
 	}
@@ -195,8 +187,8 @@ func validateDataStore(path *field.Path, store *DataStore) []*field.Error {
 	if store.Database != nil {
 		var db = store.Database
 		databasePath := path.Child("database")
-		if len(db.Password) != 0 && db.VaultPath != nil {
-			allErrs = append(allErrs, field.Invalid(databasePath, db.VaultPath, "Can only set vaultPath or password!"))
+		if len(db.Password) != 0 && db.Vault != nil {
+			allErrs = append(allErrs, field.Invalid(databasePath, db.Vault, "Can only set vault or password!"))
 		}
 
 		match, _ := regexp.MatchString("^jdbc:[a-z0-9]+://", db.Db2URL)
@@ -217,8 +209,9 @@ func validateDataStore(path *field.Path, store *DataStore) []*field.Error {
 
 	if store.S3 != nil {
 		s3Path := path.Child("s3")
-		if msgs := validationutils.IsDNS1123Subdomain(store.S3.Endpoint); len(msgs) != 0 {
-			allErrs = append(allErrs, field.Invalid(s3Path.Child("endpoint"), store.S3.Endpoint, "Invalid endpoint! Expecting a valid domain!"))
+		_, err := url.Parse(store.S3.Endpoint)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(s3Path.Child("endpoint"), store.S3.Endpoint, "Invalid endpoint! Expecting a endpoint URL!"))
 		}
 
 		if len(store.S3.Bucket) == 0 {
@@ -229,8 +222,8 @@ func validateDataStore(path *field.Path, store *DataStore) []*field.Error {
 			allErrs = append(allErrs, field.Invalid(s3Path.Child("objectKey"), store.S3.ObjectKey, validationutils.EmptyError()))
 		}
 
-		if (len(store.S3.AccessKey) != 0 || len(store.S3.SecretKey) != 0) && store.S3.VaultPath != nil {
-			allErrs = append(allErrs, field.Invalid(s3Path, store.S3.VaultPath, "Can only set vaultPath or accessKey/secretKey!"))
+		if (len(store.S3.AccessKey) != 0 || len(store.S3.SecretKey) != 0) && store.S3.Vault != nil {
+			allErrs = append(allErrs, field.Invalid(s3Path, store.S3.Vault, "Can only set vault or accessKey/secretKey!"))
 		}
 	}
 
@@ -268,8 +261,8 @@ func validateDataStore(path *field.Path, store *DataStore) []*field.Error {
 			allErrs = append(allErrs, field.Invalid(kafkaPath.Child("kafkaTopic"), store.Kafka.KafkaTopic, validationutils.EmptyError()))
 		}
 
-		if len(store.Kafka.Password) != 0 && store.Kafka.VaultPath != nil {
-			allErrs = append(allErrs, field.Invalid(kafkaPath, store.Kafka.VaultPath, "Can only set vaultPath or password!"))
+		if len(store.Kafka.Password) != 0 && store.Kafka.Vault != nil {
+			allErrs = append(allErrs, field.Invalid(kafkaPath, store.Kafka.Vault, "Can only set vault or password!"))
 		}
 
 		if store.Kafka.DataFormat != "" && store.Kafka.DataFormat != "avro" && store.Kafka.DataFormat != "json" {
@@ -299,20 +292,6 @@ func (r *BatchTransfer) validateBatchTransferSpec() *field.Error {
 func validateScheduleFormat(schedule string, fldPath *field.Path) *field.Error {
 	if _, err := cron.ParseStandard(schedule); err != nil {
 		return field.Invalid(fldPath, schedule, err.Error())
-	}
-	return nil
-}
-
-// Validates that the object name does comply with K8s name standards
-func validateObjectName(r *metav1.ObjectMeta) *field.Error {
-	if len(r.Name) > validationutils.DNS1035LabelMaxLength-11 {
-		// The job name length is 63 character like all Kubernetes objects
-		// (which must fit in a DNS subdomain). The BatchTransfer controller appends
-		// a 11-character suffix to the BatchTransfer (`-$TIMESTAMP`) when creating
-		// a job. The job name length limit is 63 characters. Therefore BatchTransfer
-		// names must have length <= 63-11=52. If we don't validate this here,
-		// then job creation will fail later.
-		return field.Invalid(field.NewPath("metadata").Child("name"), r.Name, "must be no more than 52 characters")
 	}
 	return nil
 }

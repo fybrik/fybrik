@@ -16,10 +16,10 @@ import (
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var dmaClient *DMAClient
+var dmaClient *K8sClient
 
 // DMARoutes is a list of the REST APIs supported by the backend of the Data User GUI
-func DMARoutes(client *DMAClient) *chi.Mux {
+func DMARoutes(client *K8sClient) *chi.Mux {
 	dmaClient = client // global variable used by all funcs in this package
 
 	router := chi.NewRouter()
@@ -42,14 +42,14 @@ func M4DApplicationOptions(w http.ResponseWriter, r *http.Request) {
 func ListM4DApplications(w http.ResponseWriter, r *http.Request) {
 	log.Println("In ListM4DApplications")
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("No dmaClient set")))
+		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no dmaClient set")))
 		if suberr != nil {
 			log.Printf(suberr.Error() + " upon no dmaClient set")
 		}
 	}
 
 	// Call kubernetes to get the list of M4DApplication CRDs
-	dmaList, err := dmaClient.List(meta_v1.ListOptions{})
+	dmaList, err := dmaClient.ListApplications(meta_v1.ListOptions{})
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))
 		if suberr != nil {
@@ -66,7 +66,7 @@ func ListM4DApplications(w http.ResponseWriter, r *http.Request) {
 func GetM4DApplication(w http.ResponseWriter, r *http.Request) {
 	log.Println("In GetM4DApplication")
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("No dmaClient set")))
+		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no dmaClient set")))
 		if suberr != nil {
 			log.Printf(suberr.Error() + " upon no dmaclient set")
 		}
@@ -75,7 +75,7 @@ func GetM4DApplication(w http.ResponseWriter, r *http.Request) {
 	m4dapplicationID := chi.URLParam(r, "m4dapplicationID")
 
 	// Call kubernetes to get the M4DApplication CRD
-	dma, err := dmaClient.Get(m4dapplicationID)
+	dma, err := dmaClient.GetApplication(m4dapplicationID)
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))
 		if suberr != nil {
@@ -91,7 +91,7 @@ func GetM4DApplication(w http.ResponseWriter, r *http.Request) {
 func UpdateM4DApplication(w http.ResponseWriter, r *http.Request) {
 	log.Println("In UpdateM4DApplication")
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("No dmaClient set")))
+		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no dmaClient set")))
 		if suberr != nil {
 			log.Printf(suberr.Error() + " upon no dmaclient set")
 		}
@@ -113,7 +113,8 @@ func UpdateM4DApplication(w http.ResponseWriter, r *http.Request) {
 
 	m4dapplicationID := chi.URLParam(r, "m4dapplicationID")
 	// Call kubernetes to update the M4DApplication CRD
-	dma, err := dmaClient.Update(m4dapplicationID, &dmaStruct)
+	dmaStruct.Namespace = dmaClient.namespace
+	dma, err := dmaClient.UpdateApplication(m4dapplicationID, &dmaStruct)
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))
 		if suberr != nil {
@@ -132,7 +133,7 @@ func UpdateM4DApplication(w http.ResponseWriter, r *http.Request) {
 func DeleteM4DApplication(w http.ResponseWriter, r *http.Request) {
 	log.Println("In DeleteM4DApplication")
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("No dmaClient set")))
+		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no dmaClient set")))
 		if suberr != nil {
 			log.Printf(suberr.Error() + " upon no dmaclient set")
 		}
@@ -141,7 +142,7 @@ func DeleteM4DApplication(w http.ResponseWriter, r *http.Request) {
 	m4dapplicationID := chi.URLParam(r, "m4dapplicationID")
 
 	// Call kubernetes to get the M4DApplication CRD
-	err := dmaClient.Delete(m4dapplicationID, nil)
+	err := dmaClient.DeleteApplication(m4dapplicationID, nil)
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))
 		if suberr != nil {
@@ -178,15 +179,15 @@ func CreateM4DApplication(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("No dmaClient set")))
+		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no dmaClient set")))
 		if suberr != nil {
 			log.Printf(suberr.Error() + " upon no dmaclient set")
 		}
 	}
 
 	// Create the M4DApplication CRD
-
-	dma, err := dmaClient.Create(&dmaStruct)
+	dmaStruct.Namespace = dmaClient.namespace
+	dma, err := dmaClient.CreateApplication(&dmaStruct)
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))
 		if suberr != nil {

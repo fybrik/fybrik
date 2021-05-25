@@ -4,11 +4,8 @@
 apiVersion: app.m4d.ibm.com/v1alpha1
 kind: M4DModule
 metadata:
-  name: arrow-flight-module
+  name: read-module-test-e2e
   namespace: m4d-system
-  labels:
-    name: arrow-flight-module
-    version: 0.0.1  # semantic version
 spec:
   chart:
     name: localhost:5000/m4d-system/m4d-template:0.1.0
@@ -16,15 +13,21 @@ spec:
   flows:
     - read
   capabilities:
-    credentials-managed-by: secret-provider
     api:
       protocol: m4d-arrow-flight
       dataformat: arrow
+      endpoint:
+        port: 80
+        scheme: grpc
     supportedInterfaces:
     - flow: read
       source:
         protocol: s3
         dataformat: parquet
+    - flow: read
+      source:
+        protocol: s3
+        dataformat: csv
     actions:
       - id: redact-ID
         level: 2  # column

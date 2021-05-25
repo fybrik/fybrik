@@ -4,8 +4,7 @@
 apiVersion: app.m4d.ibm.com/v1alpha1
 kind: Blueprint
 metadata:
-  name: blueprint-ysqxbhyihk
-  namespace: default
+  name: blueprint-with-copy
   labels:
     app.m4d.ibm.com/appNamespace: default
     app.m4d.ibm.com/appName: notebook
@@ -18,7 +17,6 @@ spec:
     name: notebook
     steps:
     - arguments:
-        flow: copy
         copy:
           destination:
             connection:
@@ -28,7 +26,11 @@ spec:
                 endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
                 object_key: small.kp.encrypted.parq
             type: 2
-            credentialLocation: /v1/m4d/dataset-creds/m4d-test-bucket
+            vault:
+              address: http://vault.m4d-system:8200
+              authPath: /v1/auth/kubernetes/login
+              role: module
+              secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
             format: parquet
           source:
             connection:
@@ -38,21 +40,43 @@ spec:
                 database: NQD60833
                 url: dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net
                 ssl: "true"
-            credentialLocation: "/v1/secret/data/db2/m4d"
+            vault:
+              address: http://vault.m4d-system:8200
+              authPath: /v1/auth/kubernetes/login
+              role: module
+              secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
             format: table
-          transformations:
-          - enforcementActionArgs:
-              column: name-orig2
-            enforcementActionID: redact-ID
-            enforcementActionLevel: 2
-            enforcementActionName: redact
-        readargs: {}
-        writeargs: {}
-      name: notebook-implicit-copy-batch-latest-fgjzkfwykn
-      template: implicit-copy-batch-latest
+          transformations: []
+      name: notebook-copy-batch
+      template: copy-batch
+    - arguments:
+        read:
+          - source:
+              connection:
+                name: S3
+                s3:
+                  bucket: m4d-test-bucket
+                  endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
+                  object_key: small.kp.encrypted.parq
+                type: 2
+              vault:
+                address: http://vault.m4d-system:8200
+                authPath: /v1/auth/kubernetes/login
+                role: module
+                secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
+              format: parquet
+            assetID: xyz
+      name: notebook-read-module
+      template: read-module
   templates:
-  - name: implicit-copy-batch-latest
+  - name: copy-batch
     kind: M4DModule
     flow: copy
     chart:
-      name: localhost:5000/m4d-system/m4d-implicit-copy-batch:0.1.0
+      name: ghcr.io/the-mesh-for-data/m4d-implicit-copy-batch:0.1.0
+  - name: read-module
+    kind: M4DModule
+    flow: read
+    chart:
+      name: ghcr.io/the-mesh-for-data/m4d-template:0.1.0
+

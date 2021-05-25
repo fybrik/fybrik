@@ -51,13 +51,13 @@ func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationCon
 	log.Println(in)
 
 	catalogConnectorAddress := getEnv("CATALOG_CONNECTOR_URL")
-	policyToBeEvaluated := getEnv("POLICY_TO_BE_EVALUATED")
+	policyToBeEvaluated := "dataapi/authz"
 
 	timeOutInSecs := getEnv("CONNECTION_TIMEOUT")
 	timeOut, err := strconv.Atoi(timeOutInSecs)
 
 	if err != nil {
-		return nil, fmt.Errorf("Atoi conversion of timeOutinseconds failed: %v", err)
+		return nil, fmt.Errorf("conversion of timeOutinseconds failed: %v", err)
 	}
 
 	catalogReader := opabl.NewCatalogReader(catalogConnectorAddress, timeOut)
@@ -68,7 +68,7 @@ func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationCon
 	}
 	jsonOutput, err := json.MarshalIndent(eval, "", "\t")
 	if err != nil {
-		return nil, fmt.Errorf("Error during MarshalIndent of OPA Decisions: %v", err)
+		return nil, fmt.Errorf("error during MarshalIndent of OPA decisions: %v", err)
 	}
 	log.Println("Received evaluation : " + string(jsonOutput))
 	return eval, err

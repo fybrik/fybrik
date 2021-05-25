@@ -1,0 +1,139 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
+  pull_request:
+    branches:
+      - master
+
+env:
+  GO_VERSION: 1.13
+  JAVA_VERSION: 11
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - uses: actions/checkout@v2
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.m2/repository
+          ~/go/pkg/mod
+          ${{ github.workspace }}/hack/tools/bin
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-go
+    - name: Verify
+      run: make verify
+
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up JDK
+      uses: actions/setup-java@v1
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - uses: actions/checkout@v2
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.m2/repository
+          ~/go/pkg/mod
+          ${{ github.workspace }}/hack/tools/bin
+        key: ${{ runner.os }}-ut-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-ut-m2
+    - name: Test
+      run: make test
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_HOSTNAME: "localhost:5000"
+      DOCKER_NAMESPACE: m4d-system
+    steps:
+    - name: Set up JDK
+      uses: actions/setup-java@v1
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - uses: actions/checkout@v2
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.m2/repository
+          ~/go/pkg/mod
+          ${{ github.workspace }}/hack/tools/bin
+        key: ${{ runner.os }}-it-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-it-m2
+    - name: Install tools
+      run: make install-tools
+    - name: Integration tests
+      run: make run-integration-tests
+    - run: docker images
+    - name: Save images
+      if: ${{ github.event_name != 'pull_request' }}
+      run: make save-images
+    - name: Upload images
+      if: ${{ github.event_name != 'pull_request' }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: images
+        path: images.tar
+        retention-days: 1
+
+  push_images:
+    name: Push images
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_HOSTNAME: "localhost:5000"
+      DOCKER_NAMESPACE: m4d-system
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+    needs: [verify, test, integration-tests]
+    if: ${{ github.event_name != 'pull_request' }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Download artifact
+      if: ${{ github.event_name != 'pull_request' }}
+      uses: actions/download-artifact@v2
+      with:
+        name: images
+    - name: Load images
+      if: ${{ github.event_name != 'pull_request' }}
+      run: docker load -i images.tar
+    - run: docker images
+    - id: version
+      name: Infer version
+      run: |
+        version="${GITHUB_REF#refs/tags/v}"
+        if  [[ $version == refs/* ]] ;
+        then
+            version="latest"
+        fi
+        echo ::set-output name=version::$version
+    - name: Publish images
+      if: ${{ github.event_name != 'pull_request' }}
+      env:
+        DOCKER_PUBLIC_TAGNAME:  ${{ steps.version.outputs.version }}
+      run: make docker-retag-and-push-public && make helm-push-public

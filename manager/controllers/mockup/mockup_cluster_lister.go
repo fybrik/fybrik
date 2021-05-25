@@ -15,12 +15,12 @@ type ClusterLister struct {
 func (m *ClusterLister) GetClusters() ([]multicluster.Cluster, error) {
 	return []multicluster.Cluster{
 		{
-			Name:     "US-cluster",
-			Metadata: multicluster.ClusterMetadata{Region: "US", VaultAuthPath: "us-cluster"},
+			Name:     "thegreendragon",
+			Metadata: multicluster.ClusterMetadata{Region: "theshire", VaultAuthPath: "kubernetes"},
 		},
 		{
-			Name:     "Germany-cluster",
-			Metadata: multicluster.ClusterMetadata{Region: "Germany", VaultAuthPath: "germany-cluster"},
+			Name:     "neverland-cluster",
+			Metadata: multicluster.ClusterMetadata{Region: "neverland", VaultAuthPath: "kubernetes"},
 		},
 	}, nil
 }

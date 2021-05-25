@@ -151,6 +151,10 @@ type BlueprintStatus struct {
 	// whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+
+	// Releases map each release to the observed generation of the blueprint containing this release.
+	// At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.
+	Releases map[string]int64 `json:"releases,omitempty"`
 }
 
 // +kubebuilder:object:root=true

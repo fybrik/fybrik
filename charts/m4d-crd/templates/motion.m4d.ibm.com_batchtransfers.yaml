@@ -58,17 +58,35 @@ spec:
                       description: Host of cloudant instance
                       type: string
                     password:
-                      description: Cloudant password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+                      description: Cloudant password. Can be retrieved from vault if specified in vault parameter and is thus optional.
                       type: string
                     secretImport:
                       description: Define a secret import definition.
                       type: string
                     username:
-                      description: Cloudant user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+                      description: Cloudant user. Can be retrieved from vault if specified in vault parameter and is thus optional.
                       type: string
-                    vaultPath:
-                      description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
-                      type: string
+                    vault:
+                      description: Define secrets that are fetched from a Vault instance
+                      properties:
+                        address:
+                          description: Address is Vault address
+                          type: string
+                        authPath:
+                          description: AuthPath is the path to auth method i.e. kubernetes
+                          type: string
+                        role:
+                          description: Role is the Vault role used for retrieving the credentials
+                          type: string
+                        secretPath:
+                          description: SecretPath is the path of the secret holding the Credentials in Vault
+                          type: string
+                      required:
+                      - address
+                      - authPath
+                      - role
+                      - secretPath
+                      type: object
                   required:
                   - database
                   - host
@@ -80,7 +98,7 @@ spec:
                       description: URL to Db2 instance in JDBC format Supported SSL certificates are currently certificates signed with IBM Intermediate CA or cloud signed certificates.
                       type: string
                     password:
-                      description: Database password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+                      description: Database password. Can be retrieved from vault if specified in vault parameter and is thus optional.
                       type: string
                     secretImport:
                       description: Define a secret import definition.
@@ -89,11 +107,29 @@ spec:
                       description: Table to be read
                       type: string
                     user:
-                      description: Database user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+                      description: Database user. Can be retrieved from vault if specified in vault parameter and is thus optional.
                       type: string
-                    vaultPath:
-                      description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
-                      type: string
+                    vault:
+                      description: Define secrets that are fetched from a Vault instance
+                      properties:
+                        address:
+                          description: Address is Vault address
+                          type: string
+                        authPath:
+                          description: AuthPath is the path to auth method i.e. kubernetes
+                          type: string
+                        role:
+                          description: Role is the Vault role used for retrieving the credentials
+                          type: string
+                        secretPath:
+                          description: SecretPath is the path of the secret holding the Credentials in Vault
+                          type: string
+                      required:
+                      - address
+                      - authPath
+                      - role
+                      - secretPath
+                      type: object
                   required:
                   - db2URL
                   - table
@@ -120,7 +156,7 @@ spec:
                       description: Deserializer to be used for the keys of the topic
                       type: string
                     password:
-                      description: Kafka user password Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+                      description: Kafka user password Can be retrieved from vault if specified in vault parameter and is thus optional.
                       type: string
                     saslMechanism:
                       description: SASL Mechanism to be used (e.g. PLAIN or SCRAM-SHA-512) Default SCRAM-SHA-512 will be assumed if not specified
@@ -147,14 +183,32 @@ spec:
                       description: Kubernetes secret that contains the SSL truststore. The format can be JKS or PKCS12. A truststore can be specified like this or as
                       type: string
                     user:
-                      description: Kafka user name. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+                      description: Kafka user name. Can be retrieved from vault if specified in vault parameter and is thus optional.
                       type: string
                     valueDeserializer:
                       description: Deserializer to be used for the values of the topic
                       type: string
-                    vaultPath:
-                      description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
-                      type: string
+                    vault:
+                      description: Define secrets that are fetched from a Vault instance
+                      properties:
+                        address:
+                          description: Address is Vault address
+                          type: string
+                        authPath:
+                          description: AuthPath is the path to auth method i.e. kubernetes
+                          type: string
+                        role:
+                          description: Role is the Vault role used for retrieving the credentials
+                          type: string
+                        secretPath:
+                          description: SecretPath is the path of the secret holding the Credentials in Vault
+                          type: string
+                      required:
+                      - address
+                      - authPath
+                      - role
+                      - secretPath
+                      type: object
                   required:
                   - kafkaBrokers
                   - kafkaTopic
@@ -164,7 +218,7 @@ spec:
                   description: An object store data store that is compatible with S3. This can be a COS bucket.
                   properties:
                     accessKey:
-                      description: Access key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+                      description: Access key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vault parameter and is thus optional.
                       type: string
                     bucket:
                       description: Bucket of S3 service
@@ -190,11 +244,29 @@ spec:
                       description: Define a secret import definition.
                       type: string
                     secretKey:
-                      description: Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+                      description: Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vault parameter and is thus optional.
                       type: string
-                    vaultPath:
-                      description: Vault path where the accessKey/secretKey are stored. If not specified accessKey and secretKey have to be specified!
-                      type: string
+                    vault:
+                      description: Define secrets that are fetched from a Vault instance
+                      properties:
+                        address:
+                          description: Address is Vault address
+                          type: string
+                        authPath:
+                          description: AuthPath is the path to auth method i.e. kubernetes
+                          type: string
+                        role:
+                          description: Role is the Vault role used for retrieving the credentials
+                          type: string
+                        secretPath:
+                          description: SecretPath is the path of the secret holding the Credentials in Vault
+                          type: string
+                      required:
+                      - address
+                      - authPath
+                      - role
+                      - secretPath
+                      type: object
                   required:
                   - bucket
                   - endpoint
@@ -254,17 +326,35 @@ spec:
                       description: Host of cloudant instance
                       type: string
                     password:
-                      description: Cloudant password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+                      description: Cloudant password. Can be retrieved from vault if specified in vault parameter and is thus optional.
                       type: string
                     secretImport:
                       description: Define a secret import definition.
                       type: string
                     username:
-                      description: Cloudant user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+                      description: Cloudant user. Can be retrieved from vault if specified in vault parameter and is thus optional.
                       type: string
-                    vaultPath:
-                      description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
-                      type: string
+                    vault:
+                      description: Define secrets that are fetched from a Vault instance
+                      properties:
+                        address:
+                          description: Address is Vault address
+                          type: string
+                        authPath:
+                          description: AuthPath is the path to auth method i.e. kubernetes
+                          type: string
+                        role:
+                          description: Role is the Vault role used for retrieving the credentials
+                          type: string
+                        secretPath:
+                          description: SecretPath is the path of the secret holding the Credentials in Vault
+                          type: string
+                      required:
+                      - address
+                      - authPath
+                      - role
+                      - secretPath
+                      type: object
                   required:
                   - database
                   - host
@@ -276,7 +366,7 @@ spec:
                       description: URL to Db2 instance in JDBC format Supported SSL certificates are currently certificates signed with IBM Intermediate CA or cloud signed certificates.
                       type: string
                     password:
-                      description: Database password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+                      description: Database password. Can be retrieved from vault if specified in vault parameter and is thus optional.
                       type: string
                     secretImport:
                       description: Define a secret import definition.
@@ -285,11 +375,29 @@ spec:
                       description: Table to be read
                       type: string
                     user:
-                      description: Database user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+                      description: Database user. Can be retrieved from vault if specified in vault parameter and is thus optional.
                       type: string
-                    vaultPath:
-                      description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
-                      type: string
+                    vault:
+                      description: Define secrets that are fetched from a Vault instance
+                      properties:
+                        address:
+                          description: Address is Vault address
+                          type: string
+                        authPath:
+                          description: AuthPath is the path to auth method i.e. kubernetes
+                          type: string
+                        role:
+                          description: Role is the Vault role used for retrieving the credentials
+                          type: string
+                        secretPath:
+                          description: SecretPath is the path of the secret holding the Credentials in Vault
+                          type: string
+                      required:
+                      - address
+                      - authPath
+                      - role
+                      - secretPath
+                      type: object
                   required:
                   - db2URL
                   - table
@@ -316,7 +424,7 @@ spec:
                       description: Deserializer to be used for the keys of the topic
                       type: string
                     password:
-                      description: Kafka user password Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+                      description: Kafka user password Can be retrieved from vault if specified in vault parameter and is thus optional.
                       type: string
                     saslMechanism:
                       description: SASL Mechanism to be used (e.g. PLAIN or SCRAM-SHA-512) Default SCRAM-SHA-512 will be assumed if not specified
@@ -343,14 +451,32 @@ spec:
                       description: Kubernetes secret that contains the SSL truststore. The format can be JKS or PKCS12. A truststore can be specified like this or as
                       type: string
                     user:
-                      description: Kafka user name. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+                      description: Kafka user name. Can be retrieved from vault if specified in vault parameter and is thus optional.
                       type: string
                     valueDeserializer:
                       description: Deserializer to be used for the values of the topic
                       type: string
-                    vaultPath:
-                      description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
-                      type: string
+                    vault:
+                      description: Define secrets that are fetched from a Vault instance
+                      properties:
+                        address:
+                          description: Address is Vault address
+                          type: string
+                        authPath:
+                          description: AuthPath is the path to auth method i.e. kubernetes
+                          type: string
+                        role:
+                          description: Role is the Vault role used for retrieving the credentials
+                          type: string
+                        secretPath:
+                          description: SecretPath is the path of the secret holding the Credentials in Vault
+                          type: string
+                      required:
+                      - address
+                      - authPath
+                      - role
+                      - secretPath
+                      type: object
                   required:
                   - kafkaBrokers
                   - kafkaTopic
@@ -360,7 +486,7 @@ spec:
                   description: An object store data store that is compatible with S3. This can be a COS bucket.
                   properties:
                     accessKey:
-                      description: Access key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+                      description: Access key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vault parameter and is thus optional.
                       type: string
                     bucket:
                       description: Bucket of S3 service
@@ -386,11 +512,29 @@ spec:
                       description: Define a secret import definition.
                       type: string
                     secretKey:
-                      description: Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+                      description: Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vault parameter and is thus optional.
                       type: string
-                    vaultPath:
-                      description: Vault path where the accessKey/secretKey are stored. If not specified accessKey and secretKey have to be specified!
-                      type: string
+                    vault:
+                      description: Define secrets that are fetched from a Vault instance
+                      properties:
+                        address:
+                          description: Address is Vault address
+                          type: string
+                        authPath:
+                          description: AuthPath is the path to auth method i.e. kubernetes
+                          type: string
+                        role:
+                          description: Role is the Vault role used for retrieving the credentials
+                          type: string
+                        secretPath:
+                          description: SecretPath is the path of the secret holding the Credentials in Vault
+                          type: string
+                      required:
+                      - address
+                      - authPath
+                      - role
+                      - secretPath
+                      type: object
                   required:
                   - bucket
                   - endpoint

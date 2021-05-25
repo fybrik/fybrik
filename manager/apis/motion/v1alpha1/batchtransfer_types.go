@@ -4,6 +4,7 @@
 package v1alpha1
 
 import (
+	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -147,21 +148,21 @@ type Database struct {
 	// Table to be read
 	Table string `json:"table"`
 
-	// Database user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+	// Database user. Can be retrieved from vault if specified in vault parameter and is thus optional.
 	// +optional
 	User string `json:"user,omitempty"`
 
-	// Database password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+	// Database password. Can be retrieved from vault if specified in vault parameter and is thus optional.
 	// +optional
 	Password string `json:"password,omitempty"`
-
-	// Vault path where the user name/password are stored. If not specified user and password have to be specified!
-	// +optional
-	VaultPath *string `json:"vaultPath,omitempty"`
 
 	// Define a secret import definition.
 	// +optional
 	SecretImport *string `json:"secretImport,omitempty"`
+
+	// Define secrets that are fetched from a Vault instance
+	// +optional
+	Vault *v1alpha1.Vault `json:"vault,omitempty"`
 }
 
 // A minimalistic database connection definition.
@@ -173,21 +174,21 @@ type Cloudant struct {
 	// Database to be read from/written to
 	Database string `json:"database"`
 
-	// Cloudant user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+	// Cloudant user. Can be retrieved from vault if specified in vault parameter and is thus optional.
 	// +optional
 	User string `json:"username,omitempty"`
 
-	// Cloudant password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+	// Cloudant password. Can be retrieved from vault if specified in vault parameter and is thus optional.
 	// +optional
 	Password string `json:"password,omitempty"`
-
-	// Vault path where the user name/password are stored. If not specified user and password have to be specified!
-	// +optional
-	VaultPath *string `json:"vaultPath,omitempty"`
 
 	// Define a secret import definition.
 	// +optional
 	SecretImport *string `json:"secretImport,omitempty"`
+
+	// Define secrets that are fetched from a Vault instance
+	// +optional
+	Vault *v1alpha1.Vault `json:"vault,omitempty"`
 }
 
 // An S3/COS endpoint. Besides the mandatory parameters such as
@@ -206,12 +207,12 @@ type S3 struct {
 	Bucket string `json:"bucket"`
 
 	// Access key of the HMAC credentials that can access the given bucket.
-	// Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+	// Can be retrieved from vault if specified in vault parameter and is thus optional.
 	// +optional
 	AccessKey string `json:"accessKey,omitempty"`
 
 	// Secret key of the HMAC credentials that can access the given bucket.
-	// Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+	// Can be retrieved from vault if specified in vault parameter and is thus optional.
 	// +optional
 	SecretKey string `json:"secretKey,omitempty"`
 
@@ -227,13 +228,13 @@ type S3 struct {
 	// +optional
 	PartitionBy *[]string `json:"partitionBy,omitempty"`
 
-	// Vault path where the accessKey/secretKey are stored. If not specified accessKey and secretKey have to be specified!
-	// +optional
-	VaultPath *string `json:"vaultPath,omitempty"`
-
 	// Define a secret import definition.
 	// +optional
 	SecretImport *string `json:"secretImport,omitempty"`
+
+	// Define secrets that are fetched from a Vault instance
+	// +optional
+	Vault *v1alpha1.Vault `json:"vault,omitempty"`
 }
 
 // An extended kafka endpoint for storing KTables that also
@@ -256,12 +257,12 @@ type Kafka struct {
 	SaslMechanism string `json:"saslMechanism,omitempty"`
 
 	// Kafka user name.
-	// Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+	// Can be retrieved from vault if specified in vault parameter and is thus optional.
 	// +optional
 	User string `json:"user,omitempty"`
 
 	// Kafka user password
-	// Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
+	// Can be retrieved from vault if specified in vault parameter and is thus optional.
 	// +optional
 	Password string `json:"password,omitempty"`
 
@@ -311,13 +312,13 @@ type Kafka struct {
 	// +optional
 	DataFormat string `json:"dataFormat,omitempty"`
 
-	// Vault path where the user name/password are stored. If not specified user and password have to be specified!
-	// +optional
-	VaultPath *string `json:"vaultPath,omitempty"`
-
 	// Define a secret import definition.
 	// +optional
 	SecretImport *string `json:"secretImport,omitempty"`
+
+	// Define secrets that are fetched from a Vault instance
+	// +optional
+	Vault *v1alpha1.Vault `json:"vault,omitempty"`
 }
 
 // to be refined...

@@ -4,17 +4,27 @@
 
 : ${PORT_TO_FORWARD:=8200}
 
+
+# Enable userpass auth method
+# $1 user name
+# $2 password
+# $3 policy
+enable_userpass_auth() {
+	vault auth enable userpass
+	vault write auth/userpass/users/"$1" password="$2" policies="$3"
+}
+
+
 # $1 role name
 # $2 policy name
 # $3 path to auth method
 # $4 bound_service_account_namespaces
 create_role() {
-        # Configure a role for the secret-provider
         echo "creating role $1 in k8s auth"
         bin/vault write auth/"$3"/role/"$1" \
         bound_service_account_names="*" \
         bound_service_account_namespaces="$4" \
-        policies=$1 \
+        policies=$2 \
         ttl=24h
 
 }
@@ -59,6 +69,21 @@ create_policy() {
         }
 EOF
 }
+
+# Create a policy to allow access to Vault plugin path as well as
+# for the path where dataset credentials resides. This is temporary
+# until dataset credentials path become obselete.
+# $1 - policy name
+# $2 - plugin path
+create_policy_with_plugin_path() {
+        echo "creating policy $1, to access the secrets in: $2"
+        bin/vault policy write "$1" - <<EOF
+        path "$2" {
+        capabilities = ["create", "read", "update", "delete", "list"]
+        }
+EOF
+}
+
 
 # Do port-forwarding
 port_forward() {

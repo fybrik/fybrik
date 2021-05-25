@@ -116,15 +116,10 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) (ctr
 	return ctrl.Result{}, nil
 }
 
-func getReleaseName(blueprintName string, step app.FlowStep) string {
-	fullName := blueprintName + "-" + step.Name
-	return utils.HelmConformName(fullName)
-}
-
 func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) error {
 	errs := make([]string, 0)
 	for _, step := range blueprint.Spec.Flow.Steps {
-		releaseName := getReleaseName(blueprint.Name, step)
+		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], step)
 		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus != nil || rel == nil {
 			continue
 		}
@@ -140,7 +135,7 @@ func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) 
 
 func (r *BlueprintReconciler) hasExternalResources(blueprint *app.Blueprint) bool {
 	for _, step := range blueprint.Spec.Flow.Steps {
-		releaseName := getReleaseName(blueprint.Name, step)
+		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], step)
 		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus == nil && rel != nil {
 			return true
 		}
@@ -235,6 +230,9 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 	blueprint.Status.ObservedState.Ready = false
 	blueprint.Status.ObservedState.Error = ""
 	blueprint.Status.ObservedState.DataAccessInstructions = ""
+	if blueprint.Status.Releases == nil {
+		blueprint.Status.Releases = map[string]int64{}
+	}
 
 	// count the overall number of Helm releases and how many of them are ready
 	numReleases, numReady := 0, 0
@@ -257,8 +255,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		if err != nil {
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
-
-		releaseName := getReleaseName(blueprint.Name, step)
+		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], step)
 		log.V(0).Info("Release name: " + releaseName)
 		numReleases++
 		// check the release status
@@ -279,6 +276,18 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 				blueprint.Status.ObservedState.Error += "ResourceAllocationFailure: " + errMsg + "\n"
 			} else if status == corev1.ConditionTrue {
 				numReady++
+			}
+		}
+		blueprint.Status.Releases[releaseName] = blueprint.Status.ObservedGeneration
+	}
+	// clean-up
+	for release, version := range blueprint.Status.Releases {
+		if version != blueprint.Status.ObservedGeneration {
+			_, err := r.Helmer.Uninstall(blueprint.Namespace, release)
+			if err != nil {
+				log.V(0).Info("Error uninstalling release " + release + " : " + err.Error())
+			} else {
+				delete(blueprint.Status.Releases, release)
 			}
 		}
 	}

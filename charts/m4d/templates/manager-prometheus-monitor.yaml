@@ -1,3 +1,4 @@
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
 {{- if .Values.manager.prometheus }}
 # Prometheus Monitor Service (Metrics)
 apiVersion: monitoring.coreos.com/v1
@@ -13,4 +14,5 @@ spec:
   selector:
     matchLabels:
       control-plane: controller-manager
+{{- end }}
 {{- end }}

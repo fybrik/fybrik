@@ -1,0 +1,60 @@
+{{- $autoFlag := and .Values.manager.enabled .Values.coordinator.enabled (eq .Values.coordinator.catalog "katalog") }}
+{{- if include "m4d.isEnabled" (tuple .Values.katalogConnector.enabled $autoFlag) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: katalog-connector
+  labels:
+    app.kubernetes.io/component: katalog-connector
+    {{- include "m4d.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.katalogConnector.autoscaling.enabled }}
+  replicas: {{ .Values.katalogConnector.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: katalog-connector
+      {{- include "m4d.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.katalogConnector.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        m4d.ibm.com/componentType: connector
+        app.kubernetes.io/component: katalog-connector
+        {{- include "m4d.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ .Values.katalogConnector.serviceAccount.name }}
+      securityContext:
+        {{- toYaml .Values.katalogConnector.podSecurityContext | nindent 8 }}
+      containers:
+        - name: katalog-connector
+          securityContext:
+            {{- toYaml .Values.katalogConnector.securityContext | nindent 12 }}
+          image: {{ include "m4d.image" ( tuple $ .Values.katalogConnector ) }}
+          imagePullPolicy: {{ .Values.katalogConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.katalogConnector.resources | nindent 12 }}
+      {{- with .Values.katalogConnector.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.katalogConnector.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.katalogConnector.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

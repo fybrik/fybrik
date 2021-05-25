@@ -12,8 +12,12 @@ copy:
         endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
         object_key: car.data.copy.parq
       type: 2
-    credentialLocation: /v1/m4d/dataset-creds/m4d-test-bucket
     format: parquet
+    vault:
+      address: http://vault.m4d-system:8200
+      authPath: /v1/auth/kubernetes/login
+      role: module
+      secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
 
   destination:
     connection:
@@ -23,8 +27,12 @@ copy:
         endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
         object_key: car.data.parq
       type: 2
-    credentialLocation: /v1/m4d/dataset-creds/m4d-test-bucket
     format: parquet
+    vault:
+      address: http://vault.m4d-system:8200
+      authPath: /v1/auth/kubernetes/login
+      role: module
+      secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
 
   transformations:
   - id: "redact-ID"

@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 import com.datmesh.DataCatalogResponse.CatalogDatasetInfo;
+import com.datmesh.DatasetDetailsOuterClass.CredentialsInfo;
 import com.datmesh.DatasetDetailsOuterClass.DatasetDetails;
 import com.datmesh.DatasetDetailsOuterClass.DatasetMetadata;
 import com.datmesh.DatasetDetailsOuterClass.Db2DataStore;
@@ -55,7 +56,7 @@ public final class EgeriaClient {
     private String assetGuid;
     // at this point we make it a constant, this will change and should be passed as
     // credentials for Egeria
-    private final String userid = "calliequartile";
+    private String userid;
 
     private EgeriaProperties prop;
 
@@ -79,6 +80,10 @@ public final class EgeriaClient {
         strbuilder.append("assetID: ");
         strbuilder.append(assetIDJson);
         return strbuilder.toString();
+    }
+
+    public void setEgeriaDefaultUserName(final String defaultUserName) {
+        this.userid = defaultUserName;
     }
 
     // https://stackoverflow.com/questions/50462157/android-https-urls-are-not-working-in-okhttp3
@@ -223,7 +228,7 @@ public final class EgeriaClient {
                             + "/servers/" + serverName
                             + "/open-metadata/common-services/" + serviceURLName
                             + "/connected-asset/users/"
-                            + userid + "/assets/" + schemaTypeGuid
+                            + userid + "/assets/schemas/" + schemaTypeGuid
                             + "/schema-attributes?elementStart=0&maxElements=0";
 
         HashMap<String, DataComponentMetadata> componentsMetadata = new HashMap<String, DataComponentMetadata>();
@@ -373,6 +378,7 @@ public final class EgeriaClient {
 
     public CatalogDatasetInfo getCatalogDatasetInfo() throws CustomException, Exception {
         LOGGER.info("Call Asset API");
+        LOGGER.info("userid in Egeria: {}", userid.replaceAll("[\r\n]", ""));
 
         String fullUrl = prop.getEgeriaServiseURL()
                         + "/servers/" + serverName
@@ -386,7 +392,8 @@ public final class EgeriaClient {
         LOGGER.info("assetMetaDataHelper : {}", assetMetaDataHelper.toString().replaceAll("[\r\n]", ""));
 
         String schemaTypeGuid = assetMetaDataHelper.getSchemaTypeGuid();
-        HashMap<String, DataComponentMetadata> componentsMetadata = callSchemaAttributesAPI(schemaTypeGuid);
+        HashMap<String, DataComponentMetadata> componentsMetadata =
+                                                callSchemaAttributesAPI(schemaTypeGuid);
         LOGGER.info("listOfColumns in getCatalogDatasetInfo: {}",
                                                     componentsMetadata.toString().replaceAll("[\r\n]", ""));
 
@@ -403,18 +410,61 @@ public final class EgeriaClient {
                 .build();
 
         DatasetDetails datasetDetails = null;
-        String dataowner = assetMetaDataHelper.getOwner();
+        // data owner is not supported in Egeria 2.6 now.
+        String dataowner = "";
+        // data owner is not supported in Egeria 2.6 now.
+
         String name = assetMetaDataHelper.getName();
-        //String geo = null;
 
         String typeOfAsset = assetMetaDataHelper.getAssetType(); //maybe will be in additional properties
+        if (typeOfAsset == null) {
+            typeOfAsset = "";
+        }
 
         //it can contain a direct link to the file or a json with remote object
         String qualifiedName = assetMetaDataHelper.getQualifiedName();
-        // fix for https://github.com/IBM/the-mesh-for-data/issues/122 - start 
+        // fix for https://github.com/IBM/the-mesh-for-data/issues/122 - start
         JsonObject storeJson = JsonParser.parseString(qualifiedName).getAsJsonObject();
         String geo = storeJson.get("data_location").getAsString();
-        // fix for https://github.com/IBM/the-mesh-for-data/issues/122 - end 
+        // fix for https://github.com/IBM/the-mesh-for-data/issues/122 - end
+
+        String vaultSecretPath = "";
+        LOGGER.info("constructing the  vaultSecretPath using "
+                    + "credentials_secret_ref in fullPath key in Egeria Asset Json");
+        if (storeJson.has("credentials_secret_ref")) {
+            String credSecretRef = storeJson.get("credentials_secret_ref").getAsString();
+            String[] credSecretRefSplit = credSecretRef.split("/");
+            if (credSecretRefSplit.length == 2) {
+                String secretNamespace = credSecretRefSplit[0];
+                String secretName = credSecretRefSplit[1];
+                String vaultPluginPath = "kubernetes-secrets";
+                vaultSecretPath = "/v1/" + vaultPluginPath
+                                        + "/" + secretName
+                                        + "?namespace=" + secretNamespace;
+                LOGGER.info("credSecretRef: {} ",
+                credSecretRef.replaceAll("[\r\n]", ""));
+                LOGGER.info("secretNamespace: {} ",
+                secretNamespace.replaceAll("[\r\n]", ""));
+                LOGGER.info("secretName: {} ",
+                secretName.replaceAll("[\r\n]", ""));
+                LOGGER.info("vaultPluginPath: {} ",
+                vaultPluginPath.replaceAll("[\r\n]", ""));
+                LOGGER.info("vaultSecretPath: {} ",
+                vaultSecretPath.replaceAll("[\r\n]", ""));
+            } else {
+                LOGGER.info("credentials_secret_ref is not in correct format in the fullPath key ");
+                throw new CustomException(
+                    "credentials_secret_ref is not in correct format in the fullPath key."
+                    + " credentials_secret_ref value got is :"
+                    + credSecretRef.replaceAll("[\r\n]", ""));
+            }
+        } else {
+            LOGGER.info("credentials_secret_ref not found in JSON built under fullPath key ");
+        }
+
+        CredentialsInfo credInfo = CredentialsInfo.newBuilder()
+        .setVaultSecretPath(vaultSecretPath)
+        .build();
         DataStore dataStore = getAssetStore(qualifiedName);
 
         datasetDetails = DatasetDetails.newBuilder()
@@ -422,12 +472,20 @@ public final class EgeriaClient {
                         .setDataOwner(dataowner)
                         .setMetadata(metadata)
                         .setDataStore(dataStore)
-                        //.setGeo("geo not supported yet") //should be in additionalProperties
                         .setGeo(geo)
                         .setDataFormat(typeOfAsset)
+                        .setCredentialsInfo(credInfo)
                         .build();
 
 
+        LOGGER.info("datasetDetails in getCatalogDatasetInfo: {}",
+                    datasetDetails.toString().replaceAll("[\r\n]", ""));
+        CatalogDatasetInfo  info = CatalogDatasetInfo.newBuilder()
+                                    .setDatasetId(assetIDJson)
+                                    .setDetails(datasetDetails)
+                                    .build();
+        LOGGER.info("CatalogDatasetInfo in getCatalogDatasetInfo: {}",
+                    info.toString().replaceAll("[\r\n]", ""));
         return CatalogDatasetInfo.newBuilder()
                .setDatasetId(assetIDJson)
                .setDetails(datasetDetails)

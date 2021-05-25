@@ -4,19 +4,18 @@
 apiVersion: app.m4d.ibm.com/v1alpha1
 kind: M4DApplication
 metadata:
-  name: notebook
+  name: test-app-e2e
   namespace: default
   labels:
     app: notebook
 spec:
   selector:
-    clusterName: US-cluster
+    clusterName: thegreendragon
     workloadSelector:
       matchLabels:
         app: notebook
   appInfo:
-    purpose: fraud-detection
-    role: Security
+    intent: fraud-detection
   data:
     - dataSetID: '{"asset_id": "xxx", "catalog_id": "s3"}'
       requirements:

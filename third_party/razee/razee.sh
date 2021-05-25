@@ -68,21 +68,35 @@ setup_remotes() {
     RAZEE_USER=$RAZEE_USER RAZEE_PASSWORD=$RAZEE_PASSWORD ./setupCluster.sh kind-kind "http://control-control-plane:30333"
 }
 
-create_razee_secret() {
+create_local_group() {
   # fetch the token
+  echo "Fetching token..."
   DATA=$(curl --request POST \
         --url http://localhost:3333/graphql \
         --header 'Content-Type: application/json' \
-        --data "{\"query\":\"mutation {\n  signIn(\n    login: \\\"$RAZEE_USER\\\"\n    password: \\\"$RAZEE_PASSWORD\\\"\n  ) {\n    token\n  }\n}\"}")
+        --data "{\"query\":\"mutation {\n  signIn(\n    login: \\\"$RAZEE_USER\\\"\n    password: \\\"$RAZEE_PASSWORD\\\"\n  ) {token}\n}\"}")
   TOKEN=$(echo $DATA | jq -r -c ".data.signIn.token")
 
-  ordId=$(curl --request POST \
+  echo "Fetching orgID..."
+  ORGIDRES=$(curl --request POST \
   --url http://localhost:3333/graphql \
   --header 'content-type: application/json' \
   --header "Authorization: Bearer $TOKEN" \
   --data '{"query":"query {\n  me {\n    orgId \n  }\n}"}')
 
-  echo  "ordId = $ordId"
+  ORGID=$(echo $ORGIDRES | jq -r -c ".data.me.orgId")
+
+  echo  "ordId = $ORGID"
+
+  GROUPRES=$(curl --request POST \
+  --url http://localhost:3333/graphql \
+  --header "Authorization: Bearer $TOKEN" \
+  --header 'Content-Type: application/json' \
+  --data "{\"query\":\"mutation{addGroup(orgId: \\\"$ORGID\\\", name: \\\"local\\\") {uuid}}\"}")
+
+  echo "Create group result: $GROUPRES"
+
+  echo "Created group \"local\""
 }
 
 case "$op" in
@@ -106,13 +120,11 @@ case "$op" in
         header_text "Installing razee on clusters"
         setup_user
         ;;
-    create_razee_secret)
-        create_razee_secret
-        ;;
     *)
         header_text "Installing razee"
         setup_control_cluster
         setup_user
+        create_local_group
         setup_remotes
         ;;
 esac

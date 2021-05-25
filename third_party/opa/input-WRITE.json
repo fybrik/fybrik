@@ -1,0 +1,236 @@
+{ "input": {
+	"dataset_id": "{\"catalog_id\":\"503d683f-1d43-4257-a1a3-0ddf5e446ba5\",\"asset_id\":\"b1f6fc03-9016-489c-a776-25954f5f00b4\"}",
+	"details": {
+		"data_format": "csv",
+		"data_owner": "1000331001",
+		"data_store": {
+			"name": "object store",
+			"s3": {
+				"bucket": "m4d-standard-demo-bucket-turkey",
+				"endpoint": "s3.eu.cloud-object-storage.appdomain.cloud",
+				"object_key": "Source_System_Bank_Transactions.csv"
+			},
+			"type": 2
+		},
+		"geo": "Turkey",
+		"metadata": {
+			"components_metadata": {
+				"ASSISTEDCHANNELS_CONTACTS": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"ASSISTEDCHANNELS_DISTINCT_DAYS": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"ATM_CONTACTS": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"ATM_DISTINCT_DAYS": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"BRANCH_CONTACTS": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"BRANCH_DISTINCT_DAYS": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"CURRENCY": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"CUSTOMER_ACTIVITY": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"CUSTOMER_EMAIL": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"CUSTOMER_ID": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					},
+					"tags": [
+						"Confidential"
+					]
+				},
+				"CUSTOMER_NAME": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"CUSTOMER_PHONE": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"DATA_DATE": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"DATA_SOURCE": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"DIGITAL_CONTACTS": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"DIGITAL_DISTINCT_DAYS": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"FRST_HLDR_CREDIT_CARDS_BALANCE": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"FRST_HLDR_INVESTMENTS_BALANCE": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"FRST_HLDR_MORTGAGE_BALANCE": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"FRST_HLDR_OTHER_LOANS_BALANCE": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"FRST_HLDR_PAYMENTS_BALANCE": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"FRST_HLDR_SAVINGS_BALANCE": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"GENDER": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"MOBILE_CONTACTS": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"MOBILE_DISTINCT_DAYS": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"PHONE_CONTACTS": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"PHONE_DISTINCT_DAYS": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"PRIMARY_CUSTOMER": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"RECURRENT_INCOME": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"WEB_CONTACTS": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"WEB_DISTINCT_DAYS": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				},
+				"YEAR_OF_BIRTH": {
+					"component_type": "column",
+					"named_metadata": {
+						"type": "length=1024.0,nullable=true,type=varchar,scale=0.0,signed=false"
+					}
+				}
+			},
+			"dataset_named_metadata": {
+				"asset_attributes": "data_asset,asset_terms,data_profile,column_info",
+				"asset_category": "USER",
+				"asset_state": "available",
+				"asset_type": "data_asset",
+				"catalog_id": "503d683f-1d43-4257-a1a3-0ddf5e446ba5",
+				"created_at": "2021-03-04T10:57:30Z",
+				"rating": "0.0",
+				"total_rating": "0"
+			},
+			"dataset_tags": [
+				"residency = Turkey"
+			]
+		},
+		"name": "ingest-asset"
+	},
+	"processing_geography": "Netherlands",
+	"properties": {
+		"intent": "Fraud Detection",
+		"role": "Data Scientist"
+	},
+	"type": "WRITE"
+} }

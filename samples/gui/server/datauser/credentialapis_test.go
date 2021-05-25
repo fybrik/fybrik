@@ -13,11 +13,9 @@ import (
 
 var (
 	credserverurl = "http://localhost:8080/v1/creds/usercredentials"
-	cred1         = "{\"System\": \"Egaria\",\"M4DApplicationID\": \"notebook1\",\"Credentials\": {\"username\": \"user1\"}}"
-	cred2         = "{\"System\": \"Egaria\",\"M4DApplicationID\": \"notebook2\",\"Credentials\": {\"username\": \"user2\"}}"
-	namespace     = "default"
-	cred1path     = namespace + "/notebook1/Egaria"
-	cred2path     = namespace + "/notebook2/Egaria"
+	cred1         = "{\"SecretName\": \"notebook\",\"System\": \"Egeria\",\"Credentials\": {\"username\": \"user1\"}}"
+	cred2         = "{\"SecretName\": \"notebook\",\"System\": \"OPA\", \"Credentials\": {\"username\": \"user2\"}}"
+	name          = "notebook"
 )
 
 func storeCredentials(t *testing.T, cred string) {
@@ -54,10 +52,10 @@ func deleteCredentials(t *testing.T, path string) {
 }
 
 func TestCredentialAPIs(t *testing.T) {
+	SkipOnClosedSocket("localhost:8080", t)
+
 	storeCredentials(t, cred1)
 	storeCredentials(t, cred2)
-	readCredentials(t, cred1path)
-	readCredentials(t, cred2path)
-	deleteCredentials(t, cred1path)
-	deleteCredentials(t, cred2path)
+	readCredentials(t, name)
+	deleteCredentials(t, name)
 }

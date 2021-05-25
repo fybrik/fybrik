@@ -9,9 +9,10 @@ import (
 	"strings"
 	"time"
 
+	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
-	"github.com/hashicorp/vault/api"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -28,6 +29,7 @@ import (
 	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
 	"github.com/ibm/the-mesh-for-data/pkg/serde"
 	"github.com/ibm/the-mesh-for-data/pkg/storage"
+	"github.com/ibm/the-mesh-for-data/pkg/vault"
 
 	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
@@ -40,11 +42,12 @@ type M4DApplicationReconciler struct {
 	Name              string
 	Log               logr.Logger
 	Scheme            *runtime.Scheme
-	VaultClient       *api.Client
+	VaultConnection   vault.Interface
 	PolicyCompiler    pc.IPolicyCompiler
 	ResourceInterface ContextInterface
 	ClusterManager    multicluster.ClusterLister
 	Provision         storage.ProvisionInterface
+	DataCatalog       DataCatalog
 }
 
 // Reconcile reconciles M4DApplication CRD
@@ -232,11 +235,39 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 	return nil
 }
 
+// setReadModulesEndpoints populates the ReadEndpointsMap map in the status of the m4dapplication
+// Current implementation assumes there is only one cluster with read modules (which is the same cluster the user's workload)
+func setReadModulesEndpoints(applicationContext *app.M4DApplication, blueprintsMap map[string]app.BlueprintSpec, moduleMap map[string]*app.M4DModule) {
+	var foundReadEndpoints = false
+	for _, blueprintSpec := range blueprintsMap {
+		for _, step := range blueprintSpec.Flow.Steps {
+			if step.Arguments.Read != nil {
+				// We found a read module
+				foundReadEndpoints = true
+				releaseName := utils.GetReleaseName(applicationContext.ObjectMeta.Name, applicationContext.ObjectMeta.Namespace, step)
+				moduleName := step.Template
+				originalEndpointSpec := moduleMap[moduleName].Spec.Capabilities.API.Endpoint
+				fqdn := utils.GenerateModuleEndpointFQDN(releaseName, BlueprintNamespace)
+				for _, arg := range step.Arguments.Read {
+					applicationContext.Status.ReadEndpointsMap[arg.AssetID] = app.EndpointSpec{
+						Hostname: fqdn,
+						Port:     originalEndpointSpec.Port,
+						Scheme:   originalEndpointSpec.Scheme,
+					}
+				}
+			}
+		}
+		// We found a blueprint with read modules
+		if foundReadEndpoints {
+			return
+		}
+	}
+}
+
 // reconcile receives either M4DApplication CRD
 // or a status update from the generated resource
 func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplication) (ctrl.Result, error) {
 	utils.PrintStructure(applicationContext.Spec, r.Log, "M4DApplication")
-
 	// Data User created or updated the M4DApplication
 
 	// clear status
@@ -246,6 +277,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	if applicationContext.Status.ProvisionedStorage == nil {
 		applicationContext.Status.ProvisionedStorage = make(map[string]app.DatasetDetails)
 	}
+	applicationContext.Status.ReadEndpointsMap = make(map[string]app.EndpointSpec)
 
 	clusters, err := r.ClusterManager.GetClusters()
 	if err != nil {
@@ -255,7 +287,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	var requirements []modules.DataInfo
 	for _, dataset := range applicationContext.Spec.Data {
 		req := modules.DataInfo{
-			Context: &dataset,
+			Context: dataset.DeepCopy(),
 		}
 		if err := r.constructDataInfo(&req, applicationContext, clusters); err != nil {
 			return ctrl.Result{}, err
@@ -281,7 +313,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		Owner:              objectKey,
 		PolicyCompiler:     r.PolicyCompiler,
 		Provision:          r.Provision,
-		VaultClient:        r.VaultClient,
+		VaultConnection:    r.VaultConnection,
 		ProvisionedStorage: make(map[string]NewAssetInfo),
 	}
 	instances := make([]modules.ModuleInstanceSpec, 0)
@@ -340,6 +372,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	}
 	// generate blueprint specifications (per cluster)
 	blueprintPerClusterMap := r.GenerateBlueprints(instances, applicationContext)
+	setReadModulesEndpoints(applicationContext, blueprintPerClusterMap, moduleMap)
 	resourceRef := r.ResourceInterface.CreateResourceReference(applicationContext.Name, applicationContext.Namespace)
 	ownerRef := &app.ResourceReference{Name: applicationContext.Name, Namespace: applicationContext.Namespace}
 	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, blueprintPerClusterMap); err != nil {
@@ -356,37 +389,58 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 }
 
 func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, input *app.M4DApplication, clusters []multicluster.Cluster) error {
-	datasetID := req.Context.DataSetID
 	var err error
 	// Call the DataCatalog service to get info about the dataset
-	if err = GetConnectionDetails(req, input); err != nil {
-		return AnalyzeError(input, r.Log, datasetID, err)
+
+	var response *pb.CatalogDatasetInfo
+	var credentialPath string
+	if input.Spec.SecretRef != "" {
+		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
-	// Call the CredentialsManager service to get info about the dataset
-	if err = GetCredentials(req, input); err != nil {
-		return AnalyzeError(input, r.Log, datasetID, err)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	if response, err = r.DataCatalog.GetDatasetInfo(ctx, &pb.CatalogDatasetRequest{
+		CredentialPath: credentialPath,
+		DatasetId:      req.Context.DataSetID,
+	}); err != nil {
+		return err
 	}
-	// The received credentials are stored in vault
-	if err = r.RegisterCredentials(req); err != nil {
-		return AnalyzeError(input, r.Log, datasetID, err)
+
+	details := response.GetDetails()
+	dataDetails, err := modules.CatalogDatasetToDataDetails(response)
+	if err != nil {
+		return err
 	}
+	req.DataDetails = dataDetails
+	req.VaultSecretPath = ""
+	if details.CredentialsInfo != nil {
+		req.VaultSecretPath = details.CredentialsInfo.VaultSecretPath
+	}
+
 	return nil
 }
 
 // NewM4DApplicationReconciler creates a new reconciler for M4DApplications
-func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultClient *api.Client,
-	policyCompiler pc.IPolicyCompiler, cm multicluster.ClusterLister, provision storage.ProvisionInterface) *M4DApplicationReconciler {
+func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultConnection vault.Interface,
+	policyCompiler pc.IPolicyCompiler, cm multicluster.ClusterLister, provision storage.ProvisionInterface) (*M4DApplicationReconciler, error) {
+	catalog, err := NewGrpcDataCatalog()
+	if err != nil {
+		return nil, err
+	}
 	return &M4DApplicationReconciler{
 		Client:            mgr.GetClient(),
 		Name:              name,
 		Log:               ctrl.Log.WithName("controllers").WithName(name),
 		Scheme:            mgr.GetScheme(),
-		VaultClient:       vaultClient,
+		VaultConnection:   vaultConnection,
 		PolicyCompiler:    policyCompiler,
 		ResourceInterface: NewPlotterInterface(mgr.GetClient()),
 		ClusterManager:    cm,
 		Provision:         provision,
-	}
+		DataCatalog:       catalog,
+	}, nil
 }
 
 // SetupWithManager registers M4DApplication controller
