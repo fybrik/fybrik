@@ -40,9 +40,6 @@ server:
       # NOTE: m4d/dataset-creds/ secret engine is enabled by the manager and is used temporarily
       # to store dataset credentials.
       vault policy write "allow-all-dataset-creds" - <<EOF
-      path "m4d/dataset-creds/*" {
-      capabilities = ["create", "read", "update", "delete", "list"]
-      }
       path "kubernetes-secrets/*" {
       capabilities = ["create", "read", "update", "delete", "list"]
       }

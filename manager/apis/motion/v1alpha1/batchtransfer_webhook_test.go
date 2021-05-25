@@ -164,12 +164,55 @@ func TestInvalidS3Bucket(t *testing.T) {
 	assert.Equal(t, "spec.source.s3.objectKey", err[0].Field)
 
 	// Test multiple errors
-	datastore.S3.Endpoint = "test@wrong.com"
+	datastore.S3.Endpoint = "123://wrong.com"
 	datastore.S3.Bucket = ""
 	datastore.S3.ObjectKey = ""
 	err = validateDataStore(path, &datastore)
 	assert.NotNil(t, err)
 	assert.Len(t, err, 3)
+}
+
+func TestValidS3Bucket(t *testing.T) {
+	t.Parallel()
+	datastore := DataStore{
+		Database: nil,
+		S3: &S3{
+			Endpoint:   "my.endpoint",
+			Region:     "eu-gb",
+			Bucket:     "mybucket",
+			AccessKey:  "ab",
+			SecretKey:  "cd",
+			ObjectKey:  "obj.parq",
+			DataFormat: "parquet",
+		},
+		Kafka: nil,
+	}
+
+	path := field.NewPath("spec", "source")
+
+	// test normal endpoint
+	err := validateDataStore(path, &datastore)
+	assert.Nil(t, err)
+
+	// test http endpoint
+	datastore.S3.Endpoint = "http://localhost"
+	err = validateDataStore(path, &datastore)
+	assert.Nil(t, err)
+
+	// test http endpoint with host
+	datastore.S3.Endpoint = "http://localhost:9090"
+	err = validateDataStore(path, &datastore)
+	assert.Nil(t, err)
+
+	// test https endpoint with host
+	datastore.S3.Endpoint = "https://localhost:9091"
+	err = validateDataStore(path, &datastore)
+	assert.Nil(t, err)
+
+	// test endpoint without scheme endpoint
+	datastore.S3.Endpoint = "localhost:9091"
+	err = validateDataStore(path, &datastore)
+	assert.Nil(t, err)
 }
 
 func TestDefaultingS3Bucket(t *testing.T) {

@@ -6,7 +6,7 @@ transform[action] {
 	dp.correct_input
     #user context and access type check
     dp.check_access_type([dp.AccessTypes.READ])
-	dp.check_purpose("Fraud Detection")
+	dp.check_intent("Fraud Detection")
 	dp.check_role("Data Scientist")
 	dp.dataset_has_tag("residency = Turkey")
 	dp.check_processingGeo_not("Turkey")
@@ -15,11 +15,11 @@ transform[action] {
 }
 
 deny[action] {
-	description = "Deny if role is not Data Scientist when purpose is Fraud Detection"
+	description = "Deny if role is not Data Scientist when intent is Fraud Detection"
 	dp.correct_input
     #user context and access type check
     dp.check_access_type([dp.AccessTypes.READ])
-	dp.check_purpose("Fraud Detection")
+	dp.check_intent("Fraud Detection")
 	dp.check_role_not("Data Scientist")
 	dp.dataset_has_tag("residency = Turkey")
     action = dp.build_deny_access_action(dp.build_policy_from_description(description))
@@ -30,7 +30,7 @@ deny[action] {
 	dp.correct_input
     #user context and access type check
     dp.check_access_type([dp.AccessTypes.READ])
-	dp.check_purpose("Customer Behaviour Analysis")
+	dp.check_intent("Customer Behaviour Analysis")
 	dp.check_role("Business Analyst")
 	dp.dataset_has_tag("residency = Turkey")
     dp.column_has_tag("Confidential")
@@ -38,11 +38,11 @@ deny[action] {
 }
 
 deny[action] {
-	description = "Deny if role is not Business Analyst when purpose is Customer Behaviour Analysis"
+	description = "Deny if role is not Business Analyst when intent is Customer Behaviour Analysis"
 	dp.correct_input
     #user context and access type check
     dp.check_access_type([dp.AccessTypes.READ])
-	dp.check_purpose("Customer Behaviour Analysis")
+	dp.check_intent("Customer Behaviour Analysis")
 	dp.check_role_not("Business Analyst")
 	dp.dataset_has_tag("residency = Turkey")
 	dp.check_processingGeo_not("Turkey")
@@ -51,11 +51,11 @@ deny[action] {
 
 
 deny[action] {
-	description = "Deny if role is Data Scientist and purpose is Fraud Detection but the processing geography is not Trukey"
+	description = "Deny if role is Data Scientist and intent is Fraud Detection but the processing geography is not Trukey"
 	dp.correct_input
     #user context and access type check
     dp.check_access_type([dp.AccessTypes.READ])
-	dp.check_purpose("Fraud Detection")
+	dp.check_intent("Fraud Detection")
 	dp.check_role_not("Data Scientist")
 	dp.dataset_has_tag("residency = Turkey")
 	dp.check_processingGeo_not("Turkey")

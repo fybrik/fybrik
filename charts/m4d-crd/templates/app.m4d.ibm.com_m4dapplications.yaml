@@ -80,6 +80,7 @@ spec:
                             - csv
                             - json
                             - avro
+                            - orc
                             - binary
                             - arrow
                             type: string

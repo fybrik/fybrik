@@ -16,8 +16,8 @@ package storage
 
 import (
 	"context"
+	"fmt"
 
-	"emperror.dev/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	comv1alpha1 "github.com/datashim-io/datashim/src/dataset-operator/pkg/apis/com/v1alpha1"
@@ -177,7 +177,7 @@ func (r *ProvisionTest) SetPersistent(ref *types.NamespacedName, persistent bool
 			return nil
 		}
 	}
-	return errors.New("Could not find a dataset: " + ref.Name)
+	return fmt.Errorf("could not find a dataset: %s", ref.Name)
 }
 
 // GetDatasetStatus returns status of an existing Dataset resource.
@@ -187,7 +187,7 @@ func (r *ProvisionTest) GetDatasetStatus(ref *types.NamespacedName) (*Provisione
 			return &ProvisionedStorageStatus{Provisioned: true}, nil
 		}
 	}
-	return nil, errors.New("Could not find a dataset: " + ref.Name)
+	return nil, fmt.Errorf("could not find a dataset: %s", ref.Name)
 }
 
 // DeleteDataset removes an existing dataset
@@ -207,5 +207,5 @@ func (r *ProvisionTest) DeleteDataset(ref *types.NamespacedName) error {
 		r.datasets = newDatasets
 		return nil
 	}
-	return errors.New("Could not delete a dataset " + ref.Name + "\n" + errMessage)
+	return fmt.Errorf("could not delete a dataset %s\n%s", ref.Name, errMessage)
 }
