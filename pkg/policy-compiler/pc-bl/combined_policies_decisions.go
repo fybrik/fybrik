@@ -6,7 +6,7 @@ package policycompilerbl
 import (
 	"strconv"
 
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
 )
 
 func GetCombinedPoliciesDecisions(firstDecisions *pb.PoliciesDecisions, secondDecisions *pb.PoliciesDecisions) *pb.PoliciesDecisions {

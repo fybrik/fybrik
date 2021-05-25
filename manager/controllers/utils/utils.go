@@ -12,8 +12,8 @@ import (
 	"runtime"
 	"sort"
 
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	dc "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	dc "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
 )
 
 // GetDataFormat returns the existing data format

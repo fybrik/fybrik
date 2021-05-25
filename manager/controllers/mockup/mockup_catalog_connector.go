@@ -9,8 +9,8 @@ import (
 	"net"
 
 	"emperror.dev/errors"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
 	"google.golang.org/grpc"
 )
 

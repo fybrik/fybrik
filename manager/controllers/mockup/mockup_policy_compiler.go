@@ -6,9 +6,9 @@ package mockup
 import (
 	"log"
 
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
-	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	pc "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/policy-compiler"
 )
 
 // MockPolicyCompiler is a mock for PolicyCompiler interface used in tests

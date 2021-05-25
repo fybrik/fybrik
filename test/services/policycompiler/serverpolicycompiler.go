@@ -8,9 +8,9 @@ import (
 	"log"
 	"net"
 
-	mockup "github.com/ibm/the-mesh-for-data/manager/controllers/mockup"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	mockup "github.com/mesh-for-data/mesh-for-data/manager/controllers/mockup"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
 	"google.golang.org/grpc"
 )
 
