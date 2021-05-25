@@ -73,10 +73,10 @@ spec:
     kind: M4DModule
     flow: copy
     chart:
-      name: ghcr.io/the-mesh-for-data/m4d-implicit-copy-batch:0.1.0
+      name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
   - name: read-module
     kind: M4DModule
     flow: read
     chart:
-      name: ghcr.io/the-mesh-for-data/m4d-template:0.1.0
+      name: ghcr.io/mesh-for-data/m4d-template:0.1.0
 

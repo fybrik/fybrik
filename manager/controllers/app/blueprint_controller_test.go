@@ -8,11 +8,11 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
-	"github.com/ibm/the-mesh-for-data/pkg/helm"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	"github.com/mesh-for-data/mesh-for-data/pkg/helm"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"

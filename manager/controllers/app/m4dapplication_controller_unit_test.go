@@ -9,16 +9,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/ibm/the-mesh-for-data/manager/controllers/mockup"
-	"github.com/ibm/the-mesh-for-data/pkg/storage"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/mockup"
+	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
 
-	"github.com/ibm/the-mesh-for-data/pkg/vault"
+	"github.com/mesh-for-data/mesh-for-data/pkg/vault"
 
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"

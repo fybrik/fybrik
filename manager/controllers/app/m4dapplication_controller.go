@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
@@ -23,15 +23,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
-	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
-	"github.com/ibm/the-mesh-for-data/pkg/serde"
-	"github.com/ibm/the-mesh-for-data/pkg/storage"
-	"github.com/ibm/the-mesh-for-data/pkg/vault"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/app/modules"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
+	"github.com/mesh-for-data/mesh-for-data/pkg/serde"
+	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
+	"github.com/mesh-for-data/mesh-for-data/pkg/vault"
 
-	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
+	pc "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

@@ -3,8 +3,8 @@ package dummy
 import (
 	"errors"
 
-	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
+	"github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
 )
 
 // This ClusterManager is meant to be used for testing
