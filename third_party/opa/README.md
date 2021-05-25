@@ -1,4 +1,4 @@
-# Install/Uninstall/Template OPA
+# Lifecycle Management
 
 To install OPA, execute
 ```bash
@@ -15,30 +15,30 @@ helm uninstall m4d-opa
 ```
 
 
-# Policy Management in OPA
+# Policy Management
 
-### Add a policy
+### Add a policy to OPA
 ```bash
 make loadpolicy ARGS=<POLICYFOLDER>
 
 Example: make loadpolicy ARGS=data-and-policies/user-created-policy-1
 ```
 
-### Remove a policy
+### Remove a policy from OPA
 ```bash
 make unloadpolicy ARGS=<POLICYFOLDER>
 
 Example: make unloadpolicy ARGS=data-and-policies/user-created-policy-1
 ```
 
-### Add a policy data folder
+### Add a policy data folder to OPA
 ```bash
 make loaddata ARGS=<POLICYDATAFOLDER>
 
 Example: make loaddata ARGS=data-and-policies/meshfordata-external-data
 ```
 
-### Remove a policy data folder
+### Remove a policy data folder from OPA
 ```bash
 make unloaddata ARGS=<POLICYDATAFOLDER>
 
