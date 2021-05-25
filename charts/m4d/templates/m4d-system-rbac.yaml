@@ -1,0 +1,25 @@
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: m4d-system
+  name: {{ template "m4d.fullname" . }}-system-rbac
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - plotters
+  - m4dstorageaccounts
+  - m4dmodules
+  - datasets
+  - secrets
+  - secrets/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+{{- end }}

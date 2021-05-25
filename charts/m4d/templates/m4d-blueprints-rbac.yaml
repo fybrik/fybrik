@@ -1,0 +1,30 @@
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: m4d-blueprints
+  name: {{ template "m4d.fullname" . }}-blueprints-rbac
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - streamtransfers
+  - streamtransfers/finalizers
+  - streamtransfers/status
+  - batchtransfers
+  - batchtransfers/finalizers
+  - batchtransfers/status
+  - pods
+  - deployments
+  - jobs
+  - persistentvolumeclaims
+  - persistentvolumeclaims/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+{{- end }}
