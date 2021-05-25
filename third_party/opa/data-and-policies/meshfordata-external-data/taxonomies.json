@@ -1,7 +1,7 @@
 {
-    "DataPurposes": ["audit&complience", "client Support", "marketing", "Fraud Detection", "Customer Behaviour Analysis"],
+    "Intents": ["audit&complience", "client Support", "marketing", "Fraud Detection", "Customer Behaviour Analysis"],
 
-    "DataRoles": ["Data Scientist", "Business Analyst", "hr", "management", "security"],
+    "Roles": ["Data Scientist", "Business Analyst", "hr", "management", "security"],
 
     "DataSensitivity": ["SPI", "SHI", "ECI", "Confidential"],
 
