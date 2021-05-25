@@ -5,7 +5,7 @@
     "description": "This taxonomy defines the structure of response received from Policy Agent policy engine with enforcements.",
 	"type": "object",
 	"properties": {
-		"governance_decision_response": {"$ref":"policymanager.structs.schema.json#/definitions/governance_decision_response"}
+		"governance_decision_response":{"$ref":"policymanager.structs.schema.json#/definitions/governance_decision_response"}
 	},
 	"additionalProperties": false,
 	"required": ["governance_decision_response"]

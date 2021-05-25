@@ -9,21 +9,54 @@
             "description": "Type of modules supported by the M4D manager.",
             "enum": ["copy", "read", "write"]
         },
-        "governance_decision_name": {
-            "description": "Governance decision enforced on data.",
-            "type": "string",
-			"enum": ["DenyAccess", "DenyWriting", "RemoveColumn", "RedactColumn", "EncryptColumn", "PeriodicBlackout", "FilterRows"]
-        },
         "protocol": {
             "type":"string",
             "description": "The mechanism via which the data will be accessed.",
             "enum":["s3", "kafka", "db2-jdbc", "m4d-arrow-flight"]
-        }
-    },
-    "properties": {
-        "module_type": { "$ref": "#/definitions/module_type"},
-        "governance_decision_name": { "$ref": "#/definitions/governance_decision_name"},
-        "protocol": {"$ref": "#/definitions/protocol"}
-    },
+        },
+		"action": {
+			"type": "object",
+			"description": "Contains the details about action and on which entity the action is enforced",
+			"properties": {
+				"name": {
+					"type": "string",
+					"description": "Represents the action type"
+				},
+				"columns": {
+					"type": "array",
+					"description": "Represents the column names on which the actions have been taken"
+				},
+				"dataset": {
+					"type": "string",
+					"description": "Represents the dataset on which the actions have been taken"
+				}
+			},
+			"oneOf": [{
+				"properties": {
+					"name": {
+						"enum":["DenyAccess", "DenyWriting"]
+					}
+				},
+					"required": [
+					  "dataset"
+					]
+				},
+				{
+				"properties": {
+					"name": {
+						"enum":["RemoveColumn", "RedactColumn", "EncryptColumn", "PeriodicBlackout"]
+					}
+				},
+					"required": [
+					  "columns"
+					]
+				}]
+			}
+		},
+    	"properties":{
+			"module_type": { "$ref": "#/definitions/module_type"},
+			"action_name": { "$ref": "#/definitions/action"},
+			"protocol": {"$ref": "#/definitions/protocol"}
+		},
     "additionalProperties": false
 }

@@ -4,11 +4,11 @@
     "title": "Module Taxonomy",
     "description": "Portion of the taxonomy contributed to by the mesh for data modules. Currently contains only what is needed by OPA.",
     "definitions": {
-        "governance_decision": {
+        "action": {
             "type": "object",
             "description": "Governance decision applied on the data.",
             "properties": {
-                "name" : {"$ref": "module.values.schema.json#/definitions/governance_decision_name"},
+                "name" : {"$ref": "module.values.schema.json#/definitions/action_name"},
 				"params": {
                     "type": "array",
                     "description": "List of optional parameters provided to the transform function.",
@@ -21,7 +21,7 @@
         }
     },
     "properties": {
-        "governance_decision": {"$ref": "#/definitions/governance_decision"}
+        "action": {"$ref": "#/definitions/action"}
     },
     "additionalProperties": false
 }

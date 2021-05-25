@@ -28,26 +28,34 @@
         },
         "governance_decision_response": {
             "type": "object",
-            "description": "Root level decision plus list of optional transforms that may be required on the root or sub-items of the data",
+            "description": "Governance decisions on the asset based on the enforced policies",
             "properties": {
 				"decision_id": {
 					"description": "This is the id returned by the governance engine",
 					"type": "string"
 				},
-				"governance_actions" : { 
+				"result" : { 
 					"type": "array",
 					"items": {
 						"properties": {
-							"actions": {"$ref": "module.structs.schema.json#/definitions/governance_decision"},
+							"action": {"$ref": "module.values.schema.json#/definitions/action"},
+							"params": {
+								"type": "array",
+								"description": "List of optional parameters provided to the transform function.",
+								"items": {
+									"type":"string"
+								}
+							},
 							"used_policy": {
 								"description" : "The list of policies on which the decision was based.",
 								"type": "string"
 							}
-						}                 
+						},
+						"required":["action","used_policy"]                 
 					}
 				}
 			},
-            "required": ["decision_id", "governance_actions"]
+            "required": ["result"]
         }
     },
     "properties": {
