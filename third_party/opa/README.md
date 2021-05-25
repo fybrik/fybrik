@@ -1,4 +1,21 @@
-# Example
+# Install/Uninstall/Template OPA
+
+To install OPA, execute
+```bash
+helm install m4d-opa  ../../charts/m4d --set manager.enabled=false --set opaServer.enabled=true
+```
+To view the OPA installation template, execute
+```bash
+helm template m4d-opa  ../../charts/m4d --set manager.enabled=false --set opaServer.enabled=true
+```
+
+To uninstall OPA, execute
+```bash
+helm uninstall m4d-opa
+```
+
+
+# Policy Management in OPA
 
 ### Add a policy
 ```bash
@@ -27,6 +44,8 @@ make unloaddata ARGS=<POLICYDATAFOLDER>
 
 Example: make unloaddata ARGS=data-and-policies/meshfordata-external-data
 ```
+
+# Example
 
 ### Port forward OPA
 
