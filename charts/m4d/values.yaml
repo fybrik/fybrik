@@ -10,8 +10,8 @@ fullnameOverride: ""
 # Note that these resources are still required for a valid
 # deployment. Only set this to false if you deployed cluster
 # scoped resources using a different method.
-# TODO(roee.shlomo): not implemented yet, comparing this approach to using a base chart.
-# clusterScoped: true
+
+clusterScoped: true
 
 # Global configuration applies to multiple components installed by this chart
 global:
@@ -51,7 +51,7 @@ coordinator:
   catalog: "katalog"
 
   # Overrides the catalog connector URL.
-  # Defaults to `<catalog>-connector`.
+  # Defaults to `<catalog>-connector:80`.
   catalogConnectorURL: ""
 
   # Configures the policy manager system name to be used by the coordinator manager.
@@ -59,31 +59,24 @@ coordinator:
   policyManager: "opa"
 
   # Overrides the policy manager connector URL.
-  # Defaults to `<policyManager>-connector`.
+  # Defaults to `<policyManager>-connector:80`.
   policyManagerConnectorURL: ""
-
-  # Configures the credentials manager system name to be used by the coordinator manager.
-  # Accepted values are "katalog" or any meaningful name if a third party connector is used.
-  # such as "vault". 
-  # This field is subject to be removed in the upcoming release.
-  credentialsManager: "katalog"
-
-  # Overrides the credentials manager connector URL.
-  # Defaults to `<credentialsManager>-connector`.
-  # This field is subject to be removed in the upcoming release.
-  credentialsManagerConnectorURL: ""
 
   # Configure the vault instance to be used by the coordinator manager
   vault:
     # Set to the Vault address. 
-    address: "http://vault.m4d-system:8200/"
-    # Set to the path where credentials of dataset accessed by the m4d are stored.
-    datasetHome: "m4d/dataset-creds/"
-    # Set to the path where user credentials are stored.
-    userHome: "m4d/user-creds/"
+    address: "http://vault.m4d-system:8200"
+    # Login method to Vault
+    login:
+      # Token authentication
+      token: "root"
 
   # Configures the Razee instance to be used by the coordinator manager in a multicluster setup
   razee:
+    # Overrides the multicluster group that should be used.
+    # Using Razee one can bundle clusters in a group. The controller is then limited to all
+    # the clusters registered in this group.
+    multiclusterGroup: ""
     # URL for Razee local deployment
     url: ""
     # Usernane for Razee local deployment
@@ -100,13 +93,6 @@ coordinator:
 worker:
   # Set to false to disable worker components in manager.
   enabled: true
-
-# Mover configuration used in the Mostion API controllers
-mover:
-  # Image name or a hub/image[:tag]
-  image: "mover"
-  # Overrides global.imagePullPolicy
-  imagePullPolicy: ""
 
 # Manager component
 manager:
@@ -177,18 +163,6 @@ manager:
 
   prometheus: false
 
-# Secret provider component deployed as part of manager
-secretProvider:
-  # Set to true to deploy the secret provider or false to skip its deployment.
-  # Defaults to true if `.manager.enabled` is set to true
-  enabled: auto
-
-  # Image name or a hub/image[:tag]
-  image: "secret-provider"
-  
-  # Overrides global.imagePullPolicy
-  imagePullPolicy: ""
-
 # OPA connector component
 opaConnector:
   # Set to true to deploy the opa connector or false to skip its deployment.
@@ -196,7 +170,8 @@ opaConnector:
   enabled: auto
 
   # Overrides the URL of the OPA server
-  serverURL: "opa:8181"
+  # Defaults to the address of the deployed OPA server
+  serverURL:
 
   # Override GRPC connection timeout
   # See `.global.connectionTimeout`.
@@ -270,9 +245,72 @@ opaServer:
 
   # Image name or a hub/image[:tag]
   image: "openpolicyagent/opa:latest"
-
+  
   # Overrides global.imagePullPolicy
   imagePullPolicy: ""
+
+  args:
+  - "run"
+  - "--server"
+  - "--log-level=debug"
+  - "--set=decision_logs.console=true"
+
+  kubemgmt:
+    image: openpolicyagent/kube-mgmt:0.11
+
+  # Used if autoscaling is not enabled 
+  replicaCount: 1
+  
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use
+    name: opa
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 8181
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage:
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
 
 # Katalog connector component
 katalogConnector:

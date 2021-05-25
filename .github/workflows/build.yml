@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+    tags:
+      - '*'
   pull_request:
     branches:
       - master
@@ -121,6 +123,17 @@ jobs:
       if: ${{ github.event_name != 'pull_request' }}
       run: docker load -i images.tar
     - run: docker images
+    - id: version
+      name: Infer version
+      run: |
+        version="${GITHUB_REF#refs/tags/v}"
+        if  [[ $version == refs/* ]] ;
+        then
+            version="latest"
+        fi
+        echo ::set-output name=version::$version
     - name: Publish images
       if: ${{ github.event_name != 'pull_request' }}
+      env:
+        DOCKER_PUBLIC_TAGNAME:  ${{ steps.version.outputs.version }}
       run: make docker-retag-and-push-public && make helm-push-public

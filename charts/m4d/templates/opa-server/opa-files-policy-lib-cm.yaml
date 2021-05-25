@@ -1,0 +1,12 @@
+{{- $autoFlag := and .Values.manager.enabled .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
+{{- $opaConnectorEnabled := include "m4d.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
+{{- if include "m4d.isEnabled" (tuple .Values.opaServer.enabled $opaConnectorEnabled) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opa-m4d-policy-lib
+  labels:
+    openpolicyagent.org/policy: rego
+data:
+  {{- (.Files.Glob "files/opa-server/policy-lib/**.rego").AsConfig | nindent 2 }}
+{{- end }}

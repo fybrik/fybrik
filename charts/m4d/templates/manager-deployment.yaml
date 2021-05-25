@@ -78,18 +78,13 @@ spec:
             - secretRef:
                 name: razee-credentials
             {{- end }}
+            {{- if .Values.coordinator.enabled}}
+            - secretRef:
+                name: vault-credentials
+            {{- end }}
           env:
             - name: ENABLE_WEBHOOKS
               value: "true"
-            - name: MOVER_IMAGE
-              value: {{ include "m4d.image" ( tuple $ .Values.mover ) }}
-            - name: IMAGE_PULL_POLICY
-              value: {{ .Values.mover.imagePullPolicy | default .Values.global.imagePullPolicy }}
-            - name: VAULT_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: vault-unseal-keys
-                  key: vault-root
             {{- if .Values.manager.extraEnvs }}
             {{- toYaml .Values.manager.extraEnvs | nindent 12 }}
             {{- end }}

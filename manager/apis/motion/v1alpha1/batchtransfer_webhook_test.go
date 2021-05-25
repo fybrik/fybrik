@@ -21,11 +21,10 @@ func TestValidBatchTransfer(t *testing.T) {
 		Spec: BatchTransferSpec{
 			Source: DataStore{
 				Database: &Database{
-					Db2URL:    "jdbc:db2://host:1234/DB",
-					Table:     "MY.TABLE",
-					User:      "user",
-					Password:  "password",
-					VaultPath: nil,
+					Db2URL:   "jdbc:db2://host:1234/DB",
+					Table:    "MY.TABLE",
+					User:     "user",
+					Password: "password",
 				},
 				S3:    nil,
 				Kafka: nil,
@@ -40,7 +39,6 @@ func TestValidBatchTransfer(t *testing.T) {
 					SecretKey:  "cd",
 					ObjectKey:  "obj.parq",
 					DataFormat: "parquet",
-					VaultPath:  nil,
 				},
 				Kafka: nil,
 			},
@@ -70,11 +68,10 @@ func TestValidBatchTransferKafka(t *testing.T) {
 		Spec: BatchTransferSpec{
 			Source: DataStore{
 				Database: &Database{
-					Db2URL:    "jdbc:db2://host:1234/DB",
-					Table:     "MY.TABLE",
-					User:      "user",
-					Password:  "password",
-					VaultPath: nil,
+					Db2URL:   "jdbc:db2://host:1234/DB",
+					Table:    "MY.TABLE",
+					User:     "user",
+					Password: "password",
 				},
 				S3:    nil,
 				Kafka: nil,
@@ -88,7 +85,6 @@ func TestValidBatchTransferKafka(t *testing.T) {
 					Password:          "pwd",
 					KafkaTopic:        "topic",
 					CreateSnapshot:    false,
-					VaultPath:         nil,
 				},
 			},
 			Transformation:            nil,
@@ -120,7 +116,6 @@ func TestInValidKafkaConfiguration(t *testing.T) {
 			Password:          "pwd",
 			KafkaTopic:        "topic",
 			CreateSnapshot:    false,
-			VaultPath:         nil,
 		},
 	}
 
@@ -146,7 +141,6 @@ func TestInvalidS3Bucket(t *testing.T) {
 			SecretKey:  "cd",
 			ObjectKey:  "obj.parq",
 			DataFormat: "parquet",
-			VaultPath:  nil,
 		},
 		Kafka: nil,
 	}
@@ -170,7 +164,7 @@ func TestInvalidS3Bucket(t *testing.T) {
 	assert.Equal(t, "spec.source.s3.objectKey", err[0].Field)
 
 	// Test multiple errors
-	datastore.S3.Endpoint = "test@wrong.com"
+	datastore.S3.Endpoint = "123://wrong.com"
 	datastore.S3.Bucket = ""
 	datastore.S3.ObjectKey = ""
 	err = validateDataStore(path, &datastore)
@@ -178,10 +172,51 @@ func TestInvalidS3Bucket(t *testing.T) {
 	assert.Len(t, err, 3)
 }
 
+func TestValidS3Bucket(t *testing.T) {
+	t.Parallel()
+	datastore := DataStore{
+		Database: nil,
+		S3: &S3{
+			Endpoint:   "my.endpoint",
+			Region:     "eu-gb",
+			Bucket:     "mybucket",
+			AccessKey:  "ab",
+			SecretKey:  "cd",
+			ObjectKey:  "obj.parq",
+			DataFormat: "parquet",
+		},
+		Kafka: nil,
+	}
+
+	path := field.NewPath("spec", "source")
+
+	// test normal endpoint
+	err := validateDataStore(path, &datastore)
+	assert.Nil(t, err)
+
+	// test http endpoint
+	datastore.S3.Endpoint = "http://localhost"
+	err = validateDataStore(path, &datastore)
+	assert.Nil(t, err)
+
+	// test http endpoint with host
+	datastore.S3.Endpoint = "http://localhost:9090"
+	err = validateDataStore(path, &datastore)
+	assert.Nil(t, err)
+
+	// test https endpoint with host
+	datastore.S3.Endpoint = "https://localhost:9091"
+	err = validateDataStore(path, &datastore)
+	assert.Nil(t, err)
+
+	// test endpoint without scheme endpoint
+	datastore.S3.Endpoint = "localhost:9091"
+	err = validateDataStore(path, &datastore)
+	assert.Nil(t, err)
+}
+
 func TestDefaultingS3Bucket(t *testing.T) {
 	t.Parallel()
-	_ = os.Setenv("IMAGE_PULL_POLICY", "Always")
-	_ = os.Setenv("MOVER_IMAGE", "mover-test:latest")
 	_ = os.Setenv("SECRET_PROVIDER_URL", "mysecrets:123")
 	_ = os.Setenv("SECRET_PROVIDER_ROLE", "demo")
 
@@ -191,11 +226,10 @@ func TestDefaultingS3Bucket(t *testing.T) {
 		Spec: BatchTransferSpec{
 			Source: DataStore{
 				Database: &Database{
-					Db2URL:    "jdbc:db2://host:1234/DB",
-					Table:     "MY.TABLE",
-					User:      "user",
-					Password:  "password",
-					VaultPath: nil,
+					Db2URL:   "jdbc:db2://host:1234/DB",
+					Table:    "MY.TABLE",
+					User:     "user",
+					Password: "password",
 				},
 				S3:    nil,
 				Kafka: nil,
@@ -210,7 +244,6 @@ func TestDefaultingS3Bucket(t *testing.T) {
 					SecretKey:  "cd",
 					ObjectKey:  "obj.parq",
 					DataFormat: "parquet",
-					VaultPath:  nil,
 				},
 				Kafka: nil,
 			},
@@ -230,8 +263,8 @@ func TestDefaultingS3Bucket(t *testing.T) {
 
 	batchTransfer.Default()
 
-	assert.Equal(t, corev1.PullAlways, batchTransfer.Spec.ImagePullPolicy)
-	assert.Equal(t, "mover-test:latest", batchTransfer.Spec.Image)
+	assert.Equal(t, corev1.PullIfNotPresent, batchTransfer.Spec.ImagePullPolicy)
+	assert.Equal(t, "ghcr.io/mesh-for-data/mover:latest", batchTransfer.Spec.Image)
 	assert.Equal(t, "mysecrets:123", batchTransfer.Spec.SecretProviderURL)
 	assert.Equal(t, "demo", batchTransfer.Spec.SecretProviderRole)
 	assert.Equal(t, false, batchTransfer.Spec.Suspend)
@@ -243,8 +276,6 @@ func TestDefaultingS3Bucket(t *testing.T) {
 	assert.Equal(t, LogData, batchTransfer.Spec.ReadDataType)
 	assert.Equal(t, LogData, batchTransfer.Spec.WriteDataType)
 	assert.Equal(t, Overwrite, batchTransfer.Spec.WriteOperation)
-	_ = os.Unsetenv("IMAGE_PULL_POLICY")
-	_ = os.Unsetenv("MOVER_IMAGE")
 	_ = os.Unsetenv("SECRET_PROVIDER_URL")
 	_ = os.Unsetenv("SECRET_PROVIDER_ROLE")
 }

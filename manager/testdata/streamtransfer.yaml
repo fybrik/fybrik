@@ -14,7 +14,11 @@ spec:
       bucket: "m4d-test-bucket"
       objectKey: "small.parq"
       dataFormat: "parquet"
-      vaultPath: "/v1/secret/data/cos/m4d"
+      vault:
+        address: "http://vault.m4d-system:8200"
+        authPath: "/v1/auth/kubernetes/login"
+        role: module
+        secretPath: "/v1/secret/data/cos/m4d"
   destination:
     s3:
       endpoint: "s3.eu-gb.cloud-object-storage.appdomain.cloud"
@@ -22,15 +26,17 @@ spec:
       bucket: "m4d-test-bucket"
       objectKey: "small.csv"
       dataFormat: "csv"
-      vaultPath: "/v1/secret/data/cos/m4d"
+      vault:
+        address: "http://vault.m4d-system:8200"
+        authPath: "/v1/auth/kubernetes/login"
+        role: module
+        secretPath: "/v1/secret/data/cos/m4d"
   transformation:
   - name: "Hash blood group"
     action: "DigestColumns"
     columns: ["BLOOD_GROUP"]
     options:
       algo: md5
-  secretProviderURL: "http://secret-provider.secret-provider.svc.cluster.local:5555/get-secret"
-  secretProviderRole: demo
   image: localhost:5000/m4d-system/dummy-mover:latest
   imagePullPolicy: "IfNotPresent"
   maxFailedRetries: 0

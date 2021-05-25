@@ -1,3 +1,5 @@
+ROOT_DIR := ..
+include $(ROOT_DIR)/Makefile.env
 NAME := m4d-template
 
 .PHONY: all
@@ -25,3 +27,11 @@ helm-uninstall:
 	$(MAKE) -C m4d-template helm-uninstall
 	$(MAKE) -C m4d-implicit-copy-batch helm-uninstall
 	$(MAKE) -C m4d-implicit-copy-stream helm-uninstall
+
+# Tests if implicit copy definitions can be installed
+.PHONY: test
+test:
+	$(TOOLBIN)/kubectl apply -f implicit-copy-batch-module.yaml
+	$(TOOLBIN)/kubectl apply -f implicit-copy-stream-module.yaml
+	$(TOOLBIN)/kubectl delete -f implicit-copy-batch-module.yaml
+	$(TOOLBIN)/kubectl delete -f implicit-copy-stream-module.yaml

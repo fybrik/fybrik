@@ -23,7 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	comv1alpha1 "github.com/IBM/dataset-lifecycle-framework/src/dataset-operator/pkg/apis/com/v1alpha1"
+	comv1alpha1 "github.com/datashim-io/datashim/src/dataset-operator/pkg/apis/com/v1alpha1"
 	appv1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
 	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
 	"github.com/ibm/the-mesh-for-data/manager/controllers/app"
@@ -144,7 +144,11 @@ func main() {
 		policyCompiler := pc.NewPolicyCompiler()
 
 		// Initiate the M4DApplication Controller
-		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultConn, policyCompiler, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
+		applicationController, err := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultConn, policyCompiler, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
+		if err != nil {
+			setupLog.Error(err, "unable to create controller")
+			os.Exit(1)
+		}
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
 			os.Exit(1)
@@ -182,38 +186,11 @@ func main() {
 	}
 }
 
-// init vault client and mount the base directory for storing credentials
+// init vault client
+// TODO: the vault client should be used to add roles for the modules.
 func initVaultConnection() (vault.Interface, error) {
 	vaultConn, err := vault.InitConnection(utils.GetVaultAddress(), utils.GetVaultToken())
 	if err != nil {
-		return vaultConn, err
-	}
-	if err = vaultConn.Mount(utils.GetVaultDatasetMountPath()); err != nil {
-		return vaultConn, err
-	}
-	if err = vaultConn.Mount(utils.GetVaultUserMountPath()); err != nil {
-		return vaultConn, err
-	}
-	// Create and save a vault policy
-	path := utils.GetVaultDatasetHome() + "*"
-	policy := "path \"" + path + "\"" + " {\n	capabilities = [\"read\"]\n }"
-	policyName := "read-dataset-creds"
-
-	setupLog.Info("policyName: " + policyName + "  policy: " + policy)
-	if err = vaultConn.WritePolicy(policyName, policy); err != nil {
-		setupLog.Info("      Failed writing policy: " + err.Error())
-		return vaultConn, err
-	}
-
-	setupLog.Info("Assigning the policy to " + "/role/" + utils.GetSecretProviderRole())
-	// Link the policy to the authentication role (configured)
-	if err = vaultConn.LinkPolicyToIdentity("/role/"+utils.GetSecretProviderRole(),
-		policyName,
-		utils.GetSystemNamespace(),
-		"secret-provider",
-		utils.GetVaultAuth(),
-		utils.GetVaultAuthTTL()); err != nil {
-		setupLog.Info("Could not create a role " + utils.GetSecretProviderRole() + " : " + err.Error())
 		return vaultConn, err
 	}
 	return vaultConn, nil
@@ -223,15 +200,21 @@ func initVaultConnection() (vault.Interface, error) {
 // cluster manager instance should be initiated.
 func NewClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error) {
 	setupLog := ctrl.Log.WithName("setup")
+	multiClusterGroup := os.Getenv("MULTICLUSTER_GROUP")
 	if user, razeeLocal := os.LookupEnv("RAZEE_USER"); razeeLocal {
 		razeeURL := strings.TrimSpace(os.Getenv("RAZEE_URL"))
 		password := strings.TrimSpace(os.Getenv("RAZEE_PASSWORD"))
 
 		setupLog.Info("Using razee local at " + razeeURL)
-		return razee.NewRazeeManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password)
+		return razee.NewRazeeLocalManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password, multiClusterGroup)
 	} else if apiKey, satConf := os.LookupEnv("IAM_API_KEY"); satConf {
 		setupLog.Info("Using IBM Satellite config")
-		return razee.NewSatConfManager(strings.TrimSpace(apiKey))
+		return razee.NewSatConfManager(strings.TrimSpace(apiKey), multiClusterGroup)
+	} else if apiKey, razeeOauth := os.LookupEnv("API_KEY"); razeeOauth {
+		setupLog.Info("Using Razee oauth")
+
+		razeeURL := strings.TrimSpace(os.Getenv("RAZEE_URL"))
+		return razee.NewRazeeOAuthManager(strings.TrimSpace(razeeURL), strings.TrimSpace(apiKey), multiClusterGroup)
 	} else {
 		setupLog.Info("Using local cluster manager")
 		return local.NewManager(mgr.GetClient(), utils.GetSystemNamespace())

@@ -33,7 +33,7 @@ message AccessOperation {
 }
 
 message ApplicationContext {
-    string app_id = 1;   // string that identifies the application (namespace + appID) that will be used against secretProvider to obtain the realted credetnials
+    string credential_path = 1;   // link to vault plugin for reading k8s secret with user credentials
     ApplicationDetails app_info = 2;
     repeated DatasetContext datasets = 3;
     repeated AccessOperation general_operations = 4;

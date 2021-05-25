@@ -4,8 +4,7 @@ include $(ROOT_DIR)/Makefile.env
 CONNECTORS := \
 	katalog \
 	egeria \
-	opa \
-	vault
+	opa
 
 define test-target
   test:: ; cd $1 && make test
@@ -30,6 +29,5 @@ $(foreach dir,$(CONNECTORS),$(eval $(call docker-rmi-target,$(dir))))
 
 .PHONY: deploy undeploy charts
 deploy undeploy charts:
-	$(MAKE) -C vault $@
 	$(MAKE) -C opa $@
 	$(MAKE) -C egeria $@

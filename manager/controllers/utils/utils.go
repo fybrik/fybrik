@@ -34,7 +34,7 @@ func GetDataFormat(info *dc.DatasetDetails) (app.DataFormatType, error) {
 	case "arrow":
 		return app.Arrow, nil
 	}
-	return app.Binary, errors.New("Unknown format " + info.DataFormat)
+	return app.Binary, fmt.Errorf("unknown format %s", info.DataFormat)
 }
 
 // GetProtocol returns the existing data protocol
@@ -47,7 +47,7 @@ func GetProtocol(info *dc.DatasetDetails) (app.IFProtocol, error) {
 	case dc.DataStore_DB2:
 		return app.JdbcDb2, nil
 	}
-	return app.S3, errors.New("Unknown protocol ")
+	return app.S3, errors.New("unknown protocol")
 }
 
 // IsTransformation returns true if the data transformation is required
@@ -118,9 +118,20 @@ func CreateDataSetIdentifier(datasetID string) string {
 	return id[:len(id)-1]
 }
 
-// CreateAppIdentifier constructs an identifier for a m4d application: namespace/name.
-func CreateAppIdentifier(application *app.M4DApplication) string {
-	return application.Namespace + "/" + application.Name
+// Generating release name from step
+func GetReleaseName(applicationName string, namespace string, step app.FlowStep) string {
+	return GetReleaseNameByStepName(applicationName, namespace, step.Name)
+}
+
+// Generate release name from step name
+func GetReleaseNameByStepName(applicationName string, namespace string, stepName string) string {
+	fullName := applicationName + "-" + namespace + "-" + stepName
+	return HelmConformName(fullName)
+}
+
+// Generate fqdn for a module
+func GenerateModuleEndpointFQDN(releaseName string, blueprintNamespace string) string {
+	return releaseName + "." + blueprintNamespace + ".svc.cluster.local"
 }
 
 // Some k8s objects only allow for a length of 63 characters.
@@ -133,6 +144,12 @@ func K8sConformName(name string) string {
 // Helm has stricter restrictions than K8s and restricts release names to 53 characters
 func HelmConformName(name string) string {
 	return ShortenedName(name, 53, 5)
+}
+
+// Create a name for a step in a blueprint.
+// Since this is part of the name of a release, this should be done in a central location to make testing easier
+func CreateStepName(moduleName string, assetID string) string {
+	return moduleName + "-" + Hash(assetID, 10)
 }
 
 // This function shortens a name to the maximum length given and uses rest of the string that is too long

@@ -1,0 +1,91 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "module.values.schema.json",
+    "title": "Module Values Taxonomy",
+    "description": "Values contributed to by the mesh for data modules. Currently contains only what is needed by OPA.",
+    "definitions": {
+        "module_type": {
+            "type": "string",
+            "description": "Type of modules supported by the M4D manager.",
+            "enum": ["copy", "read", "write"]
+        },
+        "transformation_name": {
+            "description": "Transformation that can be performed on data.",
+            "type": "string",
+            "enum": ["mask", "redact", "encrypt"]
+        },
+        "data_level_name": {
+            "type":"string",
+            "enum":["UNKNOWN", "DATASET", "COLUMN", "ROW", "CELL"]
+        },
+        "data_level_code": {
+            "type":"integer",
+            "description":"0=unknown, 1=dataset, 2=column, 3=row, 4=cell",
+            "minimum": 0,
+            "maximum": 4          
+        },
+        "interface": {
+            "type": "object",
+            "description": "Contains protocol and data format for arrow-flight",
+            "properties": {
+                "protocol": {
+                    "type": "string",
+                    "description": "The mechanism via which the data will be accessed."
+                },
+                "data_format": {
+                    "type":"string",
+                    "description": "The data format"
+                }
+            },
+            "anyOf": [{
+                "properties": {
+                    "protocol": {
+                        "enum":["m4d-arrow-flight"]
+                    },
+                    "data_format": {
+                        "enum":["arrow"] 
+                    }
+                }
+            },
+            {
+                "properties": {
+                    "protocol": {
+                        "enum":["kafka"]
+                    },
+                    "data_format": {
+                        "enum":["json", "avro"] 
+                    }
+                }
+            },
+            {
+                "properties": {
+                    "protocol": {
+                        "enum":["s3"]
+                    },
+                    "data_format": {
+                        "enum":["csv", "parquet"] 
+                    }
+                }
+            },
+            {
+                "properties": {
+                    "protocol": {
+                        "enum":["db2-jdbc"]
+                    },
+                    "data_format": {
+                        "enum":["db2-jdbc"] 
+                    }
+                }
+            }
+            ]
+        }
+    },
+    "properties": {
+        "module_type": { "$ref": "#/definitions/module_type"},
+        "transformation_name": { "$ref": "#/definitions/transformation_name"},
+        "data_level_name": { "$ref": "#/definitions/data_level_name"},
+        "data_level_code": {  "$ref": "#/definitions/data_level_code"},
+        "interface": {"$ref": "#/definitions/interface"}
+    },
+    "additionalProperties": false
+}

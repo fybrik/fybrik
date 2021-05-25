@@ -1,5 +1,6 @@
 {{- $autoFlag := and .Values.manager.enabled .Values.coordinator.enabled (eq .Values.coordinator.catalog "katalog") }}
 {{- if include "m4d.isEnabled" (tuple .Values.katalogConnector.enabled $autoFlag) }}
+{{- if .Values.clusterScoped }}
 # ClusterRole katalog-editor allows managing assets.
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -10,7 +11,7 @@ rules:
   resources: ["assets"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
 - apiGroups: [""]
-  resources: ["secret"]
+  resources: ["secrets"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
 ---
 # ClusterRole katalog-viewer allows viewing assets.
@@ -23,4 +24,5 @@ rules:
   resources: ["assets"]
   verbs: ["get", "list", "watch"]
 ---
+{{- end }}
 {{- end }}

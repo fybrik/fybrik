@@ -54,8 +54,23 @@ CURLRESULT=$(curl --request POST \
 export ORGAPIKEY=$(echo $CURLRESULT | jq .data.registerCluster.orgKey -r)
 export CLUSTERID=$(echo $CURLRESULT | jq .data.registerCluster.clusterId -r)
 
-kubectl create ns m4d-system || true
-kubectl -n m4d-system create secret generic razee-credentials --from-literal=RAZEE_URL="$RAZEEDASH_API/graphql" --from-literal=RAZEE_USER="$RAZEE_USER" --from-literal=RAZEE_PASSWORD=$RAZEE_PASSWORD
+GROUP=$(curl --request POST \
+  --url http://localhost:3333/graphql \
+  --header 'content-type: application/json' \
+  --header "$AUTHENTICATION_HEADER" \
+  --data "{\"query\":\"query {groupByName(orgId: \\\"$ORGID\\\", name: \\\"local\\\") {uuid}}\"}")
+
+GROUPID=$(echo $GROUP | jq -r -c ".data.groupByName.uuid")
+
+curl --request POST \
+  --url http://localhost:3333/graphql \
+  --header 'Content-Type: application/json' \
+  --header "$AUTHENTICATION_HEADER" \
+  --data "{\"query\":\"mutation{groupClusters(orgId: \\\"$ORGID\\\", uuid: \\\"$GROUPID\\\", clusters: [\\\"$CLUSTERID\\\"]) {modified}}\"}"
+
+# razee-credentials are created in the helm chart
+#kubectl create ns m4d-system || true
+#kubectl -n m4d-system create secret generic razee-credentials --from-literal=MULTICLUSTER_GROUP=local --from-literal=RAZEE_URL="$RAZEEDASH_API/graphql" --from-literal=RAZEE_USER="$RAZEE_USER" --from-literal=RAZEE_PASSWORD=$RAZEE_PASSWORD
 
 if [ $ORGAPIKEY == "null" ]; then
   echo "Could not register cluster!"
