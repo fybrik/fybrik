@@ -137,6 +137,8 @@ type ResourceReference struct {
 	Namespace string `json:"namespace"`
 	// Kind of the resource (Blueprint, Plotter)
 	Kind string `json:"kind"`
+	// Version of M4DApplication that has generated this resource
+	AppVersion int64 `json:"appVersion"`
 }
 
 // DatasetDetails contain dataset connection and metadata required to register this dataset in the enterprise catalog

@@ -683,3 +683,136 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	// check errors
 	g.Expect(getErrorMessages(application)).NotTo(gomega.BeEmpty())
 }
+
+// This test checks that the plotter state propagates into the m4dapp state
+func TestPlotterUpdate(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "read-test",
+		Namespace: "default",
+	}
+	application := &app.M4DApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.Spec.Data[0] = app.DataContext{
+		DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
+		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+	}
+	application.SetGeneration(1)
+
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Read module
+	readModule := &app.M4DModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(cl.Create(context.Background(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
+
+	// Create a M4DApplicationReconciler object with the scheme and fake client.
+	r := createTestM4DApplicationController(cl, s)
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.Background(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	// check plotter creation
+	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
+	g.Expect(application.Status.Generated.AppVersion).To(gomega.Equal(application.Generation))
+	plotterObjectKey := types.NamespacedName{
+		Namespace: application.Status.Generated.Namespace,
+		Name:      application.Status.Generated.Name,
+	}
+	plotter := &app.Plotter{}
+	err = cl.Get(context.Background(), plotterObjectKey, plotter)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	// mark the plotter as in error state
+	errorMsg := "failure to orchestrate modules"
+	plotter.Status.ObservedState.Error = errorMsg
+	g.Expect(cl.Update(context.Background(), plotter)).NotTo(gomega.HaveOccurred())
+
+	// the new reconcile should update the application state
+	_, err = r.Reconcile(req)
+	g.Expect(err).To(gomega.BeNil())
+	err = cl.Get(context.Background(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring(errorMsg))
+
+	// mark the plotter as ready
+	plotter.Status.ObservedState.Error = ""
+	plotter.Status.ObservedState.Ready = true
+	g.Expect(cl.Update(context.Background(), plotter)).NotTo(gomega.HaveOccurred())
+
+	// the new reconcile should update the application state
+	_, err = r.Reconcile(req)
+	g.Expect(err).To(gomega.BeNil())
+	err = cl.Get(context.Background(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(application.Status.Ready).To(gomega.BeTrue())
+}
+
+// This test checks that the older plotter state does not propagate into the m4dapp state
+func TestSyncWithPlotter(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "notebook",
+		Namespace: "default",
+	}
+	application := &app.M4DApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/m4dcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
+	// imitate a ready phase for the earlier generation
+	application.SetGeneration(2)
+	application.Finalizers = []string{"TestReconciler.finalizer"}
+	application.Status.Generated = &app.ResourceReference{Name: "plotter", Namespace: "m4d-system", Kind: "Plotter", AppVersion: 1}
+	application.Status.Ready = true
+	application.Status.ObservedGeneration = 1
+
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	plotter := &app.Plotter{}
+	g.Expect(readObjectFromFile("../../testdata/plotter.yaml", plotter)).NotTo(gomega.HaveOccurred())
+	plotter.Status.ObservedState.Ready = true
+	g.Expect(cl.Create(context.Background(), plotter)).NotTo(gomega.HaveOccurred())
+
+	// Create a M4DApplicationReconciler object with the scheme and fake client.
+	r := createTestM4DApplicationController(cl, s)
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(req)
+	g.Expect(err).To(gomega.BeNil())
+
+	newApp := &app.M4DApplication{}
+	err = cl.Get(context.Background(), req.NamespacedName, newApp)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(getErrorMessages(newApp)).NotTo(gomega.BeEmpty())
+	g.Expect(newApp.Status.Ready).NotTo(gomega.BeTrue())
+}
