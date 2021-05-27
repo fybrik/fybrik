@@ -11,12 +11,12 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
 	"google.golang.org/grpc"
 )
 
