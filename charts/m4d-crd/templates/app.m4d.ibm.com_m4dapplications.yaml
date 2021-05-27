@@ -183,6 +183,10 @@ spec:
               generated:
                 description: Generated resource identifier
                 properties:
+                  appVersion:
+                    description: Version of M4DApplication that has generated this resource
+                    format: int64
+                    type: integer
                   kind:
                     description: Kind of the resource (Blueprint, Plotter)
                     type: string
@@ -193,6 +197,7 @@ spec:
                     description: Namespace of the resource
                     type: string
                 required:
+                - appVersion
                 - kind
                 - name
                 - namespace

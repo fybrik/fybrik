@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	externalRef0 "github.com/ibm/the-mesh-for-data/connectors/katalog/pkg/taxonomy"
+	externalRef0 "github.com/mesh-for-data/mesh-for-data/connectors/katalog/pkg/taxonomy"
 	"github.com/pkg/errors"
 )
 

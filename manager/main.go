@@ -10,13 +10,13 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
-	"github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
-	"github.com/ibm/the-mesh-for-data/pkg/multicluster/razee"
-	"github.com/ibm/the-mesh-for-data/pkg/storage"
-	"github.com/ibm/the-mesh-for-data/pkg/vault"
+	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
+	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster/local"
+	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster/razee"
+	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
+	"github.com/mesh-for-data/mesh-for-data/pkg/vault"
 
-	"github.com/ibm/the-mesh-for-data/manager/controllers/motion"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/motion"
 
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -25,12 +25,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	comv1alpha1 "github.com/datashim-io/datashim/src/dataset-operator/pkg/apis/com/v1alpha1"
-	appv1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/app"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
-	"github.com/ibm/the-mesh-for-data/pkg/helm"
-	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
+	appv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	motionv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/motion/v1alpha1"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/app"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	"github.com/mesh-for-data/mesh-for-data/pkg/helm"
+	pc "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/policy-compiler"
 	kapps "k8s.io/api/apps/v1"
 	kbatch "k8s.io/api/batch/v1"
 	// +kubebuilder:scaffold:imports

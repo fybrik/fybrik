@@ -9,8 +9,8 @@ import (
 	"os"
 	"strconv"
 
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
-	bl "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/pc-bl"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	bl "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/pc-bl"
 )
 
 type PolicyCompiler struct {

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
@@ -23,15 +23,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
-	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
-	"github.com/ibm/the-mesh-for-data/pkg/serde"
-	"github.com/ibm/the-mesh-for-data/pkg/storage"
-	"github.com/ibm/the-mesh-for-data/pkg/vault"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/app/modules"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
+	"github.com/mesh-for-data/mesh-for-data/pkg/serde"
+	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
+	"github.com/mesh-for-data/mesh-for-data/pkg/vault"
 
-	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
+	pc "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -73,11 +73,12 @@ func (r *M4DApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	}
 
 	observedStatus := applicationContext.Status.DeepCopy()
+	appVersion := applicationContext.GetGeneration()
 
 	// check if reconcile is required
 	// reconcile is required if the spec has been changed, or the previous reconcile has failed to allocate a Plotter resource
-	generationComplete := r.ResourceInterface.ResourceExists(applicationContext.Status.Generated)
-	if !generationComplete || observedStatus.ObservedGeneration != applicationContext.GetGeneration() {
+	generationComplete := r.ResourceInterface.ResourceExists(observedStatus.Generated) && (observedStatus.Generated.AppVersion == appVersion)
+	if (!generationComplete) || (observedStatus.ObservedGeneration != appVersion) {
 		if result, err := r.reconcile(applicationContext); err != nil {
 			// another attempt will be done
 			// users should be informed in case of errors
@@ -87,7 +88,7 @@ func (r *M4DApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 			}
 			return result, err
 		}
-		applicationContext.Status.ObservedGeneration = applicationContext.GetGeneration()
+		applicationContext.Status.ObservedGeneration = appVersion
 	} else {
 		resourceStatus, err := r.ResourceInterface.GetResourceStatus(applicationContext.Status.Generated)
 		if err != nil {
@@ -121,13 +122,11 @@ func getBucketResourceRef(name string) *types.NamespacedName {
 func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApplication, status app.ObservedState) error {
 	applicationContext.Status.DataAccessInstructions = ""
 	applicationContext.Status.Ready = false
+	resetConditions(applicationContext)
 	if applicationContext.Status.CatalogedAssets == nil {
 		applicationContext.Status.CatalogedAssets = make(map[string]string)
 	}
 
-	if hasError(applicationContext) {
-		return nil
-	}
 	if status.Error != "" {
 		setCondition(applicationContext, "", status.Error, true)
 		return nil
@@ -372,8 +371,8 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	// generate blueprint specifications (per cluster)
 	blueprintPerClusterMap := r.GenerateBlueprints(instances, applicationContext)
 	setReadModulesEndpoints(applicationContext, blueprintPerClusterMap, moduleMap)
-	resourceRef := r.ResourceInterface.CreateResourceReference(applicationContext.Name, applicationContext.Namespace)
-	ownerRef := &app.ResourceReference{Name: applicationContext.Name, Namespace: applicationContext.Namespace}
+	ownerRef := &app.ResourceReference{Name: applicationContext.Name, Namespace: applicationContext.Namespace, AppVersion: applicationContext.GetGeneration()}
+	resourceRef := r.ResourceInterface.CreateResourceReference(ownerRef)
 	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, blueprintPerClusterMap); err != nil {
 		r.Log.V(0).Info("Error creating " + resourceRef.Kind + " : " + err.Error())
 		if err.Error() == app.InvalidClusterConfiguration {

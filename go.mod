@@ -1,4 +1,4 @@
-module github.com/ibm/the-mesh-for-data
+module github.com/mesh-for-data/mesh-for-data
 
 go 1.15
 
@@ -66,6 +66,7 @@ require (
 	k8s.io/client-go v12.0.0+incompatible
 	sigs.k8s.io/cli-utils v0.20.4
 	sigs.k8s.io/controller-runtime v0.7.2
+	sigs.k8s.io/controller-tools v0.5.0 // indirect
 	sigs.k8s.io/yaml v1.2.0
 )
 
