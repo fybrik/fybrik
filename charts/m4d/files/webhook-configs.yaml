@@ -5,9 +5,11 @@ metadata:
   name: '{{ .Release.Namespace }}-mutating-webhook'
   annotations:
     cert-manager.io/inject-ca-from: '{{ .Release.Namespace }}/serving-cert'
+    certmanager.k8s.io/inject-ca-from: '{{ .Release.Namespace }}/serving-cert'
 webhooks:
   - admissionReviewVersions:
       - v1
+      - v1beta1
     clientConfig:
       service:
         name: webhook-service
@@ -28,6 +30,7 @@ webhooks:
     sideEffects: None
   - admissionReviewVersions:
       - v1
+      - v1beta1
     clientConfig:
       service:
         name: webhook-service
@@ -54,9 +57,11 @@ metadata:
   name: '{{ .Release.Namespace }}-validating-webhook'
   annotations:
     cert-manager.io/inject-ca-from: '{{ .Release.Namespace }}/serving-cert'
+    certmanager.k8s.io/inject-ca-from: '{{ .Release.Namespace }}/serving-cert'
 webhooks:
   - admissionReviewVersions:
       - v1
+      - v1beta1
     clientConfig:
       service:
         name: webhook-service
@@ -77,6 +82,7 @@ webhooks:
     sideEffects: None
   - admissionReviewVersions:
       - v1
+      - v1beta1
     clientConfig:
       service:
         name: webhook-service
