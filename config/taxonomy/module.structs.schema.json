@@ -4,39 +4,38 @@
     "title": "Module Taxonomy",
     "description": "Portion of the taxonomy contributed to by the mesh for data modules. Currently contains only what is needed by OPA.",
     "definitions": {
-		"action": {
-			"type": "object",
-			"description": "Contains the details about action and on which entity (columns, dataset) the action is enforced",
-			"properties": {
-				"name": {
-					"type": "string",
-					"description": "Represents the action type"
-				},
-				"columns": {
-					"type": "array",
-					"description": "Represents the column names on which the actions have been taken",
-					"items": {
-						"type":"string"
-					}
-				}
-			},
-			"oneOf": [
-				{
-					"properties": {
-						"name": {"$ref": "module.values.schema.json#/definitions/action_name_columns"}
-					},
-					"required": ["columns"]
-				},
-				{
-					"properties": {
-						"name": {"$ref": "module.values.schema.json#/definitions/action_name_dataset"}	
-					}
-				}
-			]
-		}
-	},
+        "action": {
+            "type": "object",
+            "description": "Contains the details about action and on which entity (columns, dataset) the action is enforced",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Represents the action type"
+                },
+                "columns": {
+                    "type": "array",
+                    "description": "Represents the column names on which the actions have been taken",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "oneOf": [{
+                    "properties": {
+                        "name": { "$ref": "module.values.schema.json#/definitions/action_name_columns" }
+                    },
+                    "required": ["columns"]
+                },
+                {
+                    "properties": {
+                        "name": { "$ref": "module.values.schema.json#/definitions/action_name_dataset" }
+                    }
+                }
+            ]
+        }
+    },
     "properties": {
-        "action": {"$ref": "#/definitions/action"}
+        "action": { "$ref": "#/definitions/action" }
     },
     "additionalProperties": false
 }

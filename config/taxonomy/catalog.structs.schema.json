@@ -4,17 +4,17 @@
     "title": "Data Catalog Structures Taxonomy",
     "description": "Standardized structures relating to data catalogs.",
     "definitions": {
-         "geography": {
+        "geography": {
             "type": "object",
             "description": "Geographical location which may or may not be part of a hierarchy.",
             "properties": {
                 "geography_type": {
                     "type": "string",
-                    "$ref": "catalog.values.schema.json#/definitions/geography_type"  
+                    "$ref": "catalog.values.schema.json#/definitions/geography_type"
                 },
                 "name": {
                     "type": "string",
-                    "$ref": "catalog.values.schema.json#/definitions/geography_name"                      
+                    "$ref": "catalog.values.schema.json#/definitions/geography_name"
                 },
                 "parent": {
                     "type": "object",
@@ -28,14 +28,14 @@
             "description": "A grouping of discrete geographies that are not necessarily in a common hierarchy.",
             "items": {
                 "properties": {
-                    "geography": {"$ref": "#/definitions/geography"}
+                    "geography": { "$ref": "#/definitions/geography" }
                 }
             }
         },
-		"tag": {
-			"type": "object",
-			"additionalProperties": true
-		},
+        "tag": {
+            "type": "object",
+            "additionalProperties": true
+        },
         "resource": {
             "type": "object",
             "description": "Data set or other type of resource.",
@@ -44,8 +44,8 @@
                     "type": "string",
                     "description": "Name of the data set"
                 },
-				"tags": {"$ref": "#/definitions/tag"},
-				"columns": {
+                "tags": { "$ref": "#/definitions/tag" },
+                "columns": {
                     "type": "array",
                     "description": "List of column names in the data set with their associated tags. They must be key value pairs.",
                     "items": {
@@ -55,48 +55,48 @@
                                 "type": "string",
                                 "description": "name of column or component"
                             },
-                            "tags": {"$ref": "#/definitions/tag"}
+                            "tags": { "$ref": "#/definitions/tag" }
                         },
-                        "required":["name"]
+                        "required": ["name"]
                     }
                 },
-				"metadata": {
-					"type": "object",
-					"description": "Some additional metadata from the asset",
-					"properties": {
-						"creationTime": {
-							"type": "string",
-							"description": "Time when the asset was created"
-						},
-						"CreatedBy": {
-							"type": "string",
-							"description": "Owner Id for the user who created the asset"
+                "metadata": {
+                    "type": "object",
+                    "description": "Some additional metadata from the asset",
+                    "properties": {
+                        "creationTime": {
+                            "type": "string",
+                            "description": "Time when the asset was created"
+                        },
+                        "CreatedBy": {
+                            "type": "string",
+                            "description": "Owner Id for the user who created the asset"
 
-						},
-						"updationTime": {
-							"type": "string",
-							"description": "Time when the dataset got updated"
-						},
-						"updatedBy": {
-							"type": "string",
-							"description": "Indicates who updted the asset"
-						},
-						"totalRatings": {
-							"type": "string",
-							"description": "Indicates the total rating of the asset"
-						}
-					}
-				}
+                        },
+                        "updationTime": {
+                            "type": "string",
+                            "description": "Time when the dataset got updated"
+                        },
+                        "updatedBy": {
+                            "type": "string",
+                            "description": "Indicates who updted the asset"
+                        },
+                        "totalRatings": {
+                            "type": "string",
+                            "description": "Indicates the total rating of the asset"
+                        }
+                    }
+                }
             },
-            "required":["name"],
-			"additionalProperties": false
+            "required": ["name"],
+            "additionalProperties": false
         }
     },
     "properties": {
-        "geography": { "$ref": "#/definitions/geography"},
-		"tag": { "$ref": "#/definitions/tag"},
-        "resource": { "$ref": "#/definitions/resource"},
-        "geography_group": { "$ref": "#/definitions/geography_group"}
+        "geography": { "$ref": "#/definitions/geography" },
+        "tag": { "$ref": "#/definitions/tag" },
+        "resource": { "$ref": "#/definitions/resource" },
+        "geography_group": { "$ref": "#/definitions/geography_group" }
     },
     "additionalProperties": false
 }

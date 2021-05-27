@@ -7,7 +7,7 @@
         "geography_name": {
             "type": "string",
             "description": "Name of the geography",
-            "enum": ["Netherlands", "Turkey"]                              
+            "enum": ["Netherlands", "Turkey"]
         },
         "geography_type": {
             "type": "string",
@@ -26,10 +26,10 @@
         }
     },
     "properties": {
-        "geography_name": {"$ref": "#/definitions/geography_name"},
-        "geography_type": {"$ref": "#/definitions/geography_type"},
-        "data_format": {"$ref": "#/definitions/data_format"},
-        "data_type": {"$ref":"#/definitions/data_type"}
+        "geography_name": { "$ref": "#/definitions/geography_name" },
+        "geography_type": { "$ref": "#/definitions/geography_type" },
+        "data_format": { "$ref": "#/definitions/data_format" },
+        "data_type": { "$ref": "#/definitions/data_type" }
     },
     "additionalProperties": false
 

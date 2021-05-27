@@ -10,26 +10,26 @@
             "enum": ["copy", "read", "write"]
         },
         "protocol": {
-            "type":"string",
+            "type": "string",
             "description": "The mechanism via which the data will be accessed.",
-            "enum":["s3", "kafka", "db2-jdbc", "m4d-arrow-flight"]
+            "enum": ["s3", "kafka", "db2-jdbc", "m4d-arrow-flight"]
         },
-		"action_name_columns": {
-			"type": "string",
-			"description": "Type of actions possible on columns",
-			"enum": ["RemoveColumn", "RedactColumn", "EncryptColumn", "PeriodicBlackout"]
-		},
-		"action_name_dataset": {
-			"type": "string",
-			"description": "Type of actions possible on dataset",
-			"enum": ["DenyAccess", "DenyWriting"]
-		}
-	},
-    	"properties":{
-			"module_type": { "$ref": "#/definitions/module_type"},
-			"protocol": {"$ref": "#/definitions/protocol"},
-			"action_name_columns": {"$ref": "#/definitions/action_name_columns"},
-			"action_name_dataset": {"$ref": "#/definitions/action_name_dataset"}
-		},
+        "action_name_columns": {
+            "type": "string",
+            "description": "Type of actions possible on columns",
+            "enum": ["RemoveColumn", "RedactColumn", "EncryptColumn", "PeriodicBlackout"]
+        },
+        "action_name_dataset": {
+            "type": "string",
+            "description": "Type of actions possible on dataset",
+            "enum": ["DenyAccess", "DenyWriting"]
+        }
+    },
+    "properties": {
+        "module_type": { "$ref": "#/definitions/module_type" },
+        "protocol": { "$ref": "#/definitions/protocol" },
+        "action_name_columns": { "$ref": "#/definitions/action_name_columns" },
+        "action_name_dataset": { "$ref": "#/definitions/action_name_dataset" }
+    },
     "additionalProperties": false
 }

@@ -16,21 +16,21 @@
             },
             "required": ["action_type"]
         },
-        "request_context": { "$ref":"policymanager.values.schema.json#/definitions/request_context"},
+        "request_context": { "$ref": "policymanager.values.schema.json#/definitions/request_context" },
         "governance_decision_request": {
             "type": "object",
             "properties": {
-                "request_context": { "$ref": "#/definitions/request_context"},
-                "action": { "$ref":"#/definitions/action"},
-                "resource": { "$ref": "catalog.structs.schema.json#/definitions/resource"}
+                "request_context": { "$ref": "#/definitions/request_context" },
+                "action": { "$ref": "#/definitions/action" },
+                "resource": { "$ref": "catalog.structs.schema.json#/definitions/resource" }
             },
             "required": ["action", "resource"]
         }
     },
     "properties": {
-        "request_context": { "$ref": "#/definitions/request_context"},
-        "action": { "$ref":"#/definitions/action"},
-        "governance_decision_request": { "$ref":"#/definitions/governance_decision_request"}
+        "request_context": { "$ref": "#/definitions/request_context" },
+        "action": { "$ref": "#/definitions/action" },
+        "governance_decision_request": { "$ref": "#/definitions/governance_decision_request" }
     },
     "additionalProperties": false
 }

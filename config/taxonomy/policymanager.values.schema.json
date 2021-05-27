@@ -4,7 +4,7 @@
     "title": "Policy Manager Values Taxonomy",
     "description": "Values owned by the policy manager.",
     "definitions": {
-        "intent":{
+        "intent": {
             "type": "string",
             "description": "The reason for which the data is to be used.",
             "enum": ["Marketing", "Customer Support", "Fraud Detection", "Customer Behavior Analysis"]
@@ -24,15 +24,15 @@
         },
         "action_type": {
             "type": "string",
-             "description": "The action to be taken on the data.  A mandatory object used by the M4D controller's logic",
+            "description": "The action to be taken on the data.  A mandatory object used by the M4D controller's logic",
             "enum": ["read", "write", "delete"]
         }
     },
     "properties": {
-        "intent": { "$ref": "#/definitions/intent"},
-        "role": { "$ref": "#/definitions/role"},
-        "request_context": { "$ref": "#/definitions/request_context"},
-        "action_type": { "$ref": "#/definitions/action_type"}
+        "intent": { "$ref": "#/definitions/intent" },
+        "role": { "$ref": "#/definitions/role" },
+        "request_context": { "$ref": "#/definitions/request_context" },
+        "action_type": { "$ref": "#/definitions/action_type" }
     },
     "additionalProperties": false
 }
