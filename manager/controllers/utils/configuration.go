@@ -15,8 +15,6 @@ import (
 const (
 	CatalogConnectorServiceAddressKey string = "CATALOG_CONNECTOR_URL"
 	VaultAddressKey                   string = "VAULT_ADDRESS"
-	VaultSecretKey                    string = "VAULT_TOKEN"
-	VaultTTLKey                       string = "VAULT_TTL"
 	VaultModulesRole                  string = "VAULT_MODULES_ROLE"
 )
 
@@ -39,16 +37,6 @@ func GetModulesRole() string {
 // which is used for managing data set credentials
 func GetVaultAddress() string {
 	return os.Getenv(VaultAddressKey)
-}
-
-// GetVaultToken returns the token this module uses to authenticate with vault
-func GetVaultToken() string {
-	return os.Getenv(VaultSecretKey)
-}
-
-// GetVaultAuthTTL returns the amount of time the authorization issued by vault is valid
-func GetVaultAuthTTL() string {
-	return os.Getenv(VaultTTLKey)
 }
 
 // GetDataCatalogServiceAddress returns the address where data catalog is running

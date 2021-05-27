@@ -12,7 +12,6 @@ import (
 	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster/local"
 	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster/razee"
 	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
-	"github.com/mesh-for-data/mesh-for-data/pkg/vault"
 
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/motion"
 
@@ -133,18 +132,11 @@ func main() {
 	}
 
 	if enableApplicationController {
-		// Initiate vault client
-		vaultConn, errVaultSetup := initVaultConnection()
-		if errVaultSetup != nil {
-			setupLog.Error(errVaultSetup, "Error setting up vault")
-			os.Exit(1)
-		}
-
 		// Initialize PolicyCompiler interface
 		policyCompiler := pc.NewPolicyCompiler()
 
 		// Initiate the M4DApplication Controller
-		applicationController, err := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultConn, policyCompiler, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
+		applicationController, err := app.NewM4DApplicationReconciler(mgr, "M4DApplication", policyCompiler, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
 		if err != nil {
 			setupLog.Error(err, "unable to create controller")
 			os.Exit(1)
@@ -184,16 +176,6 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
-}
-
-// init vault client
-// TODO: the vault client should be used to add roles for the modules.
-func initVaultConnection() (vault.Interface, error) {
-	vaultConn, err := vault.InitConnection(utils.GetVaultAddress(), utils.GetVaultToken())
-	if err != nil {
-		return vaultConn, err
-	}
-	return vaultConn, nil
 }
 
 // NewClusterManager decides based on the environment variables that are set which

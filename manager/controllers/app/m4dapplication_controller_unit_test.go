@@ -16,8 +16,6 @@ import (
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/mockup"
 	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
 
-	"github.com/mesh-for-data/mesh-for-data/pkg/vault"
-
 	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -44,12 +42,11 @@ func readObjectFromFile(f string, obj interface{}) error {
 func createTestM4DApplicationController(cl client.Client, s *runtime.Scheme) *M4DApplicationReconciler {
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
 	return &M4DApplicationReconciler{
-		Client:          cl,
-		Name:            "TestReconciler",
-		Log:             ctrl.Log.WithName("test-controller"),
-		Scheme:          s,
-		VaultConnection: vault.NewDummyConnection(),
-		PolicyCompiler:  &mockup.MockPolicyCompiler{},
+		Client:         cl,
+		Name:           "TestReconciler",
+		Log:            ctrl.Log.WithName("test-controller"),
+		Scheme:         s,
+		PolicyCompiler: &mockup.MockPolicyCompiler{},
 		ResourceInterface: &PlotterInterface{
 			Client: cl,
 		},
