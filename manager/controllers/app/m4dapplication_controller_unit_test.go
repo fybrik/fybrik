@@ -725,7 +725,7 @@ func TestPlotterUpdate(t *testing.T) {
 		NamespacedName: namespaced,
 	}
 
-	_, err := r.Reconcile(req)
+	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.Background(), req.NamespacedName, application)
@@ -746,7 +746,7 @@ func TestPlotterUpdate(t *testing.T) {
 	g.Expect(cl.Update(context.Background(), plotter)).NotTo(gomega.HaveOccurred())
 
 	// the new reconcile should update the application state
-	_, err = r.Reconcile(req)
+	_, err = r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 	err = cl.Get(context.Background(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
@@ -758,7 +758,7 @@ func TestPlotterUpdate(t *testing.T) {
 	g.Expect(cl.Update(context.Background(), plotter)).NotTo(gomega.HaveOccurred())
 
 	// the new reconcile should update the application state
-	_, err = r.Reconcile(req)
+	_, err = r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 	err = cl.Get(context.Background(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
@@ -807,7 +807,7 @@ func TestSyncWithPlotter(t *testing.T) {
 		NamespacedName: namespaced,
 	}
 
-	_, err := r.Reconcile(req)
+	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	newApp := &app.M4DApplication{}
