@@ -93,9 +93,7 @@ Detect the version of cert manager crd that is installed
 Error if CRD is not available
 */}}
 {{- define "m4d.certManagerApiVersion" -}}
-{{- if (.Capabilities.APIVersions.Has "cert-manager.io/v1alpha3") -}}
-cert-manager.io/v1alpha3
-{{- else if (.Capabilities.APIVersions.Has "cert-manager.io/v1alpha2") -}}
+{{- if (.Capabilities.APIVersions.Has "cert-manager.io/v1alpha2") -}}
 cert-manager.io/v1alpha2
 {{- else if (.Capabilities.APIVersions.Has "certmanager.k8s.io/v1alpha1") -}}
 certmanager.k8s.io/v1alpha1
