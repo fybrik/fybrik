@@ -114,7 +114,7 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 		},
 	}
 
-	res, err := r.Reconcile(req)
+	res, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	// Check the result of reconciliation to make sure it has the desired state.
@@ -209,7 +209,7 @@ func TestDenyOnRead(t *testing.T) {
 		NamespacedName: namespaced,
 	}
 
-	_, err := r.Reconcile(req)
+	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
@@ -259,7 +259,7 @@ func TestNoReadPath(t *testing.T) {
 		NamespacedName: namespaced,
 	}
 
-	_, err := r.Reconcile(req)
+	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
@@ -324,7 +324,7 @@ func TestWrongCopyModule(t *testing.T) {
 		NamespacedName: namespaced,
 	}
 
-	_, err := r.Reconcile(req)
+	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
@@ -381,7 +381,7 @@ func TestActionSupport(t *testing.T) {
 		NamespacedName: namespaced,
 	}
 
-	_, err := r.Reconcile(req)
+	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
@@ -454,7 +454,7 @@ func TestMultipleDatasets(t *testing.T) {
 		NamespacedName: namespaced,
 	}
 
-	_, err := r.Reconcile(req)
+	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
@@ -536,7 +536,7 @@ func TestMultipleRegions(t *testing.T) {
 		NamespacedName: namespaced,
 	}
 
-	_, err := r.Reconcile(req)
+	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
@@ -604,7 +604,7 @@ func TestCopyData(t *testing.T) {
 		NamespacedName: namespaced,
 	}
 
-	_, err := r.Reconcile(req)
+	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
@@ -673,7 +673,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 		NamespacedName: namespaced,
 	}
 
-	_, err := r.Reconcile(req)
+	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
@@ -725,7 +725,7 @@ func TestPlotterUpdate(t *testing.T) {
 		NamespacedName: namespaced,
 	}
 
-	_, err := r.Reconcile(req)
+	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.Background(), req.NamespacedName, application)
@@ -746,7 +746,7 @@ func TestPlotterUpdate(t *testing.T) {
 	g.Expect(cl.Update(context.Background(), plotter)).NotTo(gomega.HaveOccurred())
 
 	// the new reconcile should update the application state
-	_, err = r.Reconcile(req)
+	_, err = r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 	err = cl.Get(context.Background(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
@@ -758,7 +758,7 @@ func TestPlotterUpdate(t *testing.T) {
 	g.Expect(cl.Update(context.Background(), plotter)).NotTo(gomega.HaveOccurred())
 
 	// the new reconcile should update the application state
-	_, err = r.Reconcile(req)
+	_, err = r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 	err = cl.Get(context.Background(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
@@ -807,7 +807,7 @@ func TestSyncWithPlotter(t *testing.T) {
 		NamespacedName: namespaced,
 	}
 
-	_, err := r.Reconcile(req)
+	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	newApp := &app.M4DApplication{}

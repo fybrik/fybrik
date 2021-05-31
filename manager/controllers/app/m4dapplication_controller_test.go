@@ -31,10 +31,10 @@ var _ = Describe("M4DApplication Controller", func() {
 		It("Test end-to-end for M4DApplication", func() {
 			module := &app.M4DModule{}
 			Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
-			moduleKey, _ := client.ObjectKeyFromObject(module)
+			moduleKey := client.ObjectKeyFromObject(module)
 			application := &app.M4DApplication{}
 			Expect(readObjectFromFile("../../testdata/e2e/m4dapplication.yaml", application)).ToNot(HaveOccurred())
-			applicationKey, _ := client.ObjectKeyFromObject(application)
+			applicationKey := client.ObjectKeyFromObject(application)
 
 			// Create M4DApplication and M4DModule
 			Expect(k8sClient.Create(context.Background(), module)).Should(Succeed())

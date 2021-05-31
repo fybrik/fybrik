@@ -143,12 +143,9 @@ func getAsset(ctx context.Context, client kclient.Client, namespace string, name
 	object.SetNamespace(namespace)
 	object.SetName(name)
 
-	objectKey, err := kclient.ObjectKeyFromObject(object)
-	if err != nil {
-		return nil, err
-	}
+	objectKey := kclient.ObjectKeyFromObject(object)
 
-	err = client.Get(ctx, objectKey, object)
+	err := client.Get(ctx, objectKey, object)
 	if err != nil {
 		return nil, err
 	}

@@ -11,7 +11,7 @@ metadata:
     app.m4d.ibm.com/appName: notebook
 spec:
   blueprints:
-    kind-kind:
+    thegreendragon:
       entrypoint: "MyApp"
       flow:
         name: notebook
@@ -48,7 +48,6 @@ spec:
                 format: table
           name: implicit-copy-batch-latest
           template: implicit-copy-batch-latest
-      selector: {}
       templates:
       - kind: M4DModule
         name: implicit-copy-batch-latest

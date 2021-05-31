@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 
+	corev1 "k8s.io/api/core/v1"
+
 	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
 	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster/local"
 	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster/razee"
@@ -17,7 +19,6 @@ import (
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/motion"
 
 	kruntime "k8s.io/apimachinery/pkg/runtime"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -30,6 +31,8 @@ import (
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
 	"github.com/mesh-for-data/mesh-for-data/pkg/helm"
 	pc "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/policy-compiler"
+	kapps "k8s.io/api/apps/v1"
+	kbatch "k8s.io/api/batch/v1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -39,11 +42,12 @@ var (
 )
 
 func init() {
-	_ = clientgoscheme.AddToScheme(scheme)
-
 	_ = motionv1.AddToScheme(scheme)
 	_ = appv1.AddToScheme(scheme)
 	_ = comv1alpha1.SchemeBuilder.AddToScheme(scheme)
+	_ = corev1.AddToScheme(scheme)
+	_ = kbatch.AddToScheme(scheme)
+	_ = kapps.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -62,8 +66,8 @@ func main() {
 	var enableAllControllers bool
 	var namespace string
 	address := utils.ListeningAddress(8085)
-	flag.StringVar(&metricsAddr, "metrics-addr", address, "The address the metric endpoint binds to.")
-	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
+	flag.StringVar(&metricsAddr, "metrics-bind-addr", address, "The address the metric endpoint binds to.")
+	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
 	flag.BoolVar(&enableApplicationController, "enable-application-controller", false,
 		"Enable application controller of the manager. This manages CRDs of type M4DApplication.")

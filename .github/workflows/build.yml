@@ -31,8 +31,8 @@ jobs:
           ~/.m2/repository
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: ${{ runner.os }}-go
+        key: ${{ runner.os }}-t-${{ hashFiles('hack/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/tools.mk') }}-go
     - name: Verify
       run: make verify
 

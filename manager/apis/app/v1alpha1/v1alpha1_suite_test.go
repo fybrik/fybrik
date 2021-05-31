@@ -20,7 +20,8 @@ var c client.Client
 
 func TestMain(m *testing.M) {
 	t := &envtest.Environment{
-		CRDDirectoryPaths: []string{filepath.Join("..", "..", "..", "..", "charts", "m4d-crd", "templates")},
+		CRDDirectoryPaths:     []string{filepath.Join("..", "..", "..", "..", "charts", "m4d-crd", "templates")},
+		ErrorIfCRDPathMissing: true,
 	}
 
 	err := SchemeBuilder.AddToScheme(scheme.Scheme)

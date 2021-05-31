@@ -60,6 +60,7 @@ var _ = BeforeSuite(func(done Done) {
 		CRDDirectoryPaths: []string{
 			filepath.Join("..", "..", "..", "charts", "m4d-crd", "templates"),
 		},
+		ErrorIfCRDPathMissing: true,
 	}
 
 	utils.DefaultTestConfiguration(GinkgoT())

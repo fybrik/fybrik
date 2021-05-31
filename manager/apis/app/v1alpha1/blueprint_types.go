@@ -154,6 +154,7 @@ type BlueprintStatus struct {
 
 	// Releases map each release to the observed generation of the blueprint containing this release.
 	// At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.
+	// +optional
 	Releases map[string]int64 `json:"releases,omitempty"`
 }
 
@@ -174,9 +175,14 @@ type Blueprint struct {
 
 // MetaBlueprint defines blueprint metadata (name, namespace) and status
 type MetaBlueprint struct {
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+	// +required
+	Name string `json:"name"`
 
-	Status BlueprintStatus `json:"status,omitempty"`
+	// +required
+	Namespace string `json:"namespace"`
+
+	// +required
+	Status BlueprintStatus `json:"status"`
 }
 
 // +kubebuilder:object:root=true
@@ -195,8 +201,9 @@ func init() {
 // CreateMetaBlueprint creates MetaBlueprint structure of the given blueprint
 func CreateMetaBlueprint(blueprint *Blueprint) MetaBlueprint {
 	metaBlueprint := MetaBlueprint{
-		ObjectMeta: blueprint.ObjectMeta,
-		Status:     blueprint.Status,
+		Name:      blueprint.GetName(),
+		Namespace: blueprint.GetNamespace(),
+		Status:    blueprint.Status,
 	}
 	return metaBlueprint
 }
@@ -204,8 +211,9 @@ func CreateMetaBlueprint(blueprint *Blueprint) MetaBlueprint {
 // CreateMetaBlueprintWithoutState creates the MetaBlueprint structure with an empty state
 func CreateMetaBlueprintWithoutState(blueprint *Blueprint) MetaBlueprint {
 	metaBlueprint := MetaBlueprint{
-		ObjectMeta: blueprint.ObjectMeta,
-		Status:     BlueprintStatus{},
+		Name:      blueprint.GetName(),
+		Namespace: blueprint.GetNamespace(),
+		Status:    BlueprintStatus{},
 	}
 	return metaBlueprint
 }
