@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/render"
-	datauser "github.com/ibm/the-mesh-for-data/samples/gui/server/datauser"
+	datauser "github.com/mesh-for-data/mesh-for-data/samples/gui/server/datauser"
 )
 
 // Routes are the REST endpoints for CRUD operations on M4DApplication CRDS

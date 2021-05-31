@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"log"
 
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
 )
 
 // PolicyCompiler iassumed to have main policies-manager connector and may have or not extension policies-manager

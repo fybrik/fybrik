@@ -6,8 +6,8 @@ package policycompilerbl
 import (
 	"testing"
 
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
-	tu "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/testutil"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	tu "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/testutil"
 )
 
 var usedPolicy1 = &pb.Policy{Description: "policy 1 description"}

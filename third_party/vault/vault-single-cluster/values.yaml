@@ -9,7 +9,7 @@ server:
       readOnly: false
   extraInitContainers:
     - name: kubesecrets-plugin
-      image: ghcr.io/the-mesh-for-data/vault-plugin-secrets-kubernetes-reader:latest
+      image: ghcr.io/mesh-for-data/vault-plugin-secrets-kubernetes-reader:latest
       command: [/bin/sh, -ec]
       args:
         - cp /vault-plugin-secrets-kubernetes-reader /usr/local/libexec/vault/vault-plugin-secrets-kubernetes-reader
@@ -34,7 +34,9 @@ server:
       # configuring kubernetes auth method and use it later to create roles.
       vault auth enable kubernetes
       vault write auth/kubernetes/config kubernetes_host="https://kubernetes.default.svc:443"
-      # enable secret engine
+      # register and enable secret engine
+      SHA256=$(sha256sum /usr/local/libexec/vault/vault-plugin-secrets-kubernetes-reader | cut -d ' ' -f1)
+      vault plugin register -sha256=$SHA256 secret vault-plugin-secrets-kubernetes-reader
       vault secrets enable -path=kubernetes-secrets vault-plugin-secrets-kubernetes-reader
       # create policy to access secrets
       # NOTE: m4d/dataset-creds/ secret engine is enabled by the manager and is used temporarily

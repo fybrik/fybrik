@@ -1,8 +1,8 @@
 package utils
 
 import (
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	motionv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/motion/v1alpha1"
 	"github.com/onsi/gomega"
 	kbatch "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"

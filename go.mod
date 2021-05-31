@@ -1,4 +1,4 @@
-module github.com/ibm/the-mesh-for-data
+module github.com/mesh-for-data/mesh-for-data
 
 go 1.13
 
