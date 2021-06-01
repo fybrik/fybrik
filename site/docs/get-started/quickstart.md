@@ -70,7 +70,7 @@ Run the following to install vault and the plugin in development mode:
     git clone https://github.com/mesh-for-data/mesh-for-data.git
     cd mesh-for-data
     helm install m4d-crd charts/m4d-crd -n m4d-system --wait
-    helm install m4d charts/m4d -n m4d-system --wait
+    helm install m4d charts/m4d --set global.tag=latest -n m4d-system --wait
     ```
 
 The control plane includes a `manager` service that connects to a data catalog and to a policy manager. 
