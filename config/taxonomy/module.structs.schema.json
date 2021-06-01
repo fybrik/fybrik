@@ -10,7 +10,7 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "description": "Represents the action type"
+                    "description": "Represents the unique action type taken on a list of columns"
                 },
                 "columns": {
                     "type": "array",
@@ -19,20 +19,8 @@
                         "type": "string"
                     }
                 }
-            },
-            "oneOf": [{
-                    "properties": {
-                        "name": { "$ref": "module.values.schema.json#/definitions/action_name_columns" }
-                    },
-                    "required": ["columns"]
-                },
-                {
-                    "properties": {
-                        "name": { "$ref": "module.values.schema.json#/definitions/action_name_dataset" }
-                    }
-                }
-            ]
-        }
+            }
+	}
     },
     "properties": {
         "action": { "$ref": "#/definitions/action" }

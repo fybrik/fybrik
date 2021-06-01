@@ -1,8 +1,8 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "$id": "opa.schema.json",
-    "title": "OPA Data Response Taxonomy",
-    "description": "This taxonomy defines the structure of response received from Policy Agent policy engine with enforcements.",
+    "$id": "policymanager_response.schema.json",
+    "title": "Policymanager Data Response Taxonomy",
+    "description": "This taxonomy defines the structure of response received from policymanager with enforcements.",
     "type": "object",
     "properties": {
         "decision_id": {
@@ -14,13 +14,13 @@
             "description": "While showing the result, action contains the action type and the associated entity on which action has been taken.",
             "items": {
                 "properties": {
-                    "action": { "$ref": "module.structs.schema.json#/definitions/action" },
-                    "used_policy": {
+                    "action": { "$ref": "module.values.schema.json#/definitions/action" },
+                    "policy": {
                         "description": "The list of policies on which the decision was based.",
                         "type": "string"
                     }
                 },
-                "required": ["action", "used_policy"]
+                "required": ["action", "policy"]
             }
         }
     },

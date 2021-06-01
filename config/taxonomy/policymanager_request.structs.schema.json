@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "$id": "opa.schema.json",
+    "$id": "policymanager_request.structs.schema.json",
     "title": "OPA Data Request Taxonomy",
     "description": "This taxonomy defines the structure sent to Open Policy Agent policy engine, which determines whether or how the data requested may be used by the requester.",
     "type": "object",

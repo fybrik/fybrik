@@ -14,22 +14,40 @@
             "description": "The mechanism via which the data will be accessed.",
             "enum": ["s3", "kafka", "db2-jdbc", "m4d-arrow-flight"]
         },
-        "action_name_columns": {
+        "action_columns": {
             "type": "string",
             "description": "Type of actions possible on columns",
             "enum": ["RemoveColumn", "RedactColumn", "EncryptColumn", "PeriodicBlackout"]
         },
-        "action_name_dataset": {
+        "action_dataset": {
             "type": "string",
             "description": "Type of actions possible on dataset",
             "enum": ["DenyAccess", "DenyWriting"]
+        },
+        "action": {
+            "action_struct":{"$ref": "module.structs.schema.json#/definitions/action"},
+            "oneOf": [
+                {
+                    "properties": {
+                        "name": {"$ref": "#/definitions/action_columns"} 
+		    },
+		    "required": ["columns"]
+                },
+                {
+                    "properties": {
+                        "name": {"$ref": "#/definitions/action_dataset"} 		
+                    }
+                }
+			
+            ]
         }
     },
     "properties": {
         "module_type": { "$ref": "#/definitions/module_type" },
         "protocol": { "$ref": "#/definitions/protocol" },
-        "action_name_columns": { "$ref": "#/definitions/action_name_columns" },
-        "action_name_dataset": { "$ref": "#/definitions/action_name_dataset" }
+        "action_columns": { "$ref": "#/definitions/action_columns" },
+        "action_dataset": { "$ref": "#/definitions/action_dataset" },
+	"action": { "$ref": "#/definitions/action" }
     },
     "additionalProperties": false
 }
