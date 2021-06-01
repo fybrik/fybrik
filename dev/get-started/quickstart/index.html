@@ -1023,7 +1023,7 @@ For example:
 <div class="highlight"><pre><span></span><code>git clone https://github.com/mesh-for-data/mesh-for-data.git
 <span class="nb">cd</span> mesh-for-data
 helm install m4d-crd charts/m4d-crd -n m4d-system --wait
-helm install m4d charts/m4d -n m4d-system --wait
+helm install m4d charts/m4d --set global.tag<span class="o">=</span>latest -n m4d-system --wait
 </code></pre></div></p>
 </details>
 <p>The control plane includes a <code>manager</code> service that connects to a data catalog and to a policy manager. 
