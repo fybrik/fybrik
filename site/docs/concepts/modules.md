@@ -32,7 +32,7 @@ To make the control plane aware of the module so that it can be included in appr
 
 For example, the following registers the `arrow-flight-module`:
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/the-mesh-for-data-flight-module/master/module.yaml -n m4d-system
+kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/arrow-flight-module/master/module.yaml -n m4d-system
 ```
 
 ## When is a module used?
@@ -59,7 +59,7 @@ The table below lists the currently available modules:
 
 Name | Description | M4DModule 
 ---  | ---         | ---      
-[arrow-flight-module](https://github.com/mesh-for-data/the-mesh-for-data-flight-module) | reading datasets while performing data transformations | https://raw.githubusercontent.com/mesh-for-data/the-mesh-for-data-flight-module/master/module.yaml
+[arrow-flight-module](https://github.com/mesh-for-data/arrow-flight-module) | reading datasets while performing data transformations | https://raw.githubusercontent.com/mesh-for-data/arrow-flight-module/master/module.yaml
 
 <!-- implicit-copy-module is not listed because it's still only available as part of the project tests -->
 

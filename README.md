@@ -16,7 +16,7 @@ Mesh for Data is composed of the following repositiores
 
   - [manager](manager) This directory contains the code for the main operator that is responsible for the control plane of Mesh for Data.
 
-- [mesh-for-data/the-mesh-for-data-flight-module](https://github.com/mesh-for-data/the-mesh-for-data-flight-module). This is the code repository for read/write data access module based on Arrow/Flight.
+- [mesh-for-data/arrow-flight-module](https://github.com/mesh-for-data/arrow-flight-module). This is the code repository for read/write data access module based on Arrow/Flight.
 
 - [mesh-for-data/mesh-for-data-mover](https://github.com/mesh-for-data/mesh-for-data-mover). This is the code respository for an implicit copy module based on Apache SparkSQL.
 
