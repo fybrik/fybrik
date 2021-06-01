@@ -56,8 +56,8 @@ jobs:
           ~/.m2/repository
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-ut-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: ${{ runner.os }}-ut-m2
+        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Test
       run: make test
 
@@ -84,8 +84,8 @@ jobs:
           ~/.m2/repository
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-it-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: ${{ runner.os }}-it-m2
+        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Install tools
       run: make install-tools
     - name: Integration tests
