@@ -42,7 +42,6 @@ type M4DApplicationReconciler struct {
 	Name              string
 	Log               logr.Logger
 	Scheme            *runtime.Scheme
-	VaultConnection   vault.Interface
 	PolicyCompiler    pc.IPolicyCompiler
 	ResourceInterface ContextInterface
 	ClusterManager    multicluster.ClusterLister
@@ -311,7 +310,6 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		Owner:              objectKey,
 		PolicyCompiler:     r.PolicyCompiler,
 		Provision:          r.Provision,
-		VaultConnection:    r.VaultConnection,
 		ProvisionedStorage: make(map[string]NewAssetInfo),
 	}
 	instances := make([]modules.ModuleInstanceSpec, 0)
@@ -421,8 +419,8 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 }
 
 // NewM4DApplicationReconciler creates a new reconciler for M4DApplications
-func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultConnection vault.Interface,
-	policyCompiler pc.IPolicyCompiler, cm multicluster.ClusterLister, provision storage.ProvisionInterface) (*M4DApplicationReconciler, error) {
+func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, policyCompiler pc.IPolicyCompiler,
+	cm multicluster.ClusterLister, provision storage.ProvisionInterface) (*M4DApplicationReconciler, error) {
 	catalog, err := NewGrpcDataCatalog()
 	if err != nil {
 		return nil, err
@@ -432,7 +430,6 @@ func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, vaultConnection 
 		Name:              name,
 		Log:               ctrl.Log.WithName("controllers").WithName(name),
 		Scheme:            mgr.GetScheme(),
-		VaultConnection:   vaultConnection,
 		PolicyCompiler:    policyCompiler,
 		ResourceInterface: NewPlotterInterface(mgr.GetClient()),
 		ClusterManager:    cm,
