@@ -63,6 +63,10 @@ var _ = Describe("M4DApplication Controller", func() {
 			// The plotter has to be created
 			plotter := &apiv1alpha1.Plotter{}
 			plotterObjectKey := client.ObjectKey{Namespace: application.Status.Generated.Namespace, Name: application.Status.Generated.Name}
+			Eventually(func() error {
+				return k8sClient.Get(context.Background(), plotterObjectKey, plotter)
+			}, timeout, interval).Should(Succeed())
+
 			By("Expect plotter to be ready at some point")
 			Eventually(func() bool {
 				Expect(k8sClient.Get(context.Background(), plotterObjectKey, plotter)).To(Succeed())
