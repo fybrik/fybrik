@@ -24,7 +24,7 @@ func (r *StreamTransfer) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
-// +kubebuilder:webhook:path=/mutate-motion-m4d-ibm-com-v1alpha1-streamtransfer,mutating=true,failurePolicy=fail,groups=motion.m4d.ibm.com,resources=streamtransfers,verbs=create;update,versions=v1alpha1,name=mstreamtransfer.kb.io
+// +kubebuilder:webhook:admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/mutate-motion-m4d-ibm-com-v1alpha1-streamtransfer,mutating=true,failurePolicy=fail,groups=motion.m4d.ibm.com,resources=streamtransfers,verbs=create;update,versions=v1alpha1,name=mstreamtransfer.kb.io
 
 var _ webhook.Defaulter = &StreamTransfer{}
 
@@ -78,7 +78,7 @@ func (r *StreamTransfer) Default() {
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-// +kubebuilder:webhook:verbs=create;update,path=/validate-motion-m4d-ibm-com-v1alpha1-streamtransfer,mutating=false,failurePolicy=fail,groups=motion.m4d.ibm.com,resources=streamtransfers,versions=v1alpha1,name=vstreamtransfer.kb.io
+// +kubebuilder:webhook:verbs=create;update,admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/validate-motion-m4d-ibm-com-v1alpha1-streamtransfer,mutating=false,failurePolicy=fail,groups=motion.m4d.ibm.com,resources=streamtransfers,versions=v1alpha1,name=vstreamtransfer.kb.io
 
 var _ webhook.Validator = &StreamTransfer{}
 

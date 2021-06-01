@@ -40,8 +40,7 @@ type BlueprintReconciler struct {
 
 // Reconcile receives a Blueprint CRD
 //nolint:dupl
-func (r *BlueprintReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
+func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("blueprint", req.NamespacedName)
 	var err error
 

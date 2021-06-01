@@ -60,8 +60,8 @@ spec:
             {{- if .Values.manager.overrideArgs }}
             {{- toYaml .Values.manager.overrideArgs | nindent 12 }}
             {{- else }}
-            - "--metrics-addr=127.0.0.1:8080"
-            - "--enable-leader-election"
+            - "--metrics-bind-addr=127.0.0.1:8080"
+            - "--leader-elect"
             {{- if .Values.coordinator.enabled}}
             - "--enable-application-controller"
             - "--enable-plotter-controller"
@@ -77,10 +77,6 @@ spec:
             {{- if include "m4d.isRazeeEnabled" . }}
             - secretRef:
                 name: razee-credentials
-            {{- end }}
-            {{- if .Values.coordinator.enabled}}
-            - secretRef:
-                name: vault-credentials
             {{- end }}
           env:
             - name: ENABLE_WEBHOOKS

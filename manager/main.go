@@ -8,16 +8,16 @@ import (
 	"os"
 	"strings"
 
+	corev1 "k8s.io/api/core/v1"
+
 	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
 	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster/local"
 	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster/razee"
 	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
-	"github.com/mesh-for-data/mesh-for-data/pkg/vault"
 
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/motion"
 
 	kruntime "k8s.io/apimachinery/pkg/runtime"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -30,6 +30,8 @@ import (
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
 	"github.com/mesh-for-data/mesh-for-data/pkg/helm"
 	pc "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/policy-compiler"
+	kapps "k8s.io/api/apps/v1"
+	kbatch "k8s.io/api/batch/v1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -39,11 +41,12 @@ var (
 )
 
 func init() {
-	_ = clientgoscheme.AddToScheme(scheme)
-
 	_ = motionv1.AddToScheme(scheme)
 	_ = appv1.AddToScheme(scheme)
 	_ = comv1alpha1.SchemeBuilder.AddToScheme(scheme)
+	_ = corev1.AddToScheme(scheme)
+	_ = kbatch.AddToScheme(scheme)
+	_ = kapps.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -62,8 +65,8 @@ func main() {
 	var enableAllControllers bool
 	var namespace string
 	address := utils.ListeningAddress(8085)
-	flag.StringVar(&metricsAddr, "metrics-addr", address, "The address the metric endpoint binds to.")
-	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
+	flag.StringVar(&metricsAddr, "metrics-bind-addr", address, "The address the metric endpoint binds to.")
+	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
 	flag.BoolVar(&enableApplicationController, "enable-application-controller", false,
 		"Enable application controller of the manager. This manages CRDs of type M4DApplication.")
@@ -133,18 +136,11 @@ func main() {
 	}
 
 	if enableApplicationController {
-		// Initiate vault client
-		vaultConn, errVaultSetup := initVaultConnection()
-		if errVaultSetup != nil {
-			setupLog.Error(errVaultSetup, "Error setting up vault")
-			os.Exit(1)
-		}
-
 		// Initialize PolicyCompiler interface
 		policyCompiler := pc.NewPolicyCompiler()
 
 		// Initiate the M4DApplication Controller
-		applicationController, err := app.NewM4DApplicationReconciler(mgr, "M4DApplication", vaultConn, policyCompiler, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
+		applicationController, err := app.NewM4DApplicationReconciler(mgr, "M4DApplication", policyCompiler, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
 		if err != nil {
 			setupLog.Error(err, "unable to create controller")
 			os.Exit(1)
@@ -184,16 +180,6 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
-}
-
-// init vault client
-// TODO: the vault client should be used to add roles for the modules.
-func initVaultConnection() (vault.Interface, error) {
-	vaultConn, err := vault.InitConnection(utils.GetVaultAddress(), utils.GetVaultToken())
-	if err != nil {
-		return vaultConn, err
-	}
-	return vaultConn, nil
 }
 
 // NewClusterManager decides based on the environment variables that are set which

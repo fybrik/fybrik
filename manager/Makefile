@@ -37,6 +37,7 @@ manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
 	$(TOOLBIN)/controller-gen crd:trivialVersions=true output:crd:artifacts:config=$(ROOT_DIR)/charts/m4d-crd/templates/ paths=./apis/...
 	$(TOOLBIN)/controller-gen webhook paths=./apis/... output:stdout | \
 		$(TOOLBIN)/yq eval '.metadata.annotations."cert-manager.io/inject-ca-from" |= "{{ .Release.Namespace }}/serving-cert"' - | \
+		$(TOOLBIN)/yq eval '.metadata.annotations."certmanager.k8s.io/inject-ca-from" |= "{{ .Release.Namespace }}/serving-cert"' - | \
 		$(TOOLBIN)/yq eval '(.metadata.name | select(. == "mutating-webhook-configuration")) = "{{ .Release.Namespace }}-mutating-webhook"' - | \
 		$(TOOLBIN)/yq eval '(.metadata.name | select(. == "validating-webhook-configuration")) = "{{ .Release.Namespace }}-validating-webhook"' - | \
 		$(TOOLBIN)/yq eval '(.webhooks.[].clientConfig.service.namespace) = "{{ .Release.Namespace }}"' - > $(ROOT_DIR)/charts/m4d/files/webhook-configs.yaml

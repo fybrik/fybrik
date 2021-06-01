@@ -10,7 +10,6 @@ import (
 	"emperror.dev/errors"
 	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 )
@@ -34,7 +33,6 @@ func GetCurrentNamespace() string {
 // K8sInit initializes a client to communicate with kubernetes
 func K8sInit() (*K8sClient, error) {
 	newScheme := runtime.NewScheme()
-	_ = clientgoscheme.AddToScheme(newScheme)
 	_ = app.AddToScheme(newScheme)
 
 	client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: newScheme})

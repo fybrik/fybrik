@@ -63,7 +63,7 @@ func TestBlueprintReconcile(t *testing.T) {
 		Scheme: s,
 		Helmer: helm.NewEmptyFake(),
 	}
-	ns, _ := client.ObjectKeyFromObject(blueprint)
+	ns := client.ObjectKeyFromObject(blueprint)
 
 	// Mock request to simulate Reconcile() being called on an event for a
 	// watched resource .
@@ -71,7 +71,7 @@ func TestBlueprintReconcile(t *testing.T) {
 		NamespacedName: ns,
 	}
 
-	res, err := r.Reconcile(req)
+	res, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	// Check the result of reconciliation to make sure it has the desired state.
