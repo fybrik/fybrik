@@ -25,7 +25,6 @@ func TestCredentialManagerInterface(t *testing.T) {
 	vaultToken := "dummyToken"
 	// TODO add environment variables to test against a real vault instance
 	os.Setenv("RUN_WITHOUT_VAULT", "1")
-	t.Logf("Token = " + vaultToken)
 	conn, err := InitConnection(utils.GetVaultAddress(), vaultToken)
 	assert.Nil(t, err)
 	Log(t, "init vault", err)
