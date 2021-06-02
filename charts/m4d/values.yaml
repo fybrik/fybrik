@@ -65,7 +65,7 @@ coordinator:
   # Configure the vault instance to be used by the coordinator manager
   vault:
     # Set to the Vault address. 
-    address: "http://vault.m4d-system:8200"
+    address: "http://vault.{{ .Release.Namespace }}:8200"
     # Login method to Vault
     login:
       # Token authentication

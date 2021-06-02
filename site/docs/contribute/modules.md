@@ -41,7 +41,7 @@ Because the chart is installed by the control plane, the input `values` to the c
 
 If the module workload needs to return information to the user, that information should be written to the `NOTES.txt` of the helm chart.
 
-For a full example see the [Arrow Flight Module chart](https://github.com/mesh-for-data/the-mesh-for-data-flight-module/tree/cd168bb6cdf666c2ec1df960395c0dc1c8feeaa9/helm/afm).
+For a full example see the [Arrow Flight Module chart](https://github.com/mesh-for-data/arrow-flight-module/tree/cd168bb6cdf666c2ec1df960395c0dc1c8feeaa9/helm/afm).
 
 ### Publishing the Helm Chart
 
@@ -196,7 +196,7 @@ capabilities:
 The following are examples of YAMLs from fully implemented modules:
 
 * An example YAML for a module that [copies from db2 to s3](https://github.com/mesh-for-data/mesh-for-data/blob/master/manager/testdata/e2e/module-implicit-copy-db2wh-to-s3.yaml) and includes transformation actions 
-* And an example [arrow flight read module](https://github.com/mesh-for-data/the-mesh-for-data-flight-module/blob/master/module.yaml) YAML, also with transformation support
+* And an example [arrow flight read module](https://github.com/mesh-for-data/arrow-flight-module/blob/master/module.yaml) YAML, also with transformation support
 
 ## Test
 
