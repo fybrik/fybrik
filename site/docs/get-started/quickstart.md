@@ -41,6 +41,7 @@ Run the following to install vault and the plugin in development mode:
     helm repo update
     helm install vault hashicorp/vault --version 0.9.1 --create-namespace -n m4d-system \
         --set "server.dev.enabled=true" \
+        --set "injector.enabled=false" \
         --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.1.0/third_party/vault/vault-single-cluster/values.yaml \
         --wait --timeout 120s
     kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.1.0/third_party/vault/vault-single-cluster/vault-rbac.yaml -n m4d-system
@@ -53,6 +54,7 @@ Run the following to install vault and the plugin in development mode:
     helm repo update
     helm install vault hashicorp/vault --version 0.9.1 --create-namespace -n m4d-system \
         --set "global.openshift=true" \
+        --set "injector.enabled=false" \
         --set "server.dev.enabled=true" \
         --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.1.0/third_party/vault/vault-single-cluster/values.yaml \
         --wait --timeout 120s
