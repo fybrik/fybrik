@@ -88,8 +88,8 @@ helm install m4d m4d-charts/m4d -n m4d-system --wait
 
 [Modules](../concepts/modules.md) are plugins that the control plane deploys whenever required. 
 
-Install the [arrow flight module](https://github.com/mesh-for-data/the-mesh-for-data-flight-module):
+Install the [arrow flight module](https://github.com/mesh-for-data/arrow-flight-module):
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/the-mesh-for-data-flight-module/master/module.yaml -n m4d-system
+kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/arrow-flight-module/master/module.yaml -n m4d-system
 ```
