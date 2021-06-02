@@ -9,7 +9,6 @@ metadata:
 spec:
   chart:
     name: localhost:5000/m4d-system/m4d-template:0.1.0
-  type: service
   flows:
     - read
   capabilities:

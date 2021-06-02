@@ -4,7 +4,7 @@
 package mockup
 
 import (
-	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
+	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
 )
 
 // ClusterLister is a mockup cluster manager

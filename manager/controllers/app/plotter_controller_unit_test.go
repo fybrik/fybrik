@@ -8,10 +8,10 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
 
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/ibm/the-mesh-for-data/pkg/multicluster/dummy"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster/dummy"
 	"github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -74,7 +74,7 @@ func TestPlotterController(t *testing.T) {
 			Namespace: namespace,
 		},
 	}
-	res, err := r.Reconcile(req)
+	res, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	// Check the result of reconciliation to make sure it has the desired state.
@@ -84,16 +84,19 @@ func TestPlotterController(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, plotter)
 	g.Expect(err).To(gomega.BeNil(), "Can fetch plotter")
 
-	g.Expect(plotter.Status.Blueprints).To(gomega.HaveKey("kind-kind"))
+	g.Expect(plotter.Status.Blueprints).To(gomega.HaveKey("thegreendragon"))
+	blueprintMeta := plotter.Status.Blueprints["thegreendragon"]
+	g.Expect(blueprintMeta.Name).To(gomega.Equal(plotter.Name))
+	g.Expect(blueprintMeta.Namespace).To(gomega.Equal(BlueprintNamespace))
 
 	// Simulate that blueprint changes state to Ready=true
-	dummyManager.DeployedBlueprints["kind-kind"].Status.ObservedState.Ready = true
-	dummyManager.DeployedBlueprints["kind-kind"].Status.ObservedState.DataAccessInstructions = "nop"
+	dummyManager.DeployedBlueprints["thegreendragon"].Status.ObservedState.Ready = true
+	dummyManager.DeployedBlueprints["thegreendragon"].Status.ObservedState.DataAccessInstructions = "nop"
 
-	deployedBp := dummyManager.DeployedBlueprints["kind-kind"]
+	deployedBp := dummyManager.DeployedBlueprints["thegreendragon"]
 	g.Expect(deployedBp.Labels[app.ApplicationNamespaceLabel]).To(gomega.Equal("default"))
 	g.Expect(deployedBp.Labels[app.ApplicationNameLabel]).To(gomega.Equal("notebook"))
-	res, err = r.Reconcile(req)
+	res, err = r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	// Check the result of reconciliation to make sure it has the desired state.

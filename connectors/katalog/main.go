@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ibm/the-mesh-for-data/connectors/katalog/pkg/connector"
+	"github.com/mesh-for-data/mesh-for-data/connectors/katalog/pkg/connector"
 )
 
 // RootCmd defines the root cli command

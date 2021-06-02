@@ -9,8 +9,8 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	apiv1alpha1 "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
+	apiv1alpha1 "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,10 +31,10 @@ var _ = Describe("M4DApplication Controller", func() {
 		It("Test end-to-end for M4DApplication", func() {
 			module := &app.M4DModule{}
 			Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
-			moduleKey, _ := client.ObjectKeyFromObject(module)
+			moduleKey := client.ObjectKeyFromObject(module)
 			application := &app.M4DApplication{}
 			Expect(readObjectFromFile("../../testdata/e2e/m4dapplication.yaml", application)).ToNot(HaveOccurred())
-			applicationKey, _ := client.ObjectKeyFromObject(application)
+			applicationKey := client.ObjectKeyFromObject(application)
 
 			// Create M4DApplication and M4DModule
 			Expect(k8sClient.Create(context.Background(), module)).Should(Succeed())
@@ -63,6 +63,10 @@ var _ = Describe("M4DApplication Controller", func() {
 			// The plotter has to be created
 			plotter := &apiv1alpha1.Plotter{}
 			plotterObjectKey := client.ObjectKey{Namespace: application.Status.Generated.Namespace, Name: application.Status.Generated.Name}
+			Eventually(func() error {
+				return k8sClient.Get(context.Background(), plotterObjectKey, plotter)
+			}, timeout, interval).Should(Succeed())
+
 			By("Expect plotter to be ready at some point")
 			Eventually(func() bool {
 				Expect(k8sClient.Get(context.Background(), plotterObjectKey, plotter)).To(Succeed())

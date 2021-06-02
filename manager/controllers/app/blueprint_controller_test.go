@@ -8,11 +8,11 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
-	"github.com/ibm/the-mesh-for-data/pkg/helm"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	"github.com/mesh-for-data/mesh-for-data/pkg/helm"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -63,7 +63,7 @@ func TestBlueprintReconcile(t *testing.T) {
 		Scheme: s,
 		Helmer: helm.NewEmptyFake(),
 	}
-	ns, _ := client.ObjectKeyFromObject(blueprint)
+	ns := client.ObjectKeyFromObject(blueprint)
 
 	// Mock request to simulate Reconcile() being called on an event for a
 	// watched resource .
@@ -71,7 +71,7 @@ func TestBlueprintReconcile(t *testing.T) {
 		NamespacedName: ns,
 	}
 
-	res, err := r.Reconcile(req)
+	res, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	// Check the result of reconciliation to make sure it has the desired state.

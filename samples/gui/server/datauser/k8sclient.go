@@ -6,7 +6,7 @@ package datauser
 import (
 	"context"
 
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -25,7 +25,7 @@ func (f *K8sClient) CreateApplication(obj *app.M4DApplication) (*app.M4DApplicat
 // UpdateApplication updates an existing M4DApplication CRD
 func (f *K8sClient) UpdateApplication(name string, obj *app.M4DApplication) (*app.M4DApplication, error) {
 	var result app.M4DApplication
-	key, _ := kclient.ObjectKeyFromObject(obj)
+	key := kclient.ObjectKeyFromObject(obj)
 	err := f.client.Get(context.Background(), key, &result)
 	if err != nil {
 		return nil, err
@@ -71,7 +71,7 @@ func (f *K8sClient) ListApplications(opts meta_v1.ListOptions) (*app.M4DApplicat
 // CreateOrUpdateSecret makes a new Secret or updates an existing one using received credentials
 func (f *K8sClient) CreateOrUpdateSecret(obj *corev1.Secret) (*corev1.Secret, error) {
 	var existing corev1.Secret
-	key, _ := kclient.ObjectKeyFromObject(obj)
+	key := kclient.ObjectKeyFromObject(obj)
 	err := f.client.Get(context.Background(), key, &existing)
 	if err == nil {
 		// update (add new properties on top of the existing)

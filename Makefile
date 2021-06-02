@@ -36,6 +36,7 @@ run-integration-tests:
 	$(MAKE) -C charts m4d
 	$(MAKE) -C manager wait_for_manager
 	$(MAKE) helm
+	$(MAKE) -C modules helm-uninstall # Uninstalls the deployed tests from previous command
 	$(MAKE) -C pkg/helm test
 	$(MAKE) -C manager run-integration-tests
 	$(MAKE) -C modules test
@@ -91,7 +92,7 @@ helm:
 	$(MAKE) -C modules helm
 
 DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
-DOCKER_PUBLIC_NAMESPACE ?= the-mesh-for-data
+DOCKER_PUBLIC_NAMESPACE ?= mesh-for-data
 DOCKER_PUBLIC_TAGNAME ?= latest
 
 DOCKER_PUBLIC_NAMES := \
