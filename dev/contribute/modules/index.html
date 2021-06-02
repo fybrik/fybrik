@@ -1144,7 +1144,7 @@
 <!-- TODO: expand this when we support setting values in the M4DModule YAML: https://github.com/mesh-for-data/mesh-for-data/pull/42 -->
 
 <p>If the module workload needs to return information to the user, that information should be written to the <code>NOTES.txt</code> of the helm chart.</p>
-<p>For a full example see the <a href="https://github.com/mesh-for-data/the-mesh-for-data-flight-module/tree/cd168bb6cdf666c2ec1df960395c0dc1c8feeaa9/helm/afm">Arrow Flight Module chart</a>.</p>
+<p>For a full example see the <a href="https://github.com/mesh-for-data/arrow-flight-module/tree/cd168bb6cdf666c2ec1df960395c0dc1c8feeaa9/helm/afm">Arrow Flight Module chart</a>.</p>
 <h3 id="publishing-the-helm-chart">Publishing the Helm Chart</h3>
 <p>Once your Helm chart is ready, you need to push it to a <a href="https://helm.sh/docs/topics/registries/">OCI-based registry</a> such as <a href="https://ghcr.io">ghcr.io</a>. This allows the control plane of Mesh for Data to later pull the chart whenever it needs to be installed.</p>
 <p>You can use the <a href="https://github.com/mesh-for-data/mesh-for-data/blob/master/hack/make-rules/helm.mk">hack/make-rules/helm.mk</a> Makefile, or manually push the chart:</p>
@@ -1255,7 +1255,7 @@ a module that does not perform any transformation on the data may omit the <code
 <p>The following are examples of YAMLs from fully implemented modules:</p>
 <ul>
 <li>An example YAML for a module that <a href="https://github.com/mesh-for-data/mesh-for-data/blob/master/manager/testdata/e2e/module-implicit-copy-db2wh-to-s3.yaml">copies from db2 to s3</a> and includes transformation actions </li>
-<li>And an example <a href="https://github.com/mesh-for-data/the-mesh-for-data-flight-module/blob/master/module.yaml">arrow flight read module</a> YAML, also with transformation support</li>
+<li>And an example <a href="https://github.com/mesh-for-data/arrow-flight-module/blob/master/module.yaml">arrow flight read module</a> YAML, also with transformation support</li>
 </ul>
 <h2 id="test">Test</h2>
 <ol>
