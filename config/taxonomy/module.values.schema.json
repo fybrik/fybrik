@@ -9,17 +9,12 @@
             "description": "Type of modules supported by the M4D manager.",
             "enum": ["copy", "read", "write"]
         },
-        "protocol": {
-            "type": "string",
-            "description": "The mechanism via which the data will be accessed.",
-            "enum": ["s3", "kafka", "db2-jdbc", "m4d-arrow-flight"]
-        },
-        "action_columns": {
+        "allowable_action_columns": {
             "type": "string",
             "description": "Type of actions possible on columns",
             "enum": ["RemoveColumn", "RedactColumn", "EncryptColumn", "PeriodicBlackout"]
         },
-        "action_dataset": {
+        "allowable_action_dataset": {
             "type": "string",
             "description": "Type of actions possible on dataset",
             "enum": ["DenyAccess", "DenyWriting"]
@@ -29,13 +24,13 @@
             "oneOf": [
                 {
                     "properties": {
-                        "name": {"$ref": "#/definitions/action_columns"} 
+                        "name": {"$ref": "#/definitions/allowable_action_columns"} 
 		    },
 		    "required": ["columns"]
                 },
                 {
                     "properties": {
-                        "name": {"$ref": "#/definitions/action_dataset"} 		
+                        "name": {"$ref": "#/definitions/allowable_action_dataset"} 		
                     }
                 }
 			
@@ -44,9 +39,8 @@
     },
     "properties": {
         "module_type": { "$ref": "#/definitions/module_type" },
-        "protocol": { "$ref": "#/definitions/protocol" },
-        "action_columns": { "$ref": "#/definitions/action_columns" },
-        "action_dataset": { "$ref": "#/definitions/action_dataset" },
+        "allowable_action_columns": { "$ref": "#/definitions/allowable_action_columns" },
+        "allowable_action_dataset": { "$ref": "#/definitions/allowable_action_dataset" },
 	"action": { "$ref": "#/definitions/action" }
     },
     "additionalProperties": false

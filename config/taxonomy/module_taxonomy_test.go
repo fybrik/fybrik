@@ -8,20 +8,16 @@ import (
 )
 
 var (
-	ModuleTaxStructsName = "module.structs.schema.json"
-	ModuleTaxValsName    = "module.values.schema.json"
+	ModuleTaxValsName = "module.values.schema.json"
 
 	moduleTypeGood = "{\"module_type\":\"read\"}"
 	moduleTypeBad  = "{\"module_type\":\"xxx\"}"
 
-	actionNameColumnsGood = "{\"action_columns\":\"RedactColumn\"}"
-	actionNameColumnsBad  = "{\"action_columns\":\"DenyWriting\"}"
+	actionNameColumnsGood = "{\"allowable_action_columns\":\"RedactColumn\"}"
+	actionNameColumnsBad  = "{\"allowable_action_columns\":\"DenyWriting\"}"
 
-	actionNameDatasetGood = "{\"action_dataset\":\"DenyAccess\"}"
-	actionNameDatasetBad  = "{\"action_dataset\":\"RedactColumn\"}"
-
-	protocolGood = "{\"protocol\":\"m4d-arrow-flight\"}"
-	protocolBad  = "{\"protocol\":\"xxx\"}"
+	actionNameDatasetGood = "{\"allowable_action_dataset\":\"DenyAccess\"}"
+	actionNameDatasetBad  = "{\"allowable_action_dataset\":\"RedactColumn\"}"
 
 	actionNameGood = "{\"action\": {\"name\":\"DenyAccess\"}}"
 	actionNameBad  = "{\"action\": {\"name\":\"xxx\"}}"
@@ -37,8 +33,6 @@ func TestModuleTaxonomy(t *testing.T) {
 	ValidateTaxonomy(t, ModuleTaxValsName, actionNameColumnsBad, "actionNameColumnsBad", false)
 	ValidateTaxonomy(t, ModuleTaxValsName, actionNameDatasetGood, "actionNameDatasetGood", true)
 	ValidateTaxonomy(t, ModuleTaxValsName, actionNameDatasetBad, "actionNameDatasetBad", false)
-	ValidateTaxonomy(t, ModuleTaxValsName, protocolGood, "protocolGood", true)
-	ValidateTaxonomy(t, ModuleTaxValsName, protocolBad, "protocolBad", false)
 	ValidateTaxonomy(t, ModuleTaxValsName, actionNameGood, "actionNameGood", true)
 	ValidateTaxonomy(t, ModuleTaxValsName, actionNameBad, "actionNameBad", false)
 	ValidateTaxonomy(t, ModuleTaxValsName, actionGoodRequiredField, "actionGoodRequiredField", true)
