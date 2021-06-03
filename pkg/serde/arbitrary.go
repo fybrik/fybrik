@@ -9,7 +9,6 @@ import (
 // +kubebuilder:validation:Type=object
 // +kubebuilder:pruning:PreserveUnknownFields
 type Arbitrary struct {
-	// +kubebuilder:pruning:PreserveUnknownFields
 	Data interface{} `json:"-"`
 }
 
