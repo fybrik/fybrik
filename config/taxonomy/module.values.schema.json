@@ -24,10 +24,60 @@
             "minimum": 0,
             "maximum": 4          
         },
-        "protocol": {
-            "type":"string",
-            "description": "The mechanism via which the data will be accessed.",
-            "enum":["s3", "kafka", "db2-jdbc", "m4d-arrow-flight"]
+        "interface": {
+            "type": "object",
+            "description": "Contains protocol and data format for arrow-flight",
+            "properties": {
+                "protocol": {
+                    "type": "string",
+                    "description": "The mechanism via which the data will be accessed."
+                },
+                "data_format": {
+                    "type":"string",
+                    "description": "The data format"
+                }
+            },
+            "anyOf": [{
+                "properties": {
+                    "protocol": {
+                        "enum":["m4d-arrow-flight"]
+                    },
+                    "data_format": {
+                        "enum":["arrow"] 
+                    }
+                }
+            },
+            {
+                "properties": {
+                    "protocol": {
+                        "enum":["kafka"]
+                    },
+                    "data_format": {
+                        "enum":["json", "avro"] 
+                    }
+                }
+            },
+            {
+                "properties": {
+                    "protocol": {
+                        "enum":["s3"]
+                    },
+                    "data_format": {
+                        "enum":["csv", "parquet"] 
+                    }
+                }
+            },
+            {
+                "properties": {
+                    "protocol": {
+                        "enum":["db2-jdbc"]
+                    },
+                    "data_format": {
+                        "enum":["db2-jdbc"] 
+                    }
+                }
+            }
+            ]
         }
     },
     "properties": {
@@ -35,7 +85,7 @@
         "transformation_name": { "$ref": "#/definitions/transformation_name"},
         "data_level_name": { "$ref": "#/definitions/data_level_name"},
         "data_level_code": {  "$ref": "#/definitions/data_level_code"},
-        "protocol": {"$ref": "#/definitions/protocol"}
+        "interface": {"$ref": "#/definitions/interface"}
     },
     "additionalProperties": false
 }

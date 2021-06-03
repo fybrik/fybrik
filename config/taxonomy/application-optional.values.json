@@ -1,0 +1,9 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "application-optional.values.schema.json",
+    "title": "Application Values Relaxed Taxonomy",
+    "description": "Values contributed to by the mesh for data applications.",
+    "definitions": {
+        "interface": { "$ref": "module.values.schema.json#/definitions/interface" }
+    }
+} 
