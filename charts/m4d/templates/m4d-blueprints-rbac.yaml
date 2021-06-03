@@ -6,25 +6,9 @@ metadata:
   name: {{ template "m4d.fullname" . }}-blueprints-rbac
 rules:
 - apiGroups:
-  - ""
+  - '*'
   resources:
-  - streamtransfers
-  - streamtransfers/finalizers
-  - streamtransfers/status
-  - batchtransfers
-  - batchtransfers/finalizers
-  - batchtransfers/status
-  - pods
-  - deployments
-  - jobs
-  - persistentvolumeclaims
-  - persistentvolumeclaims/finalizers
+  - '*'
   verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
+  - '*'
 {{- end }}
