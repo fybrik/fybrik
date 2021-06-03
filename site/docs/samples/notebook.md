@@ -28,7 +28,7 @@ This enables easy [cleanup](#cleanup) once you're done experimenting with the sa
 
 ## Prepare a dataset to be accessed by the notebook
 
-This sample uses the [Synthetic Financial Datasets For Fraud Detection](https://www.kaggle.com/ntnu-testimon/paysim1/data) dataset[^1] as the data that the notebook needs to read. Download and extract the file to your machine. You should now see a file named `PS_20174392719_1491204439457_log.csv`. Alternatively, use a sample of 100 lines of the same dataset by downloading [`PS_20174392719_1491204439457_log.csv`](https://raw.githubusercontent.com/IBM/the-mesh-for-data/master/samples/notebook/PS_20174392719_1491204439457_log.csv) from GitHub.
+This sample uses the [Synthetic Financial Datasets For Fraud Detection](https://www.kaggle.com/ntnu-testimon/paysim1/data) dataset[^1] as the data that the notebook needs to read. Download and extract the file to your machine. You should now see a file named `PS_20174392719_1491204439457_log.csv`. Alternatively, use a sample of 100 lines of the same dataset by downloading [`PS_20174392719_1491204439457_log.csv`](https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/master/samples/notebook/PS_20174392719_1491204439457_log.csv) from GitHub.
 
 [^1]: Created by NTNU and shared under the ***CC BY-SA 4.0*** license.
 
@@ -143,6 +143,7 @@ In this sample only the policy above is applied. Copy the policy to a file named
 ```bash
 kubectl -n m4d-system create configmap sample-policy --from-file=sample-policy.rego
 kubectl -n m4d-system label configmap sample-policy openpolicyagent.org/policy=rego
+while [[ $(kubectl get cm sample-policy -n m4d-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
 ```
 
 You can similarly apply a directory holding multiple rego files.
@@ -158,6 +159,7 @@ In this sample a Jupyter notebook is used as the user workload and its business 
         kubectl create deployment my-notebook --image=jupyter/base-notebook --port=8888 -- start.sh jupyter lab --LabApp.token=''
         kubectl set env deployment my-notebook JUPYTER_ENABLE_LAB=yes
         kubectl label deployment my-notebook app.kubernetes.io/name=my-notebook
+        kubectl wait --for=condition=available --timeout=120s deployment/my-notebook
         kubectl expose deployment my-notebook --port=80 --target-port=8888
         ```
     1. Create a port-forward to communicate with JupyterLab:
@@ -222,7 +224,7 @@ Notice that:
 Run the following command to wait until the `M4DApplication` is ready:
 
 ```bash
-while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting" && sleep 1; done
+while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for M4DApplication" && sleep 5; done
 ```
 
 ## Read the dataset from the notebook

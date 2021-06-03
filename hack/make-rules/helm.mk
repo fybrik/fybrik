@@ -61,8 +61,5 @@ helm-debug: $(ABSTOOLBIN)/helm
 helm-actions:
 	$(ABSTOOLBIN)/helm show values ../${CHART} | yq -y -r .actions
 
-.PHONY: helm-crd-hook
-helm-crd-hook:
-
 .PHONY: helm-all
-helm-all: helm-crd-hook helm-verify helm-chart-push helm-chart-pull helm-uninstall helm-chart-install
+helm-all: helm-verify helm-chart-push helm-chart-pull helm-uninstall helm-chart-install

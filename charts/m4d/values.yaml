@@ -16,7 +16,7 @@ clusterScoped: true
 # Global configuration applies to multiple components installed by this chart
 global:
   # Default hub for Mesh for Data images.
-  hub: ghcr.io/the-mesh-for-data
+  hub: ghcr.io/mesh-for-data
   # Default tag for Mesh for Data images.
   # If no value is set, the chart's appVersion will be used.
   tag: ""
@@ -62,21 +62,10 @@ coordinator:
   # Defaults to `<policyManager>-connector:80`.
   policyManagerConnectorURL: ""
 
-  # Configures the credentials manager system name to be used by the coordinator manager.
-  # Accepted values are "katalog" or any meaningful name if a third party connector is used.
-  # such as "vault". 
-  # This field is subject to be removed in the upcoming release.
-  credentialsManager: "katalog"
-
-  # Overrides the credentials manager connector URL.
-  # Defaults to `<credentialsManager>-connector:80`.
-  # This field is subject to be removed in a future release.
-  credentialsManagerConnectorURL: ""
-
   # Configure the vault instance to be used by the coordinator manager
   vault:
     # Set to the Vault address. 
-    address: "http://vault.m4d-system:8200"
+    address: "http://vault.{{ .Release.Namespace }}:8200"
     # Login method to Vault
     login:
       # Token authentication

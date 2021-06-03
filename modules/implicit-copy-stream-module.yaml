@@ -21,13 +21,20 @@ spec:
       sink: 
         protocol: s3
         dataformat: parquet
+    - flow: copy
+      source:
+        protocol: kafka
+        dataformat: avro
+      sink:
+        protocol: s3
+        dataformat: parquet
     actions:
     - id: redact-ID
       level: 2  # column
     - id: removed-ID
       level: 2  # column
   chart:
-    name: ghcr.io/the-mesh-for-data/m4d-implicit-copy-stream:0.1.0
+    name: ghcr.io/mesh-for-data/m4d-implicit-copy-stream:0.1.0
   statusIndicators:
     - kind: StreamTransfer
       successCondition: status.status == SUCCEEDED

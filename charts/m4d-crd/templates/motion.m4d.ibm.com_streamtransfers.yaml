@@ -1,23 +1,13 @@
 
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.3.0
+    controller-gen.kubebuilder.io/version: v0.5.0
   creationTimestamp: null
   name: streamtransfers.motion.m4d.ibm.com
 spec:
-  additionalPrinterColumns:
-  - JSONPath: .spec.source.description
-    name: Source
-    type: string
-  - JSONPath: .spec.destination.description
-    name: Destination
-    type: string
-  - JSONPath: .status.status
-    name: Status
-    type: string
   group: motion.m4d.ibm.com
   names:
     kind: StreamTransfer
@@ -25,627 +15,613 @@ spec:
     plural: streamtransfers
     singular: streamtransfer
   scope: Namespaced
-  subresources:
-    status: {}
-  validation:
-    openAPIV3Schema:
-      description: StreamTransfer is the Schema for the streamtransfers API
-      properties:
-        apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-          type: string
-        kind:
-          description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-          type: string
-        metadata:
-          type: object
-        spec:
-          description: StreamTransferSpec defines the desired state of StreamTransfer
-          properties:
-            destination:
-              description: Destination data store for this batch job
-              properties:
-                cloudant:
-                  description: IBM Cloudant. Needs cloudant legacy credentials.
-                  properties:
-                    database:
-                      description: Database to be read from/written to
-                      type: string
-                    host:
-                      description: Host of cloudant instance
-                      type: string
-                    password:
-                      description: Cloudant password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
-                      type: string
-                    secretImport:
-                      description: Define a secret import definition.
-                      type: string
-                    username:
-                      description: Cloudant user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
-                      type: string
-                    vault:
-                      description: Define secrets that are fetched from a Vault instance
-                      properties:
-                        address:
-                          description: Address is Vault address
-                          type: string
-                        authPath:
-                          description: AuthPath is the path to auth method i.e. kubernetes
-                          type: string
-                        role:
-                          description: Role is the Vault role used for retrieving the credentials
-                          type: string
-                        secretPath:
-                          description: SecretPath is the path of the secret holding the Credentials in Vault
-                          type: string
-                      required:
-                      - address
-                      - authPath
-                      - role
-                      - secretPath
-                      type: object
-                    vaultPath:
-                      description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
-                      type: string
-                  required:
-                  - database
-                  - host
-                  type: object
-                database:
-                  description: Database data store. For the moment only Db2 is supported.
-                  properties:
-                    db2URL:
-                      description: URL to Db2 instance in JDBC format Supported SSL certificates are currently certificates signed with IBM Intermediate CA or cloud signed certificates.
-                      type: string
-                    password:
-                      description: Database password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
-                      type: string
-                    secretImport:
-                      description: Define a secret import definition.
-                      type: string
-                    table:
-                      description: Table to be read
-                      type: string
-                    user:
-                      description: Database user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
-                      type: string
-                    vault:
-                      description: Define secrets that are fetched from a Vault instance
-                      properties:
-                        address:
-                          description: Address is Vault address
-                          type: string
-                        authPath:
-                          description: AuthPath is the path to auth method i.e. kubernetes
-                          type: string
-                        role:
-                          description: Role is the Vault role used for retrieving the credentials
-                          type: string
-                        secretPath:
-                          description: SecretPath is the path of the secret holding the Credentials in Vault
-                          type: string
-                      required:
-                      - address
-                      - authPath
-                      - role
-                      - secretPath
-                      type: object
-                    vaultPath:
-                      description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
-                      type: string
-                  required:
-                  - db2URL
-                  - table
-                  type: object
-                description:
-                  description: Description of the transfer in human readable form that is displayed in the kubectl get If not provided this will be filled in depending on the datastore that is specified.
-                  type: string
-                kafka:
-                  description: Kafka data store. The supposed format within the given Kafka topic is a Confluent compatible format stored as Avro. A schema registry needs to be specified as well.
-                  properties:
-                    createSnapshot:
-                      description: 'If a snapshot should be created of the topic. Records in Kafka are stored as key-value pairs. Updates/Deletes for the same key are appended to the Kafka topic and the last value for a given key is the valid key in a Snapshot. When this property is true only the last value will be written. If the property is false all values will be written out. As a CDC example: If the property is true a valid snapshot of the log stream will be created. If the property is false the CDC stream will be dumped as is like a change log.'
-                      type: boolean
-                    dataFormat:
-                      description: Data format of the objects in S3. e.g. parquet or csv. Please refer to struct for allowed values.
-                      type: string
-                    kafkaBrokers:
-                      description: Kafka broker URLs as a comma separated list.
-                      type: string
-                    kafkaTopic:
-                      description: Kafka topic
-                      type: string
-                    keyDeserializer:
-                      description: Deserializer to be used for the keys of the topic
-                      type: string
-                    password:
-                      description: Kafka user password Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
-                      type: string
-                    saslMechanism:
-                      description: SASL Mechanism to be used (e.g. PLAIN or SCRAM-SHA-512) Default SCRAM-SHA-512 will be assumed if not specified
-                      type: string
-                    schemaRegistryURL:
-                      description: URL to the schema registry. The registry has to be Confluent schema registry compatible.
-                      type: string
-                    secretImport:
-                      description: Define a secret import definition.
-                      type: string
-                    securityProtocol:
-                      description: Kafka security protocol one of (PLAINTEXT, SASL_PLAINTEXT, SASL_SSL, SSL) Default SASL_SSL will be assumed if not specified
-                      type: string
-                    sslTruststore:
-                      description: A truststore or certificate encoded as base64. The format can be JKS or PKCS12. A truststore can be specified like this or in a predefined Kubernetes secret
-                      type: string
-                    sslTruststoreLocation:
-                      description: SSL truststore location.
-                      type: string
-                    sslTruststorePassword:
-                      description: SSL truststore password.
-                      type: string
-                    sslTruststoreSecret:
-                      description: Kubernetes secret that contains the SSL truststore. The format can be JKS or PKCS12. A truststore can be specified like this or as
-                      type: string
-                    user:
-                      description: Kafka user name. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
-                      type: string
-                    valueDeserializer:
-                      description: Deserializer to be used for the values of the topic
-                      type: string
-                    vault:
-                      description: Define secrets that are fetched from a Vault instance
-                      properties:
-                        address:
-                          description: Address is Vault address
-                          type: string
-                        authPath:
-                          description: AuthPath is the path to auth method i.e. kubernetes
-                          type: string
-                        role:
-                          description: Role is the Vault role used for retrieving the credentials
-                          type: string
-                        secretPath:
-                          description: SecretPath is the path of the secret holding the Credentials in Vault
-                          type: string
-                      required:
-                      - address
-                      - authPath
-                      - role
-                      - secretPath
-                      type: object
-                    vaultPath:
-                      description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
-                      type: string
-                  required:
-                  - kafkaBrokers
-                  - kafkaTopic
-                  - schemaRegistryURL
-                  type: object
-                s3:
-                  description: An object store data store that is compatible with S3. This can be a COS bucket.
-                  properties:
-                    accessKey:
-                      description: Access key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
-                      type: string
-                    bucket:
-                      description: Bucket of S3 service
-                      type: string
-                    dataFormat:
-                      description: Data format of the objects in S3. e.g. parquet or csv. Please refer to struct for allowed values.
-                      type: string
-                    endpoint:
-                      description: Endpoint of S3 service
-                      type: string
-                    objectKey:
-                      description: Object key of the object in S3. This is used as a prefix! Thus all objects that have the given objectKey as prefix will be used as input!
-                      type: string
-                    partitionBy:
-                      description: Partition by partition (for target data stores) Defines the columns to partition the output by for a target data store.
-                      items:
-                        type: string
-                      type: array
-                    region:
-                      description: Region of S3 service
-                      type: string
-                    secretImport:
-                      description: Define a secret import definition.
-                      type: string
-                    secretKey:
-                      description: Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
-                      type: string
-                    vault:
-                      description: Define secrets that are fetched from a Vault instance
-                      properties:
-                        address:
-                          description: Address is Vault address
-                          type: string
-                        authPath:
-                          description: AuthPath is the path to auth method i.e. kubernetes
-                          type: string
-                        role:
-                          description: Role is the Vault role used for retrieving the credentials
-                          type: string
-                        secretPath:
-                          description: SecretPath is the path of the secret holding the Credentials in Vault
-                          type: string
-                      required:
-                      - address
-                      - authPath
-                      - role
-                      - secretPath
-                      type: object
-                    vaultPath:
-                      description: Vault path where the accessKey/secretKey are stored. If not specified accessKey and secretKey have to be specified!
-                      type: string
-                  required:
-                  - bucket
-                  - endpoint
-                  - objectKey
-                  type: object
-              type: object
-            flowType:
-              description: Data flow type that specifies if this is a stream or a batch workflow
-              enum:
-              - Batch
-              - Stream
-              type: string
-            image:
-              description: Image that should be used for the actual batch job. This is usually a datamover image. This property will be defaulted by the webhook if not set.
-              type: string
-            imagePullPolicy:
-              description: Image pull policy that should be used for the actual job. This property will be defaulted by the webhook if not set.
-              type: string
-            noFinalizer:
-              description: If this batch job instance should have a finalizer or not. This property will be defaulted by the webhook if not set.
-              type: boolean
-            readDataType:
-              description: Data type of the data that is read from source (log data or change data)
-              enum:
-              - LogData
-              - ChangeData
-              type: string
-            secretProviderRole:
-              description: Secret provider role that should be used for the actual job. This property will be defaulted by the webhook if not set.
-              type: string
-            secretProviderURL:
-              description: Secret provider url that should be used for the actual job. This property will be defaulted by the webhook if not set.
-              type: string
-            source:
-              description: Source data store for this batch job
-              properties:
-                cloudant:
-                  description: IBM Cloudant. Needs cloudant legacy credentials.
-                  properties:
-                    database:
-                      description: Database to be read from/written to
-                      type: string
-                    host:
-                      description: Host of cloudant instance
-                      type: string
-                    password:
-                      description: Cloudant password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
-                      type: string
-                    secretImport:
-                      description: Define a secret import definition.
-                      type: string
-                    username:
-                      description: Cloudant user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
-                      type: string
-                    vault:
-                      description: Define secrets that are fetched from a Vault instance
-                      properties:
-                        address:
-                          description: Address is Vault address
-                          type: string
-                        authPath:
-                          description: AuthPath is the path to auth method i.e. kubernetes
-                          type: string
-                        role:
-                          description: Role is the Vault role used for retrieving the credentials
-                          type: string
-                        secretPath:
-                          description: SecretPath is the path of the secret holding the Credentials in Vault
-                          type: string
-                      required:
-                      - address
-                      - authPath
-                      - role
-                      - secretPath
-                      type: object
-                    vaultPath:
-                      description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
-                      type: string
-                  required:
-                  - database
-                  - host
-                  type: object
-                database:
-                  description: Database data store. For the moment only Db2 is supported.
-                  properties:
-                    db2URL:
-                      description: URL to Db2 instance in JDBC format Supported SSL certificates are currently certificates signed with IBM Intermediate CA or cloud signed certificates.
-                      type: string
-                    password:
-                      description: Database password. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
-                      type: string
-                    secretImport:
-                      description: Define a secret import definition.
-                      type: string
-                    table:
-                      description: Table to be read
-                      type: string
-                    user:
-                      description: Database user. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
-                      type: string
-                    vault:
-                      description: Define secrets that are fetched from a Vault instance
-                      properties:
-                        address:
-                          description: Address is Vault address
-                          type: string
-                        authPath:
-                          description: AuthPath is the path to auth method i.e. kubernetes
-                          type: string
-                        role:
-                          description: Role is the Vault role used for retrieving the credentials
-                          type: string
-                        secretPath:
-                          description: SecretPath is the path of the secret holding the Credentials in Vault
-                          type: string
-                      required:
-                      - address
-                      - authPath
-                      - role
-                      - secretPath
-                      type: object
-                    vaultPath:
-                      description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
-                      type: string
-                  required:
-                  - db2URL
-                  - table
-                  type: object
-                description:
-                  description: Description of the transfer in human readable form that is displayed in the kubectl get If not provided this will be filled in depending on the datastore that is specified.
-                  type: string
-                kafka:
-                  description: Kafka data store. The supposed format within the given Kafka topic is a Confluent compatible format stored as Avro. A schema registry needs to be specified as well.
-                  properties:
-                    createSnapshot:
-                      description: 'If a snapshot should be created of the topic. Records in Kafka are stored as key-value pairs. Updates/Deletes for the same key are appended to the Kafka topic and the last value for a given key is the valid key in a Snapshot. When this property is true only the last value will be written. If the property is false all values will be written out. As a CDC example: If the property is true a valid snapshot of the log stream will be created. If the property is false the CDC stream will be dumped as is like a change log.'
-                      type: boolean
-                    dataFormat:
-                      description: Data format of the objects in S3. e.g. parquet or csv. Please refer to struct for allowed values.
-                      type: string
-                    kafkaBrokers:
-                      description: Kafka broker URLs as a comma separated list.
-                      type: string
-                    kafkaTopic:
-                      description: Kafka topic
-                      type: string
-                    keyDeserializer:
-                      description: Deserializer to be used for the keys of the topic
-                      type: string
-                    password:
-                      description: Kafka user password Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
-                      type: string
-                    saslMechanism:
-                      description: SASL Mechanism to be used (e.g. PLAIN or SCRAM-SHA-512) Default SCRAM-SHA-512 will be assumed if not specified
-                      type: string
-                    schemaRegistryURL:
-                      description: URL to the schema registry. The registry has to be Confluent schema registry compatible.
-                      type: string
-                    secretImport:
-                      description: Define a secret import definition.
-                      type: string
-                    securityProtocol:
-                      description: Kafka security protocol one of (PLAINTEXT, SASL_PLAINTEXT, SASL_SSL, SSL) Default SASL_SSL will be assumed if not specified
-                      type: string
-                    sslTruststore:
-                      description: A truststore or certificate encoded as base64. The format can be JKS or PKCS12. A truststore can be specified like this or in a predefined Kubernetes secret
-                      type: string
-                    sslTruststoreLocation:
-                      description: SSL truststore location.
-                      type: string
-                    sslTruststorePassword:
-                      description: SSL truststore password.
-                      type: string
-                    sslTruststoreSecret:
-                      description: Kubernetes secret that contains the SSL truststore. The format can be JKS or PKCS12. A truststore can be specified like this or as
-                      type: string
-                    user:
-                      description: Kafka user name. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
-                      type: string
-                    valueDeserializer:
-                      description: Deserializer to be used for the values of the topic
-                      type: string
-                    vault:
-                      description: Define secrets that are fetched from a Vault instance
-                      properties:
-                        address:
-                          description: Address is Vault address
-                          type: string
-                        authPath:
-                          description: AuthPath is the path to auth method i.e. kubernetes
-                          type: string
-                        role:
-                          description: Role is the Vault role used for retrieving the credentials
-                          type: string
-                        secretPath:
-                          description: SecretPath is the path of the secret holding the Credentials in Vault
-                          type: string
-                      required:
-                      - address
-                      - authPath
-                      - role
-                      - secretPath
-                      type: object
-                    vaultPath:
-                      description: Vault path where the user name/password are stored. If not specified user and password have to be specified!
-                      type: string
-                  required:
-                  - kafkaBrokers
-                  - kafkaTopic
-                  - schemaRegistryURL
-                  type: object
-                s3:
-                  description: An object store data store that is compatible with S3. This can be a COS bucket.
-                  properties:
-                    accessKey:
-                      description: Access key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
-                      type: string
-                    bucket:
-                      description: Bucket of S3 service
-                      type: string
-                    dataFormat:
-                      description: Data format of the objects in S3. e.g. parquet or csv. Please refer to struct for allowed values.
-                      type: string
-                    endpoint:
-                      description: Endpoint of S3 service
-                      type: string
-                    objectKey:
-                      description: Object key of the object in S3. This is used as a prefix! Thus all objects that have the given objectKey as prefix will be used as input!
-                      type: string
-                    partitionBy:
-                      description: Partition by partition (for target data stores) Defines the columns to partition the output by for a target data store.
-                      items:
-                        type: string
-                      type: array
-                    region:
-                      description: Region of S3 service
-                      type: string
-                    secretImport:
-                      description: Define a secret import definition.
-                      type: string
-                    secretKey:
-                      description: Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vaultPath parameter and is thus optional.
-                      type: string
-                    vault:
-                      description: Define secrets that are fetched from a Vault instance
-                      properties:
-                        address:
-                          description: Address is Vault address
-                          type: string
-                        authPath:
-                          description: AuthPath is the path to auth method i.e. kubernetes
-                          type: string
-                        role:
-                          description: Role is the Vault role used for retrieving the credentials
-                          type: string
-                        secretPath:
-                          description: SecretPath is the path of the secret holding the Credentials in Vault
-                          type: string
-                      required:
-                      - address
-                      - authPath
-                      - role
-                      - secretPath
-                      type: object
-                    vaultPath:
-                      description: Vault path where the accessKey/secretKey are stored. If not specified accessKey and secretKey have to be specified!
-                      type: string
-                  required:
-                  - bucket
-                  - endpoint
-                  - objectKey
-                  type: object
-              type: object
-            suspend:
-              description: If this batch job instance is run on a schedule the regular schedule can be suspended with this property. This property will be defaulted by the webhook if not set.
-              type: boolean
-            transformation:
-              description: Transformations to be applied to the source data before writing to destination
-              items:
-                description: to be refined...
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.source.description
+      name: Source
+      type: string
+    - jsonPath: .spec.destination.description
+      name: Destination
+      type: string
+    - jsonPath: .status.status
+      name: Status
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: StreamTransfer is the Schema for the streamtransfers API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: StreamTransferSpec defines the desired state of StreamTransfer
+            properties:
+              destination:
+                description: Destination data store for this batch job
                 properties:
-                  action:
-                    description: Transformation action that should be performed.
-                    enum:
-                    - RemoveColumns
-                    - EncryptColumns
-                    - DigestColumns
-                    - RedactColumns
-                    - SampleRows
-                    - FilterRows
+                  cloudant:
+                    description: IBM Cloudant. Needs cloudant legacy credentials.
+                    properties:
+                      database:
+                        description: Database to be read from/written to
+                        type: string
+                      host:
+                        description: Host of cloudant instance
+                        type: string
+                      password:
+                        description: Cloudant password. Can be retrieved from vault if specified in vault parameter and is thus optional.
+                        type: string
+                      secretImport:
+                        description: Define a secret import definition.
+                        type: string
+                      username:
+                        description: Cloudant user. Can be retrieved from vault if specified in vault parameter and is thus optional.
+                        type: string
+                      vault:
+                        description: Define secrets that are fetched from a Vault instance
+                        properties:
+                          address:
+                            description: Address is Vault address
+                            type: string
+                          authPath:
+                            description: AuthPath is the path to auth method i.e. kubernetes
+                            type: string
+                          role:
+                            description: Role is the Vault role used for retrieving the credentials
+                            type: string
+                          secretPath:
+                            description: SecretPath is the path of the secret holding the Credentials in Vault
+                            type: string
+                        required:
+                        - address
+                        - authPath
+                        - role
+                        - secretPath
+                        type: object
+                    required:
+                    - database
+                    - host
+                    type: object
+                  database:
+                    description: Database data store. For the moment only Db2 is supported.
+                    properties:
+                      db2URL:
+                        description: URL to Db2 instance in JDBC format Supported SSL certificates are currently certificates signed with IBM Intermediate CA or cloud signed certificates.
+                        type: string
+                      password:
+                        description: Database password. Can be retrieved from vault if specified in vault parameter and is thus optional.
+                        type: string
+                      secretImport:
+                        description: Define a secret import definition.
+                        type: string
+                      table:
+                        description: Table to be read
+                        type: string
+                      user:
+                        description: Database user. Can be retrieved from vault if specified in vault parameter and is thus optional.
+                        type: string
+                      vault:
+                        description: Define secrets that are fetched from a Vault instance
+                        properties:
+                          address:
+                            description: Address is Vault address
+                            type: string
+                          authPath:
+                            description: AuthPath is the path to auth method i.e. kubernetes
+                            type: string
+                          role:
+                            description: Role is the Vault role used for retrieving the credentials
+                            type: string
+                          secretPath:
+                            description: SecretPath is the path of the secret holding the Credentials in Vault
+                            type: string
+                        required:
+                        - address
+                        - authPath
+                        - role
+                        - secretPath
+                        type: object
+                    required:
+                    - db2URL
+                    - table
+                    type: object
+                  description:
+                    description: Description of the transfer in human readable form that is displayed in the kubectl get If not provided this will be filled in depending on the datastore that is specified.
                     type: string
-                  columns:
-                    description: Columns that are involved in this action. This property is optional as for some actions no columns have to be specified. E.g. filter is a row based transformation.
-                    items:
-                      type: string
-                    type: array
-                  name:
-                    description: Name of the transaction. Mainly used for debugging and lineage tracking.
-                    type: string
-                  options:
-                    additionalProperties:
-                      type: string
-                    description: Additional options for this transformation.
+                  kafka:
+                    description: Kafka data store. The supposed format within the given Kafka topic is a Confluent compatible format stored as Avro. A schema registry needs to be specified as well.
+                    properties:
+                      createSnapshot:
+                        description: 'If a snapshot should be created of the topic. Records in Kafka are stored as key-value pairs. Updates/Deletes for the same key are appended to the Kafka topic and the last value for a given key is the valid key in a Snapshot. When this property is true only the last value will be written. If the property is false all values will be written out. As a CDC example: If the property is true a valid snapshot of the log stream will be created. If the property is false the CDC stream will be dumped as is like a change log.'
+                        type: boolean
+                      dataFormat:
+                        description: Data format of the objects in S3. e.g. parquet or csv. Please refer to struct for allowed values.
+                        type: string
+                      kafkaBrokers:
+                        description: Kafka broker URLs as a comma separated list.
+                        type: string
+                      kafkaTopic:
+                        description: Kafka topic
+                        type: string
+                      keyDeserializer:
+                        description: Deserializer to be used for the keys of the topic
+                        type: string
+                      password:
+                        description: Kafka user password Can be retrieved from vault if specified in vault parameter and is thus optional.
+                        type: string
+                      saslMechanism:
+                        description: SASL Mechanism to be used (e.g. PLAIN or SCRAM-SHA-512) Default SCRAM-SHA-512 will be assumed if not specified
+                        type: string
+                      schemaRegistryURL:
+                        description: URL to the schema registry. The registry has to be Confluent schema registry compatible.
+                        type: string
+                      secretImport:
+                        description: Define a secret import definition.
+                        type: string
+                      securityProtocol:
+                        description: Kafka security protocol one of (PLAINTEXT, SASL_PLAINTEXT, SASL_SSL, SSL) Default SASL_SSL will be assumed if not specified
+                        type: string
+                      sslTruststore:
+                        description: A truststore or certificate encoded as base64. The format can be JKS or PKCS12. A truststore can be specified like this or in a predefined Kubernetes secret
+                        type: string
+                      sslTruststoreLocation:
+                        description: SSL truststore location.
+                        type: string
+                      sslTruststorePassword:
+                        description: SSL truststore password.
+                        type: string
+                      sslTruststoreSecret:
+                        description: Kubernetes secret that contains the SSL truststore. The format can be JKS or PKCS12. A truststore can be specified like this or as
+                        type: string
+                      user:
+                        description: Kafka user name. Can be retrieved from vault if specified in vault parameter and is thus optional.
+                        type: string
+                      valueDeserializer:
+                        description: Deserializer to be used for the values of the topic
+                        type: string
+                      vault:
+                        description: Define secrets that are fetched from a Vault instance
+                        properties:
+                          address:
+                            description: Address is Vault address
+                            type: string
+                          authPath:
+                            description: AuthPath is the path to auth method i.e. kubernetes
+                            type: string
+                          role:
+                            description: Role is the Vault role used for retrieving the credentials
+                            type: string
+                          secretPath:
+                            description: SecretPath is the path of the secret holding the Credentials in Vault
+                            type: string
+                        required:
+                        - address
+                        - authPath
+                        - role
+                        - secretPath
+                        type: object
+                    required:
+                    - kafkaBrokers
+                    - kafkaTopic
+                    - schemaRegistryURL
+                    type: object
+                  s3:
+                    description: An object store data store that is compatible with S3. This can be a COS bucket.
+                    properties:
+                      accessKey:
+                        description: Access key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vault parameter and is thus optional.
+                        type: string
+                      bucket:
+                        description: Bucket of S3 service
+                        type: string
+                      dataFormat:
+                        description: Data format of the objects in S3. e.g. parquet or csv. Please refer to struct for allowed values.
+                        type: string
+                      endpoint:
+                        description: Endpoint of S3 service
+                        type: string
+                      objectKey:
+                        description: Object key of the object in S3. This is used as a prefix! Thus all objects that have the given objectKey as prefix will be used as input!
+                        type: string
+                      partitionBy:
+                        description: Partition by partition (for target data stores) Defines the columns to partition the output by for a target data store.
+                        items:
+                          type: string
+                        type: array
+                      region:
+                        description: Region of S3 service
+                        type: string
+                      secretImport:
+                        description: Define a secret import definition.
+                        type: string
+                      secretKey:
+                        description: Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vault parameter and is thus optional.
+                        type: string
+                      vault:
+                        description: Define secrets that are fetched from a Vault instance
+                        properties:
+                          address:
+                            description: Address is Vault address
+                            type: string
+                          authPath:
+                            description: AuthPath is the path to auth method i.e. kubernetes
+                            type: string
+                          role:
+                            description: Role is the Vault role used for retrieving the credentials
+                            type: string
+                          secretPath:
+                            description: SecretPath is the path of the secret holding the Credentials in Vault
+                            type: string
+                        required:
+                        - address
+                        - authPath
+                        - role
+                        - secretPath
+                        type: object
+                    required:
+                    - bucket
+                    - endpoint
+                    - objectKey
                     type: object
                 type: object
-              type: array
-            triggerInterval:
-              description: Interval in which the Micro batches of this stream should be triggered The default is '5 seconds'.
-              type: string
-            writeDataType:
-              description: Data type of how the data should be written to the target (log data or change data)
-              enum:
-              - LogData
-              - ChangeData
-              type: string
-            writeOperation:
-              description: 'Write operation that should be performed when writing (overwrite,append,update) Caution: Some write operations are only available for batch and some only for stream.'
-              enum:
-              - Overwrite
-              - Append
-              - Update
-              type: string
-          required:
-          - destination
-          - source
-          type: object
-        status:
-          description: StreamTransferStatus defines the observed state of StreamTransfer
-          properties:
-            active:
-              description: A pointer to the currently running job (or nil)
-              properties:
-                apiVersion:
-                  description: API version of the referent.
-                  type: string
-                fieldPath:
-                  description: 'If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: "spec.containers{name}" (where "name" refers to the name of the container that triggered the event) or if no container name is specified "spec.containers[2]" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object. TODO: this design is not final and this field is subject to change in the future.'
-                  type: string
-                kind:
-                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-                  type: string
-                name:
-                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
-                  type: string
-                namespace:
-                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
-                  type: string
-                resourceVersion:
-                  description: 'Specific resourceVersion to which this reference is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
-                  type: string
-                uid:
-                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
-                  type: string
-              type: object
-            error:
-              type: string
-            status:
-              enum:
-              - STARTING
-              - RUNNING
-              - STOPPED
-              - FAILING
-              type: string
-          type: object
-      type: object
-  version: v1alpha1
-  versions:
-  - name: v1alpha1
+              flowType:
+                description: Data flow type that specifies if this is a stream or a batch workflow
+                enum:
+                - Batch
+                - Stream
+                type: string
+              image:
+                description: Image that should be used for the actual batch job. This is usually a datamover image. This property will be defaulted by the webhook if not set.
+                type: string
+              imagePullPolicy:
+                description: Image pull policy that should be used for the actual job. This property will be defaulted by the webhook if not set.
+                type: string
+              noFinalizer:
+                description: If this batch job instance should have a finalizer or not. This property will be defaulted by the webhook if not set.
+                type: boolean
+              readDataType:
+                description: Data type of the data that is read from source (log data or change data)
+                enum:
+                - LogData
+                - ChangeData
+                type: string
+              secretProviderRole:
+                description: Secret provider role that should be used for the actual job. This property will be defaulted by the webhook if not set.
+                type: string
+              secretProviderURL:
+                description: Secret provider url that should be used for the actual job. This property will be defaulted by the webhook if not set.
+                type: string
+              source:
+                description: Source data store for this batch job
+                properties:
+                  cloudant:
+                    description: IBM Cloudant. Needs cloudant legacy credentials.
+                    properties:
+                      database:
+                        description: Database to be read from/written to
+                        type: string
+                      host:
+                        description: Host of cloudant instance
+                        type: string
+                      password:
+                        description: Cloudant password. Can be retrieved from vault if specified in vault parameter and is thus optional.
+                        type: string
+                      secretImport:
+                        description: Define a secret import definition.
+                        type: string
+                      username:
+                        description: Cloudant user. Can be retrieved from vault if specified in vault parameter and is thus optional.
+                        type: string
+                      vault:
+                        description: Define secrets that are fetched from a Vault instance
+                        properties:
+                          address:
+                            description: Address is Vault address
+                            type: string
+                          authPath:
+                            description: AuthPath is the path to auth method i.e. kubernetes
+                            type: string
+                          role:
+                            description: Role is the Vault role used for retrieving the credentials
+                            type: string
+                          secretPath:
+                            description: SecretPath is the path of the secret holding the Credentials in Vault
+                            type: string
+                        required:
+                        - address
+                        - authPath
+                        - role
+                        - secretPath
+                        type: object
+                    required:
+                    - database
+                    - host
+                    type: object
+                  database:
+                    description: Database data store. For the moment only Db2 is supported.
+                    properties:
+                      db2URL:
+                        description: URL to Db2 instance in JDBC format Supported SSL certificates are currently certificates signed with IBM Intermediate CA or cloud signed certificates.
+                        type: string
+                      password:
+                        description: Database password. Can be retrieved from vault if specified in vault parameter and is thus optional.
+                        type: string
+                      secretImport:
+                        description: Define a secret import definition.
+                        type: string
+                      table:
+                        description: Table to be read
+                        type: string
+                      user:
+                        description: Database user. Can be retrieved from vault if specified in vault parameter and is thus optional.
+                        type: string
+                      vault:
+                        description: Define secrets that are fetched from a Vault instance
+                        properties:
+                          address:
+                            description: Address is Vault address
+                            type: string
+                          authPath:
+                            description: AuthPath is the path to auth method i.e. kubernetes
+                            type: string
+                          role:
+                            description: Role is the Vault role used for retrieving the credentials
+                            type: string
+                          secretPath:
+                            description: SecretPath is the path of the secret holding the Credentials in Vault
+                            type: string
+                        required:
+                        - address
+                        - authPath
+                        - role
+                        - secretPath
+                        type: object
+                    required:
+                    - db2URL
+                    - table
+                    type: object
+                  description:
+                    description: Description of the transfer in human readable form that is displayed in the kubectl get If not provided this will be filled in depending on the datastore that is specified.
+                    type: string
+                  kafka:
+                    description: Kafka data store. The supposed format within the given Kafka topic is a Confluent compatible format stored as Avro. A schema registry needs to be specified as well.
+                    properties:
+                      createSnapshot:
+                        description: 'If a snapshot should be created of the topic. Records in Kafka are stored as key-value pairs. Updates/Deletes for the same key are appended to the Kafka topic and the last value for a given key is the valid key in a Snapshot. When this property is true only the last value will be written. If the property is false all values will be written out. As a CDC example: If the property is true a valid snapshot of the log stream will be created. If the property is false the CDC stream will be dumped as is like a change log.'
+                        type: boolean
+                      dataFormat:
+                        description: Data format of the objects in S3. e.g. parquet or csv. Please refer to struct for allowed values.
+                        type: string
+                      kafkaBrokers:
+                        description: Kafka broker URLs as a comma separated list.
+                        type: string
+                      kafkaTopic:
+                        description: Kafka topic
+                        type: string
+                      keyDeserializer:
+                        description: Deserializer to be used for the keys of the topic
+                        type: string
+                      password:
+                        description: Kafka user password Can be retrieved from vault if specified in vault parameter and is thus optional.
+                        type: string
+                      saslMechanism:
+                        description: SASL Mechanism to be used (e.g. PLAIN or SCRAM-SHA-512) Default SCRAM-SHA-512 will be assumed if not specified
+                        type: string
+                      schemaRegistryURL:
+                        description: URL to the schema registry. The registry has to be Confluent schema registry compatible.
+                        type: string
+                      secretImport:
+                        description: Define a secret import definition.
+                        type: string
+                      securityProtocol:
+                        description: Kafka security protocol one of (PLAINTEXT, SASL_PLAINTEXT, SASL_SSL, SSL) Default SASL_SSL will be assumed if not specified
+                        type: string
+                      sslTruststore:
+                        description: A truststore or certificate encoded as base64. The format can be JKS or PKCS12. A truststore can be specified like this or in a predefined Kubernetes secret
+                        type: string
+                      sslTruststoreLocation:
+                        description: SSL truststore location.
+                        type: string
+                      sslTruststorePassword:
+                        description: SSL truststore password.
+                        type: string
+                      sslTruststoreSecret:
+                        description: Kubernetes secret that contains the SSL truststore. The format can be JKS or PKCS12. A truststore can be specified like this or as
+                        type: string
+                      user:
+                        description: Kafka user name. Can be retrieved from vault if specified in vault parameter and is thus optional.
+                        type: string
+                      valueDeserializer:
+                        description: Deserializer to be used for the values of the topic
+                        type: string
+                      vault:
+                        description: Define secrets that are fetched from a Vault instance
+                        properties:
+                          address:
+                            description: Address is Vault address
+                            type: string
+                          authPath:
+                            description: AuthPath is the path to auth method i.e. kubernetes
+                            type: string
+                          role:
+                            description: Role is the Vault role used for retrieving the credentials
+                            type: string
+                          secretPath:
+                            description: SecretPath is the path of the secret holding the Credentials in Vault
+                            type: string
+                        required:
+                        - address
+                        - authPath
+                        - role
+                        - secretPath
+                        type: object
+                    required:
+                    - kafkaBrokers
+                    - kafkaTopic
+                    - schemaRegistryURL
+                    type: object
+                  s3:
+                    description: An object store data store that is compatible with S3. This can be a COS bucket.
+                    properties:
+                      accessKey:
+                        description: Access key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vault parameter and is thus optional.
+                        type: string
+                      bucket:
+                        description: Bucket of S3 service
+                        type: string
+                      dataFormat:
+                        description: Data format of the objects in S3. e.g. parquet or csv. Please refer to struct for allowed values.
+                        type: string
+                      endpoint:
+                        description: Endpoint of S3 service
+                        type: string
+                      objectKey:
+                        description: Object key of the object in S3. This is used as a prefix! Thus all objects that have the given objectKey as prefix will be used as input!
+                        type: string
+                      partitionBy:
+                        description: Partition by partition (for target data stores) Defines the columns to partition the output by for a target data store.
+                        items:
+                          type: string
+                        type: array
+                      region:
+                        description: Region of S3 service
+                        type: string
+                      secretImport:
+                        description: Define a secret import definition.
+                        type: string
+                      secretKey:
+                        description: Secret key of the HMAC credentials that can access the given bucket. Can be retrieved from vault if specified in vault parameter and is thus optional.
+                        type: string
+                      vault:
+                        description: Define secrets that are fetched from a Vault instance
+                        properties:
+                          address:
+                            description: Address is Vault address
+                            type: string
+                          authPath:
+                            description: AuthPath is the path to auth method i.e. kubernetes
+                            type: string
+                          role:
+                            description: Role is the Vault role used for retrieving the credentials
+                            type: string
+                          secretPath:
+                            description: SecretPath is the path of the secret holding the Credentials in Vault
+                            type: string
+                        required:
+                        - address
+                        - authPath
+                        - role
+                        - secretPath
+                        type: object
+                    required:
+                    - bucket
+                    - endpoint
+                    - objectKey
+                    type: object
+                type: object
+              suspend:
+                description: If this batch job instance is run on a schedule the regular schedule can be suspended with this property. This property will be defaulted by the webhook if not set.
+                type: boolean
+              transformation:
+                description: Transformations to be applied to the source data before writing to destination
+                items:
+                  description: to be refined...
+                  properties:
+                    action:
+                      description: Transformation action that should be performed.
+                      enum:
+                      - RemoveColumns
+                      - EncryptColumns
+                      - DigestColumns
+                      - RedactColumns
+                      - SampleRows
+                      - FilterRows
+                      type: string
+                    columns:
+                      description: Columns that are involved in this action. This property is optional as for some actions no columns have to be specified. E.g. filter is a row based transformation.
+                      items:
+                        type: string
+                      type: array
+                    name:
+                      description: Name of the transaction. Mainly used for debugging and lineage tracking.
+                      type: string
+                    options:
+                      additionalProperties:
+                        type: string
+                      description: Additional options for this transformation.
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                  type: object
+                type: array
+              triggerInterval:
+                description: Interval in which the Micro batches of this stream should be triggered The default is '5 seconds'.
+                type: string
+              writeDataType:
+                description: Data type of how the data should be written to the target (log data or change data)
+                enum:
+                - LogData
+                - ChangeData
+                type: string
+              writeOperation:
+                description: 'Write operation that should be performed when writing (overwrite,append,update) Caution: Some write operations are only available for batch and some only for stream.'
+                enum:
+                - Overwrite
+                - Append
+                - Update
+                type: string
+            required:
+            - destination
+            - source
+            type: object
+          status:
+            description: StreamTransferStatus defines the observed state of StreamTransfer
+            properties:
+              active:
+                description: A pointer to the currently running job (or nil)
+                properties:
+                  apiVersion:
+                    description: API version of the referent.
+                    type: string
+                  fieldPath:
+                    description: 'If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: "spec.containers{name}" (where "name" refers to the name of the container that triggered the event) or if no container name is specified "spec.containers[2]" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object. TODO: this design is not final and this field is subject to change in the future.'
+                    type: string
+                  kind:
+                    description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                    type: string
+                  name:
+                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                    type: string
+                  namespace:
+                    description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                    type: string
+                  resourceVersion:
+                    description: 'Specific resourceVersion to which this reference is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                    type: string
+                  uid:
+                    description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                    type: string
+                type: object
+              error:
+                type: string
+              status:
+                enum:
+                - STARTING
+                - RUNNING
+                - STOPPED
+                - FAILING
+                type: string
+            type: object
+        type: object
     served: true
     storage: true
+    subresources:
+      status: {}
 status:
   acceptedNames:
     kind: ""

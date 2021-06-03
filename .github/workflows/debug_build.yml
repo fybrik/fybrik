@@ -14,7 +14,7 @@ env:
 
 jobs:
   build-and-publish:
-    if: github.repository != 'IBM/the-mesh-for-data'
+    if: github.repository != 'mesh-for-data/mesh-for-data'
     name: Build and publish images
     runs-on: ubuntu-latest
     env:

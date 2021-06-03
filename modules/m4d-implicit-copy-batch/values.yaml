@@ -25,7 +25,7 @@ copy:
 #        bucket: ""
 #        object_key: ""
 #    format: ""
-#    credentialLocation: ""
+#    vault: {}
 
   # copies to destination
   destination:
@@ -35,6 +35,6 @@ copy:
 #        bucket: ""
 #        object_key: ""
 #    format: ""
-#    credentialLocation: ""
+#    vault: {}
 
   transformations: []

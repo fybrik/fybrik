@@ -12,8 +12,8 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -36,8 +36,7 @@ const BlueprintNamespace = "m4d-blueprints"
 
 // Reconcile receives a Plotter CRD
 //nolint:dupl
-func (r *PlotterReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
+func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("plotter", req.NamespacedName)
 
 	plotter := app.Plotter{}

@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"log"
 
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
 )
 
 type OpaReader struct {

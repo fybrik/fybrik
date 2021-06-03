@@ -8,9 +8,9 @@ import (
 	"os"
 	"testing"
 
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
-	bl "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/pc-bl"
-	tu "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/testutil"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	bl "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/pc-bl"
+	tu "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/testutil"
 )
 
 func constructPolicyConnectors() (*bl.PolicyManagerConnector, *bl.PolicyManagerConnector) {

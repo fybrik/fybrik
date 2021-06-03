@@ -3,8 +3,8 @@ package dummy
 import (
 	"errors"
 
-	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
+	"github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
 )
 
 // This ClusterManager is meant to be used for testing
@@ -26,7 +26,7 @@ func (m *ClusterManager) GetBlueprint(cluster string, namespace string, name str
 	if found {
 		return blueprint, nil
 	}
-	return nil, errors.New("Blueprint not found")
+	return nil, errors.New("blueprint not found")
 }
 
 func (m *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {

@@ -1,5 +1,5 @@
 {{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: {{ include "m4d.certManagerApiVersion" . }}
 kind: Issuer
 metadata:
   name: selfsigned-issuer
@@ -8,7 +8,7 @@ spec:
   selfSigned: {}
 
 ---
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: {{ include "m4d.certManagerApiVersion" . }}
 kind: Certificate
 metadata:
   name: serving-cert

@@ -4,7 +4,7 @@
 package mockup
 
 import (
-	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
+	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
 )
 
 // ClusterLister is a mockup cluster manager
@@ -16,11 +16,11 @@ func (m *ClusterLister) GetClusters() ([]multicluster.Cluster, error) {
 	return []multicluster.Cluster{
 		{
 			Name:     "thegreendragon",
-			Metadata: multicluster.ClusterMetadata{Region: "theshire", VaultAuthPath: "us-cluster"},
+			Metadata: multicluster.ClusterMetadata{Region: "theshire", VaultAuthPath: "kubernetes"},
 		},
 		{
-			Name:     "Germany-cluster",
-			Metadata: multicluster.ClusterMetadata{Region: "Germany", VaultAuthPath: "germany-cluster"},
+			Name:     "neverland-cluster",
+			Metadata: multicluster.ClusterMetadata{Region: "neverland", VaultAuthPath: "kubernetes"},
 		},
 	}, nil
 }

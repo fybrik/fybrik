@@ -10,13 +10,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
 	"helm.sh/helm/v3/pkg/release"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	comv1alpha1 "github.com/datashim-io/datashim/src/dataset-operator/pkg/apis/com/v1alpha1"
-	appapi "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
+	appapi "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -31,11 +31,8 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	"github.com/ibm/the-mesh-for-data/manager/controllers/mockup"
-	"github.com/ibm/the-mesh-for-data/pkg/helm"
-	local "github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
-	"github.com/ibm/the-mesh-for-data/pkg/storage"
-	"github.com/ibm/the-mesh-for-data/pkg/vault"
+	"github.com/mesh-for-data/mesh-for-data/pkg/helm"
+	local "github.com/mesh-for-data/mesh-for-data/pkg/multicluster/local"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -56,13 +53,14 @@ func TestAPIs(t *testing.T) {
 }
 
 var _ = BeforeSuite(func(done Done) {
-	logf.SetLogger(zap.LoggerTo(GinkgoWriter, true))
+	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 
 	By("bootstrapping test environment")
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{
-			filepath.Join("..", "..", "config", "crd", "bases"),
+			filepath.Join("..", "..", "..", "charts", "m4d-crd", "templates"),
 		},
+		ErrorIfCRDPathMissing: true,
 	}
 
 	utils.DefaultTestConfiguration(GinkgoT())
@@ -84,9 +82,6 @@ var _ = BeforeSuite(func(done Done) {
 		k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 		Expect(err).ToNot(HaveOccurred())
 	} else {
-		// Mockup connectors
-		go mockup.CreateTestCatalogConnector(GinkgoT())
-
 		mgr, err = ctrl.NewManager(cfg, ctrl.Options{
 			Scheme:             scheme.Scheme,
 			MetricsBindAddress: "localhost:8086",
@@ -94,10 +89,8 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 
 		// Setup application controller
-		var clusterLister *mockup.ClusterLister
-		policyCompiler := &mockup.MockPolicyCompiler{}
-		conn, _ := vault.NewDummyConnection()
-		err = NewM4DApplicationReconciler(mgr, "M4DApplication", conn, policyCompiler, clusterLister, storage.NewProvisionTest()).SetupWithManager(mgr)
+		reconciler := createTestM4DApplicationController(mgr.GetClient(), mgr.GetScheme())
+		err = reconciler.SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
 
 		// Setup blueprint controller
@@ -154,6 +147,5 @@ var _ = AfterSuite(func() {
 	By("tearing down the test environment")
 	gexec.KillAndWait(5 * time.Second)
 	err := testEnv.Stop()
-	mockup.KillServer()
 	Expect(err).ToNot(HaveOccurred())
 })

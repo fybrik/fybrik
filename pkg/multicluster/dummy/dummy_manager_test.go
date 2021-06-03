@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
 	"github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -67,5 +67,5 @@ func TestDummyMultiClusterManager(t *testing.T) {
 	getBlueprint, err = manager.GetBlueprint("kind-kind", "ns", "n")
 	g.Expect(getBlueprint).To(gomega.BeNil())
 	g.Expect(err).To(gomega.Not(gomega.BeNil()))
-	g.Expect(err).To(gomega.Equal(errors.New("Blueprint not found")))
+	g.Expect(err).To(gomega.Equal(errors.New("blueprint not found")))
 }

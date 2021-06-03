@@ -8,16 +8,16 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	modules "github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
-	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
-	local "github.com/ibm/the-mesh-for-data/pkg/multicluster/local"
-	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
-	"github.com/ibm/the-mesh-for-data/pkg/serde"
-	"github.com/ibm/the-mesh-for-data/pkg/storage"
-	vault "github.com/ibm/the-mesh-for-data/pkg/vault"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	modules "github.com/mesh-for-data/mesh-for-data/manager/controllers/app/modules"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
+	local "github.com/mesh-for-data/mesh-for-data/pkg/multicluster/local"
+	pc "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/policy-compiler"
+	"github.com/mesh-for-data/mesh-for-data/pkg/serde"
+	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
+	vault "github.com/mesh-for-data/mesh-for-data/pkg/vault"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -78,15 +78,6 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	var err error
 	if bucket, err = AllocateBucket(m.Client, m.Log, m.Owner, originalAssetName, geo); err != nil {
 		m.Log.Info("Bucket allocation failed: " + err.Error())
-		return nil, err
-	}
-	credsMap, err := SecretToCredentialMap(m.Client, bucket.SecretRef)
-	if err != nil {
-		m.Log.Info("Could not fetch credentials: " + err.Error())
-		return nil, err
-	}
-	if err = m.VaultConnection.AddSecret(utils.GetVaultDatasetHome()+bucket.Name, credsMap); err != nil {
-		m.Log.Info("Could not register secret in vault: " + err.Error())
 		return nil, err
 	}
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
@@ -216,7 +207,7 @@ func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.
 		}
 	}
 	if copySelector == nil {
-		return nil, errors.New("No copy module has been found supporting required source interface")
+		return nil, errors.New("no copy module has been found supporting required source interface")
 	}
 	if copySelector.GetModule() == nil {
 		m.Log.Info("Could not find copy module for " + item.Context.DataSetID)
@@ -237,15 +228,8 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 		return nil, err
 	}
 
-	// Temporary check: VaultSecretPath should come only from
-	// the catalog connector.
-	var vaultSecretPath string
-	if item.VaultSecretPath == "" {
-		vaultSecretPath = utils.GetSecretPath(datasetID)
-	} else {
-		// Set the value received from the catalog connector.
-		vaultSecretPath = item.VaultSecretPath
-	}
+	// Set the value received from the catalog connector.
+	vaultSecretPath := item.VaultSecretPath
 
 	// Each selector receives source/sink interface and relevant actions
 	// Starting with the data location interface for source and the required interface for sink
@@ -440,7 +424,7 @@ func (m *ModuleManager) enforceWritePolicies(appContext *app.M4DApplication, dat
 		}
 		excludedGeos += cluster.Metadata.Region
 	}
-	return actions, "", errors.New("Writing to all geographies is denied: " + excludedGeos)
+	return actions, "", errors.New("writing to all geographies is denied: " + excludedGeos)
 }
 
 // GetProcessingGeography determines the geography of the workload cluster.

@@ -1,10 +1,10 @@
 
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.3.0
+    controller-gen.kubebuilder.io/version: v0.5.0
   creationTimestamp: null
   name: m4dmodules.app.m4d.ibm.com
 spec:
@@ -15,207 +15,226 @@ spec:
     plural: m4dmodules
     singular: m4dmodule
   scope: Namespaced
-  validation:
-    openAPIV3Schema:
-      description: M4DModule is a description of an injectable component. the parameters it requires, as well as the specification of how to instantiate such a component. It is used as metadata only.  There is no status nor reconciliation.
-      properties:
-        apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-          type: string
-        kind:
-          description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-          type: string
-        metadata:
-          type: object
-        spec:
-          description: M4DModuleSpec contains the info common to all modules, which are one of the components that process, load, write, audit, monitor the data used by the data scientist's application.
-          properties:
-            capabilities:
-              description: Capabilities declares what this module knows how to do and the types of data it knows how to handle
-              properties:
-                actions:
-                  description: Actions are the data transformations that the module supports
-                  items:
-                    description: SupportedAction declares an action that the module supports (action identifier and its scope)
-                    properties:
-                      id:
-                        type: string
-                      level:
-                        format: int32
-                        type: integer
-                    type: object
-                  type: array
-                api:
-                  description: API indicates to the application how to access/write the data
-                  properties:
-                    dataformat:
-                      description: DataFormatType defines data format type
-                      enum:
-                      - parquet
-                      - table
-                      - csv
-                      - json
-                      - avro
-                      - binary
-                      - arrow
-                      type: string
-                    protocol:
-                      description: IFProtocol defines interface protocol for data transactions
-                      enum:
-                      - s3
-                      - kafka
-                      - jdbc-db2
-                      - m4d-arrow-flight
-                      type: string
-                  required:
-                  - protocol
-                  type: object
-                supportedInterfaces:
-                  description: Copy should have one or more instances in the list, and its content should have source and sink Read should have one or more instances in the list, each with source populated Write should have one or more instances in the list, each with sink populated TODO - In the future if we have a module type that doesn't interface directly with data then this list could be empty
-                  items:
-                    description: ModuleInOut specifies the protocol and format of the data input and output by the module - if any
-                    properties:
-                      flow:
-                        description: Flow for which this interface is supported
-                        enum:
-                        - copy
-                        - read
-                        - write
-                        type: string
-                      sink:
-                        description: Sink specifies the output data protocol and format
-                        properties:
-                          dataformat:
-                            description: DataFormatType defines data format type
-                            enum:
-                            - parquet
-                            - table
-                            - csv
-                            - json
-                            - avro
-                            - binary
-                            - arrow
-                            type: string
-                          protocol:
-                            description: IFProtocol defines interface protocol for data transactions
-                            enum:
-                            - s3
-                            - kafka
-                            - jdbc-db2
-                            - m4d-arrow-flight
-                            type: string
-                        required:
-                        - protocol
-                        type: object
-                      source:
-                        description: Source specifies the input data protocol and format
-                        properties:
-                          dataformat:
-                            description: DataFormatType defines data format type
-                            enum:
-                            - parquet
-                            - table
-                            - csv
-                            - json
-                            - avro
-                            - binary
-                            - arrow
-                            type: string
-                          protocol:
-                            description: IFProtocol defines interface protocol for data transactions
-                            enum:
-                            - s3
-                            - kafka
-                            - jdbc-db2
-                            - m4d-arrow-flight
-                            type: string
-                        required:
-                        - protocol
-                        type: object
-                    required:
-                    - flow
-                    type: object
-                  type: array
-              required:
-              - supportedInterfaces
-              type: object
-            chart:
-              description: Reference to a Helm chart that allows deployment of the resources required for this module
-              properties:
-                name:
-                  description: Name of helm chart
-                  type: string
-                values:
-                  additionalProperties:
-                    type: string
-                  description: Values to pass to helm chart installation
-                  type: object
-              required:
-              - name
-              type: object
-            dependencies:
-              description: Other components that must be installed in order for this module to work
-              items:
-                description: Dependency details another component on which this module relies - i.e. a pre-requisit
-                properties:
-                  name:
-                    description: Name is the name of the dependent component
-                    type: string
-                  type:
-                    description: Type provides information used in determining how to instantiate the component
-                    enum:
-                    - module
-                    - connector
-                    - feature
-                    type: string
-                required:
-                - name
-                - type
-                type: object
-              type: array
-            flows:
-              description: Flows is a list of the types of capabilities supported by the module - copy, read, write
-              items:
-                description: ModuleFlow indicates what data flow is performed by the module
-                enum:
-                - copy
-                - read
-                - write
-                type: string
-              type: array
-            statusIndicators:
-              description: StatusIndicators allow to check status of a non-standard resource that can not be computed by helm/kstatus
-              items:
-                description: ResourceStatusIndicator is used to determine the status of an orchestrated resource
-                properties:
-                  errorMessage:
-                    description: ErrorMessage specifies the resource field to check for an error, e.g. status.errorMsg
-                    type: string
-                  failureCondition:
-                    description: FailureCondition specifies a condition that indicates the resource failure It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
-                    type: string
-                  kind:
-                    description: Kind provides information about the resource kind
-                    type: string
-                  successCondition:
-                    description: SuccessCondition specifies a condition that indicates that the resource is ready It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
-                    type: string
-                required:
-                - kind
-                - successCondition
-                type: object
-              type: array
-          required:
-          - capabilities
-          - chart
-          - flows
-          type: object
-      required:
-      - spec
-      type: object
-  version: v1alpha1
   versions:
   - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: M4DModule is a description of an injectable component. the parameters it requires, as well as the specification of how to instantiate such a component. It is used as metadata only.  There is no status nor reconciliation.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: M4DModuleSpec contains the info common to all modules, which are one of the components that process, load, write, audit, monitor the data used by the data scientist's application.
+            properties:
+              capabilities:
+                description: Capabilities declares what this module knows how to do and the types of data it knows how to handle
+                properties:
+                  actions:
+                    description: Actions are the data transformations that the module supports
+                    items:
+                      description: SupportedAction declares an action that the module supports (action identifier and its scope)
+                      properties:
+                        id:
+                          type: string
+                        level:
+                          format: int32
+                          type: integer
+                      type: object
+                    type: array
+                  api:
+                    description: API indicates to the application how to access/write the data
+                    properties:
+                      dataformat:
+                        description: DataFormatType defines data format type
+                        enum:
+                        - parquet
+                        - table
+                        - csv
+                        - json
+                        - avro
+                        - orc
+                        - binary
+                        - arrow
+                        type: string
+                      endpoint:
+                        description: EndpointSpec is used both by the module creator and by the status of the m4dapplication
+                        properties:
+                          hostname:
+                            description: Always equals the release name. Can be omitted.
+                            type: string
+                          port:
+                            format: int32
+                            type: integer
+                          scheme:
+                            description: 'For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc'
+                            type: string
+                        required:
+                        - port
+                        - scheme
+                        type: object
+                      protocol:
+                        description: IFProtocol defines interface protocol for data transactions
+                        enum:
+                        - s3
+                        - kafka
+                        - jdbc-db2
+                        - m4d-arrow-flight
+                        type: string
+                    required:
+                    - endpoint
+                    - protocol
+                    type: object
+                  supportedInterfaces:
+                    description: Copy should have one or more instances in the list, and its content should have source and sink Read should have one or more instances in the list, each with source populated Write should have one or more instances in the list, each with sink populated TODO - In the future if we have a module type that doesn't interface directly with data then this list could be empty
+                    items:
+                      description: ModuleInOut specifies the protocol and format of the data input and output by the module - if any
+                      properties:
+                        flow:
+                          description: Flow for which this interface is supported
+                          enum:
+                          - copy
+                          - read
+                          - write
+                          type: string
+                        sink:
+                          description: Sink specifies the output data protocol and format
+                          properties:
+                            dataformat:
+                              description: DataFormatType defines data format type
+                              enum:
+                              - parquet
+                              - table
+                              - csv
+                              - json
+                              - avro
+                              - orc
+                              - binary
+                              - arrow
+                              type: string
+                            protocol:
+                              description: IFProtocol defines interface protocol for data transactions
+                              enum:
+                              - s3
+                              - kafka
+                              - jdbc-db2
+                              - m4d-arrow-flight
+                              type: string
+                          required:
+                          - protocol
+                          type: object
+                        source:
+                          description: Source specifies the input data protocol and format
+                          properties:
+                            dataformat:
+                              description: DataFormatType defines data format type
+                              enum:
+                              - parquet
+                              - table
+                              - csv
+                              - json
+                              - avro
+                              - orc
+                              - binary
+                              - arrow
+                              type: string
+                            protocol:
+                              description: IFProtocol defines interface protocol for data transactions
+                              enum:
+                              - s3
+                              - kafka
+                              - jdbc-db2
+                              - m4d-arrow-flight
+                              type: string
+                          required:
+                          - protocol
+                          type: object
+                      required:
+                      - flow
+                      type: object
+                    type: array
+                required:
+                - supportedInterfaces
+                type: object
+              chart:
+                description: Reference to a Helm chart that allows deployment of the resources required for this module
+                properties:
+                  name:
+                    description: Name of helm chart
+                    type: string
+                  values:
+                    additionalProperties:
+                      type: string
+                    description: Values to pass to helm chart installation
+                    type: object
+                required:
+                - name
+                type: object
+              dependencies:
+                description: Other components that must be installed in order for this module to work
+                items:
+                  description: Dependency details another component on which this module relies - i.e. a pre-requisit
+                  properties:
+                    name:
+                      description: Name is the name of the dependent component
+                      type: string
+                    type:
+                      description: Type provides information used in determining how to instantiate the component
+                      enum:
+                      - module
+                      - connector
+                      - feature
+                      type: string
+                  required:
+                  - name
+                  - type
+                  type: object
+                type: array
+              flows:
+                description: Flows is a list of the types of capabilities supported by the module - copy, read, write
+                items:
+                  description: ModuleFlow indicates what data flow is performed by the module
+                  enum:
+                  - copy
+                  - read
+                  - write
+                  type: string
+                type: array
+              statusIndicators:
+                description: StatusIndicators allow to check status of a non-standard resource that can not be computed by helm/kstatus
+                items:
+                  description: ResourceStatusIndicator is used to determine the status of an orchestrated resource
+                  properties:
+                    errorMessage:
+                      description: ErrorMessage specifies the resource field to check for an error, e.g. status.errorMsg
+                      type: string
+                    failureCondition:
+                      description: FailureCondition specifies a condition that indicates the resource failure It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
+                      type: string
+                    kind:
+                      description: Kind provides information about the resource kind
+                      type: string
+                    successCondition:
+                      description: SuccessCondition specifies a condition that indicates that the resource is ready It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
+                      type: string
+                  required:
+                  - kind
+                  - successCondition
+                  type: object
+                type: array
+            required:
+            - capabilities
+            - chart
+            - flows
+            type: object
+        required:
+        - spec
+        type: object
     served: true
     storage: true
 status:

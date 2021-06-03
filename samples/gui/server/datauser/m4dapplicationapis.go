@@ -9,7 +9,7 @@ import (
 	"log"
 	"net/http"
 
-	dm "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
+	dm "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
@@ -42,7 +42,7 @@ func M4DApplicationOptions(w http.ResponseWriter, r *http.Request) {
 func ListM4DApplications(w http.ResponseWriter, r *http.Request) {
 	log.Println("In ListM4DApplications")
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("No dmaClient set")))
+		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no dmaClient set")))
 		if suberr != nil {
 			log.Printf(suberr.Error() + " upon no dmaClient set")
 		}
@@ -66,7 +66,7 @@ func ListM4DApplications(w http.ResponseWriter, r *http.Request) {
 func GetM4DApplication(w http.ResponseWriter, r *http.Request) {
 	log.Println("In GetM4DApplication")
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("No dmaClient set")))
+		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no dmaClient set")))
 		if suberr != nil {
 			log.Printf(suberr.Error() + " upon no dmaclient set")
 		}
@@ -91,7 +91,7 @@ func GetM4DApplication(w http.ResponseWriter, r *http.Request) {
 func UpdateM4DApplication(w http.ResponseWriter, r *http.Request) {
 	log.Println("In UpdateM4DApplication")
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("No dmaClient set")))
+		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no dmaClient set")))
 		if suberr != nil {
 			log.Printf(suberr.Error() + " upon no dmaclient set")
 		}
@@ -133,7 +133,7 @@ func UpdateM4DApplication(w http.ResponseWriter, r *http.Request) {
 func DeleteM4DApplication(w http.ResponseWriter, r *http.Request) {
 	log.Println("In DeleteM4DApplication")
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("No dmaClient set")))
+		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no dmaClient set")))
 		if suberr != nil {
 			log.Printf(suberr.Error() + " upon no dmaclient set")
 		}
@@ -179,7 +179,7 @@ func CreateM4DApplication(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("No dmaClient set")))
+		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no dmaClient set")))
 		if suberr != nil {
 			log.Printf(suberr.Error() + " upon no dmaclient set")
 		}

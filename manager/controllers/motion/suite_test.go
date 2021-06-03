@@ -13,11 +13,10 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 
-	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
+	motionv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/motion/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"k8s.io/client-go/kubernetes/scheme"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
@@ -61,13 +60,14 @@ func TestMotionAPIs(t *testing.T) {
 //   should be used. E.g. in integration tests running against an existing setup a controller is already existing
 //   in the Kubernetes cluster and should not be started by the test as two controllers competing may influence the test.
 var _ = BeforeSuite(func(done Done) {
-	logf.SetLogger(zap.LoggerTo(GinkgoWriter, true))
+	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 	By("bootstrapping test environment")
 	if os.Getenv("NO_SIMULATED_PROGRESS") == "true" {
 		noSimulatedProgress = true
 	}
 	testEnv = &envtest.Environment{
-		CRDDirectoryPaths: []string{filepath.Join("..", "..", "config", "crd", "bases")},
+		CRDDirectoryPaths:     []string{filepath.Join("..", "..", "..", "charts", "m4d-crd", "templates")},
+		ErrorIfCRDPathMissing: true,
 		//AttachControlPlaneOutput: true,
 	}
 
@@ -76,7 +76,6 @@ var _ = BeforeSuite(func(done Done) {
 	Expect(err).ToNot(HaveOccurred())
 	Expect(cfg).ToNot(BeNil())
 
-	_ = clientgoscheme.AddToScheme(scheme.Scheme)
 	err = motionv1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 

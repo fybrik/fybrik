@@ -36,8 +36,10 @@ run-integration-tests:
 	$(MAKE) -C charts m4d
 	$(MAKE) -C manager wait_for_manager
 	$(MAKE) helm
+	$(MAKE) -C modules helm-uninstall # Uninstalls the deployed tests from previous command
 	$(MAKE) -C pkg/helm test
 	$(MAKE) -C manager run-integration-tests
+	$(MAKE) -C modules test
 
 .PHONY: run-deploy-tests
 run-deploy-tests: export KUBE_NAMESPACE?=m4d-system
@@ -62,21 +64,6 @@ cluster-prepare:
 .PHONY: cluster-prepare-wait
 cluster-prepare-wait:
 	$(MAKE) -C third_party/datashim deploy-wait
-
-.PHONY: install
-install:
-	$(MAKE) -C manager install
-
-.PHONY: deploy
-deploy:
-	$(MAKE) -C manager deploy
-	$(MAKE) -C connectors deploy
-
-.PHONY: undeploy
-undeploy:
-	$(MAKE) -C manager undeploy
-	$(MAKE) -C manager undeploy-crd
-	$(MAKE) -C connectors undeploy
 
 .PHONY: docker
 docker: docker-build docker-push
@@ -105,7 +92,7 @@ helm:
 	$(MAKE) -C modules helm
 
 DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
-DOCKER_PUBLIC_NAMESPACE ?= the-mesh-for-data
+DOCKER_PUBLIC_NAMESPACE ?= mesh-for-data
 DOCKER_PUBLIC_TAGNAME ?= latest
 
 DOCKER_PUBLIC_NAMES := \
@@ -113,8 +100,7 @@ DOCKER_PUBLIC_NAMES := \
 	dummy-mover \
 	egr-connector \
 	katalog-connector \
-	opa-connector \
-	vault-connector
+	opa-connector 
 
 define do-docker-retag-and-push-public
 	for name in ${DOCKER_PUBLIC_NAMES}; do \
@@ -137,8 +123,7 @@ save-images:
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/dummy-mover:${DOCKER_TAGNAME} \
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/egr-connector:${DOCKER_TAGNAME} \
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/katalog-connector:${DOCKER_TAGNAME} \
-		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:${DOCKER_TAGNAME} \
-		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/vault-connector:${DOCKER_TAGNAME}
+		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:${DOCKER_TAGNAME}
 
 include hack/make-rules/tools.mk
 include hack/make-rules/verify.mk

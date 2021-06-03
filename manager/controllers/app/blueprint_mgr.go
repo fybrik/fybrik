@@ -4,9 +4,9 @@
 package app
 
 import (
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/app/modules"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/app/modules"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
 	// Temporary - shouldn't have something specific to implicit copies
 )
 
@@ -87,7 +87,7 @@ func (r *M4DApplicationReconciler) GenerateBlueprint(instances []modules.ModuleI
 
 		// Create a flow step
 		var step app.FlowStep
-		step.Name = modulename + "-" + utils.Hash(moduleInstance.AssetID, 10) // Need unique name for each step so include ids for dataset
+		step.Name = utils.CreateStepName(modulename, moduleInstance.AssetID) // Need unique name for each step so include ids for dataset
 		step.Template = modulename
 
 		step.Arguments = *moduleInstance.Args

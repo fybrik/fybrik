@@ -27,6 +27,7 @@ vault:
 	helm repo add hashicorp https://helm.releases.hashicorp.com
 	helm install vault hashicorp/vault --version 0.9.1 \
                 --set "global.openshift=$(WITH_OPENSHIFT)" \
+                --set injector.enabled=false \
                 --set "server.dev.enabled=true" \
 		--values ../third_party/vault/plugin-secrets-kubernetes-reader/values.yaml \
 		--namespace m4d-system \

@@ -39,70 +39,6 @@
 
 
 
-<a name="data_credential_response.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## data_credential_response.proto
-
-
- <!-- end services -->
-
-
-<a name="connectors.DatasetCredentials"></a>
-
-### DatasetCredentials
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| dataset_id | [string](#string) |  | identifier of asset - always needed. JSON expected. Interpreted by the Connector, can contain any additional information as part of JSON |
-| creds | [Credentials](#connectors.Credentials) |  |  |
-
-
-
-
-
- <!-- end messages -->
-
- <!-- end enums -->
-
- <!-- end HasExtensions -->
-
-
-
-<a name="data_credential_request.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## data_credential_request.proto
-
-
- <!-- end services -->
-
-
-<a name="connectors.DatasetCredentialsRequest"></a>
-
-### DatasetCredentialsRequest
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| credential_path | [string](#string) |  | link to vault plugin for reading k8s secret with user credentials |
-| dataset_id | [string](#string) |  | identifier of asset - always needed. JSON expected. Interpreted by the Connector, can contain any additional information as part of JSON |
-
-
-
-
-
- <!-- end messages -->
-
- <!-- end enums -->
-
- <!-- end HasExtensions -->
-
-
-
 <a name="data_catalog_response.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
@@ -135,25 +71,126 @@
 
 
 
-<a name="data_credential_service.proto"></a>
+<a name="policy_manager_request.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## data_credential_service.proto
+## policy_manager_request.proto
 
-
-
-<a name="connectors.DataCredentialService"></a>
-
-### DataCredentialService
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| GetCredentialsInfo | [DatasetCredentialsRequest](#connectors.DatasetCredentialsRequest) | [DatasetCredentials](#connectors.DatasetCredentials) |  |
 
  <!-- end services -->
 
+
+<a name="connectors.AccessOperation"></a>
+
+### AccessOperation
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| type | [AccessOperation.AccessType](#connectors.AccessOperation.AccessType) |  |  |
+| destination | [string](#string) |  | Destination for transfer or write. |
+
+
+
+
+
+
+<a name="connectors.ApplicationContext"></a>
+
+### ApplicationContext
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| credential_path | [string](#string) |  | link to vault plugin for reading k8s secret with user credentials |
+| app_info | [ApplicationDetails](#connectors.ApplicationDetails) |  |  |
+| datasets | [DatasetContext](#connectors.DatasetContext) | repeated |  |
+| general_operations | [AccessOperation](#connectors.AccessOperation) | repeated |  |
+
+
+
+
+
+
+<a name="connectors.ApplicationDetails"></a>
+
+### ApplicationDetails
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| processing_geography | [string](#string) |  |  |
+| properties | [ApplicationDetails.PropertiesEntry](#connectors.ApplicationDetails.PropertiesEntry) | repeated |  |
+
+
+
+
+
+
+<a name="connectors.ApplicationDetails.PropertiesEntry"></a>
+
+### ApplicationDetails.PropertiesEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [string](#string) |  |  |
+| value | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="connectors.DatasetContext"></a>
+
+### DatasetContext
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| dataset | [DatasetIdentifier](#connectors.DatasetIdentifier) |  |  |
+| operation | [AccessOperation](#connectors.AccessOperation) |  |  |
+
+
+
+
+
+
+<a name="connectors.DatasetIdentifier"></a>
+
+### DatasetIdentifier
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| dataset_id | [string](#string) |  | identifier of asset - always needed. JSON expected. Interpreted by the Connector, can contain any additional information as part of JSON |
+
+
+
+
+
  <!-- end messages -->
+
+
+<a name="connectors.AccessOperation.AccessType"></a>
+
+### AccessOperation.AccessType
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| UNKNOWN | 0 |  |
+| READ | 1 |  |
+| COPY | 2 |  |
+| WRITE | 3 |  |
+
 
  <!-- end enums -->
 
@@ -344,133 +381,6 @@
 
 
 
-<a name="policy_manager_request.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## policy_manager_request.proto
-
-
- <!-- end services -->
-
-
-<a name="connectors.AccessOperation"></a>
-
-### AccessOperation
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| type | [AccessOperation.AccessType](#connectors.AccessOperation.AccessType) |  |  |
-| destination | [string](#string) |  | Destination for transfer or write. |
-
-
-
-
-
-
-<a name="connectors.ApplicationContext"></a>
-
-### ApplicationContext
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| credential_path | [string](#string) |  | link to vault plugin for reading k8s secret with user credentials |
-| app_info | [ApplicationDetails](#connectors.ApplicationDetails) |  |  |
-| datasets | [DatasetContext](#connectors.DatasetContext) | repeated |  |
-| general_operations | [AccessOperation](#connectors.AccessOperation) | repeated |  |
-
-
-
-
-
-
-<a name="connectors.ApplicationDetails"></a>
-
-### ApplicationDetails
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| processing_geography | [string](#string) |  |  |
-| properties | [ApplicationDetails.PropertiesEntry](#connectors.ApplicationDetails.PropertiesEntry) | repeated |  |
-
-
-
-
-
-
-<a name="connectors.ApplicationDetails.PropertiesEntry"></a>
-
-### ApplicationDetails.PropertiesEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | [string](#string) |  |  |
-| value | [string](#string) |  |  |
-
-
-
-
-
-
-<a name="connectors.DatasetContext"></a>
-
-### DatasetContext
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| dataset | [DatasetIdentifier](#connectors.DatasetIdentifier) |  |  |
-| operation | [AccessOperation](#connectors.AccessOperation) |  |  |
-
-
-
-
-
-
-<a name="connectors.DatasetIdentifier"></a>
-
-### DatasetIdentifier
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| dataset_id | [string](#string) |  | identifier of asset - always needed. JSON expected. Interpreted by the Connector, can contain any additional information as part of JSON |
-
-
-
-
-
- <!-- end messages -->
-
-
-<a name="connectors.AccessOperation.AccessType"></a>
-
-### AccessOperation.AccessType
-
-
-| Name | Number | Description |
-| ---- | ------ | ----------- |
-| UNKNOWN | 0 |  |
-| READ | 1 |  |
-| COPY | 2 |  |
-| WRITE | 3 |  |
-
-
- <!-- end enums -->
-
- <!-- end HasExtensions -->
-
-
-
 <a name="data_catalog_service.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
@@ -564,6 +474,21 @@
  <!-- end services -->
 
 
+<a name="connectors.CredentialsInfo"></a>
+
+### CredentialsInfo
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| vault_secret_path | [string](#string) |  | the path to Vault secret which is used to retrive the dataset credentials from the catalog. |
+
+
+
+
+
+
 <a name="connectors.DataComponentMetadata"></a>
 
 ### DataComponentMetadata
@@ -625,11 +550,12 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | [string](#string) |  | name in Catalog |
-| data_owner | [string](#string) |  | inforamtion on the owner of data asset - can have different formats for different catalogs |
+| data_owner | [string](#string) |  | information on the owner of data asset - can have different formats for different catalogs |
 | data_store | [DataStore](#connectors.DataStore) |  | All info about the data store |
 | data_format | [string](#string) |  |  |
 | geo | [string](#string) |  | geography location where data resides (if this information available) |
 | metadata | [DatasetMetadata](#connectors.DatasetMetadata) |  | LocationType locationType = 10; //publicCloud/privateCloud etc. Should be filled later when we understand better if we have a closed set of values and how they are used. |
+| credentials_info | [CredentialsInfo](#connectors.CredentialsInfo) |  | information about how to retrive dataset credentials from the catalog. |
 
 
 
@@ -787,7 +713,7 @@
 | creds | [Credentials](#connectors.Credentials) |  |  |
 | dataset_details | [DatasetDetails](#connectors.DatasetDetails) |  |  |
 | destination_catalog_id | [string](#string) |  |  |
-| app_id | [string](#string) |  | reference to user credentials |
+| credential_path | [string](#string) |  | link to vault plugin for reading k8s secret with user credentials |
 
 
 

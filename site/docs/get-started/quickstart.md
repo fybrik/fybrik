@@ -41,9 +41,10 @@ Run the following to install vault and the plugin in development mode:
     helm repo update
     helm install vault hashicorp/vault --version 0.9.1 --create-namespace -n m4d-system \
         --set "server.dev.enabled=true" \
-        --values https://raw.githubusercontent.com/IBM/the-mesh-for-data/a3f951087eada4aed4b1cee9390bed5d71c35970/third_party/vault/vault-single-cluster/values.yaml \
+        --set "injector.enabled=false" \
+        --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.1.0/third_party/vault/vault-single-cluster/values.yaml \
         --wait --timeout 120s
-    kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data/a3f951087eada4aed4b1cee9390bed5d71c35970/third_party/vault/vault-single-cluster/vault-rbac.yaml -n m4d-system
+    kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.1.0/third_party/vault/vault-single-cluster/vault-rbac.yaml -n m4d-system
     ```
 
 === "OpenShift"
@@ -53,10 +54,11 @@ Run the following to install vault and the plugin in development mode:
     helm repo update
     helm install vault hashicorp/vault --version 0.9.1 --create-namespace -n m4d-system \
         --set "global.openshift=true" \
+        --set "injector.enabled=false" \
         --set "server.dev.enabled=true" \
-        --values https://raw.githubusercontent.com/IBM/the-mesh-for-data/a3f951087eada4aed4b1cee9390bed5d71c35970/third_party/vault/vault-single-cluster/values.yaml \
+        --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.1.0/third_party/vault/vault-single-cluster/values.yaml \
         --wait --timeout 120s
-    kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data/a3f951087eada4aed4b1cee9390bed5d71c35970/third_party/vault/vault-single-cluster/vault-rbac.yaml -n m4d-system
+    kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.1.0/third_party/vault/vault-single-cluster/vault-rbac.yaml -n m4d-system
     ```
 
 ## Install control plane
@@ -67,10 +69,10 @@ Run the following to install vault and the plugin in development mode:
     To install the `dev` version install the charts from the source code.
     For example:
     ```bash
-    git clone https://github.com/IBM/the-mesh-for-data.git
-    cd the-mesh-for-data
+    git clone https://github.com/mesh-for-data/mesh-for-data.git
+    cd mesh-for-data
     helm install m4d-crd charts/m4d-crd -n m4d-system --wait
-    helm install m4d charts/m4d -n m4d-system --wait
+    helm install m4d charts/m4d --set global.tag=latest -n m4d-system --wait
     ```
 
 The control plane includes a `manager` service that connects to a data catalog and to a policy manager. 
@@ -88,8 +90,8 @@ helm install m4d m4d-charts/m4d -n m4d-system --wait
 
 [Modules](../concepts/modules.md) are plugins that the control plane deploys whenever required. 
 
-Install the [arrow flight module](https://github.com/ibm/the-mesh-for-data-flight-module):
+Install the [arrow flight module](https://github.com/mesh-for-data/arrow-flight-module):
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/IBM/the-mesh-for-data-flight-module/master/module.yaml -n m4d-system
+kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/arrow-flight-module/master/module.yaml -n m4d-system
 ```

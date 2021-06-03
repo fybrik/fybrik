@@ -42,13 +42,41 @@ spec:
       sink:
         protocol: s3
         dataformat: parquet
+    - flow: copy
+      source:
+        protocol: s3
+        dataformat: orc
+      sink:
+        protocol: s3
+        dataformat: parquet
+    - flow: copy
+      source:
+        protocol: s3
+        dataformat: csv
+      sink:
+        protocol: s3
+        dataformat: csv
+    - flow: copy
+      source:
+        protocol: s3
+        dataformat: json
+      sink:
+        protocol: s3
+        dataformat: json
+    - flow: copy
+      source:
+        protocol: s3
+        dataformat: orc
+      sink:
+        protocol: s3
+        dataformat: orc
     actions:
     - id: redact-ID
       level: 2  # column
     - id: removed-ID
       level: 2  # column
   chart:
-    name: ghcr.io/the-mesh-for-data/m4d-implicit-copy-batch:0.1.0
+    name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
   statusIndicators:
     - kind: BatchTransfer
       successCondition: status.status == SUCCEEDED

@@ -8,12 +8,13 @@ import (
 	"io/ioutil"
 	"testing"
 
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/ibm/the-mesh-for-data/pkg/multicluster/dummy"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster/dummy"
 	"github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -50,8 +51,7 @@ func TestPlotterController(t *testing.T) {
 	}
 
 	// Register operator types with the runtime scheme.
-	s := scheme.Scheme
-	s.AddKnownTypes(app.GroupVersion, plotter)
+	s := utils.NewScheme(g)
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	dummyManager := &dummy.ClusterManager{
@@ -74,7 +74,7 @@ func TestPlotterController(t *testing.T) {
 			Namespace: namespace,
 		},
 	}
-	res, err := r.Reconcile(req)
+	res, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	// Check the result of reconciliation to make sure it has the desired state.
@@ -84,16 +84,19 @@ func TestPlotterController(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, plotter)
 	g.Expect(err).To(gomega.BeNil(), "Can fetch plotter")
 
-	g.Expect(plotter.Status.Blueprints).To(gomega.HaveKey("kind-kind"))
+	g.Expect(plotter.Status.Blueprints).To(gomega.HaveKey("thegreendragon"))
+	blueprintMeta := plotter.Status.Blueprints["thegreendragon"]
+	g.Expect(blueprintMeta.Name).To(gomega.Equal(plotter.Name))
+	g.Expect(blueprintMeta.Namespace).To(gomega.Equal(BlueprintNamespace))
 
 	// Simulate that blueprint changes state to Ready=true
-	dummyManager.DeployedBlueprints["kind-kind"].Status.ObservedState.Ready = true
-	dummyManager.DeployedBlueprints["kind-kind"].Status.ObservedState.DataAccessInstructions = "nop"
+	dummyManager.DeployedBlueprints["thegreendragon"].Status.ObservedState.Ready = true
+	dummyManager.DeployedBlueprints["thegreendragon"].Status.ObservedState.DataAccessInstructions = "nop"
 
-	deployedBp := dummyManager.DeployedBlueprints["kind-kind"]
+	deployedBp := dummyManager.DeployedBlueprints["thegreendragon"]
 	g.Expect(deployedBp.Labels[app.ApplicationNamespaceLabel]).To(gomega.Equal("default"))
 	g.Expect(deployedBp.Labels[app.ApplicationNameLabel]).To(gomega.Equal("notebook"))
-	res, err = r.Reconcile(req)
+	res, err = r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
 	// Check the result of reconciliation to make sure it has the desired state.

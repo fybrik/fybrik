@@ -9,7 +9,7 @@ This page describes what must be provided when contributing a [module](../concep
 1. Create the [M4DModule YAML](#m4dmodule-yaml) which describes the capabilities of the module workload, in which flows it should be considered for inclusion, its supported interfaces, and the link to the module helm chart.
 1. [Test](#test) the new module
 
-These steps are described in the following sections in more detail, so that you can create your own modules for use by Mesh for Data.  Note that a new module is maintained in its own git repository, separate from the [the-mesh-for-data](https://github.com/ibm/the-mesh-for-data) repository.
+These steps are described in the following sections in more detail, so that you can create your own modules for use by Mesh for Data.  Note that a new module is maintained in its own git repository, separate from the [mesh-for-data](https://github.com/mesh-for-data/mesh-for-data) repository.
 
 ## Module Workload
 
@@ -37,17 +37,17 @@ $ curl --header "X-Vault-Token: ..." https://<address>/<secretPath>
 For any module chosen by the control plane to be part of the data path, the control plane needs to be able to install/remove/upgrade an instance of the module. Mesh for Data uses [Helm](https://helm.sh/docs/intro/using_helm/) to provide this functionality. Follow the Helm [getting started](https://helm.sh/docs/chart_template_guide/getting_started/) guide if you are unfamiliar with Helm. Note that Helm 3.3 or above is required.
 
 Because the chart is installed by the control plane, the input `values` to the chart must match the relevant type of [arguments](../reference/crds.md#blueprintspecflowstepsindexarguments). 
-<!-- TODO: expand this when we support setting values in the M4DModule YAML: https://github.com/IBM/the-mesh-for-data/pull/42 -->
+<!-- TODO: expand this when we support setting values in the M4DModule YAML: https://github.com/mesh-for-data/mesh-for-data/pull/42 -->
 
 If the module workload needs to return information to the user, that information should be written to the `NOTES.txt` of the helm chart.
 
-For a full example see the [Arrow Flight Module chart](https://github.com/IBM/the-mesh-for-data-flight-module/tree/cd168bb6cdf666c2ec1df960395c0dc1c8feeaa9/helm/afm).
+For a full example see the [Arrow Flight Module chart](https://github.com/mesh-for-data/arrow-flight-module/tree/cd168bb6cdf666c2ec1df960395c0dc1c8feeaa9/helm/afm).
 
 ### Publishing the Helm Chart
 
 Once your Helm chart is ready, you need to push it to a [OCI-based registry](https://helm.sh/docs/topics/registries/) such as [ghcr.io](https://ghcr.io). This allows the control plane of Mesh for Data to later pull the chart whenever it needs to be installed.
 
-You can use the [hack/make-rules/helm.mk](https://github.com/ibm/the-mesh-for-data/blob/master/hack/make-rules/helm.mk) Makefile, or manually push the chart:
+You can use the [hack/make-rules/helm.mk](https://github.com/mesh-for-data/mesh-for-data/blob/master/hack/make-rules/helm.mk) Makefile, or manually push the chart:
 
 ```bash
 HELM_EXPERIMENTAL_OCI=1 
@@ -126,7 +126,15 @@ flows: # Indicate the data flow(s) in which the control plane should consider us
 * `format` field can take a value such as `avro`, `parquet`, `json`, or `csv`.
 Note that a module that targets copy flows will omit the `api` field and contain just `source` and `sink`, a module that only supports reading data assets will omit the `sink` field and only contain `api` and `source`
 
-`capabilites.api` indicates the protocol and data format supported for reading or writing data from the user's workload.
+`capabilites.api` describes the api exposed by the module for reading or writing data from the user's workload:
+* `protocol` field can take a value such as `kafka`, `s3`, `jdbc-db2`, `m4d-arrow-flight`, etc 
+* `dataformat` field can take a value such as `parquet`, `csv`, `arrow`, etc
+* `endpoint` field describes the endpoint exposed the module
+
+`capabilites.api.endpoint` describes the endpoint from a networking perspective:
+* `hostname` field is the hostname to be used when accessing the module. Equals the release name. Can be omitted.
+* `port` field is the port of the service exposed by the module.
+* `scheme` field can take a value such as `http`, `https`, `grpc`, `grpc+tls`, `jdbc:oracle:thin:@`, etc
 
 An example for a module that copies data from a db2 database table to an s3 bucket in parquet format.
 
@@ -149,6 +157,9 @@ capabilities:
     api:
       protocol: m4d-arrow-flight
       dataformat: arrow
+      endpoint:
+        port: 80
+        scheme: grpc
     supportedInterfaces:
     - flow: read
       source:
@@ -184,8 +195,8 @@ capabilities:
 
 The following are examples of YAMLs from fully implemented modules:
 
-* An example YAML for a module that [copies from db2 to s3](https://github.com/ibm/the-mesh-for-data/blob/master/manager/testdata/e2e/module-implicit-copy-db2wh-to-s3.yaml) and includes transformation actions 
-* And an example [arrow flight read module](https://github.com/IBM/the-mesh-for-data-flight-module/blob/master/module.yaml) YAML, also with transformation support
+* An example YAML for a module that [copies from db2 to s3](https://github.com/mesh-for-data/mesh-for-data/blob/master/manager/testdata/e2e/module-implicit-copy-db2wh-to-s3.yaml) and includes transformation actions 
+* And an example [arrow flight read module](https://github.com/mesh-for-data/arrow-flight-module/blob/master/module.yaml) YAML, also with transformation support
 
 ## Test
 

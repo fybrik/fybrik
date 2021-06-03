@@ -5,14 +5,14 @@ package app
 
 import (
 	"context"
+	"fmt"
 
-	"emperror.dev/errors"
 	"github.com/go-logr/logr"
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/ibm/the-mesh-for-data/pkg/storage"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -48,7 +48,7 @@ func AllocateBucket(c client.Client, log logr.Logger, owner types.NamespacedName
 			SecretRef: types.NamespacedName{Name: account.Spec.SecretRef, Namespace: utils.GetSystemNamespace()},
 		}, nil
 	}
-	return nil, errors.New("Could not allocate a bucket in " + geo)
+	return nil, fmt.Errorf("could not allocate a bucket in %s", geo)
 }
 
 func generateDatasetName(owner types.NamespacedName, id string) string {

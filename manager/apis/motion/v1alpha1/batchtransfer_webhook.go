@@ -31,8 +31,7 @@ func (r *BatchTransfer) SetupWebhookWithManager(mgr ctrl.Manager) error {
 }
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-
-// +kubebuilder:webhook:path=/mutate-motion-m4d-ibm-com-v1alpha1-batchtransfer,mutating=true,failurePolicy=fail,groups=motion.m4d.ibm.com,resources=batchtransfers,verbs=create;update,versions=v1alpha1,name=mbatchtransfer.kb.io
+// +kubebuilder:webhook:admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/mutate-motion-m4d-ibm-com-v1alpha1-batchtransfer,mutating=true,failurePolicy=fail,groups=motion.m4d.ibm.com,resources=batchtransfers,verbs=create;update,versions=v1alpha1,name=mbatchtransfer.kb.io
 
 var _ webhook.Defaulter = &BatchTransfer{}
 
@@ -126,7 +125,7 @@ func defaultDataStoreDescription(dataStore *DataStore) {
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-// +kubebuilder:webhook:verbs=create;update,path=/validate-motion-m4d-ibm-com-v1alpha1-batchtransfer,mutating=false,failurePolicy=fail,groups=motion.m4d.ibm.com,resources=batchtransfers,versions=v1alpha1,name=vbatchtransfer.kb.io
+// +kubebuilder:webhook:verbs=create;update,admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/validate-motion-m4d-ibm-com-v1alpha1-batchtransfer,mutating=false,failurePolicy=fail,groups=motion.m4d.ibm.com,resources=batchtransfers,versions=v1alpha1,name=vbatchtransfer.kb.io
 
 var _ webhook.Validator = &BatchTransfer{}
 
@@ -187,8 +186,8 @@ func validateDataStore(path *field.Path, store *DataStore) []*field.Error {
 	if store.Database != nil {
 		var db = store.Database
 		databasePath := path.Child("database")
-		if len(db.Password) != 0 && db.VaultPath != nil {
-			allErrs = append(allErrs, field.Invalid(databasePath, db.VaultPath, "Can only set vaultPath or password!"))
+		if len(db.Password) != 0 && db.Vault != nil {
+			allErrs = append(allErrs, field.Invalid(databasePath, db.Vault, "Can only set vault or password!"))
 		}
 
 		match, _ := regexp.MatchString("^jdbc:[a-z0-9]+://", db.Db2URL)
@@ -209,8 +208,9 @@ func validateDataStore(path *field.Path, store *DataStore) []*field.Error {
 
 	if store.S3 != nil {
 		s3Path := path.Child("s3")
-		if msgs := validationutils.IsDNS1123Subdomain(store.S3.Endpoint); len(msgs) != 0 {
-			allErrs = append(allErrs, field.Invalid(s3Path.Child("endpoint"), store.S3.Endpoint, "Invalid endpoint! Expecting a valid domain!"))
+		_, err := url.Parse(store.S3.Endpoint)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(s3Path.Child("endpoint"), store.S3.Endpoint, "Invalid endpoint! Expecting a endpoint URL!"))
 		}
 
 		if len(store.S3.Bucket) == 0 {
@@ -221,8 +221,8 @@ func validateDataStore(path *field.Path, store *DataStore) []*field.Error {
 			allErrs = append(allErrs, field.Invalid(s3Path.Child("objectKey"), store.S3.ObjectKey, validationutils.EmptyError()))
 		}
 
-		if (len(store.S3.AccessKey) != 0 || len(store.S3.SecretKey) != 0) && store.S3.VaultPath != nil {
-			allErrs = append(allErrs, field.Invalid(s3Path, store.S3.VaultPath, "Can only set vaultPath or accessKey/secretKey!"))
+		if (len(store.S3.AccessKey) != 0 || len(store.S3.SecretKey) != 0) && store.S3.Vault != nil {
+			allErrs = append(allErrs, field.Invalid(s3Path, store.S3.Vault, "Can only set vault or accessKey/secretKey!"))
 		}
 	}
 
@@ -260,8 +260,8 @@ func validateDataStore(path *field.Path, store *DataStore) []*field.Error {
 			allErrs = append(allErrs, field.Invalid(kafkaPath.Child("kafkaTopic"), store.Kafka.KafkaTopic, validationutils.EmptyError()))
 		}
 
-		if len(store.Kafka.Password) != 0 && store.Kafka.VaultPath != nil {
-			allErrs = append(allErrs, field.Invalid(kafkaPath, store.Kafka.VaultPath, "Can only set vaultPath or password!"))
+		if len(store.Kafka.Password) != 0 && store.Kafka.Vault != nil {
+			allErrs = append(allErrs, field.Invalid(kafkaPath, store.Kafka.Vault, "Can only set vault or password!"))
 		}
 
 		if store.Kafka.DataFormat != "" && store.Kafka.DataFormat != "avro" && store.Kafka.DataFormat != "json" {

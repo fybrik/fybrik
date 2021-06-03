@@ -8,16 +8,23 @@ op=$1
 
 source ./common.sh
 
-K8S_VERSION=${K8S_VERSION:-v1.16.9}
+K8S_VERSION=${K8S_VERSION:-v1.16.15}
 : ${KUBE_NAMESPACE:=m4d-system}
+: ${KEEP_PROXY:=true}
 
 registry_delete() {
   docker network disconnect kind kind-registry
   docker kill kind-registry
   docker rm -f kind-registry
+  if [ "${KEEP_PROXY}" != true ]; then
+    docker network disconnect kind kind-registry-proxy
+    docker kill kind-registry-proxy
+    docker rm -f kind-registry-proxy
+  fi
 }
 
 registry_create() {
+  # The registry is for the locally created images and helm charts
   running="$(docker inspect -f '{{.State.Running}}' "kind-registry" 2>/dev/null || true)"
   if [ "${running}" != 'true' ]; then
     docker run \
@@ -25,6 +32,30 @@ registry_create() {
       --network kind \
       -e REGISTRY_HTTP_ADDR=0.0.0.0:5000 \
       registry:2
+  fi
+  # The proxy registry caches public images and helps to circumvent the
+  # docker hub download limits by allowing to set a separate docker hub login.
+  proxy_running="$(docker inspect -f '{{.State.Running}}' "kind-registry-proxy" 2>/dev/null || true)"
+  if [ "${proxy_running}" != 'true' ]; then
+    if [ -v DOCKERHUB_USERNAME ]; then
+      echo "Creating proxy with user login"
+      docker run \
+          -d --restart=always -p "5001:5000" --name "kind-registry-proxy" \
+          --network kind \
+          -e REGISTRY_HTTP_ADDR=0.0.0.0:5001 \
+          -e REGISTRY_PROXY_REMOTEURL="https://registry-1.docker.io" \
+          -e REGISTRY_PROXY_USERNAME=${DOCKERHUB_USERNAME} \
+          -e REGISTRY_PROXY_PASSWORD=${DOCKERHUB_PASSWORD} \
+          registry:2
+    else
+      echo "Creating proxy with anonymous login"
+      docker run \
+          -d --restart=always -p "5001:5000" --name "kind-registry-proxy" \
+          --network kind \
+          -e REGISTRY_HTTP_ADDR=0.0.0.0:5001 \
+          -e REGISTRY_PROXY_REMOTEURL="https://registry-1.docker.io" \
+          registry:2
+    fi
   fi
 }
 
@@ -68,8 +99,8 @@ multi)
   kind_create kind kind-config.yaml &
   kind_create control kind-control-config.yaml &
   wait
-  install_nginx_ingress control &
   registry_create
+  install_nginx_ingress control &
   ;;
 *)
   header_text "Installing kind cluster"

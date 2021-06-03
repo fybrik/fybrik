@@ -12,8 +12,8 @@ import (
 	"os"
 	"strconv"
 
-	opabl "github.com/ibm/the-mesh-for-data/connectors/opa/lib"
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	opabl "github.com/mesh-for-data/mesh-for-data/connectors/opa/lib"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
 	"google.golang.org/grpc"
 )
 
@@ -57,7 +57,7 @@ func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationCon
 	timeOut, err := strconv.Atoi(timeOutInSecs)
 
 	if err != nil {
-		return nil, fmt.Errorf("Atoi conversion of timeOutinseconds failed: %v", err)
+		return nil, fmt.Errorf("conversion of timeOutinseconds failed: %v", err)
 	}
 
 	catalogReader := opabl.NewCatalogReader(catalogConnectorAddress, timeOut)
@@ -68,7 +68,7 @@ func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationCon
 	}
 	jsonOutput, err := json.MarshalIndent(eval, "", "\t")
 	if err != nil {
-		return nil, fmt.Errorf("Error during MarshalIndent of OPA Decisions: %v", err)
+		return nil, fmt.Errorf("error during MarshalIndent of OPA decisions: %v", err)
 	}
 	log.Println("Received evaluation : " + string(jsonOutput))
 	return eval, err

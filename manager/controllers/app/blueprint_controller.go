@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	"helm.sh/helm/v3/pkg/release"
 
 	"github.com/go-logr/logr"
@@ -22,8 +22,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
-	"github.com/ibm/the-mesh-for-data/pkg/helm"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	"github.com/mesh-for-data/mesh-for-data/pkg/helm"
 	corev1 "k8s.io/api/core/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
@@ -40,8 +40,7 @@ type BlueprintReconciler struct {
 
 // Reconcile receives a Blueprint CRD
 //nolint:dupl
-func (r *BlueprintReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
+func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("blueprint", req.NamespacedName)
 	var err error
 
@@ -116,15 +115,10 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) (ctr
 	return ctrl.Result{}, nil
 }
 
-func getReleaseName(blueprintName string, step app.FlowStep) string {
-	fullName := blueprintName + "-" + step.Name
-	return utils.HelmConformName(fullName)
-}
-
 func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) error {
 	errs := make([]string, 0)
 	for _, step := range blueprint.Spec.Flow.Steps {
-		releaseName := getReleaseName(blueprint.Name, step)
+		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], step)
 		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus != nil || rel == nil {
 			continue
 		}
@@ -140,7 +134,7 @@ func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) 
 
 func (r *BlueprintReconciler) hasExternalResources(blueprint *app.Blueprint) bool {
 	for _, step := range blueprint.Spec.Flow.Steps {
-		releaseName := getReleaseName(blueprint.Name, step)
+		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], step)
 		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus == nil && rel != nil {
 			return true
 		}
@@ -260,8 +254,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		if err != nil {
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
-
-		releaseName := getReleaseName(blueprint.Name, step)
+		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], step)
 		log.V(0).Info("Release name: " + releaseName)
 		numReleases++
 		// check the release status
