@@ -5,6 +5,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"time"
 
@@ -16,7 +17,6 @@ import (
 	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
 	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
-	"github.com/mesh-for-data/mesh-for-data/pkg/serde"
 	"github.com/mesh-for-data/mesh-for-data/pkg/vault"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -81,10 +81,11 @@ func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.Dat
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	datasetDetails := &pb.DatasetDetails{}
-	if err := serde.FromRawExtention(info.Details, datasetDetails); err != nil {
-		return "", err
+	datasetDetails, ok := info.Details.Data.(*pb.DatasetDetails)
+	if !ok {
+		return "", fmt.Errorf("data details has incorrect type %T (expected *DatasetDetails)", info.Details.Data)
 	}
+
 	var creds *pb.Credentials
 	if creds, err = SecretToCredentials(r.Client, types.NamespacedName{Name: info.SecretRef, Namespace: utils.GetSystemNamespace()}); err != nil {
 		return "", err

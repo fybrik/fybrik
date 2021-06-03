@@ -69,6 +69,7 @@ spec:
                                           connection:
                                             description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
                                             type: object
+                                            x-kubernetes-preserve-unknown-fields: true
                                           format:
                                             description: Format represents data format (e.g. parquet) as received from catalog connectors
                                             type: string
@@ -104,6 +105,7 @@ spec:
                                           connection:
                                             description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
                                             type: object
+                                            x-kubernetes-preserve-unknown-fields: true
                                           format:
                                             description: Format represents data format (e.g. parquet) as received from catalog connectors
                                             type: string
@@ -137,6 +139,7 @@ spec:
                                         description: Transformations are different types of processing that may be done to the data as it is copied.
                                         items:
                                           type: object
+                                          x-kubernetes-preserve-unknown-fields: true
                                         type: array
                                     required:
                                     - destination
@@ -156,6 +159,7 @@ spec:
                                             connection:
                                               description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
                                               type: object
+                                              x-kubernetes-preserve-unknown-fields: true
                                             format:
                                               description: Format represents data format (e.g. parquet) as received from catalog connectors
                                               type: string
@@ -189,6 +193,7 @@ spec:
                                           description: Transformations are different types of processing that may be done to the data
                                           items:
                                             type: object
+                                            x-kubernetes-preserve-unknown-fields: true
                                           type: array
                                       required:
                                       - assetID
@@ -206,6 +211,7 @@ spec:
                                             connection:
                                               description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
                                               type: object
+                                              x-kubernetes-preserve-unknown-fields: true
                                             format:
                                               description: Format represents data format (e.g. parquet) as received from catalog connectors
                                               type: string
@@ -239,6 +245,7 @@ spec:
                                           description: Transformations are different types of processing that may be done to the data as it is written.
                                           items:
                                             type: object
+                                            x-kubernetes-preserve-unknown-fields: true
                                           type: array
                                       required:
                                       - destination

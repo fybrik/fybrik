@@ -1084,7 +1084,7 @@ Interface indicates the protocol and format expected by the data user
     <tbody><tr>
         <td><b>dataformat</b></td>
         <td>enum</td>
-        <td>DataFormatType defines data format type [parquet table csv json avro binary arrow]</td>
+        <td>DataFormatType defines data format type [parquet table csv json avro orc binary arrow]</td>
         <td>false</td>
       </tr><tr>
         <td><b>protocol</b></td>
@@ -1207,6 +1207,11 @@ Generated resource identifier
         </tr>
     </thead>
     <tbody><tr>
+        <td><b>appVersion</b></td>
+        <td>integer</td>
+        <td>Version of M4DApplication that has generated this resource</td>
+        <td>true</td>
+      </tr><tr>
         <td><b>kind</b></td>
         <td>string</td>
         <td>Kind of the resource (Blueprint, Plotter)</td>
@@ -1538,7 +1543,7 @@ API indicates to the application how to access/write the data
     <tbody><tr>
         <td><b>dataformat</b></td>
         <td>enum</td>
-        <td>DataFormatType defines data format type [parquet table csv json avro binary arrow]</td>
+        <td>DataFormatType defines data format type [parquet table csv json avro orc binary arrow]</td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#m4dmodulespeccapabilitiesapiendpoint">endpoint</a></b></td>
@@ -1643,7 +1648,7 @@ Sink specifies the output data protocol and format
     <tbody><tr>
         <td><b>dataformat</b></td>
         <td>enum</td>
-        <td>DataFormatType defines data format type [parquet table csv json avro binary arrow]</td>
+        <td>DataFormatType defines data format type [parquet table csv json avro orc binary arrow]</td>
         <td>false</td>
       </tr><tr>
         <td><b>protocol</b></td>
@@ -1673,7 +1678,7 @@ Source specifies the input data protocol and format
     <tbody><tr>
         <td><b>dataformat</b></td>
         <td>enum</td>
-        <td>DataFormatType defines data format type [parquet table csv json avro binary arrow]</td>
+        <td>DataFormatType defines data format type [parquet table csv json avro orc binary arrow]</td>
         <td>false</td>
       </tr><tr>
         <td><b>protocol</b></td>
@@ -2599,15 +2604,20 @@ MetaBlueprint defines blueprint metadata (name, namespace) and status
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>metadata</b></td>
-        <td>object</td>
+        <td><b>name</b></td>
+        <td>string</td>
         <td></td>
-        <td>false</td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>namespace</b></td>
+        <td>string</td>
+        <td></td>
+        <td>true</td>
       </tr><tr>
         <td><b><a href="#plotterstatusblueprintskeystatus">status</a></b></td>
         <td>object</td>
         <td>BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators forthe Kubernetes resources owned by the Blueprint for cleanup and status monitoring</td>
-        <td>false</td>
+        <td>true</td>
       </tr></tbody>
 </table>
 

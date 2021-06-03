@@ -44,6 +44,7 @@ Run the following to install vault and the plugin in development mode:
         --set "injector.enabled=false" \
         --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.1.0/third_party/vault/vault-single-cluster/values.yaml \
         --wait --timeout 120s
+    kubectl wait --for=condition=ready --all pod -n m4d-system --timeout=120s
     kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.1.0/third_party/vault/vault-single-cluster/vault-rbac.yaml -n m4d-system
     ```
 
@@ -58,6 +59,7 @@ Run the following to install vault and the plugin in development mode:
         --set "server.dev.enabled=true" \
         --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.1.0/third_party/vault/vault-single-cluster/values.yaml \
         --wait --timeout 120s
+    kubectl wait --for=condition=ready --all pod -n m4d-system --timeout=120s
     kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.1.0/third_party/vault/vault-single-cluster/vault-rbac.yaml -n m4d-system
     ```
 

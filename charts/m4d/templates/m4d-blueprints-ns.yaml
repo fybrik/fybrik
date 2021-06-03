@@ -1,4 +1,4 @@
-{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+{{- if or .Values.coordinator.enabled .Values.worker.enabled }}
 {{- if .Values.clusterScoped }}
 apiVersion: v1
 kind: Namespace
