@@ -334,10 +334,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	}
 	// add or update new buckets
 	for datasetID, info := range moduleManager.ProvisionedStorage {
-		raw, err := serde.ToRawExtension(info.Details)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
+		raw := serde.NewArbitrary(info.Details)
 		applicationContext.Status.ProvisionedStorage[datasetID] = app.DatasetDetails{
 			DatasetRef: info.Storage.Name,
 			SecretRef:  info.Storage.SecretRef.Name,

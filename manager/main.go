@@ -95,30 +95,15 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
-	var ctrlOps manager.Options
-
-	if len(namespace) > 0 {
-		// manager restricted to a single namespace
-		ctrlOps = ctrl.Options{
-			Scheme:             scheme,
-			Namespace:          namespace,
-			MetricsBindAddress: metricsAddr,
-			LeaderElection:     enableLeaderElection,
-			LeaderElectionID:   "m4d-operator-leader-election",
-			Port:               9443,
-		}
-	} else {
-		// manager not restricted to a namespace.
-		ctrlOps = ctrl.Options{
-			Scheme:             scheme,
-			MetricsBindAddress: metricsAddr,
-			LeaderElection:     enableLeaderElection,
-			LeaderElectionID:   "m4d-operator-leader-election",
-			Port:               9443,
-		}
-	}
-
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrlOps)
+	setupLog.Info("creating manager")
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+		Scheme:             scheme,
+		Namespace:          namespace,
+		MetricsBindAddress: metricsAddr,
+		LeaderElection:     enableLeaderElection,
+		LeaderElectionID:   "m4d-operator-leader-election",
+		Port:               9443,
+	})
 
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -126,6 +111,7 @@ func main() {
 	}
 
 	// Initialize ClusterManager
+	setupLog.Info("creating cluster manager")
 	var clusterManager multicluster.ClusterManager
 	if enableApplicationController || enablePlotterController {
 		clusterManager, err = NewClusterManager(mgr)
@@ -136,6 +122,8 @@ func main() {
 	}
 
 	if enableApplicationController {
+		setupLog.Info("creating M4DApplication controller")
+
 		// Initialize PolicyCompiler interface
 		policyCompiler := pc.NewPolicyCompiler()
 
@@ -153,6 +141,7 @@ func main() {
 
 	if enablePlotterController {
 		// Initiate the Plotter Controller
+		setupLog.Info("creating Plotter controller")
 		plotterController := app.NewPlotterReconciler(mgr, "Plotter", clusterManager)
 		if err := plotterController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", plotterController.Name)
@@ -162,6 +151,7 @@ func main() {
 
 	if enableBlueprintController {
 		// Initiate the Blueprint Controller
+		setupLog.Info("creating Blueprint controller")
 		blueprintController := app.NewBlueprintReconciler(mgr, "Blueprint", new(helm.Impl))
 		if err := blueprintController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", blueprintController.Name)
@@ -170,6 +160,7 @@ func main() {
 	}
 
 	if enableMotionController {
+		setupLog.Info("creating motion controllers")
 		motion.SetupMotionControllers(mgr)
 	}
 

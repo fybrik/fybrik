@@ -18,7 +18,6 @@ import (
 	"github.com/mesh-for-data/mesh-for-data/pkg/serde"
 	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
 	vault "github.com/mesh-for-data/mesh-for-data/pkg/vault"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -100,11 +99,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 			ObjectKey: originalAssetName + utils.Hash(m.Owner.Name+m.Owner.Namespace, 10),
 		},
 	}
-	connection, err := serde.ToRawExtension(datastore)
-	if err != nil {
-		m.Log.Info("Could not convert connection details")
-		return nil, err
-	}
+	connection := serde.NewArbitrary(datastore)
 	assetInfo := NewAssetInfo{
 		Storage: bucket,
 		Details: &pb.DatasetDetails{
@@ -263,10 +258,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 			return instances, err
 		}
 		// append moduleinstances to the list
-		actions, err := actionsToRawExtentions(copySelector.Actions)
-		if err != nil {
-			return instances, err
-		}
+		actions := actionsToArbitrary(copySelector.Actions)
 		copyArgs := &app.ModuleArguments{
 			Copy: &app.CopyModuleArgs{
 				Source:          *sourceDataStore,
@@ -300,10 +292,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 			readSource = *sinkDataStore
 		}
 
-		actions, err := actionsToRawExtentions(readSelector.Actions)
-		if err != nil {
-			return instances, err
-		}
+		actions := actionsToArbitrary(readSelector.Actions)
 		readCluster, err := readSelector.SelectCluster(item, m.Clusters)
 		if err != nil {
 			m.Log.Info("Could not determine the cluster for read: " + err.Error())
@@ -455,14 +444,11 @@ func (m *ModuleManager) GetProcessingGeography(applicationContext *app.M4DApplic
 	return "", errors.New("Unknown cluster: " + clusterName)
 }
 
-func actionsToRawExtentions(actions []*pb.EnforcementAction) ([]runtime.RawExtension, error) {
-	result := []runtime.RawExtension{}
+func actionsToArbitrary(actions []*pb.EnforcementAction) []serde.Arbitrary {
+	result := []serde.Arbitrary{}
 	for _, action := range actions {
-		raw, err := serde.ToRawExtension(action)
-		if err != nil {
-			return result, err
-		}
+		raw := serde.NewArbitrary(action)
 		result = append(result, *raw)
 	}
-	return result, nil
+	return result
 }
