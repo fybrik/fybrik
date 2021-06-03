@@ -24,7 +24,7 @@ manager: generate fmt vet
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: generate fmt vet manifests
-	go run ./main.go
+	go run ./main.go --enable-all-controllers --metrics-bind-addr=0
 
 # Generate manifests e.g. CRD, RBAC etc.
 .PHONY: generate

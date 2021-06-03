@@ -12,7 +12,6 @@ import (
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
 	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
 	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // DataDetails is the information received from the catalog connector
@@ -24,7 +23,7 @@ type DataDetails struct {
 	// Geography is the geo-location of the asset
 	Geography string
 	// Connection is the connection details in raw format as received from the connector
-	Connection runtime.RawExtension
+	Connection serde.Arbitrary
 	// Metadata
 	Metadata *pb.DatasetMetadata
 }
@@ -250,10 +249,7 @@ func CatalogDatasetToDataDetails(response *pb.CatalogDatasetInfo) (*DataDetails,
 		return nil, err
 	}
 
-	connection, err := serde.ToRawExtension(details.DataStore)
-	if err != nil {
-		return nil, err
-	}
+	connection := serde.NewArbitrary(details.DataStore)
 
 	return &DataDetails{
 		Name: details.Name,

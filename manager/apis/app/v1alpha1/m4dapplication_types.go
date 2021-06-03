@@ -4,9 +4,9 @@
 package v1alpha1
 
 import (
+	"github.com/mesh-for-data/mesh-for-data/pkg/serde"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // CatalogRequirements contain the specifics for catalogging the data asset
@@ -148,7 +148,7 @@ type DatasetDetails struct {
 	// Reference to a secret where the credentials are stored
 	SecretRef string `json:"secretRef,omitempty"`
 	// Dataset information
-	Details runtime.RawExtension `json:"details,omitempty"`
+	Details serde.Arbitrary `json:"details,omitempty"`
 }
 
 // M4DApplicationStatus defines the observed state of M4DApplication.
