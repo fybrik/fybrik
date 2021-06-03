@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "$id": "policymanager.values.schema.json#",
-    "title": "Policy Manager Values Taxonomy",
+    "title": "Policy Manager Request Values Taxonomy",
     "description": "Values owned by the policy manager.",
     "definitions": {
         "intent": {

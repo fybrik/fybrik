@@ -67,11 +67,11 @@
                     "type": "string",
                     "description": "Time when the asset was created"
                 },
-                "CreatedBy": {
+                "createdBy": {
                     "type": "string",
                     "description": "Owner Id for the user who created the asset"
                 },
-                "updationTime": {
+                "updateTime": {
                     "type": "string",
                     "description": "Time when the dataset got updated"
                 },
@@ -81,7 +81,7 @@
                 },
                 "totalRatings": {
                     "type": "string",
-                    "description": "Indicates the total rating of the asset"
+                    "description": "Indicates the total rating of the asset given by the data users"
 					}
 				}
 			}
