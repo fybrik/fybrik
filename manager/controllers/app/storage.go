@@ -8,11 +8,11 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/ibm/the-mesh-for-data/pkg/storage"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
 	"k8s.io/apimachinery/pkg/types"
 )
 

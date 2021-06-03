@@ -10,7 +10,7 @@
                 "intent": { "$ref": "policymanager.values.schema.json#/definitions/intent"},
                 "role": { "$ref": "policymanager.values.schema.json#/definitions/role"}
             },
-            "required": ["intent"]
+            "required": ["intent", "role"]
         },
         "interface": { "$ref": "module.values.schema.json#/definitions/interface" }
     }

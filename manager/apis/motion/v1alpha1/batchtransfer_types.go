@@ -4,7 +4,7 @@
 package v1alpha1
 
 import (
-	"github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -336,6 +336,7 @@ type Transformation struct {
 
 	// Additional options for this transformation.
 	// +optional
+	//+kubebuilder:pruning:PreserveUnknownFields
 	Options map[string]string `json:"options,omitempty"`
 }
 
@@ -419,6 +420,7 @@ type Spark struct {
 
 	// Additional options for Spark configuration.
 	// +optional
+	//+kubebuilder:pruning:PreserveUnknownFields
 	AdditionalOptions map[string]string `json:"options,omitempty"`
 }
 

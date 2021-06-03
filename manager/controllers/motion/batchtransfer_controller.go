@@ -8,7 +8,7 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
-	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
+	motionv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/motion/v1alpha1"
 	kbatch "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
@@ -42,8 +42,7 @@ type BatchTransferReconciler struct {
 // - Check if the object is being deleted and handle a finalizer if needed
 // - Update the status by checking the existing Job/CronJob
 // - If K8s objects are not yet created create the objects
-func (reconciler *BatchTransferReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
+func (reconciler *BatchTransferReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := reconciler.Log.WithValues("batchtransfer", req.NamespacedName)
 
 	batchTransfer := &motionv1.BatchTransfer{}

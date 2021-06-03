@@ -16,7 +16,7 @@ clusterScoped: true
 # Global configuration applies to multiple components installed by this chart
 global:
   # Default hub for Mesh for Data images.
-  hub: ghcr.io/the-mesh-for-data
+  hub: ghcr.io/mesh-for-data
   # Default tag for Mesh for Data images.
   # If no value is set, the chart's appVersion will be used.
   tag: ""
@@ -65,7 +65,7 @@ coordinator:
   # Configure the vault instance to be used by the coordinator manager
   vault:
     # Set to the Vault address. 
-    address: "http://vault.m4d-system:8200"
+    address: "http://vault.{{ .Release.Namespace }}:8200"
     # Login method to Vault
     login:
       # Token authentication

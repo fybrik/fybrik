@@ -10,8 +10,8 @@ import (
 	"os"
 	"strconv"
 
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
-	pc "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/policy-compiler"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	pc "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

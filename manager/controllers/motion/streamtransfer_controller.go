@@ -13,7 +13,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	motionv1 "github.com/ibm/the-mesh-for-data/manager/apis/motion/v1alpha1"
+	motionv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/motion/v1alpha1"
 )
 
 // StreamTransferReconciler reconciles a StreamTransfer object
@@ -29,8 +29,7 @@ type StreamTransferReconciler struct {
 // if it does not exist (including a persistent checkpoint storage) and otherwise be left running.
 // A more involved version that is handling errors and is discovering crash loops may have to be based
 // on a Pod directly in order to discover errors on a finer granular level.
-func (reconciler *StreamTransferReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
+func (reconciler *StreamTransferReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := reconciler.Log.WithValues("streamtransfer", req.NamespacedName)
 
 	streamTransfer := &motionv1.StreamTransfer{}

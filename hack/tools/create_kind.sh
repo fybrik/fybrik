@@ -8,7 +8,7 @@ op=$1
 
 source ./common.sh
 
-K8S_VERSION=${K8S_VERSION:-v1.16.9}
+K8S_VERSION=${K8S_VERSION:-v1.16.15}
 : ${KUBE_NAMESPACE:=m4d-system}
 : ${KEEP_PROXY:=true}
 

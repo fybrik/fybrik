@@ -19,7 +19,7 @@ spec:
         protocol: s3
         dataformat: parquet
   chart:
-    name: ghcr.io/the-mesh-for-data/m4d-implicit-copy-batch:0.1.0
+    name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
   statusIndicators:
     - kind: BatchTransfer
       successCondition: status.status == SUCCEEDED

@@ -8,8 +8,8 @@ import (
 	"os"
 	"testing"
 
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
-	tu "github.com/ibm/the-mesh-for-data/pkg/policy-compiler/testutil"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	tu "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/testutil"
 )
 
 func policyCompilerMainOnly(purpose string) *pb.PoliciesDecisions {

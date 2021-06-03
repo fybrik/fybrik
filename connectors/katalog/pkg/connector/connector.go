@@ -5,18 +5,16 @@ package connector
 import (
 	"net"
 
-	connectors "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
+	connectors "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"k8s.io/apimachinery/pkg/runtime"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 func Start(address string) error {
 	scheme := runtime.NewScheme()
-	_ = clientgoscheme.AddToScheme(scheme)
 	_ = AddToScheme(scheme)
 
 	client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: scheme})

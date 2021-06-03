@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	tu "github.com/ibm/the-mesh-for-data/connectors/opa/testutil"
+	tu "github.com/mesh-for-data/mesh-for-data/connectors/opa/testutil"
 	"gotest.tools/assert"
 )
 

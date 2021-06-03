@@ -6,12 +6,12 @@ package modules
 import (
 	"errors"
 
-	"github.com/ibm/the-mesh-for-data/pkg/serde"
+	"github.com/mesh-for-data/mesh-for-data/pkg/serde"
 
-	app "github.com/ibm/the-mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/ibm/the-mesh-for-data/manager/controllers/utils"
-	pb "github.com/ibm/the-mesh-for-data/pkg/connectors/protobuf"
-	"github.com/ibm/the-mesh-for-data/pkg/multicluster"
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
