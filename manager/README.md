@@ -81,20 +81,17 @@ Below is a `launch.json` file for VSCode:
 ```json
 {
     "version": "0.2.0",
-    {
-        "version": "0.2.0",
-        "configurations": [
-            {
-                "name": "Launch",
-                "type": "go",
-                "request": "launch",
-                "mode": "auto",
-                "program": "${workspaceFolder}/manager/main.go",
-                "envFile": "${workspaceFolder}/.env",
-                "args": ["--metrics-bind-addr=0", "--enable-all-controllers"]
-            }
-        ]
-    }
+    "configurations": [
+        {
+            "name": "Launch",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/manager/main.go",
+            "envFile": "${workspaceFolder}/.env",
+            "args": ["--metrics-bind-addr=0", "--enable-all-controllers"]
+        }
+    ]
 }
 ```
 
