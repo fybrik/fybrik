@@ -45,8 +45,8 @@ func newTaxonomyValidateCmd() *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := taxonomy.ValidateSchema(args[0])
-			if err != nil {
-				fmt.Println("Validate: " + strings.Join(args, " ") + "successfully")
+			if err == nil {
+				fmt.Println("Validate: " + strings.Join(args, " ") + " successfully")
 			}
 			return err
 		},
