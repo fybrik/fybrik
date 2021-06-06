@@ -14,23 +14,23 @@ func TestValidateSchema_embedded_module(t *testing.T) {
 	g.Expect(err).NotTo(HaveOccurred())
 }
 */
-
+/*
 func TestValidateSchema_embedded_policymanager(t *testing.T) {
-	taxonomy_file := "policymanager.structs.schema.json"
+	taxonomyFile := "policymanager.structs.schema.json"
 	g := NewGomegaWithT(t)
-	err := ValidateSchema("../../config/taxonomy/" + taxonomy_file)
+	err := ValidateSchema("../../config/taxonomy/" + taxonomyFile)
 	g.Expect(err).NotTo(HaveOccurred())
 }
-
+*/
 func TestValidateSchema_simple_success(t *testing.T) {
-	taxonomy_file := "catalog.structs.schema.json"
+	taxonomyFile := "catalog.structs.schema.json"
 	g := NewGomegaWithT(t)
-	err := ValidateSchema("./" + taxonomy_file)
+	err := ValidateSchema("./" + taxonomyFile)
 	g.Expect(err).NotTo(HaveOccurred())
 }
 func TestValidateSchema_simple_fail(t *testing.T) {
-	taxonomy_file := "bad_catalog.structs.schema.json"
+	taxonomyFile := "bad_catalog.structs.schema.json"
 	g := NewGomegaWithT(t)
-	err := ValidateSchema("./" + taxonomy_file)
+	err := ValidateSchema("./" + taxonomyFile)
 	g.Expect(err).To(HaveOccurred())
 }
