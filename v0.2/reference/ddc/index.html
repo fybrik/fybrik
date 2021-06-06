@@ -1,0 +1,1596 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A cloud-native platform to control data usage">
+      
+      
+      
+      
+      <link rel="icon" href="../../static/logo.svg">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.1.6">
+    
+    
+      
+        <title>Data Distribution Controller - Mesh for Data</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.875de78c.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.f1a3b89f.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#02a6f2">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="light-blue" data-md-color-accent="">
+  
+    
+    <script>function __prefix(e){return new URL("../..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#data-distribution-controller" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Mesh for Data" class="md-header__button md-logo" aria-label="Mesh for Data" data-md-component="logo">
+      
+  <img src="../../static/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Mesh for Data
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Data Distribution Controller
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/mesh-for-data/mesh-for-data/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mesh-for-data/mesh-for-data
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      About
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../get-started/quickstart/" class="md-tabs__link">
+        Get Started
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../concepts/introduction/" class="md-tabs__link">
+        Concepts
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tasks/control-plane-security/" class="md-tabs__link">
+        Tasks
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../crds/" class="md-tabs__link md-tabs__link--active">
+        Reference
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contribute/" class="md-tabs__link">
+        Contribute
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Mesh for Data" class="md-nav__button md-logo" aria-label="Mesh for Data" data-md-component="logo">
+      
+  <img src="../../static/logo.svg" alt="logo">
+
+    </a>
+    Mesh for Data
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/mesh-for-data/mesh-for-data/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mesh-for-data/mesh-for-data
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        About
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      <label class="md-nav__link" for="__nav_2">
+        Get Started
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Get Started" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Get Started
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/quickstart/" class="md-nav__link">
+        Quick Start Guide
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/notebook/" class="md-nav__link">
+        Notebook sample
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      <label class="md-nav__link" for="__nav_3">
+        Concepts
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Concepts" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Concepts
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/introduction/" class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/architecture/" class="md-nav__link">
+        Architecture
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_3" type="checkbox" id="__nav_3_3" >
+      
+      <label class="md-nav__link" for="__nav_3_3">
+        Plugins
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Plugins" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_3">
+          <span class="md-nav__icon md-icon"></span>
+          Plugins
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/connectors/" class="md-nav__link">
+        Connectors
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/modules/" class="md-nav__link">
+        Modules
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      <label class="md-nav__link" for="__nav_4">
+        Tasks
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Tasks" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Tasks
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/control-plane-security/" class="md-nav__link">
+        Enable Control Plane Security
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/using-opa/" class="md-nav__link">
+        Using OPA
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/multicluster/" class="md-nav__link">
+        Multicluster setup
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+      
+      <label class="md-nav__link" for="__nav_5">
+        Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../crds/" class="md-nav__link">
+        API Reference
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../connectors/" class="md-nav__link">
+        Connectors API
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_3" type="checkbox" id="__nav_5_3" checked>
+      
+      <label class="md-nav__link" for="__nav_5_3">
+        Components
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Components" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_3">
+          <span class="md-nav__icon md-icon"></span>
+          Components
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Data Distribution Controller
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Data Distribution Controller
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview-of-requirements-and-functionality" class="md-nav__link">
+    Overview of Requirements and Functionality
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview of Requirements and Functionality">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#goals" class="md-nav__link">
+    Goals
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    Non-Goals
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#high-level-design" class="md-nav__link">
+    High-Level Design
+  </a>
+  
+    <nav class="md-nav" aria-label="High-Level Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-sets-and-data-assets" class="md-nav__link">
+    Data Sets and Data Assets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-stores" class="md-nav__link">
+    Data Stores
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transformations" class="md-nav__link">
+    Transformations
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-life-cycle" class="md-nav__link">
+    Data Life-cycle
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-high-level-description" class="md-nav__link">
+    API High-level Description
+  </a>
+  
+    <nav class="md-nav" aria-label="API High-level Description">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#secret-management" class="md-nav__link">
+    Secret management
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    Error handling
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#events" class="md-nav__link">
+    Events
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-specification" class="md-nav__link">
+    API Specification
+  </a>
+  
+    <nav class="md-nav" aria-label="API Specification">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    Examples
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-dependencies" class="md-nav__link">
+    External Dependencies
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relevant-code-repositories" class="md-nav__link">
+    Relevant Code Repositories
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#roadmap" class="md-nav__link">
+    Roadmap
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../katalog/" class="md-nav__link">
+        Katalog
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      <label class="md-nav__link" for="__nav_6">
+        Contribute
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Contribute" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Contribute
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/" class="md-nav__link">
+        About
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/environment/" class="md-nav__link">
+        Development Environment
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/build-test/" class="md-nav__link">
+        Build and Test
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/flow/" class="md-nav__link">
+        GitHub Workflow
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_5" type="checkbox" id="__nav_6_5" >
+      
+      <label class="md-nav__link" for="__nav_6_5">
+        Documentation
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Documentation" data-md-level="2">
+        <label class="md-nav__title" for="__nav_6_5">
+          <span class="md-nav__icon md-icon"></span>
+          Documentation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/documentation/" class="md-nav__link">
+        Contribute Documentation
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/documentation/formatting/" class="md-nav__link">
+        Formatting Standards
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/documentation/style/" class="md-nav__link">
+        Style Guide
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_6" type="checkbox" id="__nav_6_6" >
+      
+      <label class="md-nav__link" for="__nav_6_6">
+        Plugins
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Plugins" data-md-level="2">
+        <label class="md-nav__title" for="__nav_6_6">
+          <span class="md-nav__icon md-icon"></span>
+          Plugins
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/modules/" class="md-nav__link">
+        Module Development
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview-of-requirements-and-functionality" class="md-nav__link">
+    Overview of Requirements and Functionality
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview of Requirements and Functionality">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#goals" class="md-nav__link">
+    Goals
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    Non-Goals
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#high-level-design" class="md-nav__link">
+    High-Level Design
+  </a>
+  
+    <nav class="md-nav" aria-label="High-Level Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-sets-and-data-assets" class="md-nav__link">
+    Data Sets and Data Assets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-stores" class="md-nav__link">
+    Data Stores
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transformations" class="md-nav__link">
+    Transformations
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-life-cycle" class="md-nav__link">
+    Data Life-cycle
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-high-level-description" class="md-nav__link">
+    API High-level Description
+  </a>
+  
+    <nav class="md-nav" aria-label="API High-level Description">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#secret-management" class="md-nav__link">
+    Secret management
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    Error handling
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#events" class="md-nav__link">
+    Events
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-specification" class="md-nav__link">
+    API Specification
+  </a>
+  
+    <nav class="md-nav" aria-label="API Specification">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    Examples
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-dependencies" class="md-nav__link">
+    External Dependencies
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relevant-code-repositories" class="md-nav__link">
+    Relevant Code Repositories
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#roadmap" class="md-nav__link">
+    Roadmap
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/mesh-for-data/mesh-for-data/edit/master/site/docs/reference/ddc.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                <h1 id="data-distribution-controller">Data Distribution Controller</h1>
+<h2 id="overview-of-requirements-and-functionality">Overview of Requirements and Functionality</h2>
+<p>The <strong>Data Distribution Controller</strong> (DDC) handles the movement of data between data stores.
+Mesh for Data uses the DDC to perform an action called "implicit copy", i.e. the movement
+of a data set from one data store to another with possibly some unitary transform applied
+to that data set. It corresponds to Step 8 in the Architecture Document (Add a link here)</p>
+<p>Data can be copied from data store to data store in a large variety of different ways, depending on the types of the data store (e.g. COS, Relational DB) and nature of the data capture (Streamed, Snapshot).
+This document defines the functionality as well as the boundary conditions of the data distribution controller.</p>
+<h3 id="goals">Goals</h3>
+<p>This document introduces fundamental concepts of the data
+distribution component and describes a high-level API for invoking data distributions.
+The initial focus is on structured (tabular) data. One goal of the data distribution component is to maximize congruence
+across different data stores and formats by preserving not only the data content but also the structure of the data as
+faithfully as possible. Fully unstructured data such (e.g. "binary content") will also be supported but that is not the focus of the initial version. Semi-structured data will be supported on a case-by-case basis.</p>
+<h3 id="non-goals">Non-Goals</h3>
+<p>The focus is on how to invoke data distribution and not the if and when. This document doesn't describe the control component that is required to decide whether, when and how often data should be copied across storage systems.
+Neither does the data distribution perform any policy enforcement. This is done by the component that controls the data distribution system.</p>
+<h2 id="high-level-design">High-Level Design</h2>
+<p>Before providing an outline of the API functionality, some fundamental concepts are defined.</p>
+<h3 id="data-sets-and-data-assets">Data Sets and Data Assets</h3>
+<p>The following definition is aligned with the terminology used in the Watson Knowledge Catalog.
+Data is organized into data sets and data assets. A data set is a collection of data assets that is administered by a single body using a set of policies. Both data sets and data assets are uniquely identifiable. A data set is a collection of data assets with the same structure. Some examples:</p>
+<ul>
+<li>A data set is data that resides in a relational database where the database tables or views form the data asset.</li>
+<li>A data set consisting of objects that reside in a COS bucket where object prefix paths that have a common format are data assets. E.g. a set of partitioned parquet files with the same schema.</li>
+<li>A data set may be formed by a set of Kafka topics where each topic contains messages in compatible format. A data asset is represented by the content of the topic.</li>
+</ul>
+<p>The unit of data distribution is the data asset.</p>
+<h3 id="data-stores">Data Stores</h3>
+<p>A data store allows access to data sets and data assets. Each store allows to individually access data through a data store specific API, e.g. S3 API or JDBC. Additional properties that are relevant for data distribution:</p>
+<ul>
+<li>
+<p>Granularity of data access for reading: Some systems provide access to entire data assets only. (e.g. single unpartitioned files on COS). Other storage systems support queries to retrieve a sub-set (a selection and/or projection) of an individual data assets. (e.g. queries on Db2 or partitioned/bucketed prefixes on COS)</p>
+</li>
+<li>
+<p>Granularity of data access for writing: Fine-granular write access is required to apply delta-updates of individual data assets, i.e. update and insert (<em>upsert</em>) operations as well as deletes on record level are needed to process streams of changes.  Systems that support fine-granular updates are relational database systems, elastic search indexes, and in-memory caches. Other systems such as traditional parquet files stored on COS or HDFS only allow data assets to be updated in their entirety. More sophisticated storage formats such as <a href="https://delta.io/">Delta Lake</a>, <a href="https://iceberg.apache.org/">Apache Iceberg</a> or <a href="https://hudi.incubator.apache.org/">Hudi</a> extend the capabilities of parquet.</p>
+</li>
+<li>
+<p>Fidelity of the type system: Data stores use various different typing systems and have different data models that require type conversions as data is distributed between these systems.  For example, when moving the content of an elastic search index
+into a relational database we are moving between two entirely different data models.
+In order to minimize loss of information, type specific metadata (technical metadata) may need to be preserved as separate entities. In addition, schema inference might be needed to support certain data distributions.</p>
+</li>
+</ul>
+<p>The invoker of the DDC is assumed to have knowledge of the technical metadata present
+at the source data asset and of the <em>desired</em> technical metadata of that data asset at the target.
+If the invoker does not specify this the DDC will attempt to infer it where possible.
+In both cases the source and target technical metadata are returned as part of the result of the data
+distribution. If the passed source or target technical metadata is inconsistent with the data asset
+at the source, then the data distribution fails.</p>
+<p>The version 1.0 of the DDC supports the following data stores:</p>
+<ul>
+<li>Db2 LUW v10.5 or newer</li>
+<li>Apache Kafka v2.2 or newer (Raw + Confluent KTable format serialized in JSON or Avro)</li>
+<li>IBM COS with Parquet, JSON and ORC (using a Stocator based approach)</li>
+</ul>
+<h3 id="transformations">Transformations</h3>
+<p>The data distribution supports simple transformations and filtering such as:
+- Filtering of individual rows or columns based on condition clauses.
+- Masking of specific columns.
+- Encrypting/hashing of specific columns.
+- Sampling of a subset of rows.</p>
+<p>This is specifically for creating a derived version of a specific data asset and is <strong>NOT</strong> to enrich or combine
+data assets, i.e. this is a not a general purpose computation environment.</p>
+<h3 id="data-life-cycle">Data Life-cycle</h3>
+<p>The DDC moves a data asset from a source to a target data store. The copy of the data asset will
+be retained at the target until explicitly removed by the invoker via the DDC API.</p>
+<h2 id="api-high-level-description">API High-level Description</h2>
+<p>The API follows the custom resource definition approach (CRD) for Kubernetes. The following basic CRD types exist:
+- <em>BatchTransfer</em>: One-time or periodic transfer of a single data asset from a source data store to a destination data store. This is also called snapshotting. This is similar to a job in K8s and will inherit many features from it, e.g. the
+state is kept in K8s after the batch transfer has completed and must be deleted manually.
+- <em>SyncTransfer</em>: Continuous synchronization of a single data asset from a source data store to a destination data store. The main use-case is to continuously update a destination data asset as it
+is typically used in a streaming or change-data-capture scenario. This CRD is similar to a stateful set in K8s.</p>
+<p>Both transfer types will have the same API concerning the core transfer definitions such as:
+- The source data store including connection details and data asset.
+- The path (in Vault) to the credentials required to access the source data store.
+- The destination data store including connection details and data asset.
+- The path (in Vault) to the credentials required to access the destination data store.
+- Transfer properties that define parameters such as schedule, retries, transformations etc.</p>
+<p>The difference is that <em>SyncTransfer</em> is running continuously, <em>BatchTransfer</em> requires a schedule or is a one-time transfer.</p>
+<p>Initially we will limit <em>SyncTransfer</em> to the movement of data from Kafka to COS or from Kafka to Db2.</p>
+<p>The status of the CRD is continuously updated with the state of the data distribution. It is used to detect both success or error situations as well as freshness. It also provides transfer statistics.</p>
+<p>Using the status of the CRD a user may examine:
+- where data assets have been moved
+- when this was last successfully completed (for _BatchTransfer_s)
+- statistics, i.e. how long this took, how many bytes, rows etc. were transferred
+- what technical metadata about the data was used at the source/destination</p>
+<p>Other K8s controllers can watch the objects and subscribe to statistics or technical metadata updates and forward these changes e.g. in dashboards or WKT.</p>
+<h3 id="secret-management">Secret management</h3>
+<p>The data distribution API should not define any secrets in the CRD spec in a production environment. For development and
+testing direct definitions can be used but in a production environment credentials shall be retrieved from the secret provider.</p>
+<p>The secret provider can be accessed via a REST API using a role and a secret name. This secret name refers to a path in vault.
+At the movement operator shall not create any secrets in Kubernetes that contain any credentials and credentials shall only be maintained
+in memory. The fetching of secrets will be executed by the <a href="https://github.com/mesh-for-data/mesh-for-data-mover">datamover</a> component.
+The datamover component retrieves configuration from a JSON file that is passed on as a Kubernetes secret. 
+The goal is that vault paths can be specified in this JSON configuration file and will be substituted by values retrieved from the
+secret provider. The following example illustrates this mechanism:</p>
+<p>Given the example configuration file:
+<div class="highlight"><pre><span></span><code>{
+  &quot;db2URL&quot;: &quot;jdbc:db2//host1:1234/MYDB&quot;,
+  &quot;user&quot;: &quot;myuser&quot;
+  &quot;vaultPath&quot;: &quot;/myvault/db2Password&quot;
+}
+</code></pre></div>
+ and the following string in vault:
+<code>{"password": "mypassword"}</code></p>
+<p>The substitution in the datamover will find a JSON field called <code>vaultPath</code> and look up the value using the secret
+provider. The substitution happens at the same level as the <code>vaultPath</code> field was found. This works whenever
+the data that is stored in vault is a JSON object itself. The advantage is that the in-memory configuration will be the same
+as in a dev/test environment after the substitution. The result of the given example after substitution will be:
+<div class="highlight"><pre><span></span><code>{
+  &quot;db2URL&quot;: &quot;jdbc:db2//host1:1234/MYDB&quot;,
+  &quot;user&quot;: &quot;myuser&quot;
+  &quot;password&quot;: &quot;mypassword&quot;
+}
+</code></pre></div></p>
+<p>This credential substitution can also be used in the <code>options</code> field of transformations.</p>
+<h3 id="error-handling">Error handling</h3>
+<p>The data distribution API is using validation hooks to do simple checks when a CRD is created or updated. This is a first
+kind of error that will result in an error when creating/updating the CRD. It will specify an error message about which
+fields are not valid. (e.g. an invalid cron pattern for the schedule property) 
+As validation errors are checked before objects are created they return an error via the Kubernetes API.</p>
+<p>If an error occurred during a <code>BatchTransfer</code> the status of the CRD will be set to <code>FAILED</code> and a possible error reason
+will show in the <code>error</code> field. The error messages will differ depending on the type of exception that is thrown in the internal
+datamover process. 
+The internal datamover process will communicate errors to Kubernetes via a <a href="https://kubernetes.io/docs/tasks/debug-application-cluster/determine-reason-pod-failure/">termination message</a>. 
+The content of the termination message will be written into the <code>error</code> field of the <code>BatchTransfer</code>. 
+The error message shall describe the error as good as possible without any stack traces to keep it readable and displayable in a short form.</p>
+<p>Actions for possible error states:
+* Pending - Nothing to do. Normal process
+* Running - Nothing to do. Normal process
+* Succeeded - Possibly execute on succeeded actions (e.g. updating a catalog, ...)
+* Failed - Operator will try to recover. 
+* Fatal - Operator could not recover. Possibly recreate CRD to resolve and investigate error further.</p>
+<h3 id="events">Events</h3>
+<p>In addition to errors the datamover application that is called by the data distribution api will publish Kubernetes
+events for the CRD in order to give feedback for errors and successes. Errors will contain the error message.
+Successful messages will contain additional metrics such as number of transferred rows or technical metadata information.</p>
+<h2 id="api-specification">API Specification</h2>
+<p>The formalism to use to describe this is to be decided, possibilities are Go using kubebuilder OR CRD directly. As the definition of transfer specific parameters is the same for <em>BatchTransfer</em> kind and <em>SyncTransfer</em> kind the definition below focusses on the <em>BatchTransfer</em> kind. (Think of it like a pod template definition that is the same for a job or a deployment)</p>
+<p>A possible but not complete list of Go structs using kubebuilder is:</p>
+<div class="highlight"><pre><span></span><code>// BatchTransferSpec defines the desired state of BatchTransfer
+type BatchTransferSpec struct {
+    Source         DataStore        `json:&quot;source&quot;`
+    Destination    DataStore        `json:&quot;destination&quot;`
+    Transformation []Transformation `json:&quot;transformation,omitempty&quot;`
+    Schedule string `json:&quot;schedule,omitempty&quot;`
+    Image string `json:&quot;image&quot;`                                 // Has default value from webhook
+    ImagePullPolicy corev1.PullPolicy `json:&quot;imagePullPolicy&quot;`  // Has default value from webhook
+    SecretProviderURL string `json:&quot;secretProviderURL&quot;`         // Has default value from webhook
+    SecretProviderRole string `json:&quot;secretProviderRole&quot;`       // Has default value from webhook
+    Suspend bool `json:&quot;suspend,omitempty&quot;`                     // Has default value from webhook
+    MaxFailedRetries int `json:&quot;maxFailedRetries,omitempty&quot;`    // Has default value from webhook
+    SuccessfulJobHistoryLimit int `json:&quot;successfulJobHistoryLimit,omitempty&quot;` // Has default value from webhook
+    FailedJobHistoryLimit int `json:&quot;failedJobHistoryLimit,omitempty&quot;` // Has default value from webhook
+}
+
+type DataStore struct {
+    DataAsset string    `json:&quot;dataAsset&quot;`
+    Database  *Database `json:&quot;database,omitempty&quot;`
+    S3        *S3       `json:&quot;s3,omitempty&quot;`
+    Kafka     *Kafka    `json:&quot;kafka,omitempty&quot;`
+}
+
+type Database struct {
+    Db2URL   string `json:&quot;db2URL&quot;`
+    User     string `json:&quot;user&quot;`
+    Password *string `json:&quot;password,omitempty&quot;`   // Please use for dev/test only!
+    VaultPath *string `json:&quot;vaultPath,omitempty&quot;`
+}
+
+type S3 struct {
+    Endpoint   string `json:&quot;endpoint&quot;`
+    Region     string `json:&quot;region,omitempty&quot;`
+    Bucket     string `json:&quot;bucket&quot;`
+    AccessKey *string `json:&quot;accessKey,omitempty&quot;` // Please use for dev/test only!
+    SecretKey *string `json:&quot;secretKey,omitempty&quot;` // Please use for dev/test only!
+    VaultPath *string `json:&quot;vaultPath,omitempty&quot;`
+    ObjectKey  string `json:&quot;objectKey&quot;`
+    DataFormat string `json:&quot;dataFormat,omitempty&quot;`
+}
+
+type Kafka struct {
+    KafkaBrokers          string `json:&quot;kafkaBrokers&quot;`
+    SchemaRegistryURL     string `json:&quot;schemaRegistryURL&quot;`
+    User                  string `json:&quot;user&quot;`
+    Password             *string `json:&quot;password,omitempty&quot;` // Please use for dev/test only!
+    VaultPath            *string `json:&quot;vaultPath,omitempty&quot;`
+    SslTruststoreLocation string `json:&quot;sslTruststoreLocation,omitempty&quot;`
+    SslTruststorePassword string `json:&quot;sslTruststorePassword,omitempty&quot;`
+    KafkaTopic            string `json:&quot;kafkaTopic&quot;`
+    CreateSnapshot        bool   `json:&quot;createSnapshot,omitempty&quot;`
+}
+
+type Transformation struct {
+    Name string `json:&quot;name,omitempty&quot;`
+    Action Action `json:&quot;action,omitempty&quot;`
+    Columns []string `json:&quot;columns,omitempty&quot;`
+    Options map[string]string `json:&quot;options,omitempty&quot;`
+}
+
+type Action string
+
+const (
+    RemoveColumn Action = &quot;RemoveColumn&quot;
+    Filter       Action = &quot;Filter&quot;
+    Encrypt      Action = &quot;Encrypt&quot;
+    Sample       Action = &quot;Sample&quot;
+    Digest       Action = &quot;Digest&quot; // md5, sha1, crc32, sha256, sha512, xxhash32, xxhash64, murmur32
+    Redact       Action = &quot;Redact&quot; // random, fixed, formatted, etc
+)
+
+// BatchTransferStatus defines the observed state of BatchTransfer
+type BatchTransferStatus struct {
+    Active *corev1.ObjectReference `json:&quot;active,omitempty&quot;`
+    Status Status `json:&quot;status,omitempty&quot;`
+    Error string `json:&quot;status,omitempty&quot;`
+    LastCompleted *corev1.ObjectReference `json:&quot;lastCompleted,omitempty&quot;`
+    LastFailed *corev1.ObjectReference `json:&quot;lastFailed,omitempty&quot;`
+    LastSuccessTime *metav1.Time `json:&quot;lastSuccessTime,omitempty&quot;`
+    LastRecordTime *metav1.Time `json:&quot;lastRecordTime,omitempty&quot;`
+    NumRecords int64 `json:&quot;numRecords,omitempty&quot;`
+    LastScheduleTime *metav1.Time `json:&quot;lastScheduleTime,omitempty&quot;`
+}
+
+// +kubebuilder:validation:Enum=Pending;Running;Succeeded;Failed;Fatal;ConfigurationError
+type Status string
+
+const (
+    Pending            Status = &quot;Pending&quot; // Starting up transfers
+    Running            Status = &quot;Running&quot; // Transfers are running
+    Succeeded          Status = &quot;Succeeded&quot; // Transfers succeeded
+    Failed             Status = &quot;Failed&quot; // Transfers failed (Maybe recoverable (e.g. temporary connection issues))
+    Fatal              Status = &quot;Fatal&quot; // Fatal. Cannot recover. Manual intervention needed
+)
+
+// +kubebuilder:object:root=true
+
+// BatchTransfer is the Schema for the batchtransfers API
+type BatchTransfer struct {
+    metav1.TypeMeta   `json:&quot;,inline&quot;`
+    metav1.ObjectMeta `json:&quot;metadata,omitempty&quot;`
+
+    Spec   BatchTransferSpec   `json:&quot;spec,omitempty&quot;`
+    Status BatchTransferStatus `json:&quot;status,omitempty&quot;`
+}
+
+// +kubebuilder:object:root=true
+
+// BatchTransferList contains a list of BatchTransfer
+type BatchTransferList struct {
+    metav1.TypeMeta `json:&quot;,inline&quot;`
+    metav1.ListMeta `json:&quot;metadata,omitempty&quot;`
+    Assets           []BatchTransfer `json:&quot;assets&quot;`
+}
+</code></pre></div>
+<h3 id="examples">Examples</h3>
+<div class="highlight"><pre><span></span><code>---
+apiVersion: &quot;m4d.ibm.com/v1&quot;
+kind: BatchTransfer
+metadata:
+  name: copy1
+  namespace: myNamespace
+spec:
+  source:
+    db:
+      db2URL: &quot;jdbc:db2://db1.psvc-dev.zc2.ibm.com:50602/DHUBS:sslConnection=true;&quot;
+      user: myuser
+      password: &quot;mypassword&quot;
+  destination:
+    cos:
+      endpoint: s3...
+      bucket: myBucket
+      accessKey: 0123
+      secretKey: 0123
+  transformation:
+  - name: &quot;Remove column A&quot;
+    action: &quot;RemoveColumn&quot;
+    columns: [&quot;A&quot;]
+  - name: &quot;Digest column B&quot;
+    action: &quot;Digest&quot;
+    columns: [&quot;B&quot;]
+    options:
+      algo: &quot;md5&quot;
+  schedule: null # Cron schedule definition if needed
+  maxFailedRetries: 3 # Maximum retries if failed
+  suspend: false
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 5
+status:
+  lastCompleted: corev1.ObjectReference # Reference to child K8s objects
+  lastScheduledTime: 2018-01-01T00:00:00Z
+  lastSuccessTime: 2018-01-01T00:00:00Z
+  lastRecordTime: 2018-01-01T00:00:00Z # inspect data?
+  numRecords: 23113
+</code></pre></div>
+<h2 id="external-dependencies">External Dependencies</h2>
+<p>Data distribution will be implemented in different ways, depending on the distribution kind, on the source and destination data store technologies as well as depending on the requested transformations.</p>
+<p>The control layer of the data distribution is implemented following the operator pattern of Kubernetes. In addition, the following technologies are relevant for specific distribution scenarios:
+- Redhat Debezium for Change Data Capture
+- IBM Event Streams (Apache Kafka) for SyncTransfer
+- Apache Spark
+- Db2 client
+- COS client
+- Reference to IBM Specific JDBC driver for streaming into a relation database.</p>
+<h2 id="relevant-code-repositories">Relevant Code Repositories</h2>
+<p>The <a href="https://github.com/mesh-for-data/mesh-for-data-mover">data distribution core libraries</a> that are Scala/Spark based</p>
+<p>The <a href="https://github.com/mesh-for-data/mesh-for-data">data distribution operator</a> has been integrated into
+Mesh for Data code and is part of the manager.</p>
+<h2 id="roadmap">Roadmap</h2>
+<ul>
+<li>Integration with Parquet Encryption + KeyProtect (As Target)</li>
+<li>Integration with Iceberg (As Target)</li>
+<li>Integration with Relational Databases (As Target)</li>
+<li>Integration with KTables (As Source)</li>
+</ul>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        <a href="../connectors/" class="md-footer__link md-footer__link--prev" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Connectors API
+            </div>
+          </div>
+        </a>
+      
+      
+        <a href="../katalog/" class="md-footer__link md-footer__link--next" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Katalog
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Made with ❤️ by Mesh for Data contributors.
+          </div>
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+  <div class="md-footer-social">
+    
+      
+      
+        
+        
+      
+      <a href="https://github.com/mesh-for-data/mesh-for-data" target="_blank" rel="noopener" title="github.com" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"/></svg>
+      </a>
+    
+  </div>
+
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../../assets/javascripts/workers/search.d351de03.min.js", "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.34eae1b6.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,3167 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A cloud-native platform to control data usage">
+      
+      
+      
+      
+      <link rel="icon" href="../../static/logo.svg">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.1.6">
+    
+    
+      
+        <title>Connectors API - Mesh for Data</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.875de78c.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.f1a3b89f.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#02a6f2">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="light-blue" data-md-color-accent="">
+  
+    
+    <script>function __prefix(e){return new URL("../..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#protocol-documentation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Mesh for Data" class="md-header__button md-logo" aria-label="Mesh for Data" data-md-component="logo">
+      
+  <img src="../../static/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Mesh for Data
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Connectors API
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/mesh-for-data/mesh-for-data/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mesh-for-data/mesh-for-data
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      About
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../get-started/quickstart/" class="md-tabs__link">
+        Get Started
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../concepts/introduction/" class="md-tabs__link">
+        Concepts
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tasks/control-plane-security/" class="md-tabs__link">
+        Tasks
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../crds/" class="md-tabs__link md-tabs__link--active">
+        Reference
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contribute/" class="md-tabs__link">
+        Contribute
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Mesh for Data" class="md-nav__button md-logo" aria-label="Mesh for Data" data-md-component="logo">
+      
+  <img src="../../static/logo.svg" alt="logo">
+
+    </a>
+    Mesh for Data
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/mesh-for-data/mesh-for-data/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mesh-for-data/mesh-for-data
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        About
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      <label class="md-nav__link" for="__nav_2">
+        Get Started
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Get Started" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Get Started
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/quickstart/" class="md-nav__link">
+        Quick Start Guide
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/notebook/" class="md-nav__link">
+        Notebook sample
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      <label class="md-nav__link" for="__nav_3">
+        Concepts
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Concepts" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Concepts
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/introduction/" class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/architecture/" class="md-nav__link">
+        Architecture
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_3" type="checkbox" id="__nav_3_3" >
+      
+      <label class="md-nav__link" for="__nav_3_3">
+        Plugins
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Plugins" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_3">
+          <span class="md-nav__icon md-icon"></span>
+          Plugins
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/connectors/" class="md-nav__link">
+        Connectors
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/modules/" class="md-nav__link">
+        Modules
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      <label class="md-nav__link" for="__nav_4">
+        Tasks
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Tasks" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Tasks
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/control-plane-security/" class="md-nav__link">
+        Enable Control Plane Security
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/using-opa/" class="md-nav__link">
+        Using OPA
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/multicluster/" class="md-nav__link">
+        Multicluster setup
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+      
+      <label class="md-nav__link" for="__nav_5">
+        Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../crds/" class="md-nav__link">
+        API Reference
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Connectors API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Connectors API
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#credentialsproto" class="md-nav__link">
+    credentials.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="credentials.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#credentials" class="md-nav__link">
+    Credentials
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data_catalog_responseproto" class="md-nav__link">
+    data_catalog_response.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="data_catalog_response.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#catalogdatasetinfo" class="md-nav__link">
+    CatalogDatasetInfo
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#policy_manager_responseproto" class="md-nav__link">
+    policy_manager_response.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="policy_manager_response.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#componentversion" class="md-nav__link">
+    ComponentVersion
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasetdecision" class="md-nav__link">
+    DatasetDecision
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enforcementaction" class="md-nav__link">
+    EnforcementAction
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enforcementactionargsentry" class="md-nav__link">
+    EnforcementAction.ArgsEntry
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operationdecision" class="md-nav__link">
+    OperationDecision
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#policiesdecisions" class="md-nav__link">
+    PoliciesDecisions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#policy" class="md-nav__link">
+    Policy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enforcementactionenforcementactionlevel" class="md-nav__link">
+    EnforcementAction.EnforcementActionLevel
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data_catalog_requestproto" class="md-nav__link">
+    data_catalog_request.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="data_catalog_request.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#catalogdatasetrequest" class="md-nav__link">
+    CatalogDatasetRequest
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#policy_manager_requestproto" class="md-nav__link">
+    policy_manager_request.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="policy_manager_request.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#accessoperation" class="md-nav__link">
+    AccessOperation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#applicationcontext" class="md-nav__link">
+    ApplicationContext
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#applicationdetails" class="md-nav__link">
+    ApplicationDetails
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#applicationdetailspropertiesentry" class="md-nav__link">
+    ApplicationDetails.PropertiesEntry
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasetcontext" class="md-nav__link">
+    DatasetContext
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasetidentifier" class="md-nav__link">
+    DatasetIdentifier
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#accessoperationaccesstype" class="md-nav__link">
+    AccessOperation.AccessType
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data_catalog_serviceproto" class="md-nav__link">
+    data_catalog_service.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="data_catalog_service.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#datacatalogservice" class="md-nav__link">
+    DataCatalogService
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#policy_manager_serviceproto" class="md-nav__link">
+    policy_manager_service.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="policy_manager_service.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#policymanagerservice" class="md-nav__link">
+    PolicyManagerService
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#register_asset_responseproto" class="md-nav__link">
+    register_asset_response.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="register_asset_response.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registerassetresponse" class="md-nav__link">
+    RegisterAssetResponse
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dataset_detailsproto" class="md-nav__link">
+    dataset_details.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="dataset_details.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#credentialsinfo" class="md-nav__link">
+    CredentialsInfo
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datacomponentmetadata" class="md-nav__link">
+    DataComponentMetadata
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datacomponentmetadatanamedmetadataentry" class="md-nav__link">
+    DataComponentMetadata.NamedMetadataEntry
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datastore" class="md-nav__link">
+    DataStore
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasetdetails" class="md-nav__link">
+    DatasetDetails
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasetmetadata" class="md-nav__link">
+    DatasetMetadata
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasetmetadatacomponentsmetadataentry" class="md-nav__link">
+    DatasetMetadata.ComponentsMetadataEntry
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasetmetadatadatasetnamedmetadataentry" class="md-nav__link">
+    DatasetMetadata.DatasetNamedMetadataEntry
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#db2datastore" class="md-nav__link">
+    Db2DataStore
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kafkadatastore" class="md-nav__link">
+    KafkaDataStore
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#s3datastore" class="md-nav__link">
+    S3DataStore
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datastoredatastoretype" class="md-nav__link">
+    DataStore.DataStoreType
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#register_asset_requestproto" class="md-nav__link">
+    register_asset_request.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="register_asset_request.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registerassetrequest" class="md-nav__link">
+    RegisterAssetRequest
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scalar-value-types" class="md-nav__link">
+    Scalar Value Types
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_3" type="checkbox" id="__nav_5_3" >
+      
+      <label class="md-nav__link" for="__nav_5_3">
+        Components
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Components" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_3">
+          <span class="md-nav__icon md-icon"></span>
+          Components
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ddc/" class="md-nav__link">
+        Data Distribution Controller
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../katalog/" class="md-nav__link">
+        Katalog
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      <label class="md-nav__link" for="__nav_6">
+        Contribute
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Contribute" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Contribute
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/" class="md-nav__link">
+        About
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/environment/" class="md-nav__link">
+        Development Environment
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/build-test/" class="md-nav__link">
+        Build and Test
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/flow/" class="md-nav__link">
+        GitHub Workflow
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_5" type="checkbox" id="__nav_6_5" >
+      
+      <label class="md-nav__link" for="__nav_6_5">
+        Documentation
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Documentation" data-md-level="2">
+        <label class="md-nav__title" for="__nav_6_5">
+          <span class="md-nav__icon md-icon"></span>
+          Documentation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/documentation/" class="md-nav__link">
+        Contribute Documentation
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/documentation/formatting/" class="md-nav__link">
+        Formatting Standards
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/documentation/style/" class="md-nav__link">
+        Style Guide
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_6" type="checkbox" id="__nav_6_6" >
+      
+      <label class="md-nav__link" for="__nav_6_6">
+        Plugins
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Plugins" data-md-level="2">
+        <label class="md-nav__title" for="__nav_6_6">
+          <span class="md-nav__icon md-icon"></span>
+          Plugins
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/modules/" class="md-nav__link">
+        Module Development
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#credentialsproto" class="md-nav__link">
+    credentials.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="credentials.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#credentials" class="md-nav__link">
+    Credentials
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data_catalog_responseproto" class="md-nav__link">
+    data_catalog_response.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="data_catalog_response.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#catalogdatasetinfo" class="md-nav__link">
+    CatalogDatasetInfo
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#policy_manager_responseproto" class="md-nav__link">
+    policy_manager_response.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="policy_manager_response.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#componentversion" class="md-nav__link">
+    ComponentVersion
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasetdecision" class="md-nav__link">
+    DatasetDecision
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enforcementaction" class="md-nav__link">
+    EnforcementAction
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enforcementactionargsentry" class="md-nav__link">
+    EnforcementAction.ArgsEntry
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operationdecision" class="md-nav__link">
+    OperationDecision
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#policiesdecisions" class="md-nav__link">
+    PoliciesDecisions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#policy" class="md-nav__link">
+    Policy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enforcementactionenforcementactionlevel" class="md-nav__link">
+    EnforcementAction.EnforcementActionLevel
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data_catalog_requestproto" class="md-nav__link">
+    data_catalog_request.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="data_catalog_request.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#catalogdatasetrequest" class="md-nav__link">
+    CatalogDatasetRequest
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#policy_manager_requestproto" class="md-nav__link">
+    policy_manager_request.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="policy_manager_request.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#accessoperation" class="md-nav__link">
+    AccessOperation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#applicationcontext" class="md-nav__link">
+    ApplicationContext
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#applicationdetails" class="md-nav__link">
+    ApplicationDetails
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#applicationdetailspropertiesentry" class="md-nav__link">
+    ApplicationDetails.PropertiesEntry
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasetcontext" class="md-nav__link">
+    DatasetContext
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasetidentifier" class="md-nav__link">
+    DatasetIdentifier
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#accessoperationaccesstype" class="md-nav__link">
+    AccessOperation.AccessType
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data_catalog_serviceproto" class="md-nav__link">
+    data_catalog_service.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="data_catalog_service.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#datacatalogservice" class="md-nav__link">
+    DataCatalogService
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#policy_manager_serviceproto" class="md-nav__link">
+    policy_manager_service.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="policy_manager_service.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#policymanagerservice" class="md-nav__link">
+    PolicyManagerService
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#register_asset_responseproto" class="md-nav__link">
+    register_asset_response.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="register_asset_response.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registerassetresponse" class="md-nav__link">
+    RegisterAssetResponse
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dataset_detailsproto" class="md-nav__link">
+    dataset_details.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="dataset_details.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#credentialsinfo" class="md-nav__link">
+    CredentialsInfo
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datacomponentmetadata" class="md-nav__link">
+    DataComponentMetadata
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datacomponentmetadatanamedmetadataentry" class="md-nav__link">
+    DataComponentMetadata.NamedMetadataEntry
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datastore" class="md-nav__link">
+    DataStore
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasetdetails" class="md-nav__link">
+    DatasetDetails
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasetmetadata" class="md-nav__link">
+    DatasetMetadata
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasetmetadatacomponentsmetadataentry" class="md-nav__link">
+    DatasetMetadata.ComponentsMetadataEntry
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasetmetadatadatasetnamedmetadataentry" class="md-nav__link">
+    DatasetMetadata.DatasetNamedMetadataEntry
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#db2datastore" class="md-nav__link">
+    Db2DataStore
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kafkadatastore" class="md-nav__link">
+    KafkaDataStore
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#s3datastore" class="md-nav__link">
+    S3DataStore
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datastoredatastoretype" class="md-nav__link">
+    DataStore.DataStoreType
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#register_asset_requestproto" class="md-nav__link">
+    register_asset_request.proto
+  </a>
+  
+    <nav class="md-nav" aria-label="register_asset_request.proto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registerassetrequest" class="md-nav__link">
+    RegisterAssetRequest
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scalar-value-types" class="md-nav__link">
+    Scalar Value Types
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/mesh-for-data/mesh-for-data/edit/master/site/docs/reference/connectors.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                <h1 id="protocol-documentation">Protocol Documentation</h1>
+<p><a name="top"></a></p>
+<p><a name="credentials.proto"></a></p>
+<p align="right"><a href="#top">Top</a></p>
+
+<h2 id="credentialsproto">credentials.proto</h2>
+<!-- end services -->
+
+<p><a name="connectors.Credentials"></a></p>
+<h3 id="credentials">Credentials</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>access_key</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>access credential for the bucket where the asset is stored</td>
+</tr>
+<tr>
+<td>secret_key</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>username</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>password</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>api_key</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>api key assigned to the bucket in which the asset is stored</td>
+</tr>
+<tr>
+<td>resource_instance_id</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>resource instance id for the bucket</td>
+</tr>
+</tbody>
+</table>
+<!-- end messages -->
+
+<!-- end enums -->
+
+<!-- end HasExtensions -->
+
+<p><a name="data_catalog_response.proto"></a></p>
+<p align="right"><a href="#top">Top</a></p>
+
+<h2 id="data_catalog_responseproto">data_catalog_response.proto</h2>
+<!-- end services -->
+
+<p><a name="connectors.CatalogDatasetInfo"></a></p>
+<h3 id="catalogdatasetinfo">CatalogDatasetInfo</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dataset_id</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>details</td>
+<td><a href="#connectors.DatasetDetails">DatasetDetails</a></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<!-- end messages -->
+
+<!-- end enums -->
+
+<!-- end HasExtensions -->
+
+<p><a name="policy_manager_response.proto"></a></p>
+<p align="right"><a href="#top">Top</a></p>
+
+<h2 id="policy_manager_responseproto">policy_manager_response.proto</h2>
+<!-- end services -->
+
+<p><a name="connectors.ComponentVersion"></a></p>
+<h3 id="componentversion">ComponentVersion</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>name</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>id</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>version</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.DatasetDecision"></a></p>
+<h3 id="datasetdecision">DatasetDecision</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dataset</td>
+<td><a href="#connectors.DatasetIdentifier">DatasetIdentifier</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>decisions</td>
+<td><a href="#connectors.OperationDecision">OperationDecision</a></td>
+<td>repeated</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.EnforcementAction"></a></p>
+<h3 id="enforcementaction">EnforcementAction</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>name</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>id</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>level</td>
+<td><a href="#connectors.EnforcementAction.EnforcementActionLevel">EnforcementAction.EnforcementActionLevel</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>args</td>
+<td><a href="#connectors.EnforcementAction.ArgsEntry">EnforcementAction.ArgsEntry</a></td>
+<td>repeated</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.EnforcementAction.ArgsEntry"></a></p>
+<h3 id="enforcementactionargsentry">EnforcementAction.ArgsEntry</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>key</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>value</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.OperationDecision"></a></p>
+<h3 id="operationdecision">OperationDecision</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>operation</td>
+<td><a href="#connectors.AccessOperation">AccessOperation</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>enforcement_actions</td>
+<td><a href="#connectors.EnforcementAction">EnforcementAction</a></td>
+<td>repeated</td>
+<td></td>
+</tr>
+<tr>
+<td>used_policies</td>
+<td><a href="#connectors.Policy">Policy</a></td>
+<td>repeated</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.PoliciesDecisions"></a></p>
+<h3 id="policiesdecisions">PoliciesDecisions</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>component_versions</td>
+<td><a href="#connectors.ComponentVersion">ComponentVersion</a></td>
+<td>repeated</td>
+<td></td>
+</tr>
+<tr>
+<td>dataset_decisions</td>
+<td><a href="#connectors.DatasetDecision">DatasetDecision</a></td>
+<td>repeated</td>
+<td>one per dataset</td>
+</tr>
+<tr>
+<td>general_decisions</td>
+<td><a href="#connectors.OperationDecision">OperationDecision</a></td>
+<td>repeated</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.Policy"></a></p>
+<h3 id="policy">Policy</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>name</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>description</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>type</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>hierarchy</td>
+<td><a href="#string">string</a></td>
+<td>repeated</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<!-- end messages -->
+
+<p><a name="connectors.EnforcementAction.EnforcementActionLevel"></a></p>
+<h3 id="enforcementactionenforcementactionlevel">EnforcementAction.EnforcementActionLevel</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Number</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UNKNOWN</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td>DATASET</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>COLUMN</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td>ROW</td>
+<td>3</td>
+<td></td>
+</tr>
+<tr>
+<td>CELL</td>
+<td>4</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<!-- end enums -->
+
+<!-- end HasExtensions -->
+
+<p><a name="data_catalog_request.proto"></a></p>
+<p align="right"><a href="#top">Top</a></p>
+
+<h2 id="data_catalog_requestproto">data_catalog_request.proto</h2>
+<!-- end services -->
+
+<p><a name="connectors.CatalogDatasetRequest"></a></p>
+<h3 id="catalogdatasetrequest">CatalogDatasetRequest</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>credential_path</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>link to vault plugin for reading k8s secret with user credentials</td>
+</tr>
+<tr>
+<td>dataset_id</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>identifier of asset - always needed. JSON expected. Interpreted by the Connector, can contain any additional information as part of JSON</td>
+</tr>
+</tbody>
+</table>
+<!-- end messages -->
+
+<!-- end enums -->
+
+<!-- end HasExtensions -->
+
+<p><a name="policy_manager_request.proto"></a></p>
+<p align="right"><a href="#top">Top</a></p>
+
+<h2 id="policy_manager_requestproto">policy_manager_request.proto</h2>
+<!-- end services -->
+
+<p><a name="connectors.AccessOperation"></a></p>
+<h3 id="accessoperation">AccessOperation</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>type</td>
+<td><a href="#connectors.AccessOperation.AccessType">AccessOperation.AccessType</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>destination</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>Destination for transfer or write.</td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.ApplicationContext"></a></p>
+<h3 id="applicationcontext">ApplicationContext</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>credential_path</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>link to vault plugin for reading k8s secret with user credentials</td>
+</tr>
+<tr>
+<td>app_info</td>
+<td><a href="#connectors.ApplicationDetails">ApplicationDetails</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>datasets</td>
+<td><a href="#connectors.DatasetContext">DatasetContext</a></td>
+<td>repeated</td>
+<td></td>
+</tr>
+<tr>
+<td>general_operations</td>
+<td><a href="#connectors.AccessOperation">AccessOperation</a></td>
+<td>repeated</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.ApplicationDetails"></a></p>
+<h3 id="applicationdetails">ApplicationDetails</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>processing_geography</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>properties</td>
+<td><a href="#connectors.ApplicationDetails.PropertiesEntry">ApplicationDetails.PropertiesEntry</a></td>
+<td>repeated</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.ApplicationDetails.PropertiesEntry"></a></p>
+<h3 id="applicationdetailspropertiesentry">ApplicationDetails.PropertiesEntry</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>key</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>value</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.DatasetContext"></a></p>
+<h3 id="datasetcontext">DatasetContext</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dataset</td>
+<td><a href="#connectors.DatasetIdentifier">DatasetIdentifier</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>operation</td>
+<td><a href="#connectors.AccessOperation">AccessOperation</a></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.DatasetIdentifier"></a></p>
+<h3 id="datasetidentifier">DatasetIdentifier</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dataset_id</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>identifier of asset - always needed. JSON expected. Interpreted by the Connector, can contain any additional information as part of JSON</td>
+</tr>
+</tbody>
+</table>
+<!-- end messages -->
+
+<p><a name="connectors.AccessOperation.AccessType"></a></p>
+<h3 id="accessoperationaccesstype">AccessOperation.AccessType</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Number</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UNKNOWN</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td>READ</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>COPY</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td>WRITE</td>
+<td>3</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<!-- end enums -->
+
+<!-- end HasExtensions -->
+
+<p><a name="data_catalog_service.proto"></a></p>
+<p align="right"><a href="#top">Top</a></p>
+
+<h2 id="data_catalog_serviceproto">data_catalog_service.proto</h2>
+<p><a name="connectors.DataCatalogService"></a></p>
+<h3 id="datacatalogservice">DataCatalogService</h3>
+<table>
+<thead>
+<tr>
+<th>Method Name</th>
+<th>Request Type</th>
+<th>Response Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GetDatasetInfo</td>
+<td><a href="#connectors.CatalogDatasetRequest">CatalogDatasetRequest</a></td>
+<td><a href="#connectors.CatalogDatasetInfo">CatalogDatasetInfo</a></td>
+<td></td>
+</tr>
+<tr>
+<td>RegisterDatasetInfo</td>
+<td><a href="#connectors.RegisterAssetRequest">RegisterAssetRequest</a></td>
+<td><a href="#connectors.RegisterAssetResponse">RegisterAssetResponse</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<!-- end services -->
+
+<!-- end messages -->
+
+<!-- end enums -->
+
+<!-- end HasExtensions -->
+
+<p><a name="policy_manager_service.proto"></a></p>
+<p align="right"><a href="#top">Top</a></p>
+
+<h2 id="policy_manager_serviceproto">policy_manager_service.proto</h2>
+<p><a name="connectors.PolicyManagerService"></a></p>
+<h3 id="policymanagerservice">PolicyManagerService</h3>
+<table>
+<thead>
+<tr>
+<th>Method Name</th>
+<th>Request Type</th>
+<th>Response Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GetPoliciesDecisions</td>
+<td><a href="#connectors.ApplicationContext">ApplicationContext</a></td>
+<td><a href="#connectors.PoliciesDecisions">PoliciesDecisions</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<!-- end services -->
+
+<!-- end messages -->
+
+<!-- end enums -->
+
+<!-- end HasExtensions -->
+
+<p><a name="register_asset_response.proto"></a></p>
+<p align="right"><a href="#top">Top</a></p>
+
+<h2 id="register_asset_responseproto">register_asset_response.proto</h2>
+<!-- end services -->
+
+<p><a name="connectors.RegisterAssetResponse"></a></p>
+<h3 id="registerassetresponse">RegisterAssetResponse</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>asset_id</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>Returns the id of the new asset registered in a catalog</td>
+</tr>
+</tbody>
+</table>
+<!-- end messages -->
+
+<!-- end enums -->
+
+<!-- end HasExtensions -->
+
+<p><a name="dataset_details.proto"></a></p>
+<p align="right"><a href="#top">Top</a></p>
+
+<h2 id="dataset_detailsproto">dataset_details.proto</h2>
+<!-- end services -->
+
+<p><a name="connectors.CredentialsInfo"></a></p>
+<h3 id="credentialsinfo">CredentialsInfo</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vault_secret_path</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>the path to Vault secret which is used to retrive the dataset credentials from the catalog.</td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.DataComponentMetadata"></a></p>
+<h3 id="datacomponentmetadata">DataComponentMetadata</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>component_type</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>e.g., column</td>
+</tr>
+<tr>
+<td>named_metadata</td>
+<td><a href="#connectors.DataComponentMetadata.NamedMetadataEntry">DataComponentMetadata.NamedMetadataEntry</a></td>
+<td>repeated</td>
+<td>Named terms, that exist in Catalog toxonomy and the values for these terms for columns we will have "SchemaDetails" key, that will include technical schema details for this column TODO: Consider create special field for schema outside of metadata</td>
+</tr>
+<tr>
+<td>tags</td>
+<td><a href="#string">string</a></td>
+<td>repeated</td>
+<td>Tags - can be any free text added to a component (no taxonomy)</td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.DataComponentMetadata.NamedMetadataEntry"></a></p>
+<h3 id="datacomponentmetadatanamedmetadataentry">DataComponentMetadata.NamedMetadataEntry</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>key</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>value</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.DataStore"></a></p>
+<h3 id="datastore">DataStore</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>type</td>
+<td><a href="#connectors.DataStore.DataStoreType">DataStore.DataStoreType</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>name</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>for auditing and readability. Can be same as location type or can have more info if availble from catalog</td>
+</tr>
+<tr>
+<td>db2</td>
+<td><a href="#connectors.Db2DataStore">Db2DataStore</a></td>
+<td></td>
+<td>oneof location { // should have been oneof but for technical rasons, a problem to translate it to JSON, we remove the oneof for now should have been local, db2, s3 without "location" but had a problem to compile it in proto - collision with proto name DataLocationDb2</td>
+</tr>
+<tr>
+<td>s3</td>
+<td><a href="#connectors.S3DataStore">S3DataStore</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>kafka</td>
+<td><a href="#connectors.KafkaDataStore">KafkaDataStore</a></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.DatasetDetails"></a></p>
+<h3 id="datasetdetails">DatasetDetails</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>name</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>name in Catalog</td>
+</tr>
+<tr>
+<td>data_owner</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>information on the owner of data asset - can have different formats for different catalogs</td>
+</tr>
+<tr>
+<td>data_store</td>
+<td><a href="#connectors.DataStore">DataStore</a></td>
+<td></td>
+<td>All info about the data store</td>
+</tr>
+<tr>
+<td>data_format</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>geo</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>geography location where data resides (if this information available)</td>
+</tr>
+<tr>
+<td>metadata</td>
+<td><a href="#connectors.DatasetMetadata">DatasetMetadata</a></td>
+<td></td>
+<td>LocationType locationType = 10; //publicCloud/privateCloud etc. Should be filled later when we understand better if we have a closed set of values and how they are used.</td>
+</tr>
+<tr>
+<td>credentials_info</td>
+<td><a href="#connectors.CredentialsInfo">CredentialsInfo</a></td>
+<td></td>
+<td>information about how to retrive dataset credentials from the catalog.</td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.DatasetMetadata"></a></p>
+<h3 id="datasetmetadata">DatasetMetadata</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dataset_named_metadata</td>
+<td><a href="#connectors.DatasetMetadata.DatasetNamedMetadataEntry">DatasetMetadata.DatasetNamedMetadataEntry</a></td>
+<td>repeated</td>
+<td></td>
+</tr>
+<tr>
+<td>dataset_tags</td>
+<td><a href="#string">string</a></td>
+<td>repeated</td>
+<td>Tags - can be any free text added to a component (no taxonomy)</td>
+</tr>
+<tr>
+<td>components_metadata</td>
+<td><a href="#connectors.DatasetMetadata.ComponentsMetadataEntry">DatasetMetadata.ComponentsMetadataEntry</a></td>
+<td>repeated</td>
+<td>metadata for each component in asset. In tabular data each column is a component, then we will have: column name -&gt; column metadata</td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.DatasetMetadata.ComponentsMetadataEntry"></a></p>
+<h3 id="datasetmetadatacomponentsmetadataentry">DatasetMetadata.ComponentsMetadataEntry</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>key</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>value</td>
+<td><a href="#connectors.DataComponentMetadata">DataComponentMetadata</a></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.DatasetMetadata.DatasetNamedMetadataEntry"></a></p>
+<h3 id="datasetmetadatadatasetnamedmetadataentry">DatasetMetadata.DatasetNamedMetadataEntry</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>key</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>value</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.Db2DataStore"></a></p>
+<h3 id="db2datastore">Db2DataStore</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>url</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>database</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>table</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>reformat to SCHEMA.TABLE struct</td>
+</tr>
+<tr>
+<td>port</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>ssl</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>Note that bool value if set to "false" does not appear in the struct at all</td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.KafkaDataStore"></a></p>
+<h3 id="kafkadatastore">KafkaDataStore</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>topic_name</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>bootstrap_servers</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>schema_registry</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>key_deserializer</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>value_deserializer</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>security_protocol</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>sasl_mechanism</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>ssl_truststore</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>ssl_truststore_password</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a name="connectors.S3DataStore"></a></p>
+<h3 id="s3datastore">S3DataStore</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>endpoint</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>bucket</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>object_key</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>can be object name or the prefix for dataset</td>
+</tr>
+<tr>
+<td>region</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>WKC does not return it, it will stay empty in our case!!!</td>
+</tr>
+</tbody>
+</table>
+<!-- end messages -->
+
+<p><a name="connectors.DataStore.DataStoreType"></a></p>
+<h3 id="datastoredatastoretype">DataStore.DataStoreType</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Number</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UNKNOWN</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td>LOCAL</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>S3</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td>DB2</td>
+<td>3</td>
+<td></td>
+</tr>
+<tr>
+<td>KAFKA</td>
+<td>4</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<!-- end enums -->
+
+<!-- end HasExtensions -->
+
+<p><a name="register_asset_request.proto"></a></p>
+<p align="right"><a href="#top">Top</a></p>
+
+<h2 id="register_asset_requestproto">register_asset_request.proto</h2>
+<!-- end services -->
+
+<p><a name="connectors.RegisterAssetRequest"></a></p>
+<h3 id="registerassetrequest">RegisterAssetRequest</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>creds</td>
+<td><a href="#connectors.Credentials">Credentials</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>dataset_details</td>
+<td><a href="#connectors.DatasetDetails">DatasetDetails</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>destination_catalog_id</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>credential_path</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>link to vault plugin for reading k8s secret with user credentials</td>
+</tr>
+</tbody>
+</table>
+<!-- end messages -->
+
+<!-- end enums -->
+
+<!-- end HasExtensions -->
+
+<h2 id="scalar-value-types">Scalar Value Types</h2>
+<table>
+<thead>
+<tr>
+<th>.proto Type</th>
+<th>Notes</th>
+<th>C++</th>
+<th>Java</th>
+<th>Python</th>
+<th>Go</th>
+<th>C#</th>
+<th>PHP</th>
+<th>Ruby</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a name="double" /> double</td>
+<td></td>
+<td>double</td>
+<td>double</td>
+<td>float</td>
+<td>float64</td>
+<td>double</td>
+<td>float</td>
+<td>Float</td>
+</tr>
+<tr>
+<td><a name="float" /> float</td>
+<td></td>
+<td>float</td>
+<td>float</td>
+<td>float</td>
+<td>float32</td>
+<td>float</td>
+<td>float</td>
+<td>Float</td>
+</tr>
+<tr>
+<td><a name="int32" /> int32</td>
+<td>Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint32 instead.</td>
+<td>int32</td>
+<td>int</td>
+<td>int</td>
+<td>int32</td>
+<td>int</td>
+<td>integer</td>
+<td>Bignum or Fixnum (as required)</td>
+</tr>
+<tr>
+<td><a name="int64" /> int64</td>
+<td>Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint64 instead.</td>
+<td>int64</td>
+<td>long</td>
+<td>int/long</td>
+<td>int64</td>
+<td>long</td>
+<td>integer/string</td>
+<td>Bignum</td>
+</tr>
+<tr>
+<td><a name="uint32" /> uint32</td>
+<td>Uses variable-length encoding.</td>
+<td>uint32</td>
+<td>int</td>
+<td>int/long</td>
+<td>uint32</td>
+<td>uint</td>
+<td>integer</td>
+<td>Bignum or Fixnum (as required)</td>
+</tr>
+<tr>
+<td><a name="uint64" /> uint64</td>
+<td>Uses variable-length encoding.</td>
+<td>uint64</td>
+<td>long</td>
+<td>int/long</td>
+<td>uint64</td>
+<td>ulong</td>
+<td>integer/string</td>
+<td>Bignum or Fixnum (as required)</td>
+</tr>
+<tr>
+<td><a name="sint32" /> sint32</td>
+<td>Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int32s.</td>
+<td>int32</td>
+<td>int</td>
+<td>int</td>
+<td>int32</td>
+<td>int</td>
+<td>integer</td>
+<td>Bignum or Fixnum (as required)</td>
+</tr>
+<tr>
+<td><a name="sint64" /> sint64</td>
+<td>Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int64s.</td>
+<td>int64</td>
+<td>long</td>
+<td>int/long</td>
+<td>int64</td>
+<td>long</td>
+<td>integer/string</td>
+<td>Bignum</td>
+</tr>
+<tr>
+<td><a name="fixed32" /> fixed32</td>
+<td>Always four bytes. More efficient than uint32 if values are often greater than 2^28.</td>
+<td>uint32</td>
+<td>int</td>
+<td>int</td>
+<td>uint32</td>
+<td>uint</td>
+<td>integer</td>
+<td>Bignum or Fixnum (as required)</td>
+</tr>
+<tr>
+<td><a name="fixed64" /> fixed64</td>
+<td>Always eight bytes. More efficient than uint64 if values are often greater than 2^56.</td>
+<td>uint64</td>
+<td>long</td>
+<td>int/long</td>
+<td>uint64</td>
+<td>ulong</td>
+<td>integer/string</td>
+<td>Bignum</td>
+</tr>
+<tr>
+<td><a name="sfixed32" /> sfixed32</td>
+<td>Always four bytes.</td>
+<td>int32</td>
+<td>int</td>
+<td>int</td>
+<td>int32</td>
+<td>int</td>
+<td>integer</td>
+<td>Bignum or Fixnum (as required)</td>
+</tr>
+<tr>
+<td><a name="sfixed64" /> sfixed64</td>
+<td>Always eight bytes.</td>
+<td>int64</td>
+<td>long</td>
+<td>int/long</td>
+<td>int64</td>
+<td>long</td>
+<td>integer/string</td>
+<td>Bignum</td>
+</tr>
+<tr>
+<td><a name="bool" /> bool</td>
+<td></td>
+<td>bool</td>
+<td>boolean</td>
+<td>boolean</td>
+<td>bool</td>
+<td>bool</td>
+<td>boolean</td>
+<td>TrueClass/FalseClass</td>
+</tr>
+<tr>
+<td><a name="string" /> string</td>
+<td>A string must always contain UTF-8 encoded or 7-bit ASCII text.</td>
+<td>string</td>
+<td>String</td>
+<td>str/unicode</td>
+<td>string</td>
+<td>string</td>
+<td>string</td>
+<td>String (UTF-8)</td>
+</tr>
+<tr>
+<td><a name="bytes" /> bytes</td>
+<td>May contain any arbitrary sequence of bytes.</td>
+<td>string</td>
+<td>ByteString</td>
+<td>str</td>
+<td>[]byte</td>
+<td>ByteString</td>
+<td>string</td>
+<td>String (ASCII-8BIT)</td>
+</tr>
+</tbody>
+</table>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        <a href="../crds/" class="md-footer__link md-footer__link--prev" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              API Reference
+            </div>
+          </div>
+        </a>
+      
+      
+        <a href="../ddc/" class="md-footer__link md-footer__link--next" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Data Distribution Controller
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Made with ❤️ by Mesh for Data contributors.
+          </div>
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+  <div class="md-footer-social">
+    
+      
+      
+        
+        
+      
+      <a href="https://github.com/mesh-for-data/mesh-for-data" target="_blank" rel="noopener" title="github.com" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"/></svg>
+      </a>
+    
+  </div>
+
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../../assets/javascripts/workers/search.d351de03.min.js", "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.34eae1b6.min.js"></script>
+      
+    
+  </body>
+</html>
