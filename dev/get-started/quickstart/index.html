@@ -1038,10 +1038,18 @@ helm install m4d-crd m4d-charts/m4d-crd -n m4d-system --wait
 helm install m4d m4d-charts/m4d -n m4d-system --wait
 </code></pre></div>
 <h2 id="install-modules">Install modules</h2>
-<p><a href="../../concepts/modules/">Modules</a> are plugins that the control plane deploys whenever required. </p>
-<p>Install the <a href="https://github.com/mesh-for-data/arrow-flight-module">arrow flight module</a>:</p>
-<div class="highlight"><pre><span></span><code>kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/arrow-flight-module/master/module.yaml -n m4d-system
+<p><a href="../../concepts/modules/">Modules</a> are plugins that the control plane deploys whenever required. The <a href="https://github.com/mesh-for-data/arrow-flight-module">arrow flight module</a> enables reading data through Apache Arrow Flight API. </p>
+<p>Install the latest<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> release of arrow-flight-module:</p>
+<div class="highlight"><pre><span></span><code>kubectl apply -f https://github.com/mesh-for-data/arrow-flight-module/releases/latest/download/module.yaml -n m4d-system
 </code></pre></div>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>Refer to the <a href="https://github.com/mesh-for-data/arrow-flight-module/blob/master/README.md#register-as-a-mesh-for-data-module">documentation</a> of arrow-flight-module for other versions&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
                 
               
               
