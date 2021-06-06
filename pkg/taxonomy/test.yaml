@@ -1,0 +1,12 @@
+openapi: 3.0.1
+info:
+  title: Recursive refs example
+  version: "1.0"
+paths: {}
+components:
+  schemas:
+    Complex:
+      type: object
+      properties:
+        parent:
+          $ref: '#/components/schemas/Complex'
