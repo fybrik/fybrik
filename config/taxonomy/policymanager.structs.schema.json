@@ -1,7 +1,8 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "$id": "policymanager.schema.json#",
+    "$id": "policymanager.structs.schema.json",
     "title": "Policy Manager Taxonomy",
+    "type": "object",
     "description": "Portion of the taxonomy owned by the policy manager.",
     "definitions": {
         "action": {
@@ -32,12 +33,10 @@
             "properties": {
                 "resource" : { "$ref": "catalog.structs.schema.json#/definitions/resource"},
                 "governance_decision" : { "$ref": "policymanager.values.schema.json#/definitions/governance_decision"},
-                "transformations" : { 
+                "transformations" : {
                     "type": "array",
                     "items": {
-                        "properties": {
-                            "transformation": {"$ref": "module.structs.schema.json#/definitions/transformation"}
-                        }                 
+                        "$ref": "module.structs.schema.json#/definitions/transformation"
                     }
                 },
                 "used_policies": {

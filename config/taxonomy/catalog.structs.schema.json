@@ -2,6 +2,7 @@
     "$schema": "http://json-schema.org/draft-04/schema#",
     "$id": "catalog.structs.schema.json",
     "title": "Data Catalog Structures Taxonomy",
+    "type": "object",
     "description": "Standardized structures relating to data catalogs.",
     "definitions": {
          "geography": {
@@ -15,10 +16,6 @@
                 "name": {
                     "type": "string",
                     "$ref": "catalog.values.schema.json#/definitions/geography_name"                      
-                },
-                "parent": {
-                    "type": "object",
-                    "$ref": "#/definitions/geography"
                 }
             },
             "required": ["name"]
@@ -27,9 +24,7 @@
             "type": "array",
             "description": "A grouping of discrete geographies that are not necessarily in a common hierarchy.",
             "items": {
-                "properties": {
-                    "geography": {"$ref": "#/definitions/geography"}
-                }
+                "$ref": "#/definitions/geography"
             }
         },
         "resource": {
