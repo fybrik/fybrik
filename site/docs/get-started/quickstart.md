@@ -90,10 +90,12 @@ helm install m4d m4d-charts/m4d -n m4d-system --wait
 
 ## Install modules
 
-[Modules](../concepts/modules.md) are plugins that the control plane deploys whenever required. 
+[Modules](../concepts/modules.md) are plugins that the control plane deploys whenever required. The [arrow flight module](https://github.com/mesh-for-data/arrow-flight-module) enables reading data through Apache Arrow Flight API. 
 
-Install the [arrow flight module](https://github.com/mesh-for-data/arrow-flight-module):
+Install the latest[^1] release of arrow-flight-module:
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/arrow-flight-module/master/module.yaml -n m4d-system
+kubectl apply -f https://github.com/mesh-for-data/arrow-flight-module/releases/latest/download/module.yaml -n m4d-system
 ```
+
+[^1]: Refer to the [documentation](https://github.com/mesh-for-data/arrow-flight-module/blob/master/README.md#register-as-a-mesh-for-data-module) of arrow-flight-module for other versions
