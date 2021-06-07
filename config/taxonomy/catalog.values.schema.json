@@ -7,7 +7,7 @@
         "geography_name": {
             "type": "string",
             "description": "Name of the geography",
-            "enum": ["Netherlands", "Turkey"]                              
+            "enum": ["Netherlands", "Turkey"]
         },
         "geography_type": {
             "type": "string",
@@ -23,26 +23,13 @@
             "type": "string",
             "description": "Type of data.",
             "enum": ["tabular", "image", "text", "voice", "video"]
-        },
-        "valid_metadata": {
-            "type": "array",
-            "description": "A list of valid key value metadata pairs describing aspects of the data.  Values must be one of the items indicated.",
-            "items": {
-                "properties": {
-                    "geography_name": {"$ref": "#/definitions/geography_name"},
-                    "data_type": {"$ref": "#/definitions/data_type"},
-                    "geography": {"$ref": "catalog.structs.schema.json#/definitions/geography"}
-                },
-                "additionalProperties": true
-            }           
         }
     },
     "properties": {
-        "geography_name": {"$ref": "#/definitions/geography_name"},
-        "geography_type": {"$ref": "#/definitions/geography_type"},
-        "data_format": {"$ref": "#/definitions/data_format"},
-        "data_type": {"$ref":"#/definitions/data_type"},
-        "valid_metadata": {"$ref:": "#/defintions/valid_metadata"}
+        "geography_name": { "$ref": "#/definitions/geography_name" },
+        "geography_type": { "$ref": "#/definitions/geography_type" },
+        "data_format": { "$ref": "#/definitions/data_format" },
+        "data_type": { "$ref": "#/definitions/data_type" }
     },
     "additionalProperties": false
 
