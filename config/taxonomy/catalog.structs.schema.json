@@ -4,17 +4,17 @@
     "title": "Data Catalog Structures Taxonomy",
     "description": "Standardized structures relating to data catalogs.",
     "definitions": {
-         "geography": {
+        "geography": {
             "type": "object",
             "description": "Geographical location which may or may not be part of a hierarchy.",
             "properties": {
                 "geography_type": {
                     "type": "string",
-                    "$ref": "catalog.values.schema.json#/definitions/geography_type"  
+                    "$ref": "catalog.values.schema.json#/definitions/geography_type"
                 },
                 "name": {
                     "type": "string",
-                    "$ref": "catalog.values.schema.json#/definitions/geography_name"                      
+                    "$ref": "catalog.values.schema.json#/definitions/geography_name"
                 },
                 "parent": {
                     "type": "object",
@@ -28,9 +28,13 @@
             "description": "A grouping of discrete geographies that are not necessarily in a common hierarchy.",
             "items": {
                 "properties": {
-                    "geography": {"$ref": "#/definitions/geography"}
+                    "geography": { "$ref": "#/definitions/geography" }
                 }
             }
+        },
+        "tags": {
+            "type": "object",
+            "additionalProperties": true
         },
         "resource": {
             "type": "object",
@@ -40,7 +44,7 @@
                     "type": "string",
                     "description": "Name of the data set"
                 },
-                "tags": { "$ref": "catalog.values.schema.json#/definitions/valid_metadata"},
+                "tags": { "$ref": "#/definitions/tags" },
                 "columns": {
                     "type": "array",
                     "description": "List of column names in the data set with their associated tags. They must be key value pairs.",
@@ -51,20 +55,42 @@
                                 "type": "string",
                                 "description": "name of column or component"
                             },
-                            "tags": { "$ref": "catalog.values.schema.json#/definitions/valid_metadata"}
+                            "tags": { "$ref": "#/definitions/tags" }
                         },
-                        "required":["name"]
+                        "required": ["name"]
                     }
                 }
             },
-            "required":["name"],
-            "additionalProperties": false
-        }
-    },
+            "required": ["name"],
+            "additionalProperties": {
+                "creationTime": {
+                    "type": "string",
+                    "description": "Time when the asset was created"
+                },
+                "createdBy": {
+                    "type": "string",
+                    "description": "Owner Id for the user who created the asset"
+                },
+                "updateTime": {
+                    "type": "string",
+                    "description": "Time when the dataset got updated"
+                },
+                "updatedBy": {
+                    "type": "string",
+                    "description": "Indicates who updted the asset"
+                },
+                "totalRatings": {
+                    "type": "string",
+                    "description": "Indicates the total rating of the asset given by the data users"
+					}
+				}
+			}
+        },
     "properties": {
-        "geography": { "$ref": "#/definitions/geography"},
-        "resource": { "$ref": "#/definitions/resource"},
-        "geography_group": { "$ref": "#/definitions/geography_group"}
+        "geography": { "$ref": "#/definitions/geography" },
+        "tags": { "$ref": "#/definitions/tags" },
+        "resource": { "$ref": "#/definitions/resource" },
+        "geography_group": { "$ref": "#/definitions/geography_group" }
     },
     "additionalProperties": false
 }
