@@ -4,7 +4,7 @@
 package taxonomy
 
 import (
-	tax "github.com/ibm/the-mesh-for-data/config/taxonomy"
+	tax "github.com/mesh-for-data/mesh-for-data/config/taxonomy"
 	"testing"
 )
 
