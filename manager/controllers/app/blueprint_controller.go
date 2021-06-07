@@ -334,10 +334,7 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// If it's not then it is a rogue event created by someone outside of the control plane.
 	p := predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
-			if e.Object.GetNamespace() == BlueprintNamespace {
-				return true
-			}
-			return false
+			return e.Object.GetNamespace() == BlueprintNamespace
 		},
 	}
 
