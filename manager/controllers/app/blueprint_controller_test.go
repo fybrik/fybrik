@@ -82,6 +82,57 @@ func TestBlueprintReconcile(t *testing.T) {
 	g.Expect(blueprint.Status.Releases).Should(gomega.HaveKeyWithValue("notebook-default-notebook-read-module", blueprint.Status.ObservedGeneration))
 }
 
+// Tries to create a blueprint in a namespace other than m4d-blueprints.
+// Result should be that no event is sent to the reconciler, since the predicate function
+// registered during the controller deployment filters it out.
+func TestIllegalBlueprint(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	blueprint, err := readBlueprint("../../testdata/blueprint.yaml")
+	g.Expect(err).To(gomega.BeNil(), "Cannot read blueprint file for test")
+
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		blueprint,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	r := &BlueprintReconciler{
+		Client: cl,
+		Name:   "BlueprintTestController",
+		Log:    ctrl.Log.WithName("test-blueprint-controller"),
+		Scheme: s,
+		Helmer: helm.NewEmptyFake(),
+	}
+	ns := client.ObjectKeyFromObject(blueprint)
+
+	// Mock request to simulate Reconcile() being called on an event for a
+	// watched resource .
+	// Put bad namespace name!!
+	ns.Namespace = "rogue-namespace"
+	req := reconcile.Request{
+		NamespacedName: ns,
+	}
+
+	res, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	// Check the result of reconciliation to make sure it has the desired state.
+	// I.e. The event should not have been queued to reconcile
+	g.Expect(res.Requeue).To(gomega.BeFalse(), "reconcile did not requeue request - as is expected")
+
+	// Look for the blueprint.  Shouldn't have been created because the namespace was wrong
+	err = cl.Get(context.TODO(), req.NamespacedName, blueprint)
+	g.Expect(err).Should(gomega.HaveOccurred())
+}
+
 // This test checks that a short release name is not truncated
 func TestShortReleaseName(t *testing.T) {
 	t.Parallel()
