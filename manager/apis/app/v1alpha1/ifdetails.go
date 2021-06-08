@@ -4,11 +4,9 @@
 package v1alpha1
 
 // IFProtocol defines interface protocol for data transactions
-// +kubebuilder:validation:Enum=s3;kafka;jdbc-db2;m4d-arrow-flight
 type IFProtocol string
 
 // DataFormatType defines data format type
-// +kubebuilder:validation:Enum=parquet;table;csv;json;avro;orc;binary;arrow
 type DataFormatType string
 
 // DataFormatType valid values

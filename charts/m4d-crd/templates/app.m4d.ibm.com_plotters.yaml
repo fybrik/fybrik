@@ -262,6 +262,7 @@ spec:
                             - name
                             - template
                             type: object
+                          minItems: 1
                           type: array
                       required:
                       - name
@@ -296,6 +297,7 @@ spec:
                         - kind
                         - name
                         type: object
+                      minItems: 1
                       type: array
                   required:
                   - entrypoint
