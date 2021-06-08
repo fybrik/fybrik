@@ -17,7 +17,7 @@ spec:
   appInfo:
     intent: fraud-detection
   data:
-    - dataSetID: 's3/allow-dataset'
+    - dataSetID: 's3/redact-dataset'
       requirements:
         interface:
           protocol: m4d-arrow-flight
