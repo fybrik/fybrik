@@ -10,23 +10,21 @@
             "enum": ["copy", "read", "write"]
         },
         "allowable_action_columns": {
-            "type": "string",
-            "description": "Type of actions possible on columns",
             "enum": ["RemoveColumn", "RedactColumn", "EncryptColumn", "PeriodicBlackout"]
         },
         "allowable_action_dataset": {
-            "type": "string",
-            "description": "Type of actions possible on dataset",
             "enum": ["DenyAccess", "DenyWriting"]
         },
         "action": {
+            "type": "object",
             "action_struct":{"$ref": "module.structs.schema.json#/definitions/action"},
+            "x-kubernetes-int-or-string": "true",
             "oneOf": [
                 {
                     "properties": {
                         "name": {"$ref": "#/definitions/allowable_action_columns"} 
-		    },
-		    "required": ["columns"]
+		            },
+		            "required": ["columns"]
                 },
                 {
                     "properties": {

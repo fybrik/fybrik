@@ -13,6 +13,7 @@
             "type": "array",
             "description": "While showing the result, action contains the action type and the associated entity on which action has been taken.",
             "items": {
+                "type": "object",
                 "properties": {
                     "action": { "$ref": "module.values.schema.json#/definitions/action" },
                     "policy": {

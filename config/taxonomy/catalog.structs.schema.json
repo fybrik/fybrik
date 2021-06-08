@@ -15,7 +15,7 @@
                 },
                 "name": {
                     "type": "string",
-                    "$ref": "catalog.values.schema.json#/definitions/geography_name"                      
+                    "$ref": "catalog.values.schema.json#/definitions/geography_name"
                 }
             },
             "required": ["name"]
@@ -24,7 +24,7 @@
             "type": "array",
             "description": "A grouping of discrete geographies that are not necessarily in a common hierarchy.",
             "items": {
-                "$ref": "#/definitions/geography"
+                "$ref": "#/definitions/geography"                
             }
         },
         "tags": {
@@ -56,29 +56,7 @@
                     }
                 }
             },
-            "required": ["name"],
-            "additionalProperties": {
-                "creationTime": {
-                    "type": "string",
-                    "description": "Time when the asset was created"
-                },
-                "createdBy": {
-                    "type": "string",
-                    "description": "Owner Id for the user who created the asset"
-                },
-                "updateTime": {
-                    "type": "string",
-                    "description": "Time when the dataset got updated"
-                },
-                "updatedBy": {
-                    "type": "string",
-                    "description": "Indicates who updted the asset"
-                },
-                "totalRatings": {
-                    "type": "string",
-                    "description": "Indicates the total rating of the asset given by the data users"
-					}
-				}
+            "required": ["name"]
 			}
         },
     "properties": {
