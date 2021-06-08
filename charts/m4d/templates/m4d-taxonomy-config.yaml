@@ -1,0 +1,12 @@
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: m4d-config
+data:
+  {{- if .Values.coordinator.enabled }}
+  {{ range $path, $_ :=  .Files.Glob  "**.json" }}
+      {{ $.Files.Get $path }}
+  {{ end }}
+  {{- end }}
+{{- end }}
