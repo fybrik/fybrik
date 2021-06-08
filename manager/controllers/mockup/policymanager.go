@@ -5,6 +5,7 @@ package mockup
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strings"
 
@@ -39,6 +40,9 @@ func (s *MockPolicyManager) GetPoliciesDecisions(ctx context.Context, in *pb.App
 
 		var operationDecisions []*pb.OperationDecision
 		splittedID := strings.SplitN(dataset.GetDatasetId(), "/", 2)
+		if len(splittedID) != 2 {
+			panic(fmt.Sprintf("Invalid dataset ID for mock: %s", dataset.GetDatasetId()))
+		}
 		assetID := splittedID[1]
 		switch assetID {
 		case "allow-dataset":

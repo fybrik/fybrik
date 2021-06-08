@@ -3,6 +3,7 @@ package mockup
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"strings"
 
@@ -22,6 +23,10 @@ func (d *DataCatalogDummy) GetDatasetInfo(ctx context.Context, in *pb.CatalogDat
 	log.Printf("MockDataCatalog.GetDatasetInfo called with DataSetID " + datasetID)
 
 	splittedID := strings.SplitN(datasetID, "/", 2)
+	if len(splittedID) != 2 {
+		panic(fmt.Sprintf("Invalid dataset ID for mock: %s", datasetID))
+	}
+
 	catalogID := splittedID[0]
 
 	dataDetails, found := d.dataDetails[catalogID]
