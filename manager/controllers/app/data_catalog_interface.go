@@ -5,11 +5,8 @@ package app
 
 import (
 	"context"
-	"time"
 
 	"encoding/json"
-
-	"google.golang.org/grpc"
 
 	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
@@ -28,20 +25,8 @@ import (
 // - an error if happened
 // - the new asset identifier
 func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.DatasetDetails, input *app.M4DApplication) (string, error) {
-	// Set up a connection to the data catalog interface server.
-	conn, err := grpc.Dial(utils.GetDataCatalogServiceAddress(), grpc.WithInsecure(), grpc.WithBlock())
-	if err != nil {
-		return "", err
-	}
-	defer conn.Close()
-	c := pb.NewDataCatalogServiceClient(conn)
-
-	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
-
 	datasetDetails := &pb.DatasetDetails{}
-	err = info.Details.Into(datasetDetails)
+	err := info.Details.Into(datasetDetails)
 	if err != nil {
 		return "", err
 	}
@@ -55,7 +40,7 @@ func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.Dat
 		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
 
-	response, err := c.RegisterDatasetInfo(ctx, &pb.RegisterAssetRequest{
+	response, err := r.DataCatalog.RegisterDatasetInfo(context.Background(), &pb.RegisterAssetRequest{
 		Creds:                creds,
 		DatasetDetails:       datasetDetails,
 		DestinationCatalogId: catalogID,
