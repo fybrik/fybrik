@@ -52,3 +52,7 @@ connectors/egeria/target
 
 # Downloaded egeria
 third_party/egeria/egeria
+
+# Local development
+.env
+__debug_bin

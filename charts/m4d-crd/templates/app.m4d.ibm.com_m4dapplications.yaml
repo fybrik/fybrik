@@ -216,6 +216,7 @@ spec:
                     details:
                       description: Dataset information
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     secretRef:
                       description: Reference to a secret where the credentials are stored
                       type: string

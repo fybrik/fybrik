@@ -71,133 +71,6 @@
 
 
 
-<a name="policy_manager_request.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## policy_manager_request.proto
-
-
- <!-- end services -->
-
-
-<a name="connectors.AccessOperation"></a>
-
-### AccessOperation
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| type | [AccessOperation.AccessType](#connectors.AccessOperation.AccessType) |  |  |
-| destination | [string](#string) |  | Destination for transfer or write. |
-
-
-
-
-
-
-<a name="connectors.ApplicationContext"></a>
-
-### ApplicationContext
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| credential_path | [string](#string) |  | link to vault plugin for reading k8s secret with user credentials |
-| app_info | [ApplicationDetails](#connectors.ApplicationDetails) |  |  |
-| datasets | [DatasetContext](#connectors.DatasetContext) | repeated |  |
-| general_operations | [AccessOperation](#connectors.AccessOperation) | repeated |  |
-
-
-
-
-
-
-<a name="connectors.ApplicationDetails"></a>
-
-### ApplicationDetails
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| processing_geography | [string](#string) |  |  |
-| properties | [ApplicationDetails.PropertiesEntry](#connectors.ApplicationDetails.PropertiesEntry) | repeated |  |
-
-
-
-
-
-
-<a name="connectors.ApplicationDetails.PropertiesEntry"></a>
-
-### ApplicationDetails.PropertiesEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | [string](#string) |  |  |
-| value | [string](#string) |  |  |
-
-
-
-
-
-
-<a name="connectors.DatasetContext"></a>
-
-### DatasetContext
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| dataset | [DatasetIdentifier](#connectors.DatasetIdentifier) |  |  |
-| operation | [AccessOperation](#connectors.AccessOperation) |  |  |
-
-
-
-
-
-
-<a name="connectors.DatasetIdentifier"></a>
-
-### DatasetIdentifier
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| dataset_id | [string](#string) |  | identifier of asset - always needed. JSON expected. Interpreted by the Connector, can contain any additional information as part of JSON |
-
-
-
-
-
- <!-- end messages -->
-
-
-<a name="connectors.AccessOperation.AccessType"></a>
-
-### AccessOperation.AccessType
-
-
-| Name | Number | Description |
-| ---- | ------ | ----------- |
-| UNKNOWN | 0 |  |
-| READ | 1 |  |
-| COPY | 2 |  |
-| WRITE | 3 |  |
-
-
- <!-- end enums -->
-
- <!-- end HasExtensions -->
-
-
-
 <a name="policy_manager_response.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
@@ -374,6 +247,133 @@
 
 
  <!-- end messages -->
+
+ <!-- end enums -->
+
+ <!-- end HasExtensions -->
+
+
+
+<a name="policy_manager_request.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## policy_manager_request.proto
+
+
+ <!-- end services -->
+
+
+<a name="connectors.AccessOperation"></a>
+
+### AccessOperation
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| type | [AccessOperation.AccessType](#connectors.AccessOperation.AccessType) |  |  |
+| destination | [string](#string) |  | Destination for transfer or write. |
+
+
+
+
+
+
+<a name="connectors.ApplicationContext"></a>
+
+### ApplicationContext
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| credential_path | [string](#string) |  | link to vault plugin for reading k8s secret with user credentials |
+| app_info | [ApplicationDetails](#connectors.ApplicationDetails) |  |  |
+| datasets | [DatasetContext](#connectors.DatasetContext) | repeated |  |
+| general_operations | [AccessOperation](#connectors.AccessOperation) | repeated |  |
+
+
+
+
+
+
+<a name="connectors.ApplicationDetails"></a>
+
+### ApplicationDetails
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| processing_geography | [string](#string) |  |  |
+| properties | [ApplicationDetails.PropertiesEntry](#connectors.ApplicationDetails.PropertiesEntry) | repeated |  |
+
+
+
+
+
+
+<a name="connectors.ApplicationDetails.PropertiesEntry"></a>
+
+### ApplicationDetails.PropertiesEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [string](#string) |  |  |
+| value | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="connectors.DatasetContext"></a>
+
+### DatasetContext
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| dataset | [DatasetIdentifier](#connectors.DatasetIdentifier) |  |  |
+| operation | [AccessOperation](#connectors.AccessOperation) |  |  |
+
+
+
+
+
+
+<a name="connectors.DatasetIdentifier"></a>
+
+### DatasetIdentifier
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| dataset_id | [string](#string) |  | identifier of asset - always needed. JSON expected. Interpreted by the Connector, can contain any additional information as part of JSON |
+
+
+
+
+
+ <!-- end messages -->
+
+
+<a name="connectors.AccessOperation.AccessType"></a>
+
+### AccessOperation.AccessType
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| UNKNOWN | 0 |  |
+| READ | 1 |  |
+| COPY | 2 |  |
+| WRITE | 3 |  |
+
 
  <!-- end enums -->
 
