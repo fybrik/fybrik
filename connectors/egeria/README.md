@@ -1,15 +1,13 @@
 # Egeria Connector
 
-For each of the tasks related to the egeria connector, execute the corresponding commands from this directory.
+All commands in this document should be executed from this directory unless explicitly stated otherwise.
 
 
-## Build the connector
+## Testing
 
 ```bash
-make build
+make test
 ```
-
-Cleanup with `make clean`
 
 ## Build and push the connector image
 
@@ -22,31 +20,68 @@ make docker-build docker-push
 
 Cleanup with `make clean docker-rmi`
 
-## Running tests
+## Running in a cluster
+
+The connector can be deployed as part of the Mesh for Data Helm chart by adding the following to the installation of the m4d chart (replace the serverURL if the value is different):
 
 ```bash
-make test
+--set coordinator.catalog=egeria --set egeriaConnector.serverURL="https://egeria-platform.egeria-catalog:9443"
 ```
+
+To use a [locally built image](#build-and-push-the-connector-image) add the following to the installation of the m4d chart:
+
+```bash
+--set egeriaConnector.image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/egr-connector:${DOCKER_TAGNAME}
+```
+
+To run independantly of manager you need to set some environment variables:
+
+1. `EGERIA_SERVER_URL`: A URL to a running egeria server
+2. `KUBE_NAMESPACE`: target namespace (defaults to "m4d-system")
+
+We recommend to create a file named `.env` in the root directory of the project and set all variables there. For example:
+
+```s
+EGERIA_SERVER_URL="https://egeria-platform.egeria-catalog:9443"
+KUBE_NAMESPACE="m4d-system"
+```
+
+Deploy the connector:
+
+```bash
+make deploy
+```
+
+Cleanup with `make undeploy`
 
 ## Running locally
 
-To run the connector locally the `EGERIA_SERVER_URL` environment variable needs to be set to a URL of a running Egeria server. We recommend to create a file named `.env` in the root directory of the project and set the variable there. For example:
+### Build the connector
 
 ```bash
-EGERIA_SERVER_URL=https://localhost:9443
+make build
 ```
 
-To run the connector locally:
+Cleanup with `make clean`
+
+### Run the connector
+
+Set environment variables:
+
+1. `EGERIA_SERVER_URL`: a URL to a running Egeria server
+2. `PORT_EGERIA_CONNECTOR`: port to bind to (defaults to 50084)
+
+We recommend to create a file named `.env` in the root directory of the project and set all variables there. For example:
+
+```s
+EGERIA_SERVER_URL="https://localhost:9443"
+PORT_EGERIA_CONNECTOR=50084
+```
+
+Run the connector:
 
 ```bash
 make run
 ```
 
-To terminate the process:
-
-```bash
-make terminate
-```
-
-Note that by default the connector binds to port 50084.
-You can change it by setting the `PORT_EGERIA_CONNECTOR` environment variable (e.g., adding it to `.env`).
+Termnate with `make terminate`.

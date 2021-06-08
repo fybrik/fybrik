@@ -4,11 +4,10 @@ DOCKER_NAME = opa-connector
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 
-NEED_TEST_COVERAGE_STATISTICS=1
-NEED_TEST_COVERAGE_STATISTICS_IN_HTML=0
-
 KUBE_NAMESPACE ?= m4d-system
 
+NEED_TEST_COVERAGE_STATISTICS=1
+NEED_TEST_COVERAGE_STATISTICS_IN_HTML=0
 
 docker-build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o opa-connector main.go
@@ -17,10 +16,10 @@ docker-build:
 
 .PHONY: deploy
 deploy:
-	helm template m4d-opa $(ROOT_DIR)/charts/m4d \
+	helm install m4d-opa $(ROOT_DIR)/charts/m4d \
 		--set coordinator.enabled=false --set worker.enabled=false --set manager.enabled=false \
 		--set opaServer.enabled=true --set opaConnector.enabled=true \
-		--set opaConnector.image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:${DOCKER_TAGNAME} \
+		--set opaConnector.image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(DOCKER_NAME):${DOCKER_TAGNAME} \
 		--set coordinator.catalogConnectorURL=${CATALOG_CONNECTOR_URL}
 		-n $(KUBE_NAMESPACE)
 

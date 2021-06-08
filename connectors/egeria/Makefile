@@ -4,12 +4,28 @@ DOCKER_NAME = egr-connector
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 
+KUBE_NAMESPACE ?= m4d-system
+
+.PHONY: docker-build
+docker-build: build
+	docker build . -t ${IMG}
+
+.PHONY: deploy
+deploy:
+	helm install m4d-egeria $(ROOT_DIR)/charts/m4d \
+		--set coordinator.enabled=false --set worker.enabled=false --set manager.enabled=false \
+		--set egeriaConnector.enabled=true \
+		--set egeriaConnector.image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(DOCKER_NAME):${DOCKER_TAGNAME} \
+		--set egeriaConnector.serverURL=${EGERIA_SERVER_URL} \
+		-n $(KUBE_NAMESPACE)
+
+.PHONY: undeploy
+undeploy:
+	helm uninstall m4d-egeria -n $(KUBE_NAMESPACE)
+
 .PHONY: build
 build:
 	mvn -B clean install -DskipTests
-
-docker-build: build
-	docker build . -t ${IMG}
 
 .PHONY: test
 test:

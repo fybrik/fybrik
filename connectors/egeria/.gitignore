@@ -1,6 +1,5 @@
 target/
 generatedsources/
-kustomization.yaml
 
 .classpath
 .factorypath
