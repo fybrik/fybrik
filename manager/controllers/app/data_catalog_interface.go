@@ -5,7 +5,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"time"
 
@@ -81,9 +80,10 @@ func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.Dat
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	datasetDetails, ok := info.Details.Data.(*pb.DatasetDetails)
-	if !ok {
-		return "", fmt.Errorf("data details has incorrect type %T (expected *DatasetDetails)", info.Details.Data)
+	datasetDetails := &pb.DatasetDetails{}
+	err = info.Details.Into(datasetDetails)
+	if err != nil {
+		return "", err
 	}
 
 	var creds *pb.Credentials

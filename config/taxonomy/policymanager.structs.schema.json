@@ -16,46 +16,21 @@
             },
             "required": ["action_type"]
         },
-        "request_context": { "$ref":"policymanager.values.schema.json#/definitions/request_context"},
+        "request_context": { "$ref": "policymanager.values.schema.json#/definitions/request_context" },
         "governance_decision_request": {
             "type": "object",
             "properties": {
-                "request_context": { "$ref": "#/definitions/request_context"},
-                "action": { "$ref":"#/definitions/action"},
-                "resource": { "$ref": "catalog.structs.schema.json#/definitions/resource"}
+                "request_context": { "$ref": "#/definitions/request_context" },
+                "action": { "$ref": "#/definitions/action" },
+                "resource": { "$ref": "catalog.structs.schema.json#/definitions/resource" }
             },
             "required": ["action", "resource"]
-        },
-        "governance_decision_response": {
-            "type": "object",
-            "description": "Root level decision plus list of optional transforms that may be required on the root or sub-items of the data",
-            "properties": {
-                "resource" : { "$ref": "catalog.structs.schema.json#/definitions/resource"},
-                "governance_decision" : { "$ref": "policymanager.values.schema.json#/definitions/governance_decision"},
-                "transformations" : { 
-                    "type": "array",
-                    "items": {
-                        "properties": {
-                            "transformation": {"$ref": "module.structs.schema.json#/definitions/transformation"}
-                        }                 
-                    }
-                },
-                "used_policies": {
-                    "description" : "The list of policies on which the decision was based.",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            },
-            "required": ["resource", "governance_decision"]
         }
     },
     "properties": {
-        "request_context": { "$ref": "#/definitions/request_context"},
-        "action": { "$ref":"#/definitions/action"},
-        "governance_decision_request": { "$ref":"#/definitions/governance_decision_request"},
-        "governance_decision_response": { "$ref":"#/definitions/governance_decision_response"}
+        "request_context": { "$ref": "#/definitions/request_context" },
+        "action": { "$ref": "#/definitions/action" },
+        "governance_decision_request": { "$ref": "#/definitions/governance_decision_request" }
     },
     "additionalProperties": false
 }

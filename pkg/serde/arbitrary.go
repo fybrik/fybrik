@@ -34,3 +34,11 @@ func (in *Arbitrary) UnmarshalJSON(data []byte) error {
 func (in *Arbitrary) MarshalJSON() ([]byte, error) {
 	return json.Marshal(in.Data)
 }
+
+func (in *Arbitrary) Into(target interface{}) error {
+	raw, err := json.Marshal(in.Data)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(raw, target)
+}

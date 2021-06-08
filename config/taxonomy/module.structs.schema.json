@@ -4,38 +4,26 @@
     "title": "Module Taxonomy",
     "description": "Portion of the taxonomy contributed to by the mesh for data modules. Currently contains only what is needed by OPA.",
     "definitions": {
-        "transformation": {
+        "action": {
             "type": "object",
-            "description": "Transformation that may be applied to data.",
+            "description": "Contains the details about action and on which entity (columns, dataset) the action is enforced",
             "properties": {
-                "name" : {"$ref": "module.values.schema.json#/definitions/transformation_name"},
-                "params": {
-                    "type": "array",
-                    "description": "List of optional parameters provided to the transform function.",
-                    "items": {
-                        "type":"string"
-                    }
+                "name": {
+                    "type": "string",
+                    "description": "Represents the unique action type taken on a list of columns"
                 },
-                "level": {
-                    "type": "object",
-                    "properties": {
-                        "value": {
-                            "type":"integer",
-                            "$ref": "module.values.schema.json#/definitions/data_level_code"
-                        },
-                        "name": {
-                            "type":"string",
-                            "$ref": "module.values.schema.json#/definitions/data_level_name"
-                        }
-                    },
-                    "additionalProperties": false
+                "columns": {
+                    "type": "array",
+                    "description": "Represents the column names on which the actions have been taken",
+                    "items": {
+                        "type": "string"
+                    }
                 }
-            },
-            "required": ["name"]
-        }
+            }
+	}
     },
     "properties": {
-        "transformation": {"$ref": "#/definitions/transformation"}
+        "action": { "$ref": "#/definitions/action" }
     },
     "additionalProperties": false
 }
