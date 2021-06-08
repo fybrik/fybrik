@@ -26,8 +26,8 @@ vault policy write "allow-all-dataset-creds" - <<EOF
       }
       EOF
 ```
-3. Have the `CatalogDatasetInfo` structure from the [data catalog response](https://mesh-for-data.github.io/mesh-for-data/dev/reference/connectors/#data_catalog_responseproto) contain the Vault secret path which should be used to retrieve the credentials. This path will later be passed on to the [modules](./modules.md).
-The secret path contains the plugin path, for example, a secret path for the [Vault-plugin-secrets-kubernetes-reader](https://github.com/mesh-for-data/vault-plugin-secrets-kubernetes-reader) plugin is `/v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample`, where `paysim-csv` is the kubernetes secret name which holds the credentials and `m4d-notebook-sample` is the secret namespace.
+3. Have the `CatalogDatasetInfo` structure from the [data catalog response](https://mesh-for-data.github.io/mesh-for-data/dev/reference/connectors/#data_catalog_responseproto) contain the Vault secret path which should be used to retrieve the credentials for a given asset. When Vault plugin is used to retrieve the credentials the parameters to the plugin should follow the plugin usage instructions. This path will later be passed on to the [modules](./modules.md).
+For example, when the credentials are stored in kubernetes secret as is done in the [Katalog](../reference/katalog.md) built-in data catalog; the [Vault-plugin-secrets-kubernetes-reader](https://github.com/mesh-for-data/vault-plugin-secrets-kubernetes-reader) plugin can be used to retrieve the credentials. In this case two parameters should be passed: `paysim-csv`  which is the kubernetes secret name that holds the credentials and `m4d-notebook-sample` is the secret namespace, both are known to the katalog when constructing the path.
 
 The following snippet shows `CatalogDatasetInfo` structure with Vault secret path in `CredentialsInfo` field.
 
