@@ -6,11 +6,11 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: m4dapplication-editor
 rules:
-- apiGroups: app.m4d.ibm.com
-  resources: m4dapplications
+- apiGroups: ["app.m4d.ibm.com"]
+  resources: ["m4dapplications"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-- apiGroups: app.m4d.ibm.com
-  resources: m4dapplications/status
+- apiGroups: ["app.m4d.ibm.com"]
+  resources: ["m4dapplications/status"]
   verbs: ["get", "update", "patch"]
 {{- end }}
 {{- end }}
