@@ -1,4 +1,4 @@
-{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (and .Values.worker.enabled)) }}
 {{- if .Values.clusterScoped }}
 # ClusterRole m4dapplication-editor allows managing m4dapplications
 kind: ClusterRole

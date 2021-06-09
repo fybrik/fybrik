@@ -1,4 +1,4 @@
-{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (and .Values.coordinator.enabled)) }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
