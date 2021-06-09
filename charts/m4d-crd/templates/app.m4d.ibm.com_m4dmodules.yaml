@@ -51,7 +51,7 @@ spec:
                     description: API indicates to the application how to access/write the data
                     properties:
                       dataformat:
-                        description: DataFormatType defines data format type
+                        description: DataFormat defines the data format type
                         type: string
                       endpoint:
                         description: EndpointSpec is used both by the module creator and by the status of the m4dapplication
@@ -70,7 +70,7 @@ spec:
                         - scheme
                         type: object
                       protocol:
-                        description: IFProtocol defines interface protocol for data transactions
+                        description: Protocol defines the interface protocol used for data transactions
                         type: string
                     required:
                     - endpoint
@@ -92,10 +92,10 @@ spec:
                           description: Sink specifies the output data protocol and format
                           properties:
                             dataformat:
-                              description: DataFormatType defines data format type
+                              description: DataFormat defines the data format type
                               type: string
                             protocol:
-                              description: IFProtocol defines interface protocol for data transactions
+                              description: Protocol defines the interface protocol used for data transactions
                               type: string
                           required:
                           - protocol
@@ -104,10 +104,10 @@ spec:
                           description: Source specifies the input data protocol and format
                           properties:
                             dataformat:
-                              description: DataFormatType defines data format type
+                              description: DataFormat defines the data format type
                               type: string
                             protocol:
-                              description: IFProtocol defines interface protocol for data transactions
+                              description: Protocol defines the interface protocol used for data transactions
                               type: string
                           required:
                           - protocol

@@ -73,10 +73,10 @@ spec:
                           description: Interface indicates the protocol and format expected by the data user
                           properties:
                             dataformat:
-                              description: DataFormatType defines data format type
+                              description: DataFormat defines the data format type
                               type: string
                             protocol:
-                              description: IFProtocol defines interface protocol for data transactions
+                              description: Protocol defines the interface protocol used for data transactions
                               type: string
                           required:
                           - protocol
