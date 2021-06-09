@@ -81,10 +81,10 @@ func (r *M4DApplication) validateM4DApplicationSpec() []*field.Error {
 func (r *M4DApplication) validateDataContext(path *field.Path, dataSet *DataContext) []*field.Error {
 	var allErrs []*field.Error
 	interfacePath := path.Child("Requirements", "Interface")
-	if err := validateProtocol(string(dataSet.Requirements.Interface.Protocol)); err != nil {
+	if err := validateProtocol(dataSet.Requirements.Interface.Protocol); err != nil {
 		allErrs = append(allErrs, field.Invalid(interfacePath.Child("Protocol"), &dataSet.Requirements.Interface.Protocol, err.Error()))
 	}
-	if err := validateDataFormat(string(dataSet.Requirements.Interface.DataFormat)); err != nil {
+	if err := validateDataFormat(dataSet.Requirements.Interface.DataFormat); err != nil {
 		allErrs = append(allErrs, field.Invalid(interfacePath.Child("DataFormat"), &dataSet.Requirements.Interface.DataFormat, err.Error()))
 	}
 	return allErrs
