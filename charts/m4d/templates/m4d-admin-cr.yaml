@@ -1,0 +1,13 @@
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled .Values.coordinator.enabled) }}
+{{- if .Values.clusterScoped }}
+# ClusterRole m4d-admin allows managing m4dmodules and m4dstorageaccounts
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: m4d-admin
+rules:
+- apiGroups: ["app.m4d.ibm.com"]
+  resources: ["m4dmodules", "m4dstorageaccounts"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+{{- end }}
+{{- end }}
