@@ -107,21 +107,7 @@ func validateProtocol(protocol string) error {
 
 func validateDataFormat(format string) error {
 	switch format {
-	case "parquet":
-		return nil
-	case "table":
-		return nil
-	case "csv":
-		return nil
-	case "json":
-		return nil
-	case "avro":
-		return nil
-	case "orc":
-		return nil
-	case "binary":
-		return nil
-	case "arrow":
+	case "parquet", "table", "csv", "json", "avro", "orc", "binary", "arrow":
 		return nil
 	default:
 		return errors.New("Value should be one of these: parquet, table, csv, json, avro, orc, binary, arrow")

@@ -3,7 +3,7 @@
 
 package v1alpha1
 
-// Values used in tests and mockup servers
+// Values used in tests and for grpc connection with connectors.
 const (
 	S3          string = "s3"
 	Kafka       string = "kafka"
