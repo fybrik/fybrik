@@ -2,11 +2,11 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: m4d-taxonomy-config
+  name: m4d-module-config
 data:
-  {{- if .Values.coordinator.enabled }}
-  {{ range $path, $_ :=  .Files.Glob  "**.json" }}
-      {{ $.Files.Get $path }}
-  {{ end }}
+  {{- $files := .Files }}
+  {{- range tuple "module.structs.schema.json" "module.values.schema.json" }}
+  {{ . }}: |-
+        {{ $files.Get . }}
   {{- end }}
 {{- end }}

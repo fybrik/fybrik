@@ -1,0 +1,12 @@
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: m4d-catalog-config
+data:
+  {{- $files := .Files }}
+  {{- range tuple "catalog.structs.schema.json" "catalog.values.schema.json" }}
+  {{ . }}: |-
+        {{ $files.Get . }}
+  {{- end }}
+{{- end }}
