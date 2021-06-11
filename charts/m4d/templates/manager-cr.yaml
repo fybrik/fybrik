@@ -229,4 +229,3 @@ rules:
   - update
 {{- end }}
 {{- end }}
-    
