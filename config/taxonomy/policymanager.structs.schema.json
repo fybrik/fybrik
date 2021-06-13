@@ -1,7 +1,8 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "$id": "policymanager.schema.json#",
+    "$id": "policymanager.structs.schema.json",
     "title": "Policy Manager Taxonomy",
+    "type": "object",
     "description": "Portion of the taxonomy owned by the policy manager.",
     "definitions": {
         "action": {
