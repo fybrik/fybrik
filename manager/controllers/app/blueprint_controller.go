@@ -336,6 +336,9 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		CreateFunc: func(e event.CreateEvent) bool {
 			return e.Object.GetNamespace() == BlueprintNamespace
 		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			return e.ObjectOld.GetNamespace() == BlueprintNamespace
+		},
 	}
 
 	return ctrl.NewControllerManagedBy(mgr).
