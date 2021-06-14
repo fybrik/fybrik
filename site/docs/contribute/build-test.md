@@ -77,6 +77,7 @@ make -C third_party/datashim deploy
 
 # build the mock/test docker images and push them to local registry
 make -C test/services docker-build docker-push
+make -C test/dummy-mover docker-build docker-push
 
 # wait until cluster-prepare setup really completed
 make cluster-prepare-wait
