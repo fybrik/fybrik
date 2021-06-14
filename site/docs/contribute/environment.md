@@ -42,5 +42,5 @@ a docker registry as a proxy for all public images. This registry runs in a dock
 
 ```shell
 export DOCKERHUB_USERNAME='your docker hub username'
-export DOCKERHUB_PASSWORD='your password'
+export DOCKERHUB_PASSWORD='your GIT user token'
 ```

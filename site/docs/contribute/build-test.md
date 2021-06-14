@@ -62,11 +62,18 @@ export DOCKER_NAMESPACE=m4d-system
 # build a local kind cluser
 make kind
 
-# deploy the the cluster 3rd party such as cert-manager and vault
-make cluster-prepare
+# deploy vault
+make -C charts vault
+make -C charts wait-for-vault
 
-# build all docker images and push them to the local registry
-make docker
+# check if cert-manager is already installed
+kubectl get namespaces
+
+# If cert-manager namespace did not appear in the list from the previous step, install cert-manager
+make -C charts cert-manager
+
+# Deploy the datashim which enables dynamic bucket allocation in object store
+make -C third_party/datashim deploy
 
 # build the mock/test docker images and push them to local registry
 make -C test/services docker-build docker-push
@@ -78,10 +85,7 @@ make cluster-prepare-wait
 make configure-vault
 
 # deploy the m4d CRDs to the kind cluster
-make -C manager deploy-crd
-
-# deploy m4d manager to the kind cluster
-make -C manager deploy_it
+make -C charts m4d
 
 # wait until manager is ready
 make -C manager wait_for_manager
@@ -91,6 +95,7 @@ make helm
 
 # actually run the integration tests
 make -C manager run-integration-tests
+make -C modules test
 ```
 
 ## Building in a multi cluster environment
