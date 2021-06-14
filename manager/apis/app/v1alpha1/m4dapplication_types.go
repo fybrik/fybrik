@@ -87,7 +87,6 @@ type M4DApplicationSpec struct {
 	// Data contains the identifiers of the data to be used by the Data Scientist's application,
 	// and the protocol used to access it and the format expected.
 	// +required
-	// +kubebuilder:validation:MinItems=1
 	Data []DataContext `json:"data"`
 }
 
