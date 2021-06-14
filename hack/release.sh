@@ -10,4 +10,3 @@ ${TOOLBIN}/yq eval --inplace ".appVersion = \"$RELEASE\"" ./charts/m4d/Chart.yam
 ${TOOLBIN}/yq eval --inplace ".version = \"$RELEASE\"" ./charts/m4d-crd/Chart.yaml
 ${TOOLBIN}/yq eval --inplace ".appVersion = \"$RELEASE\"" ./charts/m4d-crd/Chart.yaml
 ${TOOLBIN}/yq eval --inplace ".version = \"$RELEASE\"" ./charts/vault/Chart.yaml
-${TOOLBIN}/yq eval --inplace ".appVersion = \"$RELEASE\"" ./charts/vault/Chart.yaml
