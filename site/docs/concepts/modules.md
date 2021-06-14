@@ -55,13 +55,12 @@ A user workload description `M4DApplicaton` includes a list of the data sets req
 
 ## Available modules
 
-The table below lists the currently available modules: 
+The table below lists the currently available modules:
 
-Name | Description | M4DModule 
----  | ---         | ---      
-[arrow-flight-module](https://github.com/mesh-for-data/arrow-flight-module) | reading datasets while performing data transformations | https://raw.githubusercontent.com/mesh-for-data/arrow-flight-module/master/module.yaml
-
-<!-- implicit-copy-module is not listed because it's still only available as part of the project tests -->
+Name | Description | M4DModule | Prerequisite
+---  | ---         | ---       | ---
+[arrow-flight-module](https://github.com/mesh-for-data/arrow-flight-module) | reading datasets while performing data transformations | https://raw.githubusercontent.com/mesh-for-data/arrow-flight-module/master/module.yaml |
+[mover](https://github.com/mesh-for-data/mover) | copies data between any two supported data stores, for example S3 and Kafka, and applies transformations. | https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/master/modules/implicit-copy-batch-module.yaml<br> <br>https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/master/modules/implicit-copy-stream-module.yaml | - [Datashim](https://github.com/datashim-io/datashim) deployment.<br>- [`M4DStorageAccount`](../../reference/crds#m4dstorageaccount) resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data.
 
 ## Contributing
 
