@@ -66,9 +66,6 @@ func (r *M4DApplication) validateM4DApplicationSpec() []*field.Error {
 	// structured validation errors.
 
 	var allErrs []*field.Error
-	if len(r.Spec.Data) == 0 {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("data"), r.Spec.Data, "'data' must include at least one element!"))
-	}
 	specField := field.NewPath("spec").Child("data")
 	for i, dataSet := range r.Spec.Data {
 		if err := r.validateDataContext(specField.Index(i), &dataSet); err != nil {

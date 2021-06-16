@@ -6,7 +6,6 @@ package app
 import (
 	"context"
 
-	"emperror.dev/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -76,9 +75,6 @@ func (c *PlotterInterface) GetResourceSignature(ref *app.ResourceReference) *app
 // CreateOrUpdateResource creates a new Plotter resource or updates an existing one
 func (c *PlotterInterface) CreateOrUpdateResource(owner *app.ResourceReference, ref *app.ResourceReference, blueprintPerClusterMap map[string]app.BlueprintSpec) error {
 	plotter := c.GetResourceSignature(ref)
-	if len(blueprintPerClusterMap) == 0 {
-		return errors.New("invalid cluster configuration")
-	}
 	if err := c.Client.Get(context.Background(), types.NamespacedName{Namespace: ref.Namespace, Name: ref.Name}, plotter); err == nil {
 		if equality.Semantic.DeepEqual(&plotter.Spec.Blueprints, &blueprintPerClusterMap) {
 			// nothing needs to be done
