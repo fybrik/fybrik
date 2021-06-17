@@ -229,7 +229,7 @@ while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}')
 
 ## Read the dataset from the notebook
 
-In your **terminal**, run the following command to print the endpoint to use for reading the data. It fetches the code from the `M4DApplication` resource:
+In your **terminal**, run the following command to print the [endpoint](../../reference/crds/#m4dapplicationstatusreadendpointsmapkey) to use for reading the data. It fetches the code from the `M4DApplication` resource:
 ```bash
 printf "$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap})"
 ```
