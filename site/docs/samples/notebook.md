@@ -229,15 +229,44 @@ while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}')
 
 ## Read the dataset from the notebook
 
+In your **terminal**, run the following command to print the endpoint to use for reading the data. It fetches the code from the `M4DApplication` resource:
+```bash
+printf "$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap})"
+```
+The endpoint contains the connection details  which are used to serve the application, such as `scheme`, `hostname`, and `port` in a JSON format, for example:
+
+```json
+{"m4d-notebook-sample/paysim-csv":{"hostname":"my-notebook-m4d-notebook-sample-arrow-flight-mo-53080.m4d-blueprints.svc.cluster.local","port":80,"scheme":"grpc"}}
+```
+
+The next steps use the endpoint to read the data in a python notebook
+
 1. Insert a new notebook cell to install pandas and pyarrow packages:
   ```python
   %pip install pandas pyarrow
   ```
-2. In your **terminal**, run the following command to print the code to use for reading the data. It fetches the code from the `M4DApplication` resource:
+2. Insert a new notebook cell to read the data using the endpoint values extracted from the `M4DApplication` in the previous step:
   ```bash
-  printf "$(kubectl get m4dapplication my-notebook -o jsonpath={.status.dataAccessInstructions})"
+  %pip install pandas pyarrow
+  import json
+  import pyarrow.flight as fl
+  import pandas as pd
+
+  # Create a Flight client
+  client = fl.connect("<SCHEME>://<HOSTNAME>:<PORT>")
+
+  # Prepare the request
+  request = {
+      "asset": "m4d-notebook-sample/paysim-csv",
+      # To request specific columns add to the request a "columns" key with a list of column names
+      # "columns": [...]
+  }
+
+  # Send request and fetch result as a pandas DataFrame
+  info = client.get_flight_info(fl.FlightDescriptor.for_command(json.dumps(request)))
+  reader: fl.FlightStreamReader = client.do_get(info.endpoints[0].ticket)
+  df: pd.DataFrame = reader.read_pandas()
   ```
-3. Insert a new notebook cell and paste in it the code for reading data as printed in the previous step.
 4. Insert a new notebook cell with the following command to visualize the result:
   ```
   df
