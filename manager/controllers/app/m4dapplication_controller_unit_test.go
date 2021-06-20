@@ -815,7 +815,7 @@ func TestSyncWithPlotter(t *testing.T) {
 }
 
 // This test checks that an empty m4dapplication can be created and reconciled
-func TestNoData(t *testing.T) {
+func TestM4DApplicationWithNoDatasets(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	// Set the logger to development mode for verbose logs.

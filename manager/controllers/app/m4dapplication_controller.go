@@ -110,7 +110,7 @@ func (r *M4DApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	}
 
 	// trigger a new reconcile if required (the m4dapplication is not ready and not empty)
-	if !applicationContext.Status.Ready && (len(applicationContext.Spec.Data) > 0) {
+	if !applicationContext.Status.Ready && len(applicationContext.Spec.Data) > 0 {
 		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 	return ctrl.Result{}, nil
@@ -278,6 +278,12 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	}
 	applicationContext.Status.ReadEndpointsMap = make(map[string]app.EndpointSpec)
 
+	if len(applicationContext.Spec.Data) == 0 {
+		err := r.deleteExternalResources(applicationContext)
+		r.Log.V(0).Info("no blueprint will be generated since no datasets are specified")
+		return ctrl.Result{}, err
+	}
+
 	clusters, err := r.ClusterManager.GetClusters()
 	if err != nil {
 		return ctrl.Result{}, err
@@ -366,11 +372,6 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		return ctrl.Result{RequeueAfter: 2 * time.Second}, allocErr
 	}
 	// generate blueprint specifications (per cluster)
-	if len(instances) == 0 {
-		r.Log.V(0).Info("module allocation is not required")
-		return ctrl.Result{}, err
-	}
-
 	blueprintPerClusterMap := r.GenerateBlueprints(instances, applicationContext)
 	setReadModulesEndpoints(applicationContext, blueprintPerClusterMap, moduleMap)
 	ownerRef := &app.ResourceReference{Name: applicationContext.Name, Namespace: applicationContext.Namespace, AppVersion: applicationContext.GetGeneration()}
