@@ -206,17 +206,17 @@ func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M
 func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *app.M4DApplication) error {
 	// clear provisioned storage
 	// References to buckets (Dataset resources) are deleted. Buckets that are persistent will not be removed upon Dataset deletion.
-	var deletedBuckets []string
+	var deletedKeys []string
 	var errMsgs []string
-	for _, datasetDetails := range applicationContext.Status.ProvisionedStorage {
+	for datasetID, datasetDetails := range applicationContext.Status.ProvisionedStorage {
 		if err := r.Provision.DeleteDataset(getBucketResourceRef(datasetDetails.DatasetRef)); err != nil {
 			errMsgs = append(errMsgs, err.Error())
 		} else {
-			deletedBuckets = append(deletedBuckets, datasetDetails.DatasetRef)
+			deletedKeys = append(deletedKeys, datasetID)
 		}
 	}
-	for _, bucket := range deletedBuckets {
-		delete(applicationContext.Status.ProvisionedStorage, bucket)
+	for _, datasetID := range deletedKeys {
+		delete(applicationContext.Status.ProvisionedStorage, datasetID)
 	}
 	if len(errMsgs) != 0 {
 		return errors.New(strings.Join(errMsgs, ";"))
