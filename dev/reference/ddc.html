@@ -1292,7 +1292,7 @@ is typically used in a streaming or change-data-capture scenario. This CRD is si
 testing direct definitions can be used but in a production environment credentials shall be retrieved from the secret provider.</p>
 <p>The secret provider can be accessed via a REST API using a role and a secret name. This secret name refers to a path in vault.
 At the movement operator shall not create any secrets in Kubernetes that contain any credentials and credentials shall only be maintained
-in memory. The fetching of secrets will be executed by the <a href="https://github.com/mesh-for-data/mesh-for-data-mover">datamover</a> component.
+in memory. The fetching of secrets will be executed by the <a href="https://github.com/mesh-for-data/mover">datamover</a> component.
 The datamover component retrieves configuration from a JSON file that is passed on as a Kubernetes secret. 
 The goal is that vault paths can be specified in this JSON configuration file and will be substituted by values retrieved from the
 secret provider. The following example illustrates this mechanism:</p>
@@ -1505,7 +1505,7 @@ status:
 - COS client
 - Reference to IBM Specific JDBC driver for streaming into a relation database.</p>
 <h2 id="relevant-code-repositories">Relevant Code Repositories</h2>
-<p>The <a href="https://github.com/mesh-for-data/mesh-for-data-mover">data distribution core libraries</a> that are Scala/Spark based</p>
+<p>The <a href="https://github.com/mesh-for-data/mover">data distribution core libraries</a> that are Scala/Spark based</p>
 <p>The <a href="https://github.com/mesh-for-data/mesh-for-data">data distribution operator</a> has been integrated into
 Mesh for Data code and is part of the manager.</p>
 <h2 id="roadmap">Roadmap</h2>
