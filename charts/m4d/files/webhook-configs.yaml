@@ -66,6 +66,27 @@ webhooks:
       service:
         name: webhook-service
         namespace: '{{ .Release.Namespace }}'
+        path: /validate-app-m4d-ibm-com-v1alpha1-m4dapplication
+    failurePolicy: Fail
+    name: vm4dapplication.kb.io
+    rules:
+      - apiGroups:
+          - app.m4d.ibm.com
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - m4dapplications
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: webhook-service
+        namespace: '{{ .Release.Namespace }}'
         path: /validate-motion-m4d-ibm-com-v1alpha1-batchtransfer
     failurePolicy: Fail
     name: vbatchtransfer.kb.io

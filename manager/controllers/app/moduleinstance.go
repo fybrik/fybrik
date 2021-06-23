@@ -105,7 +105,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 		Details: &pb.DatasetDetails{
 			Name:       originalAssetName,
 			Geo:        item.DataDetails.Geography,
-			DataFormat: string(destinationInterface.DataFormat),
+			DataFormat: destinationInterface.DataFormat,
 			DataStore:  datastore,
 			Metadata:   item.DataDetails.Metadata,
 		}}
@@ -120,7 +120,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 			Address:    utils.GetVaultAddress(),
 		},
 		Connection: *connection,
-		Format:     string(destinationInterface.DataFormat),
+		Format:     destinationInterface.DataFormat,
 	}, nil
 }
 
@@ -235,7 +235,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 			Role:       utils.GetModulesRole(),
 			Address:    utils.GetVaultAddress(),
 		},
-		Format: string(item.DataDetails.Interface.DataFormat),
+		Format: item.DataDetails.Interface.DataFormat,
 	}
 	// DataStore for destination will be determined if an implicit copy is required
 	var sinkDataStore *app.DataStore

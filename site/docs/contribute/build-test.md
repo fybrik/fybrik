@@ -1,9 +1,9 @@
 # Build and Test
 
-## Build the project 
+## Build the project images
 
 ```bash
-make build
+make docker-build
 ```
 
 ## Run unit tests
