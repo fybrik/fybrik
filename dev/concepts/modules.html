@@ -1051,13 +1051,14 @@ Can be a client to the external component(s) or be independent.</li>
 <!-- TODO: Update to address multi-cluster logic -->
 
 <h2 id="available-modules">Available modules</h2>
-<p>The table below lists the currently available modules: </p>
+<p>The table below lists the currently available modules:</p>
 <table>
 <thead>
 <tr>
 <th>Name</th>
 <th>Description</th>
 <th>M4DModule</th>
+<th>Prerequisite</th>
 </tr>
 </thead>
 <tbody>
@@ -1065,11 +1066,16 @@ Can be a client to the external component(s) or be independent.</li>
 <td><a href="https://github.com/mesh-for-data/arrow-flight-module">arrow-flight-module</a></td>
 <td>reading datasets while performing data transformations</td>
 <td>https://raw.githubusercontent.com/mesh-for-data/arrow-flight-module/master/module.yaml</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/mesh-for-data/mover">implicit-copy</a></td>
+<td>copies data between any two supported data stores, for example S3 and Kafka, and applies transformations.</td>
+<td>https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/master/modules/implicit-copy-batch-module.yaml<br> <br>https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/master/modules/implicit-copy-stream-module.yaml</td>
+<td>- <a href="https://github.com/datashim-io/datashim">Datashim</a> deployment.<br>- <a href="../../reference/crds#m4dstorageaccount"><code>M4DStorageAccount</code></a> resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data.</td>
 </tr>
 </tbody>
 </table>
-<!-- implicit-copy-module is not listed because it's still only available as part of the project tests -->
-
 <h2 id="contributing">Contributing</h2>
 <p>Read  <a href="../contribute/modules.html">Module Development</a> for details on the components that make up a module and how to create a module.</p>
                 
