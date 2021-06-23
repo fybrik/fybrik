@@ -89,13 +89,7 @@ func (r *M4DApplication) validateDataContext(path *field.Path, dataSet *DataCont
 
 func validateProtocol(protocol string) error {
 	switch protocol {
-	case "s3":
-		return nil
-	case "kafka":
-		return nil
-	case "jdbc-db2":
-		return nil
-	case "m4d-arrow-flight":
+	case "s3", "kafka", "jdbc-db2", "m4d-arrow-flight":
 		return nil
 	default:
 		return errors.New("Value should be one of these: s3, kafka, jdbc-db2, m4d-arrow-flight")
