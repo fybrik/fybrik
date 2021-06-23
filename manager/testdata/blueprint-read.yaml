@@ -1,0 +1,43 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: app.m4d.ibm.com/v1alpha1
+kind: Blueprint
+metadata:
+  name: blueprint-with-read
+  labels:
+    app.m4d.ibm.com/appNamespace: default
+    app.m4d.ibm.com/appName: notebook
+spec:
+  selector:
+    matchLabels:
+      app: notebook
+  entrypoint: notebook
+  flow:
+    name: notebook
+    steps:
+    - arguments:
+        read:
+          - source:
+              connection:
+                name: S3
+                s3:
+                  bucket: m4d-test-bucket
+                  endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
+                  object_key: small.kp.encrypted.parq
+                type: 2
+              vault:
+                address: http://vault.m4d-system:8200
+                authPath: /v1/auth/kubernetes/login
+                role: module
+                secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
+              format: parquet
+            assetID: xyz
+      name: notebook-read-module
+      template: read-module
+  templates:
+  - name: read-module
+    kind: M4DModule
+    flow: read
+    chart:
+      name: ghcr.io/mesh-for-data/m4d-template:0.1.0
