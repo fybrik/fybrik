@@ -905,7 +905,7 @@ Following is an example of a policy which gives permission to read secrets in Va
 <span class="s">      }</span>
 <span class="s">      EOF</span>
 </code></pre></div>
-3. Have the <code>CatalogDatasetInfo</code> structure from the <a href="https://mesh-for-data.github.io/mesh-for-data/dev/reference/connectors/#data_catalog_responseproto">data catalog response</a> contain the Vault secret path which should be used to retrieve the credentials for a given asset. When Vault plugin is used to retrieve the credentials the parameters to the plugin should follow the plugin usage instructions. This path will later be passed on to the <a href="modules.html">modules</a>.
+3. Have the <code>CatalogDatasetInfo</code> structure from the <a href="../../reference/connectors#data_catalog_responseproto">data catalog response</a> contain the Vault secret path which should be used to retrieve the credentials for a given asset. When Vault plugin is used to retrieve the credentials the parameters to the plugin should follow the plugin usage instructions. This path will later be passed on to the <a href="modules.html">modules</a>.
 For example, when the credentials are stored in kubernetes secret as is done in the <a href="../reference/katalog.html">Katalog</a> built-in data catalog; the <a href="https://github.com/mesh-for-data/vault-plugin-secrets-kubernetes-reader">Vault-plugin-secrets-kubernetes-reader</a> plugin can be used to retrieve the credentials. In this case two parameters should be passed: <code>paysim-csv</code>  which is the kubernetes secret name that holds the credentials and <code>m4d-notebook-sample</code> is the secret namespace, both are known to the katalog when constructing the path.</p>
 <p>The following snippet shows <code>CatalogDatasetInfo</code> structure with Vault secret path in <code>CredentialsInfo</code> field.</p>
 <p><div class="highlight"><pre><span></span><code>    connectors.CatalogDatasetInfo<span class="o">{</span>
@@ -920,7 +920,7 @@ For example, when the credentials are stored in kubernetes secret as is done in 
         <span class="o">}</span>,
     <span class="o">}</span>
 </code></pre></div>
-4. Update the <a href="modules.html">modules</a> to use the <a href="https://mesh-for-data.github.io/mesh-for-data/dev/reference/crds/#blueprintspecflowstepsindexargumentscopydestinationvault">Vault related values</a> to retrieve dataset credentias during their runtime execution. The values contain <code>secretPath</code> field with the plugin path as described in the previous step.
+4. Update the <a href="modules.html">modules</a> to use the <a href="../../reference/crds#blueprintspecflowstepsindexargumentscopydestinationvault">Vault related values</a> to retrieve dataset credentias during their runtime execution. The values contain <code>secretPath</code> field with the plugin path as described in the previous step.
 The following snippet, taken from <a href="https://github.com/mesh-for-data/hello-world-module">hello-world-module</a> <a href="https://github.com/mesh-for-data/hello-world-module/blob/main/hello-world-module/values.yaml">values.yaml</a> file, contains an example of such values. </p>
 <div class="highlight"><pre><span></span><code>    vault:
       <span class="c1"># Address is Vault address</span>
