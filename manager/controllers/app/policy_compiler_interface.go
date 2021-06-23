@@ -4,11 +4,13 @@
 package app
 
 import (
+	"context"
+
 	"emperror.dev/errors"
 	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	connectors "github.com/mesh-for-data/mesh-for-data/pkg/connectors/clients"
 	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
-	pc "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"github.com/mesh-for-data/mesh-for-data/pkg/vault"
 )
 
@@ -34,10 +36,10 @@ func ConstructApplicationContext(datasetID string, input *app.M4DApplication, op
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
-func LookupPolicyDecisions(datasetID string, policyCompiler pc.IPolicyCompiler, input *app.M4DApplication, op *pb.AccessOperation) ([]*pb.EnforcementAction, error) {
+func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, input *app.M4DApplication, op *pb.AccessOperation) ([]*pb.EnforcementAction, error) {
 	// call external policy manager to get governance instructions for this operation
 	appContext := ConstructApplicationContext(datasetID, input, op)
-	pcresponse, err := policyCompiler.GetPoliciesDecisions(appContext)
+	pcresponse, err := policyManager.GetPoliciesDecisions(context.Background(), appContext)
 	actions := []*pb.EnforcementAction{}
 	if err != nil {
 		return actions, err

@@ -11,7 +11,7 @@ spec:
     purpose: Ingest
     role: Data Owner
   data:
-    - dataSetID: '{"asset_id": "xxx", "catalog_id": "s3-external"}'
+    - dataSetID: s3-external/xxx
       requirements:
         copy:
           required: true

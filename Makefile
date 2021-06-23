@@ -9,11 +9,6 @@ license: $(TOOLBIN)/license_finder
 docker-mirror-read:
 	$(TOOLS_DIR)/docker_mirror.sh $(TOOLS_DIR)/docker_mirror.conf
 
-.PHONY: build
-build:
-	$(MAKE) -C pkg/policy-compiler build
-	$(MAKE) -C manager manager
-
 .PHONY: test
 test:
 	$(MAKE) -C manager pre-test
