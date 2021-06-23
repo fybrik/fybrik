@@ -112,6 +112,12 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
 			return 1
 		}
+		if os.Getenv("ENABLE_WEBHOOKS") != "false" {
+			if err := (&appv1.M4DApplication{}).SetupWebhookWithManager(mgr); err != nil {
+				setupLog.Error(err, "unable to create webhook", "webhook", "M4DApplication")
+				os.Exit(1)
+			}
+		}
 	}
 
 	if enablePlotterController {

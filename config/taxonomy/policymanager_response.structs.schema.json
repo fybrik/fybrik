@@ -1,0 +1,30 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "policymanager_response.schema.json",
+    "title": "Policymanager Data Response Taxonomy",
+    "description": "This taxonomy defines the structure of response received from policymanager with enforcements.",
+    "type": "object",
+    "properties": {
+        "decision_id": {
+            "description": "This is the id returned by the governance engine",
+            "type": "string"
+        },
+        "result": {
+            "type": "array",
+            "description": "While showing the result, action contains the action type and the associated entity on which action has been taken.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "action": { "$ref": "module.values.schema.json#/definitions/action" },
+                    "policy": {
+                        "description": "The list of policies on which the decision was based.",
+                        "type": "string"
+                    }
+                },
+                "required": ["action", "policy"]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": ["result"]
+}
