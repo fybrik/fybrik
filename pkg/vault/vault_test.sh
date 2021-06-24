@@ -16,7 +16,7 @@ port_forward() {
 test() {
   port_forward
   # Get Vault's root token
-  export VAULT_TOKEN=$(kubectl get secrets vault-unseal-keys -n $KUBE_NAMESPACE -o jsonpath={.data.vault-root} | base64 --decode)
+  export VAULT_TOKEN=$(kubectl get secrets vault-credentials -n $KUBE_NAMESPACE -o jsonpath={.data.VAULT_TOKEN} | base64 --decode)
   export VAULT_ADDRESS="http://127.0.0.1:$PORT_TO_FORWARD/"
   go test -v vault_interface.go vault_impl.go vault_dummy.go vault_interface_test.go
   # Kill the port-forward if nessecarry 

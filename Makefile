@@ -9,11 +9,6 @@ license: $(TOOLBIN)/license_finder
 docker-mirror-read:
 	$(TOOLS_DIR)/docker_mirror.sh $(TOOLS_DIR)/docker_mirror.conf
 
-.PHONY: build
-build:
-	$(MAKE) -C pkg/policy-compiler build
-	$(MAKE) -C manager manager
-
 .PHONY: test
 test:
 	$(MAKE) -C manager pre-test
@@ -33,9 +28,9 @@ run-integration-tests:
 	$(MAKE) docker
 	$(MAKE) -C test/services docker-build docker-push
 	$(MAKE) cluster-prepare-wait
-	$(MAKE) configure-vault
 	$(MAKE) -C charts m4d
 	$(MAKE) -C manager wait_for_manager
+	$(MAKE) configure-vault
 	$(MAKE) helm
 	$(MAKE) -C modules helm-uninstall # Uninstalls the deployed tests from previous command
 	$(MAKE) -C pkg/helm test
@@ -50,7 +45,6 @@ run-deploy-tests:
 	kubectl config set-context --current --namespace=$(KUBE_NAMESPACE)
 	$(MAKE) -C third_party/opa deploy
 	kubectl apply -f ./manager/config/prod/deployment_configmap.yaml
-	kubectl create secret generic user-vault-unseal-keys --from-literal=vault-root=$(kubectl get secrets vault-unseal-keys -o jsonpath={.data.vault-root} | base64 --decode) 
 	$(MAKE) -C connectors deploy
 	kubectl get pod --all-namespaces
 	kubectl wait --for=condition=ready pod --all-namespaces --all --timeout=120s

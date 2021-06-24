@@ -62,7 +62,7 @@ case "$op" in
     *)
 	header_text "Configure Vault on a single cluster"
 	kubectl config set-context --current --namespace=$KUBE_NAMESPACE
-	export VAULT_TOKEN=$(kubectl get secrets vault-unseal-keys -n $KUBE_NAMESPACE -o jsonpath={.data.vault-root} | base64 --decode)
+	export VAULT_TOKEN=$(kubectl get secrets vault-credentials -n $KUBE_NAMESPACE -o jsonpath={.data.VAULT_TOKEN} | base64 --decode)
 	$WITHOUT_PORT_FORWARD || port_forward
 	export VAULT_ADDR="http://127.0.0.1:8200"
 	bin/vault login "$VAULT_TOKEN"

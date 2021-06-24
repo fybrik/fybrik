@@ -9,7 +9,7 @@ Follow this guide to install Mesh for Data using default parameters that are sui
 Ensure that you have the following:
 
 - [Helm](https://helm.sh/) 3.3 or newer must be installed and configured on your machine.
-- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) 1.16 or newer must be installed on your machine.
+- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) 1.18 or newer must be installed on your machine.
 - Access to a Kubernetes cluster such as [Kind](http://kind.sigs.k8s.io/) as a cluster administrator.
 
 ## Install cert-manager

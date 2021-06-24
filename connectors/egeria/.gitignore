@@ -1,3 +1,9 @@
 target/
 generatedsources/
-kustomization.yaml
+
+.classpath
+.factorypath
+.project
+.settings/
+
+*.log
