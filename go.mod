@@ -33,10 +33,7 @@ require (
 	github.com/mailru/easyjson v0.7.1-0.20191009090205-6c0755d89d1e // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-runewidth v0.0.7 // indirect
-<<<<<<< HEAD
 	github.com/mesh-for-data/openapi2crd v0.3.0
-=======
->>>>>>> master
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826

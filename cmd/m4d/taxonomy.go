@@ -9,6 +9,7 @@ import (
 	"helm.sh/helm/v3/cmd/helm/require"
 )
 
+// Add root "taxonomy" command option
 func newTaxonomyCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "taxonomy",
@@ -19,6 +20,7 @@ func newTaxonomyCmd() *cobra.Command {
 	return cmd
 }
 
+// Add "schema" command option as part of the "taxonomy" commands
 func newTaxonomySchemaCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "schema",
@@ -29,6 +31,7 @@ func newTaxonomySchemaCmd() *cobra.Command {
 	return cmd
 }
 
+// Add  "validate" schema file command under the schema command
 func newTaxonomyValidateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "validate FILE",

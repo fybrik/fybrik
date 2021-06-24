@@ -1,3 +1,6 @@
+// Copyright 2020 IBM Corp.
+// SPDX-License-Identifier: Apache-2.0
+
 package taxonomy
 
 import (
@@ -14,7 +17,7 @@ import (
 )
 
 // ValidateSchema validates that the input schema adheres to the requirements defined in
-// https://github.com/IBM/the-mesh-for-data/blob/master/config/taxonomy/HOWTO_SPEC.md
+// https://github.com/mesh-for-data/mesh-for-data/blob/master/config/taxonomy/HOWTO_SPEC.md
 func ValidateSchema(path string) error {
 	orig := path
 	path, err := filepath.Abs(path)
