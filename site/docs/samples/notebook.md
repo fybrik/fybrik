@@ -231,21 +231,18 @@ while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}')
 
 In your **terminal**, run the following command to print the [endpoint](../../reference/crds/#m4dapplicationstatusreadendpointsmapkey) to use for reading the data. It fetches the code from the `M4DApplication` resource:
 ```bash
-printf "$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap})"
+ENDPOINT_SCHEME=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.m4d-notebook-sample/paysim-csv.scheme})
+ENDPOINT_HOSTNAME=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.m4d-notebook-sample/paysim-csv.hostname})
+ENDPOINT_PORT=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.m4d-notebook-sample/paysim-csv.port})
+printf "${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}"
 ```
-The endpoint contains the connection details  which are used to serve the application, such as `scheme`, `hostname`, and `port` in a JSON format, for example:
-
-```json
-{"m4d-notebook-sample/paysim-csv":{"hostname":"my-notebook-m4d-notebook-sample-arrow-flight-mo-53080.m4d-blueprints.svc.cluster.local","port":80,"scheme":"grpc"}}
-```
-
 The next steps use the endpoint to read the data in a python notebook
 
 1. Insert a new notebook cell to install pandas and pyarrow packages:
   ```python
   %pip install pandas pyarrow
   ```
-2. Insert a new notebook cell to read the data using the endpoint values extracted from the `M4DApplication` in the previous step:
+2. Insert a new notebook cell to read the data using the endpoint value extracted from the `M4DApplication` in the previous step:
   ```bash
   %pip install pandas pyarrow
   import json
@@ -253,7 +250,7 @@ The next steps use the endpoint to read the data in a python notebook
   import pandas as pd
 
   # Create a Flight client
-  client = fl.connect("<SCHEME>://<HOSTNAME>:<PORT>")
+  client = fl.connect('<ENDPOINT>')
 
   # Prepare the request
   request = {
