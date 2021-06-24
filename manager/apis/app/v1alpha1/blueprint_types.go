@@ -117,7 +117,6 @@ type DataFlow struct {
 	Name string `json:"name"`
 
 	// +required
-	// +kubebuilder::validation:MinItems:=1
 	Steps []FlowStep `json:"steps"`
 }
 
@@ -134,7 +133,6 @@ type BlueprintSpec struct {
 	Flow DataFlow `json:"flow"`
 
 	// +required
-	// +kubebuilder::validation:MinItems:=1
 	Templates []ComponentTemplate `json:"templates"`
 }
 

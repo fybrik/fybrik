@@ -73,24 +73,10 @@ spec:
                           description: Interface indicates the protocol and format expected by the data user
                           properties:
                             dataformat:
-                              description: DataFormatType defines data format type
-                              enum:
-                              - parquet
-                              - table
-                              - csv
-                              - json
-                              - avro
-                              - orc
-                              - binary
-                              - arrow
+                              description: DataFormat defines the data format type
                               type: string
                             protocol:
-                              description: IFProtocol defines interface protocol for data transactions
-                              enum:
-                              - s3
-                              - kafka
-                              - jdbc-db2
-                              - m4d-arrow-flight
+                              description: Protocol defines the interface protocol used for data transactions
                               type: string
                           required:
                           - protocol
@@ -102,7 +88,6 @@ spec:
                   - dataSetID
                   - requirements
                   type: object
-                minItems: 1
                 type: array
               secretRef:
                 description: SecretRef points to the secret that holds credentials for each system the user has been authenticated with. The secret is deployed in M4dApplication namespace.

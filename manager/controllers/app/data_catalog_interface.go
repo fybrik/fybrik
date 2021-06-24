@@ -5,14 +5,8 @@ package app
 
 import (
 	"context"
-	"fmt"
-	"io"
-	"time"
 
 	"encoding/json"
-
-	"emperror.dev/errors"
-	"google.golang.org/grpc"
 
 	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
@@ -23,44 +17,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// DataCatalog is an interface of a facade to a data catalog.
-type DataCatalog interface {
-	pb.DataCatalogServiceServer
-	io.Closer
-}
-
-type DataCatalogImpl struct {
-	catalogClient     pb.DataCatalogServiceClient
-	catalogConnection *grpc.ClientConn
-}
-
-func NewGrpcDataCatalog() (*DataCatalogImpl, error) {
-	catalogConnection, err := grpc.Dial(utils.GetDataCatalogServiceAddress(), grpc.WithInsecure(), grpc.WithBlock())
-	if err != nil {
-		return nil, err
-	}
-
-	return &DataCatalogImpl{
-		catalogClient:     pb.NewDataCatalogServiceClient(catalogConnection),
-		catalogConnection: catalogConnection,
-	}, nil
-}
-
-func (d *DataCatalogImpl) GetDatasetInfo(ctx context.Context, req *pb.CatalogDatasetRequest) (*pb.CatalogDatasetInfo, error) {
-	result, err := d.catalogClient.GetDatasetInfo(ctx, req)
-	return result, errors.Wrap(err, "get dataset info failed")
-}
-
-func (d *DataCatalogImpl) RegisterDatasetInfo(ctx context.Context, req *pb.RegisterAssetRequest) (*pb.RegisterAssetResponse, error) {
-	result, err := d.catalogClient.RegisterDatasetInfo(ctx, req)
-	return result, errors.Wrap(err, "register dataset info failed")
-}
-
-func (d *DataCatalogImpl) Close() error {
-	err := d.catalogConnection.Close()
-	return err
-}
-
 // RegisterAsset registers a new asset in the specified catalog
 // Input arguments:
 // - catalogID: the destination catalog identifier
@@ -69,21 +25,10 @@ func (d *DataCatalogImpl) Close() error {
 // - an error if happened
 // - the new asset identifier
 func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.DatasetDetails, input *app.M4DApplication) (string, error) {
-	// Set up a connection to the data catalog interface server.
-	conn, err := grpc.Dial(utils.GetDataCatalogServiceAddress(), grpc.WithInsecure(), grpc.WithBlock())
+	datasetDetails := &pb.DatasetDetails{}
+	err := info.Details.Into(datasetDetails)
 	if err != nil {
 		return "", err
-	}
-	defer conn.Close()
-	c := pb.NewDataCatalogServiceClient(conn)
-
-	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
-
-	datasetDetails, ok := info.Details.Data.(*pb.DatasetDetails)
-	if !ok {
-		return "", fmt.Errorf("data details has incorrect type %T (expected *DatasetDetails)", info.Details.Data)
 	}
 
 	var creds *pb.Credentials
@@ -95,7 +40,7 @@ func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.Dat
 		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
 
-	response, err := c.RegisterDatasetInfo(ctx, &pb.RegisterAssetRequest{
+	response, err := r.DataCatalog.RegisterDatasetInfo(context.Background(), &pb.RegisterAssetRequest{
 		Creds:                creds,
 		DatasetDetails:       datasetDetails,
 		DestinationCatalogId: catalogID,

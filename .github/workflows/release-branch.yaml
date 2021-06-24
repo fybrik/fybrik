@@ -1,0 +1,21 @@
+name: Release
+on: create
+jobs:
+  update-release-branch:
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.ref, 'refs/heads/releases/') }}
+    steps:
+    - id: version
+      name: Infer version
+      run: echo ::set-output name=VERSION::${GITHUB_REF#refs/heads/releases/}
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.TAG_PSAT }}
+    - name: Install yq
+      run: make ./hack/tools/bin/yq
+    - run: RELEASE=${{ steps.version.outputs.version }} ./hack/release.sh
+    - uses: EndBug/add-and-commit@v7
+      with:
+        default_author: github_actions
+        tag: 'v${{ steps.version.outputs.version }}'

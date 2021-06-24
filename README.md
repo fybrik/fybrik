@@ -18,7 +18,7 @@ Mesh for Data is composed of the following repositiores
 
 - [mesh-for-data/arrow-flight-module](https://github.com/mesh-for-data/arrow-flight-module). This is the code repository for read/write data access module based on Arrow/Flight.
 
-- [mesh-for-data/mesh-for-data-mover](https://github.com/mesh-for-data/mesh-for-data-mover). This is the code respository for an implicit copy module based on Apache SparkSQL.
+- [mesh-for-data/mover](https://github.com/mesh-for-data/mover). This is the code respository for an implicit copy module based on Apache SparkSQL.
 
 ## Issue management
 

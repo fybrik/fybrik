@@ -9,21 +9,30 @@
             "description": "Type of modules supported by the M4D manager.",
             "enum": ["copy", "read", "write"]
         },
-        "transformation_name": {
-            "description": "Transformation that can be performed on data.",
-            "type": "string",
-            "enum": ["mask", "redact", "encrypt"]
+        "allowable_action_columns": {
+            "enum": ["RemoveColumn", "RedactColumn", "EncryptColumn", "PeriodicBlackout"]
         },
-        "data_level_name": {
-            "type":"string",
-            "enum":["UNKNOWN", "DATASET", "COLUMN", "ROW", "CELL"]
+        "allowable_action_dataset": {
+            "enum": ["DenyAccess", "DenyWriting"]
         },
-        "data_level_code": {
-            "type":"integer",
-            "description":"0=unknown, 1=dataset, 2=column, 3=row, 4=cell",
-            "minimum": 0,
-            "maximum": 4          
-        },
+        "action": {
+            "type": "object",
+            "action_struct":{"$ref": "module.structs.schema.json#/definitions/action"},
+            "x-kubernetes-int-or-string": "true",
+            "oneOf": [
+                {
+                    "properties": {
+                        "name": {"$ref": "#/definitions/allowable_action_columns"} 
+		            },
+		            "required": ["columns"]
+                },
+                {
+                    "properties": {
+                        "name": {"$ref": "#/definitions/allowable_action_dataset"} 		
+                    }
+                }
+	    ]
+	},
         "interface": {
             "type": "object",
             "description": "Contains protocol and data format for arrow-flight",
@@ -76,15 +85,14 @@
                         "enum":["db2-jdbc"] 
                     }
                 }
-            }
-            ]
+            }]
         }
     },
     "properties": {
-        "module_type": { "$ref": "#/definitions/module_type"},
-        "transformation_name": { "$ref": "#/definitions/transformation_name"},
-        "data_level_name": { "$ref": "#/definitions/data_level_name"},
-        "data_level_code": {  "$ref": "#/definitions/data_level_code"},
+        "module_type": { "$ref": "#/definitions/module_type" },
+        "allowable_action_columns": { "$ref": "#/definitions/allowable_action_columns" },
+        "allowable_action_dataset": { "$ref": "#/definitions/allowable_action_dataset" },
+	"action": { "$ref": "#/definitions/action" },
         "interface": {"$ref": "#/definitions/interface"}
     },
     "additionalProperties": false
