@@ -11,7 +11,7 @@ spec:
   appInfo:
     intent: Testing
   data:
-    - dataSetID: '{"asset_id": "redact-dataset", "catalog_id": "s3"}'
+    - dataSetID: s3/redact-dataset
       requirements:
         interface: 
           protocol: m4d-arrow-flight

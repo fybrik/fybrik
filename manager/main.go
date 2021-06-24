@@ -6,10 +6,14 @@ package main
 import (
 	"flag"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 
+	"emperror.dev/errors"
 	corev1 "k8s.io/api/core/v1"
 
+	connectors "github.com/mesh-for-data/mesh-for-data/pkg/connectors/clients"
 	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
 	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster/local"
 	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster/razee"
@@ -29,10 +33,8 @@ import (
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/app"
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
 	"github.com/mesh-for-data/mesh-for-data/pkg/helm"
-	pc "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/policy-compiler"
 	kapps "k8s.io/api/apps/v1"
 	kbatch "k8s.io/api/batch/v1"
-	// +kubebuilder:scaffold:imports
 )
 
 var (
@@ -47,15 +49,117 @@ func init() {
 	_ = corev1.AddToScheme(scheme)
 	_ = kbatch.AddToScheme(scheme)
 	_ = kapps.AddToScheme(scheme)
-	// +kubebuilder:scaffold:scheme
 }
 
-// This component starts all the controllers of the CRDs of the manager.
-// This includes the following components:
-// - application-controller
-// - blueprint-contoller
-// - movement-controller
+func run(namespace string, metricsAddr string, enableLeaderElection bool,
+	enableApplicationController, enableBlueprintController, enablePlotterController, enableMotionController bool) int {
+	setupLog.Info("creating manager")
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+		Scheme:             scheme,
+		Namespace:          namespace,
+		MetricsBindAddress: metricsAddr,
+		LeaderElection:     enableLeaderElection,
+		LeaderElectionID:   "m4d-operator-leader-election",
+		Port:               9443,
+	})
+
+	if err != nil {
+		setupLog.Error(err, "unable to start manager")
+		return 1
+	}
+
+	// Initialize ClusterManager
+	setupLog.Info("creating cluster manager")
+	var clusterManager multicluster.ClusterManager
+	if enableApplicationController || enablePlotterController {
+		clusterManager, err = newClusterManager(mgr)
+		if err != nil {
+			setupLog.Error(err, "unable to initialize cluster manager")
+			return 1
+		}
+	}
+
+	if enableApplicationController {
+		setupLog.Info("creating M4DApplication controller")
+
+		// Initialize PolicyManager interface
+		policyManager, err := newPolicyManager()
+		if err != nil {
+			setupLog.Error(err, "unable to create policy manager facade", "controller", "M4DApplication")
+			return 1
+		}
+		defer func() {
+			if err := policyManager.Close(); err != nil {
+				setupLog.Error(err, "unable to close policy manager facade", "controller", "M4DApplication")
+			}
+		}()
+
+		// Initialize DataCatalog interface
+		catalog, err := newDataCatalog()
+		if err != nil {
+			setupLog.Error(err, "unable to create data catalog facade", "controller", "M4DApplication")
+			return 1
+		}
+		defer func() {
+			if err := catalog.Close(); err != nil {
+				setupLog.Error(err, "unable to close data catalog facade", "controller", "M4DApplication")
+			}
+		}()
+
+		// Initiate the M4DApplication Controller
+		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", policyManager, catalog, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
+		if err := applicationController.SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
+			return 1
+		}
+		if os.Getenv("ENABLE_WEBHOOKS") != "false" {
+			if err := (&appv1.M4DApplication{}).SetupWebhookWithManager(mgr); err != nil {
+				setupLog.Error(err, "unable to create webhook", "webhook", "M4DApplication")
+				return 1
+			}
+		}
+	}
+
+	if enablePlotterController {
+		// Initiate the Plotter Controller
+		setupLog.Info("creating Plotter controller")
+		plotterController := app.NewPlotterReconciler(mgr, "Plotter", clusterManager)
+		if err := plotterController.SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", plotterController.Name)
+			return 1
+		}
+	}
+
+	if enableBlueprintController {
+		// Initiate the Blueprint Controller
+		setupLog.Info("creating Blueprint controller")
+		blueprintController := app.NewBlueprintReconciler(mgr, "Blueprint", new(helm.Impl))
+		if err := blueprintController.SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", blueprintController.Name)
+			return 1
+		}
+	}
+
+	if enableMotionController {
+		setupLog.Info("creating motion controllers")
+		if err := motion.SetupMotionControllers(mgr); err != nil {
+			setupLog.Error(err, "unable to setup motion controllers")
+			return 1
+		}
+	}
+
+	setupLog.Info("starting manager")
+	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+		setupLog.Error(err, "problem running manager")
+		return 1
+	}
+
+	return 0
+}
+
+// Main entry point starts manager and controllers
 func main() {
+	var namespace string
 	var metricsAddr string
 	var enableLeaderElection bool
 	var enableApplicationController bool
@@ -63,8 +167,8 @@ func main() {
 	var enablePlotterController bool
 	var enableMotionController bool
 	var enableAllControllers bool
-	var namespace string
 	address := utils.ListeningAddress(8085)
+
 	flag.StringVar(&metricsAddr, "metrics-bind-addr", address, "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
@@ -95,88 +199,57 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
-	setupLog.Info("creating manager")
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:             scheme,
-		Namespace:          namespace,
-		MetricsBindAddress: metricsAddr,
-		LeaderElection:     enableLeaderElection,
-		LeaderElectionID:   "m4d-operator-leader-election",
-		Port:               9443,
-	})
-
-	if err != nil {
-		setupLog.Error(err, "unable to start manager")
-		os.Exit(1)
-	}
-
-	// Initialize ClusterManager
-	setupLog.Info("creating cluster manager")
-	var clusterManager multicluster.ClusterManager
-	if enableApplicationController || enablePlotterController {
-		clusterManager, err = NewClusterManager(mgr)
-		if err != nil {
-			setupLog.Error(err, "unable to initialize cluster manager")
-			os.Exit(1)
-		}
-	}
-
-	if enableApplicationController {
-		setupLog.Info("creating M4DApplication controller")
-
-		// Initialize PolicyCompiler interface
-		policyCompiler := pc.NewPolicyCompiler()
-
-		// Initiate the M4DApplication Controller
-		applicationController, err := app.NewM4DApplicationReconciler(mgr, "M4DApplication", policyCompiler, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
-		if err != nil {
-			setupLog.Error(err, "unable to create controller")
-			os.Exit(1)
-		}
-		if err := applicationController.SetupWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
-			os.Exit(1)
-		}
-	}
-
-	if enablePlotterController {
-		// Initiate the Plotter Controller
-		setupLog.Info("creating Plotter controller")
-		plotterController := app.NewPlotterReconciler(mgr, "Plotter", clusterManager)
-		if err := plotterController.SetupWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create controller", "controller", plotterController.Name)
-			os.Exit(1)
-		}
-	}
-
-	if enableBlueprintController {
-		// Initiate the Blueprint Controller
-		setupLog.Info("creating Blueprint controller")
-		blueprintController := app.NewBlueprintReconciler(mgr, "Blueprint", new(helm.Impl))
-		if err := blueprintController.SetupWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create controller", "controller", blueprintController.Name)
-			os.Exit(1)
-		}
-	}
-
-	if enableMotionController {
-		setupLog.Info("creating motion controllers")
-		motion.SetupMotionControllers(mgr)
-	}
-
-	// +kubebuilder:scaffold:builder
-
-	setupLog.Info("starting manager")
-	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		setupLog.Error(err, "problem running manager")
-		os.Exit(1)
-	}
+	os.Exit(run(namespace, metricsAddr, enableLeaderElection,
+		enableApplicationController, enableBlueprintController, enablePlotterController, enableMotionController))
 }
 
-// NewClusterManager decides based on the environment variables that are set which
+func newDataCatalog() (connectors.DataCatalog, error) {
+	connectionTimeout, err := getConnectionTimeout()
+	if err != nil {
+		return nil, err
+	}
+	providerName := os.Getenv("CATALOG_PROVIDER_NAME")
+	connectorURL := os.Getenv("CATALOG_CONNECTOR_URL")
+	connector, err := connectors.NewGrpcDataCatalog(providerName, connectorURL, connectionTimeout)
+	setupLog.Info("setting data catalog client", "Name", providerName, "URL", connectorURL, "Timeout", connectionTimeout)
+	if err != nil {
+		return nil, err
+	}
+	return connector, nil
+}
+
+func newPolicyManager() (connectors.PolicyManager, error) {
+	connectionTimeout, err := getConnectionTimeout()
+	if err != nil {
+		return nil, err
+	}
+
+	mainPolicyManagerName := os.Getenv("MAIN_POLICY_MANAGER_NAME")
+	mainPolicyManagerURL := os.Getenv("MAIN_POLICY_MANAGER_CONNECTOR_URL")
+	setupLog.Info("setting main policy manager client", "Name", mainPolicyManagerName, "URL", mainPolicyManagerURL, "Timeout", connectionTimeout)
+	policyManager, err := connectors.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
+	if err != nil {
+		return nil, err
+	}
+
+	useExtensionPolicyManager, err := strconv.ParseBool(os.Getenv("USE_EXTENSIONPOLICY_MANAGER"))
+	if useExtensionPolicyManager && err == nil {
+		extensionPolicyManagerName := os.Getenv("EXTENSIONS_POLICY_MANAGER_NAME")
+		extensionPolicyManagerURL := os.Getenv("EXTENSIONS_POLICY_MANAGER_CONNECTOR_URL")
+		setupLog.Info("setting extension policy manager client", "Name", extensionPolicyManagerName, "URL", extensionPolicyManagerURL, "Timeout", connectionTimeout)
+		extensionPolicyManager, err := connectors.NewGrpcPolicyManager(extensionPolicyManagerName, extensionPolicyManagerURL, connectionTimeout)
+		if err != nil {
+			return nil, err
+		}
+		policyManager = connectors.NewMultiPolicyManager(policyManager, extensionPolicyManager)
+	}
+
+	return policyManager, nil
+}
+
+// newClusterManager decides based on the environment variables that are set which
 // cluster manager instance should be initiated.
-func NewClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error) {
-	setupLog := ctrl.Log.WithName("setup")
+func newClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error) {
 	multiClusterGroup := os.Getenv("MULTICLUSTER_GROUP")
 	if user, razeeLocal := os.LookupEnv("RAZEE_USER"); razeeLocal {
 		razeeURL := strings.TrimSpace(os.Getenv("RAZEE_URL"))
@@ -196,4 +269,13 @@ func NewClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error)
 		setupLog.Info("Using local cluster manager")
 		return local.NewManager(mgr.GetClient(), utils.GetSystemNamespace())
 	}
+}
+
+func getConnectionTimeout() (time.Duration, error) {
+	connectionTimeout := os.Getenv("CONNECTION_TIMEOUT")
+	timeOutInSeconds, err := strconv.Atoi(connectionTimeout)
+	if err != nil {
+		return 0, errors.Wrap(err, "Atoi conversion of CONNECTION_TIMEOUT failed")
+	}
+	return time.Duration(timeOutInSeconds) * time.Second, nil
 }

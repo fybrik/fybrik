@@ -11,10 +11,10 @@ import (
 	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	modules "github.com/mesh-for-data/mesh-for-data/manager/controllers/app/modules"
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	connectors "github.com/mesh-for-data/mesh-for-data/pkg/connectors/clients"
 	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
 	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
 	local "github.com/mesh-for-data/mesh-for-data/pkg/multicluster/local"
-	pc "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"github.com/mesh-for-data/mesh-for-data/pkg/serde"
 	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
 	vault "github.com/mesh-for-data/mesh-for-data/pkg/vault"
@@ -35,7 +35,7 @@ type ModuleManager struct {
 	Modules            map[string]*app.M4DModule
 	Clusters           []multicluster.Cluster
 	Owner              types.NamespacedName
-	PolicyCompiler     pc.IPolicyCompiler
+	PolicyManager      connectors.PolicyManager
 	WorkloadGeography  string
 	Provision          storage.ProvisionInterface
 	VaultConnection    vault.Interface
@@ -105,7 +105,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 		Details: &pb.DatasetDetails{
 			Name:       originalAssetName,
 			Geo:        item.DataDetails.Geography,
-			DataFormat: string(destinationInterface.DataFormat),
+			DataFormat: destinationInterface.DataFormat,
 			DataStore:  datastore,
 			Metadata:   item.DataDetails.Metadata,
 		}}
@@ -120,7 +120,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 			Address:    utils.GetVaultAddress(),
 		},
 		Connection: *connection,
-		Format:     string(destinationInterface.DataFormat),
+		Format:     destinationInterface.DataFormat,
 	}, nil
 }
 
@@ -134,7 +134,7 @@ func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.
 	// Read policies for data that is processed in the workload geography
 	var readActions []*pb.EnforcementAction
 	var err error
-	readActions, err = LookupPolicyDecisions(item.Context.DataSetID, m.PolicyCompiler, appContext,
+	readActions, err = LookupPolicyDecisions(item.Context.DataSetID, m.PolicyManager, appContext,
 		&pb.AccessOperation{Type: pb.AccessOperation_READ, Destination: m.WorkloadGeography})
 	if err != nil {
 		return nil, err
@@ -235,7 +235,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 			Role:       utils.GetModulesRole(),
 			Address:    utils.GetVaultAddress(),
 		},
-		Format: string(item.DataDetails.Interface.DataFormat),
+		Format: item.DataDetails.Interface.DataFormat,
 	}
 	// DataStore for destination will be determined if an implicit copy is required
 	var sinkDataStore *app.DataStore
@@ -394,7 +394,7 @@ func (m *ModuleManager) enforceWritePolicies(appContext *app.M4DApplication, dat
 	actions := []*pb.EnforcementAction{}
 	//	if the cluster selector is non-empty, the write will be done to the specified geography if possible
 	if m.WorkloadGeography != "" {
-		if actions, err = LookupPolicyDecisions(datasetID, m.PolicyCompiler, appContext,
+		if actions, err = LookupPolicyDecisions(datasetID, m.PolicyManager, appContext,
 			&pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: m.WorkloadGeography}); err == nil {
 			return actions, m.WorkloadGeography, nil
 		}
@@ -402,7 +402,7 @@ func (m *ModuleManager) enforceWritePolicies(appContext *app.M4DApplication, dat
 	var excludedGeos string
 	for _, cluster := range m.Clusters {
 		operation := &pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: cluster.Metadata.Region}
-		if actions, err = LookupPolicyDecisions(datasetID, m.PolicyCompiler, appContext, operation); err == nil {
+		if actions, err = LookupPolicyDecisions(datasetID, m.PolicyManager, appContext, operation); err == nil {
 			return actions, cluster.Metadata.Region, nil
 		}
 		if err.Error() != app.WriteNotAllowed {

@@ -42,17 +42,17 @@ func readObjectFromFile(f string, obj interface{}) error {
 func createTestM4DApplicationController(cl client.Client, s *runtime.Scheme) *M4DApplicationReconciler {
 	// Create a M4DApplicationReconciler object with the scheme and fake client.
 	return &M4DApplicationReconciler{
-		Client:         cl,
-		Name:           "TestReconciler",
-		Log:            ctrl.Log.WithName("test-controller"),
-		Scheme:         s,
-		PolicyCompiler: &mockup.MockPolicyCompiler{},
+		Client:        cl,
+		Name:          "TestReconciler",
+		Log:           ctrl.Log.WithName("test-controller"),
+		Scheme:        s,
+		PolicyManager: &mockup.MockPolicyManager{},
+		DataCatalog:   mockup.NewTestCatalog(),
 		ResourceInterface: &PlotterInterface{
 			Client: cl,
 		},
 		ClusterManager: &mockup.ClusterLister{},
 		Provision:      &storage.ProvisionTest{},
-		DataCatalog:    mockup.NewTestCatalog(),
 	}
 }
 
@@ -185,7 +185,7 @@ func TestDenyOnRead(t *testing.T) {
 	application := &app.M4DApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
-		DataSetID:    "{\"asset_id\": \"deny-dataset\", \"catalog_id\": \"s3\"}",
+		DataSetID:    "s3/deny-dataset",
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet}},
 	}
 
@@ -231,7 +231,7 @@ func TestNoReadPath(t *testing.T) {
 	application := &app.M4DApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
-		DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"db2\"}",
+		DataSetID:    "db2/allow-dataset",
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.JdbcDb2, DataFormat: app.Table}},
 	}
 
@@ -288,11 +288,11 @@ func TestWrongCopyModule(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data = []app.DataContext{
 		{
-			DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
+			DataSetID:    "s3/allow-dataset",
 			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
 		},
 		{
-			DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"kafka\"}",
+			DataSetID:    "kafka/allow-dataset",
 			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
 		},
 	}
@@ -350,7 +350,7 @@ func TestActionSupport(t *testing.T) {
 	application := &app.M4DApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
-		DataSetID:    "{\"asset_id\": \"redact-dataset\", \"catalog_id\": \"db2\"}",
+		DataSetID:    "db2/redact-dataset",
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
 	}
 
@@ -410,11 +410,11 @@ func TestMultipleDatasets(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data = []app.DataContext{
 		{
-			DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
+			DataSetID:    "s3/allow-dataset",
 			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
 		},
 		{
-			DataSetID:    "{\"asset_id\": \"redact-dataset\", \"catalog_id\": \"db2\"}",
+			DataSetID:    "db2/redact-dataset",
 			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
 		},
 	}
@@ -457,7 +457,7 @@ func TestMultipleDatasets(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
 	// check provisioned storage
-	g.Expect(application.Status.ProvisionedStorage["{\"asset_id\": \"redact-dataset\", \"catalog_id\": \"db2\"}"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
+	g.Expect(application.Status.ProvisionedStorage["db2/redact-dataset"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 	plotterObjectKey := types.NamespacedName{
@@ -497,7 +497,7 @@ func TestMultipleRegions(t *testing.T) {
 	application := &app.M4DApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
-		DataSetID:    "{\"asset_id\": \"redact-dataset\", \"catalog_id\": \"s3-external\"}",
+		DataSetID:    "s3-external/redact-dataset",
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
 	}
 
@@ -539,7 +539,7 @@ func TestMultipleRegions(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
 	// check provisioned storage
-	g.Expect(application.Status.ProvisionedStorage["{\"asset_id\": \"redact-dataset\", \"catalog_id\": \"s3-external\"}"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
+	g.Expect(application.Status.ProvisionedStorage["s3-external/redact-dataset"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 	plotterObjectKey := types.NamespacedName{
@@ -560,7 +560,7 @@ func TestCopyData(t *testing.T) {
 	// Set the logger to development mode for verbose logs.
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
-	assetName := "{\"asset_id\": \"allow-theshire\", \"catalog_id\": \"s3-external\"}"
+	assetName := "s3-external/allow-theshire"
 	namespaced := types.NamespacedName{
 		Name:      "ingest",
 		Namespace: "default",
@@ -634,7 +634,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	// Set the logger to development mode for verbose logs.
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
-	assetName := "{\"asset_id\": \"deny-theshire\", \"catalog_id\": \"s3-external\"}"
+	assetName := "s3-external/deny-theshire"
 	namespaced := types.NamespacedName{
 		Name:      "ingest",
 		Namespace: "default",
@@ -695,7 +695,7 @@ func TestPlotterUpdate(t *testing.T) {
 	application := &app.M4DApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
-		DataSetID:    "{\"asset_id\": \"allow-dataset\", \"catalog_id\": \"s3\"}",
+		DataSetID:    "s3/allow-dataset",
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
 	}
 	application.SetGeneration(1)
@@ -812,4 +812,46 @@ func TestSyncWithPlotter(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
 	g.Expect(getErrorMessages(newApp)).NotTo(gomega.BeEmpty())
 	g.Expect(newApp.Status.Ready).NotTo(gomega.BeTrue())
+}
+
+// This test checks that an empty m4dapplication can be created and reconciled
+func TestM4DApplicationWithNoDatasets(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "notebook",
+		Namespace: "default",
+	}
+	application := &app.M4DApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/m4dcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.Spec.Data = []app.DataContext{}
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Create a M4DApplicationReconciler object with the scheme and fake client.
+	r := createTestM4DApplicationController(cl, s)
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	res, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+	g.Expect(res).To(gomega.BeEquivalentTo(ctrl.Result{}))
+	// The application should be in Ready state
+	newApp := &app.M4DApplication{}
+	err = cl.Get(context.Background(), req.NamespacedName, newApp)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(getErrorMessages(newApp)).To(gomega.BeEmpty())
+	g.Expect(newApp.Status.Ready).To(gomega.BeTrue())
 }

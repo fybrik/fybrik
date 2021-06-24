@@ -1,3 +1,4 @@
+{{- if .Values.manager.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -13,3 +14,4 @@ data:
   VAULT_ADDRESS: {{ tpl .Values.coordinator.vault.address . | quote }}
   VAULT_MODULES_ROLE: "module" # temporary
   {{- end }}
+{{- end }}

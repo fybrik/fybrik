@@ -16,29 +16,8 @@ import (
 	dc "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
 )
 
-// GetDataFormat returns the existing data format
-func GetDataFormat(info *dc.DatasetDetails) (app.DataFormatType, error) {
-	switch info.DataFormat {
-	case "parquet":
-		return app.Parquet, nil
-	case "table":
-		return app.Table, nil
-	case "csv":
-		return app.CSV, nil
-	case "json":
-		return app.JSON, nil
-	case "avro":
-		return app.AVRO, nil
-	case "binary":
-		return app.Binary, nil
-	case "arrow":
-		return app.Arrow, nil
-	}
-	return app.Binary, fmt.Errorf("unknown format %s", info.DataFormat)
-}
-
 // GetProtocol returns the existing data protocol
-func GetProtocol(info *dc.DatasetDetails) (app.IFProtocol, error) {
+func GetProtocol(info *dc.DatasetDetails) (string, error) {
 	switch info.DataStore.Type {
 	case dc.DataStore_S3:
 		return app.S3, nil
@@ -47,7 +26,7 @@ func GetProtocol(info *dc.DatasetDetails) (app.IFProtocol, error) {
 	case dc.DataStore_DB2:
 		return app.JdbcDb2, nil
 	}
-	return app.S3, errors.New("unknown protocol")
+	return "", errors.New("unknown protocol")
 }
 
 // IsTransformation returns true if the data transformation is required
@@ -63,15 +42,6 @@ func IsAction(actionName string) bool {
 // IsDenied returns true if the data access is denied
 func IsDenied(actionName string) bool {
 	return (actionName == "Deny") // TODO FIX THIS
-}
-
-// GetAttribute parses a JSON string and returns the required attribute value
-func GetAttribute(attribute string, jsonStr string) string {
-	obj := make(map[string]string)
-	if err := json.Unmarshal([]byte(jsonStr), &obj); err != nil {
-		return ""
-	}
-	return obj[attribute]
 }
 
 // StructToMap converts a struct to a map using JSON marshal

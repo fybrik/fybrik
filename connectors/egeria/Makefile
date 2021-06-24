@@ -1,16 +1,31 @@
 ROOT_DIR := ../..
-include $(ROOT_DIR)/Makefile.env
-include ${ROOT_DIR}/pkg/policy-compiler/policy-compiler.env
-
 DOCKER_NAME = egr-connector
+
+include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/docker.mk
+
+KUBE_NAMESPACE ?= m4d-system
+
+.PHONY: docker-build
+docker-build: build
+	docker build . -t ${IMG}
+
+.PHONY: deploy
+deploy:
+	helm install m4d-egeria $(ROOT_DIR)/charts/m4d \
+		--set coordinator.enabled=false --set worker.enabled=false --set manager.enabled=false \
+		--set egeriaConnector.enabled=true \
+		--set egeriaConnector.image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(DOCKER_NAME):${DOCKER_TAGNAME} \
+		--set egeriaConnector.serverURL=${EGERIA_SERVER_URL} \
+		-n $(KUBE_NAMESPACE)
+
+.PHONY: undeploy
+undeploy:
+	helm uninstall m4d-egeria -n $(KUBE_NAMESPACE)
 
 .PHONY: build
 build:
 	mvn -B clean install -DskipTests
-
-docker-build: build
-	docker build . -t ${IMG}
 
 .PHONY: test
 test:
@@ -22,27 +37,12 @@ clean:
 
 .PHONY: run
 run:
+	$(info EGERIA_SERVER_URL is $(EGERIA_SERVER_URL))
 	nohup java -cp target/egeriaconnector-1.0-SNAPSHOT-jar-with-dependencies.jar:src/lib/* com.ibm.egeria.EgeriaConnector > output-egeriaconnector.log &  2>&1 ; echo "$$!" >> pids.txt; sleep 5
 
 .PHONY: terminate
 terminate:
 	kill -9 $$( cat pids.txt ); rm -f pids.txt
 
-IMAGE := egr-connector
-
-kustomization.yaml: kustomization.yaml.in
-	cp $< $@
-
-.PHONY: deploy
-deploy: kustomization.yaml
-	kustomize edit set image $(IMAGE)=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(IMAGE):${DOCKER_TAGNAME}
-	kustomize build . | kubectl apply -f -
-
-.PHONY: undeploy
-undeploy: kustomization.yaml
-	kustomize edit set image $(IMAGE)=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(IMAGE):${DOCKER_TAGNAME}
-	kustomize build . | kubectl delete -f -
-
-.PHONY: charts
-charts: kustomization.yaml
-	cp egr_connector.yaml ${ROOT_DIR}/charts/m4d/templates/.
+-include ${ROOT_DIR}/.env
+.EXPORT_ALL_VARIABLES:

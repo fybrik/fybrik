@@ -25,19 +25,14 @@ vault:
 	@echo "Installing vault ..."
 	kubectl create namespace m4d-system || true
 	helm repo add hashicorp https://helm.releases.hashicorp.com
-	helm install vault hashicorp/vault --version 0.9.1 \
-                --set "global.openshift=$(WITH_OPENSHIFT)" \
-                --set injector.enabled=false \
-                --set "server.dev.enabled=true" \
-		--values ../third_party/vault/plugin-secrets-kubernetes-reader/values.yaml \
+	helm dependency update vault
+	helm install vault vault \
+                --set "vault.global.openshift=$(WITH_OPENSHIFT)" \
+                --set "vault.injector.enabled=false" \
+                --set "vault.server.dev.enabled=true" \
+		--values vault/env/dev/plugin-secrets-kubernetes-reader-values.yaml \
 		--namespace m4d-system \
 		--wait --timeout 120s
-	# Create a secret to hold Vault Token. This token is used when configuaring Vault.
-	# default token in dev mode is "root".
-	kubectl create secret generic vault-unseal-keys --from-literal=vault-root=root -n m4d-system || true
-	# To enable Vault to read kuberenetes secrets clusterrole and clusterrolebinding should be added.
-	kubectl apply -f ../third_party/vault/plugin-secrets-kubernetes-reader/clusterrole.yaml -n m4d-system || true
-	kubectl apply -f ../third_party/vault/plugin-secrets-kubernetes-reader/clusterrolebinding.yaml -n m4d-system || true
 
 .PHONY: wait-for-vault
 wait-for-vault:
