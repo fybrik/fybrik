@@ -108,6 +108,8 @@ func (r *M4DApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	if hasError(applicationContext) {
 		log.Info("Reconciled with errors: " + getErrorMessages(applicationContext))
 	}
+
+	// trigger a new reconcile if required (the m4dapplication is not ready)
 	if !applicationContext.Status.Ready {
 		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
@@ -204,17 +206,17 @@ func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M
 func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *app.M4DApplication) error {
 	// clear provisioned storage
 	// References to buckets (Dataset resources) are deleted. Buckets that are persistent will not be removed upon Dataset deletion.
-	var deletedBuckets []string
+	var deletedKeys []string
 	var errMsgs []string
-	for _, datasetDetails := range applicationContext.Status.ProvisionedStorage {
+	for datasetID, datasetDetails := range applicationContext.Status.ProvisionedStorage {
 		if err := r.Provision.DeleteDataset(getBucketResourceRef(datasetDetails.DatasetRef)); err != nil {
 			errMsgs = append(errMsgs, err.Error())
 		} else {
-			deletedBuckets = append(deletedBuckets, datasetDetails.DatasetRef)
+			deletedKeys = append(deletedKeys, datasetID)
 		}
 	}
-	for _, bucket := range deletedBuckets {
-		delete(applicationContext.Status.ProvisionedStorage, bucket)
+	for _, datasetID := range deletedKeys {
+		delete(applicationContext.Status.ProvisionedStorage, datasetID)
 	}
 	if len(errMsgs) != 0 {
 		return errors.New(strings.Join(errMsgs, ";"))
@@ -275,6 +277,15 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		applicationContext.Status.ProvisionedStorage = make(map[string]app.DatasetDetails)
 	}
 	applicationContext.Status.ReadEndpointsMap = make(map[string]app.EndpointSpec)
+
+	if len(applicationContext.Spec.Data) == 0 {
+		if err := r.deleteExternalResources(applicationContext); err != nil {
+			return ctrl.Result{}, err
+		}
+		r.Log.V(0).Info("no blueprint will be generated since no datasets are specified")
+		applicationContext.Status.Ready = true
+		return ctrl.Result{}, nil
+	}
 
 	clusters, err := r.ClusterManager.GetClusters()
 	if err != nil {
