@@ -1063,26 +1063,27 @@ kubectl config set-context --current --namespace<span class="o">=</span>m4d-note
 <p>This sample uses the <a href="https://www.kaggle.com/ealaxi/paysim1">Synthetic Financial Datasets For Fraud Detection</a> dataset<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> as the data that the notebook needs to read. Download and extract the file to your machine. You should now see a file named <code>PS_20174392719_1491204439457_log.csv</code>. Alternatively, use a sample of 100 lines of the same dataset by downloading <a href="https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/master/samples/notebook/PS_20174392719_1491204439457_log.csv"><code>PS_20174392719_1491204439457_log.csv</code></a> from GitHub.</p>
 <p>Upload the CSV file to an object storage of your choice such as AWS S3, IBM Cloud Object Storage or Ceph.
 Make a note of the service endpoint, bucket name, and access credentials. You will need them later.</p>
-<details class="tip"><summary>Setup and upload to MinIO</summary><p>For experimentation you can install MinIO to your cluster instead of using a cloud service.</p>
+<details class="tip"><summary>Setup and upload to localstack</summary><p>For experimentation you can install localstack to your cluster instead of using a cloud service.</p>
 <ol>
 <li>Define variables for access key and secret key
   <div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;myaccesskey&quot;</span>
 <span class="nb">export</span> <span class="nv">SECRET_KEY</span><span class="o">=</span><span class="s2">&quot;mysecretkey&quot;</span>
 </code></pre></div></li>
-<li>Install Minio to the currently active namespace:
-  <div class="highlight"><pre><span></span><code>kubectl create deployment minio --image<span class="o">=</span>minio/minio:RELEASE.2021-02-14T04-01-33Z -- /bin/sh -ce <span class="s2">&quot;/usr/bin/docker-entrypoint.sh minio -S /etc/minio/certs/ server /export&quot;</span>
-kubectl <span class="nb">set</span> env deployment/minio <span class="nv">MINIO_ACCESS_KEY</span><span class="o">=</span><span class="si">${</span><span class="nv">ACCESS_KEY</span><span class="si">}</span> <span class="nv">MINIO_SECRET_KEY</span><span class="o">=</span><span class="si">${</span><span class="nv">SECRET_KEY</span><span class="si">}</span>
-kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>available --timeout<span class="o">=</span>120s deployment/minio
+<li>Install localstack to the currently active namespace and wait for it to be ready:
+  <div class="highlight"><pre><span></span><code>helm repo add localstack-charts https://localstack.github.io/helm-charts
+helm install localstack localstack-charts/localstack --set <span class="nv">startServices</span><span class="o">=</span><span class="s2">&quot;s3&quot;</span> --set service.type<span class="o">=</span>ClusterIP
+kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n m4d-notebook-sample --timeout<span class="o">=</span>120s
 </code></pre></div></li>
-<li>Create a service to expose MinIO:
-  <div class="highlight"><pre><span></span><code>kubectl expose deployment minio --port <span class="m">9000</span>
+<li>Create a port-forward to communicate with localstack server:
+  <div class="highlight"><pre><span></span><code>kubectl port-forward svc/localstack <span class="m">4566</span>:4566 <span class="p">&amp;</span>
 </code></pre></div></li>
-<li>Create a port-forward to connect to MinIO UI:
-  <div class="highlight"><pre><span></span><code>kubectl port-forward svc/minio <span class="m">9000</span> <span class="p">&amp;</span>
+<li>Use <a href="https://aws.amazon.com/cli/">AWS CLI</a> to upload the dataset to a new created bucket in the localstack server:
+  <div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">ENDPOINT</span><span class="o">=</span><span class="s2">&quot;http://127.0.0.1:4566&quot;</span>
+<span class="nb">export</span> <span class="nv">BUCKET</span><span class="o">=</span><span class="s2">&quot;demo&quot;</span>
+<span class="nb">export</span> <span class="nv">OBJECT_KEY</span><span class="o">=</span><span class="s2">&quot;PS_20174392719_1491204439457_log.csv&quot;</span>
+<span class="nb">export</span> <span class="nv">FILEPATH</span><span class="o">=</span><span class="s2">&quot;/path/to/PS_20174392719_1491204439457_log.csv&quot;</span>
+aws configure <span class="nb">set</span> aws_access_key_id <span class="si">${</span><span class="nv">ACCESS_KEY</span><span class="si">}</span> <span class="o">&amp;&amp;</span> aws configure <span class="nb">set</span> aws_secret_access_key <span class="si">${</span><span class="nv">SECRET_KEY</span><span class="si">}</span> <span class="o">&amp;&amp;</span> aws --endpoint-url<span class="o">=</span><span class="si">${</span><span class="nv">ENDPOINT</span><span class="si">}</span> s3api create-bucket --bucket <span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span> <span class="o">&amp;&amp;</span> aws --endpoint-url<span class="o">=</span><span class="si">${</span><span class="nv">ENDPOINT</span><span class="si">}</span> s3api put-object --bucket <span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span> --key <span class="si">${</span><span class="nv">OBJECT_KEY</span><span class="si">}</span> --body <span class="si">${</span><span class="nv">FILEPATH</span><span class="si">}</span>
 </code></pre></div></li>
-<li>Open <a href="http://localhost:9000">http://localhost:9000</a> and login with the access key and secret key defined in step 1</li>
-<li>Click the <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm144 276c0 6.6-5.4 12-12 12h-92v92c0 6.6-5.4 12-12 12h-56c-6.6 0-12-5.4-12-12v-92h-92c-6.6 0-12-5.4-12-12v-56c0-6.6 5.4-12 12-12h92v-92c0-6.6 5.4-12 12-12h56c6.6 0 12 5.4 12 12v92h92c6.6 0 12 5.4 12 12v56z"/></svg></span> button in the bottom right corner and then <strong>Create bucket</strong> to create a bucket (e.g. "demo").</li>
-<li>Click the <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm144 276c0 6.6-5.4 12-12 12h-92v92c0 6.6-5.4 12-12 12h-56c-6.6 0-12-5.4-12-12v-92h-92c-6.6 0-12-5.4-12-12v-56c0-6.6 5.4-12 12-12h92v-92c0-6.6 5.4-12 12-12h56c6.6 0 12 5.4 12 12v92h92c6.6 0 12 5.4 12 12v56z"/></svg></span> button again and then <strong>Upload files</strong> to upload a file to the newly created bucket.</li>
 </ol>
 </details>
 <h2 id="register-the-dataset-in-a-data-catalog">Register the dataset in a data catalog</h2>
@@ -1112,7 +1113,7 @@ kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="n
     <span class="nt">connection</span><span class="p">:</span>
       <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">s3</span>
       <span class="nt">s3</span><span class="p">:</span>
-        <span class="nt">endpoint</span><span class="p">:</span> <span class="s">&quot;http://minio.m4d-notebook-sample.svc.cluster.local:9000&quot;</span>
+        <span class="nt">endpoint</span><span class="p">:</span> <span class="s">&quot;http://localstack.m4d-notebook-sample.svc.cluster.local:4566&quot;</span>
         <span class="nt">bucket</span><span class="p">:</span> <span class="s">&quot;demo&quot;</span>
         <span class="nt">objectKey</span><span class="p">:</span> <span class="s">&quot;PS_20174392719_1491204439457_log.csv&quot;</span>
   <span class="nt">assetMetadata</span><span class="p">:</span>
