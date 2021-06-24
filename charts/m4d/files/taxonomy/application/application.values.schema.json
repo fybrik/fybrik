@@ -15,4 +15,4 @@
         },
         "interface": { "$ref": "module.values.schema.json#/definitions/interface" }
     }
-}
+} 
