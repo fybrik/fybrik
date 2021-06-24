@@ -35,33 +35,33 @@ This sample uses the [Synthetic Financial Datasets For Fraud Detection](https://
 Upload the CSV file to an object storage of your choice such as AWS S3, IBM Cloud Object Storage or Ceph.
 Make a note of the service endpoint, bucket name, and access credentials. You will need them later.
 
-??? tip "Setup and upload to MinIO"
+??? tip "Setup and upload to localstack"
 
-    For experimentation you can install MinIO to your cluster instead of using a cloud service.
+    For experimentation you can install localstack to your cluster instead of using a cloud service.
     
     1. Define variables for access key and secret key
       ```bash
       export ACCESS_KEY="myaccesskey"
       export SECRET_KEY="mysecretkey"
       ```
-    2. Install Minio to the currently active namespace:
+    2. Install localstack to the currently active namespace and wait for it to be ready:
       ```bash
-      kubectl create deployment minio --image=minio/minio:RELEASE.2021-02-14T04-01-33Z -- /bin/sh -ce "/usr/bin/docker-entrypoint.sh minio -S /etc/minio/certs/ server /export"
-      kubectl set env deployment/minio MINIO_ACCESS_KEY=${ACCESS_KEY} MINIO_SECRET_KEY=${SECRET_KEY}
-      kubectl wait --for=condition=available --timeout=120s deployment/minio
+      helm repo add localstack-charts https://localstack.github.io/helm-charts
+      helm install localstack localstack-charts/localstack --set startServices="s3" --set service.type=ClusterIP
+      kubectl wait --for=condition=ready --all pod -n m4d-notebook-sample --timeout=120s
       ```
-    3. Create a service to expose MinIO:
+    3. Create a port-forward to communicate with localstack server:
       ```bash
-      kubectl expose deployment minio --port 9000
+      kubectl port-forward svc/localstack 4566:4566 &
       ```
-    4. Create a port-forward to connect to MinIO UI:
+    3. Use [AWS CLI](https://aws.amazon.com/cli/) to upload the dataset to a new created bucket in the localstack server:
       ```bash
-      kubectl port-forward svc/minio 9000 &
+      export ENDPOINT="http://127.0.0.1:4566"
+      export BUCKET="demo"
+      export OBJECT_KEY="PS_20174392719_1491204439457_log.csv"
+      export FILEPATH="/path/to/PS_20174392719_1491204439457_log.csv"
+      aws configure set aws_access_key_id ${ACCESS_KEY} && aws configure set aws_secret_access_key ${SECRET_KEY} && aws --endpoint-url=${ENDPOINT} s3api create-bucket --bucket ${BUCKET} && aws --endpoint-url=${ENDPOINT} s3api put-object --bucket ${BUCKET} --key ${OBJECT_KEY} --body ${FILEPATH}
       ```
-    5. Open [http://localhost:9000](http://localhost:9000) and login with the access key and secret key defined in step 1
-    6. Click the :fontawesome-solid-plus-circle: button in the bottom right corner and then **Create bucket** to create a bucket (e.g. "demo").
-    7. Click the :fontawesome-solid-plus-circle: button again and then **Upload files** to upload a file to the newly created bucket.
-
 ## Register the dataset in a data catalog
 
 Register the credentials required for accessing the dataset. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
@@ -95,7 +95,7 @@ spec:
     connection:
       type: s3
       s3:
-        endpoint: "http://minio.m4d-notebook-sample.svc.cluster.local:9000"
+        endpoint: "http://localstack.m4d-notebook-sample.svc.cluster.local:4566"
         bucket: "demo"
         objectKey: "PS_20174392719_1491204439457_log.csv"
   assetMetadata:
