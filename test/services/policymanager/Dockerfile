@@ -1,6 +1,6 @@
 FROM gcr.io/distroless/static:nonroot
 WORKDIR /
-COPY serverpolicycompiler .
+COPY serverpolicymanager .
 USER nonroot:nonroot
 
-ENTRYPOINT ["/serverpolicycompiler"]
+ENTRYPOINT ["/serverpolicymanager"]

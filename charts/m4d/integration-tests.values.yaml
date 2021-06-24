@@ -17,7 +17,7 @@ manager:
 # OPA connector component
 opaConnector:
   # Using mock image until opa policies for tests are implemented
-  image: "serverpolicycompiler-mock"
+  image: "serverpolicymanager-mock"
 
 # Katalog connector component
 katalogConnector:

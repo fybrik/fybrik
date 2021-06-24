@@ -39,7 +39,7 @@ manager:
 # OPA connector component
 opaConnector:
   # Image name or a hub/image[:tag]
-  image: "serverpolicycompiler-mock"
+  image: "serverpolicymanager-mock"
 
 # Katalog connector component
 katalogConnector:

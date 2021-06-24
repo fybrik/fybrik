@@ -1,14 +1,16 @@
 ROOT_DIR := ../../../..
 DOCKER_NAME = plcy-mgr-mock
-DOCKER_CONTEXT = $(ROOT_DIR)
-DOCKER_FILE = $(DOCKER_CONTEXT)/test/services/pilot/policy-manager-mock/Dockerfile
 
 include $(ROOT_DIR)/hack/make-rules/docker.mk
-include $(ROOT_DIR)/pkg/policy-compiler/policy-compiler.env
 
 .PHONY: build
 build:
 	go build
+
+docker-build:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o policy-manager-mock
+	docker build . -t $(IMG)
+	rm policy-manager-mock
 
 .PHONY: run
 run:
@@ -23,3 +25,6 @@ clean:
 
 .PHONY: test
 test:
+
+-include ${ROOT_DIR}/.env
+.EXPORT_ALL_VARIABLES:

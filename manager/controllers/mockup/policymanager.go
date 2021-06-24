@@ -4,20 +4,22 @@
 package mockup
 
 import (
+	"context"
+	"fmt"
 	"log"
+	"strings"
 
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	connectors "github.com/mesh-for-data/mesh-for-data/pkg/connectors/clients"
 	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
-	pc "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/policy-compiler"
 )
 
-// MockPolicyCompiler is a mock for PolicyCompiler interface used in tests
-type MockPolicyCompiler struct {
-	pc.IPolicyCompiler
+// MockPolicyManager is a mock for PolicyManager interface used in tests
+type MockPolicyManager struct {
+	connectors.PolicyManager
 }
 
 // GetPoliciesDecisions implements the PolicyCompiler interface
-func (s *MockPolicyCompiler) GetPoliciesDecisions(in *pb.ApplicationContext) (*pb.PoliciesDecisions, error) {
+func (s *MockPolicyManager) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationContext) (*pb.PoliciesDecisions, error) {
 	log.Printf("Received: ")
 	log.Printf("ProcessingGeography: " + in.AppInfo.GetProcessingGeography())
 	log.Printf("Secret: " + in.GetCredentialPath())
@@ -37,7 +39,11 @@ func (s *MockPolicyCompiler) GetPoliciesDecisions(in *pb.ApplicationContext) (*p
 		args := make(map[string]string)
 
 		var operationDecisions []*pb.OperationDecision
-		assetID := utils.GetAttribute("asset_id", dataset.GetDatasetId())
+		splittedID := strings.SplitN(dataset.GetDatasetId(), "/", 2)
+		if len(splittedID) != 2 {
+			panic(fmt.Sprintf("Invalid dataset ID for mock: %s", dataset.GetDatasetId()))
+		}
+		assetID := splittedID[1]
 		switch assetID {
 		case "allow-dataset":
 			enforcementActions = append(enforcementActions, &pb.EnforcementAction{

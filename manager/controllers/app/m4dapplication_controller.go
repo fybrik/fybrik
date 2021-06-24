@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	connectors "github.com/mesh-for-data/mesh-for-data/pkg/connectors/clients"
 	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
 
 	"emperror.dev/errors"
@@ -31,7 +32,6 @@ import (
 	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
 	"github.com/mesh-for-data/mesh-for-data/pkg/vault"
 
-	pc "github.com/mesh-for-data/mesh-for-data/pkg/policy-compiler/policy-compiler"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -42,11 +42,11 @@ type M4DApplicationReconciler struct {
 	Name              string
 	Log               logr.Logger
 	Scheme            *runtime.Scheme
-	PolicyCompiler    pc.IPolicyCompiler
+	PolicyManager     connectors.PolicyManager
+	DataCatalog       connectors.DataCatalog
 	ResourceInterface ContextInterface
 	ClusterManager    multicluster.ClusterLister
 	Provision         storage.ProvisionInterface
-	DataCatalog       DataCatalog
 }
 
 // Reconcile reconciles M4DApplication CRD
@@ -319,7 +319,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		Modules:            moduleMap,
 		Clusters:           clusters,
 		Owner:              objectKey,
-		PolicyCompiler:     r.PolicyCompiler,
+		PolicyManager:      r.PolicyManager,
 		Provision:          r.Provision,
 		ProvisionedStorage: make(map[string]NewAssetInfo),
 	}
@@ -394,8 +394,8 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 
 func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, input *app.M4DApplication, clusters []multicluster.Cluster) error {
 	var err error
-	// Call the DataCatalog service to get info about the dataset
 
+	// Call the DataCatalog service to get info about the dataset
 	var response *pb.CatalogDatasetInfo
 	var credentialPath string
 	if input.Spec.SecretRef != "" {
@@ -427,23 +427,19 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 }
 
 // NewM4DApplicationReconciler creates a new reconciler for M4DApplications
-func NewM4DApplicationReconciler(mgr ctrl.Manager, name string, policyCompiler pc.IPolicyCompiler,
-	cm multicluster.ClusterLister, provision storage.ProvisionInterface) (*M4DApplicationReconciler, error) {
-	catalog, err := NewGrpcDataCatalog()
-	if err != nil {
-		return nil, err
-	}
+func NewM4DApplicationReconciler(mgr ctrl.Manager, name string,
+	policyManager connectors.PolicyManager, catalog connectors.DataCatalog, cm multicluster.ClusterLister, provision storage.ProvisionInterface) *M4DApplicationReconciler {
 	return &M4DApplicationReconciler{
 		Client:            mgr.GetClient(),
 		Name:              name,
 		Log:               ctrl.Log.WithName("controllers").WithName(name),
 		Scheme:            mgr.GetScheme(),
-		PolicyCompiler:    policyCompiler,
+		PolicyManager:     policyManager,
 		ResourceInterface: NewPlotterInterface(mgr.GetClient()),
 		ClusterManager:    cm,
 		Provision:         provision,
 		DataCatalog:       catalog,
-	}, nil
+	}
 }
 
 // SetupWithManager registers M4DApplication controller
