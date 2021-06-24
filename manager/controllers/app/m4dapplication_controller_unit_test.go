@@ -854,5 +854,4 @@ func TestM4DApplicationWithNoDatasets(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
 	g.Expect(getErrorMessages(newApp)).To(gomega.BeEmpty())
 	g.Expect(newApp.Status.Ready).To(gomega.BeTrue())
-
 }
