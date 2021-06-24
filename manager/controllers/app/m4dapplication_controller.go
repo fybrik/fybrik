@@ -109,8 +109,8 @@ func (r *M4DApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		log.Info("Reconciled with errors: " + getErrorMessages(applicationContext))
 	}
 
-	// trigger a new reconcile if required (the m4dapplication is not ready and not empty)
-	if !applicationContext.Status.Ready && len(applicationContext.Spec.Data) > 0 {
+	// trigger a new reconcile if required (the m4dapplication is not ready)
+	if !applicationContext.Status.Ready {
 		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 	return ctrl.Result{}, nil
@@ -279,9 +279,12 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	applicationContext.Status.ReadEndpointsMap = make(map[string]app.EndpointSpec)
 
 	if len(applicationContext.Spec.Data) == 0 {
-		err := r.deleteExternalResources(applicationContext)
+		if err := r.deleteExternalResources(applicationContext); err != nil {
+			return ctrl.Result{}, err
+		}
 		r.Log.V(0).Info("no blueprint will be generated since no datasets are specified")
-		return ctrl.Result{}, err
+		applicationContext.Status.Ready = true
+		return ctrl.Result{}, nil
 	}
 
 	clusters, err := r.ClusterManager.GetClusters()
