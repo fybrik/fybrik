@@ -4,9 +4,5 @@ kind: ConfigMap
 metadata:
   name: m4d-module-config
 data:
-  {{- $files := .Files }}
-  {{- range tuple "module.structs.schema.json" "module.values.schema.json" }}
-  {{ . }}: |-
-        {{ $files.Get . }}
-  {{- end }}
+  {{- (.Files.Glob "files/taxonomy/module/**.json").AsConfig | nindent 2 }}
 {{- end }}
