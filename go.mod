@@ -10,7 +10,7 @@ require (
 	github.com/datashim-io/datashim/src/dataset-operator v0.0.0-20210421141459-334795d082bd
 	github.com/docker/docker v17.12.0-ce-rc1.0.20200309214505-aa6a9891b09c+incompatible // indirect
 	github.com/form3tech-oss/jwt-go v3.2.2+incompatible // indirect
-	github.com/getkin/kin-openapi v0.62.0
+	github.com/getkin/kin-openapi v0.51.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-chi/render v1.0.1
