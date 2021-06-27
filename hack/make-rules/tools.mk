@@ -106,10 +106,10 @@ $(TOOLBIN)/vault:
 	cd $(TOOLS_DIR); ./install_vault.sh
 	$(call post-install-check)
 
-INSTALL_TOOLS += $(TOOLBIN)/oapi-codegen
-$(TOOLBIN)/oapi-codegen:
-	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.4.2
-	$(call post-install-check)
+#INSTALL_TOOLS += $(TOOLBIN)/oapi-codegen
+#$(TOOLBIN)/oapi-codegen:
+#	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.4.2
+#	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/openapi2crd
 $(TOOLBIN)/openapi2crd:
