@@ -12,7 +12,7 @@
       
       
       <link rel="icon" href="../static/logo.svg">
-      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.8">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
     
     
       
@@ -1222,14 +1222,38 @@ kubectl expose deployment my-notebook --port<span class="o">=</span><span class=
 <div class="highlight"><pre><span></span><code><span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get m4dapplication my-notebook -o <span class="s1">&#39;jsonpath={.status.ready}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s2">&quot;true&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for M4DApplication&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
 </code></pre></div>
 <h2 id="read-the-dataset-from-the-notebook">Read the dataset from the notebook</h2>
+<p>In your <strong>terminal</strong>, run the following command to print the <a href="../../reference/crds/#m4dapplicationstatusreadendpointsmapkey">endpoint</a> to use for reading the data. It fetches the code from the <code>M4DApplication</code> resource:
+<div class="highlight"><pre><span></span><code><span class="nv">ENDPOINT_SCHEME</span><span class="o">=</span><span class="k">$(</span>kubectl get m4dapplication my-notebook -o <span class="nv">jsonpath</span><span class="o">={</span>.status.readEndpointsMap.m4d-notebook-sample/paysim-csv.scheme<span class="o">}</span><span class="k">)</span>
+<span class="nv">ENDPOINT_HOSTNAME</span><span class="o">=</span><span class="k">$(</span>kubectl get m4dapplication my-notebook -o <span class="nv">jsonpath</span><span class="o">={</span>.status.readEndpointsMap.m4d-notebook-sample/paysim-csv.hostname<span class="o">}</span><span class="k">)</span>
+<span class="nv">ENDPOINT_PORT</span><span class="o">=</span><span class="k">$(</span>kubectl get m4dapplication my-notebook -o <span class="nv">jsonpath</span><span class="o">={</span>.status.readEndpointsMap.m4d-notebook-sample/paysim-csv.port<span class="o">}</span><span class="k">)</span>
+<span class="nb">printf</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ENDPOINT_SCHEME</span><span class="si">}</span><span class="s2">://</span><span class="si">${</span><span class="nv">ENDPOINT_HOSTNAME</span><span class="si">}</span><span class="s2">:</span><span class="si">${</span><span class="nv">ENDPOINT_PORT</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+The next steps use the endpoint to read the data in a python notebook</p>
 <ol>
 <li>Insert a new notebook cell to install pandas and pyarrow packages:
   <div class="highlight"><pre><span></span><code><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">pandas</span> <span class="n">pyarrow</span>
 </code></pre></div></li>
-<li>In your <strong>terminal</strong>, run the following command to print the code to use for reading the data. It fetches the code from the <code>M4DApplication</code> resource:
-  <div class="highlight"><pre><span></span><code><span class="nb">printf</span> <span class="s2">&quot;</span><span class="k">$(</span>kubectl get m4dapplication my-notebook -o <span class="nv">jsonpath</span><span class="o">={</span>.status.dataAccessInstructions<span class="o">}</span><span class="k">)</span><span class="s2">&quot;</span>
+<li>Insert a new notebook cell to read the data using the endpoint value extracted from the <code>M4DApplication</code> in the previous step:
+  <div class="highlight"><pre><span></span><code>%pip install pandas pyarrow
+import json
+import pyarrow.flight as fl
+import pandas as pd
+
+<span class="c1"># Create a Flight client</span>
+<span class="nv">client</span> <span class="o">=</span> fl.connect<span class="o">(</span><span class="s1">&#39;&lt;ENDPOINT&gt;&#39;</span><span class="o">)</span>
+
+<span class="c1"># Prepare the request</span>
+<span class="nv">request</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="s2">&quot;asset&quot;</span>: <span class="s2">&quot;m4d-notebook-sample/paysim-csv&quot;</span>,
+    <span class="c1"># To request specific columns add to the request a &quot;columns&quot; key with a list of column names</span>
+    <span class="c1"># &quot;columns&quot;: [...]</span>
+<span class="o">}</span>
+
+<span class="c1"># Send request and fetch result as a pandas DataFrame</span>
+<span class="nv">info</span> <span class="o">=</span> client.get_flight_info<span class="o">(</span>fl.FlightDescriptor.for_command<span class="o">(</span>json.dumps<span class="o">(</span>request<span class="o">)))</span>
+reader: fl.FlightStreamReader <span class="o">=</span> client.do_get<span class="o">(</span>info.endpoints<span class="o">[</span><span class="m">0</span><span class="o">]</span>.ticket<span class="o">)</span>
+df: pd.DataFrame <span class="o">=</span> reader.read_pandas<span class="o">()</span>
 </code></pre></div></li>
-<li>Insert a new notebook cell and paste in it the code for reading data as printed in the previous step.</li>
 <li>Insert a new notebook cell with the following command to visualize the result:
   <div class="highlight"><pre><span></span><code>df
 </code></pre></div></li>
@@ -1338,10 +1362,10 @@ kubectl expose deployment my-notebook --port<span class="o">=</span><span class=
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.b0710199.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.477d984a.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.76f349be.min.js"></script>
+      <script src="../assets/javascripts/bundle.82b56eb2.min.js"></script>
       
     
   </body>
