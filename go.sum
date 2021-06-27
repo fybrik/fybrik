@@ -406,6 +406,9 @@ github.com/fsouza/fake-gcs-server v1.7.0/go.mod h1:5XIRs4YvwNbNoz+1JF8j6KLAyDh7R
 github.com/garyburd/redigo v0.0.0-20150301180006-535138d7bcd7/go.mod h1:NR3MbYisc3/PwhQ00EMzDiPmrwpPxAn5GI05/YaO1SY=
 github.com/garyburd/redigo v1.6.0 h1:0VruCpn7yAIIu7pWVClQC8wxCJEcG3nyzpMSHKi1PQc=
 github.com/garyburd/redigo v1.6.0/go.mod h1:NR3MbYisc3/PwhQ00EMzDiPmrwpPxAn5GI05/YaO1SY=
+github.com/getkin/kin-openapi v0.34.0/go.mod h1:ZJSfy1PxJv2QQvH9EdBj3nupRTVvV42mkW6zKUlRBwk=
+github.com/getkin/kin-openapi v0.51.0 h1:KwdZxNsT8ano/hV9P9+ys5e2hWc4jQoN7WTbwarqjYk=
+github.com/getkin/kin-openapi v0.51.0/go.mod h1:fRpo2Nw4Czgy0QnrIesRrEXs5+15N1F9mGZLP/aIomE=
 github.com/getkin/kin-openapi v0.61.0 h1:6awGqF5nG5zkVpMsAih1QH4VgzS8phTxECUWIFo7zko=
 github.com/getkin/kin-openapi v0.61.0/go.mod h1:7Yn5whZr5kJi6t+kShccXS8ae1APpYTW6yheSwk8Yi4=
 github.com/getkin/kin-openapi v0.62.0 h1:qDGdXTLo20ANSgflJEYotfNzHGvYvilNogWOryEwRrI=
@@ -1006,6 +1009,9 @@ github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182aff
 github.com/maxbrunsfeld/counterfeiter/v6 v6.2.1/go.mod h1:F9YacGpnZbLQMzuPI0rR6op21YvNu/RjL705LJJpM3k=
 github.com/maxbrunsfeld/counterfeiter/v6 v6.2.2/go.mod h1:eD9eIE7cdwcMi9rYluz88Jz2VyhSmden33/aXg4oVIY=
 github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0/go.mod h1:fcEyUyXZXoV4Abw8DX0t7wyL8mCDxXyU4iAFZfT3IHw=
+github.com/mesh-for-data/openapi2crd v0.1.4/go.mod h1:RKR6Qah0asSWFMvuMzkyW3dNREx1QzebMg6pX1TgAig=
+github.com/mesh-for-data/openapi2crd v0.1.5/go.mod h1:aziq2bl3zekwc7PDzbgEhat4hbV4bok4KRZMzKSZUqE=
+github.com/mesh-for-data/openapi2crd v0.2.0/go.mod h1:ZJkn3e33tLxskRLhjzeTdNKTEBrc/4g6q1osBVU6iKU=
 github.com/mesh-for-data/openapi2crd v0.3.0 h1:hIsE/nqbmqUTFc7yrHobsZeFGf4H+iWpQurxUby7BxQ=
 github.com/mesh-for-data/openapi2crd v0.3.0/go.mod h1:8rECGiHF5EnHhaM+BfF90KTkyK3P3OaevecDGHkuuio=
 github.com/mesos/mesos-go v0.0.9/go.mod h1:kPYCMQ9gsOXVAle1OsoY4I1+9kPu8GHkf88aV59fDr4=
