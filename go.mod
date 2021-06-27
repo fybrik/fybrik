@@ -10,7 +10,7 @@ require (
 	github.com/datashim-io/datashim/src/dataset-operator v0.0.0-20210421141459-334795d082bd
 	github.com/docker/docker v17.12.0-ce-rc1.0.20200309214505-aa6a9891b09c+incompatible // indirect
 	github.com/form3tech-oss/jwt-go v3.2.2+incompatible // indirect
-	github.com/getkin/kin-openapi v0.51.0
+	github.com/getkin/kin-openapi v0.64.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-chi/render v1.0.1
@@ -33,7 +33,7 @@ require (
 	github.com/mailru/easyjson v0.7.1-0.20191009090205-6c0755d89d1e // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-runewidth v0.0.7 // indirect
-	github.com/mesh-for-data/openapi2crd v0.1.4
+	github.com/mesh-for-data/openapi2crd v0.3.0
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826

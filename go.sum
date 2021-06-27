@@ -413,6 +413,8 @@ github.com/getkin/kin-openapi v0.61.0 h1:6awGqF5nG5zkVpMsAih1QH4VgzS8phTxECUWIFo
 github.com/getkin/kin-openapi v0.61.0/go.mod h1:7Yn5whZr5kJi6t+kShccXS8ae1APpYTW6yheSwk8Yi4=
 github.com/getkin/kin-openapi v0.62.0 h1:qDGdXTLo20ANSgflJEYotfNzHGvYvilNogWOryEwRrI=
 github.com/getkin/kin-openapi v0.62.0/go.mod h1:7Yn5whZr5kJi6t+kShccXS8ae1APpYTW6yheSwk8Yi4=
+github.com/getkin/kin-openapi v0.64.0 h1:b1F3kecUsuX0/TheDRlT/+XD108EBc99tWkwurbRNXE=
+github.com/getkin/kin-openapi v0.64.0/go.mod h1:7Yn5whZr5kJi6t+kShccXS8ae1APpYTW6yheSwk8Yi4=
 github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 h1:Mn26/9ZMNWSw9C9ERFA1PUxfmGpolnw2v0bKOREu5ew=
@@ -1009,6 +1011,7 @@ github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182aff
 github.com/maxbrunsfeld/counterfeiter/v6 v6.2.1/go.mod h1:F9YacGpnZbLQMzuPI0rR6op21YvNu/RjL705LJJpM3k=
 github.com/maxbrunsfeld/counterfeiter/v6 v6.2.2/go.mod h1:eD9eIE7cdwcMi9rYluz88Jz2VyhSmden33/aXg4oVIY=
 github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0/go.mod h1:fcEyUyXZXoV4Abw8DX0t7wyL8mCDxXyU4iAFZfT3IHw=
+github.com/mesh-for-data/openapi2crd v0.1.4 h1:AXGbWbYU2egnysJo/ZT7bdLkF9xLmQ2/3lN79vqOSi0=
 github.com/mesh-for-data/openapi2crd v0.1.4/go.mod h1:RKR6Qah0asSWFMvuMzkyW3dNREx1QzebMg6pX1TgAig=
 github.com/mesh-for-data/openapi2crd v0.1.5/go.mod h1:aziq2bl3zekwc7PDzbgEhat4hbV4bok4KRZMzKSZUqE=
 github.com/mesh-for-data/openapi2crd v0.2.0/go.mod h1:ZJkn3e33tLxskRLhjzeTdNKTEBrc/4g6q1osBVU6iKU=
