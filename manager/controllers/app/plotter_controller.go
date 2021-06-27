@@ -13,6 +13,7 @@ import (
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
 	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
 	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -20,6 +21,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 // PlotterReconciler reconciles a Plotter object
@@ -297,7 +300,20 @@ func NewPlotterReconciler(mgr ctrl.Manager, name string, manager multicluster.Cl
 
 // SetupWithManager registers Plotter controller
 func (r *PlotterReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// 'UpdateFunc' and 'CreateFunc' used to judge if the event came from within the system namespace.
+	// If that is true, the event will be processed by the reconciler.
+	// If it's not then it is a rogue event created by someone outside of the control plane.
+	p := predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			return e.Object.GetNamespace() == utils.GetSystemNamespace()
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			return e.ObjectOld.GetNamespace() == utils.GetSystemNamespace()
+		},
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&app.Plotter{}).
+		WithEventFilter(p).
 		Complete(r)
 }
