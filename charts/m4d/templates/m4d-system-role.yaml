@@ -13,6 +13,7 @@ rules:
   - datasets
   - secrets
   - secrets/finalizers
+  - leases
   verbs:
   - create
   - delete
