@@ -813,3 +813,45 @@ func TestSyncWithPlotter(t *testing.T) {
 	g.Expect(getErrorMessages(newApp)).NotTo(gomega.BeEmpty())
 	g.Expect(newApp.Status.Ready).NotTo(gomega.BeTrue())
 }
+
+// This test checks that an empty m4dapplication can be created and reconciled
+func TestM4DApplicationWithNoDatasets(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "notebook",
+		Namespace: "default",
+	}
+	application := &app.M4DApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/m4dcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.Spec.Data = []app.DataContext{}
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Create a M4DApplicationReconciler object with the scheme and fake client.
+	r := createTestM4DApplicationController(cl, s)
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	res, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+	g.Expect(res).To(gomega.BeEquivalentTo(ctrl.Result{}))
+	// The application should be in Ready state
+	newApp := &app.M4DApplication{}
+	err = cl.Get(context.Background(), req.NamespacedName, newApp)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(getErrorMessages(newApp)).To(gomega.BeEmpty())
+	g.Expect(newApp.Status.Ready).To(gomega.BeTrue())
+}
