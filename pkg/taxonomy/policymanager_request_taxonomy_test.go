@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	OPATaxValsName = "../../charts/files/taxonomy/policymanager/policymanager_request.structs.schema.json"
+	OPATaxValsName = "../../charts/m4d/files/taxonomy/policymanager/policymanager_request.structs.schema.json"
 
 	governanceRequestGood          = "{\"request_context\":{\"intent\":\"Marketing\", \"role\":\"Data Scientist\"},\"action\":{\"action_type\":\"read\", \"processingLocation\":\"Turkey\"}, \"resource\":{\"name\":\"file1\"}}"
 	governanceRequestBadNoResource = "{\"request_context\":{\"intent\":\"Marketing\", \"role\":\"Data Scientist\"},\"action\":{\"action_type\":\"read\", \"processingLocation\":\"Turkey\"}}"
