@@ -495,7 +495,7 @@ func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, e
 
 	moduleMap := make(map[string]*app.M4DModule)
 	var moduleList app.M4DModuleList
-	if err := r.List(ctx, &moduleList); err != nil {
+	if err := r.List(ctx, &moduleList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
 		r.Log.V(0).Info("Error while listing modules: " + err.Error())
 		return moduleMap, err
 	}

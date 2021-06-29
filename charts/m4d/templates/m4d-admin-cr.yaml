@@ -10,7 +10,7 @@ rules:
   resources:
   - events
   - secrets
-  - secrets/finalizers
+  - configmaps
   verbs:
   - create
   - delete
@@ -92,6 +92,31 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - m4dstorageaccounts
+  - m4dmodules
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - com.ie.ibm.hpsys
+  resources:
+  - datasets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 {{- end }}
 {{- end }}
 
