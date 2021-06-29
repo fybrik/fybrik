@@ -229,15 +229,41 @@ while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}')
 
 ## Read the dataset from the notebook
 
+In your **terminal**, run the following command to print the [endpoint](../../reference/crds/#m4dapplicationstatusreadendpointsmapkey) to use for reading the data. It fetches the code from the `M4DApplication` resource:
+```bash
+ENDPOINT_SCHEME=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.m4d-notebook-sample/paysim-csv.scheme})
+ENDPOINT_HOSTNAME=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.m4d-notebook-sample/paysim-csv.hostname})
+ENDPOINT_PORT=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.m4d-notebook-sample/paysim-csv.port})
+printf "${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}"
+```
+The next steps use the endpoint to read the data in a python notebook
+
 1. Insert a new notebook cell to install pandas and pyarrow packages:
   ```python
   %pip install pandas pyarrow
   ```
-2. In your **terminal**, run the following command to print the code to use for reading the data. It fetches the code from the `M4DApplication` resource:
+2. Insert a new notebook cell to read the data using the endpoint value extracted from the `M4DApplication` in the previous step:
   ```bash
-  printf "$(kubectl get m4dapplication my-notebook -o jsonpath={.status.dataAccessInstructions})"
+  %pip install pandas pyarrow
+  import json
+  import pyarrow.flight as fl
+  import pandas as pd
+
+  # Create a Flight client
+  client = fl.connect('<ENDPOINT>')
+
+  # Prepare the request
+  request = {
+      "asset": "m4d-notebook-sample/paysim-csv",
+      # To request specific columns add to the request a "columns" key with a list of column names
+      # "columns": [...]
+  }
+
+  # Send request and fetch result as a pandas DataFrame
+  info = client.get_flight_info(fl.FlightDescriptor.for_command(json.dumps(request)))
+  reader: fl.FlightStreamReader = client.do_get(info.endpoints[0].ticket)
+  df: pd.DataFrame = reader.read_pandas()
   ```
-3. Insert a new notebook cell and paste in it the code for reading data as printed in the previous step.
 4. Insert a new notebook cell with the following command to visualize the result:
   ```
   df
