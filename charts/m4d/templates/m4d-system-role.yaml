@@ -7,13 +7,9 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - plotters
   - m4dstorageaccounts
   - m4dmodules
   - datasets
-  - secrets
-  - secrets/finalizers
-  - leases
   verbs:
   - create
   - delete
@@ -22,12 +18,4 @@ rules:
   - patch
   - update
   - watch
-- apiGroups:
-  - app.m4d.ibm.com
-  resources:
-  - plotters/status
-  verbs:
-  - get
-  - patch
-  - update
 {{- end }}

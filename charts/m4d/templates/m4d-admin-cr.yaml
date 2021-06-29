@@ -1,13 +1,97 @@
-{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled .Values.coordinator.enabled) }}
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
 {{- if .Values.clusterScoped }}
-# ClusterRole m4d-admin allows managing m4dmodules and m4dstorageaccounts
-kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
 metadata:
-  name: m4d-admin
+  name: {{ template "m4d.fullname" . }}-admin-cr
 rules:
-- apiGroups: ["app.m4d.ibm.com"]
-  resources: ["m4dmodules", "m4dstorageaccounts"]
-  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups:
+  - ""
+  resources:
+  - events
+  - secrets
+  - secrets/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - "coordination.k8s.io"
+  resources:
+  - leases
+  - leases/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - blueprints
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - blueprints/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - m4dapplications
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - m4dapplications/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - plotters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - plotters/status
+  verbs:
+  - get
+  - patch
+  - update
 {{- end }}
 {{- end }}
+
