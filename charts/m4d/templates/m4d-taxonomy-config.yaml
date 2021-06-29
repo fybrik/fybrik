@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: m4d-app-config
+  name: m4d-taxonomy-config
 data:
-  {{- (.Files.Glob "files/taxonomy/application/**.json").AsConfig | nindent 2 }}
+  {{- (.Files.Glob "files/taxonomy/**.json").AsConfig | nindent 2 }}
 {{- end }}
