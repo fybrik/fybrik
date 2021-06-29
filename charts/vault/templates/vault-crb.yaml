@@ -1,13 +1,14 @@
+{{- if not .Values.plugins.readKuberenetsSecrets.namespaces }}
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: vault
+  name: "vault-crb"
 subjects:
 - kind: ServiceAccount
   name: vault
-  namespace: m4d-system
+  namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
   name: vault-secrets-manager
   apiGroup: rbac.authorization.k8s.io
-
+{{- end }}

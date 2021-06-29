@@ -1,0 +1,11 @@
+plugins:
+  # Settings related to vault-plugin-secrets-kubernetes-reader plugin  
+  readKuberenetsSecrets:
+    enabled: true
+    # A list of namespaces that Vault can read Kuberenets secrets from.
+    # If it is empty then Vault will be able to read Kuberenets secrets
+    # from all the namespaces in the cluster
+    namespaces: 
+      #- m4d-notebook-sample
+      #- m4d-system
+    

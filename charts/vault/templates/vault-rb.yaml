@@ -1,0 +1,19 @@
+{{- if .Values.plugins.readKuberenetsSecrets.namespaces }}
+{{- $releaseName := .Release.Namespace -}}
+{{- range $ns := .Values.plugins.readKuberenetsSecrets.namespaces }}
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: "vault-rb-{{ $ns }}"
+  namespace: "{{ $ns }}"
+subjects:
+- kind: ServiceAccount
+  name:  vault
+  namespace: {{ $releaseName }} 
+roleRef:
+  kind: ClusterRole
+  name: vault-secrets-manager
+  apiGroup: rbac.authorization.k8s.io
+---
+{{- end }}
+{{- end }}
