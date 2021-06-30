@@ -13,5 +13,5 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: {{ .Values.manager.serviceAccount.name | default "default" }}
-  namespace: m4d-blueprints
+  namespace: {{ .Release.Namespace }}
 {{- end }}
