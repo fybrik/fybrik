@@ -4,12 +4,13 @@
 package taxonomy
 
 import (
-	tax "github.com/mesh-for-data/mesh-for-data/config/taxonomy"
 	"testing"
+
+	tax "github.com/mesh-for-data/mesh-for-data/config/taxonomy"
 )
 
 var (
-	OPATaxValsName = "../../config/taxonomy/policymanager_request.structs.schema.json"
+	OPATaxValsName = "../../charts/m4d/files/taxonomy/policymanager_request.structs.schema.json"
 
 	governanceRequestGood          = "{\"request_context\":{\"intent\":\"Marketing\", \"role\":\"Data Scientist\"},\"action\":{\"action_type\":\"read\", \"processingLocation\":\"Turkey\"}, \"resource\":{\"name\":\"file1\"}}"
 	governanceRequestBadNoResource = "{\"request_context\":{\"intent\":\"Marketing\", \"role\":\"Data Scientist\"},\"action\":{\"action_type\":\"read\", \"processingLocation\":\"Turkey\"}}"
