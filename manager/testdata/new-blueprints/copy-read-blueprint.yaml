@@ -4,7 +4,9 @@ metadata:
   name: copy-and-read
   labels:
 spec:
+  cluster: theshire
   appSelector: "app:demoapp"
+  appCluster: theshire
   flow:
   - name: copy-step
     assetID: 'm4d-notebook-sample/paysim-csv'

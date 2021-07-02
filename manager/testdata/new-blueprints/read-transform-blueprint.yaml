@@ -4,7 +4,9 @@ metadata:
   name: read-and-transform
   labels:
 spec:
+  cluster: theshire
   appSelector: "app:demoapp"
+  appCluster: theshire
   steps:
   - name: read-data
     assetID: m4d-notebook-sample/paysim-csv
@@ -24,7 +26,7 @@ spec:
           bucket: srcbucket
           object: data.parq
     service:
-      name: common-read-arrow-flight
+      name: common-arrow-flight-read-service
       assetID: m4d-notebook-sample/paysim-csv # Differentiator to original asset for multi user arrow flight service? How to best specify?
       port: 8080
       interfaceDetails:
@@ -37,9 +39,11 @@ spec:
       chart: ghcr.io/mesh-for-data/m4d-transform-conf-arrow-flight:0.1.0
       moduleLabel: "mod: common-transform-arrow-flight"
     source:
+      step: read-data # the name of step for debugging purposes
+      selector: "mod: common-arrow-flight-read-service" # Selector of the dependency
       connection:
         service:
-          Name: common-read-arrow-flight
+          name: common-read-arrow-flight
           assetID: m4d-notebook-sample/paysim-csv
           port: 8080
           interfaceDetails:
@@ -69,9 +73,9 @@ status:
   observedState: Ready
   observedGeneration: 1
   steps:
-    - name: demoapp-read-step1
+    - name: read-data
       status: Ready
-    - name: demoapp-read-step2
+    - name: transform-step
       status: Ready
     - name: isolation-step1
       status: Ready
@@ -81,8 +85,8 @@ status:
   - name: m4d-notebook-sample/paysim-csv
     status: Ready
     steps:
-     - name: demoapp-read-step1
+     - name: read-data
        status: Ready
-     - name: demoapp-read-step2
+     - name: transform-step
        status: Ready
   conditions: []
