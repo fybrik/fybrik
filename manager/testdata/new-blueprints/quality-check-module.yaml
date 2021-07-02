@@ -1,0 +1,23 @@
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: M4DModule
+metadata:
+  name: quality-check
+  namespace: m4d-system
+  labels:
+    version: 0.0.1
+spec:
+  multi-user: true
+  chart:
+    name: ghcr.io/mesh-for-data/m4d-quality-check:0.1.0
+  statusIndicators: # Indicators for a K8s job
+  kind: deployment
+  capabilities:
+  - quality-check
+  supportedInterfaces:
+  - flow: quality-check
+    source:
+      protocol: s3
+      dataformat: parquet
+status:
+  observedStatus: Ready
+  conditions: []

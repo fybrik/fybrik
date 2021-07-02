@@ -1,0 +1,94 @@
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: Blueprint
+metadata:
+  name: copy-and-read
+  labels:
+spec:
+  appSelector: "app:demoapp"
+  flow:
+  - name: copy-step
+    assetID: 'm4d-notebook-sample/paysim-csv'
+    templateSpec:
+      chart: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
+    moduleLabel: "mod: demoapp-copy-step"
+    frequency: "0 1 * * *"
+    source:
+      vault:
+        address: http://vault.m4d-system:8200
+        authPath: /v1/auth/kubernetes/login
+        role: module
+        secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
+      format: parquet
+      connection:
+        s3:
+          endpoint: localhost:8001
+          bucket: srcbucket
+          object: data.parq
+    destination:
+      vault:
+        address: http://vault.m4d-system:8200
+        authPath: /v1/auth/kubernetes/login
+        role: module
+        secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
+      format: parquet
+      connection:
+        s3:
+          endpoint: localhost:8001
+          bucket: destbucket
+          object: data.parq
+    transformations:
+    - action: redact
+      column: blood_group
+  - name: read-step
+    templateSpec:
+      chart: ghcr.io/mesh-for-data/m4d-arrow-flight:0.1.0
+    moduleSelector: "mod: demoapp-read-step"
+    assetID: 'm4d-notebook-sample/paysim-csv'
+    source:
+      step: copy-step # the name of step for debugging purposes
+      selector: "mod: demoapp-copy-step" # Selector of the dependency
+      vault:
+        address: http://vault.m4d-system:8200
+        authPath: /v1/auth/kubernetes/login
+        role: module
+        secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
+      connection:
+        s3:
+          endpoint: "localhost:8001"
+          bucket: destbucket
+          object: data.parq
+      format: parquet
+    service:
+      name: common-arrow-flight-read-service
+      assetID: m4d-notebook-sample/paysim-csv
+      port: 8080
+      interfaceDetails:
+        protocol: arrow-flight
+        dataformat: arrow
+    transformations:
+    - action: redact
+      column: blood_group
+  - name: isolation-to-app
+    templateSpec: # Configure here or in “reading” module?
+      name: ghcr.io/mesh-for-data/networkpolicy-isolation:0.1.0
+    appSelector: "app: demoapp"
+    moduleSelector: "mod: common-arrow-flight-read-service"
+status:
+  observedState: Ready
+  observedGeneration: 1
+  steps:
+  - name: copy-step
+    status: Ready
+  - name: read-step
+    status: Ready
+  - name: isolation-to-app
+    status: Ready
+  assets:
+  - name: m4d-notebook-sample/paysim-csv
+    status: Ready
+    steps:
+    - name: copy-step
+      status: Ready
+    - name: read-step
+      status: Ready
+  conditions: [ ]

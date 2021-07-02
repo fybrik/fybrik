@@ -1,0 +1,41 @@
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: M4DModule
+metadata:
+  name: arrow-flight-common-transform-conf
+  namespace: m4d-system
+  labels:
+    version: 0.0.1
+spec:
+  multi-user: true
+  chart:
+    name: ghcr.io/mesh-for-data/m4d-arrow-flight-common-transform-conf:0.1.0
+    values: {}
+  statusIndicators:
+  kind: configuration
+  dependencies: # Possibly define dependencies for the module to be "Ready"
+  - kind: pod
+    selector: "mod: common-transform-arrow-flight"
+  - kind: service
+    name: common-transform-arrow-flight
+  capabilities:
+  - transform
+  api:
+    endpoint:
+      host: common-transform-arrow-flight  # This can e.g. be used for multi-user modules
+      selector: "mod: common-transform-arrow-flight"
+      port: 80
+    protocol: m4d-arrow-flight
+    dataformat: arrow
+  supportedInterfaces:
+  - flow: read
+    source:
+      protocol: s3
+      dataformat: parquet
+  actions:
+  - id: redact-ID
+    level: 2  # column
+  - id: removed-ID
+    level: 2  # column
+status:
+  observedStatus: Ready
+  conditions: []

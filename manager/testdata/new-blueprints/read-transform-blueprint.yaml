@@ -1,0 +1,88 @@
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: Blueprint
+metadata:
+  name: read-and-transform
+  labels:
+spec:
+  appSelector: "app:demoapp"
+  steps:
+  - name: read-data
+    assetID: m4d-notebook-sample/paysim-csv
+    templateSpec:
+      chart: ghcr.io/mesh-for-data/m4d-arrow-flight-common-read-conf:0.1.0
+      m4dModule: arrow-flight-common-read-conf # This is the name of the deployed M4DModule definition
+    moduleLabel: "mod: common-arrow-flight-read-service"
+    source:
+      vault:
+        address: http://vault.m4d-system:8200
+        authPath: /v1/auth/kubernetes/login
+        role: module
+        secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
+      connection:
+        s3:
+          endpoint: localhost:8001
+          bucket: srcbucket
+          object: data.parq
+    service:
+      name: common-read-arrow-flight
+      assetID: m4d-notebook-sample/paysim-csv # Differentiator to original asset for multi user arrow flight service? How to best specify?
+      port: 8080
+      interfaceDetails:
+        protocol: arrow-flight
+        dataformat: arrow
+    transformations: [] # No transformations done in this module
+  - name: transform-step
+    assetID: m4d-notebook-sample/paysim-csv
+    templateSpec:
+      chart: ghcr.io/mesh-for-data/m4d-transform-conf-arrow-flight:0.1.0
+      moduleLabel: "mod: common-transform-arrow-flight"
+    source:
+      connection:
+        service:
+          Name: common-read-arrow-flight
+          assetID: m4d-notebook-sample/paysim-csv
+          port: 8080
+          interfaceDetails:
+            protocol: arrow-flight
+            dataformat: arrow
+    service:
+      name: common-transform-arrow-flight
+      assetID: m4d-notebook-sample/paysim-csv
+      port: 8080
+      interfaceDetails:
+        protocol: arrow-flight
+        dataformat: arrow
+    transformations:
+    - action: redact
+      column: blood_group
+  - name: isolation-step1
+    templateSpec: # Configure here or in “reading” module?
+      name: ghcr.io/mesh-for-data/networkpolicy-isolation:0.1.0
+    sourceSelector: "mod: common-read-arrow-flight"
+    moduleSelector: "mod: common-transform-arrow-flight"
+  - name: isolation-step2-to-app
+    templateSpec: # Configure here or in “reading” module?
+      name: ghcr.io/mesh-for-data/networkpolicy-isolation:0.1.0
+    appSelector: "app: demoapp"
+    moduleSelector: "mod: common-transform-arrow-flight"
+status:
+  observedState: Ready
+  observedGeneration: 1
+  steps:
+    - name: demoapp-read-step1
+      status: Ready
+    - name: demoapp-read-step2
+      status: Ready
+    - name: isolation-step1
+      status: Ready
+    - name: isolation-step2-to-app
+      status: Ready
+  assets:
+  - name: m4d-notebook-sample/paysim-csv
+    status: Ready
+    steps:
+     - name: demoapp-read-step1
+       status: Ready
+     - name: demoapp-read-step2
+       status: Ready
+  conditions: []

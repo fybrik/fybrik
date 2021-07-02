@@ -1,0 +1,42 @@
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: M4DModule
+metadata:
+  name: arrow-flight-common-read-conf
+  namespace: m4d-system
+  labels:
+    version: 0.0.1
+spec:
+  description: "This module knows how to configure a cluster wide arrow flight service"
+  multi-user: true
+  confChart:
+    name: ghcr.io/mesh-for-data/:0.1.0
+    values: {}
+  statusIndicators:
+  kind: configuration
+  dependencies: # Possibly define dependencies for the module to be "Ready"
+  - kind: pod
+    selector: "mod: common-arrow-flight-read-service"
+  - kind: service
+    name: common-arrow-flight-read-service
+  capabilities:
+  - read
+  api:
+    endpoint:
+      host: common-arrow-flight-read-service  # This can e.g. be used for multi-user modules
+      selector: "mod: common-arrow-flight-read-service"
+      port: 80
+    protocol: m4d-arrow-flight
+    dataformat: arrow
+  supportedInterfaces:
+  - flow: read
+    source:
+      protocol: s3
+      dataformat: parquet
+  - flow: read
+    source:
+      protocol: s3
+      dataformat: csv
+  actions: []
+status:
+  observedStatus: Ready
+  conditions: []

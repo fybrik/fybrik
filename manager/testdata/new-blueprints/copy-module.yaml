@@ -1,0 +1,36 @@
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: M4DModule
+metadata:
+  name: copy
+  namespace: m4d-system
+  labels:
+    version: 0.0.1
+spec:
+  multi-user: true # Could be multi user depending on naming strategy of deployments
+  chart:
+    name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
+  statusIndicators:
+  - kind: BatchTransfer
+    successCondition: status.status == SUCCEEDED
+    failureCondition: status.status == FAILED
+    errorMessage: status.error
+  kind: deployment
+  capabilities:
+  - copy
+  - transform
+  supportedInterfaces:
+  - flow: copy
+    source:
+      protocol: s3
+      dataformat: parquet
+    sink:
+      protocol: s3
+      dataformat: parquet
+  actions:
+  - id: redact-ID
+    level: 2  # column
+  - id: removed-ID
+    level: 2  # column
+status:
+  observedStatus: Ready
+  conditions: []

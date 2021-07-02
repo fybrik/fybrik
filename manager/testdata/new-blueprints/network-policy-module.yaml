@@ -1,0 +1,23 @@
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: M4DModule
+metadata:
+  name: network-policy
+  namespace: m4d-system
+  labels:
+    version: 0.0.1
+spec:
+  description: "This module knows how to configure a kubernetes network policy"
+  multi-user: true
+  confChart:
+    name: ghcr.io/mesh-for-data/networkpolicy-isolation:0.1.0
+    values: {}
+  statusIndicators:
+  kind: configuration
+  capabilities:
+  - isolation
+  isolation:
+  - ingess
+  - egress
+status:
+  observedStatus: Ready
+  conditions: []
