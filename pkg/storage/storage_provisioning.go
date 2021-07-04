@@ -89,7 +89,7 @@ func (r *ProvisionImpl) getDatasetAsUnstructured(name string, namespace string) 
 	return object, nil
 }
 
-func getValue(obj map[string]interface{}, path []string) string {
+func getValue(obj map[string]interface{}, path ...string) string {
 	if valStr, exists, err := unstructured.NestedString(obj, path...); err == nil && exists {
 		return valStr
 	}
@@ -98,16 +98,16 @@ func getValue(obj map[string]interface{}, path []string) string {
 
 func equal(required *ProvisionedBucket, existing *unstructured.Unstructured) bool {
 	obj := existing.UnstructuredContent()
-	if required.Name != getValue(obj, []string{"spec", "local", "bucket"}) {
+	if required.Name != getValue(obj, "spec", "local", "bucket") {
 		return false
 	}
-	if required.Endpoint != getValue(obj, []string{"spec", "local", "endpoint"}) {
+	if required.Endpoint != getValue(obj, "spec", "local", "endpoint") {
 		return false
 	}
-	if required.SecretRef.Name != getValue(obj, []string{"spec", "local", "secret-name"}) {
+	if required.SecretRef.Name != getValue(obj, "spec", "local", "secret-name") {
 		return false
 	}
-	if required.SecretRef.Namespace != getValue(obj, []string{"spec", "local", "secret-namespace"}) {
+	if required.SecretRef.Namespace != getValue(obj, "spec", "local", "secret-namespace") {
 		return false
 	}
 	return true
@@ -173,8 +173,8 @@ func (r *ProvisionImpl) GetDatasetStatus(ref *types.NamespacedName) (*Provisione
 	if err != nil {
 		return nil, err
 	}
-	status := getValue(dataset.Object, []string{"status", "provision", "status"})
-	info := getValue(dataset.Object, []string{"status", "provision", "info"})
+	status := getValue(dataset.Object, "status", "provision", "status")
+	info := getValue(dataset.Object, "status", "provision", "info")
 	return &ProvisionedStorageStatus{Provisioned: status == "OK", ErrorMsg: info}, nil
 }
 
