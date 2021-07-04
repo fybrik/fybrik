@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	catalogTaxStructsName = "catalog.structs.schema.json"
-	catalogTaxValsName    = "catalog.values.schema.json"
+	catalogTaxStructsName = "../../charts/m4d/files/taxonomy/catalog.structs.schema.json"
+	catalogTaxValsName    = "../../charts/m4d/files/taxonomy/catalog.values.schema.json"
 
 	geographyGood1 = "{\"geography\": {\"name\": \"Turkey\", \"geography_type\": \"country\"}}"
 	geographyGood2 = "{\"geography\": {\"name\": \"Turkey\"}}"

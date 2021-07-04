@@ -92,6 +92,8 @@ spec:
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: cert
               readOnly: true
+            - mountPath: /tmp/taxonomy
+              name: m4d-taxonomy
           securityContext:
             {{- toYaml .Values.manager.securityContext | nindent 12 }}
           resources:
@@ -102,6 +104,9 @@ spec:
           secret:
             defaultMode: 420
             secretName: webhook-server-cert
+        - name: m4d-taxonomy
+          configMap:
+            name: m4d-taxonomy-config
       {{- with .Values.manager.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
