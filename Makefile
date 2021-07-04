@@ -22,7 +22,6 @@ run-integration-tests: export VALUES_FILE=m4d/integration-tests.values.yaml
 run-integration-tests:
 	$(MAKE) kind
 	$(MAKE) -C charts vault
-	$(MAKE) -C charts wait-for-vault
 	$(MAKE) -C charts cert-manager
 	$(MAKE) -C third_party/datashim deploy
 	$(MAKE) docker
