@@ -4,7 +4,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"os"
 	"strconv"
@@ -106,8 +105,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		}()
 
 		// Initiate the M4DApplication Controller
-		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", policyManager, catalog, clusterManager,
-			storage.NewProvisionImpl(mgr.GetClient(), context.Background()))
+		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", policyManager, catalog, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
 			return 1

@@ -57,15 +57,13 @@ type ProvisionInterface interface {
 
 // ProvisionImpl is an implementation of ProvisionInterface using Dataset CRDs
 type ProvisionImpl struct {
-	Client  client.Client
-	Context context.Context
+	Client client.Client
 }
 
 // NewProvisionImpl returns a new ProvisionImpl object
-func NewProvisionImpl(c client.Client, ctx context.Context) *ProvisionImpl {
+func NewProvisionImpl(c client.Client) *ProvisionImpl {
 	return &ProvisionImpl{
-		Client:  c,
-		Context: ctx,
+		Client: c,
 	}
 }
 
@@ -85,7 +83,7 @@ func (r *ProvisionImpl) getDatasetAsUnstructured(name string, namespace string) 
 
 	objectKey := client.ObjectKeyFromObject(object)
 
-	if err := r.Client.Get(r.Context, objectKey, object); err != nil {
+	if err := r.Client.Get(context.Background(), objectKey, object); err != nil {
 		return nil, err
 	}
 	return object, nil
@@ -141,7 +139,9 @@ func (r *ProvisionImpl) CreateDataset(ref *types.NamespacedName, bucket *Provisi
 		"m4d.ibm.com/owner": owner.Namespace + "." + owner.Name,
 		"remove-on-delete":  "true"})
 
-	unstructured.SetNestedStringMap(dataset.Object, values, "spec", "local")
+	if err = unstructured.SetNestedStringMap(dataset.Object, values, "spec", "local"); err != nil {
+		return err
+	}
 	return r.Client.Create(context.Background(), dataset)
 }
 
