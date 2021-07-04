@@ -32,11 +32,15 @@ vault:
                 --set "vault.server.dev.enabled=true" \
 		--values vault/env/dev/plugin-secrets-kubernetes-reader-values.yaml \
 		--namespace m4d-system \
-		--wait --timeout 120s
+		--wait --timeout 300s
 
 .PHONY: wait-for-vault
 wait-for-vault:
-	kubectl wait --for=condition=ready --all pod -n m4d-system --timeout=120s
+	kubectl get pods -o wide -n m4d-system
+	kubectl get nodes -o wide
+	kubectl describe nodes
+	kubectl describe pods -A
+	kubectl wait --for=condition=ready --all pod -n m4d-system --timeout=360s	kubectl wait --for=condition=ready --all pod -n m4d-system --timeout=120s
 
 .PHONY:
 vault-setup:
