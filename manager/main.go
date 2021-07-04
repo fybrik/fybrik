@@ -4,6 +4,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 	"strconv"
@@ -27,7 +28,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	comv1alpha1 "github.com/datashim-io/datashim/src/dataset-operator/pkg/apis/com/v1alpha1"
 	appv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	motionv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/motion/v1alpha1"
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/app"
@@ -45,7 +45,6 @@ var (
 func init() {
 	_ = motionv1.AddToScheme(scheme)
 	_ = appv1.AddToScheme(scheme)
-	_ = comv1alpha1.SchemeBuilder.AddToScheme(scheme)
 	_ = corev1.AddToScheme(scheme)
 	_ = kbatch.AddToScheme(scheme)
 	_ = kapps.AddToScheme(scheme)
@@ -107,7 +106,8 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		}()
 
 		// Initiate the M4DApplication Controller
-		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", policyManager, catalog, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
+		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", policyManager, catalog, clusterManager,
+			storage.NewProvisionImpl(mgr.GetClient(), context.Background()))
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
 			return 1
