@@ -32,35 +32,64 @@ helm install cert-manager jetstack/cert-manager \
 
 [Hashicorp Vault](https://www.vaultproject.io/) and a [secrets-kubernetes-reader](https://github.com/mesh-for-data/vault-plugin-secrets-kubernetes-reader) plugin are used by Mesh for Data for credential management.
 
+??? tip "Install latest development version from GitHub"
+
+    The published Helm charts are only available for released versions.
+    To install the `dev` version install the charts from the source code.
+    For example:
+	=== "Kubernetes"
+		```bash
+		git clone https://github.com/mesh-for-data/mesh-for-data.git
+		cd mesh-for-data
+		helm repo add hashicorp https://helm.releases.hashicorp.com
+		helm dependency update charts/vault
+		helm install vault charts/vault --create-namespace -n m4d-system \
+			--set "vault.injector.enabled=false" \
+			--set "vault.server.dev.enabled=true" \
+			--values charts/vault/env/dev/vault-single-cluster-values.yaml
+		kubectl wait --for=condition=ready --all pod -n m4d-system --timeout=120s
+		```
+	=== "OpenShift"
+
+		```bash
+		git clone https://github.com/mesh-for-data/mesh-for-data.git
+		cd mesh-for-data
+		helm repo add hashicorp https://helm.releases.hashicorp.com
+		helm dependency update charts/vault
+		helm install vault charts/vault --create-namespace -n m4d-system \
+			--set "global.openshift=true" \
+			--set "vault.injector.enabled=false" \
+			--set "vault.server.dev.enabled=true" \
+			--values charts/vault/env/dev/vault-single-cluster-values.yaml
+		kubectl wait --for=condition=ready --all pod -n m4d-system --timeout=120s
+	    ```
+
+
 Run the following to install vault and the plugin in development mode:
 
 === "Kubernetes" 
 
     ```bash
     helm repo add hashicorp https://helm.releases.hashicorp.com
-    helm repo update
-    helm install vault hashicorp/vault --version 0.9.1 --create-namespace -n m4d-system \
-        --set "server.dev.enabled=true" \
-        --set "injector.enabled=false" \
-        --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.1.0/third_party/vault/vault-single-cluster/values.yaml \
-        --wait --timeout 120s
+    helm dependency update m4d-charts/vault
+    helm install vault m4d-charts/vault --create-namespace -n m4d-system \
+        --set "vault.injector.enabled=false" \
+        --set "vault.server.dev.enabled=true" \
+        --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.3.0/charts/vault/env/dev/vault-single-cluster-values.yaml
     kubectl wait --for=condition=ready --all pod -n m4d-system --timeout=120s
-    kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.1.0/third_party/vault/vault-single-cluster/vault-rbac.yaml -n m4d-system
     ```
 
 === "OpenShift"
 
     ```bash
     helm repo add hashicorp https://helm.releases.hashicorp.com
-    helm repo update
-    helm install vault hashicorp/vault --version 0.9.1 --create-namespace -n m4d-system \
+    helm dependency update m4d-charts/vault
+    helm install vault m4d-charts/vault --create-namespace -n m4d-system \
         --set "global.openshift=true" \
-        --set "injector.enabled=false" \
-        --set "server.dev.enabled=true" \
-        --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.1.0/third_party/vault/vault-single-cluster/values.yaml \
-        --wait --timeout 120s
+        --set "vault.injector.enabled=false" \
+        --set "vault.server.dev.enabled=true" \
+        --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.3.0/charts/vault/env/dev/vault-single-cluster-values.yaml
     kubectl wait --for=condition=ready --all pod -n m4d-system --timeout=120s
-    kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.1.0/third_party/vault/vault-single-cluster/vault-rbac.yaml -n m4d-system
     ```
 
 ## Install control plane
