@@ -42,7 +42,7 @@ $(TOOLBIN)/kustomize:
 
 INSTALL_TOOLS += $(TOOLBIN)/kind
 $(TOOLBIN)/kind:
-	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get sigs.k8s.io/kind@v0.9.0
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get sigs.k8s.io/kind@v0.11.1
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/istioctl
