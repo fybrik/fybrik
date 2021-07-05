@@ -4,16 +4,19 @@ metadata:
   name: copy-and-read
   labels:
 spec:
-  cluster: theshire
-  appSelector: "app:demoapp"
-  appCluster: theshire
+  cluster: thegreendragon
+  appSelector: # Selector of the application that uses this workload
+    clusterName: thegreendragon
+    workloadSelector:
+      matchLabels:
+        app: demoapp
   flow:
   - name: copy-step
     assetID: 'm4d-notebook-sample/paysim-csv'
     templateSpec:
       chart: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
     moduleLabel: "mod: demoapp-copy-step"
-    frequency: "0 1 * * *"
+    frequency: "0 1 * * *" # How often should the process be repeated (this is crontab syntax but could also be something "like once per day")
     source:
       vault:
         address: http://vault.m4d-system:8200

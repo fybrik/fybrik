@@ -14,10 +14,10 @@ spec:
   statusIndicators:
   kind: configuration
   capabilities:
-  - isolation
-  isolation:
-  - ingess
-  - egress
+  - capability: isolation
+    scope: dataset
+    ingress: true
+    egress: true
 status:
   observedStatus: Ready
   conditions: []

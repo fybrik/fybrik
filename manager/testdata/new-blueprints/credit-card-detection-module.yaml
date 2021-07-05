@@ -1,0 +1,22 @@
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: M4DModule
+metadata:
+  name: credit-card-detector
+  namespace: m4d-system
+  labels:
+    version: 0.0.1
+spec:
+  multi-user: false
+  chart:
+    name: ghcr.io/mesh-for-data/cc-detector:0.1.0
+  statusIndicators: # Indicators for a K8s deployment
+  kind: deployment # Assume for now that the program is a K8s deployment per dataset
+  capabilities:
+  - capability: audit
+    scope: dataset
+    sources:
+    - protocol: m4d-arrow-flight
+      dataformat: arrow
+status:
+  observedStatus: Ready
+  conditions: []

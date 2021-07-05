@@ -12,11 +12,10 @@ spec:
   statusIndicators: # Indicators for a K8s job
   kind: deployment
   capabilities:
-  - quality-check
-  supportedInterfaces:
-  - flow: quality-check
-    source:
-      protocol: s3
+  - capability: quality-check
+    scope: dataset
+    sources:
+    - protocol: s3
       dataformat: parquet
 status:
   observedStatus: Ready

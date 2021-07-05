@@ -18,7 +18,16 @@ spec:
   - kind: service
     name: common-transform-arrow-flight
   capabilities:
-  - transform
+  - capability: transform
+    scope: dataset
+    source:
+      protocol: m4d-arrow-flight
+      dataformat: arrow
+    transformations:
+    - id: redact
+      level: column
+    - id: remove
+      level: column
   api:
     endpoint:
       host: common-transform-arrow-flight  # This can e.g. be used for multi-user modules
@@ -26,16 +35,6 @@ spec:
       port: 80
     protocol: m4d-arrow-flight
     dataformat: arrow
-  supportedInterfaces:
-  - flow: read
-    source:
-      protocol: s3
-      dataformat: parquet
-  actions:
-  - id: redact-ID
-    level: 2  # column
-  - id: removed-ID
-    level: 2  # column
 status:
   observedStatus: Ready
   conditions: []

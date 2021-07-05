@@ -1,0 +1,135 @@
+# This represents an example workflow in order to show the specification of multiple modules.
+# It does not represent a real world workload.
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: Plotter
+metadata:
+  name: read-write
+  labels:
+spec:
+  appSelector: # Selector of the application that uses this workload
+    clusterName: thegreendragon
+    workloadSelector:
+      matchLabels:
+        app: demo
+  globalModules:
+  - module: network-policy # set up an isolation module for intra-cluster communication
+  - module: multi-cluster-conf # This module sets up connections for inter cluster communication
+  # Assets used by this workload and their sources
+  assets:
+  - dataSetID: "m4d-notebook-sample/paysim-csv"
+    source:
+      vault:
+        address: http://vault.m4d-system:8200
+        authPath: /v1/auth/kubernetes/login
+        role: module
+        secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
+      connection:
+        s3:
+          endpoint: localhost:8001
+          bucket: srcbucket
+          object: data.parq
+    dataPathFlowType: read # @Sima only one flow type?
+  # Flows used in this workflow
+  # The syntax is reversed to argo as the default for m4d is parallel workflows.
+  # Two dashes start a new parallel action and the sub-flows with one dash are the in-path dataflows.
+  # flow 01 reads the data asset and offers it on an interface
+  # flow 02 reads the data asset from flow 01, applies transformations and offers it to the application
+  # flow 03 takes data written out as data asset "out1" to the arrow flight service and stores it on S3
+  # flow 04 takes data written out as data asset "out1" to an arrow flight service and does a misuse detection on it
+  #
+  # Networking modules
+  # Open questions:
+  # - Should the global modules be generated during blueprint creation or should they be part of the flow and output
+  #     of the policy compiler/optimizer?
+  # - should there be a proxy that the user writes to that forwards data to step 03 and 04?
+  flows:
+  - - id: 01
+      module: arrow-flight-common-read-conf
+      cluster: theprancingpony
+      parameters:
+        source:
+          dataSetID: "m4d-notebook-sample/paysim-csv"
+        api:
+          service:
+            assetID: m4d-notebook-sample/paysim-csv
+            interfaceDetails:
+              protocol: arrow-flight
+              dataformat: arrow
+    - id: 02
+      module: arrow-flight-common-transform-conf
+      cluster: thegreendragon
+      parameters:
+        source:
+          step: 01 # Not sure if this is redundant if we see the dash listings as flow.
+          # source details are taken from spec of flow 01. No need to repeat here
+        transformations:
+        - action: redact
+          column: blood_group
+  - - id: 03
+      module: arrow-flight-common-write-conf
+      parameters:
+        api:
+          service:
+            assetId: "out1"
+            interfaceDetails:
+              protocol: arrow-flight
+              dataformat: arrow
+        destination:
+          connection:
+            s3:
+              endpoint: localhost:8001
+              bucket: destbucket
+              object: appout.parq
+      cluster: thegreendragon
+  - - id: 04
+      module: credit-card-detector
+      parameters:
+        api:
+          service:
+            assetId: "out1"
+            interfaceDetails:
+              protocol: arrow-flight
+              dataformat: arrow
+      cluster: thegreendragon
+status:
+  observedState: Ready
+  observedGeneration: 1
+  # The global modules are generated when the blueprints are generated and injected into them.
+  # Yet they still have a status that is important to the workflow.
+  globalModules:
+  - name: isolation-01-to-02
+    status: Ready
+  - name: isolation-02-to-app
+    status: Ready
+  - name: isolation-app-to-03
+    status: Ready
+  - name: isolation-app-to-04
+    status: Ready
+  - name: multicluster-01-to-02
+    status: Ready
+  steps:
+  - name: 01
+    status: Ready
+  - name: 02
+    status: Not Ready
+  - name: 03
+    status: Ready
+  - name: 04
+    status: Ready
+  assets:
+  - name: m4d-notebook-sample/paysim-csv
+    # Endpoint where the asset can be reached. If this was on a different cluster it might point to a different endpoint.
+    endpoint: common-transform-arrow-flight.service-ns # Assume the transform service is deployed in the 'service-ns' namespace.
+    port: 8080
+    status: Not Ready
+    errors:
+    - "This would be a possible error"
+    steps:
+    - name: 01
+      status: Ready
+    - name: 02
+      status: Ready
+  conditions:
+  - type: Error
+    status: "False"
+    message: "This would be a possible error"

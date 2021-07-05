@@ -4,9 +4,12 @@ metadata:
   name: read-and-transform
   labels:
 spec:
-  cluster: theshire
-  appSelector: "app:demoapp"
-  appCluster: theshire
+  cluster: thegreendragon
+  appSelector: # Selector of the application that uses this workload
+    clusterName: thegreendragon
+    workloadSelector:
+      matchLabels:
+        app: demoapp
   steps:
   - name: read-data
     assetID: m4d-notebook-sample/paysim-csv
@@ -43,7 +46,7 @@ spec:
       selector: "mod: common-arrow-flight-read-service" # Selector of the dependency
       connection:
         service:
-          name: common-read-arrow-flight
+          name: common-arrow-flight-read-service
           assetID: m4d-notebook-sample/paysim-csv
           port: 8080
           interfaceDetails:

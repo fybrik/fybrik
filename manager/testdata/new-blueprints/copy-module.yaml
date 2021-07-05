@@ -16,21 +16,19 @@ spec:
     errorMessage: status.error
   kind: deployment
   capabilities:
-  - copy
-  - transform
-  supportedInterfaces:
-  - flow: copy
-    source:
-      protocol: s3
+  - capability: copy
+    scope: dataset
+    sources:
+    - protocol: s3
       dataformat: parquet
-    sink:
-      protocol: s3
+    sinks:
+    - protocol: s3
       dataformat: parquet
-  actions:
-  - id: redact-ID
-    level: 2  # column
-  - id: removed-ID
-    level: 2  # column
+    transformations:
+    - id: redact
+      level: column
+    - id: removed
+      level: column
 status:
   observedStatus: Ready
   conditions: []

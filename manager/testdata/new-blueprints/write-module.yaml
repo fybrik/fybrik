@@ -1,7 +1,7 @@
 apiVersion: app.m4d.ibm.com/v1alpha2
 kind: M4DModule
 metadata:
-  name: arrow-flight-common-read-conf
+  name: arrow-flight-common-write-conf
   namespace: m4d-system
   labels:
     version: 0.0.1
@@ -14,30 +14,34 @@ spec:
   # M4DModule.Capabilities.Api.endpoint.host.
   multi-user: true
   confChart:
-    name: ghcr.io/mesh-for-data/read-module-conf:0.1.0
+    name: ghcr.io/mesh-for-data/afwm:0.1.0
     values: {}
   statusIndicators:
   kind: configuration
   dependencies: # Possibly define dependencies for the module to be "Ready"
   - kind: pod
-    selector: "mod: common-arrow-flight-read-service"
+    selector: "mod: common-arrow-flight-write-service"
   - kind: service
-    name: common-arrow-flight-read-service
+    name: common-arrow-flight-write-service
   capabilities:
-  - capability: read
+  - capability: write
     scope: dataset
-    sources:
-    - protocol: s3
+    source:
+      protocol: s3
       dataformat: parquet
-    - protocol: s3
+  - capability: write
+    scope: dataset
+    source:
+      protocol: s3
       dataformat: csv
   api:
     endpoint:
-      host: common-arrow-flight-read-service  # This can e.g. be used for multi-user services
-      selector: "mod: common-arrow-flight-read-service" # Can be set for multi-user services
-      port: 80 # Mandatory for each service
+      host: common-arrow-flight-write-service  # This can e.g. be used for multi-user modules
+      selector: "mod: common-arrow-flight-write-service"
+      port: 80
     protocol: m4d-arrow-flight
     dataformat: arrow
+  transformations: []
 status:
-  observedStatus: Ready # Proposal for the future where a module controller could validate the spec. (e.g. check dependencies)
+  observedStatus: Ready
   conditions: []
