@@ -36,6 +36,7 @@ vault:
 
 .PHONY: wait-for-vault
 wait-for-vault:
+	docker ps
 	kubectl get pods -o wide -n m4d-system
 	kubectl get nodes -o wide
 	kubectl describe nodes

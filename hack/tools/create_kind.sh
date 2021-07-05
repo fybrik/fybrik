@@ -65,7 +65,7 @@ kind_delete() {
 
 kind_create() {
   bin/kind create cluster --name $1 \
-    -v 4 --retain --wait=300s \
+    -v 4 --retain --wait=120s \
     --config ./$2 \
     --image=kindest/node:$K8S_VERSION
   for node in $(kind get nodes --name $1); do
