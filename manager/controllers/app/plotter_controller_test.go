@@ -47,7 +47,7 @@ func deployAndCheck(namespace string, shouldSucceed bool) {
 		By("Expecting Plotter to never be ready because reconcile should not be called")
 		Eventually(func() bool {
 			Expect(k8sClient.Get(context.Background(), plotterKey, plotter)).To(Succeed())
-			return plotter.Status.ObservedState.Ready
+			return plotter.Status.ObservedState.Ready && plotter.Status.ObservedGeneration > 0
 		}, timeout, interval).Should(BeFalse(), "Plotter should not be ready because reconciler should not have been invoked!")
 	} else {
 		By("Expecting Plotter to eventually be ready")
@@ -58,7 +58,25 @@ func deployAndCheck(namespace string, shouldSucceed bool) {
 	}
 }
 
-var _ = Describe("Plotter Controller Real Env", func() {
+var _ = Describe("Plotter Controller Illegal Event", func() {
+	Context("Plotter", func() {
+		BeforeEach(func() {
+			// Add any setup steps that needs to be executed before each test
+		})
+
+		AfterEach(func() {
+			// Add any teardown steps that needs to be executed after each test
+		})
+
+		// Plotters not deployed to m4d-system should not be successfully reconciled due to the filter preventing
+		// reconcile from being called.
+		It("Test Plotter Deploy to Bad Namespace", func() {
+			deployAndCheck("default", false)
+		})
+	})
+})
+
+var _ = Describe("Plotter Controller Legal Event", func() {
 	Context("Plotter", func() {
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test
@@ -71,12 +89,6 @@ var _ = Describe("Plotter Controller Real Env", func() {
 		// Plotter are successfully reconciled when deployed to m4d-system only
 		It("Test Plotter Deploy to Correct Namespace", func() {
 			deployAndCheck(utils.GetSystemNamespace(), true)
-		})
-
-		// Plotters not deployed to m4d-system should not be successfully reconciled due to the filter preventing
-		// reconcile from being called.
-		It("Test Plotter Deploy to Bad Namespace", func() {
-			deployAndCheck("default", false)
 		})
 	})
 })
