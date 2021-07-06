@@ -5,7 +5,7 @@ It demonstrates how policies are seamlessly applied when accessing the dataset c
 
 In this sample you play multiple roles:
 
-1. As a data ower you upload a dataset and register it in a data catalog
+1. As a data owner you upload a dataset and register it in a data catalog
 2. As a data steward you setup data governance policies
 3. As a data user you specify your data usage requirements and use a notebook to consume the data
 
