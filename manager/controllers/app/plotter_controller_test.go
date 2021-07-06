@@ -58,7 +58,7 @@ func deployAndCheck(namespace string, shouldSucceed bool) {
 	}
 }
 
-var _ = Describe("Plotter Controller Illegal Event", func() {
+var _ = Describe("Plotter Controller Illegal Create Event", func() {
 	Context("Plotter", func() {
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test
@@ -76,7 +76,7 @@ var _ = Describe("Plotter Controller Illegal Event", func() {
 	})
 })
 
-var _ = Describe("Plotter Controller Legal Event", func() {
+var _ = Describe("Plotter Controller Legal Create Event", func() {
 	Context("Plotter", func() {
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test
@@ -89,6 +89,87 @@ var _ = Describe("Plotter Controller Legal Event", func() {
 		// Plotter are successfully reconciled when deployed to m4d-system only
 		It("Test Plotter Deploy to Correct Namespace", func() {
 			deployAndCheck(utils.GetSystemNamespace(), true)
+		})
+	})
+})
+
+// Create and then Delete the plotter and check that the result is what was expected.
+// Deploy the plotter and check that the result is what was expected.
+func deployDeleteAndCheck(namespace string, shouldSucceed bool) {
+	const timeout = time.Second * 30
+	const interval = time.Millisecond * 100
+
+	// Create the plotter yaml from the hard coded testdata file
+	plotter := &app.Plotter{}
+	Expect(readObjectFromFile("../../testdata/plotter.yaml", plotter)).ToNot(HaveOccurred())
+
+	// Set the namespace to the system namespace so that the plotter will be successfully created
+	plotter.SetNamespace(utils.GetSystemNamespace())
+
+	// Create the Plotter
+	Expect(k8sClient.Create(context.Background(), plotter)).Should(Succeed())
+
+	// Don't forget to clean up after tests finish
+	plotterKey := client.ObjectKeyFromObject(plotter)
+	defer func() {
+		plotter := &app.Plotter{ObjectMeta: metav1.ObjectMeta{Namespace: plotterKey.Namespace, Name: plotterKey.Name}}
+		_ = k8sClient.Get(context.Background(), plotterKey, plotter)
+		_ = k8sClient.Delete(context.Background(), plotter)
+	}()
+
+	By("Expecting plotter to be created")
+	Eventually(func() error {
+		return k8sClient.Get(context.Background(), plotterKey, plotter)
+	}, timeout, interval).Should(Succeed())
+
+	By("Expecting Plotter to eventually be ready")
+	Eventually(func() bool {
+		Expect(k8sClient.Get(context.Background(), plotterKey, plotter)).To(Succeed())
+		return plotter.Status.ObservedState.Ready
+	}, timeout, interval).Should(BeTrue(), "Plotter is not ready after timeout!")
+
+	// Now create a request to delete the same plotter
+	// Set the namespace to the namespace being used for this test
+	delPlotter := &app.Plotter{ObjectMeta: metav1.ObjectMeta{Namespace: namespace, Name: plotterKey.Name}}
+
+	// Delete the Plotter
+	if shouldSucceed {
+		Expect(k8sClient.Delete(context.Background(), delPlotter)).Should(Succeed())
+	} else {
+		Expect(k8sClient.Delete(context.Background(), delPlotter)).ShouldNot(Succeed())
+	}
+}
+
+var _ = Describe("Plotter Controller Legal Delete Event", func() {
+	Context("Plotter", func() {
+		BeforeEach(func() {
+			// Add any setup steps that needs to be executed before each test
+		})
+
+		AfterEach(func() {
+			// Add any teardown steps that needs to be executed after each test
+		})
+
+		// Plotter is successfully deleted when deletion is done from m4d-system only
+		It("Test Plotter Deletion from Correct Namespace", func() {
+			deployDeleteAndCheck(utils.GetSystemNamespace(), true)
+		})
+	})
+})
+
+var _ = Describe("Plotter Controller Illegal Delete Event", func() {
+	Context("Plotter", func() {
+		BeforeEach(func() {
+			// Add any setup steps that needs to be executed before each test
+		})
+
+		AfterEach(func() {
+			// Add any teardown steps that needs to be executed after each test
+		})
+
+		// Plotter is successfully deleted when deletion is done from m4d-system only
+		It("Test Plotter Deletion from Correct Namespace", func() {
+			deployDeleteAndCheck("default", false)
 		})
 	})
 })

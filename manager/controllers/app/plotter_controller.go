@@ -310,6 +310,9 @@ func (r *PlotterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			return e.ObjectOld.GetNamespace() == utils.GetSystemNamespace()
 		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			return e.Object.GetNamespace() == utils.GetSystemNamespace()
+		},
 	}
 
 	return ctrl.NewControllerManagedBy(mgr).
