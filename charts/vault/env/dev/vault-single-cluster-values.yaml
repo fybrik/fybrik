@@ -49,6 +49,9 @@ vault:
       - "sh"
       - "-c"
       - |
+        # Sleep command is needed to avoid synchronization issues with the container pod. Please see
+        # https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/#discussion
+        # FIXME: Use a proper way to configure Vault after Vault start-up
         sleep 5
         /opt/config/poststart.sh
 

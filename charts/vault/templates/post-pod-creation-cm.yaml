@@ -1,5 +1,3 @@
-{{- $major := .Capabilities.KubeVersion.Major -}}
-{{- $minor := .Capabilities.KubeVersion.Minor -}}
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -9,7 +7,7 @@ data:
   poststart.sh: | 
       # configuring kubernetes auth method and use it later to create roles.
       vault auth enable kubernetes
-{{- if and (lt (int $major) 2) (lt (int $minor) 21) }}
+{{- if semverCompare "<1.21-0" .Capabilities.KubeVersion.GitVersion }}
       vault write auth/kubernetes/config kubernetes_host="https://kubernetes.default.svc:443"
 {{- else }}
       vault write auth/kubernetes/config issuer="https://kubernetes.default.svc.cluster.local" kubernetes_host="https://kubernetes.default.svc:443"
