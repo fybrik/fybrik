@@ -23,13 +23,13 @@ Modules that access or write data need credentials in order to access the data s
 An example for Vault Login API call which uses the Vault parameters is as follows:
 
 ```
-$ curl -v --request POST <address>/<authPath> -H "Content-Type: application/json" --data '{"jwt": <module service account token>, "role": <role>}'
+$ curl -v -X POST <address>/<authPath> -H "Content-Type: application/json" --data '{"jwt": <module service account token>, "role": <role>}'
 ```
 
 An example for Vault Read Secret API call which uses the Vault parameters is as follows:
 
 ```
-$ curl --header "X-Vault-Token: ..." https://<address>/<secretPath>
+$ curl --header "X-Vault-Token: ..." -X GET https://<address>/<secretPath>
 ```
 
 ## Module Helm Chart
@@ -197,7 +197,7 @@ capabilities:
 
 The following are examples of YAMLs from fully implemented modules:
 
-* An example YAML for a module that [copies from db2 to s3](https://github.com/mesh-for-data/mesh-for-data/blob/master/manager/testdata/e2e/module-implicit-copy-db2wh-to-s3.yaml) and includes transformation actions 
+* An example YAML for a module that [copies from db2 to s3](https://github.com/mesh-for-data/mesh-for-data/blob/master/manager/testdata/unittests/copy-db2-parquet.yaml) and includes transformation actions
 * And an example [arrow flight read module](https://github.com/mesh-for-data/arrow-flight-module/blob/master/module.yaml) YAML, also with transformation support
 
 ## Test
