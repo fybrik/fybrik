@@ -5,6 +5,7 @@ metadata:
   namespace: m4d-system
   labels:
     version: 0.0.1
+    name: implicit-copy-batch
 spec:
   multi-user: true # Could be multi user depending on naming strategy of deployments
   chart:

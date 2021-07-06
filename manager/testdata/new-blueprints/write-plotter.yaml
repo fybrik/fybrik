@@ -4,6 +4,7 @@ apiVersion: app.m4d.ibm.com/v1alpha2
 kind: Plotter
 metadata:
   name: read-write
+  namespace: m4d-system
   labels:
 spec:
   appSelector: # Selector of the application that uses this workload
@@ -65,6 +66,15 @@ spec:
         transformations:
         - action: redact
           column: blood_group
+        api:
+          service:
+            # Endpoint details and port are taken from the module specified above.
+            # That's why they are not part of the specification here. They will be written
+            # into the status though.
+            assetID: m4d-notebook-sample/paysim-csv
+            interfaceDetails:
+              protocol: arrow-flight
+              dataformat: arrow
   - - id: 03
       module: arrow-flight-common-write-conf
       parameters:
@@ -90,6 +100,11 @@ spec:
             interfaceDetails:
               protocol: arrow-flight
               dataformat: arrow
+        destination:
+          connection:
+            endpoint: localhost:8001
+            bucket: destbucket
+            object: misuse-log.csv
       cluster: thegreendragon
 status:
   observedState: Ready

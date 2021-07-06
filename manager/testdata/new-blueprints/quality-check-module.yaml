@@ -5,6 +5,7 @@ metadata:
   namespace: m4d-system
   labels:
     version: 0.0.1
+    name: quality-check
 spec:
   multi-user: true
   chart:
@@ -17,6 +18,15 @@ spec:
     sources:
     - protocol: s3
       dataformat: parquet
+    sinks:
+    - protocol: s3
+      dataformat: csv
+    # The quality check could check various property and produce different
+    # statistics. Thus the output could also be manifold. Statistics could be written to WKC or Kafka.
+    - protocol: wkc
+      dataformat: plaintext
+    - protocol: kafka
+      dataformat: json
 status:
   observedStatus: Ready
   conditions: []

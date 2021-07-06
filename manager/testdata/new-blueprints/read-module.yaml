@@ -1,3 +1,8 @@
+# This is an example of a module that configures an already existing arrow-flight service.
+# The configuration happens via the specified helm chart. The helm chart may contain e.g.
+# a configmap with configuration that gets loaded by the service. Or possibly also a pod
+# that executes a curl command to configure the service via REST.
+# This service handles all the reads within the cluster.
 apiVersion: app.m4d.ibm.com/v1alpha2
 kind: M4DModule
 metadata:
@@ -5,6 +10,7 @@ metadata:
   namespace: m4d-system
   labels:
     version: 0.0.1
+    name: arrow-flight-common-read-conf
 spec:
   description: "This module knows how to configure a cluster wide arrow flight service"
   # this field is true if this module serves multiple users. Otherwise it
@@ -18,6 +24,10 @@ spec:
     values: {}
   statusIndicators:
   kind: configuration
+  # The dependencies are dependencies that have to be met so that the module is functional.
+  # This is a proposal that is related to the status. It does not have to be included into the final version
+  # I included this because there is already a dependencies field in the current M4DModule which
+  # description says something similar.
   dependencies: # Possibly define dependencies for the module to be "Ready"
   - kind: pod
     selector: "mod: common-arrow-flight-read-service"

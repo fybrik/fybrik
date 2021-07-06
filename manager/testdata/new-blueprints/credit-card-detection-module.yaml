@@ -5,6 +5,7 @@ metadata:
   namespace: m4d-system
   labels:
     version: 0.0.1
+    name: credit-card-detector
 spec:
   multi-user: false
   chart:
@@ -17,6 +18,21 @@ spec:
     sources:
     - protocol: m4d-arrow-flight
       dataformat: arrow
+    sinks:
+    # As this is a fictional module the output may support many formats
+    # Data could be forwarded/logged to another service via arrow-flight, logged to S3
+    # Another possibility is that mail or slack notifications are sent about a
+    # possible security breach in application "demoapp".
+    - protocol: m4d-arrow-flight
+      dataformat: arrow
+    - protocol: s3
+      dataformat: csv
+    - protocol: kafka
+      dataformat: json
+    - protocol: mail
+      dataformat: plaintext
+    - protocol: slack
+      dataformat: plaintext
 status:
   observedStatus: Ready
   conditions: []

@@ -2,6 +2,7 @@ apiVersion: app.m4d.ibm.com/v1alpha2
 kind: Blueprint
 metadata:
   name: read-and-transform
+  namespace: m4d-blueprints
   labels:
 spec:
   cluster: thegreendragon
@@ -10,7 +11,8 @@ spec:
     workloadSelector:
       matchLabels:
         app: demoapp
-  steps:
+  modules:
+  # The names are human readable in this example. In the implementation this will differ.
   - name: read-data
     assetID: m4d-notebook-sample/paysim-csv
     templateSpec:
@@ -36,13 +38,12 @@ spec:
         protocol: arrow-flight
         dataformat: arrow
     transformations: [] # No transformations done in this module
-  - name: transform-step
+  - name: transform-data
     assetID: m4d-notebook-sample/paysim-csv
     templateSpec:
       chart: ghcr.io/mesh-for-data/m4d-transform-conf-arrow-flight:0.1.0
       moduleLabel: "mod: common-transform-arrow-flight"
     source:
-      step: read-data # the name of step for debugging purposes
       selector: "mod: common-arrow-flight-read-service" # Selector of the dependency
       connection:
         service:
@@ -62,12 +63,12 @@ spec:
     transformations:
     - action: redact
       column: blood_group
-  - name: isolation-step1
+  - name: isolation1
     templateSpec: # Configure here or in “reading” module?
       name: ghcr.io/mesh-for-data/networkpolicy-isolation:0.1.0
     sourceSelector: "mod: common-read-arrow-flight"
     moduleSelector: "mod: common-transform-arrow-flight"
-  - name: isolation-step2-to-app
+  - name: isolation-transform-to-app
     templateSpec: # Configure here or in “reading” module?
       name: ghcr.io/mesh-for-data/networkpolicy-isolation:0.1.0
     appSelector: "app: demoapp"
@@ -75,19 +76,23 @@ spec:
 status:
   observedState: Ready
   observedGeneration: 1
-  steps:
+  modules:
     - name: read-data
       status: Ready
-    - name: transform-step
+    - name: transform-data
       status: Ready
-    - name: isolation-step1
+    - name: isolation1
       status: Ready
-    - name: isolation-step2-to-app
+    - name: isolation-transform-to-app
       status: Ready
   assets:
   - name: m4d-notebook-sample/paysim-csv
     status: Ready
-    steps:
+    # An endpoint will only be specified if there is a read/transform module that exposes an api
+    # In the case of e.g. only a copy module in one cluster there is no endpoint.
+    endpoint: common-transform-arrow-flight.service-ns # Assume the transform service is deployed in the 'service-ns' namespace.
+    port: 8080
+    modules:
      - name: read-data
        status: Ready
      - name: transform-step

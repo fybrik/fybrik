@@ -5,6 +5,7 @@ metadata:
   namespace: m4d-system
   labels:
     version: 0.0.1
+    name: arrow-flight-common-write-conf
 spec:
   description: "This module knows how to configure a cluster wide arrow flight service"
   # this field is true if this module serves multiple users. Otherwise it
@@ -18,6 +19,10 @@ spec:
     values: {}
   statusIndicators:
   kind: configuration
+  # The dependencies are dependencies that have to be met so that the module is functional.
+  # This is a proposal that is related to the status. It does not have to be included into the final version
+  # I included this because there is already a dependencies field in the current M4DModule which
+  # description says something similar.
   dependencies: # Possibly define dependencies for the module to be "Ready"
   - kind: pod
     selector: "mod: common-arrow-flight-write-service"
