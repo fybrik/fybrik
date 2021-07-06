@@ -1,8 +1,8 @@
-{{- if not .Values.plugins.readKuberenetsSecrets.namespaces }}
+{{- if eq .Values.plugins.vaultPluginSecretsKubernetesReader.clusterScope true }}
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: "vault-crb"
+  name: "vault-plugin-kubernetes-secret-reader-crb"
 subjects:
 - kind: ServiceAccount
   name: vault
