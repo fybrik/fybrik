@@ -20,9 +20,14 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	comv1alpha1 "github.com/datashim-io/datashim/src/dataset-operator/pkg/apis/com/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+)
+
+var (
+	// GroupVersion is group version used to register these objects
+	GroupVersion = schema.GroupVersion{Group: "com.ie.ibm.hpsys", Version: "v1alpha1"}
 )
 
 // ProvisionedBucket holds information about the bucket to be provisioned.
@@ -62,14 +67,47 @@ func NewProvisionImpl(c client.Client) *ProvisionImpl {
 	}
 }
 
-func equal(required *ProvisionedBucket, existing *comv1alpha1.DatasetSpec) bool {
-	if required.Name != existing.Local["bucket"] {
+func newDatasetAsUnstructured(name string, namespace string) *unstructured.Unstructured {
+	object := &unstructured.Unstructured{}
+	object.SetGroupVersionKind(schema.GroupVersionKind{Group: GroupVersion.Group, Version: GroupVersion.Version, Kind: "Dataset"})
+	object.SetNamespace(namespace)
+	object.SetName(name)
+	return object
+}
+
+func (r *ProvisionImpl) getDatasetAsUnstructured(name string, namespace string) (*unstructured.Unstructured, error) {
+	object := &unstructured.Unstructured{}
+	object.SetGroupVersionKind(schema.GroupVersionKind{Group: GroupVersion.Group, Version: GroupVersion.Version, Kind: "Dataset"})
+	object.SetNamespace(namespace)
+	object.SetName(name)
+
+	objectKey := client.ObjectKeyFromObject(object)
+
+	if err := r.Client.Get(context.Background(), objectKey, object); err != nil {
+		return nil, err
+	}
+	return object, nil
+}
+
+func getValue(obj map[string]interface{}, path ...string) string {
+	if valStr, exists, err := unstructured.NestedString(obj, path...); err == nil && exists {
+		return valStr
+	}
+	return ""
+}
+
+func equal(required *ProvisionedBucket, existing *unstructured.Unstructured) bool {
+	obj := existing.UnstructuredContent()
+	if required.Name != getValue(obj, "spec", "local", "bucket") {
 		return false
 	}
-	if required.Endpoint != existing.Local["endpoint"] {
+	if required.Endpoint != getValue(obj, "spec", "local", "endpoint") {
 		return false
 	}
-	if required.SecretRef.Name != existing.Local["secret-name"] || required.SecretRef.Namespace != existing.Local["secret-namespace"] {
+	if required.SecretRef.Name != getValue(obj, "spec", "local", "secret-name") {
+		return false
+	}
+	if required.SecretRef.Namespace != getValue(obj, "spec", "local", "secret-namespace") {
 		return false
 	}
 	return true
@@ -77,9 +115,9 @@ func equal(required *ProvisionedBucket, existing *comv1alpha1.DatasetSpec) bool 
 
 // CreateDataset generates a Dataset resource
 func (r *ProvisionImpl) CreateDataset(ref *types.NamespacedName, bucket *ProvisionedBucket, owner *types.NamespacedName) error {
-	existing := &comv1alpha1.Dataset{}
-	if err := r.Client.Get(context.Background(), *ref, existing); err == nil {
-		if equal(bucket, &existing.Spec) {
+	existing, err := r.getDatasetAsUnstructured(ref.Name, ref.Namespace)
+	if err == nil {
+		if equal(bucket, existing) {
 			// update is not required
 			return nil
 		}
@@ -95,28 +133,28 @@ func (r *ProvisionImpl) CreateDataset(ref *types.NamespacedName, bucket *Provisi
 		"endpoint":         bucket.Endpoint,
 		"bucket":           bucket.Name,
 		"provision":        "true"}
-	dataset := &comv1alpha1.Dataset{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      ref.Name,
-			Namespace: ref.Namespace,
-			Labels: map[string]string{
-				"m4d.ibm.com/owner": owner.Namespace + "." + owner.Name,
-				"remove-on-delete":  "true"},
-		},
-		Spec: comv1alpha1.DatasetSpec{Local: values},
-	}
 
+	dataset := newDatasetAsUnstructured(ref.Name, ref.Namespace)
+	dataset.SetLabels(map[string]string{
+		"m4d.ibm.com/owner": owner.Namespace + "." + owner.Name,
+		"remove-on-delete":  "true"})
+
+	if err = unstructured.SetNestedStringMap(dataset.Object, values, "spec", "local"); err != nil {
+		return err
+	}
 	return r.Client.Create(context.Background(), dataset)
 }
 
 // SetPersistent updates a "remove-on-delete" label of the existing Dataset resource
 func (r *ProvisionImpl) SetPersistent(ref *types.NamespacedName, persistent bool) error {
-	existing := &comv1alpha1.Dataset{}
-	if err := r.Client.Get(context.Background(), *ref, existing); err != nil {
+	existing, err := r.getDatasetAsUnstructured(ref.Name, ref.Namespace)
+	if err != nil {
 		return err
 	}
-	if existing.Labels == nil {
-		existing.Labels = make(map[string]string)
+	labels := existing.GetLabels()
+
+	if labels == nil {
+		labels = make(map[string]string)
 	}
 	var removeOnDelete string
 	if persistent {
@@ -124,26 +162,29 @@ func (r *ProvisionImpl) SetPersistent(ref *types.NamespacedName, persistent bool
 	} else {
 		removeOnDelete = "true"
 	}
-	existing.Labels["remove-on-delete"] = removeOnDelete
+	labels["remove-on-delete"] = removeOnDelete
+	existing.SetLabels(labels)
 	return r.Client.Update(context.Background(), existing)
 }
 
 // GetDatasetStatus returns status of an existing Dataset resource.
 func (r *ProvisionImpl) GetDatasetStatus(ref *types.NamespacedName) (*ProvisionedStorageStatus, error) {
-	dataset := &comv1alpha1.Dataset{}
-	if err := r.Client.Get(context.Background(), types.NamespacedName{Name: ref.Name, Namespace: ref.Namespace}, dataset); err != nil {
+	dataset, err := r.getDatasetAsUnstructured(ref.Name, ref.Namespace)
+	if err != nil {
 		return nil, err
 	}
-	return &ProvisionedStorageStatus{Provisioned: dataset.Status.Provision.Status == "OK", ErrorMsg: dataset.Status.Provision.Info}, nil
+	status := getValue(dataset.Object, "status", "provision", "status")
+	info := getValue(dataset.Object, "status", "provision", "info")
+	return &ProvisionedStorageStatus{Provisioned: status == "OK", ErrorMsg: info}, nil
 }
 
 // DeleteDataset deletes the existing Dataset resource
 func (r *ProvisionImpl) DeleteDataset(ref *types.NamespacedName) error {
-	dataset := &comv1alpha1.Dataset{}
-	if err := r.Client.Get(context.Background(), types.NamespacedName{Name: ref.Name, Namespace: ref.Namespace}, dataset); err != nil {
-		return err
+	dataset, err := r.getDatasetAsUnstructured(ref.Name, ref.Namespace)
+	if err == nil {
+		return r.Client.Delete(context.Background(), dataset)
 	}
-	return r.Client.Delete(context.Background(), dataset)
+	return err
 }
 
 // ProvisionTest is an implementation of ProvisionInterface used for testing
