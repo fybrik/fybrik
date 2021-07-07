@@ -104,6 +104,25 @@
         display: block;
     }
 
+    .feature-item-link {
+        font-family: 'Lato', sans-serif;
+        font-weight: 300;
+        box-sizing: border-box;
+        padding: 0 15px;
+        word-break: break-word
+    }
+
+    .feature-item-link p {
+        font-size: 16px;
+        line-height: 1.8em;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        color: #111;
+        margin: 0 0 10px;
+        display: block;
+    }
+
+
     @media screen and (max-width:70em) {
         .tx-hero h1 {
             font-size: 1.4rem
@@ -174,11 +193,16 @@
             min-width: 0;
         }
 
-        .feature-item:hover {
+        .feature-item-link {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .feature-item-link:hover {
             background-color: #76b3f4;
             border-radius: 3px;
         }
-    }
+
     }
 </style>
 <section class="tx-container">
@@ -245,13 +269,15 @@ greatly reducing risk of data loss.
 </div>
 
 <!-- Learn More -->
-<div class="topic-item">
-        <h1>
-            <center>Learn more</center>
+<div class="top-hr">
+    <div class="feature-item">
+        <h1 align=center>
+            Learn more
         </h1>
+    </div>
 </div>
     <div class="top-hr">
-    <div class="feature-item">
+    <div class="feature-item-link">
         <a href="https://mesh-for-data.github.io/mesh-for-data/dev/static/mesh-for-data-whitepaper-2021.pdf">
             <h2>
             <center>Whitepaper</center>
@@ -259,10 +285,10 @@ greatly reducing risk of data loss.
             <p>Outline our vision, the motivation, main ideas and the principles upon which Mesh for Data is built</p>
         </a>
     </div>
-    <div class="feature-item">
+    <div class="feature-item-link">
         <a href="https://medium.com/mesh-for-data">
             <h2>
-            <center>Read our blogs</center>
+            <center>Blog</center>
             </h2>
             <p>Additional reading on Mesh for Data concepts, use cases, components and more</p>
         </a>
