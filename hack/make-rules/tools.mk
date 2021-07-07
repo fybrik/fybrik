@@ -57,7 +57,7 @@ $(TOOLBIN)/protoc:
 
 INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-doc
 $(TOOLBIN)/protoc-gen-doc:
-	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go install -u github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@v1.4.1
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@v1.4.1
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-go
