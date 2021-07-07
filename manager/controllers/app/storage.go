@@ -33,7 +33,7 @@ func AllocateBucket(c client.Client, log logr.Logger, owner types.NamespacedName
 	ctx := context.Background()
 	log.Info("Searching for a storage account matching the geography " + geo)
 	var accountList app.M4DStorageAccountList
-	if err := c.List(ctx, &accountList); err != nil {
+	if err := c.List(ctx, &accountList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
 		log.Info(err.Error())
 		return nil, err
 	}

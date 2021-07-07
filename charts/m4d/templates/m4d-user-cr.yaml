@@ -1,0 +1,16 @@
+{{- if .Values.coordinator.enabled }}
+{{- if .Values.clusterScoped }}
+# ClusterRole m4d-user allows managing m4dapplications
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: m4d-user
+rules:
+- apiGroups: ["app.m4d.ibm.com"]
+  resources: ["m4dapplications"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["app.m4d.ibm.com"]
+  resources: ["m4dapplications/status"]
+  verbs: ["get", "update", "patch"]
+{{- end }}
+{{- end }}

@@ -1,0 +1,14 @@
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled .Values.worker.enabled) }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ template "m4d.fullname" . }}-blueprints-role
+  namespace: m4d-blueprints
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+{{- end }}
