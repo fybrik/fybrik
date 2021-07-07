@@ -11,6 +11,10 @@ spec:
   chart:
     name: ghcr.io/mesh-for-data/cc-detector:0.1.0
   statusIndicators: # Indicators for a K8s deployment
+  - kind: Deployment
+    successCondition: # Success condition
+    failureCondition: # Failure condition
+    errorMessage: # Error
   kind: deployment # Assume for now that the program is a K8s deployment per dataset
   capabilities:
   - capability: audit
@@ -33,6 +37,3 @@ spec:
       dataformat: plaintext
     - protocol: slack
       dataformat: plaintext
-status:
-  observedStatus: Ready
-  conditions: []

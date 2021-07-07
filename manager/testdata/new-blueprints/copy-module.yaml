@@ -30,6 +30,3 @@ spec:
       level: column
     - id: removed
       level: column
-status:
-  observedStatus: Ready
-  conditions: []

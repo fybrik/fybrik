@@ -24,15 +24,6 @@ spec:
     values: {}
   statusIndicators:
   kind: configuration
-  # The dependencies are dependencies that have to be met so that the module is functional.
-  # This is a proposal that is related to the status. It does not have to be included into the final version
-  # I included this because there is already a dependencies field in the current M4DModule which
-  # description says something similar.
-  dependencies: # Possibly define dependencies for the module to be "Ready"
-  - kind: pod
-    selector: "mod: common-arrow-flight-read-service"
-  - kind: service
-    name: common-arrow-flight-read-service
   capabilities:
   - capability: read
     scope: dataset
@@ -48,6 +39,3 @@ spec:
       port: 80 # Mandatory for each service
     protocol: m4d-arrow-flight
     dataformat: arrow
-status:
-  observedStatus: Ready # Proposal for the future where a module controller could validate the spec. (e.g. check dependencies)
-  conditions: []

@@ -27,6 +27,3 @@ spec:
       dataformat: plaintext
     - protocol: kafka
       dataformat: json
-status:
-  observedStatus: Ready
-  conditions: []

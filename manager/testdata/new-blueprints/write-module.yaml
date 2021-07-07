@@ -19,15 +19,6 @@ spec:
     values: {}
   statusIndicators:
   kind: configuration
-  # The dependencies are dependencies that have to be met so that the module is functional.
-  # This is a proposal that is related to the status. It does not have to be included into the final version
-  # I included this because there is already a dependencies field in the current M4DModule which
-  # description says something similar.
-  dependencies: # Possibly define dependencies for the module to be "Ready"
-  - kind: pod
-    selector: "mod: common-arrow-flight-write-service"
-  - kind: service
-    name: common-arrow-flight-write-service
   capabilities:
   - capability: write
     scope: dataset
@@ -47,6 +38,3 @@ spec:
     protocol: m4d-arrow-flight
     dataformat: arrow
   transformations: []
-status:
-  observedStatus: Ready
-  conditions: []
