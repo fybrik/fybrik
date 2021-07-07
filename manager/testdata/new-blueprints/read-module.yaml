@@ -23,7 +23,6 @@ spec:
     name: ghcr.io/mesh-for-data/read-module-conf:0.1.0
     values: {}
   statusIndicators:
-  kind: configuration
   capabilities:
   - capability: read
     scope: dataset

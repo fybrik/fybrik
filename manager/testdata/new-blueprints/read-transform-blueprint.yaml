@@ -37,7 +37,7 @@ spec:
       interfaceDetails:
         protocol: arrow-flight
         dataformat: arrow
-    transformations: [] # No transformations done in this module
+    actions: [] # No actions done in this module
   - name: transform-data
     assetID: m4d-notebook-sample/paysim-csv
     templateSpec:
@@ -60,7 +60,7 @@ spec:
       interfaceDetails:
         protocol: arrow-flight
         dataformat: arrow
-    transformations:
+    actions:
     - action: redact
       column: blood_group
   - name: isolation1

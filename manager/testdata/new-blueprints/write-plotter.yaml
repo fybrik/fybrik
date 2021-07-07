@@ -11,7 +11,7 @@ spec:
     clusterName: thegreendragon
     workloadSelector:
       matchLabels:
-        app: demo
+        app: demoapp
   globalModules:
   - module: network-policy # set up an isolation module for intra-cluster communication
   - module: multi-cluster-conf # This module sets up connections for inter cluster communication
@@ -34,7 +34,7 @@ spec:
   # The syntax is reversed to argo as the default for m4d is parallel workflows.
   # Two dashes start a new parallel action and the sub-flows with one dash are the in-path dataflows.
   # flow 01 reads the data asset and offers it on an interface
-  # flow 02 reads the data asset from flow 01, applies transformations and offers it to the application
+  # flow 02 reads the data asset from flow 01, applies actions and offers it to the application
   # flow 03 takes data written out as data asset "out1" to the arrow flight service and stores it on S3
   # flow 04 takes data written out as data asset "out1" to an arrow flight service and does a misuse detection on it
   #
@@ -63,7 +63,7 @@ spec:
         source:
           step: 01 # Not sure if this is redundant if we see the dash listings as flow.
           # source details are taken from spec of flow 01. No need to repeat here
-        transformations:
+        actions:
         - action: redact
           column: blood_group
         api:

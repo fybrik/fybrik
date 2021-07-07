@@ -18,7 +18,6 @@ spec:
     name: ghcr.io/mesh-for-data/afwm:0.1.0
     values: {}
   statusIndicators:
-  kind: configuration
   capabilities:
   - capability: write
     scope: dataset
@@ -37,4 +36,4 @@ spec:
       port: 80
     protocol: m4d-arrow-flight
     dataformat: arrow
-  transformations: []
+  actions: []

@@ -7,7 +7,7 @@ metadata:
     version: 0.0.1
     name: implicit-copy-batch
 spec:
-  multi-user: true # Could be multi user depending on naming strategy of deployments
+  multi-user: false # Could be multi user depending on naming strategy of deployments
   chart:
     name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
   statusIndicators:
@@ -15,7 +15,6 @@ spec:
     successCondition: status.status == SUCCEEDED
     failureCondition: status.status == FAILED
     errorMessage: status.error
-  kind: deployment
   capabilities:
   - capability: copy
     scope: dataset
@@ -25,7 +24,7 @@ spec:
     sinks:
     - protocol: s3
       dataformat: parquet
-    transformations:
+    actions:
     - id: redact
       level: column
     - id: removed

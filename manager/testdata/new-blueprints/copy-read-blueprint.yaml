@@ -41,7 +41,7 @@ spec:
           endpoint: localhost:8001
           bucket: destbucket
           object: data.parq
-    transformations:
+    actions:
     - action: redact
       column: blood_group
   - name: read-step
@@ -70,7 +70,7 @@ spec:
       interfaceDetails:
         protocol: arrow-flight
         dataformat: arrow
-    transformations:
+    actions:
     - action: redact
       column: blood_group
   - name: isolation-to-app

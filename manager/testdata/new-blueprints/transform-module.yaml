@@ -2,7 +2,7 @@
 # The configuration happens via the specified helm chart. The helm chart may contain e.g.
 # a configmap with configuration that gets loaded by the service. Or possibly also a pod
 # that executes a curl command to configure the service via REST.
-# This service handles all the transformations within the cluster.
+# This service handles all the actions within the cluster.
 # The helm chart translates between M4D taxonomy (e.g. names of actions) and the service
 # specific syntax.
 # Actions have to be specified in M4D specific taxonomy so that the application controller knows
@@ -21,14 +21,13 @@ spec:
     name: ghcr.io/mesh-for-data/m4d-arrow-flight-common-transform-conf:0.1.0
     values: {}
   statusIndicators:
-  kind: configuration
   capabilities:
   - capability: transform
     scope: dataset
     source:
       protocol: m4d-arrow-flight
       dataformat: arrow
-    transformations:
+    actions:
     - id: redact
       level: column
     - id: remove

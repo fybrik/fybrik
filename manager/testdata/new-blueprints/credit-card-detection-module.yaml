@@ -15,7 +15,6 @@ spec:
     successCondition: # Success condition
     failureCondition: # Failure condition
     errorMessage: # Error
-  kind: deployment # Assume for now that the program is a K8s deployment per dataset
   capabilities:
   - capability: audit
     scope: dataset

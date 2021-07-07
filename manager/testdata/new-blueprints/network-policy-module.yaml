@@ -13,7 +13,6 @@ spec:
     name: ghcr.io/mesh-for-data/networkpolicy-isolation:0.1.0
     values: {}
   statusIndicators: # Come up with correct status indicators based on CRD used in helm chart
-  kind: configuration
   capabilities:
   - capability: isolation
     scope: dataset
