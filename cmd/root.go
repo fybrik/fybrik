@@ -4,13 +4,19 @@
 package cmd
 
 import (
+	"embed"
 	"fmt"
+	"log"
 	"os"
 
+	"github.com/mesh-for-data/mesh-for-data/pkg/text"
 	"github.com/spf13/cobra"
 
 	"github.com/spf13/viper"
 )
+
+//go:embed *.txt
+var helpTxtFiles embed.FS
 
 var cfgFile string
 
@@ -55,4 +61,22 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+// loadHelp loads help description from an embedded txt file
+func loadHelp(filename string) string {
+	txtBytes, err := helpTxtFiles.ReadFile(filename)
+	if err != nil {
+		// all markdown files are embedded so if this happens then the caller code is wrong
+		log.Fatal(err)
+	}
+
+	return string(txtBytes)
+}
+
+func longHelp(short, filename string) string {
+	return fmt.Sprintf(`%s.
+
+Overview:
+%s`, short, text.Indent(loadHelp(filename), "  "))
 }
