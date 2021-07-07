@@ -55,6 +55,74 @@
         border-color: var(--md-accent-fg-color)
     }
     
+    .feature-item h2 svg {
+        height: 30px;
+        float: left;
+        margin-right: 10px;
+        transform: translateY(10%);
+    }
+
+    .top-hr {
+        margin-top: 42px;
+    }
+
+    .topic-item {
+        font-family: 'Lato', sans-serif;
+        font-weight: 150;
+        box-sizing: border-box;
+        padding: 0 15px;
+        word-break: break-word
+
+    }
+    .feature-item {
+        font-family: 'Lato', sans-serif;
+        font-weight: 300;
+        box-sizing: border-box;
+        padding: 0 15px;
+        word-break: break-word
+    }
+
+    .feature-item h2 {
+        color: #333;
+        font-weight: 300;
+        font-size: 25px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: normal;
+        margin-bottom: 10px;
+        font-family: inherit;
+    }
+
+    .feature-item p {
+        font-size: 16px;
+        line-height: 1.8em;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        color: #111;
+        margin: 0 0 10px;
+        display: block;
+    }
+
+    .feature-item-link {
+        font-family: 'Lato', sans-serif;
+        font-weight: 300;
+        box-sizing: border-box;
+        padding: 0 15px;
+        word-break: break-word
+    }
+
+    .feature-item-link p {
+        font-size: 16px;
+        line-height: 1.8em;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        color: #111;
+        margin: 0 0 10px;
+        display: block;
+    }
+
+
     @media screen and (max-width:70em) {
         .tx-hero h1 {
             font-size: 1.4rem
@@ -100,6 +168,41 @@
         .tx-hero__image img {
             max-width: 20rem;
         }
+
+        .top-hr {
+            width: 100%;
+            display: flex;
+            max-width: 61rem;
+            margin-right: auto;
+            margin-left: auto;
+            padding: 0 .2rem;
+        }
+
+        .bottom-hr {
+            margin-top: 10px;
+            width: 100%;
+            display: flex;
+            max-width: 61rem;
+            margin-right: auto;
+            margin-left: auto;
+            padding: 0 .2rem;
+        }
+
+        .feature-item {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .feature-item-link {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .feature-item-link:hover {
+            background-color: #76b3f4;
+            border-radius: 3px;
+        }
+
     }
 </style>
 <section class="tx-container">
@@ -121,4 +224,80 @@
         </div>
     </div>
 </section>
+
+<div class="top-hr">
+    <div class="topic-item">
+        <h1>
+Mesh for Data is a cloud native platform to unify data access, governance 
+and orchestration, enabling business agility while securing enterprise data.
+By providing access and use of data only via the platform, Mesh for Data 
+brings together access, performance and governance for data, 
+greatly reducing risk of data loss.
+        </h1>
+    </div>
+</div>
+<!-- Features -->
+<div class="top-hr">
+    <div class="feature-item">
+        <h2>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 59.2 59.2"><circle cx="29.6" cy="29.6" r="29.6" fill="#345d80"/><g fill="#fff"><ellipse cx="29.3" cy="11.4" rx="6.9" ry="2.9"/><path d="M36.4 12.5c-.4 1.5-3.4 2.7-7.1 2.7s-6.8-1.2-7.1-2.7v11.4c0 1.7 3.2 3 7.2 3s7.2-1.4 7.2-3l-.2-11.4z"/><ellipse cx="18.5" cy="30.6" rx="6.9" ry="2.9"/><path d="M25.6 31.6c-.4 1.5-3.4 2.7-7.1 2.7s-6.8-1.2-7.1-2.7V43c0 1.7 3.2 3 7.1 3s7.1-1.3 7.1-3V31.6z"/><ellipse cx="40.7" cy="30.6" rx="6.9" ry="2.9"/><path d="M47.8 31.6c-.4 1.5-3.4 2.7-7.1 2.7s-6.8-1.2-7.1-2.7V43c0 1.7 3.2 3 7.2 3s7.2-1.3 7.2-3l-.2-11.4zM26.5 37h6.2v3.5h-6.2zm-5-13.3l-3.3 3.2h.5c1.2 0 2.5.1 3.7.5l.9-.9c-1.1-.5-1.9-1.3-1.9-2l.1-.8zm18.7 3.2h.4l-3.4-3.4v1c0 .7-.6 1.4-1.7 1.9l.9.9c1.2-.3 2.5-.5 3.8-.4z"/></g></svg>
+            Connect
+        </h2>
+        <p>Abstract the connection to data and allow seamless access agnostic to the locations of computation and data or the data API and protocol</p>
+    </div>
+    <div class="feature-item">
+        <h2>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 59.8 59.8"><circle cx="29.9" cy="29.9" r="29.9" fill="#e02533"/><path d="M40.3 21.3C40.3 15.6 35.7 11 30 11s-10.3 4.6-10.3 10.3V26c-5 5.7-4.5 14.4 1.2 19.4s14.4 4.5 19.4-1.2a13.73 13.73 0 0 0 0-18.2v-4.7zm-17.3 0c.1-3.8 3.1-6.8 6.9-6.9 3.8.1 6.8 3.1 6.9 6.9v1.9a13.63 13.63 0 0 0-13.8 0v-1.9zm4.3 21.3L21 36.3l2.4-2.4 3.9 4 9.1-9.1 2.4 2.4-11.5 11.4z" fill="#fff"/></svg>
+            Secure
+        </h2>
+        <p>Secure data usage and enforce governance by intermediating all input and output flows</p>
+    </div>
+    <div class="feature-item">
+        <h2>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 299.442 299.636" height="319.612"><path fill="#325c80" d="M150.385 299.636C64.714 299.636 0 228.692 0 150.45 0 60.69 74.632 0 149.23 0c89.206 0 150.212 73.662 150.212 148.637 0 91.638-75.26 151-149.057 151z"/><path d="M200.456 206.557c17.576-.44 32.993-11.385 38.998-31.406 4.83-15.504-.944-29.427-12.223-40.826-3.783-3.397-8.927-6.68-17.44-9.683-.44-9.3-1.83-15.533-4.916-22.576-8.584-18.628-29.568-28.376-43.243-27.91-12.027 1.175-32.055 5.964-42.98 26.508-3.045 5.932-5.178 12.023-6.472 25.34-7.02-1.025-14.06-2.105-20.697-1.976-13.372.436-38.84 13.433-38.133 42.743 1.542 19.638 19.336 38.598 41.06 39.786zm-110.638 11.78c-18.025 0-47.866-17.78-47.866-51.435 0-28.084 12.49-42.543 33.17-51.435 10.848-4.186 12.78-4.97 26.74-3.47 5.83-28.38 27.284-47.09 58.25-49.444 17.16-.722 34.35 7.016 45.334 18.593 10.823 12.602 14.276 24.48 15.387 34.358 20.24 11.767 32.873 25.23 31.9 52.256 0 19.73-15.265 46.46-44.287 50.58z" fill="#fff"/></svg>
+            Control
+        </h2>
+        <p>Control and optimize the workload behavior by orchestrating data functions and data mobility. Optimize performance using technologies such as caching, copies and more</p>
+    </div>
+    <div class="feature-item">
+        <h2>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 59.5 59.5"><circle cx="29.8" cy="29.8" r="29.8" fill="#8cc441"/><g fill="#fff"><path d="M25.1 12.3a12.76 12.76 0 0 0-12.8 12.8 12.76 12.76 0 0 0 12.8 12.8 12.76 12.76 0 0 0 12.8-12.8c0-7-5.7-12.8-12.8-12.8zm0 24.4a11.61 11.61 0 0 1-11.6-11.6 11.61 11.61 0 0 1 11.6-11.6 11.61 11.61 0 0 1 11.6 11.6 11.61 11.61 0 0 1-11.6 11.6zm10.443 2.342l3.465-3.465 8.132 8.132-3.465 3.465z"/><circle cx="35.6" cy="35.6" r="1.2"/></g></svg>
+            Observe (future)
+        </h2>
+        <p>Provides instrumentation to observe the use of data by enabling the seamless platform-level collection of metrics, logs, audit and data provenance information </p>
+    </div>
+</div>
+
+<!-- Learn More -->
+<div class="top-hr">
+    <div class="feature-item">
+        <h1 align=center>
+            Learn more
+        </h1>
+    </div>
+</div>
+    <div class="top-hr">
+    <div class="feature-item-link">
+        <a href="https://mesh-for-data.github.io/mesh-for-data/dev/static/mesh-for-data-whitepaper-2021.pdf">
+            <h2>
+            <center>Whitepaper</center>
+            </h2>
+            <p>Outline our vision, the motivation, main ideas and the principles upon which Mesh for Data is built</p>
+        </a>
+    </div>
+    <div class="feature-item-link">
+        <a href="https://medium.com/mesh-for-data">
+            <h2>
+            <center>Blog</center>
+            </h2>
+            <p>Additional reading on Mesh for Data concepts, use cases, components and more</p>
+        </a>
+    </div>
+</div>
+
+<div class="top-hr">
+    <div class="hr">
+    </div>
+</div>
+
 {% endblock %} {% block content %}{% endblock %} {% block footer %}{% endblock %}
