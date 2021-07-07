@@ -2,6 +2,10 @@
 # The configuration happens via the specified helm chart. The helm chart may contain e.g.
 # a configmap with configuration that gets loaded by the service. Or possibly also a pod
 # that executes a curl command to configure the service via REST.
+# For this example let's assume that the helm chart deploys config maps that are read by the
+# service. Once the configuration is loaded the service sets a label "configured: SUCCESS" in
+# this configmap. If the service could not be configured the label will be "configured: FAILED".
+# An error message will be set in the 'error' annotation.
 # This service handles all the reads within the cluster.
 apiVersion: app.m4d.ibm.com/v1alpha2
 kind: M4DModule
@@ -23,6 +27,10 @@ spec:
     name: ghcr.io/mesh-for-data/read-module-conf:0.1.0
     values: {}
   statusIndicators:
+  - kind: ConfigMap
+    successCondition: metadata.labels.configured == SUCCEEDED
+    failureCondition: metadata.labels.configured == FAILED
+    errorMessage: metadata.annotations.error
   capabilities:
   - capability: read
     scope: dataset
