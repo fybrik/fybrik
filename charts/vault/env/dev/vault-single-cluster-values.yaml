@@ -20,7 +20,6 @@ vault:
       - mountPath: /etc/config/poststart.sh
         subPath: poststart.sh
         name: configvolume
-        readOnly: false
     extraInitContainers:
       - name: kubesecrets-plugin
         image: ghcr.io/mesh-for-data/vault-plugin-secrets-kubernetes-reader:latest
