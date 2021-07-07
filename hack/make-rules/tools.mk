@@ -72,7 +72,7 @@ $(TOOLBIN)/protoc-gen-lint:
 
 INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-deepcopy
 $(TOOLBIN)/protoc-gen-deepcopy:
-	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go install istio.io/tools/cmd/protoc-gen-deepcopy@1.8.2
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get -d istio.io/tools/cmd/protoc-gen-deepcopy@1.8.2
 	$(call post-install-check)
 	   
 # INSTALL_TOOLS += $(TOOLBIN)/oc
@@ -82,7 +82,7 @@ $(TOOLBIN)/oc:
 
 INSTALL_TOOLS += $(TOOLBIN)/addlicense
 $(TOOLBIN)/addlicense:
-	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go install github.com/google/addlicense
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get -d github.com/google/addlicense
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/misspell
