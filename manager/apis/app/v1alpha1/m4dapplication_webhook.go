@@ -7,6 +7,10 @@ import (
 	"errors"
 	log "log"
 
+	"encoding/json"
+	"path/filepath"
+
+	"github.com/xeipuuv/gojsonschema"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -46,10 +50,51 @@ func (r *M4DApplication) ValidateDelete() error {
 	return nil
 }
 
+// func (r *M4DApplication) validateM4DApplication() error {
+// 	var allErrs field.ErrorList
+// 	if err := r.validateM4DApplicationSpec(); err != nil {
+// 		allErrs = append(allErrs, err...)
+// 	}
+
+// 	if len(allErrs) == 0 {
+// 		return nil
+// 	}
+
+// 	return apierrors.NewInvalid(
+// 		schema.GroupKind{Group: "app.m4d.ibm.com", Kind: "M4DApplication"},
+// 		r.Name, allErrs)
+// }
+
 func (r *M4DApplication) validateM4DApplication() error {
-	var allErrs field.ErrorList
-	if err := r.validateM4DApplicationSpec(); err != nil {
-		allErrs = append(allErrs, err...)
+	var allErrs []*field.Error
+
+	// Convert M4D application Go struct to JSON
+	applicationJSON, err := json.Marshal(r)
+	if err != nil {
+		return err
+	}
+
+	// Validate against taxonomy
+	path, err := filepath.Abs("/tmp/taxonomy/application.values.schema.json")
+	if err != nil {
+		return err
+	}
+
+	taxonomyLoader := gojsonschema.NewReferenceLoader("file://" + path)
+	documentLoader := gojsonschema.NewStringLoader(string(applicationJSON))
+	result, err := gojsonschema.Validate(taxonomyLoader, documentLoader)
+	if err != nil {
+		return err
+	}
+
+	if result.Valid() {
+		log.Printf("This M4D application is valid\n")
+	} else {
+		log.Printf("This M4D application is not valid. see errors :\n")
+		for _, desc := range result.Errors() {
+			log.Printf("- %s\n", desc)
+			allErrs = append(allErrs, field.Invalid(field.NewPath(desc.Field()), desc.Value(), desc.Description()))
+		}
 	}
 
 	if len(allErrs) == 0 {
@@ -61,19 +106,19 @@ func (r *M4DApplication) validateM4DApplication() error {
 		r.Name, allErrs)
 }
 
-func (r *M4DApplication) validateM4DApplicationSpec() []*field.Error {
-	// The field helpers from the kubernetes API machinery help us return nicely
-	// structured validation errors.
+// func (r *M4DApplication) validateM4DApplicationSpec() []*field.Error {
+// 	// The field helpers from the kubernetes API machinery help us return nicely
+// 	// structured validation errors.
 
-	var allErrs []*field.Error
-	specField := field.NewPath("spec").Child("data")
-	for i, dataSet := range r.Spec.Data {
-		if err := r.validateDataContext(specField.Index(i), &dataSet); err != nil {
-			allErrs = append(allErrs, err...)
-		}
-	}
-	return allErrs
-}
+// 	var allErrs []*field.Error
+// 	specField := field.NewPath("spec").Child("data")
+// 	for i, dataSet := range r.Spec.Data {
+// 		if err := r.validateDataContext(specField.Index(i), &dataSet); err != nil {
+// 			allErrs = append(allErrs, err...)
+// 		}
+// 	}
+// 	return allErrs
+// }
 
 func (r *M4DApplication) validateDataContext(path *field.Path, dataSet *DataContext) []*field.Error {
 	var allErrs []*field.Error
