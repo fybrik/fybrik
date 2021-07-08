@@ -106,8 +106,11 @@ func deployDeleteAndCheck(namespace string, shouldSucceed bool) {
 	// Set the namespace to the system namespace so that the plotter will be successfully created
 	plotter.SetNamespace(utils.GetSystemNamespace())
 
-	// Create the Plotter
-	Expect(k8sClient.Create(context.Background(), plotter)).Should(Succeed())
+	// Create the Plotter.  Need to wait in case it's still in the process of being deleted from a previous test.
+	By("Expecting the plotter to be created.")
+	Eventually(func() error {
+		return k8sClient.Create(context.Background(), plotter)
+	}, timeout, interval).Should(Succeed())
 
 	// Don't forget to clean up after tests finish
 	plotterKey := client.ObjectKeyFromObject(plotter)
@@ -117,7 +120,7 @@ func deployDeleteAndCheck(namespace string, shouldSucceed bool) {
 		_ = k8sClient.Delete(context.Background(), plotter)
 	}()
 
-	By("Expecting plotter to be created")
+	By("Expecting to find the plotter we created")
 	Eventually(func() error {
 		return k8sClient.Get(context.Background(), plotterKey, plotter)
 	}, timeout, interval).Should(Succeed())
@@ -137,6 +140,9 @@ func deployDeleteAndCheck(namespace string, shouldSucceed bool) {
 		Expect(k8sClient.Delete(context.Background(), delPlotter)).Should(Succeed())
 	} else {
 		Expect(k8sClient.Delete(context.Background(), delPlotter)).ShouldNot(Succeed())
+
+		// Cleanup - from correct namespace
+		Expect(k8sClient.Delete(context.Background(), plotter)).Should(Succeed())
 	}
 }
 
@@ -167,8 +173,8 @@ var _ = Describe("Plotter Controller Illegal Delete Event", func() {
 			// Add any teardown steps that needs to be executed after each test
 		})
 
-		// Plotter is successfully deleted when deletion is done from m4d-system only
-		It("Test Plotter Deletion from Correct Namespace", func() {
+		// Plotter is NOT deleted when deletion is done from a namespace other than m4d-system
+		It("Test Plotter Deletion from Bad Namespace", func() {
 			deployDeleteAndCheck("default", false)
 		})
 	})
