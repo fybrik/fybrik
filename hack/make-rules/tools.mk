@@ -62,7 +62,12 @@ $(TOOLBIN)/protoc-gen-doc:
 
 INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-go
 $(TOOLBIN)/protoc-gen-go:
-	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go install github.com/golang/protobuf/protoc-gen-go
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27
+	$(call post-install-check)
+
+INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-go-grpc
+$(TOOLBIN)/protoc-gen-go-grpc:
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-lint
