@@ -16,7 +16,6 @@ metadata:
     version: 0.0.1
     name: arrow-flight-common-transform-conf
 spec:
-  multi-user: true
   chart:
     name: ghcr.io/mesh-for-data/m4d-arrow-flight-common-transform-conf:0.1.0
     values: {}

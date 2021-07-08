@@ -7,7 +7,6 @@ metadata:
     version: 0.0.1
     name: implicit-copy-batch
 spec:
-  multi-user: false # Could be multi user depending on naming strategy of deployments
   chart:
     name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
   statusIndicators:

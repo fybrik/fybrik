@@ -7,7 +7,6 @@ metadata:
     version: 0.0.1
     name: credit-card-detector
 spec:
-  multi-user: false
   chart:
     name: ghcr.io/mesh-for-data/cc-detector:0.1.0
   statusIndicators: # Indicators for a K8s deployment

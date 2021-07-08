@@ -8,7 +8,6 @@ metadata:
     name: network-policy
 spec:
   description: "This module knows how to configure a kubernetes network policy"
-  multi-user: true
   confChart:
     name: ghcr.io/mesh-for-data/networkpolicy-isolation:0.1.0
     values: {}

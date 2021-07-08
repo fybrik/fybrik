@@ -80,7 +80,7 @@ spec:
       parameters:
         api:
           service:
-            assetId: "out1"
+            assetId: "out1" # out1 is an artificial output asset that is written by the application
             interfaceDetails:
               protocol: arrow-flight
               dataformat: arrow
@@ -96,7 +96,7 @@ spec:
       parameters:
         api:
           service:
-            assetId: "out1"
+            assetId: "out1" # out1 is an artificial output asset that is written by the application
             interfaceDetails:
               protocol: arrow-flight
               dataformat: arrow

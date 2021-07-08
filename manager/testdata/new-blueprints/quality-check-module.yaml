@@ -7,7 +7,6 @@ metadata:
     version: 0.0.1
     name: quality-check
 spec:
-  multi-user: true
   chart:
     name: ghcr.io/mesh-for-data/m4d-quality-check:0.1.0
   statusIndicators: # Indicators for a K8s job

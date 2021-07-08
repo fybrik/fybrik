@@ -22,7 +22,6 @@ spec:
   # access the module service - if it is a multi-user module then
   # the service name will be fixed and will be taken from
   # M4DModule.Capabilities.Api.endpoint.host.
-  multi-user: true
   confChart:
     name: ghcr.io/mesh-for-data/read-module-conf:0.1.0
     values: {}
