@@ -10,11 +10,6 @@ $(TOOLBIN)/controller-gen:
 	GOBIN=$(ABSTOOLBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.5.0
 	$(call post-install-check)
 
-INSTALL_TOOLS += $(TOOLBIN)/crd-ref-docs
-$(TOOLBIN)/crd-ref-docs:
-	GOBIN=$(ABSTOOLBIN) go install github.com/elastic/crd-ref-docs@v0.0.5
-	$(call post-install-check)
-
 INSTALL_TOOLS += $(TOOLBIN)/dlv
 $(TOOLBIN)/dlv:
 	GOBIN=$(ABSTOOLBIN) go install github.com/go-delve/delve/cmd/dlv@v1.4.1
@@ -73,11 +68,6 @@ $(TOOLBIN)/protoc-gen-go-grpc:
 INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-lint
 $(TOOLBIN)/protoc-gen-lint:
 	GOBIN=$(ABSTOOLBIN) go install github.com/ckaznocha/protoc-gen-lint@v0.2.1
-	$(call post-install-check)
-
-INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-deepcopy
-$(TOOLBIN)/protoc-gen-deepcopy:
-	GOBIN=$(ABSTOOLBIN) go get -d istio.io/tools/cmd/protoc-gen-deepcopy@1.8.2
 	$(call post-install-check)
 	   
 # INSTALL_TOOLS += $(TOOLBIN)/oc
