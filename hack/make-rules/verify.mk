@@ -38,11 +38,6 @@ CODE_MAINT += tidy
 tidy:
 	go mod tidy
 
-#CODE_MAINT += addlicense
-.PHONY: addlicense
-addlicense: $(TOOLBIN)/addlicense
-	$(ABSTOOLBIN)/addlicense -ignorefile .addlicenseignore -f $(ROOT_DIR)/hack/boilerplate.txt .
-
 GOLINT_LINTERS ?= \
 	--disable-all \
 	--enable=deadcode \

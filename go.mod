@@ -62,7 +62,6 @@ require (
 )
 
 replace (
-	github.com/google/addlicense => github.com/the-mesh-for-data/addlicense v0.0.0-20200913135744-636c44b42906
 	github.com/onsi/gomega => github.com/onsi/gomega v1.10.0
 	helm.sh/helm/v3 v3.6.2 => github.com/mesh-for-data/helm/v3 v3.6.2-m4d
 )
