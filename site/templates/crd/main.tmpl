@@ -7,10 +7,7 @@ hide:
 
 Packages:
 {{range .Groups}}
-- {{.Group}}/{{.Version}}
-  {{- range .Kinds}}
-    - [{{.Name}}](#{{.Name | lower}})
-  {{- end }}
+- [{{.Group}}/{{.Version}}](#{{ anchorize (printf "%s/%s" .Group .Version) }})
 {{- end -}}{{/* range .Groups */}}
 
 {{- range .Groups }}
@@ -20,19 +17,19 @@ Packages:
 
 Resource Types:
 {{range .Kinds}}
-- [{{.Name}}](#{{.Name | lower}})
+- [{{.Name}}](#{{ anchorize .Name }})
 {{end}}{{/* range .Kinds */}}
 
 {{range .Kinds}}
 {{$kind := .}}
 ### {{.Name}}
-<sup><sup>[↩ Parent](#{{$group.Group | lower}}/{{$group.Version | lower}} )</sup></sup>
+<sup><sup>[↩ Parent](#{{ anchorize (printf "%s/%s" $group.Group $group.Version) }} )</sup></sup>
 
 {{range .Types}}
 
 {{if not .IsTopLevel}}
 #### {{.Name}}
-{{if .ParentKey}}<sup><sup>[↩ Parent]({{.ParentKey}})</sup></sup>{{end}}
+{{if .ParentKey}}<sup><sup>[↩ Parent](#{{.ParentKey}})</sup></sup>{{end}}
 {{end}}
 
 
@@ -70,9 +67,29 @@ Resource Types:
       {{- end -}}
       {{- range .Fields -}}
       <tr>
-        <td><b>{{if .TypeKey}}<a href="{{.TypeKey}}">{{.Name}}</a>{{else}}{{.Name}}{{end}}</b></td>
+        <td><b>{{if .TypeKey}}<a href="#{{.TypeKey}}">{{.Name}}</a>{{else}}{{.Name}}{{end}}</b></td>
         <td>{{.Type}}</td>
-        <td>{{.Description}}</td>
+        <td>
+          {{.Description}}<br/>
+          {{- if or .Schema.Format .Schema.Enum .Schema.Default .Schema.Minimum .Schema.Maximum }}
+          <br/>
+          {{- end}}
+          {{- if .Schema.Format }}
+            <i>Format</i>: {{ .Schema.Format }}<br/>
+          {{- end }}
+          {{- if .Schema.Enum }}
+            <i>Enum</i>: {{ .Schema.Enum | toStrings | join ", " }}<br/>
+          {{- end }}
+          {{- if .Schema.Default }}
+            <i>Default</i>: {{ .Schema.Default }}<br/>
+          {{- end }}
+          {{- if .Schema.Minimum }}
+            <i>Minimum</i>: {{ .Schema.Minimum }}<br/>
+          {{- end }}
+          {{- if .Schema.Maximum }}
+            <i>Maximum</i>: {{ .Schema.Maximum }}<br/>
+          {{- end }}
+        </td>
         <td>{{.Required}}</td>
       </tr>
       {{- end -}}
