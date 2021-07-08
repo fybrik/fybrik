@@ -7,12 +7,17 @@ endef
 
 INSTALL_TOOLS += $(TOOLBIN)/controller-gen
 $(TOOLBIN)/controller-gen:
-	GOBIN=$(ABSTOOLBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.5.0
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.5.0
+	$(call post-install-check)
+
+INSTALL_TOOLS += $(TOOLBIN)/crd-ref-docs
+$(TOOLBIN)/crd-ref-docs:
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get github.com/elastic/crd-ref-docs@v0.0.5
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/dlv
 $(TOOLBIN)/dlv:
-	GOBIN=$(ABSTOOLBIN) go install github.com/go-delve/delve/cmd/dlv@v1.4.1
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get github.com/go-delve/delve/cmd/dlv@v1.4.1
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/helm
@@ -22,7 +27,7 @@ $(TOOLBIN)/helm:
 
 INSTALL_TOOLS += $(TOOLBIN)/golangci-lint
 $(TOOLBIN)/golangci-lint:
-	GOBIN=$(ABSTOOLBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.31.0
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.31.0
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/kubebuilder
@@ -37,7 +42,7 @@ $(TOOLBIN)/kustomize:
 
 INSTALL_TOOLS += $(TOOLBIN)/kind
 $(TOOLBIN)/kind:
-	GOBIN=$(ABSTOOLBIN) go install sigs.k8s.io/kind@v0.11.1
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get sigs.k8s.io/kind@v0.11.1
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/istioctl
@@ -52,23 +57,24 @@ $(TOOLBIN)/protoc:
 
 INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-doc
 $(TOOLBIN)/protoc-gen-doc:
-	GOBIN=$(ABSTOOLBIN) go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@v1.4.1
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get -u github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@v1.4.1
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-go
 $(TOOLBIN)/protoc-gen-go:
-	go get -d google.golang.org/protobuf/cmd/protoc-gen-go@v1.27
-	GOBIN=$(ABSTOOLBIN) go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27
-	$(call post-install-check)
-
-INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-go-grpc
-$(TOOLBIN)/protoc-gen-go-grpc:
-	GOBIN=$(ABSTOOLBIN) go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
+	# FIXME: using `go install` to fix broken deps but needs to be reverted back to `go get`
+	# GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get github.com/golang/protobuf/protoc-gen-go@v1.3.5
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go install github.com/golang/protobuf/protoc-gen-go
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-lint
 $(TOOLBIN)/protoc-gen-lint:
-	GOBIN=$(ABSTOOLBIN) go install github.com/ckaznocha/protoc-gen-lint@v0.2.1
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get github.com/ckaznocha/protoc-gen-lint@v0.2.1
+	$(call post-install-check)
+
+INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-deepcopy
+$(TOOLBIN)/protoc-gen-deepcopy:
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get istio.io/tools/cmd/protoc-gen-deepcopy@1.8.2
 	$(call post-install-check)
 	   
 # INSTALL_TOOLS += $(TOOLBIN)/oc
@@ -76,9 +82,14 @@ $(TOOLBIN)/oc:
 	cd $(TOOLS_DIR); ./install_oc.sh
 	$(call post-install-check)
 
+INSTALL_TOOLS += $(TOOLBIN)/addlicense
+$(TOOLBIN)/addlicense:
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get github.com/google/addlicense
+	$(call post-install-check)
+
 INSTALL_TOOLS += $(TOOLBIN)/misspell
 $(TOOLBIN)/misspell:
-	GOBIN=$(ABSTOOLBIN) go install github.com/client9/misspell/cmd/misspell@v0.3.4
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get github.com/client9/misspell/cmd/misspell@v0.3.4
 	$(call post-install-check)
 
 $(TOOLBIN)/license_finder:
@@ -97,7 +108,7 @@ $(TOOLBIN)/vault:
 
 INSTALL_TOOLS += $(TOOLBIN)/oapi-codegen
 $(TOOLBIN)/oapi-codegen:
-	GOBIN=$(ABSTOOLBIN) go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.4.2
+	GOBIN=$(ABSTOOLBIN) GO111MODULE=on go get github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.4.2
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/openapi2crd

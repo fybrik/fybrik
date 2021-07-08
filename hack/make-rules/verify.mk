@@ -11,7 +11,7 @@ define license_java
 	($(ABSTOOLBIN)/license_finder || true)
 endef
 
-GO_VERSION:=1.16
+GO_VERSION:=1.13
 CODE_MAINT += go-version
 .PHONY: go-version
 go-version:
@@ -37,6 +37,11 @@ CODE_MAINT += tidy
 .PHONY: tidy
 tidy:
 	go mod tidy
+
+#CODE_MAINT += addlicense
+.PHONY: addlicense
+addlicense: $(TOOLBIN)/addlicense
+	$(ABSTOOLBIN)/addlicense -ignorefile .addlicenseignore -f $(ROOT_DIR)/hack/boilerplate.txt .
 
 GOLINT_LINTERS ?= \
 	--disable-all \
