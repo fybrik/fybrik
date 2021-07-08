@@ -57,6 +57,7 @@ $(TOOLBIN)/protoc-gen-doc:
 
 INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-go
 $(TOOLBIN)/protoc-gen-go:
+	go get -d google.golang.org/protobuf/cmd/protoc-gen-go@v1.27
 	GOBIN=$(ABSTOOLBIN) go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27
 	$(call post-install-check)
 
