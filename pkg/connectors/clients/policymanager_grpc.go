@@ -16,8 +16,6 @@ import (
 var _ PolicyManager = (*grpcPolicyManager)(nil)
 
 type grpcPolicyManager struct {
-	pb.UnimplementedPolicyManagerServiceServer
-
 	name       string
 	connection *grpc.ClientConn
 	client     pb.PolicyManagerServiceClient
