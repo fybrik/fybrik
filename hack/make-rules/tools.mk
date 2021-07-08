@@ -77,7 +77,7 @@ $(TOOLBIN)/oc:
 
 INSTALL_TOOLS += $(TOOLBIN)/addlicense
 $(TOOLBIN)/addlicense:
-	GOBIN=$(ABSTOOLBIN) go get -d github.com/google/addlicense
+	GOBIN=$(ABSTOOLBIN) go install github.com/google/addlicense@latest
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/misspell
