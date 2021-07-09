@@ -24,7 +24,7 @@ var _ = Describe("StreamTransfer Controller", func() {
 	const timeout = time.Second * 30
 	const interval = time.Millisecond * 100
 	const streamtransferName = "streamtransfer-sample"
-	const streamtransferNameSpace = "default"
+	const streamtransferNameSpace = "m4d-blueprints"
 
 	BeforeEach(func() {
 		// Add any setup steps that needs to be executed before each test

@@ -5,7 +5,7 @@ apiVersion: motion.m4d.ibm.com/v1alpha1
 kind: BatchTransfer
 metadata:
   name: batchtransfer-sample
-  namespace: default
+  namespace: m4d-blueprints
 spec:
   source:
     s3:

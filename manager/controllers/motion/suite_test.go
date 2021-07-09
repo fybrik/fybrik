@@ -4,6 +4,7 @@
 package motion
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -16,6 +17,8 @@ import (
 	motionv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/motion/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -103,6 +106,12 @@ var _ = BeforeSuite(func(done Done) {
 		}()
 
 		k8sClient = mgr.GetClient()
+		err = k8sClient.Create(context.Background(), &v1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "m4d-blueprints",
+			},
+		})
+		Expect(err).ToNot(HaveOccurred())
 	}
 
 	Expect(k8sClient).ToNot(BeNil())
@@ -120,3 +129,4 @@ var _ = AfterSuite(func() {
 	err := testEnv.Stop()
 	Expect(err).ToNot(HaveOccurred())
 })
+
