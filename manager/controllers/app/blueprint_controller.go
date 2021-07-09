@@ -352,7 +352,7 @@ func (r *BlueprintReconciler) getExpectedResults(kind string) (*app.ResourceStat
 	ctx := context.Background()
 
 	var moduleList app.M4DModuleList
-	if err := r.List(ctx, &moduleList); err != nil {
+	if err := r.List(ctx, &moduleList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
 		return nil, err
 	}
 	for _, module := range moduleList.Items {

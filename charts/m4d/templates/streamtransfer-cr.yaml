@@ -1,0 +1,16 @@
+{{- if .Values.worker.enabled }}
+{{- if .Values.clusterScoped }}
+# ClusterRole streamtransfer-editor allows managing streamtransfers
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: streamtransfer-editor
+rules:
+- apiGroups: ["motion.m4d.ibm.com"]
+  resources: ["streamtransfers", "streamtransfers/finalizers"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["motion.m4d.ibm.com"]
+  resources: ["streamtransfers/status"]
+  verbs: ["get", "update", "patch"]
+{{- end }}
+{{- end }}

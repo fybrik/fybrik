@@ -1,0 +1,16 @@
+{{- if .Values.worker.enabled }}
+{{- if .Values.clusterScoped }}
+# ClusterRole batchtransfer-editor allows managing batchtransfers
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: batchtransfer-editor
+rules:
+- apiGroups: ["motion.m4d.ibm.com"]
+  resources: ["batchtransfers", "batchtransfers/finalizers"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["motion.m4d.ibm.com"]
+  resources: ["batchtransfers/status"]
+  verbs: ["get", "update", "patch"]
+{{- end }}
+{{- end }}
