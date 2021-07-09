@@ -60,6 +60,10 @@ func (r *M4DApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		log.V(0).Info("The reconciled object was not found")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
+
+	// Call validate update function from webhook (only if webhooks are disabled - check flag )
+	//ValidateUpdate()
+
 	if err := r.reconcileFinalizers(applicationContext); err != nil {
 		log.V(0).Info("Could not reconcile finalizers " + err.Error())
 		return ctrl.Result{}, err
