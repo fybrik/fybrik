@@ -19,6 +19,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+
+	
 )
 
 func (r *M4DApplication) SetupWebhookWithManager(mgr ctrl.Manager) error {
@@ -132,32 +134,32 @@ func (r *M4DApplication) validateM4DApplication() error {
 // 	return allErrs
 // }
 
-func (r *M4DApplication) validateDataContext(path *field.Path, dataSet *DataContext) []*field.Error {
-	var allErrs []*field.Error
-	interfacePath := path.Child("Requirements", "Interface")
-	if err := validateProtocol(dataSet.Requirements.Interface.Protocol); err != nil {
-		allErrs = append(allErrs, field.Invalid(interfacePath.Child("Protocol"), &dataSet.Requirements.Interface.Protocol, err.Error()))
-	}
-	if err := validateDataFormat(dataSet.Requirements.Interface.DataFormat); err != nil {
-		allErrs = append(allErrs, field.Invalid(interfacePath.Child("DataFormat"), &dataSet.Requirements.Interface.DataFormat, err.Error()))
-	}
-	return allErrs
-}
+// func (r *M4DApplication) validateDataContext(path *field.Path, dataSet *DataContext) []*field.Error {
+// 	var allErrs []*field.Error
+// 	interfacePath := path.Child("Requirements", "Interface")
+// 	if err := validateProtocol(dataSet.Requirements.Interface.Protocol); err != nil {
+// 		allErrs = append(allErrs, field.Invalid(interfacePath.Child("Protocol"), &dataSet.Requirements.Interface.Protocol, err.Error()))
+// 	}
+// 	if err := validateDataFormat(dataSet.Requirements.Interface.DataFormat); err != nil {
+// 		allErrs = append(allErrs, field.Invalid(interfacePath.Child("DataFormat"), &dataSet.Requirements.Interface.DataFormat, err.Error()))
+// 	}
+// 	return allErrs
+// }
 
-func validateProtocol(protocol string) error {
-	switch protocol {
-	case "s3", "kafka", "jdbc-db2", "m4d-arrow-flight":
-		return nil
-	default:
-		return errors.New("Value should be one of these: s3, kafka, jdbc-db2, m4d-arrow-flight")
-	}
-}
+// func validateProtocol(protocol string) error {
+// 	switch protocol {
+// 	case "s3", "kafka", "jdbc-db2", "m4d-arrow-flight":
+// 		return nil
+// 	default:
+// 		return errors.New("Value should be one of these: s3, kafka, jdbc-db2, m4d-arrow-flight")
+// 	}
+// }
 
-func validateDataFormat(format string) error {
-	switch format {
-	case "parquet", "table", "csv", "json", "avro", "orc", "binary", "arrow":
-		return nil
-	default:
-		return errors.New("Value should be one of these: parquet, table, csv, json, avro, orc, binary, arrow")
-	}
-}
+// func validateDataFormat(format string) error {
+// 	switch format {
+// 	case "parquet", "table", "csv", "json", "avro", "orc", "binary", "arrow":
+// 		return nil
+// 	default:
+// 		return errors.New("Value should be one of these: parquet, table, csv, json, avro, orc, binary, arrow")
+// 	}
+// }

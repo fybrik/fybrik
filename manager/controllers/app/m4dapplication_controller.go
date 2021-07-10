@@ -62,7 +62,7 @@ func (r *M4DApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	}
 
 	// Call validate update function from webhook (only if webhooks are disabled - check flag )
-	//ValidateUpdate()
+	// ValidateUpdate()
 
 	if err := r.reconcileFinalizers(applicationContext); err != nil {
 		log.V(0).Info("Could not reconcile finalizers " + err.Error())
