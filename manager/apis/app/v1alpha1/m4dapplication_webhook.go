@@ -10,6 +10,8 @@ import (
 	"encoding/json"
 	"path/filepath"
 
+	"io/ioutil"
+
 	"github.com/xeipuuv/gojsonschema"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -72,6 +74,16 @@ func (r *M4DApplication) validateM4DApplication() error {
 	applicationJSON, err := json.Marshal(r)
 	if err != nil {
 		return err
+	}
+
+	// Read and print M4D application (debug)
+	log.Printf("m4d application JSON is ")
+	log.Printf(string(applicationJSON))
+
+	// Read and print taxonomy file (debug)
+	if data, err := ioutil.ReadFile("/tmp/taxonomy/application.values.schema.json"); err == nil {
+		log.Printf("Application taxonomy file contents are ")
+		log.Printf(string(data))
 	}
 
 	// Validate against taxonomy
