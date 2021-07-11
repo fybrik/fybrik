@@ -27,7 +27,11 @@ func deployAndCheck(namespace string, shouldSucceed bool) {
 	plotter.SetNamespace(namespace)
 
 	// Create the Plotter
-	Expect(k8sClient.Create(context.Background(), plotter)).Should(Succeed())
+	// Create the Plotter.  Need to wait in case it's still in the process of being deleted from a previous test.
+	By("Expecting the plotter to be created.")
+	Eventually(func() error {
+		return k8sClient.Create(context.Background(), plotter)
+	}, timeout, interval).Should(Succeed())
 
 	// Don't forget to clean up after tests finish
 	plotterKey := client.ObjectKeyFromObject(plotter)
