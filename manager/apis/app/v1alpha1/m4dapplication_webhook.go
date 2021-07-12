@@ -4,12 +4,10 @@
 package v1alpha1
 
 import (
-	log "log"
-
 	"encoding/json"
-	"path/filepath"
-
 	"io/ioutil"
+	log "log"
+	"path/filepath"
 
 	"github.com/xeipuuv/gojsonschema"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
