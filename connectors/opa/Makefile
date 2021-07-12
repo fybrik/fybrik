@@ -1,32 +1,32 @@
 ROOT_DIR := ../..
+DOCKER_NAME = opa-connector
+
 include $(ROOT_DIR)/Makefile.env
-DOCKER_NAME=opa-connector
-DOCKER_CONTEXT=$(ROOT_DIR)
-DOCKER_FILE=$(DOCKER_CONTEXT)/connectors/opa/Dockerfile
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 
-OPA_PATH=${ABSTOOLBIN}/opa
-OPA_DEFAULT_POLICY_FILE=${ROOT_DIR}/third_party/opa/data-and-policies/user_policies.rego
-OPA_DEFAULT_POLICY_FOLDER=${ROOT_DIR}/third_party/opa/data-and-policies/data_policies
+KUBE_NAMESPACE ?= m4d-system
+
 NEED_TEST_COVERAGE_STATISTICS=1
 NEED_TEST_COVERAGE_STATISTICS_IN_HTML=0
 
 docker-build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o opa-connector main.go
-	docker build . -t $(IMG) -f Dockerfile
+	docker build . -t $(IMG)
 	rm opa-connector
 
-.PHONY: opaserver
-opaserver:
-	{ $(OPA_PATH) run --server $(OPA_DEFAULT_POLICY_FILE) $(OPA_DEFAULT_POLICY_FOLDER) > output-opa.log 2>&1 & echo $$! >> opa_pids.txt; }
+.PHONY: deploy
+deploy:
+	helm install m4d-opa $(ROOT_DIR)/charts/m4d \
+		--set coordinator.enabled=false --set worker.enabled=false --set manager.enabled=false \
+		--set opaServer.enabled=true --set opaConnector.enabled=true \
+		--set opaConnector.image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(DOCKER_NAME):${DOCKER_TAGNAME} \
+		--set coordinator.catalogConnectorURL=${CATALOG_CONNECTOR_URL}
+		-n $(KUBE_NAMESPACE)
 
-.PHONY: opaserver-terminate
-opaserver-terminate:
-	-kill -9 $$( cat opa_pids.txt ) && rm -f opa_pids.txt
+.PHONY: undeploy
+undeploy:
+	helm uninstall m4d-opa -n $(KUBE_NAMESPACE)
 
-.PHONY: opaserver-clean
-opaserver-clean:
-	rm -f output-opa.log
 
 .PHONY: build
 build:
@@ -57,21 +57,24 @@ run: opaserver
 terminate: opaserver-terminate
 	kill -9 $$( cat pids.txt ); rm -f pids.txt
 
-IMAGE := opa-connector
+# OPA server targets
 
-kustomization.yaml: kustomization.yaml.in
-	cp $< $@
+OPA_PATH=${ABSTOOLBIN}/opa
+OPA_DEFAULT_POLICY_FILE=${ROOT_DIR}/third_party/opa/data-and-policies/user_policies.rego
+OPA_DEFAULT_POLICY_FOLDER=${ROOT_DIR}/third_party/opa/data-and-policies/data_policies
 
-.PHONY: deploy
-deploy: kustomization.yaml
-	kustomize edit set image $(IMAGE)=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(IMAGE):${DOCKER_TAGNAME}
-	kustomize build . | kubectl apply -f -
+.PHONY: opaserver
+opaserver:
+	{ $(OPA_PATH) run --server $(OPA_DEFAULT_POLICY_FILE) $(OPA_DEFAULT_POLICY_FOLDER) > output-opa.log 2>&1 & echo $$! >> opa_pids.txt; }
 
-.PHONY: undeploy
-undeploy: kustomization.yaml
-	kustomize edit set image $(IMAGE)=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(IMAGE):${DOCKER_TAGNAME}
-	kustomize build . | kubectl delete -f -
+.PHONY: opaserver-terminate
+opaserver-terminate:
+	-kill -9 $$( cat opa_pids.txt ) && rm -f opa_pids.txt
 
-.PHONY: charts
-charts: kustomization.yaml
-	cp opa_connector.yaml ${ROOT_DIR}/charts/m4d/templates/.
+.PHONY: opaserver-clean
+opaserver-clean:
+	rm -f output-opa.log
+
+
+-include ${ROOT_DIR}/.env
+.EXPORT_ALL_VARIABLES:

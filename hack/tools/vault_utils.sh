@@ -4,7 +4,6 @@
 
 : ${PORT_TO_FORWARD:=8200}
 
-
 # Enable userpass auth method
 # $1 user name
 # $2 password
@@ -50,6 +49,7 @@ enable_k8s_auth() {
         kubectl get secret $2 -n $3 -o jsonpath="{.data['ca\.crt']}" | base64 --decode > tmp/ca.crt
 
         # Configure the k8s sa auth
+        # TODO: Add issuer for kubernetes versions greater than 1.20
         echo "configuring k8s auth"
         bin/vault write auth/"$1"/config \
         token_reviewer_jwt="$TOKEN_REVIEW_JWT" \

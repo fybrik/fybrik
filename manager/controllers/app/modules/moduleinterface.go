@@ -240,15 +240,14 @@ func (m *Selector) SelectCluster(item DataInfo, clusters []multicluster.Cluster)
 // TODO Think about getting rid of one or the other and reuse
 func CatalogDatasetToDataDetails(response *pb.CatalogDatasetInfo) (*DataDetails, error) {
 	details := response.GetDetails()
+	if details == nil {
+		return nil, errors.New("no metadata found for " + response.DatasetId)
+	}
 	protocol, err := utils.GetProtocol(details)
 	if err != nil {
 		return nil, err
 	}
-	format, err := utils.GetDataFormat(details)
-	if err != nil {
-		return nil, err
-	}
-
+	format := details.DataFormat
 	connection := serde.NewArbitrary(details.DataStore)
 
 	return &DataDetails{

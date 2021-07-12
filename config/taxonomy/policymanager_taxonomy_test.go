@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	PMTaxStructsName = "policymanager.structs.schema.json"
-	PMTaxValsName    = "policymanager.values.schema.json"
+	PMTaxStructsName = "../../charts/m4d/files/taxonomy/policymanager.structs.schema.json"
+	PMTaxValsName    = "../../charts/m4d/files/taxonomy/policymanager.values.schema.json"
 
 	intentGood = "{\"intent\":\"Marketing\"}"
 	intentBad  = "{\"intent\":\"whatever\"}"

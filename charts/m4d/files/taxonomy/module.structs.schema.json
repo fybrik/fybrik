@@ -1,0 +1,30 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "module.schema.json",
+    "title": "Module Taxonomy",
+    "type": "object",
+    "description": "Portion of the taxonomy contributed to by the mesh for data modules. Currently contains only what is needed by OPA.",
+    "definitions": {
+        "action": {
+            "type": "object",
+            "description": "Contains the details about action and on which entity (columns, dataset) the action is enforced",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Represents the unique action type taken on a list of columns"
+                },
+                "columns": {
+                    "type": "array",
+                    "description": "Represents the column names on which the actions have been taken",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+	}
+    },
+    "properties": {
+        "action": { "$ref": "#/definitions/action" }
+    },
+    "additionalProperties": false
+}

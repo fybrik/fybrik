@@ -6,6 +6,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/go-logr/logr"
 	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
@@ -32,7 +33,7 @@ func AllocateBucket(c client.Client, log logr.Logger, owner types.NamespacedName
 	ctx := context.Background()
 	log.Info("Searching for a storage account matching the geography " + geo)
 	var accountList app.M4DStorageAccountList
-	if err := c.List(ctx, &accountList); err != nil {
+	if err := c.List(ctx, &accountList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
 		log.Info(err.Error())
 		return nil, err
 	}
@@ -53,5 +54,6 @@ func AllocateBucket(c client.Client, log logr.Logger, owner types.NamespacedName
 
 func generateDatasetName(owner types.NamespacedName, id string) string {
 	name := owner.Name + "-" + owner.Namespace + utils.Hash(id, 10)
+	name = strings.ReplaceAll(name, ".", "-")
 	return utils.K8sConformName(name)
 }

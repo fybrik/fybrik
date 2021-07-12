@@ -58,7 +58,7 @@ case "$op" in
         header_text "Configure Vault on kind multi-cluster"
         kubectl config use-context kind-control --namespace=$KUBE_NAMESPACE
         export VAULT_ADDR=$INGRESS_ADDRESS
-        export VAULT_TOKEN=$(kubectl get secrets vault-unseal-keys -n $KUBE_NAMESPACE -o jsonpath={.data.vault-root} | base64 --decode)
+        export VAULT_TOKEN=$(kubectl get secrets vault-credentials -n $KUBE_NAMESPACE -o jsonpath={.data.VAULT_TOKEN} | base64 --decode)
         bin/vault login "$VAULT_TOKEN"
         enable_k8s_auth_for_cluster control "$CONTROL_CLUSTER_KUBE_HOST"
         enable_k8s_auth_for_cluster kind "$KIND_CLUSTER_KUBE_HOST"

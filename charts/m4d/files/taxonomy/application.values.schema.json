@@ -1,0 +1,18 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "application.values.schema.json",
+    "title": "Application Values Taxonomy",
+    "type": "object",
+    "description": "Values contributed to by the mesh for data applications.",
+    "definitions": {
+        "app_info": {
+            "type": "object",
+            "properties": {
+                "intent": { "$ref": "policymanager.values.schema.json#/definitions/intent"},
+                "role": { "$ref": "policymanager.values.schema.json#/definitions/role"}
+            },
+            "required": ["intent", "role"]
+        },
+        "interface": { "$ref": "module.values.schema.json#/definitions/interface" }
+    }
+} 

@@ -6,8 +6,8 @@ package motion
 import (
 	"os"
 
+	"emperror.dev/errors"
 	motionv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/motion/v1alpha1"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
@@ -16,30 +16,26 @@ import (
 // This currently includes:
 // - a manager for BatchTransfers
 // - a manager for StreamTransfers
-func SetupMotionControllers(mgr manager.Manager) {
-	setupLog := ctrl.Log.WithName("setup")
-
+func SetupMotionControllers(mgr manager.Manager) error {
 	if err := NewBatchTransferReconciler(mgr, "BatchTransferController").SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "BatchTransfer")
-		os.Exit(1)
+		return errors.Wrap(err, "unable to create BatchTransfer controller")
 	}
 
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
 		if err := (&motionv1.BatchTransfer{}).SetupWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "Captain")
-			os.Exit(1)
+			return errors.Wrap(err, "unable to create BatchTransfer webhook")
 		}
 	}
 
 	if err := NewStreamTransferReconciler(mgr, "StreamTransferController").SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "StreamTransfer")
-		os.Exit(1)
+		return errors.Wrap(err, "unable to create StreamTransfer controller")
 	}
 
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
 		if err := (&motionv1.StreamTransfer{}).SetupWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "StreamTransfer")
-			os.Exit(1)
+			return errors.Wrap(err, "unable to create StreamTransfer webhook")
 		}
 	}
+
+	return nil
 }

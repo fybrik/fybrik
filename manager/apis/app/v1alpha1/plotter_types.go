@@ -17,7 +17,6 @@ type PlotterSpec struct {
 	Selector metav1.LabelSelector `json:"selector"`
 
 	// +required
-	// +kubebuilder::validation:MinItems:=1
 	// Blueprints structure represents remote blueprints mapped by the identifier of a cluster in which they will be running
 	Blueprints map[string]BlueprintSpec `json:"blueprints"`
 }

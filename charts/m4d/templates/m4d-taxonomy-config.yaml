@@ -1,0 +1,8 @@
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: m4d-taxonomy-config
+data:
+  {{- (.Files.Glob "files/taxonomy/**.json").AsConfig | nindent 2 }}
+{{- end }}

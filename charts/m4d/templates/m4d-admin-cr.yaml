@@ -1,0 +1,122 @@
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+{{- if .Values.clusterScoped }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "m4d.fullname" . }}-admin-cr
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  - secrets
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - "coordination.k8s.io"
+  resources:
+  - leases
+  - leases/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - blueprints
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - blueprints/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - m4dapplications
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - m4dapplications/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - plotters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - plotters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - app.m4d.ibm.com
+  resources:
+  - m4dstorageaccounts
+  - m4dmodules
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - com.ie.ibm.hpsys
+  resources:
+  - datasets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+{{- end }}
+{{- end }}
+

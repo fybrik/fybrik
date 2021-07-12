@@ -5,7 +5,7 @@ It demonstrates how policies are seamlessly applied when accessing the dataset c
 
 In this sample you play multiple roles:
 
-1. As a data ower you upload a dataset and register it in a data catalog
+1. As a data owner you upload a dataset and register it in a data catalog
 2. As a data steward you setup data governance policies
 3. As a data user you specify your data usage requirements and use a notebook to consume the data
 
@@ -28,40 +28,40 @@ This enables easy [cleanup](#cleanup) once you're done experimenting with the sa
 
 ## Prepare a dataset to be accessed by the notebook
 
-This sample uses the [Synthetic Financial Datasets For Fraud Detection](https://www.kaggle.com/ntnu-testimon/paysim1/data) dataset[^1] as the data that the notebook needs to read. Download and extract the file to your machine. You should now see a file named `PS_20174392719_1491204439457_log.csv`. Alternatively, use a sample of 100 lines of the same dataset by downloading [`PS_20174392719_1491204439457_log.csv`](https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/master/samples/notebook/PS_20174392719_1491204439457_log.csv) from GitHub.
+This sample uses the [Synthetic Financial Datasets For Fraud Detection](https://www.kaggle.com/ealaxi/paysim1) dataset[^1] as the data that the notebook needs to read. Download and extract the file to your machine. You should now see a file named `PS_20174392719_1491204439457_log.csv`. Alternatively, use a sample of 100 lines of the same dataset by downloading [`PS_20174392719_1491204439457_log.csv`](https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/master/samples/notebook/PS_20174392719_1491204439457_log.csv) from GitHub.
 
 [^1]: Created by NTNU and shared under the ***CC BY-SA 4.0*** license.
 
 Upload the CSV file to an object storage of your choice such as AWS S3, IBM Cloud Object Storage or Ceph.
 Make a note of the service endpoint, bucket name, and access credentials. You will need them later.
 
-??? tip "Setup and upload to MinIO"
+??? tip "Setup and upload to localstack"
 
-    For experimentation you can install MinIO to your cluster instead of using a cloud service.
+    For experimentation you can install localstack to your cluster instead of using a cloud service.
     
     1. Define variables for access key and secret key
       ```bash
       export ACCESS_KEY="myaccesskey"
       export SECRET_KEY="mysecretkey"
       ```
-    2. Install Minio to the currently active namespace:
+    2. Install localstack to the currently active namespace and wait for it to be ready:
       ```bash
-      kubectl create deployment minio --image=minio/minio:RELEASE.2021-02-14T04-01-33Z -- /bin/sh -ce "/usr/bin/docker-entrypoint.sh minio -S /etc/minio/certs/ server /export"
-      kubectl set env deployment/minio MINIO_ACCESS_KEY=${ACCESS_KEY} MINIO_SECRET_KEY=${SECRET_KEY}
-      kubectl wait --for=condition=available --timeout=120s deployment/minio
+      helm repo add localstack-charts https://localstack.github.io/helm-charts
+      helm install localstack localstack-charts/localstack --set startServices="s3" --set service.type=ClusterIP
+      kubectl wait --for=condition=ready --all pod -n m4d-notebook-sample --timeout=120s
       ```
-    3. Create a service to expose MinIO:
+    3. Create a port-forward to communicate with localstack server:
       ```bash
-      kubectl expose deployment minio --port 9000
+      kubectl port-forward svc/localstack 4566:4566 &
       ```
-    4. Create a port-forward to connect to MinIO UI:
+    3. Use [AWS CLI](https://aws.amazon.com/cli/) to upload the dataset to a new created bucket in the localstack server:
       ```bash
-      kubectl port-forward svc/minio 9000 &
+      export ENDPOINT="http://127.0.0.1:4566"
+      export BUCKET="demo"
+      export OBJECT_KEY="PS_20174392719_1491204439457_log.csv"
+      export FILEPATH="/path/to/PS_20174392719_1491204439457_log.csv"
+      aws configure set aws_access_key_id ${ACCESS_KEY} && aws configure set aws_secret_access_key ${SECRET_KEY} && aws --endpoint-url=${ENDPOINT} s3api create-bucket --bucket ${BUCKET} && aws --endpoint-url=${ENDPOINT} s3api put-object --bucket ${BUCKET} --key ${OBJECT_KEY} --body ${FILEPATH}
       ```
-    5. Open [http://localhost:9000](http://localhost:9000) and login with the access key and secret key defined in step 1
-    6. Click the :fontawesome-solid-plus-circle: button in the bottom right corner and then **Create bucket** to create a bucket (e.g. "demo").
-    7. Click the :fontawesome-solid-plus-circle: button again and then **Upload files** to upload a file to the newly created bucket.
-
 ## Register the dataset in a data catalog
 
 Register the credentials required for accessing the dataset. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
@@ -95,7 +95,7 @@ spec:
     connection:
       type: s3
       s3:
-        endpoint: "http://minio.m4d-notebook-sample.svc.cluster.local:9000"
+        endpoint: "http://localstack.m4d-notebook-sample.svc.cluster.local:4566"
         bucket: "demo"
         objectKey: "PS_20174392719_1491204439457_log.csv"
   assetMetadata:
@@ -229,15 +229,41 @@ while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}')
 
 ## Read the dataset from the notebook
 
+In your **terminal**, run the following command to print the [endpoint](../../reference/crds/#m4dapplicationstatusreadendpointsmapkey) to use for reading the data. It fetches the code from the `M4DApplication` resource:
+```bash
+ENDPOINT_SCHEME=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.m4d-notebook-sample/paysim-csv.scheme})
+ENDPOINT_HOSTNAME=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.m4d-notebook-sample/paysim-csv.hostname})
+ENDPOINT_PORT=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.m4d-notebook-sample/paysim-csv.port})
+printf "${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}"
+```
+The next steps use the endpoint to read the data in a python notebook
+
 1. Insert a new notebook cell to install pandas and pyarrow packages:
   ```python
   %pip install pandas pyarrow
   ```
-2. In your **terminal**, run the following command to print the code to use for reading the data. It fetches the code from the `M4DApplication` resource:
+2. Insert a new notebook cell to read the data using the endpoint value extracted from the `M4DApplication` in the previous step:
   ```bash
-  printf "$(kubectl get m4dapplication my-notebook -o jsonpath={.status.dataAccessInstructions})"
+  %pip install pandas pyarrow
+  import json
+  import pyarrow.flight as fl
+  import pandas as pd
+
+  # Create a Flight client
+  client = fl.connect('<ENDPOINT>')
+
+  # Prepare the request
+  request = {
+      "asset": "m4d-notebook-sample/paysim-csv",
+      # To request specific columns add to the request a "columns" key with a list of column names
+      # "columns": [...]
+  }
+
+  # Send request and fetch result as a pandas DataFrame
+  info = client.get_flight_info(fl.FlightDescriptor.for_command(json.dumps(request)))
+  reader: fl.FlightStreamReader = client.do_get(info.endpoints[0].ticket)
+  df: pd.DataFrame = reader.read_pandas()
   ```
-3. Insert a new notebook cell and paste in it the code for reading data as printed in the previous step.
 4. Insert a new notebook cell with the following command to visualize the result:
   ```
   df

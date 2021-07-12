@@ -1,0 +1,56 @@
+vault:
+  server:
+    extraArgs: '-dev-plugin-dir=/usr/local/libexec/vault'
+    volumes:
+      - name: plugins
+        emptyDir: {}
+      - name: poststartvolume
+        emptyDir: {}
+      - name: configvolume # this volume is read only
+        configMap:
+          name: vault-poststart-cm
+          defaultMode: 0744
+    volumeMounts:
+      - mountPath: /usr/local/libexec/vault
+        name: plugins
+        readOnly: false
+      - mountPath: /opt/config
+        name: poststartvolume
+        readOnly: false
+      - mountPath: /etc/config/poststart.sh
+        subPath: poststart.sh
+        name: configvolume
+    extraInitContainers:
+      - name: kubesecrets-plugin
+        image: ghcr.io/mesh-for-data/vault-plugin-secrets-kubernetes-reader:latest
+        command: [/bin/sh, -ec]
+        args:
+          - |
+            cp /vault-plugin-secrets-kubernetes-reader /usr/local/libexec/vault/vault-plugin-secrets-kubernetes-reader
+            cp /etc/config/poststart.sh /opt/config/poststart.sh
+        volumeMounts:
+        - name: plugins
+          mountPath: /usr/local/libexec/vault
+          readOnly: false
+        - name: poststartvolume
+          mountPath: /opt/config
+          readOnly: false
+        - name: configvolume
+          mountPath: /etc/config
+          readOnly: false
+    extraEnvironmentVars:
+      VAULT_API_ADDR: http://127.0.0.1:8200
+      VAULT_ADDR: http://127.0.0.1:8200
+      # Used to define commands to run after the pod is ready.
+      # This can be used to automate processes such as initialization
+      # or boostrapping auth methods.
+    postStart:
+      - "sh"
+      - "-c"
+      - |
+        # Sleep command is needed to avoid synchronization issues with the container pod. Please see
+        # https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/#discussion
+        # FIXME: Use a proper way to configure Vault after Vault start-up
+        sleep 5
+        /opt/config/poststart.sh
+

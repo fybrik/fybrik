@@ -21,6 +21,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
 	"github.com/mesh-for-data/mesh-for-data/pkg/helm"
@@ -327,8 +329,21 @@ func NewBlueprintReconciler(mgr ctrl.Manager, name string, helmer helm.Interface
 
 // SetupWithManager registers Blueprint controller
 func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// 'UpdateFunc' and 'CreateFunc' used to judge if the event came from within the blueprint's namespace.
+	// If that is true, the event will be processed by the reconciler.
+	// If it's not then it is a rogue event created by someone outside of the control plane.
+	p := predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			return e.Object.GetNamespace() == BlueprintNamespace
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			return e.ObjectOld.GetNamespace() == BlueprintNamespace
+		},
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&app.Blueprint{}).
+		WithEventFilter(p).
 		Complete(r)
 }
 
@@ -337,7 +352,7 @@ func (r *BlueprintReconciler) getExpectedResults(kind string) (*app.ResourceStat
 	ctx := context.Background()
 
 	var moduleList app.M4DModuleList
-	if err := r.List(ctx, &moduleList); err != nil {
+	if err := r.List(ctx, &moduleList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
 		return nil, err
 	}
 	for _, module := range moduleList.Items {

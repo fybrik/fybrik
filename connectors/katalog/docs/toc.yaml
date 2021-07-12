@@ -1,8 +1,0 @@
-metadata:
-  title: "API Reference"
-  description: "API Reference for Katalog"
-groups:
-  - group: katalog.m4d.ibm.com
-    version: v1alpha1
-    kinds:
-      - name: Asset

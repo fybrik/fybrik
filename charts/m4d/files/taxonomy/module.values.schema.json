@@ -1,0 +1,99 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "module.values.schema.json",
+    "title": "Module Values Taxonomy",
+    "description": "Values contributed to by the mesh for data modules. Currently contains only what is needed by OPA.",
+    "definitions": {
+        "module_type": {
+            "type": "string",
+            "description": "Type of modules supported by the M4D manager.",
+            "enum": ["copy", "read", "write"]
+        },
+        "allowable_action_columns": {
+            "enum": ["RemoveColumn", "RedactColumn", "EncryptColumn", "PeriodicBlackout"]
+        },
+        "allowable_action_dataset": {
+            "enum": ["DenyAccess", "DenyWriting"]
+        },
+        "action": {
+            "type": "object",
+            "action_struct":{"$ref": "module.structs.schema.json#/definitions/action"},
+            "x-kubernetes-int-or-string": "true",
+            "oneOf": [
+                {
+                    "properties": {
+                        "name": {"$ref": "#/definitions/allowable_action_columns"} 
+		            },
+		            "required": ["columns"]
+                },
+                {
+                    "properties": {
+                        "name": {"$ref": "#/definitions/allowable_action_dataset"} 		
+                    }
+                }
+	    ]
+	},
+        "interface": {
+            "type": "object",
+            "description": "Contains protocol and data format for arrow-flight",
+            "properties": {
+                "protocol": {
+                    "type": "string",
+                    "description": "The mechanism via which the data will be accessed."
+                },
+                "data_format": {
+                    "type":"string",
+                    "description": "The data format"
+                }
+            },
+            "anyOf": [{
+                "properties": {
+                    "protocol": {
+                        "enum":["m4d-arrow-flight"]
+                    },
+                    "data_format": {
+                        "enum":["arrow"] 
+                    }
+                }
+            },
+            {
+                "properties": {
+                    "protocol": {
+                        "enum":["kafka"]
+                    },
+                    "data_format": {
+                        "enum":["json", "avro"] 
+                    }
+                }
+            },
+            {
+                "properties": {
+                    "protocol": {
+                        "enum":["s3"]
+                    },
+                    "data_format": {
+                        "enum":["csv", "parquet"] 
+                    }
+                }
+            },
+            {
+                "properties": {
+                    "protocol": {
+                        "enum":["db2-jdbc"]
+                    },
+                    "data_format": {
+                        "enum":["db2-jdbc"] 
+                    }
+                }
+            }]
+        }
+    },
+    "properties": {
+        "module_type": { "$ref": "#/definitions/module_type" },
+        "allowable_action_columns": { "$ref": "#/definitions/allowable_action_columns" },
+        "allowable_action_dataset": { "$ref": "#/definitions/allowable_action_dataset" },
+	"action": { "$ref": "#/definitions/action" },
+        "interface": {"$ref": "#/definitions/interface"}
+    },
+    "additionalProperties": false
+}

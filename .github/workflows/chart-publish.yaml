@@ -22,8 +22,10 @@ jobs:
       - run: |
           rm -rf charts-repo/charts/m4d-crd
           rm -rf charts-repo/charts/m4d
+          rm -rf charts-repo/charts/vault
           cp -r main/charts/m4d-crd charts-repo/charts
           cp -r main/charts/m4d charts-repo/charts
+          cp -r main/charts/vault charts-repo/charts
       - uses: tibdex/github-app-token@v1
         id: generate-token
         with:

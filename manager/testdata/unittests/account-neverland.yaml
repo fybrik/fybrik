@@ -2,6 +2,7 @@ apiVersion: app.m4d.ibm.com/v1alpha1
 kind: M4DStorageAccount
 metadata:
   generateName: account-neverland
+  namespace: m4d-system
 spec:
   endpoint: http://s3.eu.cloud-object-storage.appdomain.cloud
   secretRef: credentials-neverland

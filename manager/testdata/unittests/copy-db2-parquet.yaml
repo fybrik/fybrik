@@ -6,6 +6,7 @@ apiVersion: app.m4d.ibm.com/v1alpha1
 kind: M4DModule
 metadata:
   name: implicit-copy-batch-db2
+  namespace: m4d-system
   labels:
     name: implicit-copy-batch-db2
     version: 0.1.0 
