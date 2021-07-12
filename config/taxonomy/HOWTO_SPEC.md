@@ -93,10 +93,6 @@ The additionalProperties keyword may be either a boolean or an object:
 
 Note: in json schema tooling the default is `additionalProperties: true` while in Kubernetes CRDs the default is equivalent to `additionalProperties: false`. We currently recommend setting this field explicitly. 
 
-<!-- TODO: do we want `additionalProperties: true` as default always and change our tools accordingly? -->
-<!-- TODO: update openapi2crd to drop `additionalProperties: false` and change `additionalProperties: true` to `x-kubernetes-preserve-unknown-fields: true` -->
-<!-- TODO: implement a validation tool against the spec described here -->
-
 ### Validation properties
 
 Validation properties augment the structural schema with properties that are used for validation against input documents.
@@ -223,8 +219,6 @@ IPv4 | `string` | `ipv4` | IPv4 address according to the "dotted-quad" ABNF synt
 IPv6 | `string` | `ipv6` | IPv6 address 
 URI  | `string` | `uri` | a valid URI, according to [RFC3986](https://tools.ietf.org/html/rfc3986)
 UUID | `string` | `uuid` | a UUID
-
-<!-- TODO: update openapi2crd to prune format if not one of: "int32", "int64", "float", "double", "byte", "date", "date-time", "password" -->
 
 ## Reference objects
 
