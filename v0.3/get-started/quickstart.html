@@ -384,6 +384,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#add-required-helm-repositories" class="md-nav__link">
+    Add required Helm repositories
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#install-cert-manager" class="md-nav__link">
     Install cert-manager
   </a>
@@ -938,6 +945,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#add-required-helm-repositories" class="md-nav__link">
+    Add required Helm repositories
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#install-cert-manager" class="md-nav__link">
     Install cert-manager
   </a>
@@ -993,12 +1007,16 @@
 <li><a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/">Kubectl</a> 1.18 or newer must be installed on your machine.</li>
 <li>Access to a Kubernetes cluster such as <a href="http://kind.sigs.k8s.io/">Kind</a> as a cluster administrator.</li>
 </ul>
+<h2 id="add-required-helm-repositories">Add required Helm repositories</h2>
+<div class="highlight"><pre><span></span><code>helm repo add jetstack https://charts.jetstack.io
+helm repo add hashicorp https://helm.releases.hashicorp.com
+helm repo add m4d-charts https://mesh-for-data.github.io/charts
+helm repo update
+</code></pre></div>
 <h2 id="install-cert-manager">Install cert-manager</h2>
 <p>Mesh for Data requires <a href="https://cert-manager.io">cert-manager</a> to be installed to your cluster. 
 Many clusters already include cert-manager. Check if <code>cert-manager</code> namespace exists in your cluster and only run the following if it doesn't exist:</p>
-<div class="highlight"><pre><span></span><code>helm repo add jetstack https://charts.jetstack.io
-helm repo update
-helm install cert-manager jetstack/cert-manager <span class="se">\</span>
+<div class="highlight"><pre><span></span><code>helm install cert-manager jetstack/cert-manager <span class="se">\</span>
     --namespace cert-manager <span class="se">\</span>
     --version v1.2.0 <span class="se">\</span>
     --create-namespace <span class="se">\</span>
@@ -1013,7 +1031,6 @@ For example:</p>
 <div class="tabbed-set" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">Kubernetes</label><div class="tabbed-content">
 <div class="highlight"><pre><span></span><code>git clone https://github.com/mesh-for-data/mesh-for-data.git
 <span class="nb">cd</span> mesh-for-data
-helm repo add hashicorp https://helm.releases.hashicorp.com
 helm dependency update charts/vault
 helm install vault charts/vault --create-namespace -n m4d-system <span class="se">\</span>
     --set <span class="s2">&quot;vault.injector.enabled=false&quot;</span> <span class="se">\</span>
@@ -1025,7 +1042,6 @@ kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="n
 <input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><label for="__tabbed_1_2">OpenShift</label><div class="tabbed-content">
 <div class="highlight"><pre><span></span><code>git clone https://github.com/mesh-for-data/mesh-for-data.git
 <span class="nb">cd</span> mesh-for-data
-helm repo add hashicorp https://helm.releases.hashicorp.com
 helm dependency update charts/vault
 helm install vault charts/vault --create-namespace -n m4d-system <span class="se">\</span>
     --set <span class="s2">&quot;global.openshift=true&quot;</span> <span class="se">\</span>
@@ -1039,23 +1055,21 @@ kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="n
 </details>
 <p>Run the following to install vault and the plugin in development mode:</p>
 <div class="tabbed-set" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><label for="__tabbed_2_1">Kubernetes</label><div class="tabbed-content">
-<div class="highlight"><pre><span></span><code>helm repo add hashicorp https://helm.releases.hashicorp.com
-helm dependency update m4d-charts/vault
+<div class="highlight"><pre><span></span><code>helm dependency update m4d-charts/vault
 helm install vault m4d-charts/vault --create-namespace -n m4d-system <span class="se">\</span>
     --set <span class="s2">&quot;vault.injector.enabled=false&quot;</span> <span class="se">\</span>
     --set <span class="s2">&quot;vault.server.dev.enabled=true&quot;</span> <span class="se">\</span>
-    --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.3.0/charts/vault/env/dev/vault-single-cluster-values.yaml
+    --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.3.1/charts/vault/env/dev/vault-single-cluster-values.yaml
 kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n m4d-system --timeout<span class="o">=</span>120s
 </code></pre></div>
 </div>
 <input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><label for="__tabbed_2_2">OpenShift</label><div class="tabbed-content">
-<div class="highlight"><pre><span></span><code>helm repo add hashicorp https://helm.releases.hashicorp.com
-helm dependency update m4d-charts/vault
+<div class="highlight"><pre><span></span><code>helm dependency update m4d-charts/vault
 helm install vault m4d-charts/vault --create-namespace -n m4d-system <span class="se">\</span>
     --set <span class="s2">&quot;global.openshift=true&quot;</span> <span class="se">\</span>
     --set <span class="s2">&quot;vault.injector.enabled=false&quot;</span> <span class="se">\</span>
     --set <span class="s2">&quot;vault.server.dev.enabled=true&quot;</span> <span class="se">\</span>
-    --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.3.0/charts/vault/env/dev/vault-single-cluster-values.yaml
+    --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.3.1/charts/vault/env/dev/vault-single-cluster-values.yaml
 kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n m4d-system --timeout<span class="o">=</span>120s
 </code></pre></div>
 </div>
@@ -1072,9 +1086,7 @@ helm install m4d charts/m4d --set global.tag<span class="o">=</span>latest -n m4
 </details>
 <p>The control plane includes a <code>manager</code> service that connects to a data catalog and to a policy manager. 
 Install the latest release of Mesh for Data with a built-in data catalog and with <a href="https://www.openpolicyagent.org">Open Policy Agent</a> as the policy manager:</p>
-<div class="highlight"><pre><span></span><code>helm repo add m4d-charts https://mesh-for-data.github.io/charts
-helm repo update
-helm install m4d-crd m4d-charts/m4d-crd -n m4d-system --wait
+<div class="highlight"><pre><span></span><code>helm install m4d-crd m4d-charts/m4d-crd -n m4d-system --wait
 helm install m4d m4d-charts/m4d -n m4d-system --wait
 </code></pre></div>
 <h2 id="install-modules">Install modules</h2>
