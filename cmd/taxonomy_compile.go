@@ -8,8 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var taxonomyCompileHelp = "Generate a taxonomy.json file from base taxonomy and taxonomy layers"
-
 var (
 	taxonomyCompileBasePath string
 	taxonomyCompileOutPath  string
@@ -19,8 +17,7 @@ var (
 // compileCmd represents the compile command
 var compileCmd = &cobra.Command{
 	Use:   "compile --out <outputFile> --base <baseFile> [<layerFile> ...] [--codegen]",
-	Short: taxonomyCompileHelp,
-	Long:  longHelp(taxonomyCompileHelp, "taxonomy_compile.txt"),
+	Short: "Generate a taxonomy.json file from base taxonomy and taxonomy layers",
 	Args:  cobra.ArbitraryArgs,
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{"yaml", "yml", "json"}, cobra.ShellCompDirectiveDefault
