@@ -15,6 +15,8 @@ import (
 var _ DataCatalog = (*grpcDataCatalog)(nil)
 
 type grpcDataCatalog struct {
+	pb.UnimplementedDataCatalogServiceServer
+
 	name       string
 	connection *grpc.ClientConn
 	client     pb.DataCatalogServiceClient
