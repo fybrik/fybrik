@@ -51,21 +51,6 @@ func (r *M4DApplication) ValidateDelete() error {
 	return nil
 }
 
-// func (r *M4DApplication) validateM4DApplication() error {
-// 	var allErrs field.ErrorList
-// 	if err := r.validateM4DApplicationSpec(); err != nil {
-// 		allErrs = append(allErrs, err...)
-// 	}
-
-// 	if len(allErrs) == 0 {
-// 		return nil
-// 	}
-
-// 	return apierrors.NewInvalid(
-// 		schema.GroupKind{Group: "app.m4d.ibm.com", Kind: "M4DApplication"},
-// 		r.Name, allErrs)
-// }
-
 func (r *M4DApplication) validateM4DApplication() error {
 	var allErrs []*field.Error
 
@@ -116,47 +101,3 @@ func (r *M4DApplication) validateM4DApplication() error {
 		schema.GroupKind{Group: "app.m4d.ibm.com", Kind: "M4DApplication"},
 		r.Name, allErrs)
 }
-
-// func (r *M4DApplication) validateM4DApplicationSpec() []*field.Error {
-// 	// The field helpers from the kubernetes API machinery help us return nicely
-// 	// structured validation errors.
-
-// 	var allErrs []*field.Error
-// 	specField := field.NewPath("spec").Child("data")
-// 	for i, dataSet := range r.Spec.Data {
-// 		if err := r.validateDataContext(specField.Index(i), &dataSet); err != nil {
-// 			allErrs = append(allErrs, err...)
-// 		}
-// 	}
-// 	return allErrs
-// }
-
-// func (r *M4DApplication) validateDataContext(path *field.Path, dataSet *DataContext) []*field.Error {
-// 	var allErrs []*field.Error
-// 	interfacePath := path.Child("Requirements", "Interface")
-// 	if err := validateProtocol(dataSet.Requirements.Interface.Protocol); err != nil {
-// 		allErrs = append(allErrs, field.Invalid(interfacePath.Child("Protocol"), &dataSet.Requirements.Interface.Protocol, err.Error()))
-// 	}
-// 	if err := validateDataFormat(dataSet.Requirements.Interface.DataFormat); err != nil {
-// 		allErrs = append(allErrs, field.Invalid(interfacePath.Child("DataFormat"), &dataSet.Requirements.Interface.DataFormat, err.Error()))
-// 	}
-// 	return allErrs
-// }
-
-// func validateProtocol(protocol string) error {
-// 	switch protocol {
-// 	case "s3", "kafka", "jdbc-db2", "m4d-arrow-flight":
-// 		return nil
-// 	default:
-// 		return errors.New("Value should be one of these: s3, kafka, jdbc-db2, m4d-arrow-flight")
-// 	}
-// }
-
-// func validateDataFormat(format string) error {
-// 	switch format {
-// 	case "parquet", "table", "csv", "json", "avro", "orc", "binary", "arrow":
-// 		return nil
-// 	default:
-// 		return errors.New("Value should be one of these: parquet, table, csv, json, avro, orc, binary, arrow")
-// 	}
-// }
