@@ -63,7 +63,6 @@ func (t *transformer) transformSchema(key string, schema *model.SchemaRef) *mode
 }
 
 func (t *transformer) oneOfRefsTransform(key string, schema *model.SchemaRef) *model.SchemaRef {
-
 	if key == "" || schema.OneOf == nil || len(schema.Properties) != 1 || !schema.AdditionalProperties.IsAllowed() {
 		// this transform does not apply here
 		return schema

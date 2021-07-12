@@ -9,8 +9,8 @@ import (
 	"github.com/mohae/deepcopy"
 )
 
-// Compile generates a taxonomy document from a base file and zero or more layer files
-func Compile(baseDocPath string, layerDocPaths []string, opts ...CompileOption) (*model.Document, error) {
+// Files generates a taxonomy document from a base file and zero or more layer files
+func Files(baseDocPath string, layerDocPaths []string, opts ...Option) (*model.Document, error) {
 	// load base document
 	base, err := taxonomyio.ReadDocumentFromFile(baseDocPath)
 	if err != nil {
@@ -28,11 +28,11 @@ func Compile(baseDocPath string, layerDocPaths []string, opts ...CompileOption) 
 	}
 
 	// merge all documents
-	return CompileDocuments(base, layers, opts...)
+	return Documents(base, layers, opts...)
 }
 
-// CompileDocuments generates a taxonomy document from a base document and zero or more layer documents
-func CompileDocuments(base *model.Document, layers []*model.Document, opts ...CompileOption) (*model.Document, error) {
+// Documents generates a taxonomy document from a base document and zero or more layer documents
+func Documents(base *model.Document, layers []*model.Document, opts ...Option) (*model.Document, error) {
 	options := compileOptions{
 		codegenTarget: false,
 	}
@@ -58,12 +58,12 @@ type compileOptions struct {
 	codegenTarget bool
 }
 
-// CompileOption is the type for Compile options
-type CompileOption func(*compileOptions)
+// Option is the type for Compile options
+type Option func(*compileOptions)
 
 // WithCodeGenerationTarget option to enable generating an output
 //  that is more suitable for code generation tools
-func WithCodeGenerationTarget(enabled bool) CompileOption {
+func WithCodeGenerationTarget(enabled bool) Option {
 	return func(h *compileOptions) {
 		h.codegenTarget = enabled
 	}

@@ -23,7 +23,7 @@ var compileCmd = &cobra.Command{
 		return []string{"yaml", "yml", "json"}, cobra.ShellCompDirectiveDefault
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		result, err := compile.Compile(taxonomyCompileBasePath, args, compile.WithCodeGenerationTarget(taxonomyCompileCodegen))
+		result, err := compile.Files(taxonomyCompileBasePath, args, compile.WithCodeGenerationTarget(taxonomyCompileCodegen))
 		if err != nil {
 			return err
 		}
