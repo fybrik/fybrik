@@ -11,7 +11,8 @@
                 "intent": { "$ref": "policymanager.values.schema.json#/definitions/intent"},
                 "role": { "$ref": "policymanager.values.schema.json#/definitions/role"}
             },
-            "required": ["intent", "role"]
+            "required": ["intent", "role"],
+            "additionalProperties": false
         },
         "interface": { "$ref": "module.values.schema.json#/definitions/interface" }
     }
