@@ -171,7 +171,7 @@ func TestM4DApplicationFinalizers(t *testing.T) {
 // Tests denial of the access to data
 // Assumptions on response from connectors:
 // Enforcement action for read operation: Deny
-// Result: an error
+// Result: Deny condition, no reconcile
 func TestDenyOnRead(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -206,12 +206,14 @@ func TestDenyOnRead(t *testing.T) {
 		NamespacedName: namespaced,
 	}
 
-	_, err := r.Reconcile(context.Background(), req)
+	res, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
+	g.Expect(res).To(gomega.BeEquivalentTo(ctrl.Result{}))
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
-	// Expect an error
+	// Expect Deny condition
+	g.Expect(application.Status.Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring(app.ReadAccessDenied))
 }
 

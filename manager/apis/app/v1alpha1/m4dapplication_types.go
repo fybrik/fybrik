@@ -102,8 +102,9 @@ const (
 
 // Condition indices are static. Conditions always present in the status.
 const (
-	FailureConditionIndex int64 = 0
-	ErrorConditionIndex   int64 = 1
+	ReadyConditionIndex int64 = 0
+	DenyConditionIndex  int64 = 1
+	ErrorConditionIndex int64 = 2
 )
 
 // ConditionType represents a condition type
@@ -113,8 +114,11 @@ const (
 	// ErrorCondition means that an error was encountered during blueprint construction
 	ErrorCondition ConditionType = "Error"
 
-	// FailureCondition means that a blueprint could not be constructed
-	FailureCondition ConditionType = "Failure"
+	// DenyCondition means that access to a dataset is denied
+	DenyCondition ConditionType = "Deny"
+
+	// ReadyCondition means that access to a dataset is granted
+	ReadyCondition ConditionType = "Ready"
 )
 
 // Condition describes the state of a M4DApplication at a certain point.
