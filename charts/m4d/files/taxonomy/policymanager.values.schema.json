@@ -12,7 +12,7 @@
         "role": {
             "type": "string",
             "description": "The position of the person in the organization processing the data.",
-            "enum": ["Sales", "HR", "Customer Support", "Business Analyst", "Data Scientist"]
+            "enum": ["Sales", "HR", "Customer Support", "Business Analyst", "Data Scientist", "Security"]
         },
         "request_context": {
             "type": "object",
