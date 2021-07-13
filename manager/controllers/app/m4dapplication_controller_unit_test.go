@@ -208,13 +208,13 @@ func TestDenyOnRead(t *testing.T) {
 
 	res, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
-	g.Expect(res).To(gomega.BeEquivalentTo(ctrl.Result{}))
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
 	// Expect Deny condition
-	g.Expect(application.Status.Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue), "Deny condition is not set")
 	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring(app.ReadAccessDenied))
+	g.Expect(res).To(gomega.BeEquivalentTo(ctrl.Result{}), "Requests another reconcile")
 }
 
 // Tests selection of read-path module

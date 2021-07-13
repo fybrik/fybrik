@@ -326,7 +326,8 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	for _, item := range requirements {
 		instancesPerDataset, err := moduleManager.SelectModuleInstances(item, applicationContext)
 		if err != nil {
-			setErrorCondition(applicationContext, item.Context.DataSetID, err.Error())
+			AnalyzeError(applicationContext, item.Context.DataSetID, err)
+			continue
 		}
 		instances = append(instances, instancesPerDataset...)
 	}
@@ -470,12 +471,23 @@ func (r *M4DApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 // AnalyzeError analyzes whether the given error is fatal, or a retrial attempt can be made.
 // Reasons for retrial can be either communication problems with external services, or kubernetes problems to perform some action on a resource.
 // A retrial is achieved by returning an error to the reconcile method
-func AnalyzeError(app *app.M4DApplication, assetID string, err error) {
-	errStatus, _ := status.FromError(err)
-	if errStatus.Code() == codes.InvalidArgument {
-		setDenyCondition(app, assetID, errStatus.Message())
+func AnalyzeError(application *app.M4DApplication, assetID string, err error) {
+	if err == nil {
+		return
+	}
+	if errStatus, fromGrpc := status.FromError(err); fromGrpc {
+		if errStatus.Code() == codes.InvalidArgument {
+			setDenyCondition(application, assetID, errStatus.Message())
+		} else {
+			setErrorCondition(application, assetID, errStatus.Message())
+		}
 	} else {
-		setErrorCondition(app, assetID, errStatus.Message())
+		switch err.Error() {
+		case app.ReadAccessDenied, app.CopyNotAllowed, app.WriteNotAllowed:
+			setDenyCondition(application, assetID, err.Error())
+		default:
+			setErrorCondition(application, assetID, err.Error())
+		}
 	}
 }
 
