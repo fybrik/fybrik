@@ -41,17 +41,18 @@
                     "type": "string",
                     "description": "The mechanism via which the data will be accessed."
                 },
-                "data_format": {
+                "dataformat": {
                     "type":"string",
                     "description": "The data format"
                 }
             },
+            "required": ["protocol", "dataformat"],
             "anyOf": [{
                 "properties": {
                     "protocol": {
                         "enum":["m4d-arrow-flight"]
                     },
-                    "data_format": {
+                    "dataformat": {
                         "enum":["arrow"] 
                     }
                 }
@@ -61,7 +62,7 @@
                     "protocol": {
                         "enum":["kafka"]
                     },
-                    "data_format": {
+                    "dataformat": {
                         "enum":["json", "avro"] 
                     }
                 }
@@ -71,7 +72,7 @@
                     "protocol": {
                         "enum":["s3"]
                     },
-                    "data_format": {
+                    "dataformat": {
                         "enum":["csv", "parquet"] 
                     }
                 }
@@ -81,7 +82,7 @@
                     "protocol": {
                         "enum":["db2-jdbc"]
                     },
-                    "data_format": {
+                    "dataformat": {
                         "enum":["db2-jdbc"] 
                     }
                 }
