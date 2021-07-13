@@ -475,18 +475,23 @@ func AnalyzeError(application *app.M4DApplication, assetID string, err error) {
 	if err == nil {
 		return
 	}
-	if errStatus, fromGrpc := status.FromError(err); fromGrpc {
+	// Unwrap the error - it wraps the original error by the connector
+	errorToCheck := err
+	if cause := errors.Cause(err); cause != nil {
+		errorToCheck = cause
+	}
+	if errStatus, fromGrpc := status.FromError(errorToCheck); fromGrpc {
 		if errStatus.Code() == codes.InvalidArgument {
 			setDenyCondition(application, assetID, errStatus.Message())
 		} else {
 			setErrorCondition(application, assetID, errStatus.Message())
 		}
 	} else {
-		switch err.Error() {
+		switch errorToCheck.Error() {
 		case app.ReadAccessDenied, app.CopyNotAllowed, app.WriteNotAllowed:
-			setDenyCondition(application, assetID, err.Error())
+			setDenyCondition(application, assetID, errorToCheck.Error())
 		default:
-			setErrorCondition(application, assetID, err.Error())
+			setErrorCondition(application, assetID, errorToCheck.Error())
 		}
 	}
 }
