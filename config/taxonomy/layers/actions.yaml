@@ -1,0 +1,27 @@
+definitions:
+  Action:
+    oneOf:
+      - $ref: "#/definitions/RedactAction"
+      - $ref: "#/definitions/EncryptAction"
+      - $ref: "#/definitions/DenyAccess"
+  RedactAction:
+    type: object
+    properties:
+      columns:
+        items:
+          type: string
+        type: array
+    required:
+      - columns
+  EncryptAction:
+    type: object
+    properties:
+      algorithm:
+        type: string
+  DenyAccess:
+    type: object
+  ActionType:
+    enum:
+      - read
+      - write
+      - delete

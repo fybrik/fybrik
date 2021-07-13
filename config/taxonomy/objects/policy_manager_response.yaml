@@ -1,0 +1,25 @@
+$schema: http://json-schema.org/draft-04/schema#
+title: Policy Manager Response
+type: object
+properties:
+  decision_id:
+    type: string
+  result:
+    type: array
+    items:
+      $ref: "#/definitions/ResultItem"
+additionalProperties: false
+required:
+  - result
+definitions:
+  ResultItem:
+    type: object
+    properties:
+      policy:
+        description: The policy on which the decision was based.
+        type: string
+      action:
+        $ref: "taxonomy.json#/definitions/Action"
+    required:
+      - policy
+      - action

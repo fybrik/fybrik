@@ -1,0 +1,10 @@
+definitions:
+  Tags:
+    properties:
+      secret: 
+        type: boolean
+      public: 
+        type: boolean
+      region:
+        type: string
+    additionalProperties: true

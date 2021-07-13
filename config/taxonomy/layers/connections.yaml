@@ -1,0 +1,56 @@
+definitions:
+  Connection:
+    oneOf:
+      - $ref: "#/definitions/S3"
+      - $ref: "#/definitions/DB2"
+      - $ref: "#/definitions/Kafka"
+  S3:
+    description: Connection information for S3 compatible object store
+    type: object
+    properties:
+      bucket:
+        type: string
+      endpoint:
+        type: string
+      objectKey:
+        type: string
+      region:
+        type: string
+    required:
+    - bucket
+    - endpoint
+    - objectKey
+  DB2:
+    type: object
+    properties:
+      database:
+        type: string
+      port:
+        type: string
+      ssl:
+        type: string
+      table:
+        type: string
+      url:
+        type: string
+  Kafka:
+    type: object
+    properties:
+      bootstrap_servers:
+        type: string
+      key_deserializer:
+        type: string
+      sasl_mechanism:
+        type: string
+      schema_registry:
+        type: string
+      security_protocol:
+        type: string
+      ssl_truststore:
+        type: string
+      ssl_truststore_password:
+        type: string
+      topic_name:
+        type: string
+      value_deserializer:
+        type: string

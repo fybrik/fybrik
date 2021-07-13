@@ -1,0 +1,13 @@
+openapi: 3.0.1
+info:
+  version: 1.0.0
+  title: Some Swagger
+  license:
+    name: MIT
+paths: {}
+components:
+  schemas:
+    PolicyManagerRequest:
+      $ref: "./objects/policy_manager_request.yaml"
+    PolicyManagerResponse:
+      $ref: "./objects/policy_manager_response.yaml"

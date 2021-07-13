@@ -1,0 +1,33 @@
+definitions:
+  Interface:
+    oneOf:
+      - properties:
+          protocol:
+            enum:
+              - m4d-arrow-flight
+          format:
+            enum:
+              - arrow
+      - properties:
+          protocol:
+            enum:
+              - kafka
+          format:
+            enum:
+              - json
+              - avro
+      - properties:
+          protocol:
+            enum:
+              - s3
+          format:
+            enum:
+              - csv
+              - parquet
+      - properties:
+          protocol:
+            enum:
+              - db2-jdbc
+          format:
+            enum:
+              - db2-jdbc

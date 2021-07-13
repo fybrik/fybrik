@@ -1,0 +1,43 @@
+definitions:
+  PolicyManagerRequestContext:
+    type: object
+    additionalProperties: true
+  Tags:
+    type: object
+    additionalProperties: true
+  Action:
+    type: object
+    properties:
+      name:
+        type: string
+    additionalProperties: true
+    required:
+      - name
+  Connection:
+    type: object
+    properties:
+      name:
+        type: string
+    required:
+      - name
+    additionalProperties: true
+  Protocol:
+    type: string
+  Format:
+    type: string
+  Interface:
+    type: object
+    properties:
+      protocol:
+        $ref: "#/definitions/Protocol"
+      format:
+        $ref: "#/definitions/Format"
+    required:
+      - protocol
+    additionalProperties: false
+  DatasetID:
+    type: string
+  ActionType:
+    type: string
+  ProcessingLocation:
+    type: string
