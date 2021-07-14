@@ -70,7 +70,7 @@ func getErrorMessages(application *app.M4DApplication) string {
 		errorMsgs = append(errorMsgs, application.Status.Conditions[app.ErrorConditionIndex].Message)
 	}
 	if application.Status.Conditions[app.DenyConditionIndex].Status == corev1.ConditionTrue {
-		errorMsgs[1] = application.Status.Conditions[app.DenyConditionIndex].Message
+		errorMsgs = append(errorMsgs, application.Status.Conditions[app.DenyConditionIndex].Message)
 	}
 	return strings.Join(errorMsgs, "\n")
 }
