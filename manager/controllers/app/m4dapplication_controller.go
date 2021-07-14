@@ -31,9 +31,6 @@ import (
 	"github.com/mesh-for-data/mesh-for-data/pkg/serde"
 	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
 	"github.com/mesh-for-data/mesh-for-data/pkg/vault"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // M4DApplicationReconciler reconciles a M4DApplication object
@@ -105,7 +102,7 @@ func (r *M4DApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 			return ctrl.Result{}, err
 		}
 	}
-	if hasError(applicationContext) {
+	if errorOrDeny(applicationContext) {
 		log.Info("Reconciled with errors: " + getErrorMessages(applicationContext))
 	}
 
@@ -301,8 +298,8 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		}
 		requirements = append(requirements, req)
 	}
-	// check for errors
-	if hasError(applicationContext) {
+	// check if can proceed
+	if errorOrDeny(applicationContext) {
 		return ctrl.Result{}, nil
 	}
 
@@ -331,8 +328,8 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 		}
 		instances = append(instances, instancesPerDataset...)
 	}
-	// check for errors
-	if hasError(applicationContext) {
+	// check if can proceed
+	if errorOrDeny(applicationContext) {
 		return ctrl.Result{}, nil
 	}
 	// update allocated storage in the status
@@ -475,24 +472,11 @@ func AnalyzeError(application *app.M4DApplication, assetID string, err error) {
 	if err == nil {
 		return
 	}
-	// Unwrap the error - it wraps the original error by the connector
-	errorToCheck := err
-	if cause := errors.Cause(err); cause != nil {
-		errorToCheck = cause
-	}
-	if errStatus, fromGrpc := status.FromError(errorToCheck); fromGrpc {
-		if errStatus.Code() == codes.InvalidArgument {
-			setDenyCondition(application, assetID, errStatus.Message())
-		} else {
-			setErrorCondition(application, assetID, errStatus.Message())
-		}
-	} else {
-		switch errorToCheck.Error() {
-		case app.ReadAccessDenied, app.CopyNotAllowed, app.WriteNotAllowed:
-			setDenyCondition(application, assetID, errorToCheck.Error())
-		default:
-			setErrorCondition(application, assetID, errorToCheck.Error())
-		}
+	switch err.Error() {
+	case app.InvalidAssetID, app.ReadAccessDenied, app.CopyNotAllowed, app.WriteNotAllowed:
+		setDenyCondition(application, assetID, err.Error())
+	default:
+		setErrorCondition(application, assetID, err.Error())
 	}
 }
 

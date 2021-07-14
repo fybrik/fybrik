@@ -92,6 +92,7 @@ type M4DApplicationSpec struct {
 
 // ErrorMessages that are reported to the user
 const (
+	InvalidAssetID              string = "The asset does not exist."
 	ReadAccessDenied            string = "Governance policies forbid access to the data."
 	CopyNotAllowed              string = "Copy of the data is required but can not be done according to the governance policies."
 	WriteNotAllowed             string = "Governance policies forbid writing of the data."

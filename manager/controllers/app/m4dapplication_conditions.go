@@ -4,6 +4,8 @@
 package app
 
 import (
+	"strings"
+
 	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -19,36 +21,27 @@ func resetConditions(application *app.M4DApplication) {
 }
 
 func setErrorCondition(application *app.M4DApplication, assetID string, msg string) {
-	if len(application.Status.Conditions) == 0 {
-		resetConditions(application)
-	}
 	errMsg := "An error was received"
 	if assetID != "" {
 		errMsg += " for asset " + assetID
 	}
-	errMsg += " . If the error persists, please contact an operator.\n"
-	errMsg += "Error description: " + msg + "\n"
+	errMsg += " . If the error persists, please contact an operator."
+	errMsg += "Error description: " + msg
 	application.Status.Conditions[app.ErrorConditionIndex].Status = corev1.ConditionTrue
-	application.Status.Conditions[app.ErrorConditionIndex].Message += errMsg
+	application.Status.Conditions[app.ErrorConditionIndex].Message = errMsg
 }
 
 func setDenyCondition(application *app.M4DApplication, assetID string, msg string) {
-	if len(application.Status.Conditions) == 0 {
-		resetConditions(application)
-	}
 	application.Status.Conditions[app.DenyConditionIndex].Status = corev1.ConditionTrue
 	application.Status.Conditions[app.DenyConditionIndex].Message = msg
 }
 
 func setReadyCondition(application *app.M4DApplication, assetID string) {
-	if len(application.Status.Conditions) == 0 {
-		resetConditions(application)
-	}
 	application.Status.Conditions[app.ReadyConditionIndex].Status = corev1.ConditionTrue
 	application.Status.Ready = true
 }
 
-func hasError(application *app.M4DApplication) bool {
+func errorOrDeny(application *app.M4DApplication) bool {
 	// check if the conditions have been initialized
 	if len(application.Status.Conditions) == 0 {
 		return false
@@ -68,16 +61,16 @@ func inFinalState(application *app.M4DApplication) bool {
 }
 
 func getErrorMessages(application *app.M4DApplication) string {
-	var errMsg string
+	var errorMsgs []string
 	// check if the conditions have been initialized
 	if len(application.Status.Conditions) == 0 {
-		return errMsg
+		return ""
 	}
 	if application.Status.Conditions[app.ErrorConditionIndex].Status == corev1.ConditionTrue {
-		errMsg += application.Status.Conditions[app.ErrorConditionIndex].Message
+		errorMsgs = append(errorMsgs, application.Status.Conditions[app.ErrorConditionIndex].Message)
 	}
 	if application.Status.Conditions[app.DenyConditionIndex].Status == corev1.ConditionTrue {
-		errMsg += application.Status.Conditions[app.DenyConditionIndex].Message
+		errorMsgs[1] = application.Status.Conditions[app.DenyConditionIndex].Message
 	}
-	return errMsg
+	return strings.Join(errorMsgs, "\n")
 }
