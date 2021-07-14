@@ -57,11 +57,17 @@ func (r *M4DApplication) validateM4DApplication() error {
 		return err
 	}
 
-	// Validate against taxonomy
+	// Validate against strict taxonomy
 	path, err := filepath.Abs("/tmp/taxonomy/application.values.schema.json")
 	if err != nil {
 		return err
 	}
+
+	// // Validate against relaxed taxonomy
+	// path, err := filepath.Abs("/tmp/taxonomy/application_relaxed.values.schema.json")
+	// if err != nil {
+	// 	return err
+	// }
 
 	taxonomyLoader := gojsonschema.NewReferenceLoader("file://" + path)
 	documentLoader := gojsonschema.NewStringLoader(string(applicationJSON))
