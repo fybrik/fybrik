@@ -1,9 +1,7 @@
 definitions:
   Tags:
     properties:
-      secret: 
-        type: boolean
-      public: 
+      confidential: 
         type: boolean
       region:
         type: string
