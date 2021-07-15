@@ -3,7 +3,7 @@ definitions:
     oneOf:
       - $ref: "#/definitions/RedactAction"
       - $ref: "#/definitions/RemoveAction"
-      - $ref: "#/definitions/DenyAccess"
+      - $ref: "#/definitions/Deny"
   RedactAction:
     type: object
     properties:
@@ -22,5 +22,6 @@ definitions:
         type: array
     required:
       - columns
-  DenyAccess:
+  Deny:
     type: object
+    additionalProperties: false
