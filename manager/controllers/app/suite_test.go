@@ -15,7 +15,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	comv1alpha1 "github.com/datashim-io/datashim/src/dataset-operator/pkg/apis/com/v1alpha1"
 	appapi "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 
 	. "github.com/onsi/ginkgo"
@@ -71,8 +70,6 @@ var _ = BeforeSuite(func(done Done) {
 	Expect(cfg).ToNot(BeNil())
 
 	err = appapi.AddToScheme(scheme.Scheme)
-	Expect(err).NotTo(HaveOccurred())
-	err = comv1alpha1.SchemeBuilder.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
 	// +kubebuilder:scaffold:scheme

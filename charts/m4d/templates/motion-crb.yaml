@@ -3,11 +3,11 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ template "m4d.fullname" . }}-manager-crb
+  name: {{ template "m4d.fullname" . }}-motion-crb
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ template "m4d.fullname" . }}-manager-cr
+  name: {{ template "m4d.fullname" . }}-motion-cr
 subjects:
 - kind: ServiceAccount
   name: {{ .Values.manager.serviceAccount.name | default "default" }}

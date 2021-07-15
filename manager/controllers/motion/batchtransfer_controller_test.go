@@ -24,7 +24,7 @@ var _ = Describe("BatchTransfer Controller", func() {
 	const timeout = time.Second * 30
 	const interval = time.Millisecond * 100
 	const batchtransferName = "batchtransfer-sample"
-	const batchtransferNameSpace = "default"
+	const batchtransferNameSpace = "m4d-blueprints"
 
 	BeforeEach(func() {
 		// Add any setup steps that needs to be executed before each test

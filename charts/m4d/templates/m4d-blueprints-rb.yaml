@@ -1,0 +1,17 @@
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled .Values.worker.enabled) }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ template "m4d.fullname" . }}-blueprints-rb
+  namespace: m4d-blueprints
+  labels:
+    {{- include "m4d.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ template "m4d.fullname" . }}-blueprints-role
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.manager.serviceAccount.name | default "default" }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}

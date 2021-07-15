@@ -23,18 +23,20 @@ Modules that access or write data need credentials in order to access the data s
 An example for Vault Login API call which uses the Vault parameters is as follows:
 
 ```
-$ curl -v --request POST <address>/<authPath> -H "Content-Type: application/json" --data '{"jwt": <module service account token>, "role": <role>}'
+$ curl -v -X POST <address>/<authPath> -H "Content-Type: application/json" --data '{"jwt": <module service account token>, "role": <role>}'
 ```
 
 An example for Vault Read Secret API call which uses the Vault parameters is as follows:
 
 ```
-$ curl --header "X-Vault-Token: ..." https://<address>/<secretPath>
+$ curl --header "X-Vault-Token: ..." -X GET https://<address>/<secretPath>
 ```
 
 ## Module Helm Chart
 
 For any module chosen by the control plane to be part of the data path, the control plane needs to be able to install/remove/upgrade an instance of the module. Mesh for Data uses [Helm](https://helm.sh/docs/intro/using_helm/) to provide this functionality. Follow the Helm [getting started](https://helm.sh/docs/chart_template_guide/getting_started/) guide if you are unfamiliar with Helm. Note that Helm 3.3 or above is required.
+
+The names of the Kubernetes resources deployed by the module helm chart must contain the release name to avoid resource conflicts. A Kubernetes `service` resource which is used to access the module must have a name equal to the release name (this service name is also used in the optional [`spec.capabilites.api.endpoint.hostname`](../reference/crds.md#m4dmodulespeccapabilitiesapiendpoint) field).
 
 Because the chart is installed by the control plane, the input `values` to the chart must match the relevant type of [arguments](../reference/crds.md#blueprintspecflowstepsindexarguments). 
 <!-- TODO: expand this when we support setting values in the M4DModule YAML: https://github.com/mesh-for-data/mesh-for-data/pull/42 -->
@@ -195,7 +197,7 @@ capabilities:
 
 The following are examples of YAMLs from fully implemented modules:
 
-* An example YAML for a module that [copies from db2 to s3](https://github.com/mesh-for-data/mesh-for-data/blob/master/manager/testdata/e2e/module-implicit-copy-db2wh-to-s3.yaml) and includes transformation actions 
+* An example YAML for a module that [copies from db2 to s3](https://github.com/mesh-for-data/mesh-for-data/blob/master/manager/testdata/unittests/copy-db2-parquet.yaml) and includes transformation actions
 * And an example [arrow flight read module](https://github.com/mesh-for-data/arrow-flight-module/blob/master/module.yaml) YAML, also with transformation support
 
 ## Test

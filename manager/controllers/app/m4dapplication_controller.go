@@ -31,9 +31,6 @@ import (
 	"github.com/mesh-for-data/mesh-for-data/pkg/serde"
 	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
 	"github.com/mesh-for-data/mesh-for-data/pkg/vault"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // M4DApplicationReconciler reconciles a M4DApplication object
@@ -105,12 +102,12 @@ func (r *M4DApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 			return ctrl.Result{}, err
 		}
 	}
-	if hasError(applicationContext) {
+	if errorOrDeny(applicationContext) {
 		log.Info("Reconciled with errors: " + getErrorMessages(applicationContext))
 	}
 
 	// trigger a new reconcile if required (the m4dapplication is not ready)
-	if !applicationContext.Status.Ready {
+	if !inFinalState(applicationContext) {
 		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 	return ctrl.Result{}, nil
@@ -122,14 +119,13 @@ func getBucketResourceRef(name string) *types.NamespacedName {
 
 func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApplication, status app.ObservedState) error {
 	applicationContext.Status.DataAccessInstructions = ""
-	applicationContext.Status.Ready = false
 	resetConditions(applicationContext)
 	if applicationContext.Status.CatalogedAssets == nil {
 		applicationContext.Status.CatalogedAssets = make(map[string]string)
 	}
 
 	if status.Error != "" {
-		setCondition(applicationContext, "", status.Error, true)
+		setErrorCondition(applicationContext, "", status.Error)
 		return nil
 	}
 	if !status.Ready {
@@ -164,7 +160,7 @@ func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApp
 			}
 		}
 	}
-	applicationContext.Status.Ready = true
+	setReadyCondition(applicationContext, "")
 	applicationContext.Status.DataAccessInstructions = status.DataAccessInstructions
 	return nil
 }
@@ -272,7 +268,6 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	// clear status
 	resetConditions(applicationContext)
 	applicationContext.Status.DataAccessInstructions = ""
-	applicationContext.Status.Ready = false
 	if applicationContext.Status.ProvisionedStorage == nil {
 		applicationContext.Status.ProvisionedStorage = make(map[string]app.DatasetDetails)
 	}
@@ -283,7 +278,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 			return ctrl.Result{}, err
 		}
 		r.Log.V(0).Info("no blueprint will be generated since no datasets are specified")
-		applicationContext.Status.Ready = true
+		setReadyCondition(applicationContext, "")
 		return ctrl.Result{}, nil
 	}
 
@@ -298,12 +293,13 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 			Context: dataset.DeepCopy(),
 		}
 		if err := r.constructDataInfo(&req, applicationContext, clusters); err != nil {
-			return ctrl.Result{}, err
+			AnalyzeError(applicationContext, req.Context.DataSetID, err)
+			continue
 		}
 		requirements = append(requirements, req)
 	}
-	// check for errors
-	if hasError(applicationContext) {
+	// check if can proceed
+	if errorOrDeny(applicationContext) {
 		return ctrl.Result{}, nil
 	}
 
@@ -327,12 +323,13 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	for _, item := range requirements {
 		instancesPerDataset, err := moduleManager.SelectModuleInstances(item, applicationContext)
 		if err != nil {
-			setCondition(applicationContext, item.Context.DataSetID, err.Error(), true)
+			AnalyzeError(applicationContext, item.Context.DataSetID, err)
+			continue
 		}
 		instances = append(instances, instancesPerDataset...)
 	}
-	// check for errors
-	if hasError(applicationContext) {
+	// check if can proceed
+	if errorOrDeny(applicationContext) {
 		return ctrl.Result{}, nil
 	}
 	// update allocated storage in the status
@@ -382,7 +379,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, blueprintPerClusterMap); err != nil {
 		r.Log.V(0).Info("Error creating " + resourceRef.Kind + " : " + err.Error())
 		if err.Error() == app.InvalidClusterConfiguration {
-			setCondition(applicationContext, "", app.InvalidClusterConfiguration, true)
+			setErrorCondition(applicationContext, "", app.InvalidClusterConfiguration)
 			return ctrl.Result{}, nil
 		}
 		return ctrl.Result{}, err
@@ -471,15 +468,16 @@ func (r *M4DApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 // AnalyzeError analyzes whether the given error is fatal, or a retrial attempt can be made.
 // Reasons for retrial can be either communication problems with external services, or kubernetes problems to perform some action on a resource.
 // A retrial is achieved by returning an error to the reconcile method
-func AnalyzeError(app *app.M4DApplication, log logr.Logger, assetID string, err error) error {
-	errStatus, _ := status.FromError(err)
-	log.V(0).Info(errStatus.Message())
-	if errStatus.Code() == codes.InvalidArgument {
-		setCondition(app, assetID, errStatus.Message(), true)
-		return nil
+func AnalyzeError(application *app.M4DApplication, assetID string, err error) {
+	if err == nil {
+		return
 	}
-	setCondition(app, assetID, errStatus.Message(), false)
-	return err
+	switch err.Error() {
+	case app.InvalidAssetID, app.ReadAccessDenied, app.CopyNotAllowed, app.WriteNotAllowed:
+		setDenyCondition(application, assetID, err.Error())
+	default:
+		setErrorCondition(application, assetID, err.Error())
+	}
 }
 
 func ownerLabels(id types.NamespacedName) map[string]string {
@@ -495,7 +493,7 @@ func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, e
 
 	moduleMap := make(map[string]*app.M4DModule)
 	var moduleList app.M4DModuleList
-	if err := r.List(ctx, &moduleList); err != nil {
+	if err := r.List(ctx, &moduleList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
 		r.Log.V(0).Info("Error while listing modules: " + err.Error())
 		return moduleMap, err
 	}

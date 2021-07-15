@@ -1,0 +1,16 @@
+{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+{{- if .Values.clusterScoped }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ template "m4d.fullname" . }}-admin-crb
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ template "m4d.fullname" . }}-admin-cr
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.manager.serviceAccount.name | default "default" }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}
+{{- end }}
