@@ -42,9 +42,6 @@ func (r *M4DApplication) ValidateUpdate(old runtime.Object) error {
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *M4DApplication) ValidateDelete() error {
-	log.Printf("Validating m4dapplication %s for deletion", r.Name)
-
-	// TODO(user): fill in your validation logic upon object deletion.
 	return nil
 }
 
@@ -62,12 +59,6 @@ func (r *M4DApplication) validateM4DApplication() error {
 	if err != nil {
 		return err
 	}
-
-	// // Validate against relaxed taxonomy
-	// path, err := filepath.Abs("/tmp/taxonomy/application_relaxed.values.schema.json")
-	// if err != nil {
-	// 	return err
-	// }
 
 	taxonomyLoader := gojsonschema.NewReferenceLoader("file://" + path)
 	documentLoader := gojsonschema.NewStringLoader(string(applicationJSON))
