@@ -30,7 +30,6 @@ func transform(base, doc *model.Document, codegenTarget bool) (*model.Document, 
 	if codegenTarget {
 		for _, value := range t.doc.Definitions {
 			t.removeComplexValidation(value)
-			// t.adjustAdditionalProperties(value)
 		}
 	}
 
@@ -175,21 +174,3 @@ func (t *transformer) removeComplexValidation(schema *model.SchemaRef) *model.Sc
 	}
 	return schema
 }
-
-// func (t *transformer) adjustAdditionalProperties(schema *model.SchemaRef) *model.SchemaRef {
-// 	if schema != nil {
-// 		if schema.AdditionalProperties.IsAllowed() {
-// 			schema.AdditionalProperties.Allowed = nil
-// 			schema.AdditionalProperties.Schema = &model.SchemaRef{Schema: model.Schema{}}
-// 		}
-// 		for _, property := range schema.Properties {
-// 			property := t.doc.Deref(property)
-// 			t.adjustAdditionalProperties(property)
-// 		}
-// 		t.adjustAdditionalProperties(schema.Items)
-// 		if schema.AdditionalProperties != nil {
-// 			t.adjustAdditionalProperties(schema.AdditionalProperties.Schema)
-// 		}
-// 	}
-// 	return schema
-// }
