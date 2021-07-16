@@ -19,7 +19,6 @@ import (
 // ValidateSchema validates that the input schema adheres to the requirements defined in
 // https://github.com/mesh-for-data/mesh-for-data/blob/master/config/taxonomy/HOWTO_SPEC.md
 func ValidateSchema(path string) error {
-	orig := path
 	path, err := filepath.Abs(path)
 	if err != nil {
 		return err
@@ -31,7 +30,7 @@ func ValidateSchema(path string) error {
 		return errors.Wrap(err, "Schema is not a valid DRAFT 4 JSON schema")
 	}
 
-	err = ValidateStructural(orig)
+	err = ValidateStructural(path)
 	if err != nil {
 		return errors.Wrap(err, "Schema is not a valid structural schema")
 	}

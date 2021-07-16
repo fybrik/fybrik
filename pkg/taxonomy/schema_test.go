@@ -10,7 +10,7 @@ import (
 func TestValidateSchema_simple_success(t *testing.T) {
 	taxonomyFile := "../../test/taxonomy/catalog.structs.schema.json"
 	g := NewGomegaWithT(t)
-	err := ValidateSchema("./" + taxonomyFile)
+	err := ValidateSchema(taxonomyFile)
 	g.Expect(err).NotTo(HaveOccurred())
 }
 
@@ -18,6 +18,6 @@ func TestValidateSchema_simple_success(t *testing.T) {
 func TestValidateSchema_simple_fail(t *testing.T) {
 	taxonomyFile := "../../test/taxonomy/bad_catalog.structs.schema.json"
 	g := NewGomegaWithT(t)
-	err := ValidateSchema("./" + taxonomyFile)
+	err := ValidateSchema(taxonomyFile)
 	g.Expect(err).To(HaveOccurred())
 }
