@@ -12,13 +12,17 @@ import (
 
 	"github.com/onsi/gomega/gexec"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 
 	motionv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/motion/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	kbatch "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -88,9 +92,20 @@ var _ = BeforeSuite(func(done Done) {
 		logf.Log.Info("Using existing controller in existing cluster...")
 		k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 	} else {
+		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": "m4d-blueprints"})
+		selectorsByObject := cache.SelectorsByObject{
+			&motionv1.BatchTransfer{}:       {Field: workerNamespaceSelector},
+			&motionv1.StreamTransfer{}:      {Field: workerNamespaceSelector},
+			&kbatch.Job{}:                   {Field: workerNamespaceSelector},
+			&corev1.Secret{}:                {Field: workerNamespaceSelector},
+			&corev1.Pod{}:                   {Field: workerNamespaceSelector},
+			&corev1.PersistentVolumeClaim{}: {Field: workerNamespaceSelector},
+		}
+
 		mgr, err = ctrl.NewManager(cfg, ctrl.Options{
 			Scheme:             scheme.Scheme,
 			MetricsBindAddress: "localhost:8085",
+			NewCache:           cache.BuilderWithOptions(cache.Options{SelectorsByObject: selectorsByObject}),
 		})
 		Expect(err).ToNot(HaveOccurred())
 

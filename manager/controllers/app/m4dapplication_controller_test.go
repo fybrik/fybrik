@@ -5,6 +5,7 @@ package app
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -13,6 +14,7 @@ import (
 	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -27,6 +29,24 @@ var _ = Describe("M4DApplication Controller", func() {
 
 		AfterEach(func() {
 			// Add any teardown steps that needs to be executed after each test
+		})
+		It("Test restricted access", func() {
+			if os.Getenv("USE_EXISTING_CONTROLLER") != "true" {
+				// test access restriction
+				// Create secrets in default and m4d-blueprints namespaces
+				// A secret from the default namespace should not be listed
+				secret1 := &corev1.Secret{Type: corev1.SecretTypeOpaque, StringData: map[string]string{"password": "123"}}
+				secret1.Name = "test-secret"
+				secret1.Namespace = "default"
+				Expect(k8sClient.Create(context.TODO(), secret1)).NotTo(HaveOccurred(), "a secret could not be created")
+				secret2 := &corev1.Secret{Type: corev1.SecretTypeOpaque, StringData: map[string]string{"password": "123"}}
+				secret2.Name = "test-secret"
+				secret2.Namespace = "m4d-blueprints"
+				Expect(k8sClient.Create(context.TODO(), secret2)).NotTo(HaveOccurred(), "a secret could not be created")
+				secretList := &corev1.SecretList{}
+				Expect(k8sClient.List(context.Background(), secretList)).NotTo(HaveOccurred())
+				Expect(len(secretList.Items)).To(Equal(1), "Secrets from other namespaces should not be listed")
+			}
 		})
 		It("Test end-to-end for M4DApplication", func() {
 			module := &app.M4DModule{}
