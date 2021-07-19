@@ -1,0 +1,20 @@
+apiVersion: app.m4d.ibm.com/v1alpha1
+kind: M4DApplication
+metadata:
+  name: application-with-errors
+  labels:
+    app: kf-notebook
+spec:
+  selector:
+    clusterName: hobbiton
+    workloadSelector:
+      matchLabels:
+        app: kf-notebook
+  appInfo:
+    role: Hacker
+  data:
+    - dataSetID: "{\"ServerName\":\"mds1\",\"AssetGuid\":\"ASSET_ID\"}"
+      requirements:
+        interface: 
+          protocol: m4d-arrow-flight
+          dataformat: arrow

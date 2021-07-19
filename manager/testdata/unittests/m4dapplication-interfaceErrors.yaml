@@ -1,0 +1,21 @@
+apiVersion: app.m4d.ibm.com/v1alpha1
+kind: M4DApplication
+metadata:
+  name: application-with-errors-2
+  labels:
+    app: kf-notebook
+spec:
+  selector:
+    clusterName: hobbiton
+    workloadSelector:
+      matchLabels:
+        app: kf-notebook
+  appInfo:
+    intent: Fraud Detection
+    role: Sales
+  data:
+    - dataSetID: "{\"ServerName\":\"mds1\",\"AssetGuid\":\"ASSET_ID\"}"
+      requirements:
+        interface: 
+          protocol: wrongProtocol
+          dataformat: csv
