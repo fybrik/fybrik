@@ -1,0 +1,17 @@
+name: license-check
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  addlicense-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2.3.4
+      - name: Run license check
+        run: |
+          go get -u github.com/google/addlicense
+          export PATH=$PATH:$(go env GOPATH)/bin
+          addlicense -f hack/LICENSE.go.txt -check $(find $PWD -type f -name '*.go')
+
