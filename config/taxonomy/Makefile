@@ -1,14 +1,12 @@
 GLANG ?= "go"
 all: clean compile gen
 compile:
-	go run ../../main.go taxonomy compile --base ./base/base.yaml --out ./objects/taxonomy.json ./layers/actions.yaml ./layers/locations.yaml \
+	go run ../../main.go taxonomy compile --base ./base/base.yaml --out ./objects/taxonomy.json \
+	./layers/module/actions.yaml \
+	./layers/catalog/locations.yaml \
+	./layers/catalog/tags.yaml \
 		--codegen  
-gen:
-	mkdir -p out
-	~/bin/openapitools/openapi-generator-cli generate -i ./codegen.spec.yaml -g $(GLANG) -o out --global-property=models,apis \
-		--additional-properties=legacyDiscriminatorBehavior=false \
-		--enable-post-process-file \
-		--type-mappings=object=interface{}
-clean:
-	rm -rf docs
-	rm -rf out
+
+validate:
+	go run ../../main.go taxonomy validate ./objects/policy_manager_request.json
+	go run ../../main.go taxonomy validate ./objects/policy_manager_response.json
