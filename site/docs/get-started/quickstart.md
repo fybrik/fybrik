@@ -76,7 +76,6 @@ Run the following to install vault and the plugin in development mode:
 === "Kubernetes" 
 
     ```bash
-    helm dependency update m4d-charts/vault
     helm install vault m4d-charts/vault --create-namespace -n m4d-system \
         --set "vault.injector.enabled=false" \
         --set "vault.server.dev.enabled=true" \
@@ -87,7 +86,6 @@ Run the following to install vault and the plugin in development mode:
 === "OpenShift"
 
     ```bash
-    helm dependency update m4d-charts/vault
     helm install vault m4d-charts/vault --create-namespace -n m4d-system \
         --set "global.openshift=true" \
         --set "vault.injector.enabled=false" \

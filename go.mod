@@ -7,6 +7,7 @@ require (
 	github.com/IBM/satcon-client-go v0.1.2-0.20210329192404-b8fa1c732712
 	github.com/buger/jsonparser v1.1.1
 	github.com/fatih/color v1.9.0 // indirect
+	github.com/getkin/kin-openapi v0.66.0 // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-chi/render v1.0.1
@@ -26,6 +27,7 @@ require (
 	github.com/kr/pretty v0.2.1 // indirect
 	github.com/mailru/easyjson v0.7.1-0.20191009090205-6c0755d89d1e // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
+	github.com/mesh-for-data/openapi2crd v0.3.2 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
@@ -35,8 +37,8 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/robfig/cron v1.2.0
 	github.com/rogpeppe/go-internal v1.6.0 // indirect
-	github.com/spf13/cobra v1.1.3
-	github.com/spf13/viper v1.7.0
+	github.com/spf13/cobra v1.2.1
+	github.com/spf13/viper v1.8.1
 	github.com/stoewer/go-strcase v1.2.0
 	github.com/stretchr/testify v1.7.0
 	github.com/tidwall/pretty v1.0.1 // indirect
@@ -45,17 +47,17 @@ require (
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/multierr v1.6.0
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
-	golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5 // indirect
 	google.golang.org/genproto v0.0.0-20210707164411-8c882eb9abba // indirect
 	google.golang.org/grpc v1.39.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.6.2
-	k8s.io/api v0.21.1
-	k8s.io/apimachinery v0.21.1
+	k8s.io/api v0.21.2
+	k8s.io/apiextensions-apiserver v0.21.2 // indirect
+	k8s.io/apimachinery v0.21.2
 	k8s.io/cli-runtime v0.21.0
-	k8s.io/client-go v0.21.1
+	k8s.io/client-go v0.21.2
 	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/cli-utils v0.19.2
 	sigs.k8s.io/controller-runtime v0.9.0

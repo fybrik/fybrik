@@ -21,7 +21,7 @@ func WriteDocumentToFile(doc *model.Document, outPath string) error {
 	if strings.HasSuffix(outPath, ".yaml") || strings.HasSuffix(outPath, ".yml") {
 		encoded, err = yaml.Marshal(doc)
 	} else {
-		encoded, err = json.Marshal(doc)
+		encoded, err = json.MarshalIndent(doc, "", "  ")
 	}
 	if err != nil {
 		return err
