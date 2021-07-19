@@ -84,14 +84,13 @@ var _ = BeforeSuite(func(done Done) {
 	} else {
 		systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
 		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": "m4d-blueprints"})
+		// the testing environment will restrict access to secrets, modules and storage accounts
 		mgr, err = ctrl.NewManager(cfg, ctrl.Options{
 			Scheme:             scheme.Scheme,
 			MetricsBindAddress: "localhost:8086",
 			NewCache: cache.BuilderWithOptions(cache.Options{SelectorsByObject: cache.SelectorsByObject{
-				&appapi.Plotter{}:           {Field: systemNamespaceSelector},
 				&appapi.M4DModule{}:         {Field: systemNamespaceSelector},
 				&appapi.M4DStorageAccount{}: {Field: systemNamespaceSelector},
-				&appapi.Blueprint{}:         {Field: workerNamespaceSelector},
 				&corev1.Secret{}:            {Field: workerNamespaceSelector},
 			}}),
 		})

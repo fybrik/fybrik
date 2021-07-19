@@ -30,9 +30,9 @@ var _ = Describe("M4DApplication Controller", func() {
 		AfterEach(func() {
 			// Add any teardown steps that needs to be executed after each test
 		})
-		It("Test restricted access", func() {
+		It("Test restricted access to secrets", func() {
 			if os.Getenv("USE_EXISTING_CONTROLLER") != "true" {
-				// test access restriction
+				// test access restriction: only secrets from m4d-blueprints can be accessed
 				// Create secrets in default and m4d-blueprints namespaces
 				// A secret from the default namespace should not be listed
 				secret1 := &corev1.Secret{Type: corev1.SecretTypeOpaque, StringData: map[string]string{"password": "123"}}
@@ -46,6 +46,20 @@ var _ = Describe("M4DApplication Controller", func() {
 				secretList := &corev1.SecretList{}
 				Expect(k8sClient.List(context.Background(), secretList)).NotTo(HaveOccurred())
 				Expect(len(secretList.Items)).To(Equal(1), "Secrets from other namespaces should not be listed")
+			}
+		})
+		It("Test restricted access to modules", func() {
+			if os.Getenv("USE_EXISTING_CONTROLLER") != "true" {
+				// test access restriction: only modules from m4d-system can be accessed
+				// Create a module in default namespace
+				// An attempt to fetch it will fail
+				module := &app.M4DModule{}
+				Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
+				module.Namespace = "default"
+				Expect(k8sClient.Create(context.Background(), module)).Should(Succeed())
+				fetchedModule := &app.M4DModule{}
+				moduleKey := client.ObjectKeyFromObject(module)
+				Expect(k8sClient.Get(context.Background(), moduleKey, fetchedModule)).To(HaveOccurred(), "Should deny access")
 			}
 		})
 		It("Test end-to-end for M4DApplication", func() {
