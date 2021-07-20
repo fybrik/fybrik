@@ -1,7 +1,8 @@
-GLANG ?= "go"
+ROOT_DIR := ../..
 all: clean compile gen
-compile:
-	go run ../../main.go taxonomy compile --base ./base/base.yaml --out ./objects/taxonomy.json \
+
+compile-taxonomy-schema:
+	go run $(ROOT_DIR)/main.go taxonomy compile --base ./base/base.yaml --out ./objects/taxonomy.json \
 		--codegen  
 
 validate:
