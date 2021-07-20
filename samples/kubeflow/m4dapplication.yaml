@@ -11,7 +11,7 @@ spec:
       matchLabels:
         app: kf-notebook
   appInfo:
-    intent: fraud-detection
+    intent: Fraud Detection
     role: Security
   data:
     - dataSetID: "{\"ServerName\":\"mds1\",\"AssetGuid\":\"ASSET_ID\"}"
