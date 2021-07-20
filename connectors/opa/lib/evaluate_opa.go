@@ -83,7 +83,10 @@ func EvaluatePoliciesOnInput(inputMap map[string]interface{}, opaServerURL strin
 	data, _ := ioutil.ReadAll(res.Body)
 	log.Printf("body from input http response: %s\n", data)
 	log.Printf("status from input http response: %d\n", res.StatusCode)
-	res.Body.Close()
+	if err := res.Body.Close(); err != nil {
+		log.Printf("error closing http connection: %s\n" + err.Error())
+		return "", err
+	}
 
 	log.Println("responsestring data")
 	log.Println(string(data))

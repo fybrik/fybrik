@@ -68,6 +68,7 @@ func (r *M4DApplication) validateM4DApplicationSpec() []*field.Error {
 	var allErrs []*field.Error
 	specField := field.NewPath("spec").Child("data")
 	for i, dataSet := range r.Spec.Data {
+		dataSet := dataSet
 		if err := r.validateDataContext(specField.Index(i), &dataSet); err != nil {
 			allErrs = append(allErrs, err...)
 		}
