@@ -14,7 +14,6 @@ var (
 )
 
 func TestAppTaxonomy(t *testing.T) {
-
 	applicationYaml, err := ioutil.ReadFile("../../samples/kubeflow/m4dapplication.yaml")
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
