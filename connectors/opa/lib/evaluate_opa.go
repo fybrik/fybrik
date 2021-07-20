@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"strings"
 
+	"emperror.dev/errors"
 	"github.com/buger/jsonparser"
 	"github.com/hashicorp/go-retryablehttp"
 )
@@ -84,8 +85,7 @@ func EvaluatePoliciesOnInput(inputMap map[string]interface{}, opaServerURL strin
 	log.Printf("body from input http response: %s\n", data)
 	log.Printf("status from input http response: %d\n", res.StatusCode)
 	if err := res.Body.Close(); err != nil {
-		log.Printf("error closing http connection: %s\n" + err.Error())
-		return "", err
+		return "", errors.Wrap(err, "error closing http connection")
 	}
 
 	log.Println("responsestring data")
