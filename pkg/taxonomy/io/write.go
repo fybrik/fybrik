@@ -26,5 +26,7 @@ func WriteDocumentToFile(doc *model.Document, outPath string) error {
 	if err != nil {
 		return err
 	}
+	/* #nosec G306 */
+	// Avoid nosec "Expect WriteFile permissions to be 0600 or less" error
 	return ioutil.WriteFile(filepath.Clean(outPath), encoded, 0644)
 }
