@@ -1,5 +1,5 @@
 ROOT_DIR := ../..
-all: clean compile gen
+all: compile-taxonomy-schema validate
 
 compile-taxonomy-schema:
 	go run $(ROOT_DIR)/main.go taxonomy compile --base ./base/base.yaml --out ./objects/taxonomy.json \
