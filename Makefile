@@ -1,5 +1,6 @@
 include Makefile.env
 export DOCKER_TAGNAME ?= latest
+export KUBE_NAMESPACE ?= m4d-system
 
 .PHONY: license
 license: $(TOOLBIN)/license_finder
@@ -8,6 +9,15 @@ license: $(TOOLBIN)/license_finder
 .PHONY: docker-mirror-read
 docker-mirror-read:
 	$(TOOLS_DIR)/docker_mirror.sh $(TOOLS_DIR)/docker_mirror.conf
+
+.PHONY: deploy
+deploy: export VALUES_FILE?=charts/m4d/values.yaml
+deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
+	$(TOOLBIN)/kubectl create namespace $(KUBE_NAMESPACE) || true
+	$(TOOLBIN)/helm install m4d-crd charts/m4d-crd  \
+               --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
+	$(TOOLBIN)/helm install m4d charts/m4d --values $(VALUES_FILE) \
+               --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 
 .PHONY: test
 test:
@@ -18,17 +28,17 @@ test:
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
 run-integration-tests: export DOCKER_NAMESPACE?=m4d-system
-run-integration-tests: export VALUES_FILE=m4d/integration-tests.values.yaml
+run-integration-tests: export VALUES_FILE=charts/m4d/integration-tests.values.yaml
 run-integration-tests:
 	$(MAKE) kind
-	$(MAKE) -C charts vault
-	$(MAKE) -C charts wait-for-vault
-	$(MAKE) -C charts cert-manager
+	$(MAKE) -C third_party/vault deploy
+	$(MAKE) -C third_party/vault wait-for-vault
+	$(MAKE) -C third_party/cert-manager deploy
 	$(MAKE) -C third_party/datashim deploy
 	$(MAKE) docker
 	$(MAKE) -C test/services docker-build docker-push
 	$(MAKE) cluster-prepare-wait
-	$(MAKE) -C charts m4d
+	$(MAKE) deploy
 	$(MAKE) -C manager wait_for_manager
 	$(MAKE) configure-vault
 	$(MAKE) helm
@@ -38,7 +48,6 @@ run-integration-tests:
 	$(MAKE) -C modules test
 
 .PHONY: run-deploy-tests
-run-deploy-tests: export KUBE_NAMESPACE?=m4d-system
 run-deploy-tests:
 	$(MAKE) kind
 	$(MAKE) cluster-prepare
@@ -52,9 +61,9 @@ run-deploy-tests:
 
 .PHONY: cluster-prepare
 cluster-prepare:
-	$(MAKE) -C charts cert-manager
-	$(MAKE) -C charts vault
-	$(MAKE) -C charts wait-for-vault
+	$(MAKE) -C third_party/cert-manager deploy
+	$(MAKE) -C third_party/vault deploy
+	$(MAKE) -C third_party/vault wait-for-vault
 	$(MAKE) -C third_party/datashim deploy
 
 .PHONY: cluster-prepare-wait
