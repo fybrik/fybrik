@@ -12,15 +12,11 @@ kubectl config use-context kind-control
 make -C third_party/razee all
 
 kubectl config use-context kind-control
-make -C third_party/vault deploy
-make -C third_party/vault wait-for-vault
-make -C third_party/cert-manager deploy
-make -C third_party/datashim deploy
+make -C cluster-prepare
 make docker-minimal-it
 make cluster-prepare-wait
 make deploy
 make vault-setup-kind-multi
-make -C manager wait_for_manager
 make -C modules helm-chart-push
 
 export VALUES_FILE=charts/m4d/kind-kind.values.yaml
@@ -29,7 +25,6 @@ make -C third_party/cert-manager deploy
 make -C third_party/datashim deploy
 make cluster-prepare-wait
 make deploy
-make -C manager wait_for_manager
 
 # Switch to control cluster after setup
 kubectl config use-context kind-control

@@ -19,6 +19,6 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 		--namespace $(KUBE_NAMESPACE) \
 		--wait --timeout 120s
 
-.PHONY: wait-for-vault
-wait-for-vault: $(TOOLBIN)/kubectl
+.PHONY: deploy-wait
+deploy-wait: $(TOOLBIN)/kubectl
 	$(TOOLBIN)/kubectl wait --for=condition=ready --all pod -n $(KUBE_NAMESPACE) --timeout=120s

@@ -31,17 +31,13 @@ run-integration-tests: export DOCKER_NAMESPACE?=m4d-system
 run-integration-tests: export VALUES_FILE=charts/m4d/integration-tests.values.yaml
 run-integration-tests:
 	$(MAKE) kind
-	$(MAKE) -C third_party/vault deploy
-	$(MAKE) -C third_party/vault wait-for-vault
-	$(MAKE) -C third_party/cert-manager deploy
-	$(MAKE) -C third_party/datashim deploy
-	$(MAKE) docker
+	$(MAKE) cluster-prepare
+	$(MAKE) docker-build docker-push
 	$(MAKE) -C test/services docker-build docker-push
 	$(MAKE) cluster-prepare-wait
 	$(MAKE) deploy
-	$(MAKE) -C manager wait_for_manager
 	$(MAKE) configure-vault
-	$(MAKE) helm
+	$(MAKE) -C modules helm
 	$(MAKE) -C modules helm-uninstall # Uninstalls the deployed tests from previous command
 	$(MAKE) -C pkg/helm test
 	$(MAKE) -C manager run-integration-tests
@@ -63,15 +59,12 @@ run-deploy-tests:
 cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy
 	$(MAKE) -C third_party/vault deploy
-	$(MAKE) -C third_party/vault wait-for-vault
 	$(MAKE) -C third_party/datashim deploy
 
 .PHONY: cluster-prepare-wait
 cluster-prepare-wait:
 	$(MAKE) -C third_party/datashim deploy-wait
-
-.PHONY: docker
-docker: docker-build docker-push
+	$(MAKE) -C third_party/vault deploy-wait
 
 # Build only the docker images needed for integration testing
 .PHONY: docker-minimal-it
@@ -91,10 +84,6 @@ docker-push:
 	$(MAKE) -C manager docker-push
 	$(MAKE) -C connectors docker-push
 	$(MAKE) -C test/dummy-mover docker-push
-
-.PHONY: helm
-helm:
-	$(MAKE) -C modules helm
 
 DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
 DOCKER_PUBLIC_NAMESPACE ?= mesh-for-data
