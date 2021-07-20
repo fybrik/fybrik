@@ -1,0 +1,206 @@
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: Plotter
+metadata:
+  name: app1-ns1 # plotter name is a combination of app and namespace
+  namespace: m4d-system
+  labels:
+spec:
+  appSelector: # Selector of the application that uses this workload
+    clusterName: thegreendragon
+    workloadSelector:
+      matchLabels:
+        app: demoapp
+  assets:
+  - dataSetID: "m4d-notebook-sample/paysim"
+    source:
+      credentials:
+        read:
+          vault:
+            address: http://vault.m4d-system:8200
+            authPath: /v1/auth/kubernetes/login
+            role: module
+            secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
+      connection:
+        s3:
+          endpoint: localhost:8001
+          bucket: srcbucket
+          object: data.parq
+      dataformat: parquet
+  - dataSetID: "m4d-notebook-sample/users"
+    source:
+      credentials:
+        read:
+          vault:
+            address: http://vault.m4d-system:8200
+            authPath: /v1/auth/kubernetes/login
+            role: module
+            secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
+      connection:
+        s3:
+          endpoint: localhost:8001
+          bucket: srcbucket
+          object: users.parq
+      dataformat: parquet
+  - dataSetID: "m4d-notebook-sample/inventory"
+    source:
+      credentials:
+        read:
+          vault:
+            address: http://vault.m4d-system:8200
+            authPath: /v1/auth/kubernetes/login
+            role: module
+            secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
+      connection:
+        s3:
+          endpoint: localhost:8001
+          bucket: srcbucket
+          object: inventory.parq
+      dataformat: parquet
+  flows:
+  - name: flow-paysim
+    flowType: read
+    dataSetID: "m4d-notebook-sample/paysim"
+    subflows:
+    - name: subflow-paysim
+      trigger: timer
+      steps:
+      - - name: step1
+          cluster: thegreendragon
+          template: read-and-transform
+          parameters:
+            source:
+              dataSetId: "m4d-notebook-sample/paysim"
+              credentials:
+                read:
+                  vault:
+                    address: http://vault.m4d-system:8200
+                    authPath: /v1/auth/kubernetes/login
+                    role: module
+                    secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
+              connection:
+                s3:
+                  endpoint: localhost:8001
+                  bucket: srcbucket
+                  object: data.parq
+              dataformat: parquet
+            api:
+              service:
+                assetID: m4d-notebook-sample/paysim
+                interfaceDetails:
+                  protocol: arrow-flight
+                  dataformat: arrow
+            actions:
+            - action: redact
+              column: field1
+  - name: flow-users
+    flowType: read
+    dataSetID: "m4d-notebook-sample/users"
+    subflows:
+    - name: subflow-users
+      trigger: timer
+      steps:
+      - - name: step1
+          cluster: thegreendragon
+          template: read-and-transform
+          parameters:
+            source:
+              dataSetId: "m4d-notebook-sample/users"
+              credentials:
+                read:
+                  vault:
+                    address: http://vault.m4d-system:8200
+                    authPath: /v1/auth/kubernetes/login
+                    role: module
+                    secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
+              connection:
+                s3:
+                  endpoint: localhost:8001
+                  bucket: srcbucket
+                  object: users.parq
+              dataformat: parquet
+            api:
+              service:
+                assetID: m4d-notebook-sample/users
+                interfaceDetails:
+                  protocol: arrow-flight
+                  dataformat: arrow
+            actions:
+            - action: redact
+              column: blood_group
+  - name: flow-inventory
+    flowType: read
+    dataSetID: "m4d-notebook-sample/inventory"
+    subflows:
+    - name: subflow-inventory
+      trigger: timer
+      steps:
+      - - name: step1
+          cluster: thegreendragon
+          template: read-and-transform
+          parameters:
+            source:
+              dataSetId: "m4d-notebook-sample/inventory"
+              credentials:
+                read:
+                  vault:
+                    address: http://vault.m4d-system:8200
+                    authPath: /v1/auth/kubernetes/login
+                    role: module
+                    secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
+              connection:
+                s3:
+                  endpoint: localhost:8001
+                  bucket: srcbucket
+                  object: inventory.parq
+              dataformat: parquet
+            api:
+              service:
+                assetID: m4d-notebook-sample/inventory
+                interfaceDetails:
+                  protocol: arrow-flight
+                  dataformat: arrow
+            actions:
+            - action: redact
+              column: field2
+  templates:
+  - name: read-and-transform
+    modules:
+    - name: arrow-flight-read
+      kind: M4DModule
+      confChart:
+        name: ghcr.io/mesh-for-data/read-module:0.1.0
+    - name: transform-conf
+      kind: M4DModule
+      confChart:
+        name: ghcr.io/mesh-for-data/m4d-arrow-flight-transform-conf:0.1.0
+status:
+  observedState: Not Ready
+  observedGeneration: 1
+  # The global modules are generated when the blueprints are generated and injected into them.
+  # Yet they still have a status that is important to the workflow.
+  flows:
+  - name: flow-paysim
+    status: Ready
+  - name: flow-users
+    status: Ready
+  - name: flow-inventory
+    status: Not Ready
+  assets:
+  - name: m4d-notebook-sample/paysim
+    endpoint: app1-ns1.m4d-blueprints
+    port: 8080
+    status: Ready
+  - name: m4d-notebook-sample/users
+    endpoint: app1-ns1.m4d-blueprints
+    port: 8080
+    status: Ready
+  - name: m4d-notebook-sample/inventory
+    endpoint: app1-ns1.m4d-blueprints
+    port: 8080
+    status: Not Ready
+    errors:
+    - "This would be a possible error"
+  conditions:
+  - type: Error
+    status: "False"
+    message: "This would be a possible error"

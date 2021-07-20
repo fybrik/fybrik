@@ -1,0 +1,33 @@
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: M4DModule
+metadata:
+  name: transform-conf
+  namespace: m4d-system
+  labels:
+    version: 0.0.1
+    name: transform-conf
+spec:
+  chart:
+    name: ghcr.io/mesh-for-data/m4d-arrow-flight-transform-conf:0.1.0
+    values: {}
+  type: fybric-action
+  statusIndicators:
+  capabilities:
+  - capability: transform
+    scope: dataset
+    source:
+      protocol: m4d-arrow-flight
+      dataformat: arrow
+    actions:
+    - id: redact
+      level: column
+    - id: remove
+      level: column
+  api:
+    endpoint:
+      port: 80
+    protocol: m4d-arrow-flight
+    dataformat: arrow
+  dependencies:
+  - kind: M4DModule
+    name: arrow-flight-read
