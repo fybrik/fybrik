@@ -19,7 +19,7 @@ spec:
             address: http://vault.m4d-system:8200
             authPath: /v1/auth/kubernetes/login
             role: module
-            secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
+            secretPath: /v1/kubernetes-secrets/paysim?namespace=m4d-notebook-sample
       connection:
         s3:
           endpoint: localhost:8001
@@ -34,7 +34,7 @@ spec:
             address: http://vault.m4d-system:8200
             authPath: /v1/auth/kubernetes/login
             role: module
-            secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
+            secretPath: /v1/kubernetes-secrets/users?namespace=m4d-notebook-sample
       connection:
         s3:
           endpoint: localhost:8001
@@ -49,7 +49,7 @@ spec:
             address: http://vault.m4d-system:8200
             authPath: /v1/auth/kubernetes/login
             role: module
-            secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
+            secretPath: /v1/kubernetes-secrets/inventory?namespace=m4d-notebook-sample
       connection:
         s3:
           endpoint: localhost:8001
@@ -62,7 +62,7 @@ spec:
     dataSetID: "m4d-notebook-sample/paysim"
     subflows:
     - name: subflow-paysim
-      trigger: timer
+      trigger: workload
       steps:
       - - name: step1
           cluster: thegreendragon
@@ -70,19 +70,6 @@ spec:
           parameters:
             source:
               dataSetId: "m4d-notebook-sample/paysim"
-              credentials:
-                read:
-                  vault:
-                    address: http://vault.m4d-system:8200
-                    authPath: /v1/auth/kubernetes/login
-                    role: module
-                    secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
-              connection:
-                s3:
-                  endpoint: localhost:8001
-                  bucket: srcbucket
-                  object: data.parq
-              dataformat: parquet
             api:
               service:
                 assetID: m4d-notebook-sample/paysim
@@ -97,7 +84,7 @@ spec:
     dataSetID: "m4d-notebook-sample/users"
     subflows:
     - name: subflow-users
-      trigger: timer
+      trigger: workload
       steps:
       - - name: step1
           cluster: thegreendragon
@@ -105,19 +92,6 @@ spec:
           parameters:
             source:
               dataSetId: "m4d-notebook-sample/users"
-              credentials:
-                read:
-                  vault:
-                    address: http://vault.m4d-system:8200
-                    authPath: /v1/auth/kubernetes/login
-                    role: module
-                    secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
-              connection:
-                s3:
-                  endpoint: localhost:8001
-                  bucket: srcbucket
-                  object: users.parq
-              dataformat: parquet
             api:
               service:
                 assetID: m4d-notebook-sample/users
@@ -132,7 +106,7 @@ spec:
     dataSetID: "m4d-notebook-sample/inventory"
     subflows:
     - name: subflow-inventory
-      trigger: timer
+      trigger: workload
       steps:
       - - name: step1
           cluster: thegreendragon
@@ -140,19 +114,6 @@ spec:
           parameters:
             source:
               dataSetId: "m4d-notebook-sample/inventory"
-              credentials:
-                read:
-                  vault:
-                    address: http://vault.m4d-system:8200
-                    authPath: /v1/auth/kubernetes/login
-                    role: module
-                    secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
-              connection:
-                s3:
-                  endpoint: localhost:8001
-                  bucket: srcbucket
-                  object: inventory.parq
-              dataformat: parquet
             api:
               service:
                 assetID: m4d-notebook-sample/inventory

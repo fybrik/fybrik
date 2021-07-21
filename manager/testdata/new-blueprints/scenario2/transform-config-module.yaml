@@ -23,11 +23,6 @@ spec:
       level: column
     - id: remove
       level: column
-  api:
-    endpoint:
-      port: 80
-    protocol: m4d-arrow-flight
-    dataformat: arrow
   dependencies:
   - kind: M4DModule
     name: arrow-flight-read

@@ -27,7 +27,7 @@ spec:
             address: http://vault.m4d-system:8200
             authPath: /v1/auth/kubernetes/login
             role: module
-            secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
+            secretPath: /v1/kubernetes-secrets/paysim?namespace=m4d-notebook-sample
       connection:
         s3:
           endpoint: localhost:8001
@@ -41,7 +41,7 @@ spec:
             address: http://vault.m4d-system:8200
             authPath: /v1/auth/kubernetes/login
             role: module
-            secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
+            secretPath: /v1/kubernetes-secrets/users?namespace=m4d-notebook-sample
       connection:
         s3:
           endpoint: localhost:8001
@@ -55,7 +55,7 @@ spec:
             address: http://vault.m4d-system:8200
             authPath: /v1/auth/kubernetes/login
             role: module
-            secretPath: /v1/kubernetes-secrets/paysim-csv?namespace=m4d-notebook-sample
+            secretPath: /v1/kubernetes-secrets/inventory?namespace=m4d-notebook-sample
       connection:
         s3:
           endpoint: localhost:8001
