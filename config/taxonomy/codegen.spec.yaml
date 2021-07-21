@@ -1,9 +1,9 @@
 openapi: 3.0.1
 info:
   version: 1.0.0
-  title: Some Swagger
+  title: Policy Manager Specification
   license:
-    name: MIT
+    name: IBM
 paths: {}
 components:
   schemas:

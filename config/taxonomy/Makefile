@@ -4,24 +4,26 @@ include $(ROOT_DIR)/hack/make-rules/tools.mk
 
 .DEFAULT_GOAL := all
 
-all: clean compile-taxonomy-schema validate model-codegen
+all: clean compile-taxonomy-schema validate
 
 compile-taxonomy-schema:
 	go run $(ROOT_DIR)/main.go taxonomy compile --base ./base/base.yaml --out ./objects/taxonomy.json \
 		--codegen
 
 validate:
-	go run ../../main.go taxonomy validate ./objects/policy_manager_request.json
-	go run ../../main.go taxonomy validate ./objects/policy_manager_response.json
+	go run $(ROOT_DIR)/main.go taxonomy validate ./objects/policy_manager_request.json
+	go run $(ROOT_DIR)/main.go taxonomy validate ./objects/policy_manager_response.json
 
-model-codegen: $(TOOLBIN)/openapi-generator-cli
-	mkdir -p ../../pkg/taxonomy/model/openapi
-	$(TOOLBIN)/openapi-generator-cli generate -i ./codegen.spec.yaml -g go -o ../../pkg/taxonomy/model/openapi --global-property=models \
-	--additional-properties=legacyDiscriminatorBehavior=false \
+compile-codegen-cleanup: clean $(TOOLBIN)/openapi-generator-cli
+	go run $(ROOT_DIR)/main.go taxonomy compile --base ./base/base.yaml --out ./objects/taxonomy.json \
+		--codegen
+	mkdir -p $(ROOT_DIR)/pkg/taxonomy/model/base
+	$(TOOLBIN)/openapi-generator-cli generate -i ./codegen.spec.yaml -g go -o $(ROOT_DIR)/pkg/taxonomy/model/base --global-property=models,modelDocs=false \
+	--additional-properties=packageName=base \
 	--enable-post-process-file \
 	--type-mappings=object=interface{}
+	rm -f objects/taxonomy.json
 
 clean:
-	rm -f ./objects/taxonomy.json
-	rm -rf ../../pkg/taxonomy/model/openapi
-	rm -rf ../../pkg/taxonomy/model/docs
+	rm -f objects/taxonomy.json
+	rm -rf $(ROOT_DIR)/pkg/taxonomy/model/base
