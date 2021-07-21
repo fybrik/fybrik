@@ -40,7 +40,7 @@ func (reconciler *StreamTransferReconciler) CreateDeployment(streamTransfer *mot
 			},
 		}},
 		{
-			Name: "configuration",
+			Name: motionv1.ConfigSecretVolumeName,
 			VolumeSource: v1.VolumeSource{
 				Secret: &v1.SecretVolumeSource{
 					SecretName: name,
@@ -54,8 +54,8 @@ func (reconciler *StreamTransferReconciler) CreateDeployment(streamTransfer *mot
 		},
 	}
 	volumeMounts := []v1.VolumeMount{{
-		Name:      "configuration",
-		MountPath: "/etc/mover",
+		Name:      motionv1.ConfigSecretVolumeName,
+		MountPath: motionv1.ConfigSecretMountPath,
 	}, {
 		Name:      "checkpoint",
 		MountPath: "/tmp/checkpoint",
@@ -100,8 +100,8 @@ func (reconciler *StreamTransferReconciler) CreateDeployment(streamTransfer *mot
 						Name:            "transfer",
 						Image:           streamTransfer.Spec.Image,
 						ImagePullPolicy: streamTransfer.Spec.ImagePullPolicy,
-						Args:            []string{"/etc/mover/conf.json"},
-						Command:         []string{"/streaming-entrypoint.sh"},
+						Args:            []string{motionv1.ConfigSecretMountPath + "/conf.json"},
+						Command:         []string{motionv1.StreamtransferBinary},
 						Env: []v1.EnvVar{
 							{
 								Name: "MY_POD_IP",

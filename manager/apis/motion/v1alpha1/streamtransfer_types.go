@@ -127,7 +127,7 @@ type StreamTransferList struct {
 }
 
 const StreamtransferFinalizer = "streamtransfer.finalizers.ibm.com"
-const StreamtransferBinary = "/stream-mover"
+const StreamtransferBinary = "/stream"
 
 func init() {
 	SchemeBuilder.Register(&StreamTransfer{}, &StreamTransferList{})
