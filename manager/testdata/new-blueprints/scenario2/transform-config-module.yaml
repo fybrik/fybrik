@@ -1,5 +1,5 @@
 apiVersion: app.m4d.ibm.com/v1alpha2
-kind: M4DModule
+kind: M4DModule # Should we still use M4DModule for these types or introduce another CRD for modules that configure other modules?
 metadata:
   name: transform-conf
   namespace: m4d-system
@@ -16,7 +16,7 @@ spec:
   - capability: transform
     scope: dataset
     source:
-      protocol: m4d-arrow-flight
+      protocol: fybrik-action # This defines that it's a plugin action of the fybric.
       dataformat: arrow
     actions:
     - id: redact
