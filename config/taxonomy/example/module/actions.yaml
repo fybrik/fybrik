@@ -1,0 +1,27 @@
+definitions:
+  Action:
+    oneOf:
+      - $ref: "#/definitions/RedactAction"
+      - $ref: "#/definitions/RemoveAction"
+      - $ref: "#/definitions/Deny"
+  RedactAction:
+    type: object
+    properties:
+      columns:
+        items:
+          type: string
+        type: array
+    required:
+      - columns
+  RemoveAction:
+    type: object
+    properties:
+      columns:
+        items:
+          type: string
+        type: array
+    required:
+      - columns
+  Deny:
+    type: object
+    additionalProperties: false
