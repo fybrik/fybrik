@@ -14,9 +14,7 @@ validate:
 	go run $(ROOT_DIR)/main.go taxonomy validate ./objects/policy_manager_request.json
 	go run $(ROOT_DIR)/main.go taxonomy validate ./objects/policy_manager_response.json
 
-compile-codegen-cleanup: clean $(TOOLBIN)/openapi-generator-cli
-	go run $(ROOT_DIR)/main.go taxonomy compile --base ./base/base.yaml --out ./objects/taxonomy.json \
-		--codegen
+compile-codegen-cleanup: clean $(TOOLBIN)/openapi-generator-cli compile-taxonomy-schema
 	mkdir -p $(ROOT_DIR)/pkg/taxonomy/model/base
 	$(TOOLBIN)/openapi-generator-cli generate -i ./codegen.spec.yaml -g go -o $(ROOT_DIR)/pkg/taxonomy/model/base --global-property=models,modelDocs=false \
 	--additional-properties=packageName=base \
