@@ -15,13 +15,13 @@ validate:
 	go run ../../main.go taxonomy validate ./objects/policy_manager_response.json
 
 model-codegen: $(TOOLBIN)/openapi-generator-cli
-	mkdir -p ../../pkg/taxonomy/model
-	$(TOOLBIN)/openapi-generator-cli generate -i ./codegen.spec.yaml -g go -o ../../pkg/taxonomy/model --global-property=models \
+	mkdir -p ../../pkg/taxonomy/model/openapi
+	$(TOOLBIN)/openapi-generator-cli generate -i ./codegen.spec.yaml -g go -o ../../pkg/taxonomy/model/openapi --global-property=models \
 	--additional-properties=legacyDiscriminatorBehavior=false \
 	--enable-post-process-file \
 	--type-mappings=object=interface{}
 
 clean:
-	rm ./objects/taxonomy.json
-	rm ../../pkg/taxonomy/model/model_*.go
+	rm -f ./objects/taxonomy.json
+	rm -rf ../../pkg/taxonomy/model/openapi
 	rm -rf ../../pkg/taxonomy/model/docs
