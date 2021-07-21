@@ -30,11 +30,13 @@ spec:
       dataformat: parquet
     - protocol: s3
       dataformat: csv
+    plugins:
+      - protocol: fybrik-action
+        dataformat: arrow
+      - protocol: fybrik-wasm-action
+        dataformat: arrow
   api:
     endpoint:
       port: 80 # Mandatory for each service
     protocol: m4d-arrow-flight
     dataformat: arrow
-  plugins:
-  - fybrik-action
-  - fybrik-wasm-action

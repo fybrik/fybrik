@@ -16,7 +16,7 @@ spec:
   - capability: transform
     scope: dataset
     source:
-      protocol: fybrik-action # This defines that it's a plugin action of the fybric.
+      protocol: fybrik-action # This defines that it's a plugin action of the fybrik.
       dataformat: arrow
     actions:
     - id: redact
