@@ -1,0 +1,74 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"title": "Policy Manager Request",
+	"type": "object",
+	"properties": {
+	  "context": {
+		"$ref": "taxonomy.json#/definitions/PolicyManagerRequestContext"
+	  },
+	  "action": {
+		"$ref": "#/definitions/PolicyManagerRequestAction"
+	  },
+	  "resource": {
+		"$ref": "#/definitions/Resource"
+	  }
+	},
+	"additionalProperties": false,
+	"required": [
+	  "action",
+	  "resource"
+	],
+	"definitions": {
+	  "PolicyManagerRequestAction": {
+		"type": "object",
+		"properties": {
+		  "actionType": {
+			"$ref": "#/definitions/ActionType"
+		  },
+		  "processingLocation": {
+			"$ref": "taxonomy.json#/definitions/ProcessingLocation"
+		  }
+		}
+	  },
+	  "ActionType": {
+		"type": "string",
+		"enum": [
+		  "read",
+		  "write",
+		  "delete"
+		]
+	  },
+	  "Resource": {
+		"type": "object",
+		"properties": {
+		  "name": {
+			"type": "string",
+			"description": "Name of the data set"
+		  },
+		  "tags": {
+			"$ref": "taxonomy.json#/definitions/Tags"
+		  },
+		  "columns": {
+			"type": "array",
+			"items": {
+			  "type": "object",
+			  "properties": {
+				"name": {
+				  "type": "string"
+				},
+				"tags": {
+				  "$ref": "taxonomy.json#/definitions/Tags"
+				}
+			  },
+			  "required": [
+				"name"
+			  ]
+			}
+		  }
+		},
+		"required": [
+		  "name"
+		]
+	  }
+	}
+  }

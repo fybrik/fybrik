@@ -70,7 +70,7 @@ INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-lint
 $(TOOLBIN)/protoc-gen-lint:
 	GOBIN=$(ABSTOOLBIN) go install github.com/ckaznocha/protoc-gen-lint@v0.2.1
 	$(call post-install-check)
-	   
+
 # INSTALL_TOOLS += $(TOOLBIN)/oc
 $(TOOLBIN)/oc:
 	cd $(TOOLS_DIR); ./install_oc.sh
@@ -103,6 +103,11 @@ $(TOOLBIN)/oapi-codegen:
 INSTALL_TOOLS += $(TOOLBIN)/openapi2crd
 $(TOOLBIN)/openapi2crd:
 	GOBIN=$(ABSTOOLBIN) go install github.com/mesh-for-data/openapi2crd@v0.3.2
+
+INSTALL_TOOLS += $(TOOLBIN)/openapi-generator-cli
+$(TOOLBIN)/openapi-generator-cli:
+	cd $(TOOLS_DIR); chmod +x ./install_openapi-generator-cli.sh; ./install_openapi-generator-cli.sh
+	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/crdoc
 $(TOOLBIN)/crdoc:

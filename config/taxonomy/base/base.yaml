@@ -1,0 +1,19 @@
+definitions:
+  PolicyManagerRequestContext:
+    type: object
+    additionalProperties: true
+  Tags:
+    type: object
+    additionalProperties: true
+  Action:
+    type: object
+    properties:
+      name:
+        type: string
+    additionalProperties: true
+    required:
+      - name
+  DatasetID:
+    type: string
+  ProcessingLocation:
+    type: string

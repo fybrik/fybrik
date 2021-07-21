@@ -1,0 +1,13 @@
+openapi: 3.0.1
+info:
+  version: 1.0.0
+  title: Policy Manager Service
+  license:
+    name: Apache 2.0
+paths: {}
+components:
+  schemas:
+    PolicyManagerRequest:
+      $ref: "./objects/policy_manager_request.json"
+    PolicyManagerResponse:
+      $ref: "./objects/policy_manager_response.json"
