@@ -3,7 +3,7 @@
     "$id": "module.schema.json",
     "title": "Module Taxonomy",
     "type": "object",
-    "description": "Portion of the taxonomy contributed to by the mesh for data modules. Currently contains only what is needed by OPA.",
+    "description": "Portion of the taxonomy contributed to by the Fybrik modules. Currently contains only what is needed by OPA.",
     "definitions": {
         "action": {
             "type": "object",

@@ -15,7 +15,7 @@ import (
 func RootCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "katalog",
-		Short: "Kubernetes based data catalog for Mesh for Data",
+		Short: "Kubernetes based data catalog for Fybrik",
 	}
 	cmd.AddCommand(RunCmd())
 	return cmd

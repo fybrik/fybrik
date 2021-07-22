@@ -3,7 +3,7 @@
 
 apiVersion: v2
 name: m4d
-description: Mesh for Data Helm Chart
+description: Fybrik Helm Chart
 type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.

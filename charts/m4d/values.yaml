@@ -1,4 +1,4 @@
-# Default values for Mesh for Data.
+# Default values for Fybrik.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -15,12 +15,12 @@ clusterScoped: true
 
 # Global configuration applies to multiple components installed by this chart
 global:
-  # Default hub for Mesh for Data images.
+  # Default hub for Fybrik images.
   hub: ghcr.io/mesh-for-data
-  # Default tag for Mesh for Data images.
+  # Default tag for Fybrik images.
   # If no value is set, the chart's appVersion will be used.
   tag: ""
-  # Default image pull policy for Mesh for Data images
+  # Default image pull policy for Fybrik images
   # Default behavior: latest images will be Always else IfNotPresent.
   # ref: https://kubernetes.io/docs/concepts/containers/images/#updating-images
   imagePullPolicy: ""

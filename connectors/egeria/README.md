@@ -22,7 +22,7 @@ Cleanup with `make clean docker-rmi`
 
 ## Running in a cluster
 
-The connector can be deployed as part of the Mesh for Data Helm chart by adding the following to the installation of the m4d chart (replace the serverURL if the value is different):
+The connector can be deployed as part of the Fybrik Helm chart by adding the following to the installation of the m4d chart (replace the serverURL if the value is different):
 
 ```bash
 --set coordinator.catalog=egeria --set egeriaConnector.serverURL="https://egeria-platform.egeria-catalog:9443"

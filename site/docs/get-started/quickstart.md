@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-Follow this guide to install Mesh for Data using default parameters that are suitable for experimentation on a single cluster.
+Follow this guide to install Fybrik using default parameters that are suitable for experimentation on a single cluster.
 
 <!-- For a full installation refer to the [full installation guide](./setup/install) instead. -->
 
@@ -24,7 +24,7 @@ helm repo update
 
 ## Install cert-manager
 
-Mesh for Data requires [cert-manager](https://cert-manager.io) to be installed to your cluster. 
+Fybrik requires [cert-manager](https://cert-manager.io) to be installed to your cluster. 
 Many clusters already include cert-manager. Check if `cert-manager` namespace exists in your cluster and only run the following if it doesn't exist:
 
 ```bash
@@ -38,7 +38,7 @@ helm install cert-manager jetstack/cert-manager \
 
 ## Install Hashicorp Vault and plugins
 
-[Hashicorp Vault](https://www.vaultproject.io/) and a [secrets-kubernetes-reader](https://github.com/mesh-for-data/vault-plugin-secrets-kubernetes-reader) plugin are used by Mesh for Data for credential management.
+[Hashicorp Vault](https://www.vaultproject.io/) and a [secrets-kubernetes-reader](https://github.com/mesh-for-data/vault-plugin-secrets-kubernetes-reader) plugin are used by Fybrik for credential management.
 
 ??? tip "Install latest development version from GitHub"
 
@@ -109,7 +109,7 @@ Run the following to install vault and the plugin in development mode:
     ```
 
 The control plane includes a `manager` service that connects to a data catalog and to a policy manager. 
-Install the latest release of Mesh for Data with a built-in data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
+Install the latest release of Fybrik with a built-in data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
 
 ```bash
 helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system --wait

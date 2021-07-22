@@ -3,7 +3,7 @@
 ## Overview of Requirements and Functionality
 
 The **Data Distribution Controller** (DDC) handles the movement of data between data stores.
-Mesh for Data uses the DDC to perform an action called "implicit copy", i.e. the movement
+Fybrik uses the DDC to perform an action called "implicit copy", i.e. the movement
 of a data set from one data store to another with possibly some unitary transform applied
 to that data set. It corresponds to Step 8 in the Architecture Document (Add a link here)
 
@@ -363,7 +363,7 @@ The control layer of the data distribution is implemented following the operator
 The [data distribution core libraries](https://github.com/mesh-for-data/mover) that are Scala/Spark based
 
 The [data distribution operator](https://github.com/mesh-for-data/mesh-for-data) has been integrated into
-Mesh for Data code and is part of the manager.
+Fybrik code and is part of the manager.
 
 
 ## Roadmap

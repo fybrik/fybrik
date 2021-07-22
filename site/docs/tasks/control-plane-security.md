@@ -6,7 +6,7 @@ Kubernetes  [`NetworkPolicies`](https://kubernetes.io/docs/concepts/services-net
 
 ## Ingress traffic policy
 
-The installation of Mesh for Data applies a Kubernetes [`NetworkPolicy`](https://kubernetes.io/docs/concepts/services-networking/network-policies/) resource to the `fybrik-system` namespace. This resource ensures that ingress traffic to connectors is only allowed from workloads that run in the `fybrik-system` namespace and thus disallow access to connectors from other namespaces or external parties.
+The installation of Fybrik applies a Kubernetes [`NetworkPolicy`](https://kubernetes.io/docs/concepts/services-networking/network-policies/) resource to the `fybrik-system` namespace. This resource ensures that ingress traffic to connectors is only allowed from workloads that run in the `fybrik-system` namespace and thus disallow access to connectors from other namespaces or external parties.
 
 The `NetworkPolicy` is always created. However, your Kubernetes cluster must have a [Network Plugin](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/) with `NetworkPolicy` support. Otherwise, `NetworkPolicy` resources will have no affect. While most Kubernetes distributions include a network plugin that enfoces network policies, some like [Kind](https://kind.sigs.k8s.io/) do not and require you to install a separate network plugin instead.
 

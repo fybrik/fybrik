@@ -7,7 +7,7 @@ This project uses secrets plugins to retrieve dataset credentials by the running
 
 Additional secret plugins can be developed to retrieve credentials additional location. This [tutorial](https://learn.hashicorp.com/tutorials/vault/plugin-backends?in=vault/app-integration) can serve as a good starting point to learn about Vault plugin development.
 
-The following steps are for configuring a secret plug-in for Mesh for Data:
+The following steps are for configuring a secret plug-in for Fybrik:
 
 1. Enable the plugin during Vault server initialization in a specific path. An example of that can be found in helm chart [values.yaml](https://github.com/mesh-for-data/mesh-for-data/blob/master/third_party/vault/vault-single-cluster/values.yaml) file in the project where [Vault-plugin-secrets-kubernetes-reader](https://github.com/mesh-for-data/vault-plugin-secrets-kubernetes-reader) plugin is enabled in `kubernetes-secrets` path:
 

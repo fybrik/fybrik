@@ -2,7 +2,7 @@
 
 There are [several ways](https://www.openpolicyagent.org/docs/latest/management/) to manage policies and data of the OPA service. 
 
-One simple approach is to use [OPA kube-mgmt](https://github.com/open-policy-agent/kube-mgmt) and manage Rego policies in Kubernetes `Configmap` resources. By default Mesh for Data installs OPA with kube-mgmt enabled. 
+One simple approach is to use [OPA kube-mgmt](https://github.com/open-policy-agent/kube-mgmt) and manage Rego policies in Kubernetes `Configmap` resources. By default Fybrik installs OPA with kube-mgmt enabled. 
 
 This task shows how to use OPA with kube-mgmt.
 

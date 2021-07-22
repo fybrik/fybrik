@@ -1,4 +1,4 @@
-# Mesh for Data Website
+# Fybrik Website
 
 Holds source files for the project documentation and the website hosting it
 

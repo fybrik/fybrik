@@ -57,7 +57,7 @@ coordinator:
 #### Remote cluster
 
 The remote clusters only need the watch keeper and cluster subscription agents installed. The remote clusters do not need the coordinator component
-of mesh for data. It's enough to follow [this guide](https://github.com/razee-io/Razee/blob/master/README.md#installing-watch-keeper-in-every-cluster-that-you-want-to-monitor)
+of Fybrik. It's enough to follow [this guide](https://github.com/razee-io/Razee/blob/master/README.md#installing-watch-keeper-in-every-cluster-that-you-want-to-monitor)
 to install the agents and configure a group via the RazeeDash UI if needed.
 The coordinator configuration would look like the following:
 ```

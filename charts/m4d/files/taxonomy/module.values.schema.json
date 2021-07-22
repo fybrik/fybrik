@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-04/schema#",
     "$id": "module.values.schema.json",
     "title": "Module Values Taxonomy",
-    "description": "Values contributed to by the mesh for data modules. Currently contains only what is needed by OPA.",
+    "description": "Values contributed to by the Fybrik modules. Currently contains only what is needed by OPA.",
     "definitions": {
         "module_type": {
             "type": "string",

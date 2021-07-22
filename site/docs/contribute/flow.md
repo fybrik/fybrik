@@ -4,7 +4,7 @@ This page describes the GitHub workflow that contributors should follow.
 
 ## Issues and pull requests
 
-Contributing to Mesh for Data is done following the GitHub workflow of Pull Requests.
+Contributing to Fybrik is done following the GitHub workflow of Pull Requests.
 
 You should usually open a pull request in the following situations:
 

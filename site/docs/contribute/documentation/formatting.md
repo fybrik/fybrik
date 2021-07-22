@@ -1,6 +1,6 @@
 # Formatting Standards
 
-This page shows the formatting standards for the Mesh for Data documentation.
+This page shows the formatting standards for the Fybrik documentation.
 
 ## Link to other pages using relative links
 

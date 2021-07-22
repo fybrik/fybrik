@@ -95,7 +95,7 @@ make -C manager run-integration-tests
 
 ## Building in a multi cluster environment
 
-As Mesh for Data can run in a multi-cluster environment there is also a test environment
+As Fybrik can run in a multi-cluster environment there is also a test environment
 that can be used that simulates this scenario. Using kind one can spin up two separate kubernetes
 clusters with differnt contexts and develop and test in these. 
 

@@ -20,7 +20,7 @@ The following diagram shows an example with an Arrow Flight module that is fully
 
 There are several parts to a module:
 
-1. **Optional** external component(s): deployed and managed independently of Mesh for Data.
+1. **Optional** external component(s): deployed and managed independently of Fybrik.
 1. [Module Workload](../contribute/modules.md#module-workload): the workload that runs once the Helm chart is installed by the control plane.
 Can be a client to the external component(s) or be independent.
 1. [Module Helm Chart](../contribute/modules.md#module-helm-chart): the package containing the module workload that the control plane installs as part of a data plane.

@@ -1,6 +1,6 @@
 # Notebook sample
 
-This sample shows how Mesh for Data enables a Jupyter notebook workload to access a dataset.
+This sample shows how Fybrik enables a Jupyter notebook workload to access a dataset.
 It demonstrates how policies are seamlessly applied when accessing the dataset classified as financial data.
 
 In this sample you play multiple roles:
@@ -11,7 +11,7 @@ In this sample you play multiple roles:
 
 ## Before you begin
 
-- Install Mesh for Data using the [Quick Start](../get-started/quickstart.md) guide.
+- Install Fybrik using the [Quick Start](../get-started/quickstart.md) guide.
   This sample assumes the use of the built-in catalog, Open Policy Agent (OPA) and flight module.
 - A web browser.
 
@@ -187,7 +187,7 @@ In this sample a Jupyter notebook is used as the user workload and its business 
 
 ## Create a `FybrikApplication` resource for the notebook
 
-Create a [`FybrikApplication`](../reference/crds.md#m4dapplication) resource to register the notebook workload to the control plane of Mesh for Data: 
+Create a [`FybrikApplication`](../reference/crds.md#m4dapplication) resource to register the notebook workload to the control plane of Fybrik: 
 
 <!-- TODO: role field removed but code still requires it -->
 ```yaml
