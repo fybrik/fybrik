@@ -35,14 +35,14 @@ Example: make unloadpolicy ARGS=data-and-policies/user-created-policy-1
 ```bash
 make loaddata ARGS=<POLICYDATAFOLDER>
 
-Example: make loaddata ARGS=data-and-policies/meshfordata-external-data
+Example: make loaddata ARGS=data-and-policies/fybrik-external-data
 ```
 
 ### Remove a policy data folder from OPA
 ```bash
 make unloaddata ARGS=<POLICYDATAFOLDER>
 
-Example: make unloaddata ARGS=data-and-policies/meshfordata-external-data
+Example: make unloaddata ARGS=data-and-policies/fybrik-external-data
 ```
 
 # Example
