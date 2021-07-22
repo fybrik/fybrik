@@ -16,6 +16,7 @@ import (
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
 	_neturl "net/url"
+	models "github.com/mesh-for-data/mesh-for-data/pkg/taxonomy/model/base"
 )
 
 // Linger please
@@ -29,11 +30,11 @@ type DefaultApiService service
 type ApiGetPoliciesDecisionsRequest struct {
 	ctx _context.Context
 	ApiService *DefaultApiService
-	input *PolicyManagerRequest
+	input *models.PolicyManagerRequest
 	creds *string
 }
 
-func (r ApiGetPoliciesDecisionsRequest) Input(input PolicyManagerRequest) ApiGetPoliciesDecisionsRequest {
+func (r ApiGetPoliciesDecisionsRequest) Input(input models.PolicyManagerRequest) ApiGetPoliciesDecisionsRequest {
 	r.input = &input
 	return r
 }
@@ -42,7 +43,7 @@ func (r ApiGetPoliciesDecisionsRequest) Creds(creds string) ApiGetPoliciesDecisi
 	return r
 }
 
-func (r ApiGetPoliciesDecisionsRequest) Execute() (PolicyManagerResponse, *_nethttp.Response, error) {
+func (r ApiGetPoliciesDecisionsRequest) Execute() (models.PolicyManagerResponse, *_nethttp.Response, error) {
 	return r.ApiService.GetPoliciesDecisionsExecute(r)
 }
 
@@ -61,16 +62,16 @@ func (a *DefaultApiService) GetPoliciesDecisions(ctx _context.Context) ApiGetPol
 
 /*
  * Execute executes the request
- * @return PolicyManagerResponse
+ * @return models.PolicyManagerResponse
  */
-func (a *DefaultApiService) GetPoliciesDecisionsExecute(r ApiGetPoliciesDecisionsRequest) (PolicyManagerResponse, *_nethttp.Response, error) {
+func (a *DefaultApiService) GetPoliciesDecisionsExecute(r ApiGetPoliciesDecisionsRequest) (models.PolicyManagerResponse, *_nethttp.Response, error) {
 	var (
 		localVarHTTPMethod   = _nethttp.MethodGet
 		localVarPostBody     interface{}
 		localVarFormFileName string
 		localVarFileName     string
 		localVarFileBytes    []byte
-		localVarReturnValue  PolicyManagerResponse
+		localVarReturnValue  models.PolicyManagerResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.GetPoliciesDecisions")
@@ -90,7 +91,9 @@ func (a *DefaultApiService) GetPoliciesDecisionsExecute(r ApiGetPoliciesDecision
 		return localVarReturnValue, nil, reportError("creds is required and must be specified")
 	}
 
-	localVarQueryParams.Add("input", parameterToString(*r.input, ""))
+	//localVarQueryParams.Add("input", parameterToString(*r.input, ""))
+	retval, _ := parameterToJson(*r.input)
+	localVarQueryParams.Add("input", retval)
 	localVarQueryParams.Add("creds", parameterToString(*r.creds, ""))
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
