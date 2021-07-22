@@ -1,6 +1,6 @@
 # Multicluster setup
 
-Mesh for data is dynamic in its multi cluster capabilities in that it has abstractions to support multiple
+Fybrik is dynamic in its multi cluster capabilities in that it has abstractions to support multiple
 different cross-cluster orchestration mechanisms. Currently only one multi cluster orchestration mechanism is implemented
 and is using [Razee](http://razee.io) for the orchestration.
 
@@ -12,7 +12,7 @@ own Kubernetes or as a managed service from a cloud provider. Due to the complex
 recommended. 
 It's possible to define a multicluster group name that groups clusters that are used in a mesh instance. This will restrict the clusters that 
 are usable in the mesh instance to the ones that are registered in the specified Razee group. This is especially helpful if Razee is also 
-used for different purposes than Mesh for data or multiple mesh instances should be used under the same Razee installation.
+used for different purposes than Fybrik or multiple mesh instances should be used under the same Razee installation.
 
 In general there is a need for the following Razee components to be installed:
 
@@ -43,7 +43,7 @@ The API Key can also be retrieved from the UI following these two steps.
 1. From the RazeeDash console, click the arrow icon in the upper right corner. Then, select Profile.
 2. Copy the API key value. If no API key exists, click Generate to generate one.
 
-In order to configure Mesh for data to use the installed Razee on Kubernetes the values of the helm charts have to be adapted
+In order to configure Fybrik to use the installed Razee on Kubernetes the values of the helm charts have to be adapted
 to the following:
 ```
 coordinator:
@@ -80,7 +80,7 @@ Prerequisites:
 ![IBM Satellite config](../static/ibm_satellite_conf_cluster.png)
 
 The step below has to be executed for each cluster that should be added to
-the Mesh for data instance. This step is the same for coordinator and remote clusters.
+the Fybrik instance. This step is the same for coordinator and remote clusters.
 
 1. In the IBM Satellite Cloud service under the **Clusters** tab click on **Attach cluster**.
 2. Enter a cluster name in the popup dialog and click **Register cluster**. (Please don't use spaces in the name)
@@ -88,7 +88,7 @@ the Mesh for data instance. This step is the same for coordinator and remote clu
 4. After executing the `kubectl` command the Razee services will be installed in the `razeedeploy` namespace and the cluster
    will show up in your cluster list (like in the picture above). This installs the watch keeper and cluster subscription components.
 
-The next step is to configure Mesh for data to use IBM Satellite config as multicluster orchestrator. This configuration is done via a 
+The next step is to configure Fybrik to use IBM Satellite config as multicluster orchestrator. This configuration is done via a 
 Kubernetes secret that is created by the helm chart. Overwriting the `coordinator.razee` values in your deployment will make use of the
 multicluster tooling.
 A configuration using IBM Satellite Config would look like the following for the coordinator cluster:
