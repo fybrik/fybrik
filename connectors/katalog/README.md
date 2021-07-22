@@ -6,7 +6,7 @@ A data catalog and credentials manager powered by Kubernetes resources:
 
 ## Usage
 
-See [documentation](https://mesh-for-data.github.io/mesh-for-data/latest/reference/katalog/) in the website.
+See [documentation](fybrik.io/latest/reference/katalog/) in the website.
 
 ## Develop, Build and Deploy
 
