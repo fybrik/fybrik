@@ -1,10 +1,10 @@
-{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+{{- if include "fybrik.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "m4d.fullname" . }}-metrics-service
+  name: {{ template "fybrik.fullname" . }}-metrics-service
   labels:
-    {{- include "m4d.labels" . | nindent 4 }}
+    {{- include "fybrik.labels" . | nindent 4 }}
     control-plane: controller-manager
 spec:
   ports:
@@ -13,6 +13,6 @@ spec:
     targetPort: https
   selector:
     control-plane: controller-manager
-    {{- include "m4d.selectorLabels" . | nindent 4 }}
+    {{- include "fybrik.selectorLabels" . | nindent 4 }}
 {{- end }}
 

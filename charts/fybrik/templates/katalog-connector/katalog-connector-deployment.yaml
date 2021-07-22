@@ -1,12 +1,12 @@
 {{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.catalog "katalog") }}
-{{- if include "m4d.isEnabled" (tuple .Values.katalogConnector.enabled $autoFlag) }}
+{{- if include "fybrik.isEnabled" (tuple .Values.katalogConnector.enabled $autoFlag) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: katalog-connector
   labels:
     app.kubernetes.io/component: katalog-connector
-    {{- include "m4d.labels" . | nindent 4 }}
+    {{- include "fybrik.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.katalogConnector.autoscaling.enabled }}
   replicas: {{ .Values.katalogConnector.replicaCount }}
@@ -14,7 +14,7 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/component: katalog-connector
-      {{- include "m4d.selectorLabels" . | nindent 6 }}
+      {{- include "fybrik.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.katalogConnector.podAnnotations }}
@@ -24,7 +24,7 @@ spec:
       labels:
         fybrik.io/componentType: connector
         app.kubernetes.io/component: katalog-connector
-        {{- include "m4d.selectorLabels" . | nindent 8 }}
+        {{- include "fybrik.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
@@ -37,7 +37,7 @@ spec:
         - name: katalog-connector
           securityContext:
             {{- toYaml .Values.katalogConnector.securityContext | nindent 12 }}
-          image: {{ include "m4d.image" ( tuple $ .Values.katalogConnector ) }}
+          image: {{ include "fybrik.image" ( tuple $ .Values.katalogConnector ) }}
           imagePullPolicy: {{ .Values.katalogConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
           ports:
             - name: http

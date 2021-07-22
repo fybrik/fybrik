@@ -103,7 +103,7 @@ const NewApplicationEdit = props => {
     const dataToSend = applicationData.map(data => array.omit(data, ['uid']))
     axios({
       method: exists ? 'put' : 'post',
-      url: process.env.REACT_APP_BACKEND_ADDRESS + `/v1/dma/m4dapplication${exists ? `/${application.name}` : ''}`,
+      url: process.env.REACT_APP_BACKEND_ADDRESS + `/v1/dma/fybrikapplication${exists ? `/${application.name}` : ''}`,
       data: {
         apiVersion: 'app.fybrik.io/v1alpha1',
         kind: 'FybrikApplication',

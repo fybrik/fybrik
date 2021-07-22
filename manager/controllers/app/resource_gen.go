@@ -41,7 +41,7 @@ func (c *PlotterInterface) GetManagedObject() runtime.Object {
 
 // CreateResourceReference returns an identifier (name and namespace) of the generated resource.
 func (c *PlotterInterface) CreateResourceReference(owner *app.ResourceReference) *app.ResourceReference {
-	// Plotter runs in the control plane namespace. Plotter name identifies m4dapplication (name and namespace)
+	// Plotter runs in the control plane namespace. Plotter name identifies fybrikapplication (name and namespace)
 	return &app.ResourceReference{
 		Name:       owner.Name + "-" + owner.Namespace,
 		Namespace:  utils.GetSystemNamespace(),

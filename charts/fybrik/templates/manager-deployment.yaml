@@ -1,4 +1,4 @@
-{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+{{- if include "fybrik.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,14 +6,14 @@ metadata:
   labels:
     control-plane: controller-manager
     app.kubernetes.io/component: manager
-    {{- include "m4d.labels" . | nindent 4 }}
+    {{- include "fybrik.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.manager.replicaCount }}
   selector:
     matchLabels:
       control-plane: controller-manager
       app.kubernetes.io/component: manager
-      {{- include "m4d.selectorLabels" . | nindent 6 }}
+      {{- include "fybrik.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.manager.podAnnotations }}
@@ -25,7 +25,7 @@ spec:
         control-plane: controller-manager
         fybrik.io/componentType: manager
         app.kubernetes.io/component: manager
-        {{- include "m4d.selectorLabels" . | nindent 8 }}
+        {{- include "fybrik.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
@@ -54,7 +54,7 @@ spec:
           - containerPort: 8443
             name: https
         - name: manager
-          image: {{ include "m4d.image" ( tuple $ .Values.manager ) }}
+          image: {{ include "fybrik.image" ( tuple $ .Values.manager ) }}
           imagePullPolicy: {{ .Values.manager.imagePullPolicy | default .Values.global.imagePullPolicy }}
           args:
             {{- if .Values.manager.overrideArgs }}
@@ -74,7 +74,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: fybrik-config
-            {{- if include "m4d.isRazeeEnabled" . }}
+            {{- if include "fybrik.isRazeeEnabled" . }}
             - secretRef:
                 name: razee-credentials
             {{- end }}

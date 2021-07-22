@@ -6,7 +6,7 @@ This page describes what must be provided when contributing a [module](../concep
 
 1. Implement the logic of the module you are contributing. The implementation can either be directly in the [Module Workload](#module-workload) or in an external component.  If the logic is in an external component, then the module workload should act as a client - i.e. receiving paramaters from the control plane and passing them to the external component.
 1. Create and publish the [Module Helm Chart](#module-helm-chart) that will be used by the control plane to deploy the module workload, update it, and delete it as necessary.
-1. Create the [FybrikModule YAML](#m4dmodule-yaml) which describes the capabilities of the module workload, in which flows it should be considered for inclusion, its supported interfaces, and the link to the module helm chart.
+1. Create the [FybrikModule YAML](#fybrikmodule-yaml) which describes the capabilities of the module workload, in which flows it should be considered for inclusion, its supported interfaces, and the link to the module helm chart.
 1. [Test](#test) the new module
 
 These steps are described in the following sections in more detail, so that you can create your own modules for use by Fybrik.  Note that a new module is maintained in its own git repository, separate from the [fybrik](https://github.com/fybrik/fybrik) repository.
@@ -36,7 +36,7 @@ $ curl --header "X-Vault-Token: ..." -X GET https://<address>/<secretPath>
 
 For any module chosen by the control plane to be part of the data path, the control plane needs to be able to install/remove/upgrade an instance of the module. Fybrik uses [Helm](https://helm.sh/docs/intro/using_helm/) to provide this functionality. Follow the Helm [getting started](https://helm.sh/docs/chart_template_guide/getting_started/) guide if you are unfamiliar with Helm. Note that Helm 3.3 or above is required.
 
-The names of the Kubernetes resources deployed by the module helm chart must contain the release name to avoid resource conflicts. A Kubernetes `service` resource which is used to access the module must have a name equal to the release name (this service name is also used in the optional [`spec.capabilites.api.endpoint.hostname`](../reference/crds.md#m4dmodulespeccapabilitiesapiendpoint) field).
+The names of the Kubernetes resources deployed by the module helm chart must contain the release name to avoid resource conflicts. A Kubernetes `service` resource which is used to access the module must have a name equal to the release name (this service name is also used in the optional [`spec.capabilites.api.endpoint.hostname`](../reference/crds.md#fybrikmodulespeccapabilitiesapiendpoint) field).
 
 Because the chart is installed by the control plane, the input `values` to the chart must match the relevant type of [arguments](../reference/crds.md#blueprintspecflowstepsindexarguments). 
 <!-- TODO: expand this when we support setting values in the FybrikModule YAML: https://github.com/fybrik/fybrik/pull/42 -->
@@ -60,7 +60,7 @@ helm chart push <registry>/<path>:<version>
 
 ## FybrikModule YAML
 
-`FybrikModule` is a kubernetes Custom Resource Definition (CRD) which describes to the control plane the functionality provided by the module.  The FybrikModule CRD has no controller. The specification of the `FybrikModule` Kubernetes CRD is available in the [API documentation](../reference/crds.md#m4dmodule). 
+`FybrikModule` is a kubernetes Custom Resource Definition (CRD) which describes to the control plane the functionality provided by the module.  The FybrikModule CRD has no controller. The specification of the `FybrikModule` Kubernetes CRD is available in the [API documentation](../reference/crds.md#fybrikmodule). 
 
 The YAML file begins with standard Kubernetes metadata followed by the `FybrikModule` specification:
 ```yaml

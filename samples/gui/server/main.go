@@ -28,7 +28,7 @@ func Routes(k8sclient *datauser.K8sClient) *chi.Mux {
 	)
 
 	router.Route("/v1/dma", func(r chi.Router) {
-		r.Mount("/m4dapplication", datauser.DMARoutes(k8sclient))
+		r.Mount("/fybrikapplication", datauser.DMARoutes(k8sclient))
 	})
 
 	router.Route("/v1/creds", func(r chi.Router) {

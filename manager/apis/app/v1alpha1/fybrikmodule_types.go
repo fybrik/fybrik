@@ -74,7 +74,7 @@ type SupportedAction struct {
 	Level connectors.EnforcementAction_EnforcementActionLevel `json:"level,omitempty"`
 }
 
-// EndpointSpec is used both by the module creator and by the status of the m4dapplication
+// EndpointSpec is used both by the module creator and by the status of the fybrikapplication
 type EndpointSpec struct {
 	// Always equals the release name. Can be omitted.
 	// +optional

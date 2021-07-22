@@ -71,7 +71,7 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 		namespace = "default"
 	)
 	application := &app.FybrikApplication{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/m4dcopyapp-csv.yaml", application)).To(gomega.BeNil(), "Cannot read m4dapplication file for test")
+	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).To(gomega.BeNil(), "Cannot read fybrikapplication file for test")
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
@@ -119,7 +119,7 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 
 	// Check if Application generated a plotter
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
-	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	g.Expect(application.Status.Generated).NotTo(gomega.BeNil())
 
 	plotterObjectKey := types.NamespacedName{
@@ -210,7 +210,7 @@ func TestDenyOnRead(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
-	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// Expect Deny condition
 	g.Expect(application.Status.Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue), "Deny condition is not set")
 	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring(app.ReadAccessDenied))
@@ -262,7 +262,7 @@ func TestNoReadPath(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
-	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// Expect an error
 	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring(app.ModuleNotFound))
 	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring("read"))
@@ -327,7 +327,7 @@ func TestWrongCopyModule(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
-	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// Expect an error
 	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring(app.ModuleNotFound))
 	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring("copy"))
@@ -384,7 +384,7 @@ func TestActionSupport(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
-	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// Expect an error
 	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring(app.ModuleNotFound))
 }
@@ -457,7 +457,7 @@ func TestMultipleDatasets(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
-	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage["db2/redact-dataset"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
 	// check plotter creation
@@ -539,7 +539,7 @@ func TestMultipleRegions(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
-	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage["s3-external/redact-dataset"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
 	// check plotter creation
@@ -607,7 +607,7 @@ func TestCopyData(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
-	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage[assetName].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
 	g.Expect(application.Status.ProvisionedStorage[assetName].SecretRef).To(gomega.Equal("credentials-theshire"), "Incorrect storage was selected")
@@ -676,14 +676,14 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
-	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage).To(gomega.BeEmpty())
 	// check errors
 	g.Expect(getErrorMessages(application)).NotTo(gomega.BeEmpty())
 }
 
-// This test checks that the plotter state propagates into the m4dapp state
+// This test checks that the plotter state propagates into the fybrikapp state
 func TestPlotterUpdate(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -728,7 +728,7 @@ func TestPlotterUpdate(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 
 	err = cl.Get(context.Background(), req.NamespacedName, application)
-	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 	g.Expect(application.Status.Generated.AppVersion).To(gomega.Equal(application.Generation))
@@ -748,7 +748,7 @@ func TestPlotterUpdate(t *testing.T) {
 	_, err = r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 	err = cl.Get(context.Background(), req.NamespacedName, application)
-	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring(errorMsg))
 
 	// mark the plotter as ready
@@ -760,11 +760,11 @@ func TestPlotterUpdate(t *testing.T) {
 	_, err = r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 	err = cl.Get(context.Background(), req.NamespacedName, application)
-	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	g.Expect(application.Status.Ready).To(gomega.BeTrue())
 }
 
-// This test checks that the older plotter state does not propagate into the m4dapp state
+// This test checks that the older plotter state does not propagate into the fybrikapp state
 func TestSyncWithPlotter(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -776,7 +776,7 @@ func TestSyncWithPlotter(t *testing.T) {
 		Namespace: "default",
 	}
 	application := &app.FybrikApplication{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/m4dcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
+	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
 	// imitate a ready phase for the earlier generation
 	application.SetGeneration(2)
 	application.Finalizers = []string{"TestReconciler.finalizer"}
@@ -811,12 +811,12 @@ func TestSyncWithPlotter(t *testing.T) {
 
 	newApp := &app.FybrikApplication{}
 	err = cl.Get(context.Background(), req.NamespacedName, newApp)
-	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	g.Expect(getErrorMessages(newApp)).NotTo(gomega.BeEmpty())
 	g.Expect(newApp.Status.Ready).NotTo(gomega.BeTrue())
 }
 
-// This test checks that an empty m4dapplication can be created and reconciled
+// This test checks that an empty fybrikapplication can be created and reconciled
 func TestFybrikApplicationWithNoDatasets(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -828,7 +828,7 @@ func TestFybrikApplicationWithNoDatasets(t *testing.T) {
 		Namespace: "default",
 	}
 	application := &app.FybrikApplication{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/m4dcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
+	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data = []app.DataContext{}
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
@@ -853,7 +853,7 @@ func TestFybrikApplicationWithNoDatasets(t *testing.T) {
 	// The application should be in Ready state
 	newApp := &app.FybrikApplication{}
 	err = cl.Get(context.Background(), req.NamespacedName, newApp)
-	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	g.Expect(getErrorMessages(newApp)).To(gomega.BeEmpty())
 	g.Expect(newApp.Status.Ready).To(gomega.BeTrue())
 }

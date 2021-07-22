@@ -33,7 +33,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 			Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
 			moduleKey := client.ObjectKeyFromObject(module)
 			application := &app.FybrikApplication{}
-			Expect(readObjectFromFile("../../testdata/e2e/m4dapplication.yaml", application)).ToNot(HaveOccurred())
+			Expect(readObjectFromFile("../../testdata/e2e/fybrikapplication.yaml", application)).ToNot(HaveOccurred())
 			applicationKey := client.ObjectKeyFromObject(application)
 
 			// Create FybrikApplication and FybrikModule

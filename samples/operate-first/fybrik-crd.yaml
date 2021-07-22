@@ -336,21 +336,21 @@ status:
   conditions: []
   storedVersions: []
 ---
-# Source: fybrik-crd/templates/app.fybrik.io_m4dapplications.yaml
+# Source: fybrik-crd/templates/app.fybrik.io_fybrikapplications.yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: m4dapplications.app.fybrik.io
+  name: fybrikapplications.app.fybrik.io
 spec:
   group: app.fybrik.io
   names:
     kind: FybrikApplication
     listKind: FybrikApplicationList
-    plural: m4dapplications
-    singular: m4dapplication
+    plural: fybrikapplications
+    singular: fybrikapplication
   scope: Namespaced
   subresources:
     status: {}
@@ -570,21 +570,21 @@ status:
   conditions: []
   storedVersions: []
 ---
-# Source: fybrik-crd/templates/app.fybrik.io_m4dmodules.yaml
+# Source: fybrik-crd/templates/app.fybrik.io_fybrikmodules.yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: m4dmodules.app.fybrik.io
+  name: fybrikmodules.app.fybrik.io
 spec:
   group: app.fybrik.io
   names:
     kind: FybrikModule
     listKind: FybrikModuleList
-    plural: m4dmodules
-    singular: m4dmodule
+    plural: fybrikmodules
+    singular: fybrikmodule
   scope: Namespaced
   validation:
     openAPIV3Schema:
@@ -796,21 +796,21 @@ status:
   conditions: []
   storedVersions: []
 ---
-# Source: fybrik-crd/templates/app.fybrik.io_m4dstorageaccounts.yaml
+# Source: fybrik-crd/templates/app.fybrik.io_fybrikstorageaccounts.yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: m4dstorageaccounts.app.fybrik.io
+  name: fybrikstorageaccounts.app.fybrik.io
 spec:
   group: app.fybrik.io
   names:
     kind: FybrikStorageAccount
     listKind: FybrikStorageAccountList
-    plural: m4dstorageaccounts
-    singular: m4dstorageaccount
+    plural: fybrikstorageaccounts
+    singular: fybrikstorageaccount
   scope: Namespaced
   validation:
     openAPIV3Schema:

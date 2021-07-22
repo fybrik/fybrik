@@ -1,13 +1,13 @@
 {{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
-{{- $opaConnectorEnabled := include "m4d.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
-{{- if include "m4d.isEnabled" (tuple .Values.opaServer.enabled $opaConnectorEnabled) }}
+{{- $opaConnectorEnabled := include "fybrik.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
+{{- if include "fybrik.isEnabled" (tuple .Values.opaServer.enabled $opaConnectorEnabled) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: opa
   labels:
     app.kubernetes.io/component: opa
-    {{- include "m4d.labels" . | nindent 4 }}
+    {{- include "fybrik.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.opaServer.autoscaling.enabled }}
   replicas: {{ .Values.opaServer.replicaCount }}
@@ -15,7 +15,7 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/component: opa
-      {{- include "m4d.selectorLabels" . | nindent 6 }}
+      {{- include "fybrik.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.opaServer.podAnnotations }}
@@ -24,7 +24,7 @@ spec:
       {{- end }}
       labels:
         app.kubernetes.io/component: opa
-        {{- include "m4d.selectorLabels" . | nindent 8 }}
+        {{- include "fybrik.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:

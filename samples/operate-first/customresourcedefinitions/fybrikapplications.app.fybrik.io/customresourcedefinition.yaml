@@ -4,14 +4,14 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: m4dapplications.app.fybrik.io
+  name: fybrikapplications.app.fybrik.io
 spec:
   group: app.fybrik.io
   names:
     kind: FybrikApplication
     listKind: FybrikApplicationList
-    plural: m4dapplications
-    singular: m4dapplication
+    plural: fybrikapplications
+    singular: fybrikapplication
   scope: Namespaced
   subresources:
     status: {}

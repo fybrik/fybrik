@@ -1,5 +1,5 @@
 {{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.catalog "egeria") }}
-{{- if include "m4d.isEnabled" (tuple .Values.egeriaConnector.enabled $autoFlag) }}
+{{- if include "fybrik.isEnabled" (tuple .Values.egeriaConnector.enabled $autoFlag) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

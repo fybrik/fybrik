@@ -64,7 +64,7 @@ func (r *FybrikApplicationReconciler) GenerateBlueprints(instances []modules.Mod
 	return blueprintMap
 }
 
-// GenerateBlueprint creates the Blueprint spec based on the datasets and the governance actions required, which dictate the modules that must run in the m4d
+// GenerateBlueprint creates the Blueprint spec based on the datasets and the governance actions required, which dictate the modules that must run in the fybrik
 // Credentials for accessing data set are stored in a credential management system (such as vault) and the paths for accessing them are included in the blueprint.
 // The credentials themselves are not included in the blueprint.
 func (r *FybrikApplicationReconciler) GenerateBlueprint(instances []modules.ModuleInstanceSpec, appContext *app.FybrikApplication) app.BlueprintSpec {
@@ -75,7 +75,7 @@ func (r *FybrikApplicationReconciler) GenerateBlueprint(instances []modules.Modu
 	spec.Entrypoint = appName
 	r.Log.V(0).Info("\tappName: " + appName)
 
-	// Define the flow structure, which indicates the flow of data between the components in the m4d
+	// Define the flow structure, which indicates the flow of data between the components in the fybrik
 	// Loop over the list of modules and create a step for each
 	// Also create a template for each module specification - i.e. there could be multiple instances of a module, each with different arguments
 	var flow app.DataFlow

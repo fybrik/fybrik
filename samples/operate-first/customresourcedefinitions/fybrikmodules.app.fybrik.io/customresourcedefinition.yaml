@@ -4,14 +4,14 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: m4dmodules.app.fybrik.io
+  name: fybrikmodules.app.fybrik.io
 spec:
   group: app.fybrik.io
   names:
     kind: FybrikModule
     listKind: FybrikModuleList
-    plural: m4dmodules
-    singular: m4dmodule
+    plural: fybrikmodules
+    singular: fybrikmodule
   scope: Namespaced
   validation:
     openAPIV3Schema:

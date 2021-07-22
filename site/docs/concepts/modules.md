@@ -7,7 +7,7 @@ This page describes what modules are and how they are leveraged by the control p
 
 As described in the [architecture](./architecture.md) page, the control plane generates a description of a data plane based on policies and application requirements. This is known as a blueprint, and includes components that are deployed by the control plane to fulfill different data-centric requirements.  For example, a component that can mask data can be used to enforce a data masking policy, or a component that copies data may be used to create a local data copy to meet performance requirements, etc. 
 
-Modules are the way to describe such data plane components and make them available to the control plane. A module is packaged as a [Helm](https://helm.sh/) chart that the control plane can install to a workload's data plane. To make a module available to the control plane it must be [registered](#registering-a-module) by applying a [`FybrikModule`](../reference/crds.md#m4dmodule) CRD.
+Modules are the way to describe such data plane components and make them available to the control plane. A module is packaged as a [Helm](https://helm.sh/) chart that the control plane can install to a workload's data plane. To make a module available to the control plane it must be [registered](#registering-a-module) by applying a [`FybrikModule`](../reference/crds.md#fybrikmodule) CRD.
 
 The functionality described by the module may be deployed (a) per workload, or (b) it may be composed of one or more components that run independent of the workload and its associated control plane.  In the case of (a), the control plane handles the deployment of the functional component. In the case of (b) where the functionality of the module runs independently and handles requests from multiple workloads, a client module is what is deployed by the control plane.  This client module passes parameters to the external component(s) and monitors the status and results of the requests to the external component(s). 
 <!-- TODO: Add "which are declared as a dependencies in the module yaml"  when we support it-->
@@ -24,7 +24,7 @@ There are several parts to a module:
 1. [Module Workload](../contribute/modules.md#module-workload): the workload that runs once the Helm chart is installed by the control plane.
 Can be a client to the external component(s) or be independent.
 1. [Module Helm Chart](../contribute/modules.md#module-helm-chart): the package containing the module workload that the control plane installs as part of a data plane.
-1. [FybrikModule YAML](../contribute/modules.md#m4dmodule-yaml): describes the functional capabilities, supported interfaces, and has links to the Module Helm chart.
+1. [FybrikModule YAML](../contribute/modules.md#fybrikmodule-yaml): describes the functional capabilities, supported interfaces, and has links to the Module Helm chart.
 
 ## Registering a module
 
@@ -60,7 +60,7 @@ The table below lists the currently available modules:
 Name | Description | FybrikModule | Prerequisite
 ---  | ---         | ---       | ---
 [arrow-flight-module](https://github.com/fybrik/arrow-flight-module) | reading datasets while performing data transformations | https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml |
-[implicit-copy](https://github.com/fybrik/mover) | copies data between any two supported data stores, for example S3 and Kafka, and applies transformations. | https://raw.githubusercontent.com/fybrik/fybrik/master/modules/implicit-copy-batch-module.yaml<br> <br>https://raw.githubusercontent.com/fybrik/fybrik/master/modules/implicit-copy-stream-module.yaml | - [Datashim](https://github.com/datashim-io/datashim) deployment.<br>- [`FybrikStorageAccount`](../../reference/crds#m4dstorageaccount) resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data.
+[implicit-copy](https://github.com/fybrik/mover) | copies data between any two supported data stores, for example S3 and Kafka, and applies transformations. | https://raw.githubusercontent.com/fybrik/fybrik/master/modules/implicit-copy-batch-module.yaml<br> <br>https://raw.githubusercontent.com/fybrik/fybrik/master/modules/implicit-copy-stream-module.yaml | - [Datashim](https://github.com/datashim-io/datashim) deployment.<br>- [`FybrikStorageAccount`](../../reference/crds#fybrikstorageaccount) resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data.
 
 ## Contributing
 

@@ -50,7 +50,7 @@ type FybrikApplicationReconciler struct {
 // It receives FybrikApplication CRD and selects the appropriate modules that will run
 // The outcome is either a single Blueprint running on the same cluster or a Plotter containing multiple Blueprints that may run on different clusters
 func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.WithValues("m4dapplication", req.NamespacedName)
+	log := r.Log.WithValues("fybrikapplication", req.NamespacedName)
 	// obtain FybrikApplication resource
 	applicationContext := &app.FybrikApplication{}
 	if err := r.Get(ctx, req.NamespacedName, applicationContext); err != nil {
@@ -106,7 +106,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		log.Info("Reconciled with errors: " + getErrorMessages(applicationContext))
 	}
 
-	// trigger a new reconcile if required (the m4dapplication is not ready)
+	// trigger a new reconcile if required (the fybrikapplication is not ready)
 	if !inFinalState(applicationContext) {
 		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
@@ -230,7 +230,7 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 	return nil
 }
 
-// setReadModulesEndpoints populates the ReadEndpointsMap map in the status of the m4dapplication
+// setReadModulesEndpoints populates the ReadEndpointsMap map in the status of the fybrikapplication
 // Current implementation assumes there is only one cluster with read modules (which is the same cluster the user's workload)
 func setReadModulesEndpoints(applicationContext *app.FybrikApplication, blueprintsMap map[string]app.BlueprintSpec, moduleMap map[string]*app.FybrikModule) {
 	var foundReadEndpoints = false

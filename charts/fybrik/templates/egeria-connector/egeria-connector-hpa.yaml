@@ -1,5 +1,5 @@
 {{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.catalog "egeria") }}
-{{- if include "m4d.isEnabled" (tuple .Values.egeriaConnector.enabled $autoFlag) }}
+{{- if include "fybrik.isEnabled" (tuple .Values.egeriaConnector.enabled $autoFlag) }}
 {{- if .Values.egeriaConnector.autoscaling.enabled }}
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
@@ -7,7 +7,7 @@ metadata:
   name: egeria-connector
   labels:
     app.kubernetes.io/component: egeria-connector
-    {{- include "m4d.labels" . | nindent 4 }}
+    {{- include "fybrik.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1

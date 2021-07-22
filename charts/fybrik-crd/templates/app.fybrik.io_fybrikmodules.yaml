@@ -6,14 +6,14 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.5.0
   creationTimestamp: null
-  name: m4dmodules.app.fybrik.io
+  name: fybrikmodules.app.fybrik.io
 spec:
   group: app.fybrik.io
   names:
     kind: FybrikModule
     listKind: FybrikModuleList
-    plural: m4dmodules
-    singular: m4dmodule
+    plural: fybrikmodules
+    singular: fybrikmodule
   scope: Namespaced
   versions:
   - name: v1alpha1
@@ -54,7 +54,7 @@ spec:
                         description: DataFormat defines the data format type
                         type: string
                       endpoint:
-                        description: EndpointSpec is used both by the module creator and by the status of the m4dapplication
+                        description: EndpointSpec is used both by the module creator and by the status of the fybrikapplication
                         properties:
                           hostname:
                             description: Always equals the release name. Can be omitted.

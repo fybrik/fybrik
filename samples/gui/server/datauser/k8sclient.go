@@ -38,7 +38,7 @@ func (f *K8sClient) UpdateApplication(name string, obj *app.FybrikApplication) (
 	return &result, nil
 }
 
-// DeleteApplication terminates the existing FybrikApplication CRD and all its associated components in the m4d
+// DeleteApplication terminates the existing FybrikApplication CRD and all its associated components in the fybrik
 func (f *K8sClient) DeleteApplication(name string, options *meta_v1.DeleteOptions) error {
 	var result app.FybrikApplication
 	key := types.NamespacedName{Name: name, Namespace: k8sClient.namespace}

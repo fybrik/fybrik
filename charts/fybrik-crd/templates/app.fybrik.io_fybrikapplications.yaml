@@ -6,14 +6,14 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.5.0
   creationTimestamp: null
-  name: m4dapplications.app.fybrik.io
+  name: fybrikapplications.app.fybrik.io
 spec:
   group: app.fybrik.io
   names:
     kind: FybrikApplication
     listKind: FybrikApplicationList
-    plural: m4dapplications
-    singular: m4dapplication
+    plural: fybrikapplications
+    singular: fybrikapplication
   scope: Namespaced
   versions:
   - name: v1alpha1
@@ -210,7 +210,7 @@ spec:
                 type: object
               readEndpointsMap:
                 additionalProperties:
-                  description: EndpointSpec is used both by the module creator and by the status of the m4dapplication
+                  description: EndpointSpec is used both by the module creator and by the status of the fybrikapplication
                   properties:
                     hostname:
                       description: Always equals the release name. Can be omitted.

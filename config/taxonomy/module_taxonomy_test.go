@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ModuleTaxValsName = "../../charts/m4d/files/taxonomy/module.values.schema.json"
+	ModuleTaxValsName = "../../charts/fybrik/files/taxonomy/module.values.schema.json"
 
 	moduleTypeGood = "{\"module_type\":\"read\"}"
 	moduleTypeBad  = "{\"module_type\":\"xxx\"}"

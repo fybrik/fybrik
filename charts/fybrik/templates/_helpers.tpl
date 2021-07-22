@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "m4d.name" -}}
+{{- define "fybrik.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "m4d.fullname" -}}
+{{- define "fybrik.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "m4d.chart" -}}
+{{- define "fybrik.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "m4d.labels" -}}
-helm.sh/chart: {{ include "m4d.chart" . }}
-{{ include "m4d.selectorLabels" . }}
+{{- define "fybrik.labels" -}}
+helm.sh/chart: {{ include "fybrik.chart" . }}
+{{ include "fybrik.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,15 +45,15 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "m4d.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "m4d.name" . }}
+{{- define "fybrik.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "fybrik.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the value of an image field from hub, image and tag
 */}}
-{{- define "m4d.image" -}}
+{{- define "fybrik.image" -}}
 {{- $root := first . -}}
 {{- $ctx := last . -}}
 {{- if contains "/" $ctx.image }}
@@ -71,7 +71,7 @@ The return value when using `include` is always a String.
 2. The flag is set to true
 3. The flag is set to "auto" and the second parameter to this function is true 
 */}}
-{{- define "m4d.isEnabled" -}}
+{{- define "fybrik.isEnabled" -}}
 {{- $flag := toString (first .) -}}
 {{- $condition := last . -}}
 {{- if or (eq $flag "true") (and (eq $flag "auto") $condition) }}
@@ -82,7 +82,7 @@ true
 {{/*
 isRazeeEnabled checks if razee configuration is enabled
 */}}
-{{- define "m4d.isRazeeEnabled" -}}
+{{- define "fybrik.isRazeeEnabled" -}}
 {{- if or .Values.coordinator.razee.user .Values.coordinator.razee.apiKey .Values.coordinator.razee.iamKey -}}
 true
 {{- end -}}
@@ -92,7 +92,7 @@ true
 Detect the version of cert manager crd that is installed
 Defaults to cert-manager.io/v1alpha2 
 */}}
-{{- define "m4d.certManagerApiVersion" -}}
+{{- define "fybrik.certManagerApiVersion" -}}
 {{- if (.Capabilities.APIVersions.Has "certmanager.k8s.io/v1alpha1") -}}
 certmanager.k8s.io/v1alpha1
 {{- else  -}}

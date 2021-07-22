@@ -20,8 +20,8 @@ const FybrikApplications = props => {
 
     const getFybrikApplications = async () => {
       try {
-        console.log(process.env.REACT_APP_BACKEND_ADDRESS + '/v1/dma/m4dapplication')
-        return await axios.get(process.env.REACT_APP_BACKEND_ADDRESS + '/v1/dma/m4dapplication')
+        console.log(process.env.REACT_APP_BACKEND_ADDRESS + '/v1/dma/fybrikapplication')
+        return await axios.get(process.env.REACT_APP_BACKEND_ADDRESS + '/v1/dma/fybrikapplication')
       } catch (error) {
         console.error(error)
         if (mountedRef.current) {
@@ -82,7 +82,7 @@ const FybrikApplications = props => {
   // send request to delete application, remove row from table upon success
   const deleteApplication = (uid, name, secret) => {
     const axios = require('axios')
-    axios.delete(process.env.REACT_APP_BACKEND_ADDRESS + `/v1/dma/m4dapplication/${name}`)
+    axios.delete(process.env.REACT_APP_BACKEND_ADDRESS + `/v1/dma/fybrikapplication/${name}`)
       .then(async (response) => {
         console.log(response);
         // remove app from table, does not guarantee that kubernetes deletion

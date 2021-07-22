@@ -11,12 +11,12 @@ docker-mirror-read:
 	$(TOOLS_DIR)/docker_mirror.sh $(TOOLS_DIR)/docker_mirror.conf
 
 .PHONY: deploy
-deploy: export VALUES_FILE?=charts/m4d/values.yaml
+deploy: export VALUES_FILE?=charts/fybrik/values.yaml
 deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 	$(TOOLBIN)/kubectl create namespace $(KUBE_NAMESPACE) || true
 	$(TOOLBIN)/helm install fybrik-crd charts/fybrik-crd  \
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
-	$(TOOLBIN)/helm install m4d charts/m4d --values $(VALUES_FILE) \
+	$(TOOLBIN)/helm install fybrik charts/fybrik --values $(VALUES_FILE) \
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 
 .PHONY: test
@@ -28,7 +28,7 @@ test:
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
 run-integration-tests: export DOCKER_NAMESPACE?=fybrik-system
-run-integration-tests: export VALUES_FILE=charts/m4d/integration-tests.values.yaml
+run-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
 run-integration-tests:
 	$(MAKE) kind
 	$(MAKE) cluster-prepare

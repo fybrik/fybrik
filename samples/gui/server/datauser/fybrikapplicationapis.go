@@ -23,11 +23,11 @@ func DMARoutes(client *K8sClient) *chi.Mux {
 	dmaClient = client // global variable used by all funcs in this package
 
 	router := chi.NewRouter()
-	router.Get("/{m4dapplicationID}", GetFybrikApplication) // Returns the FybrikApplication CRD including its status
+	router.Get("/{fybrikapplicationID}", GetFybrikApplication) // Returns the FybrikApplication CRD including its status
 	router.Get("/", ListFybrikApplications)
-	router.Delete("/{m4dapplicationID}", DeleteFybrikApplication)
+	router.Delete("/{fybrikapplicationID}", DeleteFybrikApplication)
 	router.Post("/", CreateFybrikApplication)
-	router.Put("/{m4dapplicationID}", UpdateFybrikApplication)
+	router.Put("/{fybrikapplicationID}", UpdateFybrikApplication)
 	router.Options("/*", FybrikApplicationOptions)
 	return router
 }
@@ -72,10 +72,10 @@ func GetFybrikApplication(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	m4dapplicationID := chi.URLParam(r, "m4dapplicationID")
+	fybrikapplicationID := chi.URLParam(r, "fybrikapplicationID")
 
 	// Call kubernetes to get the FybrikApplication CRD
-	dma, err := dmaClient.GetApplication(m4dapplicationID)
+	dma, err := dmaClient.GetApplication(fybrikapplicationID)
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))
 		if suberr != nil {
@@ -111,10 +111,10 @@ func UpdateFybrikApplication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	m4dapplicationID := chi.URLParam(r, "m4dapplicationID")
+	fybrikapplicationID := chi.URLParam(r, "fybrikapplicationID")
 	// Call kubernetes to update the FybrikApplication CRD
 	dmaStruct.Namespace = dmaClient.namespace
-	dma, err := dmaClient.UpdateApplication(m4dapplicationID, &dmaStruct)
+	dma, err := dmaClient.UpdateApplication(fybrikapplicationID, &dmaStruct)
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))
 		if suberr != nil {
@@ -128,7 +128,7 @@ func UpdateFybrikApplication(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, result)
 }
 
-// DeleteFybrikApplication deletes the FybrikApplication CRD running in the m4d control plane,
+// DeleteFybrikApplication deletes the FybrikApplication CRD running in the fybrik control plane,
 // and all of the components associated with it - ex: blueprint, modules that perform read, write, copy, transform, etc.
 func DeleteFybrikApplication(w http.ResponseWriter, r *http.Request) {
 	log.Println("In DeleteFybrikApplication")
@@ -139,10 +139,10 @@ func DeleteFybrikApplication(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	m4dapplicationID := chi.URLParam(r, "m4dapplicationID")
+	fybrikapplicationID := chi.URLParam(r, "fybrikapplicationID")
 
 	// Call kubernetes to get the FybrikApplication CRD
-	err := dmaClient.DeleteApplication(m4dapplicationID, nil)
+	err := dmaClient.DeleteApplication(fybrikapplicationID, nil)
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))
 		if suberr != nil {
@@ -152,7 +152,7 @@ func DeleteFybrikApplication(w http.ResponseWriter, r *http.Request) {
 	}
 
 	render.Status(r, http.StatusOK)
-	result := DMASuccessResponse{UniqueID: m4dapplicationID, Message: "Deleted!!"}
+	result := DMASuccessResponse{UniqueID: fybrikapplicationID, Message: "Deleted!!"}
 	render.JSON(w, r, result)
 }
 

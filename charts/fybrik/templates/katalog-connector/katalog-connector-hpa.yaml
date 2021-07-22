@@ -1,5 +1,5 @@
 {{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.catalog "katalog") }}
-{{- if include "m4d.isEnabled" (tuple .Values.katalogConnector.enabled $autoFlag) }}
+{{- if include "fybrik.isEnabled" (tuple .Values.katalogConnector.enabled $autoFlag) }}
 {{- if .Values.katalogConnector.autoscaling.enabled }}
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
@@ -7,7 +7,7 @@ metadata:
   name: katalog-connector
   labels:
     app.kubernetes.io/component: katalog-connector
-    {{- include "m4d.labels" . | nindent 4 }}
+    {{- include "fybrik.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1

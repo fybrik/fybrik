@@ -21,26 +21,26 @@ func (r *FybrikApplication) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// +kubebuilder:webhook:verbs=create;update,admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/validate-app-fybrik-ibm-com-v1alpha1-m4dapplication,mutating=false,failurePolicy=fail,groups=app.fybrik.io,resources=m4dapplications,versions=v1alpha1,name=vm4dapplication.kb.io
+// +kubebuilder:webhook:verbs=create;update,admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/validate-app-fybrik-ibm-com-v1alpha1-fybrikapplication,mutating=false,failurePolicy=fail,groups=app.fybrik.io,resources=fybrikapplications,versions=v1alpha1,name=vfybrikapplication.kb.io
 
 var _ webhook.Validator = &FybrikApplication{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *FybrikApplication) ValidateCreate() error {
-	log.Printf("Validating m4dapplication %s for creation", r.Name)
+	log.Printf("Validating fybrikapplication %s for creation", r.Name)
 	return r.validateFybrikApplication()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *FybrikApplication) ValidateUpdate(old runtime.Object) error {
-	log.Printf("Validating m4dapplication %s for update", r.Name)
+	log.Printf("Validating fybrikapplication %s for update", r.Name)
 
 	return r.validateFybrikApplication()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *FybrikApplication) ValidateDelete() error {
-	log.Printf("Validating m4dapplication %s for deletion", r.Name)
+	log.Printf("Validating fybrikapplication %s for deletion", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
 	return nil

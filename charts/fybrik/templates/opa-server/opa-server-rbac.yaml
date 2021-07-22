@@ -1,6 +1,6 @@
 {{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
-{{- $opaConnectorEnabled := include "m4d.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
-{{- if include "m4d.isEnabled" (tuple .Values.opaServer.enabled $opaConnectorEnabled) }}
+{{- $opaConnectorEnabled := include "fybrik.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
+{{- if include "fybrik.isEnabled" (tuple .Values.opaServer.enabled $opaConnectorEnabled) }}
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:

@@ -12,7 +12,7 @@ docker-build: build
 
 .PHONY: deploy
 deploy:
-	helm install fybrik-egeria $(ROOT_DIR)/charts/m4d \
+	helm install fybrik-egeria $(ROOT_DIR)/charts/fybrik \
 		--set coordinator.enabled=false --set worker.enabled=false --set manager.enabled=false \
 		--set egeriaConnector.enabled=true \
 		--set egeriaConnector.image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(DOCKER_NAME):${DOCKER_TAGNAME} \

@@ -74,10 +74,10 @@ make -C test/services docker-build docker-push
 # wait until cluster-prepare setup really completed
 make cluster-prepare-wait
 
-# deploy the m4d CRDs to the kind cluster
+# deploy the fybrik CRDs to the kind cluster
 make -C manager deploy-crd
 
-# deploy m4d manager to the kind cluster
+# deploy fybrik manager to the kind cluster
 make -C manager deploy_it
 
 # wait until manager is ready

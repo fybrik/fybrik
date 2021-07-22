@@ -1,10 +1,10 @@
-# Source: m4d/templates/fybrik-blueprints-ns.yaml
+# Source: fybrik/templates/fybrik-blueprints-ns.yaml
 apiVersion: v1
 kind: Namespace
 metadata:
   name: fybrik-blueprints
 ---
-# Source: m4d/templates/katalog-connector/katalog-rbac.yaml
+# Source: fybrik/templates/katalog-connector/katalog-rbac.yaml
 # ClusterRole katalog-editor allows managing assets.
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -18,7 +18,7 @@ rules:
     resources: ["secrets"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
 ---
-# Source: m4d/templates/katalog-connector/katalog-rbac.yaml
+# Source: fybrik/templates/katalog-connector/katalog-rbac.yaml
 # ClusterRole katalog-viewer allows viewing assets.
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -29,7 +29,7 @@ rules:
     resources: ["assets"]
     verbs: ["get", "list", "watch"]
 ---
-# Source: m4d/templates/manager-auth-proxy-cr.yaml
+# Source: fybrik/templates/manager-auth-proxy-cr.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -44,7 +44,7 @@ rules:
       - subjectaccessreviews
     verbs: ["create"]
 ---
-# Source: m4d/templates/manager-cr.yaml
+# Source: fybrik/templates/manager-cr.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -119,7 +119,7 @@ rules:
   - apiGroups:
       - app.fybrik.io
     resources:
-      - m4dapplications
+      - fybrikapplications
     verbs:
       - create
       - delete
@@ -131,7 +131,7 @@ rules:
   - apiGroups:
       - app.fybrik.io
     resources:
-      - m4dapplications/status
+      - fybrikapplications/status
     verbs:
       - get
       - patch
@@ -139,7 +139,7 @@ rules:
   - apiGroups:
       - app.fybrik.io
     resources:
-      - m4dmodules
+      - fybrikmodules
     verbs:
       - get
       - list
@@ -147,7 +147,7 @@ rules:
   - apiGroups:
       - app.fybrik.io
     resources:
-      - m4dstorageaccounts
+      - fybrikstorageaccounts
     verbs:
       - get
       - list
@@ -273,7 +273,7 @@ rules:
       - patch
       - update
 ---
-# Source: m4d/templates/katalog-connector/katalog-connector-rbac.yaml
+# Source: fybrik/templates/katalog-connector/katalog-connector-rbac.yaml
 # Grant katalog-connector the katalog-editor Role.
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -288,7 +288,7 @@ subjects:
     name: katalog-connector
     namespace: fybrik-system
 ---
-# Source: m4d/templates/manager-auth-proxy-crb.yaml
+# Source: fybrik/templates/manager-auth-proxy-crb.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -302,7 +302,7 @@ subjects:
     name: manager
     namespace: fybrik-system
 ---
-# Source: m4d/templates/manager-crb.yaml
+# Source: fybrik/templates/manager-crb.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -316,7 +316,7 @@ subjects:
     name: manager
     namespace: fybrik-system
 ---
-# Source: m4d/templates/webhook-configs.yaml
+# Source: fybrik/templates/webhook-configs.yaml
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: MutatingWebhookConfiguration
 metadata:
@@ -362,7 +362,7 @@ webhooks:
         resources:
           - streamtransfers
 ---
-# Source: m4d/templates/webhook-configs.yaml
+# Source: fybrik/templates/webhook-configs.yaml
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration
 metadata:

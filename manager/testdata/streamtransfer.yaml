@@ -18,7 +18,7 @@ spec:
         address: "http://vault.fybrik-system:8200"
         authPath: "/v1/auth/kubernetes/login"
         role: module
-        secretPath: "/v1/secret/data/cos/m4d"
+        secretPath: "/v1/secret/data/cos/fybrik"
   destination:
     s3:
       endpoint: "s3.eu-gb.cloud-object-storage.appdomain.cloud"
@@ -30,7 +30,7 @@ spec:
         address: "http://vault.fybrik-system:8200"
         authPath: "/v1/auth/kubernetes/login"
         role: module
-        secretPath: "/v1/secret/data/cos/m4d"
+        secretPath: "/v1/secret/data/cos/fybrik"
   transformation:
   - name: "Hash blood group"
     action: "DigestColumns"

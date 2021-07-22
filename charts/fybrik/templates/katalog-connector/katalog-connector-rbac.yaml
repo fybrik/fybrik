@@ -1,5 +1,5 @@
 {{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.catalog "katalog") }}
-{{- if include "m4d.isEnabled" (tuple .Values.katalogConnector.enabled $autoFlag) }}
+{{- if include "fybrik.isEnabled" (tuple .Values.katalogConnector.enabled $autoFlag) }}
 {{- if .Values.clusterScoped }}
 # Grant katalog-connector the katalog-editor Role.
 kind: ClusterRoleBinding

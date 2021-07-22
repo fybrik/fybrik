@@ -1,12 +1,12 @@
 {{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
-{{- if include "m4d.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
+{{- if include "fybrik.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: opa-connector
   labels:
     app.kubernetes.io/component: opa-connector
-    {{- include "m4d.labels" . | nindent 4 }}
+    {{- include "fybrik.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.opaConnector.autoscaling.enabled }}
   replicas: {{ .Values.opaConnector.replicaCount }}
@@ -14,7 +14,7 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/component: opa-connector
-      {{- include "m4d.selectorLabels" . | nindent 6 }}
+      {{- include "fybrik.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.opaConnector.podAnnotations }}
@@ -24,7 +24,7 @@ spec:
       labels:
         fybrik.io/componentType: connector
         app.kubernetes.io/component: opa-connector
-        {{- include "m4d.selectorLabels" . | nindent 8 }}
+        {{- include "fybrik.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
@@ -37,7 +37,7 @@ spec:
         - name: opa-connector
           securityContext:
             {{- toYaml .Values.opaConnector.securityContext | nindent 12 }}
-          image: {{ include "m4d.image" ( tuple $ .Values.opaConnector ) }}
+          image: {{ include "fybrik.image" ( tuple $ .Values.opaConnector ) }}
           imagePullPolicy: {{ .Values.opaConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
           ports:
             - name: http

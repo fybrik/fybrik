@@ -19,9 +19,9 @@ Install with Helm as part of the standard Fybrik installation:
   ```
   helm install fybrik-crd charts/fybrik-crd
   ```
-- [m4d](https://github.com/fybrik/fybrik/tree/master/charts/m4d) Helm chart with `katalogConnector.enabled=true` (default).
+- [fybrik](https://github.com/fybrik/fybrik/tree/master/charts/fybrik) Helm chart with `katalogConnector.enabled=true` (default).
   ```
-  helm install m4d charts/fybrik-crd
+  helm install fybrik charts/fybrik-crd
   ```
 
 ## Where is this going?

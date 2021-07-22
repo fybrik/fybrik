@@ -6,22 +6,22 @@ The APIs and examples of their use are as follows:
   
   Create FybrikApplication (to be used by the specific workload):
 
-	curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion": "app.fybrik.io/v1alpha1","kind": "FybrikApplication","metadata": {"name": "unittest-notebook1", "namespace": "default"},"spec": {"selector": {"clusterName": "thegreendragon","workloadSelector": {"matchLabels": {"app": "unittest-notebook1"}}}, "appInfo": {"intent": "fraud-detection"}, "data": [{ "dataSetID": "whatever", "requirements": {"interface": {"protocol": "s3","dataformat": "parquet"}}}]}}'
+	curl -X POST -i http://localhost:8080/v1/dma/fybrikapplication --data '{"apiVersion": "app.fybrik.io/v1alpha1","kind": "FybrikApplication","metadata": {"name": "unittest-notebook1", "namespace": "default"},"spec": {"selector": {"clusterName": "thegreendragon","workloadSelector": {"matchLabels": {"app": "unittest-notebook1"}}}, "appInfo": {"intent": "fraud-detection"}, "data": [{ "dataSetID": "whatever", "requirements": {"interface": {"protocol": "s3","dataformat": "parquet"}}}]}}'
 
   Create FybrikApplication (to copy data and register in the public catalog):
 
-	curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion": "app.fybrik.io/v1alpha1","kind": "FybrikApplication","metadata": {"name": "unittest-copy", "namespace": "default"},"spec": {"selector": {"workloadSelector": {}, "appInfo": {"intent": "copy data"}, "data": [{ "dataSetID": "whatever", "requirements": {"copy": {"required": true, catalog: {catalogID: "Enterprise Catalog"}}, "interface": {"protocol": "s3","dataformat": "parquet"}}}]}}}'
+	curl -X POST -i http://localhost:8080/v1/dma/fybrikapplication --data '{"apiVersion": "app.fybrik.io/v1alpha1","kind": "FybrikApplication","metadata": {"name": "unittest-copy", "namespace": "default"},"spec": {"selector": {"workloadSelector": {}, "appInfo": {"intent": "copy data"}, "data": [{ "dataSetID": "whatever", "requirements": {"copy": {"required": true, catalog: {catalogID: "Enterprise Catalog"}}, "interface": {"protocol": "s3","dataformat": "parquet"}}}]}}}'
 
-curl -X POST -i http://localhost:8080/v1/dma/m4dapplication --data '{"apiVersion": "app.fybrik.io/v1alpha1","kind": "FybrikApplication", }'
+curl -X POST -i http://localhost:8080/v1/dma/fybrikapplication --data '{"apiVersion": "app.fybrik.io/v1alpha1","kind": "FybrikApplication", }'
 
 	Get list of FybrikApplications
-	  curl -X GET -i http://localhost:8080/v1/dma/m4dapplication
+	  curl -X GET -i http://localhost:8080/v1/dma/fybrikapplication
 	
 	Get specific FybrikApplication:
-	  curl -X GET -i http://localhost:8080/v1/dma/m4dapplication/unittest-notebook1
+	  curl -X GET -i http://localhost:8080/v1/dma/fybrikapplication/unittest-notebook1
 	
 	Delete FybrikApplication:
-	  curl -X DELETE -i http://localhost:8080/v1/dma/m4dapplication/unittest-notebook1
+	  curl -X DELETE -i http://localhost:8080/v1/dma/fybrikapplication/unittest-notebook1
 	
 	
 	Create Credentials

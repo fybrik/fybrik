@@ -4,7 +4,7 @@ export DOCKER_HOSTNAME ?= ghcr.io
 export DOCKER_NAMESPACE ?= fybrik
 export DOCKER_TAGNAME ?= latest
 
-DOCKER_NAME ?= m4d
+DOCKER_NAME ?= fybrik
 
 IMG ?= ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/${DOCKER_NAME}:${DOCKER_TAGNAME}
 

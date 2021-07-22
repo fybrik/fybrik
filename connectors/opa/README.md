@@ -22,7 +22,7 @@ Cleanup with `make docker-rmi`
 
 ## Running in a cluster
 
-The connector is deployed by default as part of the Fybrik Helm chart. To use a [locally built image](#build-and-push-the-connector-image) add the following to the installation of the m4d chart:
+The connector is deployed by default as part of the Fybrik Helm chart. To use a [locally built image](#build-and-push-the-connector-image) add the following to the installation of the fybrik chart:
 
 ```bash
 --set opaConnector.image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:${DOCKER_TAGNAME}

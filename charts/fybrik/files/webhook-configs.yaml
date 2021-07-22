@@ -66,9 +66,9 @@ webhooks:
       service:
         name: webhook-service
         namespace: '{{ .Release.Namespace }}'
-        path: /validate-app-fybrik-ibm-com-v1alpha1-m4dapplication
+        path: /validate-app-fybrik-ibm-com-v1alpha1-fybrikapplication
     failurePolicy: Fail
-    name: vm4dapplication.kb.io
+    name: vfybrikapplication.kb.io
     rules:
       - apiGroups:
           - app.fybrik.io
@@ -78,7 +78,7 @@ webhooks:
           - CREATE
           - UPDATE
         resources:
-          - m4dapplications
+          - fybrikapplications
     sideEffects: None
   - admissionReviewVersions:
       - v1

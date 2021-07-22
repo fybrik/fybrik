@@ -62,4 +62,4 @@ require (
 	sigs.k8s.io/yaml v1.2.0
 )
 
-replace helm.sh/helm/v3 v3.6.2 => github.com/fybrik/helm/v3 v3.6.2-m4d
+replace helm.sh/helm/v3 v3.6.2 => github.com/fybrik/helm/v3 v3.6.2-fybrik

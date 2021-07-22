@@ -187,7 +187,7 @@ In this sample a Jupyter notebook is used as the user workload and its business 
 
 ## Create a `FybrikApplication` resource for the notebook
 
-Create a [`FybrikApplication`](../reference/crds.md#m4dapplication) resource to register the notebook workload to the control plane of Fybrik: 
+Create a [`FybrikApplication`](../reference/crds.md#fybrikapplication) resource to register the notebook workload to the control plane of Fybrik: 
 
 <!-- TODO: role field removed but code still requires it -->
 ```yaml
@@ -224,16 +224,16 @@ Notice that:
 Run the following command to wait until the `FybrikApplication` is ready:
 
 ```bash
-while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for FybrikApplication" && sleep 5; done
+while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for FybrikApplication" && sleep 5; done
 ```
 
 ## Read the dataset from the notebook
 
-In your **terminal**, run the following command to print the [endpoint](../../reference/crds/#m4dapplicationstatusreadendpointsmapkey) to use for reading the data. It fetches the code from the `FybrikApplication` resource:
+In your **terminal**, run the following command to print the [endpoint](../../reference/crds/#fybrikapplicationstatusreadendpointsmapkey) to use for reading the data. It fetches the code from the `FybrikApplication` resource:
 ```bash
-ENDPOINT_SCHEME=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.fybrik-notebook-sample/paysim-csv.scheme})
-ENDPOINT_HOSTNAME=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.fybrik-notebook-sample/paysim-csv.hostname})
-ENDPOINT_PORT=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.fybrik-notebook-sample/paysim-csv.port})
+ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.readEndpointsMap.fybrik-notebook-sample/paysim-csv.scheme})
+ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.readEndpointsMap.fybrik-notebook-sample/paysim-csv.hostname})
+ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.readEndpointsMap.fybrik-notebook-sample/paysim-csv.port})
 printf "${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}"
 ```
 The next steps use the endpoint to read the data in a python notebook

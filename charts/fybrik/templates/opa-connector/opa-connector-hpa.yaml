@@ -1,5 +1,5 @@
 {{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
-{{- if include "m4d.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
+{{- if include "fybrik.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
 {{- if .Values.opaConnector.autoscaling.enabled }}
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
@@ -7,7 +7,7 @@ metadata:
   name: opa-connector
   labels:
     app.kubernetes.io/component: opa-connector
-    {{- include "m4d.labels" . | nindent 4 }}
+    {{- include "fybrik.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1

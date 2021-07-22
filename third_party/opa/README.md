@@ -2,11 +2,11 @@
 
 To install OPA, execute
 ```bash
-helm install fybrik-opa  ../../charts/m4d --set manager.enabled=false --set opaServer.enabled=true
+helm install fybrik-opa  ../../charts/fybrik --set manager.enabled=false --set opaServer.enabled=true
 ```
 To view the OPA installation template, execute
 ```bash
-helm template fybrik-opa  ../../charts/m4d --set manager.enabled=false --set opaServer.enabled=true
+helm template fybrik-opa  ../../charts/fybrik --set manager.enabled=false --set opaServer.enabled=true
 ```
 
 To uninstall OPA, execute

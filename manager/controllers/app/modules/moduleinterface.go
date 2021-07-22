@@ -28,7 +28,7 @@ type DataDetails struct {
 	Metadata *pb.DatasetMetadata
 }
 
-// DataInfo defines all the information about the given data set that comes from the m4dapplication spec and from the connectors.
+// DataInfo defines all the information about the given data set that comes from the fybrikapplication spec and from the connectors.
 type DataInfo struct {
 	// Source connection details
 	DataDetails *DataDetails

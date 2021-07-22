@@ -16,7 +16,7 @@ docker-build:
 
 .PHONY: deploy
 deploy:
-	helm install fybrik-opa $(ROOT_DIR)/charts/m4d \
+	helm install fybrik-opa $(ROOT_DIR)/charts/fybrik \
 		--set coordinator.enabled=false --set worker.enabled=false --set manager.enabled=false \
 		--set opaServer.enabled=true --set opaConnector.enabled=true \
 		--set opaConnector.image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(DOCKER_NAME):${DOCKER_TAGNAME} \
