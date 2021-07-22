@@ -11,7 +11,7 @@ make test
 
 ## Build and push the connector image
 
-Set the following environment variables to point to a container registry: `DOCKER_USERNAME`, `DOCKER_PASSWORD`, `DOCKER_HOSTNAME` (defaults to "ghcr.io"), `DOCKER_NAMESPACE` (defaults to "mesh-for-date"), `DOCKER_TAGNAME` (defaults to "latest").
+Set the following environment variables to point to a container registry: `DOCKER_USERNAME`, `DOCKER_PASSWORD`, `DOCKER_HOSTNAME` (defaults to "ghcr.io"), `DOCKER_NAMESPACE` (defaults to "fybrik"), `DOCKER_TAGNAME` (defaults to "latest").
 Then run:
 
 ```bash

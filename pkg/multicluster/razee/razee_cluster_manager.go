@@ -70,8 +70,8 @@ func (r *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 			r.log.Error(err, "Could not fetch cluster information", "cluster", c.Name)
 			return nil, err
 		}
-		// If no content for the resource was found the cluster is not part of the mesh or not installed
-		// correctly. The mesh should ignore those clusters and continue.
+		// If no content for the resource was found the cluster is not part of Fybrik or not installed
+		// correctly. Fybrik should ignore those clusters and continue.
 		if resourceContent == nil {
 			r.log.Info("Resource content returned is nil! Skipping cluster", "cluster", c.Name)
 			continue

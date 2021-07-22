@@ -10,9 +10,9 @@ Razee is a multi-cluster continuous delivery tool for Kubernetes that can deploy
 the deployment status of such deployments. There are multiple ways to run Razee. The two described here are a vanilla open source deployment on your
 own Kubernetes or as a managed service from a cloud provider. Due to the complex nature of installing Razee a managed service from a cloud provider is
 recommended. 
-It's possible to define a multicluster group name that groups clusters that are used in a mesh instance. This will restrict the clusters that 
-are usable in the mesh instance to the ones that are registered in the specified Razee group. This is especially helpful if Razee is also 
-used for different purposes than Fybrik or multiple mesh instances should be used under the same Razee installation.
+It's possible to define a multicluster group name that groups clusters that are used in a Fybrik instance. This will restrict the clusters that 
+are usable in the Fybrik instance to the ones that are registered in the specified Razee group. This is especially helpful if Razee is also 
+used for different purposes than Fybrik or multiple Fybrik instances should be used under the same Razee installation.
 
 In general there is a need for the following Razee components to be installed:
 

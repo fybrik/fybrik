@@ -1,6 +1,6 @@
 package data_policies
 
-#this file assumes input to be provided in specific format, in this case how data mesh provides it
+#this file assumes input to be provided in specific format, in this case how Fybrik provides it
 #similar file can be built for Egeria, at least for the metadata part, or any other catalog when we show how the input should be  parsed correctly
 
 #Example structure:
