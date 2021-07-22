@@ -14,4 +14,4 @@ include $(ROOT_DIR)/hack/make-rules/tools.mk
 helm-crd-hook: crd-batch
 .PHONY: crd-batch
 crd-batch:
-	$(ABSTOOLBIN)/kubectl apply -f $(ROOT_DIR)/manager/config/crd/bases/motion.m4d.ibm.com_batchtransfers.yaml
+	$(ABSTOOLBIN)/kubectl apply -f $(ROOT_DIR)/manager/config/crd/bases/motion.fybrik.io_batchtransfers.yaml

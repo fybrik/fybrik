@@ -1,12 +1,12 @@
 ---
-# Source: fybrik-crd/templates/app.m4d.ibm.com_blueprints.yaml
+# Source: fybrik-crd/templates/app.fybrik.io_blueprints.yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: blueprints.app.m4d.ibm.com
+  name: blueprints.app.fybrik.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .metadata.creationTimestamp
@@ -15,7 +15,7 @@ spec:
   - JSONPath: .status.observedState.ready
     name: Ready
     type: string
-  group: app.m4d.ibm.com
+  group: app.fybrik.io
   names:
     kind: Blueprint
     listKind: BlueprintList
@@ -336,16 +336,16 @@ status:
   conditions: []
   storedVersions: []
 ---
-# Source: fybrik-crd/templates/app.m4d.ibm.com_m4dapplications.yaml
+# Source: fybrik-crd/templates/app.fybrik.io_m4dapplications.yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: m4dapplications.app.m4d.ibm.com
+  name: m4dapplications.app.fybrik.io
 spec:
-  group: app.m4d.ibm.com
+  group: app.fybrik.io
   names:
     kind: FybrikApplication
     listKind: FybrikApplicationList
@@ -570,16 +570,16 @@ status:
   conditions: []
   storedVersions: []
 ---
-# Source: fybrik-crd/templates/app.m4d.ibm.com_m4dmodules.yaml
+# Source: fybrik-crd/templates/app.fybrik.io_m4dmodules.yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: m4dmodules.app.m4d.ibm.com
+  name: m4dmodules.app.fybrik.io
 spec:
-  group: app.m4d.ibm.com
+  group: app.fybrik.io
   names:
     kind: FybrikModule
     listKind: FybrikModuleList
@@ -796,16 +796,16 @@ status:
   conditions: []
   storedVersions: []
 ---
-# Source: fybrik-crd/templates/app.m4d.ibm.com_m4dstorageaccounts.yaml
+# Source: fybrik-crd/templates/app.fybrik.io_m4dstorageaccounts.yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: m4dstorageaccounts.app.m4d.ibm.com
+  name: m4dstorageaccounts.app.fybrik.io
 spec:
-  group: app.m4d.ibm.com
+  group: app.fybrik.io
   names:
     kind: FybrikStorageAccount
     listKind: FybrikStorageAccountList
@@ -860,14 +860,14 @@ status:
   conditions: []
   storedVersions: []
 ---
-# Source: fybrik-crd/templates/app.m4d.ibm.com_plotters.yaml
+# Source: fybrik-crd/templates/app.fybrik.io_plotters.yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: plotters.app.m4d.ibm.com
+  name: plotters.app.fybrik.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .metadata.creationTimestamp
@@ -879,7 +879,7 @@ spec:
   - JSONPath: .status.readyTimestamp
     name: ReadySince
     type: string
-  group: app.m4d.ibm.com
+  group: app.fybrik.io
   names:
     kind: Plotter
     listKind: PlotterList
@@ -1272,14 +1272,14 @@ status:
   conditions: []
   storedVersions: []
 ---
-# Source: fybrik-crd/templates/katalog.m4d.ibm.com_assets.yaml
+# Source: fybrik-crd/templates/katalog.fybrik.io_assets.yaml
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
-  name: assets.katalog.m4d.ibm.com
+  name: assets.katalog.fybrik.io
 spec:
-  group: katalog.m4d.ibm.com
+  group: katalog.fybrik.io
   names:
     kind: Asset
     listKind: AssetList
@@ -1423,14 +1423,14 @@ status:
   conditions: null
   storedVersions: []
 ---
-# Source: fybrik-crd/templates/motion.m4d.ibm.com_batchtransfers.yaml
+# Source: fybrik-crd/templates/motion.fybrik.io_batchtransfers.yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: batchtransfers.motion.m4d.ibm.com
+  name: batchtransfers.motion.fybrik.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .spec.source.description
@@ -1445,7 +1445,7 @@ spec:
   - JSONPath: .status.status
     name: Status
     type: string
-  group: motion.m4d.ibm.com
+  group: motion.fybrik.io
   names:
     kind: BatchTransfer
     listKind: BatchTransferList
@@ -2195,14 +2195,14 @@ status:
   conditions: []
   storedVersions: []
 ---
-# Source: fybrik-crd/templates/motion.m4d.ibm.com_streamtransfers.yaml
+# Source: fybrik-crd/templates/motion.fybrik.io_streamtransfers.yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: streamtransfers.motion.m4d.ibm.com
+  name: streamtransfers.motion.fybrik.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .spec.source.description
@@ -2214,7 +2214,7 @@ spec:
   - JSONPath: .status.status
     name: Status
     type: string
-  group: motion.m4d.ibm.com
+  group: motion.fybrik.io
   names:
     kind: StreamTransfer
     listKind: StreamTransferList
@@ -2849,5 +2849,5 @@ status:
   conditions: []
   storedVersions: []
 ---
-# Source: fybrik-crd/templates/katalog.m4d.ibm.com_assets.yaml
+# Source: fybrik-crd/templates/katalog.fybrik.io_assets.yaml
 # The file is generated by openapi2crd

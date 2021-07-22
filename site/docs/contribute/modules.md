@@ -64,7 +64,7 @@ helm chart push <registry>/<path>:<version>
 
 The YAML file begins with standard Kubernetes metadata followed by the `FybrikModule` specification:
 ```yaml
-apiVersion: app.m4d.ibm.com/v1alpha1 # always this value
+apiVersion: app.fybrik.io/v1alpha1 # always this value
 kind: FybrikModule # always this value
 metadata:
   name: "<module name>" # the name of your new module

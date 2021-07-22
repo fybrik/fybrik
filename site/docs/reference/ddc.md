@@ -305,7 +305,7 @@ type BatchTransferList struct {
 
 ```
 ---
-apiVersion: "m4d.ibm.com/v1"
+apiVersion: "fybrik.io/v1"
 kind: BatchTransfer
 metadata:
   name: copy1

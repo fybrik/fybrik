@@ -11,7 +11,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: katalog-editor
 rules:
-  - apiGroups: ["katalog.m4d.ibm.com"]
+  - apiGroups: ["katalog.fybrik.io"]
     resources: ["assets"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
   - apiGroups: [""]
@@ -25,7 +25,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: katalog-viewer
 rules:
-  - apiGroups: ["katalog.m4d.ibm.com"]
+  - apiGroups: ["katalog.fybrik.io"]
     resources: ["assets"]
     verbs: ["get", "list", "watch"]
 ---
@@ -97,7 +97,7 @@ rules:
     verbs:
       - '*'
   - apiGroups:
-      - app.m4d.ibm.com
+      - app.fybrik.io
     resources:
       - blueprints
     verbs:
@@ -109,7 +109,7 @@ rules:
       - update
       - watch
   - apiGroups:
-      - app.m4d.ibm.com
+      - app.fybrik.io
     resources:
       - blueprints/status
     verbs:
@@ -117,7 +117,7 @@ rules:
       - patch
       - update
   - apiGroups:
-      - app.m4d.ibm.com
+      - app.fybrik.io
     resources:
       - m4dapplications
     verbs:
@@ -129,7 +129,7 @@ rules:
       - update
       - watch
   - apiGroups:
-      - app.m4d.ibm.com
+      - app.fybrik.io
     resources:
       - m4dapplications/status
     verbs:
@@ -137,7 +137,7 @@ rules:
       - patch
       - update
   - apiGroups:
-      - app.m4d.ibm.com
+      - app.fybrik.io
     resources:
       - m4dmodules
     verbs:
@@ -145,7 +145,7 @@ rules:
       - list
       - watch
   - apiGroups:
-      - app.m4d.ibm.com
+      - app.fybrik.io
     resources:
       - m4dstorageaccounts
     verbs:
@@ -154,7 +154,7 @@ rules:
       - update
       - watch
   - apiGroups:
-      - app.m4d.ibm.com
+      - app.fybrik.io
     resources:
       - plotters
     verbs:
@@ -166,7 +166,7 @@ rules:
       - update
       - watch
   - apiGroups:
-      - app.m4d.ibm.com
+      - app.fybrik.io
     resources:
       - plotters/status
     verbs:
@@ -231,7 +231,7 @@ rules:
       - update
       - watch
   - apiGroups:
-      - motion.m4d.ibm.com
+      - motion.fybrik.io
     resources:
       - batchtransfers
       - batchtransfers/finalizers
@@ -244,7 +244,7 @@ rules:
       - update
       - watch
   - apiGroups:
-      - motion.m4d.ibm.com
+      - motion.fybrik.io
     resources:
       - batchtransfers/status
     verbs:
@@ -252,7 +252,7 @@ rules:
       - patch
       - update
   - apiGroups:
-      - motion.m4d.ibm.com
+      - motion.fybrik.io
     resources:
       - streamtransfers
       - streamtransfers/finalizers
@@ -265,7 +265,7 @@ rules:
       - update
       - watch
   - apiGroups:
-      - motion.m4d.ibm.com
+      - motion.fybrik.io
     resources:
       - streamtransfers/status
     verbs:
@@ -335,7 +335,7 @@ webhooks:
     name: mbatchtransfer.kb.io
     rules:
       - apiGroups:
-          - motion.m4d.ibm.com
+          - motion.fybrik.io
         apiVersions:
           - v1alpha1
         operations:
@@ -353,7 +353,7 @@ webhooks:
     name: mstreamtransfer.kb.io
     rules:
       - apiGroups:
-          - motion.m4d.ibm.com
+          - motion.fybrik.io
         apiVersions:
           - v1alpha1
         operations:
@@ -381,7 +381,7 @@ webhooks:
     name: vbatchtransfer.kb.io
     rules:
       - apiGroups:
-          - motion.m4d.ibm.com
+          - motion.fybrik.io
         apiVersions:
           - v1alpha1
         operations:
@@ -399,7 +399,7 @@ webhooks:
     name: vstreamtransfer.kb.io
     rules:
       - apiGroups:
-          - motion.m4d.ibm.com
+          - motion.fybrik.io
         apiVersions:
           - v1alpha1
         operations:

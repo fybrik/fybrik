@@ -4,7 +4,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: blueprints.app.m4d.ibm.com
+  name: blueprints.app.fybrik.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .metadata.creationTimestamp
@@ -13,7 +13,7 @@ spec:
   - JSONPath: .status.observedState.ready
     name: Ready
     type: string
-  group: app.m4d.ibm.com
+  group: app.fybrik.io
   names:
     kind: Blueprint
     listKind: BlueprintList

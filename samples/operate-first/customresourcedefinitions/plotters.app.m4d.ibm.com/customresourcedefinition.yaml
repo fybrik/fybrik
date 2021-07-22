@@ -4,7 +4,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: plotters.app.m4d.ibm.com
+  name: plotters.app.fybrik.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .metadata.creationTimestamp
@@ -16,7 +16,7 @@ spec:
   - JSONPath: .status.readyTimestamp
     name: ReadySince
     type: string
-  group: app.m4d.ibm.com
+  group: app.fybrik.io
   names:
     kind: Plotter
     listKind: PlotterList

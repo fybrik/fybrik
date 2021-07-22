@@ -7,11 +7,11 @@ hide:
 
 Packages:
 
-- [app.m4d.ibm.com/v1alpha1](#appm4dibmcomv1alpha1)
-- [katalog.m4d.ibm.com/v1alpha1](#katalogm4dibmcomv1alpha1)
-- [motion.m4d.ibm.com/v1alpha1](#motionm4dibmcomv1alpha1)
+- [app.fybrik.io/v1alpha1](#appm4dibmcomv1alpha1)
+- [katalog.fybrik.io/v1alpha1](#katalogm4dibmcomv1alpha1)
+- [motion.fybrik.io/v1alpha1](#motionm4dibmcomv1alpha1)
 
-## app.m4d.ibm.com/v1alpha1
+## app.fybrik.io/v1alpha1
 
 Resource Types:
 
@@ -50,7 +50,7 @@ Blueprint is the Schema for the blueprints API
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>app.m4d.ibm.com/v1alpha1</td>
+      <td>app.fybrik.io/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>
@@ -891,7 +891,7 @@ FybrikApplication provides information about the application being used by a Dat
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>app.m4d.ibm.com/v1alpha1</td>
+      <td>app.fybrik.io/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>
@@ -1531,7 +1531,7 @@ FybrikModule is a description of an injectable component. the parameters it requ
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>app.m4d.ibm.com/v1alpha1</td>
+      <td>app.fybrik.io/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>
@@ -2022,7 +2022,7 @@ FybrikStorageAccount defines a storage account used for copying data. Only S3 ba
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>app.m4d.ibm.com/v1alpha1</td>
+      <td>app.fybrik.io/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>
@@ -2116,7 +2116,7 @@ Plotter is the Schema for the plotters API
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>app.m4d.ibm.com/v1alpha1</td>
+      <td>app.fybrik.io/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>
@@ -3178,7 +3178,7 @@ ObservedState includes information to be reported back to the FybrikApplication 
       </tr></tbody>
 </table>
 
-## katalog.m4d.ibm.com/v1alpha1
+## katalog.fybrik.io/v1alpha1
 
 Resource Types:
 
@@ -3209,7 +3209,7 @@ Resource Types:
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>katalog.m4d.ibm.com/v1alpha1</td>
+      <td>katalog.fybrik.io/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>
@@ -3667,7 +3667,7 @@ Reference to a Secret resource holding credentials for this asset
       </tr></tbody>
 </table>
 
-## motion.m4d.ibm.com/v1alpha1
+## motion.fybrik.io/v1alpha1
 
 Resource Types:
 
@@ -3700,7 +3700,7 @@ BatchTransfer is the Schema for the batchtransfers API
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>motion.m4d.ibm.com/v1alpha1</td>
+      <td>motion.fybrik.io/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>
@@ -5557,7 +5557,7 @@ StreamTransfer is the Schema for the streamtransfers API
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>motion.m4d.ibm.com/v1alpha1</td>
+      <td>motion.fybrik.io/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>

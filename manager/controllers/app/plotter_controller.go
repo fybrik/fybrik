@@ -191,7 +191,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			blueprint := &app.Blueprint{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "Blueprint",
-					APIVersion: "app.m4d.ibm.com/v1alpha1",
+					APIVersion: "app.fybrik.io/v1alpha1",
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        plotter.Name,

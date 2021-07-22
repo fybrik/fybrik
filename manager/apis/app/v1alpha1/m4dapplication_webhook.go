@@ -21,7 +21,7 @@ func (r *FybrikApplication) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// +kubebuilder:webhook:verbs=create;update,admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/validate-app-fybrik-ibm-com-v1alpha1-m4dapplication,mutating=false,failurePolicy=fail,groups=app.m4d.ibm.com,resources=m4dapplications,versions=v1alpha1,name=vm4dapplication.kb.io
+// +kubebuilder:webhook:verbs=create;update,admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/validate-app-fybrik-ibm-com-v1alpha1-m4dapplication,mutating=false,failurePolicy=fail,groups=app.fybrik.io,resources=m4dapplications,versions=v1alpha1,name=vm4dapplication.kb.io
 
 var _ webhook.Validator = &FybrikApplication{}
 
@@ -57,7 +57,7 @@ func (r *FybrikApplication) validateFybrikApplication() error {
 	}
 
 	return apierrors.NewInvalid(
-		schema.GroupKind{Group: "app.m4d.ibm.com", Kind: "FybrikApplication"},
+		schema.GroupKind{Group: "app.fybrik.io", Kind: "FybrikApplication"},
 		r.Name, allErrs)
 }
 

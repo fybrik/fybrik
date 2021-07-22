@@ -18,7 +18,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - app.m4d.ibm.com
+  - app.fybrik.io
   resources:
   - m4dapplications
   verbs:
@@ -30,7 +30,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - app.m4d.ibm.com
+  - app.fybrik.io
   resources:
   - m4dapplications/status
   verbs:

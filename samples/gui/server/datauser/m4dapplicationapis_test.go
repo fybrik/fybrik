@@ -13,9 +13,9 @@ import (
 
 var (
 	dmaserverurl = "http://localhost:8080/v1/dma/m4dapplication"
-	dm1          = "{\"apiVersion\": \"app.m4d.ibm.com/v1alpha1\",\"kind\": \"FybrikApplication\",\"metadata\": {\"name\": \"unittest-read\"},\"spec\": {\"selector\": {\"workloadSelector\": {\"matchLabels\":{\"app\": \"notebook\"}}},\"appInfo\": {\"intent\": \"fraud-detection\"}, \"data\": [{\"dataSetID\": \"123\",\"requirements\": { \"interface\": {\"protocol\": \"s3\",\"dataformat\": \"parquet\"}}}]}}"
+	dm1          = "{\"apiVersion\": \"app.fybrik.io/v1alpha1\",\"kind\": \"FybrikApplication\",\"metadata\": {\"name\": \"unittest-read\"},\"spec\": {\"selector\": {\"workloadSelector\": {\"matchLabels\":{\"app\": \"notebook\"}}},\"appInfo\": {\"intent\": \"fraud-detection\"}, \"data\": [{\"dataSetID\": \"123\",\"requirements\": { \"interface\": {\"protocol\": \"s3\",\"dataformat\": \"parquet\"}}}]}}"
 	dm1name      = "unittest-read"
-	dm2          = "{\"apiVersion\": \"app.m4d.ibm.com/v1alpha1\",\"kind\": \"FybrikApplication\",\"metadata\": {\"name\": \"unittest-copy\"},\"spec\": {\"selector\": {\"workloadSelector\": {}},\"appInfo\": {\"intent\": \"copy data\"}, \"data\": [{\"dataSetID\": \"456\",\"requirements\": {\"copy\": {\"required\": true,\"catalog\": {\"catalogID\": \"enterprise\"}}, \"interface\": {\"protocol\": \"s3\",\"dataformat\": \"parquet\"}}}]}}"
+	dm2          = "{\"apiVersion\": \"app.fybrik.io/v1alpha1\",\"kind\": \"FybrikApplication\",\"metadata\": {\"name\": \"unittest-copy\"},\"spec\": {\"selector\": {\"workloadSelector\": {}},\"appInfo\": {\"intent\": \"copy data\"}, \"data\": [{\"dataSetID\": \"456\",\"requirements\": {\"copy\": {\"required\": true,\"catalog\": {\"catalogID\": \"enterprise\"}}, \"interface\": {\"protocol\": \"s3\",\"dataformat\": \"parquet\"}}}]}}"
 	dm2name      = "unittest-copy"
 )
 

@@ -23,7 +23,7 @@ spec:
       {{- end }}
       labels:
         control-plane: controller-manager
-        m4d.ibm.com/componentType: manager
+        fybrik.io/componentType: manager
         app.kubernetes.io/component: manager
         {{- include "m4d.selectorLabels" . | nindent 8 }}
     spec:

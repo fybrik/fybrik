@@ -16,4 +16,4 @@ include $(ROOT_DIR)/hack/make-rules/tools.mk
 helm-crd-hook: crd-stream
 .PHONY: crd-stream
 crd-stream:
-	$(ABSTOOLBIN)/kubectl apply -f $(ROOT_DIR)/manager/config/crd/bases/motion.m4d.ibm.com_streamtransfers.yaml
+	$(ABSTOOLBIN)/kubectl apply -f $(ROOT_DIR)/manager/config/crd/bases/motion.fybrik.io_streamtransfers.yaml

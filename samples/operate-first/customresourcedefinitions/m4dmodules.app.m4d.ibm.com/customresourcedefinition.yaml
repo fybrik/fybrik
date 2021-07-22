@@ -4,9 +4,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: m4dmodules.app.m4d.ibm.com
+  name: m4dmodules.app.fybrik.io
 spec:
-  group: app.m4d.ibm.com
+  group: app.fybrik.io
   names:
     kind: FybrikModule
     listKind: FybrikModuleList

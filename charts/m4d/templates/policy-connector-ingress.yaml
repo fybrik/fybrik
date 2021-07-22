@@ -8,7 +8,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      m4d.ibm.com/componentType: connector
+      fybrik.io/componentType: connector
   policyTypes:
   - Ingress
   ingress:

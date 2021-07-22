@@ -19,7 +19,7 @@ webhooks:
     name: mbatchtransfer.kb.io
     rules:
       - apiGroups:
-          - motion.m4d.ibm.com
+          - motion.fybrik.io
         apiVersions:
           - v1alpha1
         operations:
@@ -40,7 +40,7 @@ webhooks:
     name: mstreamtransfer.kb.io
     rules:
       - apiGroups:
-          - motion.m4d.ibm.com
+          - motion.fybrik.io
         apiVersions:
           - v1alpha1
         operations:
@@ -71,7 +71,7 @@ webhooks:
     name: vm4dapplication.kb.io
     rules:
       - apiGroups:
-          - app.m4d.ibm.com
+          - app.fybrik.io
         apiVersions:
           - v1alpha1
         operations:
@@ -92,7 +92,7 @@ webhooks:
     name: vbatchtransfer.kb.io
     rules:
       - apiGroups:
-          - motion.m4d.ibm.com
+          - motion.fybrik.io
         apiVersions:
           - v1alpha1
         operations:
@@ -113,7 +113,7 @@ webhooks:
     name: vstreamtransfer.kb.io
     rules:
       - apiGroups:
-          - motion.m4d.ibm.com
+          - motion.fybrik.io
         apiVersions:
           - v1alpha1
         operations:

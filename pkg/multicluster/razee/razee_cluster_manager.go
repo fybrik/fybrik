@@ -96,7 +96,7 @@ func (r *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 }
 
 func createBluePrintSelfLink(namespace string, name string) string {
-	return fmt.Sprintf("/apis/app.m4d.ibm.com/v1alpha1/namespaces/%s/blueprints/%s", namespace, name)
+	return fmt.Sprintf("/apis/app.fybrik.io/v1alpha1/namespaces/%s/blueprints/%s", namespace, name)
 }
 
 func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name string) (*v1alpha1.Blueprint, error) {
@@ -334,7 +334,7 @@ func (r *ClusterManager) DeleteBlueprint(cluster string, namespace string, name 
 // The channel name should be per cluster and plotter so it cannot be based on
 // the namespace that is random for every blueprint
 func channelName(cluster string, name string) string {
-	return "m4d.ibm.com" + "-" + cluster + "-" + name
+	return "fybrik.io" + "-" + cluster + "-" + name
 }
 
 func NewRazeeLocalManager(url string, login string, password string, clusterGroup string) (multicluster.ClusterManager, error) {

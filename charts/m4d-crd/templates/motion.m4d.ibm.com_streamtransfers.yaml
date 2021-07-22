@@ -6,9 +6,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.5.0
   creationTimestamp: null
-  name: streamtransfers.motion.m4d.ibm.com
+  name: streamtransfers.motion.fybrik.io
 spec:
-  group: motion.m4d.ibm.com
+  group: motion.fybrik.io
   names:
     kind: StreamTransfer
     listKind: StreamTransferList

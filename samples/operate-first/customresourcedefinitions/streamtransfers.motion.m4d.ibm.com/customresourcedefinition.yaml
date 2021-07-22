@@ -4,7 +4,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: streamtransfers.motion.m4d.ibm.com
+  name: streamtransfers.motion.fybrik.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .spec.source.description
@@ -16,7 +16,7 @@ spec:
   - JSONPath: .status.status
     name: Status
     type: string
-  group: motion.m4d.ibm.com
+  group: motion.fybrik.io
   names:
     kind: StreamTransfer
     listKind: StreamTransferList

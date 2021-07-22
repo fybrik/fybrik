@@ -50,7 +50,7 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - app.m4d.ibm.com
+  - app.fybrik.io
   resources:
   - blueprints
   verbs:
@@ -62,7 +62,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - app.m4d.ibm.com
+  - app.fybrik.io
   resources:
   - blueprints/status
   verbs:
@@ -70,7 +70,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - app.m4d.ibm.com
+  - app.fybrik.io
   resources:
   - m4dapplications
   verbs:
@@ -82,7 +82,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - app.m4d.ibm.com
+  - app.fybrik.io
   resources:
   - m4dapplications/status
   verbs:
@@ -90,7 +90,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - app.m4d.ibm.com
+  - app.fybrik.io
   resources:
   - m4dmodules
   verbs:
@@ -98,7 +98,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - app.m4d.ibm.com
+  - app.fybrik.io
   resources:
   - m4dstorageaccounts
   verbs:
@@ -107,7 +107,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - app.m4d.ibm.com
+  - app.fybrik.io
   resources:
   - plotters
   verbs:
@@ -119,7 +119,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - app.m4d.ibm.com
+  - app.fybrik.io
   resources:
   - plotters/status
   verbs:
@@ -184,7 +184,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - motion.m4d.ibm.com
+  - motion.fybrik.io
   resources:
   - batchtransfers
   - batchtransfers/finalizers
@@ -197,7 +197,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - motion.m4d.ibm.com
+  - motion.fybrik.io
   resources:
   - batchtransfers/status
   verbs:
@@ -205,7 +205,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - motion.m4d.ibm.com
+  - motion.fybrik.io
   resources:
   - streamtransfers
   - streamtransfers/finalizers
@@ -218,7 +218,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - motion.m4d.ibm.com
+  - motion.fybrik.io
   resources:
   - streamtransfers/status
   verbs:

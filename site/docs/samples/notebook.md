@@ -83,7 +83,7 @@ Then, register the data asset itself in the catalog. Replace the values for `end
 
 ```yaml
 cat << EOF | kubectl apply -f -
-apiVersion: katalog.m4d.ibm.com/v1alpha1
+apiVersion: katalog.fybrik.io/v1alpha1
 kind: Asset
 metadata:
   name: paysim-csv
@@ -192,7 +192,7 @@ Create a [`FybrikApplication`](../reference/crds.md#m4dapplication) resource to 
 <!-- TODO: role field removed but code still requires it -->
 ```yaml
 cat <<EOF | kubectl apply -f -
-apiVersion: app.m4d.ibm.com/v1alpha1
+apiVersion: app.fybrik.io/v1alpha1
 kind: FybrikApplication
 metadata:
   name: my-notebook

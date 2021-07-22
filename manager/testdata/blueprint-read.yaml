@@ -1,13 +1,13 @@
 # Copyright 2020 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
-apiVersion: app.m4d.ibm.com/v1alpha1
+apiVersion: app.fybrik.io/v1alpha1
 kind: Blueprint
 metadata:
   name: blueprint-with-read
   labels:
-    app.m4d.ibm.com/appNamespace: default
-    app.m4d.ibm.com/appName: notebook
+    app.fybrik.io/appNamespace: default
+    app.fybrik.io/appName: notebook
 spec:
   selector:
     matchLabels:

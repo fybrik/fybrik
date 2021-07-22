@@ -33,7 +33,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - app.m4d.ibm.com
+  - app.fybrik.io
   resources:
   - blueprints
   verbs:
@@ -45,7 +45,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - app.m4d.ibm.com
+  - app.fybrik.io
   resources:
   - blueprints/status
   verbs:
@@ -53,7 +53,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - app.m4d.ibm.com
+  - app.fybrik.io
   resources:
   - m4dapplications
   verbs:
@@ -65,7 +65,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - app.m4d.ibm.com
+  - app.fybrik.io
   resources:
   - m4dapplications/status
   verbs:
@@ -73,7 +73,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - app.m4d.ibm.com
+  - app.fybrik.io
   resources:
   - plotters
   verbs:
@@ -85,7 +85,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - app.m4d.ibm.com
+  - app.fybrik.io
   resources:
   - plotters/status
   verbs:
@@ -93,7 +93,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - app.m4d.ibm.com
+  - app.fybrik.io
   resources:
   - m4dstorageaccounts
   - m4dmodules
