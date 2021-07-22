@@ -11,40 +11,45 @@ spec:
       matchLabels:
         app: demoapp
   assets:
-  - dataSetID: "m4d-notebook-sample/paysim"  # dataset requested by user
-    source:
-      credentials:
-        read:
-          vault:
-            address: http://vault.m4d-system:8200
-            authPath: /v1/auth/kubernetes/login
-            role: module
-            secretPath: /v1/kubernetes-secrets/paysim?namespace=m4d-notebook-sample
-      connection:
-        s3:
-          endpoint: localhost:8001
-          bucket: srcbucket
-          object: data.csv
-      dataformat: csv
-  - dataSetID: "m4d-notebook-sample/paysim-temp"  # allocated by fybrik control plane
-    source:
-      credentials:
-        write:
-          vault:
-            address: http://vault.m4d-system:8200
-            authPath: /v1/auth/kubernetes/login
-            role: module
-            secretPath: /v1/kubernetes-secrets/paysim-temp?namespace=m4d-notebook-sample
-      connection:
-        s3:
-          endpoint: localhost:8001
-          bucket: destbucket
-          object: data.parquet
-      dataformat: parquet
+  - assetId: "m4d-notebook-sample/paysim"  # dataset requested by user
+    credentials:
+      read:
+        vault:
+          address: http://vault.m4d-system:8200
+          authPath: /v1/auth/kubernetes/login
+          role: module
+          secretPath: /v1/kubernetes-secrets/paysim?namespace=m4d-notebook-sample
+    connection:
+      s3:
+        endpoint: localhost:8001
+        bucket: srcbucket
+        object: data.csv
+    dataformat: csv
+  - assetId: "m4d-notebook-sample/paysim-temp"  # allocated by fybrik control plane
+    advertisedAssetId: "m4d-notebook-sample/paysim" # Id that is used by user facing services
+    credentials:
+      read:
+        vault:
+          address: http://vault.m4d-system:8200
+          authPath: /v1/auth/kubernetes/login
+          role: module
+          secretPath: /v1/kubernetes-secrets/paysim-temp?namespace=m4d-notebook-sample
+      write:
+        vault:
+          address: http://vault.m4d-system:8200
+          authPath: /v1/auth/kubernetes/login
+          role: module
+          secretPath: /v1/kubernetes-secrets/paysim-temp?namespace=m4d-notebook-sample
+    connection:
+      s3:
+        endpoint: localhost:8001
+        bucket: destbucket
+        object: data.parquet
+    dataformat: parquet
   flows:
   - name: flow-paysim
     flowType: read
-    dataSetID: "m4d-notebook-sample/paysim"
+    assetId: "m4d-notebook-sample/paysim"
     subflows:
     - name: subflow-paysim-copy
       flowType: copy
@@ -55,15 +60,9 @@ spec:
           template: copyTemplate
           parameters:
             source:
-              dataSetId: "m4d-notebook-sample/paysim"
+              assetId: "m4d-notebook-sample/paysim"
             sink:
-              dataSetId: "m4d-notebook-sample/paysim-temp"
-            api:  # do we need this api?  I don't think so
-              service:
-                assetID: m4d-notebook-sample/paysim-temp
-                interfaceDetails:
-                  protocol: s3
-                  dataformat: parquet
+              assetId: "m4d-notebook-sample/paysim-temp"
     - name: subflow-paysim-read
       trigger: workload
       steps:
@@ -72,10 +71,10 @@ spec:
           template: readTemplate
           parameters:
             source:
-              dataSetId: "m4d-notebook-sample/paysim-temp"
+              assetId: "m4d-notebook-sample/paysim-temp"
             api:
               service:
-                assetID: m4d-notebook-sample/paysim-temp
+                assetID: m4d-notebook-sample/paysim # Inferred from advertisedAssetId
                 interfaceDetails:
                   protocol: arrow-flight
                   dataformat: arrow
@@ -107,10 +106,6 @@ status:
       status: Ready
   assets:
   - name: m4d-notebook-sample/paysim   
-    endpoint: app1-ns1.m4d-blueprints
-    port: 8080
-    status: Ready
-  - name: m4d-notebook-sample/paysim-temp  # Would we really include both the source and temp versions of the dataset here? I assume this one wouldn't be included.  Question is how we know which to put here.
     endpoint: app1-ns1.m4d-blueprints
     port: 8080
     status: Ready

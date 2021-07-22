@@ -13,25 +13,24 @@ spec:
       matchLabels:
         app: demoapp
   assets:
-  - dataSetID: "paysim-processed"  # dataset requested by user
-    source:
-      credentials:
-        write:
-          vault:
-            address: http://vault.m4d-system:8200
-            authPath: /v1/auth/kubernetes/login
-            role: module
-            secretPath: /v1/kubernetes-secrets/paysim?namespace=m4d-notebook-sample
-      connection:
-        s3:
-          endpoint: localhost:8001
-          bucket: srcbucket
-          object: data.csv
-      dataformat: csv
+  - assetId: "paysim-processed"  # dataset written by user
+    credentials:
+      write:
+        vault:
+          address: http://vault.m4d-system:8200
+          authPath: /v1/auth/kubernetes/login
+          role: module
+          secretPath: /v1/kubernetes-secrets/paysim?namespace=m4d-notebook-sample
+    connection:
+      s3:
+        endpoint: localhost:8001
+        bucket: destbucket
+        object: data.csv
+    dataformat: csv
   flows:
   - name: flow-paysim
     flowType: write
-    dataSetID: "paysim-processed"
+    assetId: "paysim-processed"
     subflows:
     - name: write
       flowType: write
@@ -42,7 +41,7 @@ spec:
           template: writeTemplate
           parameters:
             sink: # This technically has multiple sinks. One being the dataset and the other the following step2
-              dataSetId: "paysim-processed"
+              assetId: "paysim-processed"
             api:
               service:
                 assetID: paysim-processed

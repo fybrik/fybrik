@@ -10,7 +10,7 @@ spec:
   chart:
     name: ghcr.io/mesh-for-data/m4d-arrow-flight-transform-conf:0.1.0
     values: {}
-  type: fybric-action
+  type: config
   statusIndicators:
   capabilities:
   - capability: transform

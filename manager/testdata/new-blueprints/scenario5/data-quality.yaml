@@ -25,6 +25,8 @@ spec:
   capabilities:
   - capability: data-quality
     scope: workflow
+    plugins:
+    - quality-plugin
     # No sink or target as prometheus scrapes metrics (configured outside)
     # It may be possible that other notification sinks are configurable in
     # different use cases

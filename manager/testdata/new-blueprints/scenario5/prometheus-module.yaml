@@ -1,0 +1,25 @@
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: M4DModule
+metadata:
+  name: prometheus-push-client
+  namespace: m4d-system
+  labels:
+    version: 0.0.1
+    name: prometheus-push-client
+spec:
+  description: "This configures a client for the data quality"
+  type: config
+  confChart:
+    name: ghcr.io/mesh-for-data/prometheus-push-client:0.1.0
+    values: {}
+  statusIndicators:
+  capabilities:
+  - capability: write
+    scope: asset
+    sink:
+      endpoint: "some-metrics-system:80"
+      protocol: "https"
+      dataformat: "json"
+  dependencies:
+  - kind: M4DModule
+    name: data-quality

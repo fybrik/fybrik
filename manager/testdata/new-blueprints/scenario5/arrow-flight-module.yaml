@@ -27,7 +27,7 @@ spec:
     scope: workflow
     sinks:
     - protocol: s3
-      dataformat: parquet   # doesn't know how to read csv!
+      dataformat: parquet
     - protocol: m4d-arrow-flight
       dataformat: arrow
     plugins:
