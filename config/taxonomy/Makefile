@@ -4,7 +4,7 @@ include $(ROOT_DIR)/hack/make-rules/tools.mk
 
 .DEFAULT_GOAL := all
 
-all: clean compile-taxonomy-schema validate compile-codegen-cleanup codegen-openapi-rest-client 
+all: clean compile-taxonomy-schema validate
 
 compile-taxonomy-schema:
 	go run $(ROOT_DIR)/main.go taxonomy compile --base ./base/base.yaml --out ./objects/taxonomy.json \
@@ -20,11 +20,14 @@ compile-codegen-cleanup: clean $(TOOLBIN)/openapi-generator-cli compile-taxonomy
 	--additional-properties=packageName=base \
 	--enable-post-process-file \
 	--type-mappings=object=interface{}
-# rm -f objects/taxonomy.json
+	rm -f objects/taxonomy.json
 
-codegen-openapi-rest-client: clean $(TOOLBIN)/openapi-generator-cli
-	mkdir -p $(ROOT_DIR)/pkg/taxonomy/model/openapiclient
-	$(TOOLBIN)/openapi-generator-cli generate -g go --additional-properties=packageName=openapiclient \
+# Code generated due to the below command is MODIFIED to suit our purposes
+# below code is the based for implementing the http client
+
+#codegen-openapi-rest-client: clean $(TOOLBIN)/openapi-generator-cli
+#	mkdir -p $(ROOT_DIR)/pkg/taxonomy/model/openapiclient
+#	$(TOOLBIN)/openapi-generator-cli generate -g go --additional-properties=packageName=openapiclient \
 	--global-property=apis,supportingFiles -o $(ROOT_DIR)/pkg/taxonomy/model/openapiclient \
 	-i codegen.spec.yaml
 
