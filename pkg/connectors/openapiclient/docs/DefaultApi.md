@@ -10,7 +10,7 @@ Method | HTTP request | Description
 
 ## GetPoliciesDecisions
 
-> PolicyManagerResponse GetPoliciesDecisions(ctx).Input(input).Creds(creds).Execute()
+> base.PolicyManagerResponse GetPoliciesDecisions(ctx).Input(input).Creds(creds).Execute()
 
 getPoliciesDecisions
 
@@ -29,7 +29,7 @@ import (
 )
 
 func main() {
-    input := TODO // PolicyManagerRequest | Policy Manager Request Object
+    input := TODO // base.PolicyManagerRequest | Policy Manager Request Object
     creds := "creds_example" // string | credentials to wkc connector
 
     configuration := openapiclient.NewConfiguration()
@@ -39,7 +39,7 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `DefaultApi.GetPoliciesDecisions``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `GetPoliciesDecisions`: PolicyManagerResponse
+    // response from `GetPoliciesDecisions`: base.PolicyManagerResponse
     fmt.Fprintf(os.Stdout, "Response from `DefaultApi.GetPoliciesDecisions`: %v\n", resp)
 }
 ```
@@ -55,12 +55,12 @@ Other parameters are passed through a pointer to a apiGetPoliciesDecisionsReques
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **input** | [**PolicyManagerRequest**](PolicyManagerRequest.md) | Policy Manager Request Object | 
+ **input** | [**base.PolicyManagerRequest**](base.PolicyManagerRequest.md) | Policy Manager Request Object | 
  **creds** | **string** | credentials to wkc connector | 
 
 ### Return type
 
-[**PolicyManagerResponse**](PolicyManagerResponse.md)
+[**base.PolicyManagerResponse**](PolicyManagerResponse.md)
 
 ### Authorization
 

@@ -30,11 +30,11 @@ type DefaultApiService service
 type ApiGetPoliciesDecisionsRequest struct {
 	ctx _context.Context
 	ApiService *DefaultApiService
-	input *PolicyManagerRequest
+	input *base.PolicyManagerRequest
 	creds *string
 }
 
-func (r ApiGetPoliciesDecisionsRequest) Input(input PolicyManagerRequest) ApiGetPoliciesDecisionsRequest {
+func (r ApiGetPoliciesDecisionsRequest) Input(input base.PolicyManagerRequest) ApiGetPoliciesDecisionsRequest {
 	r.input = &input
 	return r
 }
@@ -43,7 +43,7 @@ func (r ApiGetPoliciesDecisionsRequest) Creds(creds string) ApiGetPoliciesDecisi
 	return r
 }
 
-func (r ApiGetPoliciesDecisionsRequest) Execute() (PolicyManagerResponse, *_nethttp.Response, error) {
+func (r ApiGetPoliciesDecisionsRequest) Execute() (base.PolicyManagerResponse, *_nethttp.Response, error) {
 	return r.ApiService.GetPoliciesDecisionsExecute(r)
 }
 
@@ -62,16 +62,16 @@ func (a *DefaultApiService) GetPoliciesDecisions(ctx _context.Context) ApiGetPol
 
 /*
  * Execute executes the request
- * @return PolicyManagerResponse
+ * @return base.PolicyManagerResponse
  */
-func (a *DefaultApiService) GetPoliciesDecisionsExecute(r ApiGetPoliciesDecisionsRequest) (PolicyManagerResponse, *_nethttp.Response, error) {
+func (a *DefaultApiService) GetPoliciesDecisionsExecute(r ApiGetPoliciesDecisionsRequest) (base.PolicyManagerResponse, *_nethttp.Response, error) {
 	var (
 		localVarHTTPMethod   = _nethttp.MethodGet
 		localVarPostBody     interface{}
 		localVarFormFileName string
 		localVarFileName     string
 		localVarFileBytes    []byte
-		localVarReturnValue  PolicyManagerResponse
+		localVarReturnValue  base.PolicyManagerResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.GetPoliciesDecisions")
