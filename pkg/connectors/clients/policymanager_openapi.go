@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	openapiclient "github.com/mesh-for-data/mesh-for-data/pkg/taxonomy/model/openapiclient"
+	openapiclient "github.com/mesh-for-data/mesh-for-data/pkg/connectors/openapiclient"
 	openapiclientmodels "github.com/mesh-for-data/mesh-for-data/pkg/taxonomy/model/base"
 )
 
