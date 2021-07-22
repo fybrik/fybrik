@@ -11,10 +11,10 @@ import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datmesh.DataCatalogResponse.CatalogDatasetInfo;
-import com.datmesh.DataCatalogRequest.CatalogDatasetRequest;
+import io.fybrik.DataCatalogResponse.CatalogDatasetInfo;
+import io.fybrik.DataCatalogRequest.CatalogDatasetRequest;
 
-import com.datmesh.DataCatalogServiceGrpc;
+import io.fybrik.DataCatalogServiceGrpc;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.json.simple.parser.ParseException;

@@ -13,16 +13,16 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.HashMap;
 
-import com.datmesh.DataCatalogResponse.CatalogDatasetInfo;
-import com.datmesh.DatasetDetailsOuterClass.CredentialsInfo;
-import com.datmesh.DatasetDetailsOuterClass.DatasetDetails;
-import com.datmesh.DatasetDetailsOuterClass.DatasetMetadata;
-import com.datmesh.DatasetDetailsOuterClass.Db2DataStore;
-import com.datmesh.DatasetDetailsOuterClass.KafkaDataStore;
-import com.datmesh.DatasetDetailsOuterClass.S3DataStore;
-import com.datmesh.DatasetDetailsOuterClass.DataStore.DataStoreType;
-import com.datmesh.DatasetDetailsOuterClass.DataComponentMetadata;
-import com.datmesh.DatasetDetailsOuterClass.DataStore;
+import io.fybrik.DataCatalogResponse.CatalogDatasetInfo;
+import io.fybrik.DatasetDetailsOuterClass.CredentialsInfo;
+import io.fybrik.DatasetDetailsOuterClass.DatasetDetails;
+import io.fybrik.DatasetDetailsOuterClass.DatasetMetadata;
+import io.fybrik.DatasetDetailsOuterClass.Db2DataStore;
+import io.fybrik.DatasetDetailsOuterClass.KafkaDataStore;
+import io.fybrik.DatasetDetailsOuterClass.S3DataStore;
+import io.fybrik.DatasetDetailsOuterClass.DataStore.DataStoreType;
+import io.fybrik.DatasetDetailsOuterClass.DataComponentMetadata;
+import io.fybrik.DatasetDetailsOuterClass.DataStore;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
