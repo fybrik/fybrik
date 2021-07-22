@@ -18,7 +18,7 @@ Please see the [project license](../about/license.md) for further details.
 
 ## Prefer SVG format for diagrams
 
-Place image files in the [docs/static](https://github.com/mesh-for-data/mesh-for-data/tree/master/site/docs/static) directory. Use regular Markdown syntax for images. For example:
+Place image files in the [docs/static](https://github.com/fybrik/mesh-for-data/tree/master/site/docs/static) directory. Use regular Markdown syntax for images. For example:
 
 ```markdown
 ![](../static/myimage.svg)

@@ -15,11 +15,11 @@ A pull request doesn’t have to represent finished work. It’s usually better 
 
 Here’s how to submit a pull request:
 
-- **[Fork](https://github.com/mesh-for-data/mesh-for-data/fork)** the main repository
+- **[Fork](https://github.com/fybrik/mesh-for-data/fork)** the main repository
 - **Clone the forked repository locally**. Connect your local to the original “upstream” repository by adding it as a remote.
     ```shell
     git clone git@github.com:$(git config user.name)/mesh-for-data.git
-    git remote add upstream https://github.com/mesh-for-data/mesh-for-data.git
+    git remote add upstream https://github.com/fybrik/mesh-for-data.git
     git remote set-url --push upstream no_push
     ```
 - **[Pull in changes](https://help.github.com/articles/syncing-a-fork/)** from “upstream” often so that you stay up to date so that when you submit your pull request, merge conflicts will be less likely.

@@ -38,7 +38,7 @@ helm install cert-manager jetstack/cert-manager \
 
 ## Install Hashicorp Vault and plugins
 
-[Hashicorp Vault](https://www.vaultproject.io/) and a [secrets-kubernetes-reader](https://github.com/mesh-for-data/vault-plugin-secrets-kubernetes-reader) plugin are used by Fybrik for credential management.
+[Hashicorp Vault](https://www.vaultproject.io/) and a [secrets-kubernetes-reader](https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader) plugin are used by Fybrik for credential management.
 
 ??? tip "Install latest development version from GitHub"
 
@@ -47,7 +47,7 @@ helm install cert-manager jetstack/cert-manager \
     For example:
 	=== "Kubernetes"
 		```bash
-		git clone https://github.com/mesh-for-data/mesh-for-data.git
+		git clone https://github.com/fybrik/mesh-for-data.git
 		cd mesh-for-data
 		helm dependency update charts/vault
 		helm install vault charts/vault --create-namespace -n fybrik-system \
@@ -59,7 +59,7 @@ helm install cert-manager jetstack/cert-manager \
 	=== "OpenShift"
 
 		```bash
-		git clone https://github.com/mesh-for-data/mesh-for-data.git
+		git clone https://github.com/fybrik/mesh-for-data.git
 		cd mesh-for-data
 		helm dependency update charts/vault
 		helm install vault charts/vault --create-namespace -n fybrik-system \
@@ -102,7 +102,7 @@ Run the following to install vault and the plugin in development mode:
     To install the `dev` version install the charts from the source code.
     For example:
     ```bash
-    git clone https://github.com/mesh-for-data/mesh-for-data.git
+    git clone https://github.com/fybrik/mesh-for-data.git
     cd mesh-for-data
     helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
     helm install m4d charts/m4d --set global.tag=latest -n fybrik-system --wait
@@ -119,12 +119,12 @@ helm install m4d fybrik-charts/m4d -n fybrik-system --wait
 
 ## Install modules
 
-[Modules](../concepts/modules.md) are plugins that the control plane deploys whenever required. The [arrow flight module](https://github.com/mesh-for-data/arrow-flight-module) enables reading data through Apache Arrow Flight API. 
+[Modules](../concepts/modules.md) are plugins that the control plane deploys whenever required. The [arrow flight module](https://github.com/fybrik/arrow-flight-module) enables reading data through Apache Arrow Flight API. 
 
 Install the latest[^1] release of arrow-flight-module:
 
 ```bash
-kubectl apply -f https://github.com/mesh-for-data/arrow-flight-module/releases/latest/download/module.yaml -n fybrik-system
+kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml -n fybrik-system
 ```
 
-[^1]: Refer to the [documentation](https://github.com/mesh-for-data/arrow-flight-module/blob/master/README.md#register-as-a-mesh-for-data-module) of arrow-flight-module for other versions
+[^1]: Refer to the [documentation](https://github.com/fybrik/arrow-flight-module/blob/master/README.md#register-as-a-mesh-for-data-module) of arrow-flight-module for other versions

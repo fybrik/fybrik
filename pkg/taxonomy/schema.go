@@ -17,7 +17,7 @@ import (
 )
 
 // ValidateSchema validates that the input schema adheres to the requirements defined in
-// https://github.com/mesh-for-data/mesh-for-data/blob/master/config/taxonomy/HOWTO_SPEC.md
+// https://github.com/fybrik/mesh-for-data/blob/master/config/taxonomy/HOWTO_SPEC.md
 func ValidateSchema(path string) error {
 	path, err := filepath.Abs(path)
 	if err != nil {
