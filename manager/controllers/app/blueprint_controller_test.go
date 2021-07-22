@@ -65,12 +65,12 @@ var _ = Describe("Blueprint Controller Real Env", func() {
 			// Add any teardown steps that needs to be executed after each test
 		})
 
-		// Blueprints are successfully reconciled when deployed to m4d-blueprints only
+		// Blueprints are successfully reconciled when deployed to fybrik-blueprints only
 		It("Test Blueprint Deploy to Correct Namespace", func() {
-			deployBlueprint("m4d-blueprints", true)
+			deployBlueprint("fybrik-blueprints", true)
 		})
 
-		// Blueprints not deployed to m4d-blueprints should not be successfully reconciled due to the filter preventing
+		// Blueprints not deployed to fybrik-blueprints should not be successfully reconciled due to the filter preventing
 		// reconcile from being called.
 		It("Test Blueprint Deploy to Bad Namespace", func() {
 			deployBlueprint("default", false)

@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: m4d-config
+  name: fybrik-config
 data:
   {{- if .Values.coordinator.enabled }}
   CONNECTION_TIMEOUT: {{ .Values.manager.connectionTimeout | default .Values.global.connectionTimeout | quote }}

@@ -57,7 +57,7 @@ to rerun  the entire sequence
 ```bash
 # use the local kind registry
 export DOCKER_HOSTNAME=kind-registry:5000
-export DOCKER_NAMESPACE=m4d-system
+export DOCKER_NAMESPACE=fybrik-system
 
 # build a local kind cluser
 make kind

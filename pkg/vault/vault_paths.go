@@ -8,7 +8,7 @@ import "fmt"
 // The path of the Vault plugin to use to retrieve dataset credentials stored in kubernetes secret.
 // vault-plugin-secrets-kubernetes-reader plugin is used for this purpose and is enabled
 // in kubernetes-secrets path. (https://github.com/mesh-for-data/vault-plugin-secrets-kubernetes-reader)
-// TODO: pass the plugin path in m4d-config ConfigMap
+// TODO: pass the plugin path in fybrik-config ConfigMap
 const vaultPluginPath = "kubernetes-secrets"
 
 // PathForReadingKubeSecret returns the path to Vault secret that holds dataset credentials

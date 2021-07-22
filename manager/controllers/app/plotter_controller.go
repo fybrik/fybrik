@@ -32,7 +32,7 @@ type PlotterReconciler struct {
 }
 
 // BlueprintNamespace defines a namespace where blueprints and associated resources will be allocated
-const BlueprintNamespace = "m4d-blueprints"
+const BlueprintNamespace = "fybrik-blueprints"
 
 // Reconcile receives a Plotter CRD
 //nolint:dupl

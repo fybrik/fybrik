@@ -57,7 +57,7 @@ var _ = BeforeSuite(func(done Done) {
 	By("bootstrapping test environment")
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{
-			filepath.Join("..", "..", "..", "charts", "m4d-crd", "templates"),
+			filepath.Join("..", "..", "..", "charts", "fybrik-crd", "templates"),
 		},
 		ErrorIfCRDPathMissing: true,
 	}
@@ -101,7 +101,7 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 
 		// Setup plotter controller
-		clusterMgr, err := local.NewManager(mgr.GetClient(), "m4d-system")
+		clusterMgr, err := local.NewManager(mgr.GetClient(), "fybrik-system")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(clusterMgr).NotTo(BeNil())
 		err = NewPlotterReconciler(mgr, "Plotter", clusterMgr).SetupWithManager(mgr)
@@ -115,18 +115,18 @@ var _ = BeforeSuite(func(done Done) {
 		k8sClient = mgr.GetClient()
 		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "m4d-system",
+				Name: "fybrik-system",
 			},
 		}))
 		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "m4d-blueprints",
+				Name: "fybrik-blueprints",
 			},
 		}))
 		Expect(k8sClient.Create(context.Background(), &v1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "cluster-metadata",
-				Namespace: "m4d-system",
+				Namespace: "fybrik-system",
 			},
 			Data: map[string]string{
 				"ClusterName":   "thegreendragon",

@@ -35,7 +35,7 @@ func TestPlotterController(t *testing.T) {
 
 	var (
 		name      = "plotter"
-		namespace = "m4d-system"
+		namespace = "fybrik-system"
 	)
 
 	var err error

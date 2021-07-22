@@ -21,7 +21,7 @@ func (r *M4DApplication) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// +kubebuilder:webhook:verbs=create;update,admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/validate-app-m4d-ibm-com-v1alpha1-m4dapplication,mutating=false,failurePolicy=fail,groups=app.m4d.ibm.com,resources=m4dapplications,versions=v1alpha1,name=vm4dapplication.kb.io
+// +kubebuilder:webhook:verbs=create;update,admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/validate-app-fybrik-ibm-com-v1alpha1-m4dapplication,mutating=false,failurePolicy=fail,groups=app.m4d.ibm.com,resources=m4dapplications,versions=v1alpha1,name=vm4dapplication.kb.io
 
 var _ webhook.Validator = &M4DApplication{}
 
@@ -93,10 +93,10 @@ func (r *M4DApplication) validateDataContext(path *field.Path, dataSet *DataCont
 
 func validateProtocol(protocol string) error {
 	switch protocol {
-	case "s3", "kafka", "jdbc-db2", "m4d-arrow-flight":
+	case "s3", "kafka", "jdbc-db2", "fybrik-arrow-flight":
 		return nil
 	default:
-		return errors.New("Value should be one of these: s3, kafka, jdbc-db2, m4d-arrow-flight")
+		return errors.New("Value should be one of these: s3, kafka, jdbc-db2, fybrik-arrow-flight")
 	}
 }
 

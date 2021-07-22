@@ -123,7 +123,7 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(application.Status.Generated).NotTo(gomega.BeNil())
 
 	plotterObjectKey := types.NamespacedName{
-		Namespace: "m4d-system",
+		Namespace: "fybrik-system",
 		Name:      "notebook-default",
 	}
 	plotter := &app.Plotter{}
@@ -780,7 +780,7 @@ func TestSyncWithPlotter(t *testing.T) {
 	// imitate a ready phase for the earlier generation
 	application.SetGeneration(2)
 	application.Finalizers = []string{"TestReconciler.finalizer"}
-	application.Status.Generated = &app.ResourceReference{Name: "plotter", Namespace: "m4d-system", Kind: "Plotter", AppVersion: 1}
+	application.Status.Generated = &app.ResourceReference{Name: "plotter", Namespace: "fybrik-system", Kind: "Plotter", AppVersion: 1}
 	application.Status.Ready = true
 	application.Status.ObservedGeneration = 1
 

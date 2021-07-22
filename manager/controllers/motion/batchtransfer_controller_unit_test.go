@@ -38,7 +38,7 @@ func TestBatchTransferController(t *testing.T) {
 
 	var (
 		name      = "sample-transfer"
-		namespace = "m4d-system"
+		namespace = "fybrik-system"
 	)
 	batchTransfer := &motionv1.BatchTransfer{
 		ObjectMeta: metav1.ObjectMeta{

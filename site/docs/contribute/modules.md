@@ -68,7 +68,7 @@ apiVersion: app.m4d.ibm.com/v1alpha1 # always this value
 kind: M4DModule # always this value
 metadata:
   name: "<module name>" # the name of your new module
-  namespace: m4d-system  # control plane namespace. Always m4d-system
+  namespace: fybrik-system  # control plane namespace. Always fybrik-system
 spec:
    ...
 ```
@@ -124,12 +124,12 @@ flows: # Indicate the data flow(s) in which the control plane should consider us
 
 `capabilites.supportedInterfaces` lists the supported data services from which the module can read data and to which it can write 
 * `flow` field can be `read`, `write` or `copy`
-* `protocol` field can take a value such as `kafka`, `s3`, `jdbc-db2`, `m4d-arrow-flight`, etc.
+* `protocol` field can take a value such as `kafka`, `s3`, `jdbc-db2`, `fybrik-arrow-flight`, etc.
 * `format` field can take a value such as `avro`, `parquet`, `json`, or `csv`.
 Note that a module that targets copy flows will omit the `api` field and contain just `source` and `sink`, a module that only supports reading data assets will omit the `sink` field and only contain `api` and `source`
 
 `capabilites.api` describes the api exposed by the module for reading or writing data from the user's workload:
-* `protocol` field can take a value such as `kafka`, `s3`, `jdbc-db2`, `m4d-arrow-flight`, etc 
+* `protocol` field can take a value such as `kafka`, `s3`, `jdbc-db2`, `fybrik-arrow-flight`, etc 
 * `dataformat` field can take a value such as `parquet`, `csv`, `arrow`, etc
 * `endpoint` field describes the endpoint exposed the module
 
@@ -157,7 +157,7 @@ An example for a module that has an API for reading data, and supports reading b
 ```yaml
 capabilities:
     api:
-      protocol: m4d-arrow-flight
+      protocol: fybrik-arrow-flight
       dataformat: arrow
       endpoint:
         port: 80

@@ -24,7 +24,7 @@ func TestLocalClusterManager(t *testing.T) {
 		&corev1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "cluster-metadata",
-				Namespace: "m4d-system",
+				Namespace: "fybrik-system",
 			},
 			Data: map[string]string{
 				"ClusterName": "remote-cluster",
@@ -34,7 +34,7 @@ func TestLocalClusterManager(t *testing.T) {
 		},
 	}
 	cl := fake.NewFakeClientWithScheme(s, objs...)
-	namespace := "m4d-system"
+	namespace := "fybrik-system"
 	cm, err := NewManager(cl, namespace)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(cm).NotTo(gomega.BeNil())

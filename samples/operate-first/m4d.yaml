@@ -1,8 +1,8 @@
-# Source: m4d/templates/m4d-blueprints-ns.yaml
+# Source: m4d/templates/fybrik-blueprints-ns.yaml
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: m4d-blueprints
+  name: fybrik-blueprints
 ---
 # Source: m4d/templates/katalog-connector/katalog-rbac.yaml
 # ClusterRole katalog-editor allows managing assets.
@@ -33,7 +33,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: m4d-proxy-cr
+  name: fybrik-proxy-cr
 rules:
   - apiGroups: ["authentication.k8s.io"]
     resources:
@@ -48,7 +48,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: m4d-manager-cr
+  name: fybrik-manager-cr
 rules:
   - apiGroups:
       - ""
@@ -286,51 +286,51 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: katalog-connector
-    namespace: m4d-system
+    namespace: fybrik-system
 ---
 # Source: m4d/templates/manager-auth-proxy-crb.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: m4d-proxy-crb
+  name: fybrik-proxy-crb
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: m4d-proxy-cr
+  name: fybrik-proxy-cr
 subjects:
   - kind: ServiceAccount
     name: manager
-    namespace: m4d-system
+    namespace: fybrik-system
 ---
 # Source: m4d/templates/manager-crb.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: m4d-manager-crb
+  name: fybrik-manager-crb
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: m4d-manager-cr
+  name: fybrik-manager-cr
 subjects:
   - kind: ServiceAccount
     name: manager
-    namespace: m4d-system
+    namespace: fybrik-system
 ---
 # Source: m4d/templates/webhook-configs.yaml
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: MutatingWebhookConfiguration
 metadata:
   creationTimestamp: null
-  name: 'm4d-system-mutating-webhook'
+  name: 'fybrik-system-mutating-webhook'
   annotations:
-    cert-manager.io/inject-ca-from: 'm4d-system/serving-cert'
+    cert-manager.io/inject-ca-from: 'fybrik-system/serving-cert'
 webhooks:
   - clientConfig:
       caBundle: Cg==
       service:
         name: webhook-service
-        namespace: 'm4d-system'
-        path: /mutate-motion-m4d-ibm-com-v1alpha1-batchtransfer
+        namespace: 'fybrik-system'
+        path: /mutate-motion-fybrik-ibm-com-v1alpha1-batchtransfer
     failurePolicy: Fail
     name: mbatchtransfer.kb.io
     rules:
@@ -347,8 +347,8 @@ webhooks:
       caBundle: Cg==
       service:
         name: webhook-service
-        namespace: 'm4d-system'
-        path: /mutate-motion-m4d-ibm-com-v1alpha1-streamtransfer
+        namespace: 'fybrik-system'
+        path: /mutate-motion-fybrik-ibm-com-v1alpha1-streamtransfer
     failurePolicy: Fail
     name: mstreamtransfer.kb.io
     rules:
@@ -367,16 +367,16 @@ apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration
 metadata:
   creationTimestamp: null
-  name: 'm4d-system-validating-webhook'
+  name: 'fybrik-system-validating-webhook'
   annotations:
-    cert-manager.io/inject-ca-from: 'm4d-system/serving-cert'
+    cert-manager.io/inject-ca-from: 'fybrik-system/serving-cert'
 webhooks:
   - clientConfig:
       caBundle: Cg==
       service:
         name: webhook-service
-        namespace: 'm4d-system'
-        path: /validate-motion-m4d-ibm-com-v1alpha1-batchtransfer
+        namespace: 'fybrik-system'
+        path: /validate-motion-fybrik-ibm-com-v1alpha1-batchtransfer
     failurePolicy: Fail
     name: vbatchtransfer.kb.io
     rules:
@@ -393,8 +393,8 @@ webhooks:
       caBundle: Cg==
       service:
         name: webhook-service
-        namespace: 'm4d-system'
-        path: /validate-motion-m4d-ibm-com-v1alpha1-streamtransfer
+        namespace: 'fybrik-system'
+        path: /validate-motion-fybrik-ibm-com-v1alpha1-streamtransfer
     failurePolicy: Fail
     name: vstreamtransfer.kb.io
     rules:

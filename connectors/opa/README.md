@@ -32,14 +32,14 @@ To run independantly of manager you need to set some environment variables:
 
 1. `CATALOG_CONNECTOR_URL`: A URL to a catalog connector
 2. `CONNECTION_TIMEOUT`: Connection timeout in seconds
-3. `KUBE_NAMESPACE`: target namespace (defaults to "m4d-system")
+3. `KUBE_NAMESPACE`: target namespace (defaults to "fybrik-system")
 
 We recommend to create a file named `.env` in the root directory of the project and set all variables there. For example:
 
 ```s
 CATALOG_CONNECTOR_URL="katalog-connector:80"
 CONNECTION_TIMEOUT=120
-KUBE_NAMESPACE="m4d-system"
+KUBE_NAMESPACE="fybrik-system"
 ```
 
 Deploy an OPA server and a connector to it:

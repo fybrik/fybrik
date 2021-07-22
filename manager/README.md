@@ -24,7 +24,7 @@ For option 2, the Helm installation allows you to pick which compoenents to inst
 Follow the installation guide as usual but in the Helm installation for the control plane add `--set manager.enabled=false` to skip the deployment of the manager. For example:
 
 ```bash
-helm install m4d charts/m4d --set global.tag=latest --set manager.enabled=false -n m4d-system --wait
+helm install m4d charts/m4d --set global.tag=latest --set manager.enabled=false -n fybrik-system --wait
 ```
 
 ### Expose running components
@@ -34,8 +34,8 @@ If you chose to run these components in a cluster you can use port-forward.
 For example:
 
 ```bash
-kubectl -n m4d-system port-forward svc/katalog-connector 49152:80 &
-kubectl -n m4d-system port-forward svc/opa-connector 49153:80 &
+kubectl -n fybrik-system port-forward svc/katalog-connector 49152:80 &
+kubectl -n fybrik-system port-forward svc/opa-connector 49153:80 &
 ```
 
 ### Set configuration environment variables
@@ -46,7 +46,7 @@ Therefore, you need to define configuration as environment variables.
 Create `.env` file in the root folder of the project. For example:
 
 ```bash
-VAULT_ADDRESS="http://vault.m4d-system:8200"
+VAULT_ADDRESS="http://vault.fybrik-system:8200"
 MAIN_POLICY_MANAGER_NAME="opa"
 MAIN_POLICY_MANAGER_CONNECTOR_URL="localhost:49153"
 CATALOG_PROVIDER_NAME="katalog"

@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: m4d-taxonomy-config
+  name: fybrik-taxonomy-config
 data:
   {{- (.Files.Glob "files/taxonomy/**.json").AsConfig | nindent 2 }}
 {{- end }}

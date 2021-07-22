@@ -20,8 +20,8 @@ In this sample you play multiple roles:
 Create a new Kubernetes namespace and set it as the active namespace:
 
 ```bash
-kubectl create namespace m4d-notebook-sample
-kubectl config set-context --current --namespace=m4d-notebook-sample
+kubectl create namespace fybrik-notebook-sample
+kubectl config set-context --current --namespace=fybrik-notebook-sample
 ```
 
 This enables easy [cleanup](#cleanup) once you're done experimenting with the sample.
@@ -48,7 +48,7 @@ Make a note of the service endpoint, bucket name, and access credentials. You wi
       ```bash
       helm repo add localstack-charts https://localstack.github.io/helm-charts
       helm install localstack localstack-charts/localstack --set startServices="s3" --set service.type=ClusterIP
-      kubectl wait --for=condition=ready --all pod -n m4d-notebook-sample --timeout=120s
+      kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
       ```
     3. Create a port-forward to communicate with localstack server:
       ```bash
@@ -95,7 +95,7 @@ spec:
     connection:
       type: s3
       s3:
-        endpoint: "http://localstack.m4d-notebook-sample.svc.cluster.local:4566"
+        endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
         bucket: "demo"
         objectKey: "PS_20174392719_1491204439457_log.csv"
   assetMetadata:
@@ -115,7 +115,7 @@ spec:
 EOF
 ```
 
-The asset is now registered in the catalog. The identifier of the asset is `m4d-notebook-sample/paysim-csv` (i.e. `<namespace>/<name>`). You will use that name in the `M4DApplication` later.
+The asset is now registered in the catalog. The identifier of the asset is `fybrik-notebook-sample/paysim-csv` (i.e. `<namespace>/<name>`). You will use that name in the `M4DApplication` later.
 
 Notice the `assetMetadata` field above. It specifies the dataset geography and tags. These attributes can later be used in policies.
 
@@ -141,9 +141,9 @@ transform[action] {
 In this sample only the policy above is applied. Copy the policy to a file named `sample-policy.rego` and then run:
 
 ```bash
-kubectl -n m4d-system create configmap sample-policy --from-file=sample-policy.rego
-kubectl -n m4d-system label configmap sample-policy openpolicyagent.org/policy=rego
-while [[ $(kubectl get cm sample-policy -n m4d-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
+kubectl -n fybrik-system create configmap sample-policy --from-file=sample-policy.rego
+kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy=rego
+while [[ $(kubectl get cm sample-policy -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
 ```
 
 You can similarly apply a directory holding multiple rego files.
@@ -206,10 +206,10 @@ spec:
   appInfo:
     intent: fraud-detection
   data:
-    - dataSetID: "m4d-notebook-sample/paysim-csv"
+    - dataSetID: "fybrik-notebook-sample/paysim-csv"
       requirements:
         interface: 
-          protocol: m4d-arrow-flight
+          protocol: fybrik-arrow-flight
           dataformat: arrow
 EOF
 ```
@@ -231,9 +231,9 @@ while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}')
 
 In your **terminal**, run the following command to print the [endpoint](../../reference/crds/#m4dapplicationstatusreadendpointsmapkey) to use for reading the data. It fetches the code from the `M4DApplication` resource:
 ```bash
-ENDPOINT_SCHEME=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.m4d-notebook-sample/paysim-csv.scheme})
-ENDPOINT_HOSTNAME=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.m4d-notebook-sample/paysim-csv.hostname})
-ENDPOINT_PORT=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.m4d-notebook-sample/paysim-csv.port})
+ENDPOINT_SCHEME=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.fybrik-notebook-sample/paysim-csv.scheme})
+ENDPOINT_HOSTNAME=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.fybrik-notebook-sample/paysim-csv.hostname})
+ENDPOINT_PORT=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.fybrik-notebook-sample/paysim-csv.port})
 printf "${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}"
 ```
 The next steps use the endpoint to read the data in a python notebook
@@ -254,7 +254,7 @@ The next steps use the endpoint to read the data in a python notebook
 
   # Prepare the request
   request = {
-      "asset": "m4d-notebook-sample/paysim-csv",
+      "asset": "fybrik-notebook-sample/paysim-csv",
       # To request specific columns add to the request a "columns" key with a list of column names
       # "columns": [...]
   }
@@ -278,5 +278,5 @@ When you’re finished experimenting with the notebook sample, clean it up:
 1. Stop `kubectl port-forward` processes (e.g., using `pkill kubectl`)
 1. Delete the namespace created for this sample:
     ```bash
-    kubectl delete namespace m4d-notebook-sample
+    kubectl delete namespace fybrik-notebook-sample
     ```

@@ -46,9 +46,9 @@ const formatOptions = [
 
 const protocolOptions = [
   {
-    key: 'm4d-arrow-flight',
-    text: 'm4d-arrow-flight',
-    value: 'm4d-arrow-flight'
+    key: 'fybrik-arrow-flight',
+    text: 'fybrik-arrow-flight',
+    value: 'fybrik-arrow-flight'
   },
   {
     key: 'jdbc-db2',

@@ -2,7 +2,7 @@
 all: helm-all
 
 ROOT_DIR := ../..
-DOCKER_NAME := m4d-template
+DOCKER_NAME := fybrik-template
 DOCKER_TAGNAME := 0.1.0
 
 include $(ROOT_DIR)/Makefile.env

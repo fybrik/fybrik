@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	clusterMetadataConfigMapSL string = "/api/v1/namespaces/m4d-system/configmaps/cluster-metadata"
+	clusterMetadataConfigMapSL string = "/api/v1/namespaces/fybrik-system/configmaps/cluster-metadata"
 )
 
 var (
@@ -132,7 +132,7 @@ func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name
 }
 
 func getGroupName(cluster string) string {
-	return "m4d-" + cluster
+	return "fybrik-" + cluster
 }
 
 type Collection struct {

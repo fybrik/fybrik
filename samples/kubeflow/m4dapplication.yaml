@@ -17,5 +17,5 @@ spec:
     - dataSetID: "{\"ServerName\":\"mds1\",\"AssetGuid\":\"ASSET_ID\"}"
       requirements:
         interface: 
-          protocol: m4d-arrow-flight
+          protocol: fybrik-arrow-flight
           dataformat: arrow

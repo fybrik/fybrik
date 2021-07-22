@@ -20,7 +20,7 @@ spec:
   - dataSetID: "s3-csv/redact-dataset"
     requirements:
       interface:
-        protocol: m4d-arrow-flight
+        protocol: fybrik-arrow-flight
         dataformat: arrow
       copy:
         required: true

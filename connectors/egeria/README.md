@@ -37,13 +37,13 @@ To use a [locally built image](#build-and-push-the-connector-image) add the foll
 To run independantly of manager you need to set some environment variables:
 
 1. `EGERIA_SERVER_URL`: A URL to a running egeria server
-2. `KUBE_NAMESPACE`: target namespace (defaults to "m4d-system")
+2. `KUBE_NAMESPACE`: target namespace (defaults to "fybrik-system")
 
 We recommend to create a file named `.env` in the root directory of the project and set all variables there. For example:
 
 ```s
 EGERIA_SERVER_URL="https://egeria-platform.egeria-catalog:9443"
-KUBE_NAMESPACE="m4d-system"
+KUBE_NAMESPACE="fybrik-system"
 ```
 
 Deploy the connector:

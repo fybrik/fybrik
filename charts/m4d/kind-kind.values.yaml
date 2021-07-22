@@ -4,7 +4,7 @@
 
 # Global configuration applies to multiple components installed by this chart
 global:
-  hub: localhost:5000/m4d-system
+  hub: localhost:5000/fybrik-system
   tag: "latest"
   imagePullPolicy: "Always"
 

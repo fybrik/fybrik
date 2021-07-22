@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 apiVersion: v2
-name: m4d-crd
+name: fybrik-crd
 description: M4D CustomResourceDefinitions
 type: application
 # This is the chart version. This version number should be incremented each time you make changes

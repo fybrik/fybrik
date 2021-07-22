@@ -12,13 +12,13 @@ This task shows how to use OPA with kube-mgmt.
 
 ## Using a configmap YAML
 
-1. Create a configmap with a Rego policy and a `openpolicyagent.org/policy=rego` label in the `m4d-system` namespace:
+1. Create a configmap with a Rego policy and a `openpolicyagent.org/policy=rego` label in the `fybrik-system` namespace:
     ```yaml
     apiVersion: v1
     kind: ConfigMap
     metadata:
       name: <policy-name>
-      namespace: m4d-system
+      namespace: fybrik-system
       labels:
         openpolicyagent.org/policy: rego
     data:
@@ -39,8 +39,8 @@ This task shows how to use OPA with kube-mgmt.
 You can use `kubectl` to create a configmap from a Rego file. To create a configmap named `<policy-name>` from a Rego file in path `<policy-name.rego>`:
 
 ```bash
-kubectl create configmap <policy-name> --from-file=main=<policy-name.rego> -n m4d-system
-kubectl label configmap <policy-name> openpolicyagent.org/policy=rego -n m4d-system
+kubectl create configmap <policy-name> --from-file=main=<policy-name.rego> -n fybrik-system
+kubectl label configmap <policy-name> openpolicyagent.org/policy=rego -n fybrik-system
 ```
 
-Delete the policy with `kubectl delete configmap <policy-name> -n m4d-system`.
+Delete the policy with `kubectl delete configmap <policy-name> -n fybrik-system`.

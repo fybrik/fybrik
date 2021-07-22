@@ -57,7 +57,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		Namespace:          namespace,
 		MetricsBindAddress: metricsAddr,
 		LeaderElection:     enableLeaderElection,
-		LeaderElectionID:   "m4d-operator-leader-election",
+		LeaderElectionID:   "fybrik-operator-leader-election",
 		Port:               9443,
 	})
 

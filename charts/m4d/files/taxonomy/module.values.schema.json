@@ -49,7 +49,7 @@
             "anyOf": [{
                 "properties": {
                     "protocol": {
-                        "enum":["m4d-arrow-flight"]
+                        "enum":["fybrik-arrow-flight"]
                     },
                     "data_format": {
                         "enum":["arrow"] 

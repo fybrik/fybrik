@@ -1,1 +1,1 @@
-Deployed {{ include "m4d-implicit-copy-batch.fullname" . }}
+Deployed {{ include "fybrik-implicit-copy-batch.fullname" . }}

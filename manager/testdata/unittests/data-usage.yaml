@@ -14,5 +14,5 @@ spec:
     - dataSetID: s3/redact-dataset
       requirements:
         interface: 
-          protocol: m4d-arrow-flight
+          protocol: fybrik-arrow-flight
           dataformat: arrow

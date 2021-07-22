@@ -15,13 +15,13 @@ The source of the `Asset` CRD are the files in the [`manifests`](manifests) dire
 Build and push the connector image with `make all` (cleanup with `make clean`).
 
 Install with Helm as part of the standard Mesh for Data installation:
-- [m4d-crd](https://github.com/mesh-for-data/mesh-for-data/tree/master/charts/m4d-crd) Helm chart 
+- [fybrik-crd](https://github.com/mesh-for-data/mesh-for-data/tree/master/charts/fybrik-crd) Helm chart 
   ```
-  helm install m4d-crd charts/m4d-crd
+  helm install fybrik-crd charts/fybrik-crd
   ```
 - [m4d](https://github.com/mesh-for-data/mesh-for-data/tree/master/charts/m4d) Helm chart with `katalogConnector.enabled=true` (default).
   ```
-  helm install m4d charts/m4d-crd
+  helm install m4d charts/fybrik-crd
   ```
 
 ## Where is this going?

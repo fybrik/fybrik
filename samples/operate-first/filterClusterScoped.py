@@ -34,7 +34,7 @@ def createKustomizations():
 
 def main():
     splitToYamls('m4d.yaml')
-    splitToYamls('m4d-crd.yaml')
+    splitToYamls('fybrik-crd.yaml')
     print("Successfully split files into yamls and wrote to appropriate directories\n")   
     
     createKustomizations()

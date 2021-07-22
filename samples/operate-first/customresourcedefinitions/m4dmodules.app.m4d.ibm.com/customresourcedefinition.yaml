@@ -76,7 +76,7 @@ spec:
                       - s3
                       - kafka
                       - jdbc-db2
-                      - m4d-arrow-flight
+                      - fybrik-arrow-flight
                       type: string
                   required:
                   - protocol
@@ -120,7 +120,7 @@ spec:
                             - s3
                             - kafka
                             - jdbc-db2
-                            - m4d-arrow-flight
+                            - fybrik-arrow-flight
                             type: string
                         required:
                         - protocol
@@ -147,7 +147,7 @@ spec:
                             - s3
                             - kafka
                             - jdbc-db2
-                            - m4d-arrow-flight
+                            - fybrik-arrow-flight
                             type: string
                         required:
                         - protocol

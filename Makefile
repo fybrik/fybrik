@@ -1,6 +1,6 @@
 include Makefile.env
 export DOCKER_TAGNAME ?= latest
-export KUBE_NAMESPACE ?= m4d-system
+export KUBE_NAMESPACE ?= fybrik-system
 
 .PHONY: license
 license: $(TOOLBIN)/license_finder
@@ -14,7 +14,7 @@ docker-mirror-read:
 deploy: export VALUES_FILE?=charts/m4d/values.yaml
 deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 	$(TOOLBIN)/kubectl create namespace $(KUBE_NAMESPACE) || true
-	$(TOOLBIN)/helm install m4d-crd charts/m4d-crd  \
+	$(TOOLBIN)/helm install fybrik-crd charts/fybrik-crd  \
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 	$(TOOLBIN)/helm install m4d charts/m4d --values $(VALUES_FILE) \
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
@@ -27,7 +27,7 @@ test:
 
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
-run-integration-tests: export DOCKER_NAMESPACE?=m4d-system
+run-integration-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-integration-tests: export VALUES_FILE=charts/m4d/integration-tests.values.yaml
 run-integration-tests:
 	$(MAKE) kind

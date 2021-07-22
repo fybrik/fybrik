@@ -18,7 +18,7 @@ Ensure that you have the following:
 ```bash
 helm repo add jetstack https://charts.jetstack.io
 helm repo add hashicorp https://helm.releases.hashicorp.com
-helm repo add m4d-charts https://mesh-for-data.github.io/charts
+helm repo add fybrik-charts https://mesh-for-data.github.io/charts
 helm repo update
 ```
 
@@ -50,11 +50,11 @@ helm install cert-manager jetstack/cert-manager \
 		git clone https://github.com/mesh-for-data/mesh-for-data.git
 		cd mesh-for-data
 		helm dependency update charts/vault
-		helm install vault charts/vault --create-namespace -n m4d-system \
+		helm install vault charts/vault --create-namespace -n fybrik-system \
 			--set "vault.injector.enabled=false" \
 			--set "vault.server.dev.enabled=true" \
 			--values charts/vault/env/dev/vault-single-cluster-values.yaml
-		kubectl wait --for=condition=ready --all pod -n m4d-system --timeout=120s
+		kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
 		```
 	=== "OpenShift"
 
@@ -62,12 +62,12 @@ helm install cert-manager jetstack/cert-manager \
 		git clone https://github.com/mesh-for-data/mesh-for-data.git
 		cd mesh-for-data
 		helm dependency update charts/vault
-		helm install vault charts/vault --create-namespace -n m4d-system \
+		helm install vault charts/vault --create-namespace -n fybrik-system \
 			--set "global.openshift=true" \
 			--set "vault.injector.enabled=false" \
 			--set "vault.server.dev.enabled=true" \
 			--values charts/vault/env/dev/vault-single-cluster-values.yaml
-		kubectl wait --for=condition=ready --all pod -n m4d-system --timeout=120s
+		kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
 	    ```
 
 
@@ -76,22 +76,22 @@ Run the following to install vault and the plugin in development mode:
 === "Kubernetes" 
 
     ```bash
-    helm install vault m4d-charts/vault --create-namespace -n m4d-system \
+    helm install vault fybrik-charts/vault --create-namespace -n fybrik-system \
         --set "vault.injector.enabled=false" \
         --set "vault.server.dev.enabled=true" \
         --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.3.1/charts/vault/env/dev/vault-single-cluster-values.yaml
-    kubectl wait --for=condition=ready --all pod -n m4d-system --timeout=120s
+    kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
     ```
 
 === "OpenShift"
 
     ```bash
-    helm install vault m4d-charts/vault --create-namespace -n m4d-system \
+    helm install vault fybrik-charts/vault --create-namespace -n fybrik-system \
         --set "global.openshift=true" \
         --set "vault.injector.enabled=false" \
         --set "vault.server.dev.enabled=true" \
         --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.3.1/charts/vault/env/dev/vault-single-cluster-values.yaml
-    kubectl wait --for=condition=ready --all pod -n m4d-system --timeout=120s
+    kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
     ```
 
 ## Install control plane
@@ -104,16 +104,16 @@ Run the following to install vault and the plugin in development mode:
     ```bash
     git clone https://github.com/mesh-for-data/mesh-for-data.git
     cd mesh-for-data
-    helm install m4d-crd charts/m4d-crd -n m4d-system --wait
-    helm install m4d charts/m4d --set global.tag=latest -n m4d-system --wait
+    helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
+    helm install m4d charts/m4d --set global.tag=latest -n fybrik-system --wait
     ```
 
 The control plane includes a `manager` service that connects to a data catalog and to a policy manager. 
 Install the latest release of Mesh for Data with a built-in data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
 
 ```bash
-helm install m4d-crd m4d-charts/m4d-crd -n m4d-system --wait
-helm install m4d m4d-charts/m4d -n m4d-system --wait
+helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system --wait
+helm install m4d fybrik-charts/m4d -n fybrik-system --wait
 ```
 
 
@@ -124,7 +124,7 @@ helm install m4d m4d-charts/m4d -n m4d-system --wait
 Install the latest[^1] release of arrow-flight-module:
 
 ```bash
-kubectl apply -f https://github.com/mesh-for-data/arrow-flight-module/releases/latest/download/module.yaml -n m4d-system
+kubectl apply -f https://github.com/mesh-for-data/arrow-flight-module/releases/latest/download/module.yaml -n fybrik-system
 ```
 
 [^1]: Refer to the [documentation](https://github.com/mesh-for-data/arrow-flight-module/blob/master/README.md#register-as-a-mesh-for-data-module) of arrow-flight-module for other versions

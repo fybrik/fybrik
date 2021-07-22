@@ -28,11 +28,11 @@ Can be a client to the external component(s) or be independent.
 
 ## Registering a module
 
-To make the control plane aware of the module so that it can be included in appropriate workload data flows, the administrator must apply the M4DModule YAML in the `m4d-system` namespace.  This makes the control plane aware of the existence of the module.  Note that it **does not** check that the module's helm chart exists.
+To make the control plane aware of the module so that it can be included in appropriate workload data flows, the administrator must apply the M4DModule YAML in the `fybrik-system` namespace.  This makes the control plane aware of the existence of the module.  Note that it **does not** check that the module's helm chart exists.
 
 For example, the following registers the `arrow-flight-module`:
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/arrow-flight-module/master/module.yaml -n m4d-system
+kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/arrow-flight-module/master/module.yaml -n fybrik-system
 ```
 
 ## When is a module used?
