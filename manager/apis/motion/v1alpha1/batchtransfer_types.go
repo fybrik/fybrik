@@ -244,7 +244,8 @@ type Kafka struct {
 	KafkaBrokers string `json:"kafkaBrokers"`
 
 	// URL to the schema registry. The registry has to be Confluent schema registry compatible.
-	SchemaRegistryURL string `json:"schemaRegistryURL"`
+	// +optional
+	SchemaRegistryURL string `json:"schemaRegistryURL,omitempty"`
 
 	// Kafka security protocol one of (PLAINTEXT, SASL_PLAINTEXT, SASL_SSL, SSL)
 	// Default SASL_SSL will be assumed if not specified
