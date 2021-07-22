@@ -33,8 +33,11 @@ codegen-openapi-rest-client: clean $(TOOLBIN)/openapi-generator-cli
 	--git-user-id "mesh-for-data" \
     --git-repo-id "mesh-for-data/pkg/connectors/openapiclient" \
 	-i codegen.spec.yaml
+	rm -f $(ROOT_DIR)/pkg/connectors/openapiclient/go.mod
+	rm -f $(ROOT_DIR)/pkg/connectors/openapiclient/go.sum
 
 clean:
 	rm -f objects/taxonomy.json
 	rm -rf $(ROOT_DIR)/pkg/taxonomy/model/base
 	rm -rf $(ROOT_DIR)/pkg/connectors/openapiclient
+	
