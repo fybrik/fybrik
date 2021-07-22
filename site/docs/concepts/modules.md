@@ -32,7 +32,7 @@ To make the control plane aware of the module so that it can be included in appr
 
 For example, the following registers the `arrow-flight-module`:
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/arrow-flight-module/master/module.yaml -n fybrik-system
+kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
 ```
 
 ## When is a module used?
@@ -59,8 +59,8 @@ The table below lists the currently available modules:
 
 Name | Description | FybrikModule | Prerequisite
 ---  | ---         | ---       | ---
-[arrow-flight-module](https://github.com/fybrik/arrow-flight-module) | reading datasets while performing data transformations | https://raw.githubusercontent.com/mesh-for-data/arrow-flight-module/master/module.yaml |
-[implicit-copy](https://github.com/fybrik/mover) | copies data between any two supported data stores, for example S3 and Kafka, and applies transformations. | https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/master/modules/implicit-copy-batch-module.yaml<br> <br>https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/master/modules/implicit-copy-stream-module.yaml | - [Datashim](https://github.com/datashim-io/datashim) deployment.<br>- [`FybrikStorageAccount`](../../reference/crds#m4dstorageaccount) resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data.
+[arrow-flight-module](https://github.com/fybrik/arrow-flight-module) | reading datasets while performing data transformations | https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml |
+[implicit-copy](https://github.com/fybrik/mover) | copies data between any two supported data stores, for example S3 and Kafka, and applies transformations. | https://raw.githubusercontent.com/fybrik/fybrik/master/modules/implicit-copy-batch-module.yaml<br> <br>https://raw.githubusercontent.com/fybrik/fybrik/master/modules/implicit-copy-stream-module.yaml | - [Datashim](https://github.com/datashim-io/datashim) deployment.<br>- [`FybrikStorageAccount`](../../reference/crds#m4dstorageaccount) resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data.
 
 ## Contributing
 

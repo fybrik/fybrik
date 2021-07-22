@@ -33,7 +33,7 @@ func (r *StreamTransfer) Default() {
 	log.Printf("Defaulting streamtransfer %s", r.Name)
 	if r.Spec.Image == "" {
 		// TODO check if can be removed after upgrading controller-gen to 0.5.0
-		r.Spec.Image = "ghcr.io/mesh-for-data/mover:latest"
+		r.Spec.Image = "ghcr.io/fybrik/mover:latest"
 	}
 
 	if r.Spec.ImagePullPolicy == "" {

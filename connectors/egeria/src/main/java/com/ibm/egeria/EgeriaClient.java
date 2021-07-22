@@ -423,10 +423,10 @@ public final class EgeriaClient {
 
         //it can contain a direct link to the file or a json with remote object
         String qualifiedName = assetMetaDataHelper.getQualifiedName();
-        // fix for https://github.com/fybrik/mesh-for-data/issues/122 - start
+        // fix for https://github.com/fybrik/fybrik/issues/122 - start
         JsonObject storeJson = JsonParser.parseString(qualifiedName).getAsJsonObject();
         String geo = storeJson.get("data_location").getAsString();
-        // fix for https://github.com/fybrik/mesh-for-data/issues/122 - end
+        // fix for https://github.com/fybrik/fybrik/issues/122 - end
 
         String vaultSecretPath = "";
         LOGGER.info("constructing the  vaultSecretPath using "

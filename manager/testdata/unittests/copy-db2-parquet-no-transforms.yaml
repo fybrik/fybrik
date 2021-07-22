@@ -20,7 +20,7 @@ spec:
         protocol: s3
         dataformat: parquet
   chart:
-    name: ghcr.io/mesh-for-data/fybrik-implicit-copy-batch:0.1.0
+    name: ghcr.io/fybrik/fybrik-implicit-copy-batch:0.1.0
   statusIndicators:
     - kind: BatchTransfer
       successCondition: status.status == SUCCEEDED

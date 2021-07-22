@@ -362,7 +362,7 @@ The control layer of the data distribution is implemented following the operator
 
 The [data distribution core libraries](https://github.com/fybrik/mover) that are Scala/Spark based
 
-The [data distribution operator](https://github.com/fybrik/mesh-for-data) has been integrated into
+The [data distribution operator](https://github.com/fybrik/fybrik) has been integrated into
 Fybrik code and is part of the manager.
 
 

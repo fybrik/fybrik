@@ -16,7 +16,7 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "mesh-for-data",
+	Use:   "fybrik",
 	Short: "Fybrik CLI",
 }
 
@@ -30,7 +30,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	// An optional configuration file to override default flags (available to subcommands)
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mesh-for-data.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.fybrik.yaml)")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -43,10 +43,10 @@ func initConfig() {
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
 
-		// Search config in home directory with name ".mesh-for-data" (without extension).
+		// Search config in home directory with name ".fybrik" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".mesh-for-data")
+		viper.SetConfigName(".fybrik")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match

@@ -264,7 +264,7 @@ func TestDefaultingS3Bucket(t *testing.T) {
 	batchTransfer.Default()
 
 	assert.Equal(t, corev1.PullIfNotPresent, batchTransfer.Spec.ImagePullPolicy)
-	assert.Equal(t, "ghcr.io/mesh-for-data/mover:latest", batchTransfer.Spec.Image)
+	assert.Equal(t, "ghcr.io/fybrik/mover:latest", batchTransfer.Spec.Image)
 	assert.Equal(t, "mysecrets:123", batchTransfer.Spec.SecretProviderURL)
 	assert.Equal(t, "demo", batchTransfer.Spec.SecretProviderRole)
 	assert.Equal(t, false, batchTransfer.Spec.Suspend)

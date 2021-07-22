@@ -5,7 +5,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-image: "ghcr.io/mesh-for-data/mover:latest"
+image: "ghcr.io/fybrik/mover:latest"
 imagePullPolicy: null
 noFinalizer: "true"
 

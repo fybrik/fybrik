@@ -759,10 +759,10 @@ github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5
 github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 h1:I0XW9+e1XWDxdcEniV4rQAIOPUGDq67JSCiRCgGCZLI=
 github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369/go.mod h1:BSXmuO+STAnVfrANrmjBb36TMTDstsz7MSK+HVaYKv4=
 github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0/go.mod h1:fcEyUyXZXoV4Abw8DX0t7wyL8mCDxXyU4iAFZfT3IHw=
-github.com/mesh-for-data/helm/v3 v3.6.2-m4d h1:Jk/bQZYj5olDXJTBVaxdKJnQNayY/anSDNa3PgVXUxg=
-github.com/mesh-for-data/helm/v3 v3.6.2-m4d/go.mod h1:mIIus8EOqj+obtycw3sidsR4ORr2aFDmXMSI3k+oeVY=
-github.com/mesh-for-data/openapi2crd v0.3.2 h1:zeuHqh17Nz3e2ZZwnnRBWHadKvUR9hnXmh7CxKPmH5c=
-github.com/mesh-for-data/openapi2crd v0.3.2/go.mod h1:71EfefBnfYEi60EMCv5mBLDkWSyCnbtTqKQuKYh/DS8=
+github.com/fybrik/helm/v3 v3.6.2-m4d h1:Jk/bQZYj5olDXJTBVaxdKJnQNayY/anSDNa3PgVXUxg=
+github.com/fybrik/helm/v3 v3.6.2-m4d/go.mod h1:mIIus8EOqj+obtycw3sidsR4ORr2aFDmXMSI3k+oeVY=
+github.com/fybrik/openapi2crd v0.3.2 h1:zeuHqh17Nz3e2ZZwnnRBWHadKvUR9hnXmh7CxKPmH5c=
+github.com/fybrik/openapi2crd v0.3.2/go.mod h1:71EfefBnfYEi60EMCv5mBLDkWSyCnbtTqKQuKYh/DS8=
 github.com/miekg/dns v1.0.14/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
 github.com/mitchellh/cli v1.0.0/go.mod h1:hNIlj7HEI86fIcpObd7a0FcrxTWetlwJDGcceTlRvqc=
 github.com/mitchellh/copystructure v1.0.0/go.mod h1:SNtv71yrdKgLRyLFxmLdkAbkKEFWgYaq1OVrnRcwhnw=

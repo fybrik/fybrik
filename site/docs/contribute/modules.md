@@ -9,7 +9,7 @@ This page describes what must be provided when contributing a [module](../concep
 1. Create the [FybrikModule YAML](#m4dmodule-yaml) which describes the capabilities of the module workload, in which flows it should be considered for inclusion, its supported interfaces, and the link to the module helm chart.
 1. [Test](#test) the new module
 
-These steps are described in the following sections in more detail, so that you can create your own modules for use by Fybrik.  Note that a new module is maintained in its own git repository, separate from the [mesh-for-data](https://github.com/fybrik/mesh-for-data) repository.
+These steps are described in the following sections in more detail, so that you can create your own modules for use by Fybrik.  Note that a new module is maintained in its own git repository, separate from the [fybrik](https://github.com/fybrik/fybrik) repository.
 
 ## Module Workload
 
@@ -39,7 +39,7 @@ For any module chosen by the control plane to be part of the data path, the cont
 The names of the Kubernetes resources deployed by the module helm chart must contain the release name to avoid resource conflicts. A Kubernetes `service` resource which is used to access the module must have a name equal to the release name (this service name is also used in the optional [`spec.capabilites.api.endpoint.hostname`](../reference/crds.md#m4dmodulespeccapabilitiesapiendpoint) field).
 
 Because the chart is installed by the control plane, the input `values` to the chart must match the relevant type of [arguments](../reference/crds.md#blueprintspecflowstepsindexarguments). 
-<!-- TODO: expand this when we support setting values in the FybrikModule YAML: https://github.com/fybrik/mesh-for-data/pull/42 -->
+<!-- TODO: expand this when we support setting values in the FybrikModule YAML: https://github.com/fybrik/fybrik/pull/42 -->
 
 If the module workload needs to return information to the user, that information should be written to the `NOTES.txt` of the helm chart.
 
@@ -49,7 +49,7 @@ For a full example see the [Arrow Flight Module chart](https://github.com/fybrik
 
 Once your Helm chart is ready, you need to push it to a [OCI-based registry](https://helm.sh/docs/topics/registries/) such as [ghcr.io](https://ghcr.io). This allows the control plane of Fybrik to later pull the chart whenever it needs to be installed.
 
-You can use the [hack/make-rules/helm.mk](https://github.com/fybrik/mesh-for-data/blob/master/hack/make-rules/helm.mk) Makefile, or manually push the chart:
+You can use the [hack/make-rules/helm.mk](https://github.com/fybrik/fybrik/blob/master/hack/make-rules/helm.mk) Makefile, or manually push the chart:
 
 ```bash
 HELM_EXPERIMENTAL_OCI=1 
@@ -197,7 +197,7 @@ capabilities:
 
 The following are examples of YAMLs from fully implemented modules:
 
-* An example YAML for a module that [copies from db2 to s3](https://github.com/fybrik/mesh-for-data/blob/master/manager/testdata/unittests/copy-db2-parquet.yaml) and includes transformation actions
+* An example YAML for a module that [copies from db2 to s3](https://github.com/fybrik/fybrik/blob/master/manager/testdata/unittests/copy-db2-parquet.yaml) and includes transformation actions
 * And an example [arrow flight read module](https://github.com/fybrik/arrow-flight-module/blob/master/module.yaml) YAML, also with transformation support
 
 ## Test

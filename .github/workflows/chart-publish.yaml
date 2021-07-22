@@ -17,7 +17,7 @@ jobs:
       - name: Checkout charts repository
         uses: actions/checkout@v2
         with:
-          repository: mesh-for-data/charts
+          repository: fybrik/charts
           path: charts-repo
       - run: |
           rm -rf charts-repo/charts/fybrik-crd
@@ -31,7 +31,7 @@ jobs:
         with:
           app_id: ${{ secrets.CHARTS_APP_ID }}
           private_key: ${{ secrets.CHARTS_APP_PRIVATE_KEY }}
-          repository: mesh-for-data/charts
+          repository: fybrik/charts
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:

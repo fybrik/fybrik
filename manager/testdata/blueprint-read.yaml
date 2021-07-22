@@ -40,4 +40,4 @@ spec:
     kind: FybrikModule
     flow: read
     chart:
-      name: ghcr.io/mesh-for-data/fybrik-template:0.1.0
+      name: ghcr.io/fybrik/fybrik-template:0.1.0

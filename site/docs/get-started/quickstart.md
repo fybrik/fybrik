@@ -18,7 +18,7 @@ Ensure that you have the following:
 ```bash
 helm repo add jetstack https://charts.jetstack.io
 helm repo add hashicorp https://helm.releases.hashicorp.com
-helm repo add fybrik-charts https://mesh-for-data.github.io/charts
+helm repo add fybrik-charts https://fybrik.github.io/charts
 helm repo update
 ```
 
@@ -47,8 +47,8 @@ helm install cert-manager jetstack/cert-manager \
     For example:
 	=== "Kubernetes"
 		```bash
-		git clone https://github.com/fybrik/mesh-for-data.git
-		cd mesh-for-data
+		git clone https://github.com/fybrik/fybrik.git
+		cd fybrik
 		helm dependency update charts/vault
 		helm install vault charts/vault --create-namespace -n fybrik-system \
 			--set "vault.injector.enabled=false" \
@@ -59,8 +59,8 @@ helm install cert-manager jetstack/cert-manager \
 	=== "OpenShift"
 
 		```bash
-		git clone https://github.com/fybrik/mesh-for-data.git
-		cd mesh-for-data
+		git clone https://github.com/fybrik/fybrik.git
+		cd fybrik
 		helm dependency update charts/vault
 		helm install vault charts/vault --create-namespace -n fybrik-system \
 			--set "global.openshift=true" \
@@ -79,7 +79,7 @@ Run the following to install vault and the plugin in development mode:
     helm install vault fybrik-charts/vault --create-namespace -n fybrik-system \
         --set "vault.injector.enabled=false" \
         --set "vault.server.dev.enabled=true" \
-        --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.3.1/charts/vault/env/dev/vault-single-cluster-values.yaml
+        --values https://raw.githubusercontent.com/fybrik/fybrik/v0.3.1/charts/vault/env/dev/vault-single-cluster-values.yaml
     kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
     ```
 
@@ -90,7 +90,7 @@ Run the following to install vault and the plugin in development mode:
         --set "global.openshift=true" \
         --set "vault.injector.enabled=false" \
         --set "vault.server.dev.enabled=true" \
-        --values https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/v0.3.1/charts/vault/env/dev/vault-single-cluster-values.yaml
+        --values https://raw.githubusercontent.com/fybrik/fybrik/v0.3.1/charts/vault/env/dev/vault-single-cluster-values.yaml
     kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
     ```
 
@@ -102,8 +102,8 @@ Run the following to install vault and the plugin in development mode:
     To install the `dev` version install the charts from the source code.
     For example:
     ```bash
-    git clone https://github.com/fybrik/mesh-for-data.git
-    cd mesh-for-data
+    git clone https://github.com/fybrik/fybrik.git
+    cd fybrik
     helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
     helm install m4d charts/m4d --set global.tag=latest -n fybrik-system --wait
     ```
@@ -127,4 +127,4 @@ Install the latest[^1] release of arrow-flight-module:
 kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml -n fybrik-system
 ```
 
-[^1]: Refer to the [documentation](https://github.com/fybrik/arrow-flight-module/blob/master/README.md#register-as-a-mesh-for-data-module) of arrow-flight-module for other versions
+[^1]: Refer to the [documentation](https://github.com/fybrik/arrow-flight-module/blob/master/README.md#register-as-a-fybrik-module) of arrow-flight-module for other versions

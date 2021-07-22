@@ -9,7 +9,7 @@ Additional secret plugins can be developed to retrieve credentials additional lo
 
 The following steps are for configuring a secret plug-in for Fybrik:
 
-1. Enable the plugin during Vault server initialization in a specific path. An example of that can be found in helm chart [values.yaml](https://github.com/fybrik/mesh-for-data/blob/master/third_party/vault/vault-single-cluster/values.yaml) file in the project where [Vault-plugin-secrets-kubernetes-reader](https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader) plugin is enabled in `kubernetes-secrets` path:
+1. Enable the plugin during Vault server initialization in a specific path. An example of that can be found in helm chart [values.yaml](https://github.com/fybrik/fybrik/blob/master/third_party/vault/vault-single-cluster/values.yaml) file in the project where [Vault-plugin-secrets-kubernetes-reader](https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader) plugin is enabled in `kubernetes-secrets` path:
 
 
 ```bash
