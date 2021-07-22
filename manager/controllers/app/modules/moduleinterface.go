@@ -6,12 +6,12 @@ package modules
 import (
 	"errors"
 
-	"github.com/mesh-for-data/mesh-for-data/pkg/serde"
+	"fybrik.io/fybrik/pkg/serde"
 
-	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
-	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
-	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
+	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
+	"fybrik.io/fybrik/pkg/multicluster"
 )
 
 // DataDetails is the information received from the catalog connector

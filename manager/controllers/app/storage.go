@@ -8,12 +8,12 @@ import (
 	"fmt"
 	"strings"
 
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/pkg/storage"
 	"github.com/go-logr/logr"
-	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"k8s.io/apimachinery/pkg/types"
 )
 

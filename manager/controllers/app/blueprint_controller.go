@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"helm.sh/helm/v3/pkg/release"
 
 	"github.com/go-logr/logr"
@@ -24,8 +24,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
-	"github.com/mesh-for-data/mesh-for-data/pkg/helm"
+	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/helm"
 	corev1 "k8s.io/api/core/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"

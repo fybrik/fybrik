@@ -9,14 +9,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/mockup"
-	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
+	"fybrik.io/fybrik/manager/controllers/mockup"
+	"fybrik.io/fybrik/pkg/storage"
 
-	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"

@@ -4,9 +4,9 @@
 package app
 
 import (
-	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/app/modules"
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/app/modules"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	// Temporary - shouldn't have something specific to implicit copies
 )
 

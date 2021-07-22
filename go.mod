@@ -1,4 +1,4 @@
-module github.com/mesh-for-data/mesh-for-data
+module fybrik.io/fybrik
 
 go 1.16
 

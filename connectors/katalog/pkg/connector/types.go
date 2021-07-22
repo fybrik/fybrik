@@ -3,7 +3,7 @@
 package connector
 
 import (
-	"github.com/mesh-for-data/mesh-for-data/connectors/katalog/pkg/api"
+	"fybrik.io/fybrik/connectors/katalog/pkg/api"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"

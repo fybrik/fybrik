@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	utils "github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	utils "fybrik.io/fybrik/manager/controllers/utils"
 	"github.com/stretchr/testify/assert"
 )
 

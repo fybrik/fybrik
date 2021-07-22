@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	connectors "github.com/mesh-for-data/mesh-for-data/pkg/connectors/clients"
-	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
@@ -24,13 +24,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/app/modules"
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
-	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
-	"github.com/mesh-for-data/mesh-for-data/pkg/serde"
-	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
-	"github.com/mesh-for-data/mesh-for-data/pkg/vault"
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/app/modules"
+	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/multicluster"
+	"fybrik.io/fybrik/pkg/serde"
+	"fybrik.io/fybrik/pkg/storage"
+	"fybrik.io/fybrik/pkg/vault"
 )
 
 // FybrikApplicationReconciler reconciles a FybrikApplication object

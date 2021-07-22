@@ -4,7 +4,7 @@
 package v1alpha1
 
 import (
-	connectors "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	connectors "fybrik.io/fybrik/pkg/connectors/protobuf"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

@@ -4,7 +4,7 @@
 package v1alpha1
 
 import (
-	"github.com/mesh-for-data/mesh-for-data/pkg/serde"
+	"fybrik.io/fybrik/pkg/serde"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

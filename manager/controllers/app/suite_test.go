@@ -10,12 +10,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"helm.sh/helm/v3/pkg/release"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	appapi "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	appapi "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -30,8 +30,8 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	"github.com/mesh-for-data/mesh-for-data/pkg/helm"
-	local "github.com/mesh-for-data/mesh-for-data/pkg/multicluster/local"
+	"fybrik.io/fybrik/pkg/helm"
+	local "fybrik.io/fybrik/pkg/multicluster/local"
 	// +kubebuilder:scaffold:imports
 )
 

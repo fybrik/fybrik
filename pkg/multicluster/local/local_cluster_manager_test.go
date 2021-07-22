@@ -6,7 +6,7 @@ package local
 import (
 	"testing"
 
-	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
+	"fybrik.io/fybrik/pkg/multicluster"
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

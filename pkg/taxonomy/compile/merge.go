@@ -4,8 +4,8 @@
 package compile
 
 import (
-	"github.com/mesh-for-data/mesh-for-data/pkg/slices"
-	"github.com/mesh-for-data/mesh-for-data/pkg/taxonomy/model"
+	"fybrik.io/fybrik/pkg/slices"
+	"fybrik.io/fybrik/pkg/taxonomy/model"
 	"github.com/mpvl/unique"
 )
 

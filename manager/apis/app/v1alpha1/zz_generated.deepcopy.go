@@ -8,7 +8,7 @@
 package v1alpha1
 
 import (
-	"github.com/mesh-for-data/mesh-for-data/pkg/serde"
+	"fybrik.io/fybrik/pkg/serde"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 

@@ -9,7 +9,7 @@ import (
 	"log"
 	"net/http"
 
-	dm "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	dm "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"

@@ -7,10 +7,10 @@ import (
 	"log"
 	"net/http"
 
+	datauser "fybrik.io/fybrik/samples/gui/server/datauser"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/render"
-	datauser "github.com/mesh-for-data/mesh-for-data/samples/gui/server/datauser"
 )
 
 // Routes are the REST endpoints for CRUD operations on FybrikApplication CRDS

@@ -13,13 +13,13 @@ import (
 	"emperror.dev/errors"
 	corev1 "k8s.io/api/core/v1"
 
-	connectors "github.com/mesh-for-data/mesh-for-data/pkg/connectors/clients"
-	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
-	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster/local"
-	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster/razee"
-	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
+	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	"fybrik.io/fybrik/pkg/multicluster"
+	"fybrik.io/fybrik/pkg/multicluster/local"
+	"fybrik.io/fybrik/pkg/multicluster/razee"
+	"fybrik.io/fybrik/pkg/storage"
 
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/motion"
+	"fybrik.io/fybrik/manager/controllers/motion"
 
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -27,11 +27,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	appv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
-	motionv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/motion/v1alpha1"
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/app"
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
-	"github.com/mesh-for-data/mesh-for-data/pkg/helm"
+	appv1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/app"
+	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/helm"
 	kapps "k8s.io/api/apps/v1"
 	kbatch "k8s.io/api/batch/v1"
 )

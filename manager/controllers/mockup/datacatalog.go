@@ -10,7 +10,7 @@ import (
 	"log"
 	"strings"
 
-	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 )
 
 // This dummy catalog can serve as both a grpc server implementation that serves a dummy catalog

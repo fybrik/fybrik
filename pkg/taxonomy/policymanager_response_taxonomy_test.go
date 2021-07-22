@@ -6,7 +6,7 @@ package taxonomy
 import (
 	"testing"
 
-	tax "github.com/mesh-for-data/mesh-for-data/config/taxonomy"
+	tax "fybrik.io/fybrik/config/taxonomy"
 )
 
 var (

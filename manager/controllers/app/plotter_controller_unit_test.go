@@ -8,10 +8,10 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	"fybrik.io/fybrik/manager/controllers/utils"
 
-	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster/dummy"
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/pkg/multicluster/dummy"
 	"github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
