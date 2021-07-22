@@ -1,0 +1,42 @@
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: M4DModule
+metadata:
+  name: arrow-flight-write
+  namespace: m4d-system
+  labels:
+    version: 0.0.1
+    name: arrow-flight-write
+spec:
+  description: "This module deploys an arrow-flight service"
+  # this field is true if this module serves multiple users. Otherwise it
+  # is false. It is used for example when setting the endpoint to
+  # access the module service - if it is a multi-user module then
+  # the service name will be fixed and will be taken from
+  # M4DModule.Capabilities.Api.endpoint.host.
+  type: service   # deployed by fybrik
+  confChart:
+    name: ghcr.io/mesh-for-data/write-module:0.1.0
+    values: {}
+  statusIndicators:
+  - kind: Deployment
+    successCondition: status == SUCCEEDED # TBD with correct values
+    failureCondition: status == FAILED # TBD with correct values
+    errorMessage: status.error # TBD with correct values
+  capabilities:
+  - capability: write
+    scope: workflow
+    sinks:
+    - protocol: s3
+      dataformat: parquet   # doesn't know how to read csv!
+    - protocol: m4d-arrow-flight
+      dataformat: arrow
+    plugins:
+    - protocol: fybrik-action
+      dataformat: arrow
+    - protocol: fybrik-wasm-action
+      dataformat: arrow
+  api:
+    endpoint:
+      port: 80 # Mandatory for each service
+    protocol: m4d-arrow-flight
+    dataformat: arrow

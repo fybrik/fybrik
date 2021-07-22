@@ -1,0 +1,91 @@
+# This example has no input source for simplification
+# Let's assume it's outputting a random test dataset of processed paysim data.
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: Plotter
+metadata:
+  name: app1-ns1 # plotter name is a combination of app and namespace
+  namespace: m4d-system
+  labels:
+spec:
+  appSelector: # Selector of the application that uses this workload
+    clusterName: thegreendragon
+    workloadSelector:
+      matchLabels:
+        app: demoapp
+  assets:
+  - dataSetID: "paysim-processed"  # dataset requested by user
+    source:
+      credentials:
+        write:
+          vault:
+            address: http://vault.m4d-system:8200
+            authPath: /v1/auth/kubernetes/login
+            role: module
+            secretPath: /v1/kubernetes-secrets/paysim?namespace=m4d-notebook-sample
+      connection:
+        s3:
+          endpoint: localhost:8001
+          bucket: srcbucket
+          object: data.csv
+      dataformat: csv
+  flows:
+  - name: flow-paysim
+    flowType: write
+    dataSetID: "paysim-processed"
+    subflows:
+    - name: write
+      flowType: write
+      trigger: workload
+      steps:
+      - - name: step1
+          cluster: thegreendragon
+          template: writeTemplate
+          parameters:
+            sink: # This technically has multiple sinks. One being the dataset and the other the following step2
+              dataSetId: "paysim-processed"
+            api:
+              service:
+                assetID: paysim-processed
+                interfaceDetails:
+                  protocol: arrow-flight
+                  dataformat: arrow
+        - name: step2
+          cluster: thegreendragon
+          template: qualityTemplate
+          parameters:
+            api:
+              service:
+                assetID: paysim-processed
+                interfaceDetails:
+                  protocol: arrow-flight
+                  dataformat: arrow
+  templates:
+  - name: writeTemplate
+    modules:
+    - name: arrow-flight-write
+      kind: M4DModule
+      confChart:
+        name: ghcr.io/mesh-for-data/write-module:0.1.0
+  - name: qualityTemplate
+    modules:
+    - name: data-quality
+      kind: M4DModule
+      confChart:
+        name: ghcr.io/mesh-for-data/data-quality:0.1.0
+status:
+  observedState: Ready
+  observedGeneration: 1
+  # The global modules are generated when the blueprints are generated and injected into them.
+  # Yet they still have a status that is important to the workflow.
+  flows:
+  - name: flow-paysim
+    status: Ready
+    subflows:  
+    - name: write
+      status: Ready
+  assets:
+  - name: "paysim-processed"
+    endpoint: app1-ns1.m4d-blueprints
+    port: 8080
+    status: Ready
+  conditions: []

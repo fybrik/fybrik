@@ -62,6 +62,7 @@ spec:
     dataSetID: "m4d-notebook-sample/paysim"
     subflows:
     - name: subflow-paysim
+      flowType: read
       trigger: workload
       steps:
       - - name: step1
@@ -84,6 +85,7 @@ spec:
     dataSetID: "m4d-notebook-sample/users"
     subflows:
     - name: subflow-users
+      flowType: read
       trigger: workload
       steps:
       - - name: step1
@@ -106,6 +108,7 @@ spec:
     dataSetID: "m4d-notebook-sample/inventory"
     subflows:
     - name: subflow-inventory
+      flowType: read
       trigger: workload
       steps:
       - - name: step1
