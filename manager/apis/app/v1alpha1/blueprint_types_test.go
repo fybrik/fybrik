@@ -27,7 +27,7 @@ func TestBlueprint(t *testing.T) {
 			Flow: DataFlow{
 				Steps: []FlowStep{{Name: "step1", Template: "start"}},
 			},
-			Templates: []ComponentTemplate{{Name: "start", Kind: "M4DModule", Chart: ChartSpec{Name: "start-image"}}},
+			Templates: []ComponentTemplate{{Name: "start", Kind: "FybrikModule", Chart: ChartSpec{Name: "start-image"}}},
 		},
 	}
 	g := gomega.NewGomegaWithT(t)

@@ -14,7 +14,7 @@ import (
 
 // Creates a scheme that can be used in unit tests
 // The scheme will have the core and batch apis from K8s registered as well as
-// the app and motion apis from M4D.
+// the app and motion apis from Fybrik.
 // This function can be tested with a gomega environment if passed or otherwise (if nil is passed) it will ignore tests.
 func NewScheme(g *gomega.WithT) *runtime.Scheme {
 	s := runtime.NewScheme()

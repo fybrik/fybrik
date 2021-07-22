@@ -115,7 +115,7 @@ spec:
 EOF
 ```
 
-The asset is now registered in the catalog. The identifier of the asset is `fybrik-notebook-sample/paysim-csv` (i.e. `<namespace>/<name>`). You will use that name in the `M4DApplication` later.
+The asset is now registered in the catalog. The identifier of the asset is `fybrik-notebook-sample/paysim-csv` (i.e. `<namespace>/<name>`). You will use that name in the `FybrikApplication` later.
 
 Notice the `assetMetadata` field above. It specifies the dataset geography and tags. These attributes can later be used in policies.
 
@@ -185,15 +185,15 @@ In this sample a Jupyter notebook is used as the user workload and its business 
     1. Click **Connect** and create a new notebook in the server.
 
 
-## Create a `M4DApplication` resource for the notebook
+## Create a `FybrikApplication` resource for the notebook
 
-Create a [`M4DApplication`](../reference/crds.md#m4dapplication) resource to register the notebook workload to the control plane of Mesh for Data: 
+Create a [`FybrikApplication`](../reference/crds.md#m4dapplication) resource to register the notebook workload to the control plane of Mesh for Data: 
 
 <!-- TODO: role field removed but code still requires it -->
 ```yaml
 cat <<EOF | kubectl apply -f -
 apiVersion: app.m4d.ibm.com/v1alpha1
-kind: M4DApplication
+kind: FybrikApplication
 metadata:
   name: my-notebook
   labels:
@@ -221,15 +221,15 @@ Notice that:
 * The `protocol` and `dataformat` indicate that the developer wants to consume the data using Apache Arrow Flight.
 
 
-Run the following command to wait until the `M4DApplication` is ready:
+Run the following command to wait until the `FybrikApplication` is ready:
 
 ```bash
-while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for M4DApplication" && sleep 5; done
+while [[ $(kubectl get m4dapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for FybrikApplication" && sleep 5; done
 ```
 
 ## Read the dataset from the notebook
 
-In your **terminal**, run the following command to print the [endpoint](../../reference/crds/#m4dapplicationstatusreadendpointsmapkey) to use for reading the data. It fetches the code from the `M4DApplication` resource:
+In your **terminal**, run the following command to print the [endpoint](../../reference/crds/#m4dapplicationstatusreadendpointsmapkey) to use for reading the data. It fetches the code from the `FybrikApplication` resource:
 ```bash
 ENDPOINT_SCHEME=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.fybrik-notebook-sample/paysim-csv.scheme})
 ENDPOINT_HOSTNAME=$(kubectl get m4dapplication my-notebook -o jsonpath={.status.readEndpointsMap.fybrik-notebook-sample/paysim-csv.hostname})
@@ -242,7 +242,7 @@ The next steps use the endpoint to read the data in a python notebook
   ```python
   %pip install pandas pyarrow
   ```
-2. Insert a new notebook cell to read the data using the endpoint value extracted from the `M4DApplication` in the previous step:
+2. Insert a new notebook cell to read the data using the endpoint value extracted from the `FybrikApplication` in the previous step:
   ```bash
   %pip install pandas pyarrow
   import json

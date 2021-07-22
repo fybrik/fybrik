@@ -8,14 +8,14 @@ metadata:
 spec:
   group: app.m4d.ibm.com
   names:
-    kind: M4DModule
-    listKind: M4DModuleList
+    kind: FybrikModule
+    listKind: FybrikModuleList
     plural: m4dmodules
     singular: m4dmodule
   scope: Namespaced
   validation:
     openAPIV3Schema:
-      description: M4DModule is a description of an injectable component. the parameters
+      description: FybrikModule is a description of an injectable component. the parameters
         it requires, as well as the specification of how to instantiate such a component.
         It is used as metadata only.  There is no status nor reconciliation.
       properties:
@@ -32,7 +32,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: M4DModuleSpec contains the info common to all modules, which
+          description: FybrikModuleSpec contains the info common to all modules, which
             are one of the components that process, load, write, audit, monitor the
             data used by the data scientist's application.
           properties:

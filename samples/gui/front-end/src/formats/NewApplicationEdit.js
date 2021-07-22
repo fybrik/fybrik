@@ -106,7 +106,7 @@ const NewApplicationEdit = props => {
       url: process.env.REACT_APP_BACKEND_ADDRESS + `/v1/dma/m4dapplication${exists ? `/${application.name}` : ''}`,
       data: {
         apiVersion: 'app.m4d.ibm.com/v1alpha1',
-        kind: 'M4DApplication',
+        kind: 'FybrikApplication',
         metadata: {  
           name: application.name,
           resourceVersion: application.resourceVersion,

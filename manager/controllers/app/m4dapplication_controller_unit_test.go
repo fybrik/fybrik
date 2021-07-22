@@ -38,10 +38,10 @@ func readObjectFromFile(f string, obj interface{}) error {
 	return yaml.Unmarshal(bytes, obj)
 }
 
-// create M4DApplication controller with mockup interfaces
-func createTestM4DApplicationController(cl client.Client, s *runtime.Scheme) *M4DApplicationReconciler {
-	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	return &M4DApplicationReconciler{
+// create FybrikApplication controller with mockup interfaces
+func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) *FybrikApplicationReconciler {
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	return &FybrikApplicationReconciler{
 		Client:        cl,
 		Name:          "TestReconciler",
 		Log:           ctrl.Log.WithName("test-controller"),
@@ -56,11 +56,11 @@ func createTestM4DApplicationController(cl client.Client, s *runtime.Scheme) *M4
 	}
 }
 
-// TestM4DApplicationController runs M4DApplicationReconciler.Reconcile() against a
+// TestFybrikApplicationController runs FybrikApplicationReconciler.Reconcile() against a
 // fake client that tracks a M4dApplication object.
 // This test does not require a Kubernetes environment to run.
 // This mechanism of testing can be used to test corner cases of the reconcile function.
-func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
+func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	// Set the logger to development mode for verbose logs.
@@ -70,7 +70,7 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 		name      = "notebook"
 		namespace = "default"
 	)
-	application := &app.M4DApplication{}
+	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/m4dcopyapp-csv.yaml", application)).To(gomega.BeNil(), "Cannot read m4dapplication file for test")
 
 	// Objects to track in the fake client.
@@ -84,8 +84,8 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
-	readModule := &app.M4DModule{}
-	copyModule := &app.M4DModule{}
+	readModule := &app.FybrikModule{}
+	copyModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
 
@@ -97,11 +97,11 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 	dummySecret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &app.M4DStorageAccount{}
+	account := &app.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
-	r := createTestM4DApplicationController(cl, s)
+	r := createTestFybrikApplicationController(cl, s)
 	// Mock request to simulate Reconcile() being called on an event for a
 	// watched resource .
 	req := reconcile.Request{
@@ -136,14 +136,14 @@ func TestM4DApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(bpSpec.Flow.Steps[0].Arguments.Copy.Destination.Format).To(gomega.Equal(bpSpec.Flow.Steps[1].Arguments.Read[0].Source.Format))
 }
 
-// This test checks proper reconciliation of M4DApplication finalizers
-func TestM4DApplicationFinalizers(t *testing.T) {
+// This test checks proper reconciliation of FybrikApplication finalizers
+func TestFybrikApplicationFinalizers(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	// Set the logger to development mode for verbose logs.
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
-	application := &app.M4DApplication{}
+	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 
 	// Objects to track in the fake client.
@@ -157,8 +157,8 @@ func TestM4DApplicationFinalizers(t *testing.T) {
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
-	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createTestM4DApplicationController(cl, s)
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
 
 	g.Expect(r.reconcileFinalizers(application)).To(gomega.BeNil())
 	g.Expect(application.Finalizers).NotTo(gomega.BeEmpty(), "finalizers have not been created")
@@ -182,7 +182,7 @@ func TestDenyOnRead(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &app.M4DApplication{}
+	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "s3/deny-dataset",
@@ -200,8 +200,8 @@ func TestDenyOnRead(t *testing.T) {
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
-	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createTestM4DApplicationController(cl, s)
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -230,7 +230,7 @@ func TestNoReadPath(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &app.M4DApplication{}
+	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "db2/allow-dataset",
@@ -249,11 +249,11 @@ func TestNoReadPath(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := &app.M4DModule{}
+	readModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
-	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createTestM4DApplicationController(cl, s)
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -286,7 +286,7 @@ func TestWrongCopyModule(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &app.M4DApplication{}
+	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data = []app.DataContext{
 		{
@@ -311,14 +311,14 @@ func TestWrongCopyModule(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := &app.M4DModule{}
+	readModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
-	copyModule := &app.M4DModule{}
+	copyModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
-	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createTestM4DApplicationController(cl, s)
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -349,7 +349,7 @@ func TestActionSupport(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &app.M4DApplication{}
+	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "db2/redact-dataset",
@@ -368,14 +368,14 @@ func TestActionSupport(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := &app.M4DModule{}
+	readModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
-	copyModule := &app.M4DModule{}
+	copyModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet-no-transforms.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
-	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createTestM4DApplicationController(cl, s)
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -408,7 +408,7 @@ func TestMultipleDatasets(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &app.M4DApplication{}
+	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data = []app.DataContext{
 		{
@@ -433,22 +433,22 @@ func TestMultipleDatasets(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := &app.M4DModule{}
+	readModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
-	copyModule := &app.M4DModule{}
+	copyModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create storage account
 	dummySecret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &app.M4DStorageAccount{}
+	account := &app.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
-	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createTestM4DApplicationController(cl, s)
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -496,7 +496,7 @@ func TestMultipleRegions(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &app.M4DApplication{}
+	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "s3-external/redact-dataset",
@@ -515,22 +515,22 @@ func TestMultipleRegions(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := &app.M4DModule{}
+	readModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
-	copyModule := &app.M4DModule{}
+	copyModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-csv-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create storage account
 	dummySecret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &app.M4DStorageAccount{}
+	account := &app.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
-	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createTestM4DApplicationController(cl, s)
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -567,7 +567,7 @@ func TestCopyData(t *testing.T) {
 		Name:      "ingest",
 		Namespace: "default",
 	}
-	application := &app.M4DApplication{}
+	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
 	// Objects to track in the fake client.
@@ -580,25 +580,25 @@ func TestCopyData(t *testing.T) {
 
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
-	copyModule := &app.M4DModule{}
+	copyModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create storage accounts
 	secret1 := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-neverland.yaml", secret1)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.Background(), secret1)).NotTo(gomega.HaveOccurred())
-	account1 := &app.M4DStorageAccount{}
+	account1 := &app.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.Background(), account1)).NotTo(gomega.HaveOccurred())
 	secret2 := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", secret2)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.Background(), secret2)).NotTo(gomega.HaveOccurred())
-	account2 := &app.M4DStorageAccount{}
+	account2 := &app.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.Background(), account2)).NotTo(gomega.HaveOccurred())
 
-	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createTestM4DApplicationController(cl, s)
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -641,7 +641,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 		Name:      "ingest",
 		Namespace: "default",
 	}
-	application := &app.M4DApplication{}
+	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
 	// Objects to track in the fake client.
@@ -654,7 +654,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
-	copyModule := &app.M4DModule{}
+	copyModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 
@@ -662,12 +662,12 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	dummySecret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.TODO(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &app.M4DStorageAccount{}
+	account := &app.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.TODO(), account)).NotTo(gomega.HaveOccurred())
 
-	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createTestM4DApplicationController(cl, s)
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -694,7 +694,7 @@ func TestPlotterUpdate(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &app.M4DApplication{}
+	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "s3/allow-dataset",
@@ -714,12 +714,12 @@ func TestPlotterUpdate(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := &app.M4DModule{}
+	readModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.Background(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 
-	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createTestM4DApplicationController(cl, s)
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -775,7 +775,7 @@ func TestSyncWithPlotter(t *testing.T) {
 		Name:      "notebook",
 		Namespace: "default",
 	}
-	application := &app.M4DApplication{}
+	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/m4dcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
 	// imitate a ready phase for the earlier generation
 	application.SetGeneration(2)
@@ -800,8 +800,8 @@ func TestSyncWithPlotter(t *testing.T) {
 	plotter.Status.ObservedState.Ready = true
 	g.Expect(cl.Create(context.Background(), plotter)).NotTo(gomega.HaveOccurred())
 
-	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createTestM4DApplicationController(cl, s)
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -809,7 +809,7 @@ func TestSyncWithPlotter(t *testing.T) {
 	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
-	newApp := &app.M4DApplication{}
+	newApp := &app.FybrikApplication{}
 	err = cl.Get(context.Background(), req.NamespacedName, newApp)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
 	g.Expect(getErrorMessages(newApp)).NotTo(gomega.BeEmpty())
@@ -817,7 +817,7 @@ func TestSyncWithPlotter(t *testing.T) {
 }
 
 // This test checks that an empty m4dapplication can be created and reconciled
-func TestM4DApplicationWithNoDatasets(t *testing.T) {
+func TestFybrikApplicationWithNoDatasets(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	// Set the logger to development mode for verbose logs.
@@ -827,7 +827,7 @@ func TestM4DApplicationWithNoDatasets(t *testing.T) {
 		Name:      "notebook",
 		Namespace: "default",
 	}
-	application := &app.M4DApplication{}
+	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/m4dcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data = []app.DataContext{}
 	// Objects to track in the fake client.
@@ -841,8 +841,8 @@ func TestM4DApplicationWithNoDatasets(t *testing.T) {
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
-	// Create a M4DApplicationReconciler object with the scheme and fake client.
-	r := createTestM4DApplicationController(cl, s)
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -851,7 +851,7 @@ func TestM4DApplicationWithNoDatasets(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 	g.Expect(res).To(gomega.BeEquivalentTo(ctrl.Result{}))
 	// The application should be in Ready state
-	newApp := &app.M4DApplication{}
+	newApp := &app.FybrikApplication{}
 	err = cl.Get(context.Background(), req.NamespacedName, newApp)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch m4dapplication")
 	g.Expect(getErrorMessages(newApp)).To(gomega.BeEmpty())

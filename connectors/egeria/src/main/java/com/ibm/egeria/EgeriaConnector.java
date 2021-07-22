@@ -19,7 +19,7 @@ import com.datmesh.DataCatalogServiceGrpc;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.json.simple.parser.ParseException;
 
-// using standard GRPC error codes for sending error information to M4D manager
+// using standard GRPC error codes for sending error information to Fybrik manager
 import io.grpc.Status;
 
 // for getting http error codes

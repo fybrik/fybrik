@@ -7,8 +7,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// M4DStorageAccountSpec defines the desired state of M4DStorageAccount
-type M4DStorageAccountSpec struct {
+// FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
+type FybrikStorageAccountSpec struct {
 	// +required
 	// A name of k8s secret deployed in the control plane.
 	// This secret includes secretKey and accessKey credentials for S3 bucket
@@ -22,32 +22,32 @@ type M4DStorageAccountSpec struct {
 	Regions []string `json:"regions"`
 }
 
-// M4DStorageAccountStatus defines the observed state of M4DStorageAccount
-type M4DStorageAccountStatus struct {
+// FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount
+type FybrikStorageAccountStatus struct {
 }
 
-// M4DStorageAccount defines a storage account used for copying data.
+// FybrikStorageAccount defines a storage account used for copying data.
 // Only S3 based storage is supported.
 // It contains endpoint, region and a reference to the credentials a
 // Owner of the asset is responsible to store the credentials
 // +kubebuilder:object:root=true
-type M4DStorageAccount struct {
+type FybrikStorageAccount struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   M4DStorageAccountSpec   `json:"spec,omitempty"`
-	Status M4DStorageAccountStatus `json:"status,omitempty"`
+	Spec   FybrikStorageAccountSpec   `json:"spec,omitempty"`
+	Status FybrikStorageAccountStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// M4DStorageAccountList contains a list of M4DStorageAccount
-type M4DStorageAccountList struct {
+// FybrikStorageAccountList contains a list of FybrikStorageAccount
+type FybrikStorageAccountList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []M4DStorageAccount `json:"items"`
+	Items           []FybrikStorageAccount `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&M4DStorageAccount{}, &M4DStorageAccountList{})
+	SchemeBuilder.Register(&FybrikStorageAccount{}, &FybrikStorageAccountList{})
 }

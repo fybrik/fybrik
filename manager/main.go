@@ -78,41 +78,41 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	}
 
 	if enableApplicationController {
-		setupLog.Info("creating M4DApplication controller")
+		setupLog.Info("creating FybrikApplication controller")
 
 		// Initialize PolicyManager interface
 		policyManager, err := newPolicyManager()
 		if err != nil {
-			setupLog.Error(err, "unable to create policy manager facade", "controller", "M4DApplication")
+			setupLog.Error(err, "unable to create policy manager facade", "controller", "FybrikApplication")
 			return 1
 		}
 		defer func() {
 			if err := policyManager.Close(); err != nil {
-				setupLog.Error(err, "unable to close policy manager facade", "controller", "M4DApplication")
+				setupLog.Error(err, "unable to close policy manager facade", "controller", "FybrikApplication")
 			}
 		}()
 
 		// Initialize DataCatalog interface
 		catalog, err := newDataCatalog()
 		if err != nil {
-			setupLog.Error(err, "unable to create data catalog facade", "controller", "M4DApplication")
+			setupLog.Error(err, "unable to create data catalog facade", "controller", "FybrikApplication")
 			return 1
 		}
 		defer func() {
 			if err := catalog.Close(); err != nil {
-				setupLog.Error(err, "unable to close data catalog facade", "controller", "M4DApplication")
+				setupLog.Error(err, "unable to close data catalog facade", "controller", "FybrikApplication")
 			}
 		}()
 
-		// Initiate the M4DApplication Controller
-		applicationController := app.NewM4DApplicationReconciler(mgr, "M4DApplication", policyManager, catalog, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
+		// Initiate the FybrikApplication Controller
+		applicationController := app.NewFybrikApplicationReconciler(mgr, "FybrikApplication", policyManager, catalog, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
 		if err := applicationController.SetupWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create controller", "controller", "M4DApplication")
+			setupLog.Error(err, "unable to create controller", "controller", "FybrikApplication")
 			return 1
 		}
 		if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-			if err := (&appv1.M4DApplication{}).SetupWebhookWithManager(mgr); err != nil {
-				setupLog.Error(err, "unable to create webhook", "webhook", "M4DApplication")
+			if err := (&appv1.FybrikApplication{}).SetupWebhookWithManager(mgr); err != nil {
+				setupLog.Error(err, "unable to create webhook", "webhook", "FybrikApplication")
 				return 1
 			}
 		}
@@ -171,7 +171,7 @@ func main() {
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
 	flag.BoolVar(&enableApplicationController, "enable-application-controller", false,
-		"Enable application controller of the manager. This manages CRDs of type M4DApplication.")
+		"Enable application controller of the manager. This manages CRDs of type FybrikApplication.")
 	flag.BoolVar(&enableBlueprintController, "enable-blueprint-controller", false,
 		"Enable blueprint controller of the manager. This manages CRDs of type Blueprint.")
 	flag.BoolVar(&enablePlotterController, "enable-plotter-controller", false,

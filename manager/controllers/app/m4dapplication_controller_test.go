@@ -19,8 +19,8 @@ import (
 const timeout = time.Second * 30
 const interval = time.Millisecond * 100
 
-var _ = Describe("M4DApplication Controller", func() {
-	Context("M4DApplication", func() {
+var _ = Describe("FybrikApplication Controller", func() {
+	Context("FybrikApplication", func() {
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test
 		})
@@ -28,24 +28,24 @@ var _ = Describe("M4DApplication Controller", func() {
 		AfterEach(func() {
 			// Add any teardown steps that needs to be executed after each test
 		})
-		It("Test end-to-end for M4DApplication", func() {
-			module := &app.M4DModule{}
+		It("Test end-to-end for FybrikApplication", func() {
+			module := &app.FybrikModule{}
 			Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
 			moduleKey := client.ObjectKeyFromObject(module)
-			application := &app.M4DApplication{}
+			application := &app.FybrikApplication{}
 			Expect(readObjectFromFile("../../testdata/e2e/m4dapplication.yaml", application)).ToNot(HaveOccurred())
 			applicationKey := client.ObjectKeyFromObject(application)
 
-			// Create M4DApplication and M4DModule
+			// Create FybrikApplication and FybrikModule
 			Expect(k8sClient.Create(context.Background(), module)).Should(Succeed())
 			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
 
 			// Ensure getting cleaned up after tests finish
 			defer func() {
-				application := &apiv1alpha1.M4DApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace, Name: applicationKey.Name}}
+				application := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace, Name: applicationKey.Name}}
 				_ = k8sClient.Get(context.Background(), applicationKey, application)
 				_ = k8sClient.Delete(context.Background(), application)
-				module := &apiv1alpha1.M4DApplication{ObjectMeta: metav1.ObjectMeta{Namespace: moduleKey.Namespace, Name: moduleKey.Name}}
+				module := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: moduleKey.Namespace, Name: moduleKey.Name}}
 				_ = k8sClient.Get(context.Background(), moduleKey, module)
 				_ = k8sClient.Delete(context.Background(), module)
 			}()
@@ -73,11 +73,11 @@ var _ = Describe("M4DApplication Controller", func() {
 				return plotter.Status.ObservedState.Ready
 			}, timeout*10, interval).Should(BeTrue(), "plotter is not ready")
 
-			By("Expecting M4DApplication to eventually be ready")
+			By("Expecting FybrikApplication to eventually be ready")
 			Eventually(func() bool {
 				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
 				return application.Status.Ready
-			}, timeout, interval).Should(BeTrue(), "M4DApplication is not ready after timeout!")
+			}, timeout, interval).Should(BeTrue(), "FybrikApplication is not ready after timeout!")
 
 			By("Status should contain the details of the endpoint")
 			Expect(len(application.Status.ReadEndpointsMap)).To(Equal(1))

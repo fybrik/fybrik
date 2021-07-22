@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 apiVersion: app.m4d.ibm.com/v1alpha1
-kind: M4DModule
+kind: FybrikModule
 metadata:
   name: arrow-flight-module
   namespace: fybrik-system

@@ -245,8 +245,8 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step uses non-existing template")
 		}
 
-		// We only orchestrate M4DModule templates
-		if templateSpec.Kind != "M4DModule" {
+		// We only orchestrate FybrikModule templates
+		if templateSpec.Kind != "FybrikModule" {
 			continue
 		}
 
@@ -351,7 +351,7 @@ func (r *BlueprintReconciler) getExpectedResults(kind string) (*app.ResourceStat
 	// Assumption: specification for each resource kind is done in one place.
 	ctx := context.Background()
 
-	var moduleList app.M4DModuleList
+	var moduleList app.FybrikModuleList
 	if err := r.List(ctx, &moduleList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
 		return nil, err
 	}

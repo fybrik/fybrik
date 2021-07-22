@@ -37,7 +37,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: 'BlueprintSpec defines the desired state of Blueprint, which is the runtime environment which provides the Data Scientist''s application with secure and governed access to the data requested in the M4DApplication. The blueprint uses an "argo like" syntax which indicates the components and the flow of data between them as steps TODO: Add an indication of the communication relationships between the components'
+          description: 'BlueprintSpec defines the desired state of Blueprint, which is the runtime environment which provides the Data Scientist''s application with secure and governed access to the data requested in the FybrikApplication. The blueprint uses an "argo like" syntax which indicates the components and the flow of data between them as steps TODO: Add an indication of the communication relationships between the components'
           properties:
             entrypoint:
               type: string
@@ -145,7 +145,7 @@ spec:
                               description: ReadModuleArgs define the input parameters for modules that read data from location A
                               properties:
                                 assetID:
-                                  description: AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the M4DApplication resource
+                                  description: AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the FybrikApplication resource
                                   type: string
                                 source:
                                   description: Source of the read path module
@@ -250,7 +250,7 @@ spec:
                         description: Name is the name of the instance of the module. For example, if the application is named "notebook" and an implicitcopy module is deemed necessary.  The FlowStep name would be notebook-implicitcopy.
                         type: string
                       template:
-                        description: 'Template is the name of the specification in the Blueprint describing how to instantiate a component indicated by the module.  It is the name of a M4DModule CRD. For example: implicit-copy-db2wh-to-s3-latest'
+                        description: 'Template is the name of the specification in the Blueprint describing how to instantiate a component indicated by the module.  It is the name of a FybrikModule CRD. For example: implicit-copy-db2wh-to-s3-latest'
                         type: string
                     required:
                     - name
@@ -263,7 +263,7 @@ spec:
               type: object
             templates:
               items:
-                description: ComponentTemplate is a copy of a M4DModule Custom Resource.  It contains the information necessary to instantiate a component in a FlowStep, which provides the functionality described by the module.  There are 3 different module types.
+                description: ComponentTemplate is a copy of a FybrikModule Custom Resource.  It contains the information necessary to instantiate a component in a FlowStep, which provides the functionality described by the module.  There are 3 different module types.
                 properties:
                   chart:
                     description: Chart contains the location of the helm chart with info detailing how to deploy
@@ -304,7 +304,7 @@ spec:
               format: int64
               type: integer
             observedState:
-              description: ObservedState includes information to be reported back to the M4DApplication resource It includes readiness and error indications, as well as user instructions
+              description: ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
               properties:
                 dataAccessInstructions:
                   description: DataAccessInstructions indicate how the data user or his application may access the data. Instructions are available upon successful orchestration.
@@ -347,8 +347,8 @@ metadata:
 spec:
   group: app.m4d.ibm.com
   names:
-    kind: M4DApplication
-    listKind: M4DApplicationList
+    kind: FybrikApplication
+    listKind: FybrikApplicationList
     plural: m4dapplications
     singular: m4dapplication
   scope: Namespaced
@@ -356,7 +356,7 @@ spec:
     status: {}
   validation:
     openAPIV3Schema:
-      description: M4DApplication provides information about the application being used by a Data Scientist, the nature of the processing, and the data sets that the Data Scientist has chosen for processing by the application. The M4DApplication controller (aka pilot) obtains instructions regarding any governance related changes that must be performed on the data, identifies the modules capable of performing such changes, and finally generates the Blueprint which defines the secure runtime environment and all the components in it.  This runtime environment provides the Data Scientist's application with access to the data requested in a secure manner and without having to provide any credentials for the data sets.  The credentials are obtained automatically by the manager from an external credential management system, which may or may not be part of a data catalog.
+      description: FybrikApplication provides information about the application being used by a Data Scientist, the nature of the processing, and the data sets that the Data Scientist has chosen for processing by the application. The FybrikApplication controller (aka pilot) obtains instructions regarding any governance related changes that must be performed on the data, identifies the modules capable of performing such changes, and finally generates the Blueprint which defines the secure runtime environment and all the components in it.  This runtime environment provides the Data Scientist's application with access to the data requested in a secure manner and without having to provide any credentials for the data sets.  The credentials are obtained automatically by the manager from an external credential management system, which may or may not be part of a data catalog.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -367,7 +367,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: M4DApplicationSpec defines the desired state of M4DApplication.
+          description: FybrikApplicationSpec defines the desired state of FybrikApplication.
           properties:
             appInfo:
               additionalProperties:
@@ -487,7 +487,7 @@ spec:
           - data
           type: object
         status:
-          description: M4DApplicationStatus defines the observed state of M4DApplication.
+          description: FybrikApplicationStatus defines the observed state of FybrikApplication.
           properties:
             catalogedAssets:
               additionalProperties:
@@ -497,7 +497,7 @@ spec:
             conditions:
               description: Conditions represent the possible error and failure conditions
               items:
-                description: Condition describes the state of a M4DApplication at a certain point.
+                description: Condition describes the state of a FybrikApplication at a certain point.
                 properties:
                   message:
                     description: Message contains the details of the current condition
@@ -534,7 +534,7 @@ spec:
               - namespace
               type: object
             observedGeneration:
-              description: ObservedGeneration is taken from the M4DApplication metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether the Blueprint status changed.
+              description: ObservedGeneration is taken from the FybrikApplication metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether the Blueprint status changed.
               format: int64
               type: integer
             provisionedStorage:
@@ -551,7 +551,7 @@ spec:
                     description: Reference to a secret where the credentials are stored
                     type: string
                 type: object
-              description: ProvisionedStorage maps a dataset (identified by DataSetID) to the new provisioned bucket. It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received. ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready
+              description: ProvisionedStorage maps a dataset (identified by DataSetID) to the new provisioned bucket. It allows FybrikApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received. ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready
               type: object
             ready:
               description: Ready is true if a blueprint has been successfully orchestrated
@@ -581,14 +581,14 @@ metadata:
 spec:
   group: app.m4d.ibm.com
   names:
-    kind: M4DModule
-    listKind: M4DModuleList
+    kind: FybrikModule
+    listKind: FybrikModuleList
     plural: m4dmodules
     singular: m4dmodule
   scope: Namespaced
   validation:
     openAPIV3Schema:
-      description: M4DModule is a description of an injectable component. the parameters it requires, as well as the specification of how to instantiate such a component. It is used as metadata only.  There is no status nor reconciliation.
+      description: FybrikModule is a description of an injectable component. the parameters it requires, as well as the specification of how to instantiate such a component. It is used as metadata only.  There is no status nor reconciliation.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -599,7 +599,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: M4DModuleSpec contains the info common to all modules, which are one of the components that process, load, write, audit, monitor the data used by the data scientist's application.
+          description: FybrikModuleSpec contains the info common to all modules, which are one of the components that process, load, write, audit, monitor the data used by the data scientist's application.
           properties:
             capabilities:
               description: Capabilities declares what this module knows how to do and the types of data it knows how to handle
@@ -807,14 +807,14 @@ metadata:
 spec:
   group: app.m4d.ibm.com
   names:
-    kind: M4DStorageAccount
-    listKind: M4DStorageAccountList
+    kind: FybrikStorageAccount
+    listKind: FybrikStorageAccountList
     plural: m4dstorageaccounts
     singular: m4dstorageaccount
   scope: Namespaced
   validation:
     openAPIV3Schema:
-      description: M4DStorageAccount defines a storage account used for copying data. Only S3 based storage is supported. It contains endpoint, region and a reference to the credentials a Owner of the asset is responsible to store the credentials
+      description: FybrikStorageAccount defines a storage account used for copying data. Only S3 based storage is supported. It contains endpoint, region and a reference to the credentials a Owner of the asset is responsible to store the credentials
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -825,7 +825,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: M4DStorageAccountSpec defines the desired state of M4DStorageAccount
+          description: FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
           properties:
             endpoint:
               description: Endpoint
@@ -845,7 +845,7 @@ spec:
           - secretRef
           type: object
         status:
-          description: M4DStorageAccountStatus defines the observed state of M4DStorageAccount
+          description: FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount
           type: object
       type: object
   version: v1alpha1
@@ -901,11 +901,11 @@ spec:
         metadata:
           type: object
         spec:
-          description: PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter installs the runtime environment (as blueprints running on remote clusters) which provides the Data Scientist's application with secure and governed access to the data requested in the M4DApplication.
+          description: PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter installs the runtime environment (as blueprints running on remote clusters) which provides the Data Scientist's application with secure and governed access to the data requested in the FybrikApplication.
           properties:
             blueprints:
               additionalProperties:
-                description: 'BlueprintSpec defines the desired state of Blueprint, which is the runtime environment which provides the Data Scientist''s application with secure and governed access to the data requested in the M4DApplication. The blueprint uses an "argo like" syntax which indicates the components and the flow of data between them as steps TODO: Add an indication of the communication relationships between the components'
+                description: 'BlueprintSpec defines the desired state of Blueprint, which is the runtime environment which provides the Data Scientist''s application with secure and governed access to the data requested in the FybrikApplication. The blueprint uses an "argo like" syntax which indicates the components and the flow of data between them as steps TODO: Add an indication of the communication relationships between the components'
                 properties:
                   entrypoint:
                     type: string
@@ -1013,7 +1013,7 @@ spec:
                                     description: ReadModuleArgs define the input parameters for modules that read data from location A
                                     properties:
                                       assetID:
-                                        description: AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the M4DApplication resource
+                                        description: AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the FybrikApplication resource
                                         type: string
                                       source:
                                         description: Source of the read path module
@@ -1118,7 +1118,7 @@ spec:
                               description: Name is the name of the instance of the module. For example, if the application is named "notebook" and an implicitcopy module is deemed necessary.  The FlowStep name would be notebook-implicitcopy.
                               type: string
                             template:
-                              description: 'Template is the name of the specification in the Blueprint describing how to instantiate a component indicated by the module.  It is the name of a M4DModule CRD. For example: implicit-copy-db2wh-to-s3-latest'
+                              description: 'Template is the name of the specification in the Blueprint describing how to instantiate a component indicated by the module.  It is the name of a FybrikModule CRD. For example: implicit-copy-db2wh-to-s3-latest'
                               type: string
                           required:
                           - name
@@ -1131,7 +1131,7 @@ spec:
                     type: object
                   templates:
                     items:
-                      description: ComponentTemplate is a copy of a M4DModule Custom Resource.  It contains the information necessary to instantiate a component in a FlowStep, which provides the functionality described by the module.  There are 3 different module types.
+                      description: ComponentTemplate is a copy of a FybrikModule Custom Resource.  It contains the information necessary to instantiate a component in a FlowStep, which provides the functionality described by the module.  There are 3 different module types.
                       properties:
                         chart:
                           description: Chart contains the location of the helm chart with info detailing how to deploy
@@ -1167,7 +1167,7 @@ spec:
               description: Blueprints structure represents remote blueprints mapped by the identifier of a cluster in which they will be running
               type: object
             selector:
-              description: Selector enables to connect the resource to the application Should match the selector of the owner - M4DApplication CRD.
+              description: Selector enables to connect the resource to the application Should match the selector of the owner - FybrikApplication CRD.
               properties:
                 matchExpressions:
                   description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
@@ -1217,7 +1217,7 @@ spec:
                         format: int64
                         type: integer
                       observedState:
-                        description: ObservedState includes information to be reported back to the M4DApplication resource It includes readiness and error indications, as well as user instructions
+                        description: ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
                         properties:
                           dataAccessInstructions:
                             description: DataAccessInstructions indicate how the data user or his application may access the data. Instructions are available upon successful orchestration.
@@ -1243,7 +1243,7 @@ spec:
               format: int64
               type: integer
             observedState:
-              description: ObservedState includes information to be reported back to the M4DApplication resource It includes readiness and error indications, as well as user instructions
+              description: ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
               properties:
                 dataAccessInstructions:
                   description: DataAccessInstructions indicate how the data user or his application may access the data. Instructions are available upon successful orchestration.

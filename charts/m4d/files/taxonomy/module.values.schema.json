@@ -6,7 +6,7 @@
     "definitions": {
         "module_type": {
             "type": "string",
-            "description": "Type of modules supported by the M4D manager.",
+            "description": "Type of modules supported by the Fybrik manager.",
             "enum": ["copy", "read", "write"]
         },
         "allowable_action_columns": {

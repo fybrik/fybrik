@@ -4,7 +4,7 @@ Kubernetes [custom resources and controllers](https://kubernetes.io/docs/concept
 
 The `manager` binary includes all of the controllers that this project defines but you need to select which of the controllers to run by passing one or more of the following command line arguments:
 - `enable-all-controllers` to enable all controllers
-- `enable-application-controller` to enable the controller for `M4DApplication`
+- `enable-application-controller` to enable the controller for `FybrikApplication`
 - `enable-blueprint-controller` to enable the controller for `Blueprint`
 - `enable-motion-controller` to enable the controllers for `BatchTransfer` and `StreamTransfer`
 
@@ -102,13 +102,13 @@ The rest of this README describes the directory structure.
 ### `apis`
 
 Holds the Customer Resource Definitions (CRDs) of the project:
-- `app.m4d.ibm.com/v1alpha1`: Includes `M4DApplication`, administrator APIs `M4DModule` and `M4DBucket`, and internal CRDs `Blueprint` and `Plotter`.
+- `app.m4d.ibm.com/v1alpha1`: Includes `FybrikApplication`, administrator APIs `FybrikModule` and `FybrikBucket`, and internal CRDs `Blueprint` and `Plotter`.
 - `motion.m4d.ibm.com/v1alpha1`: Includes data movements APIs `BatchTransfer` and `StreamTransfer`. Usually not used directly but rather invoked as a module.
 
 ### `controllers`
 
 Holds the customer controllers of the project:
-- `controllers/app` holds the controllers for `app.m4d.ibm.com` APIs `M4DApplication`, `Blueprint` and `Plotter`.
+- `controllers/app` holds the controllers for `app.m4d.ibm.com` APIs `FybrikApplication`, `Blueprint` and `Plotter`.
 - `controllers/motion` holds the controllers for `motion.m4d.ibm.com` APIs `BatchTransfer` and `StreamTransfer`.
 
 ### `testdata`

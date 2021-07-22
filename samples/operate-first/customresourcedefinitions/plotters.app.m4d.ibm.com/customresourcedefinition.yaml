@@ -46,14 +46,14 @@ spec:
             applied in a multi-clustered environment. Plotter installs the runtime
             environment (as blueprints running on remote clusters) which provides
             the Data Scientist's application with secure and governed access to the
-            data requested in the M4DApplication.
+            data requested in the FybrikApplication.
           properties:
             blueprints:
               additionalProperties:
                 description: 'BlueprintSpec defines the desired state of Blueprint,
                   which is the runtime environment which provides the Data Scientist''s
                   application with secure and governed access to the data requested
-                  in the M4DApplication. The blueprint uses an "argo like" syntax
+                  in the FybrikApplication. The blueprint uses an "argo like" syntax
                   which indicates the components and the flow of data between them
                   as steps TODO: Add an indication of the communication relationships
                   between the components'
@@ -206,7 +206,7 @@ spec:
                                       assetID:
                                         description: AssetID identifies the asset
                                           to be used for accessing the data when it
-                                          is ready It is copied from the M4DApplication
+                                          is ready It is copied from the FybrikApplication
                                           resource
                                         type: string
                                       source:
@@ -350,7 +350,7 @@ spec:
                             template:
                               description: 'Template is the name of the specification
                                 in the Blueprint describing how to instantiate a component
-                                indicated by the module.  It is the name of a M4DModule
+                                indicated by the module.  It is the name of a FybrikModule
                                 CRD. For example: implicit-copy-db2wh-to-s3-latest'
                               type: string
                           required:
@@ -364,7 +364,7 @@ spec:
                     type: object
                   templates:
                     items:
-                      description: ComponentTemplate is a copy of a M4DModule Custom
+                      description: ComponentTemplate is a copy of a FybrikModule Custom
                         Resource.  It contains the information necessary to instantiate
                         a component in a FlowStep, which provides the functionality
                         described by the module.  There are 3 different module types.
@@ -406,7 +406,7 @@ spec:
               type: object
             selector:
               description: Selector enables to connect the resource to the application
-                Should match the selector of the owner - M4DApplication CRD.
+                Should match the selector of the owner - FybrikApplication CRD.
               properties:
                 matchExpressions:
                   description: matchExpressions is a list of label selector requirements.
@@ -479,7 +479,7 @@ spec:
                         type: integer
                       observedState:
                         description: ObservedState includes information to be reported
-                          back to the M4DApplication resource It includes readiness
+                          back to the FybrikApplication resource It includes readiness
                           and error indications, as well as user instructions
                         properties:
                           dataAccessInstructions:
@@ -518,7 +518,7 @@ spec:
               type: integer
             observedState:
               description: ObservedState includes information to be reported back
-                to the M4DApplication resource It includes readiness and error indications,
+                to the FybrikApplication resource It includes readiness and error indications,
                 as well as user instructions
               properties:
                 dataAccessInstructions:

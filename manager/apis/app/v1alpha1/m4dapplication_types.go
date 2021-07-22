@@ -65,8 +65,8 @@ type DataContext struct {
 // based on policies and rules defined in an external data policy manager.
 type ApplicationDetails map[string]string
 
-// M4DApplicationSpec defines the desired state of M4DApplication.
-type M4DApplicationSpec struct {
+// FybrikApplicationSpec defines the desired state of FybrikApplication.
+type FybrikApplicationSpec struct {
 
 	// Selector enables to connect the resource to the application
 	// Application labels should match the labels in the selector.
@@ -122,7 +122,7 @@ const (
 	ReadyCondition ConditionType = "Ready"
 )
 
-// Condition describes the state of a M4DApplication at a certain point.
+// Condition describes the state of a FybrikApplication at a certain point.
 type Condition struct {
 	// Type of the condition
 	Type ConditionType `json:"type"`
@@ -141,7 +141,7 @@ type ResourceReference struct {
 	Namespace string `json:"namespace"`
 	// Kind of the resource (Blueprint, Plotter)
 	Kind string `json:"kind"`
-	// Version of M4DApplication that has generated this resource
+	// Version of FybrikApplication that has generated this resource
 	AppVersion int64 `json:"appVersion"`
 }
 
@@ -155,8 +155,8 @@ type DatasetDetails struct {
 	Details serde.Arbitrary `json:"details,omitempty"`
 }
 
-// M4DApplicationStatus defines the observed state of M4DApplication.
-type M4DApplicationStatus struct {
+// FybrikApplicationStatus defines the observed state of FybrikApplication.
+type FybrikApplicationStatus struct {
 
 	// Ready is true if a blueprint has been successfully orchestrated
 	Ready bool `json:"ready,omitempty"`
@@ -175,7 +175,7 @@ type M4DApplicationStatus struct {
 	// +optional
 	CatalogedAssets map[string]string `json:"catalogedAssets,omitempty"`
 
-	// ObservedGeneration is taken from the M4DApplication metadata.  This is used to determine during reconcile
+	// ObservedGeneration is taken from the FybrikApplication metadata.  This is used to determine during reconcile
 	// whether reconcile was called because the desired state changed, or whether the Blueprint status changed.
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
@@ -185,7 +185,7 @@ type M4DApplicationStatus struct {
 	Generated *ResourceReference `json:"generated,omitempty"`
 
 	// ProvisionedStorage maps a dataset (identified by AssetID) to the new provisioned bucket.
-	// It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received.
+	// It allows FybrikApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received.
 	// ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready
 	// +optional
 	ProvisionedStorage map[string]DatasetDetails `json:"provisionedStorage,omitempty"`
@@ -194,9 +194,9 @@ type M4DApplicationStatus struct {
 	ReadEndpointsMap map[string]EndpointSpec `json:"readEndpointsMap,omitempty"`
 }
 
-// M4DApplication provides information about the application being used by a Data Scientist,
+// FybrikApplication provides information about the application being used by a Data Scientist,
 // the nature of the processing, and the data sets that the Data Scientist has chosen for processing by the application.
-// The M4DApplication controller (aka pilot) obtains instructions regarding any governance related changes that must
+// The FybrikApplication controller (aka pilot) obtains instructions regarding any governance related changes that must
 // be performed on the data, identifies the modules capable of performing such changes, and finally
 // generates the Blueprint which defines the secure runtime environment and all the components
 // in it.  This runtime environment provides the Data Scientist's application with access to the data requested
@@ -204,25 +204,25 @@ type M4DApplicationStatus struct {
 // by the manager from an external credential management system, which may or may not be part of a data catalog.
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-type M4DApplication struct {
+type FybrikApplication struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   M4DApplicationSpec   `json:"spec,omitempty"`
-	Status M4DApplicationStatus `json:"status,omitempty"`
+	Spec   FybrikApplicationSpec   `json:"spec,omitempty"`
+	Status FybrikApplicationStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// M4DApplicationList contains a list of M4DApplication
-type M4DApplicationList struct {
+// FybrikApplicationList contains a list of FybrikApplication
+type FybrikApplicationList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []M4DApplication `json:"items"`
+	Items           []FybrikApplication `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&M4DApplication{}, &M4DApplicationList{})
+	SchemeBuilder.Register(&FybrikApplication{}, &FybrikApplicationList{})
 }
 
 const (

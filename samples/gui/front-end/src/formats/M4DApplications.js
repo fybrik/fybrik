@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Label } from 'semantic-ui-react'
 import ApplicationTable from './ApplicationTable'
 
-const M4DApplications = props => {
+const FybrikApplications = props => {
   const array = require('lodash')
   // application instances
   const [applications, setApplications] = useState([])
@@ -18,7 +18,7 @@ const M4DApplications = props => {
     var uniqid = require('uniqid');
     const axios = require('axios')
 
-    const getM4DApplications = async () => {
+    const getFybrikApplications = async () => {
       try {
         console.log(process.env.REACT_APP_BACKEND_ADDRESS + '/v1/dma/m4dapplication')
         return await axios.get(process.env.REACT_APP_BACKEND_ADDRESS + '/v1/dma/m4dapplication')
@@ -32,7 +32,7 @@ const M4DApplications = props => {
     }
 
     const getApplications = async () => {
-      const response = await getM4DApplications()
+      const response = await getFybrikApplications()
       if (response && response.data && response.data.items) {
         console.log(response)
         if (mountedRef.current) {
@@ -119,4 +119,4 @@ const M4DApplications = props => {
   )
 }
 
-export default M4DApplications
+export default FybrikApplications

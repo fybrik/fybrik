@@ -37,7 +37,7 @@ spec:
       template: read-module
   templates:
   - name: read-module
-    kind: M4DModule
+    kind: FybrikModule
     flow: read
     chart:
       name: ghcr.io/mesh-for-data/fybrik-template:0.1.0

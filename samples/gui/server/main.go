@@ -13,7 +13,7 @@ import (
 	datauser "github.com/mesh-for-data/mesh-for-data/samples/gui/server/datauser"
 )
 
-// Routes are the REST endpoints for CRUD operations on M4DApplication CRDS
+// Routes are the REST endpoints for CRUD operations on FybrikApplication CRDS
 func Routes(k8sclient *datauser.K8sClient) *chi.Mux {
 	router := chi.NewRouter()
 	router.Use(
@@ -42,7 +42,7 @@ func Routes(k8sclient *datauser.K8sClient) *chi.Mux {
 	return router
 }
 
-// Assumes that the control plane exists, i.e. M4DApplication custom resource exists in the cluster
+// Assumes that the control plane exists, i.e. FybrikApplication custom resource exists in the cluster
 func main() {
 	// Init kubernetes config.  It is assumed that the GUI runs inside the same cluster and namespace
 	// as the compute deployed by the user.
@@ -66,7 +66,7 @@ func main() {
 		return nil
 	}
 
-	// Print out M4DApplication APIs
+	// Print out FybrikApplication APIs
 	if err := chi.Walk(router, walkFunc); err != nil {
 		log.Panicf("Logging err: %s\n", err.Error()) // panic if there is an error
 	}

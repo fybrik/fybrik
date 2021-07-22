@@ -22,7 +22,7 @@ In addition, to benefit from the [control plane security](../tasks/control-plane
 
 ### Data catalog
 
-Mesh for Data assumes the use of an enterprise data catalog. For example, to reference a required data asset in a `M4DApplication` resource, you provide a link to the asset in the catalog.
+Mesh for Data assumes the use of an enterprise data catalog. For example, to reference a required data asset in a `FybrikApplication` resource, you provide a link to the asset in the catalog.
 
 The catalog provides metadata about the asset such as security tags. It also provides connection information to describe how to connect to the data source to consume the data. Mesh for Data uses the metadata provided by the catalog both to enable seamless connectivity to the data and as input to making policy decisions. The data user is not concerned with any of it and just selects the data that it needs regardless of where the data resides.
 

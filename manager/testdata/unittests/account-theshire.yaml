@@ -1,5 +1,5 @@
 apiVersion: app.m4d.ibm.com/v1alpha1
-kind: M4DStorageAccount
+kind: FybrikStorageAccount
 metadata:
   name: account-theshire
   namespace: fybrik-system

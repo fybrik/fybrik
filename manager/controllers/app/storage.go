@@ -32,7 +32,7 @@ func includesGeography(array []string, element string) bool {
 func AllocateBucket(c client.Client, log logr.Logger, owner types.NamespacedName, id string, geo string) (*storage.ProvisionedBucket, error) {
 	ctx := context.Background()
 	log.Info("Searching for a storage account matching the geography " + geo)
-	var accountList app.M4DStorageAccountList
+	var accountList app.FybrikStorageAccountList
 	if err := c.List(ctx, &accountList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
 		log.Info(err.Error())
 		return nil, err

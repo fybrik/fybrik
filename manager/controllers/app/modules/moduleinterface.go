@@ -34,13 +34,13 @@ type DataInfo struct {
 	DataDetails *DataDetails
 	// The path to Vault secret which holds the dataset credentials
 	VaultSecretPath string
-	// Pointer to the relevant data context in the M4D application spec
+	// Pointer to the relevant data context in the Fybrik application spec
 	Context *app.DataContext
 }
 
 // ModuleInstanceSpec consists of the module spec and arguments
 type ModuleInstanceSpec struct {
-	Module      *app.M4DModule
+	Module      *app.FybrikModule
 	Args        *app.ModuleArguments
 	AssetID     string
 	ClusterName string
@@ -48,8 +48,8 @@ type ModuleInstanceSpec struct {
 
 // Selector is responsible for finding an appropriate module
 type Selector struct {
-	Module       *app.M4DModule
-	Dependencies []*app.M4DModule
+	Module       *app.FybrikModule
+	Dependencies []*app.FybrikModule
 	Message      string
 	Flow         app.ModuleFlow
 	Source       *app.InterfaceDetails
@@ -63,12 +63,12 @@ type Selector struct {
 // TODO: Add function to check if module supports recurrence type
 
 // GetModule returns the selected module
-func (m *Selector) GetModule() *app.M4DModule {
+func (m *Selector) GetModule() *app.FybrikModule {
 	return m.Module
 }
 
 // GetDependencies returns dependencies of a selected module
-func (m *Selector) GetDependencies() []*app.M4DModule {
+func (m *Selector) GetDependencies() []*app.FybrikModule {
 	return m.Dependencies
 }
 
@@ -99,7 +99,7 @@ func (m *Selector) AddModuleInstances(args *app.ModuleArguments, item DataInfo, 
 }
 
 // SupportsGovernanceActions checks whether the module supports the required agovernance actions
-func (m *Selector) SupportsGovernanceActions(module *app.M4DModule, actions []*pb.EnforcementAction) bool {
+func (m *Selector) SupportsGovernanceActions(module *app.FybrikModule, actions []*pb.EnforcementAction) bool {
 	// Check that the governance actions match
 	for _, action := range actions {
 		supportsAction := false
@@ -118,7 +118,7 @@ func (m *Selector) SupportsGovernanceActions(module *app.M4DModule, actions []*p
 }
 
 // SupportsGovernanceAction checks whether the module supports the required agovernance action
-func (m *Selector) SupportsGovernanceAction(module *app.M4DModule, action *pb.EnforcementAction) bool {
+func (m *Selector) SupportsGovernanceAction(module *app.FybrikModule, action *pb.EnforcementAction) bool {
 	// Check that the governance actions match
 	for j := range module.Spec.Capabilities.Actions {
 		transformation := &module.Spec.Capabilities.Actions[j]
@@ -130,7 +130,7 @@ func (m *Selector) SupportsGovernanceAction(module *app.M4DModule, action *pb.En
 }
 
 // SupportsDependencies checks whether the module supports the dependency requirements
-func (m *Selector) SupportsDependencies(module *app.M4DModule, moduleMap map[string]*app.M4DModule) bool {
+func (m *Selector) SupportsDependencies(module *app.FybrikModule, moduleMap map[string]*app.FybrikModule) bool {
 	// check dependencies
 	subModuleNames, errNames := CheckDependencies(module, moduleMap)
 	if len(errNames) > 0 {
@@ -149,7 +149,7 @@ func (m *Selector) SupportsDependencies(module *app.M4DModule, moduleMap map[str
 }
 
 // SupportsInterface indicates whether the module supports interface requirements and dependencies
-func (m *Selector) SupportsInterface(module *app.M4DModule) bool {
+func (m *Selector) SupportsInterface(module *app.FybrikModule) bool {
 	// Check if the module supports the flow
 	if !utils.SupportsFlow(module.Spec.Flows, m.Flow) {
 		return false
@@ -177,7 +177,7 @@ func (m *Selector) SupportsInterface(module *app.M4DModule) bool {
 }
 
 // SelectModule finds the module that fits the requirements
-func (m *Selector) SelectModule(moduleMap map[string]*app.M4DModule) bool {
+func (m *Selector) SelectModule(moduleMap map[string]*app.FybrikModule) bool {
 	m.Message = ""
 	for _, module := range moduleMap {
 		if !m.SupportsInterface(module) {
@@ -196,7 +196,7 @@ func (m *Selector) SelectModule(moduleMap map[string]*app.M4DModule) bool {
 }
 
 // CheckDependencies returns dependent module names
-func CheckDependencies(module *app.M4DModule, moduleMap map[string]*app.M4DModule) ([]string, []string) {
+func CheckDependencies(module *app.FybrikModule, moduleMap map[string]*app.FybrikModule) ([]string, []string) {
 	var found []string
 	var missing []string
 

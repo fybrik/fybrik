@@ -12,7 +12,7 @@ import (
 
 // Helper functions to manage conditions
 
-func resetConditions(application *app.M4DApplication) {
+func resetConditions(application *app.FybrikApplication) {
 	application.Status.Ready = false
 	application.Status.Conditions = make([]app.Condition, 3)
 	application.Status.Conditions[app.ErrorConditionIndex] = app.Condition{Type: app.ErrorCondition, Status: corev1.ConditionFalse}
@@ -20,7 +20,7 @@ func resetConditions(application *app.M4DApplication) {
 	application.Status.Conditions[app.ReadyConditionIndex] = app.Condition{Type: app.ReadyCondition, Status: corev1.ConditionFalse}
 }
 
-func setErrorCondition(application *app.M4DApplication, assetID string, msg string) {
+func setErrorCondition(application *app.FybrikApplication, assetID string, msg string) {
 	errMsg := "An error was received"
 	if assetID != "" {
 		errMsg += " for asset " + assetID
@@ -31,17 +31,17 @@ func setErrorCondition(application *app.M4DApplication, assetID string, msg stri
 	application.Status.Conditions[app.ErrorConditionIndex].Message = errMsg
 }
 
-func setDenyCondition(application *app.M4DApplication, assetID string, msg string) {
+func setDenyCondition(application *app.FybrikApplication, assetID string, msg string) {
 	application.Status.Conditions[app.DenyConditionIndex].Status = corev1.ConditionTrue
 	application.Status.Conditions[app.DenyConditionIndex].Message = msg
 }
 
-func setReadyCondition(application *app.M4DApplication, assetID string) {
+func setReadyCondition(application *app.FybrikApplication, assetID string) {
 	application.Status.Conditions[app.ReadyConditionIndex].Status = corev1.ConditionTrue
 	application.Status.Ready = true
 }
 
-func errorOrDeny(application *app.M4DApplication) bool {
+func errorOrDeny(application *app.FybrikApplication) bool {
 	// check if the conditions have been initialized
 	if len(application.Status.Conditions) == 0 {
 		return false
@@ -51,7 +51,7 @@ func errorOrDeny(application *app.M4DApplication) bool {
 }
 
 // Ready or Deny state
-func inFinalState(application *app.M4DApplication) bool {
+func inFinalState(application *app.FybrikApplication) bool {
 	// check if the conditions have been initialized
 	if len(application.Status.Conditions) == 0 {
 		return false
@@ -60,7 +60,7 @@ func inFinalState(application *app.M4DApplication) bool {
 		application.Status.Conditions[app.DenyConditionIndex].Status == corev1.ConditionTrue)
 }
 
-func getErrorMessages(application *app.M4DApplication) string {
+func getErrorMessages(application *app.FybrikApplication) string {
 	var errorMsgs []string
 	// check if the conditions have been initialized
 	if len(application.Status.Conditions) == 0 {

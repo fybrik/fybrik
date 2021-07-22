@@ -30,7 +30,7 @@ Mesh for Data is an open solution that can be extended to work with a wide range
 
 ## Applications
 
-Mesh for Data considers applications as first level entities. Before running a workload, an application needs to be registred to a Mesh for Data control plane by applying a `M4DApplication` resource. This is the declarative definition provided by the data user. The registration provides context about the application such as the purpose for which it's running, the data assets that it needs, and a selector to identify the workload. Additional context such as geo-location is extracted from the platform. 
+Mesh for Data considers applications as first level entities. Before running a workload, an application needs to be registred to a Mesh for Data control plane by applying a `FybrikApplication` resource. This is the declarative definition provided by the data user. The registration provides context about the application such as the purpose for which it's running, the data assets that it needs, and a selector to identify the workload. Additional context such as geo-location is extracted from the platform. 
 
 The actions taken by Mesh for Data are based on policies and the context of the application. Specifically, Mesh for Data does not consider end-users of an application. It is the responsibility of the application to implement mechanisms such as end user authentication if required, e.g. using Istio [authorization with JWT](https://istio.io/docs/tasks/security/authorization/authz-jwt/).
 

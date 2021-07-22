@@ -22,7 +22,7 @@ func containsTemplate(templateList []app.ComponentTemplate, moduleName string) b
 
 // RefineInstances collects all instances of the same read/write module and creates a new instance instead, with accumulated arguments.
 // Copy modules are left unchanged.
-func (r *M4DApplicationReconciler) RefineInstances(instances []modules.ModuleInstanceSpec) []modules.ModuleInstanceSpec {
+func (r *FybrikApplicationReconciler) RefineInstances(instances []modules.ModuleInstanceSpec) []modules.ModuleInstanceSpec {
 	newInstances := make([]modules.ModuleInstanceSpec, 0)
 	// map instances to be unified, according to the cluster and module
 	instanceMap := make(map[string]modules.ModuleInstanceSpec)
@@ -49,7 +49,7 @@ func (r *M4DApplicationReconciler) RefineInstances(instances []modules.ModuleIns
 }
 
 // GenerateBlueprints creates Blueprint specs (one per cluster)
-func (r *M4DApplicationReconciler) GenerateBlueprints(instances []modules.ModuleInstanceSpec, appContext *app.M4DApplication) map[string]app.BlueprintSpec {
+func (r *FybrikApplicationReconciler) GenerateBlueprints(instances []modules.ModuleInstanceSpec, appContext *app.FybrikApplication) map[string]app.BlueprintSpec {
 	blueprintMap := make(map[string]app.BlueprintSpec)
 	instanceMap := make(map[string][]modules.ModuleInstanceSpec)
 	for _, moduleInstance := range instances {
@@ -67,7 +67,7 @@ func (r *M4DApplicationReconciler) GenerateBlueprints(instances []modules.Module
 // GenerateBlueprint creates the Blueprint spec based on the datasets and the governance actions required, which dictate the modules that must run in the m4d
 // Credentials for accessing data set are stored in a credential management system (such as vault) and the paths for accessing them are included in the blueprint.
 // The credentials themselves are not included in the blueprint.
-func (r *M4DApplicationReconciler) GenerateBlueprint(instances []modules.ModuleInstanceSpec, appContext *app.M4DApplication) app.BlueprintSpec {
+func (r *FybrikApplicationReconciler) GenerateBlueprint(instances []modules.ModuleInstanceSpec, appContext *app.FybrikApplication) app.BlueprintSpec {
 	var spec app.BlueprintSpec
 
 	// Entrypoint is always the name of the application

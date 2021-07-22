@@ -134,10 +134,10 @@ type ResourceStatusIndicator struct {
 	ErrorMessage string `json:"errorMessage,omitempty"`
 }
 
-// M4DModuleSpec contains the info common to all modules,
+// FybrikModuleSpec contains the info common to all modules,
 // which are one of the components that process, load, write, audit, monitor the data used by
 // the data scientist's application.
-type M4DModuleSpec struct {
+type FybrikModuleSpec struct {
 	// Flows is a list of the types of capabilities supported by the module - copy, read, write
 	// +required
 	Flows []ModuleFlow `json:"flows"`
@@ -172,10 +172,10 @@ type ChartSpec struct {
 
 // +kubebuilder:object:root=true
 
-// M4DModule is a description of an injectable component.
+// FybrikModule is a description of an injectable component.
 // the parameters it requires, as well as the specification of how to instantiate such a component.
 // It is used as metadata only.  There is no status nor reconciliation.
-type M4DModule struct {
+type FybrikModule struct {
 
 	// Metadata should include name, namespace, label, annotations.
 	// annotations should include author, summary, description
@@ -183,18 +183,18 @@ type M4DModule struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	// +required
-	Spec M4DModuleSpec `json:"spec"`
+	Spec FybrikModuleSpec `json:"spec"`
 }
 
 // +kubebuilder:object:root=true
 
-// M4DModuleList contains a list of M4DModule
-type M4DModuleList struct {
+// FybrikModuleList contains a list of FybrikModule
+type FybrikModuleList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []M4DModule `json:"items"`
+	Items           []FybrikModule `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&M4DModule{}, &M4DModuleList{})
+	SchemeBuilder.Register(&FybrikModule{}, &FybrikModuleList{})
 }

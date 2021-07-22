@@ -86,7 +86,7 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 
 		// Setup application controller
-		reconciler := createTestM4DApplicationController(mgr.GetClient(), mgr.GetScheme())
+		reconciler := createTestFybrikApplicationController(mgr.GetClient(), mgr.GetScheme())
 		err = reconciler.SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
 

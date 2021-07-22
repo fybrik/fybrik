@@ -23,24 +23,24 @@ func DMARoutes(client *K8sClient) *chi.Mux {
 	dmaClient = client // global variable used by all funcs in this package
 
 	router := chi.NewRouter()
-	router.Get("/{m4dapplicationID}", GetM4DApplication) // Returns the M4DApplication CRD including its status
-	router.Get("/", ListM4DApplications)
-	router.Delete("/{m4dapplicationID}", DeleteM4DApplication)
-	router.Post("/", CreateM4DApplication)
-	router.Put("/{m4dapplicationID}", UpdateM4DApplication)
-	router.Options("/*", M4DApplicationOptions)
+	router.Get("/{m4dapplicationID}", GetFybrikApplication) // Returns the FybrikApplication CRD including its status
+	router.Get("/", ListFybrikApplications)
+	router.Delete("/{m4dapplicationID}", DeleteFybrikApplication)
+	router.Post("/", CreateFybrikApplication)
+	router.Put("/{m4dapplicationID}", UpdateFybrikApplication)
+	router.Options("/*", FybrikApplicationOptions)
 	return router
 }
 
-// M4DApplicationOptions returns an OK status, but more importantly its header is set to indicate
+// FybrikApplicationOptions returns an OK status, but more importantly its header is set to indicate
 // that future POST, PUT and DELETE calls are allowed as per the header values set when the router was initiated in main.go
-func M4DApplicationOptions(w http.ResponseWriter, r *http.Request) {
+func FybrikApplicationOptions(w http.ResponseWriter, r *http.Request) {
 	render.Status(r, http.StatusOK)
 }
 
-// ListM4DApplications returns all of the M4DApplication instances in the namespace
-func ListM4DApplications(w http.ResponseWriter, r *http.Request) {
-	log.Println("In ListM4DApplications")
+// ListFybrikApplications returns all of the FybrikApplication instances in the namespace
+func ListFybrikApplications(w http.ResponseWriter, r *http.Request) {
+	log.Println("In ListFybrikApplications")
 	if dmaClient == nil {
 		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no dmaClient set")))
 		if suberr != nil {
@@ -48,7 +48,7 @@ func ListM4DApplications(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Call kubernetes to get the list of M4DApplication CRDs
+	// Call kubernetes to get the list of FybrikApplication CRDs
 	dmaList, err := dmaClient.ListApplications(meta_v1.ListOptions{})
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))
@@ -58,13 +58,13 @@ func ListM4DApplications(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.JSON(w, r, dmaList) // Return the M4DApplication as json
+	render.JSON(w, r, dmaList) // Return the FybrikApplication as json
 }
 
-// GetM4DApplication returns the M4DApplication CRD, both spec and status
+// GetFybrikApplication returns the FybrikApplication CRD, both spec and status
 // associated with the ID provided.
-func GetM4DApplication(w http.ResponseWriter, r *http.Request) {
-	log.Println("In GetM4DApplication")
+func GetFybrikApplication(w http.ResponseWriter, r *http.Request) {
+	log.Println("In GetFybrikApplication")
 	if dmaClient == nil {
 		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no dmaClient set")))
 		if suberr != nil {
@@ -74,7 +74,7 @@ func GetM4DApplication(w http.ResponseWriter, r *http.Request) {
 
 	m4dapplicationID := chi.URLParam(r, "m4dapplicationID")
 
-	// Call kubernetes to get the M4DApplication CRD
+	// Call kubernetes to get the FybrikApplication CRD
 	dma, err := dmaClient.GetApplication(m4dapplicationID)
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))
@@ -84,12 +84,12 @@ func GetM4DApplication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.JSON(w, r, dma) // Return the M4DApplication as json
+	render.JSON(w, r, dma) // Return the FybrikApplication as json
 }
 
-// UpdateM4DApplication changes the desired state of an existing M4DApplication CRD
-func UpdateM4DApplication(w http.ResponseWriter, r *http.Request) {
-	log.Println("In UpdateM4DApplication")
+// UpdateFybrikApplication changes the desired state of an existing FybrikApplication CRD
+func UpdateFybrikApplication(w http.ResponseWriter, r *http.Request) {
+	log.Println("In UpdateFybrikApplication")
 	if dmaClient == nil {
 		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no dmaClient set")))
 		if suberr != nil {
@@ -99,7 +99,7 @@ func UpdateM4DApplication(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
-	var dmaStruct dm.M4DApplication
+	var dmaStruct dm.FybrikApplication
 
 	// Create the golang structure from the json
 	err := decoder.Decode(&dmaStruct)
@@ -112,7 +112,7 @@ func UpdateM4DApplication(w http.ResponseWriter, r *http.Request) {
 	}
 
 	m4dapplicationID := chi.URLParam(r, "m4dapplicationID")
-	// Call kubernetes to update the M4DApplication CRD
+	// Call kubernetes to update the FybrikApplication CRD
 	dmaStruct.Namespace = dmaClient.namespace
 	dma, err := dmaClient.UpdateApplication(m4dapplicationID, &dmaStruct)
 	if err != nil {
@@ -128,10 +128,10 @@ func UpdateM4DApplication(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, result)
 }
 
-// DeleteM4DApplication deletes the M4DApplication CRD running in the m4d control plane,
+// DeleteFybrikApplication deletes the FybrikApplication CRD running in the m4d control plane,
 // and all of the components associated with it - ex: blueprint, modules that perform read, write, copy, transform, etc.
-func DeleteM4DApplication(w http.ResponseWriter, r *http.Request) {
-	log.Println("In DeleteM4DApplication")
+func DeleteFybrikApplication(w http.ResponseWriter, r *http.Request) {
+	log.Println("In DeleteFybrikApplication")
 	if dmaClient == nil {
 		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no dmaClient set")))
 		if suberr != nil {
@@ -141,7 +141,7 @@ func DeleteM4DApplication(w http.ResponseWriter, r *http.Request) {
 
 	m4dapplicationID := chi.URLParam(r, "m4dapplicationID")
 
-	// Call kubernetes to get the M4DApplication CRD
+	// Call kubernetes to get the FybrikApplication CRD
 	err := dmaClient.DeleteApplication(m4dapplicationID, nil)
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))
@@ -156,17 +156,17 @@ func DeleteM4DApplication(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, result)
 }
 
-// CreateM4DApplication creates a new M4DApplication CRD with the information provided by the Data User.
-// The body of the request should have a json version of the M4DApplication
-// TODO - return the unique ID for the requested M4DApplication.  uniqueID=name+geography
+// CreateFybrikApplication creates a new FybrikApplication CRD with the information provided by the Data User.
+// The body of the request should have a json version of the FybrikApplication
+// TODO - return the unique ID for the requested FybrikApplication.  uniqueID=name+geography
 // TODO - store the request body to file
-// TODO - check if the requested M4DApplication already exists
-func CreateM4DApplication(w http.ResponseWriter, r *http.Request) {
-	log.Println("In CreateM4DApplication")
+// TODO - check if the requested FybrikApplication already exists
+func CreateFybrikApplication(w http.ResponseWriter, r *http.Request) {
+	log.Println("In CreateFybrikApplication")
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
-	var dmaStruct dm.M4DApplication
+	var dmaStruct dm.FybrikApplication
 
 	// Create the golang structure from the json
 	err := decoder.Decode(&dmaStruct)
@@ -185,7 +185,7 @@ func CreateM4DApplication(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Create the M4DApplication CRD
+	// Create the FybrikApplication CRD
 	dmaStruct.Namespace = dmaClient.namespace
 	dma, err := dmaClient.CreateApplication(&dmaStruct)
 	if err != nil {
@@ -205,11 +205,11 @@ func CreateM4DApplication(w http.ResponseWriter, r *http.Request) {
 
 // DMASuccessResponse - Structure returned when REST API is successful
 type DMASuccessResponse struct {
-	// UniqueID of the M4DApplication
+	// UniqueID of the FybrikApplication
 	UniqueID string `json:"uniqueID"`
 
-	// JSON representation of the M4DApplication
-	DMA dm.M4DApplication `json:"jsonDMA,omitempty"`
+	// JSON representation of the FybrikApplication
+	DMA dm.FybrikApplication `json:"jsonDMA,omitempty"`
 
 	// Optional message about the action performed
 	Message string `json:"message,omitempty"`

@@ -33,8 +33,8 @@ import (
 	"github.com/mesh-for-data/mesh-for-data/pkg/vault"
 )
 
-// M4DApplicationReconciler reconciles a M4DApplication object
-type M4DApplicationReconciler struct {
+// FybrikApplicationReconciler reconciles a FybrikApplication object
+type FybrikApplicationReconciler struct {
 	client.Client
 	Name              string
 	Log               logr.Logger
@@ -46,13 +46,13 @@ type M4DApplicationReconciler struct {
 	Provision         storage.ProvisionInterface
 }
 
-// Reconcile reconciles M4DApplication CRD
-// It receives M4DApplication CRD and selects the appropriate modules that will run
+// Reconcile reconciles FybrikApplication CRD
+// It receives FybrikApplication CRD and selects the appropriate modules that will run
 // The outcome is either a single Blueprint running on the same cluster or a Plotter containing multiple Blueprints that may run on different clusters
-func (r *M4DApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("m4dapplication", req.NamespacedName)
-	// obtain M4DApplication resource
-	applicationContext := &app.M4DApplication{}
+	// obtain FybrikApplication resource
+	applicationContext := &app.FybrikApplication{}
 	if err := r.Get(ctx, req.NamespacedName, applicationContext); err != nil {
 		log.V(0).Info("The reconciled object was not found")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -117,7 +117,7 @@ func getBucketResourceRef(name string) *types.NamespacedName {
 	return &types.NamespacedName{Name: name, Namespace: utils.GetSystemNamespace()}
 }
 
-func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApplication, status app.ObservedState) error {
+func (r *FybrikApplicationReconciler) checkReadiness(applicationContext *app.FybrikApplication, status app.ObservedState) error {
 	applicationContext.Status.DataAccessInstructions = ""
 	resetConditions(applicationContext)
 	if applicationContext.Status.CatalogedAssets == nil {
@@ -131,7 +131,7 @@ func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApp
 	if !status.Ready {
 		return nil
 	}
-	// Plotter is ready - update the M4DApplication status
+	// Plotter is ready - update the FybrikApplication status
 
 	// register assets if necessary if the ready state has been received
 	for _, dataCtx := range applicationContext.Spec.Data {
@@ -165,8 +165,8 @@ func (r *M4DApplicationReconciler) checkReadiness(applicationContext *app.M4DApp
 	return nil
 }
 
-// reconcileFinalizers reconciles finalizers for M4DApplication
-func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M4DApplication) error {
+// reconcileFinalizers reconciles finalizers for FybrikApplication
+func (r *FybrikApplicationReconciler) reconcileFinalizers(applicationContext *app.FybrikApplication) error {
 	// finalizer
 	finalizerName := r.Name + ".finalizer"
 	hasFinalizer := ctrlutil.ContainsFinalizer(applicationContext, finalizerName)
@@ -199,7 +199,7 @@ func (r *M4DApplicationReconciler) reconcileFinalizers(applicationContext *app.M
 	return nil
 }
 
-func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *app.M4DApplication) error {
+func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext *app.FybrikApplication) error {
 	// clear provisioned storage
 	// References to buckets (Dataset resources) are deleted. Buckets that are persistent will not be removed upon Dataset deletion.
 	var deletedKeys []string
@@ -222,7 +222,7 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 		return nil
 	}
 
-	r.Log.V(0).Info("Reconcile: M4DApplication is deleting the generated " + applicationContext.Status.Generated.Kind)
+	r.Log.V(0).Info("Reconcile: FybrikApplication is deleting the generated " + applicationContext.Status.Generated.Kind)
 	if err := r.ResourceInterface.DeleteResource(applicationContext.Status.Generated); err != nil {
 		return err
 	}
@@ -232,7 +232,7 @@ func (r *M4DApplicationReconciler) deleteExternalResources(applicationContext *a
 
 // setReadModulesEndpoints populates the ReadEndpointsMap map in the status of the m4dapplication
 // Current implementation assumes there is only one cluster with read modules (which is the same cluster the user's workload)
-func setReadModulesEndpoints(applicationContext *app.M4DApplication, blueprintsMap map[string]app.BlueprintSpec, moduleMap map[string]*app.M4DModule) {
+func setReadModulesEndpoints(applicationContext *app.FybrikApplication, blueprintsMap map[string]app.BlueprintSpec, moduleMap map[string]*app.FybrikModule) {
 	var foundReadEndpoints = false
 	for _, blueprintSpec := range blueprintsMap {
 		for _, step := range blueprintSpec.Flow.Steps {
@@ -259,11 +259,11 @@ func setReadModulesEndpoints(applicationContext *app.M4DApplication, blueprintsM
 	}
 }
 
-// reconcile receives either M4DApplication CRD
+// reconcile receives either FybrikApplication CRD
 // or a status update from the generated resource
-func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplication) (ctrl.Result, error) {
-	utils.PrintStructure(applicationContext.Spec, r.Log, "M4DApplication")
-	// Data User created or updated the M4DApplication
+func (r *FybrikApplicationReconciler) reconcile(applicationContext *app.FybrikApplication) (ctrl.Result, error) {
+	utils.PrintStructure(applicationContext.Spec, r.Log, "FybrikApplication")
+	// Data User created or updated the FybrikApplication
 
 	// clear status
 	resetConditions(applicationContext)
@@ -389,7 +389,7 @@ func (r *M4DApplicationReconciler) reconcile(applicationContext *app.M4DApplicat
 	return ctrl.Result{}, nil
 }
 
-func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, input *app.M4DApplication, clusters []multicluster.Cluster) error {
+func (r *FybrikApplicationReconciler) constructDataInfo(req *modules.DataInfo, input *app.FybrikApplication, clusters []multicluster.Cluster) error {
 	var err error
 
 	// Call the DataCatalog service to get info about the dataset
@@ -423,10 +423,10 @@ func (r *M4DApplicationReconciler) constructDataInfo(req *modules.DataInfo, inpu
 	return nil
 }
 
-// NewM4DApplicationReconciler creates a new reconciler for M4DApplications
-func NewM4DApplicationReconciler(mgr ctrl.Manager, name string,
-	policyManager connectors.PolicyManager, catalog connectors.DataCatalog, cm multicluster.ClusterLister, provision storage.ProvisionInterface) *M4DApplicationReconciler {
-	return &M4DApplicationReconciler{
+// NewFybrikApplicationReconciler creates a new reconciler for FybrikApplications
+func NewFybrikApplicationReconciler(mgr ctrl.Manager, name string,
+	policyManager connectors.PolicyManager, catalog connectors.DataCatalog, cm multicluster.ClusterLister, provision storage.ProvisionInterface) *FybrikApplicationReconciler {
+	return &FybrikApplicationReconciler{
 		Client:            mgr.GetClient(),
 		Name:              name,
 		Log:               ctrl.Log.WithName("controllers").WithName(name),
@@ -439,8 +439,8 @@ func NewM4DApplicationReconciler(mgr ctrl.Manager, name string,
 	}
 }
 
-// SetupWithManager registers M4DApplication controller
-func (r *M4DApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
+// SetupWithManager registers FybrikApplication controller
+func (r *FybrikApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	mapFn := func(a client.Object) []reconcile.Request {
 		labels := a.GetLabels()
 		if labels == nil {
@@ -459,7 +459,7 @@ func (r *M4DApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}
 	}
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&app.M4DApplication{}).
+		For(&app.FybrikApplication{}).
 		Watches(&source.Kind{
 			Type: &app.Plotter{},
 		}, handler.EnqueueRequestsFromMapFunc(mapFn)).Complete(r)
@@ -468,7 +468,7 @@ func (r *M4DApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 // AnalyzeError analyzes whether the given error is fatal, or a retrial attempt can be made.
 // Reasons for retrial can be either communication problems with external services, or kubernetes problems to perform some action on a resource.
 // A retrial is achieved by returning an error to the reconcile method
-func AnalyzeError(application *app.M4DApplication, assetID string, err error) {
+func AnalyzeError(application *app.FybrikApplication, assetID string, err error) {
 	if err == nil {
 		return
 	}
@@ -487,12 +487,12 @@ func ownerLabels(id types.NamespacedName) map[string]string {
 	}
 }
 
-// GetAllModules returns all CRDs of the kind M4DModule mapped by their name
-func (r *M4DApplicationReconciler) GetAllModules() (map[string]*app.M4DModule, error) {
+// GetAllModules returns all CRDs of the kind FybrikModule mapped by their name
+func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*app.FybrikModule, error) {
 	ctx := context.Background()
 
-	moduleMap := make(map[string]*app.M4DModule)
-	var moduleList app.M4DModuleList
+	moduleMap := make(map[string]*app.FybrikModule)
+	var moduleList app.FybrikModuleList
 	if err := r.List(ctx, &moduleList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
 		r.Log.V(0).Info("Error while listing modules: " + err.Error())
 		return moduleMap, err

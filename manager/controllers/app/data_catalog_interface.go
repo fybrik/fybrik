@@ -24,7 +24,7 @@ import (
 // Returns:
 // - an error if happened
 // - the new asset identifier
-func (r *M4DApplicationReconciler) RegisterAsset(catalogID string, info *app.DatasetDetails, input *app.M4DApplication) (string, error) {
+func (r *FybrikApplicationReconciler) RegisterAsset(catalogID string, info *app.DatasetDetails, input *app.FybrikApplication) (string, error) {
 	datasetDetails := &pb.DatasetDetails{}
 	err := info.Details.Into(datasetDetails)
 	if err != nil {

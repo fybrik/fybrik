@@ -10,8 +10,8 @@ metadata:
 spec:
   group: app.m4d.ibm.com
   names:
-    kind: M4DStorageAccount
-    listKind: M4DStorageAccountList
+    kind: FybrikStorageAccount
+    listKind: FybrikStorageAccountList
     plural: m4dstorageaccounts
     singular: m4dstorageaccount
   scope: Namespaced
@@ -19,7 +19,7 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: M4DStorageAccount defines a storage account used for copying data. Only S3 based storage is supported. It contains endpoint, region and a reference to the credentials a Owner of the asset is responsible to store the credentials
+        description: FybrikStorageAccount defines a storage account used for copying data. Only S3 based storage is supported. It contains endpoint, region and a reference to the credentials a Owner of the asset is responsible to store the credentials
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -30,7 +30,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: M4DStorageAccountSpec defines the desired state of M4DStorageAccount
+            description: FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
             properties:
               endpoint:
                 description: Endpoint
@@ -50,7 +50,7 @@ spec:
             - secretRef
             type: object
           status:
-            description: M4DStorageAccountStatus defines the observed state of M4DStorageAccount
+            description: FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount
             type: object
         type: object
     served: true
