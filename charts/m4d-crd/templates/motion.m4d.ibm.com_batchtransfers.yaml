@@ -212,7 +212,6 @@ spec:
                     required:
                     - kafkaBrokers
                     - kafkaTopic
-                    - schemaRegistryURL
                     type: object
                   s3:
                     description: An object store data store that is compatible with S3. This can be a COS bucket.
@@ -480,7 +479,6 @@ spec:
                     required:
                     - kafkaBrokers
                     - kafkaTopic
-                    - schemaRegistryURL
                     type: object
                   s3:
                     description: An object store data store that is compatible with S3. This can be a COS bucket.
