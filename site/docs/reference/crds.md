@@ -7,9 +7,9 @@ hide:
 
 Packages:
 
-- [app.fybrik.io/v1alpha1](#appfybrikibmcomv1alpha1)
-- [katalog.fybrik.io/v1alpha1](#katalogfybrikibmcomv1alpha1)
-- [motion.fybrik.io/v1alpha1](#motionfybrikibmcomv1alpha1)
+- [app.fybrik.io/v1alpha1](#appfybrikiov1alpha1)
+- [katalog.fybrik.io/v1alpha1](#katalogfybrikiov1alpha1)
+- [motion.fybrik.io/v1alpha1](#motionfybrikiov1alpha1)
 
 ## app.fybrik.io/v1alpha1
 
@@ -29,7 +29,7 @@ Resource Types:
 
 
 ### Blueprint
-<sup><sup>[↩ Parent](#appfybrikibmcomv1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
 
 
 
@@ -870,7 +870,7 @@ ObservedState includes information to be reported back to the FybrikApplication 
 </table>
 
 ### FybrikApplication
-<sup><sup>[↩ Parent](#appfybrikibmcomv1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
 
 
 
@@ -1510,7 +1510,7 @@ EndpointSpec is used both by the module creator and by the status of the fybrika
 </table>
 
 ### FybrikModule
-<sup><sup>[↩ Parent](#appfybrikibmcomv1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
 
 
 
@@ -2001,7 +2001,7 @@ Reference to a Helm chart that allows deployment of the resources required for t
 </table>
 
 ### FybrikStorageAccount
-<sup><sup>[↩ Parent](#appfybrikibmcomv1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
 
 
 
@@ -2095,7 +2095,7 @@ FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
 </table>
 
 ### Plotter
-<sup><sup>[↩ Parent](#appfybrikibmcomv1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
 
 
 
@@ -3188,7 +3188,7 @@ Resource Types:
 
 
 ### Asset
-<sup><sup>[↩ Parent](#katalogfybrikibmcomv1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#katalogfybrikiov1alpha1 )</sup></sup>
 
 
 
@@ -3679,7 +3679,7 @@ Resource Types:
 
 
 ### BatchTransfer
-<sup><sup>[↩ Parent](#motionfybrikibmcomv1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#motionfybrikiov1alpha1 )</sup></sup>
 
 
 
@@ -5536,7 +5536,7 @@ ObjectReference contains enough information to let you inspect or modify the ref
 </table>
 
 ### StreamTransfer
-<sup><sup>[↩ Parent](#motionfybrikibmcomv1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#motionfybrikiov1alpha1 )</sup></sup>
 
 
 
