@@ -50,7 +50,6 @@ func TestInvalidAppInfo(t *testing.T) {
 	assert.Len(t, errors, 2)
 	// assert.Equal(t, "spec.appInfo", errors[0].Field.errorList)
 	// assert.Equal(t, "spec.appInfo.role", errors[1].Field)
-
 }
 
 func TestInvalidInterface(t *testing.T) {
