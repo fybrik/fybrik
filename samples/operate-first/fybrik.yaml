@@ -330,7 +330,7 @@ webhooks:
       service:
         name: webhook-service
         namespace: 'fybrik-system'
-        path: /mutate-motion-fybrik-ibm-com-v1alpha1-batchtransfer
+        path: /mutate-motion-fybrik-io-v1alpha1-batchtransfer
     failurePolicy: Fail
     name: mbatchtransfer.kb.io
     rules:
@@ -348,7 +348,7 @@ webhooks:
       service:
         name: webhook-service
         namespace: 'fybrik-system'
-        path: /mutate-motion-fybrik-ibm-com-v1alpha1-streamtransfer
+        path: /mutate-motion-fybrik-io-v1alpha1-streamtransfer
     failurePolicy: Fail
     name: mstreamtransfer.kb.io
     rules:
@@ -376,7 +376,7 @@ webhooks:
       service:
         name: webhook-service
         namespace: 'fybrik-system'
-        path: /validate-motion-fybrik-ibm-com-v1alpha1-batchtransfer
+        path: /validate-motion-fybrik-io-v1alpha1-batchtransfer
     failurePolicy: Fail
     name: vbatchtransfer.kb.io
     rules:
@@ -394,7 +394,7 @@ webhooks:
       service:
         name: webhook-service
         namespace: 'fybrik-system'
-        path: /validate-motion-fybrik-ibm-com-v1alpha1-streamtransfer
+        path: /validate-motion-fybrik-io-v1alpha1-streamtransfer
     failurePolicy: Fail
     name: vstreamtransfer.kb.io
     rules:
