@@ -17,5 +17,5 @@ spec:
     - dataSetID: "{\"ServerName\":\"mds1\",\"AssetGuid\":\"ASSET_ID\"}"
       requirements:
         interface: 
-          protocol: wrongProtocol
+          protocol: kafka
           dataformat: csv
