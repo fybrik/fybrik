@@ -132,11 +132,11 @@ spec:
   templates:
   - name: read-and-transform
     modules:
-    - name: arrow-flight-read
+    - name: arrow-flight-config
       kind: M4DModule
       confChart:
-        name: ghcr.io/mesh-for-data/read-module:0.1.0
-    - name: transform-conf
+        name: ghcr.io/mesh-for-data/arrow-flight-config-module:0.1.0
+    - name: transform-config
       kind: M4DModule
       confChart:
         name: ghcr.io/mesh-for-data/m4d-arrow-flight-transform-conf:0.1.0

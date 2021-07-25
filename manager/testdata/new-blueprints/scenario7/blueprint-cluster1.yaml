@@ -1,0 +1,56 @@
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: Blueprint
+metadata:
+  name: app1-ns1
+  labels:
+spec:
+  cluster: cluster1
+  appSelector: # Selector of the application that uses this workload
+    clusterName: cluster2
+    workloadSelector:
+      matchLabels:
+        app: demoapp
+  modules:
+  - name: app1-ns1-copy
+    confChart:
+      name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
+    source:
+      assetId: "m4d-notebook-sample/paysim"
+      credentials:
+        read:
+          vault:
+            address: http://vault.m4d-system:8200
+            authPath: /v1/auth/kubernetes/login
+            role: module
+            secretPath: /v1/kubernetes-secrets/paysim?namespace=m4d-notebook-sample
+      connection:
+        s3:
+          endpoint: localhost:8001
+          bucket: srcbucket
+          object: paysim.csv
+      dataformat: csv
+    sink: 
+      assetId: "m4d-notebook-sample/paysim-temp"
+      cluster: cluster2    # included when different than the cluster in which the current blueprint runs
+      credentials:
+        write:
+          vault:
+            address: http://vault.m4d-system:8200
+            authPath: /v1/auth/kubernetes/login
+            role: module
+            secretPath: /v1/kubernetes-secrets/paysim-temp?namespace=m4d-notebook-sample
+      connection:
+        s3:
+          endpoint: localhost:8001
+          bucket: destbucket
+          object: paysim-temp.parquet
+      dataformat: parquet
+    actions:
+      - action: redact
+        column: C
+      - action: redact
+        column: D
+status:
+  observedState: Not Ready
+  observedGeneration: 1
+  releases:

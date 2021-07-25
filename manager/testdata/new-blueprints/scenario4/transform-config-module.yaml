@@ -1,0 +1,28 @@
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: M4DModule # Should we still use M4DModule for these types or introduce another CRD for modules that configure other modules?
+metadata:
+  name: transform-conf
+  namespace: m4d-system
+  labels:
+    version: 0.0.1
+    name: transform-config
+spec:
+  chart:
+    name: ghcr.io/mesh-for-data/m4d-arrow-flight-transform-conf:0.1.0
+    values: {}
+  type: plugin  # supported types: service, config, plugin
+  pluginType: fybrik-wasm  # we assume each plugin module supports only one type of plugin mechanism - ex: wasm, vault
+  statusIndicators:
+  capabilities:
+  - capability: transform
+    scope: dataset
+    source:
+       dataformat: arrow
+    actions:
+    - id: redact
+      level: column
+    - id: remove
+      level: column
+  dependencies:    # Do we need this dependency?
+  - kind: service
+    name: arrow-flight-config

@@ -1,0 +1,120 @@
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: Plotter
+metadata:
+  name: app1-ns1 # plotter name is a combination of app and namespace
+  namespace: m4d-system
+  labels:
+spec:
+  appSelector: # Selector of the application that uses this workload
+    clusterName: cluster2
+    workloadSelector:
+      matchLabels:
+        app: demoapp
+  assets:
+  - assetId: "m4d-notebook-sample/paysim"  # dataset requested by user
+    cluster: cluster1  # the cluster with which the data store is associated
+    credentials:
+      read:
+        vault:
+          address: http://vault.m4d-system:8200
+          authPath: /v1/auth/kubernetes/login
+          role: module
+          secretPath: /v1/kubernetes-secrets/paysim?namespace=m4d-notebook-sample
+    connection:
+      s3:
+        endpoint: localhost:8001
+        bucket: srcbucket
+        object: data.csv
+    dataformat: csv
+  - assetId: "m4d-notebook-sample/paysim-temp"  # allocated by fybrik control plane
+    advertisedAssetId: "m4d-notebook-sample/paysim" # Id that is used by user facing services
+    cluster: cluster2  # the cluster with which the data store is associated
+    credentials:
+      read:
+        vault:
+          address: http://vault.m4d-system:8200
+          authPath: /v1/auth/kubernetes/login
+          role: module
+          secretPath: /v1/kubernetes-secrets/paysim-temp?namespace=m4d-notebook-sample
+      write:
+        vault:
+          address: http://vault.m4d-system:8200
+          authPath: /v1/auth/kubernetes/login
+          role: module
+          secretPath: /v1/kubernetes-secrets/paysim-temp?namespace=m4d-notebook-sample
+    connection:
+      s3:
+        endpoint: localhost:8001
+        bucket: destbucket
+        object: data.parquet
+    dataformat: parquet
+  flows:
+  - name: flow-paysim
+    flowType: read
+    assetId: "m4d-notebook-sample/paysim"
+    subflows:
+    - name: subflow-paysim-copy
+      flowType: copy
+      triggers: 
+      - init
+        timer
+      steps:
+      - - name: step1
+          cluster: cluster1
+          template: copyTemplate
+          parameters:
+            source:
+              assetId: "m4d-notebook-sample/paysim"
+            sink:
+              assetId: "m4d-notebook-sample/paysim-temp"
+    - name: subflow-paysim-read
+      triggers:
+      - workload
+      steps:
+      - - name: step1
+          cluster: cluster2
+          template: readTemplate
+          parameters:
+            source:
+              assetId: "m4d-notebook-sample/paysim-temp"
+            api:
+              service:
+                assetID: m4d-notebook-sample/paysim # Inferred from advertisedAssetId
+                interfaceDetails:
+                  protocol: arrow-flight
+                  dataformat: arrow
+  templates:
+  - name: readTemplate
+    modules:
+    - name: arrow-flight-read
+      kind: M4DModule
+      confChart:
+        name: ghcr.io/mesh-for-data/read-module:0.1.0
+  - name: copyTemplate
+    modules:
+    - name: implicit-copy-batch-s3
+      kind: M4DModule
+      confChart:
+        name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
+status:
+  observedState: Not Ready
+  observedGeneration: 1
+  # The global modules are generated when the blueprints are generated and injected into them.
+  # Yet they still have a status that is important to the workflow.
+  flows:
+  - name: flow-paysim
+    status: Ready
+    subflows:  
+    - name: subflow-paysim-copy  # Allows us to know when copy in process, whether triggered by init or by time event
+      status: Ready
+    - name: subflow-paysim-read
+      status: Ready
+  assets:
+  - name: m4d-notebook-sample/paysim   
+    endpoint: app1-ns1.m4d-blueprints
+    port: 8080
+    status: Ready
+  conditions:
+  - type: Error
+    status: "False"
+    message: "This would be a possible error"
