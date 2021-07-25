@@ -15,7 +15,7 @@ spec:
     confChart:
       name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
     source: 
-      dataSetId: "m4d-notebook-sample/paysim"
+      assetID: "m4d-notebook-sample/paysim"
       credentials:
         read:
           vault:
@@ -30,7 +30,7 @@ spec:
           object: paysim.csv
       dataformat: csv
     sink: 
-      dataSetId: "m4d-notebook-sample/paysim-temp"
+      assetID: "m4d-notebook-sample/paysim-temp"
       credentials:
         write:
           vault:
@@ -53,7 +53,7 @@ spec:
             protocol: arrow-flight
             dataformat: arrow
     assets: 
-    - dataSetId: "m4d-notebook-sample/paysim-temp"
+    - assetID: "m4d-notebook-sample/paysim-temp"
       credentials:
         read:
           vault:
