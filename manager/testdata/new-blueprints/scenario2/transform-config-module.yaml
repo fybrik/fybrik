@@ -10,19 +10,19 @@ spec:
   chart:
     name: ghcr.io/mesh-for-data/m4d-arrow-flight-transform-conf:0.1.0
     values: {}
-  type: fybric-action
+  type: plugin  # supported types: service, config, plugin
+  pluginType: fybrik-wasm  # we assume each plugin module supports only one type of plugin mechanism - ex: wasm, vault
   statusIndicators:
   capabilities:
   - capability: transform
     scope: dataset
     source:
-      protocol: fybrik-action # This defines that it's a plugin action of the fybrik.
-      dataformat: arrow
+       dataformat: arrow
     actions:
     - id: redact
       level: column
     - id: remove
       level: column
-  dependencies:
+  dependencies:    # This dependency is needed only if the plugin is implemented for this specific module.
   - kind: M4DModule
     name: arrow-flight-read

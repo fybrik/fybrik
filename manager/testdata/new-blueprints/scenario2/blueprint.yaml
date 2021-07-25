@@ -19,8 +19,8 @@ spec:
         interfaceDetails:
           protocol: arrow-flight
           dataformat: arrow
-    assets: # TBD List of assets as input so that multiple assets can be configured for a module?
-    - dataSetId: "m4d-notebook-sample/paysim"
+    assets:
+    - assetId: "m4d-notebook-sample/paysim"
       credentials:
         read:
           vault:
@@ -34,7 +34,7 @@ spec:
           bucket: srcbucket
           object: paysim.parq
       dataformat: parquet
-    - dataSetId: "m4d-notebook-sample/users"
+    - assetId: "m4d-notebook-sample/users"
       credentials:
         read:
           vault:
@@ -48,7 +48,7 @@ spec:
           bucket: srcbucket
           object: users.parq
       dataformat: parquet
-    - dataSetId: "m4d-notebook-sample/inventory"
+    - assetId: "m4d-notebook-sample/inventory"
       credentials:
         read:
           vault:
@@ -67,7 +67,7 @@ spec:
       name: ghcr.io/mesh-for-data/m4d-arrow-flight-transform-conf:0.1.0
     serviceModule: app1-ns1-read # name of service to be configured
     assets:
-    - dataSetId: "m4d-notebook-sample/paysim"
+    - assetId: "m4d-notebook-sample/paysim"
       actions:
       - action: redact
         column: field1
@@ -77,7 +77,7 @@ spec:
       name: ghcr.io/mesh-for-data/m4d-arrow-flight-transform-conf:0.1.0
     serviceModule: app1-ns1-read # name of service to be configured
     assets:
-    - dataSetId: "m4d-notebook-sample/users"
+    - assetId: "m4d-notebook-sample/users"
       actions:
       - action: redact
         column: blood_group
@@ -87,8 +87,12 @@ spec:
       name: ghcr.io/mesh-for-data/m4d-arrow-flight-transform-conf:0.1.0
     serviceModule: app1-ns1-read # name of service to be configured
     assets:
-    - dataSetId: "m4d-notebook-sample/inventory"
+    - assetId: "m4d-notebook-sample/inventory"
       actions:
       - action: redact
         column: field2
       dataformat: arrow
+status:
+  observedState: Not Ready
+  observedGeneration: 1
+  releases:

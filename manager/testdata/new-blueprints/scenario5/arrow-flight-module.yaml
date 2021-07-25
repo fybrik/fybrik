@@ -1,16 +1,16 @@
 apiVersion: app.m4d.ibm.com/v1alpha2
 kind: M4DModule
 metadata:
-  name: arrow-flight-read
+  name: arrow-flight-write
   namespace: m4d-system
   labels:
     version: 0.0.1
-    name: arrow-flight-read
+    name: arrow-flight-write
 spec:
   description: "This module deploys an arrow-flight service"
-  type: service
+  type: service   # deployed by fybrik
   confChart:
-    name: ghcr.io/mesh-for-data/read-module:0.1.0
+    name: ghcr.io/mesh-for-data/write-module:0.1.0
     values: {}
   statusIndicators:
   - kind: Deployment
@@ -18,16 +18,13 @@ spec:
     failureCondition: status == FAILED # TBD with correct values
     errorMessage: status.error # TBD with correct values
   capabilities:
-  - capability: read
+  - capability: write
     scope: workflow
-    sources:
+    sinks:
     - protocol: s3
       dataformat: parquet
-    - protocol: s3
-      dataformat: csv
-    plugins:
-      - pluginType: fybrik-wasm
-        dataformat: arrow
+    - protocol: m4d-arrow-flight
+      dataformat: arrow
   api:
     endpoint:
       port: 80 # Mandatory for each service

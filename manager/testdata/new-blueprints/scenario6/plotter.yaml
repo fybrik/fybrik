@@ -11,66 +11,73 @@ spec:
       matchLabels:
         app: demoapp
   assets:
-  - assetID: "m4d-notebook-sample/paysim"  # dataset requested by user
-    source:
-      credentials:
-        read:
-          vault:
-            address: http://vault.m4d-system:8200
-            authPath: /v1/auth/kubernetes/login
-            role: module
-            secretPath: /v1/kubernetes-secrets/paysim?namespace=m4d-notebook-sample
-      connection:
-        s3:
-          endpoint: localhost:8001
-          bucket: srcbucket
-          object: data.csv
-      dataformat: csv
-  - assetID: "m4d-notebook-sample/paysim-temp"  # allocated by fybrik control plane
-    advertisedID: "m4d-notebook-sample/paysim"   
-    source:
-      credentials:
-        write:
-          vault:
-            address: http://vault.m4d-system:8200
-            authPath: /v1/auth/kubernetes/login
-            role: module
-            secretPath: /v1/kubernetes-secrets/paysim-temp?namespace=m4d-notebook-sample
-      connection:
-        s3:
-          endpoint: localhost:8001
-          bucket: destbucket
-          object: data.parquet
-      dataformat: parquet
+  - assetId: "m4d-notebook-sample/paysim"  # dataset requested by user
+    credentials:
+      read:
+        vault:
+          address: http://vault.m4d-system:8200
+          authPath: /v1/auth/kubernetes/login
+          role: module
+          secretPath: /v1/kubernetes-secrets/paysim?namespace=m4d-notebook-sample
+    connection:
+      s3:
+        endpoint: localhost:8001
+        bucket: srcbucket
+        object: data.csv
+    dataformat: csv
+  - assetId: "m4d-notebook-sample/paysim-temp"  # allocated by fybrik control plane
+    advertisedAssetId: "m4d-notebook-sample/paysim" # Id that is used by user facing services
+    credentials:
+      read:
+        vault:
+          address: http://vault.m4d-system:8200
+          authPath: /v1/auth/kubernetes/login
+          role: module
+          secretPath: /v1/kubernetes-secrets/paysim-temp?namespace=m4d-notebook-sample
+      write:
+        vault:
+          address: http://vault.m4d-system:8200
+          authPath: /v1/auth/kubernetes/login
+          role: module
+          secretPath: /v1/kubernetes-secrets/paysim-temp?namespace=m4d-notebook-sample
+    connection:
+      s3:
+        endpoint: localhost:8001
+        bucket: destbucket
+        object: data.parquet
+    dataformat: parquet
   flows:
   - name: flow-paysim
     flowType: read
-    assetID: "m4d-notebook-sample/paysim"
+    assetId: "m4d-notebook-sample/paysim"
     subflows:
     - name: subflow-paysim-copy
       flowType: copy
-      trigger: init
+      triggers: 
+      - init
+        timer
       steps:
       - - name: step1
           cluster: thegreendragon
           template: copyTemplate
           parameters:
             source:
-              assetID: "m4d-notebook-sample/paysim"
+              assetId: "m4d-notebook-sample/paysim"
             sink:
-              assetID: "m4d-notebook-sample/paysim-temp"
+              assetId: "m4d-notebook-sample/paysim-temp"
     - name: subflow-paysim-read
-      trigger: workload
+      triggers:
+      - workload
       steps:
       - - name: step1
           cluster: thegreendragon
           template: readTemplate
           parameters:
             source:
-              assetID: "m4d-notebook-sample/paysim-temp"
+              assetId: "m4d-notebook-sample/paysim-temp"
             api:
               service:
-                assetID: m4d-notebook-sample/paysim-temp
+                assetID: m4d-notebook-sample/paysim # Inferred from advertisedAssetId
                 interfaceDetails:
                   protocol: arrow-flight
                   dataformat: arrow

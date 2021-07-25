@@ -1,16 +1,21 @@
 apiVersion: app.m4d.ibm.com/v1alpha2
 kind: M4DModule
 metadata:
-  name: arrow-flight-read
+  name: data-quality
   namespace: m4d-system
   labels:
     version: 0.0.1
-    name: arrow-flight-read
+    name: data-quality-module
 spec:
   description: "This module deploys an arrow-flight service"
-  type: service
+  # this field is true if this module serves multiple users. Otherwise it
+  # is false. It is used for example when setting the endpoint to
+  # access the module service - if it is a multi-user module then
+  # the service name will be fixed and will be taken from
+  # M4DModule.Capabilities.Api.endpoint.host.
+  type: service   # deployed by fybrik
   confChart:
-    name: ghcr.io/mesh-for-data/read-module:0.1.0
+    name: ghcr.io/mesh-for-data/data-quality:0.1.0
     values: {}
   statusIndicators:
   - kind: Deployment
@@ -18,16 +23,11 @@ spec:
     failureCondition: status == FAILED # TBD with correct values
     errorMessage: status.error # TBD with correct values
   capabilities:
-  - capability: read
+  - capability: data-quality
     scope: workflow
-    sources:
-    - protocol: s3
-      dataformat: parquet
-    - protocol: s3
-      dataformat: csv
     plugins:
-      - pluginType: fybrik-wasm
-        dataformat: arrow
+    - pluginTyep: metrics
+      dataformat: csv
   api:
     endpoint:
       port: 80 # Mandatory for each service

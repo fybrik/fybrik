@@ -1,0 +1,64 @@
+# Caution. This blueprint has no input. This is an output only example.
+apiVersion: app.m4d.ibm.com/v1alpha2
+kind: Blueprint
+metadata:
+  name: app1-ns1
+  labels:
+spec:
+  cluster: thegreendragon
+  appSelector: # Selector of the application that uses this workload
+    clusterName: thegreendragon
+    workloadSelector:
+      matchLabels:
+        app: demoapp
+  modules:
+  - name: app1-ns1-write
+    confChart:
+      name: ghcr.io/mesh-for-data/write-module:0.1.0
+    api:
+      service:
+        interfaceDetails:
+          protocol: arrow-flight
+          dataformat: arrow
+    assets:
+    - assetId: "paysim-processed"
+      credentials:
+        write:
+          vault:
+            address: http://vault.m4d-system:8200
+            authPath: /v1/auth/kubernetes/login
+            role: module
+            secretPath: /v1/kubernetes-secrets/paysim?namespace=m4d-notebook-sample
+      connection:
+        s3:
+          endpoint: localhost:8001
+          bucket: srcbucket
+          object: paysim-processed.parq
+      dataformat: parquet
+    - assetId: "paysim-processed"
+      connection:
+        arrow-flight:
+          assetId: "paysim-processed"
+          endpoint: "app1-ns1-data-quality"
+  - name: app1-ns1-data-quality
+    confChart:
+      name: ghcr.io/mesh-for-data/data-quality:0.1.0
+    assets:
+    - assetId: "paysim-processed"
+      api:
+        service:
+          assetId: "paysim-processed"
+          interfaceDetails:
+            protocol: arrow-flight
+            dataformat: arrow
+  - name: app1-ns1-prometheus-client
+    confChart: 
+      name: ghcr.io/mesh-for-data/prometheus-client:0.1.0
+    connection:
+      endpoint: "some-metrics-system:80"
+      protocol: "https"
+      dataformat: "json"    
+status:
+  observedState: Not Ready
+  observedGeneration: 1
+  releases:
