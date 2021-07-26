@@ -75,7 +75,7 @@ type FybrikApplicationSpec struct {
 	Selector Selector `json:"selector"`
 
 	// SecretRef points to the secret that holds credentials for each system the user has been authenticated with.
-	// The secret is deployed in M4dApplication namespace.
+	// The secret is deployed in FybrikApplication namespace.
 	// +optional
 	SecretRef string `json:"secretRef,omitempty"`
 

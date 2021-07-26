@@ -57,7 +57,7 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 }
 
 // TestFybrikApplicationController runs FybrikApplicationReconciler.Reconcile() against a
-// fake client that tracks a M4dApplication object.
+// fake client that tracks a FybrikApplication object.
 // This test does not require a Kubernetes environment to run.
 // This mechanism of testing can be used to test corner cases of the reconcile function.
 func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
