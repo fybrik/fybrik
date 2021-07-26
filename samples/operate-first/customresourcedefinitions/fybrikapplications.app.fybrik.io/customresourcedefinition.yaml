@@ -136,7 +136,7 @@ spec:
             secretRef:
               description: SecretRef points to the secret that holds credentials for
                 each system the user has been authenticated with. The secret is deployed
-                in M4dApplication namespace.
+                in FybrikApplication namespace.
               type: string
             selector:
               description: Selector enables to connect the resource to the application

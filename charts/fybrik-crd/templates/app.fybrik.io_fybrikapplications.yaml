@@ -90,7 +90,7 @@ spec:
                   type: object
                 type: array
               secretRef:
-                description: SecretRef points to the secret that holds credentials for each system the user has been authenticated with. The secret is deployed in M4dApplication namespace.
+                description: SecretRef points to the secret that holds credentials for each system the user has been authenticated with. The secret is deployed in FybrikApplication namespace.
                 type: string
               selector:
                 description: Selector enables to connect the resource to the application Application labels should match the labels in the selector. For some flows the selector may not be used.

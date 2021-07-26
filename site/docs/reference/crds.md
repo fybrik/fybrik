@@ -943,7 +943,7 @@ FybrikApplicationSpec defines the desired state of FybrikApplication.
         <td><b>secretRef</b></td>
         <td>string</td>
         <td>
-          SecretRef points to the secret that holds credentials for each system the user has been authenticated with. The secret is deployed in M4dApplication namespace.<br/>
+          SecretRef points to the secret that holds credentials for each system the user has been authenticated with. The secret is deployed in FybrikApplication namespace.<br/>
         </td>
         <td>false</td>
       </tr><tr>
