@@ -18,13 +18,13 @@ generate-base: $(TOOLBIN)/openapi-generator-cli objects/taxonomy.json
 generate-client: $(TOOLBIN)/openapi-generator-cli objects/taxonomy.json
 	mkdir -p $(ROOT_DIR)/pkg/connectors/openapiclient
 	$(TOOLBIN)/openapi-generator-cli generate -g go --additional-properties=packageName=openapiclient,isGoSubmodule=false \
-		--global-property=apis,supportingFiles -o $(ROOT_DIR)/pkg/connectors/openapiclient \
+		--global-property=apis,supportingFiles,apiDocs=false -o $(ROOT_DIR)/pkg/connectors/openapiclient \
 		--type-mappings=PolicyManagerRequest=base.PolicyManagerRequest,PolicyManagerResponse=base.PolicyManagerResponse \
 		--import-mappings=base.PolicyManagerRequest=github.com/mesh-for-data/mesh-for-data/pkg/taxonomy/model/base,base.PolicyManagerResponse=github.com/mesh-for-data/mesh-for-data/pkg/taxonomy/model/base \
-		--git-user-id "mesh-for-data" \
-		--git-repo-id "mesh-for-data/pkg/connectors/openapiclient" \
 		-i codegen.spec.yaml
-	rm -f $(ROOT_DIR)/pkg/connectors/openapiclient/go.mod $(ROOT_DIR)/pkg/connectors/openapiclient/go.sum
+	rm -f $(ROOT_DIR)/pkg/connectors/openapiclient/go.mod $(ROOT_DIR)/pkg/connectors/openapiclient/go.sum $(ROOT_DIR)/pkg/connectors/openapiclient/.travis.yml
+	rm -f $(ROOT_DIR)/pkg/connectors/openapiclient/README.md $(ROOT_DIR)/pkg/connectors/openapiclient/git_push.sh
+	rm -r $(ROOT_DIR)/pkg/connectors/openapiclient/api 
 .PHONY: clean
 clean:
 	rm -f objects/taxonomy.json
