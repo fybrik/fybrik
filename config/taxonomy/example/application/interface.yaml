@@ -1,57 +1,27 @@
 definitions:
   interface:
     oneOf:
-      - $ref: "#/definitions/flight"
-      - $ref: "#/definitions/kafka"
-      - $ref: "#/definitions/s3"
-      - $ref: "#/definitions/db2-jdbc"
-  flight:
-    type: object
-    properties:
-      protocol:
-        enum:
-          - m4d-arrow-flight
-      dataformat:
-        enum:
-          - arrow
-    required:
-      - protocol
-      - dataformat
-  kafka:
-    type: object
-    properties:
-      protocol:
-        enum:
-          - kafka
-      dataformat:
-        enum:
-          - json
-          - avro
-    required:
-      - protocol
-      - dataformat
-  s3:
-    type: object
-    properties:
-      protocol:
-        enum:
-          - s3
-      dataformat:
-        enum:
-          - csv
-          - parquet
-    required:
-      - protocol
-      - dataformat
-  db2-jdbc:
-    type: object
-    properties:
-      protocol:
-        enum:
-          - db2-jdbc
-      dataformat:
-        enum:
-          - db2-jdbc
-    required:
-      - protocol
-      - dataformat
+      - properties:
+          protocol:
+            enum: [m4d-arrow-flight]
+          dataformat:
+            enum: [arrow]
+        required: [protocol, dataformat]
+      - properties:
+          protocol:
+            enum: [kafka]
+          dataformat:
+            enum: [json, avro]
+        required: [protocol, dataformat]
+      - properties:
+          protocol:
+            enum: [s3]
+          dataformat:
+            enum: [csv, parquet]
+        required: [protocol, dataformat]
+      - properties:
+          protocol:
+            enum: [db2-jdbc]
+          dataformat:
+            enum: [db2-jdbc]
+        required: [protocol, dataformat]

@@ -1,0 +1,33 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "application.values.schema.json",
+    "title": "Application Values Taxonomy",
+    "type": "object",
+    "description": "Values contributed to by the mesh for data applications.",
+    "properties": {
+        "spec": {
+            "type": "object",
+            "properties": {
+                "appInfo": {"$ref": "taxonomy.json#/definitions/appInfo"},
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "requirements": {
+                                "type": "object",
+                                "properties": {
+                                    "interface": { "$ref": "taxonomy.json#/definitions/interface"}
+                                },
+                                "required": ["interface"]
+                            }
+                        },
+                        "required": ["requirements"]
+                    }
+                }
+            },
+            "required": ["appInfo", "data"]
+        }
+    },
+    "required": ["spec"]
+} 
