@@ -761,8 +761,8 @@ github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182aff
 github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0/go.mod h1:fcEyUyXZXoV4Abw8DX0t7wyL8mCDxXyU4iAFZfT3IHw=
 github.com/fybrik/helm/v3 v3.6.2-fybrik h1:Jk/bQZYj5olDXJTBVaxdKJnQNayY/anSDNa3PgVXUxg=
 github.com/fybrik/helm/v3 v3.6.2-fybrik/go.mod h1:mIIus8EOqj+obtycw3sidsR4ORr2aFDmXMSI3k+oeVY=
-github.com/fybrik/openapi2crd v0.3.2 h1:zeuHqh17Nz3e2ZZwnnRBWHadKvUR9hnXmh7CxKPmH5c=
-github.com/fybrik/openapi2crd v0.3.2/go.mod h1:71EfefBnfYEi60EMCv5mBLDkWSyCnbtTqKQuKYh/DS8=
+fybrik.io/openapi2crd v0.3.2 h1:zeuHqh17Nz3e2ZZwnnRBWHadKvUR9hnXmh7CxKPmH5c=
+fybrik.io/openapi2crd v0.3.2/go.mod h1:71EfefBnfYEi60EMCv5mBLDkWSyCnbtTqKQuKYh/DS8=
 github.com/miekg/dns v1.0.14/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
 github.com/mitchellh/cli v1.0.0/go.mod h1:hNIlj7HEI86fIcpObd7a0FcrxTWetlwJDGcceTlRvqc=
 github.com/mitchellh/copystructure v1.0.0/go.mod h1:SNtv71yrdKgLRyLFxmLdkAbkKEFWgYaq1OVrnRcwhnw=

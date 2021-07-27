@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 
 	"emperror.dev/errors"
-	"github.com/fybrik/openapi2crd/pkg/generator"
+	"fybrik.io/openapi2crd/pkg/generator"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/xeipuuv/gojsonschema"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
