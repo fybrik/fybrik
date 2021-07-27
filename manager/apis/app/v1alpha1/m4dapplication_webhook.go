@@ -6,9 +6,8 @@ package v1alpha1
 import (
 	"encoding/json"
 	log "log"
-	"path/filepath"
 
-	"github.com/xeipuuv/gojsonschema"
+	validate "github.com/mesh-for-data/mesh-for-data/pkg/taxonomy/validate"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -30,14 +29,15 @@ var _ webhook.Validator = &M4DApplication{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *M4DApplication) ValidateCreate() error {
 	log.Printf("Validating m4dapplication %s for creation", r.Name)
-	return r.validateM4DApplication()
+	taxonomyFile := "/tmp/taxonomy/application.values.schema.json"
+	return r.validateM4DApplication(taxonomyFile)
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *M4DApplication) ValidateUpdate(old runtime.Object) error {
 	log.Printf("Validating m4dapplication %s for update", r.Name)
-
-	return r.validateM4DApplication()
+	taxonomyFile := "/tmp/taxonomy/application.values.schema.json"
+	return r.validateM4DApplication(taxonomyFile)
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
@@ -45,7 +45,7 @@ func (r *M4DApplication) ValidateDelete() error {
 	return nil
 }
 
-func (r *M4DApplication) validateM4DApplication() error {
+func (r *M4DApplication) validateM4DApplication(taxonomyFile string) error {
 	var allErrs []*field.Error
 
 	// Convert M4D application Go struct to JSON
@@ -54,29 +54,10 @@ func (r *M4DApplication) validateM4DApplication() error {
 		return err
 	}
 
-	// Validate against strict taxonomy
-	path, err := filepath.Abs("/tmp/taxonomy/application.values.schema.json")
-	if err != nil {
-		return err
-	}
+	// Validate M4D application against taxonomy
+	allErrs = validate.validateResource(applicationJSON, taxonomyFile, "M4D application")
 
-	taxonomyLoader := gojsonschema.NewReferenceLoader("file://" + path)
-	documentLoader := gojsonschema.NewStringLoader(string(applicationJSON))
-	result, err := gojsonschema.Validate(taxonomyLoader, documentLoader)
-	if err != nil {
-		return err
-	}
-
-	if result.Valid() {
-		log.Printf("This M4D application is valid\n")
-	} else {
-		log.Printf("This M4D application is not valid. see errors :\n")
-		for _, desc := range result.Errors() {
-			log.Printf("- %s\n", desc)
-			allErrs = append(allErrs, field.Invalid(field.NewPath(desc.Field()), desc.Value(), desc.Description()))
-		}
-	}
-
+	// Return any error
 	if len(allErrs) == 0 {
 		return nil
 	}
