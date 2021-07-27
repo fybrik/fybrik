@@ -1,0 +1,21 @@
+definitions:
+  appInfo:
+    type: object
+    properties:
+      intent:
+        enum:
+          - Marketing
+          - Customer Support
+          - Fraud Detection
+          - Customer Behavior Analysis
+      role:
+        enum:
+          - Sales
+          - HR
+          - Customer Support
+          - Business Analyst
+          - Data Scientist
+          - Security
+    required:
+      - intent
+      - role 

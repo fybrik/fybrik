@@ -17,3 +17,10 @@ definitions:
     type: string
   ProcessingLocation:
     type: string
+  interface:
+    type: object
+    properties:
+      protocol:
+        type: string
+      dataformat:
+        type: string
