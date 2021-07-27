@@ -9,7 +9,7 @@ metadata:
 spec:
   description: "This module deploys an arrow-flight service"
   type: service   # service=deployed by fybrik, config=configures another service, plugin=add on to a service
-  confChart:
+  chart:
     name: ghcr.io/mesh-for-data/read-module:0.1.0
     values: {}
   statusIndicators:
@@ -19,12 +19,12 @@ spec:
     errorMessage: status.error # TBD with correct values
   capabilities:
   - capability: read
-    scope: workflow
+    scope: workload
     sources:
     - protocol: s3
       dataformat: parquet   # doesn't know how to read csv!
-  api:
-    endpoint:
-      port: 80 # Mandatory for each service
-    protocol: m4d-arrow-flight
-    dataformat: arrow
+    api:
+      endpoint:
+        port: 80 # Mandatory for each service
+      protocol: m4d-arrow-flight
+      dataformat: arrow

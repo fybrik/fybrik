@@ -12,7 +12,7 @@ spec:
         app: demoapp
   modules:
   - name: app1-ns1-read
-    confChart:
+    chart:
       name: ghcr.io/mesh-for-data/arrow-flight-config-module:0.1.0
     api:
       service:
@@ -63,7 +63,7 @@ spec:
           object: inventory.parq
       dataformat: parquet
   - name: app1-ns1-transform-read
-    confChart:
+    chart:
       name: ghcr.io/mesh-for-data/arrow-flight-config-module:0.1.0
     assets:
     - assetID: m4d-notebook-sample/paysim-step2  
@@ -82,7 +82,7 @@ spec:
           assetId: inventory-step2
           endpoint: "app1-ns1-transform-read"
   - name: transform-step-paysim
-    confChart:
+    chart:
       name: ghcr.io/mesh-for-data/m4d-arrow-flight-transform-conf:0.1.0
     serviceModule: app1-ns1-transform-read # name of service to be configured
     assets:
@@ -92,7 +92,7 @@ spec:
         column: field1
       dataformat: arrow
   - name: transform-step-users
-    confChart:
+    chart:
       name: ghcr.io/mesh-for-data/m4d-arrow-flight-transform-conf:0.1.0
     serviceModule: app1-ns1-transform-read # name of service to be configured
     assets:
@@ -102,7 +102,7 @@ spec:
         column: blood_group
       dataformat: arrow
   - name: transform-step-inventory
-    confChart:
+    chart:
       name: ghcr.io/mesh-for-data/m4d-arrow-flight-transform-conf:0.1.0
     serviceModule: app1-ns1-transform-read # name of service to be configured
     assets:

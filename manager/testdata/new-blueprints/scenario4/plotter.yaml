@@ -190,17 +190,17 @@ spec:
     modules:
     - name: arrow-flight-config
       kind: M4DModule
-      confChart:
+      chart:
         name: ghcr.io/mesh-for-data/arrow-flight-config-module:0.1.0
     - name: transform-config
       kind: M4DModule
-      confChart:
+      chart:
         name: ghcr.io/mesh-for-data/m4d-arrow-flight-transform-conf:0.1.0
   - name: read-template
     modules:
     - name: arrow-flight-config
       kind: M4DModule
-      confChart:
+      chart:
         name: ghcr.io/mesh-for-data/arrow-flight-config-module:0.1.0
 status:
   observedState: Not Ready

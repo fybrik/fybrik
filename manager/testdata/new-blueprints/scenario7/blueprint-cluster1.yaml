@@ -12,7 +12,7 @@ spec:
         app: demoapp
   modules:
   - name: app1-ns1-copy
-    confChart:
+    chart:
       name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
     source:
       assetId: "m4d-notebook-sample/paysim"

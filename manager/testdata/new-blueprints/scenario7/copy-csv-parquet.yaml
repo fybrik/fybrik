@@ -9,7 +9,7 @@ metadata:
 spec:
   description: "This module configures the pre-deployed movement operator to copy one data set from source to sink."
   type: service  # No dependency since movement operator is always deployed with fybrik
-  confChart:
+  chart:
       name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
       values: {}   
   capabilities:

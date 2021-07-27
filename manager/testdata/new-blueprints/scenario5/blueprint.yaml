@@ -13,7 +13,7 @@ spec:
         app: demoapp
   modules:
   - name: app1-ns1-write
-    confChart:
+    chart:
       name: ghcr.io/mesh-for-data/write-module:0.1.0
     api:
       service:
@@ -41,7 +41,7 @@ spec:
           assetId: "paysim-processed"
           endpoint: "app1-ns1-data-quality"
   - name: app1-ns1-data-quality
-    confChart:
+    chart:
       name: ghcr.io/mesh-for-data/data-quality:0.1.0
     assets:
     - assetId: "paysim-processed"
@@ -52,7 +52,7 @@ spec:
             protocol: arrow-flight
             dataformat: arrow
   - name: app1-ns1-prometheus-client
-    confChart: 
+    chart: 
       name: ghcr.io/mesh-for-data/prometheus-client:0.1.0
     connection:
       endpoint: "some-metrics-system:80"

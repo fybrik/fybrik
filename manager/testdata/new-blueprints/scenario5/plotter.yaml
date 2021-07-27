@@ -64,13 +64,13 @@ spec:
     modules:
     - name: arrow-flight-write
       kind: M4DModule
-      confChart:
+      chart:
         name: ghcr.io/mesh-for-data/write-module:0.1.0
   - name: qualityTemplate
     modules:
     - name: data-quality
       kind: M4DModule
-      confChart:
+      chart:
         name: ghcr.io/mesh-for-data/data-quality:0.1.0
 status:
   observedState: Ready

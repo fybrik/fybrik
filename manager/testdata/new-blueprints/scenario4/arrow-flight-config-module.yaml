@@ -9,12 +9,12 @@ metadata:
 spec:
   description: "This module deploys an arrow-flight service"
   type: config  # assumes arrow flight server pre-installed
-  confChart:
+  chart:
     name: ghcr.io/mesh-for-data/arrow-flight-config-module:0.1.0
     values: {}
   capabilities:
   - capability: read
-    scope: workflow
+    scope: cluster
     sources:
     - protocol: s3
       dataformat: parquet
@@ -23,8 +23,8 @@ spec:
     plugins:
       - pluginType: fybrik-wasm
         dataformat: arrow
-  api:
-    endpoint:
-      port: 80 # Mandatory for each service
-    protocol: m4d-arrow-flight
-    dataformat: arrow
+    api:
+      endpoint:
+        port: 80 # Mandatory for each service
+      protocol: m4d-arrow-flight
+      dataformat: arrow

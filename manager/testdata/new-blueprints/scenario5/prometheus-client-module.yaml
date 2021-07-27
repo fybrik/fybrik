@@ -10,7 +10,7 @@ spec:
   description: "This configures a client for the data quality"
   type: plugin
   pluginType: metrics  # plugin that acts as a prometheus client providing a standard interface for all metrics managers
-  confChart:
+  chart:
     name: ghcr.io/mesh-for-data/prometheus-push-client:0.1.0
     values: {}
   statusIndicators:

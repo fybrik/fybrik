@@ -86,13 +86,13 @@ spec:
     modules:
     - name: arrow-flight-read
       kind: M4DModule
-      confChart:
+      chart:
         name: ghcr.io/mesh-for-data/read-module:0.1.0
   - name: copyTemplate
     modules:
     - name: implicit-copy-batch-s3
       kind: M4DModule
-      confChart:
+      chart:
         name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
 status:
   observedState: Not Ready

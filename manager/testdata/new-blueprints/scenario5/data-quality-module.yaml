@@ -14,7 +14,7 @@ spec:
   # the service name will be fixed and will be taken from
   # M4DModule.Capabilities.Api.endpoint.host.
   type: service   # deployed by fybrik
-  confChart:
+  chart:
     name: ghcr.io/mesh-for-data/data-quality:0.1.0
     values: {}
   statusIndicators:
@@ -24,12 +24,12 @@ spec:
     errorMessage: status.error # TBD with correct values
   capabilities:
   - capability: data-quality
-    scope: workflow
+    scope: workload
     plugins:
     - pluginTyep: metrics
       dataformat: csv
-  api:
-    endpoint:
-      port: 80 # Mandatory for each service
-    protocol: m4d-arrow-flight
-    dataformat: arrow
+    api:
+      endpoint:
+        port: 80 # Mandatory for each service
+      protocol: m4d-arrow-flight
+      dataformat: arrow

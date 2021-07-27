@@ -12,7 +12,7 @@ spec:
         app: demoapp
   modules:
   - name: app1-ns1-read
-    confChart:
+    chart:
       name: ghcr.io/mesh-for-data/read-module:0.1.0
     api:
       service:
