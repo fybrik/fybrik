@@ -86,7 +86,7 @@ spec:
             actions:
             - action: redact
               column: field1
-      - - name: step2
+        - name: step2
           cluster: thegreendragon
           template: read-template
           parameters:
