@@ -10,17 +10,18 @@ spec:
   description: "This module configures the pre-deployed movement operator to copy one data set from source to sink."
   type: service  # No dependency since movement operator is always deployed with fybrik
   chart:
-      name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
-      values: {}   
+    name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
+    values: {}   
   capabilities:
-    - capability: copy
+    copy:
       scope: asset
-      source:
-        protocol: s3
-        dataformat: csv   
-      sink:
-        protocol: s3
-        dataformat: parquet
+      supportedInterfaces:
+      - source:
+          protocol: s3
+          dataformat: csv   
+        sink:
+          protocol: s3
+          dataformat: parquet
       actions:   # Not being used in current scenario
       - id: redact-ID
         level: 2  # column

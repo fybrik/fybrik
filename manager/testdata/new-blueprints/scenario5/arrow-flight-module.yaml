@@ -18,13 +18,15 @@ spec:
     failureCondition: status == FAILED # TBD with correct values
     errorMessage: status.error # TBD with correct values
   capabilities:
-  - capability: write
-    scope: workload
-    sinks:
-    - protocol: s3
-      dataformat: parquet
-    - protocol: m4d-arrow-flight
-      dataformat: arrow
+    write:
+      scope: workload
+      supportedInterfaces:
+      - sink:
+          protocol: s3
+          dataformat: parquet
+      - sink: 
+          protocol: m4d-arrow-flight
+          dataformat: arrow
     api:
       endpoint:
         port: 80 # Mandatory for each service

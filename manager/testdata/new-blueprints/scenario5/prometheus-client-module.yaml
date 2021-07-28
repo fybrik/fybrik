@@ -15,9 +15,10 @@ spec:
     values: {}
   statusIndicators:
   capabilities:
-  - capability: write
-    scope: asset
-    sink:
-      endpoint: "some-metrics-system:80"
-      protocol: "https"
-      dataformat: "json"
+    write:
+      scope: asset
+      supportedInterfaces:
+      - sink:
+          endpoint: "some-metrics-system:80"
+          protocol: "https"
+          dataformat: "json"

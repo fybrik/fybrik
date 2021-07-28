@@ -23,13 +23,17 @@ spec:
     failureCondition: status == FAILED # TBD with correct values
     errorMessage: status.error # TBD with correct values
   capabilities:
-  - capability: data-quality
-    scope: workload
-    plugins:
-    - pluginTyep: metrics
-      dataformat: csv
-    api:
-      endpoint:
-        port: 80 # Mandatory for each service
-      protocol: m4d-arrow-flight
-      dataformat: arrow
+    data-quality:
+      scope: workload
+      supportedInterfaces:
+      - source:
+          protocol: m4d-arrow-flight
+          dataformat: parquet
+      plugins:
+      - pluginTyep: metrics
+        dataformat: csv
+      api:
+        endpoint:
+          port: 80 # Mandatory for each service
+        protocol: m4d-arrow-flight
+        dataformat: arrow

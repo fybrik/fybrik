@@ -14,15 +14,16 @@ spec:
   pluginType: fybrik-wasm  # we assume each plugin module supports only one type of plugin mechanism - ex: wasm, vault
   statusIndicators:
   capabilities:
-  - capability: transform
-    scope: asset
-    source:
-       dataformat: arrow
-    actions:
-    - id: redact
-      level: column
-    - id: remove
-      level: column
+    transform:
+      scope: asset
+      supportedInterfaces:
+      - source:
+        dataformat: arrow
+      actions:
+      - id: redact
+        level: column
+      - id: remove
+        level: column
   dependencies:    # Do we need this dependency?
   - kind: service
     name: arrow-flight-config

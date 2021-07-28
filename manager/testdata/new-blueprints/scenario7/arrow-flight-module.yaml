@@ -18,11 +18,12 @@ spec:
     failureCondition: status == FAILED # TBD with correct values
     errorMessage: status.error # TBD with correct values
   capabilities:
-  - capability: read
-    scope: workload
-    sources:
-    - protocol: s3
-      dataformat: parquet   # doesn't know how to read csv!
+    read:
+      scope: workload
+      supportedInterfaces:
+      - source:
+          protocol: s3
+          dataformat: parquet   # doesn't know how to read csv!
     api:
       endpoint:
         port: 80 # Mandatory for each service
