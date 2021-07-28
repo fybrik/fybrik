@@ -12,7 +12,7 @@ import (
 )
 
 // ValidateResource validates the given resource JSON against the taxonomy file provided
-func ValidateResource(resourceJSON []byte, taxonomy string, resourceName string) []*field.Error {
+func TaxonomyCheck(resourceJSON []byte, taxonomy string, resourceName string) []*field.Error {
 	var allErrs []*field.Error
 
 	// Load taxonomy from file mounted in configMap
