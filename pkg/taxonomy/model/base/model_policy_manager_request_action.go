@@ -16,8 +16,8 @@ import (
 
 // PolicyManagerRequestAction struct for PolicyManagerRequestAction
 type PolicyManagerRequestAction struct {
-	ActionType *ActionType `json:"actionType,omitempty"`
-	ProcessingLocation *string `json:"processingLocation,omitempty"`
+	ActionType         *ActionType `json:"actionType,omitempty"`
+	ProcessingLocation *string     `json:"processingLocation,omitempty"`
 }
 
 // NewPolicyManagerRequestAction instantiates a new PolicyManagerRequestAction object
@@ -147,5 +147,3 @@ func (v *NullablePolicyManagerRequestAction) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

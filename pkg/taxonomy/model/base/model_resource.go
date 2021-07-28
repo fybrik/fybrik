@@ -17,9 +17,9 @@ import (
 // Resource struct for Resource
 type Resource struct {
 	// Name of the data set
-	Name string `json:"name"`
-	Tags *map[string]interface{} `json:"tags,omitempty"`
-	Columns *[]ResourceColumns `json:"columns,omitempty"`
+	Name    string                  `json:"name"`
+	Tags    *map[string]interface{} `json:"tags,omitempty"`
+	Columns *[]ResourceColumns      `json:"columns,omitempty"`
 }
 
 // NewResource instantiates a new Resource object
@@ -53,7 +53,7 @@ func (o *Resource) GetName() string {
 // GetNameOk returns a tuple with the Name field value
 // and a boolean to check if the value has been set.
 func (o *Resource) GetNameOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Name, true
@@ -177,5 +177,3 @@ func (v *NullableResource) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

@@ -102,7 +102,6 @@ func (m *Selector) AddModuleInstances(args *app.ModuleArguments, item DataInfo, 
 
 // SupportsGovernanceActions checks whether the module supports the required agovernance actions for the capability requested
 func (m *Selector) SupportsGovernanceActions(module *app.M4DModule, actions []*pb.EnforcementAction) bool {
-
 	// Loop over the actions requested for the declared capability
 	for _, action := range actions {
 		// If any one of the actions is not supported, return false
@@ -115,7 +114,6 @@ func (m *Selector) SupportsGovernanceActions(module *app.M4DModule, actions []*p
 
 // SupportsGovernanceAction checks whether the module supports the required governance action
 func (m *Selector) SupportsGovernanceAction(module *app.M4DModule, action *pb.EnforcementAction) bool {
-
 	// Check if the module supports the required governance action
 	if cap, hasCapability := module.Spec.Capabilities[string(m.Capability)]; hasCapability {
 		// Loop over the data transforms (actions) performed by the module for this capability
