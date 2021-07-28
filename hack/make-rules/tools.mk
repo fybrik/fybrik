@@ -109,6 +109,11 @@ $(TOOLBIN)/openapi-generator-cli:
 	cd $(TOOLS_DIR); chmod +x ./install_openapi-generator-cli.sh; ./install_openapi-generator-cli.sh
 	$(call post-install-check)
 
+INSTALL_TOOLS += $(TOOLBIN)/vangen
+$(TOOLBIN)/vangen:
+	cd $(TOOLS_DIR); chmod +x ./install_vangen.sh; ./install_vangen.sh
+	$(call post-install-check)
+
 INSTALL_TOOLS += $(TOOLBIN)/crdoc
 $(TOOLBIN)/crdoc:
 	GOBIN=$(ABSTOOLBIN) go install github.com/mesh-for-data/crdoc@v0.3.0

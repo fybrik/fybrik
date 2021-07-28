@@ -1,0 +1,19 @@
+{
+    "domain": "fybrik.io",
+    "repositories": [
+      {
+        "prefix": "fybrik",
+        "subs": [
+          "pkg/serde",
+          "pkg/taxonomy",
+          "pkg/connectors/protobuf",
+          "pkg/vault"
+        ],
+        "url": "https://github.com/fybrik/fybrik"
+      },
+      {
+        "prefix": "openapi2crd",
+        "url": "https://github.com/fybrik/openapi2crd"
+    }
+  ]
+}
