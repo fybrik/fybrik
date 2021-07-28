@@ -29,8 +29,8 @@ func TestValidApplication(t *testing.T) {
 		return
 	}
 	taxonomyFile := "../../../../charts/m4d/files/taxonomy/application.values.schema.json"
-	errors := m4dApp.validateM4DApplication(taxonomyFile)
-	assert.Nil(t, errors, "No error should be found")
+	validateErr := m4dApp.validateM4DApplication(taxonomyFile)
+	assert.Nil(t, validateErr, "No error should be found")
 }
 
 func TestInvalidAppInfo(t *testing.T) {
@@ -51,11 +51,8 @@ func TestInvalidAppInfo(t *testing.T) {
 	}
 
 	taxonomyFile := "../../../../charts/m4d/files/taxonomy/application.values.schema.json"
-	errors := (*m4dApp).validateM4DApplication(taxonomyFile)
-	assert.NotNil(t, errors)
-	assert.Len(t, errors, 2)
-	// assert.Equal(t, "spec.appInfo", errors[0].Field.errorList)
-	// assert.Equal(t, "spec.appInfo.role", errors[1].Field)
+	validateErr := (*m4dApp).validateM4DApplication(taxonomyFile)
+	assert.NotNil(t, validateErr)
 }
 
 func TestInvalidInterface(t *testing.T) {
@@ -76,8 +73,6 @@ func TestInvalidInterface(t *testing.T) {
 	}
 
 	taxonomyFile := "../../../../charts/m4d/files/taxonomy/application.values.schema.json"
-	errors := m4dApp.validateM4DApplication(taxonomyFile)
-	assert.Len(t, errors, 2)
-	// assert.Equal(t, "spec.data.0.requirements.interface", errors[0].Field)
-	// assert.Equal(t, "spec.data.0.requirements.interface.dataformat", errors[1].Field)
+	validateErr := (*m4dApp).validateM4DApplication(taxonomyFile)
+	assert.NotNil(t, validateErr)
 }

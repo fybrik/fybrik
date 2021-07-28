@@ -55,7 +55,7 @@ func (r *M4DApplication) validateM4DApplication(taxonomyFile string) error {
 	}
 
 	// Validate M4D application against taxonomy
-	allErrs = validate.validateResource(applicationJSON, taxonomyFile, "M4D application")
+	allErrs = validate.ValidateResource(applicationJSON, taxonomyFile, "M4D application")
 
 	// Return any error
 	if len(allErrs) == 0 {

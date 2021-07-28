@@ -11,8 +11,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
-// validateResource validates the given resource JSON against the taxonomy file provided
-func validateResource(resourceJSON []byte, taxonomy string, resourceName string) []*field.Error {
+// ValidateResource validates the given resource JSON against the taxonomy file provided
+func ValidateResource(resourceJSON []byte, taxonomy string, resourceName string) []*field.Error {
 	var allErrs []*field.Error
 
 	// Load taxonomy from file mounted in configMap
