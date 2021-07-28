@@ -52,7 +52,7 @@ func TestInvalidAppInfo(t *testing.T) {
 
 	taxonomyFile := "../../../../charts/m4d/files/taxonomy/application.values.schema.json"
 	validateErr := (*m4dApp).validateM4DApplication(taxonomyFile)
-	assert.NotNil(t, validateErr)
+	assert.NotNil(t, validateErr, "Invalid appInfo error should be found")
 }
 
 func TestInvalidInterface(t *testing.T) {
@@ -74,5 +74,5 @@ func TestInvalidInterface(t *testing.T) {
 
 	taxonomyFile := "../../../../charts/m4d/files/taxonomy/application.values.schema.json"
 	validateErr := (*m4dApp).validateM4DApplication(taxonomyFile)
-	assert.NotNil(t, validateErr)
+	assert.NotNil(t, validateErr, "Invalid interface error should be found")
 }
