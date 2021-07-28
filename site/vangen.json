@@ -5,15 +5,61 @@
         "prefix": "fybrik",
         "subs": [
           "pkg/serde",
+          "pkg/slices",
           "pkg/taxonomy",
           "pkg/connectors/protobuf",
-          "pkg/vault"
+          "pkg/vault",
+          "pkg/helm",
+          "pkg/storage",
+          "pkg/taxonomy",
+          "pkg/taxonomy/model",
+          "pkg/taxonomy/model/base",
+          "pkg/taxonomy/compile",
+          "pkg/taxonomy/io",
+          "pkg/connectors/protobuf",
+          "pkg/connectors/clients",
+          "pkg/multicluster/local",
+          "pkg/multicluster",
+          "pkg/multicluster/dummy",
+          "pkg/multicluster/razee",
+          "connectors/katalog",
+          "connectors/katalog/pkg/connector",
+          "connectors/katalog/pkg/taxonomy",
+          "connectors/katalog/pkg/api",
+          "connectors/opa/lib",
+          "connectors/opa/testutil",
+          "connectors/opa",
+          "manager",
+          "manager/controllers/mockup",
+          "manager/controllers/utils",
+          "manager/controllers/motion",
+          "manager/controllers/app",
+          "manager/apis/motion/v1alpha1",
+          "manager/apis/app/v1alpha1",
+          "manager/controllers"
+
         ],
         "url": "https://github.com/fybrik/fybrik"
       },
       {
         "prefix": "openapi2crd",
+        "subs": [
+          "pkg/exporter",
+          "pkg/generator",
+          "pkg/convert",
+          "pkg/config"
+        ],
         "url": "https://github.com/fybrik/openapi2crd"
-    }
+      },
+      {
+        "prefix": "crdoc",
+        "subs": [
+          "pkg/pools",
+          "pkg/functions",
+          "pkg/builder"
+         ],
+         "url": "https://github.com/fybrik/crdoc"
+      }
+    
   ]
 }
