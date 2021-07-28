@@ -25,6 +25,8 @@ Resource Types:
 
 - [Plotter](#plotter)
 
+- [SmartBlueprint](#smartblueprint)
+
 
 
 
@@ -3178,6 +3180,1073 @@ ObservedState includes information to be reported back to the M4DApplication res
       </tr></tbody>
 </table>
 
+### SmartBlueprint
+<sup><sup>[↩ Parent](#appm4dibmcomv1alpha1 )</sup></sup>
+
+
+
+
+
+
+SmartBlueprint is the Schema for the smartpointers API
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+      <td><b>apiVersion</b></td>
+      <td>string</td>
+      <td>app.m4d.ibm.com/v1alpha1</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b>kind</b></td>
+      <td>string</td>
+      <td>SmartBlueprint</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
+      <td>object</td>
+      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
+      <td>true</td>
+      </tr><tr>
+        <td><b><a href="#smartblueprintspec">spec</a></b></td>
+        <td>object</td>
+        <td>
+          SmartBlueprintSpec defines the desired state of SmartBlueprint<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#smartblueprintstatus">status</a></b></td>
+        <td>object</td>
+        <td>
+          SmartBlueprintStatus defines the observed state of SmartBlueprint<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec
+<sup><sup>[↩ Parent](#smartblueprint)</sup></sup>
+
+
+
+SmartBlueprintSpec defines the desired state of SmartBlueprint
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>entrypoint</b></td>
+        <td>string</td>
+        <td>
+          m4dapplication name that this smart blueprint belogs to<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#smartblueprintspecstepsindex">steps</a></b></td>
+        <td>[]object</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#smartblueprintspectemplatesindex">templates</a></b></td>
+        <td>[]object</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index]
+<sup><sup>[↩ Parent](#smartblueprintspec)</sup></sup>
+
+
+
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#smartblueprintspecstepsindexarguments">arguments</a></b></td>
+        <td>object</td>
+        <td>
+          Arguments are the arguments to this step.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#smartblueprintspecstepsindexstepconfigurationindex">stepConfiguration</a></b></td>
+        <td>[]object</td>
+        <td>
+          <br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>transformations</b></td>
+        <td>[]object</td>
+        <td>
+          Transformations are different types of processing that may be done to the data<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>assetID</b></td>
+        <td>string</td>
+        <td>
+          AssetID is the asset id which this step is needed for<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name is the name of the instance of the module. For example, if the application is named "notebook" and an implicitcopy module is deemed necessary.  The FlowStep name would be notebook-implicitcopy.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>template</b></td>
+        <td>string</td>
+        <td>
+          Template is the name of the specification in the Blueprint describing how to instantiate a component indicated by the module.  It is the name of a M4DModule CRD. For example: implicit-copy-db2wh-to-s3-latest<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].arguments
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindex)</sup></sup>
+
+
+
+Arguments are the arguments to this step.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#smartblueprintspecstepsindexargumentsappselector">appSelector</a></b></td>
+        <td>object</td>
+        <td>
+          AppSelector is the label selector to check if the pods match the m4dapplication labels.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#smartblueprintspecstepsindexargumentsdestination">destination</a></b></td>
+        <td>object</td>
+        <td>
+          Destination is the output of this step. it can be a data source or another step.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#smartblueprintspecstepsindexargumentsmoduleselector">moduleSelector</a></b></td>
+        <td>object</td>
+        <td>
+          ModuleSelector is the label selector to check if the pods match the module labels.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>service</b></td>
+        <td>object</td>
+        <td>
+          <br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#smartblueprintspecstepsindexargumentssource">source</a></b></td>
+        <td>object</td>
+        <td>
+          Source is the input to this step. it can be a data source or another step.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].arguments.appSelector
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindexarguments)</sup></sup>
+
+
+
+AppSelector is the label selector to check if the pods match the m4dapplication labels.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#smartblueprintspecstepsindexargumentsappselectormatchexpressionsindex">matchExpressions</a></b></td>
+        <td>[]object</td>
+        <td>
+          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>matchLabels</b></td>
+        <td>map[string]string</td>
+        <td>
+          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].arguments.appSelector.matchExpressions[index]
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindexargumentsappselector)</sup></sup>
+
+
+
+A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>values</b></td>
+        <td>[]string</td>
+        <td>
+          values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          key is the label key that the selector applies to.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>operator</b></td>
+        <td>string</td>
+        <td>
+          operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].arguments.destination
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindexarguments)</sup></sup>
+
+
+
+Destination is the output of this step. it can be a data source or another step.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>connection</b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>format</b></td>
+        <td>string</td>
+        <td>
+          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#smartblueprintspecstepsindexargumentsdestinationvault">vault</a></b></td>
+        <td>object</td>
+        <td>
+          Holds details for retrieving credentials by the modules from Vault store.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].arguments.destination.vault
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindexargumentsdestination)</sup></sup>
+
+
+
+Holds details for retrieving credentials by the modules from Vault store.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>address</b></td>
+        <td>string</td>
+        <td>
+          Address is Vault address<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>authPath</b></td>
+        <td>string</td>
+        <td>
+          AuthPath is the path to auth method i.e. kubernetes<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>role</b></td>
+        <td>string</td>
+        <td>
+          Role is the Vault role used for retrieving the credentials<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>secretPath</b></td>
+        <td>string</td>
+        <td>
+          SecretPath is the path of the secret holding the Credentials in Vault<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].arguments.moduleSelector
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindexarguments)</sup></sup>
+
+
+
+ModuleSelector is the label selector to check if the pods match the module labels.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#smartblueprintspecstepsindexargumentsmoduleselectormatchexpressionsindex">matchExpressions</a></b></td>
+        <td>[]object</td>
+        <td>
+          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>matchLabels</b></td>
+        <td>map[string]string</td>
+        <td>
+          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].arguments.moduleSelector.matchExpressions[index]
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindexargumentsmoduleselector)</sup></sup>
+
+
+
+A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>values</b></td>
+        <td>[]string</td>
+        <td>
+          values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          key is the label key that the selector applies to.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>operator</b></td>
+        <td>string</td>
+        <td>
+          operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].arguments.source
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindexarguments)</sup></sup>
+
+
+
+Source is the input to this step. it can be a data source or another step.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>connection</b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>format</b></td>
+        <td>string</td>
+        <td>
+          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#smartblueprintspecstepsindexargumentssourcevault">vault</a></b></td>
+        <td>object</td>
+        <td>
+          Holds details for retrieving credentials by the modules from Vault store.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].arguments.source.vault
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindexargumentssource)</sup></sup>
+
+
+
+Holds details for retrieving credentials by the modules from Vault store.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>address</b></td>
+        <td>string</td>
+        <td>
+          Address is Vault address<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>authPath</b></td>
+        <td>string</td>
+        <td>
+          AuthPath is the path to auth method i.e. kubernetes<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>role</b></td>
+        <td>string</td>
+        <td>
+          Role is the Vault role used for retrieving the credentials<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>secretPath</b></td>
+        <td>string</td>
+        <td>
+          SecretPath is the path of the secret holding the Credentials in Vault<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].stepConfiguration[index]
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindex)</sup></sup>
+
+
+
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#smartblueprintspecstepsindexstepconfigurationindexappselector">appSelector</a></b></td>
+        <td>object</td>
+        <td>
+          AppSelector is the label selector to check if the pods match the m4dapplication labels.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#smartblueprintspecstepsindexstepconfigurationindexdestinationselector">destinationSelector</a></b></td>
+        <td>object</td>
+        <td>
+          DestinationSelector is the label selector to check if the pods match the labels.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#smartblueprintspecstepsindexstepconfigurationindexmoduleselector">moduleSelector</a></b></td>
+        <td>object</td>
+        <td>
+          ModuleSelector is the label selector to check if the pods match the module labels.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#smartblueprintspecstepsindexstepconfigurationindexsourceselector">sourceSelector</a></b></td>
+        <td>object</td>
+        <td>
+          SourceSelector is the label selector to check if the pods match the labels.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].stepConfiguration[index].appSelector
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindexstepconfigurationindex)</sup></sup>
+
+
+
+AppSelector is the label selector to check if the pods match the m4dapplication labels.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#smartblueprintspecstepsindexstepconfigurationindexappselectormatchexpressionsindex">matchExpressions</a></b></td>
+        <td>[]object</td>
+        <td>
+          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>matchLabels</b></td>
+        <td>map[string]string</td>
+        <td>
+          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].stepConfiguration[index].appSelector.matchExpressions[index]
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindexstepconfigurationindexappselector)</sup></sup>
+
+
+
+A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>values</b></td>
+        <td>[]string</td>
+        <td>
+          values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          key is the label key that the selector applies to.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>operator</b></td>
+        <td>string</td>
+        <td>
+          operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].stepConfiguration[index].destinationSelector
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindexstepconfigurationindex)</sup></sup>
+
+
+
+DestinationSelector is the label selector to check if the pods match the labels.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#smartblueprintspecstepsindexstepconfigurationindexdestinationselectormatchexpressionsindex">matchExpressions</a></b></td>
+        <td>[]object</td>
+        <td>
+          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>matchLabels</b></td>
+        <td>map[string]string</td>
+        <td>
+          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].stepConfiguration[index].destinationSelector.matchExpressions[index]
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindexstepconfigurationindexdestinationselector)</sup></sup>
+
+
+
+A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>values</b></td>
+        <td>[]string</td>
+        <td>
+          values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          key is the label key that the selector applies to.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>operator</b></td>
+        <td>string</td>
+        <td>
+          operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].stepConfiguration[index].moduleSelector
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindexstepconfigurationindex)</sup></sup>
+
+
+
+ModuleSelector is the label selector to check if the pods match the module labels.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#smartblueprintspecstepsindexstepconfigurationindexmoduleselectormatchexpressionsindex">matchExpressions</a></b></td>
+        <td>[]object</td>
+        <td>
+          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>matchLabels</b></td>
+        <td>map[string]string</td>
+        <td>
+          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].stepConfiguration[index].moduleSelector.matchExpressions[index]
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindexstepconfigurationindexmoduleselector)</sup></sup>
+
+
+
+A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>values</b></td>
+        <td>[]string</td>
+        <td>
+          values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          key is the label key that the selector applies to.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>operator</b></td>
+        <td>string</td>
+        <td>
+          operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].stepConfiguration[index].sourceSelector
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindexstepconfigurationindex)</sup></sup>
+
+
+
+SourceSelector is the label selector to check if the pods match the labels.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#smartblueprintspecstepsindexstepconfigurationindexsourceselectormatchexpressionsindex">matchExpressions</a></b></td>
+        <td>[]object</td>
+        <td>
+          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>matchLabels</b></td>
+        <td>map[string]string</td>
+        <td>
+          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.steps[index].stepConfiguration[index].sourceSelector.matchExpressions[index]
+<sup><sup>[↩ Parent](#smartblueprintspecstepsindexstepconfigurationindexsourceselector)</sup></sup>
+
+
+
+A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>values</b></td>
+        <td>[]string</td>
+        <td>
+          values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          key is the label key that the selector applies to.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>operator</b></td>
+        <td>string</td>
+        <td>
+          operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.templates[index]
+<sup><sup>[↩ Parent](#smartblueprintspec)</sup></sup>
+
+
+
+ComponentTemplate is a copy of a M4DModule Custom Resource.  It contains the information necessary to instantiate a component in a FlowStep, which provides the functionality described by the module.  There are 3 different module types.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#smartblueprintspectemplatesindexchart">chart</a></b></td>
+        <td>object</td>
+        <td>
+          Chart contains the location of the helm chart with info detailing how to deploy<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>kind</b></td>
+        <td>string</td>
+        <td>
+          Kind of k8s resource<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the template<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.spec.templates[index].chart
+<sup><sup>[↩ Parent](#smartblueprintspectemplatesindex)</sup></sup>
+
+
+
+Chart contains the location of the helm chart with info detailing how to deploy
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>values</b></td>
+        <td>map[string]string</td>
+        <td>
+          Values to pass to helm chart installation<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of helm chart<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.status
+<sup><sup>[↩ Parent](#smartblueprint)</sup></sup>
+
+
+
+SmartBlueprintStatus defines the observed state of SmartBlueprint
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>assetsIDStatus</b></td>
+        <td>map[string]boolean</td>
+        <td>
+          <br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ObservedGeneration is taken from the Blueprint metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#smartblueprintstatusobservedstate">observedState</a></b></td>
+        <td>object</td>
+        <td>
+          ObservedState includes information to be reported back to the M4DApplication resource It includes readiness and error indications, as well as user instructions<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>releases</b></td>
+        <td>map[string]integer</td>
+        <td>
+          Releases map each release to the observed generation of the blueprint containing this release. At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### SmartBlueprint.status.observedState
+<sup><sup>[↩ Parent](#smartblueprintstatus)</sup></sup>
+
+
+
+ObservedState includes information to be reported back to the M4DApplication resource It includes readiness and error indications, as well as user instructions
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>dataAccessInstructions</b></td>
+        <td>string</td>
+        <td>
+          DataAccessInstructions indicate how the data user or his application may access the data. Instructions are available upon successful orchestration.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>error</b></td>
+        <td>string</td>
+        <td>
+          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
 ## katalog.m4d.ibm.com/v1alpha1
 
 Resource Types:
@@ -4362,6 +5431,13 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>schemaRegistryURL</b></td>
+        <td>string</td>
+        <td>
+          URL to the schema registry. The registry has to be Confluent schema registry compatible.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>secretImport</b></td>
         <td>string</td>
         <td>
@@ -4436,13 +5512,6 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         <td>string</td>
         <td>
           Kafka topic<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>schemaRegistryURL</b></td>
-        <td>string</td>
-        <td>
-          URL to the schema registry. The registry has to be Confluent schema registry compatible.<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -4962,6 +6031,13 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>schemaRegistryURL</b></td>
+        <td>string</td>
+        <td>
+          URL to the schema registry. The registry has to be Confluent schema registry compatible.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>secretImport</b></td>
         <td>string</td>
         <td>
@@ -5036,13 +6112,6 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         <td>string</td>
         <td>
           Kafka topic<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>schemaRegistryURL</b></td>
-        <td>string</td>
-        <td>
-          URL to the schema registry. The registry has to be Confluent schema registry compatible.<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -6092,6 +7161,13 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>schemaRegistryURL</b></td>
+        <td>string</td>
+        <td>
+          URL to the schema registry. The registry has to be Confluent schema registry compatible.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>secretImport</b></td>
         <td>string</td>
         <td>
@@ -6166,13 +7242,6 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         <td>string</td>
         <td>
           Kafka topic<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>schemaRegistryURL</b></td>
-        <td>string</td>
-        <td>
-          URL to the schema registry. The registry has to be Confluent schema registry compatible.<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -6692,6 +7761,13 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>schemaRegistryURL</b></td>
+        <td>string</td>
+        <td>
+          URL to the schema registry. The registry has to be Confluent schema registry compatible.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>secretImport</b></td>
         <td>string</td>
         <td>
@@ -6766,13 +7842,6 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         <td>string</td>
         <td>
           Kafka topic<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>schemaRegistryURL</b></td>
-        <td>string</td>
-        <td>
-          URL to the schema registry. The registry has to be Confluent schema registry compatible.<br/>
         </td>
         <td>true</td>
       </tr></tbody>
