@@ -13,20 +13,16 @@ spec:
   chart:
     name: localhost:5000/m4d-system/m4d-template:0.1.0
   type: service
-  flows:
-    - read
   capabilities:
-    api:
-      protocol: m4d-arrow-flight
-      dataformat: arrow
-      endpoint:
-        hostname: read-path
-        port: 80
-        scheme: grpc
-    supportedInterfaces:
-    - flow: read
-      source:
-        protocol: s3
-        dataformat: csv
-
-
+    read:
+      api:
+        protocol: m4d-arrow-flight
+        dataformat: arrow
+        endpoint:
+          hostname: read-path
+          port: 80
+          scheme: grpc
+      supportedInterfaces:
+      - source:
+          protocol: s3
+          dataformat: csv

@@ -155,13 +155,3 @@ func SupportsInterface(array []*app.InterfaceDetails, element *app.InterfaceDeta
 	}
 	return false
 }
-
-// SupportsFlow checks whether the given flow element can be found inside the array of flows
-func SupportsFlow(array []app.ModuleFlow, element app.ModuleFlow) bool {
-	for _, flow := range array {
-		if flow == element {
-			return true
-		}
-	}
-	return false
-}

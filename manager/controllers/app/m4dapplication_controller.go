@@ -241,13 +241,17 @@ func setReadModulesEndpoints(applicationContext *app.M4DApplication, blueprintsM
 				foundReadEndpoints = true
 				releaseName := utils.GetReleaseName(applicationContext.ObjectMeta.Name, applicationContext.ObjectMeta.Namespace, step)
 				moduleName := step.Template
-				originalEndpointSpec := moduleMap[moduleName].Spec.Capabilities.API.Endpoint
-				fqdn := utils.GenerateModuleEndpointFQDN(releaseName, BlueprintNamespace)
-				for _, arg := range step.Arguments.Read {
-					applicationContext.Status.ReadEndpointsMap[arg.AssetID] = app.EndpointSpec{
-						Hostname: fqdn,
-						Port:     originalEndpointSpec.Port,
-						Scheme:   originalEndpointSpec.Scheme,
+
+				// Find the read capability section in the module
+				if readCap, hasRead := moduleMap[moduleName].Spec.Capabilities[string(app.Read)]; hasRead {
+					originalEndpointSpec := readCap.API.Endpoint
+					fqdn := utils.GenerateModuleEndpointFQDN(releaseName, BlueprintNamespace)
+					for _, arg := range step.Arguments.Read {
+						applicationContext.Status.ReadEndpointsMap[arg.AssetID] = app.EndpointSpec{
+							Hostname: fqdn,
+							Port:     originalEndpointSpec.Port,
+							Scheme:   originalEndpointSpec.Scheme,
+						}
 					}
 				}
 			}
