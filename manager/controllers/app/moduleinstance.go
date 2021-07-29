@@ -326,10 +326,12 @@ func GetSupportedReadSources(module *app.M4DModule) []*app.InterfaceDetails {
 	var list []*app.InterfaceDetails
 
 	// Check if the module supports READ
-	if cap, hasCapability := module.Spec.Capabilities[string(app.Read)]; hasCapability {
-		// Collect the interface sources
-		for _, inter := range cap.SupportedInterfaces {
-			list = append(list, inter.Source)
+	if hasCapability, caps := utils.GetModuleCapabilities(module, app.Read); hasCapability {
+		for _, cap := range caps {
+			// Collect the interface sources
+			for _, inter := range cap.SupportedInterfaces {
+				list = append(list, inter.Source)
+			}
 		}
 	}
 	return list

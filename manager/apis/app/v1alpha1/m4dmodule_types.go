@@ -126,6 +126,11 @@ type Plugin struct {
 
 // Capability declares what this module knows how to do and the types of data it knows how to handle
 type ModuleCapability struct {
+
+	// Capability declares what this module knows how to do - ex: read, write, transform...
+	// +required
+	Capability CapabilityType `json:"capability"`
+
 	// Scope indicates at what level the capability is used: workload, asset, cluster
 	// If not indicated it is assumed to be asset
 	// +optional
@@ -199,7 +204,7 @@ type M4DModuleSpec struct {
 	// Capabilities declares what this module knows how to do and the types of data it knows how to handle
 	// The key to the map is a CapabilityType string
 	// +required
-	Capabilities map[string]ModuleCapability `json:"capabilities"`
+	Capabilities []ModuleCapability `json:"capabilities"`
 
 	// Reference to a Helm chart that allows deployment of the resources required for this module
 	// +required

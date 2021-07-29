@@ -114,12 +114,16 @@ func (m *Selector) SupportsGovernanceActions(module *app.M4DModule, actions []*p
 
 // SupportsGovernanceAction checks whether the module supports the required governance action
 func (m *Selector) SupportsGovernanceAction(module *app.M4DModule, action *pb.EnforcementAction) bool {
-	// Check if the module supports the required governance action
-	if cap, hasCapability := module.Spec.Capabilities[string(m.Capability)]; hasCapability {
-		// Loop over the data transforms (actions) performed by the module for this capability
-		for _, act := range cap.Actions {
-			if act.ID == action.Id && act.Level == action.Level {
-				return true
+	// Check if the module supports the capability
+	if hasCapability, caps := utils.GetModuleCapabilities(module, m.Capability); hasCapability {
+
+		// There could be multiple structures for the same CapabilityType
+		for _, cap := range caps {
+			// Loop over the data transforms (actions) performed by the module for this capability
+			for _, act := range cap.Actions {
+				if act.ID == action.Id && act.Level == action.Level {
+					return true
+				}
 			}
 		}
 	}
@@ -147,33 +151,30 @@ func (m *Selector) SupportsDependencies(module *app.M4DModule, moduleMap map[str
 
 // SupportsInterface indicates whether the module supports interface requirements and dependencies
 func (m *Selector) SupportsInterface(module *app.M4DModule) bool {
-	// Check if the module supports the capability
-	if _, hasCapability := module.Spec.Capabilities[string(m.Capability)]; !hasCapability {
-		return false
-	}
-
-	// Check if the source and sink protocols requested are supported
 	supportsInterface := false
-	if m.Capability == app.Read {
-		// Find the read capabilities and check if at least one supports the format and protocol
-		if cap, hasRead := module.Spec.Capabilities[string(app.Read)]; hasRead {
-			supportsInterface = cap.API.DataFormat == m.Destination.DataFormat && cap.API.Protocol == m.Destination.Protocol
-			if supportsInterface {
-				return true
-			}
-		}
-	} else if m.Capability == app.Copy {
-		// Find the copy capabilities and check if at least one supports the format and protocol
-		if cap, hasCopy := module.Spec.Capabilities[string(app.Copy)]; hasCopy {
-			for _, inter := range cap.SupportedInterfaces {
-				if inter.Source.DataFormat != m.Source.DataFormat || inter.Source.Protocol != m.Source.Protocol {
-					continue
+
+	// Check if the module supports the capability
+	if hasCapability, caps := utils.GetModuleCapabilities(module, m.Capability); hasCapability {
+		// There could be multiple structures for the same CapabilityType
+		for _, cap := range caps {
+			// Check if the source and sink protocols requested are supported
+
+			if m.Capability == app.Read {
+				supportsInterface = cap.API.DataFormat == m.Destination.DataFormat && cap.API.Protocol == m.Destination.Protocol
+				if supportsInterface {
+					return true
 				}
-				if inter.Sink.DataFormat != m.Destination.DataFormat || inter.Sink.Protocol != m.Destination.Protocol {
-					continue
+			} else if m.Capability == app.Copy {
+				for _, inter := range cap.SupportedInterfaces {
+					if inter.Source.DataFormat != m.Source.DataFormat || inter.Source.Protocol != m.Source.Protocol {
+						continue
+					}
+					if inter.Sink.DataFormat != m.Destination.DataFormat || inter.Sink.Protocol != m.Destination.Protocol {
+						continue
+					}
+					supportsInterface = true
+					break
 				}
-				supportsInterface = true
-				break
 			}
 		}
 	}

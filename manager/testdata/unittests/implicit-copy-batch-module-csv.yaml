@@ -13,7 +13,7 @@ metadata:
 spec:
   type: service
   capabilities:
-    copy:
+    - capability: copy
       supportedInterfaces:
       - source:
           protocol: s3

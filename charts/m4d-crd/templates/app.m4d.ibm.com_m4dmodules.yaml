@@ -33,7 +33,8 @@ spec:
             description: M4DModuleSpec contains the info common to all modules, which are one of the components that process, load, write, audit, monitor the data used by the data scientist's application.
             properties:
               capabilities:
-                additionalProperties:
+                description: Capabilities declares what this module knows how to do and the types of data it knows how to handle The key to the map is a CapabilityType string
+                items:
                   description: Capability declares what this module knows how to do and the types of data it knows how to handle
                   properties:
                     actions:
@@ -77,6 +78,13 @@ spec:
                       - endpoint
                       - protocol
                       type: object
+                    capability:
+                      description: 'Capability declares what this module knows how to do - ex: read, write, transform...'
+                      enum:
+                      - copy
+                      - read
+                      - write
+                      type: string
                     plugins:
                       description: Plugins enable the module to add libraries to perform actions rather than implementing them by itself
                       items:
@@ -130,9 +138,10 @@ spec:
                             type: object
                         type: object
                       type: array
+                  required:
+                  - capability
                   type: object
-                description: Capabilities declares what this module knows how to do and the types of data it knows how to handle The key to the map is a CapabilityType string
-                type: object
+                type: array
               chart:
                 description: Reference to a Helm chart that allows deployment of the resources required for this module
                 properties:

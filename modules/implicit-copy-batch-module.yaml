@@ -12,7 +12,7 @@ metadata:
 spec:
   type: service
   capabilities:
-    copy:
+    - capability: copy
       supportedInterfaces:
       - source:
           protocol: jdbc-db2

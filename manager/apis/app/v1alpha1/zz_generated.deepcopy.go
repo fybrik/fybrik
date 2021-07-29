@@ -596,9 +596,9 @@ func (in *M4DModuleSpec) DeepCopyInto(out *M4DModuleSpec) {
 	}
 	if in.Capabilities != nil {
 		in, out := &in.Capabilities, &out.Capabilities
-		*out = make(map[string]ModuleCapability, len(*in))
-		for key, val := range *in {
-			(*out)[key] = *val.DeepCopy()
+		*out = make([]ModuleCapability, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
 	in.Chart.DeepCopyInto(&out.Chart)

@@ -11,7 +11,7 @@ spec:
     name: localhost:5000/m4d-system/m4d-template:0.1.0
   type: service
   capabilities:
-    read:
+    - capability: read
       api:
         protocol: m4d-arrow-flight
         dataformat: arrow
