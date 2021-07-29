@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/app"
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
 	"helm.sh/helm/v3/pkg/release"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -132,7 +131,7 @@ var _ = BeforeSuite(func(done Done) {
 		}))
 		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: app.BlueprintNamespace,
+				Name: BlueprintNamespace,
 			},
 		}))
 		Expect(k8sClient.Create(context.Background(), &v1.ConfigMap{
