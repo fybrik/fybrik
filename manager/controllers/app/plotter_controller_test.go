@@ -150,6 +150,9 @@ func deployDeleteAndCheck(namespace string, shouldSucceed bool) {
 	}
 }
 
+// Check that plotter is successfully deleted when delete is called from within m4d-system namespace.
+// Note: It's not possible to check that delete fails when called on a plotter created outside m4d-system
+// because we have a filter that prevents it from being created.  Thus, no test for that.
 var _ = Describe("Plotter Controller Legal Delete Event", func() {
 	Context("Plotter", func() {
 		BeforeEach(func() {
@@ -163,23 +166,6 @@ var _ = Describe("Plotter Controller Legal Delete Event", func() {
 		// Plotter is successfully deleted when deletion is done from m4d-system only
 		It("Test Plotter Deletion from Correct Namespace", func() {
 			deployDeleteAndCheck(utils.GetSystemNamespace(), true)
-		})
-	})
-})
-
-var _ = Describe("Plotter Controller Illegal Delete Event", func() {
-	Context("Plotter", func() {
-		BeforeEach(func() {
-			// Add any setup steps that needs to be executed before each test
-		})
-
-		AfterEach(func() {
-			// Add any teardown steps that needs to be executed after each test
-		})
-
-		// Plotter is NOT deleted when deletion is done from a namespace other than m4d-system
-		It("Test Plotter Deletion from Bad Namespace", func() {
-			deployDeleteAndCheck("default", false)
 		})
 	})
 })
