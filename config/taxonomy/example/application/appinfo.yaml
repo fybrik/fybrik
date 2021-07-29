@@ -1,5 +1,5 @@
 definitions:
-  appInfo:
+  AppInfo:
     type: object
     properties:
       intent:

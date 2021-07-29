@@ -1,5 +1,5 @@
 definitions:
-  interface:
+  Interface:
     oneOf:
       - properties:
           protocol:

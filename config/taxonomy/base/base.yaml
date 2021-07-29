@@ -17,15 +17,15 @@ definitions:
     type: string
   ProcessingLocation:
     type: string
-  protocol:
+  Protocol:
     type: string
-  dataformat:
+  Dataformat:
     type: string
-  interface:
+  Interface:
     type: object
     properties:
       protocol:
-        $ref: "#/definitions/protocol"
+        $ref: "#/definitions/Protocol"
       dataformat:
-        $ref: "#/definitions/dataformat"
+        $ref: "#/definitions/Dataformat"
     additionalProperties: false
