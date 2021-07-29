@@ -5,31 +5,26 @@
 export DOCKER_HOSTNAME=localhost:5000
 export DOCKER_NAMESPACE=m4d-system
 export HELM_EXPERIMENTAL_OCI=1
-export VALUES_FILE=m4d/kind-control.values.yaml
+export VALUES_FILE=charts/m4d/kind-control.values.yaml
 
 make kind-setup-multi
 kubectl config use-context kind-control
 make -C third_party/razee all
 
 kubectl config use-context kind-control
-make -C charts vault
-make -C charts cert-manager
-make -C third_party/datashim deploy
+make -C cluster-prepare
 make docker-minimal-it
 make cluster-prepare-wait
+make deploy
 make vault-setup-kind-multi
-make -C charts m4d
-make -C manager wait_for_manager
 make -C modules helm-chart-push
 
-export VALUES_FILE=m4d/kind-kind.values.yaml
+export VALUES_FILE=charts/m4d/kind-kind.values.yaml
 kubectl config use-context kind-kind
-make -C charts vault
-make -C charts cert-manager
+make -C third_party/cert-manager deploy
 make -C third_party/datashim deploy
 make cluster-prepare-wait
-make -C charts m4d
-make -C manager wait_for_manager
+make deploy
 
 # Switch to control cluster after setup
 kubectl config use-context kind-control

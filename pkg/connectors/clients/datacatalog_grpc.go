@@ -1,3 +1,6 @@
+// Copyright 2021 IBM Corp.
+// SPDX-License-Identifier: Apache-2.0
+
 package clients
 
 import (
@@ -5,16 +8,21 @@ import (
 	"fmt"
 	"time"
 
+	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
 	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
 
 	"emperror.dev/errors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Ensure that grpcDataCatalog implements the DataCatalog interface
 var _ DataCatalog = (*grpcDataCatalog)(nil)
 
 type grpcDataCatalog struct {
+	pb.UnimplementedDataCatalogServiceServer
+
 	name       string
 	connection *grpc.ClientConn
 	client     pb.DataCatalogServiceClient
@@ -38,7 +46,11 @@ func NewGrpcDataCatalog(name string, connectionURL string, connectionTimeout tim
 
 func (m *grpcDataCatalog) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetRequest) (*pb.CatalogDatasetInfo, error) {
 	result, err := m.client.GetDatasetInfo(ctx, in)
-	return result, errors.Wrap(err, fmt.Sprintf("get dataset info from %s failed", m.name))
+	errStatus, _ := status.FromError(err)
+	if errStatus.Code() == codes.InvalidArgument {
+		return result, errors.New(app.InvalidAssetID)
+	}
+	return result, err
 }
 
 func (m *grpcDataCatalog) RegisterDatasetInfo(ctx context.Context, in *pb.RegisterAssetRequest) (*pb.RegisterAssetResponse, error) {

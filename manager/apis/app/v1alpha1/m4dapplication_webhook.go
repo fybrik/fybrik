@@ -68,7 +68,11 @@ func (r *M4DApplication) validateM4DApplicationSpec() []*field.Error {
 	var allErrs []*field.Error
 	specField := field.NewPath("spec").Child("data")
 	for i, dataSet := range r.Spec.Data {
-		if err := r.validateDataContext(specField.Index(i), &dataSet); err != nil {
+		// To avoid aliasing issue due to the fact the address of dataSet variable is passed
+		// to validateDataContext function in each loop iteration, a new temporary
+		// variable is created and used in each iteration.
+		dataSetTemp := dataSet
+		if err := r.validateDataContext(specField.Index(i), &dataSetTemp); err != nil {
 			allErrs = append(allErrs, err...)
 		}
 	}
