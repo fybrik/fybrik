@@ -13,7 +13,7 @@ spec:
     name: ghcr.io/mesh-for-data/arrow-flight-config-module:0.1.0
     values: {}
   capabilities:
-    read:
+    - capability: read  
       scope: cluster
       supportedInterfaces:
       - source:

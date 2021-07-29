@@ -23,7 +23,7 @@ spec:
     failureCondition: status == FAILED # TBD with correct values
     errorMessage: status.error # TBD with correct values
   capabilities:
-    data-quality:
+    - capability: data-quality
       scope: workload
       supportedInterfaces:
       - source:

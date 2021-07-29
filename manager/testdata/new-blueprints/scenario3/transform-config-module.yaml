@@ -14,7 +14,7 @@ spec:
   pluginType: fybrik-wasm  # we assume each plugin module supports only one type of plugin mechanism - ex: wasm, vault
   statusIndicators:
   capabilities:
-    transform:
+    - capability: transform
       scope: asset
       supportedInterfaces:
       - source:

@@ -15,7 +15,7 @@ spec:
     values: {}
   statusIndicators:
   capabilities:
-    write:
+    - capability: write
       scope: asset
       supportedInterfaces:
       - sink:
