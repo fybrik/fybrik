@@ -243,15 +243,17 @@ func validateDataStore(path *field.Path, store *DataStore) []*field.Error {
 		}
 
 		// Validate Kafka schema registry url
-		schemaRegistryURL, err := url.Parse(store.Kafka.SchemaRegistryURL)
-		if err != nil {
-			allErrs = append(allErrs, field.Invalid(kafkaPath.Child("schemaRegistryUrl"), store.Kafka.SchemaRegistryURL, "Could not parse url!"))
-		}
-		if schemaRegistryURL != nil {
-			errs := validateHostPort(schemaRegistryURL.Host)
-			for _, err := range errs {
-				errMsg := "Invalid host: " + err
-				allErrs = append(allErrs, field.Invalid(kafkaPath.Child("schemaRegistryUrl"), store.Kafka.SchemaRegistryURL, errMsg))
+		if len(store.Kafka.SchemaRegistryURL) != 0 {
+			schemaRegistryURL, err := url.Parse(store.Kafka.SchemaRegistryURL)
+			if err != nil {
+				allErrs = append(allErrs, field.Invalid(kafkaPath.Child("schemaRegistryUrl"), store.Kafka.SchemaRegistryURL, "Could not parse url!"))
+			}
+			if schemaRegistryURL != nil {
+				errs := validateHostPort(schemaRegistryURL.Host)
+				for _, err := range errs {
+					errMsg := "Invalid host: " + err
+					allErrs = append(allErrs, field.Invalid(kafkaPath.Child("schemaRegistryUrl"), store.Kafka.SchemaRegistryURL, errMsg))
+				}
 			}
 		}
 

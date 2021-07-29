@@ -1,0 +1,8 @@
+definitions:
+  Tags:
+    properties:
+      confidential: 
+        type: boolean
+      region:
+        type: string
+    additionalProperties: true
