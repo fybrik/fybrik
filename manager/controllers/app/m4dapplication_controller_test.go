@@ -41,7 +41,7 @@ var _ = Describe("M4DApplication Controller", func() {
 				Expect(k8sClient.Create(context.TODO(), secret1)).NotTo(HaveOccurred(), "a secret could not be created")
 				secret2 := &corev1.Secret{Type: corev1.SecretTypeOpaque, StringData: map[string]string{"password": "123"}}
 				secret2.Name = "test-secret"
-				secret2.Namespace = "m4d-blueprints"
+				secret2.Namespace = BlueprintNamespace
 				Expect(k8sClient.Create(context.TODO(), secret2)).NotTo(HaveOccurred(), "a secret could not be created")
 				secretList := &corev1.SecretList{}
 				Expect(k8sClient.List(context.Background(), secretList)).NotTo(HaveOccurred())

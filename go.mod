@@ -31,7 +31,7 @@ require (
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/onsi/ginkgo v1.16.4
-	github.com/onsi/gomega v1.13.0
+	github.com/onsi/gomega v1.14.0
 	github.com/opencontainers/runc v1.0.0-rc9 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/robfig/cron v1.2.0
@@ -51,14 +51,14 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.6.2
-	k8s.io/api v0.21.2
-	k8s.io/apiextensions-apiserver v0.21.2
-	k8s.io/apimachinery v0.21.2
+	k8s.io/api v0.21.3
+	k8s.io/apiextensions-apiserver v0.21.3
+	k8s.io/apimachinery v0.21.3
 	k8s.io/cli-runtime v0.21.0
-	k8s.io/client-go v0.21.2
+	k8s.io/client-go v0.21.3
 	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/cli-utils v0.19.2
-	sigs.k8s.io/controller-runtime v0.9.0
+	sigs.k8s.io/controller-runtime v0.9.5
 	sigs.k8s.io/yaml v1.2.0
 )
 

@@ -1,14 +1,14 @@
-{{- if include "m4d.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+{{- if .Values.worker.enabled }}
 {{- if .Values.clusterScoped }}
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
-  name: {{ template "m4d.fullname" . }}-admin-cr
+  name: blueprints-role
 rules:
 - apiGroups:
   - app.m4d.ibm.com
   resources:
-  - m4dapplications
+  - blueprints
   verbs:
   - create
   - delete
@@ -20,7 +20,7 @@ rules:
 - apiGroups:
   - app.m4d.ibm.com
   resources:
-  - m4dapplications/status
+  - blueprints/status
   verbs:
   - get
   - patch

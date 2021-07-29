@@ -1,7 +1,7 @@
 {{- if .Values.worker.enabled }}
 {{- if .Values.clusterScoped }}
-# ClusterRole batchtransfer-editor allows managing batchtransfers
-kind: ClusterRole
+# Role batchtransfer-editor allows managing batchtransfers
+kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: batchtransfer-editor

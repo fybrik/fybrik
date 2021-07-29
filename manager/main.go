@@ -55,17 +55,20 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	enableApplicationController, enableBlueprintController, enablePlotterController, enableMotionController bool) int {
 	setupLog.Info("creating manager")
 	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
-	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": "m4d-blueprints"})
+	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": app.BlueprintNamespace})
 	selectorsByObject := cache.SelectorsByObject{
 		&appv1.Plotter{}:                {Field: systemNamespaceSelector},
 		&appv1.M4DModule{}:              {Field: systemNamespaceSelector},
 		&appv1.M4DStorageAccount{}:      {Field: systemNamespaceSelector},
+		&corev1.ConfigMap{}:             {Field: systemNamespaceSelector},
 		&appv1.Blueprint{}:              {Field: workerNamespaceSelector},
 		&motionv1.BatchTransfer{}:       {Field: workerNamespaceSelector},
 		&motionv1.StreamTransfer{}:      {Field: workerNamespaceSelector},
 		&kbatch.Job{}:                   {Field: workerNamespaceSelector},
+		&kbatch.CronJob{}:               {Field: workerNamespaceSelector},
 		&corev1.Secret{}:                {Field: workerNamespaceSelector},
 		&corev1.Pod{}:                   {Field: workerNamespaceSelector},
+		&kapps.Deployment{}:             {Field: workerNamespaceSelector},
 		&corev1.PersistentVolumeClaim{}: {Field: workerNamespaceSelector},
 	}
 

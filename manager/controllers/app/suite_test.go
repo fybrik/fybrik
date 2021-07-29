@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mesh-for-data/mesh-for-data/manager/controllers/app"
 	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
 	"helm.sh/helm/v3/pkg/release"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -83,7 +84,7 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 	} else {
 		systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
-		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": "m4d-blueprints"})
+		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": BlueprintNamespace})
 		// the testing environment will restrict access to secrets, modules and storage accounts
 		mgr, err = ctrl.NewManager(cfg, ctrl.Options{
 			Scheme:             scheme.Scheme,
@@ -126,12 +127,12 @@ var _ = BeforeSuite(func(done Done) {
 		k8sClient = mgr.GetClient()
 		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "m4d-system",
+				Name: utils.GetSystemNamespace(),
 			},
 		}))
 		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "m4d-blueprints",
+				Name: app.BlueprintNamespace,
 			},
 		}))
 		Expect(k8sClient.Create(context.Background(), &v1.ConfigMap{

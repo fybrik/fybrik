@@ -67,7 +67,7 @@ var _ = Describe("Blueprint Controller Real Env", func() {
 
 		// Blueprints are successfully reconciled when deployed to m4d-blueprints only
 		It("Test Blueprint Deploy to Correct Namespace", func() {
-			deployBlueprint("m4d-blueprints", true)
+			deployBlueprint(BlueprintNamespace, true)
 		})
 
 		// Blueprints not deployed to m4d-blueprints should not be successfully reconciled due to the filter preventing
