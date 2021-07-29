@@ -8,7 +8,7 @@
         "spec": {
             "type": "object",
             "properties": {
-                "appInfo": {"$ref": "taxonomy.json#/definitions/appInfo"},
+                "appInfo": {"$ref": "taxonomy.json#/definitions/AppInfo"},
                 "data": {
                     "type": "array",
                     "items": {
@@ -17,7 +17,7 @@
                             "requirements": {
                                 "type": "object",
                                 "properties": {
-                                    "interface": { "$ref": "taxonomy.json#/definitions/interface"}
+                                    "interface": { "$ref": "taxonomy.json#/definitions/Interface"}
                                 },
                                 "required": ["interface"]
                             }
