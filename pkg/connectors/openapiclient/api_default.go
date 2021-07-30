@@ -91,7 +91,9 @@ func (a *DefaultApiService) GetPoliciesDecisionsExecute(r ApiGetPoliciesDecision
 		return localVarReturnValue, nil, reportError("creds is required and must be specified")
 	}
 
-	localVarQueryParams.Add("input", parameterToString(*r.input, ""))
+	//localVarQueryParams.Add("input", parameterToString(*r.input, ""))
+	retval, _ := parameterToJson(*r.input)
+    localVarQueryParams.Add("input", retval)
 	localVarQueryParams.Add("creds", parameterToString(*r.creds, ""))
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
