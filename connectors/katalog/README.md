@@ -6,7 +6,7 @@ A data catalog and credentials manager powered by Kubernetes resources:
 
 ## Usage
 
-See [documentation](fybrik.io/latest/reference/katalog/) in the website.
+See [documentation](https://fybrik.io/latest/reference/katalog/) in the website.
 
 ## Develop, Build and Deploy
 
