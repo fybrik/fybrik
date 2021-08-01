@@ -116,7 +116,6 @@ func (m *Selector) SupportsGovernanceActions(module *app.M4DModule, actions []*p
 func (m *Selector) SupportsGovernanceAction(module *app.M4DModule, action *pb.EnforcementAction) bool {
 	// Check if the module supports the capability
 	if hasCapability, caps := utils.GetModuleCapabilities(module, m.Capability); hasCapability {
-
 		// There could be multiple structures for the same CapabilityType
 		for _, cap := range caps {
 			// Loop over the data transforms (actions) performed by the module for this capability
