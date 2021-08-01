@@ -1,9 +1,10 @@
-module github.com/mesh-for-data/mesh-for-data
+module fybrik.io/fybrik
 
 go 1.16
 
 require (
 	emperror.dev/errors v0.7.0
+	fybrik.io/openapi2crd v0.4.0
 	github.com/IBM/satcon-client-go v0.1.2-0.20210329192404-b8fa1c732712
 	github.com/buger/jsonparser v1.1.1
 	github.com/fatih/color v1.9.0 // indirect
@@ -26,7 +27,6 @@ require (
 	github.com/kr/pretty v0.2.1 // indirect
 	github.com/mailru/easyjson v0.7.1-0.20191009090205-6c0755d89d1e // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
-	github.com/mesh-for-data/openapi2crd v0.3.2
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
@@ -62,4 +62,4 @@ require (
 	sigs.k8s.io/yaml v1.2.0
 )
 
-replace helm.sh/helm/v3 v3.6.2 => github.com/mesh-for-data/helm/v3 v3.6.2-m4d
+replace helm.sh/helm/v3 v3.6.2 => github.com/fybrik/helm/v3 v3.6.2-fybrik-update

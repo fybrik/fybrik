@@ -12,8 +12,8 @@ import (
 	"os"
 	"strconv"
 
-	opabl "github.com/mesh-for-data/mesh-for-data/connectors/opa/lib"
-	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	opabl "fybrik.io/fybrik/connectors/opa/lib"
+	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"google.golang.org/grpc"
 )
 

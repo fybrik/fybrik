@@ -8,14 +8,14 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/mesh-for-data/mesh-for-data/connectors/katalog/pkg/connector"
+	"fybrik.io/fybrik/connectors/katalog/pkg/connector"
 )
 
 // RootCmd defines the root cli command
 func RootCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "katalog",
-		Short: "Kubernetes based data catalog for Mesh for Data",
+		Short: "Kubernetes based data catalog for Fybrik",
 	}
 	cmd.AddCommand(RunCmd())
 	return cmd

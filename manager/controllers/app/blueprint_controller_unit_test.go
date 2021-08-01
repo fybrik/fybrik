@@ -8,11 +8,11 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
-	"github.com/mesh-for-data/mesh-for-data/pkg/helm"
+	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/helm"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"

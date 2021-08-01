@@ -7,15 +7,15 @@ import (
 	"context"
 
 	"emperror.dev/errors"
-	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
-	connectors "github.com/mesh-for-data/mesh-for-data/pkg/connectors/clients"
-	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
-	"github.com/mesh-for-data/mesh-for-data/pkg/vault"
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
+	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
+	"fybrik.io/fybrik/pkg/vault"
 )
 
 // ConstructApplicationContext constructs ApplicationContext structure to send to Policy Compiler
-func ConstructApplicationContext(datasetID string, input *app.M4DApplication, operation *pb.AccessOperation) *pb.ApplicationContext {
+func ConstructApplicationContext(datasetID string, input *app.FybrikApplication, operation *pb.AccessOperation) *pb.ApplicationContext {
 	var credentialPath string
 	if input.Spec.SecretRef != "" {
 		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
@@ -36,7 +36,7 @@ func ConstructApplicationContext(datasetID string, input *app.M4DApplication, op
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
-func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, input *app.M4DApplication, op *pb.AccessOperation) ([]*pb.EnforcementAction, error) {
+func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, input *app.FybrikApplication, op *pb.AccessOperation) ([]*pb.EnforcementAction, error) {
 	// call external policy manager to get governance instructions for this operation
 	appContext := ConstructApplicationContext(datasetID, input, op)
 	pcresponse, err := policyManager.GetPoliciesDecisions(context.Background(), appContext)

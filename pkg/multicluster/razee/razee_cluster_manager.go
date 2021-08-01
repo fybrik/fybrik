@@ -12,14 +12,14 @@ import (
 	"emperror.dev/errors"
 	"github.com/IBM/satcon-client-go/client/types"
 
+	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/pkg/multicluster"
 	"github.com/IBM/satcon-client-go/client"
 	"github.com/IBM/satcon-client-go/client/auth/apikey"
 	"github.com/IBM/satcon-client-go/client/auth/iam"
 	"github.com/IBM/satcon-client-go/client/auth/local"
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
-	"github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	clusterMetadataConfigMapSL string = "/api/v1/namespaces/m4d-system/configmaps/cluster-metadata"
+	clusterMetadataConfigMapSL string = "/api/v1/namespaces/fybrik-system/configmaps/cluster-metadata"
 )
 
 var (
@@ -70,8 +70,8 @@ func (r *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 			r.log.Error(err, "Could not fetch cluster information", "cluster", c.Name)
 			return nil, err
 		}
-		// If no content for the resource was found the cluster is not part of the mesh or not installed
-		// correctly. The mesh should ignore those clusters and continue.
+		// If no content for the resource was found the cluster is not part of Fybrik or not installed
+		// correctly. Fybrik should ignore those clusters and continue.
 		if resourceContent == nil {
 			r.log.Info("Resource content returned is nil! Skipping cluster", "cluster", c.Name)
 			continue
@@ -96,7 +96,7 @@ func (r *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 }
 
 func createBluePrintSelfLink(namespace string, name string) string {
-	return fmt.Sprintf("/apis/app.m4d.ibm.com/v1alpha1/namespaces/%s/blueprints/%s", namespace, name)
+	return fmt.Sprintf("/apis/app.fybrik.io/v1alpha1/namespaces/%s/blueprints/%s", namespace, name)
 }
 
 func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name string) (*v1alpha1.Blueprint, error) {
@@ -132,7 +132,7 @@ func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name
 }
 
 func getGroupName(cluster string) string {
-	return "m4d-" + cluster
+	return "fybrik-" + cluster
 }
 
 type Collection struct {
@@ -334,7 +334,7 @@ func (r *ClusterManager) DeleteBlueprint(cluster string, namespace string, name 
 // The channel name should be per cluster and plotter so it cannot be based on
 // the namespace that is random for every blueprint
 func channelName(cluster string, name string) string {
-	return "m4d.ibm.com" + "-" + cluster + "-" + name
+	return "fybrik.io" + "-" + cluster + "-" + name
 }
 
 func NewRazeeLocalManager(url string, login string, password string, clusterGroup string) (multicluster.ClusterManager, error) {

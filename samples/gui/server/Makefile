@@ -6,7 +6,7 @@ DOCKER_TAGNAME ?= latest
 DOCKER_FILE = Dockerfile
 DOCKER_CONTEXT = .
 GO_OUTPUT_FILE = datauserserver
-KUBE_NAMESPACE ?= m4d-system
+KUBE_NAMESPACE ?= fybrik-system
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/hack/make-rules/verify.mk
 

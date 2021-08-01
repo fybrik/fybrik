@@ -6,7 +6,7 @@ package motion
 import (
 	"context"
 
-	motionv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/motion/v1alpha1"
+	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
 	v1beta1 "k8s.io/api/batch/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"

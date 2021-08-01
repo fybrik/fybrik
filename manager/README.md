@@ -1,10 +1,10 @@
 # `manager`
 
-Kubernetes [custom resources and controllers](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) of Mesh for Data.
+Kubernetes [custom resources and controllers](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) of Fybrik.
 
 The `manager` binary includes all of the controllers that this project defines but you need to select which of the controllers to run by passing one or more of the following command line arguments:
 - `enable-all-controllers` to enable all controllers
-- `enable-application-controller` to enable the controller for `M4DApplication`
+- `enable-application-controller` to enable the controller for `FybrikApplication`
 - `enable-blueprint-controller` to enable the controller for `Blueprint`
 - `enable-motion-controller` to enable the controllers for `BatchTransfer` and `StreamTransfer`
 
@@ -24,7 +24,7 @@ For option 2, the Helm installation allows you to pick which compoenents to inst
 Follow the installation guide as usual but in the Helm installation for the control plane add `--set manager.enabled=false` to skip the deployment of the manager. For example:
 
 ```bash
-helm install m4d charts/m4d --set global.tag=latest --set manager.enabled=false -n m4d-system --wait
+helm install fybrik charts/fybrik --set global.tag=latest --set manager.enabled=false -n fybrik-system --wait
 ```
 
 ### Expose running components
@@ -34,8 +34,8 @@ If you chose to run these components in a cluster you can use port-forward.
 For example:
 
 ```bash
-kubectl -n m4d-system port-forward svc/katalog-connector 49152:80 &
-kubectl -n m4d-system port-forward svc/opa-connector 49153:80 &
+kubectl -n fybrik-system port-forward svc/katalog-connector 49152:80 &
+kubectl -n fybrik-system port-forward svc/opa-connector 49153:80 &
 ```
 
 ### Set configuration environment variables
@@ -46,7 +46,7 @@ Therefore, you need to define configuration as environment variables.
 Create `.env` file in the root folder of the project. For example:
 
 ```bash
-VAULT_ADDRESS="http://vault.m4d-system:8200"
+VAULT_ADDRESS="http://vault.fybrik-system:8200"
 MAIN_POLICY_MANAGER_NAME="opa"
 MAIN_POLICY_MANAGER_CONNECTOR_URL="localhost:49153"
 CATALOG_PROVIDER_NAME="katalog"
@@ -102,14 +102,14 @@ The rest of this README describes the directory structure.
 ### `apis`
 
 Holds the Customer Resource Definitions (CRDs) of the project:
-- `app.m4d.ibm.com/v1alpha1`: Includes `M4DApplication`, administrator APIs `M4DModule` and `M4DBucket`, and internal CRDs `Blueprint` and `Plotter`.
-- `motion.m4d.ibm.com/v1alpha1`: Includes data movements APIs `BatchTransfer` and `StreamTransfer`. Usually not used directly but rather invoked as a module.
+- `app.fybrik.io/v1alpha1`: Includes `FybrikApplication`, administrator APIs `FybrikModule` and `FybrikBucket`, and internal CRDs `Blueprint` and `Plotter`.
+- `motion.fybrik.io/v1alpha1`: Includes data movements APIs `BatchTransfer` and `StreamTransfer`. Usually not used directly but rather invoked as a module.
 
 ### `controllers`
 
 Holds the customer controllers of the project:
-- `controllers/app` holds the controllers for `app.m4d.ibm.com` APIs `M4DApplication`, `Blueprint` and `Plotter`.
-- `controllers/motion` holds the controllers for `motion.m4d.ibm.com` APIs `BatchTransfer` and `StreamTransfer`.
+- `controllers/app` holds the controllers for `app.fybrik.io` APIs `FybrikApplication`, `Blueprint` and `Plotter`.
+- `controllers/motion` holds the controllers for `motion.fybrik.io` APIs `BatchTransfer` and `StreamTransfer`.
 
 ### `testdata`
 

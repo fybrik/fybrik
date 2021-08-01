@@ -1,7 +1,7 @@
 import React from 'react'
 import { Image, Menu } from 'semantic-ui-react'
 
-const M4DMenuBar = props => (
+const FybrikMenuBar = props => (
   <Menu inverted color='blue' >
       <Menu.Item as='h3' style={{ color: 'yellow' }} header>
         <Image size='tiny' src={require('../images/image.png')} style={{ marginRight: '1.5em' }} />
@@ -13,4 +13,4 @@ const M4DMenuBar = props => (
   </Menu>
 )
 
-export default M4DMenuBar
+export default FybrikMenuBar

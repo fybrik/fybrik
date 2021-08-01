@@ -3,7 +3,7 @@
 
 package v1alpha1
 
-// ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of M4DApplication status
+// ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
 type ObservedState struct {
 	// Ready represents that the modules have been orchestrated successfully and the data is ready for usage
 	Ready bool `json:"ready,omitempty"`

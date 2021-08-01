@@ -3,7 +3,7 @@
 set -e
 set -x
 
-NAMESPACE=m4d-system
+NAMESPACE=fybrik-system
 TIMEOUT=8m
 
 check_valid_data_folder(){

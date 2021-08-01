@@ -1,7 +1,7 @@
 # Style Guide
 
 This page provides basic style guidance for keeping the documentation
-of Mesh for Data **clear** and **understandable**. 
+of Fybrik **clear** and **understandable**. 
 
 ## Choose the right title
 
@@ -76,7 +76,7 @@ whether they're part of the "we" you're describing.
 |Do                                        | Don't
 |------------------------------------------|------
 |Version 1.4 includes ...                  | In version 1.4, we have added ...
-|Mesh for Data provides a new feature for ... | We provide a new feature ...
+|Fybrik provides a new feature for ... | We provide a new feature ...
 |This page teaches you how to use pods.    | In this page, we are going to learn about pods.
 
 ## Avoid jargon and idioms

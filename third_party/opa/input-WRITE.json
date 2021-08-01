@@ -6,7 +6,7 @@
 		"data_store": {
 			"name": "object store",
 			"s3": {
-				"bucket": "m4d-standard-demo-bucket-turkey",
+				"bucket": "fybrik-standard-demo-bucket-turkey",
 				"endpoint": "s3.eu.cloud-object-storage.appdomain.cloud",
 				"object_key": "Source_System_Bank_Transactions.csv"
 			},

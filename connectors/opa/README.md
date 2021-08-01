@@ -10,7 +10,7 @@ make test
 
 ## Build and push the connector image
 
-Set the following environment variables to point to a container registry: `DOCKER_USERNAME`, `DOCKER_PASSWORD`, `DOCKER_HOSTNAME` (defaults to "ghcr.io"), `DOCKER_NAMESPACE` (defaults to "mesh-for-data"), `DOCKER_TAGNAME` (defaults to "latest").
+Set the following environment variables to point to a container registry: `DOCKER_USERNAME`, `DOCKER_PASSWORD`, `DOCKER_HOSTNAME` (defaults to "ghcr.io"), `DOCKER_NAMESPACE` (defaults to "fybrik"), `DOCKER_TAGNAME` (defaults to "latest").
 Then run:
 
 ```bash
@@ -22,7 +22,7 @@ Cleanup with `make docker-rmi`
 
 ## Running in a cluster
 
-The connector is deployed by default as part of the Mesh for Data Helm chart. To use a [locally built image](#build-and-push-the-connector-image) add the following to the installation of the m4d chart:
+The connector is deployed by default as part of the Fybrik Helm chart. To use a [locally built image](#build-and-push-the-connector-image) add the following to the installation of the fybrik chart:
 
 ```bash
 --set opaConnector.image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:${DOCKER_TAGNAME}
@@ -32,14 +32,14 @@ To run independantly of manager you need to set some environment variables:
 
 1. `CATALOG_CONNECTOR_URL`: A URL to a catalog connector
 2. `CONNECTION_TIMEOUT`: Connection timeout in seconds
-3. `KUBE_NAMESPACE`: target namespace (defaults to "m4d-system")
+3. `KUBE_NAMESPACE`: target namespace (defaults to "fybrik-system")
 
 We recommend to create a file named `.env` in the root directory of the project and set all variables there. For example:
 
 ```s
 CATALOG_CONNECTOR_URL="katalog-connector:80"
 CONNECTION_TIMEOUT=120
-KUBE_NAMESPACE="m4d-system"
+KUBE_NAMESPACE="fybrik-system"
 ```
 
 Deploy an OPA server and a connector to it:

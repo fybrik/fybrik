@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"helm.sh/helm/v3/pkg/release"
 
 	"github.com/go-logr/logr"
@@ -24,8 +24,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
-	"github.com/mesh-for-data/mesh-for-data/pkg/helm"
+	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/helm"
 	corev1 "k8s.io/api/core/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
@@ -245,8 +245,8 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step uses non-existing template")
 		}
 
-		// We only orchestrate M4DModule templates
-		if templateSpec.Kind != "M4DModule" {
+		// We only orchestrate FybrikModule templates
+		if templateSpec.Kind != "FybrikModule" {
 			continue
 		}
 
@@ -351,7 +351,7 @@ func (r *BlueprintReconciler) getExpectedResults(kind string) (*app.ResourceStat
 	// Assumption: specification for each resource kind is done in one place.
 	ctx := context.Background()
 
-	var moduleList app.M4DModuleList
+	var moduleList app.FybrikModuleList
 	if err := r.List(ctx, &moduleList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
 		return nil, err
 	}

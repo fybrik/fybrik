@@ -1,6 +1,6 @@
 # Formatting Standards
 
-This page shows the formatting standards for the Mesh for Data documentation.
+This page shows the formatting standards for the Fybrik documentation.
 
 ## Link to other pages using relative links
 
@@ -18,7 +18,7 @@ Please see the [project license](../about/license.md) for further details.
 
 ## Prefer SVG format for diagrams
 
-Place image files in the [docs/static](https://github.com/mesh-for-data/mesh-for-data/tree/master/site/docs/static) directory. Use regular Markdown syntax for images. For example:
+Place image files in the [docs/static](https://github.com/fybrik/fybrik/tree/master/site/docs/static) directory. Use regular Markdown syntax for images. For example:
 
 ```markdown
 ![](../static/myimage.svg)
