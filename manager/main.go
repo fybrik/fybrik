@@ -58,8 +58,8 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": app.BlueprintNamespace})
 	selectorsByObject := cache.SelectorsByObject{
 		&appv1.Plotter{}:                {Field: systemNamespaceSelector},
-		&appv1.M4DModule{}:              {Field: systemNamespaceSelector},
-		&appv1.M4DStorageAccount{}:      {Field: systemNamespaceSelector},
+		&appv1.FybrikModule{}:           {Field: systemNamespaceSelector},
+		&appv1.FybrikStorageAccount{}:   {Field: systemNamespaceSelector},
 		&corev1.ConfigMap{}:             {Field: systemNamespaceSelector},
 		&appv1.Blueprint{}:              {Field: workerNamespaceSelector},
 		&motionv1.BatchTransfer{}:       {Field: workerNamespaceSelector},

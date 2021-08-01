@@ -89,9 +89,9 @@ var _ = BeforeSuite(func(done Done) {
 			Scheme:             scheme.Scheme,
 			MetricsBindAddress: "localhost:8086",
 			NewCache: cache.BuilderWithOptions(cache.Options{SelectorsByObject: cache.SelectorsByObject{
-				&appapi.M4DModule{}:         {Field: systemNamespaceSelector},
-				&appapi.M4DStorageAccount{}: {Field: systemNamespaceSelector},
-				&corev1.Secret{}:            {Field: workerNamespaceSelector},
+				&appapi.FybrikModule{}:         {Field: systemNamespaceSelector},
+				&appapi.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
+				&corev1.Secret{}:               {Field: workerNamespaceSelector},
 			}}),
 		})
 		Expect(err).ToNot(HaveOccurred())

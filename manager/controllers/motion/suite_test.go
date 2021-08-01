@@ -92,7 +92,7 @@ var _ = BeforeSuite(func(done Done) {
 		logf.Log.Info("Using existing controller in existing cluster...")
 		k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 	} else {
-		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": "m4d-blueprints"})
+		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": "fybrik-blueprints"})
 		selectorsByObject := cache.SelectorsByObject{
 			&motionv1.BatchTransfer{}:       {Field: workerNamespaceSelector},
 			&motionv1.StreamTransfer{}:      {Field: workerNamespaceSelector},
