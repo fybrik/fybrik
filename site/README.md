@@ -4,7 +4,7 @@ Holds source files for the project documentation and the website hosting it
 
 ## Contribute 
 
-Read the [Contribution guidelines](fybrik.io/dev/contribute/documentation/)
+Read the [Contribution guidelines](https://fybrik.io/dev/contribute/documentation/)
 
 ## Requirements
 

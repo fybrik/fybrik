@@ -4,9 +4,9 @@
 
 # Fybrik
 
-[Fybrik](fybrik.io/) is a cloud native platform to control the usage of data within an organization and thus enable business agility while securing enterprise data. Fybrik encapsulates a containerized workload and intermediates all data flows both into the workload and out of the workload, enabling enforcement of policies defining what can be done with the data.
+[Fybrik](https://fybrik.io/) is a cloud native platform to control the usage of data within an organization and thus enable business agility while securing enterprise data. Fybrik encapsulates a containerized workload and intermediates all data flows both into the workload and out of the workload, enabling enforcement of policies defining what can be done with the data.
 
-For more information please visit [our website](fybrik.io/).
+For more information please visit [our website](https://fybrik.io/).
 
 ## Repositories
 
