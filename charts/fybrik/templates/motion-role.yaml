@@ -3,11 +3,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-<<<<<<< HEAD:charts/fybrik/templates/motion-role.yaml
-  name: {{ template "m4d.fullname" . }}-motion-role
-=======
-  name: {{ template "fybrik.fullname" . }}-motion-cr
->>>>>>> upstream/master:charts/fybrik/templates/motion-cr.yaml
+  name: {{ template "fybrik.fullname" . }}-motion-role
 rules:
 - apiGroups:
   - ""
