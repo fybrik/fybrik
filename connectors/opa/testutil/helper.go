@@ -12,12 +12,12 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	"fybrik.io/fybrik/manager/controllers/utils"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 
-	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"google.golang.org/grpc"
 )
 

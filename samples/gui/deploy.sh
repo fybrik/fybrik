@@ -27,7 +27,7 @@ spec:
         imagePullPolicy: Always
         envFrom:
         - configMapRef:
-            name: m4dgui-config
+            name: fybrikgui-config
         ports:
         - containerPort: 8080
       restartPolicy: Always" > Deployment.yaml

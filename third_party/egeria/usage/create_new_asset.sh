@@ -12,7 +12,7 @@
 # }
 # We have an assumption that asset is stored in an external storage system. Today we support 3 storage types: S3, DB2, KAFKA
 # These are the fields that should be present in the Json describing external storage.
-# This json will be retrieve by Mesh for Data and used to access the data, so it is important to follow the exact structure described here.
+# This json will be retrieve by Fybrik and used to access the data, so it is important to follow the exact structure described here.
 # DB2:
 # 			data_store : "DB2"		//required
 #          	url
@@ -43,7 +43,7 @@
 # Second parameter given to create_new_asset.sh script are Tags that are added to the asset in format of a list: 'tag1 tag2 tag3'
 # For each tag_i, a new inforamtion-tag will be created with name "tag_i" as passed here and this tag will be added to the new asset
 # This tag can be used in the governance policies
-# Today Egeria supports only csv files creation using REST API, it should change soon, but today only csv files assets can be created (if you point to another file it will work but data-mesh will categorize it as csv file)
+# Today Egeria supports only csv files creation using REST API, it should change soon, but today only csv files assets can be created (if you point to another file it will work but Fybrik will categorize it as csv file)
 
 
 ASSET_JSON=$1

@@ -1,0 +1,63 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: motion.fybrik.io/v1alpha1
+kind: StreamTransfer
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  source:
+    kafka:
+      kafkaBrokers: {{ .Values.copy.source.connection.kafka.bootstrap_servers | quote }}
+      schemaRegistryURL: {{ .Values.copy.source.connection.kafka.schema_registry | quote }}
+      kafkaTopic: {{ .Values.copy.source.connection.kafka.topic_name | quote }}
+      dataFormat: {{ .Values.copy.source.format | quote }}
+      # user: "demo-consumer" # can be taken from vault
+      # password: "" # can be taken from vault
+      createSnapshot: false
+      sslTruststore: {{ .Values.copy.source.connection.kafka.ssl_truststore | quote }}
+      sslTruststoreLocation: /opt/spark/work-dir/ca.p12
+      sslTruststorePassword: {{ .Values.copy.source.connection.kafka.ssl_truststore_password | quote }}
+      securityProtocol: {{ .Values.copy.source.connection.kafka.security_protocol | quote }}
+      saslMechanism: {{ .Values.copy.source.connection.kafka.sasl_mechanism | quote }}
+      keyDeserializer: {{ .Values.copy.source.connection.kafka.key_deserializer | quote }}
+      valueDeserializer: {{ .Values.copy.source.connection.kafka.value_deserializer | quote }}
+      {{ if .Values.copy.source.vault }}
+      vault:
+{{ toYaml .Values.copy.source.vault | indent 8 }}
+      {{ end }}
+  destination:
+    s3:
+      endpoint: {{ .Values.copy.destination.connection.s3.endpoint | quote }}
+      bucket: {{ .Values.copy.destination.connection.s3.bucket | quote}}
+      objectKey: {{ .Values.copy.destination.connection.s3.object_key | quote }}
+      dataFormat: {{ .Values.copy.destination.format | quote}}
+      {{ if .Values.copy.destination.vault }}
+      vault:
+{{ toYaml .Values.copy.destination.vault | indent 8 }}
+      {{ end }}
+  {{ if .Values.copy.transformations }}
+  transformation:
+  {{ range .Values.copy.transformations }}
+  {{ if eq .id "redact-ID" }}
+  - action: "RedactColumns"
+    name: "redacting column: {{ .args.column_name }}"
+    columns: [ {{ .args.column_name | quote }} ]
+    options:
+      redactValue: "XXXXXX"
+  {{ end }}
+  {{ if eq .id "removed-ID" }}
+  - action: "RemoveColumns"
+    name: "redacting column: {{ .args.column_name }}"
+    columns: [ "{{ .args.column_name }}" ]
+  {{ end }}
+  {{ end }}
+  {{ end }}
+  triggerInterval: "10 seconds"
+  {{ if .Values.image }}
+  image: {{ .Values.image | quote }}
+  {{ end }}
+  {{ if .Values.imagePullPolicy }}
+  imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
+  {{ end }}
+  noFinalizer: {{ .Values.noFinalizer }}

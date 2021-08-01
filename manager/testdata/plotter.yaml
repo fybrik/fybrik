@@ -1,14 +1,14 @@
 # Copyright 2020 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
-apiVersion: app.m4d.ibm.com/v1alpha1
+apiVersion: app.fybrik.io/v1alpha1
 kind: Plotter
 metadata:
   name: plotter
-  namespace: m4d-system
+  namespace: fybrik-system
   labels:
-    app.m4d.ibm.com/appNamespace: default
-    app.m4d.ibm.com/appName: notebook
+    app.fybrik.io/appNamespace: default
+    app.fybrik.io/appName: notebook
 spec:
   blueprints:
     thegreendragon:
@@ -27,7 +27,7 @@ spec:
                     object_key: my-object
                   type: 2
                 vault:
-                  address: http://vault.m4d-system:8200
+                  address: http://vault.fybrik-system:8200
                   authPath: /v1/auth/kubernetes/login
                   role: module
                   secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
@@ -41,7 +41,7 @@ spec:
                     url: mydb
                     ssl: "true"
                 vault:
-                  address: http://vault.m4d-system:8200
+                  address: http://vault.fybrik-system:8200
                   authPath: /v1/auth/kubernetes/login
                   role: module
                   secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
@@ -49,8 +49,8 @@ spec:
           name: implicit-copy-batch-latest
           template: implicit-copy-batch-latest
       templates:
-      - kind: M4DModule
+      - kind: FybrikModule
         name: implicit-copy-batch-latest
         chart:
-          name: localhost:5000/m4d-system/m4d-implicit-copy-batch:0.1.0
+          name: localhost:5000/fybrik-system/fybrik-implicit-copy-batch:0.1.0
   selector: {}

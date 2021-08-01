@@ -3,7 +3,7 @@
 
 package v1alpha1
 
-import "github.com/mesh-for-data/mesh-for-data/pkg/serde"
+import "fybrik.io/fybrik/pkg/serde"
 
 // DataStore contains the details for accesing the data that are sent by catalog connectors
 // Credentials for accesing the data are stored in Vault, in the location represented by Vault property.

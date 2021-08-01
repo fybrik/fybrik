@@ -7,7 +7,7 @@ This page describes what modules are and how they are leveraged by the control p
 
 As described in the [architecture](./architecture.md) page, the control plane generates a description of a data plane based on policies and application requirements. This is known as a blueprint, and includes components that are deployed by the control plane to fulfill different data-centric requirements.  For example, a component that can mask data can be used to enforce a data masking policy, or a component that copies data may be used to create a local data copy to meet performance requirements, etc. 
 
-Modules are the way to describe such data plane components and make them available to the control plane. A module is packaged as a [Helm](https://helm.sh/) chart that the control plane can install to a workload's data plane. To make a module available to the control plane it must be [registered](#registering-a-module) by applying a [`M4DModule`](../reference/crds.md#m4dmodule) CRD.
+Modules are the way to describe such data plane components and make them available to the control plane. A module is packaged as a [Helm](https://helm.sh/) chart that the control plane can install to a workload's data plane. To make a module available to the control plane it must be [registered](#registering-a-module) by applying a [`FybrikModule`](../reference/crds.md#fybrikmodule) CRD.
 
 The functionality described by the module may be deployed (a) per workload, or (b) it may be composed of one or more components that run independent of the workload and its associated control plane.  In the case of (a), the control plane handles the deployment of the functional component. In the case of (b) where the functionality of the module runs independently and handles requests from multiple workloads, a client module is what is deployed by the control plane.  This client module passes parameters to the external component(s) and monitors the status and results of the requests to the external component(s). 
 <!-- TODO: Add "which are declared as a dependencies in the module yaml"  when we support it-->
@@ -20,19 +20,19 @@ The following diagram shows an example with an Arrow Flight module that is fully
 
 There are several parts to a module:
 
-1. **Optional** external component(s): deployed and managed independently of Mesh for Data.
+1. **Optional** external component(s): deployed and managed independently of Fybrik.
 1. [Module Workload](../contribute/modules.md#module-workload): the workload that runs once the Helm chart is installed by the control plane.
 Can be a client to the external component(s) or be independent.
 1. [Module Helm Chart](../contribute/modules.md#module-helm-chart): the package containing the module workload that the control plane installs as part of a data plane.
-1. [M4DModule YAML](../contribute/modules.md#m4dmodule-yaml): describes the functional capabilities, supported interfaces, and has links to the Module Helm chart.
+1. [FybrikModule YAML](../contribute/modules.md#fybrikmodule-yaml): describes the functional capabilities, supported interfaces, and has links to the Module Helm chart.
 
 ## Registering a module
 
-To make the control plane aware of the module so that it can be included in appropriate workload data flows, the administrator must apply the M4DModule YAML in the `m4d-system` namespace.  This makes the control plane aware of the existence of the module.  Note that it **does not** check that the module's helm chart exists.
+To make the control plane aware of the module so that it can be included in appropriate workload data flows, the administrator must apply the FybrikModule YAML in the `fybrik-system` namespace.  This makes the control plane aware of the existence of the module.  Note that it **does not** check that the module's helm chart exists.
 
 For example, the following registers the `arrow-flight-module`:
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/mesh-for-data/arrow-flight-module/master/module.yaml -n m4d-system
+kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
 ```
 
 ## When is a module used?
@@ -46,7 +46,7 @@ A module may be used in one or more of these flows, as is indicated in the modul
 
 ## Control plane choice of modules
 
-A user workload description `M4DApplicaton` includes a list of the data sets required, the technologies that will be used to read them, and information about the location and reason for the use of the data.  This information together with input from data and enterprise policies, determine which modules are chosen by the control plane. Currently the logic for choosing the modules for the data plane is as follows:
+A user workload description `FybrikApplicaton` includes a list of the data sets required, the technologies that will be used to read them, and information about the location and reason for the use of the data.  This information together with input from data and enterprise policies, determine which modules are chosen by the control plane. Currently the logic for choosing the modules for the data plane is as follows:
 1. If the user is requesting to read data, find all the read flow related modules
 1. If the data set protocol/format and the protocol/format requested by the user do not match, then make an implicit copy of the data, storing it such that it is readable via the protocol/format requested by the user.
 1. If the governance action(s) required on the data set are not supported by the read module, and it is supported by the implicit copy module ... then make an implicit copy. Otherwise no need for implicit copy, and read will be done from the source directly.
@@ -57,10 +57,10 @@ A user workload description `M4DApplicaton` includes a list of the data sets req
 
 The table below lists the currently available modules:
 
-Name | Description | M4DModule | Prerequisite
+Name | Description | FybrikModule | Prerequisite
 ---  | ---         | ---       | ---
-[arrow-flight-module](https://github.com/mesh-for-data/arrow-flight-module) | reading datasets while performing data transformations | https://raw.githubusercontent.com/mesh-for-data/arrow-flight-module/master/module.yaml |
-[implicit-copy](https://github.com/mesh-for-data/mover) | copies data between any two supported data stores, for example S3 and Kafka, and applies transformations. | https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/master/modules/implicit-copy-batch-module.yaml<br> <br>https://raw.githubusercontent.com/mesh-for-data/mesh-for-data/master/modules/implicit-copy-stream-module.yaml | - [Datashim](https://github.com/datashim-io/datashim) deployment.<br>- [`M4DStorageAccount`](../../reference/crds#m4dstorageaccount) resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data.
+[arrow-flight-module](https://github.com/fybrik/arrow-flight-module) | reading datasets while performing data transformations | https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml |
+[implicit-copy](https://github.com/fybrik/mover) | copies data between any two supported data stores, for example S3 and Kafka, and applies transformations. | https://raw.githubusercontent.com/fybrik/fybrik/master/modules/implicit-copy-batch-module.yaml<br> <br>https://raw.githubusercontent.com/fybrik/fybrik/master/modules/implicit-copy-stream-module.yaml | - [Datashim](https://github.com/datashim-io/datashim) deployment.<br>- [`FybrikStorageAccount`](../../reference/crds#fybrikstorageaccount) resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data.
 
 ## Contributing
 

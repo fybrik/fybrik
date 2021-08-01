@@ -1,0 +1,17 @@
+{{- if include "fybrik.isEnabled" (tuple .Values.manager.enabled .Values.worker.enabled) }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ template "fybrik.fullname" . }}-blueprints-rb
+  namespace: fybrik-blueprints
+  labels:
+    {{- include "fybrik.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ template "fybrik.fullname" . }}-blueprints-role
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.manager.serviceAccount.name | default "default" }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}

@@ -2,16 +2,16 @@
 
 To install OPA, execute
 ```bash
-helm install m4d-opa  ../../charts/m4d --set manager.enabled=false --set opaServer.enabled=true
+helm install fybrik-opa  ../../charts/fybrik --set manager.enabled=false --set opaServer.enabled=true
 ```
 To view the OPA installation template, execute
 ```bash
-helm template m4d-opa  ../../charts/m4d --set manager.enabled=false --set opaServer.enabled=true
+helm template fybrik-opa  ../../charts/fybrik --set manager.enabled=false --set opaServer.enabled=true
 ```
 
 To uninstall OPA, execute
 ```bash
-helm uninstall m4d-opa
+helm uninstall fybrik-opa
 ```
 
 
@@ -35,14 +35,14 @@ Example: make unloadpolicy ARGS=data-and-policies/user-created-policy-1
 ```bash
 make loaddata ARGS=<POLICYDATAFOLDER>
 
-Example: make loaddata ARGS=data-and-policies/meshfordata-external-data
+Example: make loaddata ARGS=data-and-policies/fybrik-external-data
 ```
 
 ### Remove a policy data folder from OPA
 ```bash
 make unloaddata ARGS=<POLICYDATAFOLDER>
 
-Example: make unloaddata ARGS=data-and-policies/meshfordata-external-data
+Example: make unloaddata ARGS=data-and-policies/fybrik-external-data
 ```
 
 # Example

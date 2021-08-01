@@ -7,6 +7,6 @@ plugins:
     clusterScope: true
     # A list of namespaces that Vault can read Kuberenets secrets from.
     namespaces: 
-      #- m4d-notebook-sample
-      #- m4d-system
+      #- fybrik-notebook-sample
+      #- fybrik-system
     
