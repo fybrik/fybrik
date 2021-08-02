@@ -45,6 +45,7 @@ require (
 	go.mongodb.org/mongo-driver v1.4.2 // indirect
 	go.uber.org/multierr v1.6.0
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
+	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602
 	google.golang.org/genproto v0.0.0-20210707164411-8c882eb9abba // indirect
 	google.golang.org/grpc v1.39.0
 	google.golang.org/protobuf v1.27.1

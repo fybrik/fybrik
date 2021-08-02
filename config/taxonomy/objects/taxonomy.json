@@ -1,0 +1,30 @@
+{
+  "definitions": {
+    "Action": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name"
+      ]
+    },
+    "DatasetID": {
+      "type": "string"
+    },
+    "PolicyManagerRequestContext": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "ProcessingLocation": {
+      "type": "string"
+    },
+    "Tags": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}
