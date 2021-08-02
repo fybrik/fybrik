@@ -79,7 +79,7 @@ Run the following to install vault and the plugin in development mode:
     helm install vault fybrik-charts/vault --create-namespace -n fybrik-system \
         --set "vault.injector.enabled=false" \
         --set "vault.server.dev.enabled=true" \
-        --values https://raw.githubusercontent.com/fybrik/fybrik/v0.3.1/charts/vault/env/dev/vault-single-cluster-values.yaml
+        --values https://raw.githubusercontent.com/fybrik/fybrik/v0.4.0/charts/vault/env/dev/vault-single-cluster-values.yaml
     kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
     ```
 
@@ -90,7 +90,7 @@ Run the following to install vault and the plugin in development mode:
         --set "global.openshift=true" \
         --set "vault.injector.enabled=false" \
         --set "vault.server.dev.enabled=true" \
-        --values https://raw.githubusercontent.com/fybrik/fybrik/v0.3.1/charts/vault/env/dev/vault-single-cluster-values.yaml
+        --values https://raw.githubusercontent.com/fybrik/fybrik/v0.4.0/charts/vault/env/dev/vault-single-cluster-values.yaml
     kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
     ```
 
