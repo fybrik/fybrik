@@ -5,8 +5,8 @@ import os
 
 def splitToYamls(yamlFile):
     with open(yamlFile, 'r') as file:
-        m4d_list = yaml.load_all(file, Loader=yaml.FullLoader)
-        for yml in m4d_list:
+        fybrik_list = yaml.load_all(file, Loader=yaml.FullLoader)
+        for yml in fybrik_list:
             if yml:
                 filename = yml['kind'].lower()
                 resourceName = yml['metadata']['name']
@@ -33,8 +33,8 @@ def createKustomizations():
                 f.write(kustomizationString)
 
 def main():
-    splitToYamls('m4d.yaml')
-    splitToYamls('m4d-crd.yaml')
+    splitToYamls('fybrik.yaml')
+    splitToYamls('fybrik-crd.yaml')
     print("Successfully split files into yamls and wrote to appropriate directories\n")   
     
     createKustomizations()

@@ -12,8 +12,8 @@ import (
 	"runtime"
 	"sort"
 
-	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
-	dc "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	dc "fybrik.io/fybrik/pkg/connectors/protobuf"
 )
 
 // GetProtocol returns the existing data protocol
@@ -159,7 +159,7 @@ func SupportsInterface(array []*app.InterfaceDetails, element *app.InterfaceDeta
 // GetModuleCapabilities checks if the requested capability is supported by the module.  If so it returns
 // the ModuleCapability structure.  There could be more than one, since multiple structures could exist with
 // the same CapabilityType but different protocols, dataformats and/or actions.
-func GetModuleCapabilities(module *app.M4DModule, requestedCapability app.CapabilityType) (bool, []app.ModuleCapability) {
+func GetModuleCapabilities(module *app.FybrikModule, requestedCapability app.CapabilityType) (bool, []app.ModuleCapability) {
 	capList := []app.ModuleCapability{}
 	capFound := false
 	for _, cap := range module.Spec.Capabilities {

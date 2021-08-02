@@ -4,7 +4,7 @@
 package mockup
 
 import (
-	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
+	"fybrik.io/fybrik/pkg/multicluster"
 )
 
 // ClusterLister is a mockup cluster manager

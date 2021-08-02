@@ -10,7 +10,7 @@ import (
 	"log"
 	"strings"
 
-	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 )
 
 // This dummy catalog can serve as both a grpc server implementation that serves a dummy catalog
@@ -59,12 +59,12 @@ func NewTestCatalog() *DataCatalogDummy {
 				Name: "cos",
 				S3: &pb.S3DataStore{
 					Endpoint:  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
-					Bucket:    "m4d-test-bucket",
+					Bucket:    "fybrik-test-bucket",
 					ObjectKey: "test.csv",
 				},
 			},
 			CredentialsInfo: &pb.CredentialsInfo{
-				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
+				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=fybrik-system",
 			},
 			Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
 		},
@@ -80,12 +80,12 @@ func NewTestCatalog() *DataCatalogDummy {
 				Name: "cos",
 				S3: &pb.S3DataStore{
 					Endpoint:  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
-					Bucket:    "m4d-test-bucket",
+					Bucket:    "fybrik-test-bucket",
 					ObjectKey: "small.parq",
 				},
 			},
 			CredentialsInfo: &pb.CredentialsInfo{
-				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
+				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=fybrik-system",
 			},
 			Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
 		},
@@ -101,12 +101,12 @@ func NewTestCatalog() *DataCatalogDummy {
 				Name: "cos",
 				S3: &pb.S3DataStore{
 					Endpoint:  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
-					Bucket:    "m4d-test-bucket",
+					Bucket:    "fybrik-test-bucket",
 					ObjectKey: "small.csv",
 				},
 			},
 			CredentialsInfo: &pb.CredentialsInfo{
-				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
+				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=fybrik-system",
 			},
 			Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
 		},
@@ -129,7 +129,7 @@ func NewTestCatalog() *DataCatalogDummy {
 				},
 			},
 			CredentialsInfo: &pb.CredentialsInfo{
-				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
+				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=fybrik-system",
 			},
 			Metadata: &pb.DatasetMetadata{},
 		},
@@ -156,7 +156,7 @@ func NewTestCatalog() *DataCatalogDummy {
 				},
 			},
 			CredentialsInfo: &pb.CredentialsInfo{
-				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=m4d-system",
+				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=fybrik-system",
 			},
 			Metadata: &pb.DatasetMetadata{},
 		},

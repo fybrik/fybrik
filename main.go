@@ -3,7 +3,7 @@
 
 package main
 
-import "github.com/mesh-for-data/mesh-for-data/cmd"
+import "fybrik.io/fybrik/cmd"
 
 func main() {
 	cmd.Execute()

@@ -1,0 +1,454 @@
+# Default values for Fybrik.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Overrides names
+nameOverride: ""
+fullnameOverride: ""
+
+# Set to false to disable deploying cluster scoped resources.
+# Note that these resources are still required for a valid
+# deployment. Only set this to false if you deployed cluster
+# scoped resources using a different method.
+
+clusterScoped: true
+
+# Global configuration applies to multiple components installed by this chart
+global:
+  # Default hub for Fybrik images.
+  hub: ghcr.io/fybrik
+  # Default tag for Fybrik images.
+  # If no value is set, the chart's appVersion will be used.
+  tag: ""
+  # Default image pull policy for Fybrik images
+  # Default behavior: latest images will be Always else IfNotPresent.
+  # ref: https://kubernetes.io/docs/concepts/containers/images/#updating-images
+  imagePullPolicy: ""
+  # Reference to one or more secrets to be used when pulling images.
+  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  imagePullSecrets: []
+  # Default connection timeout for GRPC connections.
+  connectionTimeout: 120
+
+# Cluster metadata values
+cluster:
+  # Set to the name of the cluster.
+  name: thegreendragon
+  # Set to cluster zone.
+  zone: hobbiton
+  # Set to cluster region.
+  region: theshire
+  # Set to the cluster Vault auth method path.
+  vaultAuthPath: kubernetes
+
+# Configuration when deploying to a coordinator cluster.
+coordinator:
+  # Set to false to disable coordinator components in manager.
+  enabled: true
+
+  # Configures the catalog system name to be used by the coordinator manager.
+  # Accepted values are "katalog", "egeria" or any meaningful name if a third party connector is used.
+  catalog: "katalog"
+
+  # Overrides the catalog connector URL.
+  # Defaults to `<catalog>-connector:80`.
+  catalogConnectorURL: ""
+
+  # Configures the policy manager system name to be used by the coordinator manager.
+  # Accepted values are "opa" or any meaningful name if a third party connector is used.
+  policyManager: "opa"
+
+  # Overrides the policy manager connector URL.
+  # Defaults to `<policyManager>-connector:80`.
+  policyManagerConnectorURL: ""
+
+  # Configure the vault instance to be used by the coordinator manager
+  vault:
+    # Set to the Vault address. 
+    address: "http://vault.{{ .Release.Namespace }}:8200"
+    # Login method to Vault
+    login:
+      # Token authentication
+      token: "root"
+
+  # Configures the Razee instance to be used by the coordinator manager in a multicluster setup
+  razee:
+    # Overrides the multicluster group that should be used.
+    # Using Razee one can bundle clusters in a group. The controller is then limited to all
+    # the clusters registered in this group.
+    multiclusterGroup: ""
+    # URL for Razee local deployment
+    url: ""
+    # Usernane for Razee local deployment
+    user: ""
+    # Password for Razee local deployment
+    password: ""
+    # Razee deployment with oauth API key authentication requires the apiKey parameter
+    apiKey: ""
+    # Razee deployment with IBM Cloud Satellite Config requires the iamKey parameter
+    iamKey: ""
+
+# Configuration when deploying the manager to a worker cluster.
+# Note that a coordinator can also act as a worker.
+worker:
+  # Set to false to disable worker components in manager.
+  enabled: true
+
+# Manager component
+manager:
+  # Set to true to deploy the manager component or false to skip its deployment.
+  # Defaults to true if `coordinator.enabled` or `worker.enabled` is true.
+  enabled: auto
+  
+  # Override GRPC connection timeout in manager
+  connectionTimeout: 
+
+  # Image name or a hub/image[:tag]
+  image: "manager"
+  # Overrides global.imagePullPolicy
+  imagePullPolicy: ""
+
+  # Set to true to enable socat in the manager pod to forward
+  # traffic from a localhost registry. Used only for development.
+  socat: false
+
+  # Overrides arguments to be passed to manager container
+  overrideArgs:
+
+  # Extra environment variables to be set for manager container
+  extraEnvs:
+  # - name: env_name
+  #   value: env_value
+
+  replicaCount: 1
+  
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use
+    name: manager
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  prometheus: false
+
+# OPA connector component
+opaConnector:
+  # Set to true to deploy the opa connector or false to skip its deployment.
+  # Defaults to true if `coordinator.policyManager` is set to "opa"
+  enabled: auto
+
+  # Overrides the URL of the OPA server
+  # Defaults to the address of the deployed OPA server
+  serverURL:
+
+  # Override GRPC connection timeout
+  # See `.global.connectionTimeout`.
+  connectionTimeout:
+
+  # Image name or a hub/image[:tag]
+  image: "opa-connector"
+
+  # Overrides `.global.imagePullPolicy`
+  imagePullPolicy: ""
+
+  # Used if autoscaling is not enabled 
+  replicaCount: 1
+  
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use
+    name: opa-connector
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage:
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+# OPA server component
+opaServer:
+  # Set to true to deploy OPA service or false to skip its deployment.
+  # Defaults to true if the opa connector is enabled.
+  enabled: auto
+
+  # Image name or a hub/image[:tag]
+  image: "openpolicyagent/opa:latest"
+  
+  # Overrides global.imagePullPolicy
+  imagePullPolicy: ""
+
+  args:
+  - "run"
+  - "--server"
+  - "--log-level=debug"
+  - "--set=decision_logs.console=true"
+
+  kubemgmt:
+    image: openpolicyagent/kube-mgmt:0.11
+
+  # Used if autoscaling is not enabled 
+  replicaCount: 1
+  
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use
+    name: opa
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 8181
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage:
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+# Katalog connector component
+katalogConnector:
+  # Set to true to deploy the katalog connector or false to skip its deployment.
+  # Defaults to true if `coordinator.catalog` is set to "katalog"
+  enabled: auto
+
+  # Image name or a hub/image[:tag]
+  image: "katalog-connector"
+
+  # Overrides global.imagePullPolicy
+  imagePullPolicy: ""
+
+  # Used if autoscaling is not enabled 
+  replicaCount: 1
+  
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use
+    name: katalog-connector
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage:
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+# Egeria connector component
+egeriaConnector:
+  # Set to true to deploy the egeria connector or false to skip its deployment.
+  # Defaults to true if `coordinator.catalog` is set to "egeria"
+  enabled: auto
+
+  # Set to the URL of the Egeria API.
+  serverURL: "https://egeria-platform.egeria-catalog:9443"
+
+  # Default username for Egeria
+  username: "garygeeke"
+
+  # Override GRPC connection timeout
+  connectionTimeout: 
+
+  # Image name or a hub/image[:tag]
+  image: "egr-connector"
+
+  # Overrides global.imagePullPolicy
+  imagePullPolicy: ""
+
+  # Used if autoscaling is not enabled 
+  replicaCount: 1
+  
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use
+    name: egeria-connector
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage:
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}

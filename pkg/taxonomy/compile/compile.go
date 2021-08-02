@@ -4,8 +4,8 @@
 package compile
 
 import (
-	taxonomyio "github.com/mesh-for-data/mesh-for-data/pkg/taxonomy/io"
-	"github.com/mesh-for-data/mesh-for-data/pkg/taxonomy/model"
+	taxonomyio "fybrik.io/fybrik/pkg/taxonomy/io"
+	"fybrik.io/fybrik/pkg/taxonomy/model"
 	"github.com/mohae/deepcopy"
 )
 

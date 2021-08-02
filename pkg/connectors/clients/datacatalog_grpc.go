@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"time"
 
-	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
-	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 
 	"emperror.dev/errors"
 	"google.golang.org/grpc"

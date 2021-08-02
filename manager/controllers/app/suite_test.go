@@ -10,12 +10,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"helm.sh/helm/v3/pkg/release"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	appapi "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	appapi "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -30,8 +30,8 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	"github.com/mesh-for-data/mesh-for-data/pkg/helm"
-	local "github.com/mesh-for-data/mesh-for-data/pkg/multicluster/local"
+	"fybrik.io/fybrik/pkg/helm"
+	local "fybrik.io/fybrik/pkg/multicluster/local"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -57,7 +57,7 @@ var _ = BeforeSuite(func(done Done) {
 	By("bootstrapping test environment")
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{
-			filepath.Join("..", "..", "..", "charts", "m4d-crd", "templates"),
+			filepath.Join("..", "..", "..", "charts", "fybrik-crd", "templates"),
 		},
 		ErrorIfCRDPathMissing: true,
 	}
@@ -86,7 +86,7 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 
 		// Setup application controller
-		reconciler := createTestM4DApplicationController(mgr.GetClient(), mgr.GetScheme())
+		reconciler := createTestFybrikApplicationController(mgr.GetClient(), mgr.GetScheme())
 		err = reconciler.SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
 
@@ -101,7 +101,7 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 
 		// Setup plotter controller
-		clusterMgr, err := local.NewManager(mgr.GetClient(), "m4d-system")
+		clusterMgr, err := local.NewManager(mgr.GetClient(), "fybrik-system")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(clusterMgr).NotTo(BeNil())
 		err = NewPlotterReconciler(mgr, "Plotter", clusterMgr).SetupWithManager(mgr)
@@ -115,18 +115,18 @@ var _ = BeforeSuite(func(done Done) {
 		k8sClient = mgr.GetClient()
 		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "m4d-system",
+				Name: "fybrik-system",
 			},
 		}))
 		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "m4d-blueprints",
+				Name: "fybrik-blueprints",
 			},
 		}))
 		Expect(k8sClient.Create(context.Background(), &v1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "cluster-metadata",
-				Namespace: "m4d-system",
+				Namespace: "fybrik-system",
 			},
 			Data: map[string]string{
 				"ClusterName":   "thegreendragon",

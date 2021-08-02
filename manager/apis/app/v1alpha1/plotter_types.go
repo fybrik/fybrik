@@ -9,11 +9,11 @@ import (
 
 // PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter installs the runtime environment
 // (as blueprints running on remote clusters) which provides the Data Scientist's application with secure and governed access to the data requested in the
-// M4DApplication.
+// FybrikApplication.
 type PlotterSpec struct {
 
 	// Selector enables to connect the resource to the application
-	// Should match the selector of the owner - M4DApplication CRD.
+	// Should match the selector of the owner - FybrikApplication CRD.
 	Selector metav1.LabelSelector `json:"selector"`
 
 	// +required
@@ -25,7 +25,7 @@ type PlotterSpec struct {
 // This includes readiness, error message, and indicators received from blueprint
 // resources owned by the Plotter for cleanup and status monitoring
 type PlotterStatus struct {
-	// ObservedState includes information to be reported back to the M4DApplication resource
+	// ObservedState includes information to be reported back to the FybrikApplication resource
 	// It includes readiness and error indications, as well as user instructions
 	// +optional
 	ObservedState ObservedState `json:"observedState,omitempty"`

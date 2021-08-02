@@ -1,11 +1,11 @@
 blank_issues_enabled: true
 contact_links:
     - name: Ask a Question
-      url: https://github.com/mesh-for-data/mesh-for-data/discussions/new?category=help
+      url: https://github.com/fybrik/fybrik/discussions/new?category=help
       about: Ask the community for help
     - name: Feature Request
-      url: https://github.com/mesh-for-data/mesh-for-data/discussions/new?category=ideas
+      url: https://github.com/fybrik/fybrik/discussions/new?category=ideas
       about: Share ideas for new features
     - name: Bug Report
-      url: https://github.com/mesh-for-data/mesh-for-data/issues/new
+      url: https://github.com/fybrik/fybrik/issues/new
       about: Report a reproducable bug

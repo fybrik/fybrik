@@ -1,8 +1,8 @@
-apiVersion: app.m4d.ibm.com/v1alpha1
-kind: M4DStorageAccount
+apiVersion: app.fybrik.io/v1alpha1
+kind: FybrikStorageAccount
 metadata:
   name: account-theshire
-  namespace: m4d-system
+  namespace: fybrik-system
 spec:
   endpoint: http://s3.eu.cloud-object-storage.appdomain.cloud
   secretRef: credentials-theshire

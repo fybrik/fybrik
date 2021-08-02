@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"emperror.dev/errors"
-	motionv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/motion/v1alpha1"
+	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
