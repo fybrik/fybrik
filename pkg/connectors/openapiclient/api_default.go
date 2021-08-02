@@ -13,10 +13,10 @@ package openapiclient
 import (
 	"bytes"
 	_context "context"
+	"fybrik.io/fybrik/pkg/taxonomy/model/base"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
 	_neturl "net/url"
-	"github.com/mesh-for-data/mesh-for-data/pkg/taxonomy/model/base"
 )
 
 // Linger please
@@ -28,10 +28,10 @@ var (
 type DefaultApiService service
 
 type ApiGetPoliciesDecisionsRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *DefaultApiService
-	input *base.PolicyManagerRequest
-	creds *string
+	input      *base.PolicyManagerRequest
+	creds      *string
 }
 
 func (r ApiGetPoliciesDecisionsRequest) Input(input base.PolicyManagerRequest) ApiGetPoliciesDecisionsRequest {
@@ -56,7 +56,7 @@ func (r ApiGetPoliciesDecisionsRequest) Execute() (base.PolicyManagerResponse, *
 func (a *DefaultApiService) GetPoliciesDecisions(ctx _context.Context) ApiGetPoliciesDecisionsRequest {
 	return ApiGetPoliciesDecisionsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -93,7 +93,7 @@ func (a *DefaultApiService) GetPoliciesDecisionsExecute(r ApiGetPoliciesDecision
 
 	//localVarQueryParams.Add("input", parameterToString(*r.input, ""))
 	retval, _ := parameterToJson(*r.input)
-    localVarQueryParams.Add("input", retval)
+	localVarQueryParams.Add("input", retval)
 	localVarQueryParams.Add("creds", parameterToString(*r.creds, ""))
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
