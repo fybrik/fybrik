@@ -61,8 +61,8 @@ theme:
     code: Roboto Mono
   features:
     - navigation.tabs
-  favicon: static/logo.svg # this icon appears in the browser's tab
-  logo: static/logo.svg # this icon appears in the top left corner on each page
+  favicon: static/logo.png # this icon appears in the browser's tab
+  logo: static/logo.png # this icon appears in the top left corner on each page
     
 markdown_extensions:
   - toc:
