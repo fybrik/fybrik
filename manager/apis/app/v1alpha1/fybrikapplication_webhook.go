@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	log "log"
 
-	validate "github.com/fybrik/fybrik/pkg/taxonomy/validate"
+	validate "fybrik.io/fybrik/pkg/taxonomy/validate"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
