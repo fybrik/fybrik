@@ -11,7 +11,7 @@ make test
 
 ## Build and push the connector image
 
-Set the following environment variables to point to a container registry: `DOCKER_USERNAME`, `DOCKER_PASSWORD`, `DOCKER_HOSTNAME` (defaults to "ghcr.io"), `DOCKER_NAMESPACE` (defaults to "mesh-for-date"), `DOCKER_TAGNAME` (defaults to "latest").
+Set the following environment variables to point to a container registry: `DOCKER_USERNAME`, `DOCKER_PASSWORD`, `DOCKER_HOSTNAME` (defaults to "ghcr.io"), `DOCKER_NAMESPACE` (defaults to "fybrik"), `DOCKER_TAGNAME` (defaults to "latest").
 Then run:
 
 ```bash
@@ -22,13 +22,13 @@ Cleanup with `make clean docker-rmi`
 
 ## Running in a cluster
 
-The connector can be deployed as part of the Mesh for Data Helm chart by adding the following to the installation of the m4d chart (replace the serverURL if the value is different):
+The connector can be deployed as part of the Fybrik Helm chart by adding the following to the installation of the fybrik chart (replace the serverURL if the value is different):
 
 ```bash
 --set coordinator.catalog=egeria --set egeriaConnector.serverURL="https://egeria-platform.egeria-catalog:9443"
 ```
 
-To use a [locally built image](#build-and-push-the-connector-image) add the following to the installation of the m4d chart:
+To use a [locally built image](#build-and-push-the-connector-image) add the following to the installation of the fybrik chart:
 
 ```bash
 --set egeriaConnector.image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/egr-connector:${DOCKER_TAGNAME}
@@ -37,13 +37,13 @@ To use a [locally built image](#build-and-push-the-connector-image) add the foll
 To run independantly of manager you need to set some environment variables:
 
 1. `EGERIA_SERVER_URL`: A URL to a running egeria server
-2. `KUBE_NAMESPACE`: target namespace (defaults to "m4d-system")
+2. `KUBE_NAMESPACE`: target namespace (defaults to "fybrik-system")
 
 We recommend to create a file named `.env` in the root directory of the project and set all variables there. For example:
 
 ```s
 EGERIA_SERVER_URL="https://egeria-platform.egeria-catalog:9443"
-KUBE_NAMESPACE="m4d-system"
+KUBE_NAMESPACE="fybrik-system"
 ```
 
 Deploy the connector:

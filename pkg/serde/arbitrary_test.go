@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/mesh-for-data/mesh-for-data/pkg/serde"
+	"fybrik.io/fybrik/pkg/serde"
 )
 
 type ExampleArbitrary struct {

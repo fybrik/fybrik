@@ -8,7 +8,7 @@ all: manager
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 DOCKER_NAME ?= manager
 GO_OUTPUT_FILE = manager
-KUBE_NAMESPACE ?= m4d-system
+KUBE_NAMESPACE ?= fybrik-system
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/hack/make-rules/verify.mk
 
@@ -36,13 +36,13 @@ generate: $(TOOLBIN)/controller-gen
 .PHONY: manifests
 manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
 	$(TOOLBIN)/controller-gen --version
-	$(TOOLBIN)/controller-gen crd:trivialVersions=true output:crd:artifacts:config=$(ROOT_DIR)/charts/m4d-crd/templates/ paths=./apis/...
+	$(TOOLBIN)/controller-gen crd:trivialVersions=true output:crd:artifacts:config=$(ROOT_DIR)/charts/fybrik-crd/templates/ paths=./apis/...
 	$(TOOLBIN)/controller-gen webhook paths=./apis/... output:stdout | \
 		$(TOOLBIN)/yq eval '.metadata.annotations."cert-manager.io/inject-ca-from" |= "{{ .Release.Namespace }}/serving-cert"' - | \
 		$(TOOLBIN)/yq eval '.metadata.annotations."certmanager.k8s.io/inject-ca-from" |= "{{ .Release.Namespace }}/serving-cert"' - | \
 		$(TOOLBIN)/yq eval '(.metadata.name | select(. == "mutating-webhook-configuration")) = "{{ .Release.Namespace }}-mutating-webhook"' - | \
 		$(TOOLBIN)/yq eval '(.metadata.name | select(. == "validating-webhook-configuration")) = "{{ .Release.Namespace }}-validating-webhook"' - | \
-		$(TOOLBIN)/yq eval '(.webhooks.[].clientConfig.service.namespace) = "{{ .Release.Namespace }}"' - > $(ROOT_DIR)/charts/m4d/files/webhook-configs.yaml
+		$(TOOLBIN)/yq eval '(.webhooks.[].clientConfig.service.namespace) = "{{ .Release.Namespace }}"' - > $(ROOT_DIR)/charts/fybrik/files/webhook-configs.yaml
 
 # Overwrite docker-build from docker.mk
 docker-build: generate
@@ -56,7 +56,7 @@ wait_for_manager: $(TOOLBIN)/kubectl
 
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
-run-integration-tests: export DOCKER_NAMESPACE?=m4d-system
+run-integration-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-integration-tests: wait_for_manager
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestMotionAPIs -count 1
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestAPIs -count 1

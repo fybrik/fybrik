@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mesh-for-data/mesh-for-data/pkg/taxonomy/model"
+	"fybrik.io/fybrik/pkg/taxonomy/model"
 	"sigs.k8s.io/yaml"
 )
 

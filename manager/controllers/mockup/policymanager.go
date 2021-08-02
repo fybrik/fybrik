@@ -9,8 +9,8 @@ import (
 	"log"
 	"strings"
 
-	connectors "github.com/mesh-for-data/mesh-for-data/pkg/connectors/clients"
-	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 )
 
 // MockPolicyManager is a mock for PolicyManager interface used in tests

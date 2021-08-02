@@ -102,7 +102,7 @@ $(TOOLBIN)/oapi-codegen:
 
 INSTALL_TOOLS += $(TOOLBIN)/openapi2crd
 $(TOOLBIN)/openapi2crd:
-	GOBIN=$(ABSTOOLBIN) go install github.com/mesh-for-data/openapi2crd@v0.3.2
+	GOBIN=$(ABSTOOLBIN) go install fybrik.io/openapi2crd@v0.4.0
 
 INSTALL_TOOLS += $(TOOLBIN)/openapi-generator-cli
 $(TOOLBIN)/openapi-generator-cli:
@@ -111,7 +111,7 @@ $(TOOLBIN)/openapi-generator-cli:
 
 INSTALL_TOOLS += $(TOOLBIN)/crdoc
 $(TOOLBIN)/crdoc:
-	GOBIN=$(ABSTOOLBIN) go install github.com/mesh-for-data/crdoc@v0.3.0
+	GOBIN=$(ABSTOOLBIN) go install fybrik.io/crdoc@v0.4.0
 
 INSTALL_TOOLS += $(TOOLBIN)/yq
 $(TOOLBIN)/yq:

@@ -14,7 +14,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 
-	motionv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/motion/v1alpha1"
+	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/api/core/v1"
@@ -69,7 +69,7 @@ var _ = BeforeSuite(func(done Done) {
 		noSimulatedProgress = true
 	}
 	testEnv = &envtest.Environment{
-		CRDDirectoryPaths:     []string{filepath.Join("..", "..", "..", "charts", "m4d-crd", "templates")},
+		CRDDirectoryPaths:     []string{filepath.Join("..", "..", "..", "charts", "fybrik-crd", "templates")},
 		ErrorIfCRDPathMissing: true,
 		//AttachControlPlaneOutput: true,
 	}
@@ -108,7 +108,7 @@ var _ = BeforeSuite(func(done Done) {
 		k8sClient = mgr.GetClient()
 		err = k8sClient.Create(context.Background(), &v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "m4d-blueprints",
+				Name: "fybrik-blueprints",
 			},
 		})
 		Expect(err).ToNot(HaveOccurred())

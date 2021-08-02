@@ -6,7 +6,7 @@ Kubernetes  [`NetworkPolicies`](https://kubernetes.io/docs/concepts/services-net
 
 ## Ingress traffic policy
 
-The installation of Mesh for Data applies a Kubernetes [`NetworkPolicy`](https://kubernetes.io/docs/concepts/services-networking/network-policies/) resource to the `m4d-system` namespace. This resource ensures that ingress traffic to connectors is only allowed from workloads that run in the `m4d-system` namespace and thus disallow access to connectors from other namespaces or external parties.
+The installation of Fybrik applies a Kubernetes [`NetworkPolicy`](https://kubernetes.io/docs/concepts/services-networking/network-policies/) resource to the `fybrik-system` namespace. This resource ensures that ingress traffic to connectors is only allowed from workloads that run in the `fybrik-system` namespace and thus disallow access to connectors from other namespaces or external parties.
 
 The `NetworkPolicy` is always created. However, your Kubernetes cluster must have a [Network Plugin](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/) with `NetworkPolicy` support. Otherwise, `NetworkPolicy` resources will have no affect. While most Kubernetes distributions include a network plugin that enfoces network policies, some like [Kind](https://kind.sigs.k8s.io/) do not and require you to install a separate network plugin instead.
 
@@ -16,9 +16,9 @@ If Istio is installed in the cluster then you can use [automatic mutual TLS](htt
 
 Follow these steps to enable mutual TLS:
 - Ensure that Istio 1.6 or above is installed.
-- Enable Istio sidecar injection in the `m4d-system` namespace:
+- Enable Istio sidecar injection in the `fybrik-system` namespace:
     ```bash
-    kubectl label namespace m4d-system istio-injection=enabled
+    kubectl label namespace fybrik-system istio-injection=enabled
     ```
 - Create Istio `PeerAuthentication` resource to enable mutual TLS between contains with Istio sidecars:
     ```bash
@@ -27,7 +27,7 @@ Follow these steps to enable mutual TLS:
     kind: "PeerAuthentication"
     metadata:
     name: "premissive-mtls-in-control-plane"
-    namespace: m4d-system
+    namespace: fybrik-system
     spec:
       mtls:
         mode: PERMISSIVE    
@@ -40,7 +40,7 @@ Follow these steps to enable mutual TLS:
     kind: Sidecar
     metadata:
     name: sidecar-default
-    namespace: m4d-system
+    namespace: fybrik-system
     spec:
     egress:
     - hosts:
@@ -51,5 +51,5 @@ Follow these steps to enable mutual TLS:
     ```
 - Restart the control plane pods:
     ```bash
-    kubectl delete pod --all -n m4d-system
+    kubectl delete pod --all -n fybrik-system
     ```

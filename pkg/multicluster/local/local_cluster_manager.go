@@ -8,8 +8,8 @@ import (
 	"fmt"
 
 	"emperror.dev/errors"
-	"github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
+	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/pkg/multicluster"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"

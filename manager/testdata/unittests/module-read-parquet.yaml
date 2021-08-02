@@ -1,20 +1,20 @@
 # Copyright 2020 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
-apiVersion: app.m4d.ibm.com/v1alpha1
-kind: M4DModule
+apiVersion: app.fybrik.io/v1alpha1
+kind: FybrikModule
 metadata:
   name: read-parquet
-  namespace: m4d-system
+  namespace: fybrik-system
 spec:
   chart:
-    name: localhost:5000/m4d-system/m4d-template:0.1.0
+    name: localhost:5000/fybrik-system/fybrik-template:0.1.0
   type: service
   flows:
     - read
   capabilities:
     api:
-      protocol: m4d-arrow-flight
+      protocol: fybrik-arrow-flight
       dataformat: arrow
       endpoint:
         hostname: read-path

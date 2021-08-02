@@ -12,8 +12,8 @@ import (
 	"runtime"
 	"sort"
 
-	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
-	dc "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	dc "fybrik.io/fybrik/pkg/connectors/protobuf"
 )
 
 // GetProtocol returns the existing data protocol

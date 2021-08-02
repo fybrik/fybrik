@@ -4,7 +4,7 @@ DOCKER_NAME = egr-connector
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 
-KUBE_NAMESPACE ?= m4d-system
+KUBE_NAMESPACE ?= fybrik-system
 
 .PHONY: docker-build
 docker-build: build
@@ -12,7 +12,7 @@ docker-build: build
 
 .PHONY: deploy
 deploy:
-	helm install m4d-egeria $(ROOT_DIR)/charts/m4d \
+	helm install fybrik-egeria $(ROOT_DIR)/charts/fybrik \
 		--set coordinator.enabled=false --set worker.enabled=false --set manager.enabled=false \
 		--set egeriaConnector.enabled=true \
 		--set egeriaConnector.image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(DOCKER_NAME):${DOCKER_TAGNAME} \
@@ -21,7 +21,7 @@ deploy:
 
 .PHONY: undeploy
 undeploy:
-	helm uninstall m4d-egeria -n $(KUBE_NAMESPACE)
+	helm uninstall fybrik-egeria -n $(KUBE_NAMESPACE)
 
 .PHONY: build
 build:

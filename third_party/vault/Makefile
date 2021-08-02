@@ -2,7 +2,7 @@ ROOT_DIR:=../..
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 
-KUBE_NAMESPACE ?= m4d-system
+KUBE_NAMESPACE ?= fybrik-system
 WITH_OPENSHIFT ?= false
 
 .PHONY: deploy

@@ -57,7 +57,7 @@ to rerun  the entire sequence
 ```bash
 # use the local kind registry
 export DOCKER_HOSTNAME=kind-registry:5000
-export DOCKER_NAMESPACE=m4d-system
+export DOCKER_NAMESPACE=fybrik-system
 
 # build a local kind cluser
 make kind
@@ -74,10 +74,10 @@ make -C test/services docker-build docker-push
 # wait until cluster-prepare setup really completed
 make cluster-prepare-wait
 
-# deploy the m4d CRDs to the kind cluster
+# deploy the fybrik CRDs to the kind cluster
 make -C manager deploy-crd
 
-# deploy m4d manager to the kind cluster
+# deploy fybrik manager to the kind cluster
 make -C manager deploy_it
 
 # wait until manager is ready
@@ -95,7 +95,7 @@ make -C manager run-integration-tests
 
 ## Building in a multi cluster environment
 
-As Mesh for Data can run in a multi-cluster environment there is also a test environment
+As Fybrik can run in a multi-cluster environment there is also a test environment
 that can be used that simulates this scenario. Using kind one can spin up two separate kubernetes
 clusters with differnt contexts and develop and test in these. 
 

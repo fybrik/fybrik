@@ -20,7 +20,7 @@ var c client.Client
 
 func TestMain(m *testing.M) {
 	t := &envtest.Environment{
-		CRDDirectoryPaths:     []string{filepath.Join("..", "..", "..", "..", "charts", "m4d-crd", "templates")},
+		CRDDirectoryPaths:     []string{filepath.Join("..", "..", "..", "..", "charts", "fybrik-crd", "templates")},
 		ErrorIfCRDPathMissing: true,
 	}
 

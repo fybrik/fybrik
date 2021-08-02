@@ -6,15 +6,15 @@ package datauser
 import (
 	"context"
 
-	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// CreateApplication makes a new M4DApplication CRD
-func (f *K8sClient) CreateApplication(obj *app.M4DApplication) (*app.M4DApplication, error) {
+// CreateApplication makes a new FybrikApplication CRD
+func (f *K8sClient) CreateApplication(obj *app.FybrikApplication) (*app.FybrikApplication, error) {
 	err := f.client.Create(context.Background(), obj)
 	if err != nil {
 		return nil, err
@@ -22,9 +22,9 @@ func (f *K8sClient) CreateApplication(obj *app.M4DApplication) (*app.M4DApplicat
 	return obj, nil
 }
 
-// UpdateApplication updates an existing M4DApplication CRD
-func (f *K8sClient) UpdateApplication(name string, obj *app.M4DApplication) (*app.M4DApplication, error) {
-	var result app.M4DApplication
+// UpdateApplication updates an existing FybrikApplication CRD
+func (f *K8sClient) UpdateApplication(name string, obj *app.FybrikApplication) (*app.FybrikApplication, error) {
+	var result app.FybrikApplication
 	key := kclient.ObjectKeyFromObject(obj)
 	err := f.client.Get(context.Background(), key, &result)
 	if err != nil {
@@ -38,9 +38,9 @@ func (f *K8sClient) UpdateApplication(name string, obj *app.M4DApplication) (*ap
 	return &result, nil
 }
 
-// DeleteApplication terminates the existing M4DApplication CRD and all its associated components in the m4d
+// DeleteApplication terminates the existing FybrikApplication CRD and all its associated components in the fybrik
 func (f *K8sClient) DeleteApplication(name string, options *meta_v1.DeleteOptions) error {
-	var result app.M4DApplication
+	var result app.FybrikApplication
 	key := types.NamespacedName{Name: name, Namespace: k8sClient.namespace}
 	err := f.client.Get(context.Background(), key, &result)
 	if err != nil {
@@ -50,9 +50,9 @@ func (f *K8sClient) DeleteApplication(name string, options *meta_v1.DeleteOption
 	return err
 }
 
-// GetApplication returns an existing M4DApplication CRD, including its status information
-func (f *K8sClient) GetApplication(name string) (*app.M4DApplication, error) {
-	var result app.M4DApplication
+// GetApplication returns an existing FybrikApplication CRD, including its status information
+func (f *K8sClient) GetApplication(name string) (*app.FybrikApplication, error) {
+	var result app.FybrikApplication
 	key := types.NamespacedName{Name: name, Namespace: k8sClient.namespace}
 	err := f.client.Get(context.Background(), key, &result)
 	if err != nil {
@@ -61,9 +61,9 @@ func (f *K8sClient) GetApplication(name string) (*app.M4DApplication, error) {
 	return &result, err
 }
 
-// ListApplications gets the list of existing M4DApplication CRDs
-func (f *K8sClient) ListApplications(opts meta_v1.ListOptions) (*app.M4DApplicationList, error) {
-	var result app.M4DApplicationList
+// ListApplications gets the list of existing FybrikApplication CRDs
+func (f *K8sClient) ListApplications(opts meta_v1.ListOptions) (*app.FybrikApplicationList, error) {
+	var result app.FybrikApplicationList
 	err := f.client.List(context.Background(), &result, kclient.InNamespace(k8sClient.namespace))
 	return &result, err
 }
