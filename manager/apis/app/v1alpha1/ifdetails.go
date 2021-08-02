@@ -8,7 +8,7 @@ const (
 	S3          string = "s3"
 	Kafka       string = "kafka"
 	JdbcDb2     string = "jdbc-db2"
-	ArrowFlight string = "m4d-arrow-flight"
+	ArrowFlight string = "fybrik-arrow-flight"
 	Arrow       string = "arrow"
 	Parquet     string = "parquet"
 	Table       string = "table"

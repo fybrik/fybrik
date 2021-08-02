@@ -53,7 +53,7 @@ func GetCredentials(w http.ResponseWriter, r *http.Request) {
 	}
 	secretName := chi.URLParam(r, "secret")
 
-	// Call kubernetes to get the M4DApplication CRD
+	// Call kubernetes to get the FybrikApplication CRD
 	secret, err := k8sClient.GetSecret(secretName)
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))
@@ -77,7 +77,7 @@ func DeleteCredentials(w http.ResponseWriter, r *http.Request) {
 
 	secretName := chi.URLParam(r, "secret")
 
-	// Call kubernetes to get the M4DApplication CRD
+	// Call kubernetes to get the FybrikApplication CRD
 	err := k8sClient.DeleteSecret(secretName, nil)
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))

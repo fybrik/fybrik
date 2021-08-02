@@ -1,0 +1,409 @@
+# Source: fybrik/templates/fybrik-blueprints-ns.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fybrik-blueprints
+---
+# Source: fybrik/templates/katalog-connector/katalog-rbac.yaml
+# ClusterRole katalog-editor allows managing assets.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: katalog-editor
+rules:
+  - apiGroups: ["katalog.fybrik.io"]
+    resources: ["assets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
+---
+# Source: fybrik/templates/katalog-connector/katalog-rbac.yaml
+# ClusterRole katalog-viewer allows viewing assets.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: katalog-viewer
+rules:
+  - apiGroups: ["katalog.fybrik.io"]
+    resources: ["assets"]
+    verbs: ["get", "list", "watch"]
+---
+# Source: fybrik/templates/manager-auth-proxy-cr.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fybrik-proxy-cr
+rules:
+  - apiGroups: ["authentication.k8s.io"]
+    resources:
+      - tokenreviews
+    verbs: ["create"]
+  - apiGroups: ["authorization.k8s.io"]
+    resources:
+      - subjectaccessreviews
+    verbs: ["create"]
+---
+# Source: fybrik/templates/manager-cr.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fybrik-manager-cr
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - events
+      - secrets
+      - secrets/finalizers
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - persistentvolumeclaims
+      - persistentvolumeclaims/finalizers
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - pods/finalizers
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - '*'
+    resources:
+      - '*'
+    verbs:
+      - '*'
+  - apiGroups:
+      - app.fybrik.io
+    resources:
+      - blueprints
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - app.fybrik.io
+    resources:
+      - blueprints/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - app.fybrik.io
+    resources:
+      - fybrikapplications
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - app.fybrik.io
+    resources:
+      - fybrikapplications/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - app.fybrik.io
+    resources:
+      - fybrikmodules
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - app.fybrik.io
+    resources:
+      - fybrikstorageaccounts
+    verbs:
+      - get
+      - list
+      - update
+      - watch
+  - apiGroups:
+      - app.fybrik.io
+    resources:
+      - plotters
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - app.fybrik.io
+    resources:
+      - plotters/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+      - deployments/finalizers
+      - deployments/status
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+      - jobs/finalizers
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - batch
+    resources:
+      - jobs/status
+    verbs:
+      - get
+  - apiGroups:
+      - com.ie.ibm.hpsys
+    resources:
+      - datasets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - motion.fybrik.io
+    resources:
+      - batchtransfers
+      - batchtransfers/finalizers
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - motion.fybrik.io
+    resources:
+      - batchtransfers/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - motion.fybrik.io
+    resources:
+      - streamtransfers
+      - streamtransfers/finalizers
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - motion.fybrik.io
+    resources:
+      - streamtransfers/status
+    verbs:
+      - get
+      - patch
+      - update
+---
+# Source: fybrik/templates/katalog-connector/katalog-connector-rbac.yaml
+# Grant katalog-connector the katalog-editor Role.
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: katalog-connector-editor
+roleRef:
+  kind: ClusterRole
+  name: katalog-editor
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: katalog-connector
+    namespace: fybrik-system
+---
+# Source: fybrik/templates/manager-auth-proxy-crb.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: fybrik-proxy-crb
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: fybrik-proxy-cr
+subjects:
+  - kind: ServiceAccount
+    name: manager
+    namespace: fybrik-system
+---
+# Source: fybrik/templates/manager-crb.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: fybrik-manager-crb
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: fybrik-manager-cr
+subjects:
+  - kind: ServiceAccount
+    name: manager
+    namespace: fybrik-system
+---
+# Source: fybrik/templates/webhook-configs.yaml
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: 'fybrik-system-mutating-webhook'
+  annotations:
+    cert-manager.io/inject-ca-from: 'fybrik-system/serving-cert'
+webhooks:
+  - clientConfig:
+      caBundle: Cg==
+      service:
+        name: webhook-service
+        namespace: 'fybrik-system'
+        path: /mutate-motion-fybrik-io-v1alpha1-batchtransfer
+    failurePolicy: Fail
+    name: mbatchtransfer.kb.io
+    rules:
+      - apiGroups:
+          - motion.fybrik.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - batchtransfers
+  - clientConfig:
+      caBundle: Cg==
+      service:
+        name: webhook-service
+        namespace: 'fybrik-system'
+        path: /mutate-motion-fybrik-io-v1alpha1-streamtransfer
+    failurePolicy: Fail
+    name: mstreamtransfer.kb.io
+    rules:
+      - apiGroups:
+          - motion.fybrik.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - streamtransfers
+---
+# Source: fybrik/templates/webhook-configs.yaml
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: 'fybrik-system-validating-webhook'
+  annotations:
+    cert-manager.io/inject-ca-from: 'fybrik-system/serving-cert'
+webhooks:
+  - clientConfig:
+      caBundle: Cg==
+      service:
+        name: webhook-service
+        namespace: 'fybrik-system'
+        path: /validate-motion-fybrik-io-v1alpha1-batchtransfer
+    failurePolicy: Fail
+    name: vbatchtransfer.kb.io
+    rules:
+      - apiGroups:
+          - motion.fybrik.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - batchtransfers
+  - clientConfig:
+      caBundle: Cg==
+      service:
+        name: webhook-service
+        namespace: 'fybrik-system'
+        path: /validate-motion-fybrik-io-v1alpha1-streamtransfer
+    failurePolicy: Fail
+    name: vstreamtransfer.kb.io
+    rules:
+      - apiGroups:
+          - motion.fybrik.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - streamtransfers

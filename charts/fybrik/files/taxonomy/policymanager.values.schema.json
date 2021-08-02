@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "policymanager.values.schema.json#",
+    "title": "Policy Manager Request Values Taxonomy",
+    "description": "Values owned by the policy manager.",
+    "definitions": {
+        "intent": {
+            "type": "string",
+            "description": "The reason for which the data is to be used.",
+            "enum": ["Marketing", "Customer Support", "Fraud Detection", "Customer Behavior Analysis"]
+        },
+        "role": {
+            "type": "string",
+            "description": "The position of the person in the organization processing the data.",
+            "enum": ["Sales", "HR", "Customer Support", "Business Analyst", "Data Scientist"]
+        },
+        "request_context": {
+            "type": "object",
+            "properties": {
+                "intent": { "$ref": "#/definitions/intent" },
+                "role": { "$ref": "#/definitions/role" }
+            },
+            "required": ["intent"]
+        },
+        "action_type": {
+            "type": "string",
+            "description": "The action to be taken on the data.  A mandatory object used by the Fybrik controller's logic",
+            "enum": ["read", "write", "delete"]
+        }
+    },
+    "properties": {
+        "intent": { "$ref": "#/definitions/intent" },
+        "role": { "$ref": "#/definitions/role" },
+        "request_context": { "$ref": "#/definitions/request_context" },
+        "action_type": { "$ref": "#/definitions/action_type" }
+    },
+    "additionalProperties": false
+}

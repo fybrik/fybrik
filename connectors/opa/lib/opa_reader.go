@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"log"
 
-	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 )
 
 type OpaReader struct {

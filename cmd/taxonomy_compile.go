@@ -3,8 +3,8 @@
 package cmd
 
 import (
-	"github.com/mesh-for-data/mesh-for-data/pkg/taxonomy/compile"
-	taxonomyio "github.com/mesh-for-data/mesh-for-data/pkg/taxonomy/io"
+	"fybrik.io/fybrik/pkg/taxonomy/compile"
+	taxonomyio "fybrik.io/fybrik/pkg/taxonomy/io"
 	"github.com/spf13/cobra"
 )
 

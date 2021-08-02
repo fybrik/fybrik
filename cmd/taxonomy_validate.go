@@ -6,7 +6,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/mesh-for-data/mesh-for-data/pkg/taxonomy"
+	"fybrik.io/fybrik/pkg/taxonomy"
 	"github.com/spf13/cobra"
 	"helm.sh/helm/v3/cmd/helm/require"
 )

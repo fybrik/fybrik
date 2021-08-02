@@ -9,7 +9,7 @@ on:
       - site/**
       - .github/workflows/website-*
       - pkg/connectors/protos/**
-      - charts/m4d-crd/templates/**
+      - charts/fybrik-crd/templates/**
   workflow_dispatch:
 jobs:
   website-deploy:

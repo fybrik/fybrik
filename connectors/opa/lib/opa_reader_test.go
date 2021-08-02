@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	tu "github.com/mesh-for-data/mesh-for-data/connectors/opa/testutil"
+	tu "fybrik.io/fybrik/connectors/opa/testutil"
 	"gotest.tools/assert"
 )
 

@@ -2,11 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ---
-apiVersion: app.m4d.ibm.com/v1alpha1
-kind: M4DModule
+apiVersion: app.fybrik.io/v1alpha1
+kind: FybrikModule
 metadata:
   name: implicit-copy-batch-db2
-  namespace: m4d-system
+  namespace: fybrik-system
 spec:
   flows:  # one or more of copy, read, write 
   - copy  
@@ -20,7 +20,7 @@ spec:
         protocol: s3
         dataformat: parquet
   chart:
-    name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
+    name: ghcr.io/fybrik/fybrik-implicit-copy-batch:0.1.0
   statusIndicators:
     - kind: BatchTransfer
       successCondition: status.status == SUCCEEDED

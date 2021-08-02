@@ -1,4 +1,4 @@
-apiVersion: katalog.m4d.ibm.com/v1alpha1
+apiVersion: katalog.fybrik.io/v1alpha1
 kind: Asset
 metadata:
   name: data-csv

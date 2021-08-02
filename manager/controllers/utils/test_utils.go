@@ -4,8 +4,8 @@
 package utils
 
 import (
-	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
-	motionv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/motion/v1alpha1"
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
 	"github.com/onsi/gomega"
 	kbatch "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -14,7 +14,7 @@ import (
 
 // Creates a scheme that can be used in unit tests
 // The scheme will have the core and batch apis from K8s registered as well as
-// the app and motion apis from M4D.
+// the app and motion apis from Fybrik.
 // This function can be tested with a gomega environment if passed or otherwise (if nil is passed) it will ignore tests.
 func NewScheme(g *gomega.WithT) *runtime.Scheme {
 	s := runtime.NewScheme()

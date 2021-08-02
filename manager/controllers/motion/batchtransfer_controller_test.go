@@ -11,7 +11,7 @@ import (
 	kbatch "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 
-	motionv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/motion/v1alpha1"
+	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,7 +24,7 @@ var _ = Describe("BatchTransfer Controller", func() {
 	const timeout = time.Second * 30
 	const interval = time.Millisecond * 100
 	const batchtransferName = "batchtransfer-sample"
-	const batchtransferNameSpace = "m4d-blueprints"
+	const batchtransferNameSpace = "fybrik-blueprints"
 
 	BeforeEach(func() {
 		// Add any setup steps that needs to be executed before each test
