@@ -13,7 +13,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	motionv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/motion/v1alpha1"
+	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
 )
 
 // StreamTransferReconciler reconciles a StreamTransfer object

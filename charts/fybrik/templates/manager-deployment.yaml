@@ -1,0 +1,122 @@
+{{- if include "fybrik.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: manager
+  labels:
+    control-plane: controller-manager
+    app.kubernetes.io/component: manager
+    {{- include "fybrik.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.manager.replicaCount }}
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+      app.kubernetes.io/component: manager
+      {{- include "fybrik.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.manager.podAnnotations }}
+      annotations:
+        sidecar.istio.io/inject: "true"
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        control-plane: controller-manager
+        fybrik.io/componentType: manager
+        app.kubernetes.io/component: manager
+        {{- include "fybrik.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ .Values.manager.serviceAccount.name }}
+      securityContext:
+        {{- toYaml .Values.manager.podSecurityContext | nindent 8 }}
+      containers:
+        {{- if .Values.manager.socat }}
+        - name: integration-tests
+          image: alpine/socat:latest
+          command:
+          - socat
+          - TCP4-LISTEN:5000,fork
+          - TCP4:kind-registry:5000
+        {{- end }}
+        - name: kube-rbac-proxy
+          image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
+          args:
+            - "--secure-listen-address=0.0.0.0:8443"
+            - "--upstream=http://127.0.0.1:8080/"
+            - "--logtostderr=true"
+            - "--v=10"
+          ports:
+          - containerPort: 8443
+            name: https
+        - name: manager
+          image: {{ include "fybrik.image" ( tuple $ .Values.manager ) }}
+          imagePullPolicy: {{ .Values.manager.imagePullPolicy | default .Values.global.imagePullPolicy }}
+          args:
+            {{- if .Values.manager.overrideArgs }}
+            {{- toYaml .Values.manager.overrideArgs | nindent 12 }}
+            {{- else }}
+            - "--metrics-bind-addr=127.0.0.1:8080"
+            - "--leader-elect"
+            {{- if .Values.coordinator.enabled}}
+            - "--enable-application-controller"
+            - "--enable-plotter-controller"
+            {{- end}}
+            {{- if .Values.worker.enabled}}
+            - "--enable-blueprint-controller"
+            - "--enable-motion-controller"
+            {{- end}}
+            {{- end }}
+          envFrom:
+            - configMapRef:
+                name: fybrik-config
+            {{- if include "fybrik.isRazeeEnabled" . }}
+            - secretRef:
+                name: razee-credentials
+            {{- end }}
+          env:
+            - name: ENABLE_WEBHOOKS
+              value: "true"
+            {{- if .Values.manager.extraEnvs }}
+            {{- toYaml .Values.manager.extraEnvs | nindent 12 }}
+            {{- end }}
+          ports:
+            - containerPort: 9443
+              name: webhook-server
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /tmp/k8s-webhook-server/serving-certs
+              name: cert
+              readOnly: true
+            - mountPath: /tmp/taxonomy
+              name: fybrik-taxonomy
+          securityContext:
+            {{- toYaml .Values.manager.securityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.manager.resources | nindent 12 }}
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: webhook-server-cert
+        - name: fybrik-taxonomy
+          configMap:
+            name: fybrik-taxonomy-config
+      {{- with .Values.manager.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.manager.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.manager.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

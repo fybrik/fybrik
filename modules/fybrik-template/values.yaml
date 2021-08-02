@@ -1,0 +1,8 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+# Default values for fybrik-template.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+hello: world

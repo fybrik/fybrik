@@ -9,15 +9,15 @@ import (
 	"path/filepath"
 
 	"emperror.dev/errors"
+	"fybrik.io/openapi2crd/pkg/generator"
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/mesh-for-data/openapi2crd/pkg/generator"
 	"github.com/xeipuuv/gojsonschema"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // ValidateSchema validates that the input schema adheres to the requirements defined in
-// https://github.com/mesh-for-data/mesh-for-data/blob/master/config/taxonomy/HOWTO_SPEC.md
+// https://github.com/fybrik/fybrik/blob/master/config/taxonomy/HOWTO_SPEC.md
 func ValidateSchema(path string) error {
 	path, err := filepath.Abs(path)
 	if err != nil {

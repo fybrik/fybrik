@@ -24,7 +24,7 @@ func (r *StreamTransfer) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
-// +kubebuilder:webhook:admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/mutate-motion-m4d-ibm-com-v1alpha1-streamtransfer,mutating=true,failurePolicy=fail,groups=motion.m4d.ibm.com,resources=streamtransfers,verbs=create;update,versions=v1alpha1,name=mstreamtransfer.kb.io
+// +kubebuilder:webhook:admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/mutate-motion-fybrik-io-v1alpha1-streamtransfer,mutating=true,failurePolicy=fail,groups=motion.fybrik.io,resources=streamtransfers,verbs=create;update,versions=v1alpha1,name=mstreamtransfer.kb.io
 
 var _ webhook.Defaulter = &StreamTransfer{}
 
@@ -33,7 +33,7 @@ func (r *StreamTransfer) Default() {
 	log.Printf("Defaulting streamtransfer %s", r.Name)
 	if r.Spec.Image == "" {
 		// TODO check if can be removed after upgrading controller-gen to 0.5.0
-		r.Spec.Image = "ghcr.io/mesh-for-data/mover:latest"
+		r.Spec.Image = "ghcr.io/fybrik/mover:latest"
 	}
 
 	if r.Spec.ImagePullPolicy == "" {
@@ -78,7 +78,7 @@ func (r *StreamTransfer) Default() {
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-// +kubebuilder:webhook:verbs=create;update,admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/validate-motion-m4d-ibm-com-v1alpha1-streamtransfer,mutating=false,failurePolicy=fail,groups=motion.m4d.ibm.com,resources=streamtransfers,versions=v1alpha1,name=vstreamtransfer.kb.io
+// +kubebuilder:webhook:verbs=create;update,admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/validate-motion-fybrik-io-v1alpha1-streamtransfer,mutating=false,failurePolicy=fail,groups=motion.fybrik.io,resources=streamtransfers,versions=v1alpha1,name=vstreamtransfer.kb.io
 
 var _ webhook.Validator = &StreamTransfer{}
 
@@ -124,6 +124,6 @@ func (r *StreamTransfer) validateStreamTransfer() error {
 	}
 
 	return apierrors.NewInvalid(
-		schema.GroupKind{Group: "motion.m4d.ibm.com", Kind: "BatchTransfer"},
+		schema.GroupKind{Group: "motion.fybrik.io", Kind: "BatchTransfer"},
 		r.Name, allErrs)
 }

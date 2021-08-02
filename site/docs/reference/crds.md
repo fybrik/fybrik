@@ -7,21 +7,21 @@ hide:
 
 Packages:
 
-- [app.m4d.ibm.com/v1alpha1](#appm4dibmcomv1alpha1)
-- [katalog.m4d.ibm.com/v1alpha1](#katalogm4dibmcomv1alpha1)
-- [motion.m4d.ibm.com/v1alpha1](#motionm4dibmcomv1alpha1)
+- [app.fybrik.io/v1alpha1](#appfybrikiov1alpha1)
+- [katalog.fybrik.io/v1alpha1](#katalogfybrikiov1alpha1)
+- [motion.fybrik.io/v1alpha1](#motionfybrikiov1alpha1)
 
-## app.m4d.ibm.com/v1alpha1
+## app.fybrik.io/v1alpha1
 
 Resource Types:
 
 - [Blueprint](#blueprint)
 
-- [M4DApplication](#m4dapplication)
+- [FybrikApplication](#fybrikapplication)
 
-- [M4DModule](#m4dmodule)
+- [FybrikModule](#fybrikmodule)
 
-- [M4DStorageAccount](#m4dstorageaccount)
+- [FybrikStorageAccount](#fybrikstorageaccount)
 
 - [Plotter](#plotter)
 
@@ -29,7 +29,7 @@ Resource Types:
 
 
 ### Blueprint
-<sup><sup>[↩ Parent](#appm4dibmcomv1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
 
 
 
@@ -50,7 +50,7 @@ Blueprint is the Schema for the blueprints API
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>app.m4d.ibm.com/v1alpha1</td>
+      <td>app.fybrik.io/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>
@@ -68,7 +68,7 @@ Blueprint is the Schema for the blueprints API
         <td><b><a href="#blueprintspec">spec</a></b></td>
         <td>object</td>
         <td>
-          BlueprintSpec defines the desired state of Blueprint, which is the runtime environment which provides the Data Scientist's application with secure and governed access to the data requested in the M4DApplication. The blueprint uses an "argo like" syntax which indicates the components and the flow of data between them as steps TODO: Add an indication of the communication relationships between the components<br/>
+          BlueprintSpec defines the desired state of Blueprint, which is the runtime environment which provides the Data Scientist's application with secure and governed access to the data requested in the FybrikApplication. The blueprint uses an "argo like" syntax which indicates the components and the flow of data between them as steps TODO: Add an indication of the communication relationships between the components<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -87,7 +87,7 @@ Blueprint is the Schema for the blueprints API
 
 
 
-BlueprintSpec defines the desired state of Blueprint, which is the runtime environment which provides the Data Scientist's application with secure and governed access to the data requested in the M4DApplication. The blueprint uses an "argo like" syntax which indicates the components and the flow of data between them as steps TODO: Add an indication of the communication relationships between the components
+BlueprintSpec defines the desired state of Blueprint, which is the runtime environment which provides the Data Scientist's application with secure and governed access to the data requested in the FybrikApplication. The blueprint uses an "argo like" syntax which indicates the components and the flow of data between them as steps TODO: Add an indication of the communication relationships between the components
 
 <table>
     <thead>
@@ -191,7 +191,7 @@ FlowStep is one step indicates an instance of a module in the blueprint, It incl
         <td><b>template</b></td>
         <td>string</td>
         <td>
-          Template is the name of the specification in the Blueprint describing how to instantiate a component indicated by the module.  It is the name of a M4DModule CRD. For example: implicit-copy-db2wh-to-s3-latest<br/>
+          Template is the name of the specification in the Blueprint describing how to instantiate a component indicated by the module.  It is the name of a FybrikModule CRD. For example: implicit-copy-db2wh-to-s3-latest<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -485,7 +485,7 @@ ReadModuleArgs define the input parameters for modules that read data from locat
         <td><b>assetID</b></td>
         <td>string</td>
         <td>
-          AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the M4DApplication resource<br/>
+          AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the FybrikApplication resource<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -716,7 +716,7 @@ Holds details for retrieving credentials by the modules from Vault store.
 
 
 
-ComponentTemplate is a copy of a M4DModule Custom Resource.  It contains the information necessary to instantiate a component in a FlowStep, which provides the functionality described by the module.  There are 3 different module types.
+ComponentTemplate is a copy of a FybrikModule Custom Resource.  It contains the information necessary to instantiate a component in a FlowStep, which provides the functionality described by the module.  There are 3 different module types.
 
 <table>
     <thead>
@@ -815,7 +815,7 @@ BlueprintStatus defines the observed state of Blueprint This includes readiness,
         <td><b><a href="#blueprintstatusobservedstate">observedState</a></b></td>
         <td>object</td>
         <td>
-          ObservedState includes information to be reported back to the M4DApplication resource It includes readiness and error indications, as well as user instructions<br/>
+          ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -834,7 +834,7 @@ BlueprintStatus defines the observed state of Blueprint This includes readiness,
 
 
 
-ObservedState includes information to be reported back to the M4DApplication resource It includes readiness and error indications, as well as user instructions
+ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
 
 <table>
     <thead>
@@ -869,15 +869,15 @@ ObservedState includes information to be reported back to the M4DApplication res
       </tr></tbody>
 </table>
 
-### M4DApplication
-<sup><sup>[↩ Parent](#appm4dibmcomv1alpha1 )</sup></sup>
+### FybrikApplication
+<sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
 
 
 
 
 
 
-M4DApplication provides information about the application being used by a Data Scientist, the nature of the processing, and the data sets that the Data Scientist has chosen for processing by the application. The M4DApplication controller (aka pilot) obtains instructions regarding any governance related changes that must be performed on the data, identifies the modules capable of performing such changes, and finally generates the Blueprint which defines the secure runtime environment and all the components in it.  This runtime environment provides the Data Scientist's application with access to the data requested in a secure manner and without having to provide any credentials for the data sets.  The credentials are obtained automatically by the manager from an external credential management system, which may or may not be part of a data catalog.
+FybrikApplication provides information about the application being used by a Data Scientist, the nature of the processing, and the data sets that the Data Scientist has chosen for processing by the application. The FybrikApplication controller (aka pilot) obtains instructions regarding any governance related changes that must be performed on the data, identifies the modules capable of performing such changes, and finally generates the Blueprint which defines the secure runtime environment and all the components in it.  This runtime environment provides the Data Scientist's application with access to the data requested in a secure manner and without having to provide any credentials for the data sets.  The credentials are obtained automatically by the manager from an external credential management system, which may or may not be part of a data catalog.
 
 <table>
     <thead>
@@ -891,13 +891,13 @@ M4DApplication provides information about the application being used by a Data S
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>app.m4d.ibm.com/v1alpha1</td>
+      <td>app.fybrik.io/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>
       <td><b>kind</b></td>
       <td>string</td>
-      <td>M4DApplication</td>
+      <td>FybrikApplication</td>
       <td>true</td>
       </tr>
       <tr>
@@ -906,29 +906,29 @@ M4DApplication provides information about the application being used by a Data S
       <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
       <td>true</td>
       </tr><tr>
-        <td><b><a href="#m4dapplicationspec">spec</a></b></td>
+        <td><b><a href="#fybrikapplicationspec">spec</a></b></td>
         <td>object</td>
         <td>
-          M4DApplicationSpec defines the desired state of M4DApplication.<br/>
+          FybrikApplicationSpec defines the desired state of FybrikApplication.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#m4dapplicationstatus">status</a></b></td>
+        <td><b><a href="#fybrikapplicationstatus">status</a></b></td>
         <td>object</td>
         <td>
-          M4DApplicationStatus defines the observed state of M4DApplication.<br/>
+          FybrikApplicationStatus defines the observed state of FybrikApplication.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
 </table>
 
 
-#### M4DApplication.spec
-<sup><sup>[↩ Parent](#m4dapplication)</sup></sup>
+#### FybrikApplication.spec
+<sup><sup>[↩ Parent](#fybrikapplication)</sup></sup>
 
 
 
-M4DApplicationSpec defines the desired state of M4DApplication.
+FybrikApplicationSpec defines the desired state of FybrikApplication.
 
 <table>
     <thead>
@@ -943,11 +943,11 @@ M4DApplicationSpec defines the desired state of M4DApplication.
         <td><b>secretRef</b></td>
         <td>string</td>
         <td>
-          SecretRef points to the secret that holds credentials for each system the user has been authenticated with. The secret is deployed in M4dApplication namespace.<br/>
+          SecretRef points to the secret that holds credentials for each system the user has been authenticated with. The secret is deployed in FybrikApplication namespace.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#m4dapplicationspecselector">selector</a></b></td>
+        <td><b><a href="#fybrikapplicationspecselector">selector</a></b></td>
         <td>object</td>
         <td>
           Selector enables to connect the resource to the application Application labels should match the labels in the selector. For some flows the selector may not be used.<br/>
@@ -961,7 +961,7 @@ M4DApplicationSpec defines the desired state of M4DApplication.
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b><a href="#m4dapplicationspecdataindex">data</a></b></td>
+        <td><b><a href="#fybrikapplicationspecdataindex">data</a></b></td>
         <td>[]object</td>
         <td>
           Data contains the identifiers of the data to be used by the Data Scientist's application, and the protocol used to access it and the format expected.<br/>
@@ -971,8 +971,8 @@ M4DApplicationSpec defines the desired state of M4DApplication.
 </table>
 
 
-#### M4DApplication.spec.selector
-<sup><sup>[↩ Parent](#m4dapplicationspec)</sup></sup>
+#### FybrikApplication.spec.selector
+<sup><sup>[↩ Parent](#fybrikapplicationspec)</sup></sup>
 
 
 
@@ -995,7 +995,7 @@ Selector enables to connect the resource to the application Application labels s
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#m4dapplicationspecselectorworkloadselector">workloadSelector</a></b></td>
+        <td><b><a href="#fybrikapplicationspecselectorworkloadselector">workloadSelector</a></b></td>
         <td>object</td>
         <td>
           WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.<br/>
@@ -1005,8 +1005,8 @@ Selector enables to connect the resource to the application Application labels s
 </table>
 
 
-#### M4DApplication.spec.selector.workloadSelector
-<sup><sup>[↩ Parent](#m4dapplicationspecselector)</sup></sup>
+#### FybrikApplication.spec.selector.workloadSelector
+<sup><sup>[↩ Parent](#fybrikapplicationspecselector)</sup></sup>
 
 
 
@@ -1022,7 +1022,7 @@ WorkloadSelector enables to connect the resource to the application Application 
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#m4dapplicationspecselectorworkloadselectormatchexpressionsindex">matchExpressions</a></b></td>
+        <td><b><a href="#fybrikapplicationspecselectorworkloadselectormatchexpressionsindex">matchExpressions</a></b></td>
         <td>[]object</td>
         <td>
           matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
@@ -1039,8 +1039,8 @@ WorkloadSelector enables to connect the resource to the application Application 
 </table>
 
 
-#### M4DApplication.spec.selector.workloadSelector.matchExpressions[index]
-<sup><sup>[↩ Parent](#m4dapplicationspecselectorworkloadselector)</sup></sup>
+#### FybrikApplication.spec.selector.workloadSelector.matchExpressions[index]
+<sup><sup>[↩ Parent](#fybrikapplicationspecselectorworkloadselector)</sup></sup>
 
 
 
@@ -1080,8 +1080,8 @@ A label selector requirement is a selector that contains values, a key, and an o
 </table>
 
 
-#### M4DApplication.spec.data[index]
-<sup><sup>[↩ Parent](#m4dapplicationspec)</sup></sup>
+#### FybrikApplication.spec.data[index]
+<sup><sup>[↩ Parent](#fybrikapplicationspec)</sup></sup>
 
 
 
@@ -1111,7 +1111,7 @@ DataContext indicates data set chosen by the Data Scientist to be used by his ap
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b><a href="#m4dapplicationspecdataindexrequirements">requirements</a></b></td>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirements">requirements</a></b></td>
         <td>object</td>
         <td>
           Requirements from the system<br/>
@@ -1121,8 +1121,8 @@ DataContext indicates data set chosen by the Data Scientist to be used by his ap
 </table>
 
 
-#### M4DApplication.spec.data[index].requirements
-<sup><sup>[↩ Parent](#m4dapplicationspecdataindex)</sup></sup>
+#### FybrikApplication.spec.data[index].requirements
+<sup><sup>[↩ Parent](#fybrikapplicationspecdataindex)</sup></sup>
 
 
 
@@ -1138,14 +1138,14 @@ Requirements from the system
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#m4dapplicationspecdataindexrequirementscopy">copy</a></b></td>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementscopy">copy</a></b></td>
         <td>object</td>
         <td>
           CopyRequrements include the requirements for copying the data<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#m4dapplicationspecdataindexrequirementsinterface">interface</a></b></td>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementsinterface">interface</a></b></td>
         <td>object</td>
         <td>
           Interface indicates the protocol and format expected by the data user<br/>
@@ -1155,8 +1155,8 @@ Requirements from the system
 </table>
 
 
-#### M4DApplication.spec.data[index].requirements.copy
-<sup><sup>[↩ Parent](#m4dapplicationspecdataindexrequirements)</sup></sup>
+#### FybrikApplication.spec.data[index].requirements.copy
+<sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirements)</sup></sup>
 
 
 
@@ -1172,7 +1172,7 @@ CopyRequrements include the requirements for copying the data
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#m4dapplicationspecdataindexrequirementscopycatalog">catalog</a></b></td>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementscopycatalog">catalog</a></b></td>
         <td>object</td>
         <td>
           Catalog indicates that the data asset must be cataloged.<br/>
@@ -1189,8 +1189,8 @@ CopyRequrements include the requirements for copying the data
 </table>
 
 
-#### M4DApplication.spec.data[index].requirements.copy.catalog
-<sup><sup>[↩ Parent](#m4dapplicationspecdataindexrequirementscopy)</sup></sup>
+#### FybrikApplication.spec.data[index].requirements.copy.catalog
+<sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirementscopy)</sup></sup>
 
 
 
@@ -1223,8 +1223,8 @@ Catalog indicates that the data asset must be cataloged.
 </table>
 
 
-#### M4DApplication.spec.data[index].requirements.interface
-<sup><sup>[↩ Parent](#m4dapplicationspecdataindexrequirements)</sup></sup>
+#### FybrikApplication.spec.data[index].requirements.interface
+<sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirements)</sup></sup>
 
 
 
@@ -1257,12 +1257,12 @@ Interface indicates the protocol and format expected by the data user
 </table>
 
 
-#### M4DApplication.status
-<sup><sup>[↩ Parent](#m4dapplication)</sup></sup>
+#### FybrikApplication.status
+<sup><sup>[↩ Parent](#fybrikapplication)</sup></sup>
 
 
 
-M4DApplicationStatus defines the observed state of M4DApplication.
+FybrikApplicationStatus defines the observed state of FybrikApplication.
 
 <table>
     <thead>
@@ -1281,7 +1281,7 @@ M4DApplicationStatus defines the observed state of M4DApplication.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#m4dapplicationstatusconditionsindex">conditions</a></b></td>
+        <td><b><a href="#fybrikapplicationstatusconditionsindex">conditions</a></b></td>
         <td>[]object</td>
         <td>
           Conditions represent the possible error and failure conditions<br/>
@@ -1295,7 +1295,7 @@ M4DApplicationStatus defines the observed state of M4DApplication.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#m4dapplicationstatusgenerated">generated</a></b></td>
+        <td><b><a href="#fybrikapplicationstatusgenerated">generated</a></b></td>
         <td>object</td>
         <td>
           Generated resource identifier<br/>
@@ -1305,20 +1305,20 @@ M4DApplicationStatus defines the observed state of M4DApplication.
         <td><b>observedGeneration</b></td>
         <td>integer</td>
         <td>
-          ObservedGeneration is taken from the M4DApplication metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether the Blueprint status changed.<br/>
+          ObservedGeneration is taken from the FybrikApplication metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether the Blueprint status changed.<br/>
           <br/>
             <i>Format</i>: int64<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#m4dapplicationstatusprovisionedstoragekey">provisionedStorage</a></b></td>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekey">provisionedStorage</a></b></td>
         <td>map[string]object</td>
         <td>
-          ProvisionedStorage maps a dataset (identified by AssetID) to the new provisioned bucket. It allows M4DApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received. ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready<br/>
+          ProvisionedStorage maps a dataset (identified by AssetID) to the new provisioned bucket. It allows FybrikApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received. ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#m4dapplicationstatusreadendpointsmapkey">readEndpointsMap</a></b></td>
+        <td><b><a href="#fybrikapplicationstatusreadendpointsmapkey">readEndpointsMap</a></b></td>
         <td>map[string]object</td>
         <td>
           ReadEndpointsMap maps an datasetID (after parsing from json to a string with dashes) to the endpoint spec from which the asset will be served to the application<br/>
@@ -1335,12 +1335,12 @@ M4DApplicationStatus defines the observed state of M4DApplication.
 </table>
 
 
-#### M4DApplication.status.conditions[index]
-<sup><sup>[↩ Parent](#m4dapplicationstatus)</sup></sup>
+#### FybrikApplication.status.conditions[index]
+<sup><sup>[↩ Parent](#fybrikapplicationstatus)</sup></sup>
 
 
 
-Condition describes the state of a M4DApplication at a certain point.
+Condition describes the state of a FybrikApplication at a certain point.
 
 <table>
     <thead>
@@ -1376,8 +1376,8 @@ Condition describes the state of a M4DApplication at a certain point.
 </table>
 
 
-#### M4DApplication.status.generated
-<sup><sup>[↩ Parent](#m4dapplicationstatus)</sup></sup>
+#### FybrikApplication.status.generated
+<sup><sup>[↩ Parent](#fybrikapplicationstatus)</sup></sup>
 
 
 
@@ -1396,7 +1396,7 @@ Generated resource identifier
         <td><b>appVersion</b></td>
         <td>integer</td>
         <td>
-          Version of M4DApplication that has generated this resource<br/>
+          Version of FybrikApplication that has generated this resource<br/>
           <br/>
             <i>Format</i>: int64<br/>
         </td>
@@ -1426,8 +1426,8 @@ Generated resource identifier
 </table>
 
 
-#### M4DApplication.status.provisionedStorage[key]
-<sup><sup>[↩ Parent](#m4dapplicationstatus)</sup></sup>
+#### FybrikApplication.status.provisionedStorage[key]
+<sup><sup>[↩ Parent](#fybrikapplicationstatus)</sup></sup>
 
 
 
@@ -1467,12 +1467,12 @@ DatasetDetails contain dataset connection and metadata required to register this
 </table>
 
 
-#### M4DApplication.status.readEndpointsMap[key]
-<sup><sup>[↩ Parent](#m4dapplicationstatus)</sup></sup>
+#### FybrikApplication.status.readEndpointsMap[key]
+<sup><sup>[↩ Parent](#fybrikapplicationstatus)</sup></sup>
 
 
 
-EndpointSpec is used both by the module creator and by the status of the m4dapplication
+EndpointSpec is used both by the module creator and by the status of the fybrikapplication
 
 <table>
     <thead>
@@ -1509,15 +1509,15 @@ EndpointSpec is used both by the module creator and by the status of the m4dappl
       </tr></tbody>
 </table>
 
-### M4DModule
-<sup><sup>[↩ Parent](#appm4dibmcomv1alpha1 )</sup></sup>
+### FybrikModule
+<sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
 
 
 
 
 
 
-M4DModule is a description of an injectable component. the parameters it requires, as well as the specification of how to instantiate such a component. It is used as metadata only.  There is no status nor reconciliation.
+FybrikModule is a description of an injectable component. the parameters it requires, as well as the specification of how to instantiate such a component. It is used as metadata only.  There is no status nor reconciliation.
 
 <table>
     <thead>
@@ -1531,13 +1531,13 @@ M4DModule is a description of an injectable component. the parameters it require
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>app.m4d.ibm.com/v1alpha1</td>
+      <td>app.fybrik.io/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>
       <td><b>kind</b></td>
       <td>string</td>
-      <td>M4DModule</td>
+      <td>FybrikModule</td>
       <td>true</td>
       </tr>
       <tr>
@@ -1546,22 +1546,22 @@ M4DModule is a description of an injectable component. the parameters it require
       <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
       <td>true</td>
       </tr><tr>
-        <td><b><a href="#m4dmodulespec">spec</a></b></td>
+        <td><b><a href="#fybrikmodulespec">spec</a></b></td>
         <td>object</td>
         <td>
-          M4DModuleSpec contains the info common to all modules, which are one of the components that process, load, write, audit, monitor the data used by the data scientist's application.<br/>
+          FybrikModuleSpec contains the info common to all modules, which are one of the components that process, load, write, audit, monitor the data used by the data scientist's application.<br/>
         </td>
         <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### M4DModule.spec
-<sup><sup>[↩ Parent](#m4dmodule)</sup></sup>
+#### FybrikModule.spec
+<sup><sup>[↩ Parent](#fybrikmodule)</sup></sup>
 
 
 
-M4DModuleSpec contains the info common to all modules, which are one of the components that process, load, write, audit, monitor the data used by the data scientist's application.
+FybrikModuleSpec contains the info common to all modules, which are one of the components that process, load, write, audit, monitor the data used by the data scientist's application.
 
 <table>
     <thead>
@@ -1573,28 +1573,28 @@ M4DModuleSpec contains the info common to all modules, which are one of the comp
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#m4dmodulespecdependenciesindex">dependencies</a></b></td>
+        <td><b><a href="#fybrikmodulespecdependenciesindex">dependencies</a></b></td>
         <td>[]object</td>
         <td>
           Other components that must be installed in order for this module to work<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#m4dmodulespecstatusindicatorsindex">statusIndicators</a></b></td>
+        <td><b><a href="#fybrikmodulespecstatusindicatorsindex">statusIndicators</a></b></td>
         <td>[]object</td>
         <td>
           StatusIndicators allow to check status of a non-standard resource that can not be computed by helm/kstatus<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#m4dmodulespeccapabilities">capabilities</a></b></td>
+        <td><b><a href="#fybrikmodulespeccapabilities">capabilities</a></b></td>
         <td>object</td>
         <td>
           Capabilities declares what this module knows how to do and the types of data it knows how to handle<br/>
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b><a href="#m4dmodulespecchart">chart</a></b></td>
+        <td><b><a href="#fybrikmodulespecchart">chart</a></b></td>
         <td>object</td>
         <td>
           Reference to a Helm chart that allows deployment of the resources required for this module<br/>
@@ -1611,8 +1611,8 @@ M4DModuleSpec contains the info common to all modules, which are one of the comp
 </table>
 
 
-#### M4DModule.spec.dependencies[index]
-<sup><sup>[↩ Parent](#m4dmodulespec)</sup></sup>
+#### FybrikModule.spec.dependencies[index]
+<sup><sup>[↩ Parent](#fybrikmodulespec)</sup></sup>
 
 
 
@@ -1647,8 +1647,8 @@ Dependency details another component on which this module relies - i.e. a pre-re
 </table>
 
 
-#### M4DModule.spec.statusIndicators[index]
-<sup><sup>[↩ Parent](#m4dmodulespec)</sup></sup>
+#### FybrikModule.spec.statusIndicators[index]
+<sup><sup>[↩ Parent](#fybrikmodulespec)</sup></sup>
 
 
 
@@ -1695,8 +1695,8 @@ ResourceStatusIndicator is used to determine the status of an orchestrated resou
 </table>
 
 
-#### M4DModule.spec.capabilities
-<sup><sup>[↩ Parent](#m4dmodulespec)</sup></sup>
+#### FybrikModule.spec.capabilities
+<sup><sup>[↩ Parent](#fybrikmodulespec)</sup></sup>
 
 
 
@@ -1712,21 +1712,21 @@ Capabilities declares what this module knows how to do and the types of data it 
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#m4dmodulespeccapabilitiesactionsindex">actions</a></b></td>
+        <td><b><a href="#fybrikmodulespeccapabilitiesactionsindex">actions</a></b></td>
         <td>[]object</td>
         <td>
           Actions are the data transformations that the module supports<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#m4dmodulespeccapabilitiesapi">api</a></b></td>
+        <td><b><a href="#fybrikmodulespeccapabilitiesapi">api</a></b></td>
         <td>object</td>
         <td>
           API indicates to the application how to access/write the data<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#m4dmodulespeccapabilitiessupportedinterfacesindex">supportedInterfaces</a></b></td>
+        <td><b><a href="#fybrikmodulespeccapabilitiessupportedinterfacesindex">supportedInterfaces</a></b></td>
         <td>[]object</td>
         <td>
           Copy should have one or more instances in the list, and its content should have source and sink Read should have one or more instances in the list, each with source populated Write should have one or more instances in the list, each with sink populated TODO - In the future if we have a module type that doesn't interface directly with data then this list could be empty<br/>
@@ -1736,8 +1736,8 @@ Capabilities declares what this module knows how to do and the types of data it 
 </table>
 
 
-#### M4DModule.spec.capabilities.actions[index]
-<sup><sup>[↩ Parent](#m4dmodulespeccapabilities)</sup></sup>
+#### FybrikModule.spec.capabilities.actions[index]
+<sup><sup>[↩ Parent](#fybrikmodulespeccapabilities)</sup></sup>
 
 
 
@@ -1772,8 +1772,8 @@ SupportedAction declares an action that the module supports (action identifier a
 </table>
 
 
-#### M4DModule.spec.capabilities.api
-<sup><sup>[↩ Parent](#m4dmodulespeccapabilities)</sup></sup>
+#### FybrikModule.spec.capabilities.api
+<sup><sup>[↩ Parent](#fybrikmodulespeccapabilities)</sup></sup>
 
 
 
@@ -1796,10 +1796,10 @@ API indicates to the application how to access/write the data
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#m4dmodulespeccapabilitiesapiendpoint">endpoint</a></b></td>
+        <td><b><a href="#fybrikmodulespeccapabilitiesapiendpoint">endpoint</a></b></td>
         <td>object</td>
         <td>
-          EndpointSpec is used both by the module creator and by the status of the m4dapplication<br/>
+          EndpointSpec is used both by the module creator and by the status of the fybrikapplication<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -1813,12 +1813,12 @@ API indicates to the application how to access/write the data
 </table>
 
 
-#### M4DModule.spec.capabilities.api.endpoint
-<sup><sup>[↩ Parent](#m4dmodulespeccapabilitiesapi)</sup></sup>
+#### FybrikModule.spec.capabilities.api.endpoint
+<sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiesapi)</sup></sup>
 
 
 
-EndpointSpec is used both by the module creator and by the status of the m4dapplication
+EndpointSpec is used both by the module creator and by the status of the fybrikapplication
 
 <table>
     <thead>
@@ -1856,8 +1856,8 @@ EndpointSpec is used both by the module creator and by the status of the m4dappl
 </table>
 
 
-#### M4DModule.spec.capabilities.supportedInterfaces[index]
-<sup><sup>[↩ Parent](#m4dmodulespeccapabilities)</sup></sup>
+#### FybrikModule.spec.capabilities.supportedInterfaces[index]
+<sup><sup>[↩ Parent](#fybrikmodulespeccapabilities)</sup></sup>
 
 
 
@@ -1873,14 +1873,14 @@ ModuleInOut specifies the protocol and format of the data input and output by th
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#m4dmodulespeccapabilitiessupportedinterfacesindexsink">sink</a></b></td>
+        <td><b><a href="#fybrikmodulespeccapabilitiessupportedinterfacesindexsink">sink</a></b></td>
         <td>object</td>
         <td>
           Sink specifies the output data protocol and format<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#m4dmodulespeccapabilitiessupportedinterfacesindexsource">source</a></b></td>
+        <td><b><a href="#fybrikmodulespeccapabilitiessupportedinterfacesindexsource">source</a></b></td>
         <td>object</td>
         <td>
           Source specifies the input data protocol and format<br/>
@@ -1899,8 +1899,8 @@ ModuleInOut specifies the protocol and format of the data input and output by th
 </table>
 
 
-#### M4DModule.spec.capabilities.supportedInterfaces[index].sink
-<sup><sup>[↩ Parent](#m4dmodulespeccapabilitiessupportedinterfacesindex)</sup></sup>
+#### FybrikModule.spec.capabilities.supportedInterfaces[index].sink
+<sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiessupportedinterfacesindex)</sup></sup>
 
 
 
@@ -1933,8 +1933,8 @@ Sink specifies the output data protocol and format
 </table>
 
 
-#### M4DModule.spec.capabilities.supportedInterfaces[index].source
-<sup><sup>[↩ Parent](#m4dmodulespeccapabilitiessupportedinterfacesindex)</sup></sup>
+#### FybrikModule.spec.capabilities.supportedInterfaces[index].source
+<sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiessupportedinterfacesindex)</sup></sup>
 
 
 
@@ -1967,8 +1967,8 @@ Source specifies the input data protocol and format
 </table>
 
 
-#### M4DModule.spec.chart
-<sup><sup>[↩ Parent](#m4dmodulespec)</sup></sup>
+#### FybrikModule.spec.chart
+<sup><sup>[↩ Parent](#fybrikmodulespec)</sup></sup>
 
 
 
@@ -2000,15 +2000,15 @@ Reference to a Helm chart that allows deployment of the resources required for t
       </tr></tbody>
 </table>
 
-### M4DStorageAccount
-<sup><sup>[↩ Parent](#appm4dibmcomv1alpha1 )</sup></sup>
+### FybrikStorageAccount
+<sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
 
 
 
 
 
 
-M4DStorageAccount defines a storage account used for copying data. Only S3 based storage is supported. It contains endpoint, region and a reference to the credentials a Owner of the asset is responsible to store the credentials
+FybrikStorageAccount defines a storage account used for copying data. Only S3 based storage is supported. It contains endpoint, region and a reference to the credentials a Owner of the asset is responsible to store the credentials
 
 <table>
     <thead>
@@ -2022,13 +2022,13 @@ M4DStorageAccount defines a storage account used for copying data. Only S3 based
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>app.m4d.ibm.com/v1alpha1</td>
+      <td>app.fybrik.io/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>
       <td><b>kind</b></td>
       <td>string</td>
-      <td>M4DStorageAccount</td>
+      <td>FybrikStorageAccount</td>
       <td>true</td>
       </tr>
       <tr>
@@ -2037,29 +2037,29 @@ M4DStorageAccount defines a storage account used for copying data. Only S3 based
       <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
       <td>true</td>
       </tr><tr>
-        <td><b><a href="#m4dstorageaccountspec">spec</a></b></td>
+        <td><b><a href="#fybrikstorageaccountspec">spec</a></b></td>
         <td>object</td>
         <td>
-          M4DStorageAccountSpec defines the desired state of M4DStorageAccount<br/>
+          FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>status</b></td>
         <td>object</td>
         <td>
-          M4DStorageAccountStatus defines the observed state of M4DStorageAccount<br/>
+          FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount<br/>
         </td>
         <td>false</td>
       </tr></tbody>
 </table>
 
 
-#### M4DStorageAccount.spec
-<sup><sup>[↩ Parent](#m4dstorageaccount)</sup></sup>
+#### FybrikStorageAccount.spec
+<sup><sup>[↩ Parent](#fybrikstorageaccount)</sup></sup>
 
 
 
-M4DStorageAccountSpec defines the desired state of M4DStorageAccount
+FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
 
 <table>
     <thead>
@@ -2095,7 +2095,7 @@ M4DStorageAccountSpec defines the desired state of M4DStorageAccount
 </table>
 
 ### Plotter
-<sup><sup>[↩ Parent](#appm4dibmcomv1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
 
 
 
@@ -2116,7 +2116,7 @@ Plotter is the Schema for the plotters API
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>app.m4d.ibm.com/v1alpha1</td>
+      <td>app.fybrik.io/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>
@@ -2134,7 +2134,7 @@ Plotter is the Schema for the plotters API
         <td><b><a href="#plotterspec">spec</a></b></td>
         <td>object</td>
         <td>
-          PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter installs the runtime environment (as blueprints running on remote clusters) which provides the Data Scientist's application with secure and governed access to the data requested in the M4DApplication.<br/>
+          PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter installs the runtime environment (as blueprints running on remote clusters) which provides the Data Scientist's application with secure and governed access to the data requested in the FybrikApplication.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -2153,7 +2153,7 @@ Plotter is the Schema for the plotters API
 
 
 
-PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter installs the runtime environment (as blueprints running on remote clusters) which provides the Data Scientist's application with secure and governed access to the data requested in the M4DApplication.
+PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter installs the runtime environment (as blueprints running on remote clusters) which provides the Data Scientist's application with secure and governed access to the data requested in the FybrikApplication.
 
 <table>
     <thead>
@@ -2175,7 +2175,7 @@ PlotterSpec defines the desired state of Plotter, which is applied in a multi-cl
         <td><b><a href="#plotterspecselector">selector</a></b></td>
         <td>object</td>
         <td>
-          Selector enables to connect the resource to the application Should match the selector of the owner - M4DApplication CRD.<br/>
+          Selector enables to connect the resource to the application Should match the selector of the owner - FybrikApplication CRD.<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -2187,7 +2187,7 @@ PlotterSpec defines the desired state of Plotter, which is applied in a multi-cl
 
 
 
-BlueprintSpec defines the desired state of Blueprint, which is the runtime environment which provides the Data Scientist's application with secure and governed access to the data requested in the M4DApplication. The blueprint uses an "argo like" syntax which indicates the components and the flow of data between them as steps TODO: Add an indication of the communication relationships between the components
+BlueprintSpec defines the desired state of Blueprint, which is the runtime environment which provides the Data Scientist's application with secure and governed access to the data requested in the FybrikApplication. The blueprint uses an "argo like" syntax which indicates the components and the flow of data between them as steps TODO: Add an indication of the communication relationships between the components
 
 <table>
     <thead>
@@ -2291,7 +2291,7 @@ FlowStep is one step indicates an instance of a module in the blueprint, It incl
         <td><b>template</b></td>
         <td>string</td>
         <td>
-          Template is the name of the specification in the Blueprint describing how to instantiate a component indicated by the module.  It is the name of a M4DModule CRD. For example: implicit-copy-db2wh-to-s3-latest<br/>
+          Template is the name of the specification in the Blueprint describing how to instantiate a component indicated by the module.  It is the name of a FybrikModule CRD. For example: implicit-copy-db2wh-to-s3-latest<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -2585,7 +2585,7 @@ ReadModuleArgs define the input parameters for modules that read data from locat
         <td><b>assetID</b></td>
         <td>string</td>
         <td>
-          AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the M4DApplication resource<br/>
+          AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the FybrikApplication resource<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -2816,7 +2816,7 @@ Holds details for retrieving credentials by the modules from Vault store.
 
 
 
-ComponentTemplate is a copy of a M4DModule Custom Resource.  It contains the information necessary to instantiate a component in a FlowStep, which provides the functionality described by the module.  There are 3 different module types.
+ComponentTemplate is a copy of a FybrikModule Custom Resource.  It contains the information necessary to instantiate a component in a FlowStep, which provides the functionality described by the module.  There are 3 different module types.
 
 <table>
     <thead>
@@ -2891,7 +2891,7 @@ Chart contains the location of the helm chart with info detailing how to deploy
 
 
 
-Selector enables to connect the resource to the application Should match the selector of the owner - M4DApplication CRD.
+Selector enables to connect the resource to the application Should match the selector of the owner - FybrikApplication CRD.
 
 <table>
     <thead>
@@ -2997,7 +2997,7 @@ PlotterStatus defines the observed state of Plotter This includes readiness, err
         <td><b><a href="#plotterstatusobservedstate">observedState</a></b></td>
         <td>object</td>
         <td>
-          ObservedState includes information to be reported back to the M4DApplication resource It includes readiness and error indications, as well as user instructions<br/>
+          ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -3083,7 +3083,7 @@ BlueprintStatus defines the observed state of Blueprint This includes readiness,
         <td><b><a href="#plotterstatusblueprintskeystatusobservedstate">observedState</a></b></td>
         <td>object</td>
         <td>
-          ObservedState includes information to be reported back to the M4DApplication resource It includes readiness and error indications, as well as user instructions<br/>
+          ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -3102,7 +3102,7 @@ BlueprintStatus defines the observed state of Blueprint This includes readiness,
 
 
 
-ObservedState includes information to be reported back to the M4DApplication resource It includes readiness and error indications, as well as user instructions
+ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
 
 <table>
     <thead>
@@ -3143,7 +3143,7 @@ ObservedState includes information to be reported back to the M4DApplication res
 
 
 
-ObservedState includes information to be reported back to the M4DApplication resource It includes readiness and error indications, as well as user instructions
+ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
 
 <table>
     <thead>
@@ -3178,7 +3178,7 @@ ObservedState includes information to be reported back to the M4DApplication res
       </tr></tbody>
 </table>
 
-## katalog.m4d.ibm.com/v1alpha1
+## katalog.fybrik.io/v1alpha1
 
 Resource Types:
 
@@ -3188,7 +3188,7 @@ Resource Types:
 
 
 ### Asset
-<sup><sup>[↩ Parent](#katalogm4dibmcomv1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#katalogfybrikiov1alpha1 )</sup></sup>
 
 
 
@@ -3209,7 +3209,7 @@ Resource Types:
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>katalog.m4d.ibm.com/v1alpha1</td>
+      <td>katalog.fybrik.io/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>
@@ -3667,7 +3667,7 @@ Reference to a Secret resource holding credentials for this asset
       </tr></tbody>
 </table>
 
-## motion.m4d.ibm.com/v1alpha1
+## motion.fybrik.io/v1alpha1
 
 Resource Types:
 
@@ -3679,7 +3679,7 @@ Resource Types:
 
 
 ### BatchTransfer
-<sup><sup>[↩ Parent](#motionm4dibmcomv1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#motionfybrikiov1alpha1 )</sup></sup>
 
 
 
@@ -3700,7 +3700,7 @@ BatchTransfer is the Schema for the batchtransfers API
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>motion.m4d.ibm.com/v1alpha1</td>
+      <td>motion.fybrik.io/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>
@@ -5536,7 +5536,7 @@ ObjectReference contains enough information to let you inspect or modify the ref
 </table>
 
 ### StreamTransfer
-<sup><sup>[↩ Parent](#motionm4dibmcomv1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#motionfybrikiov1alpha1 )</sup></sup>
 
 
 
@@ -5557,7 +5557,7 @@ StreamTransfer is the Schema for the streamtransfers API
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>motion.m4d.ibm.com/v1alpha1</td>
+      <td>motion.fybrik.io/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>

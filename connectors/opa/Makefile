@@ -4,7 +4,7 @@ DOCKER_NAME = opa-connector
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 
-KUBE_NAMESPACE ?= m4d-system
+KUBE_NAMESPACE ?= fybrik-system
 
 NEED_TEST_COVERAGE_STATISTICS=1
 NEED_TEST_COVERAGE_STATISTICS_IN_HTML=0
@@ -16,7 +16,7 @@ docker-build:
 
 .PHONY: deploy
 deploy:
-	helm install m4d-opa $(ROOT_DIR)/charts/m4d \
+	helm install fybrik-opa $(ROOT_DIR)/charts/fybrik \
 		--set coordinator.enabled=false --set worker.enabled=false --set manager.enabled=false \
 		--set opaServer.enabled=true --set opaConnector.enabled=true \
 		--set opaConnector.image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(DOCKER_NAME):${DOCKER_TAGNAME} \
@@ -25,7 +25,7 @@ deploy:
 
 .PHONY: undeploy
 undeploy:
-	helm uninstall m4d-opa -n $(KUBE_NAMESPACE)
+	helm uninstall fybrik-opa -n $(KUBE_NAMESPACE)
 
 
 .PHONY: build

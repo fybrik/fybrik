@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	connectors "github.com/mesh-for-data/mesh-for-data/pkg/connectors/clients"
-	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	ctrl "sigs.k8s.io/controller-runtime"

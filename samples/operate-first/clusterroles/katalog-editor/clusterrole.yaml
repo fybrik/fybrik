@@ -4,7 +4,7 @@ metadata:
   name: katalog-editor
 rules:
 - apiGroups:
-  - katalog.m4d.ibm.com
+  - katalog.fybrik.io
   resources:
   - assets
   verbs:

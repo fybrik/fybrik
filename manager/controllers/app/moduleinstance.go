@@ -7,17 +7,17 @@ import (
 	"strings"
 
 	"emperror.dev/errors"
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	modules "fybrik.io/fybrik/manager/controllers/app/modules"
+	"fybrik.io/fybrik/manager/controllers/utils"
+	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
+	"fybrik.io/fybrik/pkg/multicluster"
+	local "fybrik.io/fybrik/pkg/multicluster/local"
+	"fybrik.io/fybrik/pkg/serde"
+	"fybrik.io/fybrik/pkg/storage"
+	vault "fybrik.io/fybrik/pkg/vault"
 	"github.com/go-logr/logr"
-	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
-	modules "github.com/mesh-for-data/mesh-for-data/manager/controllers/app/modules"
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
-	connectors "github.com/mesh-for-data/mesh-for-data/pkg/connectors/clients"
-	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
-	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
-	local "github.com/mesh-for-data/mesh-for-data/pkg/multicluster/local"
-	"github.com/mesh-for-data/mesh-for-data/pkg/serde"
-	"github.com/mesh-for-data/mesh-for-data/pkg/storage"
-	vault "github.com/mesh-for-data/mesh-for-data/pkg/vault"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -28,11 +28,11 @@ type NewAssetInfo struct {
 	Details *pb.DatasetDetails
 }
 
-// ModuleManager builds a set of modules based on the requirements (governance actions, data location) and the existing set of M4DModules
+// ModuleManager builds a set of modules based on the requirements (governance actions, data location) and the existing set of FybrikModules
 type ModuleManager struct {
 	Client             client.Client
 	Log                logr.Logger
-	Modules            map[string]*app.M4DModule
+	Modules            map[string]*app.FybrikModule
 	Clusters           []multicluster.Cluster
 	Owner              types.NamespacedName
 	PolicyManager      connectors.PolicyManager
@@ -124,7 +124,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	}, nil
 }
 
-func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.M4DApplication) (*modules.Selector, error) {
+func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.FybrikApplication) (*modules.Selector, error) {
 	// read module is required if the workload exists
 	if appContext.Spec.Selector.WorkloadSelector.Size() == 0 {
 		return nil, nil
@@ -145,7 +145,7 @@ func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.
 		Destination:  &item.Context.Requirements.Interface,
 		Actions:      []*pb.EnforcementAction{},
 		Source:       nil,
-		Dependencies: []*app.M4DModule{},
+		Dependencies: []*app.FybrikModule{},
 		Module:       nil,
 		Message:      "",
 		Geo:          m.WorkloadGeography,
@@ -158,7 +158,7 @@ func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.
 	return readSelector, nil
 }
 
-func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.M4DApplication, readSelector *modules.Selector) (*modules.Selector, error) {
+func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.FybrikApplication, readSelector *modules.Selector) (*modules.Selector, error) {
 	// logic for deciding whether copy module is required
 	var interfaces []*app.InterfaceDetails
 	var copyRequired bool
@@ -192,7 +192,7 @@ func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.
 			Source:       &item.DataDetails.Interface,
 			Actions:      actionsOnCopy,
 			Destination:  copyDest,
-			Dependencies: make([]*app.M4DModule, 0),
+			Dependencies: make([]*app.FybrikModule, 0),
 			Module:       nil,
 			Geo:          geo,
 			Message:      ""}
@@ -213,7 +213,7 @@ func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.
 
 // SelectModuleInstances selects the necessary read/copy/write modules for the blueprint for a given data set
 // Write path is not yet implemented
-func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext *app.M4DApplication) ([]modules.ModuleInstanceSpec, error) {
+func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext *app.FybrikApplication) ([]modules.ModuleInstanceSpec, error) {
 	datasetID := item.Context.DataSetID
 	m.Log.Info("Select modules for " + datasetID)
 	instances := make([]modules.ModuleInstanceSpec, 0)
@@ -322,7 +322,7 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 }
 
 // GetSupportedReadSources returns a list of supported READ interfaces of a module
-func GetSupportedReadSources(module *app.M4DModule) []*app.InterfaceDetails {
+func GetSupportedReadSources(module *app.FybrikModule) []*app.InterfaceDetails {
 	var list []*app.InterfaceDetails
 	for _, inter := range module.Spec.Capabilities.SupportedInterfaces {
 		if inter.Flow != app.Read {
@@ -389,7 +389,7 @@ func (m *ModuleManager) getCopyRequirements(item modules.DataInfo, readSelector 
 	return copyRequired, sources, readActionsOnCopy
 }
 
-func (m *ModuleManager) enforceWritePolicies(appContext *app.M4DApplication, datasetID string) ([]*pb.EnforcementAction, string, error) {
+func (m *ModuleManager) enforceWritePolicies(appContext *app.FybrikApplication, datasetID string) ([]*pb.EnforcementAction, string, error) {
 	var err error
 	actions := []*pb.EnforcementAction{}
 	//	if the cluster selector is non-empty, the write will be done to the specified geography if possible
@@ -418,7 +418,7 @@ func (m *ModuleManager) enforceWritePolicies(appContext *app.M4DApplication, dat
 
 // GetProcessingGeography determines the geography of the workload cluster.
 // If no cluster has been specified for a workload, a local cluster is assumed.
-func (m *ModuleManager) GetProcessingGeography(applicationContext *app.M4DApplication) (string, error) {
+func (m *ModuleManager) GetProcessingGeography(applicationContext *app.FybrikApplication) (string, error) {
 	clusterName := applicationContext.Spec.Selector.ClusterName
 	if clusterName == "" {
 		if applicationContext.Spec.Selector.WorkloadSelector.Size() == 0 {

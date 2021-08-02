@@ -12,7 +12,7 @@ import (
 	"github.com/go-chi/render"
 )
 
-// EnvironmentInfo contains the info about the user's cluster/namespace and the external systems used by M4D
+// EnvironmentInfo contains the info about the user's cluster/namespace and the external systems used by Fybrik
 type EnvironmentInfo struct {
 	// Namespace in which the GUI and GUI server are running
 	Namespace string `json:"namespace"`
@@ -23,12 +23,12 @@ type EnvironmentInfo struct {
 	// Systems and the credentials they require
 	Systems map[string][]string `json:"systems"`
 
-	// DataSetIDStruct format which must be provided to M4D
+	// DataSetIDStruct format which must be provided to Fybrik
 	DataSetIDFormat string `json:"dataSetIDFormat"`
 }
 
 // EnvironmentRoutes provide information about the cluster/namespace in which the GUI is running
-// as well as info about the M4D control plane deployment assumptions - ex: Data Catalog in use
+// as well as info about the Fybrik control plane deployment assumptions - ex: Data Catalog in use
 func EnvironmentRoutes() *chi.Mux {
 	router := chi.NewRouter()
 	router.Get("/", GetEnvInfo)
@@ -43,7 +43,7 @@ func EnvOptions(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetEnvInfo provide information about the cluster/namespace in which the GUI is running
-// as well as info about the M4D control plane deployment assumptions - ex: Data Catalog in use
+// as well as info about the Fybrik control plane deployment assumptions - ex: Data Catalog in use
 func GetEnvInfo(w http.ResponseWriter, r *http.Request) {
 	var envInfo EnvironmentInfo
 
@@ -55,8 +55,8 @@ func GetEnvInfo(w http.ResponseWriter, r *http.Request) {
 	// Get the namespace in which we are running
 	envInfo.Namespace = GetCurrentNamespace()
 
-	// Get the systems for which credentials need to be collected from the M4D control plane
-	// TODO - Get this from the M4D control plane.
+	// Get the systems for which credentials need to be collected from the Fybrik control plane
+	// TODO - Get this from the Fybrik control plane.
 	envInfo.Systems = make(map[string][]string)
 	envInfo.Systems["Egeria"] = []string{"username"}
 

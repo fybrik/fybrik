@@ -136,8 +136,8 @@ func (r *ProvisionImpl) CreateDataset(ref *types.NamespacedName, bucket *Provisi
 
 	dataset := newDatasetAsUnstructured(ref.Name, ref.Namespace)
 	dataset.SetLabels(map[string]string{
-		"m4d.ibm.com/owner": owner.Namespace + "." + owner.Name,
-		"remove-on-delete":  "true"})
+		"fybrik.io/owner":  owner.Namespace + "." + owner.Name,
+		"remove-on-delete": "true"})
 
 	if err = unstructured.SetNestedStringMap(dataset.Object, values, "spec", "local"); err != nil {
 		return err

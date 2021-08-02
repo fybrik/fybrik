@@ -1,0 +1,14 @@
+{{- if include "fybrik.isEnabled" (tuple .Values.manager.enabled .Values.worker.enabled) }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ template "fybrik.fullname" . }}-blueprints-role
+  namespace: fybrik-blueprints
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+{{- end }}

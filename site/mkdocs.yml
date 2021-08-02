@@ -1,10 +1,10 @@
 strict: false
 
-site_name: Mesh for Data
+site_name: Fybrik
 site_description: A cloud-native platform to control data usage
-copyright: Made with ❤️ by Mesh for Data contributors.
-repo_name: mesh-for-data/mesh-for-data
-repo_url: https://github.com/mesh-for-data/mesh-for-data
+copyright: Made with ❤️ by Fybrik contributors.
+repo_name: fybrik/fybrik
+repo_url: https://github.com/fybrik/fybrik
 edit_uri: edit/master/site/docs/
 
 nav:
@@ -46,7 +46,7 @@ extra:
     provider: mike
   social:
     - icon: fontawesome/brands/github-alt
-      link: https://github.com/mesh-for-data/mesh-for-data
+      link: https://github.com/fybrik/fybrik
 
 theme:
   name: material
@@ -61,8 +61,8 @@ theme:
     code: Roboto Mono
   features:
     - navigation.tabs
-  favicon: static/logo.svg # this icon appears in the browser's tab
-  logo: static/logo.svg # this icon appears in the top left corner on each page
+  favicon: static/logo.png # this icon appears in the browser's tab
+  logo: static/logo.png # this icon appears in the top left corner on each page
     
 markdown_extensions:
   - toc:

@@ -4,7 +4,7 @@
 package v1alpha1
 
 import (
-	"github.com/mesh-for-data/mesh-for-data/pkg/serde"
+	"fybrik.io/fybrik/pkg/serde"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -32,7 +32,7 @@ type ReadModuleArgs struct {
 	Source DataStore `json:"source"`
 
 	// AssetID identifies the asset to be used for accessing the data when it is ready
-	// It is copied from the M4DApplication resource
+	// It is copied from the FybrikApplication resource
 	// +required
 	AssetID string `json:"assetID"`
 
@@ -82,7 +82,7 @@ type FlowStep struct {
 
 	// +required
 	// Template is the name of the specification in the Blueprint describing how to instantiate
-	// a component indicated by the module.  It is the name of a M4DModule CRD.
+	// a component indicated by the module.  It is the name of a FybrikModule CRD.
 	// For example: implicit-copy-db2wh-to-s3-latest
 	Template string `json:"template"`
 
@@ -91,7 +91,7 @@ type FlowStep struct {
 	Arguments ModuleArguments `json:"arguments,omitempty"`
 }
 
-// ComponentTemplate is a copy of a M4DModule Custom Resource.  It contains the information necessary
+// ComponentTemplate is a copy of a FybrikModule Custom Resource.  It contains the information necessary
 // to instantiate a component in a FlowStep, which provides the functionality described by the module.  There are 3 different module types.
 type ComponentTemplate struct {
 
@@ -122,7 +122,7 @@ type DataFlow struct {
 
 // BlueprintSpec defines the desired state of Blueprint, which is the runtime environment
 // which provides the Data Scientist's application with secure and governed access to the data requested in the
-// M4DApplication.
+// FybrikApplication.
 // The blueprint uses an "argo like" syntax which indicates the components and the flow of data between them as steps
 // TODO: Add an indication of the communication relationships between the components
 type BlueprintSpec struct {
@@ -140,7 +140,7 @@ type BlueprintSpec struct {
 // This includes readiness, error message, and indicators forthe Kubernetes
 // resources owned by the Blueprint for cleanup and status monitoring
 type BlueprintStatus struct {
-	// ObservedState includes information to be reported back to the M4DApplication resource
+	// ObservedState includes information to be reported back to the FybrikApplication resource
 	// It includes readiness and error indications, as well as user instructions
 	// +optional
 	ObservedState ObservedState `json:"observedState,omitempty"`
@@ -217,6 +217,6 @@ func CreateMetaBlueprintWithoutState(blueprint *Blueprint) MetaBlueprint {
 }
 
 const (
-	BlueprintNamespaceLabel = "app.m4d.ibm.com/blueprintNamespace"
-	BlueprintNameLabel      = "app.m4d.ibm.com/blueprintName"
+	BlueprintNamespaceLabel = "app.fybrik.io/blueprintNamespace"
+	BlueprintNameLabel      = "app.fybrik.io/blueprintName"
 )

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Route, Switch } from 'react-router-dom'
 import { Divider, Container } from 'semantic-ui-react'
-import M4DMenuBar from './formats/Menu'
-import M4DApplications from './formats/M4DApplications'
+import FybrikMenuBar from './formats/Menu'
+import FybrikApplications from './formats/FybrikApplications'
 import NewApplication from './formats/NewApplication'
 import StoreCredentials from './formats/StoreCredentials'
 import NewApplicationEdit from './formats/NewApplicationEdit'
@@ -36,10 +36,10 @@ export default function App() {
   return (
     <div>
       <Container>
-        <M4DMenuBar datauserenv={datauserenv}/>
+        <FybrikMenuBar datauserenv={datauserenv}/>
         <Divider hidden />
           <Switch>
-            <Route path="/" exact component={props => <M4DApplications datauserenv={datauserenv}/>} />
+            <Route path="/" exact component={props => <FybrikApplications datauserenv={datauserenv}/>} />
             <Route path="/newapplication" exact component={NewApplication} />
             <Route path="/credentials" exact component={StoreCredentials} />
             <Route path="/newapplicationedit" exact component={NewApplicationEdit} />

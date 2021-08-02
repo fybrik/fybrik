@@ -4,8 +4,8 @@
 syntax = "proto3";
 
 package connectors;
-option java_package = "com.datmesh";
-option go_package = "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf";
+option java_package = "io.fybrik";
+option go_package = "fybrik.io/fybrik/pkg/connectors/protobuf";
 
 import "credentials.proto";
 import "dataset_details.proto";

@@ -1,6 +1,6 @@
 # Katalog
 
-Katalog is a data catalog that is included in Mesh for Data for evaluation purposes.
+Katalog is a data catalog that is included in Fybrik for evaluation purposes.
 
 It is powered by Kubernetes resources:
 

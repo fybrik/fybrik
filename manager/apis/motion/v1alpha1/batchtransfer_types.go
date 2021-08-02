@@ -4,7 +4,7 @@
 package v1alpha1
 
 import (
-	"github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -244,7 +244,8 @@ type Kafka struct {
 	KafkaBrokers string `json:"kafkaBrokers"`
 
 	// URL to the schema registry. The registry has to be Confluent schema registry compatible.
-	SchemaRegistryURL string `json:"schemaRegistryURL"`
+	// +optional
+	SchemaRegistryURL string `json:"schemaRegistryURL,omitempty"`
 
 	// Kafka security protocol one of (PLAINTEXT, SASL_PLAINTEXT, SASL_SSL, SSL)
 	// Default SASL_SSL will be assumed if not specified

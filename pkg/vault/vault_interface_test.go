@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	utils "github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	utils "fybrik.io/fybrik/manager/controllers/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,7 +28,7 @@ func TestCredentialManagerInterface(t *testing.T) {
 	conn, err := InitConnection(utils.GetVaultAddress(), vaultToken)
 	assert.Nil(t, err)
 	Log(t, "init vault", err)
-	err = conn.Mount("v1/sys/mounts/m4d/test")
+	err = conn.Mount("v1/sys/mounts/fybrik/test")
 	assert.Nil(t, err)
 	Log(t, "mount", err)
 	// Put credentials in vault
@@ -36,17 +36,17 @@ func TestCredentialManagerInterface(t *testing.T) {
 		"username": "datasetuser1",
 		"password": "myfavoritepassword",
 	}
-	err = conn.AddSecret("m4d/test/123/456", credentials)
+	err = conn.AddSecret("fybrik/test/123/456", credentials)
 	assert.Nil(t, err)
 	Log(t, "Add secret", err)
-	readCredentials, errGet := conn.GetSecret("m4d/test/123/456")
+	readCredentials, errGet := conn.GetSecret("fybrik/test/123/456")
 	assert.Nil(t, errGet)
 	Log(t, "Get secret", errGet)
 	writtenCredentials, _ := json.Marshal(credentials)
 	assert.Equal(t, string(writtenCredentials), readCredentials, "Read "+readCredentials+" instead of "+string(writtenCredentials))
-	err = conn.DeleteSecret("m4d/test/123/456")
+	err = conn.DeleteSecret("fybrik/test/123/456")
 	assert.Nil(t, err)
 	Log(t, "Delete secret", err)
-	_, err = conn.GetSecret("m4d/test/123/456")
+	_, err = conn.GetSecret("fybrik/test/123/456")
 	assert.NotNil(t, err)
 }

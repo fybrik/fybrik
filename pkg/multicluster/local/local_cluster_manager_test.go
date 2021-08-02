@@ -6,7 +6,7 @@ package local
 import (
 	"testing"
 
-	"github.com/mesh-for-data/mesh-for-data/pkg/multicluster"
+	"fybrik.io/fybrik/pkg/multicluster"
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,7 +24,7 @@ func TestLocalClusterManager(t *testing.T) {
 		&corev1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "cluster-metadata",
-				Namespace: "m4d-system",
+				Namespace: "fybrik-system",
 			},
 			Data: map[string]string{
 				"ClusterName": "remote-cluster",
@@ -34,7 +34,7 @@ func TestLocalClusterManager(t *testing.T) {
 		},
 	}
 	cl := fake.NewFakeClientWithScheme(s, objs...)
-	namespace := "m4d-system"
+	namespace := "fybrik-system"
 	cm, err := NewManager(cl, namespace)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(cm).NotTo(gomega.BeNil())

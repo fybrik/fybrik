@@ -5,7 +5,7 @@ package connector
 import (
 	"net"
 
-	connectors "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	connectors "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"k8s.io/apimachinery/pkg/runtime"

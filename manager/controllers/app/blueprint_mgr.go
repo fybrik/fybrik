@@ -4,9 +4,9 @@
 package app
 
 import (
-	app "github.com/mesh-for-data/mesh-for-data/manager/apis/app/v1alpha1"
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/app/modules"
-	"github.com/mesh-for-data/mesh-for-data/manager/controllers/utils"
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/app/modules"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	// Temporary - shouldn't have something specific to implicit copies
 )
 
@@ -22,7 +22,7 @@ func containsTemplate(templateList []app.ComponentTemplate, moduleName string) b
 
 // RefineInstances collects all instances of the same read/write module and creates a new instance instead, with accumulated arguments.
 // Copy modules are left unchanged.
-func (r *M4DApplicationReconciler) RefineInstances(instances []modules.ModuleInstanceSpec) []modules.ModuleInstanceSpec {
+func (r *FybrikApplicationReconciler) RefineInstances(instances []modules.ModuleInstanceSpec) []modules.ModuleInstanceSpec {
 	newInstances := make([]modules.ModuleInstanceSpec, 0)
 	// map instances to be unified, according to the cluster and module
 	instanceMap := make(map[string]modules.ModuleInstanceSpec)
@@ -49,7 +49,7 @@ func (r *M4DApplicationReconciler) RefineInstances(instances []modules.ModuleIns
 }
 
 // GenerateBlueprints creates Blueprint specs (one per cluster)
-func (r *M4DApplicationReconciler) GenerateBlueprints(instances []modules.ModuleInstanceSpec, appContext *app.M4DApplication) map[string]app.BlueprintSpec {
+func (r *FybrikApplicationReconciler) GenerateBlueprints(instances []modules.ModuleInstanceSpec, appContext *app.FybrikApplication) map[string]app.BlueprintSpec {
 	blueprintMap := make(map[string]app.BlueprintSpec)
 	instanceMap := make(map[string][]modules.ModuleInstanceSpec)
 	for _, moduleInstance := range instances {
@@ -64,10 +64,10 @@ func (r *M4DApplicationReconciler) GenerateBlueprints(instances []modules.Module
 	return blueprintMap
 }
 
-// GenerateBlueprint creates the Blueprint spec based on the datasets and the governance actions required, which dictate the modules that must run in the m4d
+// GenerateBlueprint creates the Blueprint spec based on the datasets and the governance actions required, which dictate the modules that must run in the fybrik
 // Credentials for accessing data set are stored in a credential management system (such as vault) and the paths for accessing them are included in the blueprint.
 // The credentials themselves are not included in the blueprint.
-func (r *M4DApplicationReconciler) GenerateBlueprint(instances []modules.ModuleInstanceSpec, appContext *app.M4DApplication) app.BlueprintSpec {
+func (r *FybrikApplicationReconciler) GenerateBlueprint(instances []modules.ModuleInstanceSpec, appContext *app.FybrikApplication) app.BlueprintSpec {
 	var spec app.BlueprintSpec
 
 	// Entrypoint is always the name of the application
@@ -75,7 +75,7 @@ func (r *M4DApplicationReconciler) GenerateBlueprint(instances []modules.ModuleI
 	spec.Entrypoint = appName
 	r.Log.V(0).Info("\tappName: " + appName)
 
-	// Define the flow structure, which indicates the flow of data between the components in the m4d
+	// Define the flow structure, which indicates the flow of data between the components in the fybrik
 	// Loop over the list of modules and create a step for each
 	// Also create a template for each module specification - i.e. there could be multiple instances of a module, each with different arguments
 	var flow app.DataFlow

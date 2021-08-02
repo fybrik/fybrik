@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
+	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
 	"github.com/go-logr/logr"
-	motionv1 "github.com/mesh-for-data/mesh-for-data/manager/apis/motion/v1alpha1"
 	kbatch "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
