@@ -3,13 +3,12 @@
 
 package taxonomy
 
-
 import (
 	"fmt"
 	"io/ioutil"
 	"testing"
 
-	tax "github.com/mesh-for-data/mesh-for-data/config/taxonomy"
+	tax "fybrik.io/fybrik/config/taxonomy"
 	"sigs.k8s.io/yaml"
 )
 
