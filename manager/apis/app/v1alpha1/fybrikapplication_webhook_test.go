@@ -23,7 +23,7 @@ func TestValidApplication(t *testing.T) {
 	}
 
 	fybrikApp := &FybrikApplication{}
-	err = yaml.Unmarshal(applicationYaml, m4dApp)
+	err = yaml.Unmarshal(applicationYaml, fybrikApp)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return
@@ -51,7 +51,7 @@ func TestInvalidAppInfo(t *testing.T) {
 	}
 
 	taxonomyFile := "../../../../charts/fybrik/files/taxonomy/application.values.schema.json"
-	validateErr := (*m4dApp).ValidateFybrikApplication(taxonomyFile)
+	validateErr := (*fybrikApp).ValidateFybrikApplication(taxonomyFile)
 	assert.NotNil(t, validateErr, "Invalid appInfo error should be found")
 }
 
