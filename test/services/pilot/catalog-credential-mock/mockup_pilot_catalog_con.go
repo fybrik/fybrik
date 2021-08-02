@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"time"
 
-	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"

@@ -25,7 +25,7 @@ func GetSystemNamespace() string {
 			return ns
 		}
 	}
-	return "m4d-system"
+	return "fybrik-system"
 }
 
 // GetModulesRole returns the modules assigned authentification role for accessing dataset credentials

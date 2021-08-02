@@ -1,0 +1,27 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: app.fybrik.io/v1alpha1
+kind: FybrikApplication
+metadata:
+  name: notebook
+  namespace: default
+  labels:
+    app: notebook
+spec:
+  selector:
+    clusterName: thegreendragon
+    workloadSelector:
+      matchLabels:
+        app: notebook
+  appInfo:
+    intent: fraud-detection
+  data:
+  - dataSetID: "s3-csv/redact-dataset"
+    requirements:
+      interface:
+        protocol: fybrik-arrow-flight
+        dataformat: arrow
+      copy:
+        required: true
+

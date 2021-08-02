@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-: ${KUBE_NAMESPACE:=m4d-system}
+: ${KUBE_NAMESPACE:=fybrik-system}
 : ${PORT_TO_FORWARD:=8204}
 
 port_forward() {

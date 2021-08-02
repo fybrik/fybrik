@@ -10,21 +10,21 @@ source ./common.sh
 source ./vault_utils.sh
 
 # This script configures Vault server deployed in the control-plane in a single cluster setup.
-# It defines Vault role for modules running in m4d-blueprints namespace to authentication against
+# It defines Vault role for modules running in fybrik-blueprints namespace to authentication against
 # Vault to retrieve dataset credentials.
 # To do that The following is done:
 # - enable kubernetes auth path in path called kubernetes.
 # - enable Vault kv secret engine to hold the dataset credentials
 # - creation of Vault policy to allow to access dataset credentials in the Vault kv secret engine enabled above
 # - creation of Vault role for kubernetes auth path to bind policy to identity. The identity is the service accounts
-#  in m4d-blueprints namespace and the policy is the policy to allow them to access the
+#  in fybrik-blueprints namespace and the policy is the policy to allow them to access the
 #  path to the dataset credentials.
 
-: ${KUBE_NAMESPACE:=m4d-system}
-: ${MODULE_NAMESPACE:="m4d-blueprints"}
+: ${KUBE_NAMESPACE:=fybrik-system}
+: ${MODULE_NAMESPACE:="fybrik-blueprints"}
 : ${ROLE:=module}
 : ${WITHOUT_PORT_FORWARD:=false}
-# Add policy and role for modules running in m4d-blueprints namespace to
+# Add policy and role for modules running in fybrik-blueprints namespace to
 # use the vault-plugin-secrets-kubernetes-reader plugin enabled in Vault
 # path kubernetes-secrets.
 : ${PLUGIN_PATH:=kubernetes-secrets}

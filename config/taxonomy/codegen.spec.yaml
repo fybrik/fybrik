@@ -4,10 +4,37 @@ info:
   title: Policy Manager Service
   license:
     name: Apache 2.0
-paths: {}
-components:
-  schemas:
-    PolicyManagerRequest:
-      $ref: "./objects/policy_manager_request.json"
-    PolicyManagerResponse:
-      $ref: "./objects/policy_manager_response.json"
+servers:
+  - url: https://localhost:8080
+paths:
+  /getPoliciesDecisions:
+    get:
+      summary: getPoliciesDecisions
+      description: Rest API for returning policy decisions
+      operationId: getPoliciesDecisions
+      parameters:
+        - name: input
+          description: Policy Manager Request Object
+          required: true
+          in: query
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: "./objects/policy_manager_request.json"
+        - name: creds
+          description: credentials to wkc connector
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: "./objects/policy_manager_response.json"
+        '400':
+          description: Invalid status value

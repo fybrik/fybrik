@@ -9,4 +9,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: katalog-connector
-  namespace: m4d-system
+  namespace: fybrik-system

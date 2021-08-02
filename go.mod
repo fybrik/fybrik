@@ -1,9 +1,10 @@
-module github.com/mesh-for-data/mesh-for-data
+module fybrik.io/fybrik
 
 go 1.16
 
 require (
 	emperror.dev/errors v0.7.0
+	fybrik.io/openapi2crd v0.4.0
 	github.com/IBM/satcon-client-go v0.1.2-0.20210329192404-b8fa1c732712
 	github.com/buger/jsonparser v1.1.1
 	github.com/fatih/color v1.9.0 // indirect
@@ -26,7 +27,6 @@ require (
 	github.com/kr/pretty v0.2.1 // indirect
 	github.com/mailru/easyjson v0.7.1-0.20191009090205-6c0755d89d1e // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
-	github.com/mesh-for-data/openapi2crd v0.3.2
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
@@ -45,21 +45,22 @@ require (
 	go.mongodb.org/mongo-driver v1.4.2 // indirect
 	go.uber.org/multierr v1.6.0
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
+	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602
 	google.golang.org/genproto v0.0.0-20210707164411-8c882eb9abba // indirect
 	google.golang.org/grpc v1.39.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.6.2
-	k8s.io/api v0.21.2
-	k8s.io/apiextensions-apiserver v0.21.2
-	k8s.io/apimachinery v0.21.2
+	k8s.io/api v0.21.3
+	k8s.io/apiextensions-apiserver v0.21.3
+	k8s.io/apimachinery v0.21.3
 	k8s.io/cli-runtime v0.21.0
-	k8s.io/client-go v0.21.2
+	k8s.io/client-go v0.21.3
 	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/cli-utils v0.19.2
 	sigs.k8s.io/controller-runtime v0.9.0
 	sigs.k8s.io/yaml v1.2.0
 )
 
-replace helm.sh/helm/v3 v3.6.2 => github.com/mesh-for-data/helm/v3 v3.6.2-m4d
+replace helm.sh/helm/v3 v3.6.2 => github.com/fybrik/helm/v3 v3.6.2-fybrik-update

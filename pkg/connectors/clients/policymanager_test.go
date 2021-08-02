@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/mesh-for-data/mesh-for-data/pkg/connectors/clients"
-	pb "github.com/mesh-for-data/mesh-for-data/pkg/connectors/protobuf"
+	"fybrik.io/fybrik/pkg/connectors/clients"
+	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 )
 
 func getTemplate(datasetID string, operation *pb.AccessOperation, actions ...*pb.EnforcementAction) *pb.PoliciesDecisions {

@@ -3,7 +3,7 @@
 ## Overview of Requirements and Functionality
 
 The **Data Distribution Controller** (DDC) handles the movement of data between data stores.
-Mesh for Data uses the DDC to perform an action called "implicit copy", i.e. the movement
+Fybrik uses the DDC to perform an action called "implicit copy", i.e. the movement
 of a data set from one data store to another with possibly some unitary transform applied
 to that data set. It corresponds to Step 8 in the Architecture Document (Add a link here)
 
@@ -119,7 +119,7 @@ testing direct definitions can be used but in a production environment credentia
 
 The secret provider can be accessed via a REST API using a role and a secret name. This secret name refers to a path in vault.
 At the movement operator shall not create any secrets in Kubernetes that contain any credentials and credentials shall only be maintained
-in memory. The fetching of secrets will be executed by the [datamover](https://github.com/mesh-for-data/mover) component.
+in memory. The fetching of secrets will be executed by the [datamover](https://github.com/fybrik/mover) component.
 The datamover component retrieves configuration from a JSON file that is passed on as a Kubernetes secret. 
 The goal is that vault paths can be specified in this JSON configuration file and will be substituted by values retrieved from the
 secret provider. The following example illustrates this mechanism:
@@ -305,7 +305,7 @@ type BatchTransferList struct {
 
 ```
 ---
-apiVersion: "m4d.ibm.com/v1"
+apiVersion: "fybrik.io/v1"
 kind: BatchTransfer
 metadata:
   name: copy1
@@ -360,10 +360,10 @@ The control layer of the data distribution is implemented following the operator
 
 ## Relevant Code Repositories
 
-The [data distribution core libraries](https://github.com/mesh-for-data/mover) that are Scala/Spark based
+The [data distribution core libraries](https://github.com/fybrik/mover) that are Scala/Spark based
 
-The [data distribution operator](https://github.com/mesh-for-data/mesh-for-data) has been integrated into
-Mesh for Data code and is part of the manager.
+The [data distribution operator](https://github.com/fybrik/fybrik) has been integrated into
+Fybrik code and is part of the manager.
 
 
 ## Roadmap

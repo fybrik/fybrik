@@ -1,8 +1,0 @@
-{{- if or .Values.coordinator.enabled .Values.worker.enabled }}
-{{- if .Values.clusterScoped }}
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: m4d-blueprints
-{{- end }}
-{{- end }}
