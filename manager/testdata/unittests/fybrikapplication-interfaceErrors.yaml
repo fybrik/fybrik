@@ -1,7 +1,7 @@
-apiVersion: app.m4d.ibm.com/v1alpha1
-kind: M4DApplication
+apiVersion: app.fybrik.io/v1alpha1
+kind: FybrikApplication
 metadata:
-  name: application-with-errors
+  name: application-with-errors-2
   labels:
     app: kf-notebook
 spec:
@@ -11,10 +11,11 @@ spec:
       matchLabels:
         app: kf-notebook
   appInfo:
-    role: Hacker
+    intent: Fraud Detection
+    role: Sales
   data:
     - dataSetID: "{\"ServerName\":\"mds1\",\"AssetGuid\":\"ASSET_ID\"}"
       requirements:
         interface: 
-          protocol: m4d-arrow-flight
-          dataformat: arrow
+          protocol: kafka
+          dataformat: csv

@@ -48,7 +48,7 @@ func (r *FybrikApplication) ValidateDelete() error {
 func (r *FybrikApplication) ValidateFybrikApplication(taxonomyFile string) error {
 	var allErrs []*field.Error
 
-	// Convert M4D application Go struct to JSON
+	// Convert Fybrik application Go struct to JSON
 	applicationJSON, err := json.Marshal(r)
 	if err != nil {
 		return err

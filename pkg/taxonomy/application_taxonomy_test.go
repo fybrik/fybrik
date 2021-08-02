@@ -13,11 +13,11 @@ import (
 )
 
 var (
-	AppTaxValsName = "../../charts/m4d/files/taxonomy/application.values.schema.json"
+	AppTaxValsName = "../../charts/fybrik/files/taxonomy/application.values.schema.json"
 )
 
 func TestAppTaxonomy(t *testing.T) {
-	applicationYaml, err := ioutil.ReadFile("../../samples/kubeflow/m4dapplication.yaml")
+	applicationYaml, err := ioutil.ReadFile("../../samples/kubeflow/fybrikapplication.yaml")
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return
@@ -29,7 +29,7 @@ func TestAppTaxonomy(t *testing.T) {
 	}
 	interfaceGood := appInfoGood
 
-	appInfoBadYaml, err := ioutil.ReadFile("../../manager/testdata/unittests/m4dapplication-appInfoErrors.yaml")
+	appInfoBadYaml, err := ioutil.ReadFile("../../manager/testdata/unittests/fybrikapplication-appInfoErrors.yaml")
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return
@@ -40,7 +40,7 @@ func TestAppTaxonomy(t *testing.T) {
 		return
 	}
 
-	interfaceBadYaml, err := ioutil.ReadFile("../../manager/testdata/unittests/m4dapplication-interfaceErrors.yaml")
+	interfaceBadYaml, err := ioutil.ReadFile("../../manager/testdata/unittests/fybrikapplication-interfaceErrors.yaml")
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return
