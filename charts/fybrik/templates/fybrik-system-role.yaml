@@ -1,5 +1,4 @@
 {{- if .Values.manager.enabled }}
-{{- if .Values.clusterScoped }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -97,5 +96,3 @@ rules:
   - update
   - watch
 {{- end }}
-{{- end }}
-

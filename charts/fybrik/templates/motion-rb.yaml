@@ -1,5 +1,4 @@
 {{- if include "fybrik.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
-{{- if .Values.clusterScoped }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -12,5 +11,4 @@ subjects:
 - kind: ServiceAccount
   name: {{ .Values.manager.serviceAccount.name | default "default" }}
   namespace: {{ .Release.Namespace }}
-{{- end }}
 {{- end }}
