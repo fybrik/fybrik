@@ -6,10 +6,10 @@ COPY main.go .
 ENV CGO_ENABLED=0
 RUN go get -d -v ./...
 
-RUN go build -a -installsuffix cgo -o open_policy_agent .
+RUN go build -a -installsuffix cgo -o openapiserver .
 
 FROM scratch AS runtime
 ENV GIN_MODE=release
-COPY --from=build /go/src/open_policy_agent ./
+COPY --from=build /go/src/openapiserver ./
 EXPOSE 8080/tcp
-ENTRYPOINT ["./open_policy_agent"]
+ENTRYPOINT ["./openapiserver"]
