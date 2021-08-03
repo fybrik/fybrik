@@ -1,0 +1,48 @@
+name: Fybrik Golang Vanity Imports
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
+
+jobs:
+  updateVanityImports:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout vanity-imports repository
+        uses: actions/checkout@v2
+        with:
+          repository: fybrik/vanity-imports
+          path: vanity-imports
+      - name: Checkout master branch
+        uses: actions/checkout@v2
+        with:
+          path: fybrik-master-branch
+      - name: Checkout site branch
+        uses: actions/checkout@v2
+        with:
+          path: fybrik-site-branch
+          ref: site
+      - name: Generate vanity import meta-tags
+        run: |
+          cp vanity-imports/hack/tools/vangen.sh fybrik-master-branch
+          cd fybrik-master-branch; ./vangen.sh; cd ..
+          cp fybrik-master-branch/vangen.json vanity-imports/
+          make -C vanity-imports generate
+      - name: Copy vanity import meta-tags to fybrik-site-branch
+        run: |
+          rm -rf fybrik-site-branch/fybrik
+          cp -r vanity-imports/vangen/fybrik fybrik-site-branch
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          path: fybrik-site-branch
+          signoff: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: 'Update fybrik repo vanity imports paths'
+          commit-message: "Update fybrik repo vanity imports"
+          committer: GitHub <noreply@github.com>
+          delete-branch: true
+
