@@ -4,9 +4,10 @@
 package v1alpha1
 
 import (
-	"errors"
+	"encoding/json"
 	log "log"
 
+	validate "fybrik.io/fybrik/pkg/taxonomy/validate"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -28,30 +29,35 @@ var _ webhook.Validator = &FybrikApplication{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *FybrikApplication) ValidateCreate() error {
 	log.Printf("Validating fybrikapplication %s for creation", r.Name)
-	return r.validateFybrikApplication()
+	taxonomyFile := "/tmp/taxonomy/application.values.schema.json"
+	return r.ValidateFybrikApplication(taxonomyFile)
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *FybrikApplication) ValidateUpdate(old runtime.Object) error {
 	log.Printf("Validating fybrikapplication %s for update", r.Name)
-
-	return r.validateFybrikApplication()
+	taxonomyFile := "/tmp/taxonomy/application.values.schema.json"
+	return r.ValidateFybrikApplication(taxonomyFile)
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *FybrikApplication) ValidateDelete() error {
-	log.Printf("Validating fybrikapplication %s for deletion", r.Name)
-
-	// TODO(user): fill in your validation logic upon object deletion.
 	return nil
 }
 
-func (r *FybrikApplication) validateFybrikApplication() error {
-	var allErrs field.ErrorList
-	if err := r.validateFybrikApplicationSpec(); err != nil {
-		allErrs = append(allErrs, err...)
+func (r *FybrikApplication) ValidateFybrikApplication(taxonomyFile string) error {
+	var allErrs []*field.Error
+
+	// Convert Fybrik application Go struct to JSON
+	applicationJSON, err := json.Marshal(r)
+	if err != nil {
+		return err
 	}
 
+	// Validate Fybrik application against taxonomy
+	allErrs = validate.TaxonomyCheck(applicationJSON, taxonomyFile, "Fybrik application")
+
+	// Return any error
 	if len(allErrs) == 0 {
 		return nil
 	}
@@ -59,52 +65,4 @@ func (r *FybrikApplication) validateFybrikApplication() error {
 	return apierrors.NewInvalid(
 		schema.GroupKind{Group: "app.fybrik.io", Kind: "FybrikApplication"},
 		r.Name, allErrs)
-}
-
-func (r *FybrikApplication) validateFybrikApplicationSpec() []*field.Error {
-	// The field helpers from the kubernetes API machinery help us return nicely
-	// structured validation errors.
-
-	var allErrs []*field.Error
-	specField := field.NewPath("spec").Child("data")
-	for i, dataSet := range r.Spec.Data {
-		// To avoid aliasing issue due to the fact the address of dataSet variable is passed
-		// to validateDataContext function in each loop iteration, a new temporary
-		// variable is created and used in each iteration.
-		dataSetTemp := dataSet
-		if err := r.validateDataContext(specField.Index(i), &dataSetTemp); err != nil {
-			allErrs = append(allErrs, err...)
-		}
-	}
-	return allErrs
-}
-
-func (r *FybrikApplication) validateDataContext(path *field.Path, dataSet *DataContext) []*field.Error {
-	var allErrs []*field.Error
-	interfacePath := path.Child("Requirements", "Interface")
-	if err := validateProtocol(dataSet.Requirements.Interface.Protocol); err != nil {
-		allErrs = append(allErrs, field.Invalid(interfacePath.Child("Protocol"), &dataSet.Requirements.Interface.Protocol, err.Error()))
-	}
-	if err := validateDataFormat(dataSet.Requirements.Interface.DataFormat); err != nil {
-		allErrs = append(allErrs, field.Invalid(interfacePath.Child("DataFormat"), &dataSet.Requirements.Interface.DataFormat, err.Error()))
-	}
-	return allErrs
-}
-
-func validateProtocol(protocol string) error {
-	switch protocol {
-	case "s3", "kafka", "jdbc-db2", "fybrik-arrow-flight":
-		return nil
-	default:
-		return errors.New("Value should be one of these: s3, kafka, jdbc-db2, fybrik-arrow-flight")
-	}
-}
-
-func validateDataFormat(format string) error {
-	switch format {
-	case "parquet", "table", "csv", "json", "avro", "orc", "binary", "arrow":
-		return nil
-	default:
-		return errors.New("Value should be one of these: parquet, table, csv, json, avro, orc, binary, arrow")
-	}
 }

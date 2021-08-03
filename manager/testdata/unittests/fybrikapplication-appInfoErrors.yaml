@@ -1,7 +1,7 @@
 apiVersion: app.fybrik.io/v1alpha1
 kind: FybrikApplication
 metadata:
-  name: notebook-with-kubeflow
+  name: application-with-errors
   labels:
     app: kf-notebook
 spec:
@@ -11,8 +11,7 @@ spec:
       matchLabels:
         app: kf-notebook
   appInfo:
-    intent: Fraud Detection
-    role: Security
+    role: Hacker
   data:
     - dataSetID: "{\"ServerName\":\"mds1\",\"AssetGuid\":\"ASSET_ID\"}"
       requirements:
