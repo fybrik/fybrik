@@ -1,0 +1,98 @@
+{{- if .Values.manager.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ template "fybrik.fullname" . }}-system-role
+rules:
+- apiGroups:
+  - app.fybrik.io
+  resources:
+  - plotters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.fybrik.io
+  resources:
+  - plotters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - app.fybrik.io
+  resources:
+  - fybrikstorageaccounts
+  - fybrikmodules
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - com.ie.ibm.hpsys
+  resources:
+  - datasets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.fybrik.io
+  resources:
+  - plotters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.fybrik.io
+  resources:
+  - plotters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - "coordination.k8s.io"
+  resources:
+  - leases
+  - leases/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+{{- end }}

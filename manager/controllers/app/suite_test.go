@@ -14,16 +14,19 @@ import (
 	"helm.sh/helm/v3/pkg/release"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/fields"
 
 	appapi "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
@@ -79,9 +82,17 @@ var _ = BeforeSuite(func(done Done) {
 		k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 		Expect(err).ToNot(HaveOccurred())
 	} else {
+		systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
+		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": BlueprintNamespace})
+		// the testing environment will restrict access to secrets, modules and storage accounts
 		mgr, err = ctrl.NewManager(cfg, ctrl.Options{
 			Scheme:             scheme.Scheme,
 			MetricsBindAddress: "localhost:8086",
+			NewCache: cache.BuilderWithOptions(cache.Options{SelectorsByObject: cache.SelectorsByObject{
+				&appapi.FybrikModule{}:         {Field: systemNamespaceSelector},
+				&appapi.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
+				&corev1.Secret{}:               {Field: workerNamespaceSelector},
+			}}),
 		})
 		Expect(err).ToNot(HaveOccurred())
 
@@ -115,12 +126,12 @@ var _ = BeforeSuite(func(done Done) {
 		k8sClient = mgr.GetClient()
 		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "fybrik-system",
+				Name: utils.GetSystemNamespace(),
 			},
 		}))
 		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "fybrik-blueprints",
+				Name: BlueprintNamespace,
 			},
 		}))
 		Expect(k8sClient.Create(context.Background(), &v1.ConfigMap{

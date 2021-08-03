@@ -21,9 +21,11 @@ import (
 
 	"fybrik.io/fybrik/manager/controllers/motion"
 
+	"k8s.io/apimachinery/pkg/fields"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -52,6 +54,24 @@ func init() {
 func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	enableApplicationController, enableBlueprintController, enablePlotterController, enableMotionController bool) int {
 	setupLog.Info("creating manager")
+	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
+	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": app.BlueprintNamespace})
+	selectorsByObject := cache.SelectorsByObject{
+		&appv1.Plotter{}:                {Field: systemNamespaceSelector},
+		&appv1.FybrikModule{}:           {Field: systemNamespaceSelector},
+		&appv1.FybrikStorageAccount{}:   {Field: systemNamespaceSelector},
+		&corev1.ConfigMap{}:             {Field: systemNamespaceSelector},
+		&appv1.Blueprint{}:              {Field: workerNamespaceSelector},
+		&motionv1.BatchTransfer{}:       {Field: workerNamespaceSelector},
+		&motionv1.StreamTransfer{}:      {Field: workerNamespaceSelector},
+		&kbatch.Job{}:                   {Field: workerNamespaceSelector},
+		&kbatch.CronJob{}:               {Field: workerNamespaceSelector},
+		&corev1.Secret{}:                {Field: workerNamespaceSelector},
+		&corev1.Pod{}:                   {Field: workerNamespaceSelector},
+		&kapps.Deployment{}:             {Field: workerNamespaceSelector},
+		&corev1.PersistentVolumeClaim{}: {Field: workerNamespaceSelector},
+	}
+
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,
 		Namespace:          namespace,
@@ -59,8 +79,8 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		LeaderElection:     enableLeaderElection,
 		LeaderElectionID:   "fybrik-operator-leader-election",
 		Port:               9443,
+		NewCache:           cache.BuilderWithOptions(cache.Options{SelectorsByObject: selectorsByObject}),
 	})
-
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
 		return 1

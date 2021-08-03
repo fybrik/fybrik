@@ -1,9 +1,8 @@
 {{- if .Values.worker.enabled }}
-{{- if .Values.clusterScoped }}
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
-  name: {{ template "fybrik.fullname" . }}-motion-cr
+  name: {{ template "fybrik.fullname" . }}-motion-role
 rules:
 - apiGroups:
   - ""
@@ -64,6 +63,5 @@ rules:
   - jobs/status
   verbs:
   - get
-{{- end }}
 {{- end }}
 
