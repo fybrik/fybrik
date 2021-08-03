@@ -19,7 +19,7 @@ import (
 	//
 	//sw "github.com/GIT_USER_ID/GIT_REPO_ID/go"
 	//
-	sw "./go"
+	sw "fybrik.io/fybrik/connectors/open_policy_agent/go"
 )
 
 func main() {
