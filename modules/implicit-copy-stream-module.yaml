@@ -10,29 +10,27 @@ metadata:
     name: implicit-copy-stream
     version: 0.1.0 
 spec:
-  flows:
-  - copy  
+  type: service
   capabilities:
-    supportedInterfaces:
-    - flow: copy
-      source: 
-        protocol: kafka    
-        dataformat: json
-      sink: 
-        protocol: s3
-        dataformat: parquet
-    - flow: copy
-      source:
-        protocol: kafka
-        dataformat: avro
-      sink:
-        protocol: s3
-        dataformat: parquet
-    actions:
-    - id: redact-ID
-      level: 2  # column
-    - id: removed-ID
-      level: 2  # column
+    - capability: copy
+      supportedInterfaces:
+      - source: 
+          protocol: kafka    
+          dataformat: json
+        sink: 
+          protocol: s3
+          dataformat: parquet
+      - source:
+          protocol: kafka
+          dataformat: avro
+        sink:
+          protocol: s3
+          dataformat: parquet
+      actions:
+      - id: redact-ID
+        level: 2  # column
+      - id: removed-ID
+        level: 2  # column
   chart:
     name: ghcr.io/fybrik/fybrik-implicit-copy-stream:0.1.0
   statusIndicators:
@@ -40,4 +38,3 @@ spec:
       successCondition: status.status == SUCCEEDED
       failureCondition: status.status == FAILED
       errorMessage: status.error
-

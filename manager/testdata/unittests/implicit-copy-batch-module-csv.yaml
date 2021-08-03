@@ -11,22 +11,21 @@ metadata:
     name: implicit-copy-batch
     version: 0.1.0 
 spec:
-  flows:  # one or more of copy, read, write 
-  - copy  
+  type: service
   capabilities:
-    supportedInterfaces:
-    - flow: copy
-      source:
-        protocol: s3
-        dataformat: csv
-      sink:
-        protocol: s3
-        dataformat: csv
-    actions:
-    - id: redact-ID
-      level: 2  # column
-    - id: removed-ID
-      level: 2  # column
+    - capability: copy
+      supportedInterfaces:
+      - source:
+          protocol: s3
+          dataformat: csv
+        sink:
+          protocol: s3
+          dataformat: csv
+      actions:
+      - id: redact-ID
+        level: 2  # column
+      - id: removed-ID
+        level: 2  # column
   chart:
     name: ghcr.io/fybrik/fybrik-implicit-copy-batch:0.1.0
   statusIndicators:

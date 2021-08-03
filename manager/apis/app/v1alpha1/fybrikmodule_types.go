@@ -8,8 +8,24 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// CapabilityScope indicates the level at which a capability is implemented
+// +kubebuilder:validation:Enum=asset;workload;cluster
+type CapabilityScope string
+
+const (
+	// Asset indicates that the capabilities are available for a particular asset, such as a dataset
+	Asset CapabilityScope = "asset"
+
+	// Workload indicates that the capability is available for all assets in the workload or is independent of assets
+	Workload CapabilityScope = "workload"
+
+	// Cluster indicates that a capability is available across workloads - i.e. across m4dapplication instances
+	Cluster CapabilityScope = "cluster"
+)
+
 // DependencyType indicates what type of pre-requisit is required
 // +kubebuilder:validation:Enum=module;connector;feature
+// TODO - Should these be changed???
 type DependencyType string
 
 const (
@@ -23,28 +39,27 @@ const (
 	Feature DependencyType = "feature"
 )
 
-// ModuleFlow indicates what data flow is performed by the module
+// ModuleCapability indicates at a high level what is being performed - often on a datset, but potentially other things as well
 // +kubebuilder:validation:Enum=copy;read;write
-type ModuleFlow string
+type CapabilityType string
 
+// TODO - Should these come from the taxonomy?
 const (
 	// Copy moves data from one location to another - i.e implicit copy
-	Copy ModuleFlow = "copy"
+	Copy CapabilityType = "copy"
 
 	// Write is accessed from within an application, typically through an SDK
-	Write ModuleFlow = "write"
+	Write CapabilityType = "write"
 
 	// Read is accessed from within an application, typically through an SDK
-	Read ModuleFlow = "read"
+	Read CapabilityType = "read"
+
+	// Transform processes and changes data
+	Transform CapabilityType = "transform"
 )
 
 // ModuleInOut specifies the protocol and format of the data input and output by the module - if any
 type ModuleInOut struct {
-
-	// Flow for which this interface is supported
-	// +required
-	Flow ModuleFlow `json:"flow"`
-
 	// Source specifies the input data protocol and format
 	// +optional
 	Source *InterfaceDetails `json:"source,omitempty"`
@@ -94,23 +109,50 @@ type ModuleAPI struct {
 	Endpoint EndpointSpec `json:"endpoint"`
 }
 
+// PluginMechanism indicates indicates the technology used for the module and the plugin to interact
+// The values supported should come from the module taxonomy
+// Ex: vault, wasm....
+type PluginMechanism string
+
+type Plugin struct {
+	// PluginType indicates the technology used for the module and the plugin to interact
+	// Examples of such mechanisms are vault plugins, wasm, etc
+	// +required
+	PluginType PluginMechanism `json:"pluginType"`
+
+	// DataFormat indicates the format of data the plugin knows how to process
+	DataFormat string `json:"dataFormat"`
+}
+
 // Capability declares what this module knows how to do and the types of data it knows how to handle
-type Capability struct {
+type ModuleCapability struct {
+
+	// Capability declares what this module knows how to do - ex: read, write, transform...
+	// +required
+	Capability CapabilityType `json:"capability"`
+
+	// Scope indicates at what level the capability is used: workload, asset, cluster
+	// If not indicated it is assumed to be asset
+	// +optional
+	Scope CapabilityScope `json:"scope"`
+
 	// Copy should have one or more instances in the list, and its content should have source and sink
 	// Read should have one or more instances in the list, each with source populated
 	// Write should have one or more instances in the list, each with sink populated
-	// TODO - In the future if we have a module type that doesn't interface directly with data then this list could be empty
-	// +required
-	// +kubebuilder:validation:Min=1
+	// This field may not be required if not handling data
+	// +optional
 	SupportedInterfaces []ModuleInOut `json:"supportedInterfaces"`
 
-	// API indicates to the application how to access/write the data
+	// API indicates to the application how to access the capabilities provided by the module
 	// +optional
 	API *ModuleAPI `json:"api,omitempty"`
 
 	// Actions are the data transformations that the module supports
 	// +optional
 	Actions []SupportedAction `json:"actions,omitempty"`
+
+	// Plugins enable the module to add libraries to perform actions rather than implementing them by itself
+	Plugins []Plugin `json:"plugins,omitempty"`
 }
 
 // ResourceStatusIndicator is used to determine the status of an orchestrated resource
@@ -138,17 +180,31 @@ type ResourceStatusIndicator struct {
 // which are one of the components that process, load, write, audit, monitor the data used by
 // the data scientist's application.
 type FybrikModuleSpec struct {
-	// Flows is a list of the types of capabilities supported by the module - copy, read, write
+	// An explanation of what this module does
+	// +optional
+	Description string `json:"description"`
+
+	// May be one of service, config or plugin
+	// Service: Means that the control plane deploys the component that performs the capability
+	// Config: Another pre-installed service performs the capability and the module deployed configures it for the particular workload or dataset
+	// Plugin: Indicates that this module performs a capability as part of another service or module rather than as a stand-alone module
 	// +required
-	Flows []ModuleFlow `json:"flows"`
+	Type string `json:"type"`
+
+	// Plugin type indicates the plugin technology used to invoke the capabilities
+	// Ex: vault, fybrik-wasm...
+	// Should be provided if type is plugin
+	// +optional
+	PluginType string `json:"pluginType"`
 
 	// Other components that must be installed in order for this module to work
 	// +optional
 	Dependencies []Dependency `json:"dependencies,omitempty"`
 
 	// Capabilities declares what this module knows how to do and the types of data it knows how to handle
+	// The key to the map is a CapabilityType string
 	// +required
-	Capabilities Capability `json:"capabilities"`
+	Capabilities []ModuleCapability `json:"capabilities"`
 
 	// Reference to a Helm chart that allows deployment of the resources required for this module
 	// +required

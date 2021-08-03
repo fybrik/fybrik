@@ -156,12 +156,17 @@ func SupportsInterface(array []*app.InterfaceDetails, element *app.InterfaceDeta
 	return false
 }
 
-// SupportsFlow checks whether the given flow element can be found inside the array of flows
-func SupportsFlow(array []app.ModuleFlow, element app.ModuleFlow) bool {
-	for _, flow := range array {
-		if flow == element {
-			return true
+// GetModuleCapabilities checks if the requested capability is supported by the module.  If so it returns
+// the ModuleCapability structure.  There could be more than one, since multiple structures could exist with
+// the same CapabilityType but different protocols, dataformats and/or actions.
+func GetModuleCapabilities(module *app.FybrikModule, requestedCapability app.CapabilityType) (bool, []app.ModuleCapability) {
+	capList := []app.ModuleCapability{}
+	capFound := false
+	for _, cap := range module.Spec.Capabilities {
+		if cap.Capability == requestedCapability {
+			capList = append(capList, cap)
+			capFound = true
 		}
 	}
-	return false
+	return capFound, capList
 }

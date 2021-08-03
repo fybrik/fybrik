@@ -49,7 +49,7 @@ Future (ingest & write) order of the lookup to support ingest is:
 - If no label selector assume ingest of external data (what about archive in future?)
 	- run Copy module close to destination (determined based on governance decisions)
 	- and register new data set in data catalog
-- If Data Context Flow=Write
+- If Data Context Capability=Write
    - Write is always required, and always close to compute
    - Implicit Copy is used on demand, e.g. if a write module does not support the existing source of data or governance actions
    - Transformations are always done at workload location
@@ -141,7 +141,7 @@ func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.
 	}
 	// select a read module that supports user interface requirements
 	// actions are not checked since they are not necessarily done by the read module
-	readSelector := &modules.Selector{Flow: app.Read,
+	readSelector := &modules.Selector{Capability: app.Read,
 		Destination:  &item.Context.Requirements.Interface,
 		Actions:      []*pb.EnforcementAction{},
 		Source:       nil,
@@ -188,7 +188,7 @@ func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.
 	// select a module that supports COPY, supports required governance actions, has the required dependencies, with source in module sources and a non-empty intersection between requested and supported interfaces.
 	for _, copyDest := range interfaces {
 		copySelector = &modules.Selector{
-			Flow:         app.Copy,
+			Capability:   app.Copy,
 			Source:       &item.DataDetails.Interface,
 			Actions:      actionsOnCopy,
 			Destination:  copyDest,
@@ -324,11 +324,15 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 // GetSupportedReadSources returns a list of supported READ interfaces of a module
 func GetSupportedReadSources(module *app.FybrikModule) []*app.InterfaceDetails {
 	var list []*app.InterfaceDetails
-	for _, inter := range module.Spec.Capabilities.SupportedInterfaces {
-		if inter.Flow != app.Read {
-			continue
+
+	// Check if the module supports READ
+	if hasCapability, caps := utils.GetModuleCapabilities(module, app.Read); hasCapability {
+		for _, cap := range caps {
+			// Collect the interface sources
+			for _, inter := range cap.SupportedInterfaces {
+				list = append(list, inter.Source)
+			}
 		}
-		list = append(list, inter.Source)
 	}
 	return list
 }

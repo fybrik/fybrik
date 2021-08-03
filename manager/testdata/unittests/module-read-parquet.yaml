@@ -10,19 +10,16 @@ spec:
   chart:
     name: localhost:5000/fybrik-system/fybrik-template:0.1.0
   type: service
-  flows:
-    - read
   capabilities:
-    api:
-      protocol: fybrik-arrow-flight
-      dataformat: arrow
-      endpoint:
-        hostname: read-path
-        port: 80
-        scheme: grpc
-    supportedInterfaces:
-    - flow: read
-      source:
-        protocol: s3
-        dataformat: parquet
-
+    - capability: read
+      api:
+        protocol: fybrik-arrow-flight
+        dataformat: arrow
+        endpoint:
+          hostname: read-path
+          port: 80
+          scheme: grpc
+      supportedInterfaces:
+      - source:
+          protocol: s3
+          dataformat: parquet

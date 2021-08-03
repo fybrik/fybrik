@@ -8,17 +8,16 @@ metadata:
   name: implicit-copy-batch-db2
   namespace: fybrik-system
 spec:
-  flows:  # one or more of copy, read, write 
-  - copy  
+  type: service
   capabilities:
-    supportedInterfaces:
-    - flow: copy
-      source:
-        protocol: jdbc-db2
-        dataformat: table
-      sink:
-        protocol: s3
-        dataformat: parquet
+    - capability: copy
+      supportedInterfaces:
+      - source:
+          protocol: jdbc-db2
+          dataformat: table
+        sink:
+          protocol: s3
+          dataformat: parquet
   chart:
     name: ghcr.io/fybrik/fybrik-implicit-copy-batch:0.1.0
   statusIndicators:

@@ -241,13 +241,22 @@ func setReadModulesEndpoints(applicationContext *app.FybrikApplication, blueprin
 				foundReadEndpoints = true
 				releaseName := utils.GetReleaseName(applicationContext.ObjectMeta.Name, applicationContext.ObjectMeta.Namespace, step)
 				moduleName := step.Template
-				originalEndpointSpec := moduleMap[moduleName].Spec.Capabilities.API.Endpoint
-				fqdn := utils.GenerateModuleEndpointFQDN(releaseName, BlueprintNamespace)
-				for _, arg := range step.Arguments.Read {
-					applicationContext.Status.ReadEndpointsMap[arg.AssetID] = app.EndpointSpec{
-						Hostname: fqdn,
-						Port:     originalEndpointSpec.Port,
-						Scheme:   originalEndpointSpec.Scheme,
+
+				// Find the read capability section in the module
+				// TODO: What if there are more than one read capability sections?  How do we know which endpoint
+				// to choose?  They could in theory be different, although that's not likely
+				// Currently the last one on the list is used.
+				if hasRead, caps := utils.GetModuleCapabilities(moduleMap[moduleName], app.Read); hasRead {
+					for _, cap := range caps {
+						originalEndpointSpec := cap.API.Endpoint
+						fqdn := utils.GenerateModuleEndpointFQDN(releaseName, BlueprintNamespace)
+						for _, arg := range step.Arguments.Read {
+							applicationContext.Status.ReadEndpointsMap[arg.AssetID] = app.EndpointSpec{
+								Hostname: fqdn,
+								Port:     originalEndpointSpec.Port,
+								Scheme:   originalEndpointSpec.Scheme,
+							}
+						}
 					}
 				}
 			}

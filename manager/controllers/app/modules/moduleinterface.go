@@ -51,7 +51,7 @@ type Selector struct {
 	Module       *app.FybrikModule
 	Dependencies []*app.FybrikModule
 	Message      string
-	Flow         app.ModuleFlow
+	Capability   app.CapabilityType
 	Source       *app.InterfaceDetails
 	Destination  *app.InterfaceDetails
 	// Actions that the module will perform
@@ -61,6 +61,8 @@ type Selector struct {
 }
 
 // TODO: Add function to check if module supports recurrence type
+// TODO: In the future add support for plugins
+// TODO: Add support for scope
 
 // GetModule returns the selected module
 func (m *Selector) GetModule() *app.FybrikModule {
@@ -98,35 +100,33 @@ func (m *Selector) AddModuleInstances(args *app.ModuleArguments, item DataInfo, 
 	return instances
 }
 
-// SupportsGovernanceActions checks whether the module supports the required agovernance actions
+// SupportsGovernanceActions checks whether the module supports the required agovernance actions for the capability requested
 func (m *Selector) SupportsGovernanceActions(module *app.FybrikModule, actions []*pb.EnforcementAction) bool {
-	// Check that the governance actions match
+	// Loop over the actions requested for the declared capability
 	for _, action := range actions {
-		supportsAction := false
-		for j := range module.Spec.Capabilities.Actions {
-			transformation := &module.Spec.Capabilities.Actions[j]
-			if transformation.ID == action.Id && transformation.Level == action.Level {
-				supportsAction = true
-				break
-			}
-		}
-		if !supportsAction {
+		// If any one of the actions is not supported, return false
+		if !m.SupportsGovernanceAction(module, action) {
 			return false
 		}
 	}
-	return true
+	return true // All actions supported
 }
 
-// SupportsGovernanceAction checks whether the module supports the required agovernance action
+// SupportsGovernanceAction checks whether the module supports the required governance action
 func (m *Selector) SupportsGovernanceAction(module *app.FybrikModule, action *pb.EnforcementAction) bool {
-	// Check that the governance actions match
-	for j := range module.Spec.Capabilities.Actions {
-		transformation := &module.Spec.Capabilities.Actions[j]
-		if transformation.ID == action.Id && transformation.Level == action.Level {
-			return true
+	// Check if the module supports the capability
+	if hasCapability, caps := utils.GetModuleCapabilities(module, m.Capability); hasCapability {
+		// There could be multiple structures for the same CapabilityType
+		for _, cap := range caps {
+			// Loop over the data transforms (actions) performed by the module for this capability
+			for _, act := range cap.Actions {
+				if act.ID == action.Id && act.Level == action.Level {
+					return true
+				}
+			}
 		}
 	}
-	return false
+	return false // Action not supported by module
 }
 
 // SupportsDependencies checks whether the module supports the dependency requirements
@@ -150,27 +150,31 @@ func (m *Selector) SupportsDependencies(module *app.FybrikModule, moduleMap map[
 
 // SupportsInterface indicates whether the module supports interface requirements and dependencies
 func (m *Selector) SupportsInterface(module *app.FybrikModule) bool {
-	// Check if the module supports the flow
-	if !utils.SupportsFlow(module.Spec.Flows, m.Flow) {
-		return false
-	}
-	// Check if the source and sink protocols requested are supported
 	supportsInterface := false
-	if m.Flow == app.Read {
-		supportsInterface = module.Spec.Capabilities.API.DataFormat == m.Destination.DataFormat && module.Spec.Capabilities.API.Protocol == m.Destination.Protocol
-	} else if m.Flow == app.Copy {
-		for _, inter := range module.Spec.Capabilities.SupportedInterfaces {
-			if inter.Flow != m.Flow {
-				continue
+
+	// Check if the module supports the capability
+	if hasCapability, caps := utils.GetModuleCapabilities(module, m.Capability); hasCapability {
+		// There could be multiple structures for the same CapabilityType
+		for _, cap := range caps {
+			// Check if the source and sink protocols requested are supported
+
+			if m.Capability == app.Read {
+				supportsInterface = cap.API.DataFormat == m.Destination.DataFormat && cap.API.Protocol == m.Destination.Protocol
+				if supportsInterface {
+					return true
+				}
+			} else if m.Capability == app.Copy {
+				for _, inter := range cap.SupportedInterfaces {
+					if inter.Source.DataFormat != m.Source.DataFormat || inter.Source.Protocol != m.Source.Protocol {
+						continue
+					}
+					if inter.Sink.DataFormat != m.Destination.DataFormat || inter.Sink.Protocol != m.Destination.Protocol {
+						continue
+					}
+					supportsInterface = true
+					break
+				}
 			}
-			if inter.Source.DataFormat != m.Source.DataFormat || inter.Source.Protocol != m.Source.Protocol {
-				continue
-			}
-			if inter.Sink.DataFormat != m.Destination.DataFormat || inter.Sink.Protocol != m.Destination.Protocol {
-				continue
-			}
-			supportsInterface = true
-			break
 		}
 	}
 	return supportsInterface
@@ -191,7 +195,7 @@ func (m *Selector) SelectModule(moduleMap map[string]*app.FybrikModule) bool {
 		}
 		return true
 	}
-	m.Message += string(m.Flow) + " : " + app.ModuleNotFound
+	m.Message += string(m.Capability) + " : " + app.ModuleNotFound
 	return false
 }
 
@@ -223,9 +227,9 @@ func CheckDependencies(module *app.FybrikModule, moduleMap map[string]*app.Fybri
 // Write is done at target
 func (m *Selector) SelectCluster(item DataInfo, clusters []multicluster.Cluster) (string, error) {
 	geo := item.DataDetails.Geography
-	if m.Flow == app.Read {
+	if m.Capability == app.Read {
 		geo = m.Geo
-	} else if m.Flow == app.Copy && len(m.Actions) == 0 {
+	} else if m.Capability == app.Copy && len(m.Actions) == 0 {
 		geo = m.Geo
 	}
 	for _, cluster := range clusters {

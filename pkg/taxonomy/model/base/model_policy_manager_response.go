@@ -16,8 +16,8 @@ import (
 
 // PolicyManagerResponse struct for PolicyManagerResponse
 type PolicyManagerResponse struct {
-	DecisionId *string `json:"decision_id,omitempty"`
-	Result []ResultItem `json:"result"`
+	DecisionId *string      `json:"decision_id,omitempty"`
+	Result     []ResultItem `json:"result"`
 }
 
 // NewPolicyManagerResponse instantiates a new PolicyManagerResponse object
@@ -83,7 +83,7 @@ func (o *PolicyManagerResponse) GetResult() []ResultItem {
 // GetResultOk returns a tuple with the Result field value
 // and a boolean to check if the value has been set.
 func (o *PolicyManagerResponse) GetResultOk() (*[]ResultItem, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Result, true
@@ -140,5 +140,3 @@ func (v *NullablePolicyManagerResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

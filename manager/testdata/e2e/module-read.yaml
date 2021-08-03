@@ -7,30 +7,27 @@ metadata:
   name: read-module-test-e2e
   namespace: fybrik-system
 spec:
+  type: service
   chart:
     name: localhost:5000/fybrik-system/fybrik-template:0.1.0
-  flows:
-    - read
   capabilities:
-    api:
-      protocol: fybrik-arrow-flight
-      dataformat: arrow
-      endpoint:
-        port: 80
-        scheme: grpc
-    supportedInterfaces:
-    - flow: read
-      source:
-        protocol: s3
-        dataformat: parquet
-    - flow: read
-      source:
-        protocol: s3
-        dataformat: csv
-    actions:
+    - capability: read
+      scope: workload
+      api:
+        protocol: fybrik-arrow-flight
+        dataformat: arrow
+        endpoint:
+          port: 80
+          scheme: grpc
+      supportedInterfaces:
+      - source:
+          protocol: s3
+          dataformat: parquet
+      - source:
+          protocol: s3
+          dataformat: csv
+      actions:
       - id: redact-ID
         level: 2  # column
       - id: removed-ID
         level: 2  # column
-
-
