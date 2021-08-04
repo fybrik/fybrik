@@ -12,44 +12,43 @@ spec:
         app: demoapp
   modules:
   - name: app1-ns1-copy
+    type: service
     chart:
       name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
-    source:
-      assetId: "m4d-notebook-sample/paysim"
-      credentials:
-        read:
+    arguments:
+      copy:
+        source:
+          assetId: "m4d-notebook-sample/paysim"
           vault:
             address: http://vault.m4d-system:8200
             authPath: /v1/auth/kubernetes/login
             role: module
             secretPath: /v1/kubernetes-secrets/paysim?namespace=m4d-notebook-sample
-      connection:
-        s3:
-          endpoint: localhost:8001
-          bucket: srcbucket
-          object: paysim.csv
-      dataformat: csv
-    sink: 
-      assetId: "m4d-notebook-sample/paysim-temp"
-      cluster: cluster2    # included when different than the cluster in which the current blueprint runs
-      credentials:
-        write:
+          connection:
+            s3:
+              endpoint: localhost:8001
+              bucket: srcbucket
+              object: paysim.csv
+          dataformat: csv
+        destination: 
+          assetId: "m4d-notebook-sample/paysim-temp"
+          cluster: cluster2    # included when different than the cluster in which the current blueprint runs
           vault:
             address: http://vault.m4d-system:8200
             authPath: /v1/auth/kubernetes/login
             role: module
             secretPath: /v1/kubernetes-secrets/paysim-temp?namespace=m4d-notebook-sample
-      connection:
-        s3:
-          endpoint: localhost:8001
-          bucket: destbucket
-          object: paysim-temp.parquet
-      dataformat: parquet
-    actions:
-      - action: redact
-        column: C
-      - action: redact
-        column: D
+          connection:
+            s3:
+              endpoint: localhost:8001
+              bucket: destbucket
+              object: paysim-temp.parquet
+          dataformat: parquet
+        actions:
+          - action: redact
+            column: C
+          - action: redact
+            column: D
 status:
   observedState: Not Ready
   observedGeneration: 1

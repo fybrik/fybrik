@@ -14,84 +14,84 @@ spec:
   - name: app1-ns1-read
     chart:
       name: ghcr.io/mesh-for-data/read-module:0.1.0
-    api:
-      service:
+    apis:
+    - capability: read
+      api:
+        service:
         interfaceDetails:
           protocol: arrow-flight
           dataformat: arrow
-    assets:
-    - assetId: "m4d-notebook-sample/paysim"
-      credentials:
-        read:
-          vault:
+    arguments:
+      read:
+        - assetId: "m4d-notebook-sample/paysim"
+          vault:  
             address: http://vault.m4d-system:8200
             authPath: /v1/auth/kubernetes/login
             role: module
             secretPath: /v1/kubernetes-secrets/paysim?namespace=m4d-notebook-sample
-      connection:
-        s3:
-          endpoint: localhost:8001
-          bucket: srcbucket
-          object: paysim.parq
-      dataformat: parquet
-    - assetId: "m4d-notebook-sample/users"
-      credentials:
-        read:
+          connection:
+            s3:
+              endpoint: localhost:8001
+              bucket: srcbucket
+              object: paysim.parq
+          dataformat: parquet
+        - assetId: "m4d-notebook-sample/users"
           vault:
             address: http://vault.m4d-system:8200
             authPath: /v1/auth/kubernetes/login
             role: module
             secretPath: /v1/kubernetes-secrets/users?namespace=m4d-notebook-sample
-      connection:
-        s3:
-          endpoint: localhost:8001
-          bucket: srcbucket
-          object: users.parq
-      dataformat: parquet
-    - assetId: "m4d-notebook-sample/inventory"
-      credentials:
-        read:
+          connection:
+            s3:
+              endpoint: localhost:8001
+              bucket: srcbucket
+              object: users.parq
+          dataformat: parquet
+        - assetId: "m4d-notebook-sample/inventory"
           vault:
             address: http://vault.m4d-system:8200
             authPath: /v1/auth/kubernetes/login
             role: module
             secretPath: /v1/kubernetes-secrets/inventory?namespace=m4d-notebook-sample
-      connection:
-        s3:
-          endpoint: localhost:8001
-          bucket: srcbucket
-          object: inventory.parq
-      dataformat: parquet
+          connection:
+            s3:
+              endpoint: localhost:8001
+              bucket: srcbucket
+              object: inventory.parq
+          dataformat: parquet
   - name: transform-step-paysim
     chart:
       name: ghcr.io/mesh-for-data/m4d-arrow-flight-transform-conf:0.1.0
     serviceModule: app1-ns1-read # name of service to be configured
-    assets:
-    - assetId: "m4d-notebook-sample/paysim"
-      actions:
-      - action: redact
-        column: field1
-      dataformat: arrow
+    arguments:
+      read:
+        - assetId: "m4d-notebook-sample/paysim"
+          actions:
+          - action: redact
+            column: field1
+          dataformat: arrow
   - name: transform-step-users
     chart:
       name: ghcr.io/mesh-for-data/m4d-arrow-flight-transform-conf:0.1.0
     serviceModule: app1-ns1-read # name of service to be configured
-    assets:
-    - assetId: "m4d-notebook-sample/users"
-      actions:
-      - action: redact
-        column: blood_group
-      dataformat: arrow
+    arguments:
+      read:
+        - assetId: "m4d-notebook-sample/users"
+          actions:
+          - action: redact
+            column: blood_group
+          dataformat: arrow
   - name: transform-step-inventory
     chart:
       name: ghcr.io/mesh-for-data/m4d-arrow-flight-transform-conf:0.1.0
     serviceModule: app1-ns1-read # name of service to be configured
-    assets:
-    - assetId: "m4d-notebook-sample/inventory"
-      actions:
-      - action: redact
-        column: field2
-      dataformat: arrow
+    arguments:
+      read:      
+        - assetId: "m4d-notebook-sample/inventory"
+          actions:
+          - action: redact
+            column: field2
+          dataformat: arrow
 status:
   observedState: Not Ready
   observedGeneration: 1

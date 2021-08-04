@@ -15,49 +15,53 @@ spec:
   - name: app1-ns1-write
     chart:
       name: ghcr.io/mesh-for-data/write-module:0.1.0
-    api:
-      service:
-        interfaceDetails:
-          protocol: arrow-flight
-          dataformat: arrow
-    assets:
-    - assetId: "paysim-processed"   
-      credentials:
-        write:
+    apis:
+    - capability: write
+      api:
+        service:
+          interfaceDetails:
+            protocol: arrow-flight
+            dataformat: arrow
+    arguments:
+      write:
+        - assetId: "paysim-processed"   
           vault:
             address: http://vault.m4d-system:8200
             authPath: /v1/auth/kubernetes/login
             role: module
             secretPath: /v1/kubernetes-secrets/paysim?namespace=m4d-notebook-sample
-      connection:
-        s3:
-          endpoint: localhost:8001
-          bucket: srcbucket
-          object: paysim-processed.parq
-      dataformat: parquet
-    - assetId: "paysim-processed"  
-      connection:
-        arrow-flight:
-          assetId: "paysim-processed"
-          endpoint: "app1-ns1-data-quality"
+          connection:
+            s3:
+              endpoint: localhost:8001
+              bucket: srcbucket
+              object: paysim-processed.parq
+          dataformat: parquet
+        - assetId: "paysim-processed"  
+          connection:
+            arrow-flight:
+              assetId: "paysim-processed"
+              endpoint: "app1-ns1-data-quality"
   - name: app1-ns1-data-quality
     chart:
       name: ghcr.io/mesh-for-data/data-quality:0.1.0
-    assets:
-    - assetId: "paysim-processed"
-      api:
-        service:
-          assetId: "paysim-processed"
-          interfaceDetails:
-            protocol: arrow-flight
-            dataformat: arrow
+    arguments:
+      read:
+        - assetId: "paysim-processed"
+          api:
+            service:
+              assetId: "paysim-processed"
+              interfaceDetails:
+                protocol: arrow-flight
+                dataformat: arrow
   - name: app1-ns1-prometheus-client
     chart: 
       name: ghcr.io/mesh-for-data/prometheus-client:0.1.0
-    connection:
-      endpoint: "some-metrics-system:80"
-      protocol: "https"
-      dataformat: "json"    
+    arguments:
+      write:
+        connection:
+          endpoint: "some-metrics-system:80"
+          protocol: "https"
+          dataformat: "json"    
 status:
   observedState: Not Ready
   observedGeneration: 1
