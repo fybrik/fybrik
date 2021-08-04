@@ -28,7 +28,7 @@ func TestValidApplication(t *testing.T) {
 		fmt.Printf("err: %v\n", err)
 		return
 	}
-	taxonomyFile := "../../../../charts/fybrik/files/taxonomy/application.values.schema.json"
+	taxonomyFile := "../../../../charts/fybrik/files/taxonomy/fybrik_application.json"
 	validateErr := fybrikApp.ValidateFybrikApplication(taxonomyFile)
 	assert.Nil(t, validateErr, "No error should be found")
 }
@@ -50,7 +50,7 @@ func TestInvalidAppInfo(t *testing.T) {
 		return
 	}
 
-	taxonomyFile := "../../../../charts/fybrik/files/taxonomy/application.values.schema.json"
+	taxonomyFile := "../../../../charts/fybrik/files/taxonomy/fybrik_application.json"
 	validateErr := (*fybrikApp).ValidateFybrikApplication(taxonomyFile)
 	assert.NotNil(t, validateErr, "Invalid appInfo error should be found")
 }
@@ -72,7 +72,7 @@ func TestInvalidInterface(t *testing.T) {
 		return
 	}
 
-	taxonomyFile := "../../../../charts/fybrik/files/taxonomy/application.values.schema.json"
+	taxonomyFile := "../../../../charts/fybrik/files/taxonomy/fybrik_application.json"
 	validateErr := (*fybrikApp).ValidateFybrikApplication(taxonomyFile)
 	assert.NotNil(t, validateErr, "Invalid interface error should be found")
 }
