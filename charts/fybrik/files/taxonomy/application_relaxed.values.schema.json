@@ -1,21 +1,13 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "$id": "application.values.schema.json",
-    "title": "Application Values Taxonomy",
+    "title": "Application Values Relaxed Taxonomy",
     "type": "object",
     "description": "Values contributed to by Fybrik applications.",
     "properties": {
         "spec": {
             "type": "object",
             "properties": {
-                "appInfo": {
-                    "type": "object",
-                    "properties": {
-                        "intent": { "$ref": "policymanager.values.schema.json#/definitions/intent"},
-                        "role": { "$ref": "policymanager.values.schema.json#/definitions/role"}
-                    },
-                    "required": ["intent", "role"]
-                },
                 "data": {
                     "type": "array",
                     "items": {
@@ -33,7 +25,7 @@
                     }
                 }
             },
-            "required": ["appInfo", "data"]
+            "required": ["data"]
         }
     },
     "required": ["spec"]

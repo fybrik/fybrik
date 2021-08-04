@@ -15,7 +15,8 @@ spec:
       matchLabels:
         app: notebook
   appInfo:
-    intent: fraud-detection
+    intent: Fraud Detection
+    role: Security
   data:
     - dataSetID: 's3/redact-dataset'
       requirements:
