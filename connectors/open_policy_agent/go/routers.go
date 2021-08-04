@@ -1,5 +1,5 @@
 // Copyright 2021 IBM Corp.
-// SPDX-License-Identifier: Apache-2.
+// SPDX-License-Identifier: Apache-2.0
 
 /*
  * Policy Manager Service

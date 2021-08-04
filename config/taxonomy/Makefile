@@ -3,7 +3,7 @@ include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 
 .DEFAULT_GOAL := all
-all: clean objects/taxonomy.json generate-base generate-server
+all: clean objects/taxonomy.json generate-base generate-client
 
 objects/taxonomy.json:
 	go run $(ROOT_DIR)/main.go taxonomy compile --base ./base/base.yaml --out ./objects/taxonomy.json
@@ -37,14 +37,15 @@ generate-server: $(TOOLBIN)/openapi-generator-cli objects/taxonomy.json
 		--additional-properties=packageName=openapiserver,serverPort=8081,sourceFolder=openapiserver \
 		--global-property=apis,supportingFiles -o $(ROOT_DIR)/connectors/open_policy_agent \
 		-i codegen.spec.yaml
-	rm -f $(ROOT_DIR)/connectors/open_policy_agent/go.mod 
+	rm -f $(ROOT_DIR)/connectors/open_policy_agent/go.mod $(ROOT_DIR)/connectors/open_policy_agent/.openapi-generator-ignore  
+	rm -f $(ROOT_DIR)/connectors/open_policy_agent/Dockerfile $(ROOT_DIR)/connectors/open_policy_agent/go/README.md 
 	rm -r $(ROOT_DIR)/connectors/open_policy_agent/api $(ROOT_DIR)/connectors/open_policy_agent/.openapi-generator
 
 .PHONY: clean
 clean:
 	rm -f objects/taxonomy.json
 	rm -rf $(ROOT_DIR)/pkg/taxonomy/model/base
-	
+	rm -rf $(ROOT_DIR)/pkg/connectors/openapiclient
 	mkdir -p $(ROOT_DIR)/connectors/tmp
 	cp  $(ROOT_DIR)/connectors/open_policy_agent/go/model.go  $(ROOT_DIR)/connectors/tmp
 	rm -rf $(ROOT_DIR)/connectors/open_policy_agent
