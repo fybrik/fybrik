@@ -12,14 +12,35 @@
         "name"
       ]
     },
+    "AppInfo": {
+      "type": "object"
+    },
+    "Dataformat": {
+      "type": "string"
+    },
     "DatasetID": {
       "type": "string"
+    },
+    "Interface": {
+      "type": "object",
+      "properties": {
+        "dataformat": {
+          "$ref": "#/definitions/Dataformat"
+        },
+        "protocol": {
+          "$ref": "#/definitions/Protocol"
+        }
+      },
+      "additionalProperties": false
     },
     "PolicyManagerRequestContext": {
       "type": "object",
       "additionalProperties": true
     },
     "ProcessingLocation": {
+      "type": "string"
+    },
+    "Protocol": {
       "type": "string"
     },
     "Tags": {

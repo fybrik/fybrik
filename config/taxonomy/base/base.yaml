@@ -17,3 +17,17 @@ definitions:
     type: string
   ProcessingLocation:
     type: string
+  AppInfo:
+    type: object
+  Protocol:
+    type: string
+  Dataformat:
+    type: string
+  Interface:
+    type: object
+    properties:
+      protocol:
+        $ref: "#/definitions/Protocol"
+      dataformat:
+        $ref: "#/definitions/Dataformat"
+    additionalProperties: false
