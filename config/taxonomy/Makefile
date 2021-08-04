@@ -9,6 +9,7 @@ objects/taxonomy.json:
 	go run $(ROOT_DIR)/main.go taxonomy compile --base ./base/base.yaml --out ./objects/taxonomy.json
 	go run $(ROOT_DIR)/main.go taxonomy validate ./objects/policy_manager_request.json
 	go run $(ROOT_DIR)/main.go taxonomy validate ./objects/policy_manager_response.json
+	go run $(ROOT_DIR)/main.go taxonomy validate ./objects/fybrik_application.json
 
 .PHONY: generate-base
 generate-base: $(TOOLBIN)/openapi-generator-cli objects/taxonomy.json
