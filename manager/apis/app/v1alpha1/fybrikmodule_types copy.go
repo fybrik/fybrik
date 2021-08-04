@@ -3,11 +3,7 @@
 
 package v1alpha1
 
-import (
-	connectors "fybrik.io/fybrik/pkg/connectors/protobuf"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
-
+/*
 // CapabilityScope indicates the level at which a capability is implemented
 // +kubebuilder:validation:Enum=asset;workload;cluster
 type CapabilityScope string
@@ -40,10 +36,11 @@ const (
 )
 
 // ModuleCapability indicates at a high level what is being performed - often on a datset, but potentially other things as well
-// +kubebuilder:validation:Enum=copy;read;write;transform
+// +kubebuilder:validation:Enum=copy;read;write;delete;transform
 type CapabilityType string
 
-// TODO - Should these come from the taxonomy?
+// TODO - The taxonomy should have a minimum of read, write, delete (future) whose values must match the DataFlow values defined in datacatalog_types.go
+// Additional values can be added based on module capabilities.
 const (
 	// Copy moves data from one location to another - i.e implicit copy
 	Copy CapabilityType = "copy"
@@ -53,6 +50,8 @@ const (
 
 	// Read is accessed from within an application, typically through an SDK
 	Read CapabilityType = "read"
+
+	Delete CapabilityType = "delete"
 
 	// Transform processes and changes data
 	Transform CapabilityType = "transform"
@@ -152,7 +151,6 @@ type ModuleCapability struct {
 	Actions []SupportedAction `json:"actions,omitempty"`
 
 	// Plugins enable the module to add libraries to perform actions rather than implementing them by itself
-	// +optional
 	Plugins []Plugin `json:"plugins,omitempty"`
 }
 
@@ -255,3 +253,4 @@ type FybrikModuleList struct {
 func init() {
 	SchemeBuilder.Register(&FybrikModule{}, &FybrikModuleList{})
 }
+*/

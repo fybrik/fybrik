@@ -235,12 +235,12 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 func setReadModulesEndpoints(applicationContext *app.FybrikApplication, blueprintsMap map[string]app.BlueprintSpec, moduleMap map[string]*app.FybrikModule) {
 	var foundReadEndpoints = false
 	for _, blueprintSpec := range blueprintsMap {
-		for _, step := range blueprintSpec.Flow.Steps {
-			if step.Arguments.Read != nil {
+		for _, module := range blueprintSpec.Modules {
+			if module.Arguments.Read != nil {
 				// We found a read module
 				foundReadEndpoints = true
-				releaseName := utils.GetReleaseName(applicationContext.ObjectMeta.Name, applicationContext.ObjectMeta.Namespace, step)
-				moduleName := step.Template
+				releaseName := utils.GetReleaseName(applicationContext.ObjectMeta.Name, applicationContext.ObjectMeta.Namespace, module)
+				moduleName := module.Name
 
 				// Find the read capability section in the module
 				// TODO: What if there are more than one read capability sections?  How do we know which endpoint
@@ -250,7 +250,7 @@ func setReadModulesEndpoints(applicationContext *app.FybrikApplication, blueprin
 					for _, cap := range caps {
 						originalEndpointSpec := cap.API.Endpoint
 						fqdn := utils.GenerateModuleEndpointFQDN(releaseName, BlueprintNamespace)
-						for _, arg := range step.Arguments.Read {
+						for _, arg := range module.Arguments.Read {
 							applicationContext.Status.ReadEndpointsMap[arg.AssetID] = app.EndpointSpec{
 								Hostname: fqdn,
 								Port:     originalEndpointSpec.Port,
@@ -261,6 +261,7 @@ func setReadModulesEndpoints(applicationContext *app.FybrikApplication, blueprin
 				}
 			}
 		}
+
 		// We found a blueprint with read modules
 		if foundReadEndpoints {
 			return

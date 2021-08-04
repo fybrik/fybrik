@@ -69,71 +69,60 @@ type ModuleArguments struct {
 	Write []WriteModuleArgs `json:"write,omitempty"`
 }
 
-// FlowStep is one step indicates an instance of a module in the blueprint,
-// It includes the name of the module template (spec) and the parameters received by the component instance
-// that is initiated by the orchestrator.
-type FlowStep struct {
+// CapabilityAPI enables the separation of APIs by capability, since a single module may
+// be able to perform multiple capabilities. (ex: read, write, ...).
+// Future: Capabilities are defined in the taxonomy.
+type CapabilityAPI struct {
+	// Capability indicates the capability associated with the arguments and API (ex: read, write, ...)
+	// +required
+	Capability string `json:"capability"`
 
-	// Name is the name of the instance of the module.
-	// For example, if the application is named "notebook" and an implicitcopy
-	// module is deemed necessary.  The FlowStep name would be notebook-implicitcopy.
+	// API indicates to the application how to access the module for the given capability
+	// +required
+	API ModuleAPI `json:"api,omitempty"`
+}
+
+// BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the information necessary
+// to instantiate a datapath component, including the parameters relevant for the particular workload.
+type BlueprintModule struct {
+	// Name of the fybrikmodule on which this is based
 	// +required
 	Name string `json:"name"`
 
+	// InstanceName is the unique name for the deployed instance related to this workload
 	// +required
-	// Template is the name of the specification in the Blueprint describing how to instantiate
-	// a component indicated by the module.  It is the name of a FybrikModule CRD.
-	// For example: implicit-copy-db2wh-to-s3-latest
-	Template string `json:"template"`
+	InstanceName string `json:"instanceName"`
+
+	// ServiceModule is the name of the service being configured by this module.
+	// Only used if this module is configuring another model rather than performing the function on its own
+	// +optional
+	ServiceModule string `json:"serviceModule"`
+
+	// Chart contains the location of the helm chart with info detailing how to deploy
+	// +required
+	Chart ChartSpec `json:"chart"`
+
+	// Arguments define the API used for external components and the workload to access a module's capabilities,
+	// and the parameters passed to it for a given workload.
+	// +optional
+	APIs []CapabilityAPI `json:"apis,omitempty"`
 
 	// Arguments are the input parameters for a specific instance of a module.
 	// +optional
 	Arguments ModuleArguments `json:"arguments,omitempty"`
 }
 
-// ComponentTemplate is a copy of a FybrikModule Custom Resource.  It contains the information necessary
-// to instantiate a component in a FlowStep, which provides the functionality described by the module.  There are 3 different module types.
-type ComponentTemplate struct {
-
-	// Name of the template
-	// +required
-	Name string `json:"name"`
-
-	// Kind of k8s resource
-	// +required
-	Kind string `json:"kind"`
-
-	// Chart contains the location of the helm chart with info detailing how to deploy
-	// +required
-	Chart ChartSpec `json:"chart"`
-}
-
-// DataFlow indicates the flow of the data between the components
-// Currently we assume this is linear and thus use steps, but other more complex graphs could be defined
-// as per how it is done in argo workflow
-type DataFlow struct {
-
-	// +required
-	Name string `json:"name"`
-
-	// +required
-	Steps []FlowStep `json:"steps"`
-}
-
-// BlueprintSpec defines the desired state of Blueprint, which is the runtime environment
-// which provides the Data Scientist's application with secure and governed access to the data requested in the
-// FybrikApplication.
-// The blueprint uses an "argo like" syntax which indicates the components and the flow of data between them as steps
-// TODO: Add an indication of the communication relationships between the components
+// BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path
+// that run in a particular cluster.  In a single cluster environment there is one blueprint.  In a multi-cluster
+// environment there is one Blueprint per cluster per workload (FybrikApplication).
 type BlueprintSpec struct {
+	// Cluster indicates the cluster on which the Blueprint runs
 	// +required
-	Entrypoint string `json:"entrypoint"`
+	Cluster string `json:"cluster"`
 
+	// Modules is a list of modules that indicate the data path components that run in this cluster
 	// +required
-	Flow DataFlow `json:"flow"`
-
-	// +required
-	Templates []ComponentTemplate `json:"templates"`
+	Modules []BlueprintModule `json:"modules"`
 }
 
 // BlueprintStatus defines the observed state of Blueprint

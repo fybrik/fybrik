@@ -3,19 +3,7 @@
 
 package utils
 
-import (
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"runtime"
-	"sort"
-
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	dc "fybrik.io/fybrik/pkg/connectors/protobuf"
-)
-
+/*
 // GetProtocol returns the existing data protocol
 func GetProtocol(info *dc.DatasetDetails) (string, error) {
 	switch info.DataStore.Type {
@@ -88,14 +76,14 @@ func CreateDataSetIdentifier(datasetID string) string {
 	return id[:len(id)-1]
 }
 
-// Generating release name based on blueprint module
+// Generating release name from step
 func GetReleaseName(applicationName string, namespace string, blueprintModule app.BlueprintModule) string {
-	return GetReleaseNameByStepName(applicationName, namespace, blueprintModule.InstanceName)
+	return GetReleaseNameByStepName(applicationName, namespace, blueprintModule.Name)
 }
 
-// Generate release name from blueprint module name
-func GetReleaseNameByStepName(applicationName string, namespace string, moduleInstanceName string) string {
-	fullName := applicationName + "-" + namespace + "-" + moduleInstanceName
+// Generate release name from step name
+func GetReleaseNameByStepName(applicationName string, namespace string, moduleName string) string {
+	fullName := applicationName + "-" + namespace + "-" + moduleName
 	return HelmConformName(fullName)
 }
 
@@ -156,17 +144,13 @@ func SupportsInterface(array []*app.InterfaceDetails, element *app.InterfaceDeta
 	return false
 }
 
-// GetModuleCapabilities checks if the requested capability is supported by the module.  If so it returns
-// the ModuleCapability structure.  There could be more than one, since multiple structures could exist with
-// the same CapabilityType but different protocols, dataformats and/or actions.
-func GetModuleCapabilities(module *app.FybrikModule, requestedCapability app.CapabilityType) (bool, []app.ModuleCapability) {
-	capList := []app.ModuleCapability{}
-	capFound := false
-	for _, cap := range module.Spec.Capabilities {
-		if cap.Capability == requestedCapability {
-			capList = append(capList, cap)
-			capFound = true
+// SupportsCapability checks whether the given capability can be found inside the array of capabilities
+func SupportsCapability(array []app.CapabilityType, element app.CapabilityType) bool {
+	for _, cap := range array {
+		if cap == element {
+			return true
 		}
 	}
-	return capFound, capList
+	return false
 }
+*/

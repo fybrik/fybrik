@@ -84,6 +84,7 @@ spec:
                       - copy
                       - read
                       - write
+                      - delete
                       - transform
                       type: string
                     plugins:

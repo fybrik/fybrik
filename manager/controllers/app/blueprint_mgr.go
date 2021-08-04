@@ -10,16 +10,6 @@ import (
 	// Temporary - shouldn't have something specific to implicit copies
 )
 
-func containsTemplate(templateList []app.ComponentTemplate, moduleName string) bool {
-	for _, template := range templateList {
-		if template.Name == moduleName {
-			return true
-		}
-	}
-
-	return false
-}
-
 // RefineInstances collects all instances of the same read/write module and creates a new instance instead, with accumulated arguments.
 // Copy modules are left unchanged.
 func (r *FybrikApplicationReconciler) RefineInstances(instances []modules.ModuleInstanceSpec) []modules.ModuleInstanceSpec {
@@ -58,7 +48,7 @@ func (r *FybrikApplicationReconciler) GenerateBlueprints(instances []modules.Mod
 	for key, instanceList := range instanceMap {
 		// unite several instances of a read/write module
 		instances := r.RefineInstances(instanceList)
-		blueprintMap[key] = r.GenerateBlueprint(instances, appContext)
+		blueprintMap[key] = r.GenerateBlueprint(instances, appContext, key)
 	}
 	utils.PrintStructure(blueprintMap, r.Log, "BlueprintMap")
 	return blueprintMap
@@ -67,47 +57,24 @@ func (r *FybrikApplicationReconciler) GenerateBlueprints(instances []modules.Mod
 // GenerateBlueprint creates the Blueprint spec based on the datasets and the governance actions required, which dictate the modules that must run in the fybrik
 // Credentials for accessing data set are stored in a credential management system (such as vault) and the paths for accessing them are included in the blueprint.
 // The credentials themselves are not included in the blueprint.
-func (r *FybrikApplicationReconciler) GenerateBlueprint(instances []modules.ModuleInstanceSpec, appContext *app.FybrikApplication) app.BlueprintSpec {
+func (r *FybrikApplicationReconciler) GenerateBlueprint(instances []modules.ModuleInstanceSpec, appContext *app.FybrikApplication, clusterName string) app.BlueprintSpec {
 	var spec app.BlueprintSpec
 
-	// Entrypoint is always the name of the application
-	appName := appContext.GetName()
-	spec.Entrypoint = appName
-	r.Log.V(0).Info("\tappName: " + appName)
+	spec.Cluster = clusterName
 
-	// Define the flow structure, which indicates the flow of data between the components in the fybrik
-	// Loop over the list of modules and create a step for each
-	// Also create a template for each module specification - i.e. there could be multiple instances of a module, each with different arguments
-	var flow app.DataFlow
-	flow.Name = appName
-	var steps []app.FlowStep
-	var templates []app.ComponentTemplate
+	// Create the list of BlueprintModules
+	var blueprintModules []app.BlueprintModule
 	for _, moduleInstance := range instances {
 		modulename := moduleInstance.Module.GetName()
 
-		// Create a flow step
-		var step app.FlowStep
-		step.Name = utils.CreateStepName(modulename, moduleInstance.AssetID) // Need unique name for each step so include ids for dataset
-		step.Template = modulename
-
-		step.Arguments = *moduleInstance.Args
-
-		steps = append(steps, step)
-
-		// If one doesn't exist already, create a template
-		if !containsTemplate(templates, modulename) {
-			var template app.ComponentTemplate
-			template.Name = modulename
-			template.Kind = moduleInstance.Module.TypeMeta.Kind
-			template.Chart = moduleInstance.Module.Spec.Chart
-
-			templates = append(templates, template)
-		}
+		var blueprintModule app.BlueprintModule
+		blueprintModule.Name = modulename
+		blueprintModule.InstanceName = utils.CreateStepName(modulename, moduleInstance.AssetID) // Need unique name for each module so include ids for dataset
+		blueprintModule.Arguments = *moduleInstance.Args
+		blueprintModule.Chart = moduleInstance.Module.Spec.Chart
+		blueprintModules = append(blueprintModules, blueprintModule)
 	}
-	flow.Steps = steps
 
-	spec.Flow = flow
-	spec.Templates = templates
-
+	spec.Modules = blueprintModules
 	return spec
 }
