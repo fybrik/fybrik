@@ -1,4 +1,4 @@
-iinclude Makefile.env
+include Makefile.env
 export DOCKER_TAGNAME ?= latest
 export KUBE_NAMESPACE ?= fybrik-system
 
