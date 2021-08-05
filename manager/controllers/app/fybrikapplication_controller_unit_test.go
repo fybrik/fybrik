@@ -912,7 +912,6 @@ func TestFybrikApplicationWithInvalidInterface(t *testing.T) {
 		Name:      "application-with-errors-2",
 		Namespace: "default",
 	}
-
 	filename := "../../testdata/unittests/fybrikapplication-interfaceErrors.yaml"
 	fybrikApp := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
@@ -921,7 +920,6 @@ func TestFybrikApplicationWithInvalidInterface(t *testing.T) {
 	objs := []runtime.Object{
 		fybrikApp,
 	}
-
 	// Register operator types with the runtime scheme.
 	s := utils.NewScheme(g)
 
@@ -933,7 +931,6 @@ func TestFybrikApplicationWithInvalidInterface(t *testing.T) {
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
-
 	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
