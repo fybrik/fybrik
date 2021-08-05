@@ -13,12 +13,11 @@ include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/hack/make-rules/verify.mk
 
 pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
+	mkdir /tmp/taxonomy || true                                                                                                                          
+	cp ../charts/fybrik/files/taxonomy/*.json /tmp/taxonomy/
 
 # Run tests
 test: pre-test
-	mkdir /tmp/taxonomy || true
-	cp ../charts/fybrik/files/taxonomy/*.json /tmp/taxonomy/
-
 	go test ./... -coverprofile cover.out
 
 # Build manager binary
