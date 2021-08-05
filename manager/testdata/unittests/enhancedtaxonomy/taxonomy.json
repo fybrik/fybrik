@@ -1,0 +1,165 @@
+{
+  "definitions": {
+    "Action": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name"
+      ]
+    },
+    "AppInfo": {
+      "type": "object",
+      "properties": {
+        "intent": {
+          "enum": [
+            "Customer Behavior Analysis",
+            "Customer Support",
+            "Fraud Detection",
+            "Marketing"
+          ]
+        },
+        "role": {
+          "enum": [
+            "Business Analyst",
+            "Customer Support",
+            "Data Scientist",
+            "HR",
+            "Sales",
+            "Security"
+          ]
+        }
+      },
+      "required": [
+        "intent",
+        "role"
+      ]
+    },
+    "Dataformat": {
+      "type": "string",
+      "enum": [
+        "arrow",
+        "avro",
+        "csv",
+        "db2-jdbc",
+        "json",
+        "parquet"
+      ]
+    },
+    "DatasetID": {
+      "type": "string"
+    },
+    "Interface": {
+      "type": "object",
+      "properties": {
+        "dataformat": {
+          "$ref": "#/definitions/Dataformat"
+        },
+        "protocol": {
+          "$ref": "#/definitions/Protocol"
+        }
+      },
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "dataformat": {
+              "enum": [
+                "arrow"
+              ]
+            },
+            "protocol": {
+              "enum": [
+                "fybrik-arrow-flight"
+              ]
+            }
+          },
+          "required": [
+            "protocol",
+            "dataformat"
+          ]
+        },
+        {
+          "properties": {
+            "dataformat": {
+              "enum": [
+                "json",
+                "avro"
+              ]
+            },
+            "protocol": {
+              "enum": [
+                "kafka"
+              ]
+            }
+          },
+          "required": [
+            "protocol",
+            "dataformat"
+          ]
+        },
+        {
+          "properties": {
+            "dataformat": {
+              "enum": [
+                "csv",
+                "parquet"
+              ]
+            },
+            "protocol": {
+              "enum": [
+                "s3"
+              ]
+            }
+          },
+          "required": [
+            "protocol",
+            "dataformat"
+          ]
+        },
+        {
+          "properties": {
+            "dataformat": {
+              "enum": [
+                "db2-jdbc"
+              ]
+            },
+            "protocol": {
+              "enum": [
+                "db2-jdbc"
+              ]
+            }
+          },
+          "required": [
+            "protocol",
+            "dataformat"
+          ]
+        }
+      ]
+    },
+    "PolicyManagerRequestContext": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "ProcessingLocation": {
+      "type": "string"
+    },
+    "Protocol": {
+      "type": "string",
+      "enum": [
+        "db2-jdbc",
+        "fybrik-arrow-flight",
+        "kafka",
+        "s3"
+      ]
+    },
+    "Tags": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}
