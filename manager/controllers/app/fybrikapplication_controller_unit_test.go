@@ -858,6 +858,7 @@ func TestFybrikApplicationWithNoDatasets(t *testing.T) {
 	g.Expect(newApp.Status.Ready).To(gomega.BeTrue())
 }
 
+//nolint
 func TestFybrikApplicationWithInvalidAppInfo(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -901,6 +902,7 @@ func TestFybrikApplicationWithInvalidAppInfo(t *testing.T) {
 	g.Expect(newApp.Status.Ready).NotTo(gomega.BeTrue())
 }
 
+//nolint
 func TestFybrikApplicationWithInvalidInterface(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
