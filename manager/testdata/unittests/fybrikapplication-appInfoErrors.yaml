@@ -2,6 +2,7 @@ apiVersion: app.fybrik.io/v1alpha1
 kind: FybrikApplication
 metadata:
   name: application-with-errors
+  namespace: default
   labels:
     app: kf-notebook
 spec:
@@ -13,7 +14,7 @@ spec:
   appInfo:
     role: Hacker
   data:
-    - dataSetID: "{\"ServerName\":\"mds1\",\"AssetGuid\":\"ASSET_ID\"}"
+    - dataSetID: s3/redact-dataset
       requirements:
         interface: 
           protocol: fybrik-arrow-flight

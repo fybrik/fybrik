@@ -71,6 +71,20 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	observedStatus := applicationContext.Status.DeepCopy()
 	appVersion := applicationContext.GetGeneration()
 
+	// check if observed generation is not the same as appVersion
+	if observedStatus.ObservedGeneration != appVersion {
+		// do validation on applicationContext
+		err := applicationContext.ValidateFybrikApplication("/tmp/taxonomy/application.values.schema.json")
+		// if validation fails
+		if err != nil {
+			// update 2 fields in the status
+			// set error message
+			setErrorCondition(applicationContext, "", "This Fybrik application is invalid")
+			observedStatus.ObservedGeneration = appVersion
+			return ctrl.Result{}, nil
+		}
+	}
+
 	// check if reconcile is required
 	// reconcile is required if the spec has been changed, or the previous reconcile has failed to allocate a Plotter resource
 	generationComplete := r.ResourceInterface.ResourceExists(observedStatus.Generated) && (observedStatus.Generated.AppVersion == appVersion)
