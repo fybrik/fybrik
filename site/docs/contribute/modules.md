@@ -13,7 +13,9 @@ These steps are described in the following sections in more detail, so that you 
 
 ## Module Workload
 
-The module workload is associated with a specific user workload and is deployed by the control plane.  It may implement the logic required itself, or it may be a client interface to an external component.  
+The module workload is associated with a specific user workload and is deployed by the control plane.  It may implement the logic required itself, or it may be a client interface to an external component.  The former will have module type "server" and the latter "config".
+
+There is also a third type of module workload known as a plugin.  It provides a standard interface by which another module may invoke its capabilities.  For example, you may have a module that reads data but doesn't know how to do data transforms.  Rather than implementing transforms in the module workload code, it can call the plugin to do the transforms.  The control plane deploys the relevant transform plugin as well as the read module.
 
 ### Credential management
 
@@ -108,27 +110,40 @@ dependencies:
       name: <dependent module name>
 ```
 
+### `spec.type`
 
-### `spec.flows`
+The `type` field may be one of the following vaues:
 
-The `flows` field indicates the types of capabilities supported by the module. Currently supported are three data flows: `read` for enabling an application to read data or prepare data for being read, `write` for enabling an application to write data, and `copy` for performing an implicit data copy on behalf of the application. A module is associated with one or more data flow based on its functionality.
+1)service - Indicates that module workload implements the modules logic, and is deployed for every workload.
+
+2) config - In this case the logic is performed by a component deployed externally, i.e. not by the fybrik control plane.  Such components can be assumed to support multiple workloads.
+
+3) plugin - This type of module enables a sub-set of often used capabilities to be implemented once and re-used by any module that supports plugins of the declared type.
+
+### `spec.pluginType`
+The types of plugins supported by this module.  Example: vault, fybrik-wasm ...
+
+### `spec.capabilities`
+Each module may support one or more capabilities.  Currently there are four capabilities: `read` for enabling an application to read data or prepare data for being read, `write` for enabling an application to write data, and `copy` for performing an implicit data copy on behalf of the application, and `transform` for altering data based on governance policies. A module provides one or more of these capabilities.  
+ 
 
 ```yaml
-flows: # Indicate the data flow(s) in which the control plane should consider using this module 
+capabilityType: # Indicate the data flow(s) in which the control plane should consider using this module 
 - read  # optional
 - write # optional
 - copy  # optional
+- transform # optional
 ```
 
 ### `spec.capabilities`
 
 `capabilites.supportedInterfaces` lists the supported data services from which the module can read data and to which it can write 
-* `flow` field can be `read`, `write` or `copy`
+* `scope` indicate whether the capability acts on the `asset`, `workload` or `cluster` level
 * `protocol` field can take a value such as `kafka`, `s3`, `jdbc-db2`, `fybrik-arrow-flight`, etc.
 * `format` field can take a value such as `avro`, `parquet`, `json`, or `csv`.
 Note that a module that targets copy flows will omit the `api` field and contain just `source` and `sink`, a module that only supports reading data assets will omit the `sink` field and only contain `api` and `source`
 
-`capabilites.api` describes the api exposed by the module for reading or writing data from the user's workload:
+`capabilites.api` describes the api exposed by the module to the user's workload for the particular capability:
 * `protocol` field can take a value such as `kafka`, `s3`, `jdbc-db2`, `fybrik-arrow-flight`, etc 
 * `dataformat` field can take a value such as `parquet`, `csv`, `arrow`, etc
 * `endpoint` field describes the endpoint exposed the module
@@ -142,9 +157,9 @@ An example for a module that copies data from a db2 database table to an s3 buck
 
 ```yaml
 capabilities:
+- copy:
     supportedInterfaces:
-    - flow: copy  
-      source:
+    - source:
         protocol: jdbc-db2
         dataformat: table
       sink:
@@ -156,6 +171,7 @@ An example for a module that has an API for reading data, and supports reading b
 
 ```yaml
 capabilities:
+- read:
     api:
       protocol: fybrik-arrow-flight
       dataformat: arrow
@@ -163,8 +179,7 @@ capabilities:
         port: 80
         scheme: grpc
     supportedInterfaces:
-    - flow: read
-      source:
+    - source:
         protocol: s3
         dataformat: parquet
     - flow: read
@@ -180,6 +195,7 @@ The following is an example of how a module would declare that it knows how to r
 
 ```yaml
 capabilities:
+- read:
     actions:
     - id: "redact-ID"
       level: 2 # column
@@ -199,6 +215,13 @@ The following are examples of YAMLs from fully implemented modules:
 
 * An example YAML for a module that [copies from db2 to s3](https://github.com/fybrik/fybrik/blob/master/manager/testdata/unittests/copy-db2-parquet.yaml) and includes transformation actions
 * And an example [arrow flight read module](https://github.com/fybrik/arrow-flight-module/blob/master/module.yaml) YAML, also with transformation support
+
+## Getting Started
+In order to help module developers get started there are two example "hello world" modules:
+* [Hello world module](https://github.com/fybrik/hello-world-module)
+* [Hellow world read module](https://github.com/fybrik/hello-world-read-module)
+
+An example of a fully functional module is the [arrow flight module][https://github.com/fybrik/arrow-flight-module]
 
 ## Test
 

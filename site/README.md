@@ -18,5 +18,5 @@ Read the [Contribution guidelines](https://fybrik.io/dev/contribute/documentatio
 
 ## Usage
 
-- Run `make generate` to generate documentation pages from the project APIs (protos and CRDs)
-- Run `make run` and browse http://localhost:8000/ to preview the website locally
+- Run `make -C site generate` to generate documentation pages from the project APIs (protos and CRDs)
+- Run `make run` from within the site directory and browse http://localhost:8000/ to preview the website locally
