@@ -77,7 +77,6 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		err := applicationContext.ValidateFybrikApplication("/tmp/taxonomy/application.values.schema.json")
 		// if validation fails
 		if err != nil {
-			// update 2 fields in the status
 			// set error message
 			setErrorCondition(applicationContext, "", "This Fybrik application is invalid")
 			observedStatus.ObservedGeneration = appVersion
