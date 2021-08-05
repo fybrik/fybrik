@@ -3,7 +3,7 @@ include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 
 .DEFAULT_GOAL := all
-all: clean ../../charts/fybrik/files/taxonomy/taxonomy.json generate-base generate-client
+all: clean $(ROOT_DIR)/charts/fybrik/files/taxonomy/taxonomy.json generate-base generate-client
 
 charts/taxonomy.json:
 	go run $(ROOT_DIR)/main.go taxonomy compile --base ./base/base.yaml --out $(ROOT_DIR)/charts/fybrik/files/taxonomy/taxonomy.json
