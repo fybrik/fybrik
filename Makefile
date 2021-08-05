@@ -21,7 +21,8 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 
 .PHONY: test
 test:
-	mkdir /tmp/taxonomy || true                                                                                                                           	 cp ../charts/fybrik/files/taxonomy/*.json /tmp/taxonomy/  
+	mkdir /tmp/taxonomy || true
+	cp ../charts/fybrik/files/taxonomy/*.json /tmp/taxonomy/  
 	$(MAKE) -C manager pre-test
 	go test -v ./...
 	# The tests for connectors/egeria are dropped because there are none
