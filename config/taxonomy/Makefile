@@ -3,16 +3,16 @@ include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 
 .DEFAULT_GOAL := all
-all: clean objects/taxonomy.json generate-base generate-client
+all: clean ../../charts/fybrik/files/taxonomy/taxonomy.json generate-base generate-client
 
-objects/taxonomy.json:
-	go run $(ROOT_DIR)/main.go taxonomy compile --base ./base/base.yaml --out ./objects/taxonomy.json
-	go run $(ROOT_DIR)/main.go taxonomy validate ./objects/policy_manager_request.json
-	go run $(ROOT_DIR)/main.go taxonomy validate ./objects/policy_manager_response.json
-	go run $(ROOT_DIR)/main.go taxonomy validate ./objects/fybrik_application.json
+charts/taxonomy.json:
+	go run $(ROOT_DIR)/main.go taxonomy compile --base ./base/base.yaml --out $(ROOT_DIR)/charts/fybrik/files/taxonomy/taxonomy.json
+	go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/policy_manager_request.json
+	go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/policy_manager_response.json
+	go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/fybrik_application.json
 
 .PHONY: generate-base
-generate-base: $(TOOLBIN)/openapi-generator-cli objects/taxonomy.json
+generate-base: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
 	mkdir -p $(ROOT_DIR)/pkg/taxonomy/model/base
 	$(TOOLBIN)/openapi-generator-cli generate -i ./codegen.spec.yaml -g go -o $(ROOT_DIR)/pkg/taxonomy/model/base --global-property=models,modelDocs=false \
 		--additional-properties=packageName=base \
@@ -20,7 +20,7 @@ generate-base: $(TOOLBIN)/openapi-generator-cli objects/taxonomy.json
 		--type-mappings=object=interface{}
 
 .PHONY: generate-client
-generate-client: $(TOOLBIN)/openapi-generator-cli objects/taxonomy.json
+generate-client: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
 	mkdir -p $(ROOT_DIR)/pkg/connectors/openapiclient
 	$(TOOLBIN)/openapi-generator-cli generate -g go --additional-properties=packageName=openapiclient,isGoSubmodule=false \
 		--global-property=apis,supportingFiles,apiDocs=false -o $(ROOT_DIR)/pkg/connectors/openapiclient \
@@ -33,6 +33,6 @@ generate-client: $(TOOLBIN)/openapi-generator-cli objects/taxonomy.json
 
 .PHONY: clean
 clean:
-	rm -f objects/taxonomy.json
+	rm -f $(ROOT_DIR)/charts/fybrik/files/taxonomy/taxonomy.json
 	rm -rf $(ROOT_DIR)/pkg/taxonomy/model/base
 	rm -rf $(ROOT_DIR)/pkg/connectors/openapiclient
