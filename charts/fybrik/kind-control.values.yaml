@@ -5,7 +5,7 @@
 # Global configuration applies to multiple components installed by this chart
 global:
   hub: localhost:5000/fybrik-system
-  tag: "latest"
+  tag: "master"
   imagePullPolicy: "Always"
 
 # Cluster metadata values

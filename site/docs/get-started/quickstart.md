@@ -105,7 +105,7 @@ Run the following to install vault and the plugin in development mode:
     git clone https://github.com/fybrik/fybrik.git
     cd fybrik
     helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-    helm install fybrik charts/fybrik --set global.tag=latest -n fybrik-system --wait
+    helm install fybrik charts/fybrik --set global.tag=master -n fybrik-system --wait
     ```
 
 The control plane includes a `manager` service that connects to a data catalog and to a policy manager. 
