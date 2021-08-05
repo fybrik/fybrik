@@ -31,8 +31,25 @@ generate-client: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
 	rm -f $(ROOT_DIR)/pkg/connectors/openapiclient/README.md $(ROOT_DIR)/pkg/connectors/openapiclient/git_push.sh
 	rm -r $(ROOT_DIR)/pkg/connectors/openapiclient/api 
 
+.PHONY: generate-server
+generate-server: $(TOOLBIN)/openapi-generator-cli objects/taxonomy.json
+	mkdir -p $(ROOT_DIR)/connectors/open_policy_agent
+	$(TOOLBIN)/openapi-generator-cli generate -g go-gin-server \
+		--additional-properties=packageName=openapiserver,serverPort=8081,sourceFolder=openapiserver \
+		--global-property=apis,supportingFiles -o $(ROOT_DIR)/connectors/open_policy_agent \
+		-i codegen.spec.yaml
+	rm -f $(ROOT_DIR)/connectors/open_policy_agent/go.mod $(ROOT_DIR)/connectors/open_policy_agent/.openapi-generator-ignore  
+	rm -f $(ROOT_DIR)/connectors/open_policy_agent/Dockerfile $(ROOT_DIR)/connectors/open_policy_agent/go/README.md 
+	rm -r $(ROOT_DIR)/connectors/open_policy_agent/api $(ROOT_DIR)/connectors/open_policy_agent/.openapi-generator
+
 .PHONY: clean
 clean:
 	rm -f $(ROOT_DIR)/charts/fybrik/files/taxonomy/taxonomy.json
 	rm -rf $(ROOT_DIR)/pkg/taxonomy/model/base
 	rm -rf $(ROOT_DIR)/pkg/connectors/openapiclient
+	mkdir -p $(ROOT_DIR)/connectors/tmp
+	cp  $(ROOT_DIR)/connectors/open_policy_agent/go/model.go  $(ROOT_DIR)/connectors/tmp
+	rm -rf $(ROOT_DIR)/connectors/open_policy_agent
+	mkdir -p $(ROOT_DIR)/connectors/open_policy_agent/go
+	cp  $(ROOT_DIR)/connectors/tmp/model.go $(ROOT_DIR)/connectors/open_policy_agent/go
+	rm -rf $(ROOT_DIR)/connectors/tmp
