@@ -183,6 +183,7 @@ func ConvertOpenAPIRespToGrpcResp(
 	for i := 0; i < len(resultItems); i++ {
 		action := resultItems[i].GetAction()
 		name := action.GetName()
+		log.Println("name received in ConvertOpenAPIRespToGrpcResp", name)
 		additionalProperties := action.AdditionalProperties
 
 		if name == "redact" {
