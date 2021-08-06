@@ -83,6 +83,9 @@ func randomHex(n int) (string, error) {
 }
 
 func ConvertGrpcReqToOpenAPIReq(in *pb.ApplicationContext) (*openapiclientmodels.PolicyManagerRequest, string, error) {
+	log.Println("printing  stack trace in ConvertGrpcReqToOpenAPIReq")
+	debug.PrintStack()
+	log.Println("printing  stack trace in ConvertGrpcReqToOpenAPIReq - end ")
 	req := openapiclientmodels.PolicyManagerRequest{}
 	action := openapiclientmodels.PolicyManagerRequestAction{}
 	resource := openapiclientmodels.Resource{}
@@ -119,6 +122,9 @@ func ConvertGrpcReqToOpenAPIReq(in *pb.ApplicationContext) (*openapiclientmodels
 }
 
 func ConvertOpenAPIReqToGrpcReq(in *openapiclientmodels.PolicyManagerRequest, creds string) (*pb.ApplicationContext, error) {
+	log.Println("printing  stack trace in ConvertOpenAPIReqToGrpcReq")
+	debug.PrintStack()
+	log.Println("printing  stack trace in ConvertOpenAPIReqToGrpcReq - end ")
 	credentialPath := creds
 	action := in.GetAction()
 	processingGeo := (&action).GetProcessingLocation()
@@ -167,6 +173,9 @@ func ConvertOpenAPIReqToGrpcReq(in *openapiclientmodels.PolicyManagerRequest, cr
 func ConvertOpenAPIRespToGrpcResp(
 	out *openapiclientmodels.PolicyManagerResponse,
 	datasetID string, op *pb.AccessOperation) (*pb.PoliciesDecisions, error) {
+	log.Println("printing  stack trace in ConvertOpenAPIRespToGrpcResp")
+	debug.PrintStack()
+	log.Println("printing  stack trace in ConvertOpenAPIRespToGrpcResp - end ")
 	resultItems := out.GetResult()
 	enforcementActions := make([]*pb.EnforcementAction, 0)
 	usedPolicies := make([]*pb.Policy, 0)
@@ -248,6 +257,9 @@ func ConvertOpenAPIRespToGrpcResp(
 }
 
 func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*openapiclientmodels.PolicyManagerResponse, error) {
+	log.Println("printing  stack trace in ConvertGrpcRespToOpenAPIResp")
+	debug.PrintStack()
+	log.Println("printing  stack trace in ConvertGrpcRespToOpenAPIResp - end ")
 	// convert GRPC response to Open Api Response - start
 	// we dont get decision id returned from OPA from GRPC response. So we generate random hex string
 	decisionID, _ := randomHex(20)
