@@ -242,6 +242,11 @@ func ConvertOpenAPIRespToGrpcResp(
 			newUsedPolicy := &pb.Policy{Description: policy}
 			usedPolicies = append(usedPolicies, newUsedPolicy)
 		}
+
+		if name == "allow" {
+			newEnforcementAction := &pb.EnforcementAction{Name: "Allow", Id: "Allow-ID", Level: pb.EnforcementAction_DATASET, Args: map[string]string{}}
+			enforcementActions = append(enforcementActions, newEnforcementAction)
+		}
 	}
 
 	opaOperationDecision := &pb.OperationDecision{Operation: op, EnforcementActions: enforcementActions, UsedPolicies: usedPolicies}
