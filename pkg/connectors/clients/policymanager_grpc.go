@@ -259,7 +259,9 @@ func ConvertOpenAPIRespToGrpcResp(
 	datasetDecison := &pb.DatasetDecision{Dataset: dataset, Decisions: opaOperationDecisionList}
 	datasetDecisionList = append(datasetDecisionList, datasetDecison)
 
-	return &pb.PoliciesDecisions{DatasetDecisions: datasetDecisionList}, nil
+	policiesDecision := &pb.PoliciesDecisions{DatasetDecisions: datasetDecisionList}
+	log.Println("returning policiesDecision in ConvertOpenAPIRespToGrpcResp: ", policiesDecision)
+	return policiesDecision, nil
 }
 
 func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*openapiclientmodels.PolicyManagerResponse, error) {
