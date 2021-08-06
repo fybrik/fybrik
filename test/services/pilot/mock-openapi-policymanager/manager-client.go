@@ -24,22 +24,11 @@ func getEnv(key string) string {
 }
 
 func main() {
-	// mainPolicyManagerName := os.Getenv("MAIN_POLICY_MANAGER_NAME")
 	mainPolicyManagerName := "OPEN API MANAGER"
-	// mainPolicyManagerURL := os.Getenv("MAIN_POLICY_MANAGER_CONNECTOR_URL")
-	// mainPolicyManagerURL := "http://v2opaconnector.m4d-system:50050"
-	// connectionTimeout, err := getConnectionTimeout()
-	// timeOutInSeconds := 120
 
 	timeOutInSecs := getEnv("CONNECTION_TIMEOUT")
 	timeOut, _ := strconv.Atoi(timeOutInSecs)
 	connectionTimeout := time.Duration(timeOut) * time.Second
-
-	// mainPolicyManagerURL := "http://v2opaconnector.m4d-system:50050"
-	// policyManager, err := connectors.NewOpenApiPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
-	// if err != nil {
-	// 	return
-	// }
 
 	mainPolicyManagerURL := "opa-connector.fybrik-system:80"
 	policyManager, err := connectors.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
@@ -49,7 +38,7 @@ func main() {
 		return
 	}
 
-	creds := "http://vault.fybrik-system:8200/v1/kubernetes-secrets/wkc-creds?namespace=cp4d"
+	creds := "http://vault.fybrik-system:8200/v1/kubernetes-secrets/<SECRET-NAME>?namespace=<NAMESPACE>"
 	input := openapiclientmodels.NewPolicyManagerRequestWithDefaults()
 
 	reqCtx := make(map[string]interface{})
