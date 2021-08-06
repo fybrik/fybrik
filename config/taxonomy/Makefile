@@ -24,7 +24,7 @@ generate-client: $(TOOLBIN)/openapi-generator-cli objects/taxonomy.json
 	$(TOOLBIN)/openapi-generator-cli generate -g go --additional-properties=packageName=openapiclient,isGoSubmodule=false \
 		--global-property=apis,supportingFiles,apiDocs=false -o $(ROOT_DIR)/pkg/connectors/openapiclient \
 		--type-mappings=PolicyManagerRequest=base.PolicyManagerRequest,PolicyManagerResponse=base.PolicyManagerResponse \
-		--import-mappings=base.PolicyManagerRequest=github.com/mesh-for-data/mesh-for-data/pkg/taxonomy/model/base,base.PolicyManagerResponse=github.com/mesh-for-data/mesh-for-data/pkg/taxonomy/model/base \
+		--import-mappings=base.PolicyManagerRequest=fybrik.io/fybrik/pkg/taxonomy/model/base,base.PolicyManagerResponse=fybrik.io/fybrik/pkg/taxonomy/model/base \
 		-i codegen.spec.yaml
 	rm -f $(ROOT_DIR)/pkg/connectors/openapiclient/go.mod $(ROOT_DIR)/pkg/connectors/openapiclient/go.sum $(ROOT_DIR)/pkg/connectors/openapiclient/.travis.yml
 	rm -f $(ROOT_DIR)/pkg/connectors/openapiclient/README.md $(ROOT_DIR)/pkg/connectors/openapiclient/git_push.sh
@@ -46,9 +46,9 @@ clean:
 	rm -f objects/taxonomy.json
 	rm -rf $(ROOT_DIR)/pkg/taxonomy/model/base
 	rm -rf $(ROOT_DIR)/pkg/connectors/openapiclient
-	mkdir -p $(ROOT_DIR)/connectors/tmp
-	cp  $(ROOT_DIR)/connectors/open_policy_agent/go/model.go  $(ROOT_DIR)/connectors/tmp
-	rm -rf $(ROOT_DIR)/connectors/open_policy_agent
-	mkdir -p $(ROOT_DIR)/connectors/open_policy_agent/go
-	cp  $(ROOT_DIR)/connectors/tmp/model.go $(ROOT_DIR)/connectors/open_policy_agent/go
-	rm -rf $(ROOT_DIR)/connectors/tmp
+#mkdir -p $(ROOT_DIR)/connectors/tmp
+#cp  $(ROOT_DIR)/connectors/open_policy_agent/go/model.go  $(ROOT_DIR)/connectors/tmp
+#rm -rf $(ROOT_DIR)/connectors/open_policy_agent
+#mkdir -p $(ROOT_DIR)/connectors/open_policy_agent/go
+#cp  $(ROOT_DIR)/connectors/tmp/model.go $(ROOT_DIR)/connectors/open_policy_agent/go
+#rm -rf $(ROOT_DIR)/connectors/tmp
