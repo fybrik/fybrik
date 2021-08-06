@@ -4,7 +4,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -32,12 +31,12 @@ func getEnv(key string) string {
 	return value
 }
 
-func constructInputParameters() *pb.ApplicationContext {
+func constructInputParameters() (*pb.ApplicationContext, string) {
 	timeoutinsecs := getEnv("CONNECTION_TIMEOUT")
 	timeoutinseconds, err := strconv.Atoi(timeoutinsecs)
 	if err != nil {
 		log.Printf("Atoi conversion of timeoutinseconds failed: %v", err)
-		return nil
+		return nil, ""
 	}
 
 	fmt.Println("timeoutinseconds in MockupPilot: ", timeoutinseconds)
@@ -77,7 +76,7 @@ func constructInputParameters() *pb.ApplicationContext {
 
 	datasets := []*pb.DatasetContext{}
 	datasets = append(datasets, createDatasetRead(datasetIDJson))
-	datasets = append(datasets, createDatasetTransferFirst(datasetIDJson))
+	//datasets = append(datasets, createDatasetTransferFirst(datasetIDJson))
 	// datasets = append(datasets, createDatasetTransferSecond(catalogID, datasetID))
 	// datasets = append(datasets, createDatasetRead(catalogIDcos, datasetIDcos))
 	// datasets = append(datasets, createDatasetRead(catalogIDDb2, datasetIDDb2))
@@ -91,7 +90,7 @@ func constructInputParameters() *pb.ApplicationContext {
 	log.Print(string(appContextStr))
 	log.Println("1***************************************************************")
 
-	return applicationContext
+	return applicationContext, datasetIDJson
 }
 
 // TODO: newPolicyManager is a duplicate of newPolicyManager from main.go
@@ -112,25 +111,25 @@ func newPolicyManager() (connectors.PolicyManager, error) {
 		return nil, err
 	}
 
-	useExtensionPolicyManager, err := strconv.ParseBool(os.Getenv("USE_EXTENSIONPOLICY_MANAGER"))
-	if useExtensionPolicyManager && err == nil {
-		extensionPolicyManagerName := os.Getenv("EXTENSIONS_POLICY_MANAGER_NAME")
-		extensionPolicyManagerURL := os.Getenv("EXTENSIONS_POLICY_MANAGER_CONNECTOR_URL")
-		extensionPolicyManager, err := connectors.NewGrpcPolicyManager(
-			extensionPolicyManagerName, extensionPolicyManagerURL, time.Duration(timeOutInSeconds)*time.Second)
-		setupLog.Info("setting extension policy manager", "Name", extensionPolicyManagerName, "URL", extensionPolicyManagerURL, "Timeout (sec)", timeOutInSeconds)
-		if err != nil {
-			return nil, err
-		}
+	// useExtensionPolicyManager, err := strconv.ParseBool(os.Getenv("USE_EXTENSIONPOLICY_MANAGER"))
+	// if useExtensionPolicyManager && err == nil {
+	// 	extensionPolicyManagerName := os.Getenv("EXTENSIONS_POLICY_MANAGER_NAME")
+	// 	extensionPolicyManagerURL := os.Getenv("EXTENSIONS_POLICY_MANAGER_CONNECTOR_URL")
+	// 	extensionPolicyManager, err := connectors.NewGrpcPolicyManager(
+	// 		extensionPolicyManagerName, extensionPolicyManagerURL, time.Duration(timeOutInSeconds)*time.Second)
+	// 	setupLog.Info("setting extension policy manager", "Name", extensionPolicyManagerName, "URL", extensionPolicyManagerURL, "Timeout (sec)", timeOutInSeconds)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
 
-		policyManager = connectors.NewMultiPolicyManager(policyManager, extensionPolicyManager)
-	}
+	// 	policyManager = connectors.NewMultiPolicyManager(policyManager, extensionPolicyManager)
+	// }
 
 	return policyManager, nil
 }
 
 func main() {
-	applicationContext := constructInputParameters()
+	applicationContext, datasetID := constructInputParameters()
 
 	policyManager, err := newPolicyManager()
 	if err != nil {
@@ -138,7 +137,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	r, err := policyManager.GetPoliciesDecisions(context.Background(), applicationContext)
+	openapiReq, creds, _ := connectors.ConvertGrpcReqToOpenApiReq(applicationContext)
+	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)
+	//r, err := policyManager.GetPoliciesDecisions(context.Background(), applicationContext)
+	datasets := applicationContext.GetDatasets()
+	op := datasets[0].GetOperation()
+	r, err := connectors.ConvertOpenApiRespToGrpcResp(openapiResp, datasetID, op)
 
 	if err != nil {
 		errStatus, _ := status.FromError(err)
@@ -158,25 +162,25 @@ func main() {
 		log.Println("2***************************************************************")
 	}
 
-	fmt.Println("*********************************invoking new request *****************************")
-	r, err = policyManager.GetPoliciesDecisions(context.Background(), applicationContext)
+	// fmt.Println("*********************************invoking new request *****************************")
+	// r, err = policyManager.GetPoliciesDecisions(context.Background(), applicationContext)
 
-	if err != nil {
-		errStatus, _ := status.FromError(err)
-		fmt.Println("*********************************in error in  MockupPilot for 2nd request *****************************")
-		fmt.Println("Message: ", errStatus.Message())
-		fmt.Println("Code: ", errStatus.Code())
+	// if err != nil {
+	// 	errStatus, _ := status.FromError(err)
+	// 	fmt.Println("*********************************in error in  MockupPilot for 2nd request *****************************")
+	// 	fmt.Println("Message: ", errStatus.Message())
+	// 	fmt.Println("Code: ", errStatus.Code())
 
-		// take specific action based on specific error?
-		if codes.InvalidArgument == errStatus.Code() {
-			fmt.Println("InvalidArgument in mockup pilot for 2nd request")
-			return
-		}
-	} else {
-		log.Printf("Response received from Policy Compiler below for 2nd request:")
-		s, _ := json.MarshalIndent(r, "", "    ")
-		log.Print(string(s))
-	}
+	// 	// take specific action based on specific error?
+	// 	if codes.InvalidArgument == errStatus.Code() {
+	// 		fmt.Println("InvalidArgument in mockup pilot for 2nd request")
+	// 		return
+	// 	}
+	// } else {
+	// 	log.Printf("Response received from Policy Compiler below for 2nd request:")
+	// 	s, _ := json.MarshalIndent(r, "", "    ")
+	// 	log.Print(string(s))
+	// }
 }
 
 func createDatasetRead(datasetIDJson string) *pb.DatasetContext {

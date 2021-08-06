@@ -4,13 +4,14 @@
 package mockup
 
 import (
-	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
 
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
+	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
 
 // MockPolicyManager is a mock for PolicyManager interface used in tests
@@ -19,7 +20,13 @@ type MockPolicyManager struct {
 }
 
 // GetPoliciesDecisions implements the PolicyCompiler interface
-func (s *MockPolicyManager) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationContext) (*pb.PoliciesDecisions, error) {
+// func (s *MockPolicyManager) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationContext) (*pb.PoliciesDecisions, error) {
+func (m *MockPolicyManager) GetPoliciesDecisions(
+	input *openapiclientmodels.PolicyManagerRequest, creds string) (*openapiclientmodels.PolicyManagerResponse, error) {
+
+	in, _ := connectors.ConvertOpenApiReqToGrpcReq(input, creds)
+	log.Println("appContext: created from convertOpenApiReqToGrpcReq: ", in)
+
 	log.Printf("Received: ")
 	log.Printf("ProcessingGeography: " + in.AppInfo.GetProcessingGeography())
 	log.Printf("Secret: " + in.GetCredentialPath())
@@ -94,6 +101,15 @@ func (s *MockPolicyManager) GetPoliciesDecisions(ctx context.Context, in *pb.App
 			Decisions: operationDecisions})
 	}
 
-	return &pb.PoliciesDecisions{ComponentVersions: externalComponents,
-		DatasetDecisions: dataSetWithActions}, nil
+	result := &pb.PoliciesDecisions{ComponentVersions: externalComponents,
+		DatasetDecisions: dataSetWithActions}
+
+	policyManagerResp, _ := connectors.ConvertGrpcRespToOpenApiResp(result)
+
+	res, err := json.MarshalIndent(policyManagerResp, "", "\t")
+	log.Println("err :", err)
+	log.Println("policyManagerResp: created from convGrpcRespToOpenApiResp")
+	log.Println("marshalled response:", string(res))
+
+	return policyManagerResp, nil
 }

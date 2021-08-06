@@ -250,17 +250,17 @@ func newPolicyManager() (connectors.PolicyManager, error) {
 		return nil, err
 	}
 
-	useExtensionPolicyManager, err := strconv.ParseBool(os.Getenv("USE_EXTENSIONPOLICY_MANAGER"))
-	if useExtensionPolicyManager && err == nil {
-		extensionPolicyManagerName := os.Getenv("EXTENSIONS_POLICY_MANAGER_NAME")
-		extensionPolicyManagerURL := os.Getenv("EXTENSIONS_POLICY_MANAGER_CONNECTOR_URL")
-		setupLog.Info("setting extension policy manager client", "Name", extensionPolicyManagerName, "URL", extensionPolicyManagerURL, "Timeout", connectionTimeout)
-		extensionPolicyManager, err := connectors.NewGrpcPolicyManager(extensionPolicyManagerName, extensionPolicyManagerURL, connectionTimeout)
-		if err != nil {
-			return nil, err
-		}
-		policyManager = connectors.NewMultiPolicyManager(policyManager, extensionPolicyManager)
-	}
+	// useExtensionPolicyManager, err := strconv.ParseBool(os.Getenv("USE_EXTENSIONPOLICY_MANAGER"))
+	// if useExtensionPolicyManager && err == nil {
+	// 	extensionPolicyManagerName := os.Getenv("EXTENSIONS_POLICY_MANAGER_NAME")
+	// 	extensionPolicyManagerURL := os.Getenv("EXTENSIONS_POLICY_MANAGER_CONNECTOR_URL")
+	// 	setupLog.Info("setting extension policy manager client", "Name", extensionPolicyManagerName, "URL", extensionPolicyManagerURL, "Timeout", connectionTimeout)
+	// 	extensionPolicyManager, err := connectors.NewGrpcPolicyManager(extensionPolicyManagerName, extensionPolicyManagerURL, connectionTimeout)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	policyManager = connectors.NewMultiPolicyManager(policyManager, extensionPolicyManager)
+	// }
 
 	return policyManager, nil
 }

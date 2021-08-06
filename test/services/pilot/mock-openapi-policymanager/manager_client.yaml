@@ -1,0 +1,27 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: manager-client
+  labels:
+    app: manager-client
+spec:
+  template:
+    metadata:
+      labels:
+        app: manager-client
+    spec:
+      containers:
+      - name: manager-client
+        image: manager-client:latest
+        imagePullPolicy: Always
+        ports:
+        - name: manager-client
+          containerPort: 50040
+        envFrom:
+        - configMapRef:
+            name: fybrik-config          
+      restartPolicy: Never          
+  backoffLimit: 0
