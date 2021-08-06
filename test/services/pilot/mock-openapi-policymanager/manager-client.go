@@ -24,16 +24,15 @@ func getEnv(key string) string {
 }
 
 func main() {
-
-	//mainPolicyManagerName := os.Getenv("MAIN_POLICY_MANAGER_NAME")
+	// mainPolicyManagerName := os.Getenv("MAIN_POLICY_MANAGER_NAME")
 	mainPolicyManagerName := "OPEN API MANAGER"
-	//mainPolicyManagerURL := os.Getenv("MAIN_POLICY_MANAGER_CONNECTOR_URL")
-	//mainPolicyManagerURL := "http://v2opaconnector.m4d-system:50050"
-	//connectionTimeout, err := getConnectionTimeout()
+	// mainPolicyManagerURL := os.Getenv("MAIN_POLICY_MANAGER_CONNECTOR_URL")
+	// mainPolicyManagerURL := "http://v2opaconnector.m4d-system:50050"
+	// connectionTimeout, err := getConnectionTimeout()
 	// timeOutInSeconds := 120
 
 	timeOutInSecs := getEnv("CONNECTION_TIMEOUT")
-	timeOut, err := strconv.Atoi(timeOutInSecs)
+	timeOut, _ := strconv.Atoi(timeOutInSecs)
 	connectionTimeout := time.Duration(timeOut) * time.Second
 
 	// mainPolicyManagerURL := "http://v2opaconnector.m4d-system:50050"
@@ -51,9 +50,6 @@ func main() {
 	}
 
 	creds := "http://vault.fybrik-system:8200/v1/kubernetes-secrets/wkc-creds?namespace=cp4d"
-
-	// input := []openapiclientmodels.PolicymanagerRequest{*openapiclientmodels.NewPolicymanagerRequest(*openapiclientmodels.NewAction(openapiclientmodels.ActionType("read")), *openapiclientmodels.NewResource("{\"asset_id\": \"0bb3245e-e3ef-40b7-b639-c471bae4966c\", \"catalog_id\": \"503d683f-1d43-4257-a1a3-0ddf5e446ba5\"}", creds))} // []PolicymanagerRequest | input values that need to be considered for filter
-
 	input := openapiclientmodels.NewPolicyManagerRequestWithDefaults()
 
 	reqCtx := make(map[string]interface{})
@@ -67,19 +63,12 @@ func main() {
 	action.SetProcessingLocation(processLocation)
 	input.SetAction(action)
 
-	//input.SetAction(*openapiclientmodels.NewAction(openapiclientmodels.ActionType("read")))
-	// /0fd6ff25-7327-4b55-8ff2-56cc1c934824/asset/5067b64a-67bc-4067-9117-0aff0a9963ea/a
-	// input.SetResource(*openapiclientmodels.NewResource("{\"asset_id\": \"0bb3245e-e3ef-40b7-b639-c471bae4966c\", \"catalog_id\": \"503d683f-1d43-4257-a1a3-0ddf5e446ba5\"}"))
 	input.SetResource(*openapiclientmodels.NewResource("{\"asset_id\": \"5067b64a-67bc-4067-9117-0aff0a9963ea\", \"catalog_id\": \"0fd6ff25-7327-4b55-8ff2-56cc1c934824\"}"))
-
-	//input.SetRequestContext(openapiclientmodels.RequestContext{})
-
-	// input := openapiclientmodels.PolicymanagerRequest{*openapiclientmodels.NewPolicymanagerRequest(*openapiclientmodels.NewAction(openapiclientmodels.ActionType("read")), *openapiclientmodels.NewResource("{\"asset_id\": \"0bb3245e-e3ef-40b7-b639-c471bae4966c\", \"catalog_id\": \"503d683f-1d43-4257-a1a3-0ddf5e446ba5\"}", creds))} // []PolicymanagerRequest | input values that need to be considered for filter
 
 	log.Println("in manager-client - policy manager request: ", input)
 	log.Println("in manager-client - creds: ", creds)
 
-	response, err := policyManager.GetPoliciesDecisions(input, creds)
+	response, _ := policyManager.GetPoliciesDecisions(input, creds)
 
 	bytes, _ := response.MarshalJSON()
 	log.Println("in manager-client - Response from `policyManager.GetPoliciesDecisions`: \n", string(bytes))
@@ -89,7 +78,6 @@ func main() {
 	log.Println("err: ", err)
 	log.Println("resp: ", resp)
 
-	//res2B, _ := json.Marshal(resp)
 	res, err := json.MarshalIndent(resp, "", "\t")
 	log.Println("err :", err)
 	log.Println("marshalled response:", string(res))

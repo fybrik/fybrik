@@ -12,7 +12,6 @@ import (
 
 // PolicyManager is an interface of a facade to connect to a policy manager.
 type PolicyManager interface {
-	//pb.PolicyManagerServiceServer
 	GetPoliciesDecisions(in *openapiclientmodels.PolicyManagerRequest, creds string) (*openapiclientmodels.PolicyManagerResponse, error)
 	io.Closer
 }

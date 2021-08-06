@@ -76,7 +76,7 @@ func constructInputParameters() (*pb.ApplicationContext, string) {
 
 	datasets := []*pb.DatasetContext{}
 	datasets = append(datasets, createDatasetRead(datasetIDJson))
-	//datasets = append(datasets, createDatasetTransferFirst(datasetIDJson))
+	// datasets = append(datasets, createDatasetTransferFirst(datasetIDJson))
 	// datasets = append(datasets, createDatasetTransferSecond(catalogID, datasetID))
 	// datasets = append(datasets, createDatasetRead(catalogIDcos, datasetIDcos))
 	// datasets = append(datasets, createDatasetRead(catalogIDDb2, datasetIDDb2))
@@ -137,12 +137,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	openapiReq, creds, _ := connectors.ConvertGrpcReqToOpenApiReq(applicationContext)
-	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)
-	//r, err := policyManager.GetPoliciesDecisions(context.Background(), applicationContext)
+	openapiReq, creds, _ := connectors.ConvertGrpcReqToOpenAPIReq(applicationContext)
+	openapiResp, _ := policyManager.GetPoliciesDecisions(openapiReq, creds)
+
 	datasets := applicationContext.GetDatasets()
 	op := datasets[0].GetOperation()
-	r, err := connectors.ConvertOpenApiRespToGrpcResp(openapiResp, datasetID, op)
+	r, err := connectors.ConvertOpenAPIRespToGrpcResp(openapiResp, datasetID, op)
 
 	if err != nil {
 		errStatus, _ := status.FromError(err)
@@ -190,12 +190,12 @@ func createDatasetRead(datasetIDJson string) *pb.DatasetContext {
 	return datasetContext
 }
 
-func createDatasetTransferFirst(datasetIDJson string) *pb.DatasetContext {
-	dataset := &pb.DatasetIdentifier{DatasetId: datasetIDJson}
-	operation := &pb.AccessOperation{Type: pb.AccessOperation_COPY, Destination: "US"}
-	datasetContext := &pb.DatasetContext{Dataset: dataset, Operation: operation}
-	return datasetContext
-}
+// func createDatasetTransferFirst(datasetIDJson string) *pb.DatasetContext {
+// 	dataset := &pb.DatasetIdentifier{DatasetId: datasetIDJson}
+// 	operation := &pb.AccessOperation{Type: pb.AccessOperation_COPY, Destination: "US"}
+// 	datasetContext := &pb.DatasetContext{Dataset: dataset, Operation: operation}
+// 	return datasetContext
+// }
 
 // func createDatasetTransferSecond(catalogID, datasetID string) *pb.DatasetContext {
 // 	dataset := &pb.DatasetIdentifier{CatalogId: catalogID, DatasetId: datasetID}

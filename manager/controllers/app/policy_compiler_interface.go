@@ -37,9 +37,9 @@ func ConstructApplicationContext(datasetID string, input *app.FybrikApplication,
 func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, input *app.FybrikApplication, op *pb.AccessOperation) ([]*pb.EnforcementAction, error) {
 	// call external policy manager to get governance instructions for this operation
 	appContext := ConstructApplicationContext(datasetID, input, op)
-	openapiReq, creds, _ := connectors.ConvertGrpcReqToOpenApiReq(appContext)
+	openapiReq, creds, _ := connectors.ConvertGrpcReqToOpenAPIReq(appContext)
 	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)
-	pcresponse, _ := connectors.ConvertOpenApiRespToGrpcResp(openapiResp, datasetID, op)
+	pcresponse, _ := connectors.ConvertOpenAPIRespToGrpcResp(openapiResp, datasetID, op)
 
 	actions := []*pb.EnforcementAction{}
 	if err != nil {

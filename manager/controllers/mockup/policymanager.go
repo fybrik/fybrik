@@ -21,10 +21,8 @@ type MockPolicyManager struct {
 
 // GetPoliciesDecisions implements the PolicyCompiler interface
 // func (s *MockPolicyManager) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationContext) (*pb.PoliciesDecisions, error) {
-func (m *MockPolicyManager) GetPoliciesDecisions(
-	input *openapiclientmodels.PolicyManagerRequest, creds string) (*openapiclientmodels.PolicyManagerResponse, error) {
-
-	in, _ := connectors.ConvertOpenApiReqToGrpcReq(input, creds)
+func (m *MockPolicyManager) GetPoliciesDecisions(input *openapiclientmodels.PolicyManagerRequest, creds string) (*openapiclientmodels.PolicyManagerResponse, error) {
+	in, _ := connectors.ConvertOpenAPIReqToGrpcReq(input, creds)
 	log.Println("appContext: created from convertOpenApiReqToGrpcReq: ", in)
 
 	log.Printf("Received: ")
@@ -104,7 +102,7 @@ func (m *MockPolicyManager) GetPoliciesDecisions(
 	result := &pb.PoliciesDecisions{ComponentVersions: externalComponents,
 		DatasetDecisions: dataSetWithActions}
 
-	policyManagerResp, _ := connectors.ConvertGrpcRespToOpenApiResp(result)
+	policyManagerResp, _ := connectors.ConvertGrpcRespToOpenAPIResp(result)
 
 	res, err := json.MarshalIndent(policyManagerResp, "", "\t")
 	log.Println("err :", err)

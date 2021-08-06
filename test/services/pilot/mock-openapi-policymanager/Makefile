@@ -14,7 +14,7 @@ build: $(TOOLBIN)/protoc $(TOOLBIN)/protoc-gen-go
 	PATH=$(ABSTOOLBIN) protoc -I protos/ protos/*.proto --go_opt=paths=source_relative --go_out=plugins=grpc:$(ROOT_DIR)/pkg/connectors/protobuf
 
 docker-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o manager-client manager-client2.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o manager-client manager-client.go
 	docker build . -t $(IMG)
 	rm manager-client
 

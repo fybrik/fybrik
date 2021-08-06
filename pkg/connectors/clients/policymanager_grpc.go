@@ -46,14 +46,13 @@ func NewGrpcPolicyManager(name string, connectionURL string, connectionTimeout t
 
 func (m *grpcPolicyManager) GetPoliciesDecisions(
 	in *openapiclientmodels.PolicyManagerRequest, creds string) (*openapiclientmodels.PolicyManagerResponse, error) {
-
-	appContext, _ := ConvertOpenApiReqToGrpcReq(in, creds)
+	appContext, _ := ConvertOpenAPIReqToGrpcReq(in, creds)
 	log.Println("appContext: created from convertOpenApiReqToGrpcReq: ", appContext)
 
 	result, _ := m.client.GetPoliciesDecisions(context.Background(), appContext)
 
 	log.Println("GRPC result returned from GetPoliciesDecisions:", result)
-	policyManagerResp, _ := ConvertGrpcRespToOpenApiResp(result)
+	policyManagerResp, _ := ConvertGrpcRespToOpenAPIResp(result)
 
 	res, err := json.MarshalIndent(policyManagerResp, "", "\t")
 	log.Println("err :", err)
@@ -78,8 +77,7 @@ func randomHex(n int) (string, error) {
 	return hex.EncodeToString(bytes), nil
 }
 
-func ConvertGrpcReqToOpenApiReq(in *pb.ApplicationContext) (*openapiclientmodels.PolicyManagerRequest, string, error) {
-
+func ConvertGrpcReqToOpenAPIReq(in *pb.ApplicationContext) (*openapiclientmodels.PolicyManagerRequest, string, error) {
 	req := openapiclientmodels.PolicyManagerRequest{}
 	action := openapiclientmodels.PolicyManagerRequestAction{}
 	resource := openapiclientmodels.Resource{}
@@ -113,11 +111,9 @@ func ConvertGrpcReqToOpenApiReq(in *pb.ApplicationContext) (*openapiclientmodels
 	req.SetContext(reqContext)
 
 	return &req, creds, nil
-
 }
 
-func ConvertOpenApiReqToGrpcReq(in *openapiclientmodels.PolicyManagerRequest, creds string) (*pb.ApplicationContext, error) {
-
+func ConvertOpenAPIReqToGrpcReq(in *openapiclientmodels.PolicyManagerRequest, creds string) (*pb.ApplicationContext, error) {
 	credentialPath := creds
 	action := in.GetAction()
 	processingGeo := (&action).GetProcessingLocation()
@@ -132,23 +128,23 @@ func ConvertOpenApiReqToGrpcReq(in *openapiclientmodels.PolicyManagerRequest, cr
 		properties["role"] = role
 	}
 
-	appInfo := &pb.ApplicationDetails{ProcessingGeography: string(processingGeo), Properties: properties}
+	appInfo := &pb.ApplicationDetails{ProcessingGeography: processingGeo, Properties: properties}
 
 	datasetContextList := []*pb.DatasetContext{}
 	resource := in.GetResource()
-	datasetId := (&resource).GetName()
-	dataset := &pb.DatasetIdentifier{DatasetId: datasetId}
+	datasetID := (&resource).GetName()
+	dataset := &pb.DatasetIdentifier{DatasetId: datasetID}
 	// ?? this is not supported in openapi
 	destination := ""
 	actionType := (&action).GetActionType()
 
 	var grpcActionType pb.AccessOperation_AccessType
-	if actionType == openapiclientmodels.READ {
+	switch actionType {
+	case openapiclientmodels.READ:
 		grpcActionType = pb.AccessOperation_READ
-	} else if actionType == openapiclientmodels.WRITE {
+	case openapiclientmodels.WRITE:
 		grpcActionType = pb.AccessOperation_WRITE
-	} else {
-		// default is read
+	default: // default is read
 		grpcActionType = pb.AccessOperation_READ
 	}
 
@@ -163,10 +159,9 @@ func ConvertOpenApiReqToGrpcReq(in *openapiclientmodels.PolicyManagerRequest, cr
 	return appContext, nil
 }
 
-func ConvertOpenApiRespToGrpcResp(
+func ConvertOpenAPIRespToGrpcResp(
 	out *openapiclientmodels.PolicyManagerResponse,
 	datasetID string, op *pb.AccessOperation) (*pb.PoliciesDecisions, error) {
-
 	resultItems := out.GetResult()
 	enforcementActions := make([]*pb.EnforcementAction, 0)
 	usedPolicies := make([]*pb.Policy, 0)
@@ -247,13 +242,11 @@ func ConvertOpenApiRespToGrpcResp(
 	return &pb.PoliciesDecisions{DatasetDecisions: datasetDecisionList}, nil
 }
 
-func ConvertGrpcRespToOpenApiResp(result *pb.PoliciesDecisions) (*openapiclientmodels.PolicyManagerResponse, error) {
-
+func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*openapiclientmodels.PolicyManagerResponse, error) {
 	// convert GRPC response to Open Api Response - start
-	//decisionId := "3ffb47c7-c3c7-4fe7-b244-b38dc8951b87"
 	// we dont get decision id returned from OPA from GRPC response. So we generate random hex string
-	decisionId, _ := randomHex(20)
-	log.Println("decision id generated", decisionId)
+	decisionID, _ := randomHex(20)
+	log.Println("decision id generated", decisionID)
 
 	var datasetDecisions []*pb.DatasetDecision
 	var decisions []*pb.OperationDecision
@@ -263,13 +256,10 @@ func ConvertGrpcRespToOpenApiResp(result *pb.PoliciesDecisions) (*openapiclientm
 	// we assume only one dataset decision is passed
 	for i := 0; i < len(datasetDecisions); i++ {
 		datasetDecision := datasetDecisions[i]
-		//datasetID := datasetDecision.GetDataset()
 		decisions = datasetDecision.GetDecisions()
 
 		for j := 0; j < len(decisions); j++ {
 			decision := decisions[j]
-			//operation := decision.GetOperation()
-
 			var enfActionList []*pb.EnforcementAction
 			var usedPoliciesList []*pb.Policy
 			enfActionList = decision.GetEnforcementActions()
@@ -336,7 +326,7 @@ func ConvertGrpcRespToOpenApiResp(result *pb.PoliciesDecisions) (*openapiclientm
 		}
 	}
 	// convert GRPC response to Open Api Response - end
-	policyManagerResp := &openapiclientmodels.PolicyManagerResponse{DecisionId: &decisionId, Result: respResult}
+	policyManagerResp := &openapiclientmodels.PolicyManagerResponse{DecisionId: &decisionID, Result: respResult}
 
 	log.Println("policyManagerResp in convGrpcRespToOpenApiResp", policyManagerResp)
 
