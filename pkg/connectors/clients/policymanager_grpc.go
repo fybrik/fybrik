@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"runtime/debug"
 	"time"
 
 	"emperror.dev/errors"
@@ -46,6 +47,10 @@ func NewGrpcPolicyManager(name string, connectionURL string, connectionTimeout t
 
 func (m *grpcPolicyManager) GetPoliciesDecisions(
 	in *openapiclientmodels.PolicyManagerRequest, creds string) (*openapiclientmodels.PolicyManagerResponse, error) {
+	log.Println("printing  stack trace in GetPoliciesDecisions")
+	debug.PrintStack()
+	log.Println("printing  stack trace in GetPoliciesDecisions - end ")
+	log.Println("openapiclientmodels.PolicyManagerRequest: received in GetPoliciesDecisions: ", *in)
 	appContext, _ := ConvertOpenAPIReqToGrpcReq(in, creds)
 	log.Println("appContext: created from convertOpenApiReqToGrpcReq: ", appContext)
 
@@ -272,6 +277,7 @@ func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*openapiclientm
 				args := enfAction.GetArgs()
 				log.Println("args received: ", args)
 				log.Println("name received: ", name)
+				log.Println("level received: ", level)
 				policyManagerResult := openapiclientmodels.ResultItem{}
 
 				if level == pb.EnforcementAction_COLUMN {

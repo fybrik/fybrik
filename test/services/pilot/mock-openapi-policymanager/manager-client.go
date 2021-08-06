@@ -54,7 +54,8 @@ func main() {
 
 	reqCtx := make(map[string]interface{})
 	reqCtx["intent"] = "Fraud Detection"
-	reqCtx["role"] = "Data Scientist"
+	// reqCtx["role"] = "Data Scientist"
+	reqCtx["role"] = "Business Analyst"
 	input.SetContext(reqCtx)
 
 	action := openapiclientmodels.PolicyManagerRequestAction{}
