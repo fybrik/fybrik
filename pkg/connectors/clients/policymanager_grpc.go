@@ -239,6 +239,7 @@ func ConvertOpenAPIRespToGrpcResp(
 			enforcementActions = append(enforcementActions, newEnforcementAction)
 
 			policy := resultItems[i].GetPolicy()
+			log.Println("policy got in ConvertOpenAPIRespToGrpcResp: ", policy)
 			newUsedPolicy := &pb.Policy{Description: policy}
 			usedPolicies = append(usedPolicies, newUsedPolicy)
 		}
