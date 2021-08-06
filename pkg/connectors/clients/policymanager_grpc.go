@@ -240,7 +240,7 @@ func ConvertOpenAPIRespToGrpcResp(
 
 			policy := resultItems[i].GetPolicy()
 			log.Println("policy got in ConvertOpenAPIRespToGrpcResp: ", policy)
-			if policy != "" {
+			if policy == "" {
 				policy = "Default Message: Deny access to Dataset"
 			}
 			newUsedPolicy := &pb.Policy{Description: policy}
