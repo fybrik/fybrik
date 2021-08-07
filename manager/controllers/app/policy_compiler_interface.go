@@ -4,6 +4,8 @@
 package app
 
 import (
+	"log"
+
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
@@ -37,9 +39,13 @@ func ConstructApplicationContext(datasetID string, input *app.FybrikApplication,
 func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, input *app.FybrikApplication, op *pb.AccessOperation) ([]*pb.EnforcementAction, error) {
 	// call external policy manager to get governance instructions for this operation
 	appContext := ConstructApplicationContext(datasetID, input, op)
+	log.Println("appContext before calling GetPoliciesDecisions in LookupPolicyDecisions", appContext)
 	openapiReq, creds, _ := connectors.ConvertGrpcReqToOpenAPIReq(appContext)
+	log.Println("openapiReq after calling ConvertGrpcReqToOpenAPIReq in LookupPolicyDecisions", openapiReq)
 	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)
+	log.Println("openapiresp after GetPoliciesDecisions in LookupPolicyDecisions", openapiResp)
 	pcresponse, _ := connectors.ConvertOpenAPIRespToGrpcResp(openapiResp, datasetID, op)
+	log.Println("pcresponse after GetPoliciesDecisions in LookupPolicyDecisions", pcresponse)
 
 	actions := []*pb.EnforcementAction{}
 	if err != nil {
