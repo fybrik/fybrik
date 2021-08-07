@@ -38,6 +38,7 @@ func ConstructApplicationContext(datasetID string, input *app.FybrikApplication,
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
 func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, input *app.FybrikApplication, op *pb.AccessOperation) ([]*pb.EnforcementAction, error) {
 	// call external policy manager to get governance instructions for this operation
+	log.Println("AccessOperation before calling ConstructApplicationContext in LookupPolicyDecisions", op)
 	appContext := ConstructApplicationContext(datasetID, input, op)
 	log.Println("appContext before calling GetPoliciesDecisions in LookupPolicyDecisions", appContext)
 	openapiReq, creds, _ := connectors.ConvertGrpcReqToOpenAPIReq(appContext)
