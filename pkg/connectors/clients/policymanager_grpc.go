@@ -197,10 +197,11 @@ func ConvertOpenAPIRespToGrpcResp(
 		if name == "redact" {
 			if additionalProperties != nil {
 				fmt.Printf("t1: %s\n", reflect.TypeOf(additionalProperties["columns"]))
-				if colNames, ok := additionalProperties["columns"].([]string); ok {
+				if colNames, ok := additionalProperties["columns"].([]interface{}); ok {
 					for j := 0; j < len(colNames); j++ {
+						log.Println("colNames[j].(string)", colNames[j].(string))
 						newEnforcementAction := &pb.EnforcementAction{Name: "redact", Id: "redact-ID",
-							Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": colNames[j]}}
+							Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": colNames[j].(string)}}
 						enforcementActions = append(enforcementActions, newEnforcementAction)
 
 						policy := resultItems[i].GetPolicy()
