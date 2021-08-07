@@ -108,11 +108,11 @@ func ConvertGrpcReqToOpenAPIReq(in *pb.ApplicationContext) (*openapiclientmodels
 		datasetID := datasets[i].GetDataset().GetDatasetId()
 		resource.SetName(datasetID)
 	}
-	req.SetAction(action)
 	req.SetResource(resource)
 
 	processingGeo := in.GetAppInfo().GetProcessingGeography()
 	action.SetProcessingLocation(processingGeo)
+	req.SetAction(action)
 
 	reqContext := make(map[string]interface{})
 	properties := in.GetAppInfo().GetProperties()
