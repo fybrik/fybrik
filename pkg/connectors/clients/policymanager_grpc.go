@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"reflect"
 	"runtime/debug"
 	"time"
 
@@ -195,6 +196,7 @@ func ConvertOpenAPIRespToGrpcResp(
 
 		if name == "redact" {
 			if additionalProperties != nil {
+				fmt.Printf("t1: %s\n", reflect.TypeOf(additionalProperties["columns"]))
 				if colNames, ok := additionalProperties["columns"].([]string); ok {
 					for j := 0; j < len(colNames); j++ {
 						newEnforcementAction := &pb.EnforcementAction{Name: "redact", Id: "redact-ID",
@@ -205,6 +207,8 @@ func ConvertOpenAPIRespToGrpcResp(
 						newUsedPolicy := &pb.Policy{Description: policy}
 						usedPolicies = append(usedPolicies, newUsedPolicy)
 					}
+				} else {
+					log.Println("additionalProperties does not have array of strings")
 				}
 			}
 		}
