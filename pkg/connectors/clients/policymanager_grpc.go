@@ -176,12 +176,19 @@ func ConvertOpenAPIRespToGrpcResp(
 	log.Println("printing  stack trace in ConvertOpenAPIRespToGrpcResp")
 	debug.PrintStack()
 	log.Println("printing  stack trace in ConvertOpenAPIRespToGrpcResp - end ")
+
+	res, err := json.MarshalIndent(out, "", "\t")
+	log.Println("err :", err)
+	log.Println("Marshalled response in ConvertOpenAPIRespToGrpcResp:", string(res))
+
 	resultItems := out.GetResult()
 	enforcementActions := make([]*pb.EnforcementAction, 0)
 	usedPolicies := make([]*pb.Policy, 0)
 
 	for i := 0; i < len(resultItems); i++ {
 		action := resultItems[i].GetAction()
+		log.Println("printing action ConvertOpenAPIRespToGrpcResp ", action)
+		log.Println("printing action.AdditionalProperties ConvertOpenAPIRespToGrpcResp ", action.AdditionalProperties)
 		name := action.GetName()
 		log.Println("name received in ConvertOpenAPIRespToGrpcResp", name)
 		additionalProperties := action.AdditionalProperties
