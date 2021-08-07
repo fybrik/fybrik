@@ -12,6 +12,7 @@ import (
 	"log"
 	"reflect"
 	"runtime/debug"
+	"strings"
 	"time"
 
 	"emperror.dev/errors"
@@ -194,9 +195,9 @@ func ConvertOpenAPIRespToGrpcResp(
 		log.Println("name received in ConvertOpenAPIRespToGrpcResp", name)
 		additionalProperties := action.AdditionalProperties
 
-		if name == "redact" {
+		if strings.EqualFold("redact", name) {
 			if additionalProperties != nil {
-				fmt.Printf("t1: %s\n", reflect.TypeOf(additionalProperties["columns"]))
+				fmt.Printf("type of additionalProperties\\[\"columns\"\\]: %s\n", reflect.TypeOf(additionalProperties["columns"]))
 				if colNames, ok := additionalProperties["columns"].([]interface{}); ok {
 					for j := 0; j < len(colNames); j++ {
 						log.Println("colNames[j].(string)", colNames[j].(string))
@@ -214,12 +215,14 @@ func ConvertOpenAPIRespToGrpcResp(
 			}
 		}
 
-		if name == "remove" {
+		if strings.EqualFold("remove", name) {
 			if additionalProperties != nil {
-				if colNames, ok := additionalProperties["columns"].([]string); ok {
+				fmt.Printf("type of additionalProperties\\[\"columns\"\\]: %s\n", reflect.TypeOf(additionalProperties["columns"]))
+				if colNames, ok := additionalProperties["columns"].([]interface{}); ok {
 					for j := 0; j < len(colNames); j++ {
+						log.Println("colNames[j].(string)", colNames[j].(string))
 						newEnforcementAction := &pb.EnforcementAction{Name: "removed", Id: "removed-ID",
-							Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": colNames[j]}}
+							Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": colNames[j].(string)}}
 						enforcementActions = append(enforcementActions, newEnforcementAction)
 
 						policy := resultItems[i].GetPolicy()
@@ -230,12 +233,14 @@ func ConvertOpenAPIRespToGrpcResp(
 			}
 		}
 
-		if name == "encrypt" {
+		if strings.EqualFold("encrypt", name) {
 			if additionalProperties != nil {
-				if colNames, ok := additionalProperties["columns"].([]string); ok {
+				fmt.Printf("type of additionalProperties\\[\"columns\"\\]: %s\n", reflect.TypeOf(additionalProperties["columns"]))
+				if colNames, ok := additionalProperties["columns"].([]interface{}); ok {
 					for j := 0; j < len(colNames); j++ {
+						log.Println("colNames[j].(string)", colNames[j].(string))
 						newEnforcementAction := &pb.EnforcementAction{Name: "encrypted", Id: "encrypted-ID",
-							Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": colNames[j]}}
+							Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": colNames[j].(string)}}
 						enforcementActions = append(enforcementActions, newEnforcementAction)
 
 						policy := resultItems[i].GetPolicy()
@@ -246,7 +251,7 @@ func ConvertOpenAPIRespToGrpcResp(
 			}
 		}
 
-		if name == "deny" {
+		if strings.EqualFold("deny", name) {
 			newEnforcementAction := &pb.EnforcementAction{Name: "Deny", Id: "Deny-ID", Level: pb.EnforcementAction_DATASET, Args: map[string]string{}}
 			enforcementActions = append(enforcementActions, newEnforcementAction)
 
@@ -259,7 +264,7 @@ func ConvertOpenAPIRespToGrpcResp(
 			usedPolicies = append(usedPolicies, newUsedPolicy)
 		}
 
-		if name == "allow" {
+		if strings.EqualFold("allow", name) {
 			newEnforcementAction := &pb.EnforcementAction{Name: "Allow", Id: "Allow-ID", Level: pb.EnforcementAction_DATASET, Args: map[string]string{}}
 			enforcementActions = append(enforcementActions, newEnforcementAction)
 		}
