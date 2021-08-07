@@ -316,7 +316,13 @@ func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*openapiclientm
 					action := make(map[string]interface{})
 					if name == "redact" {
 						action["name"] = "redact"
-						action["columns"] = []string{args["column_name"]}
+						var colName string
+						if _, ok := args["column_name"]; ok {
+							colName = args["column_name"]
+						} else {
+							colName = args["column"]
+						}
+						action["columns"] = []string{colName}
 					}
 					if name == "encrypt" {
 						action["name"] = "encrypt"
