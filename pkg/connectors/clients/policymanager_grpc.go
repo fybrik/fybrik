@@ -342,10 +342,10 @@ func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*openapiclientm
 				if level == pb.EnforcementAction_DATASET || level == pb.EnforcementAction_UNKNOWN {
 					actionOnDataset := openapiclientmodels.Action{}
 					if name == "Deny" {
-						actionOnDataset.SetName("deny")
+						actionOnDataset.SetName("Deny")
 					}
 					if name == "Allow" {
-						actionOnDataset.SetName("allow")
+						actionOnDataset.SetName("Allow")
 					}
 					policyManagerResult.SetAction(actionOnDataset)
 				}
