@@ -1,0 +1,134 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  labels:
+    app.kubernetes.io/version: "0.1"
+    operator.tekton.dev/provider-type: redhat
+  name: buildah
+spec:
+  description: |-
+    Buildah task builds source into a container image and then pushes it to a container registry.
+    Buildah Task builds source into a container image using Project Atomic's Buildah build tool.It uses Buildah's support for building from Dockerfiles, using its buildah bud command.This command executes the directives in the Dockerfile to assemble a container image, then pushes that image to a container registry.
+  params:
+  - description: Reference of the image buildah will produce.
+    name: IMAGE
+    type: string
+  - default: quay.io/buildah/stable:v1.17.0
+    description: The location of the buildah builder image.
+    name: BUILDER_IMAGE
+    type: string
+  - default: overlay
+    description: Set buildah storage driver
+    name: STORAGE_DRIVER
+    type: string
+  - default: ./Dockerfile
+    description: Path to the Dockerfile to build.
+    name: DOCKERFILE
+    type: string
+  - default: .
+    description: Path to the directory to use as context.
+    name: CONTEXT
+    type: string
+  - default: "true"
+    description: Verify the TLS on the registry endpoint (for push/pull to a non-TLS
+      registry)
+    name: TLSVERIFY
+    type: string
+  - default: oci
+    description: The format of the built container, oci or docker
+    name: FORMAT
+    type: string
+  - default: ""
+    description: Extra parameters passed for the build command when building images.
+    name: BUILD_EXTRA_ARGS
+    type: string
+  - default: ""
+    description: Extra parameters passed for the push command when pushing images.
+    name: PUSH_EXTRA_ARGS
+    type: string
+  - default: ""
+    description: Helm property that this image corresponds to
+    name: HELM_PROPERTY
+    type: string
+  - default: ""
+    name: docker-hostname
+    type: string
+  - default: ""
+    name: docker-namespace
+    type: string
+  results:
+  - description: Digest of the image just built.
+    name: IMAGE_DIGEST
+  - description: Helm property that this image corresponds to
+    name: HELM_PROPERTY
+  - description: docker-namespace of the image just built 
+    name: docker-namespace
+  - description: docker-hostname of the image just built
+    name: docker-hostname
+  - description: image name of the image just built
+    name: IMAGE
+  - description: full image (name+digest)
+    name: FULL_IMAGE
+  steps:
+  - image: $(params.BUILDER_IMAGE)
+    name: build
+    resources: {}
+    script: |
+      buildah --storage-driver=$(params.STORAGE_DRIVER) bud \
+        $(params.BUILD_EXTRA_ARGS) --format=$(params.FORMAT) \
+        --tls-verify=$(params.TLSVERIFY) --no-cache \
+        -f $(params.DOCKERFILE) -t $(params.IMAGE) $(params.CONTEXT)
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /var/lib/containers
+      name: varlibcontainers
+    workingDir: $(workspaces.source.path)
+  - image: $(params.BUILDER_IMAGE)
+    name: push
+    resources: {}
+    script: |
+      unique_id=$(echo $(params.IMAGE) | sed 's/.*\///')
+      buildah --storage-driver=$(params.STORAGE_DRIVER) push \
+        $(params.PUSH_EXTRA_ARGS) --tls-verify=$(params.TLSVERIFY) \
+        --digestfile $(workspaces.source.path)/image-digest-${unique_id} $(params.IMAGE) \
+        docker://$(params.IMAGE)
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /var/lib/containers
+      name: varlibcontainers
+    workingDir: $(workspaces.source.path)
+  - image: $(params.BUILDER_IMAGE)
+    name: digest-to-results
+    resources: {}
+    script: |
+      unique_id=$(echo $(params.IMAGE) | sed 's/.*\///')
+      cat $(workspaces.source.path)/image-digest-${unique_id} | tee /tekton/results/IMAGE_DIGEST
+  - image: $(params.BUILDER_IMAGE)
+    name: helm-property-to-results
+    resources: {}
+    script: echo -n $(params.HELM_PROPERTY) > /tekton/results/HELM_PROPERTY
+  - image: $(params.BUILDER_IMAGE)
+    name: docker-namespace-to-results
+    resources: {}
+    script: echo -n $(params.docker-namespace) > /tekton/results/docker-namespace
+  - image: $(params.BUILDER_IMAGE)
+    name: docker-hostname-to-results
+    resources: {}
+    script: echo -n $(params.docker-hostname) > /tekton/results/docker-hostname
+  - image: $(params.BUILDER_IMAGE)
+    name: image-to-results
+    resources: {}
+    script: echo -n $(params.IMAGE) > /tekton/results/IMAGE
+  - image: $(params.BUILDER_IMAGE)
+    name: full-image-to-results
+    script: |
+      unique_id=$(echo $(params.IMAGE) | sed 's/.*\///')
+      digest=$(cat $(workspaces.source.path)/image-digest-${unique_id})
+      echo -n $(params.IMAGE)@${digest} > /tekton/results/FULL_IMAGE
+  volumes:
+  - emptyDir: {}
+    name: varlibcontainers
+  workspaces:
+  - name: source

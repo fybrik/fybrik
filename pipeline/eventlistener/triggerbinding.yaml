@@ -1,0 +1,37 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: image-triggerbinding
+spec:
+  params:
+    - name: IMAGE_DIGEST
+      value: $(body.status.taskResults[?(@.name=='IMAGE_DIGEST')].value)
+    - name: IMAGE_NAME
+      value: $(body.spec.params[?(@.name=='IMAGE')].value)
+    - name: docker-hostname
+      value: $(body.spec.params[?(@.name=='docker-hostname')].value)
+    - name: docker-namespace
+      value: $(body.spec.params[?(@.name=='docker-namespace')].value)
+    - name: NAMESPACE
+      value: $(body.metadata.namespace)
+    - name: IMAGE_ID
+      value: $(body.status.taskResults[?(@.name=='HELM_PROPERTY')].value)
+    - name: event-type
+      value: $(header.Ce-Type)
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: code-change-triggerbinding
+spec:
+  params:
+    - name: COMPONENT_NAME
+      value: $(body.spec.params[?(@.name=='context')].value)
+    - name: docker-hostname
+      value: $(body.spec.params[?(@.name=='docker-hostname')].value)
+    - name: docker-namespace
+      value: $(body.spec.params[?(@.name=='docker-namespace')].value)
+    - name: NAMESPACE
+      value: $(body.metadata.namespace)
+    - name: event-type
+      value: $(header.Ce-Type)

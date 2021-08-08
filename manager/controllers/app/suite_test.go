@@ -57,10 +57,14 @@ func TestAPIs(t *testing.T) {
 var _ = BeforeSuite(func(done Done) {
 	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 
+	path, pathErr := os.Getwd()
+	if pathErr != nil {
+		logf.Log.Info(pathErr.Error())
+	}
 	By("bootstrapping test environment")
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{
-			filepath.Join("..", "..", "..", "charts", "fybrik-crd", "templates"),
+			filepath.Join(path, "..", "..", "..", "charts", "fybrik-crd", "templates"),
 		},
 		ErrorIfCRDPathMissing: true,
 	}

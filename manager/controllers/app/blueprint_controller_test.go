@@ -59,6 +59,14 @@ var _ = Describe("Blueprint Controller Real Env", func() {
 	Context("Blueprint", func() {
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test
+			const interval = time.Millisecond * 100
+			blueprint := &app.Blueprint{}
+			Expect(readObjectFromFile("../../testdata/blueprint-read.yaml", blueprint)).ToNot(HaveOccurred())
+			blueprint.SetNamespace("default")
+			_ = k8sClient.Delete(context.Background(), blueprint)
+			blueprint.SetNamespace("fybrik-blueprints")
+			_ = k8sClient.Delete(context.Background(), blueprint)
+			time.Sleep(interval)
 		})
 
 		AfterEach(func() {

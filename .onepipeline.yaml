@@ -1,0 +1,125 @@
+version: '1'
+
+setup:
+  image: icr.io/continuous-delivery/pipeline/pipeline-base-image:2.12@sha256:ff4053b0bca784d6d105fee1d008cfb20db206011453071e86b69ca3fde706a4
+  script: |
+    #!/usr/bin/env bash
+    set -x
+    GH_TOKEN=$(cat "$WORKSPACE/git-token")
+    OWNER=$(jq -r '.services[] | select(.toolchain_binding.name=="app-repo") | .parameters.owner_id' /toolchain/toolchain.json)
+    REPO=$(jq -r '.services[] | select(.toolchain_binding.name=="app-repo") | .parameters.repo_name' /toolchain/toolchain.json)
+    curl -u ":$GH_TOKEN" https://github.ibm.com/api/v3/repos/$OWNER/$REPO/branches/master/protection -XPUT -d '{"required_pull_request_reviews":{"dismiss_stale_reviews":true},"required_status_checks":{"strict":true,"contexts":["tekton/code-branch-protection","tekton/code-unit-tests","tekton/code-cis-check","tekton/code-vulnerability-scan","tekton/code-detect-secrets"]},"enforce_admins":null,"restrictions":null}'
+    env
+    ls $WORKSPACE
+    oc login $(get_env openshift_cluster) -u $(get_env admin_user) -p $(get_env admin_pw) --insecure-skip-tls-verify=true
+    set +e
+    oc new-project fybrik-system
+    set -e
+    kubectl get po -o wide
+test:
+  abort_on_failure: false
+  image: wcp-ibm-streams-docker-local.artifactory.swg-devops.com/pipelines-tutorial/compliance-baseimage-with-tkn:2.26.1
+  script: |
+    #!/usr/bin/env bash
+    #cd ../"$(load_repo app-repo path)"
+    if [[ "$PIPELINE_DEBUG" == 1 ]]; then
+      trap env EXIT
+      env
+      set -x
+    fi
+    set -x
+    env
+    ls $WORKSPACE
+    oc login $(get_env openshift_cluster) -u $(get_env admin_user) -p $(get_env admin_pw) --insecure-skip-tls-verify=true
+    set +e
+    oc new-project fybrik-system
+    oc project fybrik-system
+    oc delete pipelinerun --all --wait
+    set -e
+    export GH_TOKEN=$(get_env different-git-token)
+    export git_user=$(get_env git-user)
+    . pipeline/source-internal.sh
+    github_workspace=`pwd`/../mesh-for-data run_tkn=$(get_env run_tkn) skip_tests=false bash -x pipeline/bootstrap-pipeline.sh fybrik-system
+    for i in $(oc get po --no-headers | grep run-unit | cut -d' ' -f1); do oc logs $i -c step-unit-test > $i.logs ; save_artifact test log_$i=$i.logs; done
+containerize:
+  dind: true
+  image: wcp-ibm-streams-docker-local.artifactory.swg-devops.com/pipelines-tutorial/compliance-baseimage-with-tkn:2.26.1
+  script: |
+    #!/bin/bash
+    set -x
+    if [[ "$PIPELINE_DEBUG" == 1 ]]; then
+      trap env EXIT
+      env
+      set -x
+    fi
+    env
+    ls $WORKSPACE
+    oc login $(get_env openshift_cluster) -u $(get_env admin_user) -p $(get_env admin_pw) --insecure-skip-tls-verify=true
+    oc project fybrik-system
+    . pipeline/common_functions.sh
+    cat > ${TMP}/streams_csv_check_script.sh <<EOH
+    #!/bin/bash
+    set -x
+    oc get pipelinerun --no-headers
+    oc get pipelinerun --no-headers | grep -e Failed -e Completed
+    EOH
+    chmod u+x ${TMP}/streams_csv_check_script.sh
+    try_command "${TMP}/streams_csv_check_script.sh"  40 true 5
+    pipelinerun=$(oc get pipelinerun --no-headers | cut -d' ' -f1)
+    oc get pipelinerun $pipelinerun -o yaml > /tmp/details
+    #cat /tmp/details
+    #yq r /tmp/details 'status.taskRuns[*].status.taskResults'
+    #yq r /tmp/details 'status.taskRuns[*].status.taskResults' | grep FULL_IMAGE -A1
+    #yq r /tmp/details 'status.taskRuns[*].status.taskResults' | grep FULL_IMAGE -A1 | grep value:
+    #yq r /tmp/details 'status.taskRuns[*].status.taskResults' | grep FULL_IMAGE -A1 | grep value: | cut -d':' -f2-
+  
+    # Create the namespace if needed to ensure the push will be can be successfull
+    ICR_REGISTRY_NAMESPACE=$(get_env registry-namespace)
+    echo "Checking registry namespace: ${ICR_REGISTRY_NAMESPACE}"
+    IBM_LOGIN_REGISTRY_REGION=$(cat /config/registry-region | awk -F: '{print $3}')
+    ibmcloud login --apikey @/config/api-key -r "$IBM_LOGIN_REGISTRY_REGION"
+    NS=$( ibmcloud cr namespaces | sed 's/ *$//' | grep -x "${ICR_REGISTRY_NAMESPACE}" ||: )
+    if [ -z "${NS}" ]; then
+        echo "Registry namespace ${ICR_REGISTRY_NAMESPACE} not found"
+        ibmcloud cr namespace-add "${ICR_REGISTRY_NAMESPACE}"
+        echo "Registry namespace ${ICR_REGISTRY_NAMESPACE} created."
+    else
+        echo "Registry namespace ${ICR_REGISTRY_NAMESPACE} found."
+    fi
+    ICR_REGISTRY_REGION=us
+
+    images=$(yq r /tmp/details 'status.taskRuns[*].status.taskResults' | grep FULL_IMAGE -A1 | grep value: | cut -d':' -f2-)
+    for i in $images
+    do
+        icr_route_image=$(echo $i | sed "s|image-registry.openshift-image-registry.svc:5000/fybrik-system|$ICR_REGISTRY_REGION.icr.io/$ICR_REGISTRY_NAMESPACE|g")
+        save_artifact service type=image name="$(echo ${icr_route_image} | cut -d'@' -f1)" digest="$(echo $i | cut -d'@' -f2)" tags="latest"
+        save_artifact service_debug type=image name="$(echo ${icr_route_image} | cut -d'@' -f1)" digest="$(echo $i | cut -d'@' -f2)"
+    done
+deploy:
+  image: icr.io/continuous-delivery/pipeline/pipeline-base-image:2.12@sha256:ff4053b0bca784d6d105fee1d008cfb20db206011453071e86b69ca3fde706a4
+  script: |
+    #!/usr/bin/env bash
+    if [[ "$PIPELINE_DEBUG" == 1 ]]; then
+      trap env EXIT
+      env
+      set -x
+    fi
+    # No-op, already deployed as part of build/unit testing
+acceptance-test:
+  abort_on_failure: false
+  image: wcp-ibm-streams-docker-local.artifactory.swg-devops.com/pipelines-tutorial/compliance-baseimage-with-tkn:2.26.1
+  script: |
+    env
+    set -x
+    ls $WORKSPACE
+    oc login $(get_env openshift_cluster) -u $(get_env admin_user) -p $(get_env admin_pw) --insecure-skip-tls-verify=true
+    oc project fybrik-system
+    # go get github.com/tebeka/go2xunit
+    for i in $(oc get po --no-headers | grep run-integr | cut -d' ' -f1); do oc logs $i -c step-unit-test > $i.logs ; cat $i.logs | ~/go/bin/go2xunit > $i.xml; save_artifact acceptance-test log_$i=$i.logs; save_artifact acceptance-test xml_$i=$i.xml ; done
+release:
+  abort_on_failure: false
+  image: wcp-compliance-automation-team-docker-local.artifactory.swg-devops.com/ibm-compliance-automation:1.2.4@sha256:dc98cc52c0caede42149c08727147520e30e81fee543b8dd5939b45d06baa142
+  script: |
+    #!/usr/bin/env bash
+    env
+    # No-op, no release process from one pipeline in place yet

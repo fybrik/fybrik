@@ -6,6 +6,7 @@ package motion
 import (
 	"context"
 	"io/ioutil"
+	"os"
 	"time"
 
 	kbatch "k8s.io/api/batch/v1"
@@ -22,7 +23,7 @@ import (
 var _ = Describe("BatchTransfer Controller", func() {
 
 	const timeout = time.Second * 30
-	const interval = time.Millisecond * 100
+	const interval = time.Millisecond * 300
 	const batchtransferName = "batchtransfer-sample"
 	const batchtransferNameSpace = "fybrik-blueprints"
 
@@ -38,6 +39,7 @@ var _ = Describe("BatchTransfer Controller", func() {
 			_ = k8sClient.Update(context.Background(), f)
 			time.Sleep(interval)
 			_ = k8sClient.Delete(context.Background(), f)
+			time.Sleep(interval * 10)
 		}
 	})
 
@@ -52,7 +54,15 @@ var _ = Describe("BatchTransfer Controller", func() {
 			batchTransfer := &motionv1.BatchTransfer{}
 			err = yaml.Unmarshal(batchTransferYAML, batchTransfer)
 			Expect(err).ToNot(HaveOccurred())
-
+			registry := os.Getenv("DOCKER_HOSTNAME")
+			registryNamespace := os.Getenv("DOCKER_NAMESPACE")
+			if len(registry) > 0 && registry != "ghcr.io" {
+				if len(registryNamespace) > 0 {
+					batchTransfer.Spec.Image = registry + "/" + registryNamespace + "/dummy-mover:latest"
+				} else {
+					batchTransfer.Spec.Image = registry + "/dummy-mover:latest"
+				}
+			}
 			key := client.ObjectKeyFromObject(batchTransfer)
 
 			// Create BatchTransfer
@@ -151,7 +161,7 @@ var _ = Describe("BatchTransfer Controller", func() {
 			Eventually(func() error {
 				f := &motionv1.BatchTransfer{}
 				return k8sClient.Get(context.Background(), key, f)
-			}, timeout, interval).ShouldNot(Succeed())
+			}, timeout, interval*10).ShouldNot(Succeed())
 		})
 	})
 })

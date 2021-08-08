@@ -1,0 +1,1023 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: build-and-deploy
+spec:
+  params:
+  - description: docker registry namespace.  Choose something unique.  If using the local OpenShift registry, make this the same as NAMESPACE.
+    name: docker-namespace
+    type: string
+  - description: namespace to deploy control plane to.  If nobody has deployed fybrik on this cluster before, choose fybrik-system.
+    name: NAMESPACE
+    type: string
+  - default: kind-registry:5000
+    description: docker registry hostname.  This is where images will be pushed once built
+    name: docker-hostname
+    type: string
+  - default: docker.io
+    description: where to pull dockerhub images from.
+    name: dockerhub-hostname
+    type: string
+  - default: vascan  
+    description: namespace in us.icr.io where images will be pushed for VA scan
+    name: va-scan-namespace
+    type: string
+  - description: url of the git repo for the code of deployment
+    name: git-url
+    type: string
+    default: github.com/mesh-for-data/mesh-for-data.git
+  - default: pipeline
+    description: branch/revision to be used from repo of the code for deployment
+    name: git-revision
+    type: string
+  - default: "false"
+    description: deploy vault or no.  If deploying to the fybrik-system namespace, make this true.
+    name: deployVault
+    type: string
+  - default: "/workspace/source/mesh-for-data/third_party/vault/vault-single-cluster/vault-rbac.yaml"
+    description: roles to create when deploying vault
+    name: vaultRoles
+    type: string
+  - default: "/workspace/source/mesh-for-data/third_party/vault/vault-single-cluster/values.yaml"
+    description: values file for use when helm deploying vault
+    name: vaultValues
+    type: string
+  - default: 'cluster.name="AmsterdamCluster",cluster.zone="Netherlands",cluster.region="Netherlands",cluster.vaultAuthPath="kubernetes"'
+    description: values to pass to helm install of mesh-for-data charts
+    type: string
+    name: mesh-for-data-values
+  - default: "docker.io/yakinikku/suede_compile:latest"
+    description: image to use for build
+    name: build_image
+    type: string
+  - default: "docker.io/lachlanevenson/k8s-helm"
+    description: image to use for helm
+    name: helm_image
+    type: string
+  - default: "false"
+    description: Skip Integration Tests
+    name: skipTests
+    type: string
+  - default: "false"
+    description: deploy CRDs or no.  If deploying to the fybrik-system namespace, make this true.
+    name: deployCRD
+    type: string
+  - default: "false"
+    description: deploy certmanager or no.  If deploying to the fybrik-system namespace, and bedrock is not installed, make this true.
+    name: deployCertManager
+    type: string
+  - default: "false"
+    description: install cluster scoped helm resources.  If deploying to the fybrik-system namespace, make this true
+    name: clusterScoped
+    type: string
+  - default: manager
+    description: image name for the manager.  Only necessary to switch this if you want to swap back and forth between alternate images
+    name: MANAGER_IMAGE
+    type: string
+  - default: katalog-connector
+    description: image name for the katalog-connector.  Only necessary to switch this if you want to swap back and forth between alternate images
+    name: KATALOG_IMAGE
+    type: string
+  - default: dummy-mover
+    description: image name for the dummy data mover.  Only necessary to switch this if you want to swap back and forth between alternate images
+    name: dummy-image
+    type: string
+  - description: Not currently used.  Leave as-is
+    name: deployment-name
+    type: string
+    default: fybrik
+  - description: Used only when restarting tasks.  Do not fill
+    name: IMAGE_DIGEST
+    type: string
+    default: "none"
+  - description: Used only when restarting tasks.  Do not fill
+    name: IMAGE_NAME
+    type: string
+    default: "none"
+  - description: Used only when restarting tasks.  Do not fill
+    name: IMAGE_ID
+    type: string
+    default: "none"
+  - description: Used only when restarting tasks.  Do not fill
+    name: COMPONENT_NAME
+    type: string
+    default: "all"
+  - description: Used only when restarting tasks.  Do not fill
+    name: INCREMENTAL_RESTART 
+    type: string
+    default: "false"
+  - description: Used only when restarting tasks.  Do not fill
+    name: INCREMENTAL_CODE_RESTART 
+    type: string
+    default: "false"
+  - description: Transfer images to icr
+    name: transfer-images-to-icr
+    type: string
+    default: "false"
+  tasks:
+  - name: fetch-repository
+    params:
+    - name: url
+      value: $(params.git-url)
+    - name: subdirectory
+      value: "mesh-for-data"
+    - name: deleteExisting
+      value: "true"
+    - name: revision
+      value: $(params.git-revision)
+    - name: INCREMENTAL_CODE_RESTART
+      value: $(params.INCREMENTAL_CODE_RESTART)
+    taskRef:
+      kind: Task
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-workspace
+    when:
+    - Input: $(params.IMAGE_DIGEST)
+      Operator: in
+      Values:
+      - "none"
+    - Input: $(params.INCREMENTAL_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+  - name: build-manager
+    params:
+    - name: target
+      value: source-build
+    - name: context
+      value: mesh-for-data/manager
+    - name: image
+      value: $(params.build_image)
+    - name: docker-hostname
+      value: "$(params.docker-hostname)"
+    - name: docker-namespace
+      value: "$(params.docker-namespace)"
+    - name: INCREMENTAL_CODE_RESTART
+      value: $(params.INCREMENTAL_CODE_RESTART)
+    runAfter:
+    - fetch-repository
+    taskRef:
+      kind: Task
+      name: make
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    when:
+    - Input: $(params.IMAGE_DIGEST)
+      Operator: in
+      Values:
+      - "none"
+    - Input: $(params.INCREMENTAL_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+  - name: build-image-manager
+    params:
+    - name: IMAGE
+      value: $(params.docker-hostname)/$(params.docker-namespace)/$(params.MANAGER_IMAGE)
+    - name: TLSVERIFY
+      value: "false"
+    - name: DOCKERFILE
+      value: mesh-for-data/manager/Dockerfile
+    - name: CONTEXT
+      value: mesh-for-data/manager
+    - name: BUILD_EXTRA_ARGS
+      value: --build-arg REGISTRY=$(params.docker-hostname)/$(params.docker-namespace)
+    - name: HELM_PROPERTY
+      value: manager.image
+    - name: docker-hostname
+      value: "$(params.docker-hostname)"
+    - name: docker-namespace
+      value: "$(params.docker-namespace)"
+    runAfter:
+    - build-manager
+    taskRef:
+      kind: Task
+      name: buildah
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    when:
+    - Input: $(params.IMAGE_DIGEST)
+      Operator: in
+      Values:
+      - "none"
+    - Input: $(params.INCREMENTAL_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+    - Input: $(params.COMPONENT_NAME)
+      Operator: in
+      Values:
+      - "all"
+      - "mesh-for-data/manager"
+  - name: transfer-image-manager-vulnerability-advisor
+    retries: 3
+    taskRef:
+      kind: Task
+      name: skopeo-copy
+    params:
+    - name: srcImageURL
+      value: docker://$(params.docker-hostname)/$(params.docker-namespace)/$(params.MANAGER_IMAGE)@$(tasks.build-image-manager.results.IMAGE_DIGEST)
+    - name: destImageURL
+      value: docker://us.icr.io/$(params.va-scan-namespace)/$(params.MANAGER_IMAGE)@$(tasks.build-image-manager.results.IMAGE_DIGEST)
+    - name: srcTLSverify
+      value: "false"
+    - name: destTLSverify
+      value: "false"
+    when:
+    - Input: $(params.transfer-images-to-icr)
+      Operator: in
+      Values:
+      - "true"
+    workspaces:
+      - name: images-url
+        workspace: images-url
+  - name: build-image-dummy-mover
+    params:
+    - name: IMAGE
+      value: $(params.docker-hostname)/$(params.docker-namespace)/$(params.dummy-image)
+    - name: DOCKERFILE
+      value: mesh-for-data/test/dummy-mover/Dockerfile.dummy-mover
+    - name: TLSVERIFY
+      value: "false"
+    - name: BUILD_EXTRA_ARGS
+      value: --build-arg REGISTRY=$(params.dockerhub-hostname)
+    - name: HELM_PROPERTY
+      value: dummymover.image
+    - name: docker-hostname
+      value: "$(params.docker-hostname)"
+    - name: docker-namespace
+      value: "$(params.docker-namespace)"
+    runAfter:
+    - fetch-repository
+    taskRef:
+      kind: Task
+      name: buildah
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    when:
+    - Input: $(params.IMAGE_DIGEST)
+      Operator: in
+      Values:
+      - "none"
+    - Input: $(params.INCREMENTAL_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+    - Input: $(params.COMPONENT_NAME)
+      Operator: in
+      Values:
+      - "all"
+      - "mesh-for-data/dummy-mover"
+  - name: transfer-image-dummy-mover-vulnerability-advisor
+    retries: 3
+    taskRef:
+      kind: Task
+      name: skopeo-copy
+    params:
+    - name: srcImageURL
+      value: docker://$(params.docker-hostname)/$(params.docker-namespace)/$(params.dummy-image)@$(tasks.build-image-dummy-mover.results.IMAGE_DIGEST)
+    - name: destImageURL
+      value: docker://us.icr.io/$(params.va-scan-namespace)/$(params.dummy-image)@$(tasks.build-image-dummy-mover.results.IMAGE_DIGEST)
+    - name: srcTLSverify
+      value: "false"
+    - name: destTLSverify
+      value: "false"
+    when:
+    - Input: $(params.transfer-images-to-icr)
+      Operator: in
+      Values:
+      - "true"
+    workspaces:
+      - name: images-url
+        workspace: images-url
+  - name: build-katalog
+    params:
+    - name: target
+      value: source-build
+    - name: context
+      value: mesh-for-data/connectors/katalog
+    - name: image
+      value: $(params.build_image)
+    - name: docker-hostname
+      value: "$(params.docker-hostname)"
+    - name: docker-namespace
+      value: "$(params.docker-namespace)"
+    - name: INCREMENTAL_CODE_RESTART
+      value: $(params.INCREMENTAL_CODE_RESTART)
+    runAfter:
+    - fetch-repository
+    taskRef:
+      kind: Task
+      name: make
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    when:
+    - Input: $(params.IMAGE_DIGEST)
+      Operator: in
+      Values:
+      - "none"
+    - Input: $(params.INCREMENTAL_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+  - name: build-image-katalog
+    params:
+    - name: IMAGE
+      value: $(params.docker-hostname)/$(params.docker-namespace)/katalog-connector
+    - name: DOCKERFILE
+      value: mesh-for-data/connectors/katalog/Dockerfile
+    - name: TLSVERIFY
+      value: "false"
+    - name: BUILD_EXTRA_ARGS
+      value: --build-arg REGISTRY=$(params.docker-hostname)/$(params.docker-namespace)
+    - name: CONTEXT
+      value: mesh-for-data/connectors/katalog
+    - name: HELM_PROPERTY
+      value: katalogConnector.image
+    - name: docker-hostname
+      value: "$(params.docker-hostname)"
+    - name: docker-namespace
+      value: "$(params.docker-namespace)"
+    runAfter:
+    - build-katalog
+    taskRef:
+      kind: Task
+      name: buildah
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    when:
+    - Input: $(params.IMAGE_DIGEST)
+      Operator: in
+      Values:
+      - "none"
+    - Input: $(params.INCREMENTAL_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+    - Input: $(params.COMPONENT_NAME)
+      Operator: in
+      Values:
+      - "all"
+      - "mesh-for-data/connectors/katalog"
+  - name: transfer-image-katalog-connector-vulnerability-advisor
+    retries: 3
+    taskRef:
+      kind: Task
+      name: skopeo-copy
+    params:
+    - name: srcImageURL
+      value: docker://$(params.docker-hostname)/$(params.docker-namespace)/katalog-connector@$(tasks.build-image-katalog.results.IMAGE_DIGEST)
+    - name: destImageURL
+      value: docker://us.icr.io/$(params.va-scan-namespace)/katalog-connector@$(tasks.build-image-katalog.results.IMAGE_DIGEST)
+    - name: srcTLSverify
+      value: "false"
+    - name: destTLSverify
+      value: "false"
+    when:
+    - Input: $(params.transfer-images-to-icr)
+      Operator: in
+      Values:
+      - "true"
+    workspaces:
+      - name: images-url
+        workspace: images-url
+  - name: build-opa
+    params:
+    - name: target
+      value: source-build
+    - name: context
+      value: mesh-for-data/connectors/opa
+    - name: image
+      value: $(params.build_image)
+    - name: docker-hostname
+      value: "$(params.docker-hostname)"
+    - name: docker-namespace
+      value: "$(params.docker-namespace)"
+    - name: INCREMENTAL_CODE_RESTART
+      value: $(params.INCREMENTAL_CODE_RESTART)
+    runAfter:
+    - fetch-repository
+    taskRef:
+      kind: Task
+      name: make
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    when:
+    - Input: $(params.IMAGE_DIGEST)
+      Operator: in
+      Values:
+      - "none"
+    - Input: $(params.INCREMENTAL_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+  - name: build-image-opa
+    params:
+    - name: IMAGE
+      value: $(params.docker-hostname)/$(params.docker-namespace)/opa-connector
+    - name: DOCKERFILE
+      value: mesh-for-data/connectors/opa/Dockerfile
+    - name: TLSVERIFY
+      value: "false"
+    - name: BUILD_EXTRA_ARGS
+      value: --build-arg REGISTRY=$(params.docker-hostname)/$(params.docker-namespace)
+    - name: CONTEXT
+      value: mesh-for-data/connectors/opa
+    - name: HELM_PROPERTY
+      value: opaConnector.image
+    - name: docker-hostname
+      value: "$(params.docker-hostname)"
+    - name: docker-namespace
+      value: "$(params.docker-namespace)"
+    runAfter:
+    - build-opa
+    taskRef:
+      kind: Task
+      name: buildah
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    when:
+    - Input: $(params.IMAGE_DIGEST)
+      Operator: in
+      Values:
+      - "none"
+    - Input: $(params.INCREMENTAL_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+    - Input: $(params.COMPONENT_NAME)
+      Operator: in
+      Values:
+      - "all"
+      - "mesh-for-data/connectors/opa"
+  - name: transfer-image-opa-connector-vulnerability-advisor
+    retries: 3
+    taskRef:
+      kind: Task
+      name: skopeo-copy
+    params:
+    - name: srcImageURL
+      value: docker://$(params.docker-hostname)/$(params.docker-namespace)/opa-connector@$(tasks.build-image-opa.results.IMAGE_DIGEST)
+    - name: destImageURL
+      value: docker://us.icr.io/$(params.va-scan-namespace)/opa-connector@$(tasks.build-image-opa.results.IMAGE_DIGEST)
+    - name: srcTLSverify
+      value: "false"
+    - name: destTLSverify
+      value: "false"
+    when:
+    - Input: $(params.transfer-images-to-icr)
+      Operator: in
+      Values:
+      - "true"
+    workspaces:
+      - name: images-url
+        workspace: images-url
+  - name: build-datacatalog
+    params:
+    - name: target
+      value: source-build
+    - name: context
+      value: mesh-for-data/test/services/datacatalog
+    - name: image
+      value: $(params.build_image)
+    - name: docker-hostname
+      value: "$(params.docker-hostname)"
+    - name: docker-namespace
+      value: "$(params.docker-namespace)"
+    - name: INCREMENTAL_CODE_RESTART
+      value: $(params.INCREMENTAL_CODE_RESTART)
+    runAfter:
+    - fetch-repository
+    taskRef:
+      kind: Task
+      name: make
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    when:
+    - Input: $(params.IMAGE_DIGEST)
+      Operator: in
+      Values:
+      - "none"
+    - Input: $(params.INCREMENTAL_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+  - name: build-image-datacatalog
+    params:
+    - name: IMAGE
+      value: $(params.docker-hostname)/$(params.docker-namespace)/data-catalog-mock
+    - name: DOCKERFILE
+      value: mesh-for-data/test/services/datacatalog/Dockerfile
+    - name: TLSVERIFY
+      value: "false"
+    - name: BUILD_EXTRA_ARGS
+      value: --build-arg REGISTRY=$(params.docker-hostname)/$(params.docker-namespace)
+    - name: CONTEXT
+      value: mesh-for-data/test/services/datacatalog
+    - name: HELM_PROPERTY
+      value: datacatalog.image
+    - name: docker-hostname
+      value: "$(params.docker-hostname)"
+    - name: docker-namespace
+      value: "$(params.docker-namespace)"
+    runAfter:
+    - build-datacatalog
+    taskRef:
+      kind: Task
+      name: buildah
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    when:
+    - Input: $(params.IMAGE_DIGEST)
+      Operator: in
+      Values:
+      - "none"
+    - Input: $(params.INCREMENTAL_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+    - Input: $(params.COMPONENT_NAME)
+      Operator: in
+      Values:
+      - "all"
+      - "mesh-for-data/test/services/datacatalog"
+  - name: transfer-image-datacatalog-vulnerability-advisor
+    retries: 3
+    taskRef:
+      kind: Task
+      name: skopeo-copy
+    params:
+    - name: srcImageURL
+      value: docker://$(params.docker-hostname)/$(params.docker-namespace)/data-catalog-mock@$(tasks.build-image-datacatalog.results.IMAGE_DIGEST)
+    - name: destImageURL
+      value: docker://us.icr.io/$(params.va-scan-namespace)/data-catalog-mock@$(tasks.build-image-datacatalog.results.IMAGE_DIGEST)
+    - name: srcTLSverify
+      value: "false"
+    - name: destTLSverify
+      value: "false"
+    when:
+    - Input: $(params.transfer-images-to-icr)
+      Operator: in
+      Values:
+      - "true"
+    workspaces:
+      - name: images-url
+        workspace: images-url
+  - name: build-servicepolicymanager
+    params:
+    - name: target
+      value: source-build
+    - name: context
+      value: mesh-for-data/test/services/policymanager
+    - name: image
+      value: $(params.build_image)
+    - name: docker-hostname
+      value: "$(params.docker-hostname)"
+    - name: docker-namespace
+      value: "$(params.docker-namespace)"
+    - name: INCREMENTAL_CODE_RESTART
+      value: $(params.INCREMENTAL_CODE_RESTART)
+    runAfter:
+    - fetch-repository
+    taskRef:
+      kind: Task
+      name: make
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    when:
+    - Input: $(params.IMAGE_DIGEST)
+      Operator: in
+      Values:
+      - "none"
+    - Input: $(params.INCREMENTAL_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+  - name: build-image-serverpolicymanager
+    params:
+    - name: IMAGE
+      value: $(params.docker-hostname)/$(params.docker-namespace)/serverpolicymanager-mock
+    - name: DOCKERFILE
+      value: mesh-for-data/test/services/policymanager/Dockerfile
+    - name: TLSVERIFY
+      value: "false"
+    - name: BUILD_EXTRA_ARGS
+      value: --build-arg REGISTRY=$(params.docker-hostname)/$(params.docker-namespace)
+    - name: CONTEXT
+      value: mesh-for-data/test/services/policymanager
+    - name: HELM_PROPERTY
+      value: servicepolicymanager.image
+    - name: docker-hostname
+      value: "$(params.docker-hostname)"
+    - name: docker-namespace
+      value: "$(params.docker-namespace)"
+    runAfter:
+    - build-servicepolicymanager
+    taskRef:
+      kind: Task
+      name: buildah
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    when:
+    - Input: $(params.IMAGE_DIGEST)
+      Operator: in
+      Values:
+      - "none"
+    - Input: $(params.INCREMENTAL_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+    - Input: $(params.COMPONENT_NAME)
+      Operator: in
+      Values:
+      - "all"
+      - "mesh-for-data/test/services/policymanager"
+  - name: transfer-image-serverpolicymanager-vulnerability-advisor
+    retries: 3
+    taskRef:
+      kind: Task
+      name: skopeo-copy
+    params:
+    - name: srcImageURL
+      value: docker://$(params.docker-hostname)/$(params.docker-namespace)/serverpolicymanager-mock@$(tasks.build-image-serverpolicymanager.results.IMAGE_DIGEST)
+    - name: destImageURL
+      value: docker://us.icr.io/$(params.va-scan-namespace)/serverpolicymanager-mock@$(tasks.build-image-serverpolicymanager.results.IMAGE_DIGEST)
+    - name: srcTLSverify
+      value: "false"
+    - name: destTLSverify
+      value: "false"
+    when:
+    - Input: $(params.transfer-images-to-icr)
+      Operator: in
+      Values:
+      - "true"
+    workspaces:
+      - name: images-url
+        workspace: images-url
+  - name: upgrade-helm-full
+    params:
+    - name: charts_dir
+      value: /workspace/source/mesh-for-data/charts/fybrik
+    - name: release_name
+      value: fybrik
+      # --values /workspace/source/pipeline/pullsecrets.yaml
+    - name: release_namespace
+      value: $(params.NAMESPACE)
+    - name: overwrite_values
+      value: clusterScoped=$(params.clusterScoped),manager.image=$(params.docker-hostname)/$(params.docker-namespace)/$(params.MANAGER_IMAGE)@$(tasks.build-image-manager.results.IMAGE_DIGEST),katalogConnector.image=$(params.docker-hostname)/$(params.docker-namespace)/$(params.KATALOG_IMAGE)@$(tasks.build-image-katalog.results.IMAGE_DIGEST),opaConnector.image=$(params.docker-hostname)/$(params.docker-namespace)/opa-connector@$(tasks.build-image-opa.results.IMAGE_DIGEST),cluster.name=$(params.NAMESPACE),coordinator.vault.address=http://vault.fybrik-system:8200,vault.address=http://vault.fybrik-system:8200,$(params.mesh-for-data-values)
+    - name: release_version
+      value: 0.1.0
+    - name: image
+      value: $(params.helm_image)
+    runAfter:
+    - build-image-manager
+    - build-image-katalog
+    - build-image-opa
+    # don't need to wait on this
+    - build-image-datacatalog
+    taskRef:
+      kind: Task
+      name: helm-upgrade-from-source
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    when:
+    - Input: $(params.IMAGE_DIGEST)
+      Operator: in
+      Values:
+      - "none"
+    - Input: $(params.INCREMENTAL_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+    - Input: $(params.INCREMENTAL_CODE_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+  - name: upgrade-helm-partial
+    params:
+    - name: charts_dir
+      value: /workspace/source/mesh-for-data/charts/fybrik
+    - name: release_name
+      value: fybrik --reuse-values
+      # --values /workspace/source/pipeline/pullsecrets.yaml --reuse-values
+    - name: release_namespace
+      value: $(params.NAMESPACE)
+    - name: overwrite_values
+      value: $(params.IMAGE_ID)=$(params.IMAGE_NAME)@$(params.IMAGE_DIGEST)
+    - name: release_version
+      value: 0.1.0
+    - name: image
+      value: $(params.helm_image)
+    taskRef:
+      kind: Task
+      name: helm-upgrade-from-source
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    when:
+    - Input: $(params.IMAGE_DIGEST)
+      Operator: notin
+      Values:
+      - "none"
+    - Input: $(params.INCREMENTAL_RESTART)
+      Operator: in
+      Values:
+      - "true"
+  - name: upgrade-helm-crd-from-source
+    params:
+    - name: charts_dir
+      value: /workspace/source/mesh-for-data/charts/fybrik-crd
+    - name: release_name
+      value: fybrik-crd
+    - name: release_namespace
+      value: $(params.NAMESPACE)
+    - name: release_version
+      value: 0.1.0
+    - name: image
+      value: $(params.helm_image)
+    runAfter:
+    - fetch-repository
+    taskRef:
+      kind: Task
+      name: helm-upgrade-from-source
+    when:
+    - Input: $(params.deployCRD)
+      Operator: in
+      Values:
+      - "true"
+    - Input: $(params.IMAGE_DIGEST)
+      Operator: in
+      Values:
+      - "none"
+    - Input: $(params.INCREMENTAL_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+    - Input: $(params.INCREMENTAL_CODE_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+  - name: upgrade-helm-vault-from-repo
+    params:
+    - name: context
+      value: mesh-for-data/third_party/vault
+    - name: target
+      value: deploy
+    - name: image
+      value: $(params.build_image)
+    - name: docker-hostname
+      value: "$(params.docker-hostname)"
+    - name: docker-namespace
+      value: "$(params.docker-namespace)"
+    - name: INCREMENTAL_CODE_RESTART
+      value: $(params.INCREMENTAL_CODE_RESTART)
+    taskRef:
+      kind: Task
+      name: make
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    when:
+    - Input: $(params.deployVault)
+      Operator: in
+      Values:
+      - "true"
+    - Input: $(params.IMAGE_DIGEST)
+      Operator: in
+      Values:
+      - "none"
+    - Input: $(params.INCREMENTAL_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+    - Input: $(params.INCREMENTAL_CODE_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+  - name: upgrade-helm-certmgr-from-repo
+    params:
+    - name: helm_repo
+      value: https://charts.jetstack.io
+    - name: chart_name
+      value: jetstack/cert-manager --create-namespace
+    - name: release_version
+      value: v1.2.0
+    - name: release_name
+      value: cert-manager
+    - name: release_namespace
+      value: cert-manager 
+    - name: overwrite_values
+      value: installCRDs=true
+    - name: image
+      value: $(params.helm_image)
+    taskRef:
+      kind: Task
+      name: helm-upgrade-from-repo
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    when:
+    - Input: $(params.deployCertManager)
+      Operator: in
+      Values:
+      - "true"
+    - Input: $(params.IMAGE_DIGEST)
+      Operator: in
+      Values:
+      - "none"
+    - Input: $(params.INCREMENTAL_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+    - Input: $(params.INCREMENTAL_CODE_RESTART)
+      Operator: notin
+      Values:
+      - "true"
+  #- name: oc-install-flight-opensource-crds-absent
+  #  params:
+  #  - name: ARGS
+  #    value:
+  #    - apply -f https://github.com/mesh-for-data/arrow-flight-module/releases/latest/download/module.yaml
+  #      -n $(params.NAMESPACE)
+  #  runAfter:
+  #  - upgrade-helm-crd-from-source
+  #  taskRef:
+  #    kind: Task
+  #    name: openshift-client
+  #  when:
+  #  - Input: $(params.IMAGE_DIGEST)
+  #    Operator: in
+  #    Values:
+  #    - "none"
+  #  - Input: $(params.INCREMENTAL_RESTART)
+  #    Operator: notin
+  #    Values:
+  #    - "true"
+  #  - Input: $(params.INCREMENTAL_CODE_RESTART)
+  #    Operator: notin
+  #    Values:
+  #    - "true"
+  #  workspaces:
+  #  - name: source
+  #    workspace: shared-workspace
+  #- name: oc-install-flight-opensource-crds-present
+  #  params:
+  #  - name: ARGS
+  #    value:
+  #    - apply -f https://github.com/mesh-for-data/arrow-flight-module/releases/latest/download/module.yaml
+  #      -n $(params.NAMESPACE)
+  #  taskRef:
+  #    kind: Task
+  #    name: openshift-client
+  #  when:
+  #  - Input: $(params.deployCRD)
+  #    Operator: in
+  #    Values:
+  #    - "false"
+  #  - Input: $(params.NAMESPACE)
+  #    Operator: in
+  #    Values:
+  #    - "fybrik-system"
+  #  - Input: $(params.IMAGE_DIGEST)
+  #    Operator: in
+  #    Values:
+  #    - "none"
+  #  - Input: $(params.INCREMENTAL_RESTART)
+  #    Operator: notin
+  #    Values:
+  #    - "true"
+  #  - Input: $(params.INCREMENTAL_CODE_RESTART)
+  #    Operator: notin
+  #    Values:
+  #    - "true"
+  #  workspaces:
+  #  - name: source
+  #    workspace: shared-workspace
+  - name: run-integration-tests-full-deploy
+    params:
+    - name: target
+      value: run-integration-tests
+    - name: context
+      value: mesh-for-data/manager
+    - name: image
+      value: $(params.build_image)
+    - name: flags
+      value: DOCKER_HOSTNAME=$(params.docker-hostname) DOCKER_NAMESPACE=$(params.docker-namespace)
+    - name: INCREMENTAL_CODE_RESTART
+      value: $(params.INCREMENTAL_CODE_RESTART)
+    runAfter:
+    - upgrade-helm-full
+    - build-image-datacatalog
+    - build-image-serverpolicymanager
+    when:
+    - Input: $(params.skipTests)
+      Operator: notin
+      Values:
+      - "true"
+    taskRef:
+      kind: Task
+      name: make
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+  - name: run-integration-tests-partial-deploy
+    params:
+    - name: target
+      value: run-integration-tests
+    - name: context
+      value: mesh-for-data/manager
+    - name: image
+      value: $(params.build_image)
+    - name: flags
+      value: DOCKER_HOSTNAME=$(params.docker-hostname) DOCKER_NAMESPACE=$(params.docker-namespace)
+    runAfter:
+    - upgrade-helm-partial
+    when:
+    - Input: $(params.skipTests)
+      Operator: notin
+      Values:
+      - "true"
+    taskRef:
+      kind: Task
+      name: make
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+  - name: run-unit-tests-full-deploy
+    params:
+    - name: target
+      value: test
+    - name: context
+      value: mesh-for-data
+    - name: image
+      value: $(params.build_image)
+    - name: INCREMENTAL_CODE_RESTART
+      value: $(params.INCREMENTAL_CODE_RESTART)
+    runAfter:
+    - upgrade-helm-full
+    when:
+    - Input: $(params.skipTests)
+      Operator: notin
+      Values:
+      - "true"
+    taskRef:
+      kind: Task
+      name: make
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+  - name: run-unit-tests-partial-deploy
+    params:
+    - name: target
+      value: test
+    - name: context
+      value: mesh-for-data
+    - name: image
+      value: $(params.build_image)
+    runAfter:
+    - upgrade-helm-partial
+    when:
+    - Input: $(params.skipTests)
+      Operator: notin
+      Values:
+      - "true"
+    taskRef:
+      kind: Task
+      name: make
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+  finally:
+  - name: finally-remove-creds
+    params:
+    - name: ARGS
+      value:
+      - delete secret git-ssh-key --ignore-not-found=true
+        -n $(params.NAMESPACE)
+    taskRef:
+      kind: Task
+      name: openshift-client
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+  workspaces:
+  - name: shared-workspace
+  - name: artifacts
+  - name: images-url
