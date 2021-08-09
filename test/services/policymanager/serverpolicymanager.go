@@ -6,6 +6,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -44,7 +45,10 @@ func constructPolicyManagerRequest(inputString string) *openapiclientmodels.Poli
 	fmt.Println("inputString")
 	fmt.Println(inputString)
 	var input openapiclientmodels.PolicyManagerRequest
-	json.Unmarshal([]byte(inputString), &input)
+	err := json.Unmarshal([]byte(inputString), &input)
+	if err != nil {
+		return nil
+	}
 	fmt.Println("input:", input)
 	return &input
 }
@@ -69,5 +73,5 @@ func main() {
 		c.String(http.StatusOK, "Hello World!")
 	})
 
-	router.Run(":" + strconv.Itoa(PORT))
+	log.Fatal(router.Run(":" + strconv.Itoa(PORT)))
 }
