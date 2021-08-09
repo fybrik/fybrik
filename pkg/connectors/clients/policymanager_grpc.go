@@ -147,8 +147,8 @@ func ConvertOpenAPIReqToGrpcReq(in *openapiclientmodels.PolicyManagerRequest, cr
 	resource := in.GetResource()
 	datasetID := (&resource).GetName()
 	dataset := &pb.DatasetIdentifier{DatasetId: datasetID}
-	// ?? this is not supported in openapi
-	destination := ""
+
+	destination := (&action).GetDestination()
 	actionType := (&action).GetActionType()
 
 	var grpcActionType pb.AccessOperation_AccessType

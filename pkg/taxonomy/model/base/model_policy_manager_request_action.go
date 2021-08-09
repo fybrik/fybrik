@@ -16,8 +16,9 @@ import (
 
 // PolicyManagerRequestAction struct for PolicyManagerRequestAction
 type PolicyManagerRequestAction struct {
-	ActionType         *ActionType `json:"actionType,omitempty"`
-	ProcessingLocation *string     `json:"processingLocation,omitempty"`
+	ActionType *ActionType `json:"actionType,omitempty"`
+	ProcessingLocation *string `json:"processingLocation,omitempty"`
+	Destination *string `json:"destination,omitempty"`
 }
 
 // NewPolicyManagerRequestAction instantiates a new PolicyManagerRequestAction object
@@ -101,6 +102,38 @@ func (o *PolicyManagerRequestAction) SetProcessingLocation(v string) {
 	o.ProcessingLocation = &v
 }
 
+// GetDestination returns the Destination field value if set, zero value otherwise.
+func (o *PolicyManagerRequestAction) GetDestination() string {
+	if o == nil || o.Destination == nil {
+		var ret string
+		return ret
+	}
+	return *o.Destination
+}
+
+// GetDestinationOk returns a tuple with the Destination field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *PolicyManagerRequestAction) GetDestinationOk() (*string, bool) {
+	if o == nil || o.Destination == nil {
+		return nil, false
+	}
+	return o.Destination, true
+}
+
+// HasDestination returns a boolean if a field has been set.
+func (o *PolicyManagerRequestAction) HasDestination() bool {
+	if o != nil && o.Destination != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetDestination gets a reference to the given string and assigns it to the Destination field.
+func (o *PolicyManagerRequestAction) SetDestination(v string) {
+	o.Destination = &v
+}
+
 func (o PolicyManagerRequestAction) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if o.ActionType != nil {
@@ -108,6 +141,9 @@ func (o PolicyManagerRequestAction) MarshalJSON() ([]byte, error) {
 	}
 	if o.ProcessingLocation != nil {
 		toSerialize["processingLocation"] = o.ProcessingLocation
+	}
+	if o.Destination != nil {
+		toSerialize["destination"] = o.Destination
 	}
 	return json.Marshal(toSerialize)
 }
@@ -147,3 +183,5 @@ func (v *NullablePolicyManagerRequestAction) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+
