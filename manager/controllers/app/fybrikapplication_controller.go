@@ -75,6 +75,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	if observedStatus.ObservedGeneration != appVersion {
 		// do validation on applicationContext
 		err := applicationContext.ValidateFybrikApplication("/tmp/taxonomy/fybrik_application.json")
+
 		// if validation fails
 		if err != nil {
 			// set error message
