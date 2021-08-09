@@ -170,7 +170,6 @@ func ConvertOpenAPIReqToGrpcReq(in *openapiclientmodels.PolicyManagerRequest, cr
 func ConvertOpenAPIRespToGrpcResp(
 	out *openapiclientmodels.PolicyManagerResponse,
 	datasetID string, op *pb.AccessOperation) (*pb.PoliciesDecisions, error) {
-
 	res, err := json.MarshalIndent(out, "", "\t")
 	log.Println("err :", err)
 	log.Println("Marshalled response in ConvertOpenAPIRespToGrpcResp:", string(res))
