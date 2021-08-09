@@ -857,3 +857,88 @@ func TestFybrikApplicationWithNoDatasets(t *testing.T) {
 	g.Expect(getErrorMessages(newApp)).To(gomega.BeEmpty())
 	g.Expect(newApp.Status.Ready).To(gomega.BeTrue())
 }
+
+//nolint:dupl
+func TestFybrikApplicationWithInvalidAppInfo(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "application-with-errors",
+		Namespace: "default",
+	}
+
+	filename := "../../testdata/unittests/fybrikapplication-appInfoErrors.yaml"
+	fybrikApp := &app.FybrikApplication{}
+	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
+
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		fybrikApp,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	newApp := &app.FybrikApplication{}
+	err = cl.Get(context.Background(), req.NamespacedName, newApp)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+	g.Expect(getErrorMessages(newApp)).NotTo(gomega.BeEmpty())
+	g.Expect(newApp.Status.Ready).NotTo(gomega.BeTrue())
+}
+
+//nolint:dupl
+func TestFybrikApplicationWithInvalidInterface(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "application-with-errors-2",
+		Namespace: "default",
+	}
+	filename := "../../testdata/unittests/fybrikapplication-interfaceErrors.yaml"
+	fybrikApp := &app.FybrikApplication{}
+	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
+
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		fybrikApp,
+	}
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+	_, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	newApp := &app.FybrikApplication{}
+	err = cl.Get(context.Background(), req.NamespacedName, newApp)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+	g.Expect(getErrorMessages(newApp)).NotTo(gomega.BeEmpty())
+	g.Expect(newApp.Status.Ready).NotTo(gomega.BeTrue())
+}
