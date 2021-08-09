@@ -24,14 +24,14 @@ generate-client: $(TOOLBIN)/openapi-generator-cli objects/taxonomy.json
 	$(TOOLBIN)/openapi-generator-cli generate -g go --additional-properties=packageName=openapiclient,isGoSubmodule=false \
 		--global-property=apis,supportingFiles,apiDocs=false -o $(ROOT_DIR)/pkg/connectors/openapiclient \
 		--type-mappings=PolicyManagerRequest=base.PolicyManagerRequest,PolicyManagerResponse=base.PolicyManagerResponse \
-		--import-mappings=base.PolicyManagerRequest=github.com/mesh-for-data/mesh-for-data/pkg/taxonomy/model/base,base.PolicyManagerResponse=github.com/mesh-for-data/mesh-for-data/pkg/taxonomy/model/base \
+		--import-mappings=base.PolicyManagerRequest=fybrik.io/fybrik/pkg/taxonomy/model/base,base.PolicyManagerResponse=fybrik.io/fybrik/pkg/taxonomy/model/base \
 		-i codegen.spec.yaml
 	rm -f $(ROOT_DIR)/pkg/connectors/openapiclient/go.mod $(ROOT_DIR)/pkg/connectors/openapiclient/go.sum $(ROOT_DIR)/pkg/connectors/openapiclient/.travis.yml
 	rm -f $(ROOT_DIR)/pkg/connectors/openapiclient/README.md $(ROOT_DIR)/pkg/connectors/openapiclient/git_push.sh
 	rm -r $(ROOT_DIR)/pkg/connectors/openapiclient/api 
 
 .PHONY: generate-server
-generate-server: $(TOOLBIN)/openapi-generator-cli objects/taxonomy.json
+generate-server: clean-server $(TOOLBIN)/openapi-generator-cli objects/taxonomy.json
 	mkdir -p $(ROOT_DIR)/connectors/open_policy_agent
 	$(TOOLBIN)/openapi-generator-cli generate -g go-gin-server \
 		--additional-properties=packageName=openapiserver,serverPort=8081,sourceFolder=openapiserver \
@@ -46,6 +46,9 @@ clean:
 	rm -f objects/taxonomy.json
 	rm -rf $(ROOT_DIR)/pkg/taxonomy/model/base
 	rm -rf $(ROOT_DIR)/pkg/connectors/openapiclient
+
+.PHONY: clean-server
+clean-server:
 	mkdir -p $(ROOT_DIR)/connectors/tmp
 	cp  $(ROOT_DIR)/connectors/open_policy_agent/go/model.go  $(ROOT_DIR)/connectors/tmp
 	rm -rf $(ROOT_DIR)/connectors/open_policy_agent
