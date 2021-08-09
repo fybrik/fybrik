@@ -9,7 +9,8 @@ spec:
    workloadSelector:
      matchLabels: {run: notebook}
   appInfo:
-    intent: Testing
+    intent: Fraud Detection
+    role: Security
   data:
     - dataSetID: s3/redact-dataset
       requirements:

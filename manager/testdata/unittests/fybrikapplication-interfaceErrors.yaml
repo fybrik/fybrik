@@ -2,6 +2,7 @@ apiVersion: app.fybrik.io/v1alpha1
 kind: FybrikApplication
 metadata:
   name: application-with-errors-2
+  namespace: default
   labels:
     app: kf-notebook
 spec:
@@ -14,7 +15,7 @@ spec:
     intent: Fraud Detection
     role: Sales
   data:
-    - dataSetID: "{\"ServerName\":\"mds1\",\"AssetGuid\":\"ASSET_ID\"}"
+    - dataSetID: s3/redact-dataset
       requirements:
         interface: 
           protocol: kafka
