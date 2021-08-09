@@ -439,7 +439,10 @@ EOH
     fi
     set -e
 fi
-extra_params="${extra_params} -p git-url=${git_url} -p wkc-connector-git-url=${wkc_connector_git_url} -p vault-plugin-secrets-wkc-reader-url=${vault_plugin_secrets_wkc_reader_url}"
+extra_params="${extra_params} -p git-url=${git_url}"
+if [[ "${github}" != "github.com" ]]; then
+    extra_params="${extra_params} -p wkc-connector-git-url=${wkc_connector_git_url} -p vault-plugin-secrets-wkc-reader-url=${vault_plugin_secrets_wkc_reader_url}"
+fi
 
 # Set up credentials for WKC
 if [[ "${github}" != "github.com" ]]; then
