@@ -49,7 +49,7 @@ func TestValidApplicationWithEnhancedTaxonomy(t *testing.T) {
 		fmt.Printf("err: %v\n", err)
 		return
 	}
-	taxonomyFile := "../../../testdata/unittests/enhancedtaxonomy/fybrik_application.json"
+	taxonomyFile := "../../../testdata/unittests/sampletaxonomy/fybrik_application.json"
 	validateErr := fybrikApp.ValidateFybrikApplication(taxonomyFile)
 	assert.Nil(t, validateErr, "No error should be found")
 }
@@ -71,7 +71,7 @@ func TestInvalidAppInfoWithEnhancedTaxonomy(t *testing.T) {
 		return
 	}
 
-	taxonomyFile := "../../../testdata/unittests/enhancedtaxonomy/fybrik_application.json"
+	taxonomyFile := "../../../testdata/unittests/sampletaxonomy/fybrik_application.json"
 	validateErr := (*fybrikApp).ValidateFybrikApplication(taxonomyFile)
 	assert.NotNil(t, validateErr, "Invalid appInfo error should be found")
 }
@@ -93,7 +93,7 @@ func TestInvalidInterfaceWithEnhancedTaxonomy(t *testing.T) {
 		return
 	}
 
-	taxonomyFile := "../../../testdata/unittests/enhancedtaxonomy/fybrik_application.json"
+	taxonomyFile := "../../../testdata/unittests/sampletaxonomy/fybrik_application.json"
 	validateErr := (*fybrikApp).ValidateFybrikApplication(taxonomyFile)
 	assert.NotNil(t, validateErr, "Invalid interface error should be found")
 }
