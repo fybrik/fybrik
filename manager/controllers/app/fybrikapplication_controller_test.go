@@ -69,8 +69,8 @@ var _ = Describe("FybrikApplication Controller", func() {
 			}
 		})
 		It("Test end-to-end for FybrikApplication", func() {
-			connector := os.Getenv("USE_WKC_CONTROLLER")
-			if len(connector) > 0 && connector == "true" {
+			connector := os.Getenv("USE_MOCKUP_CONNECTOR")
+			if len(connector) > 0 && connector == "false" {
 				return
 			}
 			module := &app.FybrikModule{}
