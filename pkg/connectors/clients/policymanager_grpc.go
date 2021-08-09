@@ -49,9 +49,9 @@ func NewGrpcPolicyManager(name string, connectionURL string, connectionTimeout t
 
 func (m *grpcPolicyManager) GetPoliciesDecisions(
 	in *openapiclientmodels.PolicyManagerRequest, creds string) (*openapiclientmodels.PolicyManagerResponse, error) {
-	log.Println("printing  stack trace in GetPoliciesDecisions")
-	debug.PrintStack()
-	log.Println("printing  stack trace in GetPoliciesDecisions - end ")
+	// log.Println("printing  stack trace in GetPoliciesDecisions")
+	// debug.PrintStack()
+	// log.Println("printing  stack trace in GetPoliciesDecisions - end ")
 	log.Println("openapiclientmodels.PolicyManagerRequest: received in GetPoliciesDecisions: ", *in)
 	appContext, _ := ConvertOpenAPIReqToGrpcReq(in, creds)
 	log.Println("appContext: created from convertOpenApiReqToGrpcReq: ", appContext)
@@ -85,9 +85,9 @@ func randomHex(n int) (string, error) {
 }
 
 func ConvertGrpcReqToOpenAPIReq(in *pb.ApplicationContext) (*openapiclientmodels.PolicyManagerRequest, string, error) {
-	log.Println("printing  stack trace in ConvertGrpcReqToOpenAPIReq")
-	debug.PrintStack()
-	log.Println("printing  stack trace in ConvertGrpcReqToOpenAPIReq - end ")
+	// log.Println("printing  stack trace in ConvertGrpcReqToOpenAPIReq")
+	// debug.PrintStack()
+	// log.Println("printing  stack trace in ConvertGrpcReqToOpenAPIReq - end ")
 	req := openapiclientmodels.PolicyManagerRequest{}
 	action := openapiclientmodels.PolicyManagerRequestAction{}
 	resource := openapiclientmodels.Resource{}
@@ -98,6 +98,8 @@ func ConvertGrpcReqToOpenAPIReq(in *pb.ApplicationContext) (*openapiclientmodels
 	// assume only one dataset is passed
 	for i := 0; i < len(datasets); i++ {
 		operation := datasets[i].GetOperation()
+		destination := operation.GetDestination()
+		action.SetDestination(destination)
 		operationType := operation.GetType()
 		if operationType == pb.AccessOperation_READ {
 			action.SetActionType(openapiclientmodels.READ)
@@ -124,9 +126,9 @@ func ConvertGrpcReqToOpenAPIReq(in *pb.ApplicationContext) (*openapiclientmodels
 }
 
 func ConvertOpenAPIReqToGrpcReq(in *openapiclientmodels.PolicyManagerRequest, creds string) (*pb.ApplicationContext, error) {
-	log.Println("printing  stack trace in ConvertOpenAPIReqToGrpcReq")
-	debug.PrintStack()
-	log.Println("printing  stack trace in ConvertOpenAPIReqToGrpcReq - end ")
+	// log.Println("printing  stack trace in ConvertOpenAPIReqToGrpcReq")
+	// debug.PrintStack()
+	// log.Println("printing  stack trace in ConvertOpenAPIReqToGrpcReq - end ")
 	credentialPath := creds
 	action := in.GetAction()
 	processingGeo := (&action).GetProcessingLocation()
@@ -175,9 +177,9 @@ func ConvertOpenAPIReqToGrpcReq(in *openapiclientmodels.PolicyManagerRequest, cr
 func ConvertOpenAPIRespToGrpcResp(
 	out *openapiclientmodels.PolicyManagerResponse,
 	datasetID string, op *pb.AccessOperation) (*pb.PoliciesDecisions, error) {
-	log.Println("printing  stack trace in ConvertOpenAPIRespToGrpcResp")
-	debug.PrintStack()
-	log.Println("printing  stack trace in ConvertOpenAPIRespToGrpcResp - end ")
+	// log.Println("printing  stack trace in ConvertOpenAPIRespToGrpcResp")
+	// debug.PrintStack()
+	// log.Println("printing  stack trace in ConvertOpenAPIRespToGrpcResp - end ")
 
 	res, err := json.MarshalIndent(out, "", "\t")
 	log.Println("err :", err)
