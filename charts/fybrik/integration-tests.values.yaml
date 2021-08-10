@@ -23,3 +23,13 @@ opaConnector:
 katalogConnector:
   # Using mock image until data assets for tests are implemented
   image: "data-catalog-mock"
+  
+# Configuration when deploying to a coordinator cluster.
+coordinator:
+  # Configures the policy manager system name to be used by the coordinator manager.
+  # Accepted values are "opa" or any meaningful name if a third party connector is used.
+  policyManager: "opa"
+
+  # Overrides the policy manager connector URL.
+  # Defaults to `<policyManager>-connector:80`.
+  policyManagerConnectorURL: "http://opa-connector.fybrik-system:80"
