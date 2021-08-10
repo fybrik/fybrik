@@ -36,9 +36,11 @@ func TestBatchTransferController(t *testing.T) {
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 	g := gomega.NewGomegaWithT(t)
 
+	batchTransferNamespace := getBatchTransferNamespace()
+
 	var (
 		name      = "sample-transfer"
-		namespace = "fybrik-system"
+		namespace = batchTransferNamespace
 	)
 	batchTransfer := &motionv1.BatchTransfer{
 		ObjectMeta: metav1.ObjectMeta{

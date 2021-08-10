@@ -110,6 +110,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	if !inFinalState(applicationContext) {
 		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
+
 	return ctrl.Result{}, nil
 }
 
@@ -234,6 +235,8 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 // Current implementation assumes there is only one cluster with read modules (which is the same cluster the user's workload)
 func setReadModulesEndpoints(applicationContext *app.FybrikApplication, blueprintsMap map[string]app.BlueprintSpec, moduleMap map[string]*app.FybrikModule) {
 	var foundReadEndpoints = false
+	blueprintNamespace := getBlueprintNamespace()
+
 	for _, blueprintSpec := range blueprintsMap {
 		for _, step := range blueprintSpec.Flow.Steps {
 			if step.Arguments.Read != nil {
@@ -249,7 +252,7 @@ func setReadModulesEndpoints(applicationContext *app.FybrikApplication, blueprin
 				if hasRead, caps := utils.GetModuleCapabilities(moduleMap[moduleName], app.Read); hasRead {
 					for _, cap := range caps {
 						originalEndpointSpec := cap.API.Endpoint
-						fqdn := utils.GenerateModuleEndpointFQDN(releaseName, BlueprintNamespace)
+						fqdn := utils.GenerateModuleEndpointFQDN(releaseName, blueprintNamespace)
 						for _, arg := range step.Arguments.Read {
 							applicationContext.Status.ReadEndpointsMap[arg.AssetID] = app.EndpointSpec{
 								Hostname: fqdn,

@@ -20,7 +20,6 @@ func SetupMotionControllers(mgr manager.Manager) error {
 	if err := NewBatchTransferReconciler(mgr, "BatchTransferController").SetupWithManager(mgr); err != nil {
 		return errors.Wrap(err, "unable to create BatchTransfer controller")
 	}
-
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
 		if err := (&motionv1.BatchTransfer{}).SetupWebhookWithManager(mgr); err != nil {
 			return errors.Wrap(err, "unable to create BatchTransfer webhook")

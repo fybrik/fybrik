@@ -11,6 +11,9 @@ export image_repo="${image_repo:-kind-registry:5000}"
 export image_source_repo="${image_source_repo:-fake.com}"
 export dockerhub_hostname="${dockerhub_hostname:-docker.io}"
 export git_url="https://github.com/fybrik/fybrik.git"
+export cluster_scoped=false
+export use_application_namespace=true
+
 echo "
 ## Git credentials
 For authenticated registries, if you use a git token instead of ssh key, credentials will not be deleted when the run is complete (and therefore, you will not have to regenerate them when restarting tasks).

@@ -5,6 +5,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -38,12 +39,17 @@ func readBlueprint(f string) (*app.Blueprint, error) {
 }
 
 func TestBlueprintReconcile(t *testing.T) {
+
+	blueprintNamespace := getBlueprintNamespace()
+	fmt.Printf("Using blueprint namespace: " + blueprintNamespace)
+
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	blueprint, err := readBlueprint("../../testdata/blueprint.yaml")
 	g.Expect(err).To(gomega.BeNil(), "Cannot read blueprint file for test")
+	blueprint.Namespace = blueprintNamespace
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{

@@ -13,6 +13,11 @@ fullnameOverride: ""
 
 clusterScoped: true
 
+blueprintNamespace: "fybrik-blueprints"
+
+# Set if need to only watch for FybrikApplication from a specific namespace
+#applicationNamespace: ""
+
 # Global configuration applies to multiple components installed by this chart
 global:
   # Default hub for Fybrik images.

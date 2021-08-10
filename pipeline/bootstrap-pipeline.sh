@@ -2,6 +2,7 @@
 set -x
 set +e
 
+export cluster_scoped=${cluster_scoped:-false}
 export run_tkn=${run_tkn:-0}
 export skip_tests=${skip_tests:-false}
 export GH_TOKEN=${GH_TOKEN:-fake}
@@ -18,6 +19,7 @@ export cpd_url="${cpd_url:-https://cpd.fake.com}"
 export git_url="${git_url:-https://github.com/fybrik/fybrik.git}"
 export wkc_connector_git_url="${wkc_connector_git_url}"
 export vault_plugin_secrets_wkc_reader_url="${vault_plugin_secrets_wkc_reader_url}"
+export use_application_namespace=${use_application_namespace:-false}
 
 helper_text=""
 realpath() {
@@ -56,8 +58,9 @@ else
 fi
 set -e
 
+extra_params="-p clusterScoped=${cluster_scoped}"
+
 # Figure out if we're using air-gapped machines that should pull images from somewhere other than dockerhub
-extra_params=''
 is_external="false"
 is_internal="false"
 helm_image=
@@ -131,6 +134,72 @@ else
 fi
 unique_prefix=$(kubectl config view --minify --output 'jsonpath={..namespace}'; echo)
 
+if [[ "${unique_prefix}" == "fybrik-system" ]]; then
+  blueprint_namespace="fybrik-blueprints"
+else
+  blueprint_namespace="${unique_prefix}-blueprints"
+fi
+extra_params="${extra_params} -p blueprintNamespace=${blueprint_namespace}"
+
+fybrik_values='cluster.name="AmsterdamCluster",cluster.zone="Netherlands",cluster.region="Netherlands",cluster.vaultAuthPath="kubernetes",coordinator.catalog="WKC",coordinator.catalogConnectorURL="wkc-connector:50090"'
+if [[ ${cluster_scoped} == "false" ]]; then
+    if [[ ${use_application_namespace} == "false" ]]; then
+      fybrik_values="${fybrik_values},applicationNamespace=${unique_prefix}"
+    else 
+      fybrik_values="${fybrik_values},applicationNamespace=${unique_prefix}-app"
+    fi
+fi
+
+if [[ ${cluster_scoped} == "false" && ${use_application_namespace} == "true"  ]]; then
+  set +e
+  rc=1
+  kubectl get ns ${unique_prefix}-app
+  rc=$?
+  set -e
+  # Create new project if necessary
+  if [[ $rc -ne 0 ]]; then
+    if [[ ${is_openshift} == "true" ]]; then
+      oc new-project ${unique_prefix}-app
+      oc project ${unique_prefix} 
+    else
+      kubectl create ns ${unique_prefix}-app 
+    fi
+  fi
+
+  cat > ${TMP}/approle.yaml <<EOH
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ${unique_prefix}-app-role
+  namespace: ${unique_prefix}-app 
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ${unique_prefix}-app-rb
+  namespace: ${unique_prefix}-app
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ${unique_prefix}-app-role
+subjects:
+- kind: ServiceAccount
+  name: manager
+  namespace: ${unique_prefix}
+EOH
+  set +e
+  oc delete -f ${TMP}/approle.yaml
+  set -e
+  oc apply -f ${TMP}/approle.yaml
+fi
+
 set +e
 # Be smarter about this - just a quick hack for typical default OpenShift & Kind installs so we can control the default storage class
 oc patch storageclass managed-nfs-storage -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class": "true"}}}'
@@ -148,7 +217,7 @@ set -x
 oc get -n openshift-pipelines csv | grep redhat-openshift-pipelines-operator 
 oc get -n openshift-pipelines csv | grep redhat-openshift-pipelines-operator | grep Succeeded
 EOH
-chmod u+x ${TMP}/streams_csv_check_script.sh
+    chmod u+x ${TMP}/streams_csv_check_script.sh
     try_command "${TMP}/streams_csv_check_script.sh"  40 true 5
 
     cat > ${TMP}/streams_csv_check_script.sh <<EOH
@@ -157,7 +226,7 @@ set -x
 oc get -n openshift-operators csv | grep serverless-operator
 oc get -n openshift-operators csv | grep serverless-operator | grep -e Succeeded -e Replacing
 EOH
-chmod u+x ${TMP}/streams_csv_check_script.sh
+    chmod u+x ${TMP}/streams_csv_check_script.sh
     try_command "${TMP}/streams_csv_check_script.sh"  40 false 5
     oc apply -f ${repo_root}/pipeline/knative-eventing.yaml
 else
@@ -185,7 +254,8 @@ if [[ ${is_openshift} == "true" ]]; then
     oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:${unique_prefix}:pipeline
     oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:${unique_prefix}:root-sa
     oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${unique_prefix} --namespace ${unique_prefix}
-    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:fybrik-blueprints --namespace ${unique_prefix}
+    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${blueprint_namespace} --namespace ${unique_prefix}
+    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${unique_prefix}-app --namespace ${unique_prefix}
     oc adm policy add-role-to-user system:image-puller system:serviceaccount:${unique_prefix}:wkc-connector --namespace ${unique_prefix}
     
     # Temporary hack pending a better solution
@@ -204,6 +274,7 @@ helper_text="If this step fails, tekton related pods may be restarting or initia
 1. Please rerun in a minute or so
 "
 set -x
+oc apply -f ${repo_root}/pipeline/shell.yaml
 oc apply -f ${repo_root}/pipeline/tasks/make.yaml
 oc apply -f ${repo_root}/pipeline/tasks/git-clone.yaml
 oc apply -f ${repo_root}/pipeline/tasks/buildah.yaml
@@ -295,16 +366,10 @@ else
     kubectl patch serviceaccount default -p '{"secrets": [{"name": "regcred"}]}'
 fi
 
-# Install resources that are cluster scoped only if installing to fybrik-system
-cluster_scoped="false"
-deploy_vault="false"
-if [[ "${unique_prefix}" == "fybrik-system" ]]; then
-    extra_params="${extra_params} -p clusterScoped='true' -p deployVault='true'"
-    cluster_scoped="true"
-    deploy_vault="true"
-fi
+extra_params="${extra_params} -p deployVault='true'"
+deploy_vault="true"
 set +e
-oc get crd | grep "fybrikapplications.app.fybrik.ibm.com"
+oc get crd | grep "fybrikapplications.app.fybrik.io"
 rc=$?
 deploy_crd="false"
 if [[ $rc -ne 0 ]]; then
@@ -319,16 +384,6 @@ deploy_cert_manager="false"
 if [[ $rc -ne 0 ]]; then
     extra_params="${extra_params} -p deployCertManager='true'"
     deploy_cert_manager="true"
-fi
-
-set +e
-oc get ns fybrik-system
-rc=$?
-set -e
-if [[ $rc -ne 0 ]]; then
-    set +x
-    helper_text="please install into fybrik-system first - currently vault can only be installed in one namespace, and needs to go in fybrik-system"
-    exit 1
 fi
 
 # Create a workspace to allow users to exec in and run arbitrary commands
@@ -387,7 +442,7 @@ set -e
 # Determine which set of vault values to used, based on whether or not WKC components will be installed
 vault_values="/workspace/source/vault-plugin-secrets-wkc-reader/helm-deployment/vault-single-cluster/values.yaml"
 if [[ "${github}" == "github.com" ]]; then
-    vault_values="/workspace/source/mesh-for-data/third_party/vault/vault-single-cluster/values.yaml"
+    vault_values="/workspace/source/fybrik/third_party/vault/vault-single-cluster/values.yaml"
 fi
 extra_params="${extra_params} -p vaultValues=\"${vault_values}\""
 
@@ -464,8 +519,32 @@ stringData:
 EOH
     cat ${TMP}/wkc-credentials.yaml
     oc apply -f ${TMP}/wkc-credentials.yaml
+
+  extra_params="${extra_params} -p wkcConnectorServerUrl=https://cpd-cpd4.apps.cpstreamsx4.cp.fyre.ibm.com"
+
+  if [[ ${cluster_scoped} == "false" && ${use_application_namespace} == "true" ]]; then 
+    cat > ${TMP}/wkc-credentials.yaml <<EOH
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wkc-credentials
+  namespace: ${unique_prefix}-app
+type: kubernetes.io/Opaque
+stringData:
+  CP4D_USERNAME: ${cpd_username}
+  CP4D_PASSWORD: ${cpd_password}
+  WKC_username: ${cpd_username}
+  WKC_password: ${cpd_password}
+  WKC_USERNAME: ${cpd_username}
+  WKC_PASSWORD: ${cpd_password}
+  CP4D_SERVER_URL: ${cpd_url}
+EOH
+    cat ${TMP}/wkc-credentials.yaml
+    oc apply -f ${TMP}/wkc-credentials.yaml
     extra_params="${extra_params} -p wkcConnectorServerUrl=${cpd_url}"
+  fi
 fi
+
 
 # Determine whether images should be sent to ICR for security scanning if creds exist
 set +e
@@ -496,7 +575,7 @@ set +x
 
 echo "
 # for a pre-existing PVC that will be deleted when the namespace is deleted
-tkn pipeline start build-and-deploy -w name=images-url,emptyDir=\"\" -w name=artifacts,claimName=artifacts-pvc -w name=shared-workspace,claimName=source-pvc -p docker-hostname=${image_repo} -p dockerhub-hostname=${dockerhub_hostname} -p docker-namespace=${unique_prefix} -p NAMESPACE=${unique_prefix} -p skipTests=${skip_tests} ${extra_params} -p git-revision=pipeline"
+tkn pipeline start build-and-deploy -w name=images-url,emptyDir=\"\" -w name=artifacts,claimName=artifacts-pvc -w name=shared-workspace,claimName=source-pvc -p docker-hostname=${image_repo} -p dockerhub-hostname=${dockerhub_hostname} -p docker-namespace=${unique_prefix} -p NAMESPACE=${unique_prefix} -p skipTests=${skip_tests} -p fybrik-values=${fybrik_values} ${extra_params} -p git-revision=pipeline"
 
 if [[ ${run_tkn} -eq 1 ]]; then
     set -x
@@ -517,6 +596,8 @@ spec:
     value: ${image_repo}
   - name: dockerhub-hostname
     value: ${dockerhub_hostname}
+  - name: blueprintNamespace
+    value: ${blueprint_namespace}
   - name: docker-namespace
     value: ${unique_prefix} 
   - name: git-revision
@@ -547,6 +628,8 @@ spec:
     value: "${deploy_cert_manager}"
   - name: vaultValues
     value: "${vault_values}"
+  - name: fybrik-values
+    value: "${fybrik_values}"
   pipelineRef:
     name: build-and-deploy
   serviceAccountName: ${pipeline_sa}
@@ -562,7 +645,6 @@ spec:
       claimName: source-pvc
 EOH
     cat ${TMP}/pipelinerun.yaml
-
     oc apply -f ${TMP}/pipelinerun.yaml
  
     cat > ${TMP}/streams_csv_check_script.sh <<EOH

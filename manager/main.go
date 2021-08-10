@@ -54,9 +54,24 @@ func init() {
 func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	enableApplicationController, enableBlueprintController, enablePlotterController, enableMotionController bool) int {
 	setupLog.Info("creating manager")
+
+	var applicationNamespaceSelector fields.Selector
+	applicationNamespace := os.Getenv("APPLICATION_NAMESPACE")
+	if len(applicationNamespace) > 0 {
+		applicationNamespaceSelector = fields.SelectorFromSet(fields.Set{"metadata.namespace": applicationNamespace})
+	}
+	setupLog.Info("Application namespace: " + applicationNamespace)
+
+	// Replace with the getBlueprintNamespace()
+	blueprintNamespace := os.Getenv("BLUEPRINT_NAMESPACE")
+	if len(blueprintNamespace) <= 0 {
+		blueprintNamespace = app.BlueprintNamespace
+	}
+
 	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
-	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": app.BlueprintNamespace})
+	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": blueprintNamespace})
 	selectorsByObject := cache.SelectorsByObject{
+		&appv1.FybrikApplication{}:      {Field: applicationNamespaceSelector},
 		&appv1.Plotter{}:                {Field: systemNamespaceSelector},
 		&appv1.FybrikModule{}:           {Field: systemNamespaceSelector},
 		&appv1.FybrikStorageAccount{}:   {Field: systemNamespaceSelector},

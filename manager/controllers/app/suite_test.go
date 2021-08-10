@@ -5,6 +5,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -83,11 +84,17 @@ var _ = BeforeSuite(func(done Done) {
 
 	if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
 		logf.Log.Info("Using existing controller in existing cluster...")
+		fmt.Printf("Using existing controller in existing cluster... \n")
 		k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 		Expect(err).ToNot(HaveOccurred())
 	} else {
+		fmt.Printf("Setup fake environment... \n")
+		controllerNamespace := getControllerNamespace()
+		blueprintNamespace := getBlueprintNamespace()
+		fmt.Printf("Using controller namespace: " + controllerNamespace + " using blueprint namespace: " + blueprintNamespace + "\n")
+
 		systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
-		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": BlueprintNamespace})
+		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": blueprintNamespace})
 		// the testing environment will restrict access to secrets, modules and storage accounts
 		mgr, err = ctrl.NewManager(cfg, ctrl.Options{
 			Scheme:             scheme.Scheme,
@@ -116,7 +123,7 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 
 		// Setup plotter controller
-		clusterMgr, err := local.NewManager(mgr.GetClient(), "fybrik-system")
+		clusterMgr, err := local.NewManager(mgr.GetClient(), controllerNamespace)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(clusterMgr).NotTo(BeNil())
 		err = NewPlotterReconciler(mgr, "Plotter", clusterMgr).SetupWithManager(mgr)
@@ -133,15 +140,16 @@ var _ = BeforeSuite(func(done Done) {
 				Name: utils.GetSystemNamespace(),
 			},
 		}))
+
 		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: BlueprintNamespace,
+				Name: blueprintNamespace,
 			},
 		}))
 		Expect(k8sClient.Create(context.Background(), &v1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "cluster-metadata",
-				Namespace: "fybrik-system",
+				Namespace: controllerNamespace,
 			},
 			Data: map[string]string{
 				"ClusterName":   "thegreendragon",

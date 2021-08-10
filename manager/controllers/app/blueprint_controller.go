@@ -332,12 +332,16 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// 'UpdateFunc' and 'CreateFunc' used to judge if the event came from within the blueprint's namespace.
 	// If that is true, the event will be processed by the reconciler.
 	// If it's not then it is a rogue event created by someone outside of the control plane.
+
+	blueprintNamespace := getBlueprintNamespace()
+	r.Log.Info("blueprint namespace: " + blueprintNamespace)
+
 	p := predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
-			return e.Object.GetNamespace() == BlueprintNamespace
+			return e.Object.GetNamespace() == blueprintNamespace
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			return e.ObjectOld.GetNamespace() == BlueprintNamespace
+			return e.ObjectOld.GetNamespace() == blueprintNamespace
 		},
 	}
 

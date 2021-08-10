@@ -9,14 +9,18 @@ include $(ROOT_DIR)/hack/make-rules/tools.mk
 DOCKER_NAME ?= manager
 GO_OUTPUT_FILE = manager
 KUBE_NAMESPACE ?= fybrik-system
+CONTROLLER_NAMESPACE ?= ${KUBE_NAMESPACE}
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/hack/make-rules/verify.mk
+
 
 pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
 
 # Run tests
+test: export BLUEPRINT_NAMESPACE?=fybrik-blueprints
+test: export CONTROLLER_NAMESPACE?=fybrik-system
 test: pre-test
-	go test ./... -coverprofile cover.out
+	go test ./... -v  -coverprofile cover.out
 
 # Build manager binary
 manager: generate fmt vet
@@ -54,7 +58,7 @@ docker-build: generate source-build
 
 .PHONY: wait_for_manager
 wait_for_manager: $(TOOLBIN)/kubectl
-	$(TOOLBIN)/kubectl wait --for=condition=available -n ${KUBE_NAMESPACE} deployment/manager --timeout=120s
+	$(TOOLBIN)/kubectl wait --for=condition=available -n ${CONTROLLER_NAMESPACE} deployment/manager --timeout=120s
 
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000

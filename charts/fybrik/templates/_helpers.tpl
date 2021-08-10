@@ -99,3 +99,15 @@ certmanager.k8s.io/v1alpha1
 cert-manager.io/v1alpha2
 {{- end -}}
 {{- end -}}
+
+{{/*
+Get blueprints namespace
+*/}}
+{{- define "fybrik.getBlueprintNamespace" -}}
+{{- if .Values.blueprintNamespace -}}
+{{- .Values.blueprintNamespace -}}
+{{- else -}}
+{{- "fybrik-blueprints" -}}
+{{- end -}}
+{{- end -}}
+

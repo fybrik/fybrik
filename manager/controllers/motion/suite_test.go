@@ -5,6 +5,7 @@ package motion
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -49,7 +50,7 @@ func TestMotionAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	RunSpecsWithDefaultAndCustomReporters(t,
-		"Controller Suite",
+		"Controller Suite App",
 		[]Reporter{printer.NewlineReporter{}})
 }
 
@@ -96,7 +97,11 @@ var _ = BeforeSuite(func(done Done) {
 		logf.Log.Info("Using existing controller in existing cluster...")
 		k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 	} else {
-		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": "fybrik-blueprints"})
+		fmt.Printf("Setup fake environment... \n")
+
+		blueprintNamespace := os.Getenv("BLUEPRINT_NAMESPACE")
+		fmt.Printf("Motion test suite using blueprint namespace: " + blueprintNamespace)
+		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": blueprintNamespace})
 		selectorsByObject := cache.SelectorsByObject{
 			&motionv1.BatchTransfer{}:       {Field: workerNamespaceSelector},
 			&motionv1.StreamTransfer{}:      {Field: workerNamespaceSelector},
@@ -127,7 +132,7 @@ var _ = BeforeSuite(func(done Done) {
 		k8sClient = mgr.GetClient()
 		err = k8sClient.Create(context.Background(), &v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "fybrik-blueprints",
+				Name: blueprintNamespace,
 			},
 		})
 		Expect(err).ToNot(HaveOccurred())
