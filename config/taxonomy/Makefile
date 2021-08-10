@@ -23,8 +23,6 @@ generate-client: $(TOOLBIN)/openapi-generator-cli objects/taxonomy.json
 	mkdir -p $(ROOT_DIR)/pkg/connectors/openapiclient
 	$(TOOLBIN)/openapi-generator-cli generate -g go --additional-properties=packageName=openapiclient,isGoSubmodule=false \
 		--global-property=apis,supportingFiles,apiDocs=false -o $(ROOT_DIR)/pkg/connectors/openapiclient \
-		--type-mappings=PolicyManagerRequest=base.PolicyManagerRequest,PolicyManagerResponse=base.PolicyManagerResponse \
-		--import-mappings=base.PolicyManagerRequest=fybrik.io/fybrik/pkg/taxonomy/model/base,base.PolicyManagerResponse=fybrik.io/fybrik/pkg/taxonomy/model/base \
 		-i codegen.spec.yaml
 	rm -f $(ROOT_DIR)/pkg/connectors/openapiclient/go.mod $(ROOT_DIR)/pkg/connectors/openapiclient/go.sum $(ROOT_DIR)/pkg/connectors/openapiclient/.travis.yml
 	rm -f $(ROOT_DIR)/pkg/connectors/openapiclient/README.md $(ROOT_DIR)/pkg/connectors/openapiclient/git_push.sh
@@ -45,7 +43,13 @@ generate-server: clean-server $(TOOLBIN)/openapi-generator-cli objects/taxonomy.
 clean:
 	rm -f objects/taxonomy.json
 	rm -rf $(ROOT_DIR)/pkg/taxonomy/model/base
+	mkdir -p $(ROOT_DIR)/pkg/connectors/tmp
+	cp  $(ROOT_DIR)/pkg/connectors/openapiclient/model.go  $(ROOT_DIR)/pkg/connectors/tmp
 	rm -rf $(ROOT_DIR)/pkg/connectors/openapiclient
+	mkdir -p $(ROOT_DIR)/pkg/connectors/openapiclient
+	cp  $(ROOT_DIR)/pkg/connectors/tmp/model.go $(ROOT_DIR)/pkg/connectors/openapiclient
+	rm -rf $(ROOT_DIR)/pkg/connectors/tmp
+	
 
 .PHONY: clean-server
 clean-server:
