@@ -12,7 +12,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.2.2, mkdocs-material-7.2.2">
+      <meta name="generator" content="mkdocs-1.2.2, mkdocs-material-7.2.3">
     
     
       
@@ -20,10 +20,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.1118c9be.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.f7f47774.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ba0d045b.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.3f5d1f46.min.css">
         
           
           
@@ -933,14 +933,28 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#specflows" class="md-nav__link">
-    spec.flows
+  <a href="#spectype" class="md-nav__link">
+    spec.type
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#specplugintype" class="md-nav__link">
+    spec.pluginType
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#speccapabilities" class="md-nav__link">
+    spec.capabilities
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#speccapabilities_1" class="md-nav__link">
     spec.capabilities
   </a>
   
@@ -955,6 +969,13 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    Getting Started
+  </a>
   
 </li>
       
@@ -1087,14 +1108,28 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#specflows" class="md-nav__link">
-    spec.flows
+  <a href="#spectype" class="md-nav__link">
+    spec.type
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#specplugintype" class="md-nav__link">
+    spec.pluginType
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#speccapabilities" class="md-nav__link">
+    spec.capabilities
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#speccapabilities_1" class="md-nav__link">
     spec.capabilities
   </a>
   
@@ -1109,6 +1144,13 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    Getting Started
+  </a>
   
 </li>
       
@@ -1147,7 +1189,8 @@
 </ol>
 <p>These steps are described in the following sections in more detail, so that you can create your own modules for use by Fybrik.  Note that a new module is maintained in its own git repository, separate from the <a href="https://github.com/fybrik/fybrik">fybrik</a> repository.</p>
 <h2 id="module-workload">Module Workload</h2>
-<p>The module workload is associated with a specific user workload and is deployed by the control plane.  It may implement the logic required itself, or it may be a client interface to an external component.  </p>
+<p>The module workload is associated with a specific user workload and is deployed by the control plane.  It may implement the logic required itself, or it may be a client interface to an external component.  The former will have module type "server" and the latter "config".</p>
+<p>There is also a third type of module workload known as a plugin.  It provides a standard interface by which another module may invoke its capabilities.  For example, you may have a module that reads data but doesn't know how to do data transforms.  Rather than implementing transforms in the module workload code, it can call the plugin to do the transforms.  The control plane deploys the relevant transform plugin as well as the read module.</p>
 <h3 id="credential-management">Credential management</h3>
 <p>Modules that access or write data need credentials in order to access the data store. The credentials are retrieved from <a href="https://www.vaultproject.io/">HashiCorp Vault</a>. The parameters to <a href="https://www.vaultproject.io/api-docs/auth/kubernetes#login">login</a> to vault and to <a href="https://www.vaultproject.io/api/secret/kv/kv-v1#read-secret">read secret</a> are passed as part of the <a href="../../reference/crds/#blueprintspecflowstepsindexarguments">arguments</a> to the module Helm chart.</p>
 <p>An example for Vault Login API call which uses the Vault parameters is as follows:</p>
@@ -1204,20 +1247,28 @@ helm chart push &lt;registry&gt;/&lt;path&gt;:&lt;version&gt;
     <span class="p p-Indicator">-</span> <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">module</span> <span class="c1">#currently the only option is a dependency on another module deployed by the control plane</span>
       <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">&lt;dependent module name&gt;</span>
 </code></pre></div></p>
-<h3 id="specflows"><code>spec.flows</code></h3>
-<p>The <code>flows</code> field indicates the types of capabilities supported by the module. Currently supported are three data flows: <code>read</code> for enabling an application to read data or prepare data for being read, <code>write</code> for enabling an application to write data, and <code>copy</code> for performing an implicit data copy on behalf of the application. A module is associated with one or more data flow based on its functionality.</p>
-<div class="highlight"><pre><span></span><code><span class="nt">flows</span><span class="p">:</span> <span class="c1"># Indicate the data flow(s) in which the control plane should consider using this module </span>
+<h3 id="spectype"><code>spec.type</code></h3>
+<p>The <code>type</code> field may be one of the following vaues:</p>
+<p>1)service - Indicates that module workload implements the modules logic, and is deployed for every workload.</p>
+<p>2) config - In this case the logic is performed by a component deployed externally, i.e. not by the fybrik control plane.  Such components can be assumed to support multiple workloads.</p>
+<p>3) plugin - This type of module enables a sub-set of often used capabilities to be implemented once and re-used by any module that supports plugins of the declared type.</p>
+<h3 id="specplugintype"><code>spec.pluginType</code></h3>
+<p>The types of plugins supported by this module.  Example: vault, fybrik-wasm ...</p>
+<h3 id="speccapabilities"><code>spec.capabilities</code></h3>
+<p>Each module may support one or more capabilities.  Currently there are four capabilities: <code>read</code> for enabling an application to read data or prepare data for being read, <code>write</code> for enabling an application to write data, and <code>copy</code> for performing an implicit data copy on behalf of the application, and <code>transform</code> for altering data based on governance policies. A module provides one or more of these capabilities.  </p>
+<div class="highlight"><pre><span></span><code><span class="nt">capabilityType</span><span class="p">:</span> <span class="c1"># Indicate the data flow(s) in which the control plane should consider using this module </span>
 <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">read</span>  <span class="c1"># optional</span>
 <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">write</span> <span class="c1"># optional</span>
 <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">copy</span>  <span class="c1"># optional</span>
+<span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">transform</span> <span class="c1"># optional</span>
 </code></pre></div>
-<h3 id="speccapabilities"><code>spec.capabilities</code></h3>
+<h3 id="speccapabilities_1"><code>spec.capabilities</code></h3>
 <p><code>capabilites.supportedInterfaces</code> lists the supported data services from which the module can read data and to which it can write 
-* <code>flow</code> field can be <code>read</code>, <code>write</code> or <code>copy</code>
+* <code>scope</code> indicate whether the capability acts on the <code>asset</code>, <code>workload</code> or <code>cluster</code> level
 * <code>protocol</code> field can take a value such as <code>kafka</code>, <code>s3</code>, <code>jdbc-db2</code>, <code>fybrik-arrow-flight</code>, etc.
 * <code>format</code> field can take a value such as <code>avro</code>, <code>parquet</code>, <code>json</code>, or <code>csv</code>.
 Note that a module that targets copy flows will omit the <code>api</code> field and contain just <code>source</code> and <code>sink</code>, a module that only supports reading data assets will omit the <code>sink</code> field and only contain <code>api</code> and <code>source</code></p>
-<p><code>capabilites.api</code> describes the api exposed by the module for reading or writing data from the user's workload:
+<p><code>capabilites.api</code> describes the api exposed by the module to the user's workload for the particular capability:
 * <code>protocol</code> field can take a value such as <code>kafka</code>, <code>s3</code>, <code>jdbc-db2</code>, <code>fybrik-arrow-flight</code>, etc 
 * <code>dataformat</code> field can take a value such as <code>parquet</code>, <code>csv</code>, <code>arrow</code>, etc
 * <code>endpoint</code> field describes the endpoint exposed the module</p>
@@ -1227,9 +1278,9 @@ Note that a module that targets copy flows will omit the <code>api</code> field 
 * <code>scheme</code> field can take a value such as <code>http</code>, <code>https</code>, <code>grpc</code>, <code>grpc+tls</code>, <code>jdbc:oracle:thin:@</code>, etc</p>
 <p>An example for a module that copies data from a db2 database table to an s3 bucket in parquet format.</p>
 <div class="highlight"><pre><span></span><code><span class="nt">capabilities</span><span class="p">:</span>
+<span class="p p-Indicator">-</span> <span class="nt">copy</span><span class="p">:</span>
     <span class="nt">supportedInterfaces</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="nt">flow</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">copy</span>  
-      <span class="nt">source</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">source</span><span class="p">:</span>
         <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">jdbc-db2</span>
         <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">table</span>
       <span class="nt">sink</span><span class="p">:</span>
@@ -1238,6 +1289,7 @@ Note that a module that targets copy flows will omit the <code>api</code> field 
 </code></pre></div>
 <p>An example for a module that has an API for reading data, and supports reading both parquet and csv formats from s3.</p>
 <div class="highlight"><pre><span></span><code><span class="nt">capabilities</span><span class="p">:</span>
+<span class="p p-Indicator">-</span> <span class="nt">read</span><span class="p">:</span>
     <span class="nt">api</span><span class="p">:</span>
       <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fybrik-arrow-flight</span>
       <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">arrow</span>
@@ -1245,8 +1297,7 @@ Note that a module that targets copy flows will omit the <code>api</code> field 
         <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">80</span>
         <span class="nt">scheme</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">grpc</span>
     <span class="nt">supportedInterfaces</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="nt">flow</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">read</span>
-      <span class="nt">source</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">source</span><span class="p">:</span>
         <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">s3</span>
         <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">parquet</span>
     <span class="p p-Indicator">-</span> <span class="nt">flow</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">read</span>
@@ -1258,6 +1309,7 @@ Note that a module that targets copy flows will omit the <code>api</code> field 
 a module that does not perform any transformation on the data may omit the <code>capabilities.actions</code> field.</p>
 <p>The following is an example of how a module would declare that it knows how to redact, remove or encrypt data.  For each action there is a level indication, which can be data set level, column level, or row level.  In the example shown column level is indicated, and the actions arguments indicate the columns on which the transformation should be performed.</p>
 <div class="highlight"><pre><span></span><code><span class="nt">capabilities</span><span class="p">:</span>
+<span class="p p-Indicator">-</span> <span class="nt">read</span><span class="p">:</span>
     <span class="nt">actions</span><span class="p">:</span>
     <span class="p p-Indicator">-</span> <span class="nt">id</span><span class="p">:</span> <span class="s">&quot;redact-ID&quot;</span>
       <span class="nt">level</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span> <span class="c1"># column</span>
@@ -1276,6 +1328,11 @@ a module that does not perform any transformation on the data may omit the <code
 <li>An example YAML for a module that <a href="https://github.com/fybrik/fybrik/blob/master/manager/testdata/unittests/copy-db2-parquet.yaml">copies from db2 to s3</a> and includes transformation actions</li>
 <li>And an example <a href="https://github.com/fybrik/arrow-flight-module/blob/master/module.yaml">arrow flight read module</a> YAML, also with transformation support</li>
 </ul>
+<h2 id="getting-started">Getting Started</h2>
+<p>In order to help module developers get started there are two example "hello world" modules:
+* <a href="https://github.com/fybrik/hello-world-module">Hello world module</a>
+* <a href="https://github.com/fybrik/hello-world-read-module">Hellow world read module</a></p>
+<p>An example of a fully functional module is the [arrow flight module][https://github.com/fybrik/arrow-flight-module]</p>
 <h2 id="test">Test</h2>
 <ol>
 <li><a href="../../concepts/modules/#registering-a-module">Register the module</a> to make the control plane aware of it.</li>
@@ -1359,7 +1416,7 @@ a module that does not perform any transformation on the data may omit the <code
     <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.709b4209.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.2b46852b.min.js"></script>
+      <script src="../../assets/javascripts/bundle.29db7785.min.js"></script>
       
     
   </body>
