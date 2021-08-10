@@ -15,16 +15,15 @@ import (
 	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
 
-var _ PolicyManager = (*openApiPolicyManager)(nil)
+var _ PolicyManager = (*openAPIPolicyManager)(nil)
 
-type openApiPolicyManager struct {
+type openAPIPolicyManager struct {
 	name   string
 	client *openapiclient.APIClient
 }
 
 // NewopenApiPolicyManager creates a PolicyManager facade that connects to a openApi service
-func NewOpenApiPolicyManager(name string, connectionURL string, connectionTimeout time.Duration) (PolicyManager, error) {
-
+func NewOpenAPIPolicyManager(name string, connectionURL string, connectionTimeout time.Duration) (PolicyManager, error) {
 	configuration := &openapiclient.Configuration{
 		DefaultHeader: make(map[string]string),
 		UserAgent:     "OpenAPI-Generator/1.0.0/go",
@@ -37,16 +36,15 @@ func NewOpenApiPolicyManager(name string, connectionURL string, connectionTimeou
 		},
 		OperationServers: map[string]openapiclient.ServerConfigurations{},
 	}
-	api_client := openapiclient.NewAPIClient(configuration)
+	apiClient := openapiclient.NewAPIClient(configuration)
 
-	return &openApiPolicyManager{
+	return &openAPIPolicyManager{
 		name:   name,
-		client: api_client,
+		client: apiClient,
 	}, nil
 }
 
-func (m *openApiPolicyManager) GetPoliciesDecisions(in *openapiclientmodels.PolicyManagerRequest, creds string) (*openapiclientmodels.PolicyManagerResponse, error) {
-
+func (m *openAPIPolicyManager) GetPoliciesDecisions(in *openapiclientmodels.PolicyManagerRequest, creds string) (*openapiclientmodels.PolicyManagerResponse, error) {
 	resp, r, err := m.client.DefaultApi.GetPoliciesDecisions(context.Background()).Input(*in).Creds(creds).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `DefaultApi.GetPoliciesDecisions``: %v\n", err)
@@ -58,6 +56,6 @@ func (m *openApiPolicyManager) GetPoliciesDecisions(in *openapiclientmodels.Poli
 	return &resp, nil
 }
 
-func (m *openApiPolicyManager) Close() error {
+func (m *openAPIPolicyManager) Close() error {
 	return nil
 }

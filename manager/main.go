@@ -250,7 +250,7 @@ func newPolicyManager() (connectors.PolicyManager, error) {
 	// 	return nil, err
 	// }
 
-	policyManager, err := connectors.NewOpenApiPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
+	policyManager, err := connectors.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
 	if err != nil {
 		return nil, err
 	}
