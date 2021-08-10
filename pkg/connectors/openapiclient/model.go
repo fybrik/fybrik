@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: Apache-2.
 
 package openapiclient
+
 import (
 	"fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
+
 type PolicyManagerRequest = base.PolicyManagerRequest
 type PolicyManagerResponse = base.PolicyManagerResponse

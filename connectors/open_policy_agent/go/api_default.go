@@ -13,6 +13,8 @@
 package openapiserver
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,5 +22,9 @@ import (
 
 // GetPoliciesDecisions - getPoliciesDecisions
 func GetPoliciesDecisions(c *gin.Context) {
+	fmt.Println("in GetPoliciesDecisions of V2 OPA Connector!")
+	data, _ := ioutil.ReadAll(c.Request.Body)
+	fmt.Printf("ctx.Request.body: %v", string(data))
+	fmt.Println("creds value is", c.Request.Header["X-Request-Cred"][0])
 	c.JSON(http.StatusOK, gin.H{})
 }
