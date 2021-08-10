@@ -15,8 +15,8 @@ You can deploy Fybrik using the pipeline as cluster scoped or namespaced scoped.
 
 ### Tips
 1. When deploying a Fybrik instance as cluster scoped:
-   1. There can only be one instance deployed in cluster. 
-   2. All FybrikApplication custom resources will be processed by the cluster scoped Fybrik.  
+   1. There can only be one instance of Fybrik deployed in cluster. 
+   2. The controller will be setup so it watches all namespaces for FybrikApplications.
    3. You cannot run namespaced scoped and cluster scoped in same cluster.
 
 2. When deploying a Fybrik instance as namespaced scoped:
