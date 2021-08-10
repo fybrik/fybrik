@@ -141,7 +141,7 @@ else
 fi
 extra_params="${extra_params} -p blueprintNamespace=${blueprint_namespace}"
 
-fybrik_values='cluster.name="AmsterdamCluster",cluster.zone="Netherlands",cluster.region="Netherlands",cluster.vaultAuthPath="kubernetes",coordinator.catalog="WKC",coordinator.catalogConnectorURL="wkc-connector:50090"'
+fybrik_values="cluster.name=AmsterdamCluster,cluster.zone=Netherlands,cluster.region=Netherlands,cluster.vaultAuthPath=kubernetes,coordinator.catalog=WKC,coordinator.catalogConnectorURL=wkc-connector:50090"
 if [[ ${cluster_scoped} == "false" ]]; then
     if [[ ${use_application_namespace} == "false" ]]; then
       fybrik_values="${fybrik_values},applicationNamespace=${unique_prefix}"
