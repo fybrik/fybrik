@@ -581,5 +581,11 @@ EOH
     oc get events
     echo "debug: taskruns"
     for i in $(oc get taskrun --no-headers | grep "False" | cut -d' ' -f1); do oc logs -l tekton.dev/taskRun=$i --all-containers; done
-    #oc get pipelinerun -o yaml
+    set +e
+    oc get pipelinerun -o yaml | grep "Completed"
+    rc=$?
+    if [[ $rc -ne 0 ]]; then
+        exit $rc
+    fi
+    set -e
 fi

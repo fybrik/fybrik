@@ -25,7 +25,7 @@ spec:
   - description: url of the git repo for the code of deployment
     name: git-url
     type: string
-    default: github.com/mesh-for-data/mesh-for-data.git
+    default: github.com/fybrik/fybrik.git
   - default: pipeline
     description: branch/revision to be used from repo of the code for deployment
     name: git-revision
@@ -34,18 +34,18 @@ spec:
     description: deploy vault or no.  If deploying to the fybrik-system namespace, make this true.
     name: deployVault
     type: string
-  - default: "/workspace/source/mesh-for-data/third_party/vault/vault-single-cluster/vault-rbac.yaml"
+  - default: "/workspace/source/fybrik/third_party/vault/vault-single-cluster/vault-rbac.yaml"
     description: roles to create when deploying vault
     name: vaultRoles
     type: string
-  - default: "/workspace/source/mesh-for-data/third_party/vault/vault-single-cluster/values.yaml"
+  - default: "/workspace/source/fybrik/third_party/vault/vault-single-cluster/values.yaml"
     description: values file for use when helm deploying vault
     name: vaultValues
     type: string
   - default: 'cluster.name="AmsterdamCluster",cluster.zone="Netherlands",cluster.region="Netherlands",cluster.vaultAuthPath="kubernetes"'
-    description: values to pass to helm install of mesh-for-data charts
+    description: values to pass to helm install of fybrik charts
     type: string
-    name: mesh-for-data-values
+    name: fybrik-values
   - default: "docker.io/yakinikku/suede_compile:latest"
     description: image to use for build
     name: build_image
@@ -120,7 +120,7 @@ spec:
     - name: url
       value: $(params.git-url)
     - name: subdirectory
-      value: "mesh-for-data"
+      value: "fybrik"
     - name: deleteExisting
       value: "true"
     - name: revision
@@ -147,7 +147,7 @@ spec:
     - name: target
       value: source-build
     - name: context
-      value: mesh-for-data/manager
+      value: fybrik/manager
     - name: image
       value: $(params.build_image)
     - name: docker-hostname
@@ -180,9 +180,9 @@ spec:
     - name: TLSVERIFY
       value: "false"
     - name: DOCKERFILE
-      value: mesh-for-data/manager/Dockerfile
+      value: fybrik/manager/Dockerfile
     - name: CONTEXT
-      value: mesh-for-data/manager
+      value: fybrik/manager
     - name: BUILD_EXTRA_ARGS
       value: --build-arg REGISTRY=$(params.docker-hostname)/$(params.docker-namespace)
     - name: HELM_PROPERTY
@@ -212,7 +212,7 @@ spec:
       Operator: in
       Values:
       - "all"
-      - "mesh-for-data/manager"
+      - "fybrik/manager"
   - name: transfer-image-manager-vulnerability-advisor
     retries: 3
     taskRef:
@@ -240,7 +240,7 @@ spec:
     - name: IMAGE
       value: $(params.docker-hostname)/$(params.docker-namespace)/$(params.dummy-image)
     - name: DOCKERFILE
-      value: mesh-for-data/test/dummy-mover/Dockerfile.dummy-mover
+      value: fybrik/test/dummy-mover/Dockerfile.dummy-mover
     - name: TLSVERIFY
       value: "false"
     - name: BUILD_EXTRA_ARGS
@@ -272,7 +272,7 @@ spec:
       Operator: in
       Values:
       - "all"
-      - "mesh-for-data/dummy-mover"
+      - "fybrik/dummy-mover"
   - name: transfer-image-dummy-mover-vulnerability-advisor
     retries: 3
     taskRef:
@@ -300,7 +300,7 @@ spec:
     - name: target
       value: source-build
     - name: context
-      value: mesh-for-data/connectors/katalog
+      value: fybrik/connectors/katalog
     - name: image
       value: $(params.build_image)
     - name: docker-hostname
@@ -331,13 +331,13 @@ spec:
     - name: IMAGE
       value: $(params.docker-hostname)/$(params.docker-namespace)/katalog-connector
     - name: DOCKERFILE
-      value: mesh-for-data/connectors/katalog/Dockerfile
+      value: fybrik/connectors/katalog/Dockerfile
     - name: TLSVERIFY
       value: "false"
     - name: BUILD_EXTRA_ARGS
       value: --build-arg REGISTRY=$(params.docker-hostname)/$(params.docker-namespace)
     - name: CONTEXT
-      value: mesh-for-data/connectors/katalog
+      value: fybrik/connectors/katalog
     - name: HELM_PROPERTY
       value: katalogConnector.image
     - name: docker-hostname
@@ -365,7 +365,7 @@ spec:
       Operator: in
       Values:
       - "all"
-      - "mesh-for-data/connectors/katalog"
+      - "fybrik/connectors/katalog"
   - name: transfer-image-katalog-connector-vulnerability-advisor
     retries: 3
     taskRef:
@@ -393,7 +393,7 @@ spec:
     - name: target
       value: source-build
     - name: context
-      value: mesh-for-data/connectors/opa
+      value: fybrik/connectors/opa
     - name: image
       value: $(params.build_image)
     - name: docker-hostname
@@ -424,13 +424,13 @@ spec:
     - name: IMAGE
       value: $(params.docker-hostname)/$(params.docker-namespace)/opa-connector
     - name: DOCKERFILE
-      value: mesh-for-data/connectors/opa/Dockerfile
+      value: fybrik/connectors/opa/Dockerfile
     - name: TLSVERIFY
       value: "false"
     - name: BUILD_EXTRA_ARGS
       value: --build-arg REGISTRY=$(params.docker-hostname)/$(params.docker-namespace)
     - name: CONTEXT
-      value: mesh-for-data/connectors/opa
+      value: fybrik/connectors/opa
     - name: HELM_PROPERTY
       value: opaConnector.image
     - name: docker-hostname
@@ -458,7 +458,7 @@ spec:
       Operator: in
       Values:
       - "all"
-      - "mesh-for-data/connectors/opa"
+      - "fybrik/connectors/opa"
   - name: transfer-image-opa-connector-vulnerability-advisor
     retries: 3
     taskRef:
@@ -486,7 +486,7 @@ spec:
     - name: target
       value: source-build
     - name: context
-      value: mesh-for-data/test/services/datacatalog
+      value: fybrik/test/services/datacatalog
     - name: image
       value: $(params.build_image)
     - name: docker-hostname
@@ -517,13 +517,13 @@ spec:
     - name: IMAGE
       value: $(params.docker-hostname)/$(params.docker-namespace)/data-catalog-mock
     - name: DOCKERFILE
-      value: mesh-for-data/test/services/datacatalog/Dockerfile
+      value: fybrik/test/services/datacatalog/Dockerfile
     - name: TLSVERIFY
       value: "false"
     - name: BUILD_EXTRA_ARGS
       value: --build-arg REGISTRY=$(params.docker-hostname)/$(params.docker-namespace)
     - name: CONTEXT
-      value: mesh-for-data/test/services/datacatalog
+      value: fybrik/test/services/datacatalog
     - name: HELM_PROPERTY
       value: datacatalog.image
     - name: docker-hostname
@@ -551,7 +551,7 @@ spec:
       Operator: in
       Values:
       - "all"
-      - "mesh-for-data/test/services/datacatalog"
+      - "fybrik/test/services/datacatalog"
   - name: transfer-image-datacatalog-vulnerability-advisor
     retries: 3
     taskRef:
@@ -579,7 +579,7 @@ spec:
     - name: target
       value: source-build
     - name: context
-      value: mesh-for-data/test/services/policymanager
+      value: fybrik/test/services/policymanager
     - name: image
       value: $(params.build_image)
     - name: docker-hostname
@@ -610,13 +610,13 @@ spec:
     - name: IMAGE
       value: $(params.docker-hostname)/$(params.docker-namespace)/serverpolicymanager-mock
     - name: DOCKERFILE
-      value: mesh-for-data/test/services/policymanager/Dockerfile
+      value: fybrik/test/services/policymanager/Dockerfile
     - name: TLSVERIFY
       value: "false"
     - name: BUILD_EXTRA_ARGS
       value: --build-arg REGISTRY=$(params.docker-hostname)/$(params.docker-namespace)
     - name: CONTEXT
-      value: mesh-for-data/test/services/policymanager
+      value: fybrik/test/services/policymanager
     - name: HELM_PROPERTY
       value: servicepolicymanager.image
     - name: docker-hostname
@@ -644,7 +644,7 @@ spec:
       Operator: in
       Values:
       - "all"
-      - "mesh-for-data/test/services/policymanager"
+      - "fybrik/test/services/policymanager"
   - name: transfer-image-serverpolicymanager-vulnerability-advisor
     retries: 3
     taskRef:
@@ -670,14 +670,14 @@ spec:
   - name: upgrade-helm-full
     params:
     - name: charts_dir
-      value: /workspace/source/mesh-for-data/charts/fybrik
+      value: /workspace/source/fybrik/charts/fybrik
     - name: release_name
       value: fybrik
       # --values /workspace/source/pipeline/pullsecrets.yaml
     - name: release_namespace
       value: $(params.NAMESPACE)
     - name: overwrite_values
-      value: clusterScoped=$(params.clusterScoped),manager.image=$(params.docker-hostname)/$(params.docker-namespace)/$(params.MANAGER_IMAGE)@$(tasks.build-image-manager.results.IMAGE_DIGEST),katalogConnector.image=$(params.docker-hostname)/$(params.docker-namespace)/$(params.KATALOG_IMAGE)@$(tasks.build-image-katalog.results.IMAGE_DIGEST),opaConnector.image=$(params.docker-hostname)/$(params.docker-namespace)/opa-connector@$(tasks.build-image-opa.results.IMAGE_DIGEST),cluster.name=$(params.NAMESPACE),coordinator.vault.address=http://vault.fybrik-system:8200,vault.address=http://vault.fybrik-system:8200,$(params.mesh-for-data-values)
+      value: clusterScoped=$(params.clusterScoped),manager.image=$(params.docker-hostname)/$(params.docker-namespace)/$(params.MANAGER_IMAGE)@$(tasks.build-image-manager.results.IMAGE_DIGEST),katalogConnector.image=$(params.docker-hostname)/$(params.docker-namespace)/$(params.KATALOG_IMAGE)@$(tasks.build-image-katalog.results.IMAGE_DIGEST),opaConnector.image=$(params.docker-hostname)/$(params.docker-namespace)/opa-connector@$(tasks.build-image-opa.results.IMAGE_DIGEST),cluster.name=$(params.NAMESPACE),coordinator.vault.address=http://vault.fybrik-system:8200,vault.address=http://vault.fybrik-system:8200,$(params.fybrik-values)
     - name: release_version
       value: 0.1.0
     - name: image
@@ -710,7 +710,7 @@ spec:
   - name: upgrade-helm-partial
     params:
     - name: charts_dir
-      value: /workspace/source/mesh-for-data/charts/fybrik
+      value: /workspace/source/fybrik/charts/fybrik
     - name: release_name
       value: fybrik --reuse-values
       # --values /workspace/source/pipeline/pullsecrets.yaml --reuse-values
@@ -740,7 +740,7 @@ spec:
   - name: upgrade-helm-crd-from-source
     params:
     - name: charts_dir
-      value: /workspace/source/mesh-for-data/charts/fybrik-crd
+      value: /workspace/source/fybrik/charts/fybrik-crd
     - name: release_name
       value: fybrik-crd
     - name: release_namespace
@@ -777,7 +777,7 @@ spec:
   - name: upgrade-helm-vault-from-repo
     params:
     - name: context
-      value: mesh-for-data/third_party/vault
+      value: fybrik/third_party/vault
     - name: target
       value: deploy
     - name: image
@@ -854,7 +854,7 @@ spec:
   #  params:
   #  - name: ARGS
   #    value:
-  #    - apply -f https://github.com/mesh-for-data/arrow-flight-module/releases/latest/download/module.yaml
+  #    - apply -f https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml
   #      -n $(params.NAMESPACE)
   #  runAfter:
   #  - upgrade-helm-crd-from-source
@@ -881,7 +881,7 @@ spec:
   #  params:
   #  - name: ARGS
   #    value:
-  #    - apply -f https://github.com/mesh-for-data/arrow-flight-module/releases/latest/download/module.yaml
+  #    - apply -f https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml
   #      -n $(params.NAMESPACE)
   #  taskRef:
   #    kind: Task
@@ -915,7 +915,7 @@ spec:
     - name: target
       value: run-integration-tests
     - name: context
-      value: mesh-for-data/manager
+      value: fybrik/manager
     - name: image
       value: $(params.build_image)
     - name: flags
@@ -942,7 +942,7 @@ spec:
     - name: target
       value: run-integration-tests
     - name: context
-      value: mesh-for-data/manager
+      value: fybrik/manager
     - name: image
       value: $(params.build_image)
     - name: flags
@@ -965,7 +965,7 @@ spec:
     - name: target
       value: test
     - name: context
-      value: mesh-for-data
+      value: fybrik
     - name: image
       value: $(params.build_image)
     - name: INCREMENTAL_CODE_RESTART
@@ -988,7 +988,7 @@ spec:
     - name: target
       value: test
     - name: context
-      value: mesh-for-data
+      value: fybrik
     - name: image
       value: $(params.build_image)
     runAfter:
