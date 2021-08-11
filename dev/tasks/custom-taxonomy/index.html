@@ -16,7 +16,7 @@
     
     
       
-        <title>Using OPA - Fybrik</title>
+        <title>Using a Custom Taxonomy for Resource Validation - Fybrik</title>
       
     
     
@@ -67,7 +67,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#using-opa" class="md-skip">
+        <a href="#using-a-custom-taxonomy-for-resource-validation" class="md-skip">
           Skip to content
         </a>
       
@@ -96,7 +96,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Using OPA
+              Using a Custom Taxonomy for Resource Validation
             
           </span>
         </div>
@@ -529,58 +529,11 @@
             
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Using OPA
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../using-opa/" class="md-nav__link">
         Using OPA
       </a>
-      
-        
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#using-a-configmap-yaml" class="md-nav__link">
-    Using a configmap YAML
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#using-a-rego-file" class="md-nav__link">
-    Using a Rego file
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -600,11 +553,58 @@
             
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../custom-taxonomy/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Using a Custom Taxonomy for Resource Validation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         Using a Custom Taxonomy for Resource Validation
       </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#taxonomy-compile-cli-tool" class="md-nav__link">
+    Taxonomy Compile CLI tool
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deploy-fybrik-with-custom-taxonomy" class="md-nav__link">
+    Deploy Fybrik with Custom Taxonomy
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -926,15 +926,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#using-a-configmap-yaml" class="md-nav__link">
-    Using a configmap YAML
+  <a href="#taxonomy-compile-cli-tool" class="md-nav__link">
+    Taxonomy Compile CLI tool
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#using-a-rego-file" class="md-nav__link">
-    Using a Rego file
+  <a href="#deploy-fybrik-with-custom-taxonomy" class="md-nav__link">
+    Deploy Fybrik with Custom Taxonomy
   </a>
   
 </li>
@@ -951,46 +951,50 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/fybrik/fybrik/edit/master/site/docs/tasks/using-opa.md" title="Edit this page" class="md-content__button md-icon">
+                  <a href="https://github.com/fybrik/fybrik/edit/master/site/docs/tasks/custom-taxonomy.md" title="Edit this page" class="md-content__button md-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
                   </a>
                 
                 
-                <h1 id="using-opa">Using OPA</h1>
-<p>There are <a href="https://www.openpolicyagent.org/docs/latest/management/">several ways</a> to manage policies and data of the OPA service. </p>
-<p>One simple approach is to use <a href="https://github.com/open-policy-agent/kube-mgmt">OPA kube-mgmt</a> and manage Rego policies in Kubernetes <code>Configmap</code> resources. By default Fybrik installs OPA with kube-mgmt enabled. </p>
-<p>This task shows how to use OPA with kube-mgmt.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Due to size limits you must ensure that each configmap is smaller than 1MB when base64 encoded.</p>
-</div>
-<h2 id="using-a-configmap-yaml">Using a configmap YAML</h2>
-<ol>
-<li>Create a configmap with a Rego policy and a <code>openpolicyagent.org/policy=rego</code> label in the <code>fybrik-system</code> namespace:
-    <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">v1</span>
-<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ConfigMap</span>
-<span class="nt">metadata</span><span class="p">:</span>
-  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">&lt;policy-name&gt;</span>
-  <span class="nt">namespace</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fybrik-system</span>
-  <span class="nt">labels</span><span class="p">:</span>
-    <span class="nt">openpolicyagent.org/policy</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">rego</span>
-<span class="nt">data</span><span class="p">:</span>
-  <span class="nt">main</span><span class="p">:</span> <span class="p p-Indicator">|</span>
-  <span class="l l-Scalar l-Scalar-Plain">&lt;you rego policy here&gt;</span>
-</code></pre></div></li>
-<li>Apply the configmap:
-    <div class="highlight"><pre><span></span><code>kubectl apply -f &lt;policy-name&gt;.yaml
-</code></pre></div></li>
-<li>To remove the policy just remove the configmap:
-   <div class="highlight"><pre><span></span><code> kubectl delete -f &lt;policy-name&gt;.yaml
-</code></pre></div></li>
-</ol>
-<h2 id="using-a-rego-file">Using a Rego file</h2>
-<p>You can use <code>kubectl</code> to create a configmap from a Rego file. To create a configmap named <code>&lt;policy-name&gt;</code> from a Rego file in path <code>&lt;policy-name.rego&gt;</code>:</p>
-<div class="highlight"><pre><span></span><code>kubectl create configmap &lt;policy-name&gt; --from-file<span class="o">=</span><span class="nv">main</span><span class="o">=</span>&lt;policy-name.rego&gt; -n fybrik-system
-kubectl label configmap &lt;policy-name&gt; openpolicyagent.org/policy<span class="o">=</span>rego -n fybrik-system
+                <h1 id="using-a-custom-taxonomy-for-resource-validation">Using a Custom Taxonomy for Resource Validation</h1>
+<p>The project defines a set of immutable structural JSON schemas, or "taxonomies" for resources deployed in Fybrik. 
+However, since the taxonomy is meant to be configurable, a <code>taxonomy.json</code> file is referenced from these schemas for any definition that is customizable.</p>
+<p>The <code>taxonomy.json</code> file is generated from a base taxonomy and zero or more taxonomy layers:</p>
+<ul>
+<li>
+<p>The base taxonomy is maintained by the project and includes all of the structural definitions that are subject to customization (e.g.: tags, actions). </p>
+</li>
+<li>
+<p>The taxonomy layers are maintained by users and external systems that add customizations over the base taxonomy (e.g., defining specific tags, actions).</p>
+</li>
+</ul>
+<p>This task describes how to deploy Fybrik with a custom <code>taxonomy.json</code> file that is generated with the Taxonomy Compile CLI tool. </p>
+<h2 id="taxonomy-compile-cli-tool">Taxonomy Compile CLI tool</h2>
+<p>A CLI tool for compiling a base taxonomy and zero or more taxonomy layers is provided in our repo.</p>
+<p><code>base.yaml</code> can be found in <a href="https://github.com/fybrik/fybrik/blob/master/config/taxonomy/base/base.yaml"><code>config/taxonomy/base</code></a> and example layers can be found in <a href="https://github.com/fybrik/fybrik/tree/master/config/taxonomy/example"><code>config/taxonomy/example</code></a>.</p>
+<p>The following command can be used from the root directory of our repo to run the Taxonomy Compile CLI tool. </p>
+<p>Usage:
+<div class="highlight"><pre><span></span><code>  go run main.go taxonomy compile --out &lt;outputFile&gt; --base &lt;baseFile&gt; <span class="o">[</span>&lt;layerFile&gt; ...<span class="o">]</span> <span class="o">[</span>--codegen<span class="o">]</span>
+</code></pre></div></p>
+<p>Flags:</p>
+<ul>
+<li>
+<p>-b, --base string : File with base taxonomy definitions (required)</p>
+</li>
+<li>
+<p>--codegen : Best effort to make output suitable for code generation tools</p>
+</li>
+<li>
+<p>-o, --out string : Path for output file (default "taxonomy.json")</p>
+</li>
+</ul>
+<p>This will generate a <code>taxonomy.json</code> file with the layers specified. </p>
+<h2 id="deploy-fybrik-with-custom-taxonomy">Deploy Fybrik with Custom Taxonomy</h2>
+<p>To deploy Fybrik with the generated <code>taxonomy.json</code> file, follow the <a href="https://fybrik.io/v0.4/get-started/quickstart/"><code>quickstart guide</code></a> but use the command below instead of <code>helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait</code>:</p>
+<p><div class="highlight"><pre><span></span><code>helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait --set-file <span class="nv">taxonomyOverride</span><span class="o">=</span>taxonomy.json
 </code></pre></div>
-<p>Delete the policy with <code>kubectl delete configmap &lt;policy-name&gt; -n fybrik-system</code>.</p>
+The <code>--set-file</code> flag will pass in your custom <code>taxonomy.json</code> file to use for taxonomy validation in Fybrik.
+If this flag is not provided, Fybrik will use the default <code>taxonomy.json</code> file with no layers compiled into it. </p>
                 
               
               
@@ -1010,7 +1014,7 @@ kubectl label configmap &lt;policy-name&gt; openpolicyagent.org/policy<span clas
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="../control-plane-security/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Enable Control Plane Security" rel="prev">
+        <a href="../multicluster/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Multicluster setup" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -1019,20 +1023,20 @@ kubectl label configmap &lt;policy-name&gt; openpolicyagent.org/policy<span clas
               <span class="md-footer__direction">
                 Previous
               </span>
-              Enable Control Plane Security
+              Multicluster setup
             </div>
           </div>
         </a>
       
       
         
-        <a href="../multicluster/" class="md-footer__link md-footer__link--next" aria-label="Next: Multicluster setup" rel="next">
+        <a href="../../reference/crds/" class="md-footer__link md-footer__link--next" aria-label="Next: API Reference" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Multicluster setup
+              API Reference
             </div>
           </div>
           <div class="md-footer__button md-icon">
