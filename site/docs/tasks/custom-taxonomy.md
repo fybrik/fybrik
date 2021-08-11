@@ -13,8 +13,11 @@ The `taxonomy.json` file is generated from a base taxonomy and zero or more taxo
 This task describes how to deploy Fybrik with a custom `taxonomy.json` file that is generated with the Taxonomy Compile CLI tool. 
 
 ## Taxonomy Compile CLI tool 
-A CLI tool for compiling a base taxonomy and zero or more taxonomy layers is provided in our repo. 
-The following command can be used from the root directory of our repo to run this tool. 
+A CLI tool for compiling a base taxonomy and zero or more taxonomy layers is provided in our repo.
+
+`base.yaml` can be found in [`config/taxonomy/base`](https://github.com/fybrik/fybrik/blob/master/config/taxonomy/base/base.yaml) and example layers can be found in [`config/taxonomy/example`](https://github.com/fybrik/fybrik/tree/master/config/taxonomy/example).
+
+The following command can be used from the root directory of our repo to run the Taxonomy Compile CLI tool. 
 
 Usage:
 ```bash
