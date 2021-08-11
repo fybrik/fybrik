@@ -80,11 +80,6 @@ type BlueprintModule struct {
 	// +required
 	InstanceName string `json:"instanceName"`
 
-	// ServiceModule is the name of the service being configured by this module.
-	// Only used if this module is configuring another model rather than performing the function on its own
-	// +optional
-	ServiceModule string `json:"serviceModule"`
-
 	// Chart contains the location of the helm chart with info detailing how to deploy
 	// +required
 	Chart ChartSpec `json:"chart"`
@@ -92,6 +87,10 @@ type BlueprintModule struct {
 	// Arguments are the input parameters for a specific instance of a module.
 	// +optional
 	Arguments ModuleArguments `json:"arguments,omitempty"`
+
+	// assetIDs indicate the assets processed by this module.  Included so we can track asset status
+	// as well as module status in the future.
+	AssetIDs []string `json:"assetIds,omitempty"`
 }
 
 // BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path
