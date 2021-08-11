@@ -69,19 +69,6 @@ type ModuleArguments struct {
 	Write []WriteModuleArgs `json:"write,omitempty"`
 }
 
-// CapabilityAPI enables the separation of APIs by capability, since a single module may
-// be able to perform multiple capabilities. (ex: read, write, ...).
-// Future: Capabilities are defined in the taxonomy.
-type CapabilityAPI struct {
-	// Capability indicates the capability associated with the arguments and API (ex: read, write, ...)
-	// +required
-	Capability string `json:"capability"`
-
-	// API indicates to the application how to access the module for the given capability
-	// +required
-	API ModuleAPI `json:"api,omitempty"`
-}
-
 // BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the information necessary
 // to instantiate a datapath component, including the parameters relevant for the particular workload.
 type BlueprintModule struct {
@@ -101,11 +88,6 @@ type BlueprintModule struct {
 	// Chart contains the location of the helm chart with info detailing how to deploy
 	// +required
 	Chart ChartSpec `json:"chart"`
-
-	// Arguments define the API used for external components and the workload to access a module's capabilities,
-	// and the parameters passed to it for a given workload.
-	// +optional
-	APIs []CapabilityAPI `json:"apis,omitempty"`
 
 	// Arguments are the input parameters for a specific instance of a module.
 	// +optional

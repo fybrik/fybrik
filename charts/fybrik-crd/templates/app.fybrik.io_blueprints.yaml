@@ -47,47 +47,6 @@ spec:
                 items:
                   description: BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the information necessary to instantiate a datapath component, including the parameters relevant for the particular workload.
                   properties:
-                    apis:
-                      description: Arguments define the API used for external components and the workload to access a module's capabilities, and the parameters passed to it for a given workload.
-                      items:
-                        description: 'CapabilityAPI enables the separation of APIs by capability, since a single module may be able to perform multiple capabilities. (ex: read, write, ...). Future: Capabilities are defined in the taxonomy.'
-                        properties:
-                          api:
-                            description: API indicates to the application how to access the module for the given capability
-                            properties:
-                              dataformat:
-                                description: DataFormat defines the data format type
-                                type: string
-                              endpoint:
-                                description: EndpointSpec is used both by the module creator and by the status of the fybrikapplication
-                                properties:
-                                  hostname:
-                                    description: Always equals the release name. Can be omitted.
-                                    type: string
-                                  port:
-                                    format: int32
-                                    type: integer
-                                  scheme:
-                                    description: 'For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc'
-                                    type: string
-                                required:
-                                - port
-                                - scheme
-                                type: object
-                              protocol:
-                                description: Protocol defines the interface protocol used for data transactions
-                                type: string
-                            required:
-                            - endpoint
-                            - protocol
-                            type: object
-                          capability:
-                            description: 'Capability indicates the capability associated with the arguments and API (ex: read, write, ...)'
-                            type: string
-                        required:
-                        - capability
-                        type: object
-                      type: array
                     arguments:
                       description: Arguments are the input parameters for a specific instance of a module.
                       properties:
