@@ -45,12 +45,6 @@ spec:
   - name: app1-ns1-read
     chart:
       name: ghcr.io/mesh-for-data/read-module:0.1.0
-    apis:
-      api:
-        service:
-          interfaceDetails:
-            protocol: arrow-flight
-            dataformat: arrow
     arguments:
       read:
         - assetId: "m4d-notebook-sample/paysim" # Taken from the advertisedAssetId since this is used by the application

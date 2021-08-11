@@ -15,26 +15,20 @@ spec:
     type: service
     chart:
       name: ghcr.io/mesh-for-data/read-module:0.1.0
-    capabilities:
-      - capability: read
-        api:
-          service:
-            interfaceDetails:
-              protocol: arrow-flight
-              dataformat: arrow
-        arguments:
-          - assetId: "m4d-notebook-sample/paysim" # Taken from the advertisedAssetId since this is used by the application
-            vault:
-              address: http://vault.m4d-system:8200
-              authPath: /v1/auth/kubernetes/login
-              role: module
-              secretPath: /v1/kubernetes-secrets/paysim-temp?namespace=m4d-notebook-sample
-            connection:
-              s3:
-                endpoint: localhost:8001
-                bucket: destbucket
-                object: paysim-temp.parq
-            dataformat: parquet
+    arguments:
+      read:
+      - assetId: "m4d-notebook-sample/paysim" # Taken from the advertisedAssetId since this is used by the application
+        vault:
+          address: http://vault.m4d-system:8200
+          authPath: /v1/auth/kubernetes/login
+          role: module
+          secretPath: /v1/kubernetes-secrets/paysim-temp?namespace=m4d-notebook-sample
+        connection:
+          s3:
+            endpoint: localhost:8001
+            bucket: destbucket
+            object: paysim-temp.parq
+        dataformat: parquet
 status:
   observedState: Not Ready
   observedGeneration: 1

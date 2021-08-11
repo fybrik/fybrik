@@ -15,13 +15,6 @@ spec:
   - name: app1-ns1-write
     chart:
       name: ghcr.io/mesh-for-data/write-module:0.1.0
-    apis:
-    - capability: write
-      api:
-        service:
-          interfaceDetails:
-            protocol: arrow-flight
-            dataformat: arrow
     arguments:
       write:
         - assetId: "paysim-processed"   

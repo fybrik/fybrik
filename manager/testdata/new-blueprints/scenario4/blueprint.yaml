@@ -15,13 +15,6 @@ spec:
     serviceModule: arrow-flight-server1
     chart:
       name: ghcr.io/mesh-for-data/arrow-flight-config-module:0.1.0
-    apis: 
-    - capability: read
-      api:
-        service:
-          interfaceDetails:
-            protocol: arrow-flight
-            dataformat: arrow
     arguments:
       read:
         - assetId: "m4d-notebook-sample/paysim"
