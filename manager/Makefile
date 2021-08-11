@@ -15,6 +15,11 @@ include $(ROOT_DIR)/hack/make-rules/verify.mk
 pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
 	mkdir /tmp/taxonomy || true                                                                                                                          
 	cp ../charts/fybrik/files/taxonomy/*.json /tmp/taxonomy/
+	mkdir testdata/unittests/basetaxonomy || true
+	mkdir testdata/unittests/sampletaxonomy || true
+	cp ../charts/fybrik/files/taxonomy/*.json testdata/unittests/basetaxonomy
+	cp ../charts/fybrik/files/taxonomy/*.json testdata/unittests/sampletaxonomy
+	go run ../main.go taxonomy compile --out testdata/unittests/sampletaxonomy/taxonomy.json --base ../config/taxonomy/base/base.yaml ../config/taxonomy/example/application/appinfo.yaml ../config/taxonomy/example/application/interface.yaml ../config/taxonomy/example/catalog/locations.yaml ../config/taxonomy/example/catalog/tags.yaml ../config/taxonomy/example/module/actions.yaml 
 
 # Run tests
 test: pre-test
