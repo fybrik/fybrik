@@ -5,4 +5,10 @@ metadata:
   name: fybrik-taxonomy-config
 data:
   {{- (.Files.Glob "files/taxonomy/**.json").AsConfig | nindent 2 }}
+  taxonomy.json: |- 
+{{- if .Values.taxonomyOverride }}
+{{ .Values.taxonomyOverride  | indent 4}}
+{{- else }}
+{{ tpl ( .Files.Get "files/taxonomy/taxonomy.json" ) . | indent 4 }}
+{{- end -}}
 {{- end }}
