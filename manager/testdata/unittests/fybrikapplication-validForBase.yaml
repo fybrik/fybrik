@@ -1,8 +1,7 @@
 apiVersion: app.fybrik.io/v1alpha1
 kind: FybrikApplication
 metadata:
-  name: application-with-errors-2
-  namespace: default
+  name: valid-app-for-base-taxonomy
   labels:
     app: kf-notebook
 spec:
@@ -12,11 +11,10 @@ spec:
       matchLabels:
         app: kf-notebook
   appInfo:
-    intent: Fraud Detection
-    role: Sales
+    role: Hacker
   data:
-    - dataSetID: s3/redact-dataset
+    - dataSetID: "{\"ServerName\":\"mds1\",\"AssetGuid\":\"ASSET_ID\"}"
       requirements:
         interface: 
-          protocol: kafka
-          dataformat: csv
+          protocol: fybrik-arrow-flight
+          dataformat: random-string

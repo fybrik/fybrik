@@ -1580,6 +1580,20 @@ FybrikModuleSpec contains the info common to all modules, which are one of the c
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>description</b></td>
+        <td>string</td>
+        <td>
+          An explanation of what this module does<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>pluginType</b></td>
+        <td>string</td>
+        <td>
+          Plugin type indicates the plugin technology used to invoke the capabilities Ex: vault, fybrik-wasm... Should be provided if type is plugin<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b><a href="#fybrikmodulespecstatusindicatorsindex">statusIndicators</a></b></td>
         <td>[]object</td>
         <td>
@@ -1587,10 +1601,10 @@ FybrikModuleSpec contains the info common to all modules, which are one of the c
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#fybrikmodulespeccapabilities">capabilities</a></b></td>
-        <td>object</td>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindex">capabilities</a></b></td>
+        <td>[]object</td>
         <td>
-          Capabilities declares what this module knows how to do and the types of data it knows how to handle<br/>
+          Capabilities declares what this module knows how to do and the types of data it knows how to handle The key to the map is a CapabilityType string<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -1601,10 +1615,10 @@ FybrikModuleSpec contains the info common to all modules, which are one of the c
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b>flows</b></td>
-        <td>[]enum</td>
+        <td><b>type</b></td>
+        <td>string</td>
         <td>
-          Flows is a list of the types of capabilities supported by the module - copy, read, write<br/>
+          May be one of service, config or plugin Service: Means that the control plane deploys the component that performs the capability Config: Another pre-installed service performs the capability and the module deployed configures it for the particular workload or dataset Plugin: Indicates that this module performs a capability as part of another service or module rather than as a stand-alone module<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -1695,12 +1709,12 @@ ResourceStatusIndicator is used to determine the status of an orchestrated resou
 </table>
 
 
-#### FybrikModule.spec.capabilities
+#### FybrikModule.spec.capabilities[index]
 <sup><sup>[↩ Parent](#fybrikmodulespec)</sup></sup>
 
 
 
-Capabilities declares what this module knows how to do and the types of data it knows how to handle
+Capability declares what this module knows how to do and the types of data it knows how to handle
 
 <table>
     <thead>
@@ -1712,32 +1726,57 @@ Capabilities declares what this module knows how to do and the types of data it 
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#fybrikmodulespeccapabilitiesactionsindex">actions</a></b></td>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindexactionsindex">actions</a></b></td>
         <td>[]object</td>
         <td>
           Actions are the data transformations that the module supports<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#fybrikmodulespeccapabilitiesapi">api</a></b></td>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindexapi">api</a></b></td>
         <td>object</td>
         <td>
-          API indicates to the application how to access/write the data<br/>
+          API indicates to the application how to access the capabilities provided by the module<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#fybrikmodulespeccapabilitiessupportedinterfacesindex">supportedInterfaces</a></b></td>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindexpluginsindex">plugins</a></b></td>
         <td>[]object</td>
         <td>
-          Copy should have one or more instances in the list, and its content should have source and sink Read should have one or more instances in the list, each with source populated Write should have one or more instances in the list, each with sink populated TODO - In the future if we have a module type that doesn't interface directly with data then this list could be empty<br/>
+          Plugins enable the module to add libraries to perform actions rather than implementing them by itself<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>scope</b></td>
+        <td>enum</td>
+        <td>
+          Scope indicates at what level the capability is used: workload, asset, cluster If not indicated it is assumed to be asset<br/>
+          <br/>
+            <i>Enum</i>: asset, workload, cluster<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindexsupportedinterfacesindex">supportedInterfaces</a></b></td>
+        <td>[]object</td>
+        <td>
+          Copy should have one or more instances in the list, and its content should have source and sink Read should have one or more instances in the list, each with source populated Write should have one or more instances in the list, each with sink populated This field may not be required if not handling data<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>capability</b></td>
+        <td>enum</td>
+        <td>
+          Capability declares what this module knows how to do - ex: read, write, transform...<br/>
+          <br/>
+            <i>Enum</i>: copy, read, write<br/>
         </td>
         <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### FybrikModule.spec.capabilities.actions[index]
-<sup><sup>[↩ Parent](#fybrikmodulespeccapabilities)</sup></sup>
+#### FybrikModule.spec.capabilities[index].actions[index]
+<sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiesindex)</sup></sup>
 
 
 
@@ -1772,12 +1811,12 @@ SupportedAction declares an action that the module supports (action identifier a
 </table>
 
 
-#### FybrikModule.spec.capabilities.api
-<sup><sup>[↩ Parent](#fybrikmodulespeccapabilities)</sup></sup>
+#### FybrikModule.spec.capabilities[index].api
+<sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiesindex)</sup></sup>
 
 
 
-API indicates to the application how to access/write the data
+API indicates to the application how to access the capabilities provided by the module
 
 <table>
     <thead>
@@ -1796,7 +1835,7 @@ API indicates to the application how to access/write the data
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#fybrikmodulespeccapabilitiesapiendpoint">endpoint</a></b></td>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindexapiendpoint">endpoint</a></b></td>
         <td>object</td>
         <td>
           EndpointSpec is used both by the module creator and by the status of the fybrikapplication<br/>
@@ -1813,8 +1852,8 @@ API indicates to the application how to access/write the data
 </table>
 
 
-#### FybrikModule.spec.capabilities.api.endpoint
-<sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiesapi)</sup></sup>
+#### FybrikModule.spec.capabilities[index].api.endpoint
+<sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiesindexapi)</sup></sup>
 
 
 
@@ -1856,8 +1895,42 @@ EndpointSpec is used both by the module creator and by the status of the fybrika
 </table>
 
 
-#### FybrikModule.spec.capabilities.supportedInterfaces[index]
-<sup><sup>[↩ Parent](#fybrikmodulespeccapabilities)</sup></sup>
+#### FybrikModule.spec.capabilities[index].plugins[index]
+<sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiesindex)</sup></sup>
+
+
+
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>dataFormat</b></td>
+        <td>string</td>
+        <td>
+          DataFormat indicates the format of data the plugin knows how to process<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>pluginType</b></td>
+        <td>string</td>
+        <td>
+          PluginType indicates the technology used for the module and the plugin to interact Examples of such mechanisms are vault plugins, wasm, etc<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikModule.spec.capabilities[index].supportedInterfaces[index]
+<sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiesindex)</sup></sup>
 
 
 
@@ -1873,34 +1946,25 @@ ModuleInOut specifies the protocol and format of the data input and output by th
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#fybrikmodulespeccapabilitiessupportedinterfacesindexsink">sink</a></b></td>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindexsupportedinterfacesindexsink">sink</a></b></td>
         <td>object</td>
         <td>
           Sink specifies the output data protocol and format<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#fybrikmodulespeccapabilitiessupportedinterfacesindexsource">source</a></b></td>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindexsupportedinterfacesindexsource">source</a></b></td>
         <td>object</td>
         <td>
           Source specifies the input data protocol and format<br/>
         </td>
         <td>false</td>
-      </tr><tr>
-        <td><b>flow</b></td>
-        <td>enum</td>
-        <td>
-          Flow for which this interface is supported<br/>
-          <br/>
-            <i>Enum</i>: copy, read, write<br/>
-        </td>
-        <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### FybrikModule.spec.capabilities.supportedInterfaces[index].sink
-<sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiessupportedinterfacesindex)</sup></sup>
+#### FybrikModule.spec.capabilities[index].supportedInterfaces[index].sink
+<sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiesindexsupportedinterfacesindex)</sup></sup>
 
 
 
@@ -1933,8 +1997,8 @@ Sink specifies the output data protocol and format
 </table>
 
 
-#### FybrikModule.spec.capabilities.supportedInterfaces[index].source
-<sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiessupportedinterfacesindex)</sup></sup>
+#### FybrikModule.spec.capabilities[index].supportedInterfaces[index].source
+<sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiesindexsupportedinterfacesindex)</sup></sup>
 
 
 
@@ -4362,6 +4426,13 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>schemaRegistryURL</b></td>
+        <td>string</td>
+        <td>
+          URL to the schema registry. The registry has to be Confluent schema registry compatible.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>secretImport</b></td>
         <td>string</td>
         <td>
@@ -4436,13 +4507,6 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         <td>string</td>
         <td>
           Kafka topic<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>schemaRegistryURL</b></td>
-        <td>string</td>
-        <td>
-          URL to the schema registry. The registry has to be Confluent schema registry compatible.<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -4962,6 +5026,13 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>schemaRegistryURL</b></td>
+        <td>string</td>
+        <td>
+          URL to the schema registry. The registry has to be Confluent schema registry compatible.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>secretImport</b></td>
         <td>string</td>
         <td>
@@ -5036,13 +5107,6 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         <td>string</td>
         <td>
           Kafka topic<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>schemaRegistryURL</b></td>
-        <td>string</td>
-        <td>
-          URL to the schema registry. The registry has to be Confluent schema registry compatible.<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -6092,6 +6156,13 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>schemaRegistryURL</b></td>
+        <td>string</td>
+        <td>
+          URL to the schema registry. The registry has to be Confluent schema registry compatible.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>secretImport</b></td>
         <td>string</td>
         <td>
@@ -6166,13 +6237,6 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         <td>string</td>
         <td>
           Kafka topic<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>schemaRegistryURL</b></td>
-        <td>string</td>
-        <td>
-          URL to the schema registry. The registry has to be Confluent schema registry compatible.<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -6692,6 +6756,13 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>schemaRegistryURL</b></td>
+        <td>string</td>
+        <td>
+          URL to the schema registry. The registry has to be Confluent schema registry compatible.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>secretImport</b></td>
         <td>string</td>
         <td>
@@ -6766,13 +6837,6 @@ Kafka data store. The supposed format within the given Kafka topic is a Confluen
         <td>string</td>
         <td>
           Kafka topic<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>schemaRegistryURL</b></td>
-        <td>string</td>
-        <td>
-          URL to the schema registry. The registry has to be Confluent schema registry compatible.<br/>
         </td>
         <td>true</td>
       </tr></tbody>

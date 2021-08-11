@@ -12,7 +12,28 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-func TestValidApplication(t *testing.T) {
+func TestValidApplicationWithBaseTaxonomy(t *testing.T) {
+	t.Parallel()
+
+	filename := "../../../testdata/unittests/fybrikapplication-validForBase.yaml"
+	applicationYaml, err := ioutil.ReadFile(filename)
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+		return
+	}
+
+	fybrikApp := &FybrikApplication{}
+	err = yaml.Unmarshal(applicationYaml, fybrikApp)
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+		return
+	}
+	taxonomyFile := "../../../testdata/unittests/basetaxonomy/fybrik_application.json"
+	validateErr := fybrikApp.ValidateFybrikApplication(taxonomyFile)
+	assert.Nil(t, validateErr, "No error should be found")
+}
+
+func TestValidApplicationWithEnhancedTaxonomy(t *testing.T) {
 	t.Parallel()
 
 	filename := "../../../../samples/kubeflow/fybrikapplication.yaml"
@@ -28,12 +49,12 @@ func TestValidApplication(t *testing.T) {
 		fmt.Printf("err: %v\n", err)
 		return
 	}
-	taxonomyFile := "../../../../charts/fybrik/files/taxonomy/application.values.schema.json"
+	taxonomyFile := "../../../testdata/unittests/sampletaxonomy/fybrik_application.json"
 	validateErr := fybrikApp.ValidateFybrikApplication(taxonomyFile)
 	assert.Nil(t, validateErr, "No error should be found")
 }
 
-func TestInvalidAppInfo(t *testing.T) {
+func TestInvalidAppInfoWithEnhancedTaxonomy(t *testing.T) {
 	t.Parallel()
 
 	filename := "../../../testdata/unittests/fybrikapplication-appInfoErrors.yaml"
@@ -50,12 +71,12 @@ func TestInvalidAppInfo(t *testing.T) {
 		return
 	}
 
-	taxonomyFile := "../../../../charts/fybrik/files/taxonomy/application.values.schema.json"
+	taxonomyFile := "../../../testdata/unittests/sampletaxonomy/fybrik_application.json"
 	validateErr := (*fybrikApp).ValidateFybrikApplication(taxonomyFile)
 	assert.NotNil(t, validateErr, "Invalid appInfo error should be found")
 }
 
-func TestInvalidInterface(t *testing.T) {
+func TestInvalidInterfaceWithEnhancedTaxonomy(t *testing.T) {
 	t.Parallel()
 
 	filename := "../../../testdata/unittests/fybrikapplication-interfaceErrors.yaml"
@@ -72,7 +93,7 @@ func TestInvalidInterface(t *testing.T) {
 		return
 	}
 
-	taxonomyFile := "../../../../charts/fybrik/files/taxonomy/application.values.schema.json"
+	taxonomyFile := "../../../testdata/unittests/sampletaxonomy/fybrik_application.json"
 	validateErr := (*fybrikApp).ValidateFybrikApplication(taxonomyFile)
 	assert.NotNil(t, validateErr, "Invalid interface error should be found")
 }
