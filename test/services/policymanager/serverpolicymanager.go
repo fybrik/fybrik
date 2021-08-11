@@ -43,9 +43,9 @@ func main() {
 		if values := c.Request.Header["X-Request-Cred"]; len(values) > 0 {
 			creds = values[0]
 		}
-		fmt.Println("creds extracted from POST request:", creds)
+		fmt.Println("creds extracted from POST request in mockup policy manager:", creds)
 		input, _ := ioutil.ReadAll(c.Request.Body)
-		fmt.Println("input extracted from POST request body:", string(input))
+		fmt.Println("input extracted from POST request body in mockup policy manager:", string(input))
 
 		policyManagerReq := constructPolicyManagerRequest(string(input))
 		policyManager := &mockup.MockPolicyManager{}
