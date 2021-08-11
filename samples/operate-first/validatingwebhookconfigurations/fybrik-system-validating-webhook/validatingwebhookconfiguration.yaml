@@ -1,13 +1,37 @@
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: fybrik-system/serving-cert
+    certmanager.k8s.io/inject-ca-from: fybrik-system/serving-cert
   creationTimestamp: null
   name: fybrik-system-validating-webhook
 webhooks:
-- clientConfig:
-    caBundle: Cg==
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: fybrik-system
+      path: /validate-app-fybrik-io-v1alpha1-fybrikapplication
+  failurePolicy: Fail
+  name: vfybrikapplication.kb.io
+  rules:
+  - apiGroups:
+    - app.fybrik.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - fybrikapplications
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
     service:
       name: webhook-service
       namespace: fybrik-system
@@ -24,8 +48,11 @@ webhooks:
     - UPDATE
     resources:
     - batchtransfers
-- clientConfig:
-    caBundle: Cg==
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
     service:
       name: webhook-service
       namespace: fybrik-system
@@ -42,3 +69,4 @@ webhooks:
     - UPDATE
     resources:
     - streamtransfers
+  sideEffects: None
