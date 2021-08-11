@@ -40,7 +40,7 @@ spec:
     description: Go mod caching directory path
     name: GOMODCACHE
     type: string
-  - default: "wcp-ibm-streams-docker-local.artifactory.swg-devops.com/elvis_build/suede_compile:latest"
+  - default: "docker.io/yakinikku/suede:latest"
     description: default image to use for compiling
     name: image
     type: string
