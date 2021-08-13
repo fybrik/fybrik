@@ -1,4 +1,5 @@
 export run_tkn=${run_tkn:-0}
+export is_kind=${is_kind:-true}
 export skip_tests=${skip_tests:-false}
 export GH_TOKEN=${GH_TOKEN:-fake}
 export image_source_repo_password=fake

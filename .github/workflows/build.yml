@@ -141,7 +141,7 @@ jobs:
         image_repo: kind-registry:5000
         image_source_repo_username: fake@fake.com 
         GH_TOKEN: fake
-      run: pushd hack/tools/ && ./create_kind.sh && popd && . pipeline/source-external.sh && skip_tests=false github_workspace=${{ github.workspace }} pipeline/bootstrap-pipeline.sh fybrik-system
+      run: pushd hack/tools/ && ./create_kind.sh && docker info && popd && . pipeline/source-external.sh && skip_tests=false kind=true github_workspace=${{ github.workspace }} pipeline/bootstrap-pipeline.sh fybrik-system
   push_images:
     name: Push images
     runs-on: ubuntu-latest

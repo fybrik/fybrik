@@ -18,6 +18,7 @@ export cpd_url="${cpd_url:-https://cpd.fake.com}"
 export git_url="${git_url:-https://github.com/fybrik/fybrik.git}"
 export wkc_connector_git_url="${wkc_connector_git_url}"
 export vault_plugin_secrets_wkc_reader_url="${vault_plugin_secrets_wkc_reader_url}"
+export is_kind="${is_kind:-false}"
 
 helper_text=""
 realpath() {
@@ -94,13 +95,18 @@ else
     client=kubectl
     pipeline_sa=default
 fi
-if [[ ${is_kubernetes} == "true" ]]; then
-    # Assume this is a kind cluster, and install nfs client pvc
+if [[ ${is_kubernetes} == "true" && ${is_kind} == "true" ]]; then
+    # If we're running kind and we don't have a default storage class, install nfs client for RWX volume support
+    set +e
+    kubectl get sc | grep -v "standard (default)" | grep "(default)"
+    rc=$?
     set -e
-    kubectl apply -f ${repo_root}/pipeline/nfs.yaml
-    helm repo add stable https://charts.helm.sh/stable
-    ip=$(kubectl get svc -n default nfs-service -o jsonpath='{.spec.clusterIP}')
-    helm upgrade --install nfs-provisioner stable/nfs-client-provisioner --values ${repo_root}/pipeline/nfs-values.yaml --set nfs.server=${ip} --namespace nfs-provisioner --create-namespace
+    if [[ $rc -ne 0 ]]; then
+        kubectl apply -f ${repo_root}/pipeline/nfs.yaml
+        helm repo add stable https://charts.helm.sh/stable
+        ip=$(kubectl get svc -n default nfs-service -o jsonpath='{.spec.clusterIP}')
+        helm upgrade --install nfs-provisioner stable/nfs-client-provisioner --values ${repo_root}/pipeline/nfs-values.yaml --set nfs.server=${ip} --namespace nfs-provisioner --create-namespace
+    fi
 fi
 
 # See if an install namespace will need to be created
@@ -133,8 +139,8 @@ unique_prefix=$(kubectl config view --minify --output 'jsonpath={..namespace}'; 
 
 set +e
 # Be smarter about this - just a quick hack for typical default OpenShift & Kind installs so we can control the default storage class
-oc patch storageclass managed-nfs-storage -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class": "true"}}}'
-oc patch storageclass standard -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class": "false"}}}'
+kubectl patch storageclass managed-nfs-storage -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class": "true"}}}'
+kubectl patch storageclass standard -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class": "false"}}}'
 set -e
 
 # Install Tekton & Knative eventing
@@ -161,11 +167,11 @@ chmod u+x ${TMP}/streams_csv_check_script.sh
     try_command "${TMP}/streams_csv_check_script.sh"  40 false 5
     oc apply -f ${repo_root}/pipeline/knative-eventing.yaml
 else
-    kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+    kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.26.0/release.yaml
     kubectl apply -f https://github.com/knative/operator/releases/download/v0.15.4/operator.yaml
     kubectl apply -f https://github.com/knative/eventing/releases/download/v0.21.0/eventing-crds.yaml
     kubectl apply -f https://github.com/knative/eventing/releases/download/v0.21.0/eventing-core.yaml
-    kubectl wait pod -n tekton-pipelines --all --for=condition=Ready --timeout=3m
+    try_command "kubectl wait pod -n tekton-pipelines --all --for=condition=Ready --timeout=3m" 2 true 1
     set +e
     kubectl create ns knative-eventing
     set -e
@@ -204,43 +210,43 @@ helper_text="If this step fails, tekton related pods may be restarting or initia
 1. Please rerun in a minute or so
 "
 set -x
-oc apply -f ${repo_root}/pipeline/tasks/make.yaml
-oc apply -f ${repo_root}/pipeline/tasks/git-clone.yaml
-oc apply -f ${repo_root}/pipeline/tasks/buildah.yaml
-oc apply -f ${repo_root}/pipeline/tasks/skopeo-copy.yaml
-oc apply -f ${repo_root}/pipeline/tasks/openshift-client.yaml
-oc apply -f ${repo_root}/pipeline/tasks/helm-upgrade-from-source.yaml 
-oc apply -f ${repo_root}/pipeline/tasks/helm-upgrade-from-repo.yaml 
+kubectl apply -f ${repo_root}/pipeline/tasks/make.yaml
+kubectl apply -f ${repo_root}/pipeline/tasks/git-clone.yaml
+kubectl apply -f ${repo_root}/pipeline/tasks/buildah.yaml
+kubectl apply -f ${repo_root}/pipeline/tasks/skopeo-copy.yaml
+kubectl apply -f ${repo_root}/pipeline/tasks/openshift-client.yaml
+kubectl apply -f ${repo_root}/pipeline/tasks/helm-upgrade-from-source.yaml 
+kubectl apply -f ${repo_root}/pipeline/tasks/helm-upgrade-from-repo.yaml 
 helper_text=""
 
 # Wipe old pipeline definitions in case of merge conflicts
 set +e
-oc delete -f ${repo_root}/pipeline/pipeline.yaml
-oc delete -f ${repo_root}/pipeline/wkc-pipeline.yaml
+kubectl delete -f ${repo_root}/pipeline/pipeline.yaml
+kubectl delete -f ${repo_root}/pipeline/wkc-pipeline.yaml
 
 # If running open source, exclude WKC from the pipeline
 set -e
 if [[ "${github}" == "github.com" ]]; then 
-    oc apply -f ${repo_root}/pipeline/pipeline.yaml
+    kubectl apply -f ${repo_root}/pipeline/pipeline.yaml
 else
-    oc apply -f ${repo_root}/pipeline/wkc-pipeline.yaml
+    kubectl apply -f ${repo_root}/pipeline/wkc-pipeline.yaml
 fi
 
 # Delete old registry credentials
 set +e
-oc delete secret -n ${unique_prefix} regcred --wait
-oc delete secret -n ${unique_prefix} regcred-test --wait
-oc delete secret -n ${unique_prefix} sourceregcred --wait
+kubectl delete secret -n ${unique_prefix} regcred --wait
+kubectl delete secret -n ${unique_prefix} regcred-test --wait
+kubectl delete secret -n ${unique_prefix} sourceregcred --wait
 set -e
 set -x
 
 # See if we have a pull secret available on cluster that has access to authenticated registries we need
 set +e
-oc get secret -n openshift-config pull-secret -o yaml > ${TMP}/secret.yaml
+kubectl get secret -n openshift-config pull-secret -o yaml > ${TMP}/secret.yaml
 rc=$?
 if [[ ${rc} -eq 0 ]]; then
     helper_text=""
-    oc get secret -n openshift-config pull-secret -o=go-template='{{index .data ".dockerconfigjson"}}' | base64 --decode | grep "${image_source_repo}"
+    kubectl get secret -n openshift-config pull-secret -o=go-template='{{index .data ".dockerconfigjson"}}' | base64 --decode | grep "${image_source_repo}"
     rc=$?
     if [[ ${rc} -eq 0 ]]; then
         set -e
@@ -248,7 +254,7 @@ if [[ ${rc} -eq 0 ]]; then
         sed -i.bak "s|namespace: openshift-config|namespace: ${unique_prefix}|g" ${TMP}/secret.yaml
         sed -i.bak "s|name: pull-secret|name: regcred|g" ${TMP}/secret.yaml
         cat ${TMP}/secret.yaml
-        oc apply -f ${TMP}/secret.yaml
+        kubectl apply -f ${TMP}/secret.yaml
     else
         if [[ ! -z ${image_source_repo_password} ]]; then
             set -e
@@ -304,7 +310,7 @@ if [[ "${unique_prefix}" == "fybrik-system" ]]; then
     deploy_vault="true"
 fi
 set +e
-oc get crd | grep "fybrikapplications.app.fybrik.ibm.com"
+kubectl get crd | grep "fybrikapplications.app.fybrik.ibm.com"
 rc=$?
 deploy_crd="false"
 if [[ $rc -ne 0 ]]; then
@@ -313,7 +319,7 @@ if [[ $rc -ne 0 ]]; then
 fi
 
 # Don't attempt to reinstall certmanager if some form of it is already installed
-oc get crd | grep "certmanager"
+kubectl get crd | grep "certmanager"
 rc=$?
 deploy_cert_manager="false"
 if [[ $rc -ne 0 ]]; then
@@ -322,7 +328,7 @@ if [[ $rc -ne 0 ]]; then
 fi
 
 set +e
-oc get ns fybrik-system
+kubectl get ns fybrik-system
 rc=$?
 set -e
 if [[ $rc -ne 0 ]]; then
@@ -332,9 +338,9 @@ if [[ $rc -ne 0 ]]; then
 fi
 
 # Create a workspace to allow users to exec in and run arbitrary commands
-oc apply -f ${repo_root}/pipeline/rootsa.yaml
-oc apply -f ${TMP}/statefulset.yaml
-oc apply -f ${repo_root}/pipeline/pvc.yaml
+kubectl apply -f ${repo_root}/pipeline/rootsa.yaml
+kubectl apply -f ${TMP}/statefulset.yaml
+kubectl apply -f ${repo_root}/pipeline/pvc.yaml
 if [[ ${is_openshift} == "true" ]]; then
     oc adm policy add-scc-to-user privileged system:serviceaccount:${unique_prefix}:root-sa
 fi
@@ -352,36 +358,36 @@ if [[ ${is_openshift} == "true" ]]; then
 fi
 cat ${TMP}/interceptors.yaml
 popd
-oc apply -f ${TMP}/release.yaml
-oc apply -f ${TMP}/interceptors.yaml
+kubectl apply -f ${TMP}/release.yaml
+kubectl apply -f ${TMP}/interceptors.yaml
 
 # Delete old apiserversource
 set +e
-oc delete apiserversource generic-watcher
+kubectl delete apiserversource generic-watcher
 set -e
 
 # Install triggers for rebuilds of specific tasks
-oc apply -f ${repo_root}/pipeline/eventlistener/triggerbinding.yaml
-oc apply -f ${repo_root}/pipeline/eventlistener/triggertemplate.yaml
-oc apply -f ${repo_root}/pipeline/eventlistener/apiserversource.yaml
-oc apply -f ${repo_root}/pipeline/eventlistener/role.yaml
-oc apply -f ${repo_root}/pipeline/eventlistener/serviceaccount.yaml
+kubectl apply -f ${repo_root}/pipeline/eventlistener/triggerbinding.yaml
+kubectl apply -f ${repo_root}/pipeline/eventlistener/triggertemplate.yaml
+kubectl apply -f ${repo_root}/pipeline/eventlistener/apiserversource.yaml
+kubectl apply -f ${repo_root}/pipeline/eventlistener/role.yaml
+kubectl apply -f ${repo_root}/pipeline/eventlistener/serviceaccount.yaml
 
 set +x
 helper_text="If this step fails, run again - knative related pods may be restarting and unable to process the webhook
 "
 set -x
-oc apply -f ${repo_root}/pipeline/eventlistener/eventlistener.yaml
+kubectl apply -f ${repo_root}/pipeline/eventlistener/eventlistener.yaml
 helper_text=""
 set +e
-oc delete rolebinding generic-watcher
-oc delete rolebinding tekton-task-watcher
+kubectl delete rolebinding generic-watcher
+kubectl delete rolebinding tekton-task-watcher
 set -e
-oc create rolebinding tekton-task-watcher --role=tekton-task-watcher --serviceaccount=${unique_prefix}:tekton-task-watcher
+kubectl create rolebinding tekton-task-watcher --role=tekton-task-watcher --serviceaccount=${unique_prefix}:tekton-task-watcher
 
 set +e
-oc delete secret git-ssh-key
-oc delete secret git-token
+kubectl delete secret git-ssh-key
+kubectl delete secret git-token
 set -e
 
 # Determine which set of vault values to used, based on whether or not WKC components will be installed
@@ -400,9 +406,9 @@ if [[ -z ${GH_TOKEN} && "${github}" != "github.com" ]]; then
     ex: bash -x bootstrap.sh fybrik-system /path/to/private/ssh/key
     "
     set -x
-    oc create secret generic git-ssh-key --from-file=ssh-privatekey=${ssh_key} --type=kubernetes.io/ssh-auth
+    kubectl create secret generic git-ssh-key --from-file=ssh-privatekey=${ssh_key} --type=kubernetes.io/ssh-auth
     helper_text=""
-    oc annotate secret git-ssh-key --overwrite 'tekton.dev/git-0'="${github}"
+    kubectl annotate secret git-ssh-key --overwrite 'tekton.dev/git-0'="${github}"
     if [[ ${is_openshift} == "true" ]]; then
         oc secrets link pipeline git-ssh-key --for=mount
         set +e
@@ -428,7 +434,7 @@ stringData:
   username: ${git_user}
   password: ${GH_TOKEN}
 EOH
-    oc apply -f ${TMP}/git-token.yaml
+    kubectl apply -f ${TMP}/git-token.yaml
     if [[ ${is_openshift} == "true" ]]; then
         oc secrets link pipeline git-token --for=mount
         set +e
@@ -463,13 +469,13 @@ stringData:
   CP4D_SERVER_URL: ${cpd_url}
 EOH
     cat ${TMP}/wkc-credentials.yaml
-    oc apply -f ${TMP}/wkc-credentials.yaml
+    kubectl apply -f ${TMP}/wkc-credentials.yaml
     extra_params="${extra_params} -p wkcConnectorServerUrl=${cpd_url}"
 fi
 
 # Determine whether images should be sent to ICR for security scanning if creds exist
 set +e
-oc get secret us-south-creds
+kubectl get secret us-south-creds
 rc=$?
 transfer_images_to_icr=false
 if [[ $rc -eq 0 ]]; then
@@ -487,7 +493,7 @@ if [[ ! -z "${github_workspace}" ]]; then
     if [[ ${is_kubernetes} == "true" ]]; then
         kubectl cp $github_workspace workspace-0:/workspace/source/
     else 
-        oc rsync $github_workspace workspace-0:/workspace/source/
+        kubectl rsync $github_workspace workspace-0:/workspace/source/
     fi
     git_url=""
     extra_params="${extra_params} -p git-url="
@@ -563,26 +569,26 @@ spec:
 EOH
     cat ${TMP}/pipelinerun.yaml
 
-    oc apply -f ${TMP}/pipelinerun.yaml
+    kubectl apply -f ${TMP}/pipelinerun.yaml
  
     cat > ${TMP}/streams_csv_check_script.sh <<EOH
 #!/bin/bash
 set -x
-oc get taskrun,pvc,po
-for i in $(oc get taskrun --no-headers | grep "False" | cut -d' ' -f1); do oc logs -l tekton.dev/taskRun=$i --all-containers; done
-oc get pipelinerun --no-headers
-oc get pipelinerun --no-headers | grep -e "Failed" -e "Completed"
+kubectl get taskrun,pvc,po
+for i in $(kubectl get taskrun --no-headers | grep "False" | cut -d' ' -f1); do kubectl logs -l tekton.dev/taskRun=$i --all-containers; done
+kubectl get pipelinerun --no-headers
+kubectl get pipelinerun --no-headers | grep -e "Failed" -e "Completed"
 EOH
     chmod u+x ${TMP}/streams_csv_check_script.sh
     try_command "${TMP}/streams_csv_check_script.sh"  40 false 30
     echo "debug: pods"
-    oc describe pods
+    kubectl describe pods
     echo "debug: events"
-    oc get events
+    kubectl get events
     echo "debug: taskruns"
-    for i in $(oc get taskrun --no-headers | grep "False" | cut -d' ' -f1); do oc logs -l tekton.dev/taskRun=$i --all-containers; done
+    for i in $(kubectl get taskrun --no-headers | grep "False" | cut -d' ' -f1); do kubectl logs -l tekton.dev/taskRun=$i --all-containers; done
     set +e
-    oc get pipelinerun -o yaml | grep "Completed"
+    kubectl get pipelinerun -o yaml | grep "Completed"
     rc=$?
     if [[ $rc -ne 0 ]]; then
         exit $rc
