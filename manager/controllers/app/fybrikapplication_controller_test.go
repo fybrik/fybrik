@@ -114,9 +114,9 @@ var _ = Describe("FybrikApplication Controller", func() {
 			}, timeout, interval).Should(BeTrue(), "FybrikApplication is not ready after timeout!")
 
 			By("Status should contain the details of the endpoint")
-			Expect(len(application.Status.ReadEndpointsMap)).To(Equal(1))
+			Expect(len(application.Status.AssetStates)).To(Equal(1))
 			fqdn := "test-app-e2e-default-read-module-test-e2e-e24d69b99a.fybrik-blueprints.svc.cluster.local"
-			Expect(application.Status.ReadEndpointsMap["s3/redact-dataset"]).To(Equal(apiv1alpha1.EndpointSpec{
+			Expect(application.Status.AssetStates["s3/redact-dataset"].Endpoint).To(Equal(apiv1alpha1.EndpointSpec{
 				Hostname: fqdn,
 				Port:     80,
 				Scheme:   "grpc",

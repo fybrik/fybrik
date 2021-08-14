@@ -116,12 +116,13 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			return ctrl.Result{}, err
 		}
 	}
-	if errorOrDeny(applicationContext) {
-		log.Info("Reconciled with errors: " + getErrorMessages(applicationContext))
+	errorMsg := getErrorMessages(applicationContext)
+	if errorMsg != "" {
+		log.Info("Reconciled with errors: " + errorMsg)
 	}
 
 	// trigger a new reconcile if required (the fybrikapplication is not ready)
-	if !inFinalState(applicationContext) {
+	if !isReady(applicationContext) {
 		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 	return ctrl.Result{}, nil
@@ -132,50 +133,54 @@ func getBucketResourceRef(name string) *types.NamespacedName {
 }
 
 func (r *FybrikApplicationReconciler) checkReadiness(applicationContext *app.FybrikApplication, status app.ObservedState) error {
-	applicationContext.Status.DataAccessInstructions = ""
-	resetConditions(applicationContext)
-	if applicationContext.Status.CatalogedAssets == nil {
-		applicationContext.Status.CatalogedAssets = make(map[string]string)
+	if applicationContext.Status.AssetStates == nil {
+		initStatus(applicationContext)
 	}
 
-	if status.Error != "" {
-		setErrorCondition(applicationContext, "", status.Error)
-		return nil
-	}
-	if !status.Ready {
-		return nil
-	}
-	// Plotter is ready - update the FybrikApplication status
-
-	// register assets if necessary if the ready state has been received
+	// TODO(shlomitk1): receive status per asset and update accordingly
+	// Temporary fix: all assets that are not in Deny state are updated based on the received status
 	for _, dataCtx := range applicationContext.Spec.Data {
+		assetID := dataCtx.DataSetID
+		if status.Error != "" {
+			setErrorCondition(applicationContext, assetID, status.Error)
+			continue
+		}
+		if !status.Ready {
+			break
+		}
+
+		// register assets if necessary if the ready state has been received
 		if dataCtx.Requirements.Copy.Catalog.CatalogID != "" {
-			if _, cataloged := applicationContext.Status.CatalogedAssets[dataCtx.DataSetID]; cataloged {
+			if applicationContext.Status.AssetStates[assetID].CatalogedAsset != "" {
 				// the asset has been already cataloged
 				continue
 			}
 			// mark the bucket as persistent and register the asset
-			provisionedBucketRef, found := applicationContext.Status.ProvisionedStorage[dataCtx.DataSetID]
+			provisionedBucketRef, found := applicationContext.Status.ProvisionedStorage[assetID]
 			if !found {
-				message := "No copy has been created for the asset " + dataCtx.DataSetID + " required to be registered"
+				message := "No copy has been created for the asset " + assetID + " required to be registered"
 				r.Log.V(0).Info(message)
-				return errors.New(message)
+				setErrorCondition(applicationContext, assetID, message)
+				continue
 			}
 			if err := r.Provision.SetPersistent(getBucketResourceRef(provisionedBucketRef.DatasetRef), true); err != nil {
-				return err
+				setErrorCondition(applicationContext, assetID, err.Error())
+				continue
 			}
 			// register the asset: experimental feature
 			if newAssetID, err := r.RegisterAsset(dataCtx.Requirements.Copy.Catalog.CatalogID, &provisionedBucketRef, applicationContext); err == nil {
-				applicationContext.Status.CatalogedAssets[dataCtx.DataSetID] = newAssetID
+				state := applicationContext.Status.AssetStates[assetID]
+				state.CatalogedAsset = newAssetID
+				applicationContext.Status.AssetStates[assetID] = state
 			} else {
 				// log an error and make a new attempt to register the asset
-				r.Log.V(0).Info("Error while registering an asset: " + err.Error())
-				return nil
+				setErrorCondition(applicationContext, assetID, err.Error())
+				continue
 			}
 		}
+		setReadyCondition(applicationContext, assetID)
 	}
-	setReadyCondition(applicationContext, "")
-	applicationContext.Status.DataAccessInstructions = status.DataAccessInstructions
+	applicationContext.Status.Ready = isReady(applicationContext)
 	return nil
 }
 
@@ -247,12 +252,10 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 // setReadModulesEndpoints populates the ReadEndpointsMap map in the status of the fybrikapplication
 // Current implementation assumes there is only one cluster with read modules (which is the same cluster the user's workload)
 func setReadModulesEndpoints(applicationContext *app.FybrikApplication, blueprintsMap map[string]app.BlueprintSpec, moduleMap map[string]*app.FybrikModule) {
-	var foundReadEndpoints = false
+	readEndpointMap := make(map[string]app.EndpointSpec)
 	for _, blueprintSpec := range blueprintsMap {
 		for _, module := range blueprintSpec.Modules {
 			if module.Arguments.Read != nil {
-				// We found a read module
-				foundReadEndpoints = true
 				releaseName := utils.GetReleaseName(applicationContext.ObjectMeta.Name, applicationContext.ObjectMeta.Namespace, module)
 				moduleName := module.Name
 
@@ -265,7 +268,7 @@ func setReadModulesEndpoints(applicationContext *app.FybrikApplication, blueprin
 						originalEndpointSpec := cap.API.Endpoint
 						fqdn := utils.GenerateModuleEndpointFQDN(releaseName, BlueprintNamespace)
 						for _, arg := range module.Arguments.Read {
-							applicationContext.Status.ReadEndpointsMap[arg.AssetID] = app.EndpointSpec{
+							readEndpointMap[arg.AssetID] = app.EndpointSpec{
 								Hostname: fqdn,
 								Port:     originalEndpointSpec.Port,
 								Scheme:   originalEndpointSpec.Scheme,
@@ -275,11 +278,13 @@ func setReadModulesEndpoints(applicationContext *app.FybrikApplication, blueprin
 				}
 			}
 		}
-
-		// We found a blueprint with read modules
-		if foundReadEndpoints {
-			return
-		}
+	}
+	// populate endpoints in application status
+	for _, asset := range applicationContext.Spec.Data {
+		id := utils.CreateDataSetIdentifier(asset.DataSetID)
+		state := applicationContext.Status.AssetStates[asset.DataSetID]
+		state.Endpoint = readEndpointMap[id]
+		applicationContext.Status.AssetStates[asset.DataSetID] = state
 	}
 }
 
@@ -290,19 +295,16 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *app.FybrikAp
 	// Data User created or updated the FybrikApplication
 
 	// clear status
-	resetConditions(applicationContext)
-	applicationContext.Status.DataAccessInstructions = ""
+	initStatus(applicationContext)
 	if applicationContext.Status.ProvisionedStorage == nil {
 		applicationContext.Status.ProvisionedStorage = make(map[string]app.DatasetDetails)
 	}
-	applicationContext.Status.ReadEndpointsMap = make(map[string]app.EndpointSpec)
 
 	if len(applicationContext.Spec.Data) == 0 {
 		if err := r.deleteExternalResources(applicationContext); err != nil {
 			return ctrl.Result{}, err
 		}
 		r.Log.V(0).Info("no blueprint will be generated since no datasets are specified")
-		setReadyCondition(applicationContext, "")
 		return ctrl.Result{}, nil
 	}
 
@@ -323,7 +325,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *app.FybrikAp
 		requirements = append(requirements, req)
 	}
 	// check if can proceed
-	if errorOrDeny(applicationContext) {
+	if getErrorMessages(applicationContext) != "" {
 		return ctrl.Result{}, nil
 	}
 
@@ -353,7 +355,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *app.FybrikAp
 		instances = append(instances, instancesPerDataset...)
 	}
 	// check if can proceed
-	if errorOrDeny(applicationContext) {
+	if getErrorMessages(applicationContext) != "" {
 		return ctrl.Result{}, nil
 	}
 	// update allocated storage in the status
