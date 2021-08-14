@@ -108,6 +108,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			return ctrl.Result{}, err
 		}
 	}
+	applicationContext.Status.Ready = isReady(applicationContext)
 
 	// Update CRD status in case of change (other than deletion, which was handled separately)
 	if !equality.Semantic.DeepEqual(&applicationContext.Status, observedStatus) && applicationContext.DeletionTimestamp.IsZero() {
@@ -180,7 +181,6 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext *app.Fyb
 		}
 		setReadyCondition(applicationContext, assetID)
 	}
-	applicationContext.Status.Ready = isReady(applicationContext)
 	return nil
 }
 
@@ -358,6 +358,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *app.FybrikAp
 	if getErrorMessages(applicationContext) != "" {
 		return ctrl.Result{}, nil
 	}
+
 	// update allocated storage in the status
 	// clean irrelevant buckets
 	for datasetID, details := range applicationContext.Status.ProvisionedStorage {
