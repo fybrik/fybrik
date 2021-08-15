@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strings"
 
+	"fybrik.io/fybrik/pkg/serde"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -42,7 +43,7 @@ type StepSource struct {
 }
 
 // StepSink holds information to where the target data will be written:
-// it could be assetID of an asset specified in fybrikapplication or an an asset created
+// it could be assetID of an asset specified in fybrikapplication or of an asset created
 // by fybrik control-plane
 type StepSink struct {
 	// AssetID identifies the target asset of this step
@@ -72,7 +73,7 @@ type StepParameters struct {
 
 	// Actions are the data transformations that the module supports
 	// +optional
-	Actions []SupportedAction `json:"action,omitempty"`
+	Actions []serde.Arbitrary `json:"action,omitempty"`
 }
 
 // DataFlowStep contains details on a single data flow step
