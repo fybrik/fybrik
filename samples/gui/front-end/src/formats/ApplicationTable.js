@@ -24,28 +24,29 @@ const ApplicationTable = (props) => {
   // Show status success/in progress/error, and display the data access instructions
   const TableCellStatus = (status) => {
     if (('ready' in status.status) && status.status.ready) {
-      let states = {}
+      let states = []
       for (const key in status.status.assetStates) {
         let assetState = status.status.assetStates[key]
         if (assetState.conditions[1].status === "True") {
-          states[key] = assetState.conditions[1].message
+          states.push({key: key, value: assetState.conditions[1].message})
         } else {
-          states[key] = 'Asset is ready.'
-          if (assetState.catalogedAsset !== "") {
-            states[key] += 'Registered asset: ' + assetState.catalogedAsset
+          let msg = 'Asset is ready. '
+          if (('catalogedAsset' in assetState) && (assetState.catalogedAsset !== "")) {
+            msg += 'Registered asset: ' + assetState.catalogedAsset
           }
-          if (assetState.endpoint !== "") {
-            states[key] += 'Endpoint: ' + assetState.endpoint
+          if ('endpoint' in assetState) {
+            msg += 'Endpoint: ' + JSON.stringify(assetState.endpoint)
           }
+          states.push({key: key, value: msg})
         }
       }
       return (
         <Table.Cell textAlign='center'>
-          <Popup position='left center' pinned on='click' trigger={<Button flowing='true' basic size='small' icon='check' color='green'/>}>
+          <Popup position='left center' pinned on='click' trigger={<Button basic icon='check' flowing='true' color='green'/>}>
             <Grid>
-              {(status.status.assetStates.map((state, id) => (
-                <Grid.Row key={id}>
-                  <Segment attached><b>{id}: </b>{states[id]}</Segment>
+              {(states.map(elem => (
+                <Grid.Row key={elem.key}>
+                  <Segment attached><b>{elem.key}: </b>{elem.value}</Segment>
                 </Grid.Row>
               )))}
             </Grid>
@@ -53,15 +54,26 @@ const ApplicationTable = (props) => {
         </Table.Cell>
       )
     } else {
-      if ('conditions' in status.status && (status.status.conditions[0].status === "True" || status.status.conditions[1].status === "True")) {
+      let errorMsgs = []
+      if ('assetStates' in status.status) {
+        if (('errorMessage' in status.status) && (status.status.errorMessage !== '')) {
+          errorMsgs.push(status.status.errorMessage)
+        }
+        for (const key in status.status.assetStates) {
+          let assetState = status.status.assetStates[key]
+          if (assetState.conditions[2].status === "True") {
+            errorMsgs.push(assetState.conditions[2].message)
+          }
+        }
+      }
+      if (errorMsgs.length > 0) {
         return (
           <Table.Cell textAlign='center'>
             <Popup position='left center' pinned on='click' trigger={<Button basic icon='exclamation' flowing='true' color='red'/>}>
               <Grid>
-                {(status.status.conditions.map((condition, index) => (
-                  <Grid.Row key={index}>
-                    <Segment secondary attached><b>{condition.type}</b></Segment>
-                    <Segment attached><b>Message: </b>{condition.message}</Segment>
+                {(errorMsgs.map(elem => (
+                  <Grid.Row key={elem}>
+                    <Segment attached><b>Error: </b>{elem}</Segment>
                   </Grid.Row>
                 )))}
               </Grid>
