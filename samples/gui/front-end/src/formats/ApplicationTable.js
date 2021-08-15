@@ -26,15 +26,15 @@ const ApplicationTable = (props) => {
     if (('ready' in status.status) && status.status.ready) {
       let states = {}
       for (const key in status.status.assetStates) {
-        assetState = status.status.assetStates[key]
+        let assetState = status.status.assetStates[key]
         if (assetState.conditions[1].status === "True") {
           states[key] = assetState.conditions[1].message
         } else {
           states[key] = 'Asset is ready.'
-          if (assetState.catalogedAsset != "") {
+          if (assetState.catalogedAsset !== "") {
             states[key] += 'Registered asset: ' + assetState.catalogedAsset
           }
-          if (assetState.endpoint != "") {
+          if (assetState.endpoint !== "") {
             states[key] += 'Endpoint: ' + assetState.endpoint
           }
         }
