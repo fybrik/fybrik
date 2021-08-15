@@ -79,8 +79,8 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		// if validation fails
 		if err != nil {
 			// set error message
-			setErrorCondition(applicationContext, "", "This Fybrik application is invalid")
 			observedStatus.ObservedGeneration = appVersion
+			applicationContext.Status.ErrorMessage = err.Error()
 			return ctrl.Result{}, nil
 		}
 	}
@@ -406,7 +406,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *app.FybrikAp
 	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, blueprintPerClusterMap); err != nil {
 		r.Log.V(0).Info("Error creating " + resourceRef.Kind + " : " + err.Error())
 		if err.Error() == app.InvalidClusterConfiguration {
-			setErrorCondition(applicationContext, "", app.InvalidClusterConfiguration)
+			applicationContext.Status.ErrorMessage = err.Error()
 			return ctrl.Result{}, nil
 		}
 		return ctrl.Result{}, err

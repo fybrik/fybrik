@@ -76,6 +76,9 @@ func isReady(application *api.FybrikApplication) bool {
 }
 
 func getErrorMessages(application *api.FybrikApplication) string {
+	if application.Status.ErrorMessage != "" {
+		return application.Status.ErrorMessage
+	}
 	var errorMsgs []string
 	for _, state := range application.Status.AssetStates {
 		if state.Conditions[api.ErrorConditionIndex].Status == corev1.ConditionTrue {
