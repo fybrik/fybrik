@@ -250,10 +250,6 @@ type SubFlowsStatus struct {
 // AssetStatus includes information to be reported back to the FybrikApplication resource
 // It holds the status and access information for each asset in fybrikapplication
 type AssetStatus struct {
-	// Asset name
-	// +required
-	Name string `json:"name"`
-
 	// Endpoint
 	// +required
 	Endpoint string `json:"endpoint"`
@@ -324,8 +320,10 @@ type PlotterStatus struct {
 	// +required
 	Flows []FlowStatus `json:"flows"`
 
+	// Assets is a map containing the status per asset.
+	// The key of this map is assetId
 	// +required
-	Assets []AssetStatus `json:"assets"`
+	Assets map[string]AssetStatus `json:"assets"`
 
 	// + optional
 	Blueprints map[string]MetaBlueprint `json:"blueprints,omitempty"`
