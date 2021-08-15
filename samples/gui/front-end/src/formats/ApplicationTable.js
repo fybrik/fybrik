@@ -24,23 +24,31 @@ const ApplicationTable = (props) => {
   // Show status success/in progress/error, and display the data access instructions
   const TableCellStatus = (status) => {
     if (('ready' in status.status) && status.status.ready) {
-      let feedback = ''
-      if (status.status.dataAccessInstructions) {
-        feedback += status.status.dataAccessInstructions
-      }
-      if (status.status.catalogedAssets) {
-        feedback += "Cataloged assets:\n"
-        for (const [key, value] of Object.entries(status.status.catalogedAssets)) {
-          feedback += "\n" + value 
+      let states = {}
+      for (const key in status.status.assetStates) {
+        assetState = status.status.assetStates[key]
+        if (assetState.conditions[1].status === "True") {
+          states[key] = assetState.conditions[1].message
+        } else {
+          states[key] = 'Asset is ready.'
+          if (assetState.catalogedAsset != "") {
+            states[key] += 'Registered asset: ' + assetState.catalogedAsset
+          }
+          if (assetState.endpoint != "") {
+            states[key] += 'Endpoint: ' + assetState.endpoint
+          }
         }
       }
-      let t0 = (<span style={{whiteSpace: "pre-line"}}>{feedback}</span>)
       return (
-        <Table.Cell positive textAlign='center'>
-          <Popup position='left center' pinned on='click' content={<div className="description">
-                {t0}
-                </div>} 
-          trigger={<Button flowing='true' basic size='small' icon='check' color='green'/>}>
+        <Table.Cell textAlign='center'>
+          <Popup position='left center' pinned on='click' trigger={<Button flowing='true' basic size='small' icon='check' color='green'/>}>
+            <Grid>
+              {(status.status.assetStates.map((state, id) => (
+                <Grid.Row key={id}>
+                  <Segment attached><b>{id}: </b>{states[id]}</Segment>
+                </Grid.Row>
+              )))}
+            </Grid>
           </Popup>
         </Table.Cell>
       )
