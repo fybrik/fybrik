@@ -69,7 +69,7 @@ func (r *StreamTransfer) Default() {
 	}
 
 	if r.Spec.ReadDataType == "" {
-		r.Spec.ReadDataType = LogData
+		r.Spec.ReadDataType = ChangeData
 	}
 
 	if r.Spec.WriteDataType == "" {
