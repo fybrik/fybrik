@@ -139,9 +139,6 @@ spec:
                 interfaceDetails:
                   protocol: arrow-flight
                   dataformat: arrow
-            actions:
-            - action: redact
-              column: blood_group
   - name: flow-inventory
     flowType: read
     assetId: "m4d-notebook-sample/inventory"
@@ -182,9 +179,6 @@ spec:
                 interfaceDetails:
                   protocol: arrow-flight
                   dataformat: arrow
-            actions:
-            - action: redact
-              column: field2
   templates:
   - name: transform-template
     modules:
