@@ -119,8 +119,8 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) (ctr
 
 func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) error {
 	errs := make([]string, 0)
-	for _, step := range blueprint.Spec.Flow.Steps {
-		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], step)
+	for _, module := range blueprint.Spec.Modules {
+		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], module)
 		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus != nil || rel == nil {
 			continue
 		}
@@ -135,8 +135,8 @@ func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) 
 }
 
 func (r *BlueprintReconciler) hasExternalResources(blueprint *app.Blueprint) bool {
-	for _, step := range blueprint.Spec.Flow.Steps {
-		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], step)
+	for _, module := range blueprint.Spec.Modules {
+		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], module)
 		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus == nil && rel != nil {
 			return true
 		}
@@ -237,26 +237,14 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 
 	// count the overall number of Helm releases and how many of them are ready
 	numReleases, numReady := 0, 0
-
-	for _, step := range blueprint.Spec.Flow.Steps {
-		templateName := step.Template
-		templateSpec, err := findComponentTemplateByName(blueprint.Spec.Templates, templateName)
-		if err != nil {
-			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step uses non-existing template")
-		}
-
-		// We only orchestrate FybrikModule templates
-		if templateSpec.Kind != "FybrikModule" {
-			continue
-		}
-
+	for _, module := range blueprint.Spec.Modules {
 		// Get arguments by type
 		var args map[string]interface{}
-		args, err = utils.StructToMap(step.Arguments)
+		args, err := utils.StructToMap(module.Arguments)
 		if err != nil {
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
-		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], step)
+		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], module)
 		log.V(0).Info("Release name: " + releaseName)
 		numReleases++
 		// check the release status
@@ -264,12 +252,12 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		// unexisting release or a failed release - re-apply the chart
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
 			// Process templates with arguments
-			chart := templateSpec.Chart
+			chart := module.Chart
 			if _, err := r.applyChartResource(log, chart, args, blueprint, releaseName); err != nil {
 				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
 			}
 		} else if rel.Info.Status == release.StatusDeployed {
-			if len(step.Arguments.Read) > 0 {
+			if len(module.Arguments.Read) > 0 {
 				blueprint.Status.ObservedState.DataAccessInstructions += rel.Info.Notes
 			}
 			status, errMsg := r.checkReleaseStatus(releaseName, blueprint.Namespace)
@@ -304,16 +292,6 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		return ctrl.Result{RequeueAfter: 2 * time.Second}, nil
 	}
 	return ctrl.Result{}, nil
-}
-
-func findComponentTemplateByName(templates []app.ComponentTemplate, name string) (*app.ComponentTemplate, error) {
-	// TODO(roee.shlomo): BlueprintSpec#Templates should probably be a map from name to the module spec. Then we can remove this function.
-	for _, template := range templates {
-		if template.Name == name {
-			return &template, nil
-		}
-	}
-	return nil, fmt.Errorf("template %s not found", name)
 }
 
 // NewBlueprintReconciler creates a new reconciler for Blueprint resources

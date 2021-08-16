@@ -30,7 +30,7 @@ generate-client: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
 	rm -r $(ROOT_DIR)/pkg/connectors/openapiclient/api 
 
 .PHONY: generate-server
-generate-server: clean-server $(TOOLBIN)/openapi-generator-cli objects/taxonomy.json
+generate-server: clean-server $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
 	mkdir -p $(ROOT_DIR)/connectors/open_policy_agent
 	$(TOOLBIN)/openapi-generator-cli generate -g go-gin-server \
 		--additional-properties=packageName=openapiserver,serverPort=8081,sourceFolder=openapiserver \

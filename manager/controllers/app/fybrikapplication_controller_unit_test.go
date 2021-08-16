@@ -130,10 +130,10 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	bpSpec := plotter.Spec.Blueprints["thegreendragon"]
-	g.Expect(bpSpec.Flow.Steps[0].Template).To(gomega.Equal("implicit-copy-batch"))
-	g.Expect(bpSpec.Flow.Steps[0].Arguments.Copy.Source.Format).To(gomega.Equal("csv"))
-	g.Expect(bpSpec.Flow.Steps[0].Arguments.Copy.Destination.Format).To(gomega.Equal("csv"))
-	g.Expect(bpSpec.Flow.Steps[0].Arguments.Copy.Destination.Format).To(gomega.Equal(bpSpec.Flow.Steps[1].Arguments.Read[0].Source.Format))
+	g.Expect(bpSpec.Modules[0].Name).To(gomega.Equal("implicit-copy-batch"))
+	g.Expect(bpSpec.Modules[0].Arguments.Copy.Source.Format).To(gomega.Equal("csv"))
+	g.Expect(bpSpec.Modules[0].Arguments.Copy.Destination.Format).To(gomega.Equal("csv"))
+	g.Expect(bpSpec.Modules[0].Arguments.Copy.Destination.Format).To(gomega.Equal(bpSpec.Modules[1].Arguments.Read[0].Source.Format))
 }
 
 // This test checks proper reconciliation of FybrikApplication finalizers
@@ -475,10 +475,10 @@ func TestMultipleDatasets(t *testing.T) {
 	blueprint := plotter.Spec.Blueprints["thegreendragon"]
 	g.Expect(blueprint).NotTo(gomega.BeNil())
 	numReads := 0
-	for _, step := range blueprint.Flow.Steps {
-		if len(step.Arguments.Read) > 0 {
+	for _, module := range blueprint.Modules {
+		if len(module.Arguments.Read) > 0 {
 			numReads++
-			g.Expect(len(step.Arguments.Read)).To(gomega.Equal(2), "A read module should support both datasets")
+			g.Expect(len(module.Arguments.Read)).To(gomega.Equal(2), "A read module should support both datasets")
 		}
 	}
 	g.Expect(numReads).To(gomega.Equal(1), "A single read module should be instantiated")
@@ -624,7 +624,7 @@ func TestCopyData(t *testing.T) {
 	g.Expect(len(plotter.Spec.Blueprints)).To(gomega.Equal(1))
 	blueprint := plotter.Spec.Blueprints["thegreendragon"]
 	g.Expect(blueprint).NotTo(gomega.BeNil())
-	g.Expect(len(blueprint.Flow.Steps)).To(gomega.Equal(1))
+	g.Expect(len(blueprint.Modules)).To(gomega.Equal(1))
 }
 
 // This test checks the ingest scenario

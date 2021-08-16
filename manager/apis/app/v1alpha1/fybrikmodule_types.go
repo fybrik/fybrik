@@ -40,7 +40,7 @@ const (
 )
 
 // ModuleCapability indicates at a high level what is being performed - often on a datset, but potentially other things as well
-// +kubebuilder:validation:Enum=copy;read;write
+// +kubebuilder:validation:Enum=copy;read;write;transform
 type CapabilityType string
 
 // TODO - Should these come from the taxonomy?
@@ -152,6 +152,7 @@ type ModuleCapability struct {
 	Actions []SupportedAction `json:"actions,omitempty"`
 
 	// Plugins enable the module to add libraries to perform actions rather than implementing them by itself
+	// +optional
 	Plugins []Plugin `json:"plugins,omitempty"`
 }
 
