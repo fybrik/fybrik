@@ -127,7 +127,7 @@ spec:
             actions:
             - action: redact
               column: blood_group
-      - - name: step2
+        - name: step2
           cluster: thegreendragon
           template: read-template
           parameters:
@@ -170,7 +170,7 @@ spec:
             actions:
             - action: redact
               column: field2
-      - - name: step2
+        - name: step2
           cluster: thegreendragon
           template: read-template
           parameters:
