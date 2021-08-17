@@ -181,7 +181,7 @@ spec:
                       - scheme
                       type: object
                   type: object
-                description: AssetStates provides a status per asset `json:"assetStates,omitempty"`
+                description: AssetStates provides a status per asset
                 type: object
               errorMessage:
                 description: ErrorMessage indicates that an error has happened during the reconcile, unrelated to a specific asset

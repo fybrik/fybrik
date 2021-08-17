@@ -180,7 +180,7 @@ type FybrikApplicationStatus struct {
 	// +optional
 	ErrorMessage string `json:"errorMessage,omitempty"`
 
-	// AssetStates provides a status per asset `json:"assetStates,omitempty"`
+	// AssetStates provides a status per asset
 	// +optional
 	AssetStates map[string]AssetState `json:"assetStates,omitempty"`
 
