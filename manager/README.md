@@ -24,7 +24,7 @@ For option 2, the Helm installation allows you to pick which compoenents to inst
 Follow the installation guide as usual but in the Helm installation for the control plane add `--set manager.enabled=false` to skip the deployment of the manager. For example:
 
 ```bash
-helm install fybrik charts/fybrik --set global.tag=latest --set manager.enabled=false -n fybrik-system --wait
+helm install fybrik charts/fybrik --set global.tag=master --set manager.enabled=false -n fybrik-system --wait
 ```
 
 ### Expose running components
