@@ -1095,7 +1095,7 @@ For example:
 <div class="highlight"><pre><span></span><code>git clone https://github.com/fybrik/fybrik.git
 <span class="nb">cd</span> fybrik
 helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-helm install fybrik charts/fybrik --set global.tag<span class="o">=</span>latest -n fybrik-system --wait
+helm install fybrik charts/fybrik --set global.tag<span class="o">=</span>master -n fybrik-system --wait
 </code></pre></div></p>
 </details>
 <p>The control plane includes a <code>manager</code> service that connects to a data catalog and to a policy manager. 
