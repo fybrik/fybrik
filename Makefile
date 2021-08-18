@@ -1,5 +1,5 @@
 include Makefile.env
-export DOCKER_TAGNAME ?= latest
+export DOCKER_TAGNAME ?= master
 export KUBE_NAMESPACE ?= fybrik-system
 
 .PHONY: license
@@ -87,7 +87,7 @@ docker-push:
 
 DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
 DOCKER_PUBLIC_NAMESPACE ?= fybrik
-DOCKER_PUBLIC_TAGNAME ?= latest
+DOCKER_PUBLIC_TAGNAME ?= master
 
 DOCKER_PUBLIC_NAMES := \
 	manager \
