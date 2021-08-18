@@ -2,8 +2,9 @@ name: Build
 
 on:
   push:
-    branches:
-      - master
+    branches-ignore:
+      - 'releases/**'
+      - 'site'
     tags:
       - '*'
   pull_request:
@@ -127,13 +128,22 @@ jobs:
       name: Infer version
       run: |
         version="${GITHUB_REF#refs/tags/v}"
+        push_tag_event='true'
         if  [[ $version == refs/* ]] ;
         then
-            version="latest"
+            push_tag_event='false'
+            branch="${GITHUB_REF#refs/heads/}"
+            version=$branch
         fi
         echo ::set-output name=version::$version
+        echo ::set-output name=push_tag_event::$push_tag_event
     - name: Publish images
       if: ${{ github.event_name != 'pull_request' }}
       env:
         DOCKER_PUBLIC_TAGNAME:  ${{ steps.version.outputs.version }}
+      run: make docker-retag-and-push-public && make helm-push-public
+    - name: Publish latest image tag on push tag event
+      if: github.event_name != 'pull_request' && steps.version.outputs.push_tag_event == 'true'
+      env:
+        DOCKER_PUBLIC_TAGNAME: 'latest'
       run: make docker-retag-and-push-public && make helm-push-public
