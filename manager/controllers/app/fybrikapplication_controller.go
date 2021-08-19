@@ -90,9 +90,8 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 				return ctrl.Result{}, err
 			}
 			return ctrl.Result{}, nil
-		} else {
-			applicationContext.Status.ValidApplication = true
 		}
+		applicationContext.Status.ValidApplication = true
 	}
 	if !applicationContext.Status.ValidApplication {
 		return ctrl.Result{}, nil
