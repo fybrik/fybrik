@@ -72,6 +72,7 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	)
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).To(gomega.BeNil(), "Cannot read fybrikapplication file for test")
+	application.SetGeneration(1)
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
@@ -237,6 +238,7 @@ func TestNoReadPath(t *testing.T) {
 		DataSetID:    "db2/allow-dataset",
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.JdbcDb2, DataFormat: app.Table}},
 	}
+	application.SetGeneration(1)
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
