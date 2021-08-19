@@ -188,6 +188,7 @@ func TestDenyOnRead(t *testing.T) {
 		DataSetID:    "s3/deny-dataset",
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet}},
 	}
+	application.SetGeneration(1)
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
@@ -298,6 +299,7 @@ func TestWrongCopyModule(t *testing.T) {
 			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
 		},
 	}
+	application.SetGeneration(1)
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
@@ -355,6 +357,7 @@ func TestActionSupport(t *testing.T) {
 		DataSetID:    "db2/redact-dataset",
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
 	}
+	application.SetGeneration(1)
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
@@ -420,6 +423,7 @@ func TestMultipleDatasets(t *testing.T) {
 			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
 		},
 	}
+	application.SetGeneration(1)
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
@@ -502,6 +506,7 @@ func TestMultipleRegions(t *testing.T) {
 		DataSetID:    "s3-external/redact-dataset",
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
 	}
+	application.SetGeneration(1)
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
@@ -570,6 +575,8 @@ func TestCopyData(t *testing.T) {
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
+	application.SetGeneration(1)
+
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -644,6 +651,8 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
+	application.SetGeneration(1)
+
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -830,6 +839,8 @@ func TestFybrikApplicationWithNoDatasets(t *testing.T) {
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data = []app.DataContext{}
+	application.SetGeneration(1)
+
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -874,6 +885,7 @@ func TestFybrikApplicationWithInvalidAppInfo(t *testing.T) {
 	filename := "../../testdata/unittests/fybrikapplication-appInfoErrors.yaml"
 	fybrikApp := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
+	fybrikApp.SetGeneration(1)
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
@@ -917,6 +929,7 @@ func TestFybrikApplicationWithInvalidInterface(t *testing.T) {
 	filename := "../../testdata/unittests/fybrikapplication-interfaceErrors.yaml"
 	fybrikApp := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
+	fybrikApp.SetGeneration(1)
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
