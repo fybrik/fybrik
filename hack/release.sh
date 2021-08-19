@@ -2,7 +2,7 @@
 # Copyright 2020 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
-: ${RELEASE:=latest}
+: ${RELEASE:=master}
 : ${TOOLBIN:=./hack/tools/bin}
 
 ${TOOLBIN}/yq eval --inplace ".version = \"$RELEASE\"" ./charts/fybrik/Chart.yaml
