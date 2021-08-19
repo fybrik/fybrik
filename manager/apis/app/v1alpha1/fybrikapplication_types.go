@@ -180,6 +180,14 @@ type FybrikApplicationStatus struct {
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 
+	// ValidatedGeneration is the version of the FyrbikApplication that has been validated with the taxonomy defined.
+	// +optional
+	ValidatedGeneration int64 `json:"validatedGeneration,omitempty"`
+
+	// ValidApplication indicates whether the FybrikApplication is valid given the defined taxonomy
+	// +optional
+	ValidApplication bool `json:"validApplication,omitempty"`
+
 	// Generated resource identifier
 	// +optional
 	Generated *ResourceReference `json:"generated,omitempty"`

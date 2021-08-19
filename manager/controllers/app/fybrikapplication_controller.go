@@ -72,17 +72,30 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	appVersion := applicationContext.GetGeneration()
 
 	// check if observed generation is not the same as appVersion
-	if observedStatus.ObservedGeneration != appVersion {
+	if observedStatus.ValidatedGeneration != appVersion {
 		// do validation on applicationContext
 		err := applicationContext.ValidateFybrikApplication("/tmp/taxonomy/fybrik_application.json")
-
+		log.V(0).Info("Reconciler validating Fybrik application")
+		applicationContext.Status.ValidatedGeneration = appVersion
 		// if validation fails
 		if err != nil {
 			// set error message
-			setErrorCondition(applicationContext, "", "This Fybrik application is invalid")
-			observedStatus.ObservedGeneration = appVersion
+			log.V(0).Info("Fybrik application validation failed " + err.Error())
+			if applicationContext.Status.Conditions == nil {
+				resetConditions(applicationContext)
+			}
+			setErrorCondition(applicationContext, "", err.Error())
+			applicationContext.Status.ValidApplication = false
+			if err := r.Client.Status().Update(ctx, applicationContext); err != nil {
+				return ctrl.Result{}, err
+			}
 			return ctrl.Result{}, nil
+		} else {
+			applicationContext.Status.ValidApplication = true
 		}
+	}
+	if !applicationContext.Status.ValidApplication {
+		return ctrl.Result{}, nil
 	}
 
 	// check if reconcile is required
