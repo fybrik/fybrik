@@ -26,20 +26,31 @@ type AssetDetails struct {
 	// +optional
 	AdvertisedAssetID string `json:"advertisedAssetId,omitempty"`
 
-	// Cluster name where the asset resides
-	// +required
-	ClusterName string `json:"cluster"`
-
 	// +required
 	DataStore DataStore `json:"assetDetails"`
 }
 
+type Service struct {
+	//+required
+	Endpoint EndpointSpec `json:"endpoint"`
+}
+
+// API contains the details of a service.
+// It is used by other modules or the workload to access the data
+type API struct {
+	//+required
+	Service *Service `json:"service"`
+}
+
 // StepSource is the source of this step: it could be assetID
-// or the sink of another step
+// or an enpoint of another step
 type StepSource struct {
 	// AssetID identifies the source asset of this step
-	// +required
-	AssetID string `json:"assetId"`
+	// +optional
+	AssetID string `json:"assetId,omitempty"`
+
+	//+optional
+	API *API `json:"api,omitempty"`
 }
 
 // StepSink holds information to where the target data will be written:
@@ -47,14 +58,6 @@ type StepSource struct {
 // by fybrik control-plane
 type StepSink struct {
 	// AssetID identifies the target asset of this step
-	// +required
-	AssetID string `json:"assetId"`
-}
-
-// StepAPI contains the details on the service that this step
-// exposes. It is used by other modules or the workload to read the data
-type StepAPI struct {
-	// AssetID identifies the asset of this step
 	// +required
 	AssetID string `json:"assetId"`
 }
@@ -69,7 +72,7 @@ type StepParameters struct {
 	Sink *StepSink `json:"sink,omitempty"`
 
 	// +optional
-	API *StepAPI `json:"api,omitempty"`
+	API *API `json:"api,omitempty"`
 
 	// Actions are the data transformations that the module supports
 	// +optional
