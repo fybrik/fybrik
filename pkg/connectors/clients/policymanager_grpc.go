@@ -48,9 +48,6 @@ func NewGrpcPolicyManager(name string, connectionURL string, connectionTimeout t
 
 func (m *grpcPolicyManager) GetPoliciesDecisions(
 	in *openapiclientmodels.PolicyManagerRequest, creds string) (*openapiclientmodels.PolicyManagerResponse, error) {
-	// log.Println("printing  stack trace in GetPoliciesDecisions")
-	// debug.PrintStack()
-	// log.Println("printing  stack trace in GetPoliciesDecisions - end ")
 	log.Println("openapiclientmodels.PolicyManagerRequest: received in GetPoliciesDecisions: ", *in)
 	appContext, _ := ConvertOpenAPIReqToGrpcReq(in, creds)
 	log.Println("appContext: created from convertOpenApiReqToGrpcReq: ", appContext)
@@ -65,9 +62,6 @@ func (m *grpcPolicyManager) GetPoliciesDecisions(
 	log.Println("policyManagerResp: created from convGrpcRespToOpenApiResp")
 	log.Println("marshalled response:", string(res))
 	return policyManagerResp, nil
-
-	// result, err := m.client.GetPoliciesDecisions(ctx, in)
-	// return result, errors.Wrap(err, fmt.Sprintf("get policies decisions from %s failed", m.name))
 }
 
 func (m *grpcPolicyManager) Close() error {

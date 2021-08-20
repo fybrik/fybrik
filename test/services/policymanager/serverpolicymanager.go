@@ -5,7 +5,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -23,15 +22,15 @@ const (
 var router *gin.Engine
 
 func constructPolicyManagerRequest(inputString string) *openapiclientmodels.PolicyManagerRequest {
-	fmt.Println("inconstructPolicymanagerRequest")
-	fmt.Println("inputString")
-	fmt.Println(inputString)
+	log.Println("inconstructPolicymanagerRequest")
+	log.Println("inputString")
+	log.Println(inputString)
 	var input openapiclientmodels.PolicyManagerRequest
 	err := json.Unmarshal([]byte(inputString), &input)
 	if err != nil {
 		return nil
 	}
-	fmt.Println("input:", input)
+	log.Println("input:", input)
 	return &input
 }
 
@@ -43,9 +42,9 @@ func main() {
 		if values := c.Request.Header["X-Request-Cred"]; len(values) > 0 {
 			creds = values[0]
 		}
-		fmt.Println("creds extracted from POST request in mockup policy manager:", creds)
+		log.Println("creds extracted from POST request in mockup policy manager:", creds)
 		input, _ := ioutil.ReadAll(c.Request.Body)
-		fmt.Println("input extracted from POST request body in mockup policy manager:", string(input))
+		log.Println("input extracted from POST request body in mockup policy manager:", string(input))
 
 		policyManagerReq := constructPolicyManagerRequest(string(input))
 		policyManager := &mockup.MockPolicyManager{}

@@ -7,5 +7,5 @@ namespace: fybrik-system
 
 images:
 - name: manager-client
-  newName: uk.icr.io/datamesh/manager-client
+  newName: ghcr.io/datamesh/manager-client
   newTag: latest

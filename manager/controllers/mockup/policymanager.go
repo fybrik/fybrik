@@ -20,7 +20,6 @@ type MockPolicyManager struct {
 }
 
 // GetPoliciesDecisions implements the PolicyCompiler interface
-// func (s *MockPolicyManager) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationContext) (*pb.PoliciesDecisions, error) {
 func (m *MockPolicyManager) GetPoliciesDecisions(input *openapiclientmodels.PolicyManagerRequest, creds string) (*openapiclientmodels.PolicyManagerResponse, error) {
 	in, _ := connectors.ConvertOpenAPIReqToGrpcReq(input, creds)
 	log.Println("appContext: created from convertOpenApiReqToGrpcReq: ", in)
