@@ -186,7 +186,7 @@ type FybrikApplicationStatus struct {
 
 	// ValidApplication indicates whether the FybrikApplication is valid given the defined taxonomy
 	// +optional
-	ValidApplication bool `json:"validApplication,omitempty"`
+	ValidApplication corev1.ConditionStatus `json:"validApplication,omitempty"`
 
 	// Generated resource identifier
 	// +optional

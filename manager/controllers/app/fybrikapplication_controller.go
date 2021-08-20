@@ -14,6 +14,7 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -71,8 +72,8 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	observedStatus := applicationContext.Status.DeepCopy()
 	appVersion := applicationContext.GetGeneration()
 
-	// check if observed generation is not the same as appVersion
-	if observedStatus.ValidatedGeneration != appVersion {
+	// check if application has been validated before or if validated application is outdated
+	if applicationContext.Status.ValidApplication == v1.ConditionUnknown || observedStatus.ValidatedGeneration != appVersion {
 		// do validation on applicationContext
 		err := applicationContext.ValidateFybrikApplication("/tmp/taxonomy/fybrik_application.json")
 		log.V(0).Info("Reconciler validating Fybrik application")
@@ -85,15 +86,15 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 				resetConditions(applicationContext)
 			}
 			setErrorCondition(applicationContext, "", err.Error())
-			applicationContext.Status.ValidApplication = false
+			applicationContext.Status.ValidApplication = v1.ConditionFalse
 			if err := r.Client.Status().Update(ctx, applicationContext); err != nil {
 				return ctrl.Result{}, err
 			}
 			return ctrl.Result{}, nil
 		}
-		applicationContext.Status.ValidApplication = true
+		applicationContext.Status.ValidApplication = v1.ConditionTrue
 	}
-	if !applicationContext.Status.ValidApplication {
+	if applicationContext.Status.ValidApplication == v1.ConditionFalse {
 		return ctrl.Result{}, nil
 	}
 

@@ -232,7 +232,7 @@ spec:
                 type: boolean
               validApplication:
                 description: ValidApplication indicates whether the FybrikApplication is valid given the defined taxonomy
-                type: boolean
+                type: string
               validatedGeneration:
                 description: ValidatedGeneration is the version of the FyrbikApplication that has been validated with the taxonomy defined.
                 format: int64
