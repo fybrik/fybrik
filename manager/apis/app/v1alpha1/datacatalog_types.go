@@ -16,6 +16,9 @@ const (
 
 	// DeleteFlow indicates a data set is being deleted
 	DeleteFlow DataFlow = "delete"
+
+	// CopyFlow indicates a data set is being copied
+	CopyFlow DataFlow = "copy"
 )
 
 // DataStore contains the details for accesing the data that are sent by catalog connectors

@@ -41,9 +41,11 @@ type DataInfo struct {
 // ModuleInstanceSpec consists of the module spec and arguments
 type ModuleInstanceSpec struct {
 	Module      *app.FybrikModule
+	Chart       *app.ChartSpec
 	Args        *app.ModuleArguments
 	AssetID     string
 	ClusterName string
+	ModuleName  string
 }
 
 // Selector is responsible for finding an appropriate module

@@ -12,7 +12,9 @@ import (
 
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/app/modules"
 	"fybrik.io/fybrik/pkg/multicluster"
+	"fybrik.io/fybrik/pkg/serde"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -117,6 +119,130 @@ func (r *PlotterReconciler) reconcileFinalizers(plotter *app.Plotter) error {
 	return nil
 }
 
+// PlotterModulesSpec consists of module details extracted from the Plotter structure
+type PlotterModulesSpec struct {
+	ClusterName     string
+	AssetID         string
+	ModuleName      string
+	ModuleArguments *app.StepParameters
+	FlowType        app.DataFlow
+	IsPrimaryModule bool
+	Chart           app.ChartSpec
+	AssetId         string
+}
+
+// ConvertPlotterModuleToBlueprintModule converts an object of type PlotterModulesSpec to type modules.ModuleInstanceSpec
+func (r *PlotterReconciler) ConvertPlotterModuleToBlueprintModule(plotter *app.Plotter, plotterModule PlotterModulesSpec) *modules.ModuleInstanceSpec {
+	blueprintModule := &modules.ModuleInstanceSpec{
+		Chart:       &plotterModule.Chart,
+		AssetID:     plotterModule.AssetID,
+		ClusterName: plotterModule.ClusterName,
+		ModuleName:  plotterModule.ModuleName,
+	}
+
+	// if this module is not primary i.e., it is of type "plugin"
+	// then it has no arguments
+	if !plotterModule.IsPrimaryModule {
+		return blueprintModule
+	}
+
+	if plotterModule.FlowType == "read" {
+		var dataStore *app.DataStore
+		if plotterModule.ModuleArguments.Source.AssetID != "" {
+			assetId := plotterModule.ModuleArguments.Source.AssetID
+			// Get source from plotter assetID list
+			assetInfo, _ := plotter.Spec.Assets[assetId]
+			dataStore = &assetInfo.DataStore
+		} else {
+			// Fill in the DataSource from the step arguments
+			dataStore = &app.DataStore{
+				Connection: *serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
+				Format:     plotterModule.ModuleArguments.Source.API.Service.Endpoint.Scheme,
+			}
+		}
+		blueprintModule.Args.Read = []app.ReadModuleArgs{
+			{
+				Source:          *dataStore,
+				AssetID:         plotterModule.AssetID,
+				Transformations: plotterModule.ModuleArguments.Actions,
+			},
+		}
+	} else if plotterModule.FlowType == "write" {
+		blueprintModule.Args.Write = []app.WriteModuleArgs{
+			{
+				Destination:     plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore,
+				Transformations: plotterModule.ModuleArguments.Actions,
+			},
+		}
+	} else if plotterModule.FlowType == "copy" {
+		var dataStore *app.DataStore
+		if plotterModule.ModuleArguments.Source.AssetID != "" {
+			assetId := plotterModule.ModuleArguments.Source.AssetID
+			// Get source from plotter assetID list
+			assetInfo, _ := plotter.Spec.Assets[assetId]
+			dataStore = &assetInfo.DataStore
+		} else {
+			// Fill in the DataSource from the step arguments
+			dataStore = &app.DataStore{
+				Connection: *serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
+				Format:     plotterModule.ModuleArguments.Source.API.Service.Endpoint.Scheme,
+			}
+		}
+		blueprintModule.Args.Copy =
+			&app.CopyModuleArgs{
+				Source:          *dataStore,
+				Destination:     plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore,
+				Transformations: plotterModule.ModuleArguments.Actions,
+			}
+	}
+	return blueprintModule
+}
+
+// constructBlueprints constructs a list of blueprint modules driven by the plotter steps.
+func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) (map[string]app.BlueprintSpec, error) {
+	r.Log.V(1).Info("Constructing Modules list")
+	moduleInstances := make([]modules.ModuleInstanceSpec, 0)
+
+	for _, flow := range plotter.Spec.Flows {
+		for _, subFlow := range flow.SubFlows {
+			for _, subFlowStep := range subFlow.Steps {
+				for _, seqStep := range subFlowStep.Steps {
+					stepTemplate, exists := plotter.Spec.Templates[seqStep.Template]
+					// Should we check for an error here or assume it always exists?
+					if !exists {
+						err := errors.New("Module template " + seqStep.Template + "does not appear in template list")
+						r.Log.Error(err, err.Error())
+						return nil, err
+					}
+					isPrimaryModule := true
+					for _, module := range stepTemplate.Modules {
+						if module.Type == "plugin" {
+							isPrimaryModule = false
+						}
+						plotterModule := PlotterModulesSpec{
+							ModuleArguments: seqStep.Parameters,
+							AssetID:         flow.AssetID,
+							FlowType:        subFlow.FlowType,
+							IsPrimaryModule: isPrimaryModule,
+							ClusterName:     seqStep.Cluster,
+							ModuleName:      module.Name,
+							AssetId:         flow.AssetID,
+						}
+						blueprintModule := r.ConvertPlotterModuleToBlueprintModule(plotter, plotterModule)
+						// append the module to the modules list
+						moduleInstances = append(moduleInstances, *blueprintModule)
+
+					}
+				}
+
+			}
+		}
+	}
+	blueprints := r.GenerateBlueprints(moduleInstances)
+
+	return blueprints, nil
+}
+
 func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []error) {
 	if plotter.Status.Blueprints == nil {
 		plotter.Status.Blueprints = make(map[string]app.MetaBlueprint)
@@ -126,8 +252,16 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	// Reconciliation loop per cluster
 	isReady := true
 
+	blueprintsMap, err := r.getBlueprintsMap(plotter)
 	var errorCollection []error
-	for cluster, blueprintSpec := range plotter.Spec.Blueprints {
+	if err != nil {
+		r.Log.Error(err, "Could not construct blueprints from plotter")
+		errorCollection = append(errorCollection, err)
+		isReady = false
+		return ctrl.Result{RequeueAfter: 5 * time.Second}, errorCollection
+	}
+
+	for cluster, blueprintSpec := range blueprintsMap {
 		r.Log.V(1).Info("Handling spec for cluster " + cluster)
 		if blueprint, exists := plotter.Status.Blueprints[cluster]; exists {
 			r.Log.V(2).Info("Found status for cluster " + cluster)
@@ -221,7 +355,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	// Tidy up blueprints that have been deployed but are not in the spec any more
 	// E.g. after a plotter has been updated
 	for cluster, remoteBlueprint := range plotter.Status.Blueprints {
-		if _, exists := plotter.Spec.Blueprints[cluster]; !exists {
+		if _, exists := blueprintsMap[cluster]; !exists {
 			err := r.ClusterManager.DeleteBlueprint(cluster, remoteBlueprint.Namespace, remoteBlueprint.Name)
 			if err != nil {
 				if !strings.HasPrefix(err.Error(), "Query channelByName error. Could not find the channel with name") {
