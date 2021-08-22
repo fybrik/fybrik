@@ -11,7 +11,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	apiv1alpha1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -53,20 +52,20 @@ var _ = Describe("FybrikApplication Controller", func() {
 				// test access restriction: only modules from the control plane can be accessed
 				// Create a module in default namespace
 				// An attempt to fetch it will fail
-				module := &app.FybrikModule{}
+				module := &apiv1alpha1.FybrikModule{}
 				Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
 				module.Namespace = "default"
 				Expect(k8sClient.Create(context.Background(), module)).Should(Succeed())
-				fetchedModule := &app.FybrikModule{}
+				fetchedModule := &apiv1alpha1.FybrikModule{}
 				moduleKey := client.ObjectKeyFromObject(module)
 				Expect(k8sClient.Get(context.Background(), moduleKey, fetchedModule)).To(HaveOccurred(), "Should deny access")
 			}
 		})
 		It("Test end-to-end for FybrikApplication", func() {
-			module := &app.FybrikModule{}
+			module := &apiv1alpha1.FybrikModule{}
 			Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
 			moduleKey := client.ObjectKeyFromObject(module)
-			application := &app.FybrikApplication{}
+			application := &apiv1alpha1.FybrikApplication{}
 			Expect(readObjectFromFile("../../testdata/e2e/fybrikapplication.yaml", application)).ToNot(HaveOccurred())
 			applicationKey := client.ObjectKeyFromObject(application)
 
@@ -114,9 +113,9 @@ var _ = Describe("FybrikApplication Controller", func() {
 			}, timeout, interval).Should(BeTrue(), "FybrikApplication is not ready after timeout!")
 
 			By("Status should contain the details of the endpoint")
-			Expect(len(application.Status.ReadEndpointsMap)).To(Equal(1))
+			Expect(len(application.Status.AssetStates)).To(Equal(1))
 			fqdn := "test-app-e2e-default-read-module-test-e2e-e24d69b99a.fybrik-blueprints.svc.cluster.local"
-			Expect(application.Status.ReadEndpointsMap["s3/redact-dataset"]).To(Equal(apiv1alpha1.EndpointSpec{
+			Expect(application.Status.AssetStates["s3/redact-dataset"].Endpoint).To(Equal(apiv1alpha1.EndpointSpec{
 				Hostname: fqdn,
 				Port:     80,
 				Scheme:   "grpc",

@@ -14,6 +14,7 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -24,7 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/app/modules"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/multicluster"
@@ -52,7 +53,7 @@ type FybrikApplicationReconciler struct {
 func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("fybrikapplication", req.NamespacedName)
 	// obtain FybrikApplication resource
-	applicationContext := &app.FybrikApplication{}
+	applicationContext := &api.FybrikApplication{}
 	if err := r.Get(ctx, req.NamespacedName, applicationContext); err != nil {
 		log.V(0).Info("The reconciled object was not found")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -79,8 +80,8 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		// if validation fails
 		if err != nil {
 			// set error message
-			setErrorCondition(applicationContext, "", "This Fybrik application is invalid")
 			observedStatus.ObservedGeneration = appVersion
+			applicationContext.Status.ErrorMessage = err.Error()
 			return ctrl.Result{}, nil
 		}
 	}
@@ -108,6 +109,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			return ctrl.Result{}, err
 		}
 	}
+	applicationContext.Status.Ready = isReady(applicationContext)
 
 	// Update CRD status in case of change (other than deletion, which was handled separately)
 	if !equality.Semantic.DeepEqual(&applicationContext.Status, observedStatus) && applicationContext.DeletionTimestamp.IsZero() {
@@ -116,12 +118,13 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			return ctrl.Result{}, err
 		}
 	}
-	if errorOrDeny(applicationContext) {
-		log.Info("Reconciled with errors: " + getErrorMessages(applicationContext))
+	errorMsg := getErrorMessages(applicationContext)
+	if errorMsg != "" {
+		log.Info("Reconciled with errors: " + errorMsg)
 	}
 
 	// trigger a new reconcile if required (the fybrikapplication is not ready)
-	if !inFinalState(applicationContext) {
+	if !isReady(applicationContext) {
 		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 	return ctrl.Result{}, nil
@@ -131,56 +134,63 @@ func getBucketResourceRef(name string) *types.NamespacedName {
 	return &types.NamespacedName{Name: name, Namespace: utils.GetSystemNamespace()}
 }
 
-func (r *FybrikApplicationReconciler) checkReadiness(applicationContext *app.FybrikApplication, status app.ObservedState) error {
-	applicationContext.Status.DataAccessInstructions = ""
-	resetConditions(applicationContext)
-	if applicationContext.Status.CatalogedAssets == nil {
-		applicationContext.Status.CatalogedAssets = make(map[string]string)
+func (r *FybrikApplicationReconciler) checkReadiness(applicationContext *api.FybrikApplication, status api.ObservedState) error {
+	if applicationContext.Status.AssetStates == nil {
+		initStatus(applicationContext)
 	}
 
-	if status.Error != "" {
-		setErrorCondition(applicationContext, "", status.Error)
-		return nil
-	}
-	if !status.Ready {
-		return nil
-	}
-	// Plotter is ready - update the FybrikApplication status
-
-	// register assets if necessary if the ready state has been received
+	// TODO(shlomitk1): receive status per asset and update accordingly
+	// Temporary fix: all assets that are not in Deny state are updated based on the received status
 	for _, dataCtx := range applicationContext.Spec.Data {
+		assetID := dataCtx.DataSetID
+		if applicationContext.Status.AssetStates[assetID].Conditions[api.DenyConditionIndex].Status == v1.ConditionTrue {
+			// should not appear in the plotter status
+			continue
+		}
+		if status.Error != "" {
+			setErrorCondition(applicationContext, assetID, status.Error)
+			continue
+		}
+		if !status.Ready {
+			continue
+		}
+
+		// register assets if necessary if the ready state has been received
 		if dataCtx.Requirements.Copy.Catalog.CatalogID != "" {
-			if _, cataloged := applicationContext.Status.CatalogedAssets[dataCtx.DataSetID]; cataloged {
+			if applicationContext.Status.AssetStates[assetID].CatalogedAsset != "" {
 				// the asset has been already cataloged
 				continue
 			}
 			// mark the bucket as persistent and register the asset
-			provisionedBucketRef, found := applicationContext.Status.ProvisionedStorage[dataCtx.DataSetID]
+			provisionedBucketRef, found := applicationContext.Status.ProvisionedStorage[assetID]
 			if !found {
-				message := "No copy has been created for the asset " + dataCtx.DataSetID + " required to be registered"
+				message := "No copy has been created for the asset " + assetID + " required to be registered"
 				r.Log.V(0).Info(message)
-				return errors.New(message)
+				setErrorCondition(applicationContext, assetID, message)
+				continue
 			}
 			if err := r.Provision.SetPersistent(getBucketResourceRef(provisionedBucketRef.DatasetRef), true); err != nil {
-				return err
+				setErrorCondition(applicationContext, assetID, err.Error())
+				continue
 			}
 			// register the asset: experimental feature
 			if newAssetID, err := r.RegisterAsset(dataCtx.Requirements.Copy.Catalog.CatalogID, &provisionedBucketRef, applicationContext); err == nil {
-				applicationContext.Status.CatalogedAssets[dataCtx.DataSetID] = newAssetID
+				state := applicationContext.Status.AssetStates[assetID]
+				state.CatalogedAsset = newAssetID
+				applicationContext.Status.AssetStates[assetID] = state
 			} else {
 				// log an error and make a new attempt to register the asset
-				r.Log.V(0).Info("Error while registering an asset: " + err.Error())
-				return nil
+				setErrorCondition(applicationContext, assetID, err.Error())
+				continue
 			}
 		}
+		setReadyCondition(applicationContext, assetID)
 	}
-	setReadyCondition(applicationContext, "")
-	applicationContext.Status.DataAccessInstructions = status.DataAccessInstructions
 	return nil
 }
 
 // reconcileFinalizers reconciles finalizers for FybrikApplication
-func (r *FybrikApplicationReconciler) reconcileFinalizers(applicationContext *app.FybrikApplication) error {
+func (r *FybrikApplicationReconciler) reconcileFinalizers(applicationContext *api.FybrikApplication) error {
 	// finalizer
 	finalizerName := r.Name + ".finalizer"
 	hasFinalizer := ctrlutil.ContainsFinalizer(applicationContext, finalizerName)
@@ -213,7 +223,7 @@ func (r *FybrikApplicationReconciler) reconcileFinalizers(applicationContext *ap
 	return nil
 }
 
-func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext *app.FybrikApplication) error {
+func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext *api.FybrikApplication) error {
 	// clear provisioned storage
 	// References to buckets (Dataset resources) are deleted. Buckets that are persistent will not be removed upon Dataset deletion.
 	var deletedKeys []string
@@ -246,13 +256,11 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 
 // setReadModulesEndpoints populates the ReadEndpointsMap map in the status of the fybrikapplication
 // Current implementation assumes there is only one cluster with read modules (which is the same cluster the user's workload)
-func setReadModulesEndpoints(applicationContext *app.FybrikApplication, blueprintsMap map[string]app.BlueprintSpec, moduleMap map[string]*app.FybrikModule) {
-	var foundReadEndpoints = false
+func setReadModulesEndpoints(applicationContext *api.FybrikApplication, blueprintsMap map[string]api.BlueprintSpec, moduleMap map[string]*api.FybrikModule) {
+	readEndpointMap := make(map[string]api.EndpointSpec)
 	for _, blueprintSpec := range blueprintsMap {
 		for _, module := range blueprintSpec.Modules {
 			if module.Arguments.Read != nil {
-				// We found a read module
-				foundReadEndpoints = true
 				releaseName := utils.GetReleaseName(applicationContext.ObjectMeta.Name, applicationContext.ObjectMeta.Namespace, module)
 				moduleName := module.Name
 
@@ -260,12 +268,12 @@ func setReadModulesEndpoints(applicationContext *app.FybrikApplication, blueprin
 				// TODO: What if there are more than one read capability sections?  How do we know which endpoint
 				// to choose?  They could in theory be different, although that's not likely
 				// Currently the last one on the list is used.
-				if hasRead, caps := utils.GetModuleCapabilities(moduleMap[moduleName], app.Read); hasRead {
+				if hasRead, caps := utils.GetModuleCapabilities(moduleMap[moduleName], api.Read); hasRead {
 					for _, cap := range caps {
 						originalEndpointSpec := cap.API.Endpoint
 						fqdn := utils.GenerateModuleEndpointFQDN(releaseName, BlueprintNamespace)
 						for _, arg := range module.Arguments.Read {
-							applicationContext.Status.ReadEndpointsMap[arg.AssetID] = app.EndpointSpec{
+							readEndpointMap[arg.AssetID] = api.EndpointSpec{
 								Hostname: fqdn,
 								Port:     originalEndpointSpec.Port,
 								Scheme:   originalEndpointSpec.Scheme,
@@ -275,34 +283,33 @@ func setReadModulesEndpoints(applicationContext *app.FybrikApplication, blueprin
 				}
 			}
 		}
-
-		// We found a blueprint with read modules
-		if foundReadEndpoints {
-			return
-		}
+	}
+	// populate endpoints in application status
+	for _, asset := range applicationContext.Spec.Data {
+		id := utils.CreateDataSetIdentifier(asset.DataSetID)
+		state := applicationContext.Status.AssetStates[asset.DataSetID]
+		state.Endpoint = readEndpointMap[id]
+		applicationContext.Status.AssetStates[asset.DataSetID] = state
 	}
 }
 
 // reconcile receives either FybrikApplication CRD
 // or a status update from the generated resource
-func (r *FybrikApplicationReconciler) reconcile(applicationContext *app.FybrikApplication) (ctrl.Result, error) {
+func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikApplication) (ctrl.Result, error) {
 	utils.PrintStructure(applicationContext.Spec, r.Log, "FybrikApplication")
 	// Data User created or updated the FybrikApplication
 
 	// clear status
-	resetConditions(applicationContext)
-	applicationContext.Status.DataAccessInstructions = ""
+	initStatus(applicationContext)
 	if applicationContext.Status.ProvisionedStorage == nil {
-		applicationContext.Status.ProvisionedStorage = make(map[string]app.DatasetDetails)
+		applicationContext.Status.ProvisionedStorage = make(map[string]api.DatasetDetails)
 	}
-	applicationContext.Status.ReadEndpointsMap = make(map[string]app.EndpointSpec)
 
 	if len(applicationContext.Spec.Data) == 0 {
 		if err := r.deleteExternalResources(applicationContext); err != nil {
 			return ctrl.Result{}, err
 		}
 		r.Log.V(0).Info("no blueprint will be generated since no datasets are specified")
-		setReadyCondition(applicationContext, "")
 		return ctrl.Result{}, nil
 	}
 
@@ -323,7 +330,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *app.FybrikAp
 		requirements = append(requirements, req)
 	}
 	// check if can proceed
-	if errorOrDeny(applicationContext) {
+	if getErrorMessages(applicationContext) != "" {
 		return ctrl.Result{}, nil
 	}
 
@@ -353,9 +360,10 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *app.FybrikAp
 		instances = append(instances, instancesPerDataset...)
 	}
 	// check if can proceed
-	if errorOrDeny(applicationContext) {
+	if getErrorMessages(applicationContext) != "" {
 		return ctrl.Result{}, nil
 	}
+
 	// update allocated storage in the status
 	// clean irrelevant buckets
 	for datasetID, details := range applicationContext.Status.ProvisionedStorage {
@@ -367,7 +375,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *app.FybrikAp
 	// add or update new buckets
 	for datasetID, info := range moduleManager.ProvisionedStorage {
 		raw := serde.NewArbitrary(info.Details)
-		applicationContext.Status.ProvisionedStorage[datasetID] = app.DatasetDetails{
+		applicationContext.Status.ProvisionedStorage[datasetID] = api.DatasetDetails{
 			DatasetRef: info.Storage.Name,
 			SecretRef:  info.Storage.SecretRef.Name,
 			Details:    *raw,
@@ -398,12 +406,12 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *app.FybrikAp
 	// generate blueprint specifications (per cluster)
 	blueprintPerClusterMap := r.GenerateBlueprints(instances, applicationContext)
 	setReadModulesEndpoints(applicationContext, blueprintPerClusterMap, moduleMap)
-	ownerRef := &app.ResourceReference{Name: applicationContext.Name, Namespace: applicationContext.Namespace, AppVersion: applicationContext.GetGeneration()}
+	ownerRef := &api.ResourceReference{Name: applicationContext.Name, Namespace: applicationContext.Namespace, AppVersion: applicationContext.GetGeneration()}
 	resourceRef := r.ResourceInterface.CreateResourceReference(ownerRef)
 	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, blueprintPerClusterMap); err != nil {
 		r.Log.V(0).Info("Error creating " + resourceRef.Kind + " : " + err.Error())
-		if err.Error() == app.InvalidClusterConfiguration {
-			setErrorCondition(applicationContext, "", app.InvalidClusterConfiguration)
+		if err.Error() == api.InvalidClusterConfiguration {
+			applicationContext.Status.ErrorMessage = err.Error()
 			return ctrl.Result{}, nil
 		}
 		return ctrl.Result{}, err
@@ -413,7 +421,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *app.FybrikAp
 	return ctrl.Result{}, nil
 }
 
-func (r *FybrikApplicationReconciler) constructDataInfo(req *modules.DataInfo, input *app.FybrikApplication, clusters []multicluster.Cluster) error {
+func (r *FybrikApplicationReconciler) constructDataInfo(req *modules.DataInfo, input *api.FybrikApplication, clusters []multicluster.Cluster) error {
 	var err error
 
 	// Call the DataCatalog service to get info about the dataset
@@ -470,8 +478,8 @@ func (r *FybrikApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		if labels == nil {
 			return []reconcile.Request{}
 		}
-		namespace, foundNamespace := labels[app.ApplicationNamespaceLabel]
-		name, foundName := labels[app.ApplicationNameLabel]
+		namespace, foundNamespace := labels[api.ApplicationNamespaceLabel]
+		name, foundName := labels[api.ApplicationNameLabel]
 		if !foundNamespace || !foundName {
 			return []reconcile.Request{}
 		}
@@ -483,21 +491,21 @@ func (r *FybrikApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}
 	}
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&app.FybrikApplication{}).
+		For(&api.FybrikApplication{}).
 		Watches(&source.Kind{
-			Type: &app.Plotter{},
+			Type: &api.Plotter{},
 		}, handler.EnqueueRequestsFromMapFunc(mapFn)).Complete(r)
 }
 
 // AnalyzeError analyzes whether the given error is fatal, or a retrial attempt can be made.
 // Reasons for retrial can be either communication problems with external services, or kubernetes problems to perform some action on a resource.
 // A retrial is achieved by returning an error to the reconcile method
-func AnalyzeError(application *app.FybrikApplication, assetID string, err error) {
+func AnalyzeError(application *api.FybrikApplication, assetID string, err error) {
 	if err == nil {
 		return
 	}
 	switch err.Error() {
-	case app.InvalidAssetID, app.ReadAccessDenied, app.CopyNotAllowed, app.WriteNotAllowed:
+	case api.InvalidAssetID, api.ReadAccessDenied, api.CopyNotAllowed, api.WriteNotAllowed:
 		setDenyCondition(application, assetID, err.Error())
 	default:
 		setErrorCondition(application, assetID, err.Error())
@@ -506,17 +514,17 @@ func AnalyzeError(application *app.FybrikApplication, assetID string, err error)
 
 func ownerLabels(id types.NamespacedName) map[string]string {
 	return map[string]string{
-		app.ApplicationNamespaceLabel: id.Namespace,
-		app.ApplicationNameLabel:      id.Name,
+		api.ApplicationNamespaceLabel: id.Namespace,
+		api.ApplicationNameLabel:      id.Name,
 	}
 }
 
 // GetAllModules returns all CRDs of the kind FybrikModule mapped by their name
-func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*app.FybrikModule, error) {
+func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*api.FybrikModule, error) {
 	ctx := context.Background()
 
-	moduleMap := make(map[string]*app.FybrikModule)
-	var moduleList app.FybrikModuleList
+	moduleMap := make(map[string]*api.FybrikModule)
+	var moduleList api.FybrikModuleList
 	if err := r.List(ctx, &moduleList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
 		r.Log.V(0).Info("Error while listing modules: " + err.Error())
 		return moduleMap, err
