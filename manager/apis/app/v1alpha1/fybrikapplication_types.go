@@ -180,6 +180,14 @@ type FybrikApplicationStatus struct {
 	// +optional
 	ErrorMessage string `json:"errorMessage,omitempty"`
 
+	// ValidatedGeneration is the version of the FyrbikApplication that has been validated with the taxonomy defined.
+	// +optional
+	ValidatedGeneration int64 `json:"validatedGeneration,omitempty"`
+
+	// ValidApplication indicates whether the FybrikApplication is valid given the defined taxonomy
+	// +optional
+	ValidApplication corev1.ConditionStatus `json:"validApplication,omitempty"`
+
 	// AssetStates provides a status per asset
 	// +optional
 	AssetStates map[string]AssetState `json:"assetStates,omitempty"`
