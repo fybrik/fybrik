@@ -156,13 +156,13 @@ type SubFlowTrigger string
 
 const (
 	// Copy flow trigger
-	CopyTrigger SubFlowTrigger = "copy"
+	CopyTrigger SubFlowTrigger = "workload"
 
 	// Read flow trigger
-	ReadTiogger SubFlowTrigger = "read"
+	ReadTiogger SubFlowTrigger = "init"
 
 	// Write flow trigger
-	WriteTrigger SubFlowTrigger = "write"
+	WriteTrigger SubFlowTrigger = "timer"
 )
 
 // Subflows is a list of data flows which are originated from the same data asset
@@ -255,11 +255,7 @@ type SubFlowsStatus struct {
 type AssetStatus struct {
 	// Endpoint
 	// +required
-	Endpoint string `json:"endpoint"`
-
-	// Port -- endpoint should contains it already?
-	// +required
-	Port int32 `json:"port"`
+	Endpoint EndpointSpec `json:"endpoint"`
 
 	// ObservedState includes information to be reported back to the FybrikApplication resource
 	// It includes readiness and error indications, as well as user instructions
