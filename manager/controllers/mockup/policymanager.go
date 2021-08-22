@@ -104,9 +104,11 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *openapiclientmodels.Poli
 	policyManagerResp, _ := connectors.ConvertGrpcRespToOpenAPIResp(result)
 
 	res, err := json.MarshalIndent(policyManagerResp, "", "\t")
-	log.Println("err :", err)
-	log.Println("policyManagerResp: created from convGrpcRespToOpenApiResp")
-	log.Println("marshalled response:", string(res))
+	if err != nil {
+		log.Println("error in marshalling policy manager response :", err)
+		return nil, err
+	}
+	log.Println("Marshalled policy manager response:", string(res))
 
 	return policyManagerResp, nil
 }

@@ -5,8 +5,6 @@ package clients
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -17,6 +15,7 @@ import (
 	"emperror.dev/errors"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	utils "fybrik.io/fybrik/pkg/utils"
 	"google.golang.org/grpc"
 )
 
@@ -48,33 +47,34 @@ func NewGrpcPolicyManager(name string, connectionURL string, connectionTimeout t
 
 func (m *grpcPolicyManager) GetPoliciesDecisions(
 	in *openapiclientmodels.PolicyManagerRequest, creds string) (*openapiclientmodels.PolicyManagerResponse, error) {
-	log.Println("openapiclientmodels.PolicyManagerRequest: received in GetPoliciesDecisions: ", *in)
+	log.Println("open api request received for getting policy decisions: ", *in)
 	appContext, _ := ConvertOpenAPIReqToGrpcReq(in, creds)
-	log.Println("appContext: created from convertOpenApiReqToGrpcReq: ", appContext)
+	log.Println("grpc application context to be used for getting policy decisions: ", appContext)
 
-	result, _ := m.client.GetPoliciesDecisions(context.Background(), appContext)
+	result, err := m.client.GetPoliciesDecisions(context.Background(), appContext)
+	if err != nil {
+		log.Println("Error while obtaining get policies decisions: ", err)
+		return nil, err
+	}
 
 	log.Println("GRPC result returned from GetPoliciesDecisions:", result)
-	policyManagerResp, _ := ConvertGrpcRespToOpenAPIResp(result)
+	policyManagerResp, err := ConvertGrpcRespToOpenAPIResp(result)
+	if err != nil {
+		log.Println("Error during conversion to open api response: ", err)
+		return nil, err
+	}
 
 	res, err := json.MarshalIndent(policyManagerResp, "", "\t")
-	log.Println("err :", err)
-	log.Println("policyManagerResp: created from convGrpcRespToOpenApiResp")
-	log.Println("marshalled response:", string(res))
+	if err != nil {
+		log.Println("Error during marshalling policy manager response: ", err)
+		return nil, err
+	}
+	log.Println("Marshalled value of policy manager response: ", string(res))
 	return policyManagerResp, nil
 }
 
 func (m *grpcPolicyManager) Close() error {
 	return m.connection.Close()
-}
-
-// ref: https://sosedoff.com/2014/12/15/generate-random-hex-string-in-go.html
-func randomHex(n int) (string, error) {
-	bytes := make([]byte, n)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(bytes), nil
 }
 
 func ConvertGrpcReqToOpenAPIReq(in *pb.ApplicationContext) (*openapiclientmodels.PolicyManagerRequest, string, error) {
@@ -273,7 +273,7 @@ func ConvertOpenAPIRespToGrpcResp(
 func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*openapiclientmodels.PolicyManagerResponse, error) {
 	// convert GRPC response to Open Api Response - start
 	// we dont get decision id returned from OPA from GRPC response. So we generate random hex string
-	decisionID, _ := randomHex(20)
+	decisionID, _ := utils.RandomHex(20)
 	log.Println("decision id generated", decisionID)
 
 	var datasetDecisions []*pb.DatasetDecision
