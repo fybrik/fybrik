@@ -212,8 +212,10 @@ func TestDenyOnRead(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// Expect Deny condition
-	g.Expect(application.Status.Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue), "Deny condition is not set")
-	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring(app.ReadAccessDenied))
+	cond := application.Status.AssetStates["s3/deny-dataset"].Conditions[app.DenyConditionIndex]
+	g.Expect(cond.Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue), "Deny condition is not set")
+	g.Expect(cond.Message).To(gomega.ContainSubstring(app.ReadAccessDenied))
+	g.Expect(application.Status.Ready).To(gomega.BeTrue())
 	g.Expect(res).To(gomega.BeEquivalentTo(ctrl.Result{}), "Requests another reconcile")
 }
 
@@ -390,13 +392,14 @@ func TestActionSupport(t *testing.T) {
 }
 
 // Assumptions on response from connectors:
-// Two datasets:
+// Datasets:
+// S3 dataset, no access is granted.
 // Db2 dataset, a copy is required.
 // S3 dataset, no copy is needed
-// Enforcement actions for the first dataset: redact
-// Enforcement action for the second dataset: Allow
+// Enforcement actions for the second dataset: redact
+// Enforcement action for the third dataset: Allow
 // Applied copy module db2->s3 supporting redact action
-// Result: plotter with a single blueprint is created successfully, a read module is applied once for both datasets
+// Result: plotter with a single blueprint is created successfully, a read module is applied once
 
 func TestMultipleDatasets(t *testing.T) {
 	t.Parallel()
@@ -411,6 +414,10 @@ func TestMultipleDatasets(t *testing.T) {
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data = []app.DataContext{
+		{
+			DataSetID:    "s3/deny-dataset",
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+		},
 		{
 			DataSetID:    "s3/allow-dataset",
 			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
@@ -458,6 +465,8 @@ func TestMultipleDatasets(t *testing.T) {
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+	// check Deny for the first dataset
+	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage["db2/redact-dataset"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
 	// check plotter creation

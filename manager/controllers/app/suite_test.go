@@ -22,7 +22,6 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -124,17 +123,17 @@ var _ = BeforeSuite(func(done Done) {
 		}()
 
 		k8sClient = mgr.GetClient()
-		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
+		Expect(k8sClient.Create(context.Background(), &corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: utils.GetSystemNamespace(),
 			},
 		}))
-		Expect(k8sClient.Create(context.Background(), &v1.Namespace{
+		Expect(k8sClient.Create(context.Background(), &corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: BlueprintNamespace,
 			},
 		}))
-		Expect(k8sClient.Create(context.Background(), &v1.ConfigMap{
+		Expect(k8sClient.Create(context.Background(), &corev1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "cluster-metadata",
 				Namespace: "fybrik-system",

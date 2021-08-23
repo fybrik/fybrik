@@ -9,6 +9,7 @@ import (
 
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -34,7 +35,7 @@ func GetCurrentNamespace() string {
 func K8sInit() (*K8sClient, error) {
 	newScheme := runtime.NewScheme()
 	_ = app.AddToScheme(newScheme)
-
+	_ = v1.AddToScheme(newScheme)
 	client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: newScheme})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create client")
