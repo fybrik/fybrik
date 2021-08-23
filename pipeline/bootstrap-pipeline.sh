@@ -578,7 +578,7 @@ EOH
     echo "debug: taskruns"
     for i in $(kubectl get taskrun --no-headers | grep "False" | cut -d' ' -f1); do kubectl logs -l tekton.dev/taskRun=$i --all-containers; done
     set +e
-    kubectl get pipelinerun -o yaml | grep "Completed"
+    kubectl get pipelinerun --no-headers | grep "True"
     rc=$?
     if [[ $rc -ne 0 ]]; then
         exit $rc
