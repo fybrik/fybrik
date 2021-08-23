@@ -6,71 +6,84 @@ package app
 import (
 	"strings"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 )
 
 // Helper functions to manage conditions
 
-func resetConditions(application *app.FybrikApplication) {
-	application.Status.Ready = false
-	application.Status.Conditions = make([]app.Condition, 3)
-	application.Status.Conditions[app.ErrorConditionIndex] = app.Condition{Type: app.ErrorCondition, Status: corev1.ConditionFalse}
-	application.Status.Conditions[app.DenyConditionIndex] = app.Condition{Type: app.DenyCondition, Status: corev1.ConditionFalse}
-	application.Status.Conditions[app.ReadyConditionIndex] = app.Condition{Type: app.ReadyCondition, Status: corev1.ConditionFalse}
+func initStatus(application *api.FybrikApplication) {
+	application.Status.ErrorMessage = ""
+	application.Status.AssetStates = make(map[string]api.AssetState)
+	if len(application.Spec.Data) == 0 {
+		application.Status.Ready = true
+	} else {
+		application.Status.Ready = false
+	}
+	for _, asset := range application.Spec.Data {
+		resetAssetState(application, asset.DataSetID)
+	}
 }
 
-func setErrorCondition(application *app.FybrikApplication, assetID string, msg string) {
-	errMsg := "An error was received"
-	if assetID != "" {
-		errMsg += " for asset " + assetID
-	}
+func resetAssetState(application *api.FybrikApplication, assetID string) {
+	conditions := make([]api.Condition, 3)
+	conditions[api.ErrorConditionIndex] = api.Condition{Type: api.ErrorCondition, Status: corev1.ConditionFalse}
+	conditions[api.DenyConditionIndex] = api.Condition{Type: api.DenyCondition, Status: corev1.ConditionFalse}
+	conditions[api.ReadyConditionIndex] = api.Condition{Type: api.ReadyCondition, Status: corev1.ConditionFalse}
+	application.Status.AssetStates[assetID] = api.AssetState{Conditions: conditions}
+}
+
+func setErrorCondition(application *api.FybrikApplication, assetID string, msg string) {
+	errMsg := "An error was received for asset " + assetID
 	errMsg += " . If the error persists, please contact an operator."
 	errMsg += "Error description: " + msg
-	application.Status.Conditions[app.ErrorConditionIndex].Status = corev1.ConditionTrue
-	application.Status.Conditions[app.ErrorConditionIndex].Message = errMsg
+	application.Status.AssetStates[assetID].Conditions[api.ErrorConditionIndex] = api.Condition{
+		Type:    api.ErrorCondition,
+		Status:  corev1.ConditionTrue,
+		Message: errMsg}
 }
 
-func setDenyCondition(application *app.FybrikApplication, assetID string, msg string) {
-	application.Status.Conditions[app.DenyConditionIndex].Status = corev1.ConditionTrue
-	application.Status.Conditions[app.DenyConditionIndex].Message = msg
+func setDenyCondition(application *api.FybrikApplication, assetID string, msg string) {
+	application.Status.AssetStates[assetID].Conditions[api.DenyConditionIndex] = api.Condition{
+		Type:    api.DenyCondition,
+		Status:  corev1.ConditionTrue,
+		Message: msg}
 }
 
-func setReadyCondition(application *app.FybrikApplication, assetID string) {
-	application.Status.Conditions[app.ReadyConditionIndex].Status = corev1.ConditionTrue
-	application.Status.Ready = true
+func setReadyCondition(application *api.FybrikApplication, assetID string) {
+	application.Status.AssetStates[assetID].Conditions[api.ReadyConditionIndex].Status = corev1.ConditionTrue
 }
 
-func errorOrDeny(application *app.FybrikApplication) bool {
-	// check if the conditions have been initialized
-	if len(application.Status.Conditions) == 0 {
+// determine if the application is ready
+func isReady(application *api.FybrikApplication) bool {
+	if len(application.Spec.Data) == 0 {
+		return true
+	}
+	if application.Status.AssetStates == nil {
 		return false
 	}
-	return (application.Status.Conditions[app.ErrorConditionIndex].Status == corev1.ConditionTrue ||
-		application.Status.Conditions[app.DenyConditionIndex].Status == corev1.ConditionTrue)
-}
-
-// Ready or Deny state
-func inFinalState(application *app.FybrikApplication) bool {
-	// check if the conditions have been initialized
-	if len(application.Status.Conditions) == 0 {
-		return false
+	for _, asset := range application.Spec.Data {
+		assetState := application.Status.AssetStates[asset.DataSetID]
+		if len(assetState.Conditions) == 0 {
+			return false
+		}
+		if assetState.Conditions[api.DenyConditionIndex].Status == corev1.ConditionFalse &&
+			assetState.Conditions[api.ReadyConditionIndex].Status == corev1.ConditionFalse {
+			return false
+		}
 	}
-	return (application.Status.Conditions[app.ReadyConditionIndex].Status == corev1.ConditionTrue ||
-		application.Status.Conditions[app.DenyConditionIndex].Status == corev1.ConditionTrue)
+	return true
 }
 
-func getErrorMessages(application *app.FybrikApplication) string {
+func getErrorMessages(application *api.FybrikApplication) string {
+	if application.Status.ErrorMessage != "" {
+		return application.Status.ErrorMessage
+	}
 	var errorMsgs []string
-	// check if the conditions have been initialized
-	if len(application.Status.Conditions) == 0 {
-		return ""
-	}
-	if application.Status.Conditions[app.ErrorConditionIndex].Status == corev1.ConditionTrue {
-		errorMsgs = append(errorMsgs, application.Status.Conditions[app.ErrorConditionIndex].Message)
-	}
-	if application.Status.Conditions[app.DenyConditionIndex].Status == corev1.ConditionTrue {
-		errorMsgs = append(errorMsgs, application.Status.Conditions[app.DenyConditionIndex].Message)
+	for _, state := range application.Status.AssetStates {
+		if state.Conditions[api.ErrorConditionIndex].Status == corev1.ConditionTrue {
+			errorMsgs = append(errorMsgs, state.Conditions[api.ErrorConditionIndex].Message)
+		}
 	}
 	return strings.Join(errorMsgs, "\n")
 }
