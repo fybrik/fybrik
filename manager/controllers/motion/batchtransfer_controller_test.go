@@ -58,9 +58,9 @@ var _ = Describe("BatchTransfer Controller", func() {
 			registryNamespace := os.Getenv("DOCKER_NAMESPACE")
 			if len(registry) > 0 && registry != "ghcr.io" {
 				if len(registryNamespace) > 0 {
-					batchTransfer.Spec.Image = registry + "/" + registryNamespace + "/dummy-mover:latest"
+					batchTransfer.Spec.Image = registry + "/" + registryNamespace + "/dummy-mover:master"
 				} else {
-					batchTransfer.Spec.Image = registry + "/dummy-mover:latest"
+					batchTransfer.Spec.Image = registry + "/dummy-mover:master"
 				}
 			}
 			key := client.ObjectKeyFromObject(batchTransfer)

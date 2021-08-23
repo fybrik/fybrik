@@ -99,7 +99,7 @@ if [[ ${is_kubernetes} == "true" && ${is_kind} == "true" ]]; then
     rc=$?
     set -e
     if [[ $rc -ne 0 ]]; then
-        kubectl apply -f ${repo_root}/pipeline/nfs.yaml
+        kubectl apply -f ${repo_root}/pipeline/nfs.yaml -n default
         helm repo add stable https://charts.helm.sh/stable
         ip=$(kubectl get svc -n default nfs-service -o jsonpath='{.spec.clusterIP}')
         helm upgrade --install nfs-provisioner stable/nfs-client-provisioner --values ${repo_root}/pipeline/nfs-values.yaml --set nfs.server=${ip} --namespace nfs-provisioner --create-namespace
