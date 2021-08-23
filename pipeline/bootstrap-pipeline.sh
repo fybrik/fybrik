@@ -452,6 +452,7 @@ EOH
     set -e
 fi
 extra_params="${extra_params} -p git-url=${git_url}"
+
 if [[ "${is_public_repo}" != "true" ]]; then
     if [[ -f ${repo_root}/pipeline/custom_repo_references.sh ]]; then
         source ${repo_root}/pipeline/custom_repo_references.sh
