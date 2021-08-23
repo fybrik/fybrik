@@ -257,6 +257,11 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 		}
 		plotter.Status.ObservedState.DataAccessInstructions = aggregatedInstructions
 
+		if errorCollection == nil {
+			r.Log.V(2).Info("Plotter is ready!", "plotter", plotter.Name)
+			return ctrl.Result{}, nil
+		}
+
 		// The following does a simple exponential backoff with a minimum of 5 seconds
 		// and a maximum of 60 seconds until the next reconcile
 		ready := *plotter.Status.ReadyTimestamp

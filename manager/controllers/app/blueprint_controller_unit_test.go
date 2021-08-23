@@ -78,14 +78,20 @@ func TestBlueprintReconcile(t *testing.T) {
 	g.Expect(res.Requeue).To(gomega.BeFalse(), "reconcile did not requeue request as expected")
 	g.Expect(cl.Get(context.TODO(), ns, blueprint)).To(gomega.BeNil(), "could not fetch the blueprint")
 	g.Expect(blueprint.Status.Releases).To(gomega.HaveLen(2))
-	g.Expect(blueprint.Status.Releases).Should(gomega.HaveKeyWithValue("notebook-default-notebook-copy-batch", blueprint.Status.ObservedGeneration))
-	g.Expect(blueprint.Status.Releases).Should(gomega.HaveKeyWithValue("notebook-default-notebook-read-module", blueprint.Status.ObservedGeneration))
+	g.Expect(blueprint.Status.Releases).Should(gomega.HaveKeyWithValue("notebook-default-notebook-copy-batch-instance1", blueprint.Status.ObservedGeneration))
+	g.Expect(blueprint.Status.Releases).Should(gomega.HaveKeyWithValue("notebook-default-notebook-read-module-instance1", blueprint.Status.ObservedGeneration))
 }
 
 // This test checks that a short release name is not truncated
 func TestShortReleaseName(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
+	modules := []app.BlueprintModule{{
+		Name:         "dataFlow",
+		InstanceName: "dataFlowInstance1",
+		Chart:        app.ChartSpec{Name: "thechart"},
+		Arguments:    app.ModuleArguments{},
+	}}
 
 	blueprint := app.Blueprint{
 		ObjectMeta: metav1.ObjectMeta{
@@ -96,16 +102,12 @@ func TestShortReleaseName(t *testing.T) {
 			},
 		},
 		Spec: app.BlueprintSpec{
-			Flow: app.DataFlow{
-				Name: "dataflow",
-				Steps: []app.FlowStep{{Name: "mystep",
-					Template:  "template",
-					Arguments: app.ModuleArguments{}}},
-			},
+			Cluster: "cluster1",
+			Modules: modules,
 		},
 	}
-	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Flow.Steps[0])
-	g.Expect(relName).To(gomega.Equal("my-app-default-mystep"))
+	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Modules[0])
+	g.Expect(relName).To(gomega.Equal("my-app-default-dataFlowInstance1"))
 }
 
 // This test checks that a long release name is shortened
@@ -121,21 +123,17 @@ func TestLongReleaseName(t *testing.T) {
 			},
 		},
 		Spec: app.BlueprintSpec{
-			Flow: app.DataFlow{
-				Name: "dataflow",
-				Steps: []app.FlowStep{{Name: "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff",
-					Template:  "template",
-					Arguments: app.ModuleArguments{}}},
-			},
+			Cluster: "cluster1",
+			Modules: []app.BlueprintModule{{Name: "longname", InstanceName: "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff", Chart: app.ChartSpec{Name: "start-image"}}},
 		},
 	}
 
-	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Flow.Steps[0])
+	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Modules[0])
 	g.Expect(relName).To(gomega.Equal("my-app-default-ohandnottoforgettheflowstepnamet-a7569"))
 	g.Expect(relName).To(gomega.HaveLen(53))
 
 	// Make sure that calling the same method again results in the same result
-	relName2 := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Flow.Steps[0])
+	relName2 := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Modules[0])
 	g.Expect(relName2).To(gomega.Equal("my-app-default-ohandnottoforgettheflowstepnamet-a7569"))
 	g.Expect(relName2).To(gomega.HaveLen(53))
 }

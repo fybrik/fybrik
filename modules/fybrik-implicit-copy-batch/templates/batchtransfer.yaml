@@ -80,3 +80,6 @@ spec:
   imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
   {{ end }}
   noFinalizer: {{ .Values.noFinalizer }}
+  readDataType: {{ .Values.readDataType | quote}}
+  writeDataType: {{ .Values.writeDataType | quote }}
+  writeOperation: {{ .Values.writeOperation | quote }}

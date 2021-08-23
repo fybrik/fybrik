@@ -35,3 +35,7 @@ copy:
 #        object_key: ""
 #    format: ""
 #    vault: {}
+
+readDataType: "ChangeData"
+writeDataType: "LogData"
+writeOperation: "Append"
