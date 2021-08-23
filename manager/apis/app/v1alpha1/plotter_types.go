@@ -30,13 +30,6 @@ type Service struct {
 	Endpoint EndpointSpec `json:"endpoint"`
 }
 
-// API contains the details of a service.
-// It is used by other modules or the workload to access the data
-type API struct {
-	//+required
-	Service *Service `json:"service"`
-}
-
 // StepSource is the source of this step: it could be assetID
 // or an enpoint of another step
 type StepSource struct {
@@ -45,7 +38,7 @@ type StepSource struct {
 	AssetID string `json:"assetId,omitempty"`
 
 	//+optional
-	API *API `json:"api,omitempty"`
+	API *Service `json:"api,omitempty"`
 }
 
 // StepSink holds information to where the target data will be written:
@@ -67,7 +60,7 @@ type StepParameters struct {
 	Sink *StepSink `json:"sink,omitempty"`
 
 	// +optional
-	API *API `json:"api,omitempty"`
+	API *Service `json:"api,omitempty"`
 
 	// Actions are the data transformations that the module supports
 	// +optional
@@ -240,48 +233,16 @@ type Template struct {
 	Modules []ModuleInfo `json:"modules"`
 }
 
-// SubFlowsStatus holds status information about a subFlow
-type SubFlowsStatus struct {
-	// SubFlow name
-	// +required
-	Name string `json:"name"`
-
-	// ObservedState includes information about this subflow
-	// It includes readiness and error indications, as well as user instructions
-	// +optional
-	ObservedState ObservedState `json:"status,omitempty"`
-}
-
-// AssetStatus includes information to be reported back to the FybrikApplication resource
-// It holds the status and access information for each asset in fybrikapplication
-type AssetStatus struct {
-	// Endpoint
-	// +required
-	Endpoint EndpointSpec `json:"endpoint"`
-
-	// ObservedState includes information to be reported back to the FybrikApplication resource
-	// It includes readiness and error indications, as well as user instructions
-	// +optional
-	ObservedState ObservedState `json:"status,omitempty"`
-
-	// +optional
-	Errors []string `json:"errors,omitempty,omitempty"`
-}
-
 // FlowStatus includes information to be reported back to the FybrikApplication resource
 // It holds the status per data flow
 type FlowStatus struct {
-	// Template name
-	// +required
-	Name string `json:"name"`
-
 	// ObservedState includes information about the current flow
 	// It includes readiness and error indications, as well as user instructions
 	// +optional
 	ObservedState ObservedState `json:"status,omitempty"`
 
 	// +required
-	SubFlows []SubFlowsStatus `json:"subFlows"`
+	SubFlows map[string]ObservedState `json:"subFlows"`
 }
 
 // PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter installs the runtime environment
@@ -322,20 +283,23 @@ type PlotterStatus struct {
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 
-	// +required
-	Flows []FlowStatus `json:"flows"`
+	// +optional
+	Flows map[string]FlowStatus `json:"flows"`
 
 	// Assets is a map containing the status per asset.
 	// The key of this map is assetId
-	// +required
-	Assets map[string]AssetStatus `json:"assets"`
+	// +optional
+	Assets map[string]ObservedState `json:"assets"`
 
-	// + optional
+	// +optional
 	Blueprints map[string]MetaBlueprint `json:"blueprints,omitempty"`
 
 	// Conditions represent the possible error and failure conditions
 	// +optional
 	Conditions []Condition `json:"conditions,omitempty"`
+
+	// + optional
+	ReadyTimestamp *metav1.Time `json:"readyTimestamp,omitempty"`
 }
 
 // +kubebuilder:object:root=true
