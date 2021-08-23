@@ -24,9 +24,9 @@ var _ = Describe("FybrikApplication Controller", func() {
 	Context("FybrikApplication", func() {
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test
-			module := &app.FybrikModule{}
+			module := &apiv1alpha1.FybrikModule{}
 			Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
-			application := &app.FybrikApplication{}
+			application := &apiv1alpha1.FybrikApplication{}
 			Expect(readObjectFromFile("../../testdata/e2e/fybrikapplication.yaml", application)).ToNot(HaveOccurred())
 			_ = k8sClient.Delete(context.Background(), application)
 			_ = k8sClient.Delete(context.Background(), module)
