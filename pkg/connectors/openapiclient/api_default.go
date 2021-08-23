@@ -27,9 +27,9 @@ var (
 type DefaultApiService service
 
 type ApiGetPoliciesDecisionsPostRequest struct {
-	ctx _context.Context
-	ApiService *DefaultApiService
-	xRequestCred *string
+	ctx                  _context.Context
+	ApiService           *DefaultApiService
+	xRequestCred         *string
 	policyManagerRequest *PolicyManagerRequest
 }
 
@@ -54,7 +54,7 @@ func (r ApiGetPoliciesDecisionsPostRequest) Execute() (PolicyManagerResponse, *_
 func (a *DefaultApiService) GetPoliciesDecisionsPost(ctx _context.Context) ApiGetPoliciesDecisionsPostRequest {
 	return ApiGetPoliciesDecisionsPostRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 

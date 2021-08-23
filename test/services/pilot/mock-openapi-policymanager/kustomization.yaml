@@ -1,0 +1,11 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+resources:
+- manager_client.yaml
+namespace: fybrik-system
+
+images:
+- name: manager-client
+  newName: ghcr.io/datamesh/manager-client
+  newTag: latest

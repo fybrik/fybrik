@@ -245,21 +245,10 @@ func newPolicyManager() (connectors.PolicyManager, error) {
 	mainPolicyManagerName := os.Getenv("MAIN_POLICY_MANAGER_NAME")
 	mainPolicyManagerURL := os.Getenv("MAIN_POLICY_MANAGER_CONNECTOR_URL")
 	setupLog.Info("setting main policy manager client", "Name", mainPolicyManagerName, "URL", mainPolicyManagerURL, "Timeout", connectionTimeout)
-	policyManager, err := connectors.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
+
+	policyManager, err := connectors.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
 	if err != nil {
 		return nil, err
-	}
-
-	useExtensionPolicyManager, err := strconv.ParseBool(os.Getenv("USE_EXTENSIONPOLICY_MANAGER"))
-	if useExtensionPolicyManager && err == nil {
-		extensionPolicyManagerName := os.Getenv("EXTENSIONS_POLICY_MANAGER_NAME")
-		extensionPolicyManagerURL := os.Getenv("EXTENSIONS_POLICY_MANAGER_CONNECTOR_URL")
-		setupLog.Info("setting extension policy manager client", "Name", extensionPolicyManagerName, "URL", extensionPolicyManagerURL, "Timeout", connectionTimeout)
-		extensionPolicyManager, err := connectors.NewGrpcPolicyManager(extensionPolicyManagerName, extensionPolicyManagerURL, connectionTimeout)
-		if err != nil {
-			return nil, err
-		}
-		policyManager = connectors.NewMultiPolicyManager(policyManager, extensionPolicyManager)
 	}
 
 	return policyManager, nil
