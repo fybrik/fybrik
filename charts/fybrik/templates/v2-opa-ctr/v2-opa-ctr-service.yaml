@@ -1,0 +1,20 @@
+{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
+{{- if include "fybrik.isEnabled" (tuple .Values.openPolicyAgentConnector.enabled $autoFlag) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: v2-opa-ctr
+  labels:
+    app.kubernetes.io/component: v2-opa-ctr
+    {{- include "fybrik.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.openPolicyAgentConnector.service.type }}
+  ports:
+    - port: {{ .Values.openPolicyAgentConnector.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/component: v2-opa-ctr
+    {{- include "fybrik.selectorLabels" . | nindent 4 }}
+{{- end }}

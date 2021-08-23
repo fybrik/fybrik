@@ -69,7 +69,7 @@ var routes = Routes{
 
 	{
 		"GetPoliciesDecisions",
-		http.MethodGet,
+		http.MethodPost,
 		"/getPoliciesDecisions",
 		GetPoliciesDecisions,
 	},

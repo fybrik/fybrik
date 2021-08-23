@@ -1,0 +1,63 @@
+{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
+{{- if include "fybrik.isEnabled" (tuple .Values.openPolicyAgentConnector.enabled $autoFlag) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: v2-opa-ctr
+  labels:
+    app.kubernetes.io/component: v2-opa-ctr
+    {{- include "fybrik.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.openPolicyAgentConnector.autoscaling.enabled }}
+  replicas: {{ .Values.openPolicyAgentConnector.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: v2-opa-ctr
+      {{- include "fybrik.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.openPolicyAgentConnector.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        fybrik.io/componentType: connector
+        app.kubernetes.io/component: v2-opa-ctr
+        {{- include "fybrik.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ .Values.openPolicyAgentConnector.serviceAccount.name }}
+      securityContext:
+        {{- toYaml .Values.openPolicyAgentConnector.podSecurityContext | nindent 8 }}
+      containers:
+        - name: v2-opa-connector
+          securityContext:
+            {{- toYaml .Values.openPolicyAgentConnector.securityContext | nindent 12 }}
+          image: {{ include "fybrik.image" ( tuple $ .Values.openPolicyAgentConnector ) }}
+          imagePullPolicy: {{ .Values.openPolicyAgentConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8081
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: v2-opa-ctr-config
+          resources:
+            {{- toYaml .Values.openPolicyAgentConnector.resources | nindent 12 }}
+      {{- with .Values.openPolicyAgentConnector.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.openPolicyAgentConnector.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.openPolicyAgentConnector.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

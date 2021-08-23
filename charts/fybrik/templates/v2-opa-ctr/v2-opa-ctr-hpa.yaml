@@ -1,0 +1,32 @@
+{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
+{{- if include "fybrik.isEnabled" (tuple .Values.openPolicyAgentConnector.enabled $autoFlag) }}
+{{- if .Values.openPolicyAgentConnector.autoscaling.enabled }}
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: v2-opa-ctr
+  labels:
+    app.kubernetes.io/component: v2-opa-ctr
+    {{- include "fybrik.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: v2-opa-ctr
+  minReplicas: {{ .Values.openPolicyAgentConnector.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.openPolicyAgentConnector.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.openPolicyAgentConnector.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: {{ .Values.openPolicyAgentConnector.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.openPolicyAgentConnector.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        targetAverageUtilization: {{ .Values.openPolicyAgentConnector.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}
+{{- end }}

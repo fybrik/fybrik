@@ -30,15 +30,21 @@ func main() {
 	timeOut, _ := strconv.Atoi(timeOutInSecs)
 	connectionTimeout := time.Duration(timeOut) * time.Second
 
-	mainPolicyManagerURL := "opa-connector.fybrik-system:80"
-	policyManager, err := connectors.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
+	// mainPolicyManagerURL := "opa-connector.fybrik-system:80"
+	// policyManager, err := connectors.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
+	// if err != nil {
+	// 	log.Println("returned with error ")
+	// 	log.Println("error in policyManager creation: ", err)
+	// 	return
+	// }
+
+	mainPolicyManagerURL := "http://v2-opa-ctr.fybrik-system:8081"
+	policyManager, err := connectors.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
 	if err != nil {
-		log.Println("returned with error ")
-		log.Println("error in policyManager creation: ", err)
 		return
 	}
 
-	creds := "http://vault.fybrik-system:8200/v1/kubernetes-secrets/<SECRET-NAME>?namespace=<NAMESPACE>"
+	creds := "http://vault.fybrik-system:8200/v1/kubernetes-secrets/wkc-creds?namespace=cp4d"
 	input := openapiclientmodels.NewPolicyManagerRequestWithDefaults()
 
 	reqCtx := make(map[string]interface{})
