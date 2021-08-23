@@ -14,8 +14,8 @@ import (
 
 	"emperror.dev/errors"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
+	random "fybrik.io/fybrik/pkg/random"
 	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
-	utils "fybrik.io/fybrik/pkg/utils"
 	"google.golang.org/grpc"
 )
 
@@ -273,7 +273,7 @@ func ConvertOpenAPIRespToGrpcResp(
 func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*openapiclientmodels.PolicyManagerResponse, error) {
 	// convert GRPC response to Open Api Response - start
 	// we dont get decision id returned from OPA from GRPC response. So we generate random hex string
-	decisionID, _ := utils.RandomHex(20)
+	decisionID, _ := random.Hex(20)
 	log.Println("decision id generated", decisionID)
 
 	var datasetDecisions []*pb.DatasetDecision

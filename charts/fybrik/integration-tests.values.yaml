@@ -31,5 +31,5 @@ coordinator:
   policyManager: "opa"
 
   # Overrides the policy manager connector URL.
-  # Defaults to `<policyManager>-connector:80`.
+  # The default value of policyManagerConnectorURL in values.yaml is set to `<policyManager>-connector:80` which will work with GRPC. As Open api related taxonomy changes needs http url scheme, the overriding is done below.
   policyManagerConnectorURL: "http://opa-connector.fybrik-system:80"
