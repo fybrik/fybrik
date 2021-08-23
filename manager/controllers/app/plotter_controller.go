@@ -128,14 +128,15 @@ type PlotterModulesSpec struct {
 	FlowType        app.DataFlow
 	IsPrimaryModule bool
 	Chart           app.ChartSpec
-	AssetId         string
 }
 
 // ConvertPlotterModuleToBlueprintModule converts an object of type PlotterModulesSpec to type modules.ModuleInstanceSpec
 func (r *PlotterReconciler) ConvertPlotterModuleToBlueprintModule(plotter *app.Plotter, plotterModule PlotterModulesSpec) *modules.ModuleInstanceSpec {
+	AssetIDs := make([]string, 0)
+	AssetIDs = append(AssetIDs, plotterModule.AssetID)
 	blueprintModule := &modules.ModuleInstanceSpec{
 		Chart:       &plotterModule.Chart,
-		AssetID:     plotterModule.AssetID,
+		AssetIDs:    AssetIDs,
 		ClusterName: plotterModule.ClusterName,
 		ModuleName:  plotterModule.ModuleName,
 	}
@@ -157,7 +158,7 @@ func (r *PlotterReconciler) ConvertPlotterModuleToBlueprintModule(plotter *app.P
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
 				Connection: *serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
-				Format:     plotterModule.ModuleArguments.Source.API.Service.Endpoint.Scheme,
+				Format:     plotterModule.ModuleArguments.Source.API.Endpoint.Scheme,
 			}
 		}
 		blueprintModule.Args.Read = []app.ReadModuleArgs{
@@ -185,7 +186,7 @@ func (r *PlotterReconciler) ConvertPlotterModuleToBlueprintModule(plotter *app.P
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
 				Connection: *serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
-				Format:     plotterModule.ModuleArguments.Source.API.Service.Endpoint.Scheme,
+				Format:     plotterModule.ModuleArguments.Source.API.Endpoint.Scheme,
 			}
 		}
 		blueprintModule.Args.Copy =
@@ -226,7 +227,6 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) (map[string]a
 							IsPrimaryModule: isPrimaryModule,
 							ClusterName:     seqStep.Cluster,
 							ModuleName:      module.Name,
-							AssetId:         flow.AssetID,
 						}
 						blueprintModule := r.ConvertPlotterModuleToBlueprintModule(plotter, plotterModule)
 						// append the module to the modules list

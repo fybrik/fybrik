@@ -4,6 +4,8 @@
 package app
 
 import (
+	"strings"
+
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/app/modules"
 	"fybrik.io/fybrik/manager/controllers/utils"
@@ -28,7 +30,7 @@ func (r *PlotterReconciler) RefineInstances(instances []modules.ModuleInstanceSp
 			instance.Args.Read = append(instance.Args.Read, moduleInstance.Args.Read...)
 			instance.Args.Write = append(instance.Args.Write, moduleInstance.Args.Write...)
 			// AssetID is used for step name generation
-			instance.AssetID += "," + moduleInstance.AssetID
+			instance.AssetID = append(instance.AssetID, moduleInstance.AssetID...)
 			instanceMap[key] = instance
 		}
 	}
@@ -63,18 +65,22 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []modules.ModuleInstance
 	spec.Cluster = clusterName
 
 	// Create the list of BlueprintModules
+
 	var blueprintModules []app.BlueprintModule
 	for _, moduleInstance := range instances {
 		modulename := moduleInstance.ModuleName
 
 		var blueprintModule app.BlueprintModule
+		blueprintModule.InstanceName = utils.CreateStepName(modulename, strings.Join(moduleInstance.AssetID, ",")) // Need unique name for each module so include ids for dataset
 		blueprintModule.Name = modulename
-		blueprintModule.InstanceName = utils.CreateStepName(modulename, moduleInstance.AssetID) // Need unique name for each module so include ids for dataset
 		blueprintModule.Arguments = *moduleInstance.Args
 		blueprintModule.Chart = *moduleInstance.Chart
+		blueprintModule.AssetIDs = make([]string, len(moduleInstance.AssetIDs))
+		copy(blueprintModule.AssetIDs, moduleInstance.AssetIDs)
 		blueprintModules = append(blueprintModules, blueprintModule)
-	}
 
+	}
 	spec.Modules = blueprintModules
+
 	return spec
 }
