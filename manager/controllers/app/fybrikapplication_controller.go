@@ -6,6 +6,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -72,8 +73,8 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	observedStatus := applicationContext.Status.DeepCopy()
 	appVersion := applicationContext.GetGeneration()
 
-	// check if application has been validated before or if validated application is outdated
-	if string(applicationContext.Status.ValidApplication) == "" || observedStatus.ValidatedGeneration != appVersion {
+	// check if webhooks are enabled and application has been validated before or if validated application is outdated
+	if os.Getenv("ENABLE_WEBHOOKS") == "false" && (string(applicationContext.Status.ValidApplication) == "" || observedStatus.ValidatedGeneration != appVersion) {
 		// do validation on applicationContext
 		err := applicationContext.ValidateFybrikApplication("/tmp/taxonomy/fybrik_application.json")
 		log.V(0).Info("Reconciler validating Fybrik application")
