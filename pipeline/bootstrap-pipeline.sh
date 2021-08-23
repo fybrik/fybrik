@@ -14,10 +14,7 @@ export image_source_repo_username=${image_source_repo_username}
 export image_repo="${image_repo:-kind-registry:5000}"
 export image_source_repo="${image_source_repo:-fake.com}"
 export dockerhub_hostname="${dockerhub_hostname:-docker.io}"
-export cpd_url="${cpd_url:-https://cpd.fake.com}"
 export git_url="${git_url:-https://github.com/fybrik/fybrik.git}"
-export wkc_connector_git_url="${wkc_connector_git_url}"
-export vault_plugin_secrets_wkc_reader_url="${vault_plugin_secrets_wkc_reader_url}"
 export is_kind="${is_kind:-false}"
 
 helper_text=""
@@ -59,18 +56,18 @@ set -e
 
 # Figure out if we're using air-gapped machines that should pull images from somewhere other than dockerhub
 extra_params=''
-is_external="false"
-is_internal="false"
+is_public_repo="false"
+is_custom_repo="false"
 helm_image=
 build_image=
 if [[ "${github}" == "github.com" ]]; then
-    is_external="true"
+    is_public_repo="true"
     build_image="docker.io/yakinikku/suede_compile"
     helm_image="docker.io/lachlanevenson/k8s-helm:latest"
     extra_params="${extra_params} -p build_image=${build_image} -p helm_image=${helm_image}"
     cp ${repo_root}/pipeline/statefulset.yaml ${TMP}/
 else
-    is_internal="true"
+    is_custom_repo="true"
     build_image="${dockerhub_hostname}/suede_compile:latest"
     helm_image="${dockerhub_hostname}/k8s-helm"
     extra_params="${extra_params} -p build_image=${build_image} -p helm_image=${helm_image}"
@@ -222,14 +219,22 @@ helper_text=""
 # Wipe old pipeline definitions in case of merge conflicts
 set +e
 kubectl delete -f ${repo_root}/pipeline/pipeline.yaml
-kubectl delete -f ${repo_root}/pipeline/wkc-pipeline.yaml
+if [[ -f ${repo_root}/pipeline/custom_pipeline_cleanup.sh ]]; then
+    ${repo_root}/pipeline/custom_pipeline_cleanup.sh
+fi
 
-# If running open source, exclude WKC from the pipeline
 set -e
-if [[ "${github}" == "github.com" ]]; then 
+if [[ "${is_public_repo}" == "true" ]]; then
     kubectl apply -f ${repo_root}/pipeline/pipeline.yaml
-else
-    kubectl apply -f ${repo_root}/pipeline/wkc-pipeline.yaml
+else 
+     kubectl apply -f ${repo_root}/pipeline/wkc-pipeline.yaml
+     if [[ -f ${repo_root}/pipeline/custom_pipeline_create.sh ]]; then
+         ${repo_root}/pipeline/custom_pipeline_create.sh
+     else
+         set +x
+         echo "You are running with a non public repo, but no custom pipeline creation script exists at ${repo_root}/pipeline/custom_pipeline_create.sh"
+         exit 1
+     fi
 fi
 
 # Delete old registry credentials
@@ -390,15 +395,19 @@ kubectl delete secret git-ssh-key
 kubectl delete secret git-token
 set -e
 
-# Determine which set of vault values to used, based on whether or not WKC components will be installed
-vault_values="/workspace/source/vault-plugin-secrets-wkc-reader/helm-deployment/vault-single-cluster/values.yaml"
-if [[ "${github}" == "github.com" ]]; then
-    vault_values="/workspace/source/mesh-for-data/third_party/vault/vault-single-cluster/values.yaml"
+# Determine which set of vault values to used, based on whether or not custom components will be installed
+vault_values=
+if [[ "${is_public_repo}" == "true" ]]; then
+    vault_values="/workspace/source/fybrik/third_party/vault/vault-single-cluster/values.yaml"
+else
+    if [[ -f ${repo_root}/pipeline/custom_vault_values_reference.sh ]]; then
+        source ${repo_root}/pipeline/custom_vault_values_reference.sh
+    fi
 fi
 extra_params="${extra_params} -p vaultValues=\"${vault_values}\""
 
 # Determine which set of repositories to use, based on whether or not we're dealing with open source
-if [[ -z ${GH_TOKEN} && "${github}" != "github.com" ]]; then
+if [[ -z ${GH_TOKEN} && "${is_public_repo}" != "true" ]]; then
     cat ~/.ssh/known_hosts | base64 ${base64_arg} > ${TMP}/known_hosts
     set +x
     helper_text="If this step fails, make the second positional arg the path to an ssh key authenticated with Github Enterprise
@@ -416,12 +425,9 @@ if [[ -z ${GH_TOKEN} && "${github}" != "github.com" ]]; then
     else
         kubectl patch serviceaccount default -p '{"secrets": [{"name": "git-ssh-key"}]}'
         set +e
-#        kubectl patch serviceaccount default --type=json -p='[{"op": "remove", "path": "/data/mykey"}]'
-#        kubectl patch deploy/some-deployment --type=json -p='[{"op": "remove", "path": "/spec/template/spec/containers/0/ports/0"},{"op": "remove", "path": "/spec/template/spec/containers/0/ports/2"}]
-#        oc get sa default -o yaml | grep -A3 "secrets:" | awk '/git-token/ { print NR }' 
     fi
     set -e
-elif [[ ! -z ${GH_TOKEN} && "${github}" != "github.com" ]]; then
+elif [[ ! -z ${GH_TOKEN} && "${is_public_repo}" != "true" ]]; then
     cat > ${TMP}/git-token.yaml <<EOH
 apiVersion: v1
 kind: Secret
@@ -446,31 +452,10 @@ EOH
     set -e
 fi
 extra_params="${extra_params} -p git-url=${git_url}"
-if [[ "${github}" != "github.com" ]]; then
-    extra_params="${extra_params} -p wkc-connector-git-url=${wkc_connector_git_url} -p vault-plugin-secrets-wkc-reader-url=${vault_plugin_secrets_wkc_reader_url}"
-fi
-
-# Set up credentials for WKC
-if [[ "${github}" != "github.com" ]]; then
-    cat > ${TMP}/wkc-credentials.yaml <<EOH
-apiVersion: v1
-kind: Secret
-metadata:
-  name: wkc-credentials
-  namespace: ${unique_prefix}
-type: kubernetes.io/Opaque
-stringData:
-  CP4D_USERNAME: ${cpd_username}
-  CP4D_PASSWORD: ${cpd_password}
-  WKC_username: ${cpd_username}
-  WKC_password: ${cpd_password}
-  WKC_USERNAME: ${cpd_username}
-  WKC_PASSWORD: ${cpd_password}
-  CP4D_SERVER_URL: ${cpd_url}
-EOH
-    cat ${TMP}/wkc-credentials.yaml
-    kubectl apply -f ${TMP}/wkc-credentials.yaml
-    extra_params="${extra_params} -p wkcConnectorServerUrl=${cpd_url}"
+if [[ "${is_public_repo}" != "true" ]]; then
+    if [[ -f ${repo_root}/pipeline/custom_repo_references.sh ]]; then
+        source ${repo_root}/pipeline/custom_repo_references.sh
+    fi
 fi
 
 # Determine whether images should be sent to ICR for security scanning if creds exist
@@ -506,8 +491,8 @@ tkn pipeline start build-and-deploy -w name=images-url,emptyDir=\"\" -w name=art
 
 if [[ ${run_tkn} -eq 1 ]]; then
     set -x
-
-    cat > ${TMP}/pipelinerun.yaml <<EOH
+    if [[ ${is_public_repo} == "true" ]]; then
+        cat > ${TMP}/pipelinerun.yaml <<EOH
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
@@ -531,10 +516,6 @@ spec:
     value: ${cpd_url}
   - name: git-url
     value: "${git_url}"
-  - name: wkc-connector-git-url
-    value: "${wkc_connector_git_url}" 
-  - name: vault-plugin-secrets-wkc-reader-url 
-    value: "${vault_plugin_secrets_wkc_reader_url}"
   - name: skipTests
     value: "${skip_tests}"
   - name: transfer-images-to-icr
@@ -567,10 +548,18 @@ spec:
     persistentVolumeClaim:
       claimName: source-pvc
 EOH
-    cat ${TMP}/pipelinerun.yaml
+        cat ${TMP}/pipelinerun.yaml
+        kubectl apply -f ${TMP}/pipelinerun.yaml
+    else
+         if [[ -f ${repo_root}/pipeline/custom_run_tkn.sh ]]; then
+             ${repo_root}/pipeline/custom_run_tkn.sh
+         else
+             set +x
+             echo "If run_tkn is on, please put a script in ${repo_root}/pipeline/custom_run_tkn.sh to define the custom pipelinerun"
+             exit 1
+         fi
+    fi
 
-    kubectl apply -f ${TMP}/pipelinerun.yaml
- 
     cat > ${TMP}/streams_csv_check_script.sh <<EOH
 #!/bin/bash
 set -x

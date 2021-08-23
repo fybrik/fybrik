@@ -22,13 +22,18 @@ bash -x bootstrap-pipeline.sh fybrik-myname
 
 Tasks can be restarted in vscode by right-clicking on the task in the tekton pipelines extension.
 
-From command line, it can be done with a series of commands like this:
+From command line, it can be done with this script:
 ```
-# kubectl get taskrun build-and-deploy-run-run-integration-tests-full-deploy-zfwgc -o yaml > /tmp/taskrun.yaml
-# vi /tmp/taskrun.yaml
-# # delete metadata.name & metadata.namespace
-# # add metadata.generateName: restarted-task-
-# kubectl create -f /tmp/taskrun.yaml
+# ./restart-task.sh run-integration-tests
+# # Where run-integration-task is a grep match for the task you want to restart
 ```
 
 knative eventing is used to restart all downstream tasks.  Code rebuilds will trigger image rebuilds.  Image rebuilds will trigger helm upgrades.
+
+## Building code from your development environment
+
+Set the following environment variable to point at your code repo, and it will be copied to the volume tekton tasks will mount rather than cloning code from github
+```
+github_workspace="/path/to/fybrik"
+. source-external.sh
+```
