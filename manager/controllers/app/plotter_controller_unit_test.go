@@ -91,7 +91,11 @@ func TestPlotterController(t *testing.T) {
 
 	// Simulate that blueprint changes state to Ready=true
 	dummyManager.DeployedBlueprints["thegreendragon"].Status.ObservedState.Ready = true
-	dummyManager.DeployedBlueprints["thegreendragon"].Status.ObservedState.DataAccessInstructions = "nop"
+	for instanceName, _ := range dummyManager.DeployedBlueprints["thegreendragon"].Spec.Modules {
+		dummyManager.DeployedBlueprints["thegreendragon"].Status.ModulesState[instanceName] = app.ObservedState{
+			Ready: true,
+		}
+	}
 
 	deployedBp := dummyManager.DeployedBlueprints["thegreendragon"]
 	g.Expect(deployedBp.Labels[app.ApplicationNamespaceLabel]).To(gomega.Equal("default"))
@@ -107,5 +111,8 @@ func TestPlotterController(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Can fetch plotter")
 
 	g.Expect(plotter.Status.ObservedState.Ready).To(gomega.BeTrue(), "Plotter is ready")
-	g.Expect(plotter.Status.ObservedState.DataAccessInstructions).To(gomega.Equal("nop\n"), "Plotter is ready")
+	for _, assetState := range plotter.Status.Assets {
+		g.Expect(assetState).To(gomega.BeTrue(), "Asset is ready")
+	}
+	g.Expect(len(plotter.Spec.Assets) == 1).To(gomega.BeTrue(), "Plotter Asset status list contains one element")
 }

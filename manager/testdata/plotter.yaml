@@ -10,47 +10,71 @@ metadata:
     app.fybrik.io/appNamespace: default
     app.fybrik.io/appName: notebook
 spec:
-  blueprints:
-    thegreendragon:
-      entrypoint: "MyApp"
-      flow:
-        name: notebook
-        steps:
-        - arguments:
-            copy:
-              destination:
-                connection:
-                  name: S3
-                  s3:
-                    bucket: my-bucket
-                    endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
-                    object_key: my-object
-                  type: 2
-                vault:
-                  address: http://vault.fybrik-system:8200
-                  authPath: /v1/auth/kubernetes/login
-                  role: module
-                  secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
-                format: parquet
-              source:
-                connection:
-                  db2:
-                    port: "5000"
-                    table: SMALL
-                    database: MYDB
-                    url: mydb
-                    ssl: "true"
-                vault:
-                  address: http://vault.fybrik-system:8200
-                  authPath: /v1/auth/kubernetes/login
-                  role: module
-                  secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
-                format: table
-          name: implicit-copy-batch-latest
-          template: implicit-copy-batch-latest
-      templates:
-      - kind: FybrikModule
-        name: implicit-copy-batch-latest
+  assets:
+  - assetId: "S3"  # dataset requested by user
+    credentials:
+      read:
+        vault:
+          address: http://vault.fybrik-system:8200
+          authPath: /v1/auth/kubernetes/login
+          role: module
+          secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
+    connection:
+      s3:
+        bucket: my-bucket
+        endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
+        object_key: my-object
+      type: 2
+    dataformat: parquet
+  - assetId: "DB2"  # dataset requested by user
+    credentials:
+      read:
+        vault:
+          address: http://vault.fybrik-system:8200
+          authPath: /v1/auth/kubernetes/login
+          role: module
+          secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
+    connection:
+      db2:
+        port: "5000"
+        table: SMALL
+        database: MYDB
+        url: mydb
+        ssl: "true"
+    dataformat: table
+  flows:
+  - name: notebook
+    flowType: copy
+    assetId: "DB2"
+    subflows:
+    - name: subflow-copy
+      flowType: copy
+      triggers:
+      - workload
+      steps:
+      - - name: step1
+          cluster: thegreendragon
+          template: copyTemplate
+          parameters:
+            source:
+              assetId: "DB2"
+            sink:
+              assetId: "S3"
+  templates:
+    - name: copyTemplate
+      modules:
+      - name: implicit-copy-batch-latest
+        kind: FybrikModule
+        type: service
         chart:
-          name: localhost:5000/fybrik-system/fybrik-implicit-copy-batch:0.1.0
+          name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
+        capabilities:
+        - capability: copy
+          scope: workload
+          actions:   # Not being used in current scenario
+            - id: redact-ID
+              level: 2  # column
+            - id: removed-ID
+              level: 2  # column
+
   selector: {}
