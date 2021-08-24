@@ -38,7 +38,7 @@ func main() {
 	// 	return
 	// }
 
-	mainPolicyManagerURL := "http://v2-opa-ctr.fybrik-system:8081"
+	mainPolicyManagerURL := "http://openapi-opa-conn.fybrik-system:80"
 	policyManager, err := connectors.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
 	if err != nil {
 		return

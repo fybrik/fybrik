@@ -1,5 +1,5 @@
 ROOT_DIR := ../..
-DOCKER_NAME = openpolicyagent-connector
+DOCKER_NAME = openapi-opa-conn
 
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/docker.mk
@@ -10,9 +10,9 @@ NEED_TEST_COVERAGE_STATISTICS=1
 NEED_TEST_COVERAGE_STATISTICS_IN_HTML=0
 
 docker-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o openpolicyagent-connector main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o openapi-opa-conn main.go
 	docker build . -t $(IMG)
-	rm openpolicyagent-connector
+	rm openapi-opa-conn
 
 .PHONY: deploy
 deploy:

@@ -3,9 +3,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: v2-opa-ctr
+  name: openapi-opa-conn
   labels:
-    app.kubernetes.io/component: v2-opa-ctr
+    app.kubernetes.io/component: openapi-opa-conn
     {{- include "fybrik.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.openPolicyAgentConnector.autoscaling.enabled }}
@@ -13,7 +13,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      app.kubernetes.io/component: v2-opa-ctr
+      app.kubernetes.io/component: openapi-opa-conn
       {{- include "fybrik.selectorLabels" . | nindent 6 }}
   template:
     metadata:
@@ -23,7 +23,7 @@ spec:
       {{- end }}
       labels:
         fybrik.io/componentType: connector
-        app.kubernetes.io/component: v2-opa-ctr
+        app.kubernetes.io/component: openapi-opa-conn
         {{- include "fybrik.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.global.imagePullSecrets }}
@@ -34,7 +34,7 @@ spec:
       securityContext:
         {{- toYaml .Values.openPolicyAgentConnector.podSecurityContext | nindent 8 }}
       containers:
-        - name: v2-opa-connector
+        - name: openapi-opa-conn
           securityContext:
             {{- toYaml .Values.openPolicyAgentConnector.securityContext | nindent 12 }}
           image: {{ include "fybrik.image" ( tuple $ .Values.openPolicyAgentConnector ) }}
@@ -45,7 +45,7 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: v2-opa-ctr-config
+                name: openapi-opa-conn-config
           resources:
             {{- toYaml .Values.openPolicyAgentConnector.resources | nindent 12 }}
       {{- with .Values.openPolicyAgentConnector.nodeSelector }}
