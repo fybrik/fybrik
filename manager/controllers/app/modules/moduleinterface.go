@@ -46,6 +46,7 @@ type ModuleInstanceSpec struct {
 	AssetIDs    []string
 	ClusterName string
 	ModuleName  string
+	Scope       app.CapabilityScope
 }
 
 // Selector is responsible for finding an appropriate module
@@ -84,16 +85,20 @@ func (m *Selector) GetError() string {
 // AddModuleInstances creates module instances for the selected module and its dependencies
 func (m *Selector) AddModuleInstances(args *app.ModuleArguments, item DataInfo, cluster string) []ModuleInstanceSpec {
 	instances := make([]ModuleInstanceSpec, 0)
+	AssetIDs := make([]string, 0)
+	AssetIDs = append(AssetIDs, item.Context.DataSetID)
 	// append moduleinstances to the list
 	instances = append(instances, ModuleInstanceSpec{
-		AssetID:     item.Context.DataSetID,
+		AssetIDs:    AssetIDs,
 		Module:      m.GetModule(),
 		Args:        args,
 		ClusterName: cluster,
 	})
 	for _, dep := range m.GetDependencies() {
+		AssetIDs := make([]string, 0)
+		AssetIDs = append(AssetIDs, item.Context.DataSetID)
 		instances = append(instances, ModuleInstanceSpec{
-			AssetID:     item.Context.DataSetID,
+			AssetIDs:    AssetIDs,
 			Module:      dep,
 			Args:        args,
 			ClusterName: cluster,

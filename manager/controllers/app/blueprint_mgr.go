@@ -19,7 +19,9 @@ func (r *PlotterReconciler) RefineInstances(instances []modules.ModuleInstanceSp
 	// map instances to be unified, according to the cluster and module
 	instanceMap := make(map[string]modules.ModuleInstanceSpec)
 	for _, moduleInstance := range instances {
-		if moduleInstance.Args.Copy != nil {
+		// If the module scope if of type "asset" then avoid trying to unify it with another module.
+		// Copy module is assumed to be of "asset" scope
+		if moduleInstance.Scope == app.Asset {
 			newInstances = append(newInstances, moduleInstance)
 			continue
 		}

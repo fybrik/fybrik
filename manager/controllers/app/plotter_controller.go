@@ -126,8 +126,8 @@ type PlotterModulesSpec struct {
 	ModuleName      string
 	ModuleArguments *app.StepParameters
 	FlowType        app.DataFlow
-	IsPrimaryModule bool
 	Chart           app.ChartSpec
+	Scope           app.CapabilityScope
 }
 
 // convertPlotterModuleToBlueprintModule converts an object of type PlotterModulesSpec to type modules.ModuleInstanceSpec
@@ -139,15 +139,14 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		AssetIDs:    AssetIDs,
 		ClusterName: plotterModule.ClusterName,
 		ModuleName:  plotterModule.ModuleName,
+		Scope:       plotterModule.Scope,
 	}
 
-	// if this module is not primary i.e., it is of type "plugin"
-	// then it has no arguments
-	if !plotterModule.IsPrimaryModule {
+	if plotterModule.ModuleArguments == nil {
 		return blueprintModule
 	}
 
-	if plotterModule.FlowType == "read" {
+	if plotterModule.FlowType == app.ReadFlow {
 		var dataStore *app.DataStore
 		if plotterModule.ModuleArguments.Source.AssetID != "" {
 			assetId := plotterModule.ModuleArguments.Source.AssetID
@@ -158,7 +157,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
 				Connection: *serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
-				Format:     plotterModule.ModuleArguments.Source.API.Endpoint.Scheme,
+				Format:     plotterModule.ModuleArguments.Source.API.Format,
 			}
 		}
 		blueprintModule.Args.Read = []app.ReadModuleArgs{
@@ -168,14 +167,15 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 				Transformations: plotterModule.ModuleArguments.Actions,
 			},
 		}
-	} else if plotterModule.FlowType == "write" {
+	} else if plotterModule.FlowType == app.WriteFlow {
 		blueprintModule.Args.Write = []app.WriteModuleArgs{
 			{
 				Destination:     plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore,
+				AssetID:         plotterModule.AssetID,
 				Transformations: plotterModule.ModuleArguments.Actions,
 			},
 		}
-	} else if plotterModule.FlowType == "copy" {
+	} else if plotterModule.FlowType == app.CopyFlow {
 		var dataStore *app.DataStore
 		if plotterModule.ModuleArguments.Source.AssetID != "" {
 			assetId := plotterModule.ModuleArguments.Source.AssetID
@@ -186,17 +186,37 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
 				Connection: *serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
-				Format:     plotterModule.ModuleArguments.Source.API.Endpoint.Scheme,
+				Format:     plotterModule.ModuleArguments.Source.API.Format,
 			}
 		}
 		blueprintModule.Args.Copy =
 			&app.CopyModuleArgs{
 				Source:          *dataStore,
 				Destination:     plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore,
+				AssetID:         plotterModule.AssetID,
 				Transformations: plotterModule.ModuleArguments.Actions,
 			}
 	}
 	return blueprintModule
+}
+
+// getModuleScope returns the scope of the module given the data flow type of the module and the module
+// capabilities.
+func (r *PlotterReconciler) getModuleScope(capabilities []app.ModuleCapability, moduleFlow app.DataFlow) app.CapabilityScope {
+	var scope app.CapabilityScope
+	for _, capability := range capabilities {
+		// It is assumed that all capabilities of the same type have the same scope
+		if capability.Capability == app.CapabilityType(moduleFlow) {
+			scope = capability.Scope
+			if capability.Scope == "" {
+				// If scope is not indicated it is assumed to be asset
+				scope = app.Asset
+			}
+			return scope
+		}
+	}
+	// ??? we should not get here
+	return app.Asset
 }
 
 // getBlueprintsMap constructs a map of blueprints driven by the plotter structure.
@@ -212,16 +232,23 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]ap
 					stepTemplate, _ := plotter.Spec.Templates[seqStep.Template]
 					isPrimaryModule := true
 					for _, module := range stepTemplate.Modules {
+						moduleArgs := seqStep.Parameters
+
+						// If the module type is "plugin" then it is assumed
+						// that there is a primary module of type "config" or "service"
+						// in the same template and all the module arguments are used only by
+						// the primary module
 						if module.Type == "plugin" {
-							isPrimaryModule = false
+							moduleArgs = nil
 						}
+						scope := r.getModuleScope(module.Capabilities, subFlow.FlowType)
 						plotterModule := PlotterModulesSpec{
-							ModuleArguments: seqStep.Parameters,
+							ModuleArguments: moduleArgs,
 							AssetID:         flow.AssetID,
 							FlowType:        subFlow.FlowType,
-							IsPrimaryModule: isPrimaryModule,
 							ClusterName:     seqStep.Cluster,
 							ModuleName:      module.Name,
+							Scope:           scope,
 						}
 						blueprintModule := r.convertPlotterModuleToBlueprintModule(plotter, plotterModule)
 						// append the module to the modules list
@@ -262,13 +289,13 @@ func (r *PlotterReconciler) updatePlotterAssetsState(plotterStatus *app.PlotterS
 }
 
 // setPlotterAssetsReadyStateToFalse sets to false the status of the assets processed by the blueprint modules.
-func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(plotterStatus *app.PlotterStatus, BlueprintSpec *app.BlueprintSpec) {
+func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(plotterStatus *app.PlotterStatus, BlueprintSpec *app.BlueprintSpec, errMsg string) {
 	for _, module := range BlueprintSpec.Modules {
 		for _, assetID := range module.AssetIDs {
-			var err string
+			var err = errMsg
 			state, exists := plotterStatus.Assets[assetID]
 			if exists {
-				err = state.Error
+				err = state.Error + err
 				delete(plotterStatus.Assets, assetID)
 			}
 
@@ -307,7 +334,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			if err != nil {
 				r.Log.Error(err, "Could not fetch blueprint", "name", blueprint.Name)
 				errorCollection = append(errorCollection, err)
-				r.setPlotterAssetsReadyStateToFalse(&plotter.Status, &blueprintSpec)
+				r.setPlotterAssetsReadyStateToFalse(&plotter.Status, &blueprintSpec, err.Error())
 				isReady = false
 				continue
 			}
@@ -315,7 +342,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			if remoteBlueprint == nil {
 				r.Log.Info("Could not yet find remote blueprint")
 				isReady = false
-				r.setPlotterAssetsReadyStateToFalse(&plotter.Status, &blueprintSpec)
+				r.setPlotterAssetsReadyStateToFalse(&plotter.Status, &blueprintSpec, "Could not yet find remote blueprint")
 				continue // Continue with next blueprint
 			}
 
@@ -334,14 +361,14 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 						r.Log.Error(err, "Could not update blueprint", "newSpec", blueprintSpec)
 						errorCollection = append(errorCollection, err)
 						isReady = false
-						r.setPlotterAssetsReadyStateToFalse(&plotter.Status, &blueprintSpec)
+						r.setPlotterAssetsReadyStateToFalse(&plotter.Status, &blueprintSpec, err.Error())
 						continue
 					}
 					// Update meta blueprint without state as changes occur
 					plotter.Status.Blueprints[cluster] = app.CreateMetaBlueprintWithoutState(remoteBlueprint)
 					// Plotter cannot be ready if changes were just applied
 					isReady = false
-					r.setPlotterAssetsReadyStateToFalse(&plotter.Status, &blueprintSpec)
+					r.setPlotterAssetsReadyStateToFalse(&plotter.Status, &blueprintSpec, "Blueprint changes just applied")
 					continue // Continue with next blueprint
 				}
 				r.Log.V(1).Info("Not updating blueprint as generation did not change")
@@ -387,11 +414,13 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			if err != nil {
 				errorCollection = append(errorCollection, err)
 				r.Log.Error(err, "Could not create blueprint for cluster", "cluster", cluster)
+				r.setPlotterAssetsReadyStateToFalse(&plotter.Status, &blueprintSpec, err.Error())
 				continue
 			}
 
 			plotter.Status.Blueprints[cluster] = app.CreateMetaBlueprintWithoutState(blueprint)
 			isReady = false
+			r.setPlotterAssetsReadyStateToFalse(&plotter.Status, &blueprintSpec, "Blueprint just created")
 		}
 	}
 
@@ -425,14 +454,6 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			now := metav1.NewTime(time.Now())
 			plotter.Status.ReadyTimestamp = &now
 		}
-
-		aggregatedInstructions := ""
-		for _, blueprint := range plotter.Status.Blueprints {
-			if len(blueprint.Status.ObservedState.DataAccessInstructions) > 0 {
-				aggregatedInstructions = aggregatedInstructions + blueprint.Status.ObservedState.DataAccessInstructions + "\n"
-			}
-		}
-		plotter.Status.ObservedState.DataAccessInstructions = aggregatedInstructions
 
 		if errorCollection == nil {
 			r.Log.V(2).Info("Plotter is ready!", "plotter", plotter.Name)

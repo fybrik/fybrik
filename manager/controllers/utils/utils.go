@@ -89,8 +89,8 @@ func CreateDataSetIdentifier(datasetID string) string {
 }
 
 // Generating release name based on blueprint module
-func GetReleaseName(applicationName string, namespace string, blueprintModule app.BlueprintModule) string {
-	return GetReleaseNameByStepName(applicationName, namespace, blueprintModule.InstanceName)
+func GetReleaseName(applicationName string, namespace string, instanceName string) string {
+	return GetReleaseNameByStepName(applicationName, namespace, instanceName)
 }
 
 // Generate release name from blueprint module name

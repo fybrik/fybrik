@@ -28,6 +28,10 @@ type AssetDetails struct {
 type Service struct {
 	//+required
 	Endpoint EndpointSpec `json:"endpoint"`
+
+	// Format represents data format (e.g. parquet) as received from catalog connectors
+	// +required
+	Format string `json:"format"`
 }
 
 // StepSource is the source of this step: it could be assetID
