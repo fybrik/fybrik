@@ -152,7 +152,7 @@ func (r *OpaReader) GetOPADecisions(in *openapiclientmodels.PolicyManagerRequest
 		return openapiclientmodels.PolicyManagerResponse{}, fmt.Errorf("error during marshal in GetOPADecisions: %v", err)
 	}
 	inputJSON := "{ \"input\": " + string(b) + " }"
-	fmt.Println("updated stringified policy manager request iun GetOPADecisions", inputJSON)
+	fmt.Println("updated stringified policy manager request in GetOPADecisions", inputJSON)
 
 	opaEval, err := EvaluatePoliciesOnInput(inputJSON, r.opaServerURL, policyToBeEvaluated)
 	if err != nil {
