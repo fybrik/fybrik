@@ -43,7 +43,7 @@ type ModuleInstanceSpec struct {
 	Module      *app.FybrikModule
 	Chart       *app.ChartSpec
 	Args        *app.ModuleArguments
-	AssetID     string
+	AssetIDs    []string
 	ClusterName string
 	ModuleName  string
 }

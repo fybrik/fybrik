@@ -222,6 +222,20 @@ func SetMapField(obj map[string]interface{}, k string, v interface{}) bool {
 	return true
 }
 
+// updateModuleState updates the module state
+func (r *BlueprintReconciler) updateModuleState(blueprint *app.Blueprint, InstanceName string, isReady bool, err string) {
+	if moduleState, exists := blueprint.Status.ModulesState[InstanceName]; exists {
+		err = err + moduleState.Error
+	}
+
+	state := app.ObservedState{
+		Ready: isReady,
+		Error: err,
+	}
+	blueprint.Status.ModulesState[InstanceName] = state
+
+}
+
 func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, blueprint *app.Blueprint) (ctrl.Result, error) {
 	// Gather all templates and process them into a list of resources to apply
 	// force-update if the blueprint spec is different
@@ -230,20 +244,22 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 	// reset blueprint state
 	blueprint.Status.ObservedState.Ready = false
 	blueprint.Status.ObservedState.Error = ""
-	blueprint.Status.ObservedState.DataAccessInstructions = ""
 	if blueprint.Status.Releases == nil {
 		blueprint.Status.Releases = map[string]int64{}
 	}
-
+	if blueprint.Status.ModulesState == nil {
+		blueprint.Status.ModulesState = make(map[string]app.ObservedState)
+	}
 	// count the overall number of Helm releases and how many of them are ready
 	numReleases, numReady := 0, 0
-	for _, module := range blueprint.Spec.Modules {
+	for instanceName, module := range blueprint.Spec.Modules {
 		// Get arguments by type
 		var args map[string]interface{}
 		args, err := utils.StructToMap(module.Arguments)
 		if err != nil {
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
+
 		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], module)
 		log.V(0).Info("Release name: " + releaseName)
 		numReleases++
@@ -255,15 +271,16 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 			chart := module.Chart
 			if _, err := r.applyChartResource(log, chart, args, blueprint, releaseName); err != nil {
 				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
+				r.updateModuleState(blueprint, instanceName, false, err.Error())
+
 			}
 		} else if rel.Info.Status == release.StatusDeployed {
-			if len(module.Arguments.Read) > 0 {
-				blueprint.Status.ObservedState.DataAccessInstructions += rel.Info.Notes
-			}
 			status, errMsg := r.checkReleaseStatus(releaseName, blueprint.Namespace)
 			if status == corev1.ConditionFalse {
 				blueprint.Status.ObservedState.Error += "ResourceAllocationFailure: " + errMsg + "\n"
+				r.updateModuleState(blueprint, instanceName, false, errMsg)
 			} else if status == corev1.ConditionTrue {
+				r.updateModuleState(blueprint, instanceName, true, "")
 				numReady++
 			}
 		}

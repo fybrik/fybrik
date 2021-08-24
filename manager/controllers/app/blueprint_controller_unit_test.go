@@ -86,11 +86,10 @@ func TestBlueprintReconcile(t *testing.T) {
 func TestShortReleaseName(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
-	modules := []app.BlueprintModule{{
-		Name:         "dataFlow",
-		InstanceName: "dataFlowInstance1",
-		Chart:        app.ChartSpec{Name: "thechart"},
-		Arguments:    app.ModuleArguments{},
+	modules := map[string]app.BlueprintModule{"dataFlowInstance1": {
+		Name:      "dataFlow",
+		Chart:     app.ChartSpec{Name: "thechart"},
+		Arguments: app.ModuleArguments{},
 	}}
 
 	blueprint := app.Blueprint{
@@ -106,7 +105,7 @@ func TestShortReleaseName(t *testing.T) {
 			Modules: modules,
 		},
 	}
-	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Modules[0])
+	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Modules["dataFlowInstance1"])
 	g.Expect(relName).To(gomega.Equal("my-app-default-dataFlowInstance1"))
 }
 
@@ -124,7 +123,7 @@ func TestLongReleaseName(t *testing.T) {
 		},
 		Spec: app.BlueprintSpec{
 			Cluster: "cluster1",
-			Modules: []app.BlueprintModule{{Name: "longname", InstanceName: "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff", Chart: app.ChartSpec{Name: "start-image"}}},
+			Modules: map[string]app.BlueprintModule{"ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff": {Name: "longname", Chart: app.ChartSpec{Name: "start-image"}}},
 		},
 	}
 

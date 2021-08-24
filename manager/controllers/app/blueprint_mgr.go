@@ -64,20 +64,20 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []modules.ModuleInstance
 
 	spec.Cluster = clusterName
 
-	// Create the list of BlueprintModules
+	// Create the map that contains BlueprintModules
 
-	var blueprintModules []app.BlueprintModule
+	var blueprintModules = make(map[string]app.BlueprintModule)
 	for _, moduleInstance := range instances {
 		modulename := moduleInstance.ModuleName
 
 		var blueprintModule app.BlueprintModule
-		blueprintModule.InstanceName = utils.CreateStepName(modulename, strings.Join(moduleInstance.AssetID, ",")) // Need unique name for each module so include ids for dataset
+		instanceName := utils.CreateStepName(modulename, strings.Join(moduleInstance.AssetIDs, ",")) // Need unique name for each module so include ids for dataset
 		blueprintModule.Name = modulename
 		blueprintModule.Arguments = *moduleInstance.Args
 		blueprintModule.Chart = *moduleInstance.Chart
 		blueprintModule.AssetIDs = make([]string, len(moduleInstance.AssetIDs))
 		copy(blueprintModule.AssetIDs, moduleInstance.AssetIDs)
-		blueprintModules = append(blueprintModules, blueprintModule)
+		blueprintModules[instanceName] = blueprintModule
 
 	}
 	spec.Modules = blueprintModules
