@@ -1,7 +1,7 @@
 FROM gcr.io/distroless/static:nonroot
 
-COPY openapi-opa-conn /
+COPY openpolicyagent-connector /
 
 EXPOSE 50082
 
-ENTRYPOINT ["/openapi-opa-conn"]
+ENTRYPOINT ["/openpolicyagent-connector"]

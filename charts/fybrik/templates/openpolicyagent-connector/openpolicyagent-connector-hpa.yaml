@@ -4,15 +4,15 @@
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: openapi-opa-conn
+  name: openpolicyagent-connector
   labels:
-    app.kubernetes.io/component: openapi-opa-conn
+    app.kubernetes.io/component: openpolicyagent-connector
     {{- include "fybrik.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: openapi-opa-conn
+    name: openpolicyagent-connector
   minReplicas: {{ .Values.openPolicyAgentConnector.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.openPolicyAgentConnector.autoscaling.maxReplicas }}
   metrics:

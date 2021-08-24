@@ -472,7 +472,7 @@ openPolicyAgentConnector:
   connectionTimeout:
 
   # Image name or a hub/image[:tag]
-  image: "ghcr.io/rohithdv/openapi-opa-conn:latest"
+  image: "ghcr.io/rohithdv/openpolicyagent-connector:latest"
 
   # Overrides `.global.imagePullPolicy`
   imagePullPolicy: ""
@@ -486,7 +486,7 @@ openPolicyAgentConnector:
     # Annotations to add to the service account
     annotations: {}
     # The name of the service account to use
-    name: openapi-opa-conn
+    name: openpolicyagent-connector
 
   podAnnotations: {}
 

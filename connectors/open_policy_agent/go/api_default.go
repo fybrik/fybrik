@@ -84,7 +84,7 @@ func contactOPA(input openapiclientmodels.PolicyManagerRequest, creds string) (o
 	if err != nil {
 		return openapiclientmodels.PolicyManagerResponse{}, fmt.Errorf("error during MarshalIndent of OPA decisions: %v", err)
 	}
-	log.Println("DefaultApiService.GetPoliciesDecisions: Received evaluation after execution of GetOPADecisions : " + string(jsonOutput))
+	log.Println("contactOPA: Received evaluation after execution of GetOPADecisions : " + string(jsonOutput))
 
 	return eval, nil
 }
