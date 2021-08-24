@@ -13,6 +13,21 @@ manager:
   # Set to true to enable socat in the manager pod to forward
   # traffic from a localhost registry. Used only for development and integration tests.
   socat: true
+  extraEnvs:
+  - name: APPLICATION_CONCURRENT_RECONCILES
+    value: "5"
+  - name: BLUEPRINT_CONCURRENT_RECONCILES
+    value: "20"
+  - name: PLOTTER_CONCURRENT_RECONCILES
+    value: "2"
+  - name: BATCHTRANSFER_CONCURRENT_RECONCILES
+    value: "1"
+  - name: STREAMTRANSFER_CONCURRENT_RECONCILES
+    value: "1"
+  - name: CLIENT_QPS
+    value: "100.0"
+  - name: CLIENT_BURST
+    value: "200"
 
 # OPA connector component
 opaConnector:

@@ -72,7 +72,13 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		&corev1.PersistentVolumeClaim{}: {Field: workerNamespaceSelector},
 	}
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	client := ctrl.GetConfigOrDie()
+	client.QPS = utils.GetEnvAsFloat32("CLIENT_QPS", 100.0)
+	client.Burst = utils.GetEnvAsInt("CLIENT_BURST", 200)
+
+	setupLog.Info("Manager client rate limits:", "qps", client.QPS, "burst", client.Burst)
+
+	mgr, err := ctrl.NewManager(client, ctrl.Options{
 		Scheme:             scheme,
 		Namespace:          namespace,
 		MetricsBindAddress: metricsAddr,

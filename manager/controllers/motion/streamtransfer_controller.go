@@ -6,12 +6,13 @@ package motion
 import (
 	"context"
 	"fmt"
-
+	"fybrik.io/fybrik/manager/controllers/utils"
 	apps "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
 )
@@ -130,7 +131,10 @@ func (reconciler *StreamTransferReconciler) Reconcile(ctx context.Context, req c
 }
 
 func (reconciler *StreamTransferReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	numReconciles := utils.GetEnvAsInt("STREAMTRANSFER_CONCURRENT_RECONCILES", 1)
+
 	return ctrl.NewControllerManagedBy(mgr).
+		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
 		For(&motionv1.StreamTransfer{}).
 		Owns(&apps.Deployment{}).
 		Complete(reconciler)

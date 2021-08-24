@@ -6,6 +6,8 @@ package app
 import (
 	"context"
 	"fmt"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"strconv"
 	"strings"
 	"time"
 
@@ -319,7 +321,12 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		},
 	}
 
+	numReconciles := utils.GetEnvAsInt("BLUEPRINT_CONCURRENT_RECONCILES", 5)
+
+	mgr.GetLogger().Info("Concurrent blueprint reconciles " + strconv.Itoa(numReconciles))
+
 	return ctrl.NewControllerManagedBy(mgr).
+		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
 		For(&app.Blueprint{}).
 		WithEventFilter(p).
 		Complete(r)

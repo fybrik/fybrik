@@ -6,6 +6,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"strings"
 	"time"
 
@@ -490,7 +491,11 @@ func (r *FybrikApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			}},
 		}
 	}
+
+	numReconciles := utils.GetEnvAsInt("APPLICATION_CONCURRENT_RECONCILES", 5)
+
 	return ctrl.NewControllerManagedBy(mgr).
+		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
 		For(&api.FybrikApplication{}).
 		Watches(&source.Kind{
 			Type: &api.Plotter{},

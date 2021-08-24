@@ -5,8 +5,10 @@ package app
 
 import (
 	"context"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"math"
 	"reflect"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"strings"
 	"time"
 
@@ -302,7 +304,10 @@ func NewPlotterReconciler(mgr ctrl.Manager, name string, manager multicluster.Cl
 
 // SetupWithManager registers Plotter controller
 func (r *PlotterReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	numReconciles := utils.GetEnvAsInt("PLOTTER_CONCURRENT_RECONCILES", 5)
+
 	return ctrl.NewControllerManagedBy(mgr).
+		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
 		For(&app.Plotter{}).
 		Complete(r)
 }
