@@ -69,7 +69,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 		})
 		It("Test end-to-end for FybrikApplication", func() {
 			if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
-				return
+				Skip("Skipping test when not running with mockup connector!")
 			}
 			module := &apiv1alpha1.FybrikModule{}
 			Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
