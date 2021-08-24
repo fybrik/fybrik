@@ -53,6 +53,7 @@ func TestMain(m *testing.M) {
 
 	tu.EnvValues["CATALOG_CONNECTOR_URL"] = "localhost:" + "50085"
 	tu.EnvValues["OPA_SERVER_URL"] = "localhost:" + "8383"
+	tu.EnvValues["CATALOG_PROVIDER_NAME"] = "dummy_catalog"
 
 	go tu.MockCatalogConnector(50085)
 	time.Sleep(5 * time.Second)
