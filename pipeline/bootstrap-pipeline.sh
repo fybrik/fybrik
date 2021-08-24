@@ -576,7 +576,7 @@ EOH
     echo "debug: events"
     kubectl get events
     echo "debug: taskruns"
-    for i in $(kubectl get taskrun --no-headers | grep "False" | cut -d' ' -f1); do kubectl logs -l tekton.dev/taskRun=$i --all-containers; done
+    for i in $(kubectl get taskrun --no-headers | grep "False" | cut -d' ' -f1); do kubectl logs -l tekton.dev/taskRun=$i --all-containers --since=0s; tkn taskrun logs $i; done
     set +e
     kubectl get pipelinerun --no-headers | grep "True"
     rc=$?
