@@ -130,8 +130,8 @@ type PlotterModulesSpec struct {
 	Chart           app.ChartSpec
 }
 
-// ConvertPlotterModuleToBlueprintModule converts an object of type PlotterModulesSpec to type modules.ModuleInstanceSpec
-func (r *PlotterReconciler) ConvertPlotterModuleToBlueprintModule(plotter *app.Plotter, plotterModule PlotterModulesSpec) *modules.ModuleInstanceSpec {
+// convertPlotterModuleToBlueprintModule converts an object of type PlotterModulesSpec to type modules.ModuleInstanceSpec
+func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.Plotter, plotterModule PlotterModulesSpec) *modules.ModuleInstanceSpec {
 	AssetIDs := make([]string, 0)
 	AssetIDs = append(AssetIDs, plotterModule.AssetID)
 	blueprintModule := &modules.ModuleInstanceSpec{
@@ -199,22 +199,17 @@ func (r *PlotterReconciler) ConvertPlotterModuleToBlueprintModule(plotter *app.P
 	return blueprintModule
 }
 
-// constructBlueprints constructs a list of blueprint modules driven by the plotter steps.
-func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) (map[string]app.BlueprintSpec, error) {
-	r.Log.V(1).Info("Constructing Modules list")
+// getBlueprintsMap constructs a map of blueprints driven by the plotter structure.
+// The key is the cluster name.
+func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]app.BlueprintSpec {
+	r.Log.V(1).Info("Constructing Blueprints from Plotter")
 	moduleInstances := make([]modules.ModuleInstanceSpec, 0)
 
 	for _, flow := range plotter.Spec.Flows {
 		for _, subFlow := range flow.SubFlows {
 			for _, subFlowStep := range subFlow.Steps {
 				for _, seqStep := range subFlowStep.Steps {
-					stepTemplate, exists := plotter.Spec.Templates[seqStep.Template]
-					// Should we check for an error here or assume it always exists?
-					if !exists {
-						err := errors.New("Module template " + seqStep.Template + "does not appear in template list")
-						r.Log.Error(err, err.Error())
-						return nil, err
-					}
+					stepTemplate, _ := plotter.Spec.Templates[seqStep.Template]
 					isPrimaryModule := true
 					for _, module := range stepTemplate.Modules {
 						if module.Type == "plugin" {
@@ -228,7 +223,7 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) (map[string]a
 							ClusterName:     seqStep.Cluster,
 							ModuleName:      module.Name,
 						}
-						blueprintModule := r.ConvertPlotterModuleToBlueprintModule(plotter, plotterModule)
+						blueprintModule := r.convertPlotterModuleToBlueprintModule(plotter, plotterModule)
 						// append the module to the modules list
 						moduleInstances = append(moduleInstances, *blueprintModule)
 
@@ -240,24 +235,24 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) (map[string]a
 	}
 	blueprints := r.GenerateBlueprints(moduleInstances)
 
-	return blueprints, nil
+	return blueprints
 }
 
-// updateAssetsStatus updates the status of the assets processed by the blueprint modules.
-func (r *PlotterReconciler) updateAssetsStatus(remoteBlueprint *app.Blueprint, assetIDsToStatePerBlueprintMap map[string]app.ObservedState) {
-	for instanceName, moduleState := range remoteBlueprint.Status.ModulesState {
-		for _, assetID := range remoteBlueprint.Spec.Modules[instanceName].AssetIDs {
-			state, exists := assetIDsToStatePerBlueprintMap[assetID]
+// updatePlotterAssetsState updates the status of the plotter assets processed by the blueprint modules.
+func (r *PlotterReconciler) updatePlotterAssetsState(plotterStatus *app.PlotterStatus, blueprint *app.Blueprint) {
+	for instanceName, moduleState := range blueprint.Status.ModulesState {
+		for _, assetID := range blueprint.Spec.Modules[instanceName].AssetIDs {
+			state, exists := plotterStatus.Assets[assetID]
 			errMsg := moduleState.Error
 			if exists {
 				errMsg = state.Error + errMsg
 			}
 			if !exists {
-				assetIDsToStatePerBlueprintMap[assetID] = moduleState
+				plotterStatus.Assets[assetID] = moduleState
 				// if the current module is not ready then update all its assets
 				// to not ready state regardless of the assets state
 			} else if moduleState.Ready == false {
-				assetIDsToStatePerBlueprintMap[assetID] = app.ObservedState{
+				plotterStatus.Assets[assetID] = app.ObservedState{
 					Ready: false,
 					Error: errMsg,
 				}
@@ -266,18 +261,18 @@ func (r *PlotterReconciler) updateAssetsStatus(remoteBlueprint *app.Blueprint, a
 	}
 }
 
-// setAssetsReadyStateToFalse set to false the status of the assets processed by the blueprint modules.
-func (r *PlotterReconciler) setAssetsReadyStateToFalse(BlueprintSpec *app.BlueprintSpec, assetIDsToStatePerBlueprintMap map[string]app.ObservedState) {
+// setPlotterAssetsReadyStateToFalse sets to false the status of the assets processed by the blueprint modules.
+func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(plotterStatus *app.PlotterStatus, BlueprintSpec *app.BlueprintSpec) {
 	for _, module := range BlueprintSpec.Modules {
 		for _, assetID := range module.AssetIDs {
 			var err string
-			state, exists := assetIDsToStatePerBlueprintMap[assetID]
+			state, exists := plotterStatus.Assets[assetID]
 			if exists {
 				err = state.Error
-				delete(assetIDsToStatePerBlueprintMap, assetID)
+				delete(plotterStatus.Assets, assetID)
 			}
 
-			assetIDsToStatePerBlueprintMap[assetID] = app.ObservedState{
+			plotterStatus.Assets[assetID] = app.ObservedState{
 				Ready: false,
 				Error: err,
 			}
@@ -294,19 +289,14 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 		plotter.Status.Assets = make(map[string]app.ObservedState)
 	}
 
-	assetIDsToStatePerBlueprintMap := make(map[string]app.ObservedState)
+	// Reset Assets state
+	plotter.Status.Assets = make(map[string]app.ObservedState)
 	plotter.Status.ObservedState.Error = "" // Reset error state
 	// Reconciliation loop per cluster
 	isReady := true
 
-	blueprintsMap, err := r.getBlueprintsMap(plotter)
+	blueprintsMap := r.getBlueprintsMap(plotter)
 	var errorCollection []error
-	if err != nil {
-		r.Log.Error(err, "Could not construct blueprints from plotter")
-		errorCollection = append(errorCollection, err)
-		isReady = false
-		return ctrl.Result{RequeueAfter: 5 * time.Second}, errorCollection
-	}
 
 	for cluster, blueprintSpec := range blueprintsMap {
 		r.Log.V(1).Info("Handling spec for cluster " + cluster)
@@ -317,6 +307,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			if err != nil {
 				r.Log.Error(err, "Could not fetch blueprint", "name", blueprint.Name)
 				errorCollection = append(errorCollection, err)
+				r.setPlotterAssetsReadyStateToFalse(&plotter.Status, &blueprintSpec)
 				isReady = false
 				continue
 			}
@@ -324,6 +315,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			if remoteBlueprint == nil {
 				r.Log.Info("Could not yet find remote blueprint")
 				isReady = false
+				r.setPlotterAssetsReadyStateToFalse(&plotter.Status, &blueprintSpec)
 				continue // Continue with next blueprint
 			}
 
@@ -342,19 +334,19 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 						r.Log.Error(err, "Could not update blueprint", "newSpec", blueprintSpec)
 						errorCollection = append(errorCollection, err)
 						isReady = false
-						r.setAssetsReadyStateToFalse(&blueprintSpec, assetIDsToStatePerBlueprintMap)
+						r.setPlotterAssetsReadyStateToFalse(&plotter.Status, &blueprintSpec)
 						continue
 					}
 					// Update meta blueprint without state as changes occur
 					plotter.Status.Blueprints[cluster] = app.CreateMetaBlueprintWithoutState(remoteBlueprint)
 					// Plotter cannot be ready if changes were just applied
 					isReady = false
-					r.setAssetsReadyStateToFalse(&blueprintSpec, assetIDsToStatePerBlueprintMap)
+					r.setPlotterAssetsReadyStateToFalse(&plotter.Status, &blueprintSpec)
 					continue // Continue with next blueprint
 				}
 				r.Log.V(1).Info("Not updating blueprint as generation did not change")
 				isReady = false
-				r.setAssetsReadyStateToFalse(&blueprintSpec, assetIDsToStatePerBlueprintMap)
+				r.updatePlotterAssetsState(&plotter.Status, remoteBlueprint)
 				continue
 			}
 
@@ -370,7 +362,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			if remoteBlueprint.Status.ObservedState.Error != "" {
 				plotter.Status.ObservedState.Error = remoteBlueprint.Status.ObservedState.Error
 			}
-			r.updateAssetsStatus(remoteBlueprint, assetIDsToStatePerBlueprintMap)
+			r.updatePlotterAssetsState(&plotter.Status, remoteBlueprint)
 		} else {
 			r.Log.V(2).Info("Found no status for cluster " + cluster)
 			blueprint := &app.Blueprint{
@@ -427,7 +419,6 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	// Update observed generation
 	plotter.Status.ObservedGeneration = plotter.ObjectMeta.Generation
 	plotter.Status.ObservedState.Ready = isReady
-	plotter.Status.Assets = assetIDsToStatePerBlueprintMap
 
 	if isReady {
 		if plotter.Status.ReadyTimestamp == nil {

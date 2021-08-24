@@ -233,7 +233,6 @@ func (r *BlueprintReconciler) updateModuleState(blueprint *app.Blueprint, Instan
 		Error: err,
 	}
 	blueprint.Status.ModulesState[InstanceName] = state
-
 }
 
 func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, blueprint *app.Blueprint) (ctrl.Result, error) {
@@ -273,6 +272,8 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
 				r.updateModuleState(blueprint, instanceName, false, err.Error())
 
+			} else {
+				r.updateModuleState(blueprint, instanceName, false, "")
 			}
 		} else if rel.Info.Status == release.StatusDeployed {
 			status, errMsg := r.checkReleaseStatus(releaseName, blueprint.Namespace)

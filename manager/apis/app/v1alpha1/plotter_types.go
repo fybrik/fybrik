@@ -196,7 +196,7 @@ type Flow struct {
 // ModuleInfo is a copy of M4DModule Custom Resource.  It contains information
 // to instantiate resource of type M4DModule.
 type ModuleInfo struct {
-	// Name of the template
+	// Name of the module
 	// +required
 	Name string `json:"name"`
 
@@ -283,6 +283,8 @@ type PlotterStatus struct {
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 
+	// Flows is a map containing the status for each flow
+	// the key is the flow name
 	// +optional
 	Flows map[string]FlowStatus `json:"flows"`
 
