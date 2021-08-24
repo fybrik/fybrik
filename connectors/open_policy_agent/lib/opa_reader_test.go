@@ -31,6 +31,7 @@ func TestMainOpaConnector(t *testing.T) {
 	assert.NilError(t, err)
 
 	policyManagerResp, err := srv.GetOPADecisions(policyManagerReq, creds, catalogReader, policyToBeEvaluated)
+	assert.NilError(t, err)
 
 	datasets := applicationContext.GetDatasets()
 	op := datasets[0].GetOperation()

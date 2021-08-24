@@ -21,18 +21,17 @@ func NewOpaReader(opasrvurl string) *OpaReader {
 }
 
 func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *openapiclientmodels.PolicyManagerRequest, catalogMetadata map[string]interface{}) (*openapiclientmodels.PolicyManagerRequest, error) {
-
 	responseBytes, errJSON := json.MarshalIndent(catalogMetadata, "", "\t")
 	if errJSON != nil {
 		return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
 	}
 
-	var catalogJson interface{}
-	err := json.Unmarshal(responseBytes, &catalogJson)
+	var catalogJSON interface{}
+	err := json.Unmarshal(responseBytes, &catalogJSON)
 	if err != nil {
 		return nil, fmt.Errorf("error UnMarshalling WKC Catalog Connector Response: %v", err)
 	}
-	if main, ok := catalogJson.(map[string]interface{}); ok {
+	if main, ok := catalogJSON.(map[string]interface{}); ok {
 		if details, ok := main["details"].(map[string]interface{}); ok {
 			if metadata, ok := details["metadata"].(map[string]interface{}); ok {
 				if datasetTags, ok := metadata["dataset_tags"].([]interface{}); ok {
@@ -66,7 +65,6 @@ func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *openapiclient
 
 						if columnsMetadata, ok := val.(map[string]interface{}); ok {
 							if tagsList, ok := columnsMetadata["tags"].([]interface{}); ok {
-								lstOfValueTags = []string{}
 								for _, tagElem := range tagsList {
 									lstOfValueTags = append(lstOfValueTags, tagElem.(string))
 								}
@@ -113,14 +111,14 @@ func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *openapiclient
 					log.Println("******** res after: *******", res)
 					log.Println("******** in after: *******", *in)
 
-					log.Println("******** udpated policy manager resp object : *******")
+					log.Println("******** updated policy manager resp object : *******")
 					b, err := json.Marshal(*in)
 					if err != nil {
 						fmt.Println(err)
 						return nil, err
 					}
 					fmt.Println("stringified policy manager request", string(b))
-					log.Println("******** udpated policy manager resp object end : *******")
+					log.Println("******** updated policy manager resp object end : *******")
 				}
 			}
 		}
@@ -129,7 +127,6 @@ func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *openapiclient
 }
 
 func (r *OpaReader) GetOPADecisions(in *openapiclientmodels.PolicyManagerRequest, creds string, catalogReader *CatalogReader, policyToBeEvaluated string) (openapiclientmodels.PolicyManagerResponse, error) {
-
 	datasetsMetadata, err := catalogReader.GetDatasetsMetadataFromCatalog(in, creds)
 	if err != nil {
 		return openapiclientmodels.PolicyManagerResponse{}, err
@@ -159,7 +156,6 @@ func (r *OpaReader) GetOPADecisions(in *openapiclientmodels.PolicyManagerRequest
 	}
 	log.Println("OPA Eval : " + opaEval)
 
-	//operation := in.GetAction().ActionType
 	policyManagerResponse := new(openapiclientmodels.PolicyManagerResponse)
 	err = json.Unmarshal([]byte(opaEval), &policyManagerResponse)
 	if err != nil {

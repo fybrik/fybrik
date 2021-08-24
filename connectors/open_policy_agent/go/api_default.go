@@ -35,17 +35,18 @@ func getEnv(key string) string {
 	return value
 }
 
-func constructPolicyManagerRequest(inputString string) *openapiclientmodels.PolicyManagerRequest {
+func constructPolicyManagerRequest(inputString string) (*openapiclientmodels.PolicyManagerRequest, error) {
 	log.Println("inconstructPolicymanagerRequest")
 	log.Println("inputString")
 	log.Println(inputString)
 	var input openapiclientmodels.PolicyManagerRequest
-	json.Unmarshal([]byte(inputString), &input)
+	err := json.Unmarshal([]byte(inputString), &input)
+	if err != nil {
+		return nil, err
+	}
 	log.Printf("input: %v", input)
-	//resource := (&bird).GetResource()
-	//fmt.Println(fmt.Sprintf("bird creds: %v", (&resource).GetCreds()))
 
-	return &input
+	return &input, nil
 }
 
 func displayReq(input2 openapiclientmodels.PolicyManagerRequest) error {
@@ -59,7 +60,6 @@ func displayReq(input2 openapiclientmodels.PolicyManagerRequest) error {
 }
 
 func contactOPA(input openapiclientmodels.PolicyManagerRequest, creds string) (openapiclientmodels.PolicyManagerResponse, error) {
-
 	catalogConnectorAddress := getEnv("CATALOG_CONNECTOR_URL")
 	policyToBeEvaluated := "dataapi/authz/verdict"
 
@@ -96,12 +96,23 @@ func GetPoliciesDecisions(c *gin.Context) {
 	log.Printf("ctx.Request.body: %v", string(data))
 	log.Println("creds value is", c.Request.Header["X-Request-Cred"][0])
 
-	input2 := constructPolicyManagerRequest(string(data))
+	input2, err := constructPolicyManagerRequest(string(data))
+	if err != nil {
+		log.Println("Error during constructPolicyManagerRequest: ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{})
+		return
+	}
 	log.Printf("input2:")
-	displayReq(*input2)
+	err = displayReq(*input2)
+	if err != nil {
+		log.Println("Error during displayReq: ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{})
+		return
+	}
+
 	resp, err := contactOPA(*input2, c.Request.Header["X-Request-Cred"][0])
 	if err != nil {
-		log.Println("err: ", err)
+		log.Println("Error during contactOPA: ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{})
 		return
 	}

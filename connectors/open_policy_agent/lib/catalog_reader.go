@@ -39,12 +39,8 @@ func NewCatalogReader(address string, timeOut int) *CatalogReader {
 func (r *CatalogReader) GetDatasetsMetadataFromCatalog(in *openapiclientmodels.PolicyManagerRequest, creds string) (map[string]interface{}, error) {
 	datasetsMetadata := make(map[string]interface{})
 	catalogProviderName := getEnv("CATALOG_PROVIDER_NAME")
-	// creds := ((in.GetResource()).Creds)
-	// datasetID -> metadata of dataset in form of map
 	datasetID := (in.GetResource()).Name
-
 	if _, present := datasetsMetadata[datasetID]; !present {
-
 		connectionURL := r.catalogConnectorAddress
 		connectionTimeout := time.Duration(r.timeOut) * time.Second
 		log.Println("creds in GetDatasetsMetadataFromCatalog:", creds)
