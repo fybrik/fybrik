@@ -479,7 +479,7 @@ if [[ ! -z "${github_workspace}" ]]; then
     if [[ ${is_kubernetes} == "true" ]]; then
         kubectl cp $github_workspace workspace-0:/workspace/source/
     else 
-        kubectl rsync $github_workspace workspace-0:/workspace/source/
+        oc rsync $github_workspace workspace-0:/workspace/source/
     fi
     git_url=""
     extra_params="${extra_params} -p git-url="

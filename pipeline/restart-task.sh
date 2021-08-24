@@ -12,7 +12,7 @@ fi
 echo $1
 
 set -x
-for i in $(kubectl get taskrun --no-headers | grep $1 | cut -d' ' -f1); do
+for i in $(kubectl get taskrun --no-headers | grep $1 | grep -v "restart-" | cut -d' ' -f1); do
   kubectl get taskrun $i -o yaml > /tmp/taskrun-$i.yaml
   sed -i.bak "s|  name: $i|  generateName: restart-$1|g" /tmp/taskrun-$i.yaml
   sed -i.bak "s|  namespace: .*||g" /tmp/taskrun-$i.yaml
