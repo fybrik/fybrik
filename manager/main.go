@@ -5,6 +5,8 @@ package main
 
 import (
 	"flag"
+	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/pkg/environment"
 	"os"
 	"strconv"
 	"strings"
@@ -73,8 +75,8 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	}
 
 	client := ctrl.GetConfigOrDie()
-	client.QPS = utils.GetEnvAsFloat32("CLIENT_QPS", 100.0)
-	client.Burst = utils.GetEnvAsInt("CLIENT_BURST", 200)
+	client.QPS = environment.GetEnvAsFloat32(controllers.KubernetesClientQPSConfiguration, controllers.DefaultKubernetesClientQPS)
+	client.Burst = environment.GetEnvAsInt(controllers.KubernetesClientBurstConfiguration, controllers.DefaultKubernetesClientBurst)
 
 	setupLog.Info("Manager client rate limits:", "qps", client.QPS, "burst", client.Burst)
 

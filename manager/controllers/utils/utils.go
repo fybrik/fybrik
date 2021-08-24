@@ -9,13 +9,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
-	"runtime"
-	"sort"
-	"strconv"
-
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	dc "fybrik.io/fybrik/pkg/connectors/protobuf"
+	"runtime"
+	"sort"
 )
 
 // GetProtocol returns the existing data protocol
@@ -171,28 +168,4 @@ func GetModuleCapabilities(module *app.FybrikModule, requestedCapability app.Cap
 		}
 	}
 	return capFound, capList
-}
-
-// Returns the integer value of an environment variable.
-// If the environment variable is not set or cannot be parsed the default value is returned.
-func GetEnvAsInt(key string, defaultValue int) int {
-	if env, isSet := os.LookupEnv(key); isSet {
-		i, err := strconv.Atoi(env)
-		if err == nil {
-			return i
-		}
-	}
-	return defaultValue
-}
-
-// Returns the float32 value of an environment variable.
-// If the environment variable is not set or cannot be parsed the default value is returned.
-func GetEnvAsFloat32(key string, defaultValue float32) float32 {
-	if env, isSet := os.LookupEnv(key); isSet {
-		f, err := strconv.ParseFloat(env, 32)
-		if err == nil {
-			return float32(f)
-		}
-	}
-	return defaultValue
 }

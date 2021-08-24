@@ -6,8 +6,9 @@ package app
 import (
 	"context"
 	"fmt"
+	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/pkg/environment"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"strconv"
 	"strings"
 	"time"
 
@@ -321,9 +322,9 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		},
 	}
 
-	numReconciles := utils.GetEnvAsInt("BLUEPRINT_CONCURRENT_RECONCILES", 5)
+	numReconciles := environment.GetEnvAsInt(controllers.BlueprintConcurrentReconcilesConfiguration, controllers.DefaultBlueprintConcurrentReconciles)
 
-	mgr.GetLogger().Info("Concurrent blueprint reconciles " + strconv.Itoa(numReconciles))
+	mgr.GetLogger().Info(fmt.Sprintf("Concurrent blueprint reconciles: %d", numReconciles))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).

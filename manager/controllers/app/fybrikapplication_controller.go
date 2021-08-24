@@ -6,6 +6,8 @@ package app
 import (
 	"context"
 	"fmt"
+	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/pkg/environment"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"strings"
 	"time"
@@ -492,7 +494,7 @@ func (r *FybrikApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}
 	}
 
-	numReconciles := utils.GetEnvAsInt("APPLICATION_CONCURRENT_RECONCILES", 5)
+	numReconciles := environment.GetEnvAsInt(controllers.ApplicationConcurrentReconcilesConfiguration, controllers.DefaultApplicationConcurrentReconciles)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
