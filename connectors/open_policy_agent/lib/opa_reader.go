@@ -43,16 +43,15 @@ func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *openapiclient
 					}
 					log.Println("tagArr: ", tagArr)
 
-					tagInReq := make(map[string]interface{})
 					tagVal := make(map[string]interface{})
 					for i := 0; i < len(tagArr); i++ {
 						splitStr := strings.Split(tagArr[i], " = ")
 						// residency = Turkey
 						tagVal[splitStr[0]] = splitStr[1]
 					}
-					tagInReq["tags"] = tagVal
+					log.Println("tagVal: ", tagVal)
 					resource := in.GetResource()
-					(&resource).SetTags(tagInReq)
+					(&resource).SetTags(tagVal)
 					in.SetResource(resource)
 					log.Println("in.GetResource().GetTags(): ", (&resource).GetTags())
 				}
@@ -91,13 +90,12 @@ func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *openapiclient
 						newcol.SetName(listofcols[i])
 						numOfTags = len(listoftags[i])
 						if numOfTags > 0 {
-							p := make(map[string]interface{})
 							q := make(map[string]interface{})
 							for j := 0; j < len(listoftags[i]); j++ {
 								q[listoftags[i][j]] = "true"
 							}
-							p["tags"] = q
-							newcol.SetTags(p)
+							log.Println("set tags of col:", listofcols[i], " to:", q)
+							newcol.SetTags(q)
 						}
 						cols = append(cols, *newcol)
 					}
