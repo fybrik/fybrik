@@ -106,6 +106,5 @@ func GetPoliciesDecisions(c *gin.Context) {
 		return
 	}
 
-	//c.JSON(http.StatusOK, gin.H{})
 	c.JSON(http.StatusOK, resp)
 }
