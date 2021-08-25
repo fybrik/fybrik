@@ -78,7 +78,7 @@ spec:
     description: image name for the katalog-connector.  Only necessary to switch this if you want to swap back and forth between alternate images
     name: KATALOG_IMAGE
     type: string
-  - default: dummy-mover:master
+  - default: dummy-mover:latest
     description: image name for the dummy data mover.  Only necessary to switch this if you want to swap back and forth between alternate images
     name: dummy-image
     type: string
