@@ -246,9 +246,17 @@ func newPolicyManager() (connectors.PolicyManager, error) {
 	mainPolicyManagerURL := os.Getenv("MAIN_POLICY_MANAGER_CONNECTOR_URL")
 	setupLog.Info("setting main policy manager client", "Name", mainPolicyManagerName, "URL", mainPolicyManagerURL, "Timeout", connectionTimeout)
 
-	policyManager, err := connectors.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
-	if err != nil {
-		return nil, err
+	var policyManager connectors.PolicyManager
+	if strings.Contains(mainPolicyManagerURL, "http") {
+		policyManager, err = connectors.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		policyManager, err = connectors.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return policyManager, nil
