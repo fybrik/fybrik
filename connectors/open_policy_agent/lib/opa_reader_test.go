@@ -21,7 +21,10 @@ import (
 // format into enforcement decisions format
 
 func TestMainOpaConnector(t *testing.T) {
-	timeOutSecs, catalogConnectorURL, opaServerURL := tu.GetEnvironment()
+	timeOutSecs, catalogConnectorURL, opaServerURL, catalogProviderName := tu.GetEnvironment()
+	os.Setenv("CATALOG_PROVIDER_NAME", catalogProviderName)
+	defer os.Unsetenv("CATALOG_PROVIDER_NAME")
+
 	policyToBeEvaluated := "user_policies"
 	applicationContext := tu.GetApplicationContext("marketing")
 
