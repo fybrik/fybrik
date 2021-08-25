@@ -5,6 +5,8 @@ package main
 
 import (
 	"flag"
+	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/pkg/environment"
 	"os"
 	"strconv"
 	"strings"
@@ -72,7 +74,13 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		&corev1.PersistentVolumeClaim{}: {Field: workerNamespaceSelector},
 	}
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	client := ctrl.GetConfigOrDie()
+	client.QPS = environment.GetEnvAsFloat32(controllers.KubernetesClientQPSConfiguration, controllers.DefaultKubernetesClientQPS)
+	client.Burst = environment.GetEnvAsInt(controllers.KubernetesClientBurstConfiguration, controllers.DefaultKubernetesClientBurst)
+
+	setupLog.Info("Manager client rate limits:", "qps", client.QPS, "burst", client.Burst)
+
+	mgr, err := ctrl.NewManager(client, ctrl.Options{
 		Scheme:             scheme,
 		Namespace:          namespace,
 		MetricsBindAddress: metricsAddr,

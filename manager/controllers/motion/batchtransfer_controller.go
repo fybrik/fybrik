@@ -6,8 +6,9 @@ package motion
 import (
 	"context"
 	"fmt"
-
 	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/pkg/environment"
 	"github.com/go-logr/logr"
 	kbatch "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -16,6 +17,7 @@ import (
 	"k8s.io/client-go/tools/reference"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 )
 
 // A reconciler can be used to base reconcilers of Transfers on.
@@ -164,7 +166,10 @@ func (reconciler *BatchTransferReconciler) Reconcile(ctx context.Context, req ct
 
 // Setup the reconciler. This consists of creating an index of jobs where this controller is the owner.
 func (reconciler *BatchTransferReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	numReconciles := environment.GetEnvAsInt(controllers.BatchTransferConcurrentReconcilesConfiguration, controllers.DefaultBatchTransferConcurrentReconciles)
+
 	return ctrl.NewControllerManagedBy(mgr).
+		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
 		For(&motionv1.BatchTransfer{}).
 		Owns(&kbatch.Job{}).
 		Owns(&corev1.Pod{}).
