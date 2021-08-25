@@ -68,7 +68,8 @@ var _ = Describe("FybrikApplication Controller", func() {
 			}
 		})
 		It("Test end-to-end for FybrikApplication", func() {
-			if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
+     		        connector := os.Getenv("USE_MOCKUP_CONNECTOR")
+        		if len(connector) > 0 && connector != "true" {
 				Skip("Skipping test when not running with mockup connector!")
 			}
 			module := &apiv1alpha1.FybrikModule{}
