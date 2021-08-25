@@ -56,7 +56,7 @@ var _ = Describe("BatchTransfer Controller", func() {
 			Expect(err).ToNot(HaveOccurred())
 			registry := os.Getenv("DOCKER_HOSTNAME")
 			registryNamespace := os.Getenv("DOCKER_NAMESPACE")
-                        tagName := os.Getenv("DOCKER_TAGNAME")
+			tagName := os.Getenv("DOCKER_TAGNAME")
 			if len(registry) > 0 && registry != "ghcr.io" {
 				if len(registryNamespace) > 0 {
 					batchTransfer.Spec.Image = registry + "/" + registryNamespace + "/dummy-mover:" + tagName

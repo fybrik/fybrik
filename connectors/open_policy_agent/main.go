@@ -13,8 +13,8 @@
 package main
 
 import (
-	"log"
 	sw "fybrik.io/fybrik/connectors/open_policy_agent/go"
+	"log"
 )
 
 func main() {
