@@ -96,10 +96,6 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) (ctr
 			// the finalizer is present - delete the allocated resources
 			if err := r.deleteExternalResources(blueprint); err != nil {
 				r.Log.V(0).Info("Error while deleting owned resources: " + err.Error())
-				return ctrl.Result{}, err
-			}
-			if r.hasExternalResources(blueprint) {
-				return ctrl.Result{RequeueAfter: 2 * time.Second}, errors.NewPlain("helm release uninstall is still in progress")
 			}
 			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 			ctrlutil.RemoveFinalizer(blueprint, finalizerName)
@@ -122,12 +118,8 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) (ctr
 
 func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) error {
 	errs := make([]string, 0)
-	for _, module := range blueprint.Spec.Modules {
-		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], module)
-		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus != nil || rel == nil {
-			continue
-		}
-		if _, err := r.Helmer.Uninstall(blueprint.Namespace, releaseName); err != nil {
+	for release := range blueprint.Status.Releases {
+		if _, err := r.Helmer.Uninstall(blueprint.Namespace, release); err != nil {
 			errs = append(errs, err.Error())
 		}
 	}
@@ -135,16 +127,6 @@ func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) 
 		return nil
 	}
 	return errors.New(strings.Join(errs, "; "))
-}
-
-func (r *BlueprintReconciler) hasExternalResources(blueprint *app.Blueprint) bool {
-	for _, module := range blueprint.Spec.Modules {
-		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], module)
-		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus == nil && rel != nil {
-			return true
-		}
-	}
-	return false
 }
 
 func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.ChartSpec, args map[string]interface{}, blueprint *app.Blueprint, releaseName string) (ctrl.Result, error) {
