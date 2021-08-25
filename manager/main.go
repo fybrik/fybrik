@@ -247,19 +247,13 @@ func newPolicyManager() (connectors.PolicyManager, error) {
 	setupLog.Info("setting main policy manager client", "Name", mainPolicyManagerName, "URL", mainPolicyManagerURL, "Timeout", connectionTimeout)
 
 	var policyManager connectors.PolicyManager
-	if strings.Contains(mainPolicyManagerURL, "http") {
+	if strings.HasPrefix(mainPolicyManagerURL, "http") {
 		policyManager, err = connectors.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
-		if err != nil {
-			return nil, err
-		}
 	} else {
 		policyManager, err = connectors.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
-		if err != nil {
-			return nil, err
-		}
 	}
 
-	return policyManager, nil
+	return policyManager, err
 }
 
 // newClusterManager decides based on the environment variables that are set which
