@@ -20,6 +20,11 @@ type CopyModuleArgs struct {
 	// +required
 	Destination DataStore `json:"destination"`
 
+	// AssetID identifies the asset to be used for accessing the data when it is ready
+	// It is copied from the FybrikApplication resource
+	// +required
+	AssetID string `json:"assetID"`
+
 	// Transformations are different types of processing that may be done to the data as it is copied.
 	// +optional
 	Transformations []serde.Arbitrary `json:"transformations,omitempty"`
@@ -46,6 +51,11 @@ type WriteModuleArgs struct {
 	// Destination is the data store to which the data will be written
 	// +required
 	Destination DataStore `json:"destination"`
+
+	// AssetID identifies the asset to be used for accessing the data when it is ready
+	// It is copied from the FybrikApplication resource
+	// +required
+	AssetID string `json:"assetID"`
 
 	// Transformations are different types of processing that may be done to the data as it is written.
 	// +optional
