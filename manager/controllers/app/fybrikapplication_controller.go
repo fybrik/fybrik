@@ -261,7 +261,7 @@ func setReadModulesEndpoints(applicationContext *api.FybrikApplication, blueprin
 	for _, blueprintSpec := range blueprintsMap {
 		for _, module := range blueprintSpec.Modules {
 			if module.Arguments.Read != nil {
-				releaseName := utils.GetReleaseName(applicationContext.ObjectMeta.Name, applicationContext.ObjectMeta.Namespace, module)
+				releaseName := utils.GetReleaseName(applicationContext.ObjectMeta.Name, applicationContext.ObjectMeta.Namespace, module.Name)
 				moduleName := module.Name
 
 				// Find the read capability section in the module
@@ -350,14 +350,25 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 		Provision:          r.Provision,
 		ProvisionedStorage: make(map[string]NewAssetInfo),
 	}
-	instances := make([]modules.ModuleInstanceSpec, 0)
+
+	plotterSpec := api.PlotterSpec{
+		Selector:  applicationContext.Spec.Selector,
+		Assets: map[string]api.AssetDetails{},
+		Flows: []api.Flow{},
+		Templates: map[string]api.Template{},
+	}
+	plotterSpec.Selector = applicationContext.Spec.Selector
+
 	for _, item := range requirements {
-		instancesPerDataset, err := moduleManager.SelectModuleInstances(item, applicationContext)
+
+		// TODO support different flows than read by specifying it in the application
+		flowType := api.ReadFlow
+
+		err := moduleManager.AddFlowInfoForAsset(item, applicationContext, &plotterSpec, flowType)
 		if err != nil {
 			AnalyzeError(applicationContext, item.Context.DataSetID, err)
 			continue
 		}
-		instances = append(instances, instancesPerDataset...)
 	}
 	// check if can proceed
 	if getErrorMessages(applicationContext) != "" {
@@ -403,12 +414,12 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 	if !ready {
 		return ctrl.Result{RequeueAfter: 2 * time.Second}, allocErr
 	}
-	// generate blueprint specifications (per cluster)
-	blueprintPerClusterMap := r.GenerateBlueprints(instances, applicationContext)
-	setReadModulesEndpoints(applicationContext, blueprintPerClusterMap, moduleMap)
+
+	//setReadModulesEndpoints(applicationContext, blueprintPerClusterMap, moduleMap)
 	ownerRef := &api.ResourceReference{Name: applicationContext.Name, Namespace: applicationContext.Namespace, AppVersion: applicationContext.GetGeneration()}
+
 	resourceRef := r.ResourceInterface.CreateResourceReference(ownerRef)
-	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, blueprintPerClusterMap); err != nil {
+	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, plotterSpec); err != nil {
 		r.Log.V(0).Info("Error creating " + resourceRef.Kind + " : " + err.Error())
 		if err.Error() == api.InvalidClusterConfiguration {
 			applicationContext.Status.ErrorMessage = err.Error()

@@ -55,6 +55,7 @@ type Selector struct {
 	Dependencies []*app.FybrikModule
 	Message      string
 	Capability   app.CapabilityType
+	ModuleCapability *app.ModuleCapability
 	Source       *app.InterfaceDetails
 	Destination  *app.InterfaceDetails
 	// Actions that the module will perform
@@ -178,6 +179,7 @@ func (m *Selector) SupportsInterface(module *app.FybrikModule) bool {
 					if inter.Sink.DataFormat != m.Destination.DataFormat || inter.Sink.Protocol != m.Destination.Protocol {
 						continue
 					}
+					m.ModuleCapability = &cap
 					supportsInterface = true
 					break
 				}

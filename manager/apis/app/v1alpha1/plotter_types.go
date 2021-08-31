@@ -228,6 +228,9 @@ type ModuleInfo struct {
 // Template contains basic information about the required modules to serve the fybrikapplication
 // e.g., the module helm chart name.
 type Template struct {
+	// +required
+	Name string `json:"name"`
+
 	// Modules is a list of dependent modules. e.g., if a plugin module is used
 	// then the service module is used in should appear first in the modules list of the
 	// same template. If the modules list contains more than one module, the first module in the list
