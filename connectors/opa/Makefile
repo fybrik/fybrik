@@ -9,8 +9,7 @@ KUBE_NAMESPACE ?= fybrik-system
 NEED_TEST_COVERAGE_STATISTICS=1
 NEED_TEST_COVERAGE_STATISTICS_IN_HTML=0
 
-docker-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o opa-connector main.go
+docker-build: source-build
 	docker build . -t $(IMG)
 	rm opa-connector
 
@@ -22,6 +21,10 @@ deploy:
 		--set opaConnector.image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(DOCKER_NAME):${DOCKER_TAGNAME} \
 		--set coordinator.catalogConnectorURL=${CATALOG_CONNECTOR_URL}
 		-n $(KUBE_NAMESPACE)
+
+.PHONY: source-build
+source-build:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o opa-connector main.go
 
 .PHONY: undeploy
 undeploy:

@@ -29,6 +29,9 @@ test: pre-test
 manager: generate fmt vet
 	go build -o bin/manager main.go
 
+source-build: generate fmt vet
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o manager main.go
+
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: generate fmt vet manifests
 	go run ./main.go --enable-all-controllers --metrics-bind-addr=0
@@ -52,8 +55,7 @@ manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
 		$(TOOLBIN)/yq eval '(.webhooks.[].clientConfig.service.namespace) = "{{ .Release.Namespace }}"' - > $(ROOT_DIR)/charts/fybrik/files/webhook-configs.yaml
 
 # Overwrite docker-build from docker.mk
-docker-build: generate
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o manager main.go
+docker-build: generate source-build
 	docker build . -t ${IMG} -f Dockerfile
 	rm manager
 
@@ -64,6 +66,8 @@ wait_for_manager: $(TOOLBIN)/kubectl
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
 run-integration-tests: export DOCKER_NAMESPACE?=fybrik-system
+run-integration-tests: export DOCKER_TAGNAME?=master
+run-integration-tests: export USE_MOCKUP_CONNECTOR?=true
 run-integration-tests: wait_for_manager
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestMotionAPIs -count 1
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestAPIs -count 1
