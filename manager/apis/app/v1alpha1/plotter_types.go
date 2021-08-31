@@ -87,6 +87,8 @@ type DataFlowStep struct {
 	// +required
 	Template string `json:"template"`
 
+	// Step parameters
+	// TODO why not flatten the parameters into this data flow step
 	// +optional
 	Parameters *StepParameters `json:"parameters,omitempty"`
 }
@@ -151,7 +153,7 @@ const (
 	CopyTrigger SubFlowTrigger = "workload"
 
 	// Read flow trigger
-	ReadTiogger SubFlowTrigger = "init"
+	ReadTrigger SubFlowTrigger = "init"
 
 	// Write flow trigger
 	WriteTrigger SubFlowTrigger = "timer"
@@ -228,8 +230,9 @@ type ModuleInfo struct {
 // Template contains basic information about the required modules to serve the fybrikapplication
 // e.g., the module helm chart name.
 type Template struct {
+	// Name of the template
 	// +required
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
 	// Modules is a list of dependent modules. e.g., if a plugin module is used
 	// then the service module is used in should appear first in the modules list of the

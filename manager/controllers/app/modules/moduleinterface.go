@@ -143,6 +143,7 @@ func (m *Selector) SupportsInterface(module *app.FybrikModule) bool {
 			if m.Capability == app.Read {
 				supportsInterface = cap.API.DataFormat == m.Destination.DataFormat && cap.API.Protocol == m.Destination.Protocol
 				if supportsInterface {
+					m.ModuleCapability = &cap
 					return true
 				}
 			} else if m.Capability == app.Copy {

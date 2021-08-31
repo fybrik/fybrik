@@ -129,11 +129,20 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	plotter := &app.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	bpSpec := plotter.Spec.Blueprints["thegreendragon"]
-	g.Expect(bpSpec.Modules[0].Name).To(gomega.Equal("implicit-copy-batch"))
-	g.Expect(bpSpec.Modules[0].Arguments.Copy.Source.Format).To(gomega.Equal("csv"))
-	g.Expect(bpSpec.Modules[0].Arguments.Copy.Destination.Format).To(gomega.Equal("csv"))
-	g.Expect(bpSpec.Modules[0].Arguments.Copy.Destination.Format).To(gomega.Equal(bpSpec.Modules[1].Arguments.Read[0].Source.Format))
+	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(2)) // 2 assets should have been created. the original and the implicit from the copy
+	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2))
+	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(1))
+	flow := plotter.Spec.Flows[0]
+	g.Expect(flow.AssetID).To(gomega.Equal("s3-csv/redact-dataset"))
+	g.Expect(flow.FlowType).To(gomega.Equal(app.ReadFlow))
+	g.Expect(flow.SubFlows).To(gomega.HaveLen(2)) // Should have two subflows
+	copyFlow := flow.SubFlows[0] // Assume flow 0 is copy
+	g.Expect(copyFlow.FlowType).To(gomega.Equal(app.CopyFlow))
+	g.Expect(copyFlow.Triggers).To(gomega.ContainElements(app.CopyTrigger))
+	readFlow := flow.SubFlows[1]
+	g.Expect(readFlow.FlowType).To(gomega.Equal(app.ReadFlow))
+	g.Expect(readFlow.Triggers).To(gomega.ContainElements(app.ReadTrigger))
+	g.Expect(readFlow.Steps[0].Steps[0].Cluster).To(gomega.Equal("thegreendragon"))
 }
 
 // This test checks proper reconciliation of FybrikApplication finalizers
@@ -478,19 +487,15 @@ func TestMultipleDatasets(t *testing.T) {
 	plotter := &app.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Expect(len(plotter.Spec.Blueprints)).To(gomega.Equal(1), "A single blueprint should be created")
-	// Check the generated blueprint
-	// There should be a single read module with two datasets
-	blueprint := plotter.Spec.Blueprints["thegreendragon"]
-	g.Expect(blueprint).NotTo(gomega.BeNil())
-	numReads := 0
-	for _, module := range blueprint.Modules {
-		if len(module.Arguments.Read) > 0 {
-			numReads++
-			g.Expect(len(module.Arguments.Read)).To(gomega.Equal(2), "A read module should support both datasets")
-		}
-	}
-	g.Expect(numReads).To(gomega.Equal(1), "A single read module should be instantiated")
+	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(3)) // 3 assets. 2 original and one implicit copy asset
+	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2)) // expect two templates
+	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(2)) // two flows. one for each valid asset
+	g.Expect(plotter.Spec.Flows[0].AssetID).To(gomega.Equal("s3/allow-dataset"))
+	g.Expect(plotter.Spec.Flows[1].AssetID).To(gomega.Equal("db2/redact-dataset"))
+	g.Expect(plotter.Spec.Flows[0].SubFlows).To(gomega.HaveLen(1))
+	g.Expect(plotter.Spec.Flows[1].SubFlows).To(gomega.HaveLen(2))
+	g.Expect(plotter.Spec.Templates).To(gomega.HaveKey("copy"))
+	g.Expect(plotter.Spec.Templates).To(gomega.HaveKey("read"))
 }
 
 // This test checks the case where data comes from another regions, and should be redacted.
@@ -560,7 +565,15 @@ func TestMultipleRegions(t *testing.T) {
 	plotter := &app.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Expect(len(plotter.Spec.Blueprints)).To(gomega.Equal(2))
+	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(1))
+	subflow0 := plotter.Spec.Flows[0].SubFlows[0]
+	subflow1 := plotter.Spec.Flows[0].SubFlows[1]
+	g.Expect(subflow0.Steps).To(gomega.HaveLen(1))
+	g.Expect(subflow0.Steps[0].Steps).To(gomega.HaveLen(1))
+	g.Expect(subflow0.Steps[0].Steps[0].Cluster).To(gomega.Equal("neverland-cluster"))
+	g.Expect(subflow1.Steps).To(gomega.HaveLen(1))
+	g.Expect(subflow1.Steps[0].Steps).To(gomega.HaveLen(1))
+	g.Expect(subflow1.Steps[0].Steps[0].Cluster).To(gomega.Equal("thegreendragon"))
 }
 
 // This test checks the ingest scenario - copy is required, no workload specified.
@@ -629,11 +642,20 @@ func TestCopyData(t *testing.T) {
 	plotter := &app.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
+
 	// There should be a single copy module
-	g.Expect(len(plotter.Spec.Blueprints)).To(gomega.Equal(1))
-	blueprint := plotter.Spec.Blueprints["thegreendragon"]
-	g.Expect(blueprint).NotTo(gomega.BeNil())
-	g.Expect(len(blueprint.Modules)).To(gomega.Equal(1))
+	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(2)) // two assets. original + copy
+	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(1))
+	g.Expect(plotter.Spec.Flows[0].SubFlows).To(gomega.HaveLen(1))
+	subflow := plotter.Spec.Flows[0].SubFlows[0]
+	g.Expect(subflow.Triggers).To(gomega.ContainElements(app.CopyTrigger))
+	g.Expect(subflow.FlowType).To(gomega.Equal(app.CopyFlow))
+	g.Expect(subflow.Steps).To(gomega.HaveLen(1))
+	g.Expect(subflow.Steps[0].Steps).To(gomega.HaveLen(1))
+	g.Expect(subflow.Steps[0].Steps[0].Parameters.Source.AssetID).To(gomega.Equal("s3-external/allow-theshire"))
+	g.Expect(subflow.Steps[0].Steps[0].Parameters.Sink.AssetID).To(gomega.Equal("s3-external/allow-theshire-copy"))
+	marshal, err := yaml.Marshal(plotter)
+	print(marshal)
 }
 
 // This test checks the ingest scenario

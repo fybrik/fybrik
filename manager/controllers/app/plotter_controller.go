@@ -229,7 +229,7 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]ap
 			for _, subFlowStep := range subFlow.Steps {
 				for _, seqStep := range subFlowStep.Steps {
 					stepTemplate, _ := plotter.Spec.Templates[seqStep.Template]
-					isPrimaryModule := true
+					// isPrimaryModule := true
 					for _, module := range stepTemplate.Modules {
 						moduleArgs := seqStep.Parameters
 

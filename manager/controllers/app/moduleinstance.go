@@ -301,6 +301,7 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 			}
 
 			template := app.Template{
+				Name: "copy",
 				Modules: []app.ModuleInfo{{
 					Name:         "copy",
 					Type:         copySelector.Module.Spec.Type,
@@ -359,10 +360,10 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 			var readAssetId string
 			if sinkDataStore == nil {
 				readSource = *sourceDataStore
-				readAssetId = datasetID + "-copy"
+				readAssetId = datasetID
 			} else {
 				readSource = *sinkDataStore
-				readAssetId = datasetID
+				readAssetId = datasetID + "-copy"
 			}
 
 			actions := actionsToArbitrary(readSelector.Actions)
@@ -381,6 +382,7 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 			}
 
 			template := app.Template{
+				Name: "read",
 				Modules: []app.ModuleInfo{{
 					Name:         "read",
 					Type:         readSelector.Module.Spec.Type,
@@ -416,8 +418,8 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 			m.Log.Info("Add subflow")
 			subFlow := app.SubFlow{
 				Name:     "",
-				FlowType: app.CopyFlow,
-				Triggers: []app.SubFlowTrigger{app.CopyTrigger},
+				FlowType: app.ReadFlow,
+				Triggers: []app.SubFlowTrigger{app.ReadTrigger},
 				Steps:    []app.SequentialSteps{steps},
 			}
 
