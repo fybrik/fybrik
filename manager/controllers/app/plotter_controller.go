@@ -132,11 +132,10 @@ type PlotterModulesSpec struct {
 
 // convertPlotterModuleToBlueprintModule converts an object of type PlotterModulesSpec to type modules.ModuleInstanceSpec
 func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.Plotter, plotterModule PlotterModulesSpec) *modules.ModuleInstanceSpec {
-	AssetIDs := make([]string, 0)
-	AssetIDs = append(AssetIDs, plotterModule.AssetID)
+	assetIDs := []string{plotterModule.AssetID}
 	blueprintModule := &modules.ModuleInstanceSpec{
 		Chart:       &plotterModule.Chart,
-		AssetIDs:    AssetIDs,
+		AssetIDs:    assetIDs,
 		ClusterName: plotterModule.ClusterName,
 		ModuleName:  plotterModule.ModuleName,
 		Scope:       plotterModule.Scope,
@@ -272,7 +271,7 @@ func (r *PlotterReconciler) updatePlotterAssetsState(assetToStatusMap map[string
 			state, exists := assetToStatusMap[assetID]
 			errMsg := moduleState.Error
 			if exists {
-				errMsg = state.Error + errMsg
+				errMsg = state.Error + "\n" + errMsg
 			}
 			if !exists {
 				assetToStatusMap[assetID] = moduleState

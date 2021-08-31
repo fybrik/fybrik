@@ -73,7 +73,7 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []modules.ModuleInstance
 		modulename := moduleInstance.ModuleName
 
 		var blueprintModule app.BlueprintModule
-		instanceName := utils.CreateStepName(modulename, strings.Join(moduleInstance.AssetIDs, ",")) // Need unique name for each module so include ids for dataset
+		instanceName := utils.CreateStepName(modulename, strings.Join(moduleInstance.AssetIDs, "_")) // Need unique name for each module so include ids for dataset
 		blueprintModule.Name = modulename
 		blueprintModule.Arguments = *moduleInstance.Args
 		blueprintModule.Chart = *moduleInstance.Chart

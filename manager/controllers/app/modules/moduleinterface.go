@@ -40,7 +40,6 @@ type DataInfo struct {
 
 // ModuleInstanceSpec consists of the module spec and arguments
 type ModuleInstanceSpec struct {
-	Module      *app.FybrikModule
 	Chart       *app.ChartSpec
 	Args        *app.ModuleArguments
 	AssetIDs    []string
@@ -81,31 +80,6 @@ func (m *Selector) GetDependencies() []*app.FybrikModule {
 // GetError returns an error message
 func (m *Selector) GetError() string {
 	return m.Message
-}
-
-// AddModuleInstances creates module instances for the selected module and its dependencies
-func (m *Selector) AddModuleInstances(args *app.ModuleArguments, item DataInfo, cluster string) []ModuleInstanceSpec {
-	instances := make([]ModuleInstanceSpec, 0)
-	AssetIDs := make([]string, 0)
-	AssetIDs = append(AssetIDs, item.Context.DataSetID)
-	// append moduleinstances to the list
-	instances = append(instances, ModuleInstanceSpec{
-		AssetIDs:    AssetIDs,
-		Module:      m.GetModule(),
-		Args:        args,
-		ClusterName: cluster,
-	})
-	for _, dep := range m.GetDependencies() {
-		AssetIDs := make([]string, 0)
-		AssetIDs = append(AssetIDs, item.Context.DataSetID)
-		instances = append(instances, ModuleInstanceSpec{
-			AssetIDs:    AssetIDs,
-			Module:      dep,
-			Args:        args,
-			ClusterName: cluster,
-		})
-	}
-	return instances
 }
 
 // SupportsGovernanceActions checks whether the module supports the required agovernance actions for the capability requested
