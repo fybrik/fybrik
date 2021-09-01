@@ -24,10 +24,9 @@ func TestBlueprint(t *testing.T) {
 			Namespace: "default",
 		},
 		Spec: BlueprintSpec{
-			Flow: DataFlow{
-				Steps: []FlowStep{{Name: "step1", Template: "start"}},
-			},
-			Templates: []ComponentTemplate{{Name: "start", Kind: "FybrikModule", Chart: ChartSpec{Name: "start-image"}}},
+			Cluster: "cluster1",
+			//			Modules: []BlueprintModule{{Name: "start", InstanceName: "start-instance1", APIs: []CapabilityAPI{}, Chart: ChartSpec{Name: "start-image"}}},
+			Modules: []BlueprintModule{{Name: "start", InstanceName: "start-instance1", Chart: ChartSpec{Name: "start-image"}}},
 		},
 	}
 	g := gomega.NewGomegaWithT(t)

@@ -23,6 +23,8 @@ nav:
   - tasks/control-plane-security.md
   - tasks/using-opa.md
   - tasks/multicluster.md
+  - tasks/custom-taxonomy.md
+  - tasks/performance.md
 - Reference:
   - reference/crds.md
   - Connectors API: reference/connectors.md

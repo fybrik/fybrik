@@ -113,12 +113,14 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	utils.PrintStructure(&assetInfo, m.Log, "ProvisionedStorage element")
 
 	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
+	vaultMap := make(map[string]app.Vault)
+	vaultMap[string(app.WriteFlow)] = app.Vault{
+		SecretPath: vaultSecretPath,
+		Role:       utils.GetModulesRole(),
+		Address:    utils.GetVaultAddress(),
+	}
 	return &app.DataStore{
-		Vault: app.Vault{
-			SecretPath: vaultSecretPath,
-			Role:       utils.GetModulesRole(),
-			Address:    utils.GetVaultAddress(),
-		},
+		Vault:      vaultMap,
 		Connection: *connection,
 		Format:     destinationInterface.DataFormat,
 	}, nil
@@ -228,15 +230,18 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 
 	// Each selector receives source/sink interface and relevant actions
 	// Starting with the data location interface for source and the required interface for sink
+	vaultMap := make(map[string]app.Vault)
+	vaultMap[string(app.ReadFlow)] = app.Vault{
+		SecretPath: vaultSecretPath,
+		Role:       utils.GetModulesRole(),
+		Address:    utils.GetVaultAddress(),
+	}
 	sourceDataStore := &app.DataStore{
 		Connection: item.DataDetails.Connection,
-		Vault: app.Vault{
-			SecretPath: vaultSecretPath,
-			Role:       utils.GetModulesRole(),
-			Address:    utils.GetVaultAddress(),
-		},
-		Format: item.DataDetails.Interface.DataFormat,
+		Vault:      vaultMap,
+		Format:     item.DataDetails.Interface.DataFormat,
 	}
+
 	// DataStore for destination will be determined if an implicit copy is required
 	var sinkDataStore *app.DataStore
 
@@ -273,8 +278,12 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 		}
 		for _, cluster := range m.Clusters {
 			if copyCluster == cluster.Name {
-				copyArgs.Copy.Destination.Vault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
-				copyArgs.Copy.Source.Vault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
+				if writeVault, ok := copyArgs.Copy.Destination.Vault[string(app.WriteFlow)]; ok {
+					writeVault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
+				}
+				if readVault, ok := copyArgs.Copy.Source.Vault[string(app.ReadFlow)]; ok {
+					readVault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
+				}
 				break
 			}
 		}
@@ -300,7 +309,9 @@ func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext 
 		}
 		for _, cluster := range m.Clusters {
 			if readCluster == cluster.Name {
-				readSource.Vault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
+				if readVault, ok := readSource.Vault[string(app.ReadFlow)]; ok {
+					readVault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
+				}
 				break
 			}
 		}

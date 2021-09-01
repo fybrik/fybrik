@@ -138,10 +138,10 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	bpSpec := plotter.Spec.Blueprints["thegreendragon"]
-	g.Expect(bpSpec.Flow.Steps[0].Template).To(gomega.Equal("implicit-copy-batch"))
-	g.Expect(bpSpec.Flow.Steps[0].Arguments.Copy.Source.Format).To(gomega.Equal("csv"))
-	g.Expect(bpSpec.Flow.Steps[0].Arguments.Copy.Destination.Format).To(gomega.Equal("csv"))
-	g.Expect(bpSpec.Flow.Steps[0].Arguments.Copy.Destination.Format).To(gomega.Equal(bpSpec.Flow.Steps[1].Arguments.Read[0].Source.Format))
+	g.Expect(bpSpec.Modules[0].Name).To(gomega.Equal("implicit-copy-batch"))
+	g.Expect(bpSpec.Modules[0].Arguments.Copy.Source.Format).To(gomega.Equal("csv"))
+	g.Expect(bpSpec.Modules[0].Arguments.Copy.Destination.Format).To(gomega.Equal("csv"))
+	g.Expect(bpSpec.Modules[0].Arguments.Copy.Destination.Format).To(gomega.Equal(bpSpec.Modules[1].Arguments.Read[0].Source.Format))
 }
 
 // This test checks proper reconciliation of FybrikApplication finalizers
@@ -220,8 +220,10 @@ func TestDenyOnRead(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// Expect Deny condition
-	g.Expect(application.Status.Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue), "Deny condition is not set")
-	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring(app.ReadAccessDenied))
+	cond := application.Status.AssetStates["s3/deny-dataset"].Conditions[app.DenyConditionIndex]
+	g.Expect(cond.Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue), "Deny condition is not set")
+	g.Expect(cond.Message).To(gomega.ContainSubstring(app.ReadAccessDenied))
+	g.Expect(application.Status.Ready).To(gomega.BeTrue())
 	g.Expect(res).To(gomega.BeEquivalentTo(ctrl.Result{}), "Requests another reconcile")
 }
 
@@ -403,13 +405,14 @@ func TestActionSupport(t *testing.T) {
 }
 
 // Assumptions on response from connectors:
-// Two datasets:
+// Datasets:
+// S3 dataset, no access is granted.
 // Db2 dataset, a copy is required.
 // S3 dataset, no copy is needed
-// Enforcement actions for the first dataset: redact
-// Enforcement action for the second dataset: Allow
+// Enforcement actions for the second dataset: redact
+// Enforcement action for the third dataset: Allow
 // Applied copy module db2->s3 supporting redact action
-// Result: plotter with a single blueprint is created successfully, a read module is applied once for both datasets
+// Result: plotter with a single blueprint is created successfully, a read module is applied once
 
 func TestMultipleDatasets(t *testing.T) {
 	t.Parallel()
@@ -424,6 +427,10 @@ func TestMultipleDatasets(t *testing.T) {
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data = []app.DataContext{
+		{
+			DataSetID:    "s3/deny-dataset",
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+		},
 		{
 			DataSetID:    "s3/allow-dataset",
 			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
@@ -475,6 +482,8 @@ func TestMultipleDatasets(t *testing.T) {
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+	// check Deny for the first dataset
+	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage["db2/redact-dataset"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
 	// check plotter creation
@@ -492,10 +501,10 @@ func TestMultipleDatasets(t *testing.T) {
 	blueprint := plotter.Spec.Blueprints["thegreendragon"]
 	g.Expect(blueprint).NotTo(gomega.BeNil())
 	numReads := 0
-	for _, step := range blueprint.Flow.Steps {
-		if len(step.Arguments.Read) > 0 {
+	for _, module := range blueprint.Modules {
+		if len(module.Arguments.Read) > 0 {
 			numReads++
-			g.Expect(len(step.Arguments.Read)).To(gomega.Equal(2), "A read module should support both datasets")
+			g.Expect(len(module.Arguments.Read)).To(gomega.Equal(2), "A read module should support both datasets")
 		}
 	}
 	g.Expect(numReads).To(gomega.Equal(1), "A single read module should be instantiated")
@@ -650,7 +659,7 @@ func TestCopyData(t *testing.T) {
 	g.Expect(len(plotter.Spec.Blueprints)).To(gomega.Equal(1))
 	blueprint := plotter.Spec.Blueprints["thegreendragon"]
 	g.Expect(blueprint).NotTo(gomega.BeNil())
-	g.Expect(len(blueprint.Flow.Steps)).To(gomega.Equal(1))
+	g.Expect(len(blueprint.Modules)).To(gomega.Equal(1))
 }
 
 // This test checks the ingest scenario
@@ -889,4 +898,89 @@ func TestFybrikApplicationWithNoDatasets(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	g.Expect(getErrorMessages(newApp)).To(gomega.BeEmpty())
 	g.Expect(newApp.Status.Ready).To(gomega.BeTrue())
+}
+
+//nolint:dupl
+func TestFybrikApplicationWithInvalidAppInfo(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "application-with-errors",
+		Namespace: "default",
+	}
+
+	filename := "../../testdata/unittests/fybrikapplication-appInfoErrors.yaml"
+	fybrikApp := &app.FybrikApplication{}
+	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
+
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		fybrikApp,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	newApp := &app.FybrikApplication{}
+	err = cl.Get(context.Background(), req.NamespacedName, newApp)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+	g.Expect(getErrorMessages(newApp)).NotTo(gomega.BeEmpty())
+	g.Expect(newApp.Status.Ready).NotTo(gomega.BeTrue())
+}
+
+//nolint:dupl
+func TestFybrikApplicationWithInvalidInterface(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "application-with-errors-2",
+		Namespace: "default",
+	}
+	filename := "../../testdata/unittests/fybrikapplication-interfaceErrors.yaml"
+	fybrikApp := &app.FybrikApplication{}
+	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
+
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		fybrikApp,
+	}
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+	_, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	newApp := &app.FybrikApplication{}
+	err = cl.Get(context.Background(), req.NamespacedName, newApp)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+	g.Expect(getErrorMessages(newApp)).NotTo(gomega.BeEmpty())
+	g.Expect(newApp.Status.Ready).NotTo(gomega.BeTrue())
 }

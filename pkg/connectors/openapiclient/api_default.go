@@ -13,7 +13,6 @@ package openapiclient
 import (
 	"bytes"
 	_context "context"
-	"fybrik.io/fybrik/pkg/taxonomy/model/base"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
 	_neturl "net/url"
@@ -27,34 +26,33 @@ var (
 // DefaultApiService DefaultApi service
 type DefaultApiService service
 
-type ApiGetPoliciesDecisionsRequest struct {
-	ctx        _context.Context
-	ApiService *DefaultApiService
-	input      *base.PolicyManagerRequest
-	creds      *string
+type ApiGetPoliciesDecisionsPostRequest struct {
+	ctx                  _context.Context
+	ApiService           *DefaultApiService
+	xRequestCred         *string
+	policyManagerRequest *PolicyManagerRequest
 }
 
-func (r ApiGetPoliciesDecisionsRequest) Input(input base.PolicyManagerRequest) ApiGetPoliciesDecisionsRequest {
-	r.input = &input
+func (r ApiGetPoliciesDecisionsPostRequest) XRequestCred(xRequestCred string) ApiGetPoliciesDecisionsPostRequest {
+	r.xRequestCred = &xRequestCred
 	return r
 }
-func (r ApiGetPoliciesDecisionsRequest) Creds(creds string) ApiGetPoliciesDecisionsRequest {
-	r.creds = &creds
+func (r ApiGetPoliciesDecisionsPostRequest) PolicyManagerRequest(policyManagerRequest PolicyManagerRequest) ApiGetPoliciesDecisionsPostRequest {
+	r.policyManagerRequest = &policyManagerRequest
 	return r
 }
 
-func (r ApiGetPoliciesDecisionsRequest) Execute() (base.PolicyManagerResponse, *_nethttp.Response, error) {
-	return r.ApiService.GetPoliciesDecisionsExecute(r)
+func (r ApiGetPoliciesDecisionsPostRequest) Execute() (PolicyManagerResponse, *_nethttp.Response, error) {
+	return r.ApiService.GetPoliciesDecisionsPostExecute(r)
 }
 
 /*
- * GetPoliciesDecisions getPoliciesDecisions
- * Rest API for returning policy decisions
+ * GetPoliciesDecisionsPost getPoliciesDecisions.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiGetPoliciesDecisionsRequest
+ * @return ApiGetPoliciesDecisionsPostRequest
  */
-func (a *DefaultApiService) GetPoliciesDecisions(ctx _context.Context) ApiGetPoliciesDecisionsRequest {
-	return ApiGetPoliciesDecisionsRequest{
+func (a *DefaultApiService) GetPoliciesDecisionsPost(ctx _context.Context) ApiGetPoliciesDecisionsPostRequest {
+	return ApiGetPoliciesDecisionsPostRequest{
 		ApiService: a,
 		ctx:        ctx,
 	}
@@ -62,19 +60,19 @@ func (a *DefaultApiService) GetPoliciesDecisions(ctx _context.Context) ApiGetPol
 
 /*
  * Execute executes the request
- * @return base.PolicyManagerResponse
+ * @return PolicyManagerResponse
  */
-func (a *DefaultApiService) GetPoliciesDecisionsExecute(r ApiGetPoliciesDecisionsRequest) (base.PolicyManagerResponse, *_nethttp.Response, error) {
+func (a *DefaultApiService) GetPoliciesDecisionsPostExecute(r ApiGetPoliciesDecisionsPostRequest) (PolicyManagerResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarHTTPMethod   = _nethttp.MethodPost
 		localVarPostBody     interface{}
 		localVarFormFileName string
 		localVarFileName     string
 		localVarFileBytes    []byte
-		localVarReturnValue  base.PolicyManagerResponse
+		localVarReturnValue  PolicyManagerResponse
 	)
 
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.GetPoliciesDecisions")
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.GetPoliciesDecisionsPost")
 	if err != nil {
 		return localVarReturnValue, nil, GenericOpenAPIError{error: err.Error()}
 	}
@@ -84,19 +82,15 @@ func (a *DefaultApiService) GetPoliciesDecisionsExecute(r ApiGetPoliciesDecision
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
 	localVarFormParams := _neturl.Values{}
-	if r.input == nil {
-		return localVarReturnValue, nil, reportError("input is required and must be specified")
+	if r.xRequestCred == nil {
+		return localVarReturnValue, nil, reportError("xRequestCred is required and must be specified")
 	}
-	if r.creds == nil {
-		return localVarReturnValue, nil, reportError("creds is required and must be specified")
+	if r.policyManagerRequest == nil {
+		return localVarReturnValue, nil, reportError("policyManagerRequest is required and must be specified")
 	}
 
-	//localVarQueryParams.Add("input", parameterToString(*r.input, ""))
-	retval, _ := parameterToJson(*r.input)
-	localVarQueryParams.Add("input", retval)
-	localVarQueryParams.Add("creds", parameterToString(*r.creds, ""))
 	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
+	localVarHTTPContentTypes := []string{"application/json"}
 
 	// set Content-Type header
 	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
@@ -112,6 +106,9 @@ func (a *DefaultApiService) GetPoliciesDecisionsExecute(r ApiGetPoliciesDecision
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	localVarHeaderParams["X-Request-Cred"] = parameterToString(*r.xRequestCred, "")
+	// body params
+	localVarPostBody = r.policyManagerRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFormFileName, localVarFileName, localVarFileBytes)
 	if err != nil {
 		return localVarReturnValue, nil, err

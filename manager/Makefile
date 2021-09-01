@@ -15,6 +15,13 @@ include $(ROOT_DIR)/hack/make-rules/verify.mk
 
 
 pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
+	mkdir /tmp/taxonomy || true                                                                                                                          
+	cp ../charts/fybrik/files/taxonomy/*.json /tmp/taxonomy/
+	mkdir testdata/unittests/basetaxonomy || true
+	mkdir testdata/unittests/sampletaxonomy || true
+	cp ../charts/fybrik/files/taxonomy/*.json testdata/unittests/basetaxonomy
+	cp ../charts/fybrik/files/taxonomy/*.json testdata/unittests/sampletaxonomy
+	go run ../main.go taxonomy compile --out testdata/unittests/sampletaxonomy/taxonomy.json --base ../config/taxonomy/base/base.yaml ../config/taxonomy/example/application/appinfo.yaml ../config/taxonomy/example/application/interface.yaml ../config/taxonomy/example/catalog/locations.yaml ../config/taxonomy/example/catalog/tags.yaml ../config/taxonomy/example/module/actions.yaml 
 
 # Run tests
 test: export BLUEPRINT_NAMESPACE?=fybrik-blueprints
@@ -63,6 +70,7 @@ wait_for_manager: $(TOOLBIN)/kubectl
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
 run-integration-tests: export DOCKER_NAMESPACE?=fybrik-system
+run-integration-tests: export DOCKER_TAGNAME?=master
 run-integration-tests: export USE_MOCKUP_CONNECTOR?=true
 run-integration-tests: wait_for_manager
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestMotionAPIs -count 1

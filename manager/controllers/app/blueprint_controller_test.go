@@ -70,6 +70,7 @@ var _ = Describe("Blueprint Controller Real Env", func() {
 			blueprint.SetNamespace("default")
 			_ = k8sClient.Delete(context.Background(), blueprint)
 			blueprint.SetNamespace(blueprintNamespace)
+
 			_ = k8sClient.Delete(context.Background(), blueprint)
 			time.Sleep(interval)
 		})

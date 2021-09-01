@@ -5,8 +5,11 @@ package app
 
 import (
 	"context"
+	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/pkg/environment"
 	"math"
 	"reflect"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"strings"
 	"time"
 
@@ -260,6 +263,11 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 		}
 		plotter.Status.ObservedState.DataAccessInstructions = aggregatedInstructions
 
+		if errorCollection == nil {
+			r.Log.V(2).Info("Plotter is ready!", "plotter", plotter.Name)
+			return ctrl.Result{}, nil
+		}
+
 		// The following does a simple exponential backoff with a minimum of 5 seconds
 		// and a maximum of 60 seconds until the next reconcile
 		ready := *plotter.Status.ReadyTimestamp
@@ -300,7 +308,10 @@ func NewPlotterReconciler(mgr ctrl.Manager, name string, manager multicluster.Cl
 
 // SetupWithManager registers Plotter controller
 func (r *PlotterReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	numReconciles := environment.GetEnvAsInt(controllers.PlotterConcurrentReconcilesConfiguration, controllers.DefaultPlotterConcurrentReconciles)
+
 	return ctrl.NewControllerManagedBy(mgr).
+		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
 		For(&app.Plotter{}).
 		Complete(r)
 }

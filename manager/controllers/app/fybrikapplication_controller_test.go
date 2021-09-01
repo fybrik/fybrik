@@ -13,7 +13,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	apiv1alpha1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -30,11 +29,11 @@ var _ = Describe("FybrikApplication Controller", func() {
 
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test
-			module := &app.FybrikModule{}
+			module := &apiv1alpha1.FybrikModule{}
 			Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
-			module.Namespace = controllerNamespace
+      module.Namespace = controllerNamespace
+			application := &apiv1alpha1.FybrikApplication{}
 
-			application := &app.FybrikApplication{}
 			Expect(readObjectFromFile("../../testdata/e2e/fybrikapplication.yaml", application)).ToNot(HaveOccurred())
 			_ = k8sClient.Delete(context.Background(), application)
 			_ = k8sClient.Delete(context.Background(), module)
@@ -69,11 +68,11 @@ var _ = Describe("FybrikApplication Controller", func() {
 				// test access restriction: only modules from the control plane can be accessed
 				// Create a module in default namespace
 				// An attempt to fetch it will fail
-				module := &app.FybrikModule{}
+				module := &apiv1alpha1.FybrikModule{}
 				Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
 				module.Namespace = "default"
 				Expect(k8sClient.Create(context.Background(), module)).Should(Succeed())
-				fetchedModule := &app.FybrikModule{}
+				fetchedModule := &apiv1alpha1.FybrikModule{}
 				moduleKey := client.ObjectKeyFromObject(module)
 				Expect(k8sClient.Get(context.Background(), moduleKey, fetchedModule)).To(HaveOccurred(), "Should deny access")
 			}
@@ -81,14 +80,14 @@ var _ = Describe("FybrikApplication Controller", func() {
 		It("Test end-to-end for FybrikApplication", func() {
 			connector := os.Getenv("USE_MOCKUP_CONNECTOR")
 			if len(connector) > 0 && connector != "true" {
-				return
+				Skip("Skipping test when not running with mockup connector!")
 			}
-			module := &app.FybrikModule{}
+			module := &apiv1alpha1.FybrikModule{}
 			Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
 			moduleKey := client.ObjectKeyFromObject(module)
-			module.Namespace = controllerNamespace
+      module.Namespace = controllerNamespace
+			application := &apiv1alpha1.FybrikApplication{}
 
-			application := &app.FybrikApplication{}
 			Expect(readObjectFromFile("../../testdata/e2e/fybrikapplication.yaml", application)).ToNot(HaveOccurred())
 			applicationKey := client.ObjectKeyFromObject(application)
 			fmt.Printf("Module:  %v\n", module.Namespace)
@@ -140,9 +139,9 @@ var _ = Describe("FybrikApplication Controller", func() {
 			fmt.Printf("blueprint namespace fybrikapp: " + blueprintNamespace + "\n")
 
 			By("Status should contain the details of the endpoint")
-			Expect(len(application.Status.ReadEndpointsMap)).To(Equal(1))
+			Expect(len(application.Status.AssetStates)).To(Equal(1))
 			fqdn := "test-app-e2e-default-read-module-test-e2e-e24d69b99a." + blueprintNamespace + ".svc.cluster.local"
-			Expect(application.Status.ReadEndpointsMap["s3/redact-dataset"]).To(Equal(apiv1alpha1.EndpointSpec{
+			Expect(application.Status.AssetStates["s3/redact-dataset"].Endpoint).To(Equal(apiv1alpha1.EndpointSpec{
 				Hostname: fqdn,
 				Port:     80,
 				Scheme:   "grpc",

@@ -37,7 +37,7 @@ spec:
     columns: ["BLOOD_GROUP"]
     options:
       algo: md5
-  image: localhost:5000/fybrik-system/dummy-mover:latest
+  image: localhost:5000/fybrik-system/dummy-mover:master
   imagePullPolicy: "IfNotPresent"
   maxFailedRetries: 0
   successfulJobHistoryLimit: 3

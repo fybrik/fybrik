@@ -1,4 +1,8 @@
 export run_tkn=${run_tkn:-0}
+#<<<<<<< upstreamscoping
+=======
+export is_kind=${is_kind:-true}
+#>>>>>>> upstreamscoping-master
 export skip_tests=${skip_tests:-false}
 export GH_TOKEN=${GH_TOKEN:-fake}
 export image_source_repo_password=fake
@@ -11,9 +15,12 @@ export image_repo="${image_repo:-kind-registry:5000}"
 export image_source_repo="${image_source_repo:-fake.com}"
 export dockerhub_hostname="${dockerhub_hostname:-docker.io}"
 export git_url="https://github.com/fybrik/fybrik.git"
+#<<<<<<< upstreamscoping
 export cluster_scoped=false
 export use_application_namespace=true
 
+=======
+#>>>>>>> upstreamscoping-master
 echo "
 ## Git credentials
 For authenticated registries, if you use a git token instead of ssh key, credentials will not be deleted when the run is complete (and therefore, you will not have to regenerate them when restarting tasks).

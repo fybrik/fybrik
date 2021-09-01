@@ -9,11 +9,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"runtime"
-	"sort"
-
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	dc "fybrik.io/fybrik/pkg/connectors/protobuf"
+	"runtime"
+	"sort"
 )
 
 // GetProtocol returns the existing data protocol
@@ -88,14 +87,14 @@ func CreateDataSetIdentifier(datasetID string) string {
 	return id[:len(id)-1]
 }
 
-// Generating release name from step
-func GetReleaseName(applicationName string, namespace string, step app.FlowStep) string {
-	return GetReleaseNameByStepName(applicationName, namespace, step.Name)
+// Generating release name based on blueprint module
+func GetReleaseName(applicationName string, namespace string, blueprintModule app.BlueprintModule) string {
+	return GetReleaseNameByStepName(applicationName, namespace, blueprintModule.InstanceName)
 }
 
-// Generate release name from step name
-func GetReleaseNameByStepName(applicationName string, namespace string, stepName string) string {
-	fullName := applicationName + "-" + namespace + "-" + stepName
+// Generate release name from blueprint module name
+func GetReleaseNameByStepName(applicationName string, namespace string, moduleInstanceName string) string {
+	fullName := applicationName + "-" + namespace + "-" + moduleInstanceName
 	return HelmConformName(fullName)
 }
 

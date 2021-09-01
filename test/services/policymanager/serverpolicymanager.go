@@ -4,33 +4,61 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"log"
-	"net"
+	"net/http"
+	"strconv"
 
 	mockup "fybrik.io/fybrik/manager/controllers/mockup"
-	"fybrik.io/fybrik/manager/controllers/utils"
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
-	"google.golang.org/grpc"
+	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	"github.com/gin-gonic/gin"
 )
 
 const (
 	PORT = 50082
 )
 
-func main() {
-	address := utils.ListeningAddress(PORT)
-	log.Printf("starting mock policy manager server on address %s", address)
+var router *gin.Engine
 
-	listener, err := net.Listen("tcp", address)
+func constructPolicyManagerRequest(inputString string) *openapiclientmodels.PolicyManagerRequest {
+	log.Println("inconstructPolicymanagerRequest")
+	log.Println("inputString")
+	log.Println(inputString)
+	var input openapiclientmodels.PolicyManagerRequest
+	err := json.Unmarshal([]byte(inputString), &input)
 	if err != nil {
-		log.Fatalf("listening error: %v", err)
+		return nil
 	}
+	log.Println("input:", input)
+	return &input
+}
 
-	server := grpc.NewServer()
-	service := &mockup.MockPolicyManager{}
+func main() {
+	router = gin.Default()
 
-	pb.RegisterPolicyManagerServiceServer(server, service)
-	if err := server.Serve(listener); err != nil {
-		log.Fatalf("cannot serve mock policy manager: %v", err)
-	}
+	router.POST("/getPoliciesDecisions", func(c *gin.Context) {
+		creds := ""
+		if values := c.Request.Header["X-Request-Cred"]; len(values) > 0 {
+			creds = values[0]
+		}
+		log.Println("creds extracted from POST request in mockup policy manager:", creds)
+		input, _ := ioutil.ReadAll(c.Request.Body)
+		log.Println("input extracted from POST request body in mockup policy manager:", string(input))
+
+		policyManagerReq := constructPolicyManagerRequest(string(input))
+		policyManager := &mockup.MockPolicyManager{}
+		policyManagerResp, err := policyManager.GetPoliciesDecisions(policyManagerReq, creds)
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Error in GetPoliciesDecisions!")
+			return
+		}
+		c.JSON(http.StatusOK, policyManagerResp)
+	})
+
+	router.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "Hello World!")
+	})
+
+	log.Fatal(router.Run(":" + strconv.Itoa(PORT)))
 }

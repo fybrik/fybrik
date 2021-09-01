@@ -2,8 +2,6 @@
 
 [vscode tekton pipelines extension doc](https://github.com/redhat-developer/vscode-tekton)
 
-
-
 ## Bootstrapping
 
 Run the following command to bootstrap a Fybrik instance. By default the instance of Fybrik will be deployed as namespaced scoped, meaning the controller will only watch and process FybrikApplications from a specific namespace. Therefore limiting you to create FybrikApplications from one namespace. By that namespace is the one specific on the bootstrap script (a.k.a *system* namespace). You can change this behavior by setting environment variables. For details see [Scoping the deployment](#scoping-the-deployment).
@@ -24,13 +22,10 @@ After running the "tkn" command that was returned from the bootstrap script, the
 
 Tasks can be restarted in vscode by right-clicking on the task in the tekton pipelines extension.
 
-From command line, it can be done with a series of commands like this:
+From command line, it can be done with this script:
 ```
-# kubectl get taskrun build-and-deploy-run-run-integration-tests-full-deploy-zfwgc -o yaml > /tmp/taskrun.yaml
-# vi /tmp/taskrun.yaml
-# # delete metadata.name & metadata.namespace
-# # add metadata.generateName: restarted-task-
-# kubectl create -f /tmp/taskrun.yaml
+# ./restart-task.sh run-integration-tests
+# # Where run-integration-task is a grep match for the task you want to restart
 ```
 
 knative eventing is used to restart all downstream tasks.  Code rebuilds will trigger image rebuilds.  Image rebuilds will trigger helm upgrades.
@@ -58,3 +53,12 @@ By default the bootstrap script will deploy Fybrik namespaced scoped. Deploying 
 3. When using wkc-connector, the wkc-credentials secret must be in the same namespace you are using when creating FybrikApplication custom resources. The bootstrap script will unconditionally create a wkc-credentials secret in *system* namespace. 
    1. If running cluster scoped (i.e cluster_scoped=true) and you use a different namespace than *system* for your FybrikApplications, you will need to create a wkc-credentials secret in that namespace. 
    2. If running namespaced scoped (i.e cluster_scoped=false) and you set use_application_namespace=true, bootstrap will create the secret in *system*-app.
+
+## Building code from your development environment
+
+Set the following environment variable to point at your code repo, and it will be copied to the volume tekton tasks will mount rather than cloning code from github
+```
+github_workspace="/path/to/fybrik"
+. source-external.sh
+```
+
