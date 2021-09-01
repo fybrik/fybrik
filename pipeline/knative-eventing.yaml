@@ -1,0 +1,54 @@
+apiVersion: operator.knative.dev/v1alpha1
+kind: KnativeEventing
+metadata:
+  name: knative-eventing
+  namespace: knative-eventing
+spec:
+  registry:
+    override:
+      3scale-kourier-control: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:b291e575c344bbee191fb5b72a3e871727451fc2947d85e8d1fcb74a44f12528
+      3scale-kourier-gateway: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:540307410bb717ba869350a8df76d7daf1cd4edcaef9f76b9d8b95d54ed60b34
+      APISERVER_RA_IMAGE: registry.redhat.io/openshift-serverless-1/eventing-apiserver-receive-adapter-rhel8@sha256:9278f4c4b20d63de56005c21bad27924e18f57056dce227dfd019dcbac75242d
+      DISPATCHER_IMAGE: registry.redhat.io/openshift-serverless-1/eventing-in-memory-channel-dispatcher-rhel8@sha256:ccd77db7b34ab01a0a5326b916e287b65581c8bcc96015b6eb4fd1d94809adb0
+      KN_CLI_ARTIFACTS: registry.redhat.io/openshift-serverless-1/kn-cli-artifacts-rhel8@sha256:a8c199db946ca1040530943978b266df5179eca17ae9e20382aa117e14bf88fd
+      activator: registry.redhat.io/openshift-serverless-1/serving-activator-rhel8@sha256:f0de29f5efe0bcb178354d9a4f7940c7b923e5f31ea1ea44650e8c0e4946ec3a
+      activator/kube-rbac-proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy@sha256:01fc7bf43f37f4692ded540fad862d2d614a6522942221cf95e8e12f2f0e1d88
+      autoscaler: registry.redhat.io/openshift-serverless-1/serving-autoscaler-rhel8@sha256:bd83b02dcbd35b9ec197b417af99fb125690c1a48fac25d6fba4f24ca90cf690
+      autoscaler-hpa: registry.redhat.io/openshift-serverless-1/serving-autoscaler-hpa-rhel8@sha256:7267426752072cb85310ab29887389c09b2ac51a7cce2c3bb0209b3d0f468265
+      autoscaler-hpa/kube-rbac-proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy@sha256:01fc7bf43f37f4692ded540fad862d2d614a6522942221cf95e8e12f2f0e1d88
+      autoscaler/kube-rbac-proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy@sha256:01fc7bf43f37f4692ded540fad862d2d614a6522942221cf95e8e12f2f0e1d88
+      controller: registry.redhat.io/openshift-serverless-1/serving-controller-rhel8@sha256:2da6040523bd870726950009699624f4fc1f83088b75da9d8580b28fde2ecfec
+      controller/kube-rbac-proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy@sha256:01fc7bf43f37f4692ded540fad862d2d614a6522942221cf95e8e12f2f0e1d88
+      domain-mapping: registry.redhat.io/openshift-serverless-1/serving-domain-mapping-rhel8@sha256:ed99b72cae54ced15a8d28214aff29d19ce2b023c154f9d0201b91b6dd4dcd5a
+      domain-mapping/kube-rbac-proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy@sha256:01fc7bf43f37f4692ded540fad862d2d614a6522942221cf95e8e12f2f0e1d88
+      domainmapping-webhook: registry.redhat.io/openshift-serverless-1/serving-domain-mapping-webhook-rhel8@sha256:2c7cdb8253c7e7064abd40afa18d127bf2e8f6d96e7ce9f08d6694f585c3b340
+      domainmapping-webhook/kube-rbac-proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy@sha256:01fc7bf43f37f4692ded540fad862d2d614a6522942221cf95e8e12f2f0e1d88
+      eventing-controller/eventing-controller: registry.redhat.io/openshift-serverless-1/eventing-controller-rhel8@sha256:9950d1a53659cf6d22dfc2bed09c75e526d70632907cecee27fd95b372b18769
+      eventing-controller/kube-rbac-proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy@sha256:01fc7bf43f37f4692ded540fad862d2d614a6522942221cf95e8e12f2f0e1d88
+      eventing-webhook/eventing-webhook: registry.redhat.io/openshift-serverless-1/eventing-webhook-rhel8@sha256:3b3a6128d4082720b2a9a78391c059821301ba3e3383942ed47b091a2f5c4f58
+      eventing-webhook/kube-rbac-proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy@sha256:01fc7bf43f37f4692ded540fad862d2d614a6522942221cf95e8e12f2f0e1d88
+      imc-controller/controller: registry.redhat.io/openshift-serverless-1/eventing-in-memory-channel-controller-rhel8@sha256:fdf3e63f6710c2046af4dd2b6c7f615f7bf7f79221021f66204852ea16150e62
+      imc-controller/kube-rbac-proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy@sha256:01fc7bf43f37f4692ded540fad862d2d614a6522942221cf95e8e12f2f0e1d88
+      imc-dispatcher/dispatcher: registry.redhat.io/openshift-serverless-1/eventing-in-memory-channel-dispatcher-rhel8@sha256:ccd77db7b34ab01a0a5326b916e287b65581c8bcc96015b6eb4fd1d94809adb0
+      imc-dispatcher/kube-rbac-proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy@sha256:01fc7bf43f37f4692ded540fad862d2d614a6522942221cf95e8e12f2f0e1d88
+      istio-webhook/webhook: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:571aff73aac13e3db6b936f182a5440e0c4521e253cf477160d4cd4ecbcc9336
+      mt-broker-controller/kube-rbac-proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy@sha256:01fc7bf43f37f4692ded540fad862d2d614a6522942221cf95e8e12f2f0e1d88
+      mt-broker-controller/mt-broker-controller: registry.redhat.io/openshift-serverless-1/eventing-mtchannel-broker-rhel8@sha256:7b6d7ebf906ed887cde0013eaf190d3a3d05658bcc883243fc1d88c01fa8f6c9
+      mt-broker-filter/filter: registry.redhat.io/openshift-serverless-1/eventing-mtbroker-filter-rhel8@sha256:0e6a40da4536d6bac69789e70bdf2e31439d667c560d73b8cd97d8067caf2f20
+      mt-broker-filter/kube-rbac-proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy@sha256:01fc7bf43f37f4692ded540fad862d2d614a6522942221cf95e8e12f2f0e1d88
+      mt-broker-ingress/ingress: registry.redhat.io/openshift-serverless-1/eventing-mtbroker-ingress-rhel8@sha256:d751d81f4e60e7de196ff36bbcefc053b1501046d2f263e9b849457251bd0c9c
+      mt-broker-ingress/kube-rbac-proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy@sha256:01fc7bf43f37f4692ded540fad862d2d614a6522942221cf95e8e12f2f0e1d88
+      networking-istio: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:bfd429bcfca3e549456b9ae6c0e4f82f670e23e8f38cb4a3a49f516991f9e5b8
+      pingsource-mt-adapter/dispatcher: registry.redhat.io/openshift-serverless-1/eventing-mtping-rhel8@sha256:d4e323328f6ef768007dc992c49dd2407bcde44c6f272ed8ba0115b71b8d4fce
+      queue-proxy: registry.redhat.io/openshift-serverless-1/serving-queue-rhel8@sha256:51f51be17f5e47d30dae3efe3e89bfe52ffc23d9fbea36613d36e0b576e7391c
+      storage-version-migration-eventing-eventing-0.21.0/migrate: registry.redhat.io/openshift-serverless-1/eventing-storage-version-migration-rhel8@sha256:d262a8e3b950936a9ad7ec5e9a55398115019db6a1e05d108ed74a972713286a
+      storage-version-migration-serving-serving-0.21.0/migrate: registry.redhat.io/openshift-serverless-1/serving-storage-version-migration-rhel8@sha256:7b596b35ce49bd1bc7fe0ae1ebb198134863c2aa27df0f59e93122b93489cca8
+      sugar-controller/controller: registry.redhat.io/openshift-serverless-1/eventing-sugar-controller-rhel8@sha256:a4d824a0b2b088f2fc57dea696d869f17ea94488965cb952a06cecd08d5edeec
+      sugar-controller/kube-rbac-proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy@sha256:01fc7bf43f37f4692ded540fad862d2d614a6522942221cf95e8e12f2f0e1d88
+      webhook/kube-rbac-proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy@sha256:01fc7bf43f37f4692ded540fad862d2d614a6522942221cf95e8e12f2f0e1d88
+      webhook/webhook: registry.redhat.io/openshift-serverless-1/serving-webhook-rhel8@sha256:26fb29f35a5aba0793a57e80d58062a7db83e1e6be5b2b35e30525aa9fb4c697
+  resources:
+  - container: eventing-webhook
+    limits:
+      memory: 1Gi
+  sinkBindingSelectionMode: inclusion

@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "workspace"
+  labels:
+    app: workspace
+spec:
+  selector:
+    matchLabels:
+      app: workspace
+  serviceName: workspace 
+  replicas: 1
+  template:
+    metadata:
+      name: workspace
+      labels:
+        app: workspace # has to match .spec.selector.matchLabels
+    spec:
+      securityContext:
+        runAsUser: 0
+        fsGroup: 0
+      serviceAccount: root-sa
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: workspace 
+          imagePullPolicy: Always
+          image: docker.io/yakinikku/suede:latest
+          env:
+            - name: JAVA_HOME
+              value: "/usr/lib/jvm/java-8-openjdk-amd64/"
+          command: [ "bash", "-c", "sleep infinity" ]
+          volumeMounts:
+            - name: workspace-pvc
+              mountPath: /workspace/source
+    
+      volumes:
+        - name: workspace-pvc
+          persistentVolumeClaim:
+            claimName: source-pvc

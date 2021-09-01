@@ -9,11 +9,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"runtime"
-	"sort"
-
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	dc "fybrik.io/fybrik/pkg/connectors/protobuf"
+	"runtime"
+	"sort"
 )
 
 // GetProtocol returns the existing data protocol

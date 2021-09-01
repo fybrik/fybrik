@@ -24,6 +24,12 @@ var _ = Describe("FybrikApplication Controller", func() {
 	Context("FybrikApplication", func() {
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test
+			module := &apiv1alpha1.FybrikModule{}
+			Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
+			application := &apiv1alpha1.FybrikApplication{}
+			Expect(readObjectFromFile("../../testdata/e2e/fybrikapplication.yaml", application)).ToNot(HaveOccurred())
+			_ = k8sClient.Delete(context.Background(), application)
+			_ = k8sClient.Delete(context.Background(), module)
 		})
 
 		AfterEach(func() {
@@ -62,6 +68,10 @@ var _ = Describe("FybrikApplication Controller", func() {
 			}
 		})
 		It("Test end-to-end for FybrikApplication", func() {
+			connector := os.Getenv("USE_MOCKUP_CONNECTOR")
+			if len(connector) > 0 && connector != "true" {
+				Skip("Skipping test when not running with mockup connector!")
+			}
 			module := &apiv1alpha1.FybrikModule{}
 			Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
 			moduleKey := client.ObjectKeyFromObject(module)

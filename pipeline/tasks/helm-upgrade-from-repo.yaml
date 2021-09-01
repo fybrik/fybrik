@@ -1,0 +1,58 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  labels:
+    app.kubernetes.io/version: "0.1"
+    operator.tekton.dev/provider-type: internal
+  name: helm-upgrade-from-repo
+spec:
+  description: These tasks will install / upgrade a helm chart into your Kubernetes
+    / OpenShift Cluster using Helm
+  params:
+  - description: Specify a specific helm repo
+    name: helm_repo
+    type: string
+  - description: Specify chart name that will be deployed
+    name: chart_name
+    type: string
+  - default: v1.0.0
+    description: The helm release version in semantic versioning format
+    name: release_version
+    type: string
+  - default: helm-release
+    description: The helm release name
+    name: release_name
+    type: string
+  - default: ""
+    description: The helm release namespace
+    name: release_namespace
+    type: string
+  - default: ""
+    description: 'Specify the values you want to overwrite, comma separated: autoscaling.enabled=true,replicas=1'
+    name: overwrite_values
+    type: string
+  - default: latest
+    description: Specify a specific helm version
+    name: helm_version
+    type: string
+  - default: docker.io/lachlanevenson/k8s-helm
+    description: helm image
+    name: image
+    type: string
+  steps:
+  - image: $(params.image)
+    name: upgrade-from-repo
+    resources: {}
+    script: |
+      echo current installed helm releases
+      helm list --namespace "$(inputs.params.release_namespace)"
+      echo parsing helms repo name...
+      REPO=`echo "$(inputs.params.chart_name)" | cut -d "/" -f 1`
+      echo adding helm repo...
+      helm repo add $REPO "$(inputs.params.helm_repo)"
+      echo adding updating repo...
+      helm repo update
+      echo installing helm chart...
+      helm upgrade --wait --install --namespace "$(inputs.params.release_namespace)" $(inputs.params.release_name) $(inputs.params.chart_name) --debug --set "$(inputs.params.overwrite_values)"
+  workspaces:
+  - name: source

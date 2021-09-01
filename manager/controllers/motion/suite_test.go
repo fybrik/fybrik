@@ -72,8 +72,12 @@ var _ = BeforeSuite(func(done Done) {
 	if os.Getenv("NO_SIMULATED_PROGRESS") == "true" {
 		noSimulatedProgress = true
 	}
+	path, pathErr := os.Getwd()
+	if pathErr != nil {
+		logf.Log.Info(pathErr.Error())
+	}
 	testEnv = &envtest.Environment{
-		CRDDirectoryPaths:     []string{filepath.Join("..", "..", "..", "charts", "fybrik-crd", "templates")},
+		CRDDirectoryPaths:     []string{filepath.Join(path, "..", "..", "..", "charts", "fybrik-crd", "templates")},
 		ErrorIfCRDPathMissing: true,
 		//AttachControlPlaneOutput: true,
 	}

@@ -1,0 +1,105 @@
+# If we detect an image has been rebuilt, trigger a pipeline that will re-deploy (helm upgrade)
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: image-build-template
+spec:
+  params:
+    - description: IMAGE_DIGEST
+      name: IMAGE_DIGEST
+    - name: IMAGE_NAME
+      description: IMAGE_NAME
+    - name: IMAGE_ID
+      description: IMAGE_ID
+    - name: docker-hostname
+      description: docker-hostname
+    - name: docker-namespace
+      description: docker-namespace
+    - name: NAMESPACE
+      description: NAMESPACE
+    - description: Event Type
+      name: event-type
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: redeploy- 
+      spec:
+        params:
+          - name: IMAGE_DIGEST
+            value: $(tt.params.IMAGE_DIGEST)
+          - name: IMAGE_NAME
+            value: $(tt.params.IMAGE_NAME)
+          - name: IMAGE_ID
+            value: $(tt.params.IMAGE_ID)
+          - name: INCREMENTAL_RESTART
+            value: "true"
+          - name: docker-hostname
+            value: $(tt.params.docker-hostname)
+          - name: docker-namespace
+            value: $(tt.params.docker-namespace)
+          - name: NAMESPACE
+            value: $(tt.params.NAMESPACE)
+          - name: event-type
+            value: $(tt.params.event-type)
+        workspaces:
+          - name: shared-workspace
+            persistentVolumeClaim:
+              claimName: source-pvc
+          - name: images-url
+            emptyDir: {}
+          - name: artifacts
+            persistentVolumeClaim:
+              claimName: artifacts-pvc
+        pipelineRef:
+          name: build-and-deploy
+---
+# If we detect code has been rebuilt, trigger a pipeline that will rebuild the downstream image 
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: code-change-template
+spec:
+  params:
+    - description: COMPONENT_NAME
+      name: COMPONENT_NAME
+    - name: docker-hostname
+      description: docker-hostname
+    - name: docker-namespace
+      description: docker-namespace
+    - name: NAMESPACE
+      description: NAMESPACE
+    - description: Event Type
+      name: event-type
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: rebuild-image-
+      spec:
+        params:
+          - name: COMPONENT_NAME
+            value: $(tt.params.COMPONENT_NAME)
+          - name: INCREMENTAL_CODE_RESTART
+            value: "true"
+          - name: docker-hostname
+            value: $(tt.params.docker-hostname)
+          - name: docker-namespace
+            value: $(tt.params.docker-namespace)
+          - name: NAMESPACE
+            value: $(tt.params.NAMESPACE)
+          - name: event-type
+            value: $(tt.params.event-type)
+          - name: IMAGE_DIGEST
+            value: none
+        workspaces:
+          - name: shared-workspace
+            persistentVolumeClaim:
+              claimName: source-pvc
+          - name: images-url
+            emptyDir: {}
+          - name: artifacts
+            persistentVolumeClaim:
+              claimName: artifacts-pvc
+        pipelineRef:
+          name: build-and-deploy

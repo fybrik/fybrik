@@ -1,0 +1,64 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: tekton-task-eventlistener
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    # Detect an image rebuild
+    - bindings:
+        - ref: image-triggerbinding
+      name: image-rebuild
+      template:
+        ref: "image-build-template"
+      interceptors:
+        - cel:
+            filter: header.match('Ce-Type', 'dev.knative.apiserver.resource.update')
+        - cel:
+            filter: body.metadata.generateName != ''
+        - cel:
+            filter: body.status.conditions[0].reason == "Succeeded"
+        - cel:
+            filter: body.spec.taskRef.name == "buildah"
+    # Detect a code change
+    - bindings:
+        - ref: code-change-triggerbinding
+      name: code-change
+      template:
+        ref: "code-change-template"
+      interceptors:
+        - cel:
+            filter: header.match('Ce-Type', 'dev.knative.apiserver.resource.update')
+        - cel:
+            filter: body.metadata.generateName != ''
+        - cel:
+            filter: body.status.conditions[0].reason == "Succeeded"
+        - cel:
+            filter: body.spec.taskRef.name == "make"
+        - cel:
+            filter: body.spec.params[0].value != 'run-integration-tests'
+        - cel:
+            filter: body.spec.params[0].value != 'test'
+        - cel:
+            filter: body.spec.params[1].value != 'run-integration-tests'
+        - cel:
+            filter: body.spec.params[1].value != 'test'
+        - cel:
+            filter: body.spec.params[2].value != 'run-integration-tests'
+        - cel:
+            filter: body.spec.params[2].value != 'test'
+    # Detect a code change has triggered an image build
+    - bindings:
+        - ref: image-triggerbinding
+      name: image-rebuild-from-codechange
+      template:
+        ref: "image-build-template"
+      interceptors:
+        - cel:
+            filter: header.match('Ce-Type', 'dev.knative.apiserver.resource.update')
+        - cel:
+            filter: body.status.conditions[0].reason == "Succeeded"
+        - cel:
+            filter: body.spec.taskRef.name == "buildah"
+        - cel:
+            filter: body.metadata.labels['triggers.tekton.dev/trigger'] == "code-change"

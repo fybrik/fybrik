@@ -1,0 +1,104 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: make
+spec:
+  description: This Task is Golang task to test Go projects.
+  params:
+  - default: ""
+    description: 'packages to test (default: ./...)'
+    name: packages
+    type: string
+  - default: .
+    description: path to the directory to use as context.
+    name: context
+    type: string
+  - default: latest
+    description: golang version to use for tests
+    name: version
+    type: string
+  - default: ""
+    description: flags to use for the test command
+    name: flags
+    type: string
+  - default: ""
+    description: make target
+    name: target
+    type: string
+  - default: ""
+    description: env vars for make command
+    name: env_vars
+    type: string
+  - default: linux
+    description: running program's operating system target
+    name: GOOS
+    type: string
+  - default: amd64
+    description: running program's architecture target
+    name: GOARCH
+    type: string
+  - default: auto
+    description: value of module support
+    name: GO111MODULE
+    type: string
+  - default: ""
+    description: Go caching directory path
+    name: GOCACHE
+    type: string
+  - default: ""
+    description: Go mod caching directory path
+    name: GOMODCACHE
+    type: string
+  - default: "docker.io/yakinikku/suede_compile:latest"
+    description: default image to use for compiling
+    name: image
+    type: string
+  - default: ""
+    name: docker-hostname
+    type: string
+  - default: ""
+    name: docker-namespace
+    type: string
+  - default: "false"
+    name: INCREMENTAL_CODE_RESTART 
+    type: string
+  results:
+  - description: docker-namespace of the image just built
+    name: docker-namespace
+  - description: docker-hostname of the image just built
+    name: docker-hostname
+  steps:
+  - env:
+    - name: GOOS
+      value: $(params.GOOS)
+    - name: GOARCH
+      value: $(params.GOARCH)
+    - name: GO111MODULE
+      value: $(params.GO111MODULE)
+    - name: GOCACHE
+      value: $(params.GOCACHE)
+    - name: GOMODCACHE
+      value: $(params.GOMODCACHE)
+    image: $(params.image)
+    name: unit-test
+    resources: {}
+    script: |
+      if [[ $(params.INCREMENTAL_CODE_RESTART) == "true" ]]; then
+          echo "No-op because we are just building images"
+          exit 0
+      fi
+      env
+      pwd
+      cd $(params.context)
+      $(params.env_vars) make $(params.target) $(params.flags) $(params.packages)
+    workingDir: $(workspaces.source.path)
+  - image: $(params.image)
+    name: docker-namespace-to-results
+    resources: {}
+    script: echo -n $(params.docker-namespace) > /tekton/results/docker-namespace
+  - image: $(params.image)
+    name: docker-hostname-to-results
+    resources: {}
+    script: echo -n $(params.docker-hostname) > /tekton/results/docker-hostname
+  workspaces:
+  - name: source
