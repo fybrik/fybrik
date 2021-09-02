@@ -13,8 +13,6 @@
 package openapiserver
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -42,21 +40,17 @@ func (e *ConnectorController) contactOPA(input openapiclientmodels.PolicyManager
 		return openapiclientmodels.PolicyManagerResponse{}, err
 	}
 
-	jsonOutput, err := json.MarshalIndent(eval, "", "\t")
-	if err != nil {
-		return openapiclientmodels.PolicyManagerResponse{}, fmt.Errorf("error during MarshalIndent of OPA decisions: %v", err)
-	}
-	log.Println("contactOPA: Received evaluation after execution of GetOPADecisions : " + string(jsonOutput))
+	output := render.AsCode(eval)
+	log.Println("received PolicyManagerResponse from GetOPADecisions:", output)
 
 	return eval, nil
 }
 
-// GetPoliciesDecisions - getPoliciesDecisions
 func (e *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 	log.Println("in GetPoliciesDecisions of V2 OPA Connector!")
 	input := new(openapiclientmodels.PolicyManagerRequest)
 	if err := c.ShouldBindJSON(input); err != nil {
-		log.Println("err.Error()2:", err.Error())
+		log.Println("Error during ShouldBindJSON:", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
