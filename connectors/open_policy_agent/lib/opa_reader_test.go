@@ -11,6 +11,7 @@ import (
 
 	tu "fybrik.io/fybrik/connectors/open_policy_agent/testutil"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	"github.com/hashicorp/go-retryablehttp"
 	"gotest.tools/assert"
 )
 
@@ -33,7 +34,11 @@ func TestMainOpaConnector(t *testing.T) {
 	policyManagerReq, creds, err := connectors.ConvertGrpcReqToOpenAPIReq(applicationContext)
 	assert.NilError(t, err)
 
-	policyManagerResp, err := srv.GetOPADecisions(policyManagerReq, creds, catalogReader, policyToBeEvaluated)
+	retryClient := retryablehttp.NewClient()
+	retryClient.RetryMax = 10
+	standardClient := retryClient.HTTPClient // *http.Client
+
+	policyManagerResp, err := srv.GetOPADecisions(policyManagerReq, creds, catalogReader, policyToBeEvaluated, standardClient)
 	assert.NilError(t, err)
 
 	datasets := applicationContext.GetDatasets()

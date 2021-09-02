@@ -15,41 +15,23 @@ package openapiserver
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
-	"strconv"
 
 	opabl "fybrik.io/fybrik/connectors/open_policy_agent/lib"
 	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 	"github.com/gin-gonic/gin"
 )
 
-func getEnv(key string) string {
-	value, exists := os.LookupEnv(key)
-	if !exists {
-		log.Fatalf("Env Variable %v not defined", key)
-	}
-	log.Printf("Env. variable extracted: %s - %s\n", key, value)
-	return value
+type ConnectorController struct {
+	Catalogconnectoraddress string
+	Policytobeevaluated     string
+	Timeout                 int
+	Opaserverurl            string
+	Opaclient               *http.Client
 }
 
-func constructPolicyManagerRequest(inputString string) (*openapiclientmodels.PolicyManagerRequest, error) {
-	log.Println("inconstructPolicymanagerRequest")
-	log.Println("inputString")
-	log.Println(inputString)
-	var input openapiclientmodels.PolicyManagerRequest
-	err := json.Unmarshal([]byte(inputString), &input)
-	if err != nil {
-		return nil, err
-	}
-	log.Printf("input: %v", input)
-
-	return &input, nil
-}
-
-func displayReq(input2 openapiclientmodels.PolicyManagerRequest) error {
+func (e *ConnectorController) displayReq(input2 openapiclientmodels.PolicyManagerRequest) error {
 	bytes, err := input2.MarshalJSON()
 	if err != nil {
 		log.Println("err: ", err)
@@ -59,22 +41,11 @@ func displayReq(input2 openapiclientmodels.PolicyManagerRequest) error {
 	return nil
 }
 
-func contactOPA(input openapiclientmodels.PolicyManagerRequest, creds string) (openapiclientmodels.PolicyManagerResponse, error) {
-	catalogConnectorAddress := getEnv("CATALOG_CONNECTOR_URL")
-	policyToBeEvaluated := "dataapi/authz/verdict"
+func (e *ConnectorController) contactOPA(input openapiclientmodels.PolicyManagerRequest, creds string) (openapiclientmodels.PolicyManagerResponse, error) {
+	opaReader := opabl.NewOpaReader(e.Opaserverurl)
 
-	timeOutInSecs := getEnv("CONNECTION_TIMEOUT")
-	timeOut, err := strconv.Atoi(timeOutInSecs)
-
-	if err != nil {
-		return openapiclientmodels.PolicyManagerResponse{}, fmt.Errorf("conversion of timeOutinseconds failed: %v", err)
-	}
-
-	opaServerURL := getEnv("OPA_SERVER_URL")
-	opaReader := opabl.NewOpaReader(opaServerURL)
-
-	catalogReader := opabl.NewCatalogReader(catalogConnectorAddress, timeOut)
-	eval, err := opaReader.GetOPADecisions(&input, creds, catalogReader, policyToBeEvaluated)
+	catalogReader := opabl.NewCatalogReader(e.Catalogconnectoraddress, e.Timeout)
+	eval, err := opaReader.GetOPADecisions(&input, creds, catalogReader, e.Policytobeevaluated, e.Opaclient)
 	if err != nil {
 		log.Println("GetOPADecisions err:", err)
 		return openapiclientmodels.PolicyManagerResponse{}, err
@@ -90,27 +61,23 @@ func contactOPA(input openapiclientmodels.PolicyManagerRequest, creds string) (o
 }
 
 // GetPoliciesDecisions - getPoliciesDecisions
-func GetPoliciesDecisions(c *gin.Context) {
+func (e *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 	log.Println("in GetPoliciesDecisions of V2 OPA Connector!")
-	data, _ := ioutil.ReadAll(c.Request.Body)
-	log.Printf("ctx.Request.body: %v", string(data))
-	log.Println("creds value is", c.Request.Header["X-Request-Cred"][0])
-
-	input2, err := constructPolicyManagerRequest(string(data))
-	if err != nil {
-		log.Println("Error during constructPolicyManagerRequest: ", err)
-		c.JSON(http.StatusInternalServerError, gin.H{})
+	input := new(openapiclientmodels.PolicyManagerRequest)
+	if err := c.ShouldBindJSON(input); err != nil {
+		log.Println("err.Error()2:", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	log.Printf("input2:")
-	err = displayReq(*input2)
+	log.Printf("input:")
+	err := e.displayReq(*input)
 	if err != nil {
 		log.Println("Error during displayReq: ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{})
 		return
 	}
 
-	resp, err := contactOPA(*input2, c.Request.Header["X-Request-Cred"][0])
+	resp, err := e.contactOPA(*input, c.Request.Header["X-Request-Cred"][0])
 	if err != nil {
 		log.Println("Error during contactOPA: ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{})

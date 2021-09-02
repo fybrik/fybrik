@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/buger/jsonparser"
-	"github.com/hashicorp/go-retryablehttp"
+
 	"github.com/tidwall/pretty"
 )
 
@@ -56,7 +56,7 @@ func doesOpaHaveUserPoliciesLoaded(responsedata []byte) (string, bool) {
 	return decisionid, true
 }
 
-func EvaluatePoliciesOnInput(inputJSON string, opaServerURL string, policyToBeEvaluated string) (string, error) {
+func EvaluatePoliciesOnInput(inputJSON string, opaServerURL string, policyToBeEvaluated string, standardClient *http.Client) (string, error) {
 	if !strings.HasPrefix(opaServerURL, "http://") {
 		opaServerURL = "http://" + opaServerURL + "/"
 	}
@@ -64,10 +64,6 @@ func EvaluatePoliciesOnInput(inputJSON string, opaServerURL string, policyToBeEv
 		opaServerURL += "/"
 	}
 	log.Println("using opaServerURL in OPAConnector EvaluatePoliciesOnInput: ", opaServerURL)
-
-	retryClient := retryablehttp.NewClient()
-	retryClient.RetryMax = 10
-	standardClient := retryClient.HTTPClient // *http.Client
 
 	// input HTTP req
 	httpMethod := "POST"

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 
 	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
@@ -126,7 +127,7 @@ func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *openapiclient
 	return in, nil
 }
 
-func (r *OpaReader) GetOPADecisions(in *openapiclientmodels.PolicyManagerRequest, creds string, catalogReader *CatalogReader, policyToBeEvaluated string) (openapiclientmodels.PolicyManagerResponse, error) {
+func (r *OpaReader) GetOPADecisions(in *openapiclientmodels.PolicyManagerRequest, creds string, catalogReader *CatalogReader, policyToBeEvaluated string, opaClient *http.Client) (openapiclientmodels.PolicyManagerResponse, error) {
 	datasetsMetadata, err := catalogReader.GetDatasetsMetadataFromCatalog(in, creds)
 	if err != nil {
 		return openapiclientmodels.PolicyManagerResponse{}, err
@@ -149,7 +150,7 @@ func (r *OpaReader) GetOPADecisions(in *openapiclientmodels.PolicyManagerRequest
 	inputJSON := "{ \"input\": " + string(b) + " }"
 	fmt.Println("updated stringified policy manager request in GetOPADecisions", inputJSON)
 
-	opaEval, err := EvaluatePoliciesOnInput(inputJSON, r.opaServerURL, policyToBeEvaluated)
+	opaEval, err := EvaluatePoliciesOnInput(inputJSON, r.opaServerURL, policyToBeEvaluated, opaClient)
 	if err != nil {
 		log.Printf("error in EvaluatePoliciesOnInput : %v", err)
 		return openapiclientmodels.PolicyManagerResponse{}, fmt.Errorf("error in EvaluatePoliciesOnInput : %v", err)

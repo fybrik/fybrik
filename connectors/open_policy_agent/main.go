@@ -14,14 +14,52 @@ package main
 
 import (
 	"log"
+	"os"
+	"strconv"
 
+	openapiserver "fybrik.io/fybrik/connectors/open_policy_agent/go"
 	sw "fybrik.io/fybrik/connectors/open_policy_agent/go"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
+func getEnv(key string) string {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		log.Fatalf("Env Variable %v not defined", key)
+	}
+	log.Printf("Env. variable extracted: %s - %s\n", key, value)
+	return value
+}
+
 func main() {
+	log.Println("in main2: ")
+	catalogConnectorAddress := getEnv("CATALOG_CONNECTOR_URL")
+	policyToBeEvaluated := "dataapi/authz/verdict"
+
+	timeOutInSecs := getEnv("CONNECTION_TIMEOUT")
+	timeOut, err := strconv.Atoi(timeOutInSecs)
+
+	if err != nil {
+		return
+	}
+
+	opaServerURL := getEnv("OPA_SERVER_URL")
+
+	retryClient := retryablehttp.NewClient()
+	retryClient.RetryMax = 10
+	standardClient := retryClient.HTTPClient // *http.Client
+
+	connController := &openapiserver.ConnectorController{
+		Catalogconnectoraddress: catalogConnectorAddress,
+		Policytobeevaluated:     policyToBeEvaluated,
+		Timeout:                 timeOut,
+		Opaserverurl:            opaServerURL,
+		Opaclient:               standardClient,
+	}
+
+	router := sw.NewRouter(connController)
+
 	log.Printf("Server started")
-
-	router := sw.NewRouter()
-
 	log.Fatal(router.Run(":8081"))
+
 }
