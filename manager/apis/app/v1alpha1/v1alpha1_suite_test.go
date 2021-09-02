@@ -19,12 +19,16 @@ var cfg *rest.Config
 var c client.Client
 
 func TestMain(m *testing.M) {
+	path, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
 	t := &envtest.Environment{
-		CRDDirectoryPaths:     []string{filepath.Join("..", "..", "..", "..", "charts", "fybrik-crd", "templates")},
+		CRDDirectoryPaths:     []string{filepath.Join(path, "..", "..", "..", "..", "charts", "fybrik-crd", "templates")},
 		ErrorIfCRDPathMissing: true,
 	}
 
-	err := SchemeBuilder.AddToScheme(scheme.Scheme)
+	err = SchemeBuilder.AddToScheme(scheme.Scheme)
 	if err != nil {
 		log.Fatal(err)
 	}

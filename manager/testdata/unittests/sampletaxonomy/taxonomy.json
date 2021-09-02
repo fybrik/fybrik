@@ -1,0 +1,267 @@
+{
+  "definitions": {
+    "Action": {
+      "type": "object",
+      "properties": {
+        "deny": {
+          "$ref": "#/definitions/Deny"
+        },
+        "name": {
+          "$ref": "#/definitions/ActionName"
+        },
+        "redactAction": {
+          "$ref": "#/definitions/RedactAction"
+        },
+        "removeAction": {
+          "$ref": "#/definitions/RemoveAction"
+        }
+      },
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "name": {
+              "enum": [
+                "redactAction"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "redactAction"
+          ]
+        },
+        {
+          "properties": {
+            "name": {
+              "enum": [
+                "removeAction"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "removeAction"
+          ]
+        },
+        {
+          "properties": {
+            "name": {
+              "enum": [
+                "deny"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "deny"
+          ]
+        }
+      ],
+      "required": [
+        "name"
+      ]
+    },
+    "ActionName": {
+      "type": "string",
+      "enum": [
+        "deny",
+        "redactAction",
+        "removeAction"
+      ]
+    },
+    "AppInfo": {
+      "type": "object",
+      "properties": {
+        "intent": {
+          "enum": [
+            "Customer Behavior Analysis",
+            "Customer Support",
+            "Fraud Detection",
+            "Marketing"
+          ]
+        },
+        "role": {
+          "enum": [
+            "Business Analyst",
+            "Customer Support",
+            "Data Scientist",
+            "HR",
+            "Sales",
+            "Security"
+          ]
+        }
+      },
+      "required": [
+        "intent",
+        "role"
+      ]
+    },
+    "Dataformat": {
+      "type": "string",
+      "enum": [
+        "arrow",
+        "avro",
+        "csv",
+        "db2-jdbc",
+        "json",
+        "parquet"
+      ]
+    },
+    "DatasetID": {
+      "type": "string"
+    },
+    "Deny": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "Interface": {
+      "type": "object",
+      "properties": {
+        "dataformat": {
+          "$ref": "#/definitions/Dataformat"
+        },
+        "protocol": {
+          "$ref": "#/definitions/Protocol"
+        }
+      },
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "dataformat": {
+              "enum": [
+                "arrow"
+              ]
+            },
+            "protocol": {
+              "enum": [
+                "fybrik-arrow-flight"
+              ]
+            }
+          },
+          "required": [
+            "protocol",
+            "dataformat"
+          ]
+        },
+        {
+          "properties": {
+            "dataformat": {
+              "enum": [
+                "json",
+                "avro"
+              ]
+            },
+            "protocol": {
+              "enum": [
+                "kafka"
+              ]
+            }
+          },
+          "required": [
+            "protocol",
+            "dataformat"
+          ]
+        },
+        {
+          "properties": {
+            "dataformat": {
+              "enum": [
+                "csv",
+                "parquet"
+              ]
+            },
+            "protocol": {
+              "enum": [
+                "s3"
+              ]
+            }
+          },
+          "required": [
+            "protocol",
+            "dataformat"
+          ]
+        },
+        {
+          "properties": {
+            "dataformat": {
+              "enum": [
+                "db2-jdbc"
+              ]
+            },
+            "protocol": {
+              "enum": [
+                "db2-jdbc"
+              ]
+            }
+          },
+          "required": [
+            "protocol",
+            "dataformat"
+          ]
+        }
+      ]
+    },
+    "PolicyManagerRequestContext": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "ProcessingLocation": {
+      "type": "string",
+      "enum": [
+        "Netherlands",
+        "Turkey"
+      ]
+    },
+    "Protocol": {
+      "type": "string",
+      "enum": [
+        "db2-jdbc",
+        "fybrik-arrow-flight",
+        "kafka",
+        "s3"
+      ]
+    },
+    "RedactAction": {
+      "type": "object",
+      "properties": {
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "columns"
+      ]
+    },
+    "RemoveAction": {
+      "type": "object",
+      "properties": {
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "columns"
+      ]
+    },
+    "Tags": {
+      "type": "object",
+      "properties": {
+        "confidential": {
+          "type": "boolean"
+        },
+        "region": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

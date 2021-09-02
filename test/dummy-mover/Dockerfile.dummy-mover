@@ -1,4 +1,6 @@
-FROM alpine:latest
+ARG REGISTRY=docker.io/library
+
+FROM ${REGISTRY}/alpine:latest
 WORKDIR /
 
 RUN echo -e '#!/bin/sh\necho "Running dummy batch mover."' > /mover && \

@@ -1,0 +1,37 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "policymanager.structs.schema.json",
+    "title": "Policy Manager Taxonomy",
+    "type": "object",
+    "description": "Portion of the taxonomy owned by the policy manager.",
+    "definitions": {
+        "action": {
+            "type": "object",
+            "description": "The action being requested on the data (ex: read, write...) and the geography in which it is to take place.",
+            "properties": {
+                "action_type": { "$ref": "policymanager.values.schema.json#/definitions/action_type" },
+                "processingLocation": {
+                    "type": "string",
+                    "$ref": "catalog.values.schema.json#/definitions/geography_name"
+                }
+            },
+            "required": ["action_type"]
+        },
+        "request_context": { "$ref": "policymanager.values.schema.json#/definitions/request_context" },
+        "governance_decision_request": {
+            "type": "object",
+            "properties": {
+                "request_context": { "$ref": "#/definitions/request_context" },
+                "action": { "$ref": "#/definitions/action" },
+                "resource": { "$ref": "catalog.structs.schema.json#/definitions/resource" }
+            },
+            "required": ["action", "resource"]
+        }
+    },
+    "properties": {
+        "request_context": { "$ref": "#/definitions/request_context" },
+        "action": { "$ref": "#/definitions/action" },
+        "governance_decision_request": { "$ref": "#/definitions/governance_decision_request" }
+    },
+    "additionalProperties": false
+}

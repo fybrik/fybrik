@@ -1,0 +1,69 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "catalog.structs.schema.json",
+    "title": "Data Catalog Structures Taxonomy",
+    "type": "object",
+    "description": "Standardized structures relating to data catalogs.",
+    "definitions": {
+        "geography": {
+            "type": "object",
+            "description": "Geographical location which may or may not be part of a hierarchy.",
+            "properties": {
+                "geography_type": {
+                    "type": "string",
+                    "$ref": "catalog.values.schema.json#/definitions/geography_type"
+                },
+                "name": {
+                    "type": "string",
+                    "$ref": "catalog.values.schema.json#/definitions/geography_name"
+                }
+            },
+            "required": ["name"]
+        },
+        "geography_group": {
+            "type": "array",
+            "description": "A grouping of discrete geographies that are not necessarily in a common hierarchy.",
+            "items": {
+                "$ref": "#/definitions/geography"                
+            }
+        },
+        "tags": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "resource": {
+            "type": "object",
+            "description": "Data set or other type of resource.",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the data set"
+                },
+                "tags": { "$ref": "#/definitions/tags" },
+                "columns": {
+                    "type": "array",
+                    "description": "List of column names in the data set with their associated tags. They must be key value pairs.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "name of column or component"
+                            },
+                            "tags": { "$ref": "#/definitions/tags" }
+                        },
+                        "required": ["name"]
+                    }
+                }
+            },
+            "required": ["name"]
+			}
+        },
+    "properties": {
+        "geography": { "$ref": "#/definitions/geography" },
+        "tags": { "$ref": "#/definitions/tags" },
+        "resource": { "$ref": "#/definitions/resource" },
+        "geography_group": { "$ref": "#/definitions/geography_group" }
+    },
+    "additionalProperties": false
+}

@@ -1,0 +1,36 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "catalog.values.schema.json",
+    "title": "Data Catalog Values",
+    "description": "Values defined in the data catalog.",
+    "definitions": {
+        "geography_name": {
+            "type": "string",
+            "description": "Name of the geography",
+            "enum": ["Netherlands", "Turkey"]
+        },
+        "geography_type": {
+            "type": "string",
+            "description": "Geographical resolution",
+            "enum": ["union", "country", "state", "city", "region"]
+        },
+        "data_format": {
+            "type": "string",
+            "description": "Format in which the data is stored.",
+            "enum": ["parquet", "csv", "arrow", "json", "table", "avro", "binary"]
+        },
+        "data_type": {
+            "type": "string",
+            "description": "Type of data.",
+            "enum": ["tabular", "image", "text", "voice", "video"]
+        }
+    },
+    "properties": {
+        "geography_name": { "$ref": "#/definitions/geography_name" },
+        "geography_type": { "$ref": "#/definitions/geography_type" },
+        "data_format": { "$ref": "#/definitions/data_format" },
+        "data_type": { "$ref": "#/definitions/data_type" }
+    },
+    "additionalProperties": false
+
+}
