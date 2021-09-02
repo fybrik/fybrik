@@ -38,8 +38,8 @@ func main() {
 
 	timeOutInSecs := getEnv("CONNECTION_TIMEOUT")
 	timeOut, err := strconv.Atoi(timeOutInSecs)
-
 	if err != nil {
+		log.Println("error in strconv:", err.Error())
 		return
 	}
 
@@ -60,6 +60,5 @@ func main() {
 	router := sw.NewRouter(connController)
 
 	log.Printf("Server started")
-	log.Fatal(router.Run(":8081"))
-
+	log.Fatal(router.Run(":8080"))
 }

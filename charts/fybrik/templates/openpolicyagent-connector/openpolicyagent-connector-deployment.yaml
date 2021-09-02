@@ -41,7 +41,7 @@ spec:
           imagePullPolicy: {{ .Values.openPolicyAgentConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
           ports:
             - name: http
-              containerPort: 8081
+              containerPort: 8080
               protocol: TCP
           envFrom:
             - configMapRef:

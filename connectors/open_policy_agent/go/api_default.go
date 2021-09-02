@@ -20,6 +20,7 @@ import (
 
 	opabl "fybrik.io/fybrik/connectors/open_policy_agent/lib"
 	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	"github.com/gdexlab/go-render/render"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,16 +30,6 @@ type ConnectorController struct {
 	Timeout                 int
 	Opaserverurl            string
 	Opaclient               *http.Client
-}
-
-func (e *ConnectorController) displayReq(input2 openapiclientmodels.PolicyManagerRequest) error {
-	bytes, err := input2.MarshalJSON()
-	if err != nil {
-		log.Println("err: ", err)
-		return nil
-	}
-	log.Println("marshalled request:", string(bytes))
-	return nil
 }
 
 func (e *ConnectorController) contactOPA(input openapiclientmodels.PolicyManagerRequest, creds string) (openapiclientmodels.PolicyManagerResponse, error) {
@@ -69,13 +60,8 @@ func (e *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	log.Printf("input:")
-	err := e.displayReq(*input)
-	if err != nil {
-		log.Println("Error during displayReq: ", err)
-		c.JSON(http.StatusInternalServerError, gin.H{})
-		return
-	}
+	output := render.AsCode(input)
+	log.Println("bound PolicyManagerRequest:", output)
 
 	resp, err := e.contactOPA(*input, c.Request.Header["X-Request-Cred"][0])
 	if err != nil {

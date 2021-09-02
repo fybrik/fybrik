@@ -8,6 +8,7 @@ require (
 	github.com/IBM/satcon-client-go v0.1.2-0.20210329192404-b8fa1c732712
 	github.com/buger/jsonparser v1.1.1
 	github.com/fatih/color v1.9.0 // indirect
+	github.com/gdexlab/go-render v1.0.1
 	github.com/getkin/kin-openapi v0.66.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/gin-gonic/gin v1.7.3
@@ -41,7 +42,7 @@ require (
 	github.com/spf13/viper v1.8.1
 	github.com/stoewer/go-strcase v1.2.0
 	github.com/stretchr/testify v1.7.0
-	github.com/tidwall/pretty v1.0.1 // indirect
+	github.com/tidwall/pretty v1.0.1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.mongodb.org/mongo-driver v1.4.2 // indirect
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
