@@ -137,24 +137,25 @@ func (m *Selector) SupportsInterface(module *app.FybrikModule) bool {
 	// Check if the module supports the capability
 	if hasCapability, caps := utils.GetModuleCapabilities(module, m.Capability); hasCapability {
 		// There could be multiple structures for the same CapabilityType
-		for _, cap := range caps {
+		for i := range caps {
+			capability := caps[i]
 			// Check if the source and sink protocols requested are supported
 
 			if m.Capability == app.Read {
-				supportsInterface = cap.API.DataFormat == m.Destination.DataFormat && cap.API.Protocol == m.Destination.Protocol
+				supportsInterface = capability.API.DataFormat == m.Destination.DataFormat && capability.API.Protocol == m.Destination.Protocol
 				if supportsInterface {
-					m.ModuleCapability = &cap
+					m.ModuleCapability = &capability
 					return true
 				}
 			} else if m.Capability == app.Copy {
-				for _, inter := range cap.SupportedInterfaces {
+				for _, inter := range capability.SupportedInterfaces {
 					if inter.Source.DataFormat != m.Source.DataFormat || inter.Source.Protocol != m.Source.Protocol {
 						continue
 					}
 					if inter.Sink.DataFormat != m.Destination.DataFormat || inter.Sink.Protocol != m.Destination.Protocol {
 						continue
 					}
-					m.ModuleCapability = &cap
+					m.ModuleCapability = &capability
 					supportsInterface = true
 					break
 				}

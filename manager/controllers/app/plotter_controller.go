@@ -327,7 +327,8 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	blueprintsMap := r.getBlueprintsMap(plotter)
 	var errorCollection []error
 
-	for cluster, blueprintSpec := range blueprintsMap {
+	for cluster := range blueprintsMap {
+		blueprintSpec := blueprintsMap[cluster]
 		r.Log.V(1).Info("Handling spec for cluster " + cluster)
 		if blueprint, exists := plotter.Status.Blueprints[cluster]; exists {
 			r.Log.V(2).Info("Found status for cluster " + cluster)
