@@ -119,7 +119,7 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) (ctr
 
 func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) error {
 	errs := make([]string, 0)
-	for instanceName, _ := range blueprint.Spec.Modules {
+	for instanceName := range blueprint.Spec.Modules {
 		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], instanceName)
 		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus != nil || rel == nil {
 			continue
@@ -135,7 +135,7 @@ func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) 
 }
 
 func (r *BlueprintReconciler) hasExternalResources(blueprint *app.Blueprint) bool {
-	for instanceName, _ := range blueprint.Spec.Modules {
+	for instanceName := range blueprint.Spec.Modules {
 		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], instanceName)
 		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus == nil && rel != nil {
 			return true
@@ -225,7 +225,7 @@ func SetMapField(obj map[string]interface{}, k string, v interface{}) bool {
 // updateModuleState updates the module state
 func (r *BlueprintReconciler) updateModuleState(blueprint *app.Blueprint, instanceName string, isReady bool, err string) {
 	if moduleState, exists := blueprint.Status.ModulesState[instanceName]; exists {
-		err = err + moduleState.Error
+		err += moduleState.Error
 	}
 
 	state := app.ObservedState{
@@ -271,7 +271,6 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 			if _, err := r.applyChartResource(log, chart, args, blueprint, releaseName); err != nil {
 				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
 				r.updateModuleState(blueprint, instanceName, false, err.Error())
-
 			} else {
 				r.updateModuleState(blueprint, instanceName, false, "")
 			}

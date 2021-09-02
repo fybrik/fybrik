@@ -80,7 +80,6 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []modules.ModuleInstance
 		blueprintModule.AssetIDs = make([]string, len(moduleInstance.AssetIDs))
 		copy(blueprintModule.AssetIDs, moduleInstance.AssetIDs)
 		blueprintModules[instanceName] = blueprintModule
-
 	}
 	spec.Modules = blueprintModules
 

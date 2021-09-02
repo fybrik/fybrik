@@ -232,7 +232,7 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 	// Set the value received from the catalog connector.
 	vaultSecretPath := item.VaultSecretPath
 
-	if (flowType == app.ReadFlow) {
+	if flowType == app.ReadFlow {
 		// Each selector receives source/sink interface and relevant actions
 		// Starting with the data location interface for source and the required interface for sink
 		vaultMap := make(map[string]app.Vault)
@@ -272,7 +272,7 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 				return err
 			}
 
-			var copyDataAssetId = datasetID + "-copy"
+			var copyDataAssetID = datasetID + "-copy"
 
 			// append moduleinstances to the list
 			actions := actionsToArbitrary(copySelector.Actions)
@@ -318,25 +318,23 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 				DataStore:         *sinkDataStore,
 			}
 
-			assets[copyDataAssetId] = copyAsset
+			assets[copyDataAssetID] = copyAsset
 
-			steps := app.SequentialSteps{
-				Steps: []app.DataFlowStep{
-					app.DataFlowStep{
-						Name:       "",
-						Cluster:    copyCluster,
-						Template:   "copy",
-						Parameters: &app.StepParameters{
-							Source:  &app.StepSource{
-								AssetID: datasetID,
-								API:     nil,
-							},
-							Sink:    &app.StepSink{
-								AssetID: copyDataAssetId,
-							},
+			steps := []app.DataFlowStep{
+				{
+					Name:     "",
+					Cluster:  copyCluster,
+					Template: "copy",
+					Parameters: &app.StepParameters{
+						Source: &app.StepSource{
+							AssetID: datasetID,
 							API:     nil,
-							Actions: actions,
 						},
+						Sink: &app.StepSink{
+							AssetID: copyDataAssetID,
+						},
+						API:     nil,
+						Actions: actions,
 					},
 				},
 			}
@@ -346,7 +344,7 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 				Name:     "",
 				FlowType: app.CopyFlow,
 				Triggers: []app.SubFlowTrigger{app.CopyTrigger},
-				Steps:    []app.SequentialSteps{steps},
+				Steps:    [][]app.DataFlowStep{steps},
 			}
 
 			subflows = append(subflows, subFlow)
@@ -357,13 +355,13 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 		if readSelector != nil {
 			m.Log.Info("Adding read path")
 			var readSource app.DataStore
-			var readAssetId string
+			var readAssetID string
 			if sinkDataStore == nil {
 				readSource = *sourceDataStore
-				readAssetId = datasetID
+				readAssetID = datasetID
 			} else {
 				readSource = *sinkDataStore
-				readAssetId = datasetID + "-copy"
+				readAssetID = datasetID + "-copy"
 			}
 
 			actions := actionsToArbitrary(readSelector.Actions)
@@ -394,23 +392,21 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 
 			templates = append(templates, template)
 
-			steps := app.SequentialSteps{
-				Steps: []app.DataFlowStep{
-					app.DataFlowStep{
-						Name:       "",
-						Cluster:    readCluster,
-						Template:   "read",
-						Parameters: &app.StepParameters{
-							Source:  &app.StepSource{
-								AssetID: datasetID,
-								API:     nil,
-							},
-							Sink:    &app.StepSink{
-								AssetID: readAssetId,
-							},
-							API:     moduleApiToService(readSelector.ModuleCapability.API, appContext, readSelector.Module.Name),
-							Actions: actions,
+			steps := []app.DataFlowStep{
+				{
+					Name:     "",
+					Cluster:  readCluster,
+					Template: "read",
+					Parameters: &app.StepParameters{
+						Source: &app.StepSource{
+							AssetID: datasetID,
+							API:     nil,
 						},
+						Sink: &app.StepSink{
+							AssetID: readAssetID,
+						},
+						API:     moduleAPIToService(readSelector.ModuleCapability.API, appContext, readSelector.Module.Name),
+						Actions: actions,
 					},
 				},
 			}
@@ -420,13 +416,11 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 				Name:     "",
 				FlowType: app.ReadFlow,
 				Triggers: []app.SubFlowTrigger{app.ReadTrigger},
-				Steps:    []app.SequentialSteps{steps},
+				Steps:    [][]app.DataFlowStep{steps},
 			}
 
 			subflows = append(subflows, subFlow)
-
 		}
-
 	}
 
 	// If everything finished without errors build the flow and add it to the plotter spec
@@ -452,7 +446,7 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 	return nil
 }
 
-func moduleApiToService(api *app.ModuleAPI, appContext *app.FybrikApplication, moduleName string) *app.Service {
+func moduleAPIToService(api *app.ModuleAPI, appContext *app.FybrikApplication, moduleName string) *app.Service {
 	// if the defined endpoint is empty generate the name
 	var endpoint app.EndpointSpec
 	if api.Endpoint.Hostname == "" {

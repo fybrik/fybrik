@@ -134,8 +134,13 @@ type PlotterModulesSpec struct {
 func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.Plotter, plotterModule PlotterModulesSpec) *modules.ModuleInstanceSpec {
 	assetIDs := []string{plotterModule.AssetID}
 	blueprintModule := &modules.ModuleInstanceSpec{
-		Chart:       &plotterModule.Chart,
-		AssetIDs:    assetIDs,
+		Chart:    &plotterModule.Chart,
+		AssetIDs: assetIDs,
+		Args: &app.ModuleArguments{
+			Copy:  nil,
+			Read:  nil,
+			Write: nil,
+		},
 		ClusterName: plotterModule.ClusterName,
 		ModuleName:  plotterModule.ModuleName,
 		Scope:       plotterModule.Scope,
@@ -145,12 +150,13 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		return blueprintModule
 	}
 
-	if plotterModule.FlowType == app.ReadFlow {
+	switch plotterModule.FlowType {
+	case app.ReadFlow:
 		var dataStore *app.DataStore
 		if plotterModule.ModuleArguments.Source.AssetID != "" {
-			assetId := plotterModule.ModuleArguments.Source.AssetID
+			assetID := plotterModule.ModuleArguments.Source.AssetID
 			// Get source from plotter assetID list
-			assetInfo, _ := plotter.Spec.Assets[assetId]
+			assetInfo := plotter.Spec.Assets[assetID]
 			dataStore = &assetInfo.DataStore
 		} else {
 			// Fill in the DataSource from the step arguments
@@ -166,7 +172,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 				Transformations: plotterModule.ModuleArguments.Actions,
 			},
 		}
-	} else if plotterModule.FlowType == app.WriteFlow {
+	case app.WriteFlow:
 		blueprintModule.Args.Write = []app.WriteModuleArgs{
 			{
 				Destination:     plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore,
@@ -174,12 +180,12 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 				Transformations: plotterModule.ModuleArguments.Actions,
 			},
 		}
-	} else if plotterModule.FlowType == app.CopyFlow {
+	case app.CopyFlow:
 		var dataStore *app.DataStore
 		if plotterModule.ModuleArguments.Source.AssetID != "" {
-			assetId := plotterModule.ModuleArguments.Source.AssetID
+			assetID := plotterModule.ModuleArguments.Source.AssetID
 			// Get source from plotter assetID list
-			assetInfo, _ := plotter.Spec.Assets[assetId]
+			assetInfo := plotter.Spec.Assets[assetID]
 			dataStore = &assetInfo.DataStore
 		} else {
 			// Fill in the DataSource from the step arguments
@@ -227,8 +233,8 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]ap
 	for _, flow := range plotter.Spec.Flows {
 		for _, subFlow := range flow.SubFlows {
 			for _, subFlowStep := range subFlow.Steps {
-				for _, seqStep := range subFlowStep.Steps {
-					stepTemplate, _ := plotter.Spec.Templates[seqStep.Template]
+				for _, seqStep := range subFlowStep {
+					stepTemplate := plotter.Spec.Templates[seqStep.Template]
 					// isPrimaryModule := true
 					for _, module := range stepTemplate.Modules {
 						moduleArgs := seqStep.Parameters
@@ -252,10 +258,8 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]ap
 						blueprintModule := r.convertPlotterModuleToBlueprintModule(plotter, plotterModule)
 						// append the module to the modules list
 						moduleInstances = append(moduleInstances, *blueprintModule)
-
 					}
 				}
-
 			}
 		}
 	}
@@ -277,7 +281,7 @@ func (r *PlotterReconciler) updatePlotterAssetsState(assetToStatusMap map[string
 				assetToStatusMap[assetID] = moduleState
 				// if the current module is not ready then update all its assets
 				// to not ready state regardless of the assets state
-			} else if moduleState.Ready == false {
+			} else if !moduleState.Ready {
 				assetToStatusMap[assetID] = app.ObservedState{
 					Ready: false,
 					Error: errMsg,
@@ -288,8 +292,8 @@ func (r *PlotterReconciler) updatePlotterAssetsState(assetToStatusMap map[string
 }
 
 // setPlotterAssetsReadyStateToFalse sets to false the status of the assets processed by the blueprint modules.
-func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap map[string]app.ObservedState, BlueprintSpec *app.BlueprintSpec, errMsg string) {
-	for _, module := range BlueprintSpec.Modules {
+func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap map[string]app.ObservedState, blueprintSpec *app.BlueprintSpec, errMsg string) {
+	for _, module := range blueprintSpec.Modules {
 		for _, assetID := range module.AssetIDs {
 			var err = errMsg
 			state, exists := assetToStatusMap[assetID]
@@ -304,7 +308,6 @@ func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap m
 			}
 		}
 	}
-
 }
 
 func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []error) {

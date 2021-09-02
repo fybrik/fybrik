@@ -13,37 +13,40 @@ spec:
   assets:
     S3:
       assetId: "S3"  # dataset requested by user
-      credentials:
-        read:
-          vault:
-            address: http://vault.fybrik-system:8200
-            authPath: /v1/auth/kubernetes/login
-            role: module
-            secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
-      connection:
-        s3:
-          bucket: my-bucket
-          endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
-          object_key: my-object
-        type: 2
-      dataformat: parquet
+      advertisedAssetId: test
+      assetDetails:
+        vault:
+          read:
+            vault:
+              address: http://vault.fybrik-system:8200
+              authPath: /v1/auth/kubernetes/login
+              role: module
+              secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
+        connection:
+          s3:
+            bucket: my-bucket
+            endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
+            object_key: my-object
+          type: 2
+        format: parquet
     DB2:
       assetId: "DB2"  # dataset requested by user
-      credentials:
-        read:
-          vault:
-            address: http://vault.fybrik-system:8200
-            authPath: /v1/auth/kubernetes/login
-            role: module
-            secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
-      connection:
-        db2:
-          port: "5000"
-          table: SMALL
-          database: MYDB
-          url: mydb
-          ssl: "true"
-      dataformat: table
+      assetDetails:
+        vault:
+          read:
+            vault:
+              address: http://vault.fybrik-system:8200
+              authPath: /v1/auth/kubernetes/login
+              role: module
+              secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
+        connection:
+          db2:
+            port: "5000"
+            table: SMALL
+            database: MYDB
+            url: mydb
+            ssl: "true"
+        format: table
   flows:
   - name: notebook
     flowType: copy
@@ -55,6 +58,22 @@ spec:
       - workload
       steps:
       - - name: step1
+          cluster: thegreendragon
+          template: copyTemplate
+          parameters:
+            source:
+              assetId: "DB2"
+            sink:
+              assetId: "S3"
+        - name: step2
+          cluster: thegreendragon
+          template: copyTemplate
+          parameters:
+            source:
+              assetId: "DB2"
+            sink:
+              assetId: "S3"
+      - - name: pstep
           cluster: thegreendragon
           template: copyTemplate
           parameters:

@@ -194,7 +194,9 @@ func CreateMetaBlueprintWithoutState(blueprint *Blueprint) MetaBlueprint {
 	metaBlueprint := MetaBlueprint{
 		Name:      blueprint.GetName(),
 		Namespace: blueprint.GetNamespace(),
-		Status:    BlueprintStatus{},
+		Status: BlueprintStatus{
+			ModulesState: map[string]ObservedState{},
+		},
 	}
 	return metaBlueprint
 }

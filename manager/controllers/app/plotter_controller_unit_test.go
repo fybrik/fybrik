@@ -90,9 +90,13 @@ func TestPlotterController(t *testing.T) {
 	g.Expect(blueprintMeta.Namespace).To(gomega.Equal(BlueprintNamespace))
 
 	// Simulate that blueprint changes state to Ready=true
-	dummyManager.DeployedBlueprints["thegreendragon"].Status.ObservedState.Ready = true
-	for instanceName, _ := range dummyManager.DeployedBlueprints["thegreendragon"].Spec.Modules {
-		dummyManager.DeployedBlueprints["thegreendragon"].Status.ModulesState[instanceName] = app.ObservedState{
+	blueprint := dummyManager.DeployedBlueprints["thegreendragon"]
+	blueprint.Status.ObservedState.Ready = true
+	for instanceName := range blueprint.Spec.Modules {
+		if blueprint.Status.ModulesState == nil {
+			blueprint.Status.ModulesState = map[string]app.ObservedState{}
+		}
+		blueprint.Status.ModulesState[instanceName] = app.ObservedState{
 			Ready: true,
 		}
 	}
@@ -112,7 +116,7 @@ func TestPlotterController(t *testing.T) {
 
 	g.Expect(plotter.Status.ObservedState.Ready).To(gomega.BeTrue(), "Plotter is ready")
 	for _, assetState := range plotter.Status.Assets {
-		g.Expect(assetState).To(gomega.BeTrue(), "Asset is ready")
+		g.Expect(assetState.Ready).To(gomega.BeTrue(), "Asset is ready")
 	}
-	g.Expect(len(plotter.Spec.Assets) == 1).To(gomega.BeTrue(), "Plotter Asset status list contains one element")
+	g.Expect(plotter.Status.Assets).To(gomega.HaveLen(1), "Plotter Asset status list contains one element")
 }

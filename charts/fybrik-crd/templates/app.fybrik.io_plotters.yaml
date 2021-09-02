@@ -158,16 +158,110 @@ spec:
                           steps:
                             description: Steps defines a series of sequential/parallel data flow steps
                             items:
+                              items:
+                                description: DataFlowStep contains details on a single data flow step
+                                properties:
+                                  cluster:
+                                    description: Name of the cluster this step is executed on
+                                    type: string
+                                  name:
+                                    description: Name of the step
+                                    type: string
+                                  parameters:
+                                    description: Step parameters TODO why not flatten the parameters into this data flow step
+                                    properties:
+                                      action:
+                                        description: Actions are the data transformations that the module supports
+                                        items:
+                                          type: object
+                                          x-kubernetes-preserve-unknown-fields: true
+                                        type: array
+                                      api:
+                                        properties:
+                                          endpoint:
+                                            description: EndpointSpec is used both by the module creator and by the status of the fybrikapplication
+                                            properties:
+                                              hostname:
+                                                description: Always equals the release name. Can be omitted.
+                                                type: string
+                                              port:
+                                                format: int32
+                                                type: integer
+                                              scheme:
+                                                description: 'For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc'
+                                                type: string
+                                            required:
+                                            - port
+                                            - scheme
+                                            type: object
+                                          format:
+                                            description: Format represents data format (e.g. parquet) as received from catalog connectors
+                                            type: string
+                                        required:
+                                        - endpoint
+                                        - format
+                                        type: object
+                                      sink:
+                                        description: 'StepSink holds information to where the target data will be written: it could be assetID of an asset specified in fybrikapplication or of an asset created by fybrik control-plane'
+                                        properties:
+                                          assetId:
+                                            description: AssetID identifies the target asset of this step
+                                            type: string
+                                        required:
+                                        - assetId
+                                        type: object
+                                      source:
+                                        description: 'StepSource is the source of this step: it could be assetID or an enpoint of another step'
+                                        properties:
+                                          api:
+                                            properties:
+                                              endpoint:
+                                                description: EndpointSpec is used both by the module creator and by the status of the fybrikapplication
+                                                properties:
+                                                  hostname:
+                                                    description: Always equals the release name. Can be omitted.
+                                                    type: string
+                                                  port:
+                                                    format: int32
+                                                    type: integer
+                                                  scheme:
+                                                    description: 'For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc'
+                                                    type: string
+                                                required:
+                                                - port
+                                                - scheme
+                                                type: object
+                                              format:
+                                                description: Format represents data format (e.g. parquet) as received from catalog connectors
+                                                type: string
+                                            required:
+                                            - endpoint
+                                            - format
+                                            type: object
+                                          assetId:
+                                            description: AssetID identifies the source asset of this step
+                                            type: string
+                                        type: object
+                                    type: object
+                                  template:
+                                    description: Template is the name of the template to execute the step The full details of the template can be extracted from Plotter.spec.templates list field.
+                                    type: string
+                                required:
+                                - cluster
+                                - name
+                                - template
+                                type: object
                               type: array
                             type: array
+                            x-kubernetes-preserve-unknown-fields: true
                           triggers:
                             description: Triggers
                             items:
                               description: SubFlowTrigger indicates the trigger for this subflow
                               enum:
-                              - read
-                              - write
-                              - copy
+                              - workload
+                              - init
+                              - timer
                               type: string
                             type: array
                         required:

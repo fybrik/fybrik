@@ -136,13 +136,13 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(flow.AssetID).To(gomega.Equal("s3-csv/redact-dataset"))
 	g.Expect(flow.FlowType).To(gomega.Equal(app.ReadFlow))
 	g.Expect(flow.SubFlows).To(gomega.HaveLen(2)) // Should have two subflows
-	copyFlow := flow.SubFlows[0] // Assume flow 0 is copy
+	copyFlow := flow.SubFlows[0]                  // Assume flow 0 is copy
 	g.Expect(copyFlow.FlowType).To(gomega.Equal(app.CopyFlow))
 	g.Expect(copyFlow.Triggers).To(gomega.ContainElements(app.CopyTrigger))
 	readFlow := flow.SubFlows[1]
 	g.Expect(readFlow.FlowType).To(gomega.Equal(app.ReadFlow))
 	g.Expect(readFlow.Triggers).To(gomega.ContainElements(app.ReadTrigger))
-	g.Expect(readFlow.Steps[0].Steps[0].Cluster).To(gomega.Equal("thegreendragon"))
+	g.Expect(readFlow.Steps[0][0].Cluster).To(gomega.Equal("thegreendragon"))
 }
 
 // This test checks proper reconciliation of FybrikApplication finalizers
@@ -487,9 +487,9 @@ func TestMultipleDatasets(t *testing.T) {
 	plotter := &app.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(3)) // 3 assets. 2 original and one implicit copy asset
+	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(3))    // 3 assets. 2 original and one implicit copy asset
 	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2)) // expect two templates
-	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(2)) // two flows. one for each valid asset
+	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(2))     // two flows. one for each valid asset
 	g.Expect(plotter.Spec.Flows[0].AssetID).To(gomega.Equal("s3/allow-dataset"))
 	g.Expect(plotter.Spec.Flows[1].AssetID).To(gomega.Equal("db2/redact-dataset"))
 	g.Expect(plotter.Spec.Flows[0].SubFlows).To(gomega.HaveLen(1))
@@ -569,11 +569,11 @@ func TestMultipleRegions(t *testing.T) {
 	subflow0 := plotter.Spec.Flows[0].SubFlows[0]
 	subflow1 := plotter.Spec.Flows[0].SubFlows[1]
 	g.Expect(subflow0.Steps).To(gomega.HaveLen(1))
-	g.Expect(subflow0.Steps[0].Steps).To(gomega.HaveLen(1))
-	g.Expect(subflow0.Steps[0].Steps[0].Cluster).To(gomega.Equal("neverland-cluster"))
+	g.Expect(subflow0.Steps[0]).To(gomega.HaveLen(1))
+	g.Expect(subflow0.Steps[0][0].Cluster).To(gomega.Equal("neverland-cluster"))
 	g.Expect(subflow1.Steps).To(gomega.HaveLen(1))
-	g.Expect(subflow1.Steps[0].Steps).To(gomega.HaveLen(1))
-	g.Expect(subflow1.Steps[0].Steps[0].Cluster).To(gomega.Equal("thegreendragon"))
+	g.Expect(subflow1.Steps[0]).To(gomega.HaveLen(1))
+	g.Expect(subflow1.Steps[0][0].Cluster).To(gomega.Equal("thegreendragon"))
 }
 
 // This test checks the ingest scenario - copy is required, no workload specified.
@@ -651,11 +651,9 @@ func TestCopyData(t *testing.T) {
 	g.Expect(subflow.Triggers).To(gomega.ContainElements(app.CopyTrigger))
 	g.Expect(subflow.FlowType).To(gomega.Equal(app.CopyFlow))
 	g.Expect(subflow.Steps).To(gomega.HaveLen(1))
-	g.Expect(subflow.Steps[0].Steps).To(gomega.HaveLen(1))
-	g.Expect(subflow.Steps[0].Steps[0].Parameters.Source.AssetID).To(gomega.Equal("s3-external/allow-theshire"))
-	g.Expect(subflow.Steps[0].Steps[0].Parameters.Sink.AssetID).To(gomega.Equal("s3-external/allow-theshire-copy"))
-	marshal, err := yaml.Marshal(plotter)
-	print(marshal)
+	g.Expect(subflow.Steps[0]).To(gomega.HaveLen(1))
+	g.Expect(subflow.Steps[0][0].Parameters.Source.AssetID).To(gomega.Equal("s3-external/allow-theshire"))
+	g.Expect(subflow.Steps[0][0].Parameters.Sink.AssetID).To(gomega.Equal("s3-external/allow-theshire-copy"))
 }
 
 // This test checks the ingest scenario

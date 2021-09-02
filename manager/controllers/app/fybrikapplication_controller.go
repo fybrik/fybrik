@@ -256,6 +256,7 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 
 // setReadModulesEndpoints populates the ReadEndpointsMap map in the status of the fybrikapplication
 // Current implementation assumes there is only one cluster with read modules (which is the same cluster the user's workload)
+//nolint
 func setReadModulesEndpoints(applicationContext *api.FybrikApplication, blueprintsMap map[string]api.BlueprintSpec, moduleMap map[string]*api.FybrikModule) {
 	readEndpointMap := make(map[string]api.EndpointSpec)
 	for _, blueprintSpec := range blueprintsMap {
@@ -353,14 +354,13 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 
 	plotterSpec := api.PlotterSpec{
 		Selector:  applicationContext.Spec.Selector,
-		Assets: map[string]api.AssetDetails{},
-		Flows: []api.Flow{},
+		Assets:    map[string]api.AssetDetails{},
+		Flows:     []api.Flow{},
 		Templates: map[string]api.Template{},
 	}
 	plotterSpec.Selector = applicationContext.Spec.Selector
 
 	for _, item := range requirements {
-
 		// TODO support different flows than read by specifying it in the application
 		flowType := api.ReadFlow
 
@@ -415,7 +415,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 		return ctrl.Result{RequeueAfter: 2 * time.Second}, allocErr
 	}
 
-	//setReadModulesEndpoints(applicationContext, blueprintPerClusterMap, moduleMap)
+	// setReadModulesEndpoints(applicationContext, blueprintPerClusterMap, moduleMap)
 	ownerRef := &api.ResourceReference{Name: applicationContext.Name, Namespace: applicationContext.Namespace, AppVersion: applicationContext.GetGeneration()}
 
 	resourceRef := r.ResourceInterface.CreateResourceReference(ownerRef)

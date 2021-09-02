@@ -78,8 +78,8 @@ func TestBlueprintReconcile(t *testing.T) {
 	g.Expect(res.Requeue).To(gomega.BeFalse(), "reconcile did not requeue request as expected")
 	g.Expect(cl.Get(context.TODO(), ns, blueprint)).To(gomega.BeNil(), "could not fetch the blueprint")
 	g.Expect(blueprint.Status.Releases).To(gomega.HaveLen(2))
-	g.Expect(blueprint.Status.Releases).Should(gomega.HaveKeyWithValue("notebook-default-notebook-copy-batch-instance1", blueprint.Status.ObservedGeneration))
-	g.Expect(blueprint.Status.Releases).Should(gomega.HaveKeyWithValue("notebook-default-notebook-read-module-instance1", blueprint.Status.ObservedGeneration))
+	g.Expect(blueprint.Status.Releases).Should(gomega.HaveKeyWithValue("notebook-default-notebook-copy-batch", blueprint.Status.ObservedGeneration))
+	g.Expect(blueprint.Status.Releases).Should(gomega.HaveKeyWithValue("notebook-default-notebook-read-module", blueprint.Status.ObservedGeneration))
 }
 
 // This test checks that a short release name is not truncated
@@ -105,6 +105,9 @@ func TestShortReleaseName(t *testing.T) {
 			Modules: modules,
 		},
 	}
+	marshal, err := yaml.Marshal(blueprint)
+	println(marshal)
+	print(err)
 	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], "dataFlowInstance1")
 	g.Expect(relName).To(gomega.Equal("my-app-default-dataFlowInstance1"))
 }

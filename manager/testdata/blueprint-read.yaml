@@ -14,32 +14,33 @@ spec:
       app: notebook
   cluster: cluster1
   modules:
-  - name: notebook-read-module
-    instanceName: notebook-read-module-instance1
-    chart:
-      name: ghcr.io/fybrik/fybrik-template:0.1.0
-    apis:
-    - capability: read
-      api:
-        service:
-        interfaceDetails:
-          protocol: arrow-flight
-          dataformat: arrow    
-    arguments:
-      read:
-      - assetID: xyz
-        source:
-          connection:
-            name: S3
-            s3:
-              bucket: fybrik-test-bucket
-              endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
-              object_key: small.kp.encrypted.parq
-            type: 2
-          vault:
-            read:
-              address: http://vault.fybrik-system:8200
-              authPath: /v1/auth/kubernetes/login
-              role: module
-              secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
-          format: parquet
+    notebook-read-module:
+      name: notebook-read-module
+      instanceName: notebook-read-module-instance1
+      chart:
+        name: ghcr.io/fybrik/fybrik-template:0.1.0
+      apis:
+      - capability: read
+        api:
+          service:
+          interfaceDetails:
+            protocol: arrow-flight
+            dataformat: arrow
+      arguments:
+        read:
+        - assetID: xyz
+          source:
+            connection:
+              name: S3
+              s3:
+                bucket: fybrik-test-bucket
+                endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
+                object_key: small.kp.encrypted.parq
+              type: 2
+            vault:
+              read:
+                address: http://vault.fybrik-system:8200
+                authPath: /v1/auth/kubernetes/login
+                role: module
+                secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
+            format: parquet

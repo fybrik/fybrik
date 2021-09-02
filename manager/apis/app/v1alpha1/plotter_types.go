@@ -4,11 +4,6 @@
 package v1alpha1
 
 import (
-	"encoding/json"
-	"fmt"
-	"reflect"
-	"strings"
-
 	"fybrik.io/fybrik/pkg/serde"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -93,59 +88,8 @@ type DataFlowStep struct {
 	Parameters *StepParameters `json:"parameters,omitempty"`
 }
 
-// +kubebuilder:validation:Type=array
-type SequentialSteps struct {
-	// Step contains details of a single data flow step: the module to deploy and its inputs and outputs.
-	// The execution of the steps can be parallel or serial and is determined according to the following:
-	// single dash => run after previous step
-	// double dash => run in parallel with previous step
-	// +required
-	Steps []DataFlowStep `json:"-" protobuf:"bytes,1,rep,name=steps"`
-}
-
-// Step is an anonymous list inside of SequentialSteps (i.e. it does not have a key), so it needs its own
-// custom Unmarshaller
-func (p *SequentialSteps) UnmarshalJSON(value []byte) error {
-	// Since we are writing a custom unmarshaller, we have to enforce the "DisallowUnknownFields" requirement manually.
-
-	// First, get a generic representation of the contents
-	var candidate []map[string]interface{}
-	err := json.Unmarshal(value, &candidate)
-	if err != nil {
-		return err
-	}
-
-	// Generate a list of all the available JSON fields of the Step struct
-	availableFields := map[string]bool{}
-	reflectType := reflect.TypeOf(DataFlowStep{})
-	for i := 0; i < reflectType.NumField(); i++ {
-		cleanString := strings.ReplaceAll(reflectType.Field(i).Tag.Get("json"), ",omitempty", "")
-		availableFields[cleanString] = true
-	}
-
-	// Enforce that no unknown fields are present
-	for _, step := range candidate {
-		for key := range step {
-			if _, ok := availableFields[key]; !ok {
-				return fmt.Errorf(`json: unknown field "%s"`, key)
-			}
-		}
-	}
-
-	// Finally, attempt to fully unmarshal the struct
-	err = json.Unmarshal(value, &p.Steps)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (p SequentialSteps) MarshalJSON() ([]byte, error) {
-	return json.Marshal(p.Steps)
-}
-
 // SubFlowTrigger indicates the trigger for this subflow
-// +kubebuilder:validation:Enum=read;write;copy
+// +kubebuilder:validation:Enum=workload;init;timer
 type SubFlowTrigger string
 
 const (
@@ -177,7 +121,8 @@ type SubFlow struct {
 
 	// Steps defines a series of sequential/parallel data flow steps
 	// +required
-	Steps []SequentialSteps `json:"steps" protobuf:"bytes,11,opt,name=steps"`
+	//+kubebuilder:pruning:PreserveUnknownFields
+	Steps [][]DataFlowStep `json:"steps" protobuf:"bytes,11,opt,name=steps"`
 }
 
 // Flows is the list of data flows driven from fybrikapplication:
@@ -296,12 +241,12 @@ type PlotterStatus struct {
 	// Flows is a map containing the status for each flow
 	// the key is the flow name
 	// +optional
-	Flows map[string]FlowStatus `json:"flows"`
+	Flows map[string]FlowStatus `json:"flows,omitempty"`
 
 	// Assets is a map containing the status per asset.
 	// The key of this map is assetId
 	// +optional
-	Assets map[string]ObservedState `json:"assets"`
+	Assets map[string]ObservedState `json:"assets,omitempty"`
 
 	// +optional
 	Blueprints map[string]MetaBlueprint `json:"blueprints,omitempty"`

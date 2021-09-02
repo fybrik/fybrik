@@ -50,13 +50,13 @@ type ModuleInstanceSpec struct {
 
 // Selector is responsible for finding an appropriate module
 type Selector struct {
-	Module       *app.FybrikModule
-	Dependencies []*app.FybrikModule
-	Message      string
-	Capability   app.CapabilityType
+	Module           *app.FybrikModule
+	Dependencies     []*app.FybrikModule
+	Message          string
+	Capability       app.CapabilityType
 	ModuleCapability *app.ModuleCapability
-	Source       *app.InterfaceDetails
-	Destination  *app.InterfaceDetails
+	Source           *app.InterfaceDetails
+	Destination      *app.InterfaceDetails
 	// Actions that the module will perform
 	Actions []*pb.EnforcementAction
 	// Geography where the module will be orchestrated
