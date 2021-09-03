@@ -259,29 +259,17 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 
 // setReadModulesEndpoints populates the ReadEndpointsMap map in the status of the fybrikapplication
 // Current implementation assumes there is only one cluster with read modules (which is the same cluster the user's workload)
-//nolint
-func setReadModulesEndpoints(applicationContext *api.FybrikApplication, blueprintsMap map[string]api.BlueprintSpec, moduleMap map[string]*api.FybrikModule) {
+func setReadModulesEndpoints(applicationContext *api.FybrikApplication, flows []api.Flow) {
 	readEndpointMap := make(map[string]api.EndpointSpec)
-	for _, blueprintSpec := range blueprintsMap {
-		for _, module := range blueprintSpec.Modules {
-			if module.Arguments.Read != nil {
-				releaseName := utils.GetReleaseName(applicationContext.ObjectMeta.Name, applicationContext.ObjectMeta.Namespace, module.Name)
-				moduleName := module.Name
-
-				// Find the read capability section in the module
-				// TODO: What if there are more than one read capability sections?  How do we know which endpoint
-				// to choose?  They could in theory be different, although that's not likely
-				// Currently the last one on the list is used.
-				if hasRead, caps := utils.GetModuleCapabilities(moduleMap[moduleName], api.Read); hasRead {
-					for _, cap := range caps {
-						originalEndpointSpec := cap.API.Endpoint
-						fqdn := utils.GenerateModuleEndpointFQDN(releaseName, BlueprintNamespace)
-						for _, arg := range module.Arguments.Read {
-							readEndpointMap[arg.AssetID] = api.EndpointSpec{
-								Hostname: fqdn,
-								Port:     originalEndpointSpec.Port,
-								Scheme:   originalEndpointSpec.Scheme,
-							}
+	for _, flow := range flows {
+		if flow.FlowType == api.ReadFlow {
+			for _, subflow := range flow.SubFlows {
+				if subflow.FlowType == api.ReadFlow {
+					for _, sequentialSteps := range subflow.Steps {
+						// Check the last step in the sequential flow that is for read (this will expose the reading api)
+						lastStep := sequentialSteps[len(sequentialSteps)-1]
+						if lastStep.Parameters.API != nil {
+							readEndpointMap[flow.AssetID] = lastStep.Parameters.API.Endpoint
 						}
 					}
 				}
@@ -418,7 +406,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 		return ctrl.Result{RequeueAfter: 2 * time.Second}, allocErr
 	}
 
-	// setReadModulesEndpoints(applicationContext, blueprintPerClusterMap, moduleMap)
+	setReadModulesEndpoints(applicationContext, plotterSpec.Flows)
 	ownerRef := &api.ResourceReference{Name: applicationContext.Name, Namespace: applicationContext.Namespace, AppVersion: applicationContext.GetGeneration()}
 
 	resourceRef := r.ResourceInterface.CreateResourceReference(ownerRef)
