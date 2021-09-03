@@ -1,4 +1,4 @@
-{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
+{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.policyManager "openpolicyagent") }}
 {{- $opaConnectorEnabled := include "fybrik.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
 {{- if include "fybrik.isEnabled" (tuple .Values.opaServer.enabled $opaConnectorEnabled) }}
 {{- if .Values.opaServer.autoscaling.enabled }}
