@@ -151,9 +151,17 @@ fi
 
 if [[ ${cluster_scoped} == "false" ]]; then
     if [[ ${use_application_namespace} == "false" ]]; then
-      fybrik_values="${fybrik_values},applicationNamespace=${unique_prefix}"
-    else 
-      fybrik_values="${fybrik_values},applicationNamespace=${unique_prefix}-app"
+        if [[ ! -z ${fybrik_values} ]]; then
+            fybrik_values="${fybrik_values},applicationNamespace=${unique_prefix}"
+        else
+            fybrik_values="applicationNamespace=${unique_prefix}"
+        fi
+    else
+        if [[ ! -z ${fybrik_values} ]]; then
+            fybrik_values="${fybrik_values},applicationNamespace=${unique_prefix}-app"
+        else
+            fybrik_values="applicationNamespace=${unique_prefix}-app"
+        fi
     fi
 fi
 
