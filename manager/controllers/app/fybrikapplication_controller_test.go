@@ -126,12 +126,12 @@ var _ = Describe("FybrikApplication Controller", func() {
 			By("Status should contain the details of the endpoint")
 			Expect(len(application.Status.AssetStates)).To(Equal(1))
 			// TODO endpoint details are not set yet
-			// fqdn := "test-app-e2e-default-read-module-test-e2e-e24d69b99a.fybrik-blueprints.svc.cluster.local"
-			// Expect(application.Status.AssetStates["s3/redact-dataset"].Endpoint).To(Equal(apiv1alpha1.EndpointSpec{
-			// 	Hostname: fqdn,
-			// 	Port:     80,
-			// 	Scheme:   "grpc",
-			// }))
+			fqdn := "test-app-e2e-default-read-module-test-e2e.fybrik-blueprints.svc.cluster.local"
+			Expect(application.Status.AssetStates["s3/redact-dataset"].Endpoint).To(Equal(apiv1alpha1.EndpointSpec{
+				Hostname: fqdn,
+				Port:     80,
+				Scheme:   "grpc",
+			}))
 		})
 	})
 })
