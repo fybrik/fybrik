@@ -22,9 +22,9 @@ spec:
       saslMechanism: {{ .Values.copy.source.connection.kafka.sasl_mechanism | quote }}
       keyDeserializer: {{ .Values.copy.source.connection.kafka.key_deserializer | quote }}
       valueDeserializer: {{ .Values.copy.source.connection.kafka.value_deserializer | quote }}
-      {{ if .Values.copy.source.vault }}
+      {{ if .Values.copy.source.vault.read }}
       vault:
-{{ toYaml .Values.copy.source.vault | indent 8 }}
+{{ toYaml .Values.copy.source.vault.read | indent 8 }}
       {{ end }}
   destination:
     s3:
@@ -32,9 +32,9 @@ spec:
       bucket: {{ .Values.copy.destination.connection.s3.bucket | quote}}
       objectKey: {{ .Values.copy.destination.connection.s3.object_key | quote }}
       dataFormat: {{ .Values.copy.destination.format | quote}}
-      {{ if .Values.copy.destination.vault }}
+      {{ if .Values.copy.destination.vault.write }}
       vault:
-{{ toYaml .Values.copy.destination.vault | indent 8 }}
+{{ toYaml .Values.copy.destination.vault.write | indent 8 }}
       {{ end }}
   {{ if .Values.copy.transformations }}
   transformation:
