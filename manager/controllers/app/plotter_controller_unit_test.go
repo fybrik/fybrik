@@ -106,6 +106,7 @@ func TestPlotterController(t *testing.T) {
 	g.Expect(deployedBp.Labels[app.ApplicationNameLabel]).To(gomega.Equal("notebook"))
 	res, err = r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
+	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-7a2b64769d"].Chart.Name).To(gomega.Equal("ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0"))
 
 	// Check the result of reconciliation to make sure it has the desired state.
 	g.Expect(res.Requeue).To(gomega.BeFalse(), "reconcile did not requeue request as expected")

@@ -209,10 +209,6 @@ func SetMapField(obj map[string]interface{}, k string, v interface{}) bool {
 
 // updateModuleState updates the module state
 func (r *BlueprintReconciler) updateModuleState(blueprint *app.Blueprint, instanceName string, isReady bool, err string) {
-	if moduleState, exists := blueprint.Status.ModulesState[instanceName]; exists {
-		err += moduleState.Error
-	}
-
 	state := app.ObservedState{
 		Ready: isReady,
 		Error: err,

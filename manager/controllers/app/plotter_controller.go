@@ -255,6 +255,7 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]ap
 							AssetID:         flow.AssetID,
 							FlowType:        subFlow.FlowType,
 							ClusterName:     seqStep.Cluster,
+							Chart:           module.Chart,
 							ModuleName:      module.Name,
 							Scope:           scope,
 						}
