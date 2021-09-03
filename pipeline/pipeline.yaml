@@ -884,7 +884,7 @@ spec:
     - name: image
       value: $(params.build_image)
     - name: flags
-      value: DOCKER_HOSTNAME=$(params.docker-hostname) DOCKER_NAMESPACE=$(params.docker-namespace) USE_MOCKUP_CONNECTOR=false CONTROLLER_NAMESPACE=$(params.NAMESPACE) BLUEPRINT_NAMESPACE=$(params.blueprintName)
+      value: DOCKER_HOSTNAME=$(params.docker-hostname) DOCKER_NAMESPACE=$(params.docker-namespace) USE_MOCKUP_CONNECTOR=false CONTROLLER_NAMESPACE=$(params.NAMESPACE) BLUEPRINT_NAMESPACE=$(params.blueprintNamespace)
     - name: INCREMENTAL_CODE_RESTART
       value: $(params.INCREMENTAL_CODE_RESTART)
     runAfter:
