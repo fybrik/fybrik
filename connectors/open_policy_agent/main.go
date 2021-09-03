@@ -16,9 +16,12 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	openapiserver "fybrik.io/fybrik/connectors/open_policy_agent/go"
 	sw "fybrik.io/fybrik/connectors/open_policy_agent/go"
+	opabl "fybrik.io/fybrik/connectors/open_policy_agent/lib"
+	clients "fybrik.io/fybrik/pkg/connectors/clients"
 	"github.com/hashicorp/go-retryablehttp"
 )
 
@@ -32,8 +35,9 @@ func getEnv(key string) string {
 }
 
 func main() {
-	log.Println("in main2: ")
+	log.Println("in main of V2 OPA Connector: ")
 	catalogConnectorAddress := getEnv("CATALOG_CONNECTOR_URL")
+	catalogProviderName := getEnv("CATALOG_PROVIDER_NAME")
 	policyToBeEvaluated := "dataapi/authz/verdict"
 
 	timeOutInSecs := getEnv("CONNECTION_TIMEOUT")
@@ -42,19 +46,25 @@ func main() {
 		log.Println("error in strconv:", err.Error())
 		return
 	}
-
 	opaServerURL := getEnv("OPA_SERVER_URL")
+
+	connectionTimeout := time.Duration(timeOut) * time.Second
+	dataCatalog, err := clients.NewGrpcDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout)
+	if err != nil {
+		log.Println("Error during creation of data catalog connection!")
+		return
+	}
+	catalogReader := opabl.NewCatalogReader(&dataCatalog)
 
 	retryClient := retryablehttp.NewClient()
 	retryClient.RetryMax = 10
 	standardClient := retryClient.HTTPClient // *http.Client
 
 	connController := &openapiserver.ConnectorController{
-		Catalogconnectoraddress: catalogConnectorAddress,
-		Policytobeevaluated:     policyToBeEvaluated,
-		Timeout:                 timeOut,
-		Opaserverurl:            opaServerURL,
-		Opaclient:               standardClient,
+		Policytobeevaluated: policyToBeEvaluated,
+		Opaserverurl:        opaServerURL,
+		Opaclient:           standardClient,
+		CatalogReader:       catalogReader,
 	}
 
 	router := sw.NewRouter(connController)

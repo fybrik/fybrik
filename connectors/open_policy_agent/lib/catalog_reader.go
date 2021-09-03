@@ -8,52 +8,28 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
-	"time"
 
 	clients "fybrik.io/fybrik/pkg/connectors/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
 
-func getEnv(key string) string {
-	value, exists := os.LookupEnv(key)
-	if !exists {
-		log.Fatalf("Env Variable %v not defined", key)
-	}
-	log.Printf("Env. variable extracted: %s - %s\n", key, value)
-	return value
-}
-
 // CatalogReader - Reader struct which has information to read from catalog, this struct does not have any information related to the application context. any request specific info is passed as parameters to functions belonging to this struct.
 type CatalogReader struct {
-	catalogConnectorAddress string
-	timeOut                 int
+	DataCatalog *clients.DataCatalog
 }
 
-func NewCatalogReader(address string, timeOut int) *CatalogReader {
-	return &CatalogReader{catalogConnectorAddress: address, timeOut: timeOut}
+func NewCatalogReader(dataCatalog *clients.DataCatalog) *CatalogReader {
+	return &CatalogReader{DataCatalog: dataCatalog}
 }
 
 // return map  datasetID -> metadata of dataset in form of map
 func (r *CatalogReader) GetDatasetsMetadataFromCatalog(in *openapiclientmodels.PolicyManagerRequest, creds string) (map[string]interface{}, error) {
 	datasetsMetadata := make(map[string]interface{})
-	catalogProviderName := getEnv("CATALOG_PROVIDER_NAME")
 	datasetID := (in.GetResource()).Name
 	if _, present := datasetsMetadata[datasetID]; !present {
-		connectionURL := r.catalogConnectorAddress
-		connectionTimeout := time.Duration(r.timeOut) * time.Second
-		log.Println("creds in GetDatasetsMetadataFromCatalog:", creds)
-		log.Println("Create new catalog connection using catalog connector address: ", r.catalogConnectorAddress)
-
-		var dataCatalog clients.DataCatalog
-		dataCatalog, err := clients.NewGrpcDataCatalog(catalogProviderName, connectionURL, connectionTimeout)
-		if err != nil {
-			return nil, fmt.Errorf("connection to external catalog connector failed: %v", err)
-		}
-
 		objToSend := &pb.CatalogDatasetRequest{CredentialPath: creds, DatasetId: datasetID}
-		info, err := dataCatalog.GetDatasetInfo(context.Background(), objToSend)
+		info, err := (*r.DataCatalog).GetDatasetInfo(context.Background(), objToSend)
 		if err != nil {
 			return nil, err
 		}

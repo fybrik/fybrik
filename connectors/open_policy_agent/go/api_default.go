@@ -23,18 +23,16 @@ import (
 )
 
 type ConnectorController struct {
-	Catalogconnectoraddress string
-	Policytobeevaluated     string
-	Timeout                 int
-	Opaserverurl            string
-	Opaclient               *http.Client
+	Policytobeevaluated string
+	Opaserverurl        string
+	Opaclient           *http.Client
+	CatalogReader       *opabl.CatalogReader
 }
 
 func (e *ConnectorController) contactOPA(input openapiclientmodels.PolicyManagerRequest, creds string) (openapiclientmodels.PolicyManagerResponse, error) {
 	opaReader := opabl.NewOpaReader(e.Opaserverurl)
 
-	catalogReader := opabl.NewCatalogReader(e.Catalogconnectoraddress, e.Timeout)
-	eval, err := opaReader.GetOPADecisions(&input, creds, catalogReader, e.Policytobeevaluated, e.Opaclient)
+	eval, err := opaReader.GetOPADecisions(&input, creds, e.CatalogReader, e.Policytobeevaluated, e.Opaclient)
 	if err != nil {
 		log.Println("GetOPADecisions err:", err)
 		return openapiclientmodels.PolicyManagerResponse{}, err
