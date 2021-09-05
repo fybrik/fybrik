@@ -196,11 +196,12 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			assetID := plotterModule.ModuleArguments.Source.AssetID
 			// Get source from plotter assetID list
 			assetInfo := plotter.Spec.Assets[assetID]
+
+			dataStore = &assetInfo.DataStore
 			// Update vaultAuthPath from the cluster metadata
 			vaultCreds := dataStore.Vault["copy"]
 			vaultCreds.AuthPath = plotterModule.VaultAuthPath
 			dataStore.Vault["copy"] = vaultCreds
-			dataStore = &assetInfo.DataStore
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
