@@ -276,28 +276,10 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 
 			// append moduleinstances to the list
 			actions := actionsToArbitrary(copySelector.Actions)
-			copyArgs := &app.ModuleArguments{
-				Copy: &app.CopyModuleArgs{
-					Source:          *sourceDataStore,
-					Destination:     *sinkDataStore,
-					Transformations: actions,
-				},
-			}
 			copyCluster, err := copySelector.SelectCluster(item, m.Clusters)
 			if err != nil {
 				m.Log.Info("Could not determine the cluster for copy: " + err.Error())
 				return err
-			}
-			for _, cluster := range m.Clusters {
-				if copyCluster == cluster.Name {
-					if writeVault, ok := copyArgs.Copy.Destination.Vault[string(app.WriteFlow)]; ok {
-						writeVault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
-					}
-					if readVault, ok := copyArgs.Copy.Source.Vault[string(app.ReadFlow)]; ok {
-						readVault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
-					}
-					break
-				}
 			}
 
 			template := app.Template{
@@ -354,13 +336,10 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 
 		if readSelector != nil {
 			m.Log.Info("Adding read path")
-			var readSource app.DataStore
 			var readAssetID string
 			if sinkDataStore == nil {
-				readSource = *sourceDataStore
 				readAssetID = datasetID
 			} else {
-				readSource = *sinkDataStore
 				readAssetID = datasetID + "-copy"
 			}
 
@@ -369,14 +348,6 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 			if err != nil {
 				m.Log.Info("Could not determine the cluster for read: " + err.Error())
 				return err
-			}
-			for _, cluster := range m.Clusters {
-				if readCluster == cluster.Name {
-					if readVault, ok := readSource.Vault[string(app.ReadFlow)]; ok {
-						readVault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
-					}
-					break
-				}
 			}
 
 			template := app.Template{

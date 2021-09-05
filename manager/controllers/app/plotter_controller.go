@@ -5,17 +5,19 @@ package app
 
 import (
 	"context"
-	"fybrik.io/fybrik/manager/controllers"
-	"fybrik.io/fybrik/pkg/environment"
 	"math"
 	"reflect"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"strings"
 	"time"
+
+	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/pkg/environment"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/app/modules"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	"github.com/go-logr/logr"
@@ -125,6 +127,7 @@ func (r *PlotterReconciler) reconcileFinalizers(plotter *app.Plotter) error {
 // PlotterModulesSpec consists of module details extracted from the Plotter structure
 type PlotterModulesSpec struct {
 	ClusterName     string
+	VaultAuthPath   string
 	AssetID         string
 	ModuleName      string
 	ModuleArguments *app.StepParameters
@@ -161,6 +164,10 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			// Get source from plotter assetID list
 			assetInfo := plotter.Spec.Assets[assetID]
 			dataStore = &assetInfo.DataStore
+			// Update vaultAuthPath from the cluster metadata
+			vaultCreds := dataStore.Vault["read"]
+			vaultCreds.AuthPath = plotterModule.VaultAuthPath
+			dataStore.Vault["read"] = vaultCreds
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
@@ -189,6 +196,10 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			assetID := plotterModule.ModuleArguments.Source.AssetID
 			// Get source from plotter assetID list
 			assetInfo := plotter.Spec.Assets[assetID]
+			// Update vaultAuthPath from the cluster metadata
+			vaultCreds := dataStore.Vault["copy"]
+			vaultCreds.AuthPath = plotterModule.VaultAuthPath
+			dataStore.Vault["copy"] = vaultCreds
 			dataStore = &assetInfo.DataStore
 		} else {
 			// Fill in the DataSource from the step arguments
@@ -197,10 +208,15 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 				Format:     plotterModule.ModuleArguments.Source.API.Format,
 			}
 		}
+		// Update vaultAuthPath from the cluster metadata
+		destDataStore := plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore
+		vaultCreds := destDataStore.Vault["copy"]
+		vaultCreds.AuthPath = plotterModule.VaultAuthPath
+		destDataStore.Vault["copy"] = vaultCreds
 		blueprintModule.Args.Copy =
 			&app.CopyModuleArgs{
 				Source:          *dataStore,
-				Destination:     plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore,
+				Destination:     destDataStore,
 				AssetID:         plotterModule.AssetID,
 				Transformations: plotterModule.ModuleArguments.Actions,
 			}
@@ -233,6 +249,8 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]ap
 	r.Log.V(1).Info("Constructing Blueprints from Plotter")
 	moduleInstances := make([]modules.ModuleInstanceSpec, 0)
 
+	clusters, _ := r.ClusterManager.GetClusters()
+
 	for _, flow := range plotter.Spec.Flows {
 		for _, subFlow := range flow.SubFlows {
 			for _, subFlowStep := range subFlow.Steps {
@@ -250,15 +268,25 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]ap
 							moduleArgs = nil
 						}
 						scope := r.getModuleScope(module.Capabilities, subFlow.FlowType)
+						clusterName := seqStep.Cluster
+						var authPath string
+						for _, cluster := range clusters {
+							if clusterName == cluster.Name {
+								authPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
+								break
+							}
+						}
 						plotterModule := PlotterModulesSpec{
 							ModuleArguments: moduleArgs,
 							AssetID:         flow.AssetID,
 							FlowType:        subFlow.FlowType,
-							ClusterName:     seqStep.Cluster,
+							ClusterName:     clusterName,
 							Chart:           module.Chart,
 							ModuleName:      module.Name,
 							Scope:           scope,
+							VaultAuthPath:   authPath,
 						}
+
 						blueprintModule := r.convertPlotterModuleToBlueprintModule(plotter, plotterModule)
 						// append the module to the modules list
 						moduleInstances = append(moduleInstances, *blueprintModule)
