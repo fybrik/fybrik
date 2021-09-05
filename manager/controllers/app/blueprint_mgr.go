@@ -4,8 +4,6 @@
 package app
 
 import (
-	"strings"
-
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/app/modules"
 	"fybrik.io/fybrik/manager/controllers/utils"
@@ -73,7 +71,12 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []modules.ModuleInstance
 		modulename := moduleInstance.ModuleName
 
 		var blueprintModule app.BlueprintModule
-		instanceName := utils.CreateStepName(modulename, strings.Join(moduleInstance.AssetIDs, "_")) // Need unique name for each module so include ids for dataset
+		instanceName := modulename
+		if moduleInstance.Scope == app.Asset {
+			// Need unique name for each module
+			// if the module scope is one per asset then concat the id of the asset to it
+			instanceName = utils.CreateStepName(modulename, moduleInstance.AssetIDs[0])
+		}
 		blueprintModule.Name = modulename
 		blueprintModule.Arguments = *moduleInstance.Args
 		blueprintModule.Chart = *moduleInstance.Chart

@@ -382,7 +382,7 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 			template := app.Template{
 				Name: "read",
 				Modules: []app.ModuleInfo{{
-					Name:         "read",
+					Name:         readSelector.Module.Name,
 					Type:         readSelector.Module.Spec.Type,
 					Kind:         "",
 					Chart:        readSelector.Module.Spec.Chart,
@@ -405,7 +405,8 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 						Sink: &app.StepSink{
 							AssetID: readAssetID,
 						},
-						API:     moduleAPIToService(readSelector.ModuleCapability.API, appContext, readSelector.Module.Name),
+						API: moduleAPIToService(readSelector.ModuleCapability.API, readSelector.ModuleCapability.Scope,
+							appContext, readSelector.Module.Name, readAssetID),
 						Actions: actions,
 					},
 				},
@@ -446,11 +447,17 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 	return nil
 }
 
-func moduleAPIToService(api *app.ModuleAPI, appContext *app.FybrikApplication, moduleName string) *app.Service {
+func moduleAPIToService(api *app.ModuleAPI, scope app.CapabilityScope, appContext *app.FybrikApplication, moduleName string, assetID string) *app.Service {
 	// if the defined endpoint is empty generate the name
 	var endpoint app.EndpointSpec
 	if api.Endpoint.Hostname == "" {
-		releaseName := utils.GetReleaseName(appContext.Name, appContext.Namespace, moduleName)
+		instanceName := moduleName
+		if scope == app.Asset {
+			// if the scope of the module is asset then concat its id to the module name
+			// to create the instance name.
+			instanceName = utils.CreateStepName(moduleName, assetID)
+		}
+		releaseName := utils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
 		fqdn := utils.GenerateModuleEndpointFQDN(releaseName, BlueprintNamespace)
 		endpoint = app.EndpointSpec{
 			Hostname: fqdn,
