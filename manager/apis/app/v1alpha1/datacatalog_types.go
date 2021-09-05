@@ -25,7 +25,7 @@ const (
 // Credentials for accesing the data are stored in Vault, in the location represented by Vault property.
 type DataStore struct {
 	// Holds details for retrieving credentials by the modules from Vault store.
-	// It is a map so that different credentials can be stored for the different DataStoreActions
+	// It is a map so that different credentials can be stored for the different DataFlow operations.
 	Vault map[string]Vault `json:"vault"`
 	// Connection has the relevant details for accesing the data (url, table, ssl, etc.)
 	// +required
