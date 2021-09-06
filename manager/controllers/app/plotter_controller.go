@@ -165,9 +165,9 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			assetInfo := plotter.Spec.Assets[assetID]
 			dataStore = &assetInfo.DataStore
 			// Update vaultAuthPath from the cluster metadata
-			vaultCreds := dataStore.Vault["read"]
+			vaultCreds := dataStore.Vault[app.ReadCredentialKey]
 			vaultCreds.AuthPath = plotterModule.VaultAuthPath
-			dataStore.Vault["read"] = vaultCreds
+			dataStore.Vault[app.ReadCredentialKey] = vaultCreds
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
@@ -199,9 +199,9 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 
 			dataStore = &assetInfo.DataStore
 			// Update vaultAuthPath from the cluster metadata
-			vaultCreds := dataStore.Vault["copy"]
+			vaultCreds := dataStore.Vault[app.ReadCredentialKey]
 			vaultCreds.AuthPath = plotterModule.VaultAuthPath
-			dataStore.Vault["copy"] = vaultCreds
+			dataStore.Vault[app.ReadCredentialKey] = vaultCreds
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
@@ -211,9 +211,9 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		}
 		// Update vaultAuthPath from the cluster metadata
 		destDataStore := plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore
-		vaultCreds := destDataStore.Vault["copy"]
+		vaultCreds := destDataStore.Vault[app.WriteCredentialKey]
 		vaultCreds.AuthPath = plotterModule.VaultAuthPath
-		destDataStore.Vault["copy"] = vaultCreds
+		destDataStore.Vault[app.WriteCredentialKey] = vaultCreds
 		blueprintModule.Args.Copy =
 			&app.CopyModuleArgs{
 				Source:          *dataStore,

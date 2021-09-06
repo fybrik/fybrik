@@ -94,10 +94,10 @@ type SubFlowTrigger string
 
 const (
 	// Copy flow trigger
-	CopyTrigger SubFlowTrigger = "workload"
+	CopyTrigger SubFlowTrigger = "init"
 
 	// Read flow trigger
-	ReadTrigger SubFlowTrigger = "init"
+	ReadTrigger SubFlowTrigger = "workload"
 
 	// Write flow trigger
 	WriteTrigger SubFlowTrigger = "timer"

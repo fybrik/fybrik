@@ -5,6 +5,7 @@ package app
 
 import (
 	"context"
+	"fybrik.io/fybrik/pkg/multicluster"
 	"io/ioutil"
 	"testing"
 
@@ -56,6 +57,17 @@ func TestPlotterController(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	dummyManager := &dummy.ClusterManager{
 		DeployedBlueprints: make(map[string]*app.Blueprint),
+		Clusters: []multicluster.Cluster{{
+			Name: "thegreendragon",
+			Metadata: struct {
+				Region        string
+				Zone          string
+				VaultAuthPath string
+			}{
+				Region:        "theshire",
+				Zone:          "hobbiton",
+				VaultAuthPath: "kubernetes",
+			}}},
 	}
 
 	// Create a BatchTransferReconciler object with the scheme and fake client.
@@ -106,7 +118,11 @@ func TestPlotterController(t *testing.T) {
 	g.Expect(deployedBp.Labels[app.ApplicationNameLabel]).To(gomega.Equal("notebook"))
 	res, err = r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
-	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest"].Chart.Name).To(gomega.Equal("ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0"))
+	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-b604d02277"].Chart.Name).To(gomega.Equal("ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0"))
+	// Check that the auth path of the credentials is set
+	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-b604d02277"].Arguments.Copy.Source.Vault[app.ReadCredentialKey].AuthPath).To(gomega.Equal("/v1/auth/kubernetes/login"))
+	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-b604d02277"].Arguments.Copy.Destination.Vault[app.WriteCredentialKey].AuthPath).To(gomega.Equal("/v1/auth/kubernetes/login"))
+	g.Expect(deployedBp.Spec.Modules["arrow-flight-read"].Arguments.Read[0].Source.Vault[app.ReadCredentialKey].AuthPath).To(gomega.Equal("/v1/auth/kubernetes/login"))
 
 	// Check the result of reconciliation to make sure it has the desired state.
 	g.Expect(res.Requeue).To(gomega.BeFalse(), "reconcile did not requeue request as expected")

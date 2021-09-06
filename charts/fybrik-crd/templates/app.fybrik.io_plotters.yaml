@@ -120,7 +120,7 @@ spec:
                             - role
                             - secretPath
                             type: object
-                          description: Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataStoreActions
+                          description: Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.
                           type: object
                       required:
                       - connection
