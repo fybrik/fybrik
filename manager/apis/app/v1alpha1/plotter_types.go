@@ -121,7 +121,6 @@ type SubFlow struct {
 
 	// Steps defines a series of sequential/parallel data flow steps
 	// +required
-	//+kubebuilder:pruning:PreserveUnknownFields
 	Steps [][]DataFlowStep `json:"steps" protobuf:"bytes,11,opt,name=steps"`
 }
 

@@ -253,7 +253,6 @@ spec:
                                 type: object
                               type: array
                             type: array
-                            x-kubernetes-preserve-unknown-fields: true
                           triggers:
                             description: Triggers
                             items:

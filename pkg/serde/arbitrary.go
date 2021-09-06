@@ -27,6 +27,15 @@ func (in *Arbitrary) DeepCopyInto(out *Arbitrary) {
 	*out = *copy
 }
 
+func (in *Arbitrary) DeepCopy() *Arbitrary {
+	if in == nil {
+		return nil
+	}
+	out := new(Arbitrary)
+	in.DeepCopyInto(out)
+	return out
+}
+
 func (in *Arbitrary) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &in.Data); err != nil {
 		return err

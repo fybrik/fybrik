@@ -171,7 +171,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
-				Connection: *serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
+				Connection: serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
 				Format:     plotterModule.ModuleArguments.Source.API.Format,
 			}
 		}
@@ -205,7 +205,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
-				Connection: *serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
+				Connection: serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
 				Format:     plotterModule.ModuleArguments.Source.API.Format,
 			}
 		}

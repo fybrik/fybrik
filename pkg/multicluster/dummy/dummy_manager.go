@@ -13,7 +13,7 @@ import (
 // This ClusterManager is meant to be used for testing
 type ClusterManager struct {
 	DeployedBlueprints map[string]*v1alpha1.Blueprint
-	Clusters []multicluster.Cluster
+	Clusters           []multicluster.Cluster
 }
 
 func (m *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {

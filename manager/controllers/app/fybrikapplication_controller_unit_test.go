@@ -129,7 +129,19 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	plotter := &app.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
+	// Check that plotter assets have the expected properties
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(2)) // 2 assets should have been created. the original and the implicit from the copy
+	g.Expect(plotter.Spec.Assets).To(gomega.HaveKey("s3-csv/redact-dataset"))
+	g.Expect(plotter.Spec.Assets).To(gomega.HaveKey("s3-csv/redact-dataset-copy"))
+	dataStore := plotter.Spec.Assets["s3-csv/redact-dataset"].DataStore
+	dataStoreMap := dataStore.Connection.Data.(map[string]interface{})
+	g.Expect(dataStoreMap).To(gomega.HaveKey("s3"))
+	s3Config := dataStoreMap["s3"].(map[string]interface{})
+	g.Expect(s3Config["endpoint"]).To(gomega.Equal("s3.eu-gb.cloud-object-storage.appdomain.cloud"))
+	g.Expect(s3Config["bucket"]).To(gomega.Equal("fybrik-test-bucket"))
+	g.Expect(s3Config["object_key"]).To(gomega.Equal("small.csv"))
+
+	// Check templates
 	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2))
 	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(1))
 	flow := plotter.Spec.Flows[0]

@@ -121,7 +121,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	}
 	return &app.DataStore{
 		Vault:      vaultMap,
-		Connection: *connection,
+		Connection: connection,
 		Format:     destinationInterface.DataFormat,
 	}, nil
 }
@@ -242,7 +242,7 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 			Address:    utils.GetVaultAddress(),
 		}
 		sourceDataStore := &app.DataStore{
-			Connection: item.DataDetails.Connection,
+			Connection: &item.DataDetails.Connection,
 			Vault:      vaultMap,
 			Format:     item.DataDetails.Interface.DataFormat,
 		}
