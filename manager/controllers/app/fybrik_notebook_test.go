@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	apiv1alpha1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"github.com/apache/arrow/go/arrow"
+	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/flight"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -181,9 +183,19 @@ func TestS3Notebook(t *testing.T) {
 	for reader.Next() {
 		record := reader.Record()
 		defer record.Release()
-		log.Println(record)
-	}
+		Expect(record.ColumnName(0)).To(Equal("step"))
+		Expect(record.ColumnName(1)).To(Equal("type"))
+		Expect(record.ColumnName(3)).To(Equal("nameOrig"))
+		column := record.Column(3) // Check out the third 4th column that should be nameOrig and redacted
 
-	println(err)
-	println("Hello")
+		// Check that data of nameOrig column is the correct size and all records are redacted
+		dt := column.Data().DataType()
+		Expect(column.Data().Len()).To(Equal(100))
+		Expect(dt.ID()).To(Equal(arrow.STRING))
+		Expect(dt.Name()).To(Equal((&arrow.StringType{}).Name()))
+		data := array.NewStringData(column.Data())
+		for i := 0; i < data.Len(); i++ {
+			Expect(data.Value(i)).To(Equal("XXXXX"))
+		}
+	}
 }
