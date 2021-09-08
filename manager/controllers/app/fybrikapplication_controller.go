@@ -6,11 +6,12 @@ package app
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/pkg/environment"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"strings"
-	"time"
 
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
@@ -262,7 +263,7 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 // Current implementation assumes there is only one cluster with read modules (which is the same cluster the user's workload)
 func setReadModulesEndpoints(applicationContext *api.FybrikApplication, blueprintsMap map[string]api.BlueprintSpec, moduleMap map[string]*api.FybrikModule) {
 	readEndpointMap := make(map[string]api.EndpointSpec)
-  blueprintNamespace := getBlueprintNamespace()
+	blueprintNamespace := utils.GetBlueprintNamespace()
 
 	for _, blueprintSpec := range blueprintsMap {
 		for _, module := range blueprintSpec.Modules {

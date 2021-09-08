@@ -1,4 +1,5 @@
 {{- if include "fybrik.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+{{- if and  .Values.clusterScoped .Values.manager.prometheus }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -15,4 +16,4 @@ spec:
     control-plane: controller-manager
     {{- include "fybrik.selectorLabels" . | nindent 4 }}
 {{- end }}
-
+{{- end }}

@@ -6,11 +6,12 @@ package app
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/pkg/environment"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"strings"
-	"time"
 
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
@@ -296,7 +297,7 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// If that is true, the event will be processed by the reconciler.
 	// If it's not then it is a rogue event created by someone outside of the control plane.
 
-	blueprintNamespace := getBlueprintNamespace()
+	blueprintNamespace := utils.GetBlueprintNamespace()
 	r.Log.Info("blueprint namespace: " + blueprintNamespace)
 
 	p := predicate.Funcs{

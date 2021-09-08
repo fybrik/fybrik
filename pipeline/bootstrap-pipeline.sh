@@ -143,6 +143,23 @@ else
 fi
 extra_params="${extra_params} -p blueprintNamespace=${blueprint_namespace}"
 
+if [[ ${cluster_scoped} == "false" ]]; then
+  set +e
+  rc=1
+  kubectl get ns ${blueprint_namespace}
+  rc=$?
+  set -e
+  # Create new project if necessary
+  if [[ $rc -ne 0 ]]; then
+    if [[ ${is_openshift} == "true" ]]; then
+      oc new-project ${blueprint_namespace}
+      oc project ${unique_prefix} 
+    else
+      kubectl create ns ${blueprint_namespace} 
+    fi
+  fi
+fi
+
 if [[ -f ${repo_root}/pipeline/custom_fybrik_values.sh ]]; then
     source ${repo_root}/pipeline/custom_fybrik_values.sh
 else

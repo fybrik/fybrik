@@ -1,7 +1,8 @@
 {{- if or .Values.coordinator.enabled .Values.worker.enabled }}
+{{- if .Values.clusterScoped }}
 apiVersion: v1
 kind: Namespace
 metadata:
   name: {{ .Values.blueprintNamespace }}
 {{- end }}
-
+{{- end }}

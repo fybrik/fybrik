@@ -8,6 +8,7 @@ import (
 	"time"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,7 +24,7 @@ func deployBlueprint(namespace string, shouldSucceed bool) {
 
 	// Set the correct namespace
 	blueprint.SetNamespace(namespace)
-	fmt.Printf("deploy blueprint -  namespace: " + namespace + "\n")
+	fmt.Printf("Blueprint controller unit test - blueprint namespace: %s\n", namespace)
 	blueprintKey := client.ObjectKeyFromObject(blueprint)
 
 	// Create Blueprint
@@ -59,9 +60,8 @@ func deployBlueprint(namespace string, shouldSucceed bool) {
 var _ = Describe("Blueprint Controller Real Env", func() {
 	Context("Blueprint", func() {
 
-		blueprintNamespace := getBlueprintNamespace()
-		fmt.Printf("blueprint controller test -  blueprintNamespace: " + blueprintNamespace + "\n")
-
+		blueprintNamespace := utils.GetBlueprintNamespace()
+		fmt.Printf("blueprintNamespace: %s\n", blueprintNamespace)
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test
 			const interval = time.Millisecond * 100

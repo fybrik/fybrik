@@ -4,7 +4,7 @@
 
 ## Bootstrapping
 
-Run the following command to bootstrap a Fybrik instance. By default the instance of Fybrik will be deployed as namespaced scoped, meaning the controller will only watch and process FybrikApplications from a specific namespace. Therefore limiting you to create FybrikApplications from one namespace. By that namespace is the one specific on the bootstrap script (a.k.a *system* namespace). You can change this behavior by setting environment variables. For details see [Scoping the deployment](#scoping-the-deployment).
+Run the following command to bootstrap a Fybrik instance. By default the instance of Fybrik will be deployed as namespaced scoped, meaning the controller will only watch and process FybrikApplications from a specific namespace. Therefore limiting you to create FybrikApplications from one namespace. By default that namespace is the one specified on the bootstrap script (a.k.a *system* namespace). You can change this behavior by setting environment variables. For details see [Scoping the deployment](#scoping-the-deployment).
 
 The parameter specified is the *system* namespace. 
 ```
@@ -47,12 +47,7 @@ By default the bootstrap script will deploy Fybrik namespaced scoped. Deploying 
    2. The controller will be setup so it watches all namespaces for FybrikApplications.
    3. You cannot run namespaced scoped and cluster scoped in same cluster.
 
-2. When deploying a Fybrik instance as namespaced scoped:
-   1. You can only create FybrikApplication custom resources from one namespace. The default will be to allow only creating from the *system* namespace. You can override this behavior by setting the use_application_namespace environment variable to true, the bootstrap code will create the *system*-app namespace and necessary objects to allow creating FybrikApplications. Hint: You will see the application namespace in the -p mesh-for-data-values= in the tkn command that is returned from running the bootstrap script.
-
-3. When using wkc-connector, the wkc-credentials secret must be in the same namespace you are using when creating FybrikApplication custom resources. The bootstrap script will unconditionally create a wkc-credentials secret in *system* namespace. 
-   1. If running cluster scoped (i.e cluster_scoped=true) and you use a different namespace than *system* for your FybrikApplications, you will need to create a wkc-credentials secret in that namespace. 
-   2. If running namespaced scoped (i.e cluster_scoped=false) and you set use_application_namespace=true, bootstrap will create the secret in *system*-app.
+2. When deploying a Fybrik instance as namespaced scoped, you can only create FybrikApplication custom resources from one namespace. The default behavior set up by the pipeline, will allow creating FybrikApplication resourcss from the *system*-app namespace. You can override this behavior by setting the use_application_namespace environment variable to false. The bootstrap code will create the *system*-app namespace and necessary objects to allow creating FybrikApplications. Hint: You will see the application namespace in the -p mesh-for-data-values= in the tkn command that is returned from running the bootstrap script.
 
 ## Building code from your development environment
 

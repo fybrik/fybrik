@@ -7,31 +7,19 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	apps "k8s.io/api/apps/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 )
-
-const DefaultStreamtransferNameSpace = "fybrik-blueprints"
-
-func getStreamsTransferNamespace() string {
-	streamtransferNameSpace := DefaultStreamtransferNameSpace
-	streamtransferNameSpace = os.Getenv("BLUEPRINT_NAMESPACE")
-	if len(streamtransferNameSpace) <= 0 {
-		streamtransferNameSpace = DefaultStreamtransferNameSpace
-	}
-
-	return streamtransferNameSpace
-}
 
 var _ = Describe("StreamTransfer Controller", func() {
 
@@ -43,8 +31,8 @@ var _ = Describe("StreamTransfer Controller", func() {
 		// Add any setup steps that needs to be executed before each test
 		f := &motionv1.StreamTransfer{}
 
-		streamtransferNameSpace := getStreamsTransferNamespace()
-		fmt.Printf("streamtransfer namespace: " + streamtransferNameSpace)
+		streamtransferNameSpace := utils.GetStreamTransferNamespace()
+		fmt.Printf("streamtransfer namespace: %s\n", streamtransferNameSpace)
 
 		key := client.ObjectKey{
 			Namespace: streamtransferNameSpace,
@@ -70,7 +58,7 @@ var _ = Describe("StreamTransfer Controller", func() {
 			err = yaml.Unmarshal(streamTransferYAML, streamTransfer)
 			Expect(err).ToNot(HaveOccurred())
 
-			streamTransfer.Namespace = getStreamsTransferNamespace()
+			streamTransfer.Namespace = utils.GetStreamTransferNamespace()
 			fmt.Printf("template namespace %v\n", streamTransfer.Namespace)
 
 			//registry := os.Getenv("DOCKER_HOSTNAME")

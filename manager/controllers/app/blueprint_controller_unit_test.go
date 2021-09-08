@@ -40,8 +40,8 @@ func readBlueprint(f string) (*app.Blueprint, error) {
 
 func TestBlueprintReconcile(t *testing.T) {
 
-	blueprintNamespace := getBlueprintNamespace()
-	fmt.Printf("Using blueprint namespace: " + blueprintNamespace)
+	blueprintNamespace := utils.GetBlueprintNamespace()
+	fmt.Printf("Blueprint controller unit test: Using blueprint namespace: %s\n", blueprintNamespace)
 
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)

@@ -17,6 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 
 	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	kbatch "k8s.io/api/batch/v1"
@@ -99,8 +100,8 @@ var _ = BeforeSuite(func(done Done) {
 	} else {
 		fmt.Printf("Setup fake environment... \n")
 
-		blueprintNamespace := os.Getenv("BLUEPRINT_NAMESPACE")
-		fmt.Printf("Motion test suite using blueprint namespace: " + blueprintNamespace)
+		blueprintNamespace := utils.GetBlueprintNamespace()
+		fmt.Printf("Motion test suite using blueprint namespace: %s\n", blueprintNamespace)
 		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": blueprintNamespace})
 		selectorsByObject := cache.SelectorsByObject{
 			&motionv1.BatchTransfer{}:       {Field: workerNamespaceSelector},

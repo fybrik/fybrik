@@ -5,12 +5,13 @@ package main
 
 import (
 	"flag"
-	"fybrik.io/fybrik/manager/controllers"
-	"fybrik.io/fybrik/pkg/environment"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/pkg/environment"
 
 	"emperror.dev/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -58,17 +59,13 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	setupLog.Info("creating manager")
 
 	var applicationNamespaceSelector fields.Selector
-	applicationNamespace := os.Getenv("APPLICATION_NAMESPACE")
+	applicationNamespace := utils.GetApplicationNamespace()
 	if len(applicationNamespace) > 0 {
 		applicationNamespaceSelector = fields.SelectorFromSet(fields.Set{"metadata.namespace": applicationNamespace})
 	}
 	setupLog.Info("Application namespace: " + applicationNamespace)
 
-	// Replace with the getBlueprintNamespace()
-	blueprintNamespace := os.Getenv("BLUEPRINT_NAMESPACE")
-	if len(blueprintNamespace) <= 0 {
-		blueprintNamespace = app.BlueprintNamespace
-	}
+	blueprintNamespace := utils.GetBlueprintNamespace()
 
 	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
 	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": blueprintNamespace})

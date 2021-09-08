@@ -13,6 +13,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	apiv1alpha1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -24,14 +25,14 @@ const interval = time.Millisecond * 100
 var _ = Describe("FybrikApplication Controller", func() {
 	Context("FybrikApplication", func() {
 
-		controllerNamespace := getControllerNamespace()
-		fmt.Printf("FybrikApplication: controller namespace " + controllerNamespace)
+		controllerNamespace := utils.GetControllerNamespace()
+		fmt.Printf("FybrikApplication: controller namespace: %s\n", controllerNamespace)
 
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test
 			module := &apiv1alpha1.FybrikModule{}
 			Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
-      module.Namespace = controllerNamespace
+			module.Namespace = controllerNamespace
 			application := &apiv1alpha1.FybrikApplication{}
 
 			Expect(readObjectFromFile("../../testdata/e2e/fybrikapplication.yaml", application)).ToNot(HaveOccurred())
@@ -54,8 +55,8 @@ var _ = Describe("FybrikApplication Controller", func() {
 				secret2 := &corev1.Secret{Type: corev1.SecretTypeOpaque, StringData: map[string]string{"password": "123"}}
 				secret2.Name = "test-secret"
 
-				blueprintNamespace := getBlueprintNamespace()
-				fmt.Printf("Application test using blueprint namespace: " + blueprintNamespace)
+				blueprintNamespace := utils.GetBlueprintNamespace()
+				fmt.Printf("Application test using blueprint namespace: %s\n", blueprintNamespace)
 				secret2.Namespace = blueprintNamespace
 				Expect(k8sClient.Create(context.TODO(), secret2)).NotTo(HaveOccurred(), "a secret could not be created")
 				secretList := &corev1.SecretList{}
@@ -79,13 +80,14 @@ var _ = Describe("FybrikApplication Controller", func() {
 		})
 		It("Test end-to-end for FybrikApplication", func() {
 			connector := os.Getenv("USE_MOCKUP_CONNECTOR")
+			fmt.Printf("Connector:  %s\n", connector)
 			if len(connector) > 0 && connector != "true" {
 				Skip("Skipping test when not running with mockup connector!")
 			}
 			module := &apiv1alpha1.FybrikModule{}
 			Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
 			moduleKey := client.ObjectKeyFromObject(module)
-      module.Namespace = controllerNamespace
+			module.Namespace = controllerNamespace
 			application := &apiv1alpha1.FybrikApplication{}
 
 			Expect(readObjectFromFile("../../testdata/e2e/fybrikapplication.yaml", application)).ToNot(HaveOccurred())
@@ -135,8 +137,8 @@ var _ = Describe("FybrikApplication Controller", func() {
 				return application.Status.Ready
 			}, timeout, interval).Should(BeTrue(), "FybrikApplication is not ready after timeout!")
 
-			blueprintNamespace := getBlueprintNamespace()
-			fmt.Printf("blueprint namespace fybrikapp: " + blueprintNamespace + "\n")
+			blueprintNamespace := utils.GetBlueprintNamespace()
+			fmt.Printf("blueprint namespace fybrikapp: %s\n", blueprintNamespace)
 
 			By("Status should contain the details of the endpoint")
 			Expect(len(application.Status.AssetStates)).To(Equal(1))

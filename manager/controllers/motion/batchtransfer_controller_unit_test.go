@@ -36,7 +36,7 @@ func TestBatchTransferController(t *testing.T) {
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 	g := gomega.NewGomegaWithT(t)
 
-	batchTransferNamespace := getBatchTransferNamespace()
+	batchTransferNamespace := utils.GetBatchTransferNamespace()
 
 	var (
 		name      = "sample-transfer"

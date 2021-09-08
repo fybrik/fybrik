@@ -35,9 +35,9 @@ func TestPlotterController(t *testing.T) {
 	// Set the logger to development mode for verbose logs.
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
-	controllerNamespace := getControllerNamespace()
-	blueprintNamespace := getBlueprintNamespace()
-	fmt.Printf("Using controller namespace: " + controllerNamespace + " using blueprint namespace: " + blueprintNamespace)
+	controllerNamespace := utils.GetControllerNamespace()
+	blueprintNamespace := utils.GetBlueprintNamespace()
+	fmt.Printf("Using controller namespace: %s; using blueprint namespace %s\n: "+controllerNamespace, blueprintNamespace)
 
 	var (
 		name      = "plotter"

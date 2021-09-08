@@ -14,24 +14,13 @@ import (
 	v1 "k8s.io/api/core/v1"
 
 	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 )
-
-const DefaultBatchtransferNameSpace = "fybrik-blueprints"
-
-func getBatchTransferNamespace() string {
-	batchtransferNameSpace := DefaultBatchtransferNameSpace
-	batchtransferNameSpace = os.Getenv("BLUEPRINT_NAMESPACE")
-	if len(batchtransferNameSpace) <= 0 {
-		batchtransferNameSpace = DefaultBatchtransferNameSpace
-	}
-
-	return batchtransferNameSpace
-}
 
 var _ = Describe("BatchTransfer Controller", func() {
 
@@ -42,8 +31,8 @@ var _ = Describe("BatchTransfer Controller", func() {
 	BeforeEach(func() {
 		// Add any setup steps that needs to be executed before each test
 
-		batchtransferNameSpace := getBatchTransferNamespace()
-		fmt.Printf("batchtransfer namespace: " + batchtransferNameSpace + "\n")
+		batchtransferNameSpace := utils.GetBatchTransferNamespace()
+		fmt.Printf("batchtransfer namespace: %s\n ", batchtransferNameSpace)
 
 		f := &motionv1.BatchTransfer{}
 		key := client.ObjectKey{
@@ -71,9 +60,9 @@ var _ = Describe("BatchTransfer Controller", func() {
 			err = yaml.Unmarshal(batchTransferYAML, batchTransfer)
 			Expect(err).ToNot(HaveOccurred())
 
-			batchTransfer.Namespace = getBatchTransferNamespace()
+			batchTransfer.Namespace = utils.GetBatchTransferNamespace()
 			fmt.Printf("template namespace %v\n", batchTransfer.Namespace)
-          
+
 			registry := os.Getenv("DOCKER_HOSTNAME")
 			registryNamespace := os.Getenv("DOCKER_NAMESPACE")
 			tagName := os.Getenv("DOCKER_TAGNAME")

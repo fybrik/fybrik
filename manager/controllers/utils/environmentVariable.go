@@ -1,4 +1,4 @@
-package app
+package utils
 
 import (
 	"os"
@@ -10,7 +10,7 @@ const DefaultBlueprintNamespace = "fybrik-blueprints"
 // Controller namespace defines a namespace where
 const DefaultControllerNamespace = "fybrik-system"
 
-func getBlueprintNamespace() string {
+func GetBlueprintNamespace() string {
 
 	blueprintNamespace := os.Getenv("BLUEPRINT_NAMESPACE")
 	if len(blueprintNamespace) <= 0 {
@@ -19,11 +19,24 @@ func getBlueprintNamespace() string {
 	return blueprintNamespace
 }
 
-func getControllerNamespace() string {
+func GetControllerNamespace() string {
 
 	controllerNamespace := os.Getenv("CONTROLLER_NAMESPACE")
 	if len(controllerNamespace) <= 0 {
 		controllerNamespace = DefaultControllerNamespace
 	}
 	return controllerNamespace
+}
+
+func GetApplicationNamespace() string {
+	return os.Getenv("APPLICATION_NAMESPACE")
+
+}
+
+func GetBatchTransferNamespace() string {
+	return GetBlueprintNamespace()
+}
+
+func GetStreamTransferNamespace() string {
+	return GetBlueprintNamespace()
 }
