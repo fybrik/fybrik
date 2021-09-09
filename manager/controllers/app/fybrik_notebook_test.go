@@ -27,6 +27,7 @@ import (
 	"os/exec"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -46,11 +47,11 @@ func TestS3Notebook(t *testing.T) {
 
 	// Copy data.csv file to S3
 	// S3 is assumed to be exposed on localhost at port 9090
-	region := "us-east-1"
+	region := "theshire"
 	endpoint := "http://localhost:9090"
 	bucket := "bucket1"
 	key1 := "data.csv"
-	filename := "/Users/ffr/go/src/github.com/fybrik/fybrik/samples/kubeflow/data.csv"
+	filename := "../../../samples/kubeflow/data.csv"
 	s3credentials := credentials.NewStaticCredentials("ak", "sk", "")
 
 	sess := session.Must(session.NewSession(&aws.Config{
@@ -67,11 +68,8 @@ func TestS3Notebook(t *testing.T) {
 	if err != nil { // Could not retrieve object. Assume it does not exist
 		uploader := s3manager.NewUploader(sess)
 
-		f, err := os.Open(filename)
-		if err != nil {
-			log.Println(fmt.Errorf("failed to open file %q, %v", filename, err))
-			t.Fatal(err)
-		}
+		f, ferr := os.Open(filename)
+		Expect(ferr).To(BeNil(), "Opening local test data file")
 
 		// Upload the file to S3.
 		result, err := uploader.Upload(&s3manager.UploadInput{
@@ -79,12 +77,9 @@ func TestS3Notebook(t *testing.T) {
 			Key:    aws.String(key1),
 			Body:   f,
 		})
-		if err != nil {
-			log.Println(fmt.Errorf("failed to upload file, %v", err))
-			t.Fatal(err)
-		}
+		Expect(err).To(BeNil(), "S3 upload")
 		if result != nil {
-			fmt.Printf("file uploaded to, %s\n", result.Location)
+			log.Println(fmt.Sprintf("file uploaded to, %s\n", result.Location))
 		}
 	} else {
 		Expect(object).ToNot(BeNil())
@@ -113,6 +108,7 @@ func TestS3Notebook(t *testing.T) {
 	applicationKey := client.ObjectKeyFromObject(application)
 
 	// Create FybrikApplication and FybrikModule
+	By("Expecting application creation to succeed")
 	Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
 
 	// Ensure getting cleaned up after tests finish
@@ -151,8 +147,9 @@ func TestS3Notebook(t *testing.T) {
 
 	// Forward port of arrow flight service to local port
 	svcName := strings.Replace(application.Status.AssetStates["fybrik-notebook-sample/data-csv"].Endpoint.Hostname, ".fybrik-blueprints.svc.cluster.local", "", 1)
+	port := application.Status.AssetStates["fybrik-notebook-sample/data-csv"].Endpoint.Port
 
-	command := exec.Command("kubectl", "-n", BlueprintNamespace, "port-forward", "svc/"+svcName, "8083:80")
+	command := exec.Command("kubectl", "-n", BlueprintNamespace, "port-forward", "svc/"+svcName, "8083:"+strconv.Itoa(int(port)))
 	err = command.Start()
 	By("Starting kubectl port-forward for arrow-flight")
 	Expect(err).To(BeNil())
