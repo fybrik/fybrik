@@ -21,3 +21,7 @@ config/default/kustomization.yaml
 *.swp
 *.swo
 *~
+
+# Generated testdata
+testdata/unittests/basetaxonomy
+testdata/unittests/sampletaxonomy

@@ -76,6 +76,16 @@ run-integration-tests: wait_for_manager
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestMotionAPIs -count 1
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestAPIs -count 1
 
+.PHONY: run-notebook-tests
+run-notebook-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-notebook-tests: export DOCKER_NAMESPACE?=fybrik-system
+run-notebook-tests: export DOCKER_TAGNAME?=master
+run-notebook-tests: export USE_MOCKUP_CONNECTOR?=true
+run-notebook-tests: wait_for_manager
+	pushd testdata/notebook && ./setup.sh && popd
+	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestS3Notebook -count 1
+
+
 .PHONY: main.deps
 main.deps: generate fmt vet manifests
 

@@ -6,8 +6,10 @@ package app
 import (
 	"context"
 	"fmt"
+
 	"strings"
-	"time"
+	"time
+	"os"
 
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/pkg/environment"
@@ -76,18 +78,27 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	observedStatus := applicationContext.Status.DeepCopy()
 	appVersion := applicationContext.GetGeneration()
 
-	// check if observed generation is not the same as appVersion
-	if observedStatus.ObservedGeneration != appVersion {
+	// check if webhooks are enabled and application has been validated before or if validated application is outdated
+	if os.Getenv("ENABLE_WEBHOOKS") != "true" && (string(applicationContext.Status.ValidApplication) == "" || observedStatus.ValidatedGeneration != appVersion) {
 		// do validation on applicationContext
 		err := applicationContext.ValidateFybrikApplication("/tmp/taxonomy/fybrik_application.json")
-
+		log.V(0).Info("Reconciler validating Fybrik application")
+		applicationContext.Status.ValidatedGeneration = appVersion
 		// if validation fails
 		if err != nil {
 			// set error message
-			observedStatus.ObservedGeneration = appVersion
+			log.V(0).Info("Fybrik application validation failed " + err.Error())
 			applicationContext.Status.ErrorMessage = err.Error()
+			applicationContext.Status.ValidApplication = v1.ConditionFalse
+			if err := r.Client.Status().Update(ctx, applicationContext); err != nil {
+				return ctrl.Result{}, err
+			}
 			return ctrl.Result{}, nil
 		}
+		applicationContext.Status.ValidApplication = v1.ConditionTrue
+	}
+	if applicationContext.Status.ValidApplication == v1.ConditionFalse {
+		return ctrl.Result{}, nil
 	}
 
 	// check if reconcile is required
