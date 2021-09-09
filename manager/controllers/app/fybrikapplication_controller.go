@@ -8,7 +8,7 @@ import (
 	"fmt"
 
 	"strings"
-	"time
+	"time"
 	"os"
 
 	"fybrik.io/fybrik/manager/controllers"
