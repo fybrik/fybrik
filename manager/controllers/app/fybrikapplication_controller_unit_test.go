@@ -499,6 +499,68 @@ func TestMultipleDatasets(t *testing.T) {
 	g.Expect(numReads).To(gomega.Equal(1), "A single read module should be instantiated")
 }
 
+// This test checks that a non-supported data store does not prevent a plotter from being created
+func TestReadyAssetAfterUnsupported(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "read-test",
+		Namespace: "default",
+	}
+	application := &app.FybrikApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.Spec.Data = []app.DataContext{
+		{
+			DataSetID:    "s3/deny-dataset",
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+		},
+		{
+			DataSetID:    "local/redact-dataset",
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+		},
+		{
+			DataSetID:    "s3/allow-dataset",
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+		},
+	}
+	application.SetGeneration(1)
+
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Read module
+	readModule := &app.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+	// check Deny states
+	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["local/redact-dataset"].Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	// check plotter creation
+	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
+}
+
 // This test checks the case where data comes from another regions, and should be redacted.
 // In this case a read module will be deployed close to the compute, while a copy module - close to the data.
 func TestMultipleRegions(t *testing.T) {

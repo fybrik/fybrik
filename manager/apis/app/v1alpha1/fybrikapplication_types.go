@@ -92,13 +92,14 @@ type FybrikApplicationSpec struct {
 
 // ErrorMessages that are reported to the user
 const (
-	InvalidAssetID              string = "The asset does not exist."
-	ReadAccessDenied            string = "Governance policies forbid access to the data."
-	CopyNotAllowed              string = "Copy of the data is required but can not be done according to the governance policies."
-	WriteNotAllowed             string = "Governance policies forbid writing of the data."
-	ModuleNotFound              string = "No module has been registered"
-	InsufficientStorage         string = "No bucket was provisioned for implicit copy"
-	InvalidClusterConfiguration string = "Cluster configuration does not support the requirements."
+	InvalidAssetID              string = "the asset does not exist"
+	ReadAccessDenied            string = "governance policies forbid access to the data"
+	CopyNotAllowed              string = "copy of the data is required but can not be done according to the governance policies"
+	WriteNotAllowed             string = "governance policies forbid writing of the data"
+	ModuleNotFound              string = "no module has been registered"
+	InsufficientStorage         string = "no bucket was provisioned for implicit copy"
+	InvalidClusterConfiguration string = "cluster configuration does not support the requirements"
+	InvalidAssetDataStore       string = "the asset data store is not supported"
 )
 
 // Condition indices are static. Conditions always present in the status.
