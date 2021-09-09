@@ -2,6 +2,7 @@
 set -x
 set +e
 
+export cluster_scoped=${cluster_scoped:-false}
 export run_tkn=${run_tkn:-0}
 export skip_tests=${skip_tests:-false}
 export GH_TOKEN=${GH_TOKEN:-fake}
@@ -14,6 +15,7 @@ export image_source_repo_username=${image_source_repo_username}
 export image_repo="${image_repo:-kind-registry:5000}"
 export image_source_repo="${image_source_repo:-fake.com}"
 export dockerhub_hostname="${dockerhub_hostname:-docker.io}"
+export use_application_namespace=${use_application_namespace:-false}
 export git_url="${git_url:-https://github.com/fybrik/fybrik.git}"
 export is_kind="${is_kind:-false}"
 
@@ -55,7 +57,7 @@ fi
 set -e
 
 # Figure out if we're using air-gapped machines that should pull images from somewhere other than dockerhub
-extra_params=''
+extra_params="-p clusterScoped=${cluster_scoped}"
 is_public_repo="false"
 is_custom_repo="false"
 helm_image=
@@ -134,6 +136,102 @@ else
 fi
 unique_prefix=$(kubectl config view --minify --output 'jsonpath={..namespace}'; echo)
 
+if [[ "${unique_prefix}" == "fybrik-system" ]]; then
+  blueprint_namespace="fybrik-blueprints"
+else
+  blueprint_namespace="${unique_prefix}-blueprints"
+fi
+extra_params="${extra_params} -p blueprintNamespace=${blueprint_namespace}"
+
+if [[ ${cluster_scoped} == "false" ]]; then
+  set +e
+  rc=1
+  kubectl get ns ${blueprint_namespace}
+  rc=$?
+  set -e
+  # Create new project if necessary
+  if [[ $rc -ne 0 ]]; then
+    if [[ ${is_openshift} == "true" ]]; then
+      oc new-project ${blueprint_namespace}
+      oc project ${unique_prefix} 
+    else
+      kubectl create ns ${blueprint_namespace} 
+    fi
+  fi
+fi
+
+if [[ -f ${repo_root}/pipeline/custom_fybrik_values.sh ]]; then
+    source ${repo_root}/pipeline/custom_fybrik_values.sh
+else
+    fybrik_values=""
+fi
+
+if [[ ${cluster_scoped} == "false" ]]; then
+    if [[ ${use_application_namespace} == "false" ]]; then
+        if [[ ! -z ${fybrik_values} ]]; then
+            fybrik_values="${fybrik_values},applicationNamespace=${unique_prefix}"
+        else
+            fybrik_values="applicationNamespace=${unique_prefix}"
+        fi
+    else
+        if [[ ! -z ${fybrik_values} ]]; then
+            fybrik_values="${fybrik_values},applicationNamespace=${unique_prefix}-app"
+        else
+            fybrik_values="applicationNamespace=${unique_prefix}-app"
+        fi
+    fi
+fi
+
+if [[ ${cluster_scoped} == "false" && ${use_application_namespace} == "true"  ]]; then
+  set +e
+  rc=1
+  kubectl get ns ${unique_prefix}-app
+  rc=$?
+  set -e
+  # Create new project if necessary
+  if [[ $rc -ne 0 ]]; then
+    if [[ ${is_openshift} == "true" ]]; then
+      oc new-project ${unique_prefix}-app
+      oc project ${unique_prefix} 
+    else
+      kubectl create ns ${unique_prefix}-app 
+    fi
+  fi
+
+  cat > ${TMP}/approle.yaml <<EOH
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ${unique_prefix}-app-role
+  namespace: ${unique_prefix}-app 
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ${unique_prefix}-app-rb
+  namespace: ${unique_prefix}-app
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ${unique_prefix}-app-role
+subjects:
+- kind: ServiceAccount
+  name: manager
+  namespace: ${unique_prefix}
+EOH
+  set +e
+  kubectl delete -f ${TMP}/approle.yaml
+  set -e
+  kubectl apply -f ${TMP}/approle.yaml
+fi
+
 set +e
 # Be smarter about this - just a quick hack for typical default OpenShift & Kind installs so we can control the default storage class
 kubectl patch storageclass managed-nfs-storage -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class": "true"}}}'
@@ -151,7 +249,7 @@ set -x
 oc get -n openshift-pipelines csv | grep redhat-openshift-pipelines-operator 
 oc get -n openshift-pipelines csv | grep redhat-openshift-pipelines-operator | grep Succeeded
 EOH
-chmod u+x ${TMP}/streams_csv_check_script.sh
+    chmod u+x ${TMP}/streams_csv_check_script.sh
     try_command "${TMP}/streams_csv_check_script.sh"  40 true 5
 
     cat > ${TMP}/streams_csv_check_script.sh <<EOH
@@ -160,7 +258,7 @@ set -x
 oc get -n openshift-operators csv | grep serverless-operator
 oc get -n openshift-operators csv | grep serverless-operator | grep -e Succeeded -e Replacing
 EOH
-chmod u+x ${TMP}/streams_csv_check_script.sh
+    chmod u+x ${TMP}/streams_csv_check_script.sh
     try_command "${TMP}/streams_csv_check_script.sh"  40 false 5
     oc apply -f ${repo_root}/pipeline/knative-eventing.yaml
 else
@@ -188,8 +286,8 @@ if [[ ${is_openshift} == "true" ]]; then
     oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:${unique_prefix}:pipeline
     oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:${unique_prefix}:root-sa
     oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${unique_prefix} --namespace ${unique_prefix}
-    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:fybrik-blueprints --namespace ${unique_prefix}
-    oc adm policy add-role-to-user system:image-puller system:serviceaccount:${unique_prefix}:wkc-connector --namespace ${unique_prefix}
+    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${blueprint_namespace} --namespace ${unique_prefix}
+    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${unique_prefix}-app --namespace ${unique_prefix}
     
     # Temporary hack pending a better solution
     oc adm policy add-scc-to-user anyuid system:serviceaccount:${unique_prefix}:opa-connector
@@ -207,6 +305,7 @@ helper_text="If this step fails, tekton related pods may be restarting or initia
 1. Please rerun in a minute or so
 "
 set -x
+kubectl apply -f ${repo_root}/pipeline/tasks/shell.yaml
 kubectl apply -f ${repo_root}/pipeline/tasks/make.yaml
 kubectl apply -f ${repo_root}/pipeline/tasks/git-clone.yaml
 kubectl apply -f ${repo_root}/pipeline/tasks/buildah.yaml
@@ -220,16 +319,15 @@ helper_text=""
 set +e
 kubectl delete -f ${repo_root}/pipeline/pipeline.yaml
 if [[ -f ${repo_root}/pipeline/custom_pipeline_cleanup.sh ]]; then
-    ${repo_root}/pipeline/custom_pipeline_cleanup.sh
+    source ${repo_root}/pipeline/custom_pipeline_cleanup.sh
 fi
 
 set -e
 if [[ "${is_public_repo}" == "true" ]]; then
     kubectl apply -f ${repo_root}/pipeline/pipeline.yaml
 else 
-     kubectl apply -f ${repo_root}/pipeline/wkc-pipeline.yaml
      if [[ -f ${repo_root}/pipeline/custom_pipeline_create.sh ]]; then
-         ${repo_root}/pipeline/custom_pipeline_create.sh
+         source ${repo_root}/pipeline/custom_pipeline_create.sh
      else
          set +x
          echo "You are running with a non public repo, but no custom pipeline creation script exists at ${repo_root}/pipeline/custom_pipeline_create.sh"
@@ -306,16 +404,10 @@ else
     kubectl patch serviceaccount default -p '{"secrets": [{"name": "regcred"}]}'
 fi
 
-# Install resources that are cluster scoped only if installing to fybrik-system
-cluster_scoped="false"
-deploy_vault="false"
-if [[ "${unique_prefix}" == "fybrik-system" ]]; then
-    extra_params="${extra_params} -p clusterScoped='true' -p deployVault='true'"
-    cluster_scoped="true"
-    deploy_vault="true"
-fi
+extra_params="${extra_params} -p deployVault='true'"
+deploy_vault="true"
 set +e
-kubectl get crd | grep "fybrikapplications.app.fybrik.ibm.com"
+kubectl get crd | grep "fybrikapplications.app.fybrik.io"
 rc=$?
 deploy_crd="false"
 if [[ $rc -ne 0 ]]; then
@@ -330,16 +422,6 @@ deploy_cert_manager="false"
 if [[ $rc -ne 0 ]]; then
     extra_params="${extra_params} -p deployCertManager='true'"
     deploy_cert_manager="true"
-fi
-
-set +e
-kubectl get ns fybrik-system
-rc=$?
-set -e
-if [[ $rc -ne 0 ]]; then
-    set +x
-    helper_text="please install into fybrik-system first - currently vault can only be installed in one namespace, and needs to go in fybrik-system"
-    exit 1
 fi
 
 # Create a workspace to allow users to exec in and run arbitrary commands
@@ -363,6 +445,7 @@ if [[ ${is_openshift} == "true" ]]; then
 fi
 cat ${TMP}/interceptors.yaml
 popd
+
 kubectl apply -f ${TMP}/release.yaml
 kubectl apply -f ${TMP}/interceptors.yaml
 
@@ -488,7 +571,7 @@ set +x
 
 echo "
 # for a pre-existing PVC that will be deleted when the namespace is deleted
-tkn pipeline start build-and-deploy -w name=images-url,emptyDir=\"\" -w name=artifacts,claimName=artifacts-pvc -w name=shared-workspace,claimName=source-pvc -p docker-hostname=${image_repo} -p dockerhub-hostname=${dockerhub_hostname} -p docker-namespace=${unique_prefix} -p NAMESPACE=${unique_prefix} -p skipTests=${skip_tests} ${extra_params} -p git-revision=pipeline"
+tkn pipeline start build-and-deploy -w name=images-url,emptyDir=\"\" -w name=artifacts,claimName=artifacts-pvc -w name=shared-workspace,claimName=source-pvc -p docker-hostname=${image_repo} -p dockerhub-hostname=${dockerhub_hostname} -p docker-namespace=${unique_prefix} -p NAMESPACE=${unique_prefix} -p skipTests=${skip_tests} -p fybrik-values=${fybrik_values} ${extra_params} -p git-revision=pipeline"
 
 if [[ ${run_tkn} -eq 1 ]]; then
     set -x
@@ -509,12 +592,12 @@ spec:
     value: ${image_repo}
   - name: dockerhub-hostname
     value: ${dockerhub_hostname}
+  - name: blueprintNamespace
+    value: ${blueprint_namespace}
   - name: docker-namespace
     value: ${unique_prefix} 
   - name: git-revision
     value: pipeline
-  - name: wkcConnectorServerUrl
-    value: ${cpd_url}
   - name: git-url
     value: "${git_url}"
   - name: skipTests
@@ -535,6 +618,8 @@ spec:
     value: "${deploy_cert_manager}"
   - name: vaultValues
     value: "${vault_values}"
+  - name: fybrik-values
+    value: "${fybrik_values}"
   pipelineRef:
     name: build-and-deploy
   serviceAccountName: ${pipeline_sa}
@@ -553,7 +638,7 @@ EOH
         kubectl apply -f ${TMP}/pipelinerun.yaml
     else
          if [[ -f ${repo_root}/pipeline/custom_run_tkn.sh ]]; then
-             ${repo_root}/pipeline/custom_run_tkn.sh
+             source ${repo_root}/pipeline/custom_run_tkn.sh
          else
              set +x
              echo "If run_tkn is on, please put a script in ${repo_root}/pipeline/custom_run_tkn.sh to define the custom pipelinerun"

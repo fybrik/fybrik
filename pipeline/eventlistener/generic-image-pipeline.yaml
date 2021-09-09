@@ -1,0 +1,67 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: print-generic
+spec:
+  params:
+    - description: IMAGE_DIGEST
+      name: IMAGE_DIGEST
+      type: string
+    - description: GENERATE_NAME
+      name: GENERATE_NAME
+      type: string
+    - name: IMAGE_NAME
+      type: string 
+    - name: IMAGE_ID
+      type: string
+    - description: Type of Event
+      name: event-type
+      type: string
+  tasks:
+    - name: print-generic
+      params:
+        - name: IMAGE_DIGEST
+          value: $(params.IMAGE_DIGEST)
+        - name: GENERATE_NAME
+          value: $(params.GENERATE_NAME)
+        - name: IMAGE_NAME
+          value: $(params.IMAGE_NAME)
+        - name: IMAGE_ID
+          value: $(params.IMAGE_ID)
+        - name: event-type
+          value: $(params.event-type)
+      taskRef:
+        kind: Task
+        name: print-generic
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: print-generic-code-update
+spec:
+  params:
+    - description: COMPONENT_NAME 
+      name: COMPONENT_NAME
+      type: string
+    - description: GENERATE_NAME
+      name: GENERATE_NAME
+      type: string
+    - description: Type of Event
+      name: event-type
+      type: string
+  tasks:
+    - name: print-generic
+      params:
+        - name: IMAGE_DIGEST
+          value: $(params.COMPONENT_NAME)
+        - name: GENERATE_NAME
+          value: $(params.GENERATE_NAME)
+        - name: IMAGE_NAME
+          value: $(params.COMPONENT_NAME)
+        - name: IMAGE_ID
+          value: $(params.COMPONENT_NAME)
+        - name: event-type
+          value: $(params.event-type)
+      taskRef:
+        kind: Task
+        name: print-generic

@@ -13,6 +13,11 @@ fullnameOverride: ""
 
 clusterScoped: true
 
+blueprintNamespace: "fybrik-blueprints"
+
+# Set if need to only watch for FybrikApplication from a specific namespace
+#applicationNamespace: ""
+
 # Taxonomy file for taxonomy ConfigMap
 taxonomyOverride: ""
 

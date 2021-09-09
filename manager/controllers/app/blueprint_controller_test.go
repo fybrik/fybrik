@@ -4,9 +4,11 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,7 +24,7 @@ func deployBlueprint(namespace string, shouldSucceed bool) {
 
 	// Set the correct namespace
 	blueprint.SetNamespace(namespace)
-
+	fmt.Printf("Blueprint controller unit test - blueprint namespace: %s\n", namespace)
 	blueprintKey := client.ObjectKeyFromObject(blueprint)
 
 	// Create Blueprint
@@ -57,6 +59,9 @@ func deployBlueprint(namespace string, shouldSucceed bool) {
 
 var _ = Describe("Blueprint Controller Real Env", func() {
 	Context("Blueprint", func() {
+
+		blueprintNamespace := utils.GetBlueprintNamespace()
+		fmt.Printf("blueprintNamespace: %s\n", blueprintNamespace)
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test
 			const interval = time.Millisecond * 100
@@ -64,7 +69,8 @@ var _ = Describe("Blueprint Controller Real Env", func() {
 			Expect(readObjectFromFile("../../testdata/blueprint-read.yaml", blueprint)).ToNot(HaveOccurred())
 			blueprint.SetNamespace("default")
 			_ = k8sClient.Delete(context.Background(), blueprint)
-			blueprint.SetNamespace("fybrik-blueprints")
+			blueprint.SetNamespace(blueprintNamespace)
+
 			_ = k8sClient.Delete(context.Background(), blueprint)
 			time.Sleep(interval)
 		})
@@ -73,12 +79,12 @@ var _ = Describe("Blueprint Controller Real Env", func() {
 			// Add any teardown steps that needs to be executed after each test
 		})
 
-		// Blueprints are successfully reconciled when deployed to fybrik-blueprints only
+		// Blueprints are successfully reconciled when deployed to blueprintNamespace only
 		It("Test Blueprint Deploy to Correct Namespace", func() {
-			deployBlueprint(BlueprintNamespace, true)
+			deployBlueprint(blueprintNamespace, true)
 		})
 
-		// Blueprints not deployed to fybrik-blueprints should not be successfully reconciled due to the filter preventing
+		// Blueprints not deployed to blueprintNamespace should not be successfully reconciled due to the filter preventing
 		// reconcile from being called.
 		It("Test Blueprint Deploy to Bad Namespace", func() {
 			deployBlueprint("default", false)

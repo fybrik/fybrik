@@ -1,29 +1,20 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: make
+  name: shell
 spec:
   description: This Task is Golang task to test Go projects.
   params:
-  - default: ""
-    description: 'packages to test (default: ./...)'
-    name: packages
-    type: string
   - default: .
     description: path to the directory to use as context.
     name: context
     type: string
+  - description: path to the directory to use as context.
+    name: command
+    type: string
   - default: latest
     description: golang version to use for tests
     name: version
-    type: string
-  - default: ""
-    description: flags to use for the test command
-    name: flags
-    type: string
-  - default: ""
-    description: make target
-    name: target
     type: string
   - default: ""
     description: env vars for make command
@@ -49,7 +40,7 @@ spec:
     description: Go mod caching directory path
     name: GOMODCACHE
     type: string
-  - default: "docker.io/yakinikku/suede_compile:latest"
+  - default: "docker.io/yakinikku/suede:latest"
     description: default image to use for compiling
     name: image
     type: string
@@ -93,7 +84,7 @@ spec:
       env
       pwd
       cd $(params.context)
-      $(params.env_vars) make $(params.target) $(params.flags) $(params.packages)
+      $(params.env_vars) $(params.command)
     workingDir: $(workspaces.source.path)
   - image: $(params.image)
     name: docker-namespace-to-results

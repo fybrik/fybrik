@@ -6,11 +6,12 @@ package app
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/pkg/environment"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"strings"
-	"time"
 
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
@@ -130,6 +131,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	if !isReady(applicationContext) {
 		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
+
 	return ctrl.Result{}, nil
 }
 
@@ -261,6 +263,8 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 // Current implementation assumes there is only one cluster with read modules (which is the same cluster the user's workload)
 func setReadModulesEndpoints(applicationContext *api.FybrikApplication, blueprintsMap map[string]api.BlueprintSpec, moduleMap map[string]*api.FybrikModule) {
 	readEndpointMap := make(map[string]api.EndpointSpec)
+	blueprintNamespace := utils.GetBlueprintNamespace()
+
 	for _, blueprintSpec := range blueprintsMap {
 		for _, module := range blueprintSpec.Modules {
 			if module.Arguments.Read != nil {
@@ -274,7 +278,8 @@ func setReadModulesEndpoints(applicationContext *api.FybrikApplication, blueprin
 				if hasRead, caps := utils.GetModuleCapabilities(moduleMap[moduleName], api.Read); hasRead {
 					for _, cap := range caps {
 						originalEndpointSpec := cap.API.Endpoint
-						fqdn := utils.GenerateModuleEndpointFQDN(releaseName, BlueprintNamespace)
+
+						fqdn := utils.GenerateModuleEndpointFQDN(releaseName, blueprintNamespace)
 						for _, arg := range module.Arguments.Read {
 							readEndpointMap[arg.AssetID] = api.EndpointSpec{
 								Hostname: fqdn,

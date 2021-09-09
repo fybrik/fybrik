@@ -1,4 +1,5 @@
 {{- if include "fybrik.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+{{- if .Values.clusterScoped }}
 apiVersion: {{ include "fybrik.certManagerApiVersion" . }}
 kind: Issuer
 metadata:
@@ -21,4 +22,5 @@ spec:
     kind: Issuer
     name: selfsigned-issuer
   secretName: webhook-server-cert
+{{- end }}
 {{- end }}
