@@ -349,7 +349,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 		requirements = append(requirements, req)
 	}
 	// check if can proceed
-	if getErrorMessages(applicationContext) != "" {
+	if len(requirements) == 0 {
 		return ctrl.Result{}, nil
 	}
 
@@ -528,7 +528,7 @@ func AnalyzeError(application *api.FybrikApplication, assetID string, err error)
 		return
 	}
 	switch err.Error() {
-	case api.InvalidAssetID, api.ReadAccessDenied, api.CopyNotAllowed, api.WriteNotAllowed:
+	case api.InvalidAssetID, api.ReadAccessDenied, api.CopyNotAllowed, api.WriteNotAllowed, api.InvalidAssetDataStore:
 		setDenyCondition(application, assetID, err.Error())
 	default:
 		setErrorCondition(application, assetID, err.Error())
