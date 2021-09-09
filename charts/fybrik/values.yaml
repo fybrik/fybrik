@@ -455,3 +455,7 @@ egeriaConnector:
   tolerations: []
 
   affinity: {}
+
+# S3 mock service installed in fybrik namespace
+s3mock:
+  enabled: false

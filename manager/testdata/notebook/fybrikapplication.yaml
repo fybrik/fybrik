@@ -1,0 +1,26 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: app.fybrik.io/v1alpha1
+kind: FybrikApplication
+metadata:
+  name: my-notebook
+  namespace: fybrik-notebook-sample
+  labels:
+    app: my-notebook
+spec:
+  selector:
+    clusterName: thegreendragon
+    workloadSelector:
+      matchLabels:
+        app: my-notebook
+  appInfo:
+    intent: Marketing
+    role: HR
+  data:
+    - dataSetID: 'fybrik-notebook-sample/data-csv'
+      requirements:
+        interface:
+          protocol: fybrik-arrow-flight
+          dataformat: arrow
+

@@ -43,6 +43,24 @@ run-integration-tests:
 	$(MAKE) -C manager run-integration-tests
 	$(MAKE) -C modules test
 
+.PHONY: run-notebook-tests
+run-notebook-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-notebook-tests: export DOCKER_NAMESPACE?=fybrik-system
+run-notebook-tests: export VALUES_FILE=charts/fybrik/notebook-tests.values.yaml
+run-notebook-tests:
+	$(MAKE) kind
+	$(MAKE) cluster-prepare
+	$(MAKE) docker-build docker-push
+	$(MAKE) -C test/services docker-build docker-push
+	$(MAKE) cluster-prepare-wait
+	$(MAKE) deploy
+	$(MAKE) configure-vault
+	$(MAKE) -C modules helm
+	$(MAKE) -C modules helm-uninstall # Uninstalls the deployed tests from previous command
+	$(MAKE) -C pkg/helm test
+	$(MAKE) -C manager run-notebook-tests
+	$(MAKE) -C modules test
+
 .PHONY: run-deploy-tests
 run-deploy-tests:
 	$(MAKE) kind
