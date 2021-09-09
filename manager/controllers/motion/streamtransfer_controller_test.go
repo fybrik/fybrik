@@ -61,11 +61,11 @@ var _ = Describe("StreamTransfer Controller", func() {
 			streamTransfer.Namespace = utils.GetStreamTransferNamespace()
 			fmt.Printf("template namespace %v\n", streamTransfer.Namespace)
 
-			//registry := os.Getenv("DOCKER_HOSTNAME")
-			//if len(registry) > 0 {
+			// registry := os.Getenv("DOCKER_HOSTNAME")
+			// if len(registry) > 0 {
 			//	streamTransfer.Spec.Image = registry + "/dummy-mover:latest"
-			//}
-			//fmt.Printf("%v\n", registry)
+			// }
+			// fmt.Printf("%v\n", registry)
 
 			key := client.ObjectKeyFromObject(streamTransfer)
 
