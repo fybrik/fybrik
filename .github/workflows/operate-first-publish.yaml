@@ -1,46 +1,45 @@
 name: Update Operate First directory
 
-on:
-  push:
-    tags:
-      - 'v*'
+on: 
+  workflow_dispatch:
 
 jobs:
   build:
     name: Update Operate First directory
     runs-on: ubuntu-latest
     steps:
+    
       - name: Checkout Operate First repository
         uses: actions/checkout@v2
         with:
+          repository: operate-first/apps
           path: operate-first
-          ref: https://github.com/operate-first/apps
       - name: Checkout Fybrik repository
         uses: actions/checkout@v2
         with:
-          repository: fybrik/fybrik
+          repository: eletonia/fybrik
           path: fybrik-repo
-          ref: https://github.com/fybrik/fybrik
       - run: |
           rm -r fybrik-repo/samples/operate-first/*/
           rm fybrik-repo/samples/operate-first/*.yaml
           cd fybrik-repo/hack/tools
           ./install_yq.sh
           ./install_helm.sh
-          cd fybrik-repo/samples/operate-first
+          cd ../../samples/operate-first
+          make helm-template
+          pip install pipenv
           pipenv install
-          pipenv shell
-          make all
+          pipenv run python filterClusterScoped.py
       - uses: tibdex/github-app-token@v1
         id: generate-token
         with:
-          app_id: ${{ secrets.CHARTS_APP_ID }}
-          private_key: ${{ secrets.CHARTS_APP_PRIVATE_KEY }}
-          repository: fybrik/charts
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY  }}
+          repository: eletonia/fybrik
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
-          path: fybrik-repo
+          path: operate-first
           signoff: true
           token: ${{ steps.generate-token.outputs.token }}
           title: 'Update Operate First files to new release'
