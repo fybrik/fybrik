@@ -1,0 +1,37 @@
+definitions:
+  Capabilities:
+    type: array
+    properties:
+      Capability:
+        enum:
+          - copy
+          - write
+          - read
+          - transform
+      Scope:
+        enum:
+          - asset
+          - workload
+          - cluster
+      SupportedInterfaces:
+        anyOf:
+          - $ref: "#/definitions/Source"
+          - $ref: "#/definitions/Sink"
+      API:
+        InterfaceDetails:
+          - $ref: "#/definitions/Interface"
+        Endpoint:
+          Port:
+            type: float
+          Scheme:
+            enum:
+              ['grpc']
+      Actions:
+        ID:
+          - $ref: "#/definitions/Action"
+        Level:
+          type: float
+  Source:
+        - $ref: "#/definitions/Interface"
+  Sink:
+    - $ref: "#/definitions/Interface"

@@ -1,0 +1,11 @@
+definitions:
+  FybrikModule:
+    type:
+      enum: [service, config]
+    properties:
+      Dependencies:
+        DependencyType:
+          enum: [module, connector, feature]
+      Capabilities:
+        - $ref: "#/definitions/Capabilities"
+      
