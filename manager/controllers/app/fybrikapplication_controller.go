@@ -7,11 +7,12 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
+	"time"
+
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/pkg/environment"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"strings"
-	"time"
 
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
@@ -53,7 +54,7 @@ type FybrikApplicationReconciler struct {
 
 // Reconcile reconciles FybrikApplication CRD
 // It receives FybrikApplication CRD and selects the appropriate modules that will run
-// The outcome is either a single Blueprint running on the same cluster or a Plotter containing multiple Blueprints that may run on different clusters
+// The outcome is a Plotter containing multiple Blueprints that run on different clusters
 func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("fybrikapplication", req.NamespacedName)
 	// obtain FybrikApplication resource

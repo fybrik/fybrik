@@ -325,7 +325,7 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 			subFlow := app.SubFlow{
 				Name:     "",
 				FlowType: app.CopyFlow,
-				Triggers: []app.SubFlowTrigger{app.CopyTrigger},
+				Triggers: []app.SubFlowTrigger{app.InitTrigger},
 				Steps:    [][]app.DataFlowStep{steps},
 			}
 
@@ -387,7 +387,7 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 			subFlow := app.SubFlow{
 				Name:     "",
 				FlowType: app.ReadFlow,
-				Triggers: []app.SubFlowTrigger{app.ReadTrigger},
+				Triggers: []app.SubFlowTrigger{app.WorkloadTrigger},
 				Steps:    [][]app.DataFlowStep{steps},
 			}
 

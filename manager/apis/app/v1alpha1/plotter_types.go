@@ -20,6 +20,7 @@ type AssetDetails struct {
 	DataStore DataStore `json:"assetDetails"`
 }
 
+// Service holds information for accessing a module instance
 type Service struct {
 	//+required
 	Endpoint EndpointSpec `json:"endpoint"`
@@ -92,15 +93,16 @@ type DataFlowStep struct {
 // +kubebuilder:validation:Enum=workload;init;timer
 type SubFlowTrigger string
 
+// TODO: These will come from the taxonomy in the future.
 const (
-	// Copy flow trigger
-	CopyTrigger SubFlowTrigger = "init"
+	// Init flow trigger
+	InitTrigger SubFlowTrigger = "init"
 
-	// Read flow trigger
-	ReadTrigger SubFlowTrigger = "workload"
+	// Workload flow trigger
+	WorkloadTrigger SubFlowTrigger = "workload"
 
-	// Write flow trigger
-	WriteTrigger SubFlowTrigger = "timer"
+	// Timer flow trigger
+	TimerTrigger SubFlowTrigger = "timer"
 )
 
 // Subflows is a list of data flows which are originated from the same data asset

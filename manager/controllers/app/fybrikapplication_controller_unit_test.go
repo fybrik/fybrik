@@ -151,10 +151,10 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(flow.SubFlows).To(gomega.HaveLen(2)) // Should have two subflows
 	copyFlow := flow.SubFlows[0]                  // Assume flow 0 is copy
 	g.Expect(copyFlow.FlowType).To(gomega.Equal(app.CopyFlow))
-	g.Expect(copyFlow.Triggers).To(gomega.ContainElements(app.CopyTrigger))
+	g.Expect(copyFlow.Triggers).To(gomega.ContainElements(app.InitTrigger))
 	readFlow := flow.SubFlows[1]
 	g.Expect(readFlow.FlowType).To(gomega.Equal(app.ReadFlow))
-	g.Expect(readFlow.Triggers).To(gomega.ContainElements(app.ReadTrigger))
+	g.Expect(readFlow.Triggers).To(gomega.ContainElements(app.WorkloadTrigger))
 	g.Expect(readFlow.Steps[0][0].Cluster).To(gomega.Equal("thegreendragon"))
 	// Check statuses
 	g.Expect(application.Status.Ready).To(gomega.Equal(false))
@@ -676,7 +676,7 @@ func TestCopyData(t *testing.T) {
 	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(1))
 	g.Expect(plotter.Spec.Flows[0].SubFlows).To(gomega.HaveLen(1))
 	subflow := plotter.Spec.Flows[0].SubFlows[0]
-	g.Expect(subflow.Triggers).To(gomega.ContainElements(app.CopyTrigger))
+	g.Expect(subflow.Triggers).To(gomega.ContainElements(app.InitTrigger))
 	g.Expect(subflow.FlowType).To(gomega.Equal(app.CopyFlow))
 	g.Expect(subflow.Steps).To(gomega.HaveLen(1))
 	g.Expect(subflow.Steps[0]).To(gomega.HaveLen(1))
