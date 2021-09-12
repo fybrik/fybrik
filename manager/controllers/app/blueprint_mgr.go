@@ -10,14 +10,14 @@ import (
 	// Temporary - shouldn't have something specific to implicit copies
 )
 
-// RefineInstances collects all instances of the same read/write module and creates a new instance instead, with accumulated arguments.
-// Copy modules are left unchanged.
+// RefineInstances collects all instances of the same read/write module with non "Asset" scope
+// and creates a new instance instead, with accumulated arguments.
 func (r *PlotterReconciler) RefineInstances(instances []modules.ModuleInstanceSpec) []modules.ModuleInstanceSpec {
 	newInstances := make([]modules.ModuleInstanceSpec, 0)
 	// map instances to be unified, according to the cluster and module
 	instanceMap := make(map[string]modules.ModuleInstanceSpec)
 	for _, moduleInstance := range instances {
-		// If the module scope if of type "asset" then avoid trying to unify it with another module.
+		// If the module scope is of type "asset" then avoid trying to unify it with another module.
 		// Copy module is assumed to be of "asset" scope
 		if moduleInstance.Scope == app.Asset {
 			newInstances = append(newInstances, moduleInstance)
