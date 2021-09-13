@@ -9,6 +9,9 @@ KUBE_NAMESPACE ?= fybrik-system
 NEED_TEST_COVERAGE_STATISTICS=1
 NEED_TEST_COVERAGE_STATISTICS_IN_HTML=0
 
+CATALOG_PROVIDER_NAME ?= "WKC"
+CATALOG_CONNECTOR_URL ?= "wkc-connector:50090"
+
 docker-all: docker-build docker-push 
 
 docker-build:
@@ -19,10 +22,12 @@ docker-build:
 .PHONY: deploy
 deploy:
 	helm install fybrik-openpolicyagent $(ROOT_DIR)/charts/fybrik \
-		--set coordinator.enabled=false --set worker.enabled=false --set manager.enabled=false \
+		--set coordinator.enabled=true --set worker.enabled=true --set manager.enabled=true \
 		--set opaServer.enabled=true --set openPolicyAgentConnector.enabled=true \
 		--set openPolicyAgentConnector.image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(DOCKER_NAME):${DOCKER_TAGNAME} \
-		--set coordinator.catalogConnectorURL=${CATALOG_CONNECTOR_URL}
+		--set coordinator.catalog=${CATALOG_PROVIDER_NAME} \
+		--set coordinator.catalogConnectorURL=${CATALOG_CONNECTOR_URL} \
+		--set coordinator.policyManagerConnectorURL=http://$(DOCKER_NAME):80 \
 		-n $(KUBE_NAMESPACE)
 
 .PHONY: undeploy

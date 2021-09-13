@@ -64,7 +64,7 @@ func main() {
 
 	connController := &openapiserver.ConnectorController{
 		PolicyToBeEvaluated: policyToBeEvaluated,
-		OpaServerUrl:        opaServerURL,
+		OpaServerURL:        opaServerURL,
 		OpaReader:           opaReader,
 		CatalogReader:       catalogReader,
 	}

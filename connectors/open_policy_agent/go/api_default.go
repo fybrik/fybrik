@@ -13,7 +13,6 @@
 package openapiserver
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -26,7 +25,7 @@ import (
 
 type ConnectorController struct {
 	PolicyToBeEvaluated string
-	OpaServerUrl        string
+	OpaServerURL        string
 	OpaReader           *opabl.OpaReader
 	CatalogReader       *opabl.CatalogReader
 }
@@ -34,7 +33,7 @@ type ConnectorController struct {
 func (e *ConnectorController) contactOPA(input openapiclientmodels.PolicyManagerRequest, creds string) (openapiclientmodels.PolicyManagerResponse, error) {
 	eval, err := e.OpaReader.GetOPADecisions(&input, creds, e.CatalogReader, e.PolicyToBeEvaluated)
 	if err != nil {
-		return openapiclientmodels.PolicyManagerResponse{}, errors.Wrap(err, fmt.Sprintf("GetOPADecisions error in contactOPA"))
+		return openapiclientmodels.PolicyManagerResponse{}, errors.Wrap(err, "GetOPADecisions error in contactOPA")
 	}
 
 	output := render.AsCode(eval)
