@@ -67,8 +67,6 @@ func EvaluatePoliciesOnInput(inputJSON string, opaServerURL string, policyToBeEv
 
 	// input HTTP req
 	httpMethod := "POST"
-	// toPrintBytes, _ := json.MarshalIndent(inputMap, "", "\t")
-	// inputJSON := "{ \"input\": " + string(toPrintBytes) + " }"
 	log.Println("inputJSON in pretty print ")
 	res1 := pretty.Pretty([]byte(inputJSON))
 	log.Println("res = ", string(res1))

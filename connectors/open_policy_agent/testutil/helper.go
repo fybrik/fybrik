@@ -172,8 +172,6 @@ func MockCatalogConnector(port int) {
 func customOpaResponse(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: customOpaResponse")
 
-	// customeResponse := "{\"result\":{\"deny\":[],\"transform\":[{\"action_name\":\"encrypt column\",\"arguments\":{\"column_name\":\"nameDest\"},\"description\":\"Single column is encrypted with its own key\",\"used_policy\":{\"description\":\"test for transactions dataset that encrypts some columns by name\"}},{\"action_name\":\"encrypt column\",\"arguments\":{\"column_name\":\"nameOrig\"},\"description\":\"Single column is encrypted with its own key\",\"used_policy\":{\"description\":\"test for transactions dataset that encrypts some columns by name\"}}]}}"
-
 	customeResponse := "{\"decisionid\":\"ABCD\", \"result\": [{\"action\": {\"name\":\"redact\", \"columns\": [\"nameDest\", \"nameOrig\"]}, \"policy\": \"test for transactions dataset that redacts some columns by name\"}]}"
 
 	fmt.Fprint(w, customeResponse)

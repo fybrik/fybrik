@@ -40,7 +40,6 @@ func TestMainOpaConnector(t *testing.T) {
 	dataCatalog, err := clients.NewGrpcDataCatalog(catalogProviderName, catalogConnectorURL, connectionTimeout)
 	assert.NilError(t, err)
 
-	// catalogReader := NewCatalogReader(catalogConnectorURL, timeOutSecs)
 	catalogReader := NewCatalogReader(&dataCatalog)
 	policyManagerReq, creds, err := connectors.ConvertGrpcReqToOpenAPIReq(applicationContext)
 	assert.NilError(t, err)

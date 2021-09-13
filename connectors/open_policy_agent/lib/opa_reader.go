@@ -31,7 +31,7 @@ func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *openapiclient
 	var catalogJSON interface{}
 	err := json.Unmarshal(responseBytes, &catalogJSON)
 	if err != nil {
-		return nil, fmt.Errorf("error UnMarshalling WKC Catalog Connector Response: %v", err)
+		return nil, fmt.Errorf("error UnMarshalling Catalog Connector Response: %v", err)
 	}
 	if main, ok := catalogJSON.(map[string]interface{}); ok {
 		if details, ok := main["details"].(map[string]interface{}); ok {
@@ -173,109 +173,3 @@ func (r *OpaReader) GetOPADecisions(in *openapiclientmodels.PolicyManagerRequest
 
 	return *policyManagerResponse, nil
 }
-
-// func buildNewEnforcementAction(transformAction interface{}) (*openapiclientmodels.ActionOnColumns, bool) {
-// 	log.Println("transformAction", transformAction)
-// 	var actionOnColumns = new(openapiclientmodels.ActionOnColumns)
-// 	if result1, ok := transformAction.(map[string]interface{}); ok {
-// 		log.Println("transformAction type :", reflect.TypeOf(result1))
-// 		log.Println("result1[\"action\"].(string) :", result1["action"].(map[string]interface{}))
-// 		if result, ok := result1["action"].(map[string]interface{}); ok {
-// 			res1 := result["name"].(string)
-// 			switch res1 {
-// 			case string(openapiclientmodels.REMOVE_COLUMN):
-// 				actionOnColumns.SetName(openapiclientmodels.REMOVE_COLUMN)
-// 				log.Println("Name:", openapiclientmodels.REMOVE_COLUMN)
-
-// 				resCols := result["columns"].([]interface{})
-// 				log.Println("resCols", resCols)
-// 				lstOfCols := []string{}
-// 				for i := 0; i < len(resCols); i++ {
-// 					lstOfCols = append(lstOfCols, resCols[i].(string))
-// 				}
-// 				log.Println("lstOfCols", lstOfCols)
-// 				actionOnColumns.SetColumns(lstOfCols)
-
-// 				return actionOnColumns, true
-
-// 			case string(openapiclientmodels.ENCRYPT_COLUMN):
-// 				actionOnColumns.SetName(openapiclientmodels.ENCRYPT_COLUMN)
-// 				log.Println("Name:", openapiclientmodels.ENCRYPT_COLUMN)
-
-// 				resCols := result["columns"].([]interface{})
-// 				log.Println("resCols", resCols)
-// 				lstOfCols := []string{}
-// 				for i := 0; i < len(resCols); i++ {
-// 					lstOfCols = append(lstOfCols, resCols[i].(string))
-// 				}
-// 				log.Println("lstOfCols", lstOfCols)
-// 				actionOnColumns.SetColumns(lstOfCols)
-
-// 				return actionOnColumns, true
-
-// 			case string(openapiclientmodels.REDACT_COLUMN):
-// 				actionOnColumns.SetName(openapiclientmodels.REDACT_COLUMN)
-// 				log.Println("Name:", openapiclientmodels.REDACT_COLUMN)
-
-// 				resCols := result["columns"].([]interface{})
-// 				log.Println("resCols", resCols)
-// 				lstOfCols := []string{}
-// 				for i := 0; i < len(resCols); i++ {
-// 					lstOfCols = append(lstOfCols, resCols[i].(string))
-// 				}
-// 				log.Println("lstOfCols", lstOfCols)
-// 				actionOnColumns.SetColumns(lstOfCols)
-
-// 				return actionOnColumns, true
-
-// 			case string(openapiclientmodels.PERIODIC_BLACKOUT):
-// 				//if monthlyDaysNum, ok := extractArgument(action["arguments"], "monthly_days_end"); ok {
-// 				actionOnColumns.SetName(openapiclientmodels.PERIODIC_BLACKOUT)
-// 				log.Println("Name:", openapiclientmodels.PERIODIC_BLACKOUT)
-
-// 				resCols := result["columns"].([]interface{})
-// 				log.Println("resCols", resCols)
-// 				lstOfCols := []string{}
-// 				for i := 0; i < len(resCols); i++ {
-// 					lstOfCols = append(lstOfCols, resCols[i].(string))
-// 				}
-// 				log.Println("lstOfCols", lstOfCols)
-// 				actionOnColumns.SetColumns(lstOfCols)
-
-// 				return actionOnColumns, true
-// 				//}
-// 				//else if yearlyDaysNum, ok := extractArgument(action["arguments"], "yearly_days_end"); ok {
-// 				// actionOnColumns.SetName(openapiclientmodels.PERIODIC_BLACKOUT)
-// 				// actionOnColumns.SetColumns(result["columns"].([]string))
-// 				// return actionOnColumns, true
-// 				//}
-
-// 			default:
-// 				log.Printf("Unknown Enforcement Action receieved from OPA")
-// 			}
-// 		}
-// 	}
-// 	return nil, false
-// }
-
-// func extractArgument(arguments interface{}, argName string) (string, bool) {
-// 	if argsMap, ok := arguments.(map[string]interface{}); ok {
-// 		if value, ok := argsMap[argName].(string); ok {
-// 			return value, true
-// 		}
-// 	}
-// 	return "", false
-// }
-
-// func buildNewPolicy(usedPolicy interface{}) (*string, bool) {
-// 	log.Println("in buildNewPolicy")
-// 	if policy, ok := usedPolicy.(map[string]interface{}); ok {
-// 		//todo: add other fields that can be returned as part of the policy struct
-// 		if description, ok := policy["policy"].(string); ok {
-// 			newUsedPolicy := description
-// 			return &newUsedPolicy, true
-// 		}
-// 	}
-
-// 	return nil, false
-// }
