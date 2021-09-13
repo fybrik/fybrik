@@ -6,6 +6,8 @@ require (
 	emperror.dev/errors v0.7.0
 	fybrik.io/openapi2crd v0.4.0
 	github.com/IBM/satcon-client-go v0.1.2-0.20210329192404-b8fa1c732712
+	github.com/apache/arrow/go/arrow v0.0.0-20210907151234-f40856a768f2
+	github.com/aws/aws-sdk-go v1.40.37
 	github.com/buger/jsonparser v1.1.1
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/gdexlab/go-render v1.0.1
