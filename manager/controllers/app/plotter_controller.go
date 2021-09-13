@@ -329,12 +329,6 @@ func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap m
 	for _, module := range blueprintSpec.Modules {
 		for _, assetID := range module.AssetIDs {
 			var err = errMsg
-			state, exists := assetToStatusMap[assetID]
-			if exists {
-				err = state.Error + err
-				delete(assetToStatusMap, assetID)
-			}
-
 			assetToStatusMap[assetID] = app.ObservedState{
 				Ready: false,
 				Error: err,

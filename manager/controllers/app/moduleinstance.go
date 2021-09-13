@@ -429,6 +429,8 @@ func moduleAPIToService(api *app.ModuleAPI, scope app.CapabilityScope, appContex
 			instanceName = utils.CreateStepName(moduleName, assetID)
 		}
 		releaseName := utils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
+		// Current implementation assumes there is only one cluster with read modules
+		// (which is the same cluster the user's workload)
 		fqdn := utils.GenerateModuleEndpointFQDN(releaseName, BlueprintNamespace)
 		endpoint = app.EndpointSpec{
 			Hostname: fqdn,

@@ -105,9 +105,8 @@ func TestShortReleaseName(t *testing.T) {
 			Modules: modules,
 		},
 	}
-	marshal, err := yaml.Marshal(blueprint)
+	marshal, _ := yaml.Marshal(blueprint)
 	println(marshal)
-	print(err)
 	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], "dataFlowInstance1")
 	g.Expect(relName).To(gomega.Equal("my-app-default-dataFlowInstance1"))
 }

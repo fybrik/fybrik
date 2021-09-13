@@ -284,7 +284,7 @@ spec:
                     modules:
                       description: Modules is a list of dependent modules. e.g., if a plugin module is used then the service module is used in should appear first in the modules list of the same template. If the modules list contains more than one module, the first module in the list is referred to as the "primary module" of which all the parameters to this template are sent to.
                       items:
-                        description: ModuleInfo is a copy of M4DModule Custom Resource.  It contains information to instantiate resource of type M4DModule.
+                        description: ModuleInfo is a copy of FybrikModule Custom Resource.  It contains information to instantiate resource of type FybrikModule.
                         properties:
                           capabilities:
                             description: Capabilities declares what this module knows how to do and the types of data it knows how to handle The key to the map is a CapabilityType string

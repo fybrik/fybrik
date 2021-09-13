@@ -145,8 +145,8 @@ type Flow struct {
 	SubFlows []SubFlow `json:"subFlows"`
 }
 
-// ModuleInfo is a copy of M4DModule Custom Resource.  It contains information
-// to instantiate resource of type M4DModule.
+// ModuleInfo is a copy of FybrikModule Custom Resource.  It contains information
+// to instantiate resource of type FybrikModule.
 type ModuleInfo struct {
 	// Name of the module
 	// +required
@@ -201,8 +201,9 @@ type FlowStatus struct {
 	SubFlows map[string]ObservedState `json:"subFlows"`
 }
 
-// PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter installs the runtime environment
-// (as blueprints running on remote clusters) which provides the Data Scientist's application with secure and governed access to the data requested in the
+// PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment.
+// Plotter declares what needs to be installed and where (as blueprints running on remote clusters)
+// which provides the Data Scientist's application with secure and governed access to the data requested in the
 // FybrikApplication.
 type PlotterSpec struct {
 	// Selector enables to connect the resource to the application

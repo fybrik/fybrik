@@ -269,7 +269,6 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 }
 
 // setReadModulesEndpoints populates the ReadEndpointsMap map in the status of the fybrikapplication
-// Current implementation assumes there is only one cluster with read modules (which is the same cluster the user's workload)
 func setReadModulesEndpoints(applicationContext *api.FybrikApplication, flows []api.Flow) {
 	readEndpointMap := make(map[string]api.EndpointSpec)
 	for _, flow := range flows {
