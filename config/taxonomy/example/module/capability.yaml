@@ -1,6 +1,6 @@
 definitions:
-  Capabilities:
-    type: array
+  Capability:
+    type: object
     properties:
       Capability:
         enum:
@@ -24,14 +24,13 @@ definitions:
           Port:
             type: float
           Scheme:
-            enum:
-              ['grpc']
+            enum: ['grpc']
       Actions:
         ID:
           - $ref: "#/definitions/Action"
         Level:
           type: float
-  Source:
-    - $ref: "#/definitions/Interface"
-  Sink:
-    - $ref: "#/definitions/Interface"
+      Source:
+      - $ref: "#/definitions/Interface"
+      Sink:
+      - $ref: "#/definitions/Interface"

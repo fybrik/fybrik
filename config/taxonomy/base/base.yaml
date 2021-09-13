@@ -31,3 +31,5 @@ definitions:
       dataformat:
         $ref: "#/definitions/Dataformat"
     additionalProperties: false
+  FybrikModule:
+    type: object

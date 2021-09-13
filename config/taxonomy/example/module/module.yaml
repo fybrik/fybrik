@@ -4,8 +4,11 @@ definitions:
       Type:
         enum: [service, config]
       Dependencies:
-        DependencyType:
-          enum: [module, connector, feature]
+        properties:
+          DependencyType:
+            enum: [module, connector, feature]
       Capabilities:
-        - $ref: "#/definitions/Capabilities"
+        type: array
+        items:
+          - $ref: "#/definitions/Capability"
       
