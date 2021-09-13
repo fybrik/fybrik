@@ -5,13 +5,15 @@ package app
 
 import (
 	"context"
-	"fybrik.io/fybrik/manager/controllers"
-	"fybrik.io/fybrik/pkg/environment"
 	"math"
 	"reflect"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"strings"
 	"time"
+
+	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/environment"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
@@ -129,6 +131,9 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	// Reconciliation loop per cluster
 	isReady := true
 
+	blueprintNamespace := utils.GetBlueprintNamespace()
+	r.Log.Info("Using blueprint namespace: " + blueprintNamespace)
+
 	var errorCollection []error
 	for cluster, blueprintSpec := range plotter.Spec.Blueprints {
 		r.Log.V(1).Info("Handling spec for cluster " + cluster)
@@ -198,7 +203,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        plotter.Name,
-					Namespace:   BlueprintNamespace,
+					Namespace:   blueprintNamespace,
 					ClusterName: cluster,
 					Labels: map[string]string{
 						"razee/watch-resource":        "debug",

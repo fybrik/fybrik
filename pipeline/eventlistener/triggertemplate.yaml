@@ -19,6 +19,8 @@ spec:
       description: NAMESPACE
     - description: Event Type
       name: event-type
+    - description: blueprintNamespace
+      name: blueprintNamespace
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -42,6 +44,8 @@ spec:
             value: $(tt.params.NAMESPACE)
           - name: event-type
             value: $(tt.params.event-type)
+          - name: blueprintNamespace
+            value: $(tt.params.blueprintNamespace)
         workspaces:
           - name: shared-workspace
             persistentVolumeClaim:
@@ -71,6 +75,8 @@ spec:
       description: NAMESPACE
     - description: Event Type
       name: event-type
+    - description: blueprintNamespace
+      name: blueprintNamespace
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -92,6 +98,8 @@ spec:
             value: $(tt.params.event-type)
           - name: IMAGE_DIGEST
             value: none
+          - name: blueprintNamespace
+            value: $(tt.params.blueprintNamespace)
         workspaces:
           - name: shared-workspace
             persistentVolumeClaim:

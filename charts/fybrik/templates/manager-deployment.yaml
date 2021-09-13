@@ -43,6 +43,7 @@ spec:
           - TCP4-LISTEN:5000,fork
           - TCP4:kind-registry:5000
         {{- end }}
+        {{- if and .Values.clusterScoped .Values.manager.prometheus }}
         - name: kube-rbac-proxy
           image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
           args:
@@ -53,6 +54,7 @@ spec:
           ports:
           - containerPort: 8443
             name: https
+        {{- end }}
         - name: manager
           image: {{ include "fybrik.image" ( tuple $ .Values.manager ) }}
           imagePullPolicy: {{ .Values.manager.imagePullPolicy | default .Values.global.imagePullPolicy }}
@@ -60,16 +62,18 @@ spec:
             {{- if .Values.manager.overrideArgs }}
             {{- toYaml .Values.manager.overrideArgs | nindent 12 }}
             {{- else }}
+            {{- if and .Values.clusterScoped .Values.manager.prometheus }}
             - "--metrics-bind-addr=127.0.0.1:8080"
+            {{- end }}
             - "--leader-elect"
-            {{- if .Values.coordinator.enabled}}
+            {{- if .Values.coordinator.enabled }}
             - "--enable-application-controller"
             - "--enable-plotter-controller"
-            {{- end}}
-            {{- if .Values.worker.enabled}}
+            {{- end }}
+            {{- if .Values.worker.enabled }}
             - "--enable-blueprint-controller"
             - "--enable-motion-controller"
-            {{- end}}
+            {{- end }}
             {{- end }}
           envFrom:
             - configMapRef:
@@ -80,18 +84,35 @@ spec:
             {{- end }}
           env:
             - name: ENABLE_WEBHOOKS
+            {{- if .Values.clusterScoped }} 
               value: "true"
+            {{- else }}
+              value: "false"
+            {{- end }}
+
+            - name: BLUEPRINT_NAMESPACE
+              value: {{ include "fybrik.getBlueprintNamespace" . }}
+
+            {{- if .Values.applicationNamespace }}
+            - name: APPLICATION_NAMESPACE
+              value: {{ .Values.applicationNamespace }}
+            {{- end }}
+
             {{- if .Values.manager.extraEnvs }}
             {{- toYaml .Values.manager.extraEnvs | nindent 12 }}
             {{- end }}
+          {{- if .Values.clusterScoped }} 
           ports:
             - containerPort: 9443
               name: webhook-server
               protocol: TCP
+          {{- end }}
           volumeMounts:
+            {{- if .Values.clusterScoped }}
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: cert
-              readOnly: true
+              readOnly: true  
+            {{- end }}     
             - mountPath: /tmp/taxonomy
               name: fybrik-taxonomy
           securityContext:
@@ -100,10 +121,13 @@ spec:
             {{- toYaml .Values.manager.resources | nindent 12 }}
       terminationGracePeriodSeconds: 10
       volumes:
+        {{- if .Values.clusterScoped }}
         - name: cert
           secret:
             defaultMode: 420
             secretName: webhook-server-cert
+        {{- end }}
+
         - name: fybrik-taxonomy
           configMap:
             name: fybrik-taxonomy-config

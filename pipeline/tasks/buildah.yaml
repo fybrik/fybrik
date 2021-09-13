@@ -56,6 +56,9 @@ spec:
   - default: ""
     name: docker-namespace
     type: string
+  - default: ""
+    name: blueprintNamespace
+    type: string
   results:
   - description: Digest of the image just built.
     name: IMAGE_DIGEST
