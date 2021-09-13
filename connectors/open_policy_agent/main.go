@@ -60,10 +60,12 @@ func main() {
 	retryClient.RetryMax = 10
 	standardClient := retryClient.HTTPClient // *http.Client
 
+	opaReader := opabl.NewOpaReader(opaServerURL, standardClient)
+
 	connController := &openapiserver.ConnectorController{
-		Policytobeevaluated: policyToBeEvaluated,
-		Opaserverurl:        opaServerURL,
-		Opaclient:           standardClient,
+		PolicyToBeEvaluated: policyToBeEvaluated,
+		OpaServerUrl:        opaServerURL,
+		OpaReader:           opaReader,
 		CatalogReader:       catalogReader,
 	}
 

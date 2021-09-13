@@ -13,20 +13,12 @@
 package openapiserver
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 )
 
 // NewRouter returns a new router.
 func NewRouter(connController *ConnectorController) *gin.Engine {
 	router := gin.Default()
-	router.POST("/", Index)
 	router.POST("/getPoliciesDecisions", connController.GetPoliciesDecisions)
 	return router
-}
-
-// Index is the index handler.
-func Index(c *gin.Context) {
-	c.String(http.StatusOK, "Hello World!")
 }

@@ -13,9 +13,11 @@
 package openapiserver
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
+	"emperror.dev/errors"
 	opabl "fybrik.io/fybrik/connectors/open_policy_agent/lib"
 	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 	"github.com/gdexlab/go-render/render"
@@ -23,19 +25,16 @@ import (
 )
 
 type ConnectorController struct {
-	Policytobeevaluated string
-	Opaserverurl        string
-	Opaclient           *http.Client
+	PolicyToBeEvaluated string
+	OpaServerUrl        string
+	OpaReader           *opabl.OpaReader
 	CatalogReader       *opabl.CatalogReader
 }
 
 func (e *ConnectorController) contactOPA(input openapiclientmodels.PolicyManagerRequest, creds string) (openapiclientmodels.PolicyManagerResponse, error) {
-	opaReader := opabl.NewOpaReader(e.Opaserverurl)
-
-	eval, err := opaReader.GetOPADecisions(&input, creds, e.CatalogReader, e.Policytobeevaluated, e.Opaclient)
+	eval, err := e.OpaReader.GetOPADecisions(&input, creds, e.CatalogReader, e.PolicyToBeEvaluated)
 	if err != nil {
-		log.Println("GetOPADecisions err:", err)
-		return openapiclientmodels.PolicyManagerResponse{}, err
+		return openapiclientmodels.PolicyManagerResponse{}, errors.Wrap(err, fmt.Sprintf("GetOPADecisions error in contactOPA"))
 	}
 
 	output := render.AsCode(eval)
