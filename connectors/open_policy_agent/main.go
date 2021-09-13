@@ -38,7 +38,6 @@ func main() {
 	log.Println("in main of V2 OPA Connector: ")
 	catalogConnectorAddress := getEnv("CATALOG_CONNECTOR_URL")
 	catalogProviderName := getEnv("CATALOG_PROVIDER_NAME")
-	policyToBeEvaluated := "dataapi/authz/verdict"
 
 	timeOutInSecs := getEnv("CONNECTION_TIMEOUT")
 	timeOut, err := strconv.Atoi(timeOutInSecs)
@@ -63,10 +62,9 @@ func main() {
 	opaReader := opabl.NewOpaReader(opaServerURL, standardClient)
 
 	connController := &openapiserver.ConnectorController{
-		PolicyToBeEvaluated: policyToBeEvaluated,
-		OpaServerURL:        opaServerURL,
-		OpaReader:           opaReader,
-		CatalogReader:       catalogReader,
+		OpaServerURL:  opaServerURL,
+		OpaReader:     opaReader,
+		CatalogReader: catalogReader,
 	}
 
 	router := sw.NewRouter(connController)
