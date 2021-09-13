@@ -1,8 +1,8 @@
 definitions:
   FybrikModule:
-    type:
-      enum: [service, config]
     properties:
+      Type:
+        enum: [service, config]
       Dependencies:
         DependencyType:
           enum: [module, connector, feature]
