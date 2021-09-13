@@ -32,6 +32,6 @@ definitions:
         Level:
           type: float
   Source:
-        - $ref: "#/definitions/Interface"
+    - $ref: "#/definitions/Interface"
   Sink:
     - $ref: "#/definitions/Interface"
