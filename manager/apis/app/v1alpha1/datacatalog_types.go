@@ -19,12 +19,6 @@ const (
 
 	// CopyFlow indicates a data set is being copied
 	CopyFlow DataFlow = "copy"
-
-	// Read credential key
-	ReadCredentialKey = "read"
-
-	// Write creedential key
-	WriteCredentialKey = "write"
 )
 
 // DataStore contains the details for accesing the data that are sent by catalog connectors

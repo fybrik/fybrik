@@ -114,7 +114,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 
 	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
 	vaultMap := make(map[string]app.Vault)
-	vaultMap[app.WriteCredentialKey] = app.Vault{
+	vaultMap[string(app.WriteFlow)] = app.Vault{
 		SecretPath: vaultSecretPath,
 		Role:       utils.GetModulesRole(),
 		Address:    utils.GetVaultAddress(),
@@ -236,7 +236,7 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 		// Each selector receives source/sink interface and relevant actions
 		// Starting with the data location interface for source and the required interface for sink
 		vaultMap := make(map[string]app.Vault)
-		vaultMap[app.ReadCredentialKey] = app.Vault{
+		vaultMap[string(app.ReadFlow)] = app.Vault{
 			SecretPath: vaultSecretPath,
 			Role:       utils.GetModulesRole(),
 			Address:    utils.GetVaultAddress(),
