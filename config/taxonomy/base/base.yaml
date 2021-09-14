@@ -33,8 +33,3 @@ definitions:
     additionalProperties: false
   Capability:
     type: object
-  Type:
-    type: string
-  DependencyType:
-    type: string
-

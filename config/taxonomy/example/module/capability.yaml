@@ -3,8 +3,6 @@ definitions:
     properties:
       capability:
         enum: [copy, write, read, transform]
-      scope:
-        enum: [asset, workload, cluster]
       supportedInterfaces:
         type: array
         items:
@@ -15,19 +13,15 @@ definitions:
       api:
         type: object
         properties:
-          endpoint:
-            type: object
-            properties:
-              port:
-                type: integer
-              scheme:
-                enum: ['grpc']
           interfaceDetails:
             $ref: "#/definitions/Interface"
       actions:
         type: array
         items:
-          $ref: "#/definitions/Action"
+          type: object
+          properties:
+            id: 
+              $ref: "#/definitions/Action"
   Source:
     type: object
     properties:

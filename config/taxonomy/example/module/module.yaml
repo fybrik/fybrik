@@ -1,6 +1,0 @@
-definitions:
-  Type:
-    enum: [service, config]
-  DependencyType:
-    enum: [module, connector, feature]
-      

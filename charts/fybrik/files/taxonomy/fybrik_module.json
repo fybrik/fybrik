@@ -8,17 +8,12 @@
         "spec": {
             "type": "object",
             "properties": {
-                "type": {"$ref": "taxonomy.json#/definitions/Type"},
                 "capabilities": {
                     "type": "array",
                     "items": {"$ref": "taxonomy.json#/definitions/Capability"}
-                },
-                "dependencies": {
-                    "type": "array",
-                    "items": {"$ref": "taxonomy.json#/definitions/DependencyType"}
                 }
             },
-            "required": ["type", "capabilities"]
+            "required": ["capabilities"]
         }
     },
     "required": ["spec"]
