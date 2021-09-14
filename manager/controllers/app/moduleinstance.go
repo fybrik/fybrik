@@ -285,11 +285,11 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 			template := app.Template{
 				Name: "copy",
 				Modules: []app.ModuleInfo{{
-					Name:         "copy",
-					Type:         copySelector.Module.Spec.Type,
-					Kind:         "",
-					Chart:        copySelector.Module.Spec.Chart,
-					Capabilities: copySelector.Module.Spec.Capabilities,
+					Name:  "copy",
+					Type:  copySelector.Module.Spec.Type,
+					Chart: copySelector.Module.Spec.Chart,
+					Scope: copySelector.ModuleCapability.Scope,
+					API:   copySelector.ModuleCapability.API.DeepCopy(),
 				}},
 			}
 
@@ -353,11 +353,11 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 			template := app.Template{
 				Name: "read",
 				Modules: []app.ModuleInfo{{
-					Name:         readSelector.Module.Name,
-					Type:         readSelector.Module.Spec.Type,
-					Kind:         "",
-					Chart:        readSelector.Module.Spec.Chart,
-					Capabilities: readSelector.Module.Spec.Capabilities,
+					Name:  readSelector.Module.Name,
+					Type:  readSelector.Module.Spec.Type,
+					Chart: readSelector.Module.Spec.Chart,
+					Scope: readSelector.ModuleCapability.Scope,
+					API:   readSelector.ModuleCapability.API.DeepCopy(),
 				}},
 			}
 

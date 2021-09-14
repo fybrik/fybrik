@@ -919,12 +919,10 @@ func (in *ModuleInOut) DeepCopy() *ModuleInOut {
 func (in *ModuleInfo) DeepCopyInto(out *ModuleInfo) {
 	*out = *in
 	in.Chart.DeepCopyInto(&out.Chart)
-	if in.Capabilities != nil {
-		in, out := &in.Capabilities, &out.Capabilities
-		*out = make([]ModuleCapability, len(*in))
-		for i := range *in {
-			(*in)[i].DeepCopyInto(&(*out)[i])
-		}
+	if in.API != nil {
+		in, out := &in.API, &out.API
+		*out = new(ModuleAPI)
+		**out = **in
 	}
 }
 

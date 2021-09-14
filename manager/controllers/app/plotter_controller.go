@@ -225,25 +225,6 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 	return blueprintModule
 }
 
-// getModuleScope returns the scope of the module given the data flow type of the module and the module
-// capabilities.
-func (r *PlotterReconciler) getModuleScope(capabilities []app.ModuleCapability, moduleFlow app.DataFlow) app.CapabilityScope {
-	var scope app.CapabilityScope
-	for _, capability := range capabilities {
-		// It is assumed that all capabilities of the same type have the same scope
-		if capability.Capability == app.CapabilityType(moduleFlow) {
-			scope = capability.Scope
-			if capability.Scope == "" {
-				// If scope is not indicated it is assumed to be asset
-				scope = app.Asset
-			}
-			return scope
-		}
-	}
-	// ??? we should not get here
-	return app.Asset
-}
-
 // getBlueprintsMap constructs a map of blueprints driven by the plotter structure.
 // The key is the cluster name.
 func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]app.BlueprintSpec {
@@ -268,7 +249,7 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]ap
 						if module.Type == "plugin" {
 							moduleArgs = nil
 						}
-						scope := r.getModuleScope(module.Capabilities, subFlow.FlowType)
+						scope := module.Scope
 						clusterName := seqStep.Cluster
 						var authPath string
 						for _, cluster := range clusters {
