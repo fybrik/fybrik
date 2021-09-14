@@ -55,8 +55,9 @@ func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyMana
 	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)
 	log.Println("openapi response received from policy manager: ", openapiResp)
 	var actions []*openapiclientmodels.ResultItem
-	for _, result := range openapiResp.GetResult() {
-		actions = append(actions, &result)
+	result := openapiResp.GetResult()
+	for i := 0; i < len(result); i++ {
+		actions = append(actions, &result[i])
 	}
 	return actions, err
 }
