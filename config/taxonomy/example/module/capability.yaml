@@ -1,36 +1,40 @@
 definitions:
   Capability:
+    properties:
+      capability:
+        enum: [copy, write, read, transform]
+      scope:
+        enum: [asset, workload, cluster]
+      supportedInterfaces:
+        type: array
+        items:
+          type: object
+          oneOf:
+            - $ref: "#/definitions/Source"
+            - $ref: "#/definitions/Sink"
+      api:
+        type: object
+        properties:
+          endpoint:
+            type: object
+            properties:
+              port:
+                type: integer
+              scheme:
+                enum: ['grpc']
+          interfaceDetails:
+            $ref: "#/definitions/Interface"
+      actions:
+        type: array
+        items:
+          $ref: "#/definitions/Action"
+  Source:
     type: object
     properties:
-      Capability:
-        enum:
-          - copy
-          - write
-          - read
-          - transform
-      Scope:
-        enum:
-          - asset
-          - workload
-          - cluster
-      SupportedInterfaces:
-        anyOf:
-          - $ref: "#/definitions/Source"
-          - $ref: "#/definitions/Sink"
-      API:
-        InterfaceDetails:
-          - $ref: "#/definitions/Interface"
-        Endpoint:
-          Port:
-            type: float
-          Scheme:
-            enum: ['grpc']
-      Actions:
-        ID:
-          - $ref: "#/definitions/Action"
-        Level:
-          type: float
-      Source:
-      - $ref: "#/definitions/Interface"
-      Sink:
-      - $ref: "#/definitions/Interface"
+      source:
+        $ref: "#/definitions/Interface"
+  Sink:
+    type: object
+    properties:
+      sink:
+        $ref: "#/definitions/Interface"

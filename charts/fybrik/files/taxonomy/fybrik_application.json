@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "$id": "fybrikapplication.values.schema.json",
-    "title": "FybrikApplication values taxonomy",
+    "$id": "fybrik_application.json",
+    "title": "FybrikApplication taxonomy",
     "type": "object",
     "description": "Values contributed to by Fybrik applications.",
     "properties": {

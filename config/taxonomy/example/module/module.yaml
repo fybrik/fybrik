@@ -1,14 +1,6 @@
 definitions:
-  FybrikModule:
-    properties:
-      Type:
-        enum: [service, config]
-      Dependencies:
-        properties:
-          DependencyType:
-            enum: [module, connector, feature]
-      Capabilities:
-        type: array
-        items:
-          - $ref: "#/definitions/Capability"
+  Type:
+    enum: [service, config]
+  DependencyType:
+    enum: [module, connector, feature]
       

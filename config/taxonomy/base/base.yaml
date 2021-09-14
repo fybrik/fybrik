@@ -31,5 +31,10 @@ definitions:
       dataformat:
         $ref: "#/definitions/Dataformat"
     additionalProperties: false
-  FybrikModule:
+  Capability:
     type: object
+  Type:
+    type: string
+  DependencyType:
+    type: string
+
