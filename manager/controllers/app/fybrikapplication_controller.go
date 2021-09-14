@@ -6,9 +6,10 @@ package app
 import (
 	"context"
 	"fmt"
-	"os"
+
 	"strings"
 	"time"
+	"os"
 
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/pkg/environment"
@@ -141,6 +142,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	if !isReady(applicationContext) {
 		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
+
 	return ctrl.Result{}, nil
 }
 
@@ -332,7 +334,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 		requirements = append(requirements, req)
 	}
 	// check if can proceed
-	if getErrorMessages(applicationContext) != "" {
+	if len(requirements) == 0 {
 		return ctrl.Result{}, nil
 	}
 
@@ -521,7 +523,7 @@ func AnalyzeError(application *api.FybrikApplication, assetID string, err error)
 		return
 	}
 	switch err.Error() {
-	case api.InvalidAssetID, api.ReadAccessDenied, api.CopyNotAllowed, api.WriteNotAllowed:
+	case api.InvalidAssetID, api.ReadAccessDenied, api.CopyNotAllowed, api.WriteNotAllowed, api.InvalidAssetDataStore:
 		setDenyCondition(application, assetID, err.Error())
 	default:
 		setErrorCondition(application, assetID, err.Error())

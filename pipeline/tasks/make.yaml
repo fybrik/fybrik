@@ -59,6 +59,9 @@ spec:
   - default: ""
     name: docker-namespace
     type: string
+  - default: ""
+    name: blueprintNamespace
+    type: string
   - default: "false"
     name: INCREMENTAL_CODE_RESTART 
     type: string

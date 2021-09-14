@@ -5,12 +5,13 @@ package main
 
 import (
 	"flag"
-	"fybrik.io/fybrik/manager/controllers"
-	"fybrik.io/fybrik/pkg/environment"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/pkg/environment"
 
 	"emperror.dev/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -56,9 +57,20 @@ func init() {
 func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	enableApplicationController, enableBlueprintController, enablePlotterController, enableMotionController bool) int {
 	setupLog.Info("creating manager")
+
+	var applicationNamespaceSelector fields.Selector
+	applicationNamespace := utils.GetApplicationNamespace()
+	if len(applicationNamespace) > 0 {
+		applicationNamespaceSelector = fields.SelectorFromSet(fields.Set{"metadata.namespace": applicationNamespace})
+	}
+	setupLog.Info("Application namespace: " + applicationNamespace)
+
+	blueprintNamespace := utils.GetBlueprintNamespace()
+
 	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
-	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": app.BlueprintNamespace})
+	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": blueprintNamespace})
 	selectorsByObject := cache.SelectorsByObject{
+		&appv1.FybrikApplication{}:      {Field: applicationNamespaceSelector},
 		&appv1.Plotter{}:                {Field: systemNamespaceSelector},
 		&appv1.FybrikModule{}:           {Field: systemNamespaceSelector},
 		&appv1.FybrikStorageAccount{}:   {Field: systemNamespaceSelector},

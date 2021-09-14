@@ -5,6 +5,7 @@ package motion
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
@@ -13,6 +14,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 
 	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,10 +27,13 @@ var _ = Describe("BatchTransfer Controller", func() {
 	const timeout = time.Second * 30
 	const interval = time.Millisecond * 300
 	const batchtransferName = "batchtransfer-sample"
-	const batchtransferNameSpace = "fybrik-blueprints"
 
 	BeforeEach(func() {
 		// Add any setup steps that needs to be executed before each test
+
+		batchtransferNameSpace := utils.GetBatchTransferNamespace()
+		fmt.Printf("batchtransfer namespace: %s\n ", batchtransferNameSpace)
+
 		f := &motionv1.BatchTransfer{}
 		key := client.ObjectKey{
 			Namespace: batchtransferNameSpace,
@@ -54,6 +59,10 @@ var _ = Describe("BatchTransfer Controller", func() {
 			batchTransfer := &motionv1.BatchTransfer{}
 			err = yaml.Unmarshal(batchTransferYAML, batchTransfer)
 			Expect(err).ToNot(HaveOccurred())
+
+			batchTransfer.Namespace = utils.GetBatchTransferNamespace()
+			fmt.Printf("template namespace %v\n", batchTransfer.Namespace)
+
 			registry := os.Getenv("DOCKER_HOSTNAME")
 			registryNamespace := os.Getenv("DOCKER_NAMESPACE")
 			tagName := os.Getenv("DOCKER_TAGNAME")
@@ -62,6 +71,7 @@ var _ = Describe("BatchTransfer Controller", func() {
 					batchTransfer.Spec.Image = registry + "/" + registryNamespace + "/dummy-mover:" + tagName
 				} else {
 					batchTransfer.Spec.Image = registry + "/dummy-mover:" + tagName
+
 				}
 			}
 			key := client.ObjectKeyFromObject(batchTransfer)

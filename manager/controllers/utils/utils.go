@@ -9,10 +9,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	dc "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"runtime"
 	"sort"
+
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	dc "fybrik.io/fybrik/pkg/connectors/protobuf"
 )
 
 // GetProtocol returns the existing data protocol
@@ -25,7 +26,7 @@ func GetProtocol(info *dc.DatasetDetails) (string, error) {
 	case dc.DataStore_DB2:
 		return app.JdbcDb2, nil
 	}
-	return "", errors.New("unknown protocol")
+	return "", errors.New(app.InvalidAssetDataStore)
 }
 
 // IsTransformation returns true if the data transformation is required

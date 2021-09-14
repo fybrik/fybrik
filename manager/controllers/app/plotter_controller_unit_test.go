@@ -7,6 +7,8 @@ import (
 	"context"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"io/ioutil"
+
+	"fmt"
 	"testing"
 
 	"fybrik.io/fybrik/manager/controllers/utils"
@@ -34,9 +36,13 @@ func TestPlotterController(t *testing.T) {
 	// Set the logger to development mode for verbose logs.
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
+	controllerNamespace := utils.GetControllerNamespace()
+	blueprintNamespace := utils.GetBlueprintNamespace()
+	fmt.Printf("Using controller namespace: %s; using blueprint namespace %s\n: "+controllerNamespace, blueprintNamespace)
+
 	var (
 		name      = "plotter"
-		namespace = "fybrik-system"
+		namespace = controllerNamespace
 	)
 
 	var err error
@@ -45,6 +51,8 @@ func TestPlotterController(t *testing.T) {
 	plotter := &app.Plotter{}
 	err = yaml.Unmarshal(plotterYAML, plotter)
 	g.Expect(err).To(gomega.BeNil(), "Cannot read plotter file for test")
+
+	plotter.Namespace = controllerNamespace
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
@@ -99,7 +107,7 @@ func TestPlotterController(t *testing.T) {
 	g.Expect(plotter.Status.Blueprints).To(gomega.HaveKey("thegreendragon"))
 	blueprintMeta := plotter.Status.Blueprints["thegreendragon"]
 	g.Expect(blueprintMeta.Name).To(gomega.Equal(plotter.Name))
-	g.Expect(blueprintMeta.Namespace).To(gomega.Equal(BlueprintNamespace))
+	g.Expect(blueprintMeta.Namespace).To(gomega.Equal(blueprintNamespace))
 
 	// Simulate that blueprint changes state to Ready=true
 	blueprint := dummyManager.DeployedBlueprints["thegreendragon"]

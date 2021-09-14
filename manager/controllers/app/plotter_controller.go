@@ -11,13 +11,13 @@ import (
 	"time"
 
 	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/app/modules"
-	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	"github.com/go-logr/logr"
@@ -329,9 +329,12 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	// Reconciliation loop per cluster
 	isReady := true
 
-	blueprintsMap := r.getBlueprintsMap(plotter)
-	var errorCollection []error
+	blueprintNamespace := utils.GetBlueprintNamespace()
+	r.Log.Info("Using blueprint namespace: " + blueprintNamespace)
 
+	blueprintsMap := r.getBlueprintsMap(plotter)
+
+	var errorCollection []error
 	for cluster := range blueprintsMap {
 		blueprintSpec := blueprintsMap[cluster]
 		r.Log.V(1).Info("Handling spec for cluster " + cluster)
@@ -412,7 +415,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        plotter.Name,
-					Namespace:   BlueprintNamespace,
+					Namespace:   blueprintNamespace,
 					ClusterName: cluster,
 					Labels: map[string]string{
 						"razee/watch-resource":        "debug",

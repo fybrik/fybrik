@@ -161,6 +161,19 @@ func NewTestCatalog() *DataCatalogDummy {
 			Metadata: &pb.DatasetMetadata{},
 		},
 	}
+	dummyCatalog.dataDetails["local"] = pb.CatalogDatasetInfo{
+		DatasetId: "local",
+		Details: &pb.DatasetDetails{
+			Name:       "local file",
+			DataFormat: "csv",
+			Geo:        "theshire",
+			DataStore: &pb.DataStore{
+				Type: pb.DataStore_LOCAL,
+				Name: "file.csv",
+			},
+			Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
+		},
+	}
 
 	return &dummyCatalog
 }

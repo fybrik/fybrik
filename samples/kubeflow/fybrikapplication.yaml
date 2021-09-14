@@ -6,7 +6,7 @@ metadata:
     app: kf-notebook
 spec:
   selector:
-    clusterName: hobbiton
+    clusterName: thegreendragon
     workloadSelector:
       matchLabels:
         app: kf-notebook

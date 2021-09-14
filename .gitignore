@@ -56,3 +56,6 @@ third_party/egeria/egeria
 # Local development
 .env
 __debug_bin
+
+pipeline/custom_*
+pipeline/custom-pipeline.yaml

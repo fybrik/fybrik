@@ -232,12 +232,9 @@ func CatalogDatasetToDataDetails(response *pb.CatalogDatasetInfo) (*DataDetails,
 	if details == nil {
 		return nil, errors.New("no metadata found for " + response.DatasetId)
 	}
-	protocol, err := utils.GetProtocol(details)
-	if err != nil {
-		return nil, err
-	}
 	format := details.DataFormat
 	connection := serde.NewArbitrary(details.DataStore)
+	protocol, err := utils.GetProtocol(details)
 
 	return &DataDetails{
 		Name: details.Name,
@@ -248,5 +245,5 @@ func CatalogDatasetToDataDetails(response *pb.CatalogDatasetInfo) (*DataDetails,
 		Geography:  details.Geo,
 		Connection: *connection,
 		Metadata:   details.Metadata,
-	}, nil
+	}, err
 }

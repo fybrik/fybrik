@@ -1,10 +1,11 @@
 ROOT_DIR := ../../../..
 DOCKER_NAME = manager-client
+DOCKER_TAGNAME = dev
 
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 
-KUBE_NAMESPACE ?= m4d-system
+KUBE_NAMESPACE ?= fybrik-system
 
 docker-all: docker-build docker-push 
 
