@@ -567,6 +567,10 @@ if [[ ! -z "${github_workspace}" ]]; then
     git_url=""
     extra_params="${extra_params} -p git-url="
 fi
+
+if [[ -f ${repo_root}/pipeline/custom_pre_tkn.sh ]]; then
+    source ${repo_root}/pipeline/custom_pre_tkn.sh
+fi
 set +x
 
 echo "
