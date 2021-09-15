@@ -90,7 +90,7 @@ var _ = BeforeSuite(func(done Done) {
 		fmt.Printf("Setup fake environment... \n")
 		controllerNamespace := utils.GetControllerNamespace()
 		blueprintNamespace := utils.GetBlueprintNamespace()
-		fmt.Printf("Suite test: Using controller namespace: %s; using blueprint namespace %s\n: "+controllerNamespace, blueprintNamespace)
+		fmt.Printf("Suite test: Using controller namespace: %s; using blueprint namespace %s\n: ", controllerNamespace, blueprintNamespace)
 
 		systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
 		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": blueprintNamespace})

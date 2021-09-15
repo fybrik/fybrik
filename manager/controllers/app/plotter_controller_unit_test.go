@@ -39,7 +39,7 @@ func TestPlotterController(t *testing.T) {
 
 	controllerNamespace := utils.GetControllerNamespace()
 	blueprintNamespace := utils.GetBlueprintNamespace()
-	fmt.Printf("Using controller namespace: %s; using blueprint namespace %s\n: "+controllerNamespace, blueprintNamespace)
+	fmt.Printf("Using controller namespace: %s; using blueprint namespace %s\n: ", controllerNamespace, blueprintNamespace)
 
 	var (
 		name      = "plotter"
