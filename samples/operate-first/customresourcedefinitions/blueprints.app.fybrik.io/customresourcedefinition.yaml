@@ -66,6 +66,11 @@ spec:
                           description: CopyArgs are parameters specific to modules
                             that copy data from one data store to another.
                           properties:
+                            assetID:
+                              description: AssetID identifies the asset to be used
+                                for accessing the data when it is ready It is copied
+                                from the FybrikApplication resource
+                              type: string
                             destination:
                               description: Destination is the data store to which
                                 the data will be copied
@@ -172,6 +177,7 @@ spec:
                                 x-kubernetes-preserve-unknown-fields: true
                               type: array
                           required:
+                          - assetID
                           - destination
                           - source
                           type: object
@@ -254,6 +260,11 @@ spec:
                             description: WriteModuleArgs define the input parameters
                               for modules that write data to location B
                             properties:
+                              assetID:
+                                description: AssetID identifies the asset to be used
+                                  for accessing the data when it is ready It is copied
+                                  from the FybrikApplication resource
+                                type: string
                               destination:
                                 description: Destination is the data store to which
                                   the data will be written
@@ -312,6 +323,7 @@ spec:
                                   x-kubernetes-preserve-unknown-fields: true
                                 type: array
                             required:
+                            - assetID
                             - destination
                             type: object
                           type: array
