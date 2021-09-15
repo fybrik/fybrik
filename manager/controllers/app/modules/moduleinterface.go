@@ -121,7 +121,7 @@ func (m *Selector) SupportsGovernanceAction(module *app.FybrikModule, action *op
 		for _, cap := range caps {
 			// Loop over the data transforms (actions) performed by the module for this capability
 			for _, act := range cap.Actions {
-				if act.ID == action.GetAction().Name {
+				if act.ID == (action.GetAction().Name + "-ID") {
 					return true
 				}
 			}
