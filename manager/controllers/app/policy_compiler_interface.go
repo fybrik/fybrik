@@ -6,11 +6,13 @@ package app
 import (
 	"log"
 
+	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 	"fybrik.io/fybrik/pkg/vault"
+	"github.com/gdexlab/go-render/render"
 )
 
 func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operation *openapiclientmodels.PolicyManagerRequestAction) (*openapiclientmodels.PolicyManagerRequest, string, error) {
@@ -51,13 +53,32 @@ func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operati
 func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, input *app.FybrikApplication, op *openapiclientmodels.PolicyManagerRequestAction) ([]*openapiclientmodels.ResultItem, error) {
 	// call external policy manager to get governance instructions for this operation
 	openapiReq, creds, _ := ConstructOpenAPIReq(datasetID, input, op)
-	log.Println("constructred openapi request: ", openapiReq)
+	output := render.AsCode(openapiReq)
+	log.Println("constructed openapi request: ", output)
 	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)
-	log.Println("openapi response received from policy manager: ", openapiResp)
 	var actions []*openapiclientmodels.ResultItem
+	if err != nil {
+		return actions, err
+	}
+	output = render.AsCode(openapiResp)
+	log.Println("openapi response received from policy manager: ", output)
+
 	result := openapiResp.GetResult()
 	for i := 0; i < len(result); i++ {
-		actions = append(actions, &result[i])
+		if utils.IsDenied(result[i].GetAction().Name) {
+			var message string
+			switch *openapiReq.GetAction().ActionType {
+			case openapiclientmodels.READ:
+				message = app.ReadAccessDenied
+			case openapiclientmodels.WRITE:
+				message = app.WriteNotAllowed
+			}
+			return actions, errors.New(message)
+		}
+		// Check if this is a real action (i.e. not Allow)
+		if utils.IsAction(result[i].GetAction().Name) {
+			actions = append(actions, &result[i])
+		}
 	}
-	return actions, err
+	return actions, nil
 }
