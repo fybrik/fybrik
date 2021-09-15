@@ -15,7 +15,7 @@ import (
 	"github.com/gdexlab/go-render/render"
 )
 
-func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operation *openapiclientmodels.PolicyManagerRequestAction) (*openapiclientmodels.PolicyManagerRequest, string, error) {
+func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operation *openapiclientmodels.PolicyManagerRequestAction) *openapiclientmodels.PolicyManagerRequest {
 	req := openapiclientmodels.PolicyManagerRequest{}
 	action := openapiclientmodels.PolicyManagerRequestAction{}
 	resource := openapiclientmodels.Resource{}
@@ -41,20 +41,20 @@ func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operati
 	}
 	req.SetContext(reqContext)
 
-	var credentialPath string
-	if input.Spec.SecretRef != "" {
-		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
-	}
-
-	return &req, credentialPath, nil
+	return &req
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
 func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, input *app.FybrikApplication, op *openapiclientmodels.PolicyManagerRequestAction) ([]*openapiclientmodels.ResultItem, error) {
 	// call external policy manager to get governance instructions for this operation
-	openapiReq, creds, _ := ConstructOpenAPIReq(datasetID, input, op)
+	openapiReq := ConstructOpenAPIReq(datasetID, input, op)
 	output := render.AsCode(openapiReq)
 	log.Println("constructed openapi request: ", output)
+
+	var creds string
+	if input.Spec.SecretRef != "" {
+		creds = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+	}
 	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)
 	var actions []*openapiclientmodels.ResultItem
 	if err != nil {
