@@ -1,5 +1,5 @@
 {{- if include "fybrik.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
-{{- if .Values.manager.prometheus }}
+{{- if and .Values.clusterScoped .Values.manager.prometheus }}
 # Prometheus Monitor Service (Metrics)
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor

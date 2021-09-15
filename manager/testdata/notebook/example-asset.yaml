@@ -1,0 +1,29 @@
+apiVersion: katalog.fybrik.io/v1alpha1
+kind: Asset
+metadata:
+  name: data-csv
+spec:
+  secretRef:
+    name: data-csv-creds
+  assetDetails:
+    dataFormat: csv
+    connection:
+      type: s3
+      s3:
+        endpoint: "http://s3.fybrik-system:9090"
+        bucket: bucket1
+        objectKey: data.csv
+  assetMetadata:
+    geography: theshire
+    tags:
+      - finance
+    componentsMetadata:
+      nameOrig:
+        tags:
+          - PII
+      oldbalanceOrg:
+        tags:
+          - sensitive
+      newbalanceOrig:
+        tags:
+          - sensitive

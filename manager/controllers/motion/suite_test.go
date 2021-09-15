@@ -5,6 +5,7 @@ package motion
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -16,6 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 
 	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	kbatch "k8s.io/api/batch/v1"
@@ -49,7 +51,7 @@ func TestMotionAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	RunSpecsWithDefaultAndCustomReporters(t,
-		"Controller Suite",
+		"Controller Suite App",
 		[]Reporter{printer.NewlineReporter{}})
 }
 
@@ -72,8 +74,12 @@ var _ = BeforeSuite(func(done Done) {
 	if os.Getenv("NO_SIMULATED_PROGRESS") == "true" {
 		noSimulatedProgress = true
 	}
+	path, pathErr := os.Getwd()
+	if pathErr != nil {
+		logf.Log.Info(pathErr.Error())
+	}
 	testEnv = &envtest.Environment{
-		CRDDirectoryPaths:     []string{filepath.Join("..", "..", "..", "charts", "fybrik-crd", "templates")},
+		CRDDirectoryPaths:     []string{filepath.Join(path, "..", "..", "..", "charts", "fybrik-crd", "templates")},
 		ErrorIfCRDPathMissing: true,
 		//AttachControlPlaneOutput: true,
 	}
@@ -92,7 +98,11 @@ var _ = BeforeSuite(func(done Done) {
 		logf.Log.Info("Using existing controller in existing cluster...")
 		k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 	} else {
-		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": "fybrik-blueprints"})
+		fmt.Printf("Setup fake environment... \n")
+
+		blueprintNamespace := utils.GetBlueprintNamespace()
+		fmt.Printf("Motion test suite using blueprint namespace: %s\n", blueprintNamespace)
+		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": blueprintNamespace})
 		selectorsByObject := cache.SelectorsByObject{
 			&motionv1.BatchTransfer{}:       {Field: workerNamespaceSelector},
 			&motionv1.StreamTransfer{}:      {Field: workerNamespaceSelector},
@@ -123,7 +133,7 @@ var _ = BeforeSuite(func(done Done) {
 		k8sClient = mgr.GetClient()
 		err = k8sClient.Create(context.Background(), &v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "fybrik-blueprints",
+				Name: blueprintNamespace,
 			},
 		})
 		Expect(err).ToNot(HaveOccurred())

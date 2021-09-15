@@ -5,13 +5,16 @@ package motion
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
+	"os"
 	"time"
 
 	kbatch "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 
 	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,12 +25,15 @@ import (
 var _ = Describe("BatchTransfer Controller", func() {
 
 	const timeout = time.Second * 30
-	const interval = time.Millisecond * 100
+	const interval = time.Millisecond * 300
 	const batchtransferName = "batchtransfer-sample"
-	const batchtransferNameSpace = "fybrik-blueprints"
 
 	BeforeEach(func() {
 		// Add any setup steps that needs to be executed before each test
+
+		batchtransferNameSpace := utils.GetBatchTransferNamespace()
+		fmt.Printf("batchtransfer namespace: %s\n ", batchtransferNameSpace)
+
 		f := &motionv1.BatchTransfer{}
 		key := client.ObjectKey{
 			Namespace: batchtransferNameSpace,
@@ -38,6 +44,7 @@ var _ = Describe("BatchTransfer Controller", func() {
 			_ = k8sClient.Update(context.Background(), f)
 			time.Sleep(interval)
 			_ = k8sClient.Delete(context.Background(), f)
+			time.Sleep(interval * 10)
 		}
 	})
 
@@ -53,6 +60,20 @@ var _ = Describe("BatchTransfer Controller", func() {
 			err = yaml.Unmarshal(batchTransferYAML, batchTransfer)
 			Expect(err).ToNot(HaveOccurred())
 
+			batchTransfer.Namespace = utils.GetBatchTransferNamespace()
+			fmt.Printf("template namespace %v\n", batchTransfer.Namespace)
+
+			registry := os.Getenv("DOCKER_HOSTNAME")
+			registryNamespace := os.Getenv("DOCKER_NAMESPACE")
+			tagName := os.Getenv("DOCKER_TAGNAME")
+			if len(registry) > 0 && registry != "ghcr.io" {
+				if len(registryNamespace) > 0 {
+					batchTransfer.Spec.Image = registry + "/" + registryNamespace + "/dummy-mover:" + tagName
+				} else {
+					batchTransfer.Spec.Image = registry + "/dummy-mover:" + tagName
+
+				}
+			}
 			key := client.ObjectKeyFromObject(batchTransfer)
 
 			// Create BatchTransfer
@@ -151,7 +172,7 @@ var _ = Describe("BatchTransfer Controller", func() {
 			Eventually(func() error {
 				f := &motionv1.BatchTransfer{}
 				return k8sClient.Get(context.Background(), key, f)
-			}, timeout, interval).ShouldNot(Succeed())
+			}, timeout, interval*10).ShouldNot(Succeed())
 		})
 	})
 })

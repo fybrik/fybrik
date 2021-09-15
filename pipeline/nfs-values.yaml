@@ -1,0 +1,17 @@
+affinity: {}
+nfs:
+  mountOptions: null
+  path: /
+  server: 127.0.0.1
+rbac:
+  create: true
+serviceAccount:
+  create: true
+  name: null
+storageClass:
+  allowVolumeExpansion: true
+  archiveOnDelete: false
+  create: true
+  defaultClass: true
+  name: nfs-client
+  reclaimPolicy: Delete

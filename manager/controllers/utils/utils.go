@@ -26,7 +26,7 @@ func GetProtocol(info *dc.DatasetDetails) (string, error) {
 	case dc.DataStore_DB2:
 		return app.JdbcDb2, nil
 	}
-	return "", errors.New("unknown protocol")
+	return "", errors.New(app.InvalidAssetDataStore)
 }
 
 // IsTransformation returns true if the data transformation is required

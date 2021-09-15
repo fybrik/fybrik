@@ -5,7 +5,7 @@ package v1alpha1
 
 import (
 	"fmt"
-	log "log"
+	"log"
 	"net"
 	"net/url"
 	"os"

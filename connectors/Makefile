@@ -4,7 +4,8 @@ include $(ROOT_DIR)/Makefile.env
 CONNECTORS := \
 	katalog \
 	egeria \
-	opa
+	opa \
+	open_policy_agent
 
 define test-target
   test:: ; cd $1 && make test

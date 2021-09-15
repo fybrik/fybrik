@@ -103,6 +103,47 @@ jobs:
         path: images.tar
         retention-days: 1
 
+  tekton-pipelines:
+    name: Tekton Tests
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_HOSTNAME: "localhost:5000"
+      DOCKER_NAMESPACE: fybrik-system
+    steps:
+    - name: Set up JDK
+      uses: actions/setup-java@v1
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - uses: actions/checkout@v2
+    - name: install nfs rpms
+      run: sudo apt-get update && sudo apt-get install -y nfs-kernel-server nfs-common && sudo modprobe nfsd && sudo modprobe nfs
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.m2/repository
+          ~/go/pkg/mod
+          ${{ github.workspace }}/hack/tools/bin
+        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
+    - name: Install tools
+      run: make install-tools
+    - name: Integration tests
+      env:
+        image_source_repo_password: "fake"
+        github: github.com
+        run_tkn: 1
+        dockerhub_hostname: docker.io
+        git_user: fake@fake.com
+        image_repo: kind-registry:5000
+        image_source_repo_username: fake@fake.com 
+        GH_TOKEN: fake
+      run: pushd hack/tools/ && ./create_kind.sh && docker info && popd && . pipeline/source-external.sh && skip_tests=false kind=true github_workspace=${{ github.workspace }} pipeline/bootstrap-pipeline.sh fybrik-system
+
   push_images:
     name: Push images
     runs-on: ubuntu-latest

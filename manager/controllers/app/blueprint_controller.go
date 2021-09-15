@@ -9,6 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/pkg/environment"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"helm.sh/helm/v3/pkg/release"
@@ -93,10 +97,6 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) (ctr
 			// the finalizer is present - delete the allocated resources
 			if err := r.deleteExternalResources(blueprint); err != nil {
 				r.Log.V(0).Info("Error while deleting owned resources: " + err.Error())
-				return ctrl.Result{}, err
-			}
-			if r.hasExternalResources(blueprint) {
-				return ctrl.Result{RequeueAfter: 2 * time.Second}, errors.NewPlain("helm release uninstall is still in progress")
 			}
 			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 			ctrlutil.RemoveFinalizer(blueprint, finalizerName)
@@ -119,12 +119,8 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) (ctr
 
 func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) error {
 	errs := make([]string, 0)
-	for _, module := range blueprint.Spec.Modules {
-		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], module)
-		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus != nil || rel == nil {
-			continue
-		}
-		if _, err := r.Helmer.Uninstall(blueprint.Namespace, releaseName); err != nil {
+	for release := range blueprint.Status.Releases {
+		if _, err := r.Helmer.Uninstall(blueprint.Namespace, release); err != nil {
 			errs = append(errs, err.Error())
 		}
 	}
@@ -132,16 +128,6 @@ func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) 
 		return nil
 	}
 	return errors.New(strings.Join(errs, "; "))
-}
-
-func (r *BlueprintReconciler) hasExternalResources(blueprint *app.Blueprint) bool {
-	for _, module := range blueprint.Spec.Modules {
-		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], module)
-		if rel, errStatus := r.Helmer.Status(blueprint.Namespace, releaseName); errStatus == nil && rel != nil {
-			return true
-		}
-	}
-	return false
 }
 
 func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.ChartSpec, args map[string]interface{}, blueprint *app.Blueprint, releaseName string) (ctrl.Result, error) {
@@ -310,16 +296,25 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// 'UpdateFunc' and 'CreateFunc' used to judge if the event came from within the blueprint's namespace.
 	// If that is true, the event will be processed by the reconciler.
 	// If it's not then it is a rogue event created by someone outside of the control plane.
+
+	blueprintNamespace := utils.GetBlueprintNamespace()
+	r.Log.Info("blueprint namespace: " + blueprintNamespace)
+
 	p := predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
-			return e.Object.GetNamespace() == BlueprintNamespace
+			return e.Object.GetNamespace() == blueprintNamespace
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			return e.ObjectOld.GetNamespace() == BlueprintNamespace
+			return e.ObjectOld.GetNamespace() == blueprintNamespace
 		},
 	}
 
+	numReconciles := environment.GetEnvAsInt(controllers.BlueprintConcurrentReconcilesConfiguration, controllers.DefaultBlueprintConcurrentReconciles)
+
+	mgr.GetLogger().Info(fmt.Sprintf("Concurrent blueprint reconciles: %d", numReconciles))
+
 	return ctrl.NewControllerManagedBy(mgr).
+		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
 		For(&app.Blueprint{}).
 		WithEventFilter(p).
 		Complete(r)

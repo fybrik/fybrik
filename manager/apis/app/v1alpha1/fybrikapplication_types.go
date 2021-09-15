@@ -92,13 +92,14 @@ type FybrikApplicationSpec struct {
 
 // ErrorMessages that are reported to the user
 const (
-	InvalidAssetID              string = "The asset does not exist."
-	ReadAccessDenied            string = "Governance policies forbid access to the data."
-	CopyNotAllowed              string = "Copy of the data is required but can not be done according to the governance policies."
-	WriteNotAllowed             string = "Governance policies forbid writing of the data."
-	ModuleNotFound              string = "No module has been registered"
-	InsufficientStorage         string = "No bucket was provisioned for implicit copy"
-	InvalidClusterConfiguration string = "Cluster configuration does not support the requirements."
+	InvalidAssetID              string = "the asset does not exist"
+	ReadAccessDenied            string = "governance policies forbid access to the data"
+	CopyNotAllowed              string = "copy of the data is required but can not be done according to the governance policies"
+	WriteNotAllowed             string = "governance policies forbid writing of the data"
+	ModuleNotFound              string = "no module has been registered"
+	InsufficientStorage         string = "no bucket was provisioned for implicit copy"
+	InvalidClusterConfiguration string = "cluster configuration does not support the requirements"
+	InvalidAssetDataStore       string = "the asset data store is not supported"
 )
 
 // Condition indices are static. Conditions always present in the status.
@@ -155,30 +156,47 @@ type DatasetDetails struct {
 	Details serde.Arbitrary `json:"details,omitempty"`
 }
 
-// FybrikApplicationStatus defines the observed state of FybrikApplication.
-type FybrikApplicationStatus struct {
-
-	// Ready is true if a blueprint has been successfully orchestrated
-	Ready bool `json:"ready,omitempty"`
-
-	// Conditions represent the possible error and failure conditions
+// AssetState defines the observed state of an asset
+type AssetState struct {
+	// Conditions indicate the asset state (Ready, Deny, Error)
 	// +optional
 	Conditions []Condition `json:"conditions,omitempty"`
 
-	// DataAccessInstructions indicate how the data user or his application may access the data.
-	// Instructions are available upon successful orchestration.
+	// CatalogedAsset provides a new asset identifier after being registered in the enterprise catalog
 	// +optional
-	DataAccessInstructions string `json:"dataAccessInstructions,omitempty"`
+	CatalogedAsset string `json:"catalogedAsset,omitempty"`
 
-	// CatalogedAssets provide the new asset identifiers after being registered in the enterprise catalog
-	// It maps the original asset id to the cataloged asset id.
+	// Endpoint provides the endpoint spec from which the asset will be served to the application
 	// +optional
-	CatalogedAssets map[string]string `json:"catalogedAssets,omitempty"`
+	Endpoint EndpointSpec `json:"endpoint,omitempty"`
+}
+
+// FybrikApplicationStatus defines the observed state of FybrikApplication.
+type FybrikApplicationStatus struct {
+	// Ready is true if all specified assets are either ready to be used or are denied access.
+	// +optional
+	Ready bool `json:"ready,omitempty"`
+
+	// ErrorMessage indicates that an error has happened during the reconcile, unrelated to a specific asset
+	// +optional
+	ErrorMessage string `json:"errorMessage,omitempty"`
+
+	// AssetStates provides a status per asset
+	// +optional
+	AssetStates map[string]AssetState `json:"assetStates,omitempty"`
 
 	// ObservedGeneration is taken from the FybrikApplication metadata.  This is used to determine during reconcile
 	// whether reconcile was called because the desired state changed, or whether the Blueprint status changed.
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+
+	// ValidatedGeneration is the version of the FyrbikApplication that has been validated with the taxonomy defined.
+	// +optional
+	ValidatedGeneration int64 `json:"validatedGeneration,omitempty"`
+
+	// ValidApplication indicates whether the FybrikApplication is valid given the defined taxonomy
+	// +optional
+	ValidApplication corev1.ConditionStatus `json:"validApplication,omitempty"`
 
 	// Generated resource identifier
 	// +optional
@@ -189,9 +207,6 @@ type FybrikApplicationStatus struct {
 	// ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready
 	// +optional
 	ProvisionedStorage map[string]DatasetDetails `json:"provisionedStorage,omitempty"`
-
-	// ReadEndpointsMap maps an datasetID (after parsing from json to a string with dashes) to the endpoint spec from which the asset will be served to the application
-	ReadEndpointsMap map[string]EndpointSpec `json:"readEndpointsMap,omitempty"`
 }
 
 // FybrikApplication provides information about the application being used by a Data Scientist,

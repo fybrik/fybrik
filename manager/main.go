@@ -10,6 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/pkg/environment"
+
 	"emperror.dev/errors"
 	corev1 "k8s.io/api/core/v1"
 
@@ -54,9 +57,20 @@ func init() {
 func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	enableApplicationController, enableBlueprintController, enablePlotterController, enableMotionController bool) int {
 	setupLog.Info("creating manager")
+
+	var applicationNamespaceSelector fields.Selector
+	applicationNamespace := utils.GetApplicationNamespace()
+	if len(applicationNamespace) > 0 {
+		applicationNamespaceSelector = fields.SelectorFromSet(fields.Set{"metadata.namespace": applicationNamespace})
+	}
+	setupLog.Info("Application namespace: " + applicationNamespace)
+
+	blueprintNamespace := utils.GetBlueprintNamespace()
+
 	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
-	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": app.BlueprintNamespace})
+	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": blueprintNamespace})
 	selectorsByObject := cache.SelectorsByObject{
+		&appv1.FybrikApplication{}:      {Field: applicationNamespaceSelector},
 		&appv1.Plotter{}:                {Field: systemNamespaceSelector},
 		&appv1.FybrikModule{}:           {Field: systemNamespaceSelector},
 		&appv1.FybrikStorageAccount{}:   {Field: systemNamespaceSelector},
@@ -72,7 +86,13 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		&corev1.PersistentVolumeClaim{}: {Field: workerNamespaceSelector},
 	}
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	client := ctrl.GetConfigOrDie()
+	client.QPS = environment.GetEnvAsFloat32(controllers.KubernetesClientQPSConfiguration, controllers.DefaultKubernetesClientQPS)
+	client.Burst = environment.GetEnvAsInt(controllers.KubernetesClientBurstConfiguration, controllers.DefaultKubernetesClientBurst)
+
+	setupLog.Info("Manager client rate limits:", "qps", client.QPS, "burst", client.Burst)
+
+	mgr, err := ctrl.NewManager(client, ctrl.Options{
 		Scheme:             scheme,
 		Namespace:          namespace,
 		MetricsBindAddress: metricsAddr,
@@ -245,24 +265,15 @@ func newPolicyManager() (connectors.PolicyManager, error) {
 	mainPolicyManagerName := os.Getenv("MAIN_POLICY_MANAGER_NAME")
 	mainPolicyManagerURL := os.Getenv("MAIN_POLICY_MANAGER_CONNECTOR_URL")
 	setupLog.Info("setting main policy manager client", "Name", mainPolicyManagerName, "URL", mainPolicyManagerURL, "Timeout", connectionTimeout)
-	policyManager, err := connectors.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
-	if err != nil {
-		return nil, err
+
+	var policyManager connectors.PolicyManager
+	if strings.HasPrefix(mainPolicyManagerURL, "http") {
+		policyManager, err = connectors.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
+	} else {
+		policyManager, err = connectors.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
 	}
 
-	useExtensionPolicyManager, err := strconv.ParseBool(os.Getenv("USE_EXTENSIONPOLICY_MANAGER"))
-	if useExtensionPolicyManager && err == nil {
-		extensionPolicyManagerName := os.Getenv("EXTENSIONS_POLICY_MANAGER_NAME")
-		extensionPolicyManagerURL := os.Getenv("EXTENSIONS_POLICY_MANAGER_CONNECTOR_URL")
-		setupLog.Info("setting extension policy manager client", "Name", extensionPolicyManagerName, "URL", extensionPolicyManagerURL, "Timeout", connectionTimeout)
-		extensionPolicyManager, err := connectors.NewGrpcPolicyManager(extensionPolicyManagerName, extensionPolicyManagerURL, connectionTimeout)
-		if err != nil {
-			return nil, err
-		}
-		policyManager = connectors.NewMultiPolicyManager(policyManager, extensionPolicyManager)
-	}
-
-	return policyManager, nil
+	return policyManager, err
 }
 
 // newClusterManager decides based on the environment variables that are set which

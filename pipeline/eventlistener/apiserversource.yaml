@@ -1,0 +1,12 @@
+apiVersion: sources.knative.dev/v1
+kind: ApiServerSource
+metadata:
+  name: tekton-task-watcher
+spec:
+  mode: Resource
+  resources:
+    - apiVersion: tekton.dev/v1beta1
+      kind: TaskRun
+  serviceAccountName: tekton-task-watcher
+  sink:
+    uri: http://el-tekton-task-eventlistener:8080

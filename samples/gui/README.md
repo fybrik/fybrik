@@ -43,7 +43,7 @@ curl -X POST -i http://localhost:8080/v1/dma/fybrikapplication --data '{"apiVers
 ## Run server locally - run vault as well as REST API server
 
 export KUBECONFIG=$HOME/.kube/config
-export GEOGRAPHY=hobbiton
+export GEOGRAPHY=theshire
 make build
 ./datauserserver
 
