@@ -171,6 +171,8 @@ manager:
 
   prometheus: false
 
+  chartVolume: ""
+
 # OPA connector component
 opaConnector:
   # Set to true to deploy the opa connector or false to skip its deployment.
