@@ -2,28 +2,29 @@ package dataapi.authz
 
 verdict[output] {
 	count(rule) == 0
-	output = {"action": {"name":"Deny"}, "policy": "Deny by default"}
+	output = {"action": {"name":"Deny", "Deny": {"Information": "Access is denied"}}, "policy": "Deny by default"}
 }
 
-verdict[output] {
+verdict[outputFormatted] {
 	count(rule) > 0
-	output.action.name == "Deny"
+	output.action.name == "Deny"	
 	output = rule[_]
+	outputFormatted := {"action": {"name":"Deny", "Deny": {"Information": "Access is denied"}}, "policy": output.policy}
 }
 
 verdict[outputFormatted] {
 	count(rule) > 0
 	output.action.name != "Deny"
 	output = rule[_]
-	actionName := concat("", array.concat([lower(split(output.action.name, "Action")[0])], ["Action"]))
+	actionName := output.action.name
 	actionWithoutName := json.remove(output.action, ["name"])
 	outputWithoutAction := json.remove(output, ["action"])
 	actionFormatted := {"name":actionName, output.action.name:actionWithoutName}
 	outputFormatted := object.union({"action":actionFormatted}, outputWithoutAction)
 }
 
-rule[{"action": {"name":"RedactColumn", "columns": column_names}, "policy": description}] {
-	description := "If intent is Fraud Detection and role is Data Scientist and data residency is Turkey and processing location is not Trukey, redact columns with tag Confidential"
+rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": description}] {
+	description := "If intent is Fraud Detection and role is Data Scientist and data residency is Turkey and processing location is not Turkey, redact columns with tag Confidential"
 	#user context and access type check
 	input.action.actionType == "read"
 	input.context.intent == "Fraud Detection"
@@ -59,16 +60,6 @@ rule[{"action": {"name":"Deny"}, "policy": description}] {
 	input.action.actionType == "read"
 	input.context.intent == "Customer Behaviour Analysis"
 	input.context.role != "Business Analyst"
-	input.resource.tags.residency == "Turkey"
-	input.action.processingLocation != "Turkey"
-}
-
-rule[{"action": {"name":"Deny"}, "policy": description}] {
-	description = "Deny because role is not Data Scientist and intent is Fraud Detection but the processing geography is not Trukey"
-	#user context and access type check
-	input.action.actionType == "read"
-	input.context.intent == "Fraud Detection"
-	input.context.role != "Data Scientist"
 	input.resource.tags.residency == "Turkey"
 	input.action.processingLocation != "Turkey"
 }

@@ -88,7 +88,7 @@ func (t *transformer) oneOfRefsTransform(key string, schema *model.SchemaRef) *m
 			name = v.RefName()
 			key = name
 		}
-		name = strcase.LowerCamelCase(name)
+		//name = strcase.LowerCamelCase(name)
 
 		// Add to name options
 		options = append(options, name)
