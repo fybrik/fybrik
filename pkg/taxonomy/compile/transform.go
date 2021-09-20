@@ -8,7 +8,7 @@ import (
 
 	"fybrik.io/fybrik/pkg/slices"
 	"fybrik.io/fybrik/pkg/taxonomy/model"
-	//strcase "github.com/stoewer/go-strcase"
+	// strcase "github.com/stoewer/go-strcase"
 )
 
 // transform applies transformations over an input document to make it structural.
