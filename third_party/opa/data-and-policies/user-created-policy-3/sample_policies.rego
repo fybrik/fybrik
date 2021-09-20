@@ -16,10 +16,10 @@ verdict[outputFormatted] {
 	output.action.name != "Deny"
 	output = rule[_]
 	actionName := concat("", array.concat([lower(split(output.action.name, "Action")[0])], ["Action"]))
-    actionWithoutName := json.remove(output.action, ["name"])
-    outputWithoutAction := json.remove(output, ["action"])
-    actionFormatted := {"name":actionName, output.action.name:actionWithoutName}
-    outputFormatted := object.union({"action":actionFormatted}, outputWithoutAction)
+	actionWithoutName := json.remove(output.action, ["name"])
+	outputWithoutAction := json.remove(output, ["action"])
+	actionFormatted := {"name":actionName, output.action.name:actionWithoutName}
+	outputFormatted := object.union({"action":actionFormatted}, outputWithoutAction)
 }
 
 rule[{"action": {"name":"RedactColumn", "columns": column_names}, "policy": description}] {
