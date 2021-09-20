@@ -122,6 +122,8 @@ type SubFlow struct {
 	Triggers []SubFlowTrigger `json:"triggers"`
 
 	// Steps defines a series of sequential/parallel data flow steps
+	// The first dimension represents parallel data flows. The second sequential components
+	// within the same parallel data flow.
 	// +required
 	Steps [][]DataFlowStep `json:"steps" protobuf:"bytes,11,opt,name=steps"`
 }

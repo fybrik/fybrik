@@ -156,7 +156,7 @@ spec:
                             description: Name of the SubFlow
                             type: string
                           steps:
-                            description: Steps defines a series of sequential/parallel data flow steps
+                            description: Steps defines a series of sequential/parallel data flow steps The first dimension represents parallel data flows. The second sequential components within the same parallel data flow.
                             items:
                               items:
                                 description: DataFlowStep contains details on a single data flow step

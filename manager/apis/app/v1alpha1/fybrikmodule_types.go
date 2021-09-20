@@ -144,7 +144,7 @@ type ModuleCapability struct {
 	SupportedInterfaces []ModuleInOut `json:"supportedInterfaces"`
 
 	// API indicates to the application how to access the capabilities provided by the module
-	// TODO This is optinal but in ModuleAPI the endpoint is required?
+	// TODO This is optional but in ModuleAPI the endpoint is required?
 	// +optional
 	API *ModuleAPI `json:"api,omitempty"`
 
