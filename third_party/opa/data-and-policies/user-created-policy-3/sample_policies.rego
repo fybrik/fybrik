@@ -15,11 +15,15 @@ verdict[outputFormatted] {
 	count(rule) > 0
 	output.action.name != "Deny"
 	output = rule[_]
-	outputFormatted := {"action": {"name":output.action.name, output.action.name: output.action.columns}, "policy": output.policy}
+	actionName := concat("", array.concat([lower(split(output.action.name, "Action")[0])], ["Action"]))
+    actionWithoutName := json.remove(output.action, ["name"])
+    outputWithoutAction := json.remove(output, ["action"])
+    actionFormatted := {"name":actionName, output.action.name:actionWithoutName}
+    outputFormatted := object.union({"action":actionFormatted}, outputWithoutAction)
 }
 
 rule[{"action": {"name":"RedactColumn", "columns": column_names}, "policy": description}] {
-	description := "Columns with Confidential tag to be redacted before read action"
+	description := "If intent is Fraud Detection and role is Data Scientist and data residency is Turkey and processing location is not Trukey, redact columns with tag Confidential"
 	#user context and access type check
 	input.action.actionType == "read"
 	input.context.intent == "Fraud Detection"
@@ -39,7 +43,7 @@ rule[{"action": {"name":"Deny"}, "policy": description}] {
 }
 
 rule[{"action": {"name":"Deny"}, "policy": description}] {
-	description = "Deny because columns have confidential tag"
+	description = "If intent is Customer Behaviour Analysis and role is Business Analyst and data residency is Turkey, deny access to data if there is a column with tag Confidential"
 	#user context and access type check
 	input.action.actionType == "read"
 	input.context.intent == "Customer Behaviour Analysis"
