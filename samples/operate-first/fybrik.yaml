@@ -1,9 +1,3 @@
-# Source: fybrik/templates/fybrik-blueprints-ns.yaml
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: fybrik-blueprints
----
 # Source: fybrik/templates/fybrik-admin-cr.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -70,21 +64,6 @@ rules:
     resources: ["assets"]
     verbs: ["get", "list", "watch"]
 ---
-# Source: fybrik/templates/manager-auth-proxy-cr.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: fybrik-proxy-cr
-rules:
-  - apiGroups: ["authentication.k8s.io"]
-    resources:
-      - tokenreviews
-    verbs: ["create"]
-  - apiGroups: ["authorization.k8s.io"]
-    resources:
-      - subjectaccessreviews
-    verbs: ["create"]
----
 # Source: fybrik/templates/fybrik-admin-crb.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -112,20 +91,6 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: katalog-connector
-    namespace: fybrik-system
----
-# Source: fybrik/templates/manager-auth-proxy-crb.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: fybrik-proxy-crb
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: fybrik-proxy-cr
-subjects:
-  - kind: ServiceAccount
-    name: manager
     namespace: fybrik-system
 ---
 # Source: fybrik/templates/webhook-configs.yaml
