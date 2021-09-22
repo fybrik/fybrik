@@ -121,7 +121,7 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 	}
 	return &app.DataStore{
 		Vault:      vaultMap,
-		Connection: *connection,
+		Connection: connection,
 		Format:     destinationInterface.DataFormat,
 	}, nil
 }
@@ -213,123 +213,250 @@ func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.
 	return copySelector, nil
 }
 
-// SelectModuleInstances selects the necessary read/copy/write modules for the blueprint for a given data set
+// SelectModuleInstances selects the necessary read/copy/write modules for the plotter for a given data set
+// Adds the asset details, flows and templates to the given plotter spec.
 // Write path is not yet implemented
-func (m *ModuleManager) SelectModuleInstances(item modules.DataInfo, appContext *app.FybrikApplication) ([]modules.ModuleInstanceSpec, error) {
+func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *app.FybrikApplication, plotterSpec *app.PlotterSpec, flowType app.DataFlow) error {
 	datasetID := item.Context.DataSetID
 	m.Log.Info("Select modules for " + datasetID)
-	instances := make([]modules.ModuleInstanceSpec, 0)
+
+	subflows := make([]app.SubFlow, 0)
+	assets := map[string]app.AssetDetails{}
+	templates := []app.Template{}
 	var err error
 	if m.WorkloadGeography, err = m.GetProcessingGeography(appContext); err != nil {
 		m.Log.Info("Could not determine the workload geography")
-		return nil, err
+		return err
 	}
 
 	// Set the value received from the catalog connector.
 	vaultSecretPath := item.VaultSecretPath
 
-	// Each selector receives source/sink interface and relevant actions
-	// Starting with the data location interface for source and the required interface for sink
-	vaultMap := make(map[string]app.Vault)
-	vaultMap[string(app.ReadFlow)] = app.Vault{
-		SecretPath: vaultSecretPath,
-		Role:       utils.GetModulesRole(),
-		Address:    utils.GetVaultAddress(),
-	}
-	sourceDataStore := &app.DataStore{
-		Connection: item.DataDetails.Connection,
-		Vault:      vaultMap,
-		Format:     item.DataDetails.Interface.DataFormat,
-	}
-
-	// DataStore for destination will be determined if an implicit copy is required
-	var sinkDataStore *app.DataStore
-
-	var readSelector, copySelector *modules.Selector
-	if readSelector, err = m.selectReadModule(item, appContext); err != nil {
-		m.Log.Info("Could not select a read module for " + datasetID + " : " + err.Error())
-		return instances, err
-	}
-	if copySelector, err = m.selectCopyModule(item, appContext, readSelector); err != nil {
-		m.Log.Info("Could not select a copy module for " + datasetID + " : " + err.Error())
-		return instances, err
-	}
-
-	if copySelector != nil {
-		m.Log.Info("Found copy module " + copySelector.GetModule().Name + " for " + datasetID)
-		// copy should be applied - allocate storage
-		if sinkDataStore, err = m.GetCopyDestination(item, copySelector.Destination, copySelector.Geo); err != nil {
-			m.Log.Info("Allocation failed: " + err.Error())
-			return instances, err
+	if flowType == app.ReadFlow {
+		// Each selector receives source/sink interface and relevant actions
+		// Starting with the data location interface for source and the required interface for sink
+		vaultMap := make(map[string]app.Vault)
+		vaultMap[string(app.ReadFlow)] = app.Vault{
+			SecretPath: vaultSecretPath,
+			Role:       utils.GetModulesRole(),
+			Address:    utils.GetVaultAddress(),
 		}
-		// append moduleinstances to the list
-		actions := actionsToArbitrary(copySelector.Actions)
-		copyArgs := &app.ModuleArguments{
-			Copy: &app.CopyModuleArgs{
-				Source:          *sourceDataStore,
-				Destination:     *sinkDataStore,
-				Transformations: actions,
-			},
+		sourceDataStore := &app.DataStore{
+			Connection: &item.DataDetails.Connection,
+			Vault:      vaultMap,
+			Format:     item.DataDetails.Interface.DataFormat,
 		}
-		copyCluster, err := copySelector.SelectCluster(item, m.Clusters)
-		if err != nil {
-			m.Log.Info("Could not determine the cluster for copy: " + err.Error())
-			return instances, err
+
+		assets[datasetID] = app.AssetDetails{
+			AdvertisedAssetID: "",
+			DataStore:         *sourceDataStore,
 		}
-		for _, cluster := range m.Clusters {
-			if copyCluster == cluster.Name {
-				if writeVault, ok := copyArgs.Copy.Destination.Vault[string(app.WriteFlow)]; ok {
-					writeVault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
-				}
-				if readVault, ok := copyArgs.Copy.Source.Vault[string(app.ReadFlow)]; ok {
-					readVault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
-				}
-				break
+
+		// DataStore for destination will be determined if an implicit copy is required
+		var sinkDataStore *app.DataStore
+		var readSelector, copySelector *modules.Selector
+		if readSelector, err = m.selectReadModule(item, appContext); err != nil {
+			m.Log.Info("Could not select a read module for " + datasetID + " : " + err.Error())
+			return err
+		}
+		if copySelector, err = m.selectCopyModule(item, appContext, readSelector); err != nil {
+			m.Log.Info("Could not select a copy module for " + datasetID + " : " + err.Error())
+			return err
+		}
+
+		if copySelector != nil {
+			m.Log.Info("Found copy module " + copySelector.GetModule().Name + " for " + datasetID)
+			// copy should be applied - allocate storage
+			if sinkDataStore, err = m.GetCopyDestination(item, copySelector.Destination, copySelector.Geo); err != nil {
+				m.Log.Info("Allocation failed: " + err.Error())
+				return err
 			}
-		}
 
-		m.Log.Info("Adding copy module")
-		instances = copySelector.AddModuleInstances(copyArgs, item, copyCluster)
-	}
+			var copyDataAssetID = datasetID + "-copy"
 
-	if readSelector != nil {
-		m.Log.Info("Adding read path")
-		var readSource app.DataStore
-		if sinkDataStore == nil {
-			readSource = *sourceDataStore
-		} else {
-			readSource = *sinkDataStore
-		}
-
-		actions := actionsToArbitrary(readSelector.Actions)
-		readCluster, err := readSelector.SelectCluster(item, m.Clusters)
-		if err != nil {
-			m.Log.Info("Could not determine the cluster for read: " + err.Error())
-			return instances, err
-		}
-		for _, cluster := range m.Clusters {
-			if readCluster == cluster.Name {
-				if readVault, ok := readSource.Vault[string(app.ReadFlow)]; ok {
-					readVault.AuthPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
-				}
-				break
+			// append moduleinstances to the list
+			actions := actionsToArbitrary(copySelector.Actions)
+			copyCluster, err := copySelector.SelectCluster(item, m.Clusters)
+			if err != nil {
+				m.Log.Info("Could not determine the cluster for copy: " + err.Error())
+				return err
 			}
-		}
-		readInstructions := []app.ReadModuleArgs{
-			{
-				Source:          readSource,
-				AssetID:         utils.CreateDataSetIdentifier(item.Context.DataSetID),
-				Transformations: actions,
-			},
+
+			// The default capability scope is of type Asset
+			scope := copySelector.ModuleCapability.Scope
+			if scope == "" {
+				scope = app.Asset
+			}
+
+			template := app.Template{
+				Name: "copy",
+				Modules: []app.ModuleInfo{{
+					Name:  "copy",
+					Type:  copySelector.Module.Spec.Type,
+					Chart: copySelector.Module.Spec.Chart,
+					Scope: scope,
+					API:   copySelector.ModuleCapability.API.DeepCopy(),
+				}},
+			}
+
+			templates = append(templates, template)
+
+			copyAsset := app.AssetDetails{
+				AdvertisedAssetID: datasetID,
+				DataStore:         *sinkDataStore,
+			}
+
+			assets[copyDataAssetID] = copyAsset
+
+			steps := []app.DataFlowStep{
+				{
+					Name:     "",
+					Cluster:  copyCluster,
+					Template: "copy",
+					Parameters: &app.StepParameters{
+						Source: &app.StepSource{
+							AssetID: datasetID,
+							API:     nil,
+						},
+						Sink: &app.StepSink{
+							AssetID: copyDataAssetID,
+						},
+						API:     nil,
+						Actions: actions,
+					},
+				},
+			}
+
+			m.Log.Info("Add subflow")
+			subFlow := app.SubFlow{
+				Name:     "",
+				FlowType: app.CopyFlow,
+				Triggers: []app.SubFlowTrigger{app.InitTrigger},
+				Steps:    [][]app.DataFlowStep{steps},
+			}
+
+			subflows = append(subflows, subFlow)
+
+			m.Log.Info("Adding copy module")
 		}
 
-		readArgs := &app.ModuleArguments{
-			Read: readInstructions,
-		}
+		if readSelector != nil {
+			m.Log.Info("Adding read path")
+			var readAssetID string
+			if sinkDataStore == nil {
+				readAssetID = datasetID
+			} else {
+				readAssetID = datasetID + "-copy"
+			}
 
-		instances = append(instances, readSelector.AddModuleInstances(readArgs, item, readCluster)...)
+			actions := actionsToArbitrary(readSelector.Actions)
+			readCluster, err := readSelector.SelectCluster(item, m.Clusters)
+			if err != nil {
+				m.Log.Info("Could not determine the cluster for read: " + err.Error())
+				return err
+			}
+
+			// The default capability scope is of type Asset
+			scope := readSelector.ModuleCapability.Scope
+			if scope == "" {
+				scope = app.Asset
+			}
+
+			template := app.Template{
+				Name: "read",
+				Modules: []app.ModuleInfo{{
+					Name:  readSelector.Module.Name,
+					Type:  readSelector.Module.Spec.Type,
+					Chart: readSelector.Module.Spec.Chart,
+					Scope: scope,
+					API:   readSelector.ModuleCapability.API.DeepCopy(),
+				}},
+			}
+
+			templates = append(templates, template)
+
+			steps := []app.DataFlowStep{
+				{
+					Name:     "",
+					Cluster:  readCluster,
+					Template: "read",
+					Parameters: &app.StepParameters{
+						Source: &app.StepSource{
+							AssetID: datasetID,
+							API:     nil,
+						},
+						Sink: &app.StepSink{
+							AssetID: readAssetID,
+						},
+						API: moduleAPIToService(readSelector.ModuleCapability.API, readSelector.ModuleCapability.Scope,
+							appContext, readSelector.Module.Name, readAssetID),
+						Actions: actions,
+					},
+				},
+			}
+
+			m.Log.Info("Add subflow")
+			subFlow := app.SubFlow{
+				Name:     "",
+				FlowType: app.ReadFlow,
+				Triggers: []app.SubFlowTrigger{app.WorkloadTrigger},
+				Steps:    [][]app.DataFlowStep{steps},
+			}
+
+			subflows = append(subflows, subFlow)
+		}
 	}
-	return instances, nil
+
+	// If everything finished without errors build the flow and add it to the plotter spec
+	// Also add new assets as well as templates
+
+	flowName := item.Context.DataSetID + "-" + string(flowType)
+	flow := app.Flow{
+		Name:     flowName,
+		FlowType: flowType,
+		AssetID:  item.Context.DataSetID,
+		SubFlows: subflows,
+	}
+
+	plotterSpec.Flows = append(plotterSpec.Flows, flow)
+	for key, details := range assets {
+		plotterSpec.Assets[key] = details
+	}
+
+	for _, template := range templates {
+		plotterSpec.Templates[template.Name] = template
+	}
+
+	return nil
+}
+
+func moduleAPIToService(api *app.ModuleAPI, scope app.CapabilityScope, appContext *app.FybrikApplication, moduleName string, assetID string) *app.Service {
+	// if the defined endpoint is empty generate the name
+	var endpoint app.EndpointSpec
+	if api.Endpoint.Hostname == "" {
+		instanceName := moduleName
+		if scope == app.Asset {
+			// if the scope of the module is asset then concat its id to the module name
+			// to create the instance name.
+			instanceName = utils.CreateStepName(moduleName, assetID)
+		}
+		releaseName := utils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
+		// Current implementation assumes there is only one cluster with read modules
+		// (which is the same cluster the user's workload)
+		fqdn := utils.GenerateModuleEndpointFQDN(releaseName, BlueprintNamespace)
+		endpoint = app.EndpointSpec{
+			Hostname: fqdn,
+			Port:     api.Endpoint.Port,
+			Scheme:   api.Endpoint.Scheme,
+		}
+	} else {
+		endpoint = api.Endpoint
+	}
+	var service = app.Service{
+		Endpoint: endpoint,
+		Format:   api.DataFormat,
+	}
+	return &service
 }
 
 // GetSupportedReadSources returns a list of supported READ interfaces of a module

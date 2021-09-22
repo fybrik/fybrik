@@ -50,7 +50,7 @@ spec:
                         type: object
                       type: array
                     api:
-                      description: API indicates to the application how to access the capabilities provided by the module
+                      description: API indicates to the application how to access the capabilities provided by the module TODO This is optional but in ModuleAPI the endpoint is required?
                       properties:
                         dataformat:
                           description: DataFormat defines the data format type

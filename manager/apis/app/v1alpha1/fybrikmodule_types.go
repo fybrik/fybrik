@@ -19,7 +19,7 @@ const (
 	// Workload indicates that the capability is available for all assets in the workload or is independent of assets
 	Workload CapabilityScope = "workload"
 
-	// Cluster indicates that a capability is available across workloads - i.e. across m4dapplication instances
+	// Cluster indicates that a capability is available across workloads - i.e. across Fybrikapplication instances
 	Cluster CapabilityScope = "cluster"
 )
 
@@ -144,6 +144,7 @@ type ModuleCapability struct {
 	SupportedInterfaces []ModuleInOut `json:"supportedInterfaces"`
 
 	// API indicates to the application how to access the capabilities provided by the module
+	// TODO This is optional but in ModuleAPI the endpoint is required?
 	// +optional
 	API *ModuleAPI `json:"api,omitempty"`
 

@@ -7,6 +7,8 @@ import (
 	"context"
 	"io/ioutil"
 
+	"fybrik.io/fybrik/pkg/multicluster"
+
 	"fmt"
 	"testing"
 
@@ -64,6 +66,17 @@ func TestPlotterController(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	dummyManager := &dummy.ClusterManager{
 		DeployedBlueprints: make(map[string]*app.Blueprint),
+		Clusters: []multicluster.Cluster{{
+			Name: "thegreendragon",
+			Metadata: struct {
+				Region        string
+				Zone          string
+				VaultAuthPath string
+			}{
+				Region:        "theshire",
+				Zone:          "hobbiton",
+				VaultAuthPath: "kubernetes",
+			}}},
 	}
 
 	// Create a BatchTransferReconciler object with the scheme and fake client.
@@ -98,14 +111,27 @@ func TestPlotterController(t *testing.T) {
 	g.Expect(blueprintMeta.Namespace).To(gomega.Equal(blueprintNamespace))
 
 	// Simulate that blueprint changes state to Ready=true
-	dummyManager.DeployedBlueprints["thegreendragon"].Status.ObservedState.Ready = true
-	dummyManager.DeployedBlueprints["thegreendragon"].Status.ObservedState.DataAccessInstructions = "nop"
+	blueprint := dummyManager.DeployedBlueprints["thegreendragon"]
+	blueprint.Status.ObservedState.Ready = true
+	for instanceName := range blueprint.Spec.Modules {
+		if blueprint.Status.ModulesState == nil {
+			blueprint.Status.ModulesState = map[string]app.ObservedState{}
+		}
+		blueprint.Status.ModulesState[instanceName] = app.ObservedState{
+			Ready: true,
+		}
+	}
 
 	deployedBp := dummyManager.DeployedBlueprints["thegreendragon"]
 	g.Expect(deployedBp.Labels[app.ApplicationNamespaceLabel]).To(gomega.Equal("default"))
 	g.Expect(deployedBp.Labels[app.ApplicationNameLabel]).To(gomega.Equal("notebook"))
 	res, err = r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
+	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-b604d02277"].Chart.Name).To(gomega.Equal("ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0"))
+	// Check that the auth path of the credentials is set
+	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-b604d02277"].Arguments.Copy.Source.Vault[string(app.ReadFlow)].AuthPath).To(gomega.Equal("/v1/auth/kubernetes/login"))
+	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-b604d02277"].Arguments.Copy.Destination.Vault[string(app.WriteFlow)].AuthPath).To(gomega.Equal("/v1/auth/kubernetes/login"))
+	g.Expect(deployedBp.Spec.Modules["arrow-flight-read"].Arguments.Read[0].Source.Vault[string(app.ReadFlow)].AuthPath).To(gomega.Equal("/v1/auth/kubernetes/login"))
 
 	// Check the result of reconciliation to make sure it has the desired state.
 	g.Expect(res.Requeue).To(gomega.BeFalse(), "reconcile did not requeue request as expected")
@@ -115,5 +141,8 @@ func TestPlotterController(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Can fetch plotter")
 
 	g.Expect(plotter.Status.ObservedState.Ready).To(gomega.BeTrue(), "Plotter is ready")
-	g.Expect(plotter.Status.ObservedState.DataAccessInstructions).To(gomega.Equal("nop\n"), "Plotter is ready")
+	for _, assetState := range plotter.Status.Assets {
+		g.Expect(assetState.Ready).To(gomega.BeTrue(), "Asset is ready")
+	}
+	g.Expect(plotter.Status.Assets).To(gomega.HaveLen(1), "Plotter Asset status list contains one element")
 }
