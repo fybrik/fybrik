@@ -2,25 +2,17 @@ package dataapi.authz
 
 verdict[output] {
 	count(rule) == 0
-	output = {"action": {"name":"Deny", "Deny": {"Information": "Access is denied"}}, "policy": "Deny by default"}
+	output = {"action": {"name":"Deny", "Deny": {}}, "policy": "Deny by default"}
 }
 
 verdict[outputFormatted] {
 	count(rule) > 0
-	output.action.name == "Deny"	
-	output = rule[_]
-	outputFormatted := {"action": {"name":"Deny", "Deny": {"Information": "Access is denied"}}, "policy": output.policy}
-}
-
-verdict[outputFormatted] {
-	count(rule) > 0
-	output.action.name != "Deny"
 	output = rule[_]
 	actionName := output.action.name
 	actionWithoutName := json.remove(output.action, ["name"])
 	outputWithoutAction := json.remove(output, ["action"])
-	actionFormatted := {"name":actionName, output.action.name:actionWithoutName}
-	outputFormatted := object.union({"action":actionFormatted}, outputWithoutAction)
+	actionFormatted := {"name": actionName, output.action.name: actionWithoutName}
+	outputFormatted := object.union({"action": actionFormatted}, outputWithoutAction)
 }
 
 rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": description}] {
