@@ -7,7 +7,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"net"
+	"os"
+	"strings"
+	"testing"
+
 	apiv1alpha1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/pkg/test"
 	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/flight"
@@ -21,15 +28,8 @@ import (
 	"google.golang.org/grpc"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	"log"
-	"net"
-	"os"
-	"os/exec"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strconv"
-	"strings"
-	"testing"
 )
 
 type ArrowRequest struct {
@@ -149,15 +149,14 @@ func TestS3Notebook(t *testing.T) {
 	svcName := strings.Replace(application.Status.AssetStates["fybrik-notebook-sample/data-csv"].Endpoint.Hostname, ".fybrik-blueprints.svc.cluster.local", "", 1)
 	port := application.Status.AssetStates["fybrik-notebook-sample/data-csv"].Endpoint.Port
 
-	command := exec.Command("kubectl", "-n", BlueprintNamespace, "port-forward", "svc/"+svcName, "8083:"+strconv.Itoa(int(port)))
-	err = command.Start()
 	By("Starting kubectl port-forward for arrow-flight")
+	listenPort, err := test.RunPortForward(BlueprintNamespace, svcName, int(port))
 	Expect(err).To(BeNil())
 
 	// Reading data via arrow flight
 	opts := make([]grpc.DialOption, 0)
 	opts = append(opts, grpc.WithInsecure())
-	flightClient, err := flight.NewFlightClient(net.JoinHostPort("localhost", "8083"), nil, opts...)
+	flightClient, err := flight.NewFlightClient(net.JoinHostPort("localhost", listenPort), nil, opts...)
 	Expect(err).To(BeNil(), "Connect to arrow-flight service")
 	defer flightClient.Close()
 
@@ -172,7 +171,6 @@ func TestS3Notebook(t *testing.T) {
 		Type: flight.FlightDescriptor_CMD,
 		Cmd:  marshal,
 	})
-	// TODO Flight server access is currently not working
 	Expect(err).To(BeNil())
 
 	stream, err := flightClient.DoGet(context.Background(), info.Endpoint[0].Ticket)
