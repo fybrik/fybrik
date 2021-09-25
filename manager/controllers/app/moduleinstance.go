@@ -137,10 +137,10 @@ func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.
 	// Read policies for data that is processed in the workload geography
 	var readActions []*openapiclientmodels.ResultItem
 	var err error
-	reqAction := new(openapiclientmodels.PolicyManagerRequestAction)
+	reqAction := openapiclientmodels.PolicyManagerRequestAction{}
 	reqAction.SetActionType(openapiclientmodels.READ)
 	reqAction.SetDestination(m.WorkloadGeography)
-	readActions, err = LookupPolicyDecisions(item.Context.DataSetID, m.PolicyManager, appContext, reqAction)
+	readActions, err = LookupPolicyDecisions(item.Context.DataSetID, m.PolicyManager, appContext, &reqAction)
 	if err != nil {
 		return nil, err
 	}
@@ -412,11 +412,11 @@ func (m *ModuleManager) enforceWritePolicies(appContext *app.FybrikApplication, 
 	actions := []*openapiclientmodels.ResultItem{}
 	//	if the cluster selector is non-empty, the write will be done to the specified geography if possible
 	if m.WorkloadGeography != "" {
-		reqAction := new(openapiclientmodels.PolicyManagerRequestAction)
+		reqAction := openapiclientmodels.PolicyManagerRequestAction{}
 		reqAction.SetActionType(openapiclientmodels.WRITE)
 		reqAction.SetDestination(m.WorkloadGeography)
 		if actions, err = LookupPolicyDecisions(datasetID, m.PolicyManager, appContext,
-			reqAction); err == nil {
+			&reqAction); err == nil {
 			return actions, m.WorkloadGeography, nil
 		}
 	}

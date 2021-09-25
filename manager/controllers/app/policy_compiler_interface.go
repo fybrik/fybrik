@@ -23,15 +23,8 @@ func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operati
 	resource.SetName(datasetID)
 	req.SetResource(resource)
 
-	destination := operation.GetDestination()
-	action.SetDestination(destination)
-	operationType := operation.GetActionType()
-	if operationType == openapiclientmodels.READ {
-		action.SetActionType(openapiclientmodels.READ)
-	}
-	if operationType == openapiclientmodels.WRITE {
-		action.SetActionType(openapiclientmodels.WRITE)
-	}
+	action.SetDestination(operation.GetDestination())
+	action.SetActionType(operation.GetActionType())
 	action.SetProcessingLocation(operation.GetDestination())
 	req.SetAction(action)
 
