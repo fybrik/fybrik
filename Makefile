@@ -114,7 +114,8 @@ DOCKER_PUBLIC_NAMES := \
 	dummy-mover \
 	egr-connector \
 	katalog-connector \
-	opa-connector 
+	opa-connector \
+	openpolicyagent-connector
 
 define do-docker-retag-and-push-public
 	for name in ${DOCKER_PUBLIC_NAMES}; do \
