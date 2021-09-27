@@ -1,18 +1,24 @@
 {{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.catalog "katalog") }}
 {{- if include "fybrik.isEnabled" (tuple .Values.katalogConnector.enabled $autoFlag) }}
-{{- if .Values.clusterScoped }}
 # Grant katalog-connector the katalog-editor Role.
+{{- if .Values.clusterScoped }}
 kind: ClusterRoleBinding
+{{- else }}
+kind: RoleBinding
+{{- end }}
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name:  katalog-connector-editor
 roleRef:
+{{- if .Values.clusterScoped }}
   kind: ClusterRole
+{{- else }}
+  kind: Role
+{{- end }}
   name: katalog-editor
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
   name: {{ .Values.katalogConnector.serviceAccount.name | default "default" }}
   namespace: {{ .Release.Namespace }}
-{{- end }}
 {{- end }}
