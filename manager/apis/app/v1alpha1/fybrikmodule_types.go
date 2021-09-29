@@ -109,16 +109,12 @@ type ModuleAPI struct {
 	Endpoint EndpointSpec `json:"endpoint"`
 }
 
-// PluginMechanism indicates indicates the technology used for the module and the plugin to interact
-// The values supported should come from the module taxonomy
-// Ex: vault, wasm....
-type PluginMechanism string
-
 type Plugin struct {
 	// PluginType indicates the technology used for the module and the plugin to interact
+	// The values supported should come from the module taxonomy
 	// Examples of such mechanisms are vault plugins, wasm, etc
 	// +required
-	PluginType PluginMechanism `json:"pluginType"`
+	PluginType string `json:"pluginType"`
 
 	// DataFormat indicates the format of data the plugin knows how to process
 	DataFormat string `json:"dataFormat"`
