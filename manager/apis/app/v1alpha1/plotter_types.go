@@ -168,7 +168,7 @@ type ModuleInfo struct {
 	// Scope indicates at what level the capability is used: workload, asset, cluster
 	// If not indicated it is assumed to be asset
 	// +optional
-	Scope CapabilityScope `json:"scope"`
+	Scope CapabilityScope `json:"scope,omitempty"`
 
 	// API indicates to the application how to access the capabilities provided by the module
 	// TODO This is optinal but in ModuleAPI the endpoint is required?
