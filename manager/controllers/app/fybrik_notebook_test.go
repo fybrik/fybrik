@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	apiv1alpha1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/test"
 	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
@@ -145,12 +146,15 @@ func TestS3Notebook(t *testing.T) {
 		return application.Status.Ready
 	}, timeout, interval).Should(Equal(true))
 
+	blueprintNamespace := utils.GetBlueprintNamespace()
+	fmt.Printf("blueprint namespace notebook test: %s\n", blueprintNamespace)
+
 	// Forward port of arrow flight service to local port
-	svcName := strings.Replace(application.Status.AssetStates["fybrik-notebook-sample/data-csv"].Endpoint.Hostname, ".fybrik-blueprints.svc.cluster.local", "", 1)
+	svcName := strings.Replace(application.Status.AssetStates["fybrik-notebook-sample/data-csv"].Endpoint.Hostname, "."+blueprintNamespace+".svc.cluster.local", "", 1)
 	port := application.Status.AssetStates["fybrik-notebook-sample/data-csv"].Endpoint.Port
 
 	By("Starting kubectl port-forward for arrow-flight")
-	listenPort, err := test.RunPortForward(BlueprintNamespace, svcName, int(port))
+	listenPort, err := test.RunPortForward(blueprintNamespace, svcName, int(port))
 	Expect(err).To(BeNil())
 
 	// Reading data via arrow flight

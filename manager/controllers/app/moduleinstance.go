@@ -443,7 +443,8 @@ func moduleAPIToService(api *app.ModuleAPI, scope app.CapabilityScope, appContex
 		releaseName := utils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
 		// Current implementation assumes there is only one cluster with read modules
 		// (which is the same cluster the user's workload)
-		fqdn := utils.GenerateModuleEndpointFQDN(releaseName, BlueprintNamespace)
+		blueprintNamespace := utils.GetBlueprintNamespace()
+		fqdn := utils.GenerateModuleEndpointFQDN(releaseName, blueprintNamespace)
 		endpoint = app.EndpointSpec{
 			Hostname: fqdn,
 			Port:     api.Endpoint.Port,

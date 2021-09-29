@@ -38,9 +38,6 @@ type PlotterReconciler struct {
 	ClusterManager multicluster.ClusterManager
 }
 
-// BlueprintNamespace defines a namespace where blueprints and associated resources will be allocated
-const BlueprintNamespace = "fybrik-blueprints"
-
 // Reconcile receives a Plotter CRD
 //nolint:dupl
 func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
