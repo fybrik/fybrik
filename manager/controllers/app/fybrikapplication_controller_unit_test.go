@@ -5,6 +5,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"testing"
 	"time"
@@ -88,7 +89,9 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	readModule := &app.FybrikModule{}
 	copyModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	copyModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	readModule.Namespace = utils.GetControllerNamespace()
 
 	// Create modules in fake K8s agent
 	g.Expect(cl.Create(context.Background(), copyModule)).NotTo(gomega.HaveOccurred())
@@ -97,9 +100,11 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	// Create storage account
 	dummySecret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
+	dummySecret.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
 	account := &app.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	account.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
 	r := createTestFybrikApplicationController(cl, s)
@@ -123,18 +128,49 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	g.Expect(application.Status.Generated).NotTo(gomega.BeNil())
 
+	controllerNamespace := utils.GetControllerNamespace()
+	fmt.Printf("M4DApplication unit test: controller namespace " + controllerNamespace)
+
 	plotterObjectKey := types.NamespacedName{
-		Namespace: "fybrik-system",
+		Namespace: controllerNamespace,
 		Name:      "notebook-default",
 	}
 	plotter := &app.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	bpSpec := plotter.Spec.Blueprints["thegreendragon"]
-	g.Expect(bpSpec.Modules[0].Name).To(gomega.Equal("implicit-copy-batch"))
-	g.Expect(bpSpec.Modules[0].Arguments.Copy.Source.Format).To(gomega.Equal("csv"))
-	g.Expect(bpSpec.Modules[0].Arguments.Copy.Destination.Format).To(gomega.Equal("csv"))
-	g.Expect(bpSpec.Modules[0].Arguments.Copy.Destination.Format).To(gomega.Equal(bpSpec.Modules[1].Arguments.Read[0].Source.Format))
+	// Check that plotter assets have the expected properties
+	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(2)) // 2 assets should have been created. the original and the implicit from the copy
+	g.Expect(plotter.Spec.Assets).To(gomega.HaveKey("s3-csv/redact-dataset"))
+	g.Expect(plotter.Spec.Assets).To(gomega.HaveKey("s3-csv/redact-dataset-copy"))
+	dataStore := plotter.Spec.Assets["s3-csv/redact-dataset"].DataStore
+	dataStoreMap := dataStore.Connection.Data.(map[string]interface{})
+	g.Expect(dataStoreMap).To(gomega.HaveKey("s3"))
+	s3Config := dataStoreMap["s3"].(map[string]interface{})
+	g.Expect(s3Config["endpoint"]).To(gomega.Equal("s3.eu-gb.cloud-object-storage.appdomain.cloud"))
+	g.Expect(s3Config["bucket"]).To(gomega.Equal("fybrik-test-bucket"))
+	g.Expect(s3Config["object_key"]).To(gomega.Equal("small.csv"))
+
+	// Check templates
+	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2))
+	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(1))
+	flow := plotter.Spec.Flows[0]
+	g.Expect(flow.AssetID).To(gomega.Equal("s3-csv/redact-dataset"))
+	g.Expect(flow.FlowType).To(gomega.Equal(app.ReadFlow))
+	g.Expect(flow.SubFlows).To(gomega.HaveLen(2)) // Should have two subflows
+	copyFlow := flow.SubFlows[0]                  // Assume flow 0 is copy
+	g.Expect(copyFlow.FlowType).To(gomega.Equal(app.CopyFlow))
+	g.Expect(copyFlow.Triggers).To(gomega.ContainElements(app.InitTrigger))
+	readFlow := flow.SubFlows[1]
+	g.Expect(readFlow.FlowType).To(gomega.Equal(app.ReadFlow))
+	g.Expect(readFlow.Triggers).To(gomega.ContainElements(app.WorkloadTrigger))
+	g.Expect(readFlow.Steps[0][0].Cluster).To(gomega.Equal("thegreendragon"))
+	// Check statuses
+	g.Expect(application.Status.Ready).To(gomega.Equal(false))
+	assetState := application.Status.AssetStates[application.Spec.Data[0].DataSetID]
+	g.Expect(assetState.Endpoint).To(gomega.Not(gomega.BeNil()))
+	g.Expect(assetState.Endpoint.Port).To(gomega.Equal(int32(80)))
+	g.Expect(assetState.Endpoint.Hostname).To(gomega.Equal("read-path"))
+	g.Expect(assetState.Endpoint.Scheme).To(gomega.Equal("grpc"))
 }
 
 // This test checks proper reconciliation of FybrikApplication finalizers
@@ -256,6 +292,7 @@ func TestNoReadPath(t *testing.T) {
 	// Read module
 	readModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	readModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
@@ -319,9 +356,11 @@ func TestWrongCopyModule(t *testing.T) {
 	// Read module
 	readModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	readModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	copyModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	copyModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
@@ -377,9 +416,11 @@ func TestActionSupport(t *testing.T) {
 	// Read module
 	readModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	readModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	copyModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet-no-transforms.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	copyModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
@@ -448,16 +489,20 @@ func TestMultipleDatasets(t *testing.T) {
 	// Read module
 	readModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	readModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	copyModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	copyModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create storage account
 	dummySecret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
+	dummySecret.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
 	account := &app.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	account.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -484,19 +529,15 @@ func TestMultipleDatasets(t *testing.T) {
 	plotter := &app.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Expect(len(plotter.Spec.Blueprints)).To(gomega.Equal(1), "A single blueprint should be created")
-	// Check the generated blueprint
-	// There should be a single read module with two datasets
-	blueprint := plotter.Spec.Blueprints["thegreendragon"]
-	g.Expect(blueprint).NotTo(gomega.BeNil())
-	numReads := 0
-	for _, module := range blueprint.Modules {
-		if len(module.Arguments.Read) > 0 {
-			numReads++
-			g.Expect(len(module.Arguments.Read)).To(gomega.Equal(2), "A read module should support both datasets")
-		}
-	}
-	g.Expect(numReads).To(gomega.Equal(1), "A single read module should be instantiated")
+	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(3))    // 3 assets. 2 original and one implicit copy asset
+	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2)) // expect two templates
+	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(2))     // two flows. one for each valid asset
+	g.Expect(plotter.Spec.Flows[0].AssetID).To(gomega.Equal("s3/allow-dataset"))
+	g.Expect(plotter.Spec.Flows[1].AssetID).To(gomega.Equal("db2/redact-dataset"))
+	g.Expect(plotter.Spec.Flows[0].SubFlows).To(gomega.HaveLen(1))
+	g.Expect(plotter.Spec.Flows[1].SubFlows).To(gomega.HaveLen(2))
+	g.Expect(plotter.Spec.Templates).To(gomega.HaveKey("copy"))
+	g.Expect(plotter.Spec.Templates).To(gomega.HaveKey("read"))
 }
 
 // This test checks that a non-supported data store does not prevent a plotter from being created
@@ -542,6 +583,7 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 	// Read module
 	readModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	readModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
@@ -554,6 +596,7 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+
 	// check Deny states
 	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 	g.Expect(application.Status.AssetStates["local/redact-dataset"].Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
@@ -595,16 +638,20 @@ func TestMultipleRegions(t *testing.T) {
 	// Read module
 	readModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	readModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	copyModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-csv-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	copyModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create storage account
 	dummySecret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
+	dummySecret.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
 	account := &app.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	account.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -629,7 +676,15 @@ func TestMultipleRegions(t *testing.T) {
 	plotter := &app.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Expect(len(plotter.Spec.Blueprints)).To(gomega.Equal(2))
+	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(1))
+	subflow0 := plotter.Spec.Flows[0].SubFlows[0]
+	subflow1 := plotter.Spec.Flows[0].SubFlows[1]
+	g.Expect(subflow0.Steps).To(gomega.HaveLen(1))
+	g.Expect(subflow0.Steps[0]).To(gomega.HaveLen(1))
+	g.Expect(subflow0.Steps[0][0].Cluster).To(gomega.Equal("neverland-cluster"))
+	g.Expect(subflow1.Steps).To(gomega.HaveLen(1))
+	g.Expect(subflow1.Steps[0]).To(gomega.HaveLen(1))
+	g.Expect(subflow1.Steps[0][0].Cluster).To(gomega.Equal("thegreendragon"))
 }
 
 // This test checks the ingest scenario - copy is required, no workload specified.
@@ -662,19 +717,24 @@ func TestCopyData(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	copyModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	copyModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create storage accounts
 	secret1 := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-neverland.yaml", secret1)).NotTo(gomega.HaveOccurred())
+	secret1.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), secret1)).NotTo(gomega.HaveOccurred())
 	account1 := &app.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
+	account1.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account1)).NotTo(gomega.HaveOccurred())
 	secret2 := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", secret2)).NotTo(gomega.HaveOccurred())
+	secret2.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), secret2)).NotTo(gomega.HaveOccurred())
 	account2 := &app.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
+	account2.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account2)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -700,11 +760,18 @@ func TestCopyData(t *testing.T) {
 	plotter := &app.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
+
 	// There should be a single copy module
-	g.Expect(len(plotter.Spec.Blueprints)).To(gomega.Equal(1))
-	blueprint := plotter.Spec.Blueprints["thegreendragon"]
-	g.Expect(blueprint).NotTo(gomega.BeNil())
-	g.Expect(len(blueprint.Modules)).To(gomega.Equal(1))
+	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(2)) // two assets. original + copy
+	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(1))
+	g.Expect(plotter.Spec.Flows[0].SubFlows).To(gomega.HaveLen(1))
+	subflow := plotter.Spec.Flows[0].SubFlows[0]
+	g.Expect(subflow.Triggers).To(gomega.ContainElements(app.InitTrigger))
+	g.Expect(subflow.FlowType).To(gomega.Equal(app.CopyFlow))
+	g.Expect(subflow.Steps).To(gomega.HaveLen(1))
+	g.Expect(subflow.Steps[0]).To(gomega.HaveLen(1))
+	g.Expect(subflow.Steps[0][0].Parameters.Source.AssetID).To(gomega.Equal("s3-external/allow-theshire"))
+	g.Expect(subflow.Steps[0][0].Parameters.Sink.AssetID).To(gomega.Equal("s3-external/allow-theshire-copy"))
 }
 
 // This test checks the ingest scenario
@@ -738,14 +805,17 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	copyModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	copyModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 
 	// Create storage account
 	dummySecret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
+	dummySecret.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), dummySecret)).NotTo(gomega.HaveOccurred())
 	account := &app.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	account.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), account)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -798,6 +868,7 @@ func TestPlotterUpdate(t *testing.T) {
 	// Read module
 	readModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	readModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -862,7 +933,9 @@ func TestSyncWithPlotter(t *testing.T) {
 	// imitate a ready phase for the earlier generation
 	application.SetGeneration(2)
 	application.Finalizers = []string{"TestReconciler.finalizer"}
-	application.Status.Generated = &app.ResourceReference{Name: "plotter", Namespace: "fybrik-system", Kind: "Plotter", AppVersion: 1}
+	controllerNamespace := utils.GetControllerNamespace()
+	fmt.Printf("FybrikApplication unit test: controller namespace " + controllerNamespace)
+	application.Status.Generated = &app.ResourceReference{Name: "plotter", Namespace: controllerNamespace, Kind: "Plotter", AppVersion: 1}
 	application.Status.Ready = true
 	application.Status.ObservedGeneration = 1
 
@@ -880,6 +953,7 @@ func TestSyncWithPlotter(t *testing.T) {
 	plotter := &app.Plotter{}
 	g.Expect(readObjectFromFile("../../testdata/plotter.yaml", plotter)).NotTo(gomega.HaveOccurred())
 	plotter.Status.ObservedState.Ready = true
+	plotter.Namespace = controllerNamespace
 	g.Expect(cl.Create(context.Background(), plotter)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.

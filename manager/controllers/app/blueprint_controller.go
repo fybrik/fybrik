@@ -6,11 +6,12 @@ package app
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/pkg/environment"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"strings"
-	"time"
 
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
@@ -207,6 +208,15 @@ func SetMapField(obj map[string]interface{}, k string, v interface{}) bool {
 	return true
 }
 
+// updateModuleState updates the module state
+func (r *BlueprintReconciler) updateModuleState(blueprint *app.Blueprint, instanceName string, isReady bool, err string) {
+	state := app.ObservedState{
+		Ready: isReady,
+		Error: err,
+	}
+	blueprint.Status.ModulesState[instanceName] = state
+}
+
 func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, blueprint *app.Blueprint) (ctrl.Result, error) {
 	// Gather all templates and process them into a list of resources to apply
 	// force-update if the blueprint spec is different
@@ -215,21 +225,23 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 	// reset blueprint state
 	blueprint.Status.ObservedState.Ready = false
 	blueprint.Status.ObservedState.Error = ""
-	blueprint.Status.ObservedState.DataAccessInstructions = ""
 	if blueprint.Status.Releases == nil {
 		blueprint.Status.Releases = map[string]int64{}
 	}
-
+	if blueprint.Status.ModulesState == nil {
+		blueprint.Status.ModulesState = make(map[string]app.ObservedState)
+	}
 	// count the overall number of Helm releases and how many of them are ready
 	numReleases, numReady := 0, 0
-	for _, module := range blueprint.Spec.Modules {
+	for instanceName, module := range blueprint.Spec.Modules {
 		// Get arguments by type
 		var args map[string]interface{}
 		args, err := utils.StructToMap(module.Arguments)
 		if err != nil {
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
-		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], module)
+
+		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], instanceName)
 		log.V(0).Info("Release name: " + releaseName)
 		numReleases++
 		// check the release status
@@ -240,15 +252,17 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 			chart := module.Chart
 			if _, err := r.applyChartResource(log, chart, args, blueprint, releaseName); err != nil {
 				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
+				r.updateModuleState(blueprint, instanceName, false, err.Error())
+			} else {
+				r.updateModuleState(blueprint, instanceName, false, "")
 			}
 		} else if rel.Info.Status == release.StatusDeployed {
-			if len(module.Arguments.Read) > 0 {
-				blueprint.Status.ObservedState.DataAccessInstructions += rel.Info.Notes
-			}
 			status, errMsg := r.checkReleaseStatus(releaseName, blueprint.Namespace)
 			if status == corev1.ConditionFalse {
 				blueprint.Status.ObservedState.Error += "ResourceAllocationFailure: " + errMsg + "\n"
+				r.updateModuleState(blueprint, instanceName, false, errMsg)
 			} else if status == corev1.ConditionTrue {
+				r.updateModuleState(blueprint, instanceName, true, "")
 				numReady++
 			}
 		}
@@ -295,12 +309,16 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// 'UpdateFunc' and 'CreateFunc' used to judge if the event came from within the blueprint's namespace.
 	// If that is true, the event will be processed by the reconciler.
 	// If it's not then it is a rogue event created by someone outside of the control plane.
+
+	blueprintNamespace := utils.GetBlueprintNamespace()
+	r.Log.Info("blueprint namespace: " + blueprintNamespace)
+
 	p := predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
-			return e.Object.GetNamespace() == BlueprintNamespace
+			return e.Object.GetNamespace() == blueprintNamespace
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			return e.ObjectOld.GetNamespace() == BlueprintNamespace
+			return e.ObjectOld.GetNamespace() == blueprintNamespace
 		},
 	}
 

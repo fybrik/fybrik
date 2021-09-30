@@ -86,10 +86,6 @@ type BlueprintModule struct {
 	// +required
 	Name string `json:"name"`
 
-	// InstanceName is the unique name for the deployed instance related to this workload
-	// +required
-	InstanceName string `json:"instanceName"`
-
 	// Chart contains the location of the helm chart with info detailing how to deploy
 	// +required
 	Chart ChartSpec `json:"chart"`
@@ -100,6 +96,7 @@ type BlueprintModule struct {
 
 	// assetIDs indicate the assets processed by this module.  Included so we can track asset status
 	// as well as module status in the future.
+	// +optional
 	AssetIDs []string `json:"assetIds,omitempty"`
 }
 
@@ -111,9 +108,10 @@ type BlueprintSpec struct {
 	// +required
 	Cluster string `json:"cluster"`
 
-	// Modules is a list of modules that indicate the data path components that run in this cluster
+	// Modules is a map which contains modules that indicate the data path components that run in this cluster
+	// The map key is InstanceName which is the unique name for the deployed instance related to this workload
 	// +required
-	Modules []BlueprintModule `json:"modules"`
+	Modules map[string]BlueprintModule `json:"modules"`
 }
 
 // BlueprintStatus defines the observed state of Blueprint
@@ -129,6 +127,11 @@ type BlueprintStatus struct {
 	// whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+
+	// ModulesState is a map which holds the status of each module
+	// its key is the instance name which is the unique name for the deployed instance related to this workload
+	// +required
+	ModulesState map[string]ObservedState `json:"modules"`
 
 	// Releases map each release to the observed generation of the blueprint containing this release.
 	// At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.
@@ -191,7 +194,9 @@ func CreateMetaBlueprintWithoutState(blueprint *Blueprint) MetaBlueprint {
 	metaBlueprint := MetaBlueprint{
 		Name:      blueprint.GetName(),
 		Namespace: blueprint.GetNamespace(),
-		Status:    BlueprintStatus{},
+		Status: BlueprintStatus{
+			ModulesState: map[string]ObservedState{},
+		},
 	}
 	return metaBlueprint
 }

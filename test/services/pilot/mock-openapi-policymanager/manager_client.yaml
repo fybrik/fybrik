@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: manager-client
-        image: manager-client:latest
+        image: manager-client:dev
         imagePullPolicy: Always
         ports:
         - name: manager-client

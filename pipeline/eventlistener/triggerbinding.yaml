@@ -12,6 +12,8 @@ spec:
       value: $(body.spec.params[?(@.name=='docker-hostname')].value)
     - name: docker-namespace
       value: $(body.spec.params[?(@.name=='docker-namespace')].value)
+    - name: blueprintNamespace
+      value: $(body.spec.params[?(@.name=='blueprintNamespace')].value)
     - name: NAMESPACE
       value: $(body.metadata.namespace)
     - name: IMAGE_ID
@@ -31,6 +33,8 @@ spec:
       value: $(body.spec.params[?(@.name=='docker-hostname')].value)
     - name: docker-namespace
       value: $(body.spec.params[?(@.name=='docker-namespace')].value)
+    - name: blueprintNamespace
+      value: $(body.spec.params[?(@.name=='blueprintNamespace')].value)
     - name: NAMESPACE
       value: $(body.metadata.namespace)
     - name: event-type

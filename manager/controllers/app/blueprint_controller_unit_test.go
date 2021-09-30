@@ -5,6 +5,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -38,12 +39,16 @@ func readBlueprint(f string) (*app.Blueprint, error) {
 }
 
 func TestBlueprintReconcile(t *testing.T) {
+	blueprintNamespace := utils.GetBlueprintNamespace()
+	fmt.Printf("Blueprint controller unit test: Using blueprint namespace: %s\n", blueprintNamespace)
+
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	blueprint, err := readBlueprint("../../testdata/blueprint.yaml")
 	g.Expect(err).To(gomega.BeNil(), "Cannot read blueprint file for test")
+	blueprint.Namespace = blueprintNamespace
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
@@ -78,19 +83,18 @@ func TestBlueprintReconcile(t *testing.T) {
 	g.Expect(res.Requeue).To(gomega.BeFalse(), "reconcile did not requeue request as expected")
 	g.Expect(cl.Get(context.TODO(), ns, blueprint)).To(gomega.BeNil(), "could not fetch the blueprint")
 	g.Expect(blueprint.Status.Releases).To(gomega.HaveLen(2))
-	g.Expect(blueprint.Status.Releases).Should(gomega.HaveKeyWithValue("notebook-default-notebook-copy-batch-instance1", blueprint.Status.ObservedGeneration))
-	g.Expect(blueprint.Status.Releases).Should(gomega.HaveKeyWithValue("notebook-default-notebook-read-module-instance1", blueprint.Status.ObservedGeneration))
+	g.Expect(blueprint.Status.Releases).Should(gomega.HaveKeyWithValue("notebook-default-notebook-copy-batch", blueprint.Status.ObservedGeneration))
+	g.Expect(blueprint.Status.Releases).Should(gomega.HaveKeyWithValue("notebook-default-notebook-read-module", blueprint.Status.ObservedGeneration))
 }
 
 // This test checks that a short release name is not truncated
 func TestShortReleaseName(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
-	modules := []app.BlueprintModule{{
-		Name:         "dataFlow",
-		InstanceName: "dataFlowInstance1",
-		Chart:        app.ChartSpec{Name: "thechart"},
-		Arguments:    app.ModuleArguments{},
+	modules := map[string]app.BlueprintModule{"dataFlowInstance1": {
+		Name:      "dataFlow",
+		Chart:     app.ChartSpec{Name: "thechart"},
+		Arguments: app.ModuleArguments{},
 	}}
 
 	blueprint := app.Blueprint{
@@ -106,7 +110,7 @@ func TestShortReleaseName(t *testing.T) {
 			Modules: modules,
 		},
 	}
-	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Modules[0])
+	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], "dataFlowInstance1")
 	g.Expect(relName).To(gomega.Equal("my-app-default-dataFlowInstance1"))
 }
 
@@ -124,16 +128,16 @@ func TestLongReleaseName(t *testing.T) {
 		},
 		Spec: app.BlueprintSpec{
 			Cluster: "cluster1",
-			Modules: []app.BlueprintModule{{Name: "longname", InstanceName: "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff", Chart: app.ChartSpec{Name: "start-image"}}},
+			Modules: map[string]app.BlueprintModule{"ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff": {Name: "longname", Chart: app.ChartSpec{Name: "start-image"}}},
 		},
 	}
 
-	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Modules[0])
+	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff")
 	g.Expect(relName).To(gomega.Equal("my-app-default-ohandnottoforgettheflowstepnamet-a7569"))
 	g.Expect(relName).To(gomega.HaveLen(53))
 
 	// Make sure that calling the same method again results in the same result
-	relName2 := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], blueprint.Spec.Modules[0])
+	relName2 := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff")
 	g.Expect(relName2).To(gomega.Equal("my-app-default-ohandnottoforgettheflowstepnamet-a7569"))
 	g.Expect(relName2).To(gomega.HaveLen(53))
 }

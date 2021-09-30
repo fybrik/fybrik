@@ -19,7 +19,7 @@ const (
 	// Workload indicates that the capability is available for all assets in the workload or is independent of assets
 	Workload CapabilityScope = "workload"
 
-	// Cluster indicates that a capability is available across workloads - i.e. across m4dapplication instances
+	// Cluster indicates that a capability is available across workloads - i.e. across Fybrikapplication instances
 	Cluster CapabilityScope = "cluster"
 )
 
@@ -109,16 +109,12 @@ type ModuleAPI struct {
 	Endpoint EndpointSpec `json:"endpoint"`
 }
 
-// PluginMechanism indicates indicates the technology used for the module and the plugin to interact
-// The values supported should come from the module taxonomy
-// Ex: vault, wasm....
-type PluginMechanism string
-
 type Plugin struct {
 	// PluginType indicates the technology used for the module and the plugin to interact
+	// The values supported should come from the module taxonomy
 	// Examples of such mechanisms are vault plugins, wasm, etc
 	// +required
-	PluginType PluginMechanism `json:"pluginType"`
+	PluginType string `json:"pluginType"`
 
 	// DataFormat indicates the format of data the plugin knows how to process
 	DataFormat string `json:"dataFormat"`
@@ -134,16 +130,17 @@ type ModuleCapability struct {
 	// Scope indicates at what level the capability is used: workload, asset, cluster
 	// If not indicated it is assumed to be asset
 	// +optional
-	Scope CapabilityScope `json:"scope"`
+	Scope CapabilityScope `json:"scope,omitempty"`
 
 	// Copy should have one or more instances in the list, and its content should have source and sink
 	// Read should have one or more instances in the list, each with source populated
 	// Write should have one or more instances in the list, each with sink populated
 	// This field may not be required if not handling data
 	// +optional
-	SupportedInterfaces []ModuleInOut `json:"supportedInterfaces"`
+	SupportedInterfaces []ModuleInOut `json:"supportedInterfaces,omitempty"`
 
 	// API indicates to the application how to access the capabilities provided by the module
+	// TODO This is optional but in ModuleAPI the endpoint is required?
 	// +optional
 	API *ModuleAPI `json:"api,omitempty"`
 
@@ -170,7 +167,7 @@ type ResourceStatusIndicator struct {
 	// FailureCondition specifies a condition that indicates the resource failure
 	// It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
 	// +optional
-	FailureCondition string `json:"failureCondition"`
+	FailureCondition string `json:"failureCondition,omitempty"`
 
 	// ErrorMessage specifies the resource field to check for an error, e.g. status.errorMsg
 	// +optional
@@ -183,7 +180,7 @@ type ResourceStatusIndicator struct {
 type FybrikModuleSpec struct {
 	// An explanation of what this module does
 	// +optional
-	Description string `json:"description"`
+	Description string `json:"description,omitempty"`
 
 	// May be one of service, config or plugin
 	// Service: Means that the control plane deploys the component that performs the capability
@@ -196,7 +193,7 @@ type FybrikModuleSpec struct {
 	// Ex: vault, fybrik-wasm...
 	// Should be provided if type is plugin
 	// +optional
-	PluginType string `json:"pluginType"`
+	PluginType string `json:"pluginType,omitempty"`
 
 	// Other components that must be installed in order for this module to work
 	// +optional

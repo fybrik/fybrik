@@ -19,6 +19,7 @@ noFinalizer: "true"
 # copies from source
 copy:
   source:
+    vault: {}
     connection:
       s3: {}
 #        endpoint: ""
@@ -29,6 +30,7 @@ copy:
 
   # copies to destination
   destination:
+    vault: {}
     connection:
       s3: {}
 #        endpoint: ""

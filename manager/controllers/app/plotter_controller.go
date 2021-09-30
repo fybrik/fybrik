@@ -5,17 +5,21 @@ package app
 
 import (
 	"context"
-	"fybrik.io/fybrik/manager/controllers"
-	"fybrik.io/fybrik/pkg/environment"
 	"math"
 	"reflect"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"strings"
 	"time"
 
+	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/environment"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/app/modules"
 	"fybrik.io/fybrik/pkg/multicluster"
+	"fybrik.io/fybrik/pkg/serde"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,9 +37,6 @@ type PlotterReconciler struct {
 	Scheme         *runtime.Scheme
 	ClusterManager multicluster.ClusterManager
 }
-
-// BlueprintNamespace defines a namespace where blueprints and associated resources will be allocated
-const BlueprintNamespace = "fybrik-blueprints"
 
 // Reconcile receives a Plotter CRD
 //nolint:dupl
@@ -120,17 +121,219 @@ func (r *PlotterReconciler) reconcileFinalizers(plotter *app.Plotter) error {
 	return nil
 }
 
+// PlotterModulesSpec consists of module details extracted from the Plotter structure
+type PlotterModulesSpec struct {
+	ClusterName     string
+	VaultAuthPath   string
+	AssetID         string
+	ModuleName      string
+	ModuleArguments *app.StepParameters
+	FlowType        app.DataFlow
+	Chart           app.ChartSpec
+	Scope           app.CapabilityScope
+}
+
+// convertPlotterModuleToBlueprintModule converts an object of type PlotterModulesSpec to type modules.ModuleInstanceSpec
+func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.Plotter, plotterModule PlotterModulesSpec) *modules.ModuleInstanceSpec {
+	assetIDs := []string{plotterModule.AssetID}
+	blueprintModule := &modules.ModuleInstanceSpec{
+		Chart:    &plotterModule.Chart,
+		AssetIDs: assetIDs,
+		Args: &app.ModuleArguments{
+			Copy:  nil,
+			Read:  nil,
+			Write: nil,
+		},
+		ClusterName: plotterModule.ClusterName,
+		ModuleName:  plotterModule.ModuleName,
+		Scope:       plotterModule.Scope,
+	}
+
+	if plotterModule.ModuleArguments == nil {
+		return blueprintModule
+	}
+
+	switch plotterModule.FlowType {
+	case app.ReadFlow:
+		var dataStore *app.DataStore
+		if plotterModule.ModuleArguments.Source.AssetID != "" {
+			assetID := plotterModule.ModuleArguments.Source.AssetID
+			// Get source from plotter assetID list
+			assetInfo := plotter.Spec.Assets[assetID]
+			dataStore = &assetInfo.DataStore
+			// Update vaultAuthPath from the cluster metadata
+			vaultCreds := dataStore.Vault[string(app.ReadFlow)]
+			vaultCreds.AuthPath = plotterModule.VaultAuthPath
+			dataStore.Vault[string(app.ReadFlow)] = vaultCreds
+		} else {
+			// Fill in the DataSource from the step arguments
+			dataStore = &app.DataStore{
+				Connection: serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
+				Format:     plotterModule.ModuleArguments.Source.API.Format,
+			}
+		}
+		blueprintModule.Args.Read = []app.ReadModuleArgs{
+			{
+				Source:          *dataStore,
+				AssetID:         plotterModule.AssetID,
+				Transformations: plotterModule.ModuleArguments.Actions,
+			},
+		}
+	case app.WriteFlow:
+		blueprintModule.Args.Write = []app.WriteModuleArgs{
+			{
+				Destination:     plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore,
+				AssetID:         plotterModule.AssetID,
+				Transformations: plotterModule.ModuleArguments.Actions,
+			},
+		}
+	case app.CopyFlow:
+		var dataStore *app.DataStore
+		if plotterModule.ModuleArguments.Source.AssetID != "" {
+			assetID := plotterModule.ModuleArguments.Source.AssetID
+			// Get source from plotter assetID list
+			assetInfo := plotter.Spec.Assets[assetID]
+
+			dataStore = &assetInfo.DataStore
+			// Update vaultAuthPath from the cluster metadata
+			vaultCreds := dataStore.Vault[string(app.ReadFlow)]
+			vaultCreds.AuthPath = plotterModule.VaultAuthPath
+			dataStore.Vault[string(app.ReadFlow)] = vaultCreds
+		} else {
+			// Fill in the DataSource from the step arguments
+			dataStore = &app.DataStore{
+				Connection: serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
+				Format:     plotterModule.ModuleArguments.Source.API.Format,
+			}
+		}
+		// Update vaultAuthPath from the cluster metadata
+		destDataStore := plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore
+		vaultCreds := destDataStore.Vault[string(app.WriteFlow)]
+		vaultCreds.AuthPath = plotterModule.VaultAuthPath
+		destDataStore.Vault[string(app.WriteFlow)] = vaultCreds
+		blueprintModule.Args.Copy =
+			&app.CopyModuleArgs{
+				Source:          *dataStore,
+				Destination:     destDataStore,
+				AssetID:         plotterModule.AssetID,
+				Transformations: plotterModule.ModuleArguments.Actions,
+			}
+	}
+	return blueprintModule
+}
+
+// getBlueprintsMap constructs a map of blueprints driven by the plotter structure.
+// The key is the cluster name.
+func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]app.BlueprintSpec {
+	r.Log.V(1).Info("Constructing Blueprints from Plotter")
+	moduleInstances := make([]modules.ModuleInstanceSpec, 0)
+
+	clusters, _ := r.ClusterManager.GetClusters()
+
+	for _, flow := range plotter.Spec.Flows {
+		for _, subFlow := range flow.SubFlows {
+			for _, subFlowStep := range subFlow.Steps {
+				for _, seqStep := range subFlowStep {
+					stepTemplate := plotter.Spec.Templates[seqStep.Template]
+					// isPrimaryModule := true
+					for _, module := range stepTemplate.Modules {
+						moduleArgs := seqStep.Parameters
+
+						// If the module type is "plugin" then it is assumed
+						// that there is a primary module of type "config" or "service"
+						// in the same template and all the module arguments are used only by
+						// the primary module
+						if module.Type == "plugin" {
+							moduleArgs = nil
+						}
+						scope := module.Scope
+						clusterName := seqStep.Cluster
+						var authPath string
+						for _, cluster := range clusters {
+							if clusterName == cluster.Name {
+								authPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
+								break
+							}
+						}
+						plotterModule := PlotterModulesSpec{
+							ModuleArguments: moduleArgs,
+							AssetID:         flow.AssetID,
+							FlowType:        subFlow.FlowType,
+							ClusterName:     clusterName,
+							Chart:           module.Chart,
+							ModuleName:      module.Name,
+							Scope:           scope,
+							VaultAuthPath:   authPath,
+						}
+
+						blueprintModule := r.convertPlotterModuleToBlueprintModule(plotter, plotterModule)
+						// append the module to the modules list
+						moduleInstances = append(moduleInstances, *blueprintModule)
+					}
+				}
+			}
+		}
+	}
+	blueprints := r.GenerateBlueprints(moduleInstances)
+
+	return blueprints
+}
+
+// updatePlotterAssetsState updates the status of the assets processed by the blueprint modules.
+func (r *PlotterReconciler) updatePlotterAssetsState(assetToStatusMap map[string]app.ObservedState, blueprint *app.Blueprint) {
+	for instanceName, moduleState := range blueprint.Status.ModulesState {
+		for _, assetID := range blueprint.Spec.Modules[instanceName].AssetIDs {
+			state, exists := assetToStatusMap[assetID]
+			errMsg := moduleState.Error
+			if exists {
+				errMsg = state.Error + "\n" + errMsg
+			}
+			if !exists {
+				assetToStatusMap[assetID] = moduleState
+				// if the current module is not ready then update all its assets
+				// to not ready state regardless of the assets state
+			} else if !moduleState.Ready {
+				assetToStatusMap[assetID] = app.ObservedState{
+					Ready: false,
+					Error: errMsg,
+				}
+			}
+		}
+	}
+}
+
+// setPlotterAssetsReadyStateToFalse sets to false the status of the assets processed by the blueprint modules.
+func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap map[string]app.ObservedState, blueprintSpec *app.BlueprintSpec, errMsg string) {
+	for _, module := range blueprintSpec.Modules {
+		for _, assetID := range module.AssetIDs {
+			var err = errMsg
+			assetToStatusMap[assetID] = app.ObservedState{
+				Ready: false,
+				Error: err,
+			}
+		}
+	}
+}
+
 func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []error) {
 	if plotter.Status.Blueprints == nil {
 		plotter.Status.Blueprints = make(map[string]app.MetaBlueprint)
 	}
 
+	// Reset Assets state
+	assetToStatusMap := make(map[string]app.ObservedState)
 	plotter.Status.ObservedState.Error = "" // Reset error state
 	// Reconciliation loop per cluster
 	isReady := true
 
+	blueprintNamespace := utils.GetBlueprintNamespace()
+	r.Log.Info("Using blueprint namespace: " + blueprintNamespace)
+
+	blueprintsMap := r.getBlueprintsMap(plotter)
+
 	var errorCollection []error
-	for cluster, blueprintSpec := range plotter.Spec.Blueprints {
+	for cluster := range blueprintsMap {
+		blueprintSpec := blueprintsMap[cluster]
 		r.Log.V(1).Info("Handling spec for cluster " + cluster)
 		if blueprint, exists := plotter.Status.Blueprints[cluster]; exists {
 			r.Log.V(2).Info("Found status for cluster " + cluster)
@@ -139,13 +342,20 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			if err != nil {
 				r.Log.Error(err, "Could not fetch blueprint", "name", blueprint.Name)
 				errorCollection = append(errorCollection, err)
-				isReady = false
-				continue
+
+				// The following does a simple exponential backoff with a minimum of 5 seconds
+				// and a maximum of 60 seconds until the next reconcile
+				now := metav1.NewTime(time.Now())
+				elapsedTime := time.Since(now.Time)
+				backoffFactor := int(math.Min(math.Exp2(elapsedTime.Minutes()), 60.0))
+				requeueAfter := time.Duration(4+backoffFactor) * time.Second
+				return ctrl.Result{RequeueAfter: requeueAfter}, errorCollection
 			}
 
 			if remoteBlueprint == nil {
 				r.Log.Info("Could not yet find remote blueprint")
 				isReady = false
+				r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, "Could not yet find remote blueprint")
 				continue // Continue with next blueprint
 			}
 
@@ -164,16 +374,19 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 						r.Log.Error(err, "Could not update blueprint", "newSpec", blueprintSpec)
 						errorCollection = append(errorCollection, err)
 						isReady = false
+						r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, err.Error())
 						continue
 					}
 					// Update meta blueprint without state as changes occur
 					plotter.Status.Blueprints[cluster] = app.CreateMetaBlueprintWithoutState(remoteBlueprint)
 					// Plotter cannot be ready if changes were just applied
 					isReady = false
+					r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, "Blueprint changes just applied")
 					continue // Continue with next blueprint
 				}
 				r.Log.V(1).Info("Not updating blueprint as generation did not change")
 				isReady = false
+				r.updatePlotterAssetsState(assetToStatusMap, remoteBlueprint)
 				continue
 			}
 
@@ -189,6 +402,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			if remoteBlueprint.Status.ObservedState.Error != "" {
 				plotter.Status.ObservedState.Error = remoteBlueprint.Status.ObservedState.Error
 			}
+			r.updatePlotterAssetsState(assetToStatusMap, remoteBlueprint)
 		} else {
 			r.Log.V(2).Info("Found no status for cluster " + cluster)
 			blueprint := &app.Blueprint{
@@ -198,7 +412,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        plotter.Name,
-					Namespace:   BlueprintNamespace,
+					Namespace:   blueprintNamespace,
 					ClusterName: cluster,
 					Labels: map[string]string{
 						"razee/watch-resource":        "debug",
@@ -213,18 +427,20 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			if err != nil {
 				errorCollection = append(errorCollection, err)
 				r.Log.Error(err, "Could not create blueprint for cluster", "cluster", cluster)
+				r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, err.Error())
 				continue
 			}
 
 			plotter.Status.Blueprints[cluster] = app.CreateMetaBlueprintWithoutState(blueprint)
 			isReady = false
+			r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, "Blueprint just created")
 		}
 	}
 
 	// Tidy up blueprints that have been deployed but are not in the spec any more
 	// E.g. after a plotter has been updated
 	for cluster, remoteBlueprint := range plotter.Status.Blueprints {
-		if _, exists := plotter.Spec.Blueprints[cluster]; !exists {
+		if _, exists := blueprintsMap[cluster]; !exists {
 			err := r.ClusterManager.DeleteBlueprint(cluster, remoteBlueprint.Namespace, remoteBlueprint.Name)
 			if err != nil {
 				if !strings.HasPrefix(err.Error(), "Query channelByName error. Could not find the channel with name") {
@@ -245,20 +461,13 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	// Update observed generation
 	plotter.Status.ObservedGeneration = plotter.ObjectMeta.Generation
 	plotter.Status.ObservedState.Ready = isReady
+	plotter.Status.Assets = assetToStatusMap
 
 	if isReady {
 		if plotter.Status.ReadyTimestamp == nil {
 			now := metav1.NewTime(time.Now())
 			plotter.Status.ReadyTimestamp = &now
 		}
-
-		aggregatedInstructions := ""
-		for _, blueprint := range plotter.Status.Blueprints {
-			if len(blueprint.Status.ObservedState.DataAccessInstructions) > 0 {
-				aggregatedInstructions = aggregatedInstructions + blueprint.Status.ObservedState.DataAccessInstructions + "\n"
-			}
-		}
-		plotter.Status.ObservedState.DataAccessInstructions = aggregatedInstructions
 
 		if errorCollection == nil {
 			r.Log.V(2).Info("Plotter is ready!", "plotter", plotter.Name)
