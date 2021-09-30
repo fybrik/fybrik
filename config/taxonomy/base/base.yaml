@@ -42,25 +42,6 @@ definitions:
       sink:
         $ref: "#/definitions/Interface"
   Capability:
-    properties:
-      capability:
-        enum: [copy, write, read, transform]
-      supportedInterfaces:
-        type: array
-        items:
-          type: object
-          oneOf:
-            - $ref: "#/definitions/Source"
-            - $ref: "#/definitions/Sink"
-      api:
-        type: object
-        properties:
-          interfaceDetails:
-            $ref: "#/definitions/Interface"
-      actions:
-        type: array
-        items:
-          type: object
-          properties:
-            id: 
-              $ref: "#/definitions/Action"
+    type: string
+  PluginType:
+    type: string

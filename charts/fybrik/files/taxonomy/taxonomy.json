@@ -15,6 +15,9 @@
     "AppInfo": {
       "type": "object"
     },
+    "Capability": {
+      "type": "string"
+    },
     "Dataformat": {
       "type": "string"
     },
@@ -33,6 +36,9 @@
       },
       "additionalProperties": false
     },
+    "PluginType": {
+      "type": "string"
+    },
     "PolicyManagerRequestContext": {
       "type": "object",
       "additionalProperties": true
@@ -42,6 +48,22 @@
     },
     "Protocol": {
       "type": "string"
+    },
+    "Sink": {
+      "type": "object",
+      "properties": {
+        "sink": {
+          "$ref": "#/definitions/Interface"
+        }
+      }
+    },
+    "Source": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "$ref": "#/definitions/Interface"
+        }
+      }
     },
     "Tags": {
       "type": "object",

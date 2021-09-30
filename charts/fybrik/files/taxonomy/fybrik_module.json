@@ -8,12 +8,57 @@
         "spec": {
             "type": "object",
             "properties": {
+                "pluginType": {
+                    "$ref": "taxonomy.json#/definitions/PluginType"
+                },
                 "capabilities": {
                     "type": "array",
-                    "items": {"$ref": "taxonomy.json#/definitions/Capability"}
+                    "items": {
+                        "type": "object",
+		                "properties": {
+		                    "capability": {
+                                "$ref": "taxonomy.json#/definitions/Capability"
+                            },
+                            "api": {
+                                "type": "object",
+                                "properties": {
+                                    "interfaceDetails": {
+                                        "$ref": "taxonomy.json#/definitions/Interface"
+                                    }
+                                },
+                                "required": ["interfaceDetails"]
+                            },
+                            "supportedInterfaces": {
+                                "type": "array",
+                                "items": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "taxonomy.json#/definitions/Source"
+                                        },
+                                        {
+                                            "$ref": "taxonomy.json#/definitions/Sink"
+                                        }
+                                    ]
+                                }
+                            },
+                            "actions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "$ref": "taxonomy.json#/definitions/Action"
+                                        }
+                                    },
+                                    "required": ["id"]
+                                }
+                            }
+                        },
+                        "required": ["capability", "api", "supportedInterfaces", "actions"]
+                    }
                 }
             },
-            "required": ["capabilities"]
+            "required": ["pluginType", "capabilities"]
         }
     },
     "required": ["spec"]

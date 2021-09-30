@@ -1,0 +1,3 @@
+definitions:
+  Capability:
+    enum: [copy, write, read, transform]
