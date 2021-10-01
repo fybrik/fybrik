@@ -15,8 +15,8 @@
                     "type": "array",
                     "items": {
                         "type": "object",
-		                "properties": {
-		                    "capability": {
+		        "properties": {
+		            "capability": {
                                 "$ref": "taxonomy.json#/definitions/Capability"
                             },
                             "api": {
