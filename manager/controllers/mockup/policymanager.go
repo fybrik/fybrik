@@ -45,18 +45,12 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *openapiclientmodels.Poli
 		(&actionOnDataset).SetName("Deny")
 		policyManagerResult.SetAction(actionOnDataset)
 	case "allow-theshire":
-		log.Printf("in allow-theshire: ")
 		actionOnDataset := openapiclientmodels.Action{}
 		if *input.GetAction().Destination == "theshire" {
 			(&actionOnDataset).SetName("Allow")
 		} else {
 			(&actionOnDataset).SetName("Deny")
 		}
-		actionBytes, errJSON := json.MarshalIndent(actionOnDataset, "", "\t")
-		if errJSON != nil {
-			return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
-		}
-		log.Println("actionOnDatasetBytes:", string(actionBytes))
 		policyManagerResult.SetAction(actionOnDataset)
 	case "deny-theshire":
 		actionOnDataset := openapiclientmodels.Action{}
@@ -76,22 +70,14 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *openapiclientmodels.Poli
 		if errJSON != nil {
 			return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
 		}
-		log.Println("actionBytes:", string(actionBytes))
 		err := json.Unmarshal(actionBytes, &actionOnCols)
 		if err != nil {
 			return nil, fmt.Errorf("error in unmarshalling actionBytes : %v", err)
 		}
-		// just for printing
-		actionOnColsBytes, errJSON := json.MarshalIndent(actionOnCols, "", "\t")
-		if errJSON != nil {
-			return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
-		}
-		log.Println("actionOnColsBytes: ", string(actionOnColsBytes))
 		policyManagerResult.SetAction(actionOnCols)
 	}
 	respResult = append(respResult, policyManagerResult)
 	decisionID, _ := random.Hex(20)
-	log.Println("decision id generated", decisionID)
 	policyManagerResp := &openapiclientmodels.PolicyManagerResponse{DecisionId: &decisionID, Result: respResult}
 
 	res, err := json.MarshalIndent(policyManagerResp, "", "\t")
