@@ -14,62 +14,64 @@ spec:
       app: notebook
   cluster: cluster1
   modules:
-  - name: notebook-copy-batch
-    instanceName: "notebook-copy-batch-instance1"
-    chart:
-      name: ghcr.io/fybrik/fybrik-implicit-copy-batch:0.1.0
-    arguments:
-      copy:
-        destination:
-          connection:
-            name: S3
-            s3:
-              bucket: fybrik-test-bucket
-              endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
-              object_key: small.kp.encrypted.parq
-          type: 2
-          vault:
-            write:
-              address: http://vault.fybrik-system:8200
-              authPath: /v1/auth/kubernetes/login
-              role: module
-              secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
-          format: parquet
-        source:
-          connection:
-            db2:
-              port: "5000"
-              table: NQD60833.SMALL
-              database: NQD60833
-              url: dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net
-              ssl: "true"
-          vault:
-            read:
-              address: http://vault.fybrik-system:8200
-              authPath: /v1/auth/kubernetes/login
-              role: module
-              secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
-          format: table
-        transformations: []
-  - name: notebook-read-module
-    instanceName: "notebook-read-module-instance1"
-    chart:
-      name: ghcr.io/fybrik/fybrik-template:0.1.0
-    arguments:
-      read:
-      - source:
-          connection:
-            name: S3
-            s3:
-              bucket: fybrik-test-bucket
-              endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
-              object_key: small.kp.encrypted.parq
+    notebook-copy-batch:
+      name: notebook-copy-batch
+      instanceName: "notebook-copy-batch-instance1"
+      chart:
+        name: ghcr.io/fybrik/fybrik-implicit-copy-batch:0.1.0
+      arguments:
+        copy:
+          destination:
+            connection:
+              name: S3
+              s3:
+                bucket: fybrik-test-bucket
+                endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
+                object_key: small.kp.encrypted.parq
             type: 2
-          vault:
-            read:
-              address: http://vault.fybrik-system:8200
-              authPath: /v1/auth/kubernetes/login
-              role: module
-              secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
-          format: parquet
-        assetID: xyz
+            vault:
+              write:
+                address: http://vault.fybrik-system:8200
+                authPath: /v1/auth/kubernetes/login
+                role: module
+                secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
+            format: parquet
+          source:
+            connection:
+              db2:
+                port: "5000"
+                table: NQD60833.SMALL
+                database: NQD60833
+                url: dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net
+                ssl: "true"
+            vault:
+              read:
+                address: http://vault.fybrik-system:8200
+                authPath: /v1/auth/kubernetes/login
+                role: module
+                secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
+            format: table
+          transformations: []
+    notebook-read-module:
+      name:
+      instanceName: "notebook-read-module-instance1"
+      chart:
+        name: ghcr.io/fybrik/fybrik-template:0.1.0
+      arguments:
+        read:
+        - source:
+            connection:
+              name: S3
+              s3:
+                bucket: fybrik-test-bucket
+                endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
+                object_key: small.kp.encrypted.parq
+              type: 2
+            vault:
+              read:
+                address: http://vault.fybrik-system:8200
+                authPath: /v1/auth/kubernetes/login
+                role: module
+                secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
+            format: parquet
+          assetID: xyz

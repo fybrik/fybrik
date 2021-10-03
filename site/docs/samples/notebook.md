@@ -231,9 +231,9 @@ while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.ready
 
 In your **terminal**, run the following command to print the [endpoint](../../reference/crds/#fybrikapplicationstatusreadendpointsmapkey) to use for reading the data. It fetches the code from the `FybrikApplication` resource:
 ```bash
-ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.readEndpointsMap.fybrik-notebook-sample/paysim-csv.scheme})
-ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.readEndpointsMap.fybrik-notebook-sample/paysim-csv.hostname})
-ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.readEndpointsMap.fybrik-notebook-sample/paysim-csv.port})
+ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.scheme})
+ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.hostname})
+ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.port})
 printf "${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}"
 ```
 The next steps use the endpoint to read the data in a python notebook

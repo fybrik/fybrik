@@ -14,10 +14,11 @@ copy:
       type: 2
     format: parquet
     vault:
-      address: http://vault.fybrik-system:8200
-      authPath: /v1/auth/kubernetes/login
-      role: module
-      secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
+      read:
+        address: http://vault.fybrik-system:8200
+        authPath: /v1/auth/kubernetes/login
+        role: module
+        secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
 
   destination:
     connection:
@@ -29,10 +30,11 @@ copy:
       type: 2
     format: parquet
     vault:
-      address: http://vault.fybrik-system:8200
-      authPath: /v1/auth/kubernetes/login
-      role: module
-      secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
+      write:
+        address: http://vault.fybrik-system:8200
+        authPath: /v1/auth/kubernetes/login
+        role: module
+        secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
 
   transformations:
   - id: "redact-ID"
