@@ -197,6 +197,7 @@ if [[ ${cluster_scoped} == "false" && ${use_application_namespace} == "true"  ]]
       kubectl create ns ${unique_prefix}-app 
     fi
   fi
+fi
 
 set +e
 # Be smarter about this - just a quick hack for typical default OpenShift & Kind installs so we can control the default storage class
