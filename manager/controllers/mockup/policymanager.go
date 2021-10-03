@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
+	"fybrik.io/fybrik/pkg/random"
 	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
 
@@ -21,94 +21,91 @@ type MockPolicyManager struct {
 
 // GetPoliciesDecisions implements the PolicyCompiler interface
 func (m *MockPolicyManager) GetPoliciesDecisions(input *openapiclientmodels.PolicyManagerRequest, creds string) (*openapiclientmodels.PolicyManagerResponse, error) {
-	in, _ := connectors.ConvertOpenAPIReqToGrpcReq(input, creds)
-	log.Println("appContext: created from convertOpenApiReqToGrpcReq: ", in)
+	log.Printf("Received OpenAPI request in mockup GetPoliciesDecisions: ")
+	log.Printf("ProcessingGeography: " + input.Action.GetProcessingLocation())
+	log.Printf("Destination: " + *input.Action.Destination)
+	log.Printf("Secret: " + creds)
 
-	log.Printf("Received: ")
-	log.Printf("ProcessingGeography: " + in.AppInfo.GetProcessingGeography())
-	log.Printf("Secret: " + in.GetCredentialPath())
-	log.Printf("Properties:")
-	for key, val := range in.AppInfo.GetProperties() {
-		log.Printf(key + " : " + val)
+	datasetID := input.GetResource().Name
+	log.Printf("   DataSetID: " + datasetID)
+	respResult := []openapiclientmodels.ResultItem{}
+	policyManagerResult := openapiclientmodels.ResultItem{}
+
+	splittedID := strings.SplitN(datasetID, "/", 2)
+	if len(splittedID) != 2 {
+		panic(fmt.Sprintf("Invalid dataset ID for mock: %s", datasetID))
 	}
-	var externalComponents []*pb.ComponentVersion
-	externalComponents = append(externalComponents, &pb.ComponentVersion{Id: "PC1", Version: "1.0", Name: "PolicyCompiler"})
-	var dataSetWithActions []*pb.DatasetDecision
-
-	for ind, element := range in.GetDatasets() {
-		dataset := element.GetDataset()
-		log.Printf("Sending DataSet: ")
-		log.Printf("   DataSetID: " + dataset.GetDatasetId())
-		var enforcementActions []*pb.EnforcementAction
-		args := make(map[string]string)
-
-		var operationDecisions []*pb.OperationDecision
-		splittedID := strings.SplitN(dataset.GetDatasetId(), "/", 2)
-		if len(splittedID) != 2 {
-			panic(fmt.Sprintf("Invalid dataset ID for mock: %s", dataset.GetDatasetId()))
+	assetID := splittedID[1]
+	switch assetID {
+	case "allow-dataset":
+		actionOnDataset := openapiclientmodels.Action{}
+		(&actionOnDataset).SetName("Allow")
+		policyManagerResult.SetAction(actionOnDataset)
+	case "deny-dataset":
+		actionOnDataset := openapiclientmodels.Action{}
+		(&actionOnDataset).SetName("Deny")
+		policyManagerResult.SetAction(actionOnDataset)
+	case "allow-theshire":
+		log.Printf("in allow-theshire: ")
+		actionOnDataset := openapiclientmodels.Action{}
+		if *input.GetAction().Destination == "theshire" {
+			(&actionOnDataset).SetName("Allow")
+		} else {
+			(&actionOnDataset).SetName("Deny")
 		}
-		assetID := splittedID[1]
-		switch assetID {
-		case "allow-dataset":
-			enforcementActions = append(enforcementActions, &pb.EnforcementAction{
-				Name: "Allow",
-				Id:   "Allow-ID",
-			})
-		case "deny-dataset":
-			enforcementActions = append(enforcementActions, &pb.EnforcementAction{
-				Name: "Deny",
-				Id:   "Deny-ID",
-			})
-		case "allow-theshire":
-			if element.GetOperation().Destination == "theshire" {
-				enforcementActions = append(enforcementActions, &pb.EnforcementAction{
-					Name: "Allow",
-					Id:   "Allow-ID",
-				})
-			} else {
-				enforcementActions = append(enforcementActions, &pb.EnforcementAction{
-					Name: "Deny",
-					Id:   "Deny-ID",
-				})
-			}
-		case "deny-theshire":
-			if element.GetOperation().Destination != "theshire" {
-				enforcementActions = append(enforcementActions, &pb.EnforcementAction{
-					Name: "Allow",
-					Id:   "Allow-ID",
-				})
-			} else {
-				enforcementActions = append(enforcementActions, &pb.EnforcementAction{
-					Name: "Deny",
-					Id:   "Deny-ID",
-				})
-			}
-		default:
-			args["column"] = "SSN"
-			enforcementActions = append(enforcementActions, &pb.EnforcementAction{
-				Name:  "redact",
-				Id:    "redact-ID",
-				Level: pb.EnforcementAction_COLUMN,
-				Args:  args})
+		actionBytes, errJSON := json.MarshalIndent(actionOnDataset, "", "\t")
+		if errJSON != nil {
+			return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
 		}
-		operationDecisions = append(operationDecisions, &pb.OperationDecision{Operation: in.GetDatasets()[0].GetOperation(), EnforcementActions: enforcementActions})
-		dataSetWithActions = append(dataSetWithActions, &pb.DatasetDecision{
-			Dataset: &pb.DatasetIdentifier{
-				DatasetId: in.GetDatasets()[ind].GetDataset().GetDatasetId()},
-			Decisions: operationDecisions})
+		log.Println("actionOnDatasetBytes:", string(actionBytes))
+		policyManagerResult.SetAction(actionOnDataset)
+	case "deny-theshire":
+		log.Printf("in deny-theshire: ")
+		actionOnDataset := openapiclientmodels.Action{}
+		if *input.GetAction().Destination != "theshire" {
+			// actionOnDataset := openapiclientmodels.Action{}
+			(&actionOnDataset).SetName("Allow")
+		} else {
+			// actionOnDataset := openapiclientmodels.Action{}
+			(&actionOnDataset).SetName("Deny")
+		}
+		policyManagerResult.SetAction(actionOnDataset)
+	default:
+		actionOnCols := openapiclientmodels.Action{}
+		action := make(map[string]interface{})
+		action["name"] = "redact"
+		// action["columns"] = []string{"SSN"}
+		action["column"] = []string{"SSN"}
+		// action["column_name"] = []string{"SSN"}
+
+		actionBytes, errJSON := json.MarshalIndent(action, "", "\t")
+		if errJSON != nil {
+			return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
+		}
+		log.Println("actionBytes:", string(actionBytes))
+		err := json.Unmarshal(actionBytes, &actionOnCols)
+		if err != nil {
+			return nil, fmt.Errorf("error in unmarshalling actionBytes : %v", err)
+		}
+		// just for printing
+		actionOnColsBytes, errJSON := json.MarshalIndent(actionOnCols, "", "\t")
+		if errJSON != nil {
+			return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
+		}
+		log.Println("actionOnColsBytes: ", string(actionOnColsBytes))
+		policyManagerResult.SetAction(actionOnCols)
 	}
-
-	result := &pb.PoliciesDecisions{ComponentVersions: externalComponents,
-		DatasetDecisions: dataSetWithActions}
-
-	policyManagerResp, _ := connectors.ConvertGrpcRespToOpenAPIResp(result)
+	respResult = append(respResult, policyManagerResult)
+	decisionID, _ := random.Hex(20)
+	log.Println("decision id generated", decisionID)
+	policyManagerResp := &openapiclientmodels.PolicyManagerResponse{DecisionId: &decisionID, Result: respResult}
 
 	res, err := json.MarshalIndent(policyManagerResp, "", "\t")
 	if err != nil {
 		log.Println("error in marshalling policy manager response :", err)
 		return nil, err
 	}
-	log.Println("Marshalled policy manager response:", string(res))
+	log.Println("Marshalled policy manager response in mockup GetPoliciesDecisions:", string(res))
 
 	return policyManagerResp, nil
 }
