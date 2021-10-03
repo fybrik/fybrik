@@ -198,40 +198,6 @@ if [[ ${cluster_scoped} == "false" && ${use_application_namespace} == "true"  ]]
     fi
   fi
 
-  cat > ${TMP}/approle.yaml <<EOH
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: ${unique_prefix}-app-role
-  namespace: ${unique_prefix}-app 
-rules:
-- apiGroups:
-  - '*'
-  resources:
-  - '*'
-  verbs:
-  - '*'
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: ${unique_prefix}-app-rb
-  namespace: ${unique_prefix}-app
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: ${unique_prefix}-app-role
-subjects:
-- kind: ServiceAccount
-  name: manager
-  namespace: ${unique_prefix}
-EOH
-  set +e
-  kubectl delete -f ${TMP}/approle.yaml
-  set -e
-  kubectl apply -f ${TMP}/approle.yaml
-fi
-
 set +e
 # Be smarter about this - just a quick hack for typical default OpenShift & Kind installs so we can control the default storage class
 kubectl patch storageclass managed-nfs-storage -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class": "true"}}}'

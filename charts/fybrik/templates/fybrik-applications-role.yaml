@@ -1,0 +1,30 @@
+{{- if .Values.manager.enabled }}
+{{- if .Values.applicationNamespace}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ template "fybrik.fullname" . }}-applications-role
+  namespace: {{ .Values.applicationNamespace }}
+rules:
+- apiGroups:
+  - app.fybrik.io
+  resources:
+  - fybrikapplications
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.fybrik.io
+  resources:
+  - fybrikapplications/status
+  verbs:
+  - get
+  - patch
+  - update
+{{- end }}
+{{- end }}
