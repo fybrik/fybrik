@@ -24,7 +24,6 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *openapiclientmodels.Poli
 	log.Printf("Received OpenAPI request in mockup GetPoliciesDecisions: ")
 	log.Printf("ProcessingGeography: " + input.Action.GetProcessingLocation())
 	log.Printf("Destination: " + *input.Action.Destination)
-	log.Printf("Secret: " + creds)
 
 	datasetID := input.GetResource().Name
 	log.Printf("   DataSetID: " + datasetID)
@@ -60,13 +59,10 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *openapiclientmodels.Poli
 		log.Println("actionOnDatasetBytes:", string(actionBytes))
 		policyManagerResult.SetAction(actionOnDataset)
 	case "deny-theshire":
-		log.Printf("in deny-theshire: ")
 		actionOnDataset := openapiclientmodels.Action{}
 		if *input.GetAction().Destination != "theshire" {
-			// actionOnDataset := openapiclientmodels.Action{}
 			(&actionOnDataset).SetName("Allow")
 		} else {
-			// actionOnDataset := openapiclientmodels.Action{}
 			(&actionOnDataset).SetName("Deny")
 		}
 		policyManagerResult.SetAction(actionOnDataset)
@@ -74,9 +70,7 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *openapiclientmodels.Poli
 		actionOnCols := openapiclientmodels.Action{}
 		action := make(map[string]interface{})
 		action["name"] = "redact"
-		// action["columns"] = []string{"SSN"}
 		action["column"] = []string{"SSN"}
-		// action["column_name"] = []string{"SSN"}
 
 		actionBytes, errJSON := json.MarshalIndent(action, "", "\t")
 		if errJSON != nil {

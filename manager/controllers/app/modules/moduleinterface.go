@@ -5,7 +5,6 @@ package modules
 
 import (
 	"errors"
-	"log"
 
 	"fybrik.io/fybrik/pkg/serde"
 
@@ -104,8 +103,6 @@ func (m *Selector) SupportsGovernanceAction(module *app.FybrikModule, action *op
 		for _, cap := range caps {
 			// Loop over the data transforms (actions) performed by the module for this capability
 			for _, act := range cap.Actions {
-				log.Println("act.ID val:" + act.ID)
-				log.Println("action.GetAction().Name val:" + action.GetAction().Name)
 				if act.ID == action.GetAction().Name {
 					return true
 				}
