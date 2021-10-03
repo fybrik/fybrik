@@ -34,8 +34,12 @@ spec:
           volumeMounts:
             - name: workspace-pvc
               mountPath: /workspace/source
-    
+            - name: charts-pvc
+              mountPath: /opt/fybrik
       volumes:
         - name: workspace-pvc
           persistentVolumeClaim:
             claimName: source-pvc
+        - name: charts-pvc
+          persistentVolumeClaim:
+            claimName: charts-pvc
