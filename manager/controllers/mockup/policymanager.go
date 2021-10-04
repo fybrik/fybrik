@@ -37,29 +37,27 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *openapiclientmodels.Poli
 	assetID := splittedID[1]
 	switch assetID {
 	case "allow-dataset":
-		actionOnDataset := openapiclientmodels.Action{}
-		(&actionOnDataset).SetName("Allow")
-		policyManagerResult.SetAction(actionOnDataset)
+		// empty result simulates allow
+		// no need to construct any result item
 	case "deny-dataset":
 		actionOnDataset := openapiclientmodels.Action{}
 		(&actionOnDataset).SetName("Deny")
 		policyManagerResult.SetAction(actionOnDataset)
+		respResult = append(respResult, policyManagerResult)
 	case "allow-theshire":
-		actionOnDataset := openapiclientmodels.Action{}
-		if *input.GetAction().Destination == "theshire" {
-			(&actionOnDataset).SetName("Allow")
-		} else {
-			(&actionOnDataset).SetName("Deny")
-		}
-		policyManagerResult.SetAction(actionOnDataset)
-	case "deny-theshire":
-		actionOnDataset := openapiclientmodels.Action{}
 		if *input.GetAction().Destination != "theshire" {
-			(&actionOnDataset).SetName("Allow")
-		} else {
+			actionOnDataset := openapiclientmodels.Action{}
 			(&actionOnDataset).SetName("Deny")
+			policyManagerResult.SetAction(actionOnDataset)
+			respResult = append(respResult, policyManagerResult)
 		}
-		policyManagerResult.SetAction(actionOnDataset)
+	case "deny-theshire":
+		if *input.GetAction().Destination == "theshire" {
+			actionOnDataset := openapiclientmodels.Action{}
+			(&actionOnDataset).SetName("Deny")
+			policyManagerResult.SetAction(actionOnDataset)
+			respResult = append(respResult, policyManagerResult)
+		}
 	default:
 		actionOnCols := openapiclientmodels.Action{}
 		action := make(map[string]interface{})
@@ -75,8 +73,9 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *openapiclientmodels.Poli
 			return nil, fmt.Errorf("error in unmarshalling actionBytes : %v", err)
 		}
 		policyManagerResult.SetAction(actionOnCols)
+		respResult = append(respResult, policyManagerResult)
 	}
-	respResult = append(respResult, policyManagerResult)
+
 	decisionID, _ := random.Hex(20)
 	policyManagerResp := &openapiclientmodels.PolicyManagerResponse{DecisionId: &decisionID, Result: respResult}
 
