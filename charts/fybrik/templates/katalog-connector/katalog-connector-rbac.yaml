@@ -5,18 +5,18 @@ apiVersion: rbac.authorization.k8s.io/v1
 {{- if .Values.clusterScoped }}
 kind: ClusterRoleBinding
 metadata:
-  name:  katalog-connector-editor
+  name:  katalog-connector-viewer
 roleRef:
   kind: ClusterRole
 {{- else }}
 kind: RoleBinding
 metadata:
-  name:  katalog-connector-editor
+  name:  katalog-connector-viewer
   namespace: {{ .Values.applicationNamespace | default .Release.Namespace  }}
 roleRef:
   kind: Role
 {{- end }}
-  name: katalog-editor
+  name: katalog-viewer
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
