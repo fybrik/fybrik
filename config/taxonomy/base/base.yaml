@@ -31,16 +31,6 @@ definitions:
       dataformat:
         $ref: "#/definitions/Dataformat"
     additionalProperties: false
-  Source:
-    type: object
-    properties:
-      source:
-        $ref: "#/definitions/Interface"
-  Sink:
-    type: object
-    properties:
-      sink:
-        $ref: "#/definitions/Interface"
   Capability:
     type: string
   PluginType:

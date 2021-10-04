@@ -49,22 +49,6 @@
     "Protocol": {
       "type": "string"
     },
-    "Sink": {
-      "type": "object",
-      "properties": {
-        "sink": {
-          "$ref": "#/definitions/Interface"
-        }
-      }
-    },
-    "Source": {
-      "type": "object",
-      "properties": {
-        "source": {
-          "$ref": "#/definitions/Interface"
-        }
-      }
-    },
     "Tags": {
       "type": "object",
       "additionalProperties": true

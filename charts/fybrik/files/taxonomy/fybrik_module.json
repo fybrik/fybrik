@@ -31,12 +31,17 @@
                             "supportedInterfaces": {
                                 "type": "array",
                                 "items": {
+                                    "type": "object",
                                     "oneOf": [
                                         {
-                                            "$ref": "taxonomy.json#/definitions/Source"
+                                            "source": {
+                                                "$ref": "taxonomy.json#/definitions/Interface"
+                                            }
                                         },
                                         {
-                                            "$ref": "taxonomy.json#/definitions/Sink"
+                                            "sink": {
+                                                "$ref": "taxonomy.json#/definitions/Interface"
+                                            }
                                         }
                                     ]
                                 }
@@ -54,7 +59,7 @@
                                 }
                             }
                         },
-                        "required": ["capability", "api", "supportedInterfaces", "actions"]
+                        "required": ["capability", "api", "supportedInterfaces"]
                     }
                 }
             },
