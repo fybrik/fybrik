@@ -61,7 +61,7 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *openapiclientmodels.Poli
 	default:
 		actionOnCols := openapiclientmodels.Action{}
 		action := make(map[string]interface{})
-		action["name"] = "redact"
+		action["name"] = "RedactAction"
 		action["column"] = []string{"SSN"}
 
 		actionBytes, errJSON := json.MarshalIndent(action, "", "\t")
