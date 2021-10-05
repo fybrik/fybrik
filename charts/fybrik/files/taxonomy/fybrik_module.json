@@ -16,17 +16,11 @@
                     "items": {
                         "type": "object",
                         "properties": {
-		                    "capability": {
+                            "capability": {
                                 "$ref": "taxonomy.json#/definitions/Capability"
                             },
                             "api": {
-                                "type": "object",
-                                "properties": {
-                                    "interfaceDetails": {
-                                        "$ref": "taxonomy.json#/definitions/Interface"
-                                    }
-                                },
-                                "required": ["interfaceDetails"]
+                                "$ref": "taxonomy.json#/definitions/Interface"
                             },
                             "supportedInterfaces": {
                                 "type": "array",
@@ -59,11 +53,11 @@
                                 }
                             }
                         },
-                        "required": ["capability", "api", "supportedInterfaces"]
+                        "required": ["capability"]
                     }
                 }
             },
-            "required": ["pluginType", "capabilities"]
+            "required": ["capabilities"]
         }
     },
     "required": ["spec"]
