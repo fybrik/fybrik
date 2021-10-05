@@ -68,10 +68,7 @@ func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyMana
 			}
 			return actions, errors.New(message)
 		}
-		// Check if this is a real action (i.e. not Allow)
-		if utils.IsAction(result[i].GetAction().Name) {
-			actions = append(actions, &result[i])
-		}
+		actions = append(actions, &result[i])
 	}
 	return actions, nil
 }

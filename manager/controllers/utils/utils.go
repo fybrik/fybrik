@@ -29,16 +29,6 @@ func GetProtocol(info *dc.DatasetDetails) (string, error) {
 	return "", errors.New(app.InvalidAssetDataStore)
 }
 
-// IsTransformation returns true if the data transformation is required
-func IsTransformation(actionName string) bool {
-	return (actionName != "Allow") // TODO FIX THIS
-}
-
-// IsAction returns true if any action is required
-func IsAction(actionName string) bool {
-	return (actionName != "Allow") // TODO FIX THIS
-}
-
 // IsDenied returns true if the data access is denied
 func IsDenied(actionName string) bool {
 	return (actionName == "Deny") // TODO FIX THIS
