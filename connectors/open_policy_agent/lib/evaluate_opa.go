@@ -87,11 +87,8 @@ func EvaluatePoliciesOnInput(inputJSON string, opaServerURL string, policyToBeEv
 	currentData := string(data)
 	decisionid, flag := doesOpaHaveUserPoliciesLoaded(data)
 	if !flag {
-		// simulating ALlow Enforcement Action
-		// if deny and transform rules are empty, allow will be returned from opa connector
-		// currentData = "{\"decision_id\":\"" + decisionid + "\"," + "\"result\": { \"deny\": [], \"transform\": []}" + "}"
-
-		currentData = "{\"decision_id\":\"" + decisionid + "\"," + "\"result\": [{ \"policy\": \" default policy if no opa policies are loaded\", \"action\": {\"name\": \"Deny\"} }]" + "}"
+		// simulating Allow Enforcement Action. No result implies allow.
+		currentData = "{\"decision_id\":\"" + decisionid + "\",\"result\": []}"
 		log.Println("currentData - modified")
 		log.Println(currentData)
 	}
