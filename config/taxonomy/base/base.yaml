@@ -35,3 +35,4 @@ definitions:
     type: string
   PluginType:
     type: string
+    
