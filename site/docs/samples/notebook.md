@@ -280,3 +280,7 @@ When you’re finished experimenting with the notebook sample, clean it up:
     ```bash
     kubectl delete namespace fybrik-notebook-sample
     ```
+1. Delete the policy created on fybrik-system namespace:
+    ```bash
+    kubectl -n fybrik-system delete configmap sample-policy
+    ```
