@@ -201,10 +201,16 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			assetInfo := plotter.Spec.Assets[assetID]
 
 			dataStore = &assetInfo.DataStore
+			vaultMap := make(map[string]app.Vault)
 			// Update vaultAuthPath from the cluster metadata
-			vaultCreds := dataStore.Vault[string(app.ReadFlow)]
-			vaultCreds.AuthPath = plotterModule.VaultAuthPath
-			dataStore.Vault[string(app.ReadFlow)] = vaultCreds
+			// Get only the readFlow related creds
+			vaultMap[string(app.ReadFlow)] = app.Vault{
+				Role:       dataStore.Vault[string(app.ReadFlow)].Role,
+				Address:    dataStore.Vault[string(app.ReadFlow)].Address,
+				SecretPath: dataStore.Vault[string(app.ReadFlow)].SecretPath,
+				AuthPath:   plotterModule.VaultAuthPath,
+			}
+			dataStore.Vault = vaultMap
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
@@ -212,11 +218,17 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 				Format:     plotterModule.ModuleArguments.Source.API.Format,
 			}
 		}
+		// Get only the writeFlow related creds
 		// Update vaultAuthPath from the cluster metadata
 		destDataStore := plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore
-		vaultCreds := destDataStore.Vault[string(app.WriteFlow)]
-		vaultCreds.AuthPath = plotterModule.VaultAuthPath
-		destDataStore.Vault[string(app.WriteFlow)] = vaultCreds
+		vaultMap := make(map[string]app.Vault)
+		vaultMap[string(app.WriteFlow)] = app.Vault{
+			Role:       destDataStore.Vault[string(app.WriteFlow)].Role,
+			Address:    destDataStore.Vault[string(app.WriteFlow)].Address,
+			SecretPath: destDataStore.Vault[string(app.WriteFlow)].SecretPath,
+			AuthPath:   plotterModule.VaultAuthPath,
+		}
+		destDataStore.Vault = vaultMap
 		blueprintModule.Args.Copy =
 			&app.CopyModuleArgs{
 				Source:          *dataStore,
