@@ -7,9 +7,9 @@ import (
 	"context"
 	"fmt"
 
+	"os"
 	"strings"
 	"time"
-	"os"
 
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/pkg/environment"
