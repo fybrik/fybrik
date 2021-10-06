@@ -16,7 +16,8 @@ clusterScoped: true
 blueprintNamespace: "fybrik-blueprints"
 
 # Set if need to only watch for FybrikApplication from a specific namespace
-#applicationNamespace: ""
+# The namespace must already exist
+applicationNamespace: ""
 
 # Taxonomy file for taxonomy ConfigMap
 taxonomyOverride: ""
