@@ -36,6 +36,14 @@
                                             "sink": {
                                                 "$ref": "taxonomy.json#/definitions/Interface"
                                             }
+                                        },
+                                        {
+                                            "source": {
+                                                "$ref": "taxonomy.json#/definitions/Interface"
+                                            },
+                                            "sink": {
+                                                "$ref": "taxonomy.json#/definitions/Interface"
+                                            }
                                         }
                                     ]
                                 }
@@ -43,13 +51,7 @@
                             "actions": {
                                 "type": "array",
                                 "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "id": {
-                                            "$ref": "taxonomy.json#/definitions/Action"
-                                        }
-                                    },
-                                    "required": ["id"]
+                                    "$ref": "taxonomy.json#/definitions/Action"
                                 }
                             }
                         },
