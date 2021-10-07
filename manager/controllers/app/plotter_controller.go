@@ -186,9 +186,21 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			},
 		}
 	case app.WriteFlow:
+		// Get only the writeFlow related creds
+		// Update vaultAuthPath from the cluster metadata
+		destDataStore := plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore
+		vaultMap := make(map[string]app.Vault)
+		vaultMap[string(app.WriteFlow)] = app.Vault{
+			Role:       destDataStore.Vault[string(app.WriteFlow)].Role,
+			Address:    destDataStore.Vault[string(app.WriteFlow)].Address,
+			SecretPath: destDataStore.Vault[string(app.WriteFlow)].SecretPath,
+			AuthPath:   plotterModule.VaultAuthPath,
+		}
+		destDataStore.Vault = vaultMap
+
 		blueprintModule.Args.Write = []app.WriteModuleArgs{
 			{
-				Destination:     plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore,
+				Destination:     destDataStore,
 				AssetID:         plotterModule.AssetID,
 				Transformations: plotterModule.ModuleArguments.Actions,
 			},
