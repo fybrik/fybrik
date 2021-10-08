@@ -290,9 +290,8 @@ func setReadModulesEndpoints(applicationContext *api.FybrikApplication, flows []
 	}
 	// populate endpoints in application status
 	for _, asset := range applicationContext.Spec.Data {
-		id := utils.CreateDataSetIdentifier(asset.DataSetID)
 		state := applicationContext.Status.AssetStates[asset.DataSetID]
-		state.Endpoint = readEndpointMap[id]
+		state.Endpoint = readEndpointMap[asset.DataSetID]
 		applicationContext.Status.AssetStates[asset.DataSetID] = state
 	}
 }
