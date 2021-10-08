@@ -66,6 +66,10 @@ type WriteModuleArgs struct {
 // In the future might support output args as well
 // The arguments passed depend on the type of module
 type ModuleArguments struct {
+	// Labels of FybrikApplication
+	// +optional
+	Labels map[string]string `json:"labels"`
+
 	// CopyArgs are parameters specific to modules that copy data from one data store to another.
 	// +optional
 	Copy *CopyModuleArgs `json:"copy,omitempty"`

@@ -144,6 +144,11 @@ spec:
                           - destination
                           - source
                           type: object
+                        labels:
+                          additionalProperties:
+                            type: string
+                          description: Labels of FybrikApplication
+                          type: object
                         read:
                           description: ReadArgs are parameters that are specific to modules that enable an application to read data
                           items:

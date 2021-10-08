@@ -234,6 +234,12 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 	// count the overall number of Helm releases and how many of them are ready
 	numReleases, numReady := 0, 0
 	for instanceName, module := range blueprint.Spec.Modules {
+		// Add debug information to module labels
+		if module.Arguments.Labels == nil {
+			module.Arguments.Labels = map[string]string{}
+		}
+		module.Arguments.Labels[app.BlueprintNameLabel] = blueprint.Name
+		module.Arguments.Labels[app.BlueprintNamespaceLabel] = blueprint.Namespace
 		// Get arguments by type
 		var args map[string]interface{}
 		args, err := utils.StructToMap(module.Arguments)

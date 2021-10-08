@@ -140,9 +140,10 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		Chart:    &plotterModule.Chart,
 		AssetIDs: assetIDs,
 		Args: &app.ModuleArguments{
-			Copy:  nil,
-			Read:  nil,
-			Write: nil,
+			Labels: plotter.Labels,
+			Copy:   nil,
+			Read:   nil,
+			Write:  nil,
 		},
 		ClusterName: plotterModule.ClusterName,
 		ModuleName:  plotterModule.ModuleName,

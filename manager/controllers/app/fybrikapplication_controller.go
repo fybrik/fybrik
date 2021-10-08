@@ -355,19 +355,18 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 		ProvisionedStorage: make(map[string]NewAssetInfo),
 	}
 
-	plotterSpec := api.PlotterSpec{
+	plotterSpec := &api.PlotterSpec{
 		Selector:  applicationContext.Spec.Selector,
 		Assets:    map[string]api.AssetDetails{},
 		Flows:     []api.Flow{},
 		Templates: map[string]api.Template{},
 	}
-	plotterSpec.Selector = applicationContext.Spec.Selector
 
 	for _, item := range requirements {
 		// TODO support different flows than read by specifying it in the application
 		flowType := api.ReadFlow
 
-		err := moduleManager.AddFlowInfoForAsset(item, applicationContext, &plotterSpec, flowType)
+		err := moduleManager.AddFlowInfoForAsset(item, applicationContext, plotterSpec, flowType)
 		if err != nil {
 			AnalyzeError(applicationContext, item.Context.DataSetID, err)
 			continue
@@ -422,7 +421,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 	ownerRef := &api.ResourceReference{Name: applicationContext.Name, Namespace: applicationContext.Namespace, AppVersion: applicationContext.GetGeneration()}
 
 	resourceRef := r.ResourceInterface.CreateResourceReference(ownerRef)
-	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, plotterSpec); err != nil {
+	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, plotterSpec, applicationContext.Labels); err != nil {
 		r.Log.V(0).Info("Error creating " + resourceRef.Kind + " : " + err.Error())
 		if err.Error() == api.InvalidClusterConfiguration {
 			applicationContext.Status.ErrorMessage = err.Error()
