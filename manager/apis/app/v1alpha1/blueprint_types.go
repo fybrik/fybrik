@@ -70,7 +70,8 @@ type ModuleArguments struct {
 	// +optional
 	Labels map[string]string `json:"labels,omitempty"`
 
-	// Application selector retrieved from FybrikApplication
+	// Application selector is used to identify the user workload.
+	// It is obtained from FybrikApplication spec.
 	// +optional
 	AppSelector metav1.LabelSelector `json:"appSelector,omitempty"`
 

@@ -50,7 +50,7 @@ spec:
                       description: Arguments are the input parameters for a specific instance of a module.
                       properties:
                         appSelector:
-                          description: Application selector retrieved from FybrikApplication
+                          description: Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.
                           properties:
                             matchExpressions:
                               description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
