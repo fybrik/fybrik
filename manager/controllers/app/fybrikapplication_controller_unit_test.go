@@ -169,7 +169,7 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	assetState := application.Status.AssetStates[application.Spec.Data[0].DataSetID]
 	g.Expect(assetState.Endpoint).To(gomega.Not(gomega.BeNil()))
 	g.Expect(assetState.Endpoint.Port).To(gomega.Equal(int32(80)))
-	g.Expect(assetState.Endpoint.Hostname).To(gomega.Equal("read-path"))
+	g.Expect(assetState.Endpoint.Hostname).To(gomega.Equal("read-path.notebook-default-arrow-flight-module.notebook"))
 	g.Expect(assetState.Endpoint.Scheme).To(gomega.Equal("grpc"))
 }
 
