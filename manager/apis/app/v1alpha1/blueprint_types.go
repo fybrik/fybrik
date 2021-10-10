@@ -70,6 +70,10 @@ type ModuleArguments struct {
 	// +optional
 	Labels map[string]string `json:"labels,omitempty"`
 
+	// Application selector retrieved from FybrikApplication
+	// +optional
+	AppSelector metav1.LabelSelector `json:"appSelector,omitempty"`
+
 	// CopyArgs are parameters specific to modules that copy data from one data store to another.
 	// +optional
 	Copy *CopyModuleArgs `json:"copy,omitempty"`

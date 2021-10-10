@@ -145,6 +145,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 				Expect(module.Arguments.Labels["label2"]).To(Equal("bar"))
 				Expect(module.Arguments.Labels[apiv1alpha1.ApplicationNameLabel]).To(Equal(applicationKey.Name))
 				Expect(module.Arguments.Labels[apiv1alpha1.ApplicationNamespaceLabel]).To(Equal(applicationKey.Namespace))
+				Expect(module.Arguments.AppSelector.MatchLabels["app"]).To(Equal("notebook"))
 			}
 			By("Expecting FybrikApplication to eventually be ready")
 			Eventually(func() bool {
