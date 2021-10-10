@@ -169,11 +169,6 @@ type ModuleInfo struct {
 	// If not indicated it is assumed to be asset
 	// +optional
 	Scope CapabilityScope `json:"scope,omitempty"`
-
-	// API indicates to the application how to access the capabilities provided by the module
-	// TODO This is optinal but in ModuleAPI the endpoint is required?
-	// +optional
-	API *ModuleAPI `json:"api,omitempty"`
 }
 
 // Template contains basic information about the required modules to serve the fybrikapplication
