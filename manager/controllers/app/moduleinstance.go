@@ -4,7 +4,9 @@
 package app
 
 import (
+	"bytes"
 	"strings"
+	"text/template"
 
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
@@ -18,6 +20,7 @@ import (
 	"fybrik.io/fybrik/pkg/storage"
 	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 	vault "fybrik.io/fybrik/pkg/vault"
+	"github.com/Masterminds/sprig/v3"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -384,6 +387,12 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 
 			templates = append(templates, template)
 
+			api, err := moduleAPIToService(readSelector.ModuleCapability.API, readSelector.ModuleCapability.Scope,
+				appContext, readSelector.Module.Name, readAssetID)
+			if err != nil {
+				return err
+			}
+
 			steps := []app.DataFlowStep{
 				{
 					Name:     "",
@@ -394,9 +403,7 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 							AssetID: readAssetID,
 							API:     nil,
 						},
-
-						API: moduleAPIToService(readSelector.ModuleCapability.API, readSelector.ModuleCapability.Scope,
-							appContext, readSelector.Module.Name, readAssetID),
+						API:     api,
 						Actions: actions,
 					},
 				},
@@ -437,34 +444,56 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 	return nil
 }
 
-func moduleAPIToService(api *app.ModuleAPI, scope app.CapabilityScope, appContext *app.FybrikApplication, moduleName string, assetID string) *app.Service {
-	// if the defined endpoint is empty generate the name
-	var endpoint app.EndpointSpec
-	if api.Endpoint.Hostname == "" {
-		instanceName := moduleName
-		if scope == app.Asset {
-			// if the scope of the module is asset then concat its id to the module name
-			// to create the instance name.
-			instanceName = utils.CreateStepName(moduleName, assetID)
-		}
-		releaseName := utils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
-		// Current implementation assumes there is only one cluster with read modules
-		// (which is the same cluster the user's workload)
-		blueprintNamespace := utils.GetBlueprintNamespace()
-		fqdn := utils.GenerateModuleEndpointFQDN(releaseName, blueprintNamespace)
-		endpoint = app.EndpointSpec{
-			Hostname: fqdn,
+func moduleAPIToService(api *app.ModuleAPI, scope app.CapabilityScope, appContext *app.FybrikApplication, moduleName string, assetID string) (*app.Service, error) {
+	hostnameTemplateString := api.Endpoint.Hostname
+	if hostnameTemplateString == "" {
+		hostnameTemplateString = "{{ .Release.Name }}.{{ .Release.Namespace }}"
+	}
+	hostnameTemplate, err := template.New("hostname").Funcs(sprig.TxtFuncMap()).Parse(hostnameTemplateString)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not parse hostname %s as a template", hostnameTemplateString)
+	}
+
+	instanceName := moduleName
+	if scope == app.Asset {
+		// if the scope of the module is asset then concat its id to the module name
+		// to create the instance name.
+		instanceName = utils.CreateStepName(moduleName, assetID)
+	}
+	releaseName := utils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
+	blueprintNamespace := utils.GetBlueprintNamespace()
+
+	values := map[string]interface{}{
+		"Release": map[string]interface{}{
+			"Name":      releaseName,
+			"Namespace": blueprintNamespace,
+		},
+		"Values": map[string]interface{}{
+			"labels": appContext.Labels,
+		},
+	}
+
+	// the following is required for proper types (e.g., labels must be map[string]interface{})
+	values, err = utils.StructToMap(values)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not serialize values for hostname field")
+	}
+
+	var hostname bytes.Buffer
+	if err := hostnameTemplate.Execute(&hostname, values); err != nil {
+		return nil, errors.Wrapf(err, "could not process template %s", hostnameTemplateString)
+	}
+
+	var service = &app.Service{
+		Endpoint: app.EndpointSpec{
+			Hostname: hostname.String(),
 			Port:     api.Endpoint.Port,
 			Scheme:   api.Endpoint.Scheme,
-		}
-	} else {
-		endpoint = api.Endpoint
+		},
+		Format: api.DataFormat,
 	}
-	var service = app.Service{
-		Endpoint: endpoint,
-		Format:   api.DataFormat,
-	}
-	return &service
+
+	return service, nil
 }
 
 // GetSupportedReadSources returns a list of supported READ interfaces of a module
