@@ -307,7 +307,6 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 					Type:  copySelector.Module.Spec.Type,
 					Chart: copySelector.Module.Spec.Chart,
 					Scope: scope,
-					API:   copySelector.ModuleCapability.API.DeepCopy(),
 				}},
 			}
 
@@ -381,7 +380,6 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 					Type:  readSelector.Module.Spec.Type,
 					Chart: readSelector.Module.Spec.Chart,
 					Scope: scope,
-					API:   readSelector.ModuleCapability.API.DeepCopy(),
 				}},
 			}
 
