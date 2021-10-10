@@ -63,3 +63,6 @@ helm chart export --destination=./tmp ghcr.io/fybrik/backend-server-chart:v0.0.1
 helm install rel1-backend-server ./tmp/backend_server
 ```
 
+
+## Register the assets
+In this example we use 3 of the endpoints that the backend data server exposes.
