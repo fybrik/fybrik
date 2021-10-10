@@ -19,7 +19,7 @@ spec:
         protocol: fybrik-arrow-flight
         dataformat: arrow
         endpoint:
-          hostname: read-path
+          hostname: read-path.{{ .Release.Name}}.{{ get .Values.labels "app" | default .Release.Namespace }}
           port: 80
           scheme: grpc
       supportedInterfaces:
