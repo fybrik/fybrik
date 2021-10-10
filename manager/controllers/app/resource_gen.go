@@ -20,7 +20,7 @@ import (
 // ContextInterface is an interface for communication with a generated resource (e.g. Blueprint)
 type ContextInterface interface {
 	ResourceExists(ref *app.ResourceReference) bool
-	CreateOrUpdateResource(owner *app.ResourceReference, ref *app.ResourceReference, plotterSpec app.PlotterSpec) error
+	CreateOrUpdateResource(owner *app.ResourceReference, ref *app.ResourceReference, plotterSpec *app.PlotterSpec, labels map[string]string) error
 	DeleteResource(ref *app.ResourceReference) error
 	GetResourceStatus(ref *app.ResourceReference) (app.ObservedState, error)
 	CreateResourceReference(owner *app.ResourceReference) *app.ResourceReference
@@ -73,7 +73,7 @@ func (c *PlotterInterface) GetResourceSignature(ref *app.ResourceReference) *app
 }
 
 // CreateOrUpdateResource creates a new Plotter resource or updates an existing one
-func (c *PlotterInterface) CreateOrUpdateResource(owner *app.ResourceReference, ref *app.ResourceReference, plotterSpec app.PlotterSpec) error {
+func (c *PlotterInterface) CreateOrUpdateResource(owner *app.ResourceReference, ref *app.ResourceReference, plotterSpec *app.PlotterSpec, labels map[string]string) error {
 	plotter := c.GetResourceSignature(ref)
 	if err := c.Client.Get(context.Background(), types.NamespacedName{Namespace: ref.Namespace, Name: ref.Name}, plotter); err == nil {
 		if equality.Semantic.DeepEqual(&plotter.Spec, plotterSpec) {
@@ -82,8 +82,15 @@ func (c *PlotterInterface) CreateOrUpdateResource(owner *app.ResourceReference, 
 		}
 	}
 	if _, err := ctrl.CreateOrUpdate(context.Background(), c.Client, plotter, func() error {
-		plotter.Spec = plotterSpec
-		plotter.Labels = ownerLabels(types.NamespacedName{Namespace: owner.Namespace, Name: owner.Name})
+		plotter.Spec = *plotterSpec
+		plotter.Labels = labels
+		if plotter.Labels == nil {
+			plotter.Labels = make(map[string]string)
+		}
+		debugLabels := ownerLabels(types.NamespacedName{Namespace: owner.Namespace, Name: owner.Name})
+		for key, val := range debugLabels {
+			plotter.Labels[key] = val
+		}
 		return nil
 	}); err != nil {
 		return err
