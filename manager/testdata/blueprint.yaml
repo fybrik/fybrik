@@ -9,18 +9,15 @@ metadata:
     app.fybrik.io/appNamespace: default
     app.fybrik.io/appName: notebook
 spec:
-  selector:
-    matchLabels:
-      app: notebook
   cluster: cluster1
   modules:
     notebook-copy-batch:
       name: notebook-copy-batch
-      instanceName: "notebook-copy-batch-instance1"
       chart:
         name: ghcr.io/fybrik/fybrik-implicit-copy-batch:0.1.0
       arguments:
         copy:
+          assetID: xyz        
           destination:
             connection:
               name: S3
@@ -28,7 +25,7 @@ spec:
                 bucket: fybrik-test-bucket
                 endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
                 object_key: small.kp.encrypted.parq
-            type: 2
+              type: 2
             vault:
               write:
                 address: http://vault.fybrik-system:8200
@@ -53,8 +50,7 @@ spec:
             format: table
           transformations: []
     notebook-read-module:
-      name:
-      instanceName: "notebook-read-module-instance1"
+      name: arrow-flight
       chart:
         name: ghcr.io/fybrik/fybrik-template:0.1.0
       arguments:

@@ -133,6 +133,22 @@ type PlotterModulesSpec struct {
 	Scope           app.CapabilityScope
 }
 
+// addCredentials updates Vault credentials field to hold only credentials related to the flow type
+func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType app.DataFlow) {
+	vaultMap := make(map[string]app.Vault)
+
+	// Update vaultAuthPath from the cluster metadata
+	// Get only flowType related creds
+	vaultMap[string(flowType)] = app.Vault{
+		Role:       dataStore.Vault[string(flowType)].Role,
+		Address:    dataStore.Vault[string(flowType)].Address,
+		SecretPath: dataStore.Vault[string(flowType)].SecretPath,
+		AuthPath:   vaultAuthPath,
+	}
+
+	dataStore.Vault = vaultMap
+}
+
 // convertPlotterModuleToBlueprintModule converts an object of type PlotterModulesSpec to type modules.ModuleInstanceSpec
 func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.Plotter, plotterModule PlotterModulesSpec) *modules.ModuleInstanceSpec {
 	assetIDs := []string{plotterModule.AssetID}
@@ -140,9 +156,11 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		Chart:    &plotterModule.Chart,
 		AssetIDs: assetIDs,
 		Args: &app.ModuleArguments{
-			Copy:  nil,
-			Read:  nil,
-			Write: nil,
+			Labels:      plotter.Labels,
+			AppSelector: plotter.Spec.Selector.WorkloadSelector,
+			Copy:        nil,
+			Read:        nil,
+			Write:       nil,
 		},
 		ClusterName: plotterModule.ClusterName,
 		ModuleName:  plotterModule.ModuleName,
@@ -161,16 +179,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			// Get source from plotter assetID list
 			assetInfo := plotter.Spec.Assets[assetID]
 			dataStore = &assetInfo.DataStore
-			vaultMap := make(map[string]app.Vault)
-			// Update vaultAuthPath from the cluster metadata
-			// Get only the readFlow related creds
-			vaultMap[string(app.ReadFlow)] = app.Vault{
-				Role:       dataStore.Vault[string(app.ReadFlow)].Role,
-				Address:    dataStore.Vault[string(app.ReadFlow)].Address,
-				SecretPath: dataStore.Vault[string(app.ReadFlow)].SecretPath,
-				AuthPath:   plotterModule.VaultAuthPath,
-			}
-			dataStore.Vault = vaultMap
+			addCredentials(dataStore, plotterModule.VaultAuthPath, app.ReadFlow)
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
@@ -186,9 +195,14 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			},
 		}
 	case app.WriteFlow:
+		// Get only the writeFlow related creds
+		// Update vaultAuthPath from the cluster metadata
+		destDataStore := plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore
+		addCredentials(&destDataStore, plotterModule.VaultAuthPath, app.WriteFlow)
+
 		blueprintModule.Args.Write = []app.WriteModuleArgs{
 			{
-				Destination:     plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore,
+				Destination:     destDataStore,
 				AssetID:         plotterModule.AssetID,
 				Transformations: plotterModule.ModuleArguments.Actions,
 			},
@@ -201,10 +215,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			assetInfo := plotter.Spec.Assets[assetID]
 
 			dataStore = &assetInfo.DataStore
-			// Update vaultAuthPath from the cluster metadata
-			vaultCreds := dataStore.Vault[string(app.ReadFlow)]
-			vaultCreds.AuthPath = plotterModule.VaultAuthPath
-			dataStore.Vault[string(app.ReadFlow)] = vaultCreds
+			addCredentials(dataStore, plotterModule.VaultAuthPath, app.ReadFlow)
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
@@ -212,11 +223,10 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 				Format:     plotterModule.ModuleArguments.Source.API.Format,
 			}
 		}
+		// Get only the writeFlow related creds
 		// Update vaultAuthPath from the cluster metadata
 		destDataStore := plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore
-		vaultCreds := destDataStore.Vault[string(app.WriteFlow)]
-		vaultCreds.AuthPath = plotterModule.VaultAuthPath
-		destDataStore.Vault[string(app.WriteFlow)] = vaultCreds
+		addCredentials(&destDataStore, plotterModule.VaultAuthPath, app.WriteFlow)
 		blueprintModule.Args.Copy =
 			&app.CopyModuleArgs{
 				Source:          *dataStore,
