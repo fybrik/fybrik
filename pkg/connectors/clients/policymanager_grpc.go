@@ -345,21 +345,24 @@ func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*openapiclientm
 				}
 
 				if level == pb.EnforcementAction_DATASET || level == pb.EnforcementAction_UNKNOWN {
-					actionOnDataset := openapiclientmodels.Action{}
 					if name == "Deny" {
+						actionOnDataset := openapiclientmodels.Action{}
 						actionOnDataset.SetName("Deny")
+						policyManagerResult.SetAction(actionOnDataset)
 					}
-					if name == "Allow" {
-						actionOnDataset.SetName("Allow")
-					}
-					policyManagerResult.SetAction(actionOnDataset)
 				}
 				if k < len(usedPoliciesList) {
 					policy := usedPoliciesList[k].GetDescription()
 					log.Println("usedPoliciesList[k].GetDescription()", policy)
 					policyManagerResult.SetPolicy(policy)
 				}
-				respResult = append(respResult, policyManagerResult)
+				if name != "Allow" {
+					// dont do anything For "Allow" action as this is convention now.
+					// If we pass empty resultitem it means allow
+					respResult = append(respResult, policyManagerResult)
+				} else {
+					log.Println("not doing any append to respResult for Allow action")
+				}
 			}
 		}
 	}

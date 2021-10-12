@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"runtime"
-	"sort"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	dc "fybrik.io/fybrik/pkg/connectors/protobuf"
@@ -27,16 +26,6 @@ func GetProtocol(info *dc.DatasetDetails) (string, error) {
 		return app.JdbcDb2, nil
 	}
 	return "", errors.New(app.InvalidAssetDataStore)
-}
-
-// IsTransformation returns true if the data transformation is required
-func IsTransformation(actionName string) bool {
-	return (actionName != "Allow") // TODO FIX THIS
-}
-
-// IsAction returns true if any action is required
-func IsAction(actionName string) bool {
-	return (actionName != "Allow") // TODO FIX THIS
 }
 
 // IsDenied returns true if the data access is denied
@@ -66,26 +55,6 @@ func Hash(value string, hashLength int) string {
 		return hashedStr
 	}
 	return hashedStr[:hashLength]
-}
-
-// CreateDataSetIdentifier constructs an identifier for a dataset
-// For a JSON string, a concatenation of values is used when keys are sorted alphabetically
-func CreateDataSetIdentifier(datasetID string) string {
-	jsonMap := make(map[string]string)
-	if err := json.Unmarshal([]byte(datasetID), &jsonMap); err != nil {
-		return datasetID // not a JSON representation - return the received string
-	}
-	keys := []string{}
-	for key := range jsonMap {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-
-	id := ""
-	for _, key := range keys {
-		id += key + "-" + jsonMap[key] + "-"
-	}
-	return id[:len(id)-1]
 }
 
 // Generating release name based on blueprint module

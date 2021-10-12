@@ -59,7 +59,7 @@ spec:
                           description: EndpointSpec is used both by the module creator and by the status of the fybrikapplication
                           properties:
                             hostname:
-                              description: Always equals the release name. Can be omitted.
+                              description: Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals "{{ .Release.Name }}.{{ .Release.Namespace }}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.
                               type: string
                             port:
                               format: int32
@@ -94,7 +94,7 @@ spec:
                             description: DataFormat indicates the format of data the plugin knows how to process
                             type: string
                           pluginType:
-                            description: PluginType indicates the technology used for the module and the plugin to interact Examples of such mechanisms are vault plugins, wasm, etc
+                            description: PluginType indicates the technology used for the module and the plugin to interact The values supported should come from the module taxonomy Examples of such mechanisms are vault plugins, wasm, etc
                             type: string
                         required:
                         - dataFormat

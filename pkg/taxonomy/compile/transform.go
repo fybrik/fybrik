@@ -8,7 +8,6 @@ import (
 
 	"fybrik.io/fybrik/pkg/slices"
 	"fybrik.io/fybrik/pkg/taxonomy/model"
-	strcase "github.com/stoewer/go-strcase"
 )
 
 // transform applies transformations over an input document to make it structural.
@@ -88,7 +87,6 @@ func (t *transformer) oneOfRefsTransform(key string, schema *model.SchemaRef) *m
 			name = v.RefName()
 			key = name
 		}
-		name = strcase.LowerCamelCase(name)
 
 		// Add to name options
 		options = append(options, name)

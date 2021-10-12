@@ -31,3 +31,8 @@ definitions:
       dataformat:
         $ref: "#/definitions/Dataformat"
     additionalProperties: false
+  Capability:
+    type: string
+  PluginType:
+    type: string
+    

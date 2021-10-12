@@ -12,6 +12,7 @@ import (
 
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/kube"
 	"helm.sh/helm/v3/pkg/release"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -21,6 +22,8 @@ import (
 var (
 	debugOption = (os.Getenv("HELM_DEBUG") == "true")
 )
+
+const chartPath = "/opt/fybrik/charts/"
 
 func getConfig(kubeNamespace string) (*action.Configuration, error) {
 	actionConfig := new(action.Configuration)
@@ -250,6 +253,12 @@ func (r *Impl) ChartSave(chart *chart.Chart, ref string) error {
 
 // ChartLoad helm chart from cache
 func (r *Impl) ChartLoad(ref string) (*chart.Chart, error) {
+	// check for chart mounted in container
+	chart, err := loader.Load(chartPath + ref)
+	if err == nil {
+		return chart, err
+	}
+
 	cfg, err := getConfig("")
 	if err != nil {
 		return nil, err
@@ -271,6 +280,11 @@ func (r *Impl) ChartPush(chart *chart.Chart, ref string) error {
 
 // ChartPull helm chart from repo
 func (r *Impl) ChartPull(ref string) error {
+	// if chart mounted in container, no need to pull
+	if _, err := os.Stat(chartPath + ref); err == nil {
+		return nil
+	}
+
 	cfg, err := getConfig("")
 	if err != nil {
 		return err

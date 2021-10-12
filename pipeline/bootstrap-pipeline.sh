@@ -197,39 +197,6 @@ if [[ ${cluster_scoped} == "false" && ${use_application_namespace} == "true"  ]]
       kubectl create ns ${unique_prefix}-app 
     fi
   fi
-
-  cat > ${TMP}/approle.yaml <<EOH
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: ${unique_prefix}-app-role
-  namespace: ${unique_prefix}-app 
-rules:
-- apiGroups:
-  - '*'
-  resources:
-  - '*'
-  verbs:
-  - '*'
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: ${unique_prefix}-app-rb
-  namespace: ${unique_prefix}-app
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: ${unique_prefix}-app-role
-subjects:
-- kind: ServiceAccount
-  name: manager
-  namespace: ${unique_prefix}
-EOH
-  set +e
-  kubectl delete -f ${TMP}/approle.yaml
-  set -e
-  kubectl apply -f ${TMP}/approle.yaml
 fi
 
 set +e
@@ -566,6 +533,10 @@ if [[ ! -z "${github_workspace}" ]]; then
     fi
     git_url=""
     extra_params="${extra_params} -p git-url="
+fi
+
+if [[ -f ${repo_root}/pipeline/custom_pre_tkn.sh ]]; then
+    source ${repo_root}/pipeline/custom_pre_tkn.sh
 fi
 set +x
 

@@ -1,0 +1,19 @@
+{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.catalog "katalog") }}
+{{- if include "fybrik.isEnabled" (tuple .Values.katalogConnector.enabled $autoFlag) }}
+# katalog-viewer allows viewing assets.
+apiVersion: rbac.authorization.k8s.io/v1
+{{- if .Values.clusterScoped }}
+kind: ClusterRole
+metadata:
+  name: katalog-viewer
+{{- else }}
+kind: Role
+metadata:
+  name: katalog-viewer
+  namespace: {{ .Values.applicationNamespace | default .Release.Namespace  }}
+{{- end }}
+rules:
+- apiGroups: ["katalog.fybrik.io"]
+  resources: ["assets"]
+  verbs: ["get", "list", "watch"]
+{{- end }}

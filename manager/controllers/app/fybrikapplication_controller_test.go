@@ -91,6 +91,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 			application := &apiv1alpha1.FybrikApplication{}
 
 			Expect(readObjectFromFile("../../testdata/e2e/fybrikapplication.yaml", application)).ToNot(HaveOccurred())
+			application.Labels = map[string]string{"label1": "foo", "label2": "bar"}
 			applicationKey := client.ObjectKeyFromObject(application)
 			fmt.Printf("Module:  %v\n", module.Namespace)
 			fmt.Printf("Application:  %v\n", application.Namespace)
@@ -132,19 +133,30 @@ var _ = Describe("FybrikApplication Controller", func() {
 				return plotter.Status.ObservedState.Ready
 			}, timeout*10, interval).Should(BeTrue(), "plotter is not ready")
 
+			blueprintObjectKey := client.ObjectKey{Namespace: utils.GetBlueprintNamespace(), Name: plotter.Name}
+			By("Expecting Blueprint to contain application labels")
+			blueprint := &apiv1alpha1.Blueprint{}
+			Eventually(func() error {
+				return k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)
+			}, timeout, interval).Should(Succeed(), "Blueprint has not been created")
+
+			for _, module := range blueprint.Spec.Modules {
+				Expect(module.Arguments.Labels["label1"]).To(Equal("foo"))
+				Expect(module.Arguments.Labels["label2"]).To(Equal("bar"))
+				Expect(module.Arguments.Labels[apiv1alpha1.ApplicationNameLabel]).To(Equal(applicationKey.Name))
+				Expect(module.Arguments.Labels[apiv1alpha1.ApplicationNamespaceLabel]).To(Equal(applicationKey.Namespace))
+				Expect(module.Arguments.AppSelector.MatchLabels["app"]).To(Equal("notebook"))
+			}
 			By("Expecting FybrikApplication to eventually be ready")
 			Eventually(func() bool {
 				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
 				return application.Status.Ready
 			}, timeout, interval).Should(BeTrue(), "FybrikApplication is not ready after timeout!")
 
-			blueprintNamespace := utils.GetBlueprintNamespace()
-			fmt.Printf("blueprint namespace fybrikapp: %s\n", blueprintNamespace)
-
 			By("Status should contain the details of the endpoint")
 			Expect(len(application.Status.AssetStates)).To(Equal(1))
 			// TODO endpoint details are not set yet
-			fqdn := "test-app-e2e-default-read-module-test-e2e." + blueprintNamespace + ".svc.cluster.local"
+			fqdn := "test-app-e2e-default-read-module-test-e2e." + blueprintObjectKey.Namespace
 			Expect(application.Status.AssetStates["s3/redact-dataset"].Endpoint).To(Equal(apiv1alpha1.EndpointSpec{
 				Hostname: fqdn,
 				Port:     80,

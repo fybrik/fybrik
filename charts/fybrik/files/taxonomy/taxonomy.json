@@ -15,6 +15,9 @@
     "AppInfo": {
       "type": "object"
     },
+    "Capability": {
+      "type": "string"
+    },
     "Dataformat": {
       "type": "string"
     },
@@ -32,6 +35,9 @@
         }
       },
       "additionalProperties": false
+    },
+    "PluginType": {
+      "type": "string"
     },
     "PolicyManagerRequestContext": {
       "type": "object",

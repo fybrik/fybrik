@@ -66,6 +66,15 @@ type WriteModuleArgs struct {
 // In the future might support output args as well
 // The arguments passed depend on the type of module
 type ModuleArguments struct {
+	// Labels of FybrikApplication
+	// +optional
+	Labels map[string]string `json:"labels,omitempty"`
+
+	// Application selector is used to identify the user workload.
+	// It is obtained from FybrikApplication spec.
+	// +optional
+	AppSelector metav1.LabelSelector `json:"appSelector,omitempty"`
+
 	// CopyArgs are parameters specific to modules that copy data from one data store to another.
 	// +optional
 	Copy *CopyModuleArgs `json:"copy,omitempty"`

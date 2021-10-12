@@ -22,9 +22,9 @@ spec:
           protocol: s3
           dataformat: csv
       actions:
-      - id: redact-ID
+      - id: RedactAction
         level: 2  # column
-      - id: removed-ID
+      - id: RemoveAction
         level: 2  # column
   chart:
     name: ghcr.io/fybrik/fybrik-implicit-copy-batch:0.1.0

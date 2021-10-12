@@ -4,7 +4,9 @@
 package app
 
 import (
+	"bytes"
 	"strings"
+	"text/template"
 
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
@@ -16,7 +18,9 @@ import (
 	local "fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
+	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 	vault "fybrik.io/fybrik/pkg/vault"
+	"github.com/Masterminds/sprig/v3"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -119,6 +123,12 @@ func (m *ModuleManager) GetCopyDestination(item modules.DataInfo, destinationInt
 		Role:       utils.GetModulesRole(),
 		Address:    utils.GetVaultAddress(),
 	}
+	// The copied asset needs creds for later to be read
+	vaultMap[string(app.ReadFlow)] = app.Vault{
+		SecretPath: vaultSecretPath,
+		Role:       utils.GetModulesRole(),
+		Address:    utils.GetVaultAddress(),
+	}
 	return &app.DataStore{
 		Vault:      vaultMap,
 		Connection: connection,
@@ -134,10 +144,12 @@ func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.
 	m.Log.Info("Select read path for " + item.Context.DataSetID)
 
 	// Read policies for data that is processed in the workload geography
-	var readActions []*pb.EnforcementAction
+	var readActions []*openapiclientmodels.ResultItem
 	var err error
-	readActions, err = LookupPolicyDecisions(item.Context.DataSetID, m.PolicyManager, appContext,
-		&pb.AccessOperation{Type: pb.AccessOperation_READ, Destination: m.WorkloadGeography})
+	reqAction := openapiclientmodels.PolicyManagerRequestAction{}
+	reqAction.SetActionType(openapiclientmodels.READ)
+	reqAction.SetDestination(m.WorkloadGeography)
+	readActions, err = LookupPolicyDecisions(item.Context.DataSetID, m.PolicyManager, appContext, &reqAction)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +157,7 @@ func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.
 	// actions are not checked since they are not necessarily done by the read module
 	readSelector := &modules.Selector{Capability: app.Read,
 		Destination:  &item.Context.Requirements.Interface,
-		Actions:      []*pb.EnforcementAction{},
+		Actions:      []*openapiclientmodels.ResultItem{},
 		Source:       nil,
 		Dependencies: []*app.FybrikModule{},
 		Module:       nil,
@@ -164,7 +176,7 @@ func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.
 	// logic for deciding whether copy module is required
 	var interfaces []*app.InterfaceDetails
 	var copyRequired bool
-	additionalActions := []*pb.EnforcementAction{}
+	additionalActions := []*openapiclientmodels.ResultItem{}
 	if readSelector != nil {
 		copyRequired, interfaces, additionalActions = m.getCopyRequirements(item, readSelector)
 	} else if item.Context.Requirements.Copy.Required {
@@ -174,7 +186,7 @@ func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.
 	if !copyRequired {
 		return nil, nil
 	}
-	actionsOnCopy := []*pb.EnforcementAction{}
+	actionsOnCopy := []*openapiclientmodels.ResultItem{}
 	geo := m.WorkloadGeography
 	// WRITE actions
 	if readSelector == nil {
@@ -295,7 +307,6 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 					Type:  copySelector.Module.Spec.Type,
 					Chart: copySelector.Module.Spec.Chart,
 					Scope: scope,
-					API:   copySelector.ModuleCapability.API.DeepCopy(),
 				}},
 			}
 
@@ -369,11 +380,16 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 					Type:  readSelector.Module.Spec.Type,
 					Chart: readSelector.Module.Spec.Chart,
 					Scope: scope,
-					API:   readSelector.ModuleCapability.API.DeepCopy(),
 				}},
 			}
 
 			templates = append(templates, template)
+
+			api, err := moduleAPIToService(readSelector.ModuleCapability.API, readSelector.ModuleCapability.Scope,
+				appContext, readSelector.Module.Name, readAssetID)
+			if err != nil {
+				return err
+			}
 
 			steps := []app.DataFlowStep{
 				{
@@ -382,14 +398,10 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 					Template: "read",
 					Parameters: &app.StepParameters{
 						Source: &app.StepSource{
-							AssetID: datasetID,
+							AssetID: readAssetID,
 							API:     nil,
 						},
-						Sink: &app.StepSink{
-							AssetID: readAssetID,
-						},
-						API: moduleAPIToService(readSelector.ModuleCapability.API, readSelector.ModuleCapability.Scope,
-							appContext, readSelector.Module.Name, readAssetID),
+						API:     api,
 						Actions: actions,
 					},
 				},
@@ -430,33 +442,56 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 	return nil
 }
 
-func moduleAPIToService(api *app.ModuleAPI, scope app.CapabilityScope, appContext *app.FybrikApplication, moduleName string, assetID string) *app.Service {
-	// if the defined endpoint is empty generate the name
-	var endpoint app.EndpointSpec
-	if api.Endpoint.Hostname == "" {
-		instanceName := moduleName
-		if scope == app.Asset {
-			// if the scope of the module is asset then concat its id to the module name
-			// to create the instance name.
-			instanceName = utils.CreateStepName(moduleName, assetID)
-		}
-		releaseName := utils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
-		// Current implementation assumes there is only one cluster with read modules
-		// (which is the same cluster the user's workload)
-		fqdn := utils.GenerateModuleEndpointFQDN(releaseName, BlueprintNamespace)
-		endpoint = app.EndpointSpec{
-			Hostname: fqdn,
+func moduleAPIToService(api *app.ModuleAPI, scope app.CapabilityScope, appContext *app.FybrikApplication, moduleName string, assetID string) (*app.Service, error) {
+	hostnameTemplateString := api.Endpoint.Hostname
+	if hostnameTemplateString == "" {
+		hostnameTemplateString = "{{ .Release.Name }}.{{ .Release.Namespace }}"
+	}
+	hostnameTemplate, err := template.New("hostname").Funcs(sprig.TxtFuncMap()).Parse(hostnameTemplateString)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not parse hostname %s as a template", hostnameTemplateString)
+	}
+
+	instanceName := moduleName
+	if scope == app.Asset {
+		// if the scope of the module is asset then concat its id to the module name
+		// to create the instance name.
+		instanceName = utils.CreateStepName(moduleName, assetID)
+	}
+	releaseName := utils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
+	blueprintNamespace := utils.GetBlueprintNamespace()
+
+	values := map[string]interface{}{
+		"Release": map[string]interface{}{
+			"Name":      releaseName,
+			"Namespace": blueprintNamespace,
+		},
+		"Values": map[string]interface{}{
+			"labels": appContext.Labels,
+		},
+	}
+
+	// the following is required for proper types (e.g., labels must be map[string]interface{})
+	values, err = utils.StructToMap(values)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not serialize values for hostname field")
+	}
+
+	var hostname bytes.Buffer
+	if err := hostnameTemplate.Execute(&hostname, values); err != nil {
+		return nil, errors.Wrapf(err, "could not process template %s", hostnameTemplateString)
+	}
+
+	var service = &app.Service{
+		Endpoint: app.EndpointSpec{
+			Hostname: hostname.String(),
 			Port:     api.Endpoint.Port,
 			Scheme:   api.Endpoint.Scheme,
-		}
-	} else {
-		endpoint = api.Endpoint
+		},
+		Format: api.DataFormat,
 	}
-	var service = app.Service{
-		Endpoint: endpoint,
-		Format:   api.DataFormat,
-	}
-	return &service
+
+	return service, nil
 }
 
 // GetSupportedReadSources returns a list of supported READ interfaces of a module
@@ -486,7 +521,7 @@ func GetSupportedReadSources(module *app.FybrikModule) []*app.InterfaceDetails {
 // - true if copy is required, false - otherwise
 // - interface capabilities to match copy destination, based on read sources
 // - read actions that copy has to support
-func (m *ModuleManager) getCopyRequirements(item modules.DataInfo, readSelector *modules.Selector) (bool, []*app.InterfaceDetails, []*pb.EnforcementAction) {
+func (m *ModuleManager) getCopyRequirements(item modules.DataInfo, readSelector *modules.Selector) (bool, []*app.InterfaceDetails, []*openapiclientmodels.ResultItem) {
 	m.Log.Info("Checking supported read sources")
 	sources := GetSupportedReadSources(readSelector.GetModule())
 	// check if read sources include the data source
@@ -495,14 +530,14 @@ func (m *ModuleManager) getCopyRequirements(item modules.DataInfo, readSelector 
 	supportsAllActions := readSelector.SupportsGovernanceActions(readSelector.GetModule(), readSelector.Actions)
 	// Copy is required when data has to be transformed and read is done at another location
 	transformAtSource := len(readSelector.Actions) > 0 && item.DataDetails.Geography != readSelector.Geo
-	readActionsOnCopy := []*pb.EnforcementAction{}
+	readActionsOnCopy := []*openapiclientmodels.ResultItem{}
 	if transformAtSource {
 		readActionsOnCopy = append(readActionsOnCopy, readSelector.Actions...)
-		readSelector.Actions = []*pb.EnforcementAction{}
+		readSelector.Actions = []*openapiclientmodels.ResultItem{}
 	} else {
 		// ensure that copy + read support all needed actions
 		// actions that the read module can not perform are required to be done during copy
-		readActionsOnRead := []*pb.EnforcementAction{}
+		readActionsOnRead := []*openapiclientmodels.ResultItem{}
 		for _, action := range readSelector.Actions {
 			if !readSelector.SupportsGovernanceAction(readSelector.GetModule(), action) {
 				readActionsOnCopy = append(readActionsOnCopy, action)
@@ -531,19 +566,25 @@ func (m *ModuleManager) getCopyRequirements(item modules.DataInfo, readSelector 
 	return copyRequired, sources, readActionsOnCopy
 }
 
-func (m *ModuleManager) enforceWritePolicies(appContext *app.FybrikApplication, datasetID string) ([]*pb.EnforcementAction, string, error) {
+func (m *ModuleManager) enforceWritePolicies(appContext *app.FybrikApplication, datasetID string) ([]*openapiclientmodels.ResultItem, string, error) {
 	var err error
-	actions := []*pb.EnforcementAction{}
+	actions := []*openapiclientmodels.ResultItem{}
 	//	if the cluster selector is non-empty, the write will be done to the specified geography if possible
 	if m.WorkloadGeography != "" {
+		reqAction := openapiclientmodels.PolicyManagerRequestAction{}
+		reqAction.SetActionType(openapiclientmodels.WRITE)
+		reqAction.SetDestination(m.WorkloadGeography)
 		if actions, err = LookupPolicyDecisions(datasetID, m.PolicyManager, appContext,
-			&pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: m.WorkloadGeography}); err == nil {
+			&reqAction); err == nil {
 			return actions, m.WorkloadGeography, nil
 		}
 	}
 	var excludedGeos string
 	for _, cluster := range m.Clusters {
-		operation := &pb.AccessOperation{Type: pb.AccessOperation_WRITE, Destination: cluster.Metadata.Region}
+		operation := new(openapiclientmodels.PolicyManagerRequestAction)
+		operation.SetActionType(openapiclientmodels.WRITE)
+		operation.SetDestination(cluster.Metadata.Region)
+
 		if actions, err = LookupPolicyDecisions(datasetID, m.PolicyManager, appContext, operation); err == nil {
 			return actions, cluster.Metadata.Region, nil
 		}
@@ -586,7 +627,7 @@ func (m *ModuleManager) GetProcessingGeography(applicationContext *app.FybrikApp
 	return "", errors.New("Unknown cluster: " + clusterName)
 }
 
-func actionsToArbitrary(actions []*pb.EnforcementAction) []serde.Arbitrary {
+func actionsToArbitrary(actions []*openapiclientmodels.ResultItem) []serde.Arbitrary {
 	result := []serde.Arbitrary{}
 	for _, action := range actions {
 		raw := serde.NewArbitrary(action)

@@ -183,7 +183,7 @@ spec:
                                             description: EndpointSpec is used both by the module creator and by the status of the fybrikapplication
                                             properties:
                                               hostname:
-                                                description: Always equals the release name. Can be omitted.
+                                                description: Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals "{{ .Release.Name }}.{{ .Release.Namespace }}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.
                                                 type: string
                                               port:
                                                 format: int32
@@ -221,7 +221,7 @@ spec:
                                                 description: EndpointSpec is used both by the module creator and by the status of the fybrikapplication
                                                 properties:
                                                   hostname:
-                                                    description: Always equals the release name. Can be omitted.
+                                                    description: Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals "{{ .Release.Name }}.{{ .Release.Namespace }}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.
                                                     type: string
                                                   port:
                                                     format: int32
@@ -288,35 +288,6 @@ spec:
                       items:
                         description: ModuleInfo is a copy of FybrikModule Custom Resource.  It contains information to instantiate resource of type FybrikModule.
                         properties:
-                          api:
-                            description: API indicates to the application how to access the capabilities provided by the module TODO This is optinal but in ModuleAPI the endpoint is required?
-                            properties:
-                              dataformat:
-                                description: DataFormat defines the data format type
-                                type: string
-                              endpoint:
-                                description: EndpointSpec is used both by the module creator and by the status of the fybrikapplication
-                                properties:
-                                  hostname:
-                                    description: Always equals the release name. Can be omitted.
-                                    type: string
-                                  port:
-                                    format: int32
-                                    type: integer
-                                  scheme:
-                                    description: 'For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc'
-                                    type: string
-                                required:
-                                - port
-                                - scheme
-                                type: object
-                              protocol:
-                                description: Protocol defines the interface protocol used for data transactions
-                                type: string
-                            required:
-                            - endpoint
-                            - protocol
-                            type: object
                           chart:
                             description: Chart contains the information needed to use helm to install the capability
                             properties:

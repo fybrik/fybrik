@@ -10,71 +10,65 @@ import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
+	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 	"fybrik.io/fybrik/pkg/vault"
+	"github.com/gdexlab/go-render/render"
 )
 
-// ConstructApplicationContext constructs ApplicationContext structure to send to Policy Compiler
-func ConstructApplicationContext(datasetID string, input *app.FybrikApplication, operation *pb.AccessOperation) *pb.ApplicationContext {
-	var credentialPath string
-	if input.Spec.SecretRef != "" {
-		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operation *openapiclientmodels.PolicyManagerRequestAction) *openapiclientmodels.PolicyManagerRequest {
+	req := openapiclientmodels.PolicyManagerRequest{}
+	action := openapiclientmodels.PolicyManagerRequestAction{}
+	resource := openapiclientmodels.Resource{}
+
+	resource.SetName(datasetID)
+	req.SetResource(resource)
+
+	action.SetDestination(operation.GetDestination())
+	action.SetActionType(operation.GetActionType())
+	action.SetProcessingLocation(operation.GetDestination())
+	req.SetAction(action)
+
+	reqContext := make(map[string]interface{})
+	for k, v := range input.Spec.AppInfo {
+		reqContext[k] = v
 	}
-	return &pb.ApplicationContext{
-		AppInfo: &pb.ApplicationDetails{
-			ProcessingGeography: operation.Destination,
-			Properties:          input.Spec.AppInfo,
-		},
-		CredentialPath: credentialPath,
-		Datasets: []*pb.DatasetContext{{
-			Dataset: &pb.DatasetIdentifier{
-				DatasetId: datasetID,
-			},
-			Operation: operation,
-		}},
-	}
+	req.SetContext(reqContext)
+
+	return &req
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
-func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, input *app.FybrikApplication, op *pb.AccessOperation) ([]*pb.EnforcementAction, error) {
+func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, input *app.FybrikApplication, op *openapiclientmodels.PolicyManagerRequestAction) ([]*openapiclientmodels.ResultItem, error) {
 	// call external policy manager to get governance instructions for this operation
-	appContext := ConstructApplicationContext(datasetID, input, op)
-	openapiReq, creds, _ := connectors.ConvertGrpcReqToOpenAPIReq(appContext)
-	log.Println("transformed openapi request: ", openapiReq)
-	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)
-	log.Println("openapi response received: ", openapiResp)
-	pcresponse, _ := connectors.ConvertOpenAPIRespToGrpcResp(openapiResp, datasetID, op)
-	log.Println("transformed grpc response: ", pcresponse)
+	openapiReq := ConstructOpenAPIReq(datasetID, input, op)
+	output := render.AsCode(openapiReq)
+	log.Println("constructed openapi request: ", output)
 
-	actions := []*pb.EnforcementAction{}
+	var creds string
+	if input.Spec.SecretRef != "" {
+		creds = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+	}
+	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)
+	var actions []*openapiclientmodels.ResultItem
 	if err != nil {
 		return actions, err
 	}
+	output = render.AsCode(openapiResp)
+	log.Println("openapi response received from policy manager: ", output)
 
-	for _, datasetDecision := range pcresponse.GetDatasetDecisions() {
-		if datasetDecision.GetDataset().GetDatasetId() != datasetID {
-			continue // not our data set
-		}
-		operationDecisions := datasetDecision.GetDecisions()
-		for _, operationDecision := range operationDecisions {
-			enforcementActions := operationDecision.GetEnforcementActions()
-			for _, action := range enforcementActions {
-				if utils.IsDenied(action.GetName()) {
-					var message string
-					switch operationDecision.Operation.Type {
-					case pb.AccessOperation_READ:
-						message = app.ReadAccessDenied
-					case pb.AccessOperation_WRITE:
-						message = app.WriteNotAllowed
-					}
-					return actions, errors.New(message)
-				}
-				// Check if this is a real action (i.e. not Allow)
-				if utils.IsAction(action.GetName()) {
-					actions = append(actions, action)
-				}
+	result := openapiResp.GetResult()
+	for i := 0; i < len(result); i++ {
+		if utils.IsDenied(result[i].GetAction().Name) {
+			var message string
+			switch *openapiReq.GetAction().ActionType {
+			case openapiclientmodels.READ:
+				message = app.ReadAccessDenied
+			case openapiclientmodels.WRITE:
+				message = app.WriteNotAllowed
 			}
+			return actions, errors.New(message)
 		}
+		actions = append(actions, &result[i])
 	}
 	return actions, nil
 }
