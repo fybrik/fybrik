@@ -1,0 +1,3 @@
+definitions:
+  PluginType:
+    enum: [wasm]

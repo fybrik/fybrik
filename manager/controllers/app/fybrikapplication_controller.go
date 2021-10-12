@@ -7,9 +7,9 @@ import (
 	"context"
 	"fmt"
 
+	"os"
 	"strings"
 	"time"
-	"os"
 
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/pkg/environment"
@@ -55,7 +55,7 @@ type FybrikApplicationReconciler struct {
 
 // Reconcile reconciles FybrikApplication CRD
 // It receives FybrikApplication CRD and selects the appropriate modules that will run
-// The outcome is either a single Blueprint running on the same cluster or a Plotter containing multiple Blueprints that may run on different clusters
+// The outcome is a Plotter containing multiple Blueprints that run on different clusters
 func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("fybrikapplication", req.NamespacedName)
 	// obtain FybrikApplication resource
@@ -271,32 +271,17 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 }
 
 // setReadModulesEndpoints populates the ReadEndpointsMap map in the status of the fybrikapplication
-// Current implementation assumes there is only one cluster with read modules (which is the same cluster the user's workload)
-func setReadModulesEndpoints(applicationContext *api.FybrikApplication, blueprintsMap map[string]api.BlueprintSpec, moduleMap map[string]*api.FybrikModule) {
+func setReadModulesEndpoints(applicationContext *api.FybrikApplication, flows []api.Flow) {
 	readEndpointMap := make(map[string]api.EndpointSpec)
-	blueprintNamespace := utils.GetBlueprintNamespace()
-
-	for _, blueprintSpec := range blueprintsMap {
-		for _, module := range blueprintSpec.Modules {
-			if module.Arguments.Read != nil {
-				releaseName := utils.GetReleaseName(applicationContext.ObjectMeta.Name, applicationContext.ObjectMeta.Namespace, module)
-				moduleName := module.Name
-
-				// Find the read capability section in the module
-				// TODO: What if there are more than one read capability sections?  How do we know which endpoint
-				// to choose?  They could in theory be different, although that's not likely
-				// Currently the last one on the list is used.
-				if hasRead, caps := utils.GetModuleCapabilities(moduleMap[moduleName], api.Read); hasRead {
-					for _, cap := range caps {
-						originalEndpointSpec := cap.API.Endpoint
-
-						fqdn := utils.GenerateModuleEndpointFQDN(releaseName, blueprintNamespace)
-						for _, arg := range module.Arguments.Read {
-							readEndpointMap[arg.AssetID] = api.EndpointSpec{
-								Hostname: fqdn,
-								Port:     originalEndpointSpec.Port,
-								Scheme:   originalEndpointSpec.Scheme,
-							}
+	for _, flow := range flows {
+		if flow.FlowType == api.ReadFlow {
+			for _, subflow := range flow.SubFlows {
+				if subflow.FlowType == api.ReadFlow {
+					for _, sequentialSteps := range subflow.Steps {
+						// Check the last step in the sequential flow that is for read (this will expose the reading api)
+						lastStep := sequentialSteps[len(sequentialSteps)-1]
+						if lastStep.Parameters.API != nil {
+							readEndpointMap[flow.AssetID] = lastStep.Parameters.API.Endpoint
 						}
 					}
 				}
@@ -305,9 +290,8 @@ func setReadModulesEndpoints(applicationContext *api.FybrikApplication, blueprin
 	}
 	// populate endpoints in application status
 	for _, asset := range applicationContext.Spec.Data {
-		id := utils.CreateDataSetIdentifier(asset.DataSetID)
 		state := applicationContext.Status.AssetStates[asset.DataSetID]
-		state.Endpoint = readEndpointMap[id]
+		state.Endpoint = readEndpointMap[asset.DataSetID]
 		applicationContext.Status.AssetStates[asset.DataSetID] = state
 	}
 }
@@ -369,14 +353,23 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 		Provision:          r.Provision,
 		ProvisionedStorage: make(map[string]NewAssetInfo),
 	}
-	instances := make([]modules.ModuleInstanceSpec, 0)
+
+	plotterSpec := &api.PlotterSpec{
+		Selector:  applicationContext.Spec.Selector,
+		Assets:    map[string]api.AssetDetails{},
+		Flows:     []api.Flow{},
+		Templates: map[string]api.Template{},
+	}
+
 	for _, item := range requirements {
-		instancesPerDataset, err := moduleManager.SelectModuleInstances(item, applicationContext)
+		// TODO support different flows than read by specifying it in the application
+		flowType := api.ReadFlow
+
+		err := moduleManager.AddFlowInfoForAsset(item, applicationContext, plotterSpec, flowType)
 		if err != nil {
 			AnalyzeError(applicationContext, item.Context.DataSetID, err)
 			continue
 		}
-		instances = append(instances, instancesPerDataset...)
 	}
 	// check if can proceed
 	if getErrorMessages(applicationContext) != "" {
@@ -422,12 +415,12 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 	if !ready {
 		return ctrl.Result{RequeueAfter: 2 * time.Second}, allocErr
 	}
-	// generate blueprint specifications (per cluster)
-	blueprintPerClusterMap := r.GenerateBlueprints(instances, applicationContext)
-	setReadModulesEndpoints(applicationContext, blueprintPerClusterMap, moduleMap)
+
+	setReadModulesEndpoints(applicationContext, plotterSpec.Flows)
 	ownerRef := &api.ResourceReference{Name: applicationContext.Name, Namespace: applicationContext.Namespace, AppVersion: applicationContext.GetGeneration()}
+
 	resourceRef := r.ResourceInterface.CreateResourceReference(ownerRef)
-	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, blueprintPerClusterMap); err != nil {
+	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, plotterSpec, applicationContext.Labels); err != nil {
 		r.Log.V(0).Info("Error creating " + resourceRef.Kind + " : " + err.Error())
 		if err.Error() == api.InvalidClusterConfiguration {
 			applicationContext.Status.ErrorMessage = err.Error()

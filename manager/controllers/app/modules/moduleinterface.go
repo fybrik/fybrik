@@ -12,6 +12,7 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"fybrik.io/fybrik/pkg/multicluster"
+	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
 
 // DataDetails is the information received from the catalog connector
@@ -40,22 +41,25 @@ type DataInfo struct {
 
 // ModuleInstanceSpec consists of the module spec and arguments
 type ModuleInstanceSpec struct {
-	Module      *app.FybrikModule
+	Chart       *app.ChartSpec
 	Args        *app.ModuleArguments
-	AssetID     string
+	AssetIDs    []string
 	ClusterName string
+	ModuleName  string
+	Scope       app.CapabilityScope
 }
 
 // Selector is responsible for finding an appropriate module
 type Selector struct {
-	Module       *app.FybrikModule
-	Dependencies []*app.FybrikModule
-	Message      string
-	Capability   app.CapabilityType
-	Source       *app.InterfaceDetails
-	Destination  *app.InterfaceDetails
+	Module           *app.FybrikModule
+	Dependencies     []*app.FybrikModule
+	Message          string
+	Capability       app.CapabilityType
+	ModuleCapability *app.ModuleCapability
+	Source           *app.InterfaceDetails
+	Destination      *app.InterfaceDetails
 	// Actions that the module will perform
-	Actions []*pb.EnforcementAction
+	Actions []*openapiclientmodels.ResultItem
 	// Geography where the module will be orchestrated
 	Geo string
 }
@@ -79,29 +83,8 @@ func (m *Selector) GetError() string {
 	return m.Message
 }
 
-// AddModuleInstances creates module instances for the selected module and its dependencies
-func (m *Selector) AddModuleInstances(args *app.ModuleArguments, item DataInfo, cluster string) []ModuleInstanceSpec {
-	instances := make([]ModuleInstanceSpec, 0)
-	// append moduleinstances to the list
-	instances = append(instances, ModuleInstanceSpec{
-		AssetID:     item.Context.DataSetID,
-		Module:      m.GetModule(),
-		Args:        args,
-		ClusterName: cluster,
-	})
-	for _, dep := range m.GetDependencies() {
-		instances = append(instances, ModuleInstanceSpec{
-			AssetID:     item.Context.DataSetID,
-			Module:      dep,
-			Args:        args,
-			ClusterName: cluster,
-		})
-	}
-	return instances
-}
-
 // SupportsGovernanceActions checks whether the module supports the required agovernance actions for the capability requested
-func (m *Selector) SupportsGovernanceActions(module *app.FybrikModule, actions []*pb.EnforcementAction) bool {
+func (m *Selector) SupportsGovernanceActions(module *app.FybrikModule, actions []*openapiclientmodels.ResultItem) bool {
 	// Loop over the actions requested for the declared capability
 	for _, action := range actions {
 		// If any one of the actions is not supported, return false
@@ -113,14 +96,14 @@ func (m *Selector) SupportsGovernanceActions(module *app.FybrikModule, actions [
 }
 
 // SupportsGovernanceAction checks whether the module supports the required governance action
-func (m *Selector) SupportsGovernanceAction(module *app.FybrikModule, action *pb.EnforcementAction) bool {
+func (m *Selector) SupportsGovernanceAction(module *app.FybrikModule, action *openapiclientmodels.ResultItem) bool {
 	// Check if the module supports the capability
 	if hasCapability, caps := utils.GetModuleCapabilities(module, m.Capability); hasCapability {
 		// There could be multiple structures for the same CapabilityType
 		for _, cap := range caps {
 			// Loop over the data transforms (actions) performed by the module for this capability
 			for _, act := range cap.Actions {
-				if act.ID == action.Id && act.Level == action.Level {
+				if act.ID == action.GetAction().Name {
 					return true
 				}
 			}
@@ -155,22 +138,25 @@ func (m *Selector) SupportsInterface(module *app.FybrikModule) bool {
 	// Check if the module supports the capability
 	if hasCapability, caps := utils.GetModuleCapabilities(module, m.Capability); hasCapability {
 		// There could be multiple structures for the same CapabilityType
-		for _, cap := range caps {
+		for i := range caps {
+			capability := caps[i]
 			// Check if the source and sink protocols requested are supported
 
 			if m.Capability == app.Read {
-				supportsInterface = cap.API.DataFormat == m.Destination.DataFormat && cap.API.Protocol == m.Destination.Protocol
+				supportsInterface = capability.API.DataFormat == m.Destination.DataFormat && capability.API.Protocol == m.Destination.Protocol
 				if supportsInterface {
+					m.ModuleCapability = &capability
 					return true
 				}
 			} else if m.Capability == app.Copy {
-				for _, inter := range cap.SupportedInterfaces {
+				for _, inter := range capability.SupportedInterfaces {
 					if inter.Source.DataFormat != m.Source.DataFormat || inter.Source.Protocol != m.Source.Protocol {
 						continue
 					}
 					if inter.Sink.DataFormat != m.Destination.DataFormat || inter.Sink.Protocol != m.Destination.Protocol {
 						continue
 					}
+					m.ModuleCapability = &capability
 					supportsInterface = true
 					break
 				}

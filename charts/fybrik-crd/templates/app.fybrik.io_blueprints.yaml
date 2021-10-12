@@ -43,13 +43,42 @@ spec:
                 description: Cluster indicates the cluster on which the Blueprint runs
                 type: string
               modules:
-                description: Modules is a list of modules that indicate the data path components that run in this cluster
-                items:
+                additionalProperties:
                   description: BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the information necessary to instantiate a datapath component, including the parameters relevant for the particular workload.
                   properties:
                     arguments:
                       description: Arguments are the input parameters for a specific instance of a module.
                       properties:
+                        appSelector:
+                          description: Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.
+                          properties:
+                            matchExpressions:
+                              description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
+                              items:
+                                description: A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+                                properties:
+                                  key:
+                                    description: key is the label key that the selector applies to.
+                                    type: string
+                                  operator:
+                                    description: operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+                                    type: string
+                                  values:
+                                    description: values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+                                    items:
+                                      type: string
+                                    type: array
+                                required:
+                                - key
+                                - operator
+                                type: object
+                              type: array
+                            matchLabels:
+                              additionalProperties:
+                                type: string
+                              description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+                              type: object
+                          type: object
                         copy:
                           description: CopyArgs are parameters specific to modules that copy data from one data store to another.
                           properties:
@@ -88,7 +117,7 @@ spec:
                                     - role
                                     - secretPath
                                     type: object
-                                  description: Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataStoreActions
+                                  description: Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.
                                   type: object
                               required:
                               - connection
@@ -127,7 +156,7 @@ spec:
                                     - role
                                     - secretPath
                                     type: object
-                                  description: Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataStoreActions
+                                  description: Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.
                                   type: object
                               required:
                               - connection
@@ -144,6 +173,11 @@ spec:
                           - assetID
                           - destination
                           - source
+                          type: object
+                        labels:
+                          additionalProperties:
+                            type: string
+                          description: Labels of FybrikApplication
                           type: object
                         read:
                           description: ReadArgs are parameters that are specific to modules that enable an application to read data
@@ -185,7 +219,7 @@ spec:
                                       - role
                                       - secretPath
                                       type: object
-                                    description: Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataStoreActions
+                                    description: Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.
                                     type: object
                                 required:
                                 - connection
@@ -243,7 +277,7 @@ spec:
                                       - role
                                       - secretPath
                                       type: object
-                                    description: Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataStoreActions
+                                    description: Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.
                                     type: object
                                 required:
                                 - connection
@@ -281,18 +315,15 @@ spec:
                       required:
                       - name
                       type: object
-                    instanceName:
-                      description: InstanceName is the unique name for the deployed instance related to this workload
-                      type: string
                     name:
                       description: Name of the fybrikmodule on which this is based
                       type: string
                   required:
                   - chart
-                  - instanceName
                   - name
                   type: object
-                type: array
+                description: Modules is a map which contains modules that indicate the data path components that run in this cluster The map key is InstanceName which is the unique name for the deployed instance related to this workload
+                type: object
             required:
             - cluster
             - modules
@@ -300,6 +331,19 @@ spec:
           status:
             description: BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators forthe Kubernetes resources owned by the Blueprint for cleanup and status monitoring
             properties:
+              modules:
+                additionalProperties:
+                  description: ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
+                  properties:
+                    error:
+                      description: Error indicates that there has been an error to orchestrate the modules and provides the error message
+                      type: string
+                    ready:
+                      description: Ready represents that the modules have been orchestrated successfully and the data is ready for usage
+                      type: boolean
+                  type: object
+                description: ModulesState is a map which holds the status of each module its key is the instance name which is the unique name for the deployed instance related to this workload
+                type: object
               observedGeneration:
                 description: ObservedGeneration is taken from the Blueprint metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.
                 format: int64
@@ -307,9 +351,6 @@ spec:
               observedState:
                 description: ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
                 properties:
-                  dataAccessInstructions:
-                    description: DataAccessInstructions indicate how the data user or his application may access the data. Instructions are available upon successful orchestration.
-                    type: string
                   error:
                     description: Error indicates that there has been an error to orchestrate the modules and provides the error message
                     type: string
@@ -323,6 +364,8 @@ spec:
                   type: integer
                 description: Releases map each release to the observed generation of the blueprint containing this release. At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.
                 type: object
+            required:
+            - modules
             type: object
         type: object
     served: true

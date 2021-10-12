@@ -12,6 +12,7 @@ noFinalizer: "true"
 copy:
   # copies from source
   source:
+    vault: {}
     connection:
       kafka: {}
 #        bootstrap_servers: ""
@@ -28,6 +29,7 @@ copy:
 
   # copies to destination
   destination:
+    vault: {}
     connection:
       s3: {}
 #        endpoint: ""
