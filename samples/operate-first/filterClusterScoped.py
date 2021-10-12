@@ -36,7 +36,6 @@ def createKustomizations():
                     f.write(kustomizationString)
 
 def main():
-    splitToYamls('fybrik.yaml')
     splitToYamls('fybrik-crd.yaml')
     print("Successfully split files into yamls and wrote to appropriate directories\n")   
     

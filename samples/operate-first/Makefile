@@ -16,7 +16,6 @@ clean: clean
 
 .PHONY: helm-template
 helm-template: $(TOOLBIN)/yq $(TOOLBIN)/helm
-	$(TOOLBIN)/helm template $(RELEASE_NAME) -n $(NAMESPACE) $(Fybrik_CHART_PATH) | $(TOOLBIN)/yq e 'select(.kind=="MutatingWebhookConfiguration" or .kind=="ValidatingWebhookConfiguration" or .kind=="ClusterRole" or .kind=="ClusterRoleBinding")' - > fybrik.yaml
 	$(TOOLBIN)/helm template $(CRD_RELEASE_NAME) -n $(NAMESPACE) $(CRD_CHART_PATH) > fybrik-crd.yaml
 
 .PHONY: generate

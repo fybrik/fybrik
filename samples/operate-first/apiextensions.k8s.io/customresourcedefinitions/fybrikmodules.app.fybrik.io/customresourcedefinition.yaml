@@ -62,7 +62,8 @@ spec:
                       type: array
                     api:
                       description: API indicates to the application how to access
-                        the capabilities provided by the module
+                        the capabilities provided by the module TODO This is optional
+                        but in ModuleAPI the endpoint is required?
                       properties:
                         dataformat:
                           description: DataFormat defines the data format type
@@ -72,8 +73,12 @@ spec:
                             and by the status of the fybrikapplication
                           properties:
                             hostname:
-                              description: Always equals the release name. Can be
-                                omitted.
+                              description: Hostname is the hostname to connect to
+                                for connecting to a module exposed service. By default
+                                this equals "fybrik-crd.fybrik-system" of the module.
+                                <br/> Module developers can overide the default behavior
+                                by providing a template that may use the ".Release.Name",
+                                ".Release.Namespace" and ".Values.labels" variables.
                               type: string
                             port:
                               format: int32
@@ -114,8 +119,9 @@ spec:
                             type: string
                           pluginType:
                             description: PluginType indicates the technology used
-                              for the module and the plugin to interact Examples of
-                              such mechanisms are vault plugins, wasm, etc
+                              for the module and the plugin to interact The values
+                              supported should come from the module taxonomy Examples
+                              of such mechanisms are vault plugins, wasm, etc
                             type: string
                         required:
                         - dataFormat

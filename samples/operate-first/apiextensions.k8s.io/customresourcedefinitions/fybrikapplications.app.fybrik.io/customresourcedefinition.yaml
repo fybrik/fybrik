@@ -224,7 +224,12 @@ spec:
                         the asset will be served to the application
                       properties:
                         hostname:
-                          description: Always equals the release name. Can be omitted.
+                          description: Hostname is the hostname to connect to for
+                            connecting to a module exposed service. By default this
+                            equals "fybrik-crd.fybrik-system" of the module. <br/>
+                            Module developers can overide the default behavior by
+                            providing a template that may use the ".Release.Name",
+                            ".Release.Namespace" and ".Values.labels" variables.
                           type: string
                         port:
                           format: int32
