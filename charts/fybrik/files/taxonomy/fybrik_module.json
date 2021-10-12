@@ -1,0 +1,66 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "fybrik_module.json",
+    "title": "FybrikModule taxonomy",
+    "type": "object",
+    "description": "Values contributed to by Fybrik modules.",
+    "properties": {
+        "spec": {
+            "type": "object",
+            "properties": {
+                "pluginType": {
+                    "$ref": "taxonomy.json#/definitions/PluginType"
+                },
+                "capabilities": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "capability": {
+                                "$ref": "taxonomy.json#/definitions/Capability"
+                            },
+                            "api": {
+                                "$ref": "taxonomy.json#/definitions/Interface"
+                            },
+                            "supportedInterfaces": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "oneOf": [
+                                        {
+                                            "source": {
+                                                "$ref": "taxonomy.json#/definitions/Interface"
+                                            }
+                                        },
+                                        {
+                                            "sink": {
+                                                "$ref": "taxonomy.json#/definitions/Interface"
+                                            }
+                                        },
+                                        {
+                                            "source": {
+                                                "$ref": "taxonomy.json#/definitions/Interface"
+                                            },
+                                            "sink": {
+                                                "$ref": "taxonomy.json#/definitions/Interface"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "actions": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "taxonomy.json#/definitions/Action"
+                                }
+                            }
+                        },
+                        "required": ["capability"]
+                    }
+                }
+            },
+            "required": ["capabilities"]
+        }
+    },
+    "required": ["spec"]
+} 
