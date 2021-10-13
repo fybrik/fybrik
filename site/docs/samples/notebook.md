@@ -127,14 +127,11 @@ Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to redact t
 ```rego
 package dataapi.authz
 
-import data.data_policies as dp
-
-transform[action] {
+rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": description}] {
   description := "Redact sensitive columns in finance datasets"
-  dp.AccessType() == "READ"
-  dp.dataset_has_tag("finance")
-  column_names := dp.column_with_any_name({"nameOrig"})
-  action = dp.build_redact_column_action(column_names[_], dp.build_policy_from_description(description))
+  input.action.actionType == "read"
+  input.resource.tags.finance
+  column_names := [input.resource.columns[i].name | input.resource.columns[i].name == "nameOrig"]
 }
 ```
 
