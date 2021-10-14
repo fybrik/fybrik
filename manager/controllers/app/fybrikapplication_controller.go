@@ -13,8 +13,10 @@ import (
 
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/pkg/environment"
+	local "fybrik.io/fybrik/pkg/multicluster/local"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
+	config "fybrik.io/fybrik/manager/controllers/app/config_evaluator"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 
@@ -37,6 +39,7 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
+	model "fybrik.io/fybrik/pkg/taxonomy/model/base"
 	"fybrik.io/fybrik/pkg/vault"
 )
 
@@ -239,6 +242,20 @@ func (r *FybrikApplicationReconciler) reconcileFinalizers(applicationContext *ap
 	return nil
 }
 
+// GetLocalCluster returns the local cluster metadata
+func (r *FybrikApplicationReconciler) GetLocalCluster() (multicluster.Cluster, error) {
+	// the workload runs in a local cluster
+	localClusterManager, err := local.NewManager(r.Client, utils.GetSystemNamespace())
+	if err != nil {
+		return multicluster.Cluster{}, err
+	}
+	clusters, err := localClusterManager.GetClusters()
+	if err != nil || len(clusters) != 1 {
+		return multicluster.Cluster{}, err
+	}
+	return clusters[0], nil
+}
+
 func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext *api.FybrikApplication) error {
 	// clear provisioned storage
 	// References to buckets (Dataset resources) are deleted. Buckets that are persistent will not be removed upon Dataset deletion.
@@ -316,10 +333,12 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 		return ctrl.Result{}, nil
 	}
 
+	// get deployed clusters
 	clusters, err := r.ClusterManager.GetClusters()
 	if err != nil {
 		return ctrl.Result{}, err
 	}
+
 	// create a list of requirements for creating a data flow (actions, interface to app, data format) per a single data set
 	var requirements []modules.DataInfo
 	for _, dataset := range applicationContext.Spec.Data {
@@ -337,83 +356,17 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 		return ctrl.Result{}, nil
 	}
 
-	// create a module manager that will select modules to be orchestrated based on user requirements and module capabilities
-	moduleMap, err := r.GetAllModules()
-	if err != nil {
+	provisionedStorage, plotterSpec, err := r.buildSolution(applicationContext, requirements)
+
+	// check if can proceed
+	if err != nil || getErrorMessages(applicationContext) != "" {
 		return ctrl.Result{}, err
 	}
-	objectKey := client.ObjectKeyFromObject(applicationContext)
-	moduleManager := &ModuleManager{
-		Client:             r.Client,
-		Log:                r.Log,
-		Modules:            moduleMap,
-		Clusters:           clusters,
-		Owner:              objectKey,
-		PolicyManager:      r.PolicyManager,
-		Provision:          r.Provision,
-		ProvisionedStorage: make(map[string]NewAssetInfo),
-	}
 
-	plotterSpec := &api.PlotterSpec{
-		Selector:  applicationContext.Spec.Selector,
-		Assets:    map[string]api.AssetDetails{},
-		Flows:     []api.Flow{},
-		Templates: map[string]api.Template{},
-	}
-
-	for _, item := range requirements {
-		// TODO support different flows than read by specifying it in the application
-		flowType := api.ReadFlow
-
-		err := moduleManager.AddFlowInfoForAsset(item, applicationContext, plotterSpec, flowType)
-		if err != nil {
-			AnalyzeError(applicationContext, item.Context.DataSetID, err)
-			continue
-		}
-	}
-	// check if can proceed
-	if getErrorMessages(applicationContext) != "" {
-		return ctrl.Result{}, nil
-	}
-
-	// update allocated storage in the status
-	// clean irrelevant buckets
-	for datasetID, details := range applicationContext.Status.ProvisionedStorage {
-		if _, found := moduleManager.ProvisionedStorage[datasetID]; !found {
-			_ = r.Provision.DeleteDataset(getBucketResourceRef(details.DatasetRef))
-			delete(applicationContext.Status.ProvisionedStorage, datasetID)
-		}
-	}
-	// add or update new buckets
-	for datasetID, info := range moduleManager.ProvisionedStorage {
-		raw := serde.NewArbitrary(info.Details)
-		applicationContext.Status.ProvisionedStorage[datasetID] = api.DatasetDetails{
-			DatasetRef: info.Storage.Name,
-			SecretRef:  info.Storage.SecretRef.Name,
-			Details:    *raw,
-		}
-	}
-	ready := true
-	var allocErr error
-	// check that the buckets have been created successfully using Dataset status
-	for id, details := range applicationContext.Status.ProvisionedStorage {
-		res, err := r.Provision.GetDatasetStatus(getBucketResourceRef(details.DatasetRef))
-		if err != nil {
-			ready = false
-			break
-		}
-		if !res.Provisioned {
-			ready = false
-			r.Log.V(0).Info("No bucket has been provisioned for " + id)
-			// TODO(shlomitk1): analyze the error
-			if res.ErrorMsg != "" {
-				allocErr = errors.New(res.ErrorMsg)
-			}
-			break
-		}
-	}
-	if !ready {
-		return ctrl.Result{RequeueAfter: 2 * time.Second}, allocErr
+	// clean irrelevant buckets and check that the provisioned storage is ready
+	storageReady, allocationErr := r.updateProvisionedStorageStatus(applicationContext, provisionedStorage)
+	if !storageReady {
+		return ctrl.Result{RequeueAfter: 2 * time.Second}, allocationErr
 	}
 
 	setReadModulesEndpoints(applicationContext, plotterSpec.Flows)
@@ -464,6 +417,33 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *modules.DataInfo, i
 		req.VaultSecretPath = details.CredentialsInfo.VaultSecretPath
 	}
 
+	configEvaluatorInput := &config.EvaluatorInput{
+		Clusters:      clusters,
+		AssetMetadata: dataDetails,
+	}
+	config.SetApplicationInfo(input, configEvaluatorInput)
+	config.SetAssetRequirements(input, *req.Context, configEvaluatorInput)
+	localCluster, err := r.GetLocalCluster()
+	if err != nil {
+		return nil
+	}
+	config.SetWorkloadInfo(localCluster, clusters, input, configEvaluatorInput)
+
+	// Read policies for data that is processed in the workload geography
+	if configEvaluatorInput.AssetRequirements.Usage[api.ReadFlow] {
+		actionType := model.READ
+		reqAction := model.PolicyManagerRequestAction{ActionType: &actionType, Destination: &req.WorkloadCluster.Metadata.Region}
+		req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, input, &reqAction)
+		if err != nil {
+			return err
+		}
+	}
+	configEvaluatorInput.GovernanceActions = req.Actions
+	configDecisions, err := config.NewDefaultConfig().Evaluate(configEvaluatorInput)
+	if err != nil {
+		return err
+	}
+	req.Configuration = configDecisions
 	return nil
 }
 
@@ -551,4 +531,75 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*api.FybrikMod
 		moduleMap[module.Name] = module.DeepCopy()
 	}
 	return moduleMap, nil
+}
+
+func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(applicationContext *api.FybrikApplication, provisionedStorage map[string]NewAssetInfo) (bool, error) {
+	// update allocated storage in the status
+	// clean irrelevant buckets
+	for datasetID, details := range applicationContext.Status.ProvisionedStorage {
+		if _, found := provisionedStorage[datasetID]; !found {
+			_ = r.Provision.DeleteDataset(getBucketResourceRef(details.DatasetRef))
+			delete(applicationContext.Status.ProvisionedStorage, datasetID)
+		}
+	}
+	// add or update new buckets
+	for datasetID, info := range provisionedStorage {
+		raw := serde.NewArbitrary(info.Details)
+		applicationContext.Status.ProvisionedStorage[datasetID] = api.DatasetDetails{
+			DatasetRef: info.Storage.Name,
+			SecretRef:  info.Storage.SecretRef.Name,
+			Details:    *raw,
+		}
+	}
+	// check that the buckets have been created successfully using Dataset status
+	for id, details := range applicationContext.Status.ProvisionedStorage {
+		res, err := r.Provision.GetDatasetStatus(getBucketResourceRef(details.DatasetRef))
+		if err != nil {
+			return false, nil
+		}
+		if !res.Provisioned {
+			r.Log.V(0).Info("No bucket has been provisioned for " + id)
+			// TODO(shlomitk1): analyze the error
+			if res.ErrorMsg != "" {
+				return false, errors.New(res.ErrorMsg)
+			}
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+func (r *FybrikApplicationReconciler) buildSolution(applicationContext *api.FybrikApplication, requirements []modules.DataInfo) (map[string]NewAssetInfo, *api.PlotterSpec, error) {
+	// get deployed modules
+	moduleMap, err := r.GetAllModules()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// create a plotter generator that will select modules to be orchestrated based on user requirements and module capabilities
+	plotterGen := &PlotterGenerator{
+		Client:             r.Client,
+		Log:                r.Log,
+		Modules:            moduleMap,
+		Owner:              client.ObjectKeyFromObject(applicationContext),
+		PolicyManager:      r.PolicyManager,
+		Provision:          r.Provision,
+		ProvisionedStorage: make(map[string]NewAssetInfo),
+	}
+
+	plotterSpec := &api.PlotterSpec{
+		Selector:  applicationContext.Spec.Selector,
+		Assets:    map[string]api.AssetDetails{},
+		Flows:     []api.Flow{},
+		Templates: map[string]api.Template{},
+	}
+
+	for _, item := range requirements {
+		err := plotterGen.AddFlowInfoForAsset(item, applicationContext, plotterSpec)
+		if err != nil {
+			AnalyzeError(applicationContext, item.Context.DataSetID, err)
+			continue
+		}
+	}
+	return plotterGen.ProvisionedStorage, plotterSpec, nil
 }

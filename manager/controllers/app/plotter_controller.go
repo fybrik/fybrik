@@ -17,7 +17,6 @@ import (
 
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/app/modules"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	"github.com/go-logr/logr"
@@ -149,10 +148,10 @@ func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType app
 	dataStore.Vault = vaultMap
 }
 
-// convertPlotterModuleToBlueprintModule converts an object of type PlotterModulesSpec to type modules.ModuleInstanceSpec
-func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.Plotter, plotterModule PlotterModulesSpec) *modules.ModuleInstanceSpec {
+// convertPlotterModuleToBlueprintModule converts an object of type PlotterModulesSpec to type ModuleInstanceSpec
+func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.Plotter, plotterModule PlotterModulesSpec) *ModuleInstanceSpec {
 	assetIDs := []string{plotterModule.AssetID}
-	blueprintModule := &modules.ModuleInstanceSpec{
+	blueprintModule := &ModuleInstanceSpec{
 		Chart:    &plotterModule.Chart,
 		AssetIDs: assetIDs,
 		Args: &app.ModuleArguments{
@@ -241,7 +240,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 // The key is the cluster name.
 func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]app.BlueprintSpec {
 	r.Log.V(1).Info("Constructing Blueprints from Plotter")
-	moduleInstances := make([]modules.ModuleInstanceSpec, 0)
+	moduleInstances := make([]ModuleInstanceSpec, 0)
 
 	clusters, _ := r.ClusterManager.GetClusters()
 

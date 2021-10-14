@@ -38,7 +38,7 @@ func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operati
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
-func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, input *app.FybrikApplication, op *openapiclientmodels.PolicyManagerRequestAction) ([]*openapiclientmodels.ResultItem, error) {
+func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, input *app.FybrikApplication, op *openapiclientmodels.PolicyManagerRequestAction) ([]openapiclientmodels.Action, error) {
 	// call external policy manager to get governance instructions for this operation
 	openapiReq := ConstructOpenAPIReq(datasetID, input, op)
 	output := render.AsCode(openapiReq)
@@ -49,7 +49,7 @@ func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyMana
 		creds = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
 	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)
-	var actions []*openapiclientmodels.ResultItem
+	var actions []openapiclientmodels.Action
 	if err != nil {
 		return actions, err
 	}
@@ -68,7 +68,7 @@ func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyMana
 			}
 			return actions, errors.New(message)
 		}
-		actions = append(actions, &result[i])
+		actions = append(actions, result[i].GetAction())
 	}
 	return actions, nil
 }
