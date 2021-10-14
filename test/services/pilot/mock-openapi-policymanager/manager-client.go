@@ -11,7 +11,7 @@ import (
 	"time"
 
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
-	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
 
 func getEnv(key string) string {
@@ -46,7 +46,7 @@ func main() {
 	}
 
 	creds := "http://vault.fybrik-system:8200/v1/kubernetes-secrets/<SECRET-NAME>?namespace=<NAMESPACE>"
-	input := openapiclientmodels.NewPolicyManagerRequestWithDefaults()
+	input := taxonomymodels.NewPolicyManagerRequestWithDefaults()
 
 	reqCtx := make(map[string]interface{})
 	reqCtx["intent"] = "Fraud Detection"
@@ -54,13 +54,13 @@ func main() {
 	// reqCtx["role"] = "Business Analyst"
 	input.SetContext(reqCtx)
 
-	action := openapiclientmodels.PolicyManagerRequestAction{}
-	action.SetActionType(openapiclientmodels.READ)
+	action := taxonomymodels.PolicyManagerRequestAction{}
+	action.SetActionType(taxonomymodels.READ)
 	processLocation := "Netherlands"
 	action.SetProcessingLocation(processLocation)
 	input.SetAction(action)
 
-	input.SetResource(*openapiclientmodels.NewResource("{\"asset_id\": \"5067b64a-67bc-4067-9117-0aff0a9963ea\", \"catalog_id\": \"0fd6ff25-7327-4b55-8ff2-56cc1c934824\"}"))
+	input.SetResource(*taxonomymodels.NewResource("{\"asset_id\": \"5067b64a-67bc-4067-9117-0aff0a9963ea\", \"catalog_id\": \"0fd6ff25-7327-4b55-8ff2-56cc1c934824\"}"))
 
 	log.Println("in manager-client - policy manager request: ", input)
 	log.Println("in manager-client - creds: ", creds)
@@ -70,7 +70,7 @@ func main() {
 	bytes, _ := response.MarshalJSON()
 	log.Println("in manager-client - Response from `policyManager.GetPoliciesDecisions`: \n", string(bytes))
 
-	var resp openapiclientmodels.PolicyManagerResponse
+	var resp taxonomymodels.PolicyManagerResponse
 	err = json.Unmarshal(bytes, &resp)
 	log.Println("err: ", err)
 	log.Println("resp: ", resp)
