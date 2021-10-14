@@ -345,8 +345,10 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 		req := modules.DataInfo{
 			Context: dataset.DeepCopy(),
 		}
+		r.Log.V(0).Info("Preparing requirements for " + req.Context.DataSetID)
 		if err := r.constructDataInfo(&req, applicationContext, clusters); err != nil {
 			AnalyzeError(applicationContext, req.Context.DataSetID, err)
+			r.Log.V(0).Info("Error: " + err.Error())
 			continue
 		}
 		requirements = append(requirements, req)
@@ -357,7 +359,9 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 	}
 
 	provisionedStorage, plotterSpec, err := r.buildSolution(applicationContext, requirements)
-
+	if err != nil {
+		r.Log.V(0).Info("Plotter construction failed: " + err.Error())
+	}
 	// check if can proceed
 	if err != nil || getErrorMessages(applicationContext) != "" {
 		return ctrl.Result{}, err

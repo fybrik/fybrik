@@ -64,7 +64,7 @@ func (p *PlotterGenerator) SelectModules(item modules.DataInfo, appContext *app.
 			Message:      "",
 		}
 		if !readSelector.SelectModule(p.Modules, app.Read) {
-			p.Log.Info("Could not select a read module for " + item.Context.DataSetID + " : " + readSelector.GetError())
+			p.Log.Info("Could not select a read module for " + item.Context.DataSetID + "; no module supports the requested interface")
 			return nil, errors.New(readSelector.GetError())
 		}
 

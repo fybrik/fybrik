@@ -149,9 +149,11 @@ func (m *Selector) SelectModule(moduleMap map[string]*app.FybrikModule, requeste
 	m.Message = ""
 	for _, module := range moduleMap {
 		if !m.SupportsInterface(module, requestedCapability) {
+			m.Message = app.ModuleNotFound + " for " + string(requestedCapability) + "; requested interface is not supported"
 			continue
 		}
 		if !m.SupportsGovernanceActions(module, m.Actions) {
+			m.Message = app.ModuleNotFound + " for " + string(requestedCapability) + "; governance actions are not supported"
 			continue
 		}
 		if !m.SupportsDependencies(module, moduleMap) {
