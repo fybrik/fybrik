@@ -829,6 +829,7 @@ func (in *ModuleArguments) DeepCopyInto(out *ModuleArguments) {
 			(*out)[key] = val
 		}
 	}
+	in.AppSelector.DeepCopyInto(&out.AppSelector)
 	if in.Copy != nil {
 		in, out := &in.Copy, &out.Copy
 		*out = new(CopyModuleArgs)
