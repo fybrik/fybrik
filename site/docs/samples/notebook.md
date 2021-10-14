@@ -122,16 +122,16 @@ Notice the `assetMetadata` field above. It specifies the dataset geography and t
 
 ## Define data access policies
 
-Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to redact the `nameOrig` column for datasets tagged as `finance`. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
+Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to redact the columns which are tagged with `PII` for datasets which have data tags as `finance`. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
 
 ```rego
 package dataapi.authz
 
 rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": description}] {
-  description := "Redact sensitive columns in finance datasets"
+  description := "Redact columns tagged as PII in datasets tagged with finance = true"
   input.action.actionType == "read"
   input.resource.tags.finance
-  column_names := [input.resource.columns[i].name | input.resource.columns[i].name == "nameOrig"]
+  column_names := [input.resource.columns[i].name | input.resource.columns[i].tags.PII]
 }
 ```
 
