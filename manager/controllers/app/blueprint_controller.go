@@ -31,17 +31,23 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/helm"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
+	credentialprovider "k8s.io/kubernetes/pkg/credentialprovider"
+	credentialprovidersecrets "k8s.io/kubernetes/pkg/credentialprovider/secrets"
 	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
+
+	dockerref "github.com/docker/distribution/reference"
 )
 
 // BlueprintReconciler reconciles a Blueprint object
 type BlueprintReconciler struct {
 	client.Client
-	Name   string
-	Log    logr.Logger
-	Scheme *runtime.Scheme
-	Helmer helm.Interface
+	Name    string
+	Log     logr.Logger
+	Scheme  *runtime.Scheme
+	Helmer  helm.Interface
+	keyring credentialprovider.DockerKeyring
 }
 
 // Reconcile receives a Blueprint CRD
@@ -49,6 +55,21 @@ type BlueprintReconciler struct {
 func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("blueprint", req.NamespacedName)
 	var err error
+
+	// create an array of all dockerconfigjson secrets
+	pullSecrets := []v1.Secret{}
+	secretList := v1.SecretList{}
+	if err := r.List(ctx, &secretList, client.InNamespace(utils.GetSystemNamespace())); err == nil {
+		for _, secret := range secretList.Items {
+			if secret.Type == "kubernetes.io/dockerconfigjson" {
+				pullSecrets = append(pullSecrets, secret)
+			}
+		}
+	}
+
+	// create a keyring of all dockerconfigjson secrets, to be used for lookup
+	newKeyring := credentialprovider.NewDockerKeyring()
+	r.keyring, _ = credentialprovidersecrets.MakeDockerKeyring(pullSecrets, newKeyring)
 
 	blueprint := app.Blueprint{}
 	if err := r.Get(ctx, req.NamespacedName, &blueprint); err != nil {
@@ -130,6 +151,15 @@ func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) 
 	return errors.New(strings.Join(errs, "; "))
 }
 
+func getDomainFromImageName(image string) (string, error) {
+	named, err := dockerref.ParseNormalizedNamed(image)
+	if err != nil {
+		return "", fmt.Errorf("couldn't parse image name: %v", err)
+	}
+
+	return dockerref.Domain(named), nil
+}
+
 func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.ChartSpec, args map[string]interface{}, blueprint *app.Blueprint, releaseName string) (ctrl.Result, error) {
 	log.Info(fmt.Sprintf("--- Chart Ref ---\n\n%v\n\n", chartSpec.Name))
 	kubeNamespace := blueprint.Namespace
@@ -141,7 +171,20 @@ func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.
 	nbytes, _ := yaml.Marshal(args)
 	log.Info(fmt.Sprintf("--- Values.yaml ---\n\n%s\n\n", nbytes))
 
-	err := r.Helmer.ChartPull(chartSpec.Name)
+	repoToPull, err := getDomainFromImageName(chartSpec.Name)
+	if err != nil {
+		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed to parse image name")
+	}
+
+	creds, withCredentials := r.keyring.Lookup(chartSpec.Name)
+	if withCredentials {
+		err := r.Helmer.RegistryLogin(repoToPull, creds[0].Username, creds[0].Password, false)
+		if err != nil {
+			return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed registry login")
+		}
+	}
+
+	err = r.Helmer.ChartPull(chartSpec.Name)
 	if err != nil {
 		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart pull")
 	}

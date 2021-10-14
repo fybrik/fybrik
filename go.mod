@@ -10,7 +10,8 @@ require (
 	github.com/apache/arrow/go/arrow v0.0.0-20210907151234-f40856a768f2
 	github.com/aws/aws-sdk-go v1.40.37
 	github.com/buger/jsonparser v1.1.1
-	github.com/fatih/color v1.9.0 // indirect
+	github.com/docker/distribution v2.7.1+incompatible
+	github.com/fatih/color v1.10.0 // indirect
 	github.com/gdexlab/go-render v1.0.1
 	github.com/getkin/kin-openapi v0.66.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
@@ -29,15 +30,12 @@ require (
 	github.com/hashicorp/vault/api v1.0.5-0.20201001211907-38d91b749c77
 	github.com/hashicorp/vault/sdk v0.1.14-0.20201214222404-d8fffe05d2f4 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
-	github.com/kr/pretty v0.2.1 // indirect
 	github.com/mailru/easyjson v0.7.1-0.20191009090205-6c0755d89d1e // indirect
-	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.14.0
-	github.com/opencontainers/runc v1.0.0-rc9 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/robfig/cron v1.2.0
 	github.com/rogpeppe/go-internal v1.6.0 // indirect
@@ -48,22 +46,51 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.mongodb.org/mongo-driver v1.4.2 // indirect
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
-	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602
+	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
+	golang.org/x/tools v0.1.5 // indirect
 	google.golang.org/genproto v0.0.0-20210707164411-8c882eb9abba // indirect
 	google.golang.org/grpc v1.39.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.6.2
-	k8s.io/api v0.21.3
+	k8s.io/api v0.22.2
 	k8s.io/apiextensions-apiserver v0.21.3
-	k8s.io/apimachinery v0.21.3
-	k8s.io/cli-runtime v0.21.0
-	k8s.io/client-go v0.21.3
+	k8s.io/apimachinery v0.22.2
+	k8s.io/cli-runtime v0.21.3
+	k8s.io/client-go v0.22.2
+	k8s.io/kubernetes v1.22.2
 	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/cli-utils v0.19.2
 	sigs.k8s.io/controller-runtime v0.9.5
 	sigs.k8s.io/yaml v1.2.0
 )
 
-replace helm.sh/helm/v3 v3.6.2 => github.com/fybrik/helm/v3 v3.6.2-fybrik-update
+replace (
+	helm.sh/helm/v3 v3.6.2 => github.com/fybrik/helm/v3 v3.6.2-fybrik-update
+	k8s.io/api => k8s.io/api v0.21.3
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.21.3
+	k8s.io/apimachinery => k8s.io/apimachinery v0.21.3
+	k8s.io/apiserver => k8s.io/apiserver v0.21.3
+	k8s.io/cli-runtime => k8s.io/cli-runtime v0.21.3
+	k8s.io/client-go => k8s.io/client-go v0.21.3
+	k8s.io/cloud-provider => k8s.io/cloud-provider v0.21.3
+	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.21.3
+	k8s.io/code-generator => k8s.io/code-generator v0.21.3
+	k8s.io/component-base => k8s.io/component-base v0.21.3
+	k8s.io/component-helpers => k8s.io/component-helpers v0.21.3
+	k8s.io/controller-manager => k8s.io/controller-manager v0.21.3
+	k8s.io/cri-api => k8s.io/cri-api v0.21.3
+	k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.21.3
+	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.21.3
+	k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.21.3
+	k8s.io/kube-proxy => k8s.io/kube-proxy v0.21.3
+	k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.21.3
+	k8s.io/kubectl => k8s.io/kubectl v0.21.3
+	k8s.io/kubelet => k8s.io/kubelet v0.21.3
+	k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.21.3
+	k8s.io/metrics => k8s.io/metrics v0.21.3
+	k8s.io/mount-utils => k8s.io/mount-utils v0.21.3
+	k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.22.2
+	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.21.3
+)

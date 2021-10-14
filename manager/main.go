@@ -80,10 +80,11 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		&motionv1.StreamTransfer{}:      {Field: workerNamespaceSelector},
 		&kbatch.Job{}:                   {Field: workerNamespaceSelector},
 		&kbatch.CronJob{}:               {Field: workerNamespaceSelector},
-		&corev1.Secret{}:                {Field: workerNamespaceSelector},
 		&corev1.Pod{}:                   {Field: workerNamespaceSelector},
 		&kapps.Deployment{}:             {Field: workerNamespaceSelector},
 		&corev1.PersistentVolumeClaim{}: {Field: workerNamespaceSelector},
+		&corev1.Secret{}:                {Field: systemNamespaceSelector},
+		//&corev1.Secret{}:                {Field: workerNamespaceSelector},
 	}
 
 	client := ctrl.GetConfigOrDie()
