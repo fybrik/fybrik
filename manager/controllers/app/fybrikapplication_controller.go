@@ -431,11 +431,10 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *modules.DataInfo, i
 		return err
 	}
 	config.SetWorkloadInfo(localCluster, clusters, input, configEvaluatorInput)
-
 	// Read policies for data that is processed in the workload geography
 	if configEvaluatorInput.AssetRequirements.Usage[api.ReadFlow] {
 		actionType := model.READ
-		reqAction := model.PolicyManagerRequestAction{ActionType: &actionType, Destination: &req.WorkloadCluster.Metadata.Region}
+		reqAction := model.PolicyManagerRequestAction{ActionType: &actionType, Destination: &configEvaluatorInput.Workload.Cluster.Metadata.Region}
 		req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, input, &reqAction)
 		if err != nil {
 			return err
@@ -446,6 +445,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *modules.DataInfo, i
 	if err != nil {
 		return err
 	}
+	req.WorkloadCluster = configEvaluatorInput.Workload.Cluster
 	req.Configuration = configDecisions
 	return nil
 }
