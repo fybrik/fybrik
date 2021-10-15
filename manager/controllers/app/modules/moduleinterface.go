@@ -113,8 +113,6 @@ func (m *Selector) SupportsDependencies(module *app.FybrikModule, moduleMap map[
 
 // SupportsInterface indicates whether the module supports interface requirements and dependencies
 func (m *Selector) SupportsInterface(module *app.FybrikModule, requestedCapability app.CapabilityType) bool {
-	supportsInterface := false
-
 	// Check if the module supports the capability
 	for _, capability := range module.Spec.Capabilities {
 		if capability.Capability != requestedCapability {
@@ -122,8 +120,17 @@ func (m *Selector) SupportsInterface(module *app.FybrikModule, requestedCapabili
 		}
 		// Check if the source and sink protocols requested are supported
 		if requestedCapability == app.Read {
-			supportsInterface = capability.API.DataFormat == m.Destination.DataFormat && capability.API.Protocol == m.Destination.Protocol
-			if supportsInterface {
+			if capability.API.DataFormat != m.Destination.DataFormat || capability.API.Protocol != m.Destination.Protocol {
+				continue
+			}
+			if m.Source == nil {
+				m.ModuleCapability = &capability
+				return true
+			}
+			for _, inter := range capability.SupportedInterfaces {
+				if inter.Source.DataFormat != m.Source.DataFormat || inter.Source.Protocol != m.Source.Protocol {
+					continue
+				}
 				m.ModuleCapability = &capability
 				return true
 			}
@@ -136,12 +143,11 @@ func (m *Selector) SupportsInterface(module *app.FybrikModule, requestedCapabili
 					continue
 				}
 				m.ModuleCapability = &capability
-				supportsInterface = true
-				break
+				return true
 			}
 		}
 	}
-	return supportsInterface
+	return false
 }
 
 // SelectModule finds the module that fits the requirements

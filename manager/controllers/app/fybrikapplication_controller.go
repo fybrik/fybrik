@@ -536,6 +536,20 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*api.FybrikMod
 	return moduleMap, nil
 }
 
+// get all available regions for allocating storage
+// TODO(shlomitk1): avoid duplications
+func (r *FybrikApplicationReconciler) getStorageAccountRegions() ([]string, error) {
+	regions := []string{}
+	var accountList api.FybrikStorageAccountList
+	if err := r.List(context.Background(), &accountList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
+		return regions, err
+	}
+	for _, account := range accountList.Items {
+		regions = append(regions, account.Spec.Regions...)
+	}
+	return regions, nil
+}
+
 func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(applicationContext *api.FybrikApplication, provisionedStorage map[string]NewAssetInfo) (bool, error) {
 	// update allocated storage in the status
 	// clean irrelevant buckets
@@ -578,16 +592,20 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext *api.Fybr
 	if err != nil {
 		return nil, nil, err
 	}
-
+	regions, err := r.getStorageAccountRegions()
+	if err != nil {
+		return nil, nil, err
+	}
 	// create a plotter generator that will select modules to be orchestrated based on user requirements and module capabilities
 	plotterGen := &PlotterGenerator{
-		Client:             r.Client,
-		Log:                r.Log,
-		Modules:            moduleMap,
-		Owner:              client.ObjectKeyFromObject(applicationContext),
-		PolicyManager:      r.PolicyManager,
-		Provision:          r.Provision,
-		ProvisionedStorage: make(map[string]NewAssetInfo),
+		Client:                r.Client,
+		Log:                   r.Log,
+		Modules:               moduleMap,
+		Owner:                 client.ObjectKeyFromObject(applicationContext),
+		PolicyManager:         r.PolicyManager,
+		Provision:             r.Provision,
+		ProvisionedStorage:    make(map[string]NewAssetInfo),
+		StorageAccountRegions: regions,
 	}
 
 	plotterSpec := &api.PlotterSpec{

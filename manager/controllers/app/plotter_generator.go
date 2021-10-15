@@ -14,7 +14,6 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
-	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
 	vault "fybrik.io/fybrik/pkg/vault"
@@ -32,15 +31,15 @@ type NewAssetInfo struct {
 
 // PlotterGenerator constructs a plotter based on the requirements (governance actions, data location) and the existing set of FybrikModules
 type PlotterGenerator struct {
-	Client             client.Client
-	Log                logr.Logger
-	Modules            map[string]*app.FybrikModule
-	Clusters           []multicluster.Cluster
-	Owner              types.NamespacedName
-	PolicyManager      connectors.PolicyManager
-	Provision          storage.ProvisionInterface
-	VaultConnection    vault.Interface
-	ProvisionedStorage map[string]NewAssetInfo
+	Client                client.Client
+	Log                   logr.Logger
+	Modules               map[string]*app.FybrikModule
+	Owner                 types.NamespacedName
+	PolicyManager         connectors.PolicyManager
+	Provision             storage.ProvisionInterface
+	VaultConnection       vault.Interface
+	ProvisionedStorage    map[string]NewAssetInfo
+	StorageAccountRegions []string
 }
 
 // GetCopyDestination creates a Dataset for bucket allocation by implicit copies or ingest.
@@ -274,7 +273,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item modules.DataInfo, appContext
 
 	// If everything finished without errors build the flow and add it to the plotter spec
 	// Also add new assets as well as templates
-	flowType := subflows[0].FlowType
+	flowType := subflows[len(subflows)-1].FlowType
 	flowName := item.Context.DataSetID + "-" + string(flowType)
 	flow := app.Flow{
 		Name:     flowName,

@@ -126,10 +126,10 @@ func (p *PlotterGenerator) SelectModules(item modules.DataInfo, appContext *app.
 
 	// copy flow (ingest)
 	if (item.Configuration.ConfigDecisions[app.Copy].Deploy == v1.ConditionTrue) && (item.Configuration.ConfigDecisions[app.Read].Deploy == v1.ConditionFalse) {
-		for _, cluster := range p.Clusters {
+		for _, region := range p.StorageAccountRegions {
 			operation := new(openapiclientmodels.PolicyManagerRequestAction)
 			operation.SetActionType(openapiclientmodels.WRITE)
-			operation.SetDestination(cluster.Metadata.Region)
+			operation.SetDestination(region)
 
 			actionsOnCopy, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
 			if err != nil && err.Error() == app.WriteNotAllowed {
@@ -145,7 +145,7 @@ func (p *PlotterGenerator) SelectModules(item modules.DataInfo, appContext *app.
 				Dependencies:         make([]*app.FybrikModule, 0),
 				Module:               nil,
 				Message:              "",
-				StorageAccountRegion: cluster.Metadata.Region,
+				StorageAccountRegion: region,
 			}
 			if selector.SelectModule(p.Modules, app.Copy) {
 				copySelector = selector
@@ -154,7 +154,7 @@ func (p *PlotterGenerator) SelectModules(item modules.DataInfo, appContext *app.
 		}
 		if copySelector == nil {
 			p.Log.Info("Could not select a copy module for " + item.Context.DataSetID)
-			return nil, errors.New("Copy is required but the data path could not be constructed")
+			return nil, errors.New(string(app.Copy) + " : " + app.ModuleNotFound)
 		}
 	}
 	selectors[app.Copy] = copySelector

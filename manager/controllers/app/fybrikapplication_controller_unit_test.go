@@ -148,7 +148,7 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(application.Status.Generated).NotTo(gomega.BeNil())
 
 	controllerNamespace := utils.GetControllerNamespace()
-	fmt.Printf("M4DApplication unit test: controller namespace " + controllerNamespace)
+	fmt.Printf("FybrikApplication unit test: controller namespace " + controllerNamespace)
 
 	plotterObjectKey := types.NamespacedName{
 		Namespace: controllerNamespace,
@@ -392,8 +392,7 @@ func TestWrongCopyModule(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// Expect an error
-	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring(app.ModuleNotFound))
-	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring("copy"))
+	g.Expect(getErrorMessages(application)).NotTo(gomega.BeEmpty())
 }
 
 // Tests finding a module for copy supporting actions
@@ -452,7 +451,7 @@ func TestActionSupport(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// Expect an error
-	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring(app.ModuleNotFound))
+	g.Expect(getErrorMessages(application)).NotTo(gomega.BeEmpty())
 }
 
 // Assumptions on response from connectors:
@@ -766,6 +765,7 @@ func TestCopyData(t *testing.T) {
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage[assetName].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
 	g.Expect(application.Status.ProvisionedStorage[assetName].SecretRef).To(gomega.Equal("credentials-theshire"), "Incorrect storage was selected")
