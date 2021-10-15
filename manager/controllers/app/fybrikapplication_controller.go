@@ -346,7 +346,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 			Context: dataset.DeepCopy(),
 		}
 		r.Log.V(0).Info("Preparing requirements for " + req.Context.DataSetID)
-		if err := r.constructDataInfo(&req, applicationContext, clusters); err != nil {
+		if err = r.constructDataInfo(&req, applicationContext, clusters); err != nil {
 			AnalyzeError(applicationContext, req.Context.DataSetID, err)
 			r.Log.V(0).Info("Error: " + err.Error())
 			continue
@@ -392,7 +392,6 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 
 func (r *FybrikApplicationReconciler) constructDataInfo(req *modules.DataInfo, input *api.FybrikApplication, clusters []multicluster.Cluster) error {
 	var err error
-
 	// Call the DataCatalog service to get info about the dataset
 	var response *pb.CatalogDatasetInfo
 	var credentialPath string
@@ -429,7 +428,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *modules.DataInfo, i
 	config.SetAssetRequirements(input, *req.Context, configEvaluatorInput)
 	localCluster, err := r.GetLocalCluster()
 	if err != nil {
-		return nil
+		return err
 	}
 	config.SetWorkloadInfo(localCluster, clusters, input, configEvaluatorInput)
 

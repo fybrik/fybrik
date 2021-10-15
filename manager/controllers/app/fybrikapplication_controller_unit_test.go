@@ -39,8 +39,27 @@ func readObjectFromFile(f string, obj interface{}) error {
 	return yaml.Unmarshal(bytes, obj)
 }
 
+// create cluster-metadata config map
+func createClusterMetadata() *corev1.ConfigMap {
+	return &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "cluster-metadata",
+			Namespace: utils.GetSystemNamespace(),
+		},
+		Data: map[string]string{
+			"ClusterName":   "thegreendragon",
+			"Zone":          "hobbiton",
+			"Region":        "theshire",
+			"VaultAuthPath": "kind",
+		},
+	}
+}
+
 // create FybrikApplication controller with mockup interfaces
 func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) *FybrikApplicationReconciler {
+	// environment: cluster-metadata configmap
+	cl.Create(context.Background(), createClusterMetadata())
+
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	return &FybrikApplicationReconciler{
 		Client:        cl,
@@ -226,7 +245,6 @@ func TestDenyOnRead(t *testing.T) {
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet}},
 	}
 	application.SetGeneration(1)
-
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
