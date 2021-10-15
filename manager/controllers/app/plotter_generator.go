@@ -10,7 +10,6 @@ import (
 
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	modules "fybrik.io/fybrik/manager/controllers/app/modules"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
@@ -43,7 +42,7 @@ type PlotterGenerator struct {
 }
 
 // GetCopyDestination creates a Dataset for bucket allocation by implicit copies or ingest.
-func (p *PlotterGenerator) GetCopyDestination(item modules.DataInfo, destinationInterface *app.InterfaceDetails, geo string) (*app.DataStore, error) {
+func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterface *app.InterfaceDetails, geo string) (*app.DataStore, error) {
 	// provisioned storage for COPY
 	originalAssetName := item.DataDetails.Name
 	var bucket *storage.ProvisionedBucket
@@ -107,7 +106,7 @@ func (p *PlotterGenerator) GetCopyDestination(item modules.DataInfo, destination
 
 // Adds the asset details, flows and templates to the given plotter spec.
 // Write path is not yet implemented
-func (p *PlotterGenerator) AddFlowInfoForAsset(item modules.DataInfo, appContext *app.FybrikApplication, plotterSpec *app.PlotterSpec) error {
+func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.FybrikApplication, plotterSpec *app.PlotterSpec) error {
 	datasetID := item.Context.DataSetID
 	p.Log.Info("Select modules for " + datasetID)
 

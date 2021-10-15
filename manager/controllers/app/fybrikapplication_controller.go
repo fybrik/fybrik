@@ -16,7 +16,8 @@ import (
 	local "fybrik.io/fybrik/pkg/multicluster/local"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
-	config "fybrik.io/fybrik/manager/controllers/app/config_evaluator"
+	config "fybrik.io/fybrik/manager/controllers/app/evaluator"
+	"fybrik.io/fybrik/manager/controllers/app/modules"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 
@@ -34,7 +35,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/app/modules"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
@@ -340,9 +340,9 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 	}
 
 	// create a list of requirements for creating a data flow (actions, interface to app, data format) per a single data set
-	var requirements []modules.DataInfo
+	var requirements []DataInfo
 	for _, dataset := range applicationContext.Spec.Data {
-		req := modules.DataInfo{
+		req := DataInfo{
 			Context: dataset.DeepCopy(),
 		}
 		r.Log.V(0).Info("Preparing requirements for " + req.Context.DataSetID)
@@ -390,7 +390,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 	return ctrl.Result{}, nil
 }
 
-func (r *FybrikApplicationReconciler) constructDataInfo(req *modules.DataInfo, input *api.FybrikApplication, clusters []multicluster.Cluster) error {
+func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *api.FybrikApplication, clusters []multicluster.Cluster) error {
 	var err error
 	// Call the DataCatalog service to get info about the dataset
 	var response *pb.CatalogDatasetInfo
@@ -586,7 +586,7 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 	return true, nil
 }
 
-func (r *FybrikApplicationReconciler) buildSolution(applicationContext *api.FybrikApplication, requirements []modules.DataInfo) (map[string]NewAssetInfo, *api.PlotterSpec, error) {
+func (r *FybrikApplicationReconciler) buildSolution(applicationContext *api.FybrikApplication, requirements []DataInfo) (map[string]NewAssetInfo, *api.PlotterSpec, error) {
 	// get deployed modules
 	moduleMap, err := r.GetAllModules()
 	if err != nil {

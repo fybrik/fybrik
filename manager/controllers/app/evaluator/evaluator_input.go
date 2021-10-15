@@ -1,12 +1,12 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package config_evaluator
+package evaluator
 
 import (
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 
-	asset "fybrik.io/fybrik/manager/controllers/app/asset_details"
+	dataset "fybrik.io/fybrik/manager/controllers/app/dataset"
 	"fybrik.io/fybrik/pkg/multicluster"
 	model "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
@@ -37,7 +37,7 @@ type EvaluatorInput struct {
 	// Application properties
 	AppInfo api.ApplicationDetails
 	// Asset metadata
-	AssetMetadata *asset.DataDetails
+	AssetMetadata *dataset.DataDetails
 	// Requirements for asset usage
 	AssetRequirements Request
 	// Governance Actions for reading data

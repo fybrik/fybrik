@@ -9,29 +9,11 @@ import (
 	"fybrik.io/fybrik/pkg/serde"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/app/asset_details"
-	config "fybrik.io/fybrik/manager/controllers/app/config_evaluator"
+	"fybrik.io/fybrik/manager/controllers/app/dataset"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
-	"fybrik.io/fybrik/pkg/multicluster"
 	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
-
-// DataInfo defines all the information about the given data set that comes from the fybrikapplication spec and from the connectors.
-type DataInfo struct {
-	// Source connection details
-	DataDetails *asset_details.DataDetails
-	// The path to Vault secret which holds the dataset credentials
-	VaultSecretPath string
-	// Pointer to the relevant data context in the Fybrik application spec
-	Context *app.DataContext
-	// Evaluated config policies
-	Configuration config.EvaluatorOutput
-	// Workload cluster
-	WorkloadCluster multicluster.Cluster
-	// Governance actions to perform on this asset
-	Actions []openapiclientmodels.Action
-}
 
 // Selector is responsible for finding an appropriate module
 type Selector struct {
@@ -193,7 +175,7 @@ func CheckDependencies(module *app.FybrikModule, moduleMap map[string]*app.Fybri
 
 // Transforms a CatalogDatasetInfo into a DataDetails struct
 // TODO Think about getting rid of one or the other and reuse
-func CatalogDatasetToDataDetails(response *pb.CatalogDatasetInfo) (*asset_details.DataDetails, error) {
+func CatalogDatasetToDataDetails(response *pb.CatalogDatasetInfo) (*dataset.DataDetails, error) {
 	details := response.GetDetails()
 	if details == nil {
 		return nil, errors.New("no metadata found for " + response.DatasetId)
@@ -202,7 +184,7 @@ func CatalogDatasetToDataDetails(response *pb.CatalogDatasetInfo) (*asset_detail
 	connection := serde.NewArbitrary(details.DataStore)
 	protocol, err := utils.GetProtocol(details)
 
-	return &asset_details.DataDetails{
+	return &dataset.DataDetails{
 		Name: details.Name,
 		Interface: app.InterfaceDetails{
 			Protocol:   protocol,

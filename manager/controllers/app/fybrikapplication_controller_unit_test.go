@@ -58,7 +58,7 @@ func createClusterMetadata() *corev1.ConfigMap {
 // create FybrikApplication controller with mockup interfaces
 func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) *FybrikApplicationReconciler {
 	// environment: cluster-metadata configmap
-	cl.Create(context.Background(), createClusterMetadata())
+	_ = cl.Create(context.Background(), createClusterMetadata())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	return &FybrikApplicationReconciler{

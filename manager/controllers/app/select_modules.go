@@ -6,15 +6,33 @@ package app
 import (
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/app/config_evaluator"
-	modules "fybrik.io/fybrik/manager/controllers/app/modules"
+	"fybrik.io/fybrik/manager/controllers/app/dataset"
+	"fybrik.io/fybrik/manager/controllers/app/evaluator"
+	"fybrik.io/fybrik/manager/controllers/app/modules"
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 	v1 "k8s.io/api/core/v1"
 )
 
-func (p *PlotterGenerator) SelectModules(item modules.DataInfo, appContext *app.FybrikApplication) (map[app.CapabilityType]*modules.Selector, error) {
+// DataInfo defines all the information about the given data set that comes from the fybrikapplication spec and from the connectors.
+type DataInfo struct {
+	// Source connection details
+	DataDetails *dataset.DataDetails
+	// The path to Vault secret which holds the dataset credentials
+	VaultSecretPath string
+	// Pointer to the relevant data context in the Fybrik application spec
+	Context *app.DataContext
+	// Evaluated config policies
+	Configuration evaluator.EvaluatorOutput
+	// Workload cluster
+	WorkloadCluster multicluster.Cluster
+	// Governance actions to perform on this asset
+	Actions []openapiclientmodels.Action
+}
+
+func (p *PlotterGenerator) SelectModules(item DataInfo, appContext *app.FybrikApplication) (map[app.CapabilityType]*modules.Selector, error) {
 	selectors := map[app.CapabilityType]*modules.Selector{}
 	var readSelector, copySelector *modules.Selector
 	// read flow, copy is not required (either allowed or forbidden)
@@ -40,7 +58,7 @@ func (p *PlotterGenerator) SelectModules(item modules.DataInfo, appContext *app.
 			}
 			if len(item.Configuration.ConfigDecisions[app.Read].Clusters) > 0 {
 				readSelector = selector
-				item.Configuration.ConfigDecisions[app.Copy] = config_evaluator.ConfigDecision{Deploy: v1.ConditionFalse}
+				item.Configuration.ConfigDecisions[app.Copy] = evaluator.ConfigDecision{Deploy: v1.ConditionFalse}
 			}
 		}
 		// read flow, no read module was selected
