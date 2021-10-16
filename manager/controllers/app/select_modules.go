@@ -6,8 +6,8 @@ package app
 import (
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	config "fybrik.io/fybrik/manager/controllers/app/config"
 	"fybrik.io/fybrik/manager/controllers/app/dataset"
-	"fybrik.io/fybrik/manager/controllers/app/evaluator"
 	"fybrik.io/fybrik/manager/controllers/app/modules"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/multicluster"
@@ -25,7 +25,7 @@ type DataInfo struct {
 	// Pointer to the relevant data context in the Fybrik application spec
 	Context *app.DataContext
 	// Evaluated config policies
-	Configuration evaluator.EvaluatorOutput
+	Configuration config.EvaluatorOutput
 	// Workload cluster
 	WorkloadCluster multicluster.Cluster
 	// Governance actions to perform on this asset
@@ -58,7 +58,7 @@ func (p *PlotterGenerator) SelectModules(item DataInfo, appContext *app.FybrikAp
 			}
 			if len(item.Configuration.ConfigDecisions[app.Read].Clusters) > 0 {
 				readSelector = selector
-				item.Configuration.ConfigDecisions[app.Copy] = evaluator.ConfigDecision{Deploy: v1.ConditionFalse}
+				item.Configuration.ConfigDecisions[app.Copy] = config.Decision{Deploy: v1.ConditionFalse}
 			}
 		}
 		// read flow, no read module was selected
@@ -90,9 +90,9 @@ func (p *PlotterGenerator) SelectModules(item DataInfo, appContext *app.FybrikAp
 		actionsOnRead := []openapiclientmodels.Action{}
 		actionsOnCopy := []openapiclientmodels.Action{}
 		if len(item.Actions) > 0 {
-			read_and_transform := utils.Intersection(item.Configuration.ConfigDecisions[app.Read].Clusters, item.Configuration.ConfigDecisions[app.Transform].Clusters)
-			copy_and_transform := utils.Intersection(item.Configuration.ConfigDecisions[app.Copy].Clusters, item.Configuration.ConfigDecisions[app.Transform].Clusters)
-			if len(read_and_transform) == 0 {
+			readAndTransformClusters := utils.Intersection(item.Configuration.ConfigDecisions[app.Read].Clusters, item.Configuration.ConfigDecisions[app.Transform].Clusters)
+			copyAndTransformClusters := utils.Intersection(item.Configuration.ConfigDecisions[app.Copy].Clusters, item.Configuration.ConfigDecisions[app.Transform].Clusters)
+			if len(readAndTransformClusters) == 0 {
 				actionsOnCopy = item.Actions
 			} else {
 				// ensure that copy + read support all needed actions
@@ -115,7 +115,7 @@ func (p *PlotterGenerator) SelectModules(item DataInfo, appContext *app.FybrikAp
 			if err != nil {
 				return nil, err
 			}
-			if len(copy_and_transform) == 0 && len(actionsOnCopy) > 0 {
+			if len(copyAndTransformClusters) == 0 && len(actionsOnCopy) > 0 {
 				// copy module can not perform governance actions
 				return nil, errors.New("Violation of a policy on deployment clusters for running governance actions")
 			}

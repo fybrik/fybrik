@@ -1,7 +1,7 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package evaluator
+package config
 
 import (
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
@@ -9,8 +9,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// ConfigDecision is a result of evaluating a configuration policy which satisfies the specified predicates
-type ConfigDecision struct {
+// Decision is a result of evaluating a configuration policy which satisfies the specified predicates
+type Decision struct {
 	// a decision regarding deployment: True = require, False = forbid, Unknown = allow
 	Deploy corev1.ConditionStatus
 	// Deployment clusters
@@ -27,5 +27,5 @@ type EvaluatorOutput struct {
 	// Valid is true when there is no conflict between the decisions, and false otherwise
 	Valid           bool
 	DatasetID       string
-	ConfigDecisions map[api.CapabilityType]ConfigDecision
+	ConfigDecisions map[api.CapabilityType]Decision
 }

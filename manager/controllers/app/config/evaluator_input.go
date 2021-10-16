@@ -1,7 +1,7 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package evaluator
+package config
 
 import (
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"

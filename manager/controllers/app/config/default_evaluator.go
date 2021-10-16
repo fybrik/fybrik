@@ -1,7 +1,7 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package evaluator
+package config
 
 import (
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
@@ -28,15 +28,15 @@ func NewDefaultConfig() *DefaultConfig {
 	Copy is deployed in a read scenario if dataset resides in a different geography and governance actions are required.
 */
 func (r *DefaultConfig) Evaluate(in *EvaluatorInput) (EvaluatorOutput, error) {
-	decisions := map[api.CapabilityType]ConfigDecision{}
+	decisions := map[api.CapabilityType]Decision{}
 	// Read capability is deployed in a read-type scenario.
 	deployRead := corev1.ConditionFalse
 	if in.AssetRequirements.Usage[api.ReadFlow] {
 		deployRead = corev1.ConditionTrue
 	}
-	decisions[api.Read] = ConfigDecision{Deploy: deployRead, Clusters: []string{in.Workload.Cluster.Name},
+	decisions[api.Read] = Decision{Deploy: deployRead, Clusters: []string{in.Workload.Cluster.Name},
 		Restrictions: map[string]string{"capabilities.scope": "workload"}}
-	decisions[api.Write] = ConfigDecision{Deploy: corev1.ConditionFalse}
+	decisions[api.Write] = Decision{Deploy: corev1.ConditionFalse}
 
 	copyDecision := DefaultDecision(in)
 	if in.AssetRequirements.Usage[api.CopyFlow] {

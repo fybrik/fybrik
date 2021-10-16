@@ -1,7 +1,7 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package evaluator
+package config
 
 import corev1 "k8s.io/api/core/v1"
 
@@ -11,11 +11,11 @@ type ContextInConfigEvaluatorInterfaceterface interface {
 }
 
 // DefaultDecision creates a ConfigDecision object with some defaults e.g. any cluster is available, asset scope level, etc.
-func DefaultDecision(in *EvaluatorInput) ConfigDecision {
+func DefaultDecision(in *EvaluatorInput) Decision {
 	anyCluster := []string{in.Workload.Cluster.Name}
 	for _, cluster := range in.Clusters {
 		anyCluster = append(anyCluster, cluster.Name)
 	}
-	return ConfigDecision{Deploy: corev1.ConditionUnknown, Clusters: anyCluster,
+	return Decision{Deploy: corev1.ConditionUnknown, Clusters: anyCluster,
 		Restrictions: map[string]string{"capabilities.scope": "asset"}}
 }

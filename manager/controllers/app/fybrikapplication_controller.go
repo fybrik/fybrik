@@ -16,7 +16,7 @@ import (
 	local "fybrik.io/fybrik/pkg/multicluster/local"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
-	config "fybrik.io/fybrik/manager/controllers/app/evaluator"
+	config "fybrik.io/fybrik/manager/controllers/app/config"
 	"fybrik.io/fybrik/manager/controllers/app/modules"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
