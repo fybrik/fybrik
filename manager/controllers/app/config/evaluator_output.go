@@ -25,7 +25,9 @@ type Decision struct {
 // Used by manager to decide which modules are deployed and in which cluster.
 type EvaluatorOutput struct {
 	// Valid is true when there is no conflict between the decisions, and false otherwise
-	Valid           bool
-	DatasetID       string
+	Valid bool
+	// Dataset identifier
+	DatasetID string
+	// Decisions per capability (after being merged)
 	ConfigDecisions map[api.CapabilityType]Decision
 }

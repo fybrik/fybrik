@@ -136,7 +136,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 	// DataStore for destination will be determined if an implicit copy is required
 	var sinkDataStore *app.DataStore
 
-	selectors, err := p.SelectModules(item, appContext)
+	selectors, err := p.SelectModules(&item, appContext)
 	if err != nil {
 		return err
 	}

@@ -32,152 +32,183 @@ type DataInfo struct {
 	Actions []openapiclientmodels.Action
 }
 
-func (p *PlotterGenerator) SelectModules(item DataInfo, appContext *app.FybrikApplication) (map[app.CapabilityType]*modules.Selector, error) {
+// SelectModules selects the specific modules and the relevant capabilities in order to construct a data flow for the given asset
+// It restricts the choice for the deployment clusters and selects the suitable storage account region for the copy
+// Algorithm:
+// For a read scenario without the requirement for the copy, try to find a single read module. If not possible - find read + copy.
+// For a read scenario with the requirement for the copy - construct a read + copy flow
+// For a copy scenario - construct a copy flow.
+func (p *PlotterGenerator) SelectModules(item *DataInfo, appContext *app.FybrikApplication) (map[app.CapabilityType]*modules.Selector, error) {
 	selectors := map[app.CapabilityType]*modules.Selector{}
-	var readSelector, copySelector *modules.Selector
+	var err error
 	// read flow, copy is not required (either allowed or forbidden)
 	if item.Configuration.ConfigDecisions[app.Read].Deploy == v1.ConditionTrue &&
 		item.Configuration.ConfigDecisions[app.Copy].Deploy != v1.ConditionTrue {
-		// select a read module that supports user interface requirements, data source interface and all required actions
 		p.Log.Info("Looking for a data path with no copy")
-		selector := &modules.Selector{
-			Destination:  &item.Context.Requirements.Interface,
-			Actions:      item.Actions,
-			Source:       &item.DataDetails.Interface,
-			Dependencies: []*app.FybrikModule{},
-			Module:       nil,
-			Message:      "",
-		}
-		if selector.SelectModule(p.Modules, app.Read) {
-			// check deployment cluster
-			if len(item.Actions) > 0 {
-				clusters := utils.Intersection(item.Configuration.ConfigDecisions[app.Read].Clusters, item.Configuration.ConfigDecisions[app.Transform].Clusters)
-				readDecision := item.Configuration.ConfigDecisions[app.Read]
-				readDecision.Clusters = clusters
-				item.Configuration.ConfigDecisions[app.Read] = readDecision
-			}
-			if len(item.Configuration.ConfigDecisions[app.Read].Clusters) > 0 {
-				readSelector = selector
-				item.Configuration.ConfigDecisions[app.Copy] = config.Decision{Deploy: v1.ConditionFalse}
-			}
+		selectors, err = p.buildReadFlow(item, appContext)
+		if err == nil {
+			// read flow is ready
+			return selectors, nil
 		}
 		// read flow, no read module was selected
 		// if copy is forbidden - report an error
-		if readSelector == nil && item.Configuration.ConfigDecisions[app.Copy].Deploy == v1.ConditionFalse {
-			p.Log.Info("Could not select a read module for " + item.Context.DataSetID + " : " + selector.GetError())
-			return nil, errors.New(selector.GetError())
+		if item.Configuration.ConfigDecisions[app.Copy].Deploy == v1.ConditionFalse {
+			p.Log.Info("Could not build a read flow for " + item.Context.DataSetID + " : " + err.Error())
+			return selectors, err
 		}
 	}
-
 	// read + copy
-	if item.Configuration.ConfigDecisions[app.Read].Deploy == v1.ConditionTrue && readSelector == nil {
+	if item.Configuration.ConfigDecisions[app.Read].Deploy == v1.ConditionTrue {
 		p.Log.Info("Copy is required in addition to the read module")
-		// remove source interface support and action support
-		readSelector = &modules.Selector{
-			Destination:  &item.Context.Requirements.Interface,
-			Actions:      []openapiclientmodels.Action{},
-			Source:       nil,
-			Dependencies: []*app.FybrikModule{},
-			Module:       nil,
-			Message:      "",
-		}
-		if !readSelector.SelectModule(p.Modules, app.Read) {
-			p.Log.Info("Could not select a read module for " + item.Context.DataSetID + "; no module supports the requested interface")
-			return nil, errors.New(readSelector.GetError())
-		}
-
-		interfaces := GetSupportedReadSources(readSelector.GetModule())
-		actionsOnRead := []openapiclientmodels.Action{}
-		actionsOnCopy := []openapiclientmodels.Action{}
-		if len(item.Actions) > 0 {
-			readAndTransformClusters := utils.Intersection(item.Configuration.ConfigDecisions[app.Read].Clusters, item.Configuration.ConfigDecisions[app.Transform].Clusters)
-			copyAndTransformClusters := utils.Intersection(item.Configuration.ConfigDecisions[app.Copy].Clusters, item.Configuration.ConfigDecisions[app.Transform].Clusters)
-			if len(readAndTransformClusters) == 0 {
-				actionsOnCopy = item.Actions
-			} else {
-				// ensure that copy + read support all needed actions
-				// actions that the read module can not perform are required to be done during copy
-				for _, action := range item.Actions {
-					if !readSelector.SupportsGovernanceAction(readSelector.GetModule(), action) {
-						actionsOnCopy = append(actionsOnCopy, action)
-					} else {
-						actionsOnRead = append(actionsOnRead, action)
-					}
-				}
-				readSelector.Actions = actionsOnRead
-			}
-			// WRITE actions
-			operation := new(openapiclientmodels.PolicyManagerRequestAction)
-			operation.SetActionType(openapiclientmodels.WRITE)
-			operation.SetDestination(item.WorkloadCluster.Metadata.Region)
-			actions, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
-			actionsOnCopy = append(actionsOnCopy, actions...)
-			if err != nil {
-				return nil, err
-			}
-			if len(copyAndTransformClusters) == 0 && len(actionsOnCopy) > 0 {
-				// copy module can not perform governance actions
-				return nil, errors.New("Violation of a policy on deployment clusters for running governance actions")
-			}
-		}
-		// select a module that supports COPY, supports required governance actions, has the required dependencies, with source in module sources and a non-empty intersection between requested and supported interfaces.
-		for _, copyDest := range interfaces {
-			selector := &modules.Selector{
-				Source:               &item.DataDetails.Interface,
-				Actions:              actionsOnCopy,
-				Destination:          copyDest,
-				Dependencies:         make([]*app.FybrikModule, 0),
-				Module:               nil,
-				Message:              "",
-				StorageAccountRegion: item.WorkloadCluster.Metadata.Region,
-			}
-			if selector.SelectModule(p.Modules, app.Copy) {
-				copySelector = selector
-				break
-			}
-		}
-		if copySelector == nil {
-			p.Log.Info("Could not select a copy module for " + item.Context.DataSetID)
-			return nil, errors.New("Copy is required but the data path could not be constructed")
-		}
+		return p.buildReadFlowWithCopy(item, appContext)
 	}
 
 	// copy flow (ingest)
 	if (item.Configuration.ConfigDecisions[app.Copy].Deploy == v1.ConditionTrue) && (item.Configuration.ConfigDecisions[app.Read].Deploy == v1.ConditionFalse) {
-		for _, region := range p.StorageAccountRegions {
-			operation := new(openapiclientmodels.PolicyManagerRequestAction)
-			operation.SetActionType(openapiclientmodels.WRITE)
-			operation.SetDestination(region)
+		return p.buildCopyFlow(item, appContext)
+	}
+	// no data flow has been constructed
+	return selectors, errors.New("Failed to generate a plotter: no capabilities are required")
+}
 
-			actionsOnCopy, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
-			if err != nil && err.Error() == app.WriteNotAllowed {
-				continue
-			}
-			if err != nil {
-				return nil, err
-			}
-			selector := &modules.Selector{
-				Source:               &item.DataDetails.Interface,
-				Actions:              actionsOnCopy,
-				Destination:          &item.Context.Requirements.Interface,
-				Dependencies:         make([]*app.FybrikModule, 0),
-				Module:               nil,
-				Message:              "",
-				StorageAccountRegion: region,
-			}
-			if selector.SelectModule(p.Modules, app.Copy) {
-				copySelector = selector
-				break
-			}
+func (p *PlotterGenerator) buildReadFlow(item *DataInfo, appContext *app.FybrikApplication) (map[app.CapabilityType]*modules.Selector, error) {
+	// select a read module that supports user interface requirements, data source interface and all required actions
+	selectors := map[app.CapabilityType]*modules.Selector{app.Read: nil, app.Copy: nil}
+	selector := &modules.Selector{
+		Destination:  &item.Context.Requirements.Interface,
+		Actions:      item.Actions,
+		Source:       &item.DataDetails.Interface,
+		Dependencies: []*app.FybrikModule{},
+		Module:       nil,
+		Message:      "",
+	}
+	if selector.SelectModule(p.Modules, app.Read) {
+		// check deployment cluster
+		if len(item.Actions) > 0 {
+			clusters := utils.Intersection(item.Configuration.ConfigDecisions[app.Read].Clusters, item.Configuration.ConfigDecisions[app.Transform].Clusters)
+			readDecision := item.Configuration.ConfigDecisions[app.Read]
+			readDecision.Clusters = clusters
+			item.Configuration.ConfigDecisions[app.Read] = readDecision
 		}
-		if copySelector == nil {
-			p.Log.Info("Could not select a copy module for " + item.Context.DataSetID)
-			return nil, errors.New(string(app.Copy) + " : " + app.ModuleNotFound)
+		if len(item.Configuration.ConfigDecisions[app.Read].Clusters) > 0 {
+			selectors[app.Read] = selector
+			return selectors, nil
+		}
+		return selectors, errors.New("No deployment clusters for read are available")
+	}
+	return selectors, errors.New(selector.GetError())
+}
+
+func (p *PlotterGenerator) buildReadFlowWithCopy(item *DataInfo, appContext *app.FybrikApplication) (map[app.CapabilityType]*modules.Selector, error) {
+	selectors := map[app.CapabilityType]*modules.Selector{app.Read: nil, app.Copy: nil}
+	// find a read module that supports api requirements
+	// not looking for source interface support and action support
+	// TODO(shlomitk1): consider multiple options for read module compatibility
+	readSelector := &modules.Selector{
+		Destination:  &item.Context.Requirements.Interface,
+		Actions:      []openapiclientmodels.Action{},
+		Source:       nil,
+		Dependencies: []*app.FybrikModule{},
+		Module:       nil,
+		Message:      "",
+	}
+	if !readSelector.SelectModule(p.Modules, app.Read) {
+		p.Log.Info("Could not select a read module for " + item.Context.DataSetID + "; no module supports the requested interface")
+		return selectors, errors.New(readSelector.GetError())
+	}
+	// find a copy module that matches the selected read module (common interface and action support)
+	interfaces := GetSupportedReadSources(readSelector.GetModule())
+	actionsOnRead := []openapiclientmodels.Action{}
+	actionsOnCopy := []openapiclientmodels.Action{}
+	if len(item.Actions) > 0 {
+		// intersect deployment clusters for read+transform, copy+transform
+		readAndTransformClusters := utils.Intersection(item.Configuration.ConfigDecisions[app.Read].Clusters, item.Configuration.ConfigDecisions[app.Transform].Clusters)
+		copyAndTransformClusters := utils.Intersection(item.Configuration.ConfigDecisions[app.Copy].Clusters, item.Configuration.ConfigDecisions[app.Transform].Clusters)
+		if len(readAndTransformClusters) == 0 {
+			// read module can not run transformations because of the cluster restriction
+			actionsOnCopy = item.Actions
+		} else {
+			// ensure that copy + read support all needed actions
+			// actions that the read module can not perform are required to be done during copy
+			for _, action := range item.Actions {
+				if !readSelector.SupportsGovernanceAction(readSelector.GetModule(), action) {
+					actionsOnCopy = append(actionsOnCopy, action)
+				} else {
+					actionsOnRead = append(actionsOnRead, action)
+				}
+			}
+			readSelector.Actions = actionsOnRead
+		}
+		// WRITE actions that should be done by the copy module
+		// TODO(shlomitk1): generalize the regions the temporary copy can be done to, currently assumes workload geography
+		operation := new(openapiclientmodels.PolicyManagerRequestAction)
+		operation.SetActionType(openapiclientmodels.WRITE)
+		operation.SetDestination(item.WorkloadCluster.Metadata.Region)
+		actions, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
+		actionsOnCopy = append(actionsOnCopy, actions...)
+		if err != nil {
+			return selectors, err
+		}
+		if len(copyAndTransformClusters) == 0 && len(actionsOnCopy) > 0 {
+			// copy module can not perform governance actions
+			return selectors, errors.New("Violation of a policy on deployment clusters for running governance actions")
 		}
 	}
-	selectors[app.Copy] = copySelector
-	selectors[app.Read] = readSelector
-	return selectors, nil
+	// select a module that supports COPY, supports required governance actions, has the required dependencies, with source in module sources and a non-empty intersection between requested and supported interfaces.
+	for _, copyDest := range interfaces {
+		selector := &modules.Selector{
+			Source:               &item.DataDetails.Interface,
+			Actions:              actionsOnCopy,
+			Destination:          copyDest,
+			Dependencies:         make([]*app.FybrikModule, 0),
+			Module:               nil,
+			Message:              "",
+			StorageAccountRegion: item.WorkloadCluster.Metadata.Region,
+		}
+		if selector.SelectModule(p.Modules, app.Copy) {
+			selectors[app.Read] = readSelector
+			selectors[app.Copy] = selector
+			// the flow is ready
+			return selectors, nil
+		}
+	}
+	p.Log.Info("Could not select a copy module for " + item.Context.DataSetID)
+	return selectors, errors.New("Copy is required but the data path could not be constructed")
+}
+
+func (p *PlotterGenerator) buildCopyFlow(item *DataInfo, appContext *app.FybrikApplication) (map[app.CapabilityType]*modules.Selector, error) {
+	selectors := map[app.CapabilityType]*modules.Selector{app.Read: nil, app.Copy: nil}
+	// find a region for storage allocation
+	// TODO(shlomitk1): prefer the workload cluster if specified
+	for _, region := range p.StorageAccountRegions {
+		operation := new(openapiclientmodels.PolicyManagerRequestAction)
+		operation.SetActionType(openapiclientmodels.WRITE)
+		operation.SetDestination(region)
+
+		actionsOnCopy, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
+		if err != nil && err.Error() == app.WriteNotAllowed {
+			continue
+		}
+		if err != nil {
+			return selectors, err
+		}
+		selector := &modules.Selector{
+			Source:               &item.DataDetails.Interface,
+			Actions:              actionsOnCopy,
+			Destination:          &item.Context.Requirements.Interface,
+			Dependencies:         make([]*app.FybrikModule, 0),
+			Module:               nil,
+			Message:              "",
+			StorageAccountRegion: region,
+		}
+		if selector.SelectModule(p.Modules, app.Copy) {
+			// the flow is ready
+			selectors[app.Copy] = selector
+			return selectors, nil
+		}
+	}
+	p.Log.Info("Could not select a copy module for " + item.Context.DataSetID)
+	return nil, errors.New(string(app.Copy) + " : " + app.ModuleNotFound)
 }
 
 // GetSupportedReadSources returns a list of supported READ interfaces of a module

@@ -4,14 +4,7 @@
 package modules
 
 import (
-	"errors"
-
-	"fybrik.io/fybrik/pkg/serde"
-
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/app/dataset"
-	"fybrik.io/fybrik/manager/controllers/utils"
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
 
@@ -171,27 +164,4 @@ func CheckDependencies(module *app.FybrikModule, moduleMap map[string]*app.Fybri
 		}
 	}
 	return found, missing
-}
-
-// Transforms a CatalogDatasetInfo into a DataDetails struct
-// TODO Think about getting rid of one or the other and reuse
-func CatalogDatasetToDataDetails(response *pb.CatalogDatasetInfo) (*dataset.DataDetails, error) {
-	details := response.GetDetails()
-	if details == nil {
-		return nil, errors.New("no metadata found for " + response.DatasetId)
-	}
-	format := details.DataFormat
-	connection := serde.NewArbitrary(details.DataStore)
-	protocol, err := utils.GetProtocol(details)
-
-	return &dataset.DataDetails{
-		Name: details.Name,
-		Interface: app.InterfaceDetails{
-			Protocol:   protocol,
-			DataFormat: format,
-		},
-		Geography:  details.Geo,
-		Connection: *connection,
-		Metadata:   details.Metadata,
-	}, err
 }

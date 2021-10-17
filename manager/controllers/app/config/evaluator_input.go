@@ -27,7 +27,7 @@ type Request struct {
 	Usage map[api.DataFlow]bool
 }
 
-// EvaluatorInput is an input to ConfigurationPoliciesEvaluator.
+// EvaluatorInput is an input to Configuration Policies Evaluator.
 // Used to evaluate configuration policies.
 type EvaluatorInput struct {
 	// A list of available clusters
@@ -40,7 +40,7 @@ type EvaluatorInput struct {
 	AssetMetadata *dataset.DataDetails
 	// Requirements for asset usage
 	AssetRequirements Request
-	// Governance Actions for reading data
+	// Governance Actions for reading data (relevant for read scenarios only)
 	GovernanceActions []model.Action
 }
 
@@ -51,6 +51,7 @@ func SetWorkloadInfo(localCluster multicluster.Cluster, clusters []multicluster.
 	if clusterName == "" {
 		result.Workload.Cluster = localCluster
 	} else {
+		// find the cluster by its name as it is specified in FybrikApplication workload selector
 		for _, cluster := range clusters {
 			if cluster.Name == clusterName {
 				result.Workload.Cluster = localCluster
@@ -68,7 +69,9 @@ func SetApplicationInfo(application *api.FybrikApplication, result *EvaluatorInp
 // SetAssetRequirements generates a new Request object for a specific asset based on FybrikApplication and updates the input structure
 func SetAssetRequirements(application *api.FybrikApplication, dataCtx api.DataContext, result *EvaluatorInput) {
 	usage := make(map[api.DataFlow]bool)
+	// request to read is determined by the workload selector presence
 	usage[api.ReadFlow] = (application.Spec.Selector.WorkloadSelector.Size() > 0)
+	// explicit request to copy
 	usage[api.CopyFlow] = dataCtx.Requirements.Copy.Required
 	result.AssetRequirements = Request{
 		DatasetID: dataCtx.DataSetID,

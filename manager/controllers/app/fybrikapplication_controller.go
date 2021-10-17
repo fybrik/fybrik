@@ -17,7 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	config "fybrik.io/fybrik/manager/controllers/app/config"
-	"fybrik.io/fybrik/manager/controllers/app/modules"
+	"fybrik.io/fybrik/manager/controllers/app/dataset"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 
@@ -411,7 +411,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 	}
 
 	details := response.GetDetails()
-	dataDetails, err := modules.CatalogDatasetToDataDetails(response)
+	dataDetails, err := dataset.CatalogDatasetToDataDetails(response)
 	if err != nil {
 		return err
 	}
