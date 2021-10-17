@@ -31,7 +31,6 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/helm"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	credentialprovider "k8s.io/kubernetes/pkg/credentialprovider"
 	credentialprovidersecrets "k8s.io/kubernetes/pkg/credentialprovider/secrets"
@@ -57,8 +56,8 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	var err error
 
 	// create an array of all dockerconfigjson secrets
-	pullSecrets := []v1.Secret{}
-	secretList := v1.SecretList{}
+	pullSecrets := []corev1.Secret{}
+	secretList := corev1.SecretList{}
 	if err := r.List(ctx, &secretList, client.InNamespace(utils.GetSystemNamespace())); err == nil {
 		for _, secret := range secretList.Items {
 			if secret.Type == "kubernetes.io/dockerconfigjson" {
