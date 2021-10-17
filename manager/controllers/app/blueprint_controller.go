@@ -36,7 +36,7 @@ import (
 	credentialprovidersecrets "k8s.io/kubernetes/pkg/credentialprovider/secrets"
 	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
 
-	dockerref "github.com/distribution/distribution/reference"
+	distributionref "github.com/distribution/distribution/reference"
 )
 
 // BlueprintReconciler reconciles a Blueprint object
@@ -151,12 +151,12 @@ func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) 
 }
 
 func getDomainFromImageName(image string) (string, error) {
-	named, err := dockerref.ParseNormalizedNamed(image)
+	named, err := distributionref.ParseNormalizedNamed(image)
 	if err != nil {
 		return "", fmt.Errorf("couldn't parse image name: %v", err)
 	}
 
-	return dockerref.Domain(named), nil
+	return distributionref.Domain(named), nil
 }
 
 func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.ChartSpec, args map[string]interface{}, blueprint *app.Blueprint, releaseName string) (ctrl.Result, error) {
