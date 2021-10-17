@@ -36,7 +36,7 @@ import (
 	credentialprovidersecrets "k8s.io/kubernetes/pkg/credentialprovider/secrets"
 	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
 
-	dockerref "github.com/docker/distribution/reference"
+	dockerref "github.com/distribution/distribution/reference"
 )
 
 // BlueprintReconciler reconciles a Blueprint object
