@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"fybrik.io/fybrik/manager/controllers/app/config"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -71,8 +72,9 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 		ResourceInterface: &PlotterInterface{
 			Client: cl,
 		},
-		ClusterManager: &mockup.ClusterLister{},
-		Provision:      &storage.ProvisionTest{},
+		ClusterManager:  &mockup.ClusterLister{},
+		Provision:       &storage.ProvisionTest{},
+		ConfigEvaluator: config.NewDefaultConfig(),
 	}
 }
 

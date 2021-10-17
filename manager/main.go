@@ -22,6 +22,7 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster/razee"
 	"fybrik.io/fybrik/pkg/storage"
 
+	"fybrik.io/fybrik/manager/controllers/app/config"
 	"fybrik.io/fybrik/manager/controllers/motion"
 
 	"k8s.io/apimachinery/pkg/fields"
@@ -145,7 +146,15 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		}()
 
 		// Initiate the FybrikApplication Controller
-		applicationController := app.NewFybrikApplicationReconciler(mgr, "FybrikApplication", policyManager, catalog, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
+		applicationController := app.NewFybrikApplicationReconciler(
+			mgr,
+			"FybrikApplication",
+			policyManager,
+			catalog,
+			clusterManager,
+			storage.NewProvisionImpl(mgr.GetClient()),
+			config.NewDefaultConfig(),
+		)
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "FybrikApplication")
 			return 1

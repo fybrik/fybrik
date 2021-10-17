@@ -9,6 +9,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// DefaultConfig implements EvaluatorInterface
+// It provides a default configuration as an alternative to evaluation of the written rego policies
 type DefaultConfig struct {
 }
 

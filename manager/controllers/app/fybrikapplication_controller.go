@@ -54,6 +54,7 @@ type FybrikApplicationReconciler struct {
 	ResourceInterface ContextInterface
 	ClusterManager    multicluster.ClusterLister
 	Provision         storage.ProvisionInterface
+	ConfigEvaluator   config.EvaluatorInterface
 }
 
 // Reconcile reconciles FybrikApplication CRD
@@ -441,7 +442,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 		}
 	}
 	configEvaluatorInput.GovernanceActions = req.Actions
-	configDecisions, err := config.NewDefaultConfig().Evaluate(configEvaluatorInput)
+	configDecisions, err := r.ConfigEvaluator.Evaluate(configEvaluatorInput)
 	if err != nil {
 		return err
 	}
@@ -452,7 +453,8 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 
 // NewFybrikApplicationReconciler creates a new reconciler for FybrikApplications
 func NewFybrikApplicationReconciler(mgr ctrl.Manager, name string,
-	policyManager connectors.PolicyManager, catalog connectors.DataCatalog, cm multicluster.ClusterLister, provision storage.ProvisionInterface) *FybrikApplicationReconciler {
+	policyManager connectors.PolicyManager, catalog connectors.DataCatalog, cm multicluster.ClusterLister,
+	provision storage.ProvisionInterface, configEvaluator config.EvaluatorInterface) *FybrikApplicationReconciler {
 	return &FybrikApplicationReconciler{
 		Client:            mgr.GetClient(),
 		Name:              name,
@@ -463,6 +465,7 @@ func NewFybrikApplicationReconciler(mgr ctrl.Manager, name string,
 		ClusterManager:    cm,
 		Provision:         provision,
 		DataCatalog:       catalog,
+		ConfigEvaluator:   configEvaluator,
 	}
 }
 
