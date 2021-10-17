@@ -86,8 +86,8 @@ func (m *Selector) SupportsDependencies(module *app.FybrikModule, moduleMap map[
 	return true
 }
 
-// SupportsInterface indicates whether the module supports interface requirements and dependencies
-func (m *Selector) SupportsInterface(module *app.FybrikModule, requestedCapability app.CapabilityType) bool {
+// SupportsInterface indicates whether the module supports interface requirements and dependencies, and returns the relevant capability.
+func (m *Selector) SupportsInterface(module *app.FybrikModule, requestedCapability app.CapabilityType) (*app.ModuleCapability, bool) {
 	// Check if the module supports the capability
 	for _, capability := range module.Spec.Capabilities {
 		if capability.Capability != requestedCapability {
@@ -99,15 +99,13 @@ func (m *Selector) SupportsInterface(module *app.FybrikModule, requestedCapabili
 				continue
 			}
 			if m.Source == nil {
-				m.ModuleCapability = (&capability).DeepCopy()
-				return true
+				return capability.DeepCopy(), true
 			}
 			for _, inter := range capability.SupportedInterfaces {
 				if inter.Source.DataFormat != m.Source.DataFormat || inter.Source.Protocol != m.Source.Protocol {
 					continue
 				}
-				m.ModuleCapability = (&capability).DeepCopy()
-				return true
+				return capability.DeepCopy(), true
 			}
 		} else if requestedCapability == app.Copy {
 			for _, inter := range capability.SupportedInterfaces {
@@ -117,22 +115,23 @@ func (m *Selector) SupportsInterface(module *app.FybrikModule, requestedCapabili
 				if inter.Sink.DataFormat != m.Destination.DataFormat || inter.Sink.Protocol != m.Destination.Protocol {
 					continue
 				}
-				m.ModuleCapability = (&capability).DeepCopy()
-				return true
+				return capability.DeepCopy(), true
 			}
 		}
 	}
-	return false
+	return nil, false
 }
 
 // SelectModule finds the module that fits the requirements
 func (m *Selector) SelectModule(moduleMap map[string]*app.FybrikModule, requestedCapability app.CapabilityType) bool {
 	m.Message = ""
 	for _, module := range moduleMap {
-		if !m.SupportsInterface(module, requestedCapability) {
+		capability, supportsInterface := m.SupportsInterface(module, requestedCapability)
+		if !supportsInterface {
 			m.Message = app.ModuleNotFound + " for " + string(requestedCapability) + "; requested interface is not supported"
 			continue
 		}
+		m.ModuleCapability = capability
 		if !m.SupportsGovernanceActions(module, m.Actions) {
 			m.Message = app.ModuleNotFound + " for " + string(requestedCapability) + "; governance actions are not supported"
 			continue
