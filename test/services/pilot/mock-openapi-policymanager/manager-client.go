@@ -45,7 +45,7 @@ func main() {
 		return
 	}
 
-	creds := "http://vault.fybrik-system:8200/v1/kubernetes-secrets/<SECRET-NAME>?namespace=<NAMESPACE>"
+	creds := "dummy-credentials"
 	input := openapiclientmodels.NewPolicyManagerRequestWithDefaults()
 
 	reqCtx := make(map[string]interface{})
