@@ -4,7 +4,6 @@ include $(ROOT_DIR)/Makefile.env
 CONNECTORS := \
 	katalog \
 	egeria \
-	opa \
 	open_policy_agent
 
 define test-target
@@ -30,5 +29,5 @@ $(foreach dir,$(CONNECTORS),$(eval $(call docker-rmi-target,$(dir))))
 
 .PHONY: deploy undeploy charts
 deploy undeploy charts:
-	$(MAKE) -C opa $@
+	$(MAKE) -C open_policy_agent $@
 	$(MAKE) -C egeria $@
