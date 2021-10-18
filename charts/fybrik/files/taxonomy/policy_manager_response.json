@@ -9,7 +9,7 @@
 	  "result": {
 		"type": "array",
 		"items": {
-		  "$ref": "#/definitions/ResultItem"
+		  "$ref": "#/definitions/PolicyManagerResultItem"
 		}
 	  }
 	},
@@ -18,7 +18,7 @@
 	  "result"
 	],
 	"definitions": {
-	  "ResultItem": {
+	  "PolicyManagerResultItem": {
 		"type": "object",
 		"properties": {
 		  "policy": {

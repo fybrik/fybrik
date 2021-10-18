@@ -11,7 +11,7 @@ import (
 
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	"fybrik.io/fybrik/pkg/random"
-	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
 
 // MockPolicyManager is a mock for PolicyManager interface used in tests
@@ -20,15 +20,15 @@ type MockPolicyManager struct {
 }
 
 // GetPoliciesDecisions implements the PolicyCompiler interface
-func (m *MockPolicyManager) GetPoliciesDecisions(input *openapiclientmodels.PolicyManagerRequest, creds string) (*openapiclientmodels.PolicyManagerResponse, error) {
+func (m *MockPolicyManager) GetPoliciesDecisions(input *taxonomymodels.PolicyManagerRequest, creds string) (*taxonomymodels.PolicyManagerResponse, error) {
 	log.Printf("Received OpenAPI request in mockup GetPoliciesDecisions: ")
 	log.Printf("ProcessingGeography: " + input.Action.GetProcessingLocation())
 	log.Printf("Destination: " + *input.Action.Destination)
 
 	datasetID := input.GetResource().Name
 	log.Printf("   DataSetID: " + datasetID)
-	respResult := []openapiclientmodels.ResultItem{}
-	policyManagerResult := openapiclientmodels.ResultItem{}
+	respResult := []taxonomymodels.PolicyManagerResultItem{}
+	policyManagerResult := taxonomymodels.PolicyManagerResultItem{}
 
 	splittedID := strings.SplitN(datasetID, "/", 2)
 	if len(splittedID) != 2 {
@@ -40,26 +40,26 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *openapiclientmodels.Poli
 		// empty result simulates allow
 		// no need to construct any result item
 	case "deny-dataset":
-		actionOnDataset := openapiclientmodels.Action{}
+		actionOnDataset := taxonomymodels.Action{}
 		(&actionOnDataset).SetName("Deny")
 		policyManagerResult.SetAction(actionOnDataset)
 		respResult = append(respResult, policyManagerResult)
 	case "allow-theshire":
 		if *input.GetAction().Destination != "theshire" {
-			actionOnDataset := openapiclientmodels.Action{}
+			actionOnDataset := taxonomymodels.Action{}
 			(&actionOnDataset).SetName("Deny")
 			policyManagerResult.SetAction(actionOnDataset)
 			respResult = append(respResult, policyManagerResult)
 		}
 	case "deny-theshire":
 		if *input.GetAction().Destination == "theshire" {
-			actionOnDataset := openapiclientmodels.Action{}
+			actionOnDataset := taxonomymodels.Action{}
 			(&actionOnDataset).SetName("Deny")
 			policyManagerResult.SetAction(actionOnDataset)
 			respResult = append(respResult, policyManagerResult)
 		}
 	default:
-		actionOnCols := openapiclientmodels.Action{}
+		actionOnCols := taxonomymodels.Action{}
 		action := make(map[string]interface{})
 		action["name"] = "RedactAction"
 		action["column"] = []string{"SSN"}
@@ -77,7 +77,7 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *openapiclientmodels.Poli
 	}
 
 	decisionID, _ := random.Hex(20)
-	policyManagerResp := &openapiclientmodels.PolicyManagerResponse{DecisionId: &decisionID, Result: respResult}
+	policyManagerResp := &taxonomymodels.PolicyManagerResponse{DecisionId: &decisionID, Result: respResult}
 
 	res, err := json.MarshalIndent(policyManagerResp, "", "\t")
 	if err != nil {

@@ -18,7 +18,7 @@ import (
 
 	"emperror.dev/errors"
 	opabl "fybrik.io/fybrik/connectors/open_policy_agent/lib"
-	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 	"github.com/gdexlab/go-render/render"
 	"github.com/gin-gonic/gin"
 )
@@ -29,11 +29,11 @@ type ConnectorController struct {
 	CatalogReader *opabl.CatalogReader
 }
 
-func (e *ConnectorController) contactOPA(input openapiclientmodels.PolicyManagerRequest, creds string) (openapiclientmodels.PolicyManagerResponse, error) {
+func (e *ConnectorController) contactOPA(input taxonomymodels.PolicyManagerRequest, creds string) (taxonomymodels.PolicyManagerResponse, error) {
 	policyToBeEvaluated := "dataapi/authz/verdict"
 	eval, err := e.OpaReader.GetOPADecisions(&input, creds, e.CatalogReader, policyToBeEvaluated)
 	if err != nil {
-		return openapiclientmodels.PolicyManagerResponse{}, errors.Wrap(err, "GetOPADecisions error in contactOPA")
+		return taxonomymodels.PolicyManagerResponse{}, errors.Wrap(err, "GetOPADecisions error in contactOPA")
 	}
 
 	output := render.AsCode(eval)
@@ -44,7 +44,7 @@ func (e *ConnectorController) contactOPA(input openapiclientmodels.PolicyManager
 
 func (e *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 	log.Println("in GetPoliciesDecisions of V2 OPA Connector!")
-	input := new(openapiclientmodels.PolicyManagerRequest)
+	input := new(taxonomymodels.PolicyManagerRequest)
 	if err := c.ShouldBindJSON(input); err != nil {
 		log.Println("Error during ShouldBindJSON:", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

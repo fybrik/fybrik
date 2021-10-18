@@ -5,7 +5,7 @@ package modules
 
 import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
 
 // Selector is responsible for finding an appropriate module
@@ -17,7 +17,7 @@ type Selector struct {
 	Source           *app.InterfaceDetails
 	Destination      *app.InterfaceDetails
 	// Actions that the module will perform
-	Actions []openapiclientmodels.Action
+	Actions []taxonomymodels.Action
 	// StorageAccountRegion for writing data
 	StorageAccountRegion string
 }
@@ -42,7 +42,7 @@ func (m *Selector) GetError() string {
 }
 
 // SupportsGovernanceActions checks whether the module supports the required governance actions for the capability requested
-func (m *Selector) SupportsGovernanceActions(module *app.FybrikModule, actions []openapiclientmodels.Action) bool {
+func (m *Selector) SupportsGovernanceActions(module *app.FybrikModule, actions []taxonomymodels.Action) bool {
 	if m.ModuleCapability == nil {
 		return false
 	}
@@ -57,7 +57,7 @@ func (m *Selector) SupportsGovernanceActions(module *app.FybrikModule, actions [
 }
 
 // SupportsGovernanceAction checks whether the module supports the required governance action
-func (m *Selector) SupportsGovernanceAction(module *app.FybrikModule, action openapiclientmodels.Action) bool {
+func (m *Selector) SupportsGovernanceAction(module *app.FybrikModule, action taxonomymodels.Action) bool {
 	// Loop over the data transforms (actions) performed by the module for this capability
 	for _, act := range m.ModuleCapability.Actions {
 		if act.ID == action.Name {

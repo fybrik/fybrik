@@ -12,7 +12,7 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
-	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -29,7 +29,7 @@ type DataInfo struct {
 	// Workload cluster
 	WorkloadCluster multicluster.Cluster
 	// Governance actions to perform on this asset
-	Actions []openapiclientmodels.Action
+	Actions []taxonomymodels.Action
 }
 
 // SelectModules selects the specific modules and the relevant capabilities in order to construct a data flow for the given asset
@@ -106,7 +106,7 @@ func (p *PlotterGenerator) buildReadFlowWithCopy(item *DataInfo, appContext *app
 	// TODO(shlomitk1): consider multiple options for read module compatibility
 	readSelector := &modules.Selector{
 		Destination:  &item.Context.Requirements.Interface,
-		Actions:      []openapiclientmodels.Action{},
+		Actions:      []taxonomymodels.Action{},
 		Source:       nil,
 		Dependencies: []*app.FybrikModule{},
 		Module:       nil,
@@ -118,8 +118,8 @@ func (p *PlotterGenerator) buildReadFlowWithCopy(item *DataInfo, appContext *app
 	}
 	// find a copy module that matches the selected read module (common interface and action support)
 	interfaces := GetSupportedReadSources(readSelector.GetModule())
-	actionsOnRead := []openapiclientmodels.Action{}
-	actionsOnCopy := []openapiclientmodels.Action{}
+	actionsOnRead := []taxonomymodels.Action{}
+	actionsOnCopy := []taxonomymodels.Action{}
 	if len(item.Actions) > 0 {
 		// intersect deployment clusters for read+transform, copy+transform
 		readAndTransformClusters := utils.Intersection(item.Configuration.ConfigDecisions[app.Read].Clusters, item.Configuration.ConfigDecisions[app.Transform].Clusters)
@@ -141,8 +141,8 @@ func (p *PlotterGenerator) buildReadFlowWithCopy(item *DataInfo, appContext *app
 		}
 		// WRITE actions that should be done by the copy module
 		// TODO(shlomitk1): generalize the regions the temporary copy can be done to, currently assumes workload geography
-		operation := new(openapiclientmodels.PolicyManagerRequestAction)
-		operation.SetActionType(openapiclientmodels.WRITE)
+		operation := new(taxonomymodels.PolicyManagerRequestAction)
+		operation.SetActionType(taxonomymodels.WRITE)
 		operation.SetDestination(item.WorkloadCluster.Metadata.Region)
 		actions, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
 		actionsOnCopy = append(actionsOnCopy, actions...)
@@ -181,8 +181,8 @@ func (p *PlotterGenerator) buildCopyFlow(item *DataInfo, appContext *app.FybrikA
 	// find a region for storage allocation
 	// TODO(shlomitk1): prefer the workload cluster if specified
 	for _, region := range p.StorageAccountRegions {
-		operation := new(openapiclientmodels.PolicyManagerRequestAction)
-		operation.SetActionType(openapiclientmodels.WRITE)
+		operation := new(taxonomymodels.PolicyManagerRequestAction)
+		operation.SetActionType(taxonomymodels.WRITE)
 		operation.SetDestination(region)
 
 		actionsOnCopy, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
@@ -227,7 +227,7 @@ func GetSupportedReadSources(module *app.FybrikModule) []*app.InterfaceDetails {
 	return list
 }
 
-func actionsToArbitrary(actions []openapiclientmodels.Action) []serde.Arbitrary {
+func actionsToArbitrary(actions []taxonomymodels.Action) []serde.Arbitrary {
 	result := []serde.Arbitrary{}
 	for _, action := range actions {
 		raw := serde.NewArbitrary(action)
