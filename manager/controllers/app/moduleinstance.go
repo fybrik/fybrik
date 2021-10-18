@@ -461,14 +461,21 @@ func moduleAPIToService(api *app.ModuleAPI, scope app.CapabilityScope, appContex
 	releaseName := utils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
 	blueprintNamespace := utils.GetBlueprintNamespace()
 
-	values := map[string]interface{}{
-		"Release": map[string]interface{}{
+	values := make(map[string]interface{})
+	if len(appContext.Labels) == 0 {
+		values["Release"] =
+			map[string]interface{}{
+				"Name":      releaseName,
+				"Namespace": blueprintNamespace,
+			}
+	} else {
+		values["Release"] = map[string]interface{}{
 			"Name":      releaseName,
 			"Namespace": blueprintNamespace,
-		},
-		"Values": map[string]interface{}{
+		}
+		values["Values"] = map[string]interface{}{
 			"labels": appContext.Labels,
-		},
+		}
 	}
 
 	// the following is required for proper types (e.g., labels must be map[string]interface{})
