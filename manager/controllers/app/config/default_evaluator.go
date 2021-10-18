@@ -24,7 +24,7 @@ func NewDefaultConfig() *DefaultConfig {
 /* 	Read capability is deployed in a read-type scenario.
     Read capability is deployed at the workload scope.
 	Write capability is not yet supported and thus won’t be deployed.
-	Transform is deployed if a list of governance actions is not empty.  Transforms should always be performed close to the data.
+	Transforms should always be performed close to the data.
 	Copy is deployed if a user has requested it explicitly.
 	Copy is deployed if there is no read module that supports the asset format.
 	Copy is deployed in a read scenario if dataset resides in a different geography and governance actions are required.
