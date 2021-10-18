@@ -114,7 +114,6 @@ DOCKER_PUBLIC_NAMES := \
 	dummy-mover \
 	egr-connector \
 	katalog-connector \
-	opa-connector \
 	openpolicyagent-connector
 
 define do-docker-retag-and-push-public
@@ -138,7 +137,6 @@ save-images:
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/dummy-mover:${DOCKER_TAGNAME} \
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/egr-connector:${DOCKER_TAGNAME} \
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/katalog-connector:${DOCKER_TAGNAME} \
-		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:${DOCKER_TAGNAME} \
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/openpolicyagent-connector:${DOCKER_TAGNAME}
 
 include hack/make-rules/tools.mk
