@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"strings"
 
-	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
 
 type OpaReader struct {
@@ -22,7 +22,7 @@ func NewOpaReader(opasrvurl string, client *http.Client) *OpaReader {
 	return &OpaReader{opaServerURL: opasrvurl, opaClient: client}
 }
 
-func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *openapiclientmodels.PolicyManagerRequest, catalogMetadata map[string]interface{}) (*openapiclientmodels.PolicyManagerRequest, error) {
+func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *taxonomymodels.PolicyManagerRequest, catalogMetadata map[string]interface{}) (*taxonomymodels.PolicyManagerRequest, error) {
 	responseBytes, errJSON := json.MarshalIndent(catalogMetadata, "", "\t")
 	if errJSON != nil {
 		return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
@@ -80,13 +80,13 @@ func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *openapiclient
 					log.Println("******** listofcols : *******", listofcols)
 					log.Println("******** listoftags: *******", listoftags)
 
-					cols := []openapiclientmodels.ResourceColumns{}
+					cols := []taxonomymodels.ResourceColumns{}
 
-					var newcol *openapiclientmodels.ResourceColumns
+					var newcol *taxonomymodels.ResourceColumns
 					numOfCols := len(listofcols)
 					numOfTags := 0
 					for i := 0; i < numOfCols; i++ {
-						newcol = new(openapiclientmodels.ResourceColumns)
+						newcol = new(taxonomymodels.ResourceColumns)
 						newcol.SetName(listofcols[i])
 						numOfTags = len(listoftags[i])
 						if numOfTags > 0 {
@@ -128,17 +128,17 @@ func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *openapiclient
 	return in, nil
 }
 
-func (r *OpaReader) GetOPADecisions(in *openapiclientmodels.PolicyManagerRequest, creds string, catalogReader *CatalogReader, policyToBeEvaluated string) (openapiclientmodels.PolicyManagerResponse, error) {
+func (r *OpaReader) GetOPADecisions(in *taxonomymodels.PolicyManagerRequest, creds string, catalogReader *CatalogReader, policyToBeEvaluated string) (taxonomymodels.PolicyManagerResponse, error) {
 	datasetsMetadata, err := catalogReader.GetDatasetsMetadataFromCatalog(in, creds)
 	if err != nil {
-		return openapiclientmodels.PolicyManagerResponse{}, err
+		return taxonomymodels.PolicyManagerResponse{}, err
 	}
 	datasetID := in.GetResource().Name
 	metadata := datasetsMetadata[datasetID]
 
 	inputMap, ok := metadata.(map[string]interface{})
 	if !ok {
-		return openapiclientmodels.PolicyManagerResponse{}, fmt.Errorf("error in unmarshalling dataset metadata (datasetID = %s): %v", datasetID, err)
+		return taxonomymodels.PolicyManagerResponse{}, fmt.Errorf("error in unmarshalling dataset metadata (datasetID = %s): %v", datasetID, err)
 	}
 
 	in, _ = r.updatePolicyManagerRequestWithResourceInfo(in, inputMap)
@@ -146,7 +146,7 @@ func (r *OpaReader) GetOPADecisions(in *openapiclientmodels.PolicyManagerRequest
 	b, err := json.Marshal(*in)
 	if err != nil {
 		fmt.Println(err)
-		return openapiclientmodels.PolicyManagerResponse{}, fmt.Errorf("error during marshal in GetOPADecisions: %v", err)
+		return taxonomymodels.PolicyManagerResponse{}, fmt.Errorf("error during marshal in GetOPADecisions: %v", err)
 	}
 	inputJSON := "{ \"input\": " + string(b) + " }"
 	fmt.Println("updated stringified policy manager request in GetOPADecisions", inputJSON)
@@ -154,20 +154,20 @@ func (r *OpaReader) GetOPADecisions(in *openapiclientmodels.PolicyManagerRequest
 	opaEval, err := EvaluatePoliciesOnInput(inputJSON, r.opaServerURL, policyToBeEvaluated, r.opaClient)
 	if err != nil {
 		log.Printf("error in EvaluatePoliciesOnInput : %v", err)
-		return openapiclientmodels.PolicyManagerResponse{}, fmt.Errorf("error in EvaluatePoliciesOnInput : %v", err)
+		return taxonomymodels.PolicyManagerResponse{}, fmt.Errorf("error in EvaluatePoliciesOnInput : %v", err)
 	}
 	log.Println("OPA Eval : " + opaEval)
 
-	policyManagerResponse := new(openapiclientmodels.PolicyManagerResponse)
+	policyManagerResponse := new(taxonomymodels.PolicyManagerResponse)
 	err = json.Unmarshal([]byte(opaEval), &policyManagerResponse)
 	if err != nil {
-		return openapiclientmodels.PolicyManagerResponse{}, fmt.Errorf("error in GetOPADecisions during unmarshalling OPA response to Policy Manager Response : %v", err)
+		return taxonomymodels.PolicyManagerResponse{}, fmt.Errorf("error in GetOPADecisions during unmarshalling OPA response to Policy Manager Response : %v", err)
 	}
 	log.Println("unmarshalled policyManagerResp in GetOPADecisions:", policyManagerResponse)
 
 	res, err := json.MarshalIndent(policyManagerResponse, "", "\t")
 	if err != nil {
-		return openapiclientmodels.PolicyManagerResponse{}, fmt.Errorf("error in GetOPADecisions during MarshalIndent Policy Manager Response : %v", err)
+		return taxonomymodels.PolicyManagerResponse{}, fmt.Errorf("error in GetOPADecisions during MarshalIndent Policy Manager Response : %v", err)
 	}
 	log.Println("Marshalled PolicyManagerResponse from OPA response in GetOPADecisions:", string(res))
 

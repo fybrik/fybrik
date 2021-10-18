@@ -11,7 +11,7 @@ import (
 	"strconv"
 
 	mockup "fybrik.io/fybrik/manager/controllers/mockup"
-	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,11 +21,11 @@ const (
 
 var router *gin.Engine
 
-func constructPolicyManagerRequest(inputString string) *openapiclientmodels.PolicyManagerRequest {
+func constructPolicyManagerRequest(inputString string) *taxonomymodels.PolicyManagerRequest {
 	log.Println("inconstructPolicymanagerRequest")
 	log.Println("inputString")
 	log.Println(inputString)
-	var input openapiclientmodels.PolicyManagerRequest
+	var input taxonomymodels.PolicyManagerRequest
 	err := json.Unmarshal([]byte(inputString), &input)
 	if err != nil {
 		return nil

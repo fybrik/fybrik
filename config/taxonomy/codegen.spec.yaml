@@ -23,7 +23,7 @@ paths:
           application/json: 
             schema:
               type: object
-              $ref: "../../charts/fybrik/files/taxonomy/policy_manager_response.json"
+              $ref: "../../charts/fybrik/files/taxonomy/policy_manager_request.json"
       responses:
         '200':
           description: successful operation

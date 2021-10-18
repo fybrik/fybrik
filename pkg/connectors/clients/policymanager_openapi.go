@@ -12,7 +12,7 @@ import (
 
 	"emperror.dev/errors"
 	openapiclient "fybrik.io/fybrik/pkg/connectors/openapiclient"
-	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
 
 var _ PolicyManager = (*openAPIPolicyManager)(nil)
@@ -44,7 +44,7 @@ func NewOpenAPIPolicyManager(name string, connectionURL string, connectionTimeou
 	}, nil
 }
 
-func (m *openAPIPolicyManager) GetPoliciesDecisions(in *openapiclientmodels.PolicyManagerRequest, creds string) (*openapiclientmodels.PolicyManagerResponse, error) {
+func (m *openAPIPolicyManager) GetPoliciesDecisions(in *taxonomymodels.PolicyManagerRequest, creds string) (*taxonomymodels.PolicyManagerResponse, error) {
 	resp, r, err := m.client.DefaultApi.GetPoliciesDecisionsPost(context.Background()).XRequestCred(creds).PolicyManagerRequest(*in).Execute()
 	// resp, r, err := m.client.DefaultApi.GetPoliciesDecisions(context.Background()).Input(*in).Creds(creds).Execute()
 	if err != nil {

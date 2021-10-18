@@ -18,7 +18,7 @@ import (
 	local "fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
-	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 	vault "fybrik.io/fybrik/pkg/vault"
 	"github.com/Masterminds/sprig/v3"
 	"github.com/go-logr/logr"
@@ -144,10 +144,10 @@ func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.
 	m.Log.Info("Select read path for " + item.Context.DataSetID)
 
 	// Read policies for data that is processed in the workload geography
-	var readActions []*openapiclientmodels.ResultItem
+	var readActions []*taxonomymodels.PolicyManagerResultItem
 	var err error
-	reqAction := openapiclientmodels.PolicyManagerRequestAction{}
-	reqAction.SetActionType(openapiclientmodels.READ)
+	reqAction := taxonomymodels.PolicyManagerRequestAction{}
+	reqAction.SetActionType(taxonomymodels.READ)
 	reqAction.SetDestination(m.WorkloadGeography)
 	readActions, err = LookupPolicyDecisions(item.Context.DataSetID, m.PolicyManager, appContext, &reqAction)
 	if err != nil {
@@ -157,7 +157,7 @@ func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.
 	// actions are not checked since they are not necessarily done by the read module
 	readSelector := &modules.Selector{Capability: app.Read,
 		Destination:  &item.Context.Requirements.Interface,
-		Actions:      []*openapiclientmodels.ResultItem{},
+		Actions:      []*taxonomymodels.PolicyManagerResultItem{},
 		Source:       nil,
 		Dependencies: []*app.FybrikModule{},
 		Module:       nil,
@@ -176,7 +176,7 @@ func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.
 	// logic for deciding whether copy module is required
 	var interfaces []*app.InterfaceDetails
 	var copyRequired bool
-	additionalActions := []*openapiclientmodels.ResultItem{}
+	additionalActions := []*taxonomymodels.PolicyManagerResultItem{}
 	if readSelector != nil {
 		copyRequired, interfaces, additionalActions = m.getCopyRequirements(item, readSelector)
 	} else if item.Context.Requirements.Copy.Required {
@@ -186,7 +186,7 @@ func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.
 	if !copyRequired {
 		return nil, nil
 	}
-	actionsOnCopy := []*openapiclientmodels.ResultItem{}
+	actionsOnCopy := []*taxonomymodels.PolicyManagerResultItem{}
 	geo := m.WorkloadGeography
 	// WRITE actions
 	if readSelector == nil {
@@ -521,7 +521,7 @@ func GetSupportedReadSources(module *app.FybrikModule) []*app.InterfaceDetails {
 // - true if copy is required, false - otherwise
 // - interface capabilities to match copy destination, based on read sources
 // - read actions that copy has to support
-func (m *ModuleManager) getCopyRequirements(item modules.DataInfo, readSelector *modules.Selector) (bool, []*app.InterfaceDetails, []*openapiclientmodels.ResultItem) {
+func (m *ModuleManager) getCopyRequirements(item modules.DataInfo, readSelector *modules.Selector) (bool, []*app.InterfaceDetails, []*taxonomymodels.PolicyManagerResultItem) {
 	m.Log.Info("Checking supported read sources")
 	sources := GetSupportedReadSources(readSelector.GetModule())
 	// check if read sources include the data source
@@ -530,14 +530,14 @@ func (m *ModuleManager) getCopyRequirements(item modules.DataInfo, readSelector 
 	supportsAllActions := readSelector.SupportsGovernanceActions(readSelector.GetModule(), readSelector.Actions)
 	// Copy is required when data has to be transformed and read is done at another location
 	transformAtSource := len(readSelector.Actions) > 0 && item.DataDetails.Geography != readSelector.Geo
-	readActionsOnCopy := []*openapiclientmodels.ResultItem{}
+	readActionsOnCopy := []*taxonomymodels.PolicyManagerResultItem{}
 	if transformAtSource {
 		readActionsOnCopy = append(readActionsOnCopy, readSelector.Actions...)
-		readSelector.Actions = []*openapiclientmodels.ResultItem{}
+		readSelector.Actions = []*taxonomymodels.PolicyManagerResultItem{}
 	} else {
 		// ensure that copy + read support all needed actions
 		// actions that the read module can not perform are required to be done during copy
-		readActionsOnRead := []*openapiclientmodels.ResultItem{}
+		readActionsOnRead := []*taxonomymodels.PolicyManagerResultItem{}
 		for _, action := range readSelector.Actions {
 			if !readSelector.SupportsGovernanceAction(readSelector.GetModule(), action) {
 				readActionsOnCopy = append(readActionsOnCopy, action)
@@ -566,13 +566,13 @@ func (m *ModuleManager) getCopyRequirements(item modules.DataInfo, readSelector 
 	return copyRequired, sources, readActionsOnCopy
 }
 
-func (m *ModuleManager) enforceWritePolicies(appContext *app.FybrikApplication, datasetID string) ([]*openapiclientmodels.ResultItem, string, error) {
+func (m *ModuleManager) enforceWritePolicies(appContext *app.FybrikApplication, datasetID string) ([]*taxonomymodels.PolicyManagerResultItem, string, error) {
 	var err error
-	actions := []*openapiclientmodels.ResultItem{}
+	actions := []*taxonomymodels.PolicyManagerResultItem{}
 	//	if the cluster selector is non-empty, the write will be done to the specified geography if possible
 	if m.WorkloadGeography != "" {
-		reqAction := openapiclientmodels.PolicyManagerRequestAction{}
-		reqAction.SetActionType(openapiclientmodels.WRITE)
+		reqAction := taxonomymodels.PolicyManagerRequestAction{}
+		reqAction.SetActionType(taxonomymodels.WRITE)
 		reqAction.SetDestination(m.WorkloadGeography)
 		if actions, err = LookupPolicyDecisions(datasetID, m.PolicyManager, appContext,
 			&reqAction); err == nil {
@@ -581,8 +581,8 @@ func (m *ModuleManager) enforceWritePolicies(appContext *app.FybrikApplication, 
 	}
 	var excludedGeos string
 	for _, cluster := range m.Clusters {
-		operation := new(openapiclientmodels.PolicyManagerRequestAction)
-		operation.SetActionType(openapiclientmodels.WRITE)
+		operation := new(taxonomymodels.PolicyManagerRequestAction)
+		operation.SetActionType(taxonomymodels.WRITE)
 		operation.SetDestination(cluster.Metadata.Region)
 
 		if actions, err = LookupPolicyDecisions(datasetID, m.PolicyManager, appContext, operation); err == nil {
@@ -627,7 +627,7 @@ func (m *ModuleManager) GetProcessingGeography(applicationContext *app.FybrikApp
 	return "", errors.New("Unknown cluster: " + clusterName)
 }
 
-func actionsToArbitrary(actions []*openapiclientmodels.ResultItem) []serde.Arbitrary {
+func actionsToArbitrary(actions []*taxonomymodels.PolicyManagerResultItem) []serde.Arbitrary {
 	result := []serde.Arbitrary{}
 	for _, action := range actions {
 		raw := serde.NewArbitrary(action)
