@@ -1,6 +1,6 @@
-{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.policyManager "openpolicyagent") }}
-{{- if include "fybrik.isEnabled" (tuple .Values.openPolicyAgentConnector.enabled $autoFlag) }}
-{{- if .Values.openPolicyAgentConnector.autoscaling.enabled }}
+{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
+{{- if include "fybrik.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
+{{- if .Values.opaConnector.autoscaling.enabled }}
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
@@ -13,20 +13,20 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: openpolicyagent-connector
-  minReplicas: {{ .Values.openPolicyAgentConnector.autoscaling.minReplicas }}
-  maxReplicas: {{ .Values.openPolicyAgentConnector.autoscaling.maxReplicas }}
+  minReplicas: {{ .Values.opaConnector.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.opaConnector.autoscaling.maxReplicas }}
   metrics:
-    {{- if .Values.openPolicyAgentConnector.autoscaling.targetCPUUtilizationPercentage }}
+    {{- if .Values.opaConnector.autoscaling.targetCPUUtilizationPercentage }}
     - type: Resource
       resource:
         name: cpu
-        targetAverageUtilization: {{ .Values.openPolicyAgentConnector.autoscaling.targetCPUUtilizationPercentage }}
+        targetAverageUtilization: {{ .Values.opaConnector.autoscaling.targetCPUUtilizationPercentage }}
     {{- end }}
-    {{- if .Values.openPolicyAgentConnector.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- if .Values.opaConnector.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:
         name: memory
-        targetAverageUtilization: {{ .Values.openPolicyAgentConnector.autoscaling.targetMemoryUtilizationPercentage }}
+        targetAverageUtilization: {{ .Values.opaConnector.autoscaling.targetMemoryUtilizationPercentage }}
     {{- end }}
 {{- end }}
 {{- end }}

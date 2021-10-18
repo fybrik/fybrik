@@ -69,7 +69,7 @@ coordinator:
 
   # Overrides the policy manager connector URL.
   # Defaults to `<policyManager>-connector:80`.
-  policyManagerConnectorURL: ""
+  policyManagerConnectorURL: "http://openpolicyagent-connector:80"
 
   # Configure the vault instance to be used by the coordinator manager
   vault:
@@ -397,7 +397,7 @@ egeriaConnector:
 
 
 # V2 OPA connector component
-openPolicyAgentConnector:
+opaConnector:
   # Set to true to deploy the opa connector or false to skip its deployment.
   # Defaults to true if `coordinator.policyManager` is set to "opa"
   enabled: auto

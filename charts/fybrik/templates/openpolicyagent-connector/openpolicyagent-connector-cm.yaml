@@ -1,12 +1,12 @@
-{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.policyManager "openpolicyagent") }}
-{{- if include "fybrik.isEnabled" (tuple .Values.openPolicyAgentConnector.enabled $autoFlag) }}
+{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
+{{- if include "fybrik.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: openpolicyagent-connector-config
 data:
-  CONNECTION_TIMEOUT: {{ .Values.openPolicyAgentConnector.connectionTimeout | default .Values.global.connectionTimeout | quote }}
-  OPA_SERVER_URL: {{ .Values.openPolicyAgentConnector.serverURL | default (printf "opa:%d" (int .Values.opaServer.service.port) ) | quote }}
+  CONNECTION_TIMEOUT: {{ .Values.opaConnector.connectionTimeout | default .Values.global.connectionTimeout | quote }}
+  OPA_SERVER_URL: {{ .Values.opaConnector.serverURL | default (printf "opa:%d" (int .Values.opaServer.service.port) ) | quote }}
   CATALOG_CONNECTOR_URL: {{ .Values.coordinator.catalogConnectorURL | default (printf "%s-connector:80" .Values.coordinator.catalog) | quote }}
   CATALOG_PROVIDER_NAME: {{ .Values.coordinator.catalog | quote }}
 

@@ -1,5 +1,5 @@
-{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.policyManager "openpolicyagent") }}
-{{- if include "fybrik.isEnabled" (tuple .Values.openPolicyAgentConnector.enabled $autoFlag) }}
+{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
+{{- if include "fybrik.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -8,8 +8,8 @@ metadata:
     app.kubernetes.io/component: openpolicyagent-connector
     {{- include "fybrik.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.openPolicyAgentConnector.autoscaling.enabled }}
-  replicas: {{ .Values.openPolicyAgentConnector.replicaCount }}
+  {{- if not .Values.opaConnector.autoscaling.enabled }}
+  replicas: {{ .Values.opaConnector.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
@@ -17,7 +17,7 @@ spec:
       {{- include "fybrik.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.openPolicyAgentConnector.podAnnotations }}
+      {{- with .Values.opaConnector.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -30,15 +30,15 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ .Values.openPolicyAgentConnector.serviceAccount.name }}
+      serviceAccountName: {{ .Values.opaConnector.serviceAccount.name }}
       securityContext:
-        {{- toYaml .Values.openPolicyAgentConnector.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.opaConnector.podSecurityContext | nindent 8 }}
       containers:
         - name: openpolicyagent-connector
           securityContext:
-            {{- toYaml .Values.openPolicyAgentConnector.securityContext | nindent 12 }}
-          image: {{ include "fybrik.image" ( tuple $ .Values.openPolicyAgentConnector ) }}
-          imagePullPolicy: {{ .Values.openPolicyAgentConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
+            {{- toYaml .Values.opaConnector.securityContext | nindent 12 }}
+          image: {{ include "fybrik.image" ( tuple $ .Values.opaConnector ) }}
+          imagePullPolicy: {{ .Values.opaConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
           ports:
             - name: http
               containerPort: 8080
@@ -47,16 +47,16 @@ spec:
             - configMapRef:
                 name: openpolicyagent-connector-config
           resources:
-            {{- toYaml .Values.openPolicyAgentConnector.resources | nindent 12 }}
-      {{- with .Values.openPolicyAgentConnector.nodeSelector }}
+            {{- toYaml .Values.opaConnector.resources | nindent 12 }}
+      {{- with .Values.opaConnector.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.openPolicyAgentConnector.affinity }}
+      {{- with .Values.opaConnector.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.openPolicyAgentConnector.tolerations }}
+      {{- with .Values.opaConnector.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
