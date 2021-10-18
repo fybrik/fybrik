@@ -406,7 +406,7 @@ spec:
     - name: target
       value: source-build
     - name: context
-      value: fybrik/connectors/opa
+      value: fybrik/connectors/open_policy_agent
     - name: image
       value: $(params.build_image)
     - name: docker-hostname
@@ -439,13 +439,13 @@ spec:
     - name: IMAGE
       value: $(params.docker-hostname)/$(params.docker-namespace)/openpolicyagent-connector
     - name: DOCKERFILE
-      value: fybrik/connectors/opa/Dockerfile
+      value: fybrik/connectors/open_policy_agent/Dockerfile
     - name: TLSVERIFY
       value: "false"
     - name: BUILD_EXTRA_ARGS
       value: --build-arg REGISTRY=$(params.docker-hostname)/$(params.docker-namespace)
     - name: CONTEXT
-      value: fybrik/connectors/opa
+      value: fybrik/connectors/open_policy_agent
     - name: HELM_PROPERTY
       value: opaConnector.image
     - name: docker-hostname
@@ -475,7 +475,7 @@ spec:
       Operator: in
       Values:
       - "all"
-      - "fybrik/connectors/opa"
+      - "fybrik/connectors/open_policy_agent"
   - name: transfer-image-openpolicyagent-connector-vulnerability-advisor
     retries: 3
     taskRef:
