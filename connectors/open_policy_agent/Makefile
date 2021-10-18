@@ -19,6 +19,10 @@ docker-build:
 	docker build . -t $(IMG)
 	rm openpolicyagent-connector
 
+.PHONY: source-build
+source-build:
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o openpolicyagent-connector main.go
+
 .PHONY: deploy
 deploy:
 	helm install fybrik-openpolicyagent $(ROOT_DIR)/charts/fybrik \
