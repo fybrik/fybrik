@@ -21,7 +21,7 @@ docker-build:
 
 .PHONY: source-build
 source-build:
-    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o openpolicyagent-connector main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o openpolicyagent-connector main.go
 
 .PHONY: deploy
 deploy:
