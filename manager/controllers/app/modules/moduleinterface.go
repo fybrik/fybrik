@@ -12,7 +12,7 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"fybrik.io/fybrik/pkg/multicluster"
-	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
 
 // DataDetails is the information received from the catalog connector
@@ -59,7 +59,7 @@ type Selector struct {
 	Source           *app.InterfaceDetails
 	Destination      *app.InterfaceDetails
 	// Actions that the module will perform
-	Actions []*openapiclientmodels.ResultItem
+	Actions []*taxonomymodels.PolicyManagerResultItem
 	// Geography where the module will be orchestrated
 	Geo string
 }
@@ -84,7 +84,7 @@ func (m *Selector) GetError() string {
 }
 
 // SupportsGovernanceActions checks whether the module supports the required agovernance actions for the capability requested
-func (m *Selector) SupportsGovernanceActions(module *app.FybrikModule, actions []*openapiclientmodels.ResultItem) bool {
+func (m *Selector) SupportsGovernanceActions(module *app.FybrikModule, actions []*taxonomymodels.PolicyManagerResultItem) bool {
 	// Loop over the actions requested for the declared capability
 	for _, action := range actions {
 		// If any one of the actions is not supported, return false
@@ -96,7 +96,7 @@ func (m *Selector) SupportsGovernanceActions(module *app.FybrikModule, actions [
 }
 
 // SupportsGovernanceAction checks whether the module supports the required governance action
-func (m *Selector) SupportsGovernanceAction(module *app.FybrikModule, action *openapiclientmodels.ResultItem) bool {
+func (m *Selector) SupportsGovernanceAction(module *app.FybrikModule, action *taxonomymodels.PolicyManagerResultItem) bool {
 	// Check if the module supports the capability
 	if hasCapability, caps := utils.GetModuleCapabilities(module, m.Capability); hasCapability {
 		// There could be multiple structures for the same CapabilityType
