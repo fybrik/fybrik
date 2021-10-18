@@ -30,10 +30,10 @@ import (
 
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/helm"
+	credentialprovider "github.com/vdemeester/k8s-pkg-credentialprovider"
+	credentialprovidersecrets "github.com/vdemeester/k8s-pkg-credentialprovider/secrets"
 	corev1 "k8s.io/api/core/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
-	credentialprovider "k8s.io/kubernetes/pkg/credentialprovider"
-	credentialprovidersecrets "k8s.io/kubernetes/pkg/credentialprovider/secrets"
 	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
 
 	distributionref "github.com/distribution/distribution/reference"
