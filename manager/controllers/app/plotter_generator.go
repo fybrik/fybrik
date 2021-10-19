@@ -108,7 +108,7 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 // Write path is not yet implemented
 func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.FybrikApplication, plotterSpec *app.PlotterSpec) error {
 	datasetID := item.Context.DataSetID
-	p.Log.Info("Select modules for " + datasetID)
+	p.Log.Info("Choose modules for " + datasetID)
 
 	subflows := make([]app.SubFlow, 0)
 	assets := map[string]app.AssetDetails{}

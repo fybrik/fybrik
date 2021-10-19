@@ -72,7 +72,7 @@ func (p *PlotterGenerator) SelectModules(item *DataInfo, appContext *app.FybrikA
 }
 
 func (p *PlotterGenerator) buildReadFlow(item *DataInfo, appContext *app.FybrikApplication) (map[app.CapabilityType]*modules.Selector, error) {
-	// select a read module that supports user interface requirements, data source interface and all required actions
+	// choose a read module that supports user interface requirements, data source interface and all required actions
 	selectors := map[app.CapabilityType]*modules.Selector{app.Read: nil, app.Copy: nil}
 	selector := &modules.Selector{
 		Destination:  &item.Context.Requirements.Interface,
@@ -113,7 +113,7 @@ func (p *PlotterGenerator) buildReadFlowWithCopy(item *DataInfo, appContext *app
 		Message:      "",
 	}
 	if !readSelector.SelectModule(p.Modules, app.Read) {
-		p.Log.Info("Could not select a read module for " + item.Context.DataSetID + "; no module supports the requested interface")
+		p.Log.Info("Could not find a read module for " + item.Context.DataSetID + "; no module supports the requested interface")
 		return selectors, errors.New(readSelector.GetError())
 	}
 	// find a copy module that matches the selected read module (common interface and action support)
@@ -154,7 +154,7 @@ func (p *PlotterGenerator) buildReadFlowWithCopy(item *DataInfo, appContext *app
 			return selectors, errors.New("Violation of a policy on deployment clusters for running governance actions")
 		}
 	}
-	// select a module that supports COPY, supports required governance actions, has the required dependencies, with source in module sources and a non-empty intersection between requested and supported interfaces.
+	// find a module that supports COPY, supports required governance actions, has the required dependencies, with source in module sources and a non-empty intersection between requested and supported interfaces.
 	for _, copyDest := range interfaces {
 		selector := &modules.Selector{
 			Source:               &item.DataDetails.Interface,
@@ -172,7 +172,7 @@ func (p *PlotterGenerator) buildReadFlowWithCopy(item *DataInfo, appContext *app
 			return selectors, nil
 		}
 	}
-	p.Log.Info("Could not select a copy module for " + item.Context.DataSetID)
+	p.Log.Info("Could not find a copy module for " + item.Context.DataSetID)
 	return selectors, errors.New("Copy is required but the data path could not be constructed")
 }
 
@@ -207,7 +207,7 @@ func (p *PlotterGenerator) buildCopyFlow(item *DataInfo, appContext *app.FybrikA
 			return selectors, nil
 		}
 	}
-	p.Log.Info("Could not select a copy module for " + item.Context.DataSetID)
+	p.Log.Info("Could not find a copy module for " + item.Context.DataSetID)
 	return nil, errors.New(string(app.Copy) + " : " + app.ModuleNotFound)
 }
 
