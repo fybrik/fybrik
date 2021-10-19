@@ -12,6 +12,8 @@ import (
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/pkg/environment"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
@@ -305,13 +307,26 @@ func NewBlueprintReconciler(mgr ctrl.Manager, name string, helmer helm.Interface
 
 // SetupWithManager registers Blueprint controller
 func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	numReconciles := environment.GetEnvAsInt(controllers.BlueprintConcurrentReconcilesConfiguration, controllers.DefaultBlueprintConcurrentReconciles)
+	// 'UpdateFunc' and 'CreateFunc' used to judge if the event came from within the blueprint's namespace.
+	// If that is true, the event will be processed by the reconciler.
+	// If it's not then it is a rogue event created by someone outside of the control plane.
 
+	blueprintNamespace := utils.GetSystemNamespace()
+	p := predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			return e.Object.GetNamespace() == blueprintNamespace
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			return e.ObjectOld.GetNamespace() == blueprintNamespace
+		},
+	}
+	numReconciles := environment.GetEnvAsInt(controllers.BlueprintConcurrentReconcilesConfiguration, controllers.DefaultBlueprintConcurrentReconciles)
 	mgr.GetLogger().Info(fmt.Sprintf("Concurrent blueprint reconciles: %d", numReconciles))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
 		For(&app.Blueprint{}).
+		WithEventFilter(p).
 		Complete(r)
 }
 
