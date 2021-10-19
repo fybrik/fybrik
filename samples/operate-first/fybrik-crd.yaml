@@ -270,6 +270,9 @@ spec:
                         name:
                           description: Name of helm chart
                           type: string
+                        chartPullSecret:
+                          description: Name of secret containing helm registry credentials
+                          type: string
                         values:
                           additionalProperties:
                             type: string
