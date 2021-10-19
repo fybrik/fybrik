@@ -141,7 +141,7 @@ func (m *ModuleManager) selectReadModule(item modules.DataInfo, appContext *app.
 	if appContext.Spec.Selector.WorkloadSelector.Size() == 0 {
 		return nil, nil
 	}
-	m.Log.Info("Select read path for " + item.Context.DataSetID)
+	m.Log.Info("Choose read path for " + item.Context.DataSetID)
 
 	// Read policies for data that is processed in the workload geography
 	var readActions []*taxonomymodels.PolicyManagerResultItem
@@ -230,7 +230,7 @@ func (m *ModuleManager) selectCopyModule(item modules.DataInfo, appContext *app.
 // Write path is not yet implemented
 func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *app.FybrikApplication, plotterSpec *app.PlotterSpec, flowType app.DataFlow) error {
 	datasetID := item.Context.DataSetID
-	m.Log.Info("Select modules for " + datasetID)
+	m.Log.Info("Choose modules for " + datasetID)
 
 	subflows := make([]app.SubFlow, 0)
 	assets := map[string]app.AssetDetails{}
