@@ -35,7 +35,7 @@ For example:
 
 ```bash
 kubectl -n fybrik-system port-forward svc/katalog-connector 49152:80 &
-kubectl -n fybrik-system port-forward svc/openpolicyagent-connector 49153:80 &
+kubectl -n fybrik-system port-forward svc/opa-connector 49153:80 &
 ```
 
 ### Set configuration environment variables

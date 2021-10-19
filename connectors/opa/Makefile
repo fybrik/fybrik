@@ -1,5 +1,5 @@
 ROOT_DIR := ../..
-DOCKER_NAME = openpolicyagent-connector
+DOCKER_NAME = opa-connector
 
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/docker.mk
@@ -15,13 +15,13 @@ CATALOG_CONNECTOR_URL ?= "katalg-connector:50090"
 docker-all: docker-build docker-push 
 
 docker-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o openpolicyagent-connector main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o opa-connector main.go
 	docker build . -t $(IMG)
-	rm openpolicyagent-connector
+	rm opa-connector
 
 .PHONY: source-build
 source-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o openpolicyagent-connector main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o opa-connector main.go
 
 .PHONY: deploy
 deploy:
@@ -41,7 +41,7 @@ undeploy:
 
 .PHONY: build
 build:
-	go build -o openpolicyagent-connector
+	go build -o opa-connector
 
 .PHONY: test
 test:
@@ -58,11 +58,11 @@ endif
 
 .PHONY: clean
 clean: opaserver-clean
-	rm -f openpolicyagent-connector && rm -f output-openpolicyagentconnector.log
+	rm -f opa-connector && rm -f output-openpolicyagentconnector.log
 
 .PHONY: run
 run: opaserver
-	nohup ./openpolicyagent-connector > output-openpolicyagentconnector.log &  2>&1 && echo "$$!" >> pids.txt && sleep 5
+	nohup ./opa-connector > output-openpolicyagentconnector.log &  2>&1 && echo "$$!" >> pids.txt && sleep 5
 
 .PHONY: terminate
 terminate: opaserver-terminate

@@ -30,7 +30,7 @@ func main() {
 	timeOut, _ := strconv.Atoi(timeOutInSecs)
 	connectionTimeout := time.Duration(timeOut) * time.Second
 
-	mainPolicyManagerURL := "http://openpolicyagent-connector.fybrik-system:80"
+	mainPolicyManagerURL := "http://opa-connector.fybrik-system:80"
 	log.Println("mainPolicyManagerURL set to :", mainPolicyManagerURL)
 	policyManager, err := connectors.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
 	if err != nil {

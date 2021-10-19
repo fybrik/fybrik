@@ -115,7 +115,7 @@ func GetExpectedOpaDecisions(intent string, in *pb.ApplicationContext) *pb.Polic
 	return &pb.PoliciesDecisions{DatasetDecisions: []*pb.DatasetDecision{datasetDecison}}
 }
 
-// Mocks for catalog-connector and openpolicyagent-connector
+// Mocks for catalog-connector and opa-connector
 
 type connectorMockCatalog struct {
 	pb.UnimplementedDataCatalogServiceServer

@@ -3,9 +3,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: openpolicyagent-connector
+  name: opa-connector
   labels:
-    app.kubernetes.io/component: openpolicyagent-connector
+    app.kubernetes.io/component: opa-connector
     {{- include "fybrik.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.opaConnector.autoscaling.enabled }}
@@ -13,7 +13,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      app.kubernetes.io/component: openpolicyagent-connector
+      app.kubernetes.io/component: opa-connector
       {{- include "fybrik.selectorLabels" . | nindent 6 }}
   template:
     metadata:
@@ -23,7 +23,7 @@ spec:
       {{- end }}
       labels:
         fybrik.io/componentType: connector
-        app.kubernetes.io/component: openpolicyagent-connector
+        app.kubernetes.io/component: opa-connector
         {{- include "fybrik.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.global.imagePullSecrets }}
@@ -34,7 +34,7 @@ spec:
       securityContext:
         {{- toYaml .Values.opaConnector.podSecurityContext | nindent 8 }}
       containers:
-        - name: openpolicyagent-connector
+        - name: opa-connector
           securityContext:
             {{- toYaml .Values.opaConnector.securityContext | nindent 12 }}
           image: {{ include "fybrik.image" ( tuple $ .Values.opaConnector ) }}
@@ -45,7 +45,7 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: openpolicyagent-connector-config
+                name: opa-connector-config
           resources:
             {{- toYaml .Values.opaConnector.resources | nindent 12 }}
       {{- with .Values.opaConnector.nodeSelector }}

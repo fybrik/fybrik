@@ -9,14 +9,14 @@ import (
 	"testing"
 	"time"
 
-	tu "fybrik.io/fybrik/connectors/open_policy_agent/testutil"
+	tu "fybrik.io/fybrik/connectors/opa/testutil"
 	clients "fybrik.io/fybrik/pkg/connectors/clients"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	"github.com/hashicorp/go-retryablehttp"
 	"gotest.tools/assert"
 )
 
-// Tests  GetPoliciesDecisions in openpolicyagent-connector.go
+// Tests  GetPoliciesDecisions in opa-connector.go
 // In the test the purpose is set as "marketing". For this purpose in different scenarios connector is mocked and different outputs are obtained.
 // In this test the results are  manually synchronised, result of customOpaResponse function should be translated into
 // GetExpectedOpaDecisions. Tested here is the functionality of translating opa_result

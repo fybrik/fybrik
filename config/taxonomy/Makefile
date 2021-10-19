@@ -32,14 +32,14 @@ generate-client: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
 
 .PHONY: generate-server
 generate-server: clean-server $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
-	mkdir -p $(ROOT_DIR)/connectors/open_policy_agent
+	mkdir -p $(ROOT_DIR)/connectors/opa
 	$(TOOLBIN)/openapi-generator-cli generate -g go-gin-server \
 		--additional-properties=packageName=openapiserver,serverPort=8081,sourceFolder=openapiserver \
-		--global-property=apis,supportingFiles -o $(ROOT_DIR)/connectors/open_policy_agent \
+		--global-property=apis,supportingFiles -o $(ROOT_DIR)/connectors/opa \
 		-i codegen.spec.yaml
-	rm -f $(ROOT_DIR)/connectors/open_policy_agent/go.mod $(ROOT_DIR)/connectors/open_policy_agent/.openapi-generator-ignore  
-	rm -f $(ROOT_DIR)/connectors/open_policy_agent/Dockerfile $(ROOT_DIR)/connectors/open_policy_agent/go/README.md 
-	rm -r $(ROOT_DIR)/connectors/open_policy_agent/api $(ROOT_DIR)/connectors/open_policy_agent/.openapi-generator
+	rm -f $(ROOT_DIR)/connectors/opa/go.mod $(ROOT_DIR)/connectors/opa/.openapi-generator-ignore  
+	rm -f $(ROOT_DIR)/connectors/opa/Dockerfile $(ROOT_DIR)/connectors/opa/go/README.md 
+	rm -r $(ROOT_DIR)/connectors/opa/api $(ROOT_DIR)/connectors/opa/.openapi-generator
 
 .PHONY: clean
 clean:
@@ -56,8 +56,8 @@ clean:
 .PHONY: clean-server
 clean-server:
 	mkdir -p $(ROOT_DIR)/connectors/tmp
-	cp  $(ROOT_DIR)/connectors/open_policy_agent/go/model.go  $(ROOT_DIR)/connectors/tmp
-	rm -rf $(ROOT_DIR)/connectors/open_policy_agent
-	mkdir -p $(ROOT_DIR)/connectors/open_policy_agent/go
-	cp  $(ROOT_DIR)/connectors/tmp/model.go $(ROOT_DIR)/connectors/open_policy_agent/go
+	cp  $(ROOT_DIR)/connectors/opa/go/model.go  $(ROOT_DIR)/connectors/tmp
+	rm -rf $(ROOT_DIR)/connectors/opa
+	mkdir -p $(ROOT_DIR)/connectors/opa/go
+	cp  $(ROOT_DIR)/connectors/tmp/model.go $(ROOT_DIR)/connectors/opa/go
 	rm -rf $(ROOT_DIR)/connectors/tmp

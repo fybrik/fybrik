@@ -18,9 +18,9 @@ import (
 	"strconv"
 	"time"
 
-	openapiserver "fybrik.io/fybrik/connectors/open_policy_agent/go"
-	sw "fybrik.io/fybrik/connectors/open_policy_agent/go"
-	opabl "fybrik.io/fybrik/connectors/open_policy_agent/lib"
+	openapiserver "fybrik.io/fybrik/connectors/opa/go"
+	sw "fybrik.io/fybrik/connectors/opa/go"
+	opabl "fybrik.io/fybrik/connectors/opa/lib"
 	clients "fybrik.io/fybrik/pkg/connectors/clients"
 	"github.com/hashicorp/go-retryablehttp"
 )

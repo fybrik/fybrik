@@ -257,7 +257,7 @@ if [[ ${is_openshift} == "true" ]]; then
     oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${unique_prefix}-app --namespace ${unique_prefix}
     
     # Temporary hack pending a better solution
-    oc adm policy add-scc-to-user anyuid system:serviceaccount:${unique_prefix}:openpolicyagent-connector
+    oc adm policy add-scc-to-user anyuid system:serviceaccount:${unique_prefix}:opa-connector
     oc adm policy add-scc-to-user anyuid system:serviceaccount:${unique_prefix}:manager
 else
     set +e

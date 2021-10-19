@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: openpolicyagent-connector-config
+  name: opa-connector-config
 data:
   CONNECTION_TIMEOUT: {{ .Values.opaConnector.connectionTimeout | default .Values.global.connectionTimeout | quote }}
   OPA_SERVER_URL: {{ .Values.opaConnector.serverURL | default (printf "opa:%d" (int .Values.opaServer.service.port) ) | quote }}
