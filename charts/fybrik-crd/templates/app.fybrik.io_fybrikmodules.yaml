@@ -146,6 +146,9 @@ spec:
               chart:
                 description: Reference to a Helm chart that allows deployment of the resources required for this module
                 properties:
+                  chartPullSecret:
+                    description: Name of secret containing helm registry credentials
+                    type: string
                   name:
                     description: Name of helm chart
                     type: string
