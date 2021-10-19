@@ -155,7 +155,7 @@ if [[ ${cluster_scoped} == "false" ]]; then
       oc new-project ${data_access_module_namespace}
       oc project ${unique_prefix} 
     else
-      kubectl create ns ${blueprint_namespace} 
+      kubectl create ns ${data_access_module_namespace} 
     fi
   fi
 fi
@@ -253,7 +253,7 @@ if [[ ${is_openshift} == "true" ]]; then
     oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:${unique_prefix}:pipeline
     oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:${unique_prefix}:root-sa
     oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${unique_prefix} --namespace ${unique_prefix}
-    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${blueprint_namespace} --namespace ${unique_prefix}
+    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${data_access_module_namespace} --namespace ${unique_prefix}
     oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${unique_prefix}-app --namespace ${unique_prefix}
     
     # Temporary hack pending a better solution
