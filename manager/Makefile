@@ -45,6 +45,7 @@ run: generate fmt vet manifests
 generate: $(TOOLBIN)/controller-gen
 	$(TOOLBIN)/controller-gen --version
 	$(TOOLBIN)/controller-gen object:headerFile=$(ROOT_DIR)/hack/boilerplate.go.txt,year=$(shell date +%Y) paths="./..."
+	make -C ../site generate
 
 # Generate code
 .PHONY: manifests
