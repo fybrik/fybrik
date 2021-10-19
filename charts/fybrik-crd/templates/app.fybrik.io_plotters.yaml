@@ -291,6 +291,9 @@ spec:
                           chart:
                             description: Chart contains the information needed to use helm to install the capability
                             properties:
+                              chartPullSecret:
+                                description: Name of secret containing helm registry credentials
+                                type: string
                               name:
                                 description: Name of helm chart
                                 type: string
