@@ -1,6 +1,6 @@
 # Dashboard sample
 
-This reference application shows how Fybrik enables a dashboard application to display data from a 
+This sample application shows how Fybrik enables a dashboard application to display data from a 
 backend REST server, utilizing policy-driven data protection to control what information a logged in user (role) can access.
 
 Specifically, in this sample we demonstrate:
@@ -38,7 +38,7 @@ The project contains 3 main components:
 - A backend data service, which provides the mock container data for the dashboard.  
 - A [fybrik module](https://github.com/fybrik/fogProtect-dashboard-sample/tree/main/rest-read-module), 
 responsible for intercepting HTTP requests sent from a user trying to read or write data.  
-- A dashboard application, which performs HTTP requests and displays the responses for the user.  While it is out of the scope of this application to actually provide a Java Web Token (JWT) for user authentication of the dashboard login, we emulate this step by generating role-based queries with the JWT embedded in the header. 
+- A dashboard application, which performs HTTP requests and displays the responses for the user.  While it is out of the scope of this sample application to actually provide a Java Web Token (JWT) for user authentication of the dashboard login, we emulate this step by generating role-based queries with the JWT embedded in the header. 
 
 For a more detailed description of the implementation visit [fogProtect-dashboard-sample](https://github.com/fybrik/fogProtect-dashboard-sample/tree/main).
 
@@ -111,24 +111,20 @@ from the user. Once a request is received a decision must be made regarding the 
 [OpenPolicyAgent](https://www.openpolicyagent.org), and applying the policy specified 
 [here](https://github.com/fybrik/fogProtect-dashboard-sample/blob/main/python/fogprotect-policy.yaml).  
     
-Deploy the Fybrik module and application:
+Deploy the Fybrik module:
 ```bash
 kubectl apply -n fybrik-system -f https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/rest-read-module.yaml
 kubectl apply -f https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/rest-read-application.yaml
 kubectl wait --for=condition=ready --all pod --timeout=120s
 ```
-
-## Deploy the dashboard  
-
-We now deploy the dashboard that will display a table containing the safety data of the factory, along with two 
-buttons to emulate starting and stopping the manufacturing robot. One can change the role of the user using a pull down menu. 
-    
-First, create a port-forwarding to the new service that will be receiving the HTTP requests:  
+Create a port-forwarding to the new service that will be receiving the HTTP requests:  
 ```bash
 kubectl -n fybrik-blueprints port-forward svc/rest-read 5559:5559 &
 ```
+## Deploy the sample application  
 
-Afterwards, deploy the dashboard application:  
+We now deploy the dashboard that will display a table containing the safety data of the factory, along with two 
+buttons to emulate starting and stopping the manufacturing robot. One can change the role of the user using a pull down menu.   
 ```bash
 helm chart pull ghcr.io/fybrik/factory-gui-chart:v0.0.1
 helm chart export --destination=./tmp ghcr.io/fybrik/factory-gui-chart:v0.0.1
@@ -140,7 +136,8 @@ Lastly, create a port-forwarding to the dashboard service in order to be able to
 ```bash
 kubectl port-forward svc/factory-gui 3001:3000 &
 ```
-
+## Run the sample application
+ 
 Open your browser and go to http://127.0.0.1:3001.
 
 ## Cleanup
