@@ -225,7 +225,7 @@ type ChartSpec struct {
 
 	// Name of secret containing helm registry credentials
 	// +optional
-	ChartPullSecret string `json:"chartPullSecret"`
+	ChartPullSecret string `json:"chartPullSecret,omitempty"`
 
 	// Values to pass to helm chart installation
 	// +optional
