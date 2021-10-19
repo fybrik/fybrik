@@ -103,9 +103,9 @@ cert-manager.io/v1alpha2
 {{/*
 Get blueprints namespace
 */}}
-{{- define "fybrik.getBlueprintNamespace" -}}
-{{- if .Values.blueprintNamespace -}}
-{{- .Values.blueprintNamespace -}}
+{{- define "fybrik.getDataAccessModuleNamespace" -}}
+{{- if .Values.dataAccessModuleNamespace -}}
+{{- .Values.dataAccessModuleNamespace -}}
 {{- else -}}
 {{- "fybrik-blueprints" -}}
 {{- end -}}

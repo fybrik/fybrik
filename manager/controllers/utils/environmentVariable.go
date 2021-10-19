@@ -7,18 +7,18 @@ import (
 	"os"
 )
 
-// BlueprintNamespace defines a namespace where blueprints and associated resources will be allocated
-const DefaultBlueprintNamespace = "fybrik-blueprints"
+// DefaultDataAccessModuleNamespace defines a namespace where module resources will be allocated
+const DefaultDataAccessModuleNamespace = "fybrik-blueprints"
 
 // Controller namespace defines a namespace where
 const DefaultControllerNamespace = "fybrik-system"
 
-func GetBlueprintNamespace() string {
-	blueprintNamespace := os.Getenv("BLUEPRINT_NAMESPACE")
-	if len(blueprintNamespace) == 0 {
-		blueprintNamespace = DefaultBlueprintNamespace
+func GetDataAccessModuleNamespace() string {
+	ns := os.Getenv("DATA_ACCESS_MODULE_NAMESPACE")
+	if len(ns) == 0 {
+		ns = DefaultDataAccessModuleNamespace
 	}
-	return blueprintNamespace
+	return ns
 }
 
 func GetControllerNamespace() string {
@@ -34,9 +34,9 @@ func GetApplicationNamespace() string {
 }
 
 func GetBatchTransferNamespace() string {
-	return GetBlueprintNamespace()
+	return GetDataAccessModuleNamespace()
 }
 
 func GetStreamTransferNamespace() string {
-	return GetBlueprintNamespace()
+	return GetDataAccessModuleNamespace()
 }

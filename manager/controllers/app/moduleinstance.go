@@ -459,12 +459,12 @@ func moduleAPIToService(api *app.ModuleAPI, scope app.CapabilityScope, appContex
 		instanceName = utils.CreateStepName(moduleName, assetID)
 	}
 	releaseName := utils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
-	blueprintNamespace := utils.GetBlueprintNamespace()
+	releaseNamespace := utils.GetDataAccessModuleNamespace()
 
 	values := map[string]interface{}{
 		"Release": map[string]interface{}{
 			"Name":      releaseName,
-			"Namespace": blueprintNamespace,
+			"Namespace": releaseNamespace,
 		},
 		"Values": map[string]interface{}{
 			"labels": appContext.Labels,

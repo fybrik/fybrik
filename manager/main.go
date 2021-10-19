@@ -65,17 +65,17 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	}
 	setupLog.Info("Application namespace: " + applicationNamespace)
 
-	blueprintNamespace := utils.GetBlueprintNamespace()
+	dataAccessModuleNamespace := utils.GetDataAccessModuleNamespace()
 
 	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
-	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": blueprintNamespace})
+	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": dataAccessModuleNamespace})
 	selectorsByObject := cache.SelectorsByObject{
 		&appv1.FybrikApplication{}:      {Field: applicationNamespaceSelector},
 		&appv1.Plotter{}:                {Field: systemNamespaceSelector},
 		&appv1.FybrikModule{}:           {Field: systemNamespaceSelector},
 		&appv1.FybrikStorageAccount{}:   {Field: systemNamespaceSelector},
 		&corev1.ConfigMap{}:             {Field: systemNamespaceSelector},
-		&appv1.Blueprint{}:              {Field: workerNamespaceSelector},
+		&appv1.Blueprint{}:              {Field: systemNamespaceSelector},
 		&motionv1.BatchTransfer{}:       {Field: workerNamespaceSelector},
 		&motionv1.StreamTransfer{}:      {Field: workerNamespaceSelector},
 		&kbatch.Job{}:                   {Field: workerNamespaceSelector},

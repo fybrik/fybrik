@@ -25,8 +25,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/event"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/helm"
@@ -132,7 +130,7 @@ func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) 
 
 func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.ChartSpec, args map[string]interface{}, blueprint *app.Blueprint, releaseName string) (ctrl.Result, error) {
 	log.Info(fmt.Sprintf("--- Chart Ref ---\n\n%v\n\n", chartSpec.Name))
-	kubeNamespace := blueprint.Namespace
+	kubeNamespace := utils.GetDataAccessModuleNamespace()
 
 	args = CopyMap(args)
 	for k, v := range chartSpec.Values {
@@ -211,6 +209,7 @@ func (r *BlueprintReconciler) updateModuleState(blueprint *app.Blueprint, instan
 }
 
 func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, blueprint *app.Blueprint) (ctrl.Result, error) {
+	dataAccessModuleNamespace := utils.GetDataAccessModuleNamespace()
 	// Gather all templates and process them into a list of resources to apply
 	// force-update if the blueprint spec is different
 	updateRequired := blueprint.Status.ObservedGeneration != blueprint.GetGeneration()
@@ -233,6 +232,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		}
 		module.Arguments.Labels[app.BlueprintNameLabel] = blueprint.Name
 		module.Arguments.Labels[app.BlueprintNamespaceLabel] = blueprint.Namespace
+		module.Arguments.Labels[app.DataAccessModuleNamespaceLabel] = dataAccessModuleNamespace
 		// Get arguments by type
 		var args map[string]interface{}
 		args, err := utils.StructToMap(module.Arguments)
@@ -244,7 +244,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		log.V(0).Info("Release name: " + releaseName)
 		numReleases++
 		// check the release status
-		rel, err := r.Helmer.Status(blueprint.Namespace, releaseName)
+		rel, err := r.Helmer.Status(dataAccessModuleNamespace, releaseName)
 		// unexisting release or a failed release - re-apply the chart
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
 			// Process templates with arguments
@@ -256,7 +256,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 				r.updateModuleState(blueprint, instanceName, false, "")
 			}
 		} else if rel.Info.Status == release.StatusDeployed {
-			status, errMsg := r.checkReleaseStatus(releaseName, blueprint.Namespace)
+			status, errMsg := r.checkReleaseStatus(releaseName, dataAccessModuleNamespace)
 			if status == corev1.ConditionFalse {
 				blueprint.Status.ObservedState.Error += "ResourceAllocationFailure: " + errMsg + "\n"
 				r.updateModuleState(blueprint, instanceName, false, errMsg)
@@ -270,7 +270,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 	// clean-up
 	for release, version := range blueprint.Status.Releases {
 		if version != blueprint.Status.ObservedGeneration {
-			_, err := r.Helmer.Uninstall(blueprint.Namespace, release)
+			_, err := r.Helmer.Uninstall(dataAccessModuleNamespace, release)
 			if err != nil {
 				log.V(0).Info("Error uninstalling release " + release + " : " + err.Error())
 			} else {
@@ -305,22 +305,6 @@ func NewBlueprintReconciler(mgr ctrl.Manager, name string, helmer helm.Interface
 
 // SetupWithManager registers Blueprint controller
 func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	// 'UpdateFunc' and 'CreateFunc' used to judge if the event came from within the blueprint's namespace.
-	// If that is true, the event will be processed by the reconciler.
-	// If it's not then it is a rogue event created by someone outside of the control plane.
-
-	blueprintNamespace := utils.GetBlueprintNamespace()
-	r.Log.Info("blueprint namespace: " + blueprintNamespace)
-
-	p := predicate.Funcs{
-		CreateFunc: func(e event.CreateEvent) bool {
-			return e.Object.GetNamespace() == blueprintNamespace
-		},
-		UpdateFunc: func(e event.UpdateEvent) bool {
-			return e.ObjectOld.GetNamespace() == blueprintNamespace
-		},
-	}
-
 	numReconciles := environment.GetEnvAsInt(controllers.BlueprintConcurrentReconcilesConfiguration, controllers.DefaultBlueprintConcurrentReconciles)
 
 	mgr.GetLogger().Info(fmt.Sprintf("Concurrent blueprint reconciles: %d", numReconciles))
@@ -328,7 +312,6 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
 		For(&app.Blueprint{}).
-		WithEventFilter(p).
 		Complete(r)
 }
 

@@ -137,22 +137,22 @@ fi
 unique_prefix=$(kubectl config view --minify --output 'jsonpath={..namespace}'; echo)
 
 if [[ "${unique_prefix}" == "fybrik-system" ]]; then
-  blueprint_namespace="fybrik-blueprints"
+  data_access_module_namespace="fybrik-blueprints"
 else
-  blueprint_namespace="${unique_prefix}-blueprints"
+  data_access_module_namespace="${unique_prefix}-blueprints"
 fi
-extra_params="${extra_params} -p blueprintNamespace=${blueprint_namespace}"
+extra_params="${extra_params} -p dataAccessModuleNamespace=${data_access_module_namespace}"
 
 if [[ ${cluster_scoped} == "false" ]]; then
   set +e
   rc=1
-  kubectl get ns ${blueprint_namespace}
+  kubectl get ns ${data_access_module_namespace}
   rc=$?
   set -e
   # Create new project if necessary
   if [[ $rc -ne 0 ]]; then
     if [[ ${is_openshift} == "true" ]]; then
-      oc new-project ${blueprint_namespace}
+      oc new-project ${data_access_module_namespace}
       oc project ${unique_prefix} 
     else
       kubectl create ns ${blueprint_namespace} 
@@ -563,8 +563,8 @@ spec:
     value: ${image_repo}
   - name: dockerhub-hostname
     value: ${dockerhub_hostname}
-  - name: blueprintNamespace
-    value: ${blueprint_namespace}
+  - name: dataAccessModuleNamespace
+    value: ${data_access_module_namespace}
   - name: docker-namespace
     value: ${unique_prefix} 
   - name: git-revision

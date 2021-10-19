@@ -211,6 +211,7 @@ func CreateMetaBlueprintWithoutState(blueprint *Blueprint) MetaBlueprint {
 }
 
 const (
-	BlueprintNamespaceLabel = "app.fybrik.io/blueprintNamespace"
-	BlueprintNameLabel      = "app.fybrik.io/blueprintName"
+	BlueprintNamespaceLabel        = "app.fybrik.io/blueprintNamespace"
+	BlueprintNameLabel             = "app.fybrik.io/blueprintName"
+	DataAccessModuleNamespaceLabel = "app.fybrik.io/dataAccessModuleNamespace"
 )
