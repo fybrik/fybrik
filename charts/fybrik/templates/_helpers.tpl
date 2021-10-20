@@ -109,7 +109,7 @@ cert-manager.io/v1alpha2
 {{- end -}}
 
 {{/*
-Get blueprints namespace
+Get modules namespace
 */}}
 {{- define "fybrik.getModulesNamespace" -}}
 {{- if .Values.modulesNamespace -}}
