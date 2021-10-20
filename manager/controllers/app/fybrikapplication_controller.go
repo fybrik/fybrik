@@ -12,12 +12,11 @@ import (
 	"time"
 
 	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/environment"
 	local "fybrik.io/fybrik/pkg/multicluster/local"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
-	config "fybrik.io/fybrik/manager/controllers/app/config"
-	"fybrik.io/fybrik/manager/controllers/app/dataset"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 
@@ -35,6 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/app/metadata"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
@@ -54,7 +54,7 @@ type FybrikApplicationReconciler struct {
 	ResourceInterface ContextInterface
 	ClusterManager    multicluster.ClusterLister
 	Provision         storage.ProvisionInterface
-	ConfigEvaluator   config.EvaluatorInterface
+	ConfigEvaluator   adminconfig.EvaluatorInterface
 }
 
 // Reconcile reconciles FybrikApplication CRD
@@ -411,7 +411,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 	}
 
 	details := response.GetDetails()
-	dataDetails, err := dataset.CatalogDatasetToDataDetails(response)
+	dataDetails, err := metadata.CatalogDatasetToDataDetails(response)
 	if err != nil {
 		return err
 	}
@@ -421,17 +421,17 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 		req.VaultSecretPath = details.CredentialsInfo.VaultSecretPath
 	}
 
-	configEvaluatorInput := &config.EvaluatorInput{
+	configEvaluatorInput := &adminconfig.EvaluatorInput{
 		Clusters:      clusters,
 		AssetMetadata: dataDetails,
 	}
-	config.SetApplicationInfo(input, configEvaluatorInput)
-	config.SetAssetRequirements(input, *req.Context, configEvaluatorInput)
+	adminconfig.SetApplicationInfo(input, configEvaluatorInput)
+	adminconfig.SetAssetRequirements(input, *req.Context, configEvaluatorInput)
 	localCluster, err := r.GetLocalCluster()
 	if err != nil {
 		return err
 	}
-	config.SetWorkloadInfo(localCluster, clusters, input, configEvaluatorInput)
+	adminconfig.SetWorkloadInfo(localCluster, clusters, input, configEvaluatorInput)
 	// Read policies for data that is processed in the workload geography
 	if configEvaluatorInput.AssetRequirements.Usage[api.ReadFlow] {
 		actionType := model.READ
@@ -454,7 +454,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 // NewFybrikApplicationReconciler creates a new reconciler for FybrikApplications
 func NewFybrikApplicationReconciler(mgr ctrl.Manager, name string,
 	policyManager connectors.PolicyManager, catalog connectors.DataCatalog, cm multicluster.ClusterLister,
-	provision storage.ProvisionInterface, configEvaluator config.EvaluatorInterface) *FybrikApplicationReconciler {
+	provision storage.ProvisionInterface, configEvaluator adminconfig.EvaluatorInterface) *FybrikApplicationReconciler {
 	return &FybrikApplicationReconciler{
 		Client:            mgr.GetClient(),
 		Name:              name,

@@ -79,7 +79,7 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 			Geo:        item.DataDetails.Geography,
 			DataFormat: destinationInterface.DataFormat,
 			DataStore:  datastore,
-			Metadata:   item.DataDetails.Metadata,
+			Metadata:   item.DataDetails.TagMetadata,
 		}}
 	p.ProvisionedStorage[item.Context.DataSetID] = assetInfo
 	utils.PrintStructure(&assetInfo, p.Log, "ProvisionedStorage element")

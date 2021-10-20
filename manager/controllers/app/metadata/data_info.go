@@ -1,7 +1,7 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package dataset
+package metadata
 
 import (
 	"errors"
@@ -25,7 +25,7 @@ type DataDetails struct {
 	// Connection is the connection details in raw format as received from the connector
 	Connection serde.Arbitrary
 	// Metadata
-	Metadata *pb.DatasetMetadata
+	TagMetadata *pb.DatasetMetadata
 }
 
 // Transforms a CatalogDatasetInfo into a DataDetails struct
@@ -45,8 +45,8 @@ func CatalogDatasetToDataDetails(response *pb.CatalogDatasetInfo) (*DataDetails,
 			Protocol:   protocol,
 			DataFormat: format,
 		},
-		Geography:  details.Geo,
-		Connection: *connection,
-		Metadata:   details.Metadata,
+		Geography:   details.Geo,
+		Connection:  *connection,
+		TagMetadata: details.Metadata,
 	}, err
 }

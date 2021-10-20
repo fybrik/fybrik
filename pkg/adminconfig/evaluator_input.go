@@ -1,12 +1,12 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package config
+package adminconfig
 
 import (
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 
-	dataset "fybrik.io/fybrik/manager/controllers/app/dataset"
+	dataset "fybrik.io/fybrik/manager/controllers/app/metadata"
 	"fybrik.io/fybrik/pkg/multicluster"
 	model "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
