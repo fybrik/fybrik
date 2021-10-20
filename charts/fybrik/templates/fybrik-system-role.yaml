@@ -5,6 +5,33 @@ metadata:
   name: {{ template "fybrik.fullname" . }}-system-role
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - events
+  - secrets
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - "coordination.k8s.io"
+  resources:
+  - leases
+  - leases/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - app.fybrik.io
   resources:
   - plotters

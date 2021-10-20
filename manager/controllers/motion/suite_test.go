@@ -99,9 +99,9 @@ var _ = BeforeSuite(func(done Done) {
 	} else {
 		fmt.Printf("Setup fake environment... \n")
 
-		dataAccessModuleNamespace := utils.GetDataAccessModuleNamespace()
-		fmt.Printf("Motion test suite using blueprint namespace: %s\n", dataAccessModuleNamespace)
-		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": dataAccessModuleNamespace})
+		modulesNamespace := utils.GetDefaultModulesNamespace()
+		fmt.Printf("Motion test suite managing resources in the namespace: %s\n", modulesNamespace)
+		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": modulesNamespace})
 		selectorsByObject := cache.SelectorsByObject{
 			&motionv1.BatchTransfer{}:       {Field: workerNamespaceSelector},
 			&motionv1.StreamTransfer{}:      {Field: workerNamespaceSelector},
@@ -132,7 +132,7 @@ var _ = BeforeSuite(func(done Done) {
 		k8sClient = mgr.GetClient()
 		err = k8sClient.Create(context.Background(), &corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: dataAccessModuleNamespace,
+				Name: modulesNamespace,
 			},
 		})
 		Expect(err).ToNot(HaveOccurred())

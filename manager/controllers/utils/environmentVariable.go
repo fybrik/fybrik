@@ -13,8 +13,8 @@ const DefaultDataAccessModuleNamespace = "fybrik-blueprints"
 // Controller namespace defines a namespace where
 const DefaultControllerNamespace = "fybrik-system"
 
-func GetDataAccessModuleNamespace() string {
-	ns := os.Getenv("DATA_ACCESS_MODULE_NAMESPACE")
+func GetDefaultModulesNamespace() string {
+	ns := os.Getenv("MODULES_NAMESPACE")
 	if len(ns) == 0 {
 		ns = DefaultDataAccessModuleNamespace
 	}
@@ -34,9 +34,9 @@ func GetApplicationNamespace() string {
 }
 
 func GetBatchTransferNamespace() string {
-	return GetDataAccessModuleNamespace()
+	return GetDefaultModulesNamespace()
 }
 
 func GetStreamTransferNamespace() string {
-	return GetDataAccessModuleNamespace()
+	return GetDefaultModulesNamespace()
 }

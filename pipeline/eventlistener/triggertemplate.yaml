@@ -19,8 +19,8 @@ spec:
       description: NAMESPACE
     - description: Event Type
       name: event-type
-    - description: dataAccessModuleNamespace
-      name: dataAccessModuleNamespace
+    - description: modulesNamespace
+      name: modulesNamespace
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -44,8 +44,8 @@ spec:
             value: $(tt.params.NAMESPACE)
           - name: event-type
             value: $(tt.params.event-type)
-          - name: dataAccessModuleNamespace
-            value: $(tt.params.dataAccessModuleNamespace)
+          - name: modulesNamespace
+            value: $(tt.params.modulesNamespace)
         workspaces:
           - name: shared-workspace
             persistentVolumeClaim:
@@ -75,8 +75,8 @@ spec:
       description: NAMESPACE
     - description: Event Type
       name: event-type
-    - description: dataAccessModuleNamespace
-      name: dataAccessModuleNamespace
+    - description: modulesNamespace
+      name: modulesNamespace
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -98,8 +98,8 @@ spec:
             value: $(tt.params.event-type)
           - name: IMAGE_DIGEST
             value: none
-          - name: dataAccessModuleNamespace
-            value: $(tt.params.dataAccessModuleNamespace)
+          - name: modulesNamespace
+            value: $(tt.params.modulesNamespace)
         workspaces:
           - name: shared-workspace
             persistentVolumeClaim:

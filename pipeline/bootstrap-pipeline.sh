@@ -137,25 +137,25 @@ fi
 unique_prefix=$(kubectl config view --minify --output 'jsonpath={..namespace}'; echo)
 
 if [[ "${unique_prefix}" == "fybrik-system" ]]; then
-  data_access_module_namespace="fybrik-blueprints"
+  modules_namespace="fybrik-blueprints"
 else
-  data_access_module_namespace="${unique_prefix}-blueprints"
+  modules_namespace="${unique_prefix}-blueprints"
 fi
-extra_params="${extra_params} -p dataAccessModuleNamespace=${data_access_module_namespace}"
+extra_params="${extra_params} -p modulesNamespace=${modules_namespace}"
 
 if [[ ${cluster_scoped} == "false" ]]; then
   set +e
   rc=1
-  kubectl get ns ${data_access_module_namespace}
+  kubectl get ns ${modules_namespace}
   rc=$?
   set -e
   # Create new project if necessary
   if [[ $rc -ne 0 ]]; then
     if [[ ${is_openshift} == "true" ]]; then
-      oc new-project ${data_access_module_namespace}
+      oc new-project ${modules_namespace}
       oc project ${unique_prefix} 
     else
-      kubectl create ns ${data_access_module_namespace} 
+      kubectl create ns ${modules_namespace} 
     fi
   fi
 fi
@@ -253,7 +253,7 @@ if [[ ${is_openshift} == "true" ]]; then
     oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:${unique_prefix}:pipeline
     oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:${unique_prefix}:root-sa
     oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${unique_prefix} --namespace ${unique_prefix}
-    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${data_access_module_namespace} --namespace ${unique_prefix}
+    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${modules_namespace} --namespace ${unique_prefix}
     oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${unique_prefix}-app --namespace ${unique_prefix}
     
     # Temporary hack pending a better solution
@@ -563,8 +563,8 @@ spec:
     value: ${image_repo}
   - name: dockerhub-hostname
     value: ${dockerhub_hostname}
-  - name: dataAccessModuleNamespace
-    value: ${data_access_module_namespace}
+  - name: modulesNamespace
+    value: ${modules_namespace}
   - name: docker-namespace
     value: ${unique_prefix} 
   - name: git-revision

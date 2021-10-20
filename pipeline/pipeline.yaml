@@ -11,7 +11,7 @@ spec:
     name: NAMESPACE
     type: string
   - description: namespace to deploy data access modules to. Name will be derived from control plane namespace.  If control plane namespace is set to fybrik-system; this will default to fybrik-blueprints.
-    name: dataAccessModuleNamespace
+    name: modulesNamespace
     type: string
   - default: kind-registry:5000
     description: docker registry hostname.  This is where images will be pushed once built
@@ -153,8 +153,8 @@ spec:
       value: fybrik/manager
     - name: image
       value: $(params.build_image)
-    - name: dataAccessModuleNamespace
-      value: "$(params.dataAccessModuleNamespace)"
+    - name: modulesNamespace
+      value: "$(params.modulesNamespace)"
     - name: docker-hostname
       value: "$(params.docker-hostname)"
     - name: docker-namespace
@@ -196,8 +196,8 @@ spec:
       value: "$(params.docker-hostname)"
     - name: docker-namespace
       value: "$(params.docker-namespace)"
-    - name: dataAccessModuleNamespace
-      value: "$(params.dataAccessModuleNamespace)"
+    - name: modulesNamespace
+      value: "$(params.modulesNamespace)"
     runAfter:
     - build-manager
     taskRef:
@@ -258,8 +258,8 @@ spec:
       value: "$(params.docker-hostname)"
     - name: docker-namespace
       value: "$(params.docker-namespace)"
-    - name: dataAccessModuleNamespace
-      value: "$(params.dataAccessModuleNamespace)"
+    - name: modulesNamespace
+      value: "$(params.modulesNamespace)"
     runAfter:
     - fetch-repository
     taskRef:
@@ -316,8 +316,8 @@ spec:
       value: "$(params.docker-hostname)"
     - name: docker-namespace
       value: "$(params.docker-namespace)"
-    - name: dataAccessModuleNamespace
-      value: "$(params.dataAccessModuleNamespace)"
+    - name: modulesNamespace
+      value: "$(params.modulesNamespace)"
     - name: INCREMENTAL_CODE_RESTART
       value: $(params.INCREMENTAL_CODE_RESTART)
     runAfter:
@@ -355,8 +355,8 @@ spec:
       value: "$(params.docker-hostname)"
     - name: docker-namespace
       value: "$(params.docker-namespace)"
-    - name: dataAccessModuleNamespace
-      value: "$(params.dataAccessModuleNamespace)"
+    - name: modulesNamespace
+      value: "$(params.modulesNamespace)"
     runAfter:
     - build-katalog
     taskRef:
@@ -413,8 +413,8 @@ spec:
       value: "$(params.docker-hostname)"
     - name: docker-namespace
       value: "$(params.docker-namespace)"
-    - name: dataAccessModuleNamespace
-      value: $(params.dataAccessModuleNamespace)
+    - name: modulesNamespace
+      value: $(params.modulesNamespace)
     - name: INCREMENTAL_CODE_RESTART
       value: $(params.INCREMENTAL_CODE_RESTART)
     runAfter:
@@ -452,8 +452,8 @@ spec:
       value: "$(params.docker-hostname)"
     - name: docker-namespace
       value: "$(params.docker-namespace)"
-    - name: dataAccessModuleNamespace
-      value: "$(params.dataAccessModuleNamespace)"
+    - name: modulesNamespace
+      value: "$(params.modulesNamespace)"
     runAfter:
     - build-opa
     taskRef:
@@ -510,8 +510,8 @@ spec:
       value: "$(params.docker-hostname)"
     - name: docker-namespace
       value: "$(params.docker-namespace)"
-    - name: dataAccessModuleNamespace
-      value: "$(params.dataAccessModuleNamespace)"
+    - name: modulesNamespace
+      value: "$(params.modulesNamespace)"
     - name: INCREMENTAL_CODE_RESTART
       value: $(params.INCREMENTAL_CODE_RESTART)
     runAfter:
@@ -549,8 +549,8 @@ spec:
       value: "$(params.docker-hostname)"
     - name: docker-namespace
       value: "$(params.docker-namespace)"
-    - name: dataAccessModuleNamespace
-      value: "$(params.dataAccessModuleNamespace)"
+    - name: modulesNamespace
+      value: "$(params.modulesNamespace)"
     runAfter:
     - build-datacatalog
     taskRef:
@@ -607,8 +607,8 @@ spec:
       value: "$(params.docker-hostname)"
     - name: docker-namespace
       value: "$(params.docker-namespace)"
-    - name: dataAccessModuleNamespace
-      value: "$(params.dataAccessModuleNamespace)"
+    - name: modulesNamespace
+      value: "$(params.modulesNamespace)"
     - name: INCREMENTAL_CODE_RESTART
       value: $(params.INCREMENTAL_CODE_RESTART)
     runAfter:
@@ -646,8 +646,8 @@ spec:
       value: "$(params.docker-hostname)"
     - name: docker-namespace
       value: "$(params.docker-namespace)"
-    - name: dataAccessModuleNamespace
-      value: "$(params.dataAccessModuleNamespace)"
+    - name: modulesNamespace
+      value: "$(params.modulesNamespace)"
     runAfter:
     - build-servicepolicymanager
     taskRef:
@@ -701,7 +701,7 @@ spec:
     - name: release_namespace
       value: $(params.NAMESPACE)
     - name: overwrite_values
-      value: dataAccessModuleNamespace=$(params.dataAccessModuleNamespace),clusterScoped=$(params.clusterScoped),global.hub=$(params.docker-hostname)/$(params.docker-namespace),global.tag="",manager.image=$(params.docker-hostname)/$(params.docker-namespace)/$(params.MANAGER_IMAGE)@$(tasks.build-image-manager.results.IMAGE_DIGEST),katalogConnector.image=$(params.docker-hostname)/$(params.docker-namespace)/$(params.KATALOG_IMAGE)@$(tasks.build-image-katalog.results.IMAGE_DIGEST),opaConnector.image=$(params.docker-hostname)/$(params.docker-namespace)/opa-connector@$(tasks.build-image-opa.results.IMAGE_DIGEST),cluster.name=$(params.NAMESPACE),coordinator.vault.address=http://$(params.NAMESPACE)-vault.$(params.NAMESPACE):8200,vault.address=http://$(params.NAMESPACE)-vault.$(params.NAMESPACE):8200,$(params.fybrik-values)
+      value: modulesNamespace=$(params.modulesNamespace),clusterScoped=$(params.clusterScoped),global.hub=$(params.docker-hostname)/$(params.docker-namespace),global.tag="",manager.image=$(params.docker-hostname)/$(params.docker-namespace)/$(params.MANAGER_IMAGE)@$(tasks.build-image-manager.results.IMAGE_DIGEST),katalogConnector.image=$(params.docker-hostname)/$(params.docker-namespace)/$(params.KATALOG_IMAGE)@$(tasks.build-image-katalog.results.IMAGE_DIGEST),opaConnector.image=$(params.docker-hostname)/$(params.docker-namespace)/opa-connector@$(tasks.build-image-opa.results.IMAGE_DIGEST),cluster.name=$(params.NAMESPACE),coordinator.vault.address=http://$(params.NAMESPACE)-vault.$(params.NAMESPACE):8200,vault.address=http://$(params.NAMESPACE)-vault.$(params.NAMESPACE):8200,$(params.fybrik-values)
     - name: release_version
       value: 0.1.0
     - name: image
@@ -884,7 +884,7 @@ spec:
     - name: image
       value: $(params.build_image)
     - name: flags
-      value: DOCKER_HOSTNAME=$(params.docker-hostname) DOCKER_NAMESPACE=$(params.docker-namespace) USE_MOCKUP_CONNECTOR=false CONTROLLER_NAMESPACE=$(params.NAMESPACE) DATA_ACCESS_MODULE_NAMESPACE=$(params.dataAccessModuleNamespace)
+      value: DOCKER_HOSTNAME=$(params.docker-hostname) DOCKER_NAMESPACE=$(params.docker-namespace) USE_MOCKUP_CONNECTOR=false CONTROLLER_NAMESPACE=$(params.NAMESPACE) MODULES_NAMESPACE=$(params.modulesNamespace)
     - name: INCREMENTAL_CODE_RESTART
       value: $(params.INCREMENTAL_CODE_RESTART)
     runAfter:
@@ -911,7 +911,7 @@ spec:
     - name: image
       value: $(params.build_image)
     - name: flags
-      value: DOCKER_HOSTNAME=$(params.docker-hostname) DOCKER_NAMESPACE=$(params.docker-namespace) USE_MOCKUP_CONNECTOR=false CONTROLLER_NAMESPACE=$(params.NAMESPACE) DATA_ACCESS_MODULE_NAMESPACE=$(params.dataAccessModuleNamespace)
+      value: DOCKER_HOSTNAME=$(params.docker-hostname) DOCKER_NAMESPACE=$(params.docker-namespace) USE_MOCKUP_CONNECTOR=false CONTROLLER_NAMESPACE=$(params.NAMESPACE) MODULES_NAMESPACE=$(params.modulesNamespace)
     runAfter:
     - upgrade-helm-partial
     when:
@@ -936,7 +936,7 @@ spec:
     - name: INCREMENTAL_CODE_RESTART
       value: $(params.INCREMENTAL_CODE_RESTART)
     - name: flags
-      value: CONTROLLER_NAMESPACE=$(params.NAMESPACE) DATA_ACCESS_MODULE_NAMESPACE=$(params.dataAccessModuleNamespace)
+      value: CONTROLLER_NAMESPACE=$(params.NAMESPACE) MODULES_NAMESPACE=$(params.modulesNamespace)
     runAfter:
     - upgrade-helm-full
     when:
@@ -957,7 +957,7 @@ spec:
     - name: context
       value: fybrik
     - name: flags
-      value: CONTROLLER_NAMESPACE=$(params.NAMESPACE) DATA_ACCESS_MODULE_NAMESPACE=$(params.dataAccessModuleNamespace) 
+      value: CONTROLLER_NAMESPACE=$(params.NAMESPACE) MODULES_NAMESPACE=$(params.modulesNamespace) 
     - name: image
       value: $(params.build_image)
     runAfter:

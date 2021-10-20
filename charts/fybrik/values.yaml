@@ -13,7 +13,7 @@ fullnameOverride: ""
 
 clusterScoped: true
 
-dataAccessModuleNamespace: "fybrik-blueprints"
+modulesNamespace: "fybrik-blueprints"
 
 # Set if need to only watch for FybrikApplication from a specific namespace
 # The namespace must already exist

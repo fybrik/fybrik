@@ -24,7 +24,7 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
 	go run ../main.go taxonomy compile --out testdata/unittests/sampletaxonomy/taxonomy.json --base ../config/taxonomy/base/base.yaml ../config/taxonomy/example/application/appinfo.yaml ../config/taxonomy/example/application/interface.yaml ../config/taxonomy/example/catalog/locations.yaml ../config/taxonomy/example/catalog/tags.yaml ../config/taxonomy/example/module/actions.yaml 
 
 # Run tests
-test: export DATA_ACCESS_MODULE_NAMESPACE?=fybrik-blueprints
+test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
 test: pre-test
 	go test ./... -v  -coverprofile cover.out

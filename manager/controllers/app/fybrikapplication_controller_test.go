@@ -55,9 +55,9 @@ var _ = Describe("FybrikApplication Controller", func() {
 				secret2 := &corev1.Secret{Type: corev1.SecretTypeOpaque, StringData: map[string]string{"password": "123"}}
 				secret2.Name = "test-secret"
 
-				dataAccessModuleNamespace := utils.GetDataAccessModuleNamespace()
-				fmt.Printf("Application test using data access module namespace: %s\n", dataAccessModuleNamespace)
-				secret2.Namespace = dataAccessModuleNamespace
+				modulesNamespace := utils.GetDefaultModulesNamespace()
+				fmt.Printf("Application test using data access module namespace: %s\n", modulesNamespace)
+				secret2.Namespace = modulesNamespace
 				Expect(k8sClient.Create(context.TODO(), secret2)).NotTo(HaveOccurred(), "a secret could not be created")
 				secretList := &corev1.SecretList{}
 				Expect(k8sClient.List(context.Background(), secretList)).NotTo(HaveOccurred())
@@ -156,7 +156,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 			By("Status should contain the details of the endpoint")
 			Expect(len(application.Status.AssetStates)).To(Equal(1))
 			// TODO endpoint details are not set yet
-			fqdn := "test-app-e2e-default-read-module-test-e2e." + utils.GetDataAccessModuleNamespace()
+			fqdn := "test-app-e2e-default-read-module-test-e2e." + utils.GetDefaultModulesNamespace()
 			Expect(application.Status.AssetStates["s3/redact-dataset"].Endpoint).To(Equal(apiv1alpha1.EndpointSpec{
 				Hostname: fqdn,
 				Port:     80,

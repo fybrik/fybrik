@@ -90,8 +90,8 @@ spec:
               value: "false"
             {{- end }}
 
-            - name: DATA_ACCESS_MODULE_NAMESPACE
-              value: {{ include "fybrik.getDataAccessModuleNamespace" . }}
+            - name: MODULES_NAMESPACE
+              value: {{ include "fybrik.getModulesNamespace" . }}
 
             {{- if .Values.applicationNamespace }}
             - name: APPLICATION_NAMESPACE

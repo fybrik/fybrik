@@ -89,11 +89,11 @@ var _ = BeforeSuite(func(done Done) {
 	} else {
 		fmt.Printf("Setup fake environment... \n")
 		controllerNamespace := utils.GetControllerNamespace()
-		dataAccessModuleNamespace := utils.GetDataAccessModuleNamespace()
-		fmt.Printf("Suite test: Using controller namespace: %s; using data access module namespace %s\n: ", controllerNamespace, dataAccessModuleNamespace)
+		modulesNamespace := utils.GetDefaultModulesNamespace()
+		fmt.Printf("Suite test: Using controller namespace: %s; using data access module namespace %s\n: ", controllerNamespace, modulesNamespace)
 
 		systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
-		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetDataAccessModuleNamespace()})
+		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetDefaultModulesNamespace()})
 		// the testing environment will restrict access to secrets, modules and storage accounts
 		mgr, err = ctrl.NewManager(cfg, ctrl.Options{
 			Scheme:             scheme.Scheme,
@@ -142,7 +142,7 @@ var _ = BeforeSuite(func(done Done) {
 
 		Expect(k8sClient.Create(context.Background(), &corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: dataAccessModuleNamespace,
+				Name: modulesNamespace,
 			},
 		}))
 		Expect(k8sClient.Create(context.Background(), &corev1.ConfigMap{

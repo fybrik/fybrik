@@ -65,10 +65,10 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	}
 	setupLog.Info("Application namespace: " + applicationNamespace)
 
-	dataAccessModuleNamespace := utils.GetDataAccessModuleNamespace()
+	modulesNamespace := utils.GetDefaultModulesNamespace()
 
 	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
-	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": dataAccessModuleNamespace})
+	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": modulesNamespace})
 	selectorsByObject := cache.SelectorsByObject{
 		&appv1.FybrikApplication{}:      {Field: applicationNamespaceSelector},
 		&appv1.Plotter{}:                {Field: systemNamespaceSelector},
