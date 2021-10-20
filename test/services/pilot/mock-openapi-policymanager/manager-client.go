@@ -30,15 +30,7 @@ func main() {
 	timeOut, _ := strconv.Atoi(timeOutInSecs)
 	connectionTimeout := time.Duration(timeOut) * time.Second
 
-	// mainPolicyManagerURL := "opa-connector.fybrik-system:80"
-	// policyManager, err := connectors.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
-	// if err != nil {
-	// 	log.Println("returned with error ")
-	// 	log.Println("error in policyManager creation: ", err)
-	// 	return
-	// }
-
-	mainPolicyManagerURL := "http://openpolicyagent-connector.fybrik-system:80"
+	mainPolicyManagerURL := "http://opa-connector.fybrik-system:80"
 	log.Println("mainPolicyManagerURL set to :", mainPolicyManagerURL)
 	policyManager, err := connectors.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
 	if err != nil {

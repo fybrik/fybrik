@@ -17,7 +17,7 @@ import (
 	"net/http"
 
 	"emperror.dev/errors"
-	opabl "fybrik.io/fybrik/connectors/open_policy_agent/lib"
+	opabl "fybrik.io/fybrik/connectors/opa/lib"
 	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 	"github.com/gdexlab/go-render/render"
 	"github.com/gin-gonic/gin"
