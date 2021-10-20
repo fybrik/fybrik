@@ -254,6 +254,17 @@ opaServer:
 
   affinity: {}
 
+  # Bootstrap policies to load upon startup
+  # Define policies in the form of:
+  # <policyName> : |-
+  #   <regoBody>
+  # For example, to mask the entire input body in the decision logs:
+  # bootstrapPolicies:
+  #   log: |-
+  #     package system.log
+  #     mask["/input"]
+  bootstrapPolicies: {}
+
 # Katalog connector component
 katalogConnector:
   # Set to true to deploy the katalog connector or false to skip its deployment.

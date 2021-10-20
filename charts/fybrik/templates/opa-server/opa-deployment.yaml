@@ -31,8 +31,35 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ .Values.opaServer.serviceAccount.name }}
+      volumes:
+        - name: bootstrap
+          emptyDir: {}
       securityContext:
         {{- toYaml .Values.opaServer.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: initpolicy
+          image: {{ .Values.opaServer.kubemgmt.image }}
+          command:
+          - /bin/sh
+          - -c
+          - |
+            {{- $files := .Files }}
+            {{- range $path, $_ :=  $files.Glob  "files/opa-server/policy-lib/**.rego" }}
+            {{- $fileName := include "fybrik.opaServerPolicyFileName" (tuple $path ) }}
+            {{- printf "\ncat <<EOF >> /bootstrap/policy-lib-%s" $fileName | indent 12 }}
+            {{ $files.Get $path | indent 12 }}
+            EOF
+            {{ end }}
+            {{- if .Values.opaServer.bootstrapPolicies}}
+            {{- range $policyName, $policy := .Values.opaServer.bootstrapPolicies }} 
+            {{- printf "\ncat > /bootstrap/%s.rego <<EOF" $policyName  | indent 12 }}
+            {{ $policy | indent 12 }}
+            EOF
+            {{ end }}
+            {{ end }}
+          volumeMounts:
+            - name: bootstrap
+              mountPath: /bootstrap
       containers:
         - name: opa
           securityContext:
@@ -41,12 +68,16 @@ spec:
           imagePullPolicy: {{ .Values.opaServer.imagePullPolicy | default .Values.global.imagePullPolicy }}
           args:
             {{- toYaml .Values.opaServer.args | nindent 12 }}
+            - "/bootstrap"
           ports:
             - name: http
               containerPort: 8181
               protocol: TCP
           resources:
             {{- toYaml .Values.opaServer.resources | nindent 12 }}
+          volumeMounts:
+            - name: bootstrap
+              mountPath: /bootstrap
         - name: kube-mgmt
           image: {{ .Values.opaServer.kubemgmt.image }}
           args:
