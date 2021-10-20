@@ -14,3 +14,7 @@ verdict[outputFormatted] {
 	actionFormatted := {"name": actionName, output.action.name: actionWithoutName}
 	outputFormatted := object.union({"action": actionFormatted}, outputWithoutAction)
 }
+
+rule[{"action": {"name":"dummy action"}, "policy": "dummy rule"}] {
+	false
+}
