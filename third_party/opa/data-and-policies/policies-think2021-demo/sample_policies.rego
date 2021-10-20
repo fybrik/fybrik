@@ -1,20 +1,5 @@
 package dataapi.authz
 
-verdict[output] {
-	count(rule) == 0
-	output = {"action": {"name":"Deny", "Deny": {}}, "policy": "Deny by default"}
-}
-
-verdict[outputFormatted] {
-	count(rule) > 0
-	output = rule[_]
-	actionName := output.action.name
-	actionWithoutName := json.remove(output.action, ["name"])
-	outputWithoutAction := json.remove(output, ["action"])
-	actionFormatted := {"name": actionName, output.action.name: actionWithoutName}
-	outputFormatted := object.union({"action": actionFormatted}, outputWithoutAction)
-}
-
 rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": description}] {
 	description := "If intent is Fraud Detection and role is Data Scientist and data residency is Turkey and processing location is not Turkey, redact columns with tag Confidential"
 	#user context and access type check

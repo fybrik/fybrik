@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	PORT = 50082
+	PORT = 8080
 )
 
 var router *gin.Engine

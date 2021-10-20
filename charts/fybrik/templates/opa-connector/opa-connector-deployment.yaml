@@ -41,7 +41,7 @@ spec:
           imagePullPolicy: {{ .Values.opaConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
           ports:
             - name: http
-              containerPort: 50082
+              containerPort: 8080
               protocol: TCP
           envFrom:
             - configMapRef:
