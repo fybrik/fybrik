@@ -69,7 +69,7 @@ coordinator:
 
   # Overrides the policy manager connector URL.
   # Defaults to `<policyManager>-connector:80`.
-  policyManagerConnectorURL: ""
+  policyManagerConnectorURL: "http://opa-connector:80"
 
   # Configure the vault instance to be used by the coordinator manager
   vault:
@@ -178,80 +178,6 @@ manager:
     # is available on volume first, then try to pull from a Docker registry if it does not exist.
     # To populate the volume, create a 'charts' directory at the root of the mount,
     # and place helm charts within the charts directory.
-
-# OPA connector component
-opaConnector:
-  # Set to true to deploy the opa connector or false to skip its deployment.
-  # Defaults to true if `coordinator.policyManager` is set to "opa"
-  enabled: auto
-
-  # Overrides the URL of the OPA server
-  # Defaults to the address of the deployed OPA server
-  serverURL:
-
-  # Override GRPC connection timeout
-  # See `.global.connectionTimeout`.
-  connectionTimeout:
-
-  # Image name or a hub/image[:tag]
-  image: "opa-connector"
-
-  # Overrides `.global.imagePullPolicy`
-  imagePullPolicy: ""
-
-  # Used if autoscaling is not enabled 
-  replicaCount: 1
-  
-  serviceAccount:
-    # Specifies whether a service account should be created
-    create: true
-    # Annotations to add to the service account
-    annotations: {}
-    # The name of the service account to use
-    name: opa-connector
-
-  podAnnotations: {}
-
-  podSecurityContext: {}
-    # fsGroup: 2000
-
-  securityContext: {}
-    # capabilities:
-    #   drop:
-    #   - ALL
-    # readOnlyRootFilesystem: true
-    # runAsNonRoot: true
-    # runAsUser: 1000
-
-  service:
-    type: ClusterIP
-    port: 80
-
-  resources: {}
-    # We usually recommend not to specify default resources and to leave this as a conscious
-    # choice for the user. This also increases chances charts run on environments with little
-    # resources, such as Minikube. If you do want to specify resources, uncomment the following
-    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 100
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage:
-    # targetMemoryUtilizationPercentage: 80
-
-  nodeSelector: {}
-
-  tolerations: []
-
-  affinity: {}
 
 # OPA server component
 opaServer:
@@ -395,7 +321,7 @@ katalogConnector:
   affinity: {}
 
 # V2 OPA connector component
-openPolicyAgentConnector:
+opaConnector:
   # Set to true to deploy the opa connector or false to skip its deployment.
   # Defaults to true if `coordinator.policyManager` is set to "opa"
   enabled: auto
@@ -409,7 +335,7 @@ openPolicyAgentConnector:
   connectionTimeout:
 
   # Image name or a hub/image[:tag]
-  image: "openpolicyagent-connector"
+  image: "opa-connector"
 
   # Overrides `.global.imagePullPolicy`
   imagePullPolicy: ""
@@ -423,7 +349,7 @@ openPolicyAgentConnector:
     # Annotations to add to the service account
     annotations: {}
     # The name of the service account to use
-    name: openpolicyagent-connector
+    name: opa-connector
 
   podAnnotations: {}
 

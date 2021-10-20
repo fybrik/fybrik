@@ -3,8 +3,7 @@ include $(ROOT_DIR)/Makefile.env
 
 CONNECTORS := \
 	katalog \
-	opa \
-	open_policy_agent
+	opa 
 
 define test-target
   test:: ; cd $1 && make test

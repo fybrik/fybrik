@@ -9,31 +9,39 @@ KUBE_NAMESPACE ?= fybrik-system
 NEED_TEST_COVERAGE_STATISTICS=1
 NEED_TEST_COVERAGE_STATISTICS_IN_HTML=0
 
-docker-build: source-build
+CATALOG_PROVIDER_NAME ?= "katalog"
+CATALOG_CONNECTOR_URL ?= "katalg-connector:50090"
+
+docker-all: docker-build docker-push 
+
+docker-build:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o opa-connector main.go
 	docker build . -t $(IMG)
 	rm opa-connector
-
-.PHONY: deploy
-deploy:
-	helm install fybrik-opa $(ROOT_DIR)/charts/fybrik \
-		--set coordinator.enabled=false --set worker.enabled=false --set manager.enabled=false \
-		--set opaServer.enabled=true --set opaConnector.enabled=true \
-		--set opaConnector.image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(DOCKER_NAME):${DOCKER_TAGNAME} \
-		--set coordinator.catalogConnectorURL=${CATALOG_CONNECTOR_URL}
-		-n $(KUBE_NAMESPACE)
 
 .PHONY: source-build
 source-build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o opa-connector main.go
 
+.PHONY: deploy
+deploy:
+	helm install fybrik-openpolicyagent $(ROOT_DIR)/charts/fybrik \
+		--set coordinator.enabled=true --set worker.enabled=true --set manager.enabled=true \
+		--set opaServer.enabled=true --set openPolicyAgentConnector.enabled=true \
+		--set openPolicyAgentConnector.image=${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/$(DOCKER_NAME):${DOCKER_TAGNAME} \
+		--set coordinator.catalog=${CATALOG_PROVIDER_NAME} \
+		--set coordinator.catalogConnectorURL=${CATALOG_CONNECTOR_URL} \
+		--set coordinator.policyManagerConnectorURL=http://$(DOCKER_NAME):80 \
+		-n $(KUBE_NAMESPACE)
+
 .PHONY: undeploy
 undeploy:
-	helm uninstall fybrik-opa -n $(KUBE_NAMESPACE)
+	helm uninstall fybrik-openpolicyagent -n $(KUBE_NAMESPACE)
 
 
 .PHONY: build
 build:
-	go build -o opa_connector
+	go build -o opa-connector
 
 .PHONY: test
 test:
@@ -50,11 +58,11 @@ endif
 
 .PHONY: clean
 clean: opaserver-clean
-	rm -f opa_connector && rm -f output-opaconnector.log
+	rm -f opa-connector && rm -f output-openpolicyagentconnector.log
 
 .PHONY: run
 run: opaserver
-	nohup ./opa_connector > output-opaconnector.log &  2>&1 && echo "$$!" >> pids.txt && sleep 5
+	nohup ./opa-connector > output-openpolicyagentconnector.log &  2>&1 && echo "$$!" >> pids.txt && sleep 5
 
 .PHONY: terminate
 terminate: opaserver-terminate

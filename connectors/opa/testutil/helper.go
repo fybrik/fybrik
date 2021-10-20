@@ -25,17 +25,19 @@ var EnvValues = map[string]string{
 	"CONNECTION_TIMEOUT":    "120",
 	"CATALOG_CONNECTOR_URL": "localhost:50084",
 	"OPA_SERVER_URL":        "localhost:8282",
+	"CATALOG_PROVIDER_NAME": "dummy_catalog",
 }
 
-func GetEnvironment() (int, string, string) {
+func GetEnvironment() (int, string, string, string) {
 	timeOutInSecs := EnvValues["CONNECTION_TIMEOUT"]
 	timeOutSecs, _ := strconv.Atoi(timeOutInSecs)
 
 	catalogConnectorURL := EnvValues["CATALOG_CONNECTOR_URL"]
 	opaServerURL := EnvValues["OPA_SERVER_URL"]
+	catalogProviderName := EnvValues["CATALOG_PROVIDER_NAME"]
 	log.Printf("EnvVariables = %v\n", EnvValues)
 
-	return timeOutSecs, catalogConnectorURL, opaServerURL
+	return timeOutSecs, catalogConnectorURL, opaServerURL, catalogProviderName
 }
 
 func GetApplicationContext(intent string) *pb.ApplicationContext {
@@ -85,14 +87,14 @@ func GetExpectedOpaDecisions(intent string, in *pb.ApplicationContext) *pb.Polic
 		fmt.Println(operation)
 		var newUsedPolicy *pb.Policy
 		if intent == "marketing" {
-			newEnforcementAction := ConstructEncryptColumn("nameDest")
+			newEnforcementAction := ConstructRedactColumn("nameDest")
 			enforcementActions = append(enforcementActions, newEnforcementAction)
-			newUsedPolicy = &pb.Policy{Description: "test for transactions dataset that encrypts some columns by name"}
+			newUsedPolicy = &pb.Policy{Description: "test for transactions dataset that redacts some columns by name"}
 			usedPolicies = append(usedPolicies, newUsedPolicy)
 
-			newEnforcementAction = ConstructEncryptColumn("nameOrig")
+			newEnforcementAction = ConstructRedactColumn("nameOrig")
 			enforcementActions = append(enforcementActions, newEnforcementAction)
-			newUsedPolicy = &pb.Policy{Description: "test for transactions dataset that encrypts some columns by name"}
+			newUsedPolicy = &pb.Policy{Description: "test for transactions dataset that redacts some columns by name"}
 			usedPolicies = append(usedPolicies, newUsedPolicy)
 		} else {
 			newEnforcementAction := ConstructRemoveColumn("nameDest")
@@ -113,7 +115,7 @@ func GetExpectedOpaDecisions(intent string, in *pb.ApplicationContext) *pb.Polic
 	return &pb.PoliciesDecisions{DatasetDecisions: []*pb.DatasetDecision{datasetDecison}}
 }
 
-// Mocks for catalog-connector and OPA-connector
+// Mocks for catalog-connector and opa-connector
 
 type connectorMockCatalog struct {
 	pb.UnimplementedDataCatalogServiceServer
@@ -131,7 +133,7 @@ func GetCatalogInfo(credentialPath string, datasetID string) *pb.CatalogDatasetI
 	datasetNamedMetadata := make(map[string]string)
 
 	var datasetDetails *pb.DatasetDetails
-	datasetTags := []string{"Tag1"}
+	datasetTags := []string{"TagKey = TagVal"}
 
 	datasetDetails = &pb.DatasetDetails{Name: "mock-name",
 		DataOwner: "data-owner",
@@ -170,7 +172,7 @@ func MockCatalogConnector(port int) {
 func customOpaResponse(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: customOpaResponse")
 
-	customeResponse := "{\"result\":{\"deny\":[],\"transform\":[{\"action_name\":\"encrypt column\",\"arguments\":{\"column_name\":\"nameDest\"},\"description\":\"Single column is encrypted with its own key\",\"used_policy\":{\"description\":\"test for transactions dataset that encrypts some columns by name\"}},{\"action_name\":\"encrypt column\",\"arguments\":{\"column_name\":\"nameOrig\"},\"description\":\"Single column is encrypted with its own key\",\"used_policy\":{\"description\":\"test for transactions dataset that encrypts some columns by name\"}}]}}"
+	customeResponse := "{\"decisionid\":\"ABCD\", \"result\": [{\"action\": {\"name\":\"redact\", \"columns\": [\"nameDest\", \"nameOrig\"]}, \"policy\": \"test for transactions dataset that redacts some columns by name\"}]}"
 
 	fmt.Fprint(w, customeResponse)
 }
