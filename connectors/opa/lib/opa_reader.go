@@ -52,6 +52,7 @@ func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *taxonomymodel
 							tagVal[splitStr[0]] = splitStr[1]
 						} else {
 							tagVal[tagArr[i]] = "true"
+						}
 					}
 					log.Println("tagVal: ", tagVal)
 					resource := in.GetResource()
