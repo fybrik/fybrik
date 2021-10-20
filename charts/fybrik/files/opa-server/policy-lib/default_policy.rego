@@ -15,6 +15,4 @@ verdict[outputFormatted] {
 	outputFormatted := object.union({"action": actionFormatted}, outputWithoutAction)
 }
 
-rule[{"action": {"name":"dummy action"}, "policy": "dummy rule"}] {
-	false
-}
+rule[{}] { false }
