@@ -6,10 +6,10 @@ package app
 import (
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	config "fybrik.io/fybrik/manager/controllers/app/config"
-	"fybrik.io/fybrik/manager/controllers/app/dataset"
+	"fybrik.io/fybrik/manager/controllers/app/metadata"
 	"fybrik.io/fybrik/manager/controllers/app/modules"
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
@@ -19,13 +19,13 @@ import (
 // DataInfo defines all the information about the given data set that comes from the fybrikapplication spec and from the connectors.
 type DataInfo struct {
 	// Source connection details
-	DataDetails *dataset.DataDetails
+	DataDetails *metadata.DataDetails
 	// The path to Vault secret which holds the dataset credentials
 	VaultSecretPath string
 	// Pointer to the relevant data context in the Fybrik application spec
 	Context *app.DataContext
 	// Evaluated config policies
-	Configuration config.EvaluatorOutput
+	Configuration adminconfig.EvaluatorOutput
 	// Workload cluster
 	WorkloadCluster multicluster.Cluster
 	// Governance actions to perform on this asset
