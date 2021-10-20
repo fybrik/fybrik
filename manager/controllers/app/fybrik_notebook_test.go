@@ -150,7 +150,7 @@ func TestS3Notebook(t *testing.T) {
 	fmt.Printf("data access module namespace notebook test: %s\n", modulesNamespace)
 
 	// Forward port of arrow flight service to local port
-	svcName := strings.Replace(application.Status.AssetStates["fybrik-notebook-sample/data-csv"].Endpoint.Hostname, "."+modulesNamespace+".svc.cluster.local", "", 1)
+	svcName := strings.Replace(application.Status.AssetStates["fybrik-notebook-sample/data-csv"].Endpoint.Hostname, "."+modulesNamespace, "", 1)
 	port := application.Status.AssetStates["fybrik-notebook-sample/data-csv"].Endpoint.Port
 
 	By("Starting kubectl port-forward for arrow-flight")
