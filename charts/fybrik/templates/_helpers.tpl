@@ -64,6 +64,14 @@ Create the value of an image field from hub, image and tag
 {{- end }}
 
 {{/*
+Extract the file name from a path
+*/}}
+{{- define "fybrik.opaServerPolicyFileName" -}}
+{{- $path := toString (first .) -}}
+{{- printf "%s" $path | base| toString }}
+{{- end }}
+
+{{/*
 isEnabled evaluates an enabled flag that might be set to "auto".
 Returns true if one of the following is true:
 The return value when using `include` is always a String.
