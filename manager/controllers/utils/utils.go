@@ -4,7 +4,7 @@
 package utils
 
 import (
-	"crypto/sha256"
+	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -49,7 +49,7 @@ func StructToMap(data interface{}) (map[string]interface{}, error) {
 
 // Hash generates a name based on the unique identifier
 func Hash(value string, hashLength int) string {
-	data := sha256.Sum256([]byte(value))
+	data := sha512.Sum512([]byte(value))
 	hashedStr := hex.EncodeToString(data[:])
 	if hashLength >= len(hashedStr) {
 		return hashedStr
