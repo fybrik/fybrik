@@ -10,6 +10,7 @@ require (
 	github.com/apache/arrow/go/arrow v0.0.0-20210907151234-f40856a768f2
 	github.com/aws/aws-sdk-go v1.40.37
 	github.com/buger/jsonparser v1.1.1
+	github.com/distribution/distribution v2.7.1+incompatible
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/gdexlab/go-render v1.0.1
 	github.com/getkin/kin-openapi v0.66.0
@@ -45,10 +46,11 @@ require (
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/tidwall/pretty v1.0.1
+	github.com/vdemeester/k8s-pkg-credentialprovider v1.21.0-1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.mongodb.org/mongo-driver v1.4.2 // indirect
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
-	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602
+	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
 	google.golang.org/genproto v0.0.0-20210707164411-8c882eb9abba // indirect
 	google.golang.org/grpc v1.39.0
 	google.golang.org/protobuf v1.27.1
