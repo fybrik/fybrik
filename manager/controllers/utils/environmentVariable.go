@@ -7,8 +7,8 @@ import (
 	"os"
 )
 
-// DefaultDataAccessModuleNamespace defines a namespace where module resources will be allocated
-const DefaultDataAccessModuleNamespace = "fybrik-blueprints"
+// DefaultModulesNamespace defines a namespace where module resources will be allocated
+const DefaultModulesNamespace = "fybrik-blueprints"
 
 // Controller namespace defines a namespace where
 const DefaultControllerNamespace = "fybrik-system"
@@ -16,7 +16,7 @@ const DefaultControllerNamespace = "fybrik-system"
 func GetDefaultModulesNamespace() string {
 	ns := os.Getenv("MODULES_NAMESPACE")
 	if len(ns) == 0 {
-		ns = DefaultDataAccessModuleNamespace
+		ns = DefaultModulesNamespace
 	}
 	return ns
 }
