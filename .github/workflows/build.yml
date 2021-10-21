@@ -147,6 +147,7 @@ jobs:
   push_images:
     name: Push images
     runs-on: ubuntu-latest
+    if: github.repository == 'fybrik/fybrik'
     env:
       DOCKER_HOSTNAME: "localhost:5000"
       DOCKER_NAMESPACE: fybrik-system
