@@ -147,14 +147,13 @@ jobs:
   push_images:
     name: Push images
     runs-on: ubuntu-latest
-    if: github.repository == 'fybrik/fybrik'
     env:
       DOCKER_HOSTNAME: "localhost:5000"
       DOCKER_NAMESPACE: fybrik-system
       DOCKER_USERNAME: ${{ github.actor }}
       DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
     needs: [verify, test, integration-tests]
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' && github.repository == 'fybrik/fybrik' }}
     steps:
     - uses: actions/checkout@v2
     - name: Download artifact
