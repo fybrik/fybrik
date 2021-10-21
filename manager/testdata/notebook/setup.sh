@@ -20,9 +20,5 @@ kubectl -n fybrik-notebook-sample apply -f s3credentials.yaml
 # kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml -n fybrik-system
 kubectl apply -n fybrik-system -f arrow-flight-module.yaml
 
-kubectl -n fybrik-system create configmap sample-policy --from-file=sample-policy.rego
-kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy=rego
-while [[ $(kubectl get cm sample-policy -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
-
 # Forward port of test S3 instance
 kubectl port-forward -n fybrik-system svc/s3 9090:9090 &
