@@ -1251,26 +1251,23 @@ aws configure <span class="nb">set</span> aws_access_key_id <span class="si">${<
         <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">PII</span>
       <span class="nt">oldbalanceOrg</span><span class="p">:</span>
         <span class="nt">tags</span><span class="p">:</span>
-        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">sensitive</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">PII</span>
       <span class="nt">newbalanceOrig</span><span class="p">:</span>
         <span class="nt">tags</span><span class="p">:</span>
-        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">sensitive</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">PII</span>
 <span class="l l-Scalar l-Scalar-Plain">EOF</span>
 </code></pre></div>
 <p>The asset is now registered in the catalog. The identifier of the asset is <code>fybrik-notebook-sample/paysim-csv</code> (i.e. <code>&lt;namespace&gt;/&lt;name&gt;</code>). You will use that name in the <code>FybrikApplication</code> later.</p>
 <p>Notice the <code>assetMetadata</code> field above. It specifies the dataset geography and tags. These attributes can later be used in policies.</p>
 <h2 id="define-data-access-policies">Define data access policies</h2>
-<p>Define an <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a> policy to redact the <code>nameOrig</code> column for datasets tagged as <code>finance</code>. Below is the policy (written in <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego">Rego</a> language):</p>
+<p>Define an <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a> policy to redact the columns tagged as <code>PII</code> for datasets tagged with <code>finance</code>. Below is the policy (written in <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego">Rego</a> language):</p>
 <div class="highlight"><pre><span></span><code>package dataapi.authz
 
-import data.data_policies as dp
-
-transform[action] {
-  description := &quot;Redact sensitive columns in finance datasets&quot;
-  dp.AccessType() == &quot;READ&quot;
-  dp.dataset_has_tag(&quot;finance&quot;)
-  column_names := dp.column_with_any_name({&quot;nameOrig&quot;})
-  action = dp.build_redact_column_action(column_names[_], dp.build_policy_from_description(description))
+rule[{&quot;action&quot;: {&quot;name&quot;:&quot;RedactAction&quot;, &quot;columns&quot;: column_names}, &quot;policy&quot;: description}] {
+  description := &quot;Redact columns tagged as PII in datasets tagged with finance = true&quot;
+  input.action.actionType == &quot;read&quot;
+  input.resource.tags.finance
+  column_names := [input.resource.columns[i].name | input.resource.columns[i].tags.PII]
 }
 </code></pre></div>
 <p>In this sample only the policy above is applied. Copy the policy to a file named <code>sample-policy.rego</code> and then run:</p>
@@ -1382,7 +1379,7 @@ df: pd.DataFrame <span class="o">=</span> reader.read_pandas<span class="o">()</
 <li>Insert a new notebook cell with the following command to visualize the result:
   <div class="highlight"><pre><span></span><code>df
 </code></pre></div></li>
-<li>Execute all notebook cells and notice that the <code>nameOrig</code> column appears redacted.</li>
+<li>Execute all notebook cells and notice that the <code>nameOrig</code>, <code>oldbalanceOrg</code>and <code>newbalanceOrig</code> columns appear redacted.</li>
 </ol>
 <h2 id="cleanup">Cleanup</h2>
 <p>When you’re finished experimenting with the notebook sample, clean it up:</p>
