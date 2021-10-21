@@ -3,7 +3,6 @@ name: Build
 on:
   push:
     branches-ignore:
-      - 'releases/**'
       - 'site'
     tags:
       - '*'
@@ -153,7 +152,7 @@ jobs:
       DOCKER_USERNAME: ${{ github.actor }}
       DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
     needs: [verify, test, integration-tests]
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' && github.repository == 'fybrik/fybrik' }}
     steps:
     - uses: actions/checkout@v2
     - name: Download artifact

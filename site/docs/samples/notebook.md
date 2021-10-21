@@ -241,7 +241,6 @@ The next steps use the endpoint to read the data in a python notebook
   ```
 2. Insert a new notebook cell to read the data using the endpoint value extracted from the `FybrikApplication` in the previous step:
   ```bash
-  %pip install pandas pyarrow
   import json
   import pyarrow.flight as fl
   import pandas as pd
