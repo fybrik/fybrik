@@ -84,7 +84,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		&kapps.Deployment{}:             {Field: workerNamespaceSelector},
 		&corev1.PersistentVolumeClaim{}: {Field: workerNamespaceSelector},
 		&corev1.Secret{}:                {Field: systemNamespaceSelector},
-		//&corev1.Secret{}:                {Field: workerNamespaceSelector},
+		// &corev1.Secret{}:                {Field: workerNamespaceSelector},
 	}
 
 	client := ctrl.GetConfigOrDie()
