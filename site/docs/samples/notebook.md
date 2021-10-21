@@ -108,10 +108,10 @@ spec:
         - PII
       oldbalanceOrg:
         tags:
-        - sensitive
+        - PII
       newbalanceOrig:
         tags:
-        - sensitive
+        - PII
 EOF
 ```
 
@@ -122,19 +122,16 @@ Notice the `assetMetadata` field above. It specifies the dataset geography and t
 
 ## Define data access policies
 
-Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to redact the `nameOrig` column for datasets tagged as `finance`. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
+Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to redact the columns tagged as `PII` for datasets tagged with `finance`. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
 
 ```rego
 package dataapi.authz
 
-import data.data_policies as dp
-
-transform[action] {
-  description := "Redact sensitive columns in finance datasets"
-  dp.AccessType() == "READ"
-  dp.dataset_has_tag("finance")
-  column_names := dp.column_with_any_name({"nameOrig"})
-  action = dp.build_redact_column_action(column_names[_], dp.build_policy_from_description(description))
+rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": description}] {
+  description := "Redact columns tagged as PII in datasets tagged with finance = true"
+  input.action.actionType == "read"
+  input.resource.tags.finance
+  column_names := [input.resource.columns[i].name | input.resource.columns[i].tags.PII]
 }
 ```
 
@@ -268,7 +265,7 @@ The next steps use the endpoint to read the data in a python notebook
   ```
   df
   ```
-5. Execute all notebook cells and notice that the `nameOrig` column appears redacted.
+5. Execute all notebook cells and notice that the `nameOrig`, `oldbalanceOrg`and `newbalanceOrig` columns appear redacted.
 
 
 ## Cleanup
