@@ -1204,7 +1204,7 @@ For example:
 <div class="highlight"><pre><span></span><code>git clone https://github.com/fybrik/fybrik.git
 <span class="nb">cd</span> fybrik
 helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-helm install fybrik charts/fybrik --set global.tag<span class="o">=</span>master -n fybrik-system --wait
+helm install fybrik charts/fybrik --set global.tag<span class="o">=</span>master --set global.imagePullPolicy<span class="o">=</span>Always -n fybrik-system --wait
 </code></pre></div></p>
 </details>
 <p>The control plane includes a <code>manager</code> service that connects to a data catalog and to a policy manager. 
@@ -1213,6 +1213,10 @@ Install the latest release of Fybrik with a built-in data catalog and with <a hr
 helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait
 </code></pre></div>
 <h2 id="install-modules">Install modules</h2>
+<details class="tip"><summary>Install latest development version from GitHub</summary><p>To apply the latest development version of arrow-flight-module:
+<div class="highlight"><pre><span></span><code>kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
+</code></pre></div></p>
+</details>
 <p><a href="../../concepts/modules/">Modules</a> are plugins that the control plane deploys whenever required. The <a href="https://github.com/fybrik/arrow-flight-module">arrow flight module</a> enables reading data through Apache Arrow Flight API. </p>
 <p>Install the latest<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> release of arrow-flight-module:</p>
 <div class="highlight"><pre><span></span><code>kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml -n fybrik-system

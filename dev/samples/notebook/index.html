@@ -1356,8 +1356,7 @@ The next steps use the endpoint to read the data in a python notebook</p>
   <div class="highlight"><pre><span></span><code><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">pandas</span> <span class="n">pyarrow</span>
 </code></pre></div></li>
 <li>Insert a new notebook cell to read the data using the endpoint value extracted from the <code>FybrikApplication</code> in the previous step:
-  <div class="highlight"><pre><span></span><code>%pip install pandas pyarrow
-import json
+  <div class="highlight"><pre><span></span><code>import json
 import pyarrow.flight as fl
 import pandas as pd
 
