@@ -6,7 +6,7 @@ package adminconfig
 import (
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 
-	dataset "fybrik.io/fybrik/manager/controllers/app/metadata"
+	assetmetadata "fybrik.io/fybrik/manager/controllers/app/assetmetadata"
 	"fybrik.io/fybrik/pkg/multicluster"
 	model "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
@@ -30,35 +30,16 @@ type Request struct {
 // EvaluatorInput is an input to Configuration Policies Evaluator.
 // Used to evaluate configuration policies.
 type EvaluatorInput struct {
-	// A list of available clusters
-	Clusters []multicluster.Cluster
 	// Workload configuration
 	Workload WorkloadInfo
 	// Application properties
 	AppInfo api.ApplicationDetails
 	// Asset metadata
-	AssetMetadata *dataset.DataDetails
+	AssetMetadata *assetmetadata.DataDetails
 	// Requirements for asset usage
 	AssetRequirements Request
 	// Governance Actions for reading data (relevant for read scenarios only)
 	GovernanceActions []model.Action
-}
-
-// SetWorkloadInfo generates a new WorkloadInfo object based on FybrikApplication and updates the input structure
-// If no cluster has been specified for a workload, a local cluster is assumed.
-func SetWorkloadInfo(localCluster multicluster.Cluster, clusters []multicluster.Cluster, application *api.FybrikApplication, result *EvaluatorInput) {
-	clusterName := application.Spec.Selector.ClusterName
-	if clusterName == "" {
-		result.Workload.Cluster = localCluster
-	} else {
-		// find the cluster by its name as it is specified in FybrikApplication workload selector
-		for _, cluster := range clusters {
-			if cluster.Name == clusterName {
-				result.Workload.Cluster = localCluster
-				break
-			}
-		}
-	}
 }
 
 // SetApplicationInfo generates a new AppInfo object based on FybrikApplication and updates the input structure

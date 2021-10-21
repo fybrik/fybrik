@@ -152,7 +152,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			catalog,
 			clusterManager,
 			storage.NewProvisionImpl(mgr.GetClient()),
-			adminconfig.NewDefaultConfig(),
+			adminconfig.NewDefaultConfig(adminconfig.InfrastructureManager{ClusterManager: clusterManager, Client: mgr.GetClient()}),
 		)
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "FybrikApplication")

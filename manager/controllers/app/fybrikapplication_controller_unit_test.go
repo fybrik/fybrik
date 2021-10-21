@@ -74,7 +74,7 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 		},
 		ClusterManager:  &mockup.ClusterLister{},
 		Provision:       &storage.ProvisionTest{},
-		ConfigEvaluator: adminconfig.NewDefaultConfig(),
+		ConfigEvaluator: adminconfig.NewDefaultConfig(adminconfig.InfrastructureManager{ClusterManager: &mockup.ClusterLister{}, Client: cl}),
 	}
 }
 

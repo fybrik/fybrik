@@ -34,7 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/app/metadata"
+	"fybrik.io/fybrik/manager/controllers/app/assetmetadata"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
@@ -243,20 +243,6 @@ func (r *FybrikApplicationReconciler) reconcileFinalizers(applicationContext *ap
 	return nil
 }
 
-// GetLocalCluster returns the local cluster metadata
-func (r *FybrikApplicationReconciler) GetLocalCluster() (multicluster.Cluster, error) {
-	// the workload runs in a local cluster
-	localClusterManager, err := local.NewManager(r.Client, utils.GetSystemNamespace())
-	if err != nil {
-		return multicluster.Cluster{}, err
-	}
-	clusters, err := localClusterManager.GetClusters()
-	if err != nil || len(clusters) != 1 {
-		return multicluster.Cluster{}, err
-	}
-	return clusters[0], nil
-}
-
 func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext *api.FybrikApplication) error {
 	// clear provisioned storage
 	// References to buckets (Dataset resources) are deleted. Buckets that are persistent will not be removed upon Dataset deletion.
@@ -334,12 +320,6 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 		return ctrl.Result{}, nil
 	}
 
-	// get deployed clusters
-	clusters, err := r.ClusterManager.GetClusters()
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-
 	// create a list of requirements for creating a data flow (actions, interface to app, data format) per a single data set
 	var requirements []DataInfo
 	for _, dataset := range applicationContext.Spec.Data {
@@ -347,7 +327,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 			Context: dataset.DeepCopy(),
 		}
 		r.Log.V(0).Info("Preparing requirements for " + req.Context.DataSetID)
-		if err = r.constructDataInfo(&req, applicationContext, clusters); err != nil {
+		if err := r.constructDataInfo(&req, applicationContext); err != nil {
 			AnalyzeError(applicationContext, req.Context.DataSetID, err)
 			r.Log.V(0).Info("Error: " + err.Error())
 			continue
@@ -391,7 +371,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 	return ctrl.Result{}, nil
 }
 
-func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *api.FybrikApplication, clusters []multicluster.Cluster) error {
+func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *api.FybrikApplication) error {
 	var err error
 	// Call the DataCatalog service to get info about the dataset
 	var response *pb.CatalogDatasetInfo
@@ -411,7 +391,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 	}
 
 	details := response.GetDetails()
-	dataDetails, err := metadata.CatalogDatasetToDataDetails(response)
+	dataDetails, err := assetmetadata.CatalogDatasetToDataDetails(response)
 	if err != nil {
 		return err
 	}
@@ -422,16 +402,13 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 	}
 
 	configEvaluatorInput := &adminconfig.EvaluatorInput{
-		Clusters:      clusters,
 		AssetMetadata: dataDetails,
 	}
 	adminconfig.SetApplicationInfo(input, configEvaluatorInput)
 	adminconfig.SetAssetRequirements(input, *req.Context, configEvaluatorInput)
-	localCluster, err := r.GetLocalCluster()
-	if err != nil {
+	if configEvaluatorInput.Workload.Cluster, err = r.GetWorkloadCluster(input); err != nil {
 		return err
 	}
-	adminconfig.SetWorkloadInfo(localCluster, clusters, input, configEvaluatorInput)
 	// Read policies for data that is processed in the workload geography
 	if configEvaluatorInput.AssetRequirements.Usage[api.ReadFlow] {
 		actionType := model.READ
@@ -449,6 +426,49 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 	req.WorkloadCluster = configEvaluatorInput.Workload.Cluster
 	req.Configuration = configDecisions
 	return nil
+}
+
+// GetLocalCluster returns the local cluster metadata
+func (r *FybrikApplicationReconciler) GetLocalCluster() (multicluster.Cluster, error) {
+	// the workload runs in a local cluster
+	localClusterManager, err := local.NewManager(r.Client, utils.GetSystemNamespace())
+	if err != nil {
+		return multicluster.Cluster{}, err
+	}
+	clusters, err := localClusterManager.GetClusters()
+	if err != nil || len(clusters) != 1 {
+		return multicluster.Cluster{}, err
+	}
+	return clusters[0], nil
+}
+
+// GetWorkloadCluster returns a workload cluster
+// If no cluster has been specified for a workload, a local cluster is assumed.
+func (r *FybrikApplicationReconciler) GetWorkloadCluster(application *api.FybrikApplication) (multicluster.Cluster, error) {
+	clusterName := application.Spec.Selector.ClusterName
+	if clusterName == "" {
+		// the workload runs in a local cluster
+		localClusterManager, err := local.NewManager(r.Client, utils.GetSystemNamespace())
+		if err != nil {
+			return multicluster.Cluster{}, err
+		}
+		clusters, err := localClusterManager.GetClusters()
+		if err != nil || len(clusters) != 1 {
+			return multicluster.Cluster{}, err
+		}
+		return clusters[0], nil
+	}
+	// find the cluster by its name as it is specified in FybrikApplication workload selector
+	clusters, err := r.ClusterManager.GetClusters()
+	if err != nil {
+		return multicluster.Cluster{}, err
+	}
+	for _, cluster := range clusters {
+		if cluster.Name == clusterName {
+			return cluster, nil
+		}
+	}
+	return multicluster.Cluster{}, errors.New("Cluster " + clusterName + " is not available")
 }
 
 // NewFybrikApplicationReconciler creates a new reconciler for FybrikApplications

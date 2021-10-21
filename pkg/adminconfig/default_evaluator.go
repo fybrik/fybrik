@@ -12,11 +12,28 @@ import (
 // DefaultConfig implements EvaluatorInterface
 // It provides a default configuration as an alternative to evaluation of the written rego policies
 type DefaultConfig struct {
+	InfrastructureManager
+	Data *Infrastructure
 }
 
 // NewDefaultConfig constructs a new DefaultConfig object
-func NewDefaultConfig() *DefaultConfig {
-	return &DefaultConfig{}
+func NewDefaultConfig(manager InfrastructureManager) *DefaultConfig {
+	return &DefaultConfig{InfrastructureManager: manager, Data: nil}
+}
+
+func (r *DefaultConfig) SetInfrastructureDetails() error {
+	var err error
+	r.Data, err = r.SetInfrastructure()
+	return err
+}
+
+// DefaultDecision creates a Decision object with some defaults e.g. any cluster is available
+func (r *DefaultConfig) DefaultDecision(in *EvaluatorInput) Decision {
+	anyCluster := []string{in.Workload.Cluster.Name}
+	for _, cluster := range r.Data.Clusters {
+		anyCluster = append(anyCluster, cluster.Name)
+	}
+	return Decision{Deploy: corev1.ConditionUnknown, Clusters: anyCluster}
 }
 
 // Evaluate replaces hard-coded decisions in manager by default configuration
@@ -30,6 +47,11 @@ func NewDefaultConfig() *DefaultConfig {
 	Copy is deployed in a read scenario if dataset resides in a different geography and governance actions are required.
 */
 func (r *DefaultConfig) Evaluate(in *EvaluatorInput) (EvaluatorOutput, error) {
+	if r.Data == nil {
+		if err := r.SetInfrastructureDetails(); err != nil {
+			return EvaluatorOutput{Valid: false}, err
+		}
+	}
 	decisions := map[api.CapabilityType]Decision{}
 	// Read capability is deployed in a read-type scenario.
 	deployRead := corev1.ConditionFalse
@@ -40,13 +62,13 @@ func (r *DefaultConfig) Evaluate(in *EvaluatorInput) (EvaluatorOutput, error) {
 		Restrictions: map[string]string{"capabilities.scope": "workload"}}
 	decisions[api.Write] = Decision{Deploy: corev1.ConditionFalse}
 
-	copyDecision := DefaultDecision(in)
+	copyDecision := r.DefaultDecision(in)
 	if in.AssetRequirements.Usage[api.CopyFlow] {
 		copyDecision.Deploy = corev1.ConditionTrue
 	}
 
 	clustersInRegion := []string{}
-	for _, cluster := range in.Clusters {
+	for _, cluster := range r.Data.Clusters {
 		if cluster.Metadata.Region == in.AssetMetadata.Geography {
 			clustersInRegion = append(clustersInRegion, cluster.Name)
 		}
@@ -56,7 +78,7 @@ func (r *DefaultConfig) Evaluate(in *EvaluatorInput) (EvaluatorOutput, error) {
 		copyDecision.Clusters = clustersInRegion
 	}
 
-	transformDecision := DefaultDecision(in)
+	transformDecision := r.DefaultDecision(in)
 	transformDecision.Clusters = clustersInRegion
 
 	decisions[api.Transform] = transformDecision

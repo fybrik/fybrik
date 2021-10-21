@@ -6,7 +6,7 @@ package app
 import (
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/app/metadata"
+	"fybrik.io/fybrik/manager/controllers/app/assetmetadata"
 	"fybrik.io/fybrik/manager/controllers/app/modules"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
@@ -19,7 +19,7 @@ import (
 // DataInfo defines all the information about the given data set that comes from the fybrikapplication spec and from the connectors.
 type DataInfo struct {
 	// Source connection details
-	DataDetails *metadata.DataDetails
+	DataDetails *assetmetadata.DataDetails
 	// The path to Vault secret which holds the dataset credentials
 	VaultSecretPath string
 	// Pointer to the relevant data context in the Fybrik application spec
