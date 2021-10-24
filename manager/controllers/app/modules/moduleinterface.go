@@ -103,7 +103,8 @@ func (m *Selector) SupportsGovernanceAction(module *app.FybrikModule, action *ta
 		for _, cap := range caps {
 			// Loop over the data transforms (actions) performed by the module for this capability
 			for _, act := range cap.Actions {
-				if act.ID == action.GetAction().Name {
+				// TODO(shlomitk1): check for matching of additional fields declared by the module
+				if act.Name == action.GetAction().Name {
 					return true
 				}
 			}

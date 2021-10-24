@@ -4,7 +4,7 @@
 package v1alpha1
 
 import (
-	connectors "fybrik.io/fybrik/pkg/connectors/protobuf"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -81,14 +81,6 @@ type Dependency struct {
 	Name string `json:"name"`
 }
 
-// SupportedAction declares an action that the module supports (action identifier and its scope)
-type SupportedAction struct {
-	// +required
-	ID string `json:"id,omitempty"`
-	// +optional
-	Level connectors.EnforcementAction_EnforcementActionLevel `json:"level,omitempty"`
-}
-
 // EndpointSpec is used both by the module creator and by the status of the fybrikapplication
 type EndpointSpec struct {
 	// Hostname is the hostname to connect to for connecting to a module exposed service.
@@ -122,6 +114,20 @@ type Plugin struct {
 
 	// DataFormat indicates the format of data the plugin knows how to process
 	DataFormat string `json:"dataFormat"`
+}
+
+// +kubebuilder:validation:Type=object
+// +kubebuilder:pruning:PreserveUnknownFields
+type SupportedAction taxonomymodels.Action
+
+func (action *SupportedAction) UnmarshalJSON(data []byte) error {
+	obj := &taxonomymodels.Action{Name: action.Name, AdditionalProperties: action.AdditionalProperties}
+	return obj.UnmarshalJSON(data)
+}
+
+func (action *SupportedAction) MarshalJSON() ([]byte, error) {
+	obj := &taxonomymodels.Action{Name: action.Name, AdditionalProperties: action.AdditionalProperties}
+	return obj.MarshalJSON()
 }
 
 // Capability declares what this module knows how to do and the types of data it knows how to handle

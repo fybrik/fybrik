@@ -1838,8 +1838,8 @@ Capability declares what this module knows how to do and the types of data it kn
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#fybrikmodulespeccapabilitiesindexactionsindex">actions</a></b></td>
-        <td>[]object</td>
+        <td><b>actions</b></td>
+        <td>Schemaless</td>
         <td>
           Actions are the data transformations that the module supports<br/>
         </td>
@@ -1883,42 +1883,6 @@ Capability declares what this module knows how to do and the types of data it kn
             <i>Enum</i>: copy, read, write, transform<br/>
         </td>
         <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### FybrikModule.spec.capabilities[index].actions[index]
-<sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiesindex)</sup></sup>
-
-
-
-SupportedAction declares an action that the module supports (action identifier and its scope)
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>id</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>level</b></td>
-        <td>integer</td>
-        <td>
-          <br/>
-          <br/>
-            <i>Format</i>: int32<br/>
-        </td>
-        <td>false</td>
       </tr></tbody>
 </table>
 
