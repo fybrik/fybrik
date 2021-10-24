@@ -134,3 +134,17 @@ func GetModuleCapabilities(module *app.FybrikModule, requestedCapability app.Cap
 	}
 	return capFound, capList
 }
+
+// Intersection finds a common subset of two given sets of strings
+func Intersection(set1 []string, set2 []string) []string {
+	res := []string{}
+	for _, elem1 := range set1 {
+		for _, elem2 := range set2 {
+			if elem1 == elem2 {
+				res = append(res, elem1)
+				break
+			}
+		}
+	}
+	return res
+}

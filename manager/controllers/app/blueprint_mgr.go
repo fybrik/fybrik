@@ -5,17 +5,26 @@ package app
 
 import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/app/modules"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	// Temporary - shouldn't have something specific to implicit copies
 )
 
+// ModuleInstanceSpec consists of the module spec and arguments
+type ModuleInstanceSpec struct {
+	Chart       *app.ChartSpec
+	Args        *app.ModuleArguments
+	AssetIDs    []string
+	ClusterName string
+	ModuleName  string
+	Scope       app.CapabilityScope
+}
+
 // RefineInstances collects all instances of the same read/write module with non "Asset" scope
 // and creates a new instance instead, with accumulated arguments.
-func (r *PlotterReconciler) RefineInstances(instances []modules.ModuleInstanceSpec) []modules.ModuleInstanceSpec {
-	newInstances := make([]modules.ModuleInstanceSpec, 0)
+func (r *PlotterReconciler) RefineInstances(instances []ModuleInstanceSpec) []ModuleInstanceSpec {
+	newInstances := make([]ModuleInstanceSpec, 0)
 	// map instances to be unified, according to the cluster and module
-	instanceMap := make(map[string]modules.ModuleInstanceSpec)
+	instanceMap := make(map[string]ModuleInstanceSpec)
 	for _, moduleInstance := range instances {
 		// If the module scope is of type "asset" then avoid trying to unify it with another module.
 		// Copy module is assumed to be of "asset" scope
@@ -41,9 +50,9 @@ func (r *PlotterReconciler) RefineInstances(instances []modules.ModuleInstanceSp
 }
 
 // GenerateBlueprints creates Blueprint specs (one per cluster)
-func (r *PlotterReconciler) GenerateBlueprints(instances []modules.ModuleInstanceSpec) map[string]app.BlueprintSpec {
+func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec) map[string]app.BlueprintSpec {
 	blueprintMap := make(map[string]app.BlueprintSpec)
-	instanceMap := make(map[string][]modules.ModuleInstanceSpec)
+	instanceMap := make(map[string][]ModuleInstanceSpec)
 	for _, moduleInstance := range instances {
 		instanceMap[moduleInstance.ClusterName] = append(instanceMap[moduleInstance.ClusterName], moduleInstance)
 	}
@@ -59,7 +68,7 @@ func (r *PlotterReconciler) GenerateBlueprints(instances []modules.ModuleInstanc
 // GenerateBlueprint creates the Blueprint spec based on the datasets and the governance actions required, which dictate the modules that must run in the fybrik
 // Credentials for accessing data set are stored in a credential management system (such as vault) and the paths for accessing them are included in the blueprint.
 // The credentials themselves are not included in the blueprint.
-func (r *PlotterReconciler) GenerateBlueprint(instances []modules.ModuleInstanceSpec, clusterName string) app.BlueprintSpec {
+func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec, clusterName string) app.BlueprintSpec {
 	var spec app.BlueprintSpec
 
 	spec.Cluster = clusterName
