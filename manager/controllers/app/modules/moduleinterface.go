@@ -4,64 +4,22 @@
 package modules
 
 import (
-	"errors"
-
-	"fybrik.io/fybrik/pkg/serde"
-
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/utils"
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
-	"fybrik.io/fybrik/pkg/multicluster"
 	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
-
-// DataDetails is the information received from the catalog connector
-type DataDetails struct {
-	// Name of the asset
-	Name string
-	// Interface is the protocol and format
-	Interface app.InterfaceDetails
-	// Geography is the geo-location of the asset
-	Geography string
-	// Connection is the connection details in raw format as received from the connector
-	Connection serde.Arbitrary
-	// Metadata
-	Metadata *pb.DatasetMetadata
-}
-
-// DataInfo defines all the information about the given data set that comes from the fybrikapplication spec and from the connectors.
-type DataInfo struct {
-	// Source connection details
-	DataDetails *DataDetails
-	// The path to Vault secret which holds the dataset credentials
-	VaultSecretPath string
-	// Pointer to the relevant data context in the Fybrik application spec
-	Context *app.DataContext
-}
-
-// ModuleInstanceSpec consists of the module spec and arguments
-type ModuleInstanceSpec struct {
-	Chart       *app.ChartSpec
-	Args        *app.ModuleArguments
-	AssetIDs    []string
-	ClusterName string
-	ModuleName  string
-	Scope       app.CapabilityScope
-}
 
 // Selector is responsible for finding an appropriate module
 type Selector struct {
 	Module           *app.FybrikModule
 	Dependencies     []*app.FybrikModule
 	Message          string
-	Capability       app.CapabilityType
 	ModuleCapability *app.ModuleCapability
 	Source           *app.InterfaceDetails
 	Destination      *app.InterfaceDetails
 	// Actions that the module will perform
-	Actions []*taxonomymodels.PolicyManagerResultItem
-	// Geography where the module will be orchestrated
-	Geo string
+	Actions []taxonomymodels.Action
+	// StorageAccountRegion for writing data
+	StorageAccountRegion string
 }
 
 // TODO: Add function to check if module supports recurrence type
@@ -83,8 +41,11 @@ func (m *Selector) GetError() string {
 	return m.Message
 }
 
-// SupportsGovernanceActions checks whether the module supports the required agovernance actions for the capability requested
-func (m *Selector) SupportsGovernanceActions(module *app.FybrikModule, actions []*taxonomymodels.PolicyManagerResultItem) bool {
+// SupportsGovernanceActions checks whether the module supports the required governance actions for the capability requested
+func (m *Selector) SupportsGovernanceActions(module *app.FybrikModule, actions []taxonomymodels.Action) bool {
+	if m.ModuleCapability == nil {
+		return false
+	}
 	// Loop over the actions requested for the declared capability
 	for _, action := range actions {
 		// If any one of the actions is not supported, return false
@@ -96,18 +57,12 @@ func (m *Selector) SupportsGovernanceActions(module *app.FybrikModule, actions [
 }
 
 // SupportsGovernanceAction checks whether the module supports the required governance action
-func (m *Selector) SupportsGovernanceAction(module *app.FybrikModule, action *taxonomymodels.PolicyManagerResultItem) bool {
-	// Check if the module supports the capability
-	if hasCapability, caps := utils.GetModuleCapabilities(module, m.Capability); hasCapability {
-		// There could be multiple structures for the same CapabilityType
-		for _, cap := range caps {
-			// Loop over the data transforms (actions) performed by the module for this capability
-			for _, act := range cap.Actions {
-				// TODO(shlomitk1): check for matching of additional fields declared by the module
-				if act.Name == action.GetAction().Name {
-					return true
-				}
-			}
+func (m *Selector) SupportsGovernanceAction(module *app.FybrikModule, action taxonomymodels.Action) bool {
+	// Loop over the data transforms (actions) performed by the module for this capability
+	for _, act := range m.ModuleCapability.Actions {
+		// TODO(shlomitk1): check for matching of additional fields declared by the module
+		if act.Name == action.Name {
+			return true
 		}
 	}
 	return false // Action not supported by module
@@ -132,49 +87,54 @@ func (m *Selector) SupportsDependencies(module *app.FybrikModule, moduleMap map[
 	return true
 }
 
-// SupportsInterface indicates whether the module supports interface requirements and dependencies
-func (m *Selector) SupportsInterface(module *app.FybrikModule) bool {
-	supportsInterface := false
-
+// SupportsInterface indicates whether the module supports interface requirements and dependencies, and returns the relevant capability.
+func (m *Selector) SupportsInterface(module *app.FybrikModule, requestedCapability app.CapabilityType) (*app.ModuleCapability, bool) {
 	// Check if the module supports the capability
-	if hasCapability, caps := utils.GetModuleCapabilities(module, m.Capability); hasCapability {
-		// There could be multiple structures for the same CapabilityType
-		for i := range caps {
-			capability := caps[i]
-			// Check if the source and sink protocols requested are supported
-
-			if m.Capability == app.Read {
-				supportsInterface = capability.API.DataFormat == m.Destination.DataFormat && capability.API.Protocol == m.Destination.Protocol
-				if supportsInterface {
-					m.ModuleCapability = &capability
-					return true
+	for _, capability := range module.Spec.Capabilities {
+		if capability.Capability != requestedCapability {
+			continue
+		}
+		// Check if the source and sink protocols requested are supported
+		if requestedCapability == app.Read {
+			if capability.API.DataFormat != m.Destination.DataFormat || capability.API.Protocol != m.Destination.Protocol {
+				continue
+			}
+			if m.Source == nil {
+				return capability.DeepCopy(), true
+			}
+			for _, inter := range capability.SupportedInterfaces {
+				if inter.Source.DataFormat != m.Source.DataFormat || inter.Source.Protocol != m.Source.Protocol {
+					continue
 				}
-			} else if m.Capability == app.Copy {
-				for _, inter := range capability.SupportedInterfaces {
-					if inter.Source.DataFormat != m.Source.DataFormat || inter.Source.Protocol != m.Source.Protocol {
-						continue
-					}
-					if inter.Sink.DataFormat != m.Destination.DataFormat || inter.Sink.Protocol != m.Destination.Protocol {
-						continue
-					}
-					m.ModuleCapability = &capability
-					supportsInterface = true
-					break
+				return capability.DeepCopy(), true
+			}
+		} else if requestedCapability == app.Copy {
+			for _, inter := range capability.SupportedInterfaces {
+				if inter.Source.DataFormat != m.Source.DataFormat || inter.Source.Protocol != m.Source.Protocol {
+					continue
 				}
+				if inter.Sink.DataFormat != m.Destination.DataFormat || inter.Sink.Protocol != m.Destination.Protocol {
+					continue
+				}
+				return capability.DeepCopy(), true
 			}
 		}
 	}
-	return supportsInterface
+	return nil, false
 }
 
 // SelectModule finds the module that fits the requirements
-func (m *Selector) SelectModule(moduleMap map[string]*app.FybrikModule) bool {
+func (m *Selector) SelectModule(moduleMap map[string]*app.FybrikModule, requestedCapability app.CapabilityType) bool {
 	m.Message = ""
 	for _, module := range moduleMap {
-		if !m.SupportsInterface(module) {
+		capability, supportsInterface := m.SupportsInterface(module, requestedCapability)
+		if !supportsInterface {
+			m.Message = app.ModuleNotFound + " for " + string(requestedCapability) + "; requested interface is not supported"
 			continue
 		}
+		m.ModuleCapability = capability
 		if !m.SupportsGovernanceActions(module, m.Actions) {
+			m.Message = app.ModuleNotFound + " for " + string(requestedCapability) + "; governance actions are not supported"
 			continue
 		}
 		if !m.SupportsDependencies(module, moduleMap) {
@@ -182,7 +142,6 @@ func (m *Selector) SelectModule(moduleMap map[string]*app.FybrikModule) bool {
 		}
 		return true
 	}
-	m.Message += string(m.Capability) + " : " + app.ModuleNotFound
 	return false
 }
 
@@ -205,47 +164,4 @@ func CheckDependencies(module *app.FybrikModule, moduleMap map[string]*app.Fybri
 		}
 	}
 	return found, missing
-}
-
-// SelectCluster chooses where the module runs
-// Current logic:
-// Read is done at target (processing geography)
-// Copy is done at source when transformations are required, and at target - otherwise
-// Write is done at target
-func (m *Selector) SelectCluster(item DataInfo, clusters []multicluster.Cluster) (string, error) {
-	geo := item.DataDetails.Geography
-	if m.Capability == app.Read {
-		geo = m.Geo
-	} else if m.Capability == app.Copy && len(m.Actions) == 0 {
-		geo = m.Geo
-	}
-	for _, cluster := range clusters {
-		if cluster.Metadata.Region == geo {
-			return cluster.Name, nil
-		}
-	}
-	return "", errors.New(app.InvalidClusterConfiguration + "\nNo clusters have been found for running " + m.Module.Name + " in " + geo)
-}
-
-// Transforms a CatalogDatasetInfo into a DataDetails struct
-// TODO Think about getting rid of one or the other and reuse
-func CatalogDatasetToDataDetails(response *pb.CatalogDatasetInfo) (*DataDetails, error) {
-	details := response.GetDetails()
-	if details == nil {
-		return nil, errors.New("no metadata found for " + response.DatasetId)
-	}
-	format := details.DataFormat
-	connection := serde.NewArbitrary(details.DataStore)
-	protocol, err := utils.GetProtocol(details)
-
-	return &DataDetails{
-		Name: details.Name,
-		Interface: app.InterfaceDetails{
-			Protocol:   protocol,
-			DataFormat: format,
-		},
-		Geography:  details.Geo,
-		Connection: *connection,
-		Metadata:   details.Metadata,
-	}, err
 }
