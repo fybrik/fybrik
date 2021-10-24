@@ -83,7 +83,7 @@ type Dependency struct {
 // EndpointSpec is used both by the module creator and by the status of the fybrikapplication
 type EndpointSpec struct {
 	// Hostname is the hostname to connect to for connecting to a module exposed service.
-	// By default this equals "{{ .Release.Name }}.{{ .Release.Namespace }}" of the module.
+	// By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module.
 	// <br/>
 	// Module developers can overide the default behavior by providing a template that may use
 	// the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.

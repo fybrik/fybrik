@@ -243,13 +243,12 @@ spec:
                                                 description: Hostname is the hostname
                                                   to connect to for connecting to
                                                   a module exposed service. By default
-                                                  this equals "{{ .Release.Name }}.{{
-                                                  .Release.Namespace }}" of the module.
-                                                  <br/> Module developers can overide
-                                                  the default behavior by providing
-                                                  a template that may use the ".Release.Name",
-                                                  ".Release.Namespace" and ".Values.labels"
-                                                  variables.
+                                                  this equals to "{{.Release.Name}}.{{.Release.Namespace}}"
+                                                  of the module. <br/> Module developers
+                                                  can overide the default behavior
+                                                  by providing a template that may
+                                                  use the ".Release.Name", ".Release.Namespace"
+                                                  and ".Values.labels" variables.
                                                 type: string
                                               port:
                                                 format: int32
@@ -304,8 +303,7 @@ spec:
                                                     description: Hostname is the hostname
                                                       to connect to for connecting
                                                       to a module exposed service.
-                                                      By default this equals "{{ .Release.Name
-                                                      }}.{{ .Release.Namespace }}"
+                                                      By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}"
                                                       of the module. <br/> Module
                                                       developers can overide the default
                                                       behavior by providing a template
