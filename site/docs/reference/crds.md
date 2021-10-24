@@ -1839,7 +1839,7 @@ Capability declares what this module knows how to do and the types of data it kn
     </thead>
     <tbody><tr>
         <td><b>actions</b></td>
-        <td>Schemaless</td>
+        <td>[]object</td>
         <td>
           Actions are the data transformations that the module supports<br/>
         </td>

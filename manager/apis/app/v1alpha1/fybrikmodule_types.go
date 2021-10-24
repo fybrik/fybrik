@@ -118,16 +118,16 @@ type Plugin struct {
 
 // +kubebuilder:validation:Type=object
 // +kubebuilder:pruning:PreserveUnknownFields
-type SupportedAction taxonomymodels.Action
+type SupportedAction struct {
+	taxonomymodels.Action
+}
 
 func (action *SupportedAction) UnmarshalJSON(data []byte) error {
-	obj := &taxonomymodels.Action{Name: action.Name, AdditionalProperties: action.AdditionalProperties}
-	return obj.UnmarshalJSON(data)
+	return action.Action.UnmarshalJSON(data)
 }
 
 func (action *SupportedAction) MarshalJSON() ([]byte, error) {
-	obj := &taxonomymodels.Action{Name: action.Name, AdditionalProperties: action.AdditionalProperties}
-	return obj.MarshalJSON()
+	return action.Action.MarshalJSON()
 }
 
 // Capability declares what this module knows how to do and the types of data it knows how to handle

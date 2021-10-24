@@ -173,8 +173,7 @@ spec:
                             - protocol
                             type: object
                         type: object
-                      type: object
-                      x-kubernetes-preserve-unknown-fields: true
+                      type: array
                   required:
                   - capability
                   type: object
