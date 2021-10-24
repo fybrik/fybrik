@@ -12,19 +12,23 @@ import (
 // DefaultConfig implements EvaluatorInterface
 // It provides a default configuration as an alternative to evaluation of the written rego policies
 type DefaultConfig struct {
-	InfrastructureManager
-	Data *Infrastructure
+	Manager *InfrastructureManager
+	Data    *Infrastructure
 }
 
 // NewDefaultConfig constructs a new DefaultConfig object
-func NewDefaultConfig(manager InfrastructureManager) *DefaultConfig {
-	return &DefaultConfig{InfrastructureManager: manager, Data: nil}
+func NewDefaultConfig() *DefaultConfig {
+	return &DefaultConfig{Manager: nil, Data: nil}
 }
 
-func (r *DefaultConfig) SetInfrastructureDetails() error {
-	var err error
-	r.Data, err = r.SetInfrastructure()
-	return err
+// SetupWithInfrastructureManager connects the evaluator to the infrastructure manager for obtaining infrastructure details
+func (r *DefaultConfig) SetupWithInfrastructureManager(mgr *InfrastructureManager) {
+	r.Manager = mgr
+	r.Data = nil
+	// get infrastructure details using a new manager
+	if data, err := mgr.SetInfrastructure(); err != nil {
+		r.Data = data
+	}
 }
 
 // DefaultDecision creates a Decision object with some defaults e.g. any cluster is available
@@ -48,7 +52,8 @@ func (r *DefaultConfig) DefaultDecision(in *EvaluatorInput) Decision {
 */
 func (r *DefaultConfig) Evaluate(in *EvaluatorInput) (EvaluatorOutput, error) {
 	if r.Data == nil {
-		if err := r.SetInfrastructureDetails(); err != nil {
+		var err error
+		if r.Data, err = r.Manager.SetInfrastructure(); err != nil {
 			return EvaluatorOutput{Valid: false}, err
 		}
 	}
