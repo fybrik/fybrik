@@ -11,6 +11,7 @@ import (
 // Infrastructure details, such as available clusters, storage accounts, metrics.
 // TODO(shlomitk1): include available storage accounts
 // Metrics (clusters, networking) are not supported yet.
+// TODO(shlomitk1): define infrastructure taxonomy to be used in this structure
 type Infrastructure struct {
 	// Clusters available for deployment
 	Clusters []multicluster.Cluster
