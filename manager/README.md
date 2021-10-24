@@ -48,7 +48,7 @@ Create `.env` file in the root folder of the project. For example:
 ```bash
 VAULT_ADDRESS="http://vault.fybrik-system:8200"
 MAIN_POLICY_MANAGER_NAME="opa"
-MAIN_POLICY_MANAGER_CONNECTOR_URL="localhost:49153"
+MAIN_POLICY_MANAGER_CONNECTOR_URL="http://localhost:49153"
 CATALOG_PROVIDER_NAME="katalog"
 CATALOG_CONNECTOR_URL="localhost:49152"
 CONNECTION_TIMEOUT="120"
