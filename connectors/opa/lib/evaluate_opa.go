@@ -19,12 +19,10 @@ import (
 func performHTTPReq(standardClient *http.Client, address string, httpMethod string, content string, contentType string) (*http.Response, error) {
 	reqURL, err := url.Parse(address)
 	if err != nil {
-		log.Fatal("Error:", err)
 		return nil, err
 	}
 	if reqURL.Scheme != "http" && reqURL.Scheme != "https" {
 		err := errors.New("opa server url scheme should be http or https")
-		log.Fatal("Error:", err)
 		return nil, err
 	}
 
@@ -46,7 +44,6 @@ func performHTTPReq(standardClient *http.Client, address string, httpMethod stri
 	res, err := standardClient.Do(req)
 
 	if err != nil {
-		log.Fatal("Error:", err)
 		return nil, err
 	}
 	log.Println(httpMethod + " succeeded")
