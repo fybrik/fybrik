@@ -197,16 +197,13 @@ The following is an example of how a module would declare that it knows how to r
 capabilities:
 - read:
     actions:
-    - id: "redact-ID"
-      level: 2 # column
+    - name: "RedactAction"
       args:
         column_name: column_value
-    - id: "removed-ID"
-      level: 2 # column
+    - id: "RemoveAction"
       args:
         column_name: column_value
-    - id: "encrypt-ID"
-      level: 2 # column
+    - id: "EncryptAction"
 ```
 
 ### Full Examples 

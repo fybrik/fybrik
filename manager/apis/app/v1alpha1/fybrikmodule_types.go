@@ -4,7 +4,6 @@
 package v1alpha1
 
 import (
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -114,20 +113,6 @@ type Plugin struct {
 
 	// DataFormat indicates the format of data the plugin knows how to process
 	DataFormat string `json:"dataFormat"`
-}
-
-// +kubebuilder:validation:Type=object
-// +kubebuilder:pruning:PreserveUnknownFields
-type SupportedAction struct {
-	taxonomymodels.Action
-}
-
-func (action *SupportedAction) UnmarshalJSON(data []byte) error {
-	return action.Action.UnmarshalJSON(data)
-}
-
-func (action *SupportedAction) MarshalJSON() ([]byte, error) {
-	return action.Action.MarshalJSON()
 }
 
 // Capability declares what this module knows how to do and the types of data it knows how to handle

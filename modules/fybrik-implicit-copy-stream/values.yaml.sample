@@ -37,11 +37,7 @@ copy:
   transformations:
   - args:
       column: SSN
-    id: redact-ID
-    level: 2
-    name: redact
+    name: RedactAction
   - args:
       column: BLOOD_TYPE
-    id: encrypt-ID
-    level: 2
-    name: encrypt
+    name: EncryptAction
