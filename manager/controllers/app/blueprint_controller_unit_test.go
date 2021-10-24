@@ -133,11 +133,11 @@ func TestLongReleaseName(t *testing.T) {
 	}
 
 	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff")
-	g.Expect(relName).To(gomega.Equal("my-app-default-ohandnottoforgettheflowstepnamet-a7569"))
+	g.Expect(relName).To(gomega.Equal("my-app-default-ohandnottoforgettheflowstepnamet-99207"))
 	g.Expect(relName).To(gomega.HaveLen(53))
 
 	// Make sure that calling the same method again results in the same result
 	relName2 := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff")
-	g.Expect(relName2).To(gomega.Equal("my-app-default-ohandnottoforgettheflowstepnamet-a7569"))
+	g.Expect(relName2).To(gomega.Equal("my-app-default-ohandnottoforgettheflowstepnamet-99207"))
 	g.Expect(relName2).To(gomega.HaveLen(53))
 }

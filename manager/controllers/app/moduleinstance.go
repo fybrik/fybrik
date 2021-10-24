@@ -461,18 +461,32 @@ func moduleAPIToService(api *app.ModuleAPI, scope app.CapabilityScope, appContex
 	releaseName := utils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
 	releaseNamespace := utils.GetDefaultModulesNamespace()
 
-	values := map[string]interface{}{
-		"Release": map[string]interface{}{
-			"Name":      releaseName,
-			"Namespace": releaseNamespace,
+	type Release struct {
+		Name      string `json:"Name"`
+		Namespace string `json:"Namespace"`
+	}
+
+	type Values struct {
+		Labels map[string]string `json:"labels,omitempty"`
+	}
+
+	type HostnameTemplateArgs struct {
+		Release Release `json:"Release"`
+		Values  Values  `json:"Values,omitempty"`
+	}
+
+	args := HostnameTemplateArgs{
+		Release: Release{
+			Name:      releaseName,
+			Namespace: releaseNamespace,
 		},
-		"Values": map[string]interface{}{
-			"labels": appContext.Labels,
+		Values: Values{
+			Labels: appContext.Labels,
 		},
 	}
 
 	// the following is required for proper types (e.g., labels must be map[string]interface{})
-	values, err = utils.StructToMap(values)
+	values, err := utils.StructToMap(args)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not serialize values for hostname field")
 	}
