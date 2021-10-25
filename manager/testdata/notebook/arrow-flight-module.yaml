@@ -22,15 +22,15 @@ spec:
         protocol: fybrik-arrow-flight
         dataformat: arrow
       supportedInterfaces:
-        - source:
-            protocol: s3
-            dataformat: parquet
-        - source:
-            protocol: s3
-            dataformat: csv
+      - source:
+          protocol: s3
+          dataformat: parquet
+      - source:
+          protocol: s3
+          dataformat: csv
       actions:
-        - name: RedactAction
-        - name: RemoveAction
+      - name: RedactAction
+      - name: RemoveAction
     - capability: write
       scope: workload
       api:
@@ -40,9 +40,9 @@ spec:
         protocol: fybrik-arrow-flight
         dataformat: arrow
       supportedInterfaces:
-        - sink:
-            protocol: s3
-            dataformat: parquet
+      - sink:
+          protocol: s3
+          dataformat: parquet
       actions:
-        - name: RedactAction
-        - name: RemoveAction
+      - name: RedactAction
+      - name: RemoveAction

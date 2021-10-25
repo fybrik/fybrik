@@ -157,7 +157,7 @@ An example for a module that copies data from a db2 database table to an s3 buck
 
 ```yaml
 capabilities:
-- copy:
+- capability: copy
     supportedInterfaces:
     - source:
         protocol: jdbc-db2
@@ -171,7 +171,7 @@ An example for a module that has an API for reading data, and supports reading b
 
 ```yaml
 capabilities:
-- read:
+- capability: read
     api:
       protocol: fybrik-arrow-flight
       dataformat: arrow
@@ -191,19 +191,15 @@ capabilities:
 `capabilites.actions`  are taken from a defined [Enforcement Actions Taxonomy](about:blank) 
 a module that does not perform any transformation on the data may omit the `capabilities.actions` field.
 
-The following is an example of how a module would declare that it knows how to redact, remove or encrypt data.  For each action there is a level indication, which can be data set level, column level, or row level.  In the example shown column level is indicated, and the actions arguments indicate the columns on which the transformation should be performed.
+The following is an example of how a module would declare that it knows how to redact, remove or encrypt data.
 
 ```yaml
 capabilities:
 - read:
     actions:
     - name: "RedactAction"
-      args:
-        column_name: column_value
-    - id: "RemoveAction"
-      args:
-        column_name: column_value
-    - id: "EncryptAction"
+    - name: "RemoveAction"
+    - name: "EncryptAction"
 ```
 
 ### Full Examples 

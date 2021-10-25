@@ -22,8 +22,8 @@ spec:
           protocol: s3
           dataformat: csv
       actions:
-        - name: RedactAction
-        - name: RemoveAction
+      - name: RedactAction
+      - name: RemoveAction
   chart:
     name: ghcr.io/fybrik/fybrik-implicit-copy-batch:0.1.0
   statusIndicators:

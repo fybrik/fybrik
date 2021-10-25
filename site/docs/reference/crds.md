@@ -1508,7 +1508,7 @@ Endpoint provides the endpoint spec from which the asset will be served to the a
         <td><b>hostname</b></td>
         <td>string</td>
         <td>
-          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals "{{ .Release.Name }}.{{ .Release.Namespace }}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
+          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1948,7 +1948,7 @@ EndpointSpec is used both by the module creator and by the status of the fybrika
         <td><b>hostname</b></td>
         <td>string</td>
         <td>
-          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals "{{ .Release.Name }}.{{ .Release.Namespace }}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
+          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -2821,7 +2821,7 @@ EndpointSpec is used both by the module creator and by the status of the fybrika
         <td><b>hostname</b></td>
         <td>string</td>
         <td>
-          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals "{{ .Release.Name }}.{{ .Release.Namespace }}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
+          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -2959,7 +2959,7 @@ EndpointSpec is used both by the module creator and by the status of the fybrika
         <td><b>hostname</b></td>
         <td>string</td>
         <td>
-          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals "{{ .Release.Name }}.{{ .Release.Namespace }}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
+          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
         </td>
         <td>false</td>
       </tr><tr>
