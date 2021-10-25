@@ -15,6 +15,8 @@ include $(ROOT_DIR)/hack/make-rules/verify.mk
 
 
 pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
+	mkdir -p apis/app/v1alpha1/taxonomy || true
+	cp ../charts/fybrik/files/taxonomy/fybrik_application.json apis/app/v1alpha1/taxonomy
 	mkdir testdata/unittests/basetaxonomy || true
 	mkdir testdata/unittests/sampletaxonomy || true
 	cp ../charts/fybrik/files/taxonomy/*.json testdata/unittests/basetaxonomy
@@ -41,8 +43,6 @@ run: generate fmt vet manifests
 # Generate manifests e.g. CRD, RBAC etc.
 .PHONY: generate
 generate: $(TOOLBIN)/controller-gen
-	mkdir -p apis/app/v1alpha1/taxonomy || true
-	cp ../charts/fybrik/files/taxonomy/fybrik_application.json apis/app/v1alpha1/taxonomy
 	$(TOOLBIN)/controller-gen --version
 	$(TOOLBIN)/controller-gen object:headerFile=$(ROOT_DIR)/hack/boilerplate.go.txt,year=$(shell date +%Y) paths="./..."
 	$(MAKE) -C $(ROOT_DIR)/site generate
