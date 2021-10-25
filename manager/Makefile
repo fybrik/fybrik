@@ -15,8 +15,6 @@ include $(ROOT_DIR)/hack/make-rules/verify.mk
 
 
 pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
-	mkdir -p apis/app/v1alpha1/taxonomy || true
-	cp ../charts/fybrik/files/taxonomy/fybrik_application.json apis/app/v1alpha1/taxonomy
 	mkdir testdata/unittests/basetaxonomy || true
 	mkdir testdata/unittests/sampletaxonomy || true
 	cp ../charts/fybrik/files/taxonomy/*.json testdata/unittests/basetaxonomy
@@ -31,6 +29,7 @@ test: pre-test
 
 # Build manager binary
 manager: generate fmt vet
+	cp ../charts/fybrik/files/taxonomy/fybrik_application.json apis/app/v1alpha1/taxonomy
 	go build -o bin/manager main.go
 
 source-build: generate fmt vet

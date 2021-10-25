@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	log "log"
 
-	_ "embed"
+	"embed"
 	validate "fybrik.io/fybrik/pkg/taxonomy/validate"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -17,8 +17,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
-//go:embed taxonomy/fybrik_application.json
-var taxonomyString string
+//go:embed taxonomy/*
+var f embed.FS
 
 func (r *FybrikApplication) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
@@ -32,12 +32,18 @@ var _ webhook.Validator = &FybrikApplication{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *FybrikApplication) ValidateCreate() error {
+	data, _ := f.ReadFile("taxonomy/fybrik_application.json")
+	taxonomyString := string(data)
+
 	log.Printf("Validating fybrikapplication %s for creation", r.Name)
 	return r.ValidateFybrikApplication(taxonomyString)
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *FybrikApplication) ValidateUpdate(old runtime.Object) error {
+	data, _ := f.ReadFile("taxonomy/fybrik_application.json")
+	taxonomyString := string(data)
+
 	log.Printf("Validating fybrikapplication %s for update", r.Name)
 	return r.ValidateFybrikApplication(taxonomyString)
 }

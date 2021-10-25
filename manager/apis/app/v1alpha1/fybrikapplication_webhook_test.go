@@ -28,6 +28,9 @@ func TestValidApplicationWithBaseTaxonomy(t *testing.T) {
 		fmt.Printf("err: %v\n", err)
 		return
 	}
+
+	data, _ := f.ReadFile("taxonomy/fybrik_application.json")
+	taxonomyString := string(data)
 	validateErr := fybrikApp.ValidateFybrikApplication(taxonomyString)
 	assert.Nil(t, validateErr, "No error should be found")
 }
@@ -48,6 +51,9 @@ func TestValidApplicationWithEnhancedTaxonomy(t *testing.T) {
 		fmt.Printf("err: %v\n", err)
 		return
 	}
+
+	data, _ := f.ReadFile("taxonomy/fybrik_application.json")
+	taxonomyString := string(data)
 	validateErr := fybrikApp.ValidateFybrikApplication(taxonomyString)
 	assert.Nil(t, validateErr, "No error should be found")
 }
@@ -69,6 +75,8 @@ func TestInvalidAppInfoWithEnhancedTaxonomy(t *testing.T) {
 		return
 	}
 
+	data, _ := f.ReadFile("taxonomy/fybrik_application.json")
+	taxonomyString := string(data)
 	validateErr := (*fybrikApp).ValidateFybrikApplication(taxonomyString)
 	assert.NotNil(t, validateErr, "Invalid appInfo error should be found")
 }
@@ -90,6 +98,8 @@ func TestInvalidInterfaceWithEnhancedTaxonomy(t *testing.T) {
 		return
 	}
 
+	data, _ := f.ReadFile("taxonomy/fybrik_application.json")
+	taxonomyString := string(data)
 	validateErr := (*fybrikApp).ValidateFybrikApplication(taxonomyString)
 	assert.NotNil(t, validateErr, "Invalid interface error should be found")
 }
