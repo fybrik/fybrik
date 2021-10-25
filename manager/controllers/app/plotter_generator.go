@@ -5,7 +5,7 @@ package app
 
 import (
 	"bytes"
-	"strings"
+	"net/url"
 	"text/template"
 
 	"emperror.dev/errors"
@@ -56,12 +56,14 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 		p.Log.Info("Dataset creation failed: " + err.Error())
 		return nil, err
 	}
-	var endpoint string
-	if strings.HasPrefix(bucket.Endpoint, "http://") {
-		endpoint = bucket.Endpoint[7:]
-	} else {
-		endpoint = bucket.Endpoint
+
+	// S3 endpoint should not include the url scheme only the host name
+	// thus ignoring it if such exists.
+	url, err := url.Parse(bucket.Endpoint)
+	if err != nil {
+		return nil, err
 	}
+	endpoint := url.Host
 	datastore := &pb.DataStore{
 		Type: pb.DataStore_S3,
 		Name: "S3",
