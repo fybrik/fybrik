@@ -38,8 +38,13 @@ copy:
 
   transformations:
   - name: "RedactAction"
-    args:
-      column_name: col1
+    RedactAction:
+      columns: 
+      - col1
+      - col2
   - name: "RemoveAction"
-    args:
-      column_name: col2
+    RemoveAction:
+      columns: 
+      - col1
+      - col2
+  
