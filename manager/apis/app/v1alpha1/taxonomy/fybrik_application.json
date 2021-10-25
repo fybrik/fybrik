@@ -1,0 +1,33 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "fybrik_application.json",
+    "title": "FybrikApplication taxonomy",
+    "type": "object",
+    "description": "Values contributed to by Fybrik applications.",
+    "properties": {
+        "spec": {
+            "type": "object",
+            "properties": {
+                "appInfo": {"$ref": "taxonomy.json#/definitions/AppInfo"},
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "requirements": {
+                                "type": "object",
+                                "properties": {
+                                    "interface": { "$ref": "taxonomy.json#/definitions/Interface"}
+                                },
+                                "required": ["interface"]
+                            }
+                        },
+                        "required": ["requirements"]
+                    }
+                }
+            },
+            "required": ["appInfo", "data"]
+        }
+    },
+    "required": ["spec"]
+} 
