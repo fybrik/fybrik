@@ -15,6 +15,7 @@ include $(ROOT_DIR)/hack/make-rules/verify.mk
 
 
 pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
+	cp ../charts/fybrik/files/taxonomy/fybrik_application.json apis/app/v1alpha1/taxonomy
 	mkdir testdata/unittests/basetaxonomy || true
 	mkdir testdata/unittests/sampletaxonomy || true
 	cp ../charts/fybrik/files/taxonomy/*.json testdata/unittests/basetaxonomy
