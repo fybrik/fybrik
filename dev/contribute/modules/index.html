@@ -1399,8 +1399,8 @@ Note that a module that targets copy flows will omit the <code>api</code> field 
 * <code>scheme</code> field can take a value such as <code>http</code>, <code>https</code>, <code>grpc</code>, <code>grpc+tls</code>, <code>jdbc:oracle:thin:@</code>, etc</p>
 <p>An example for a module that copies data from a db2 database table to an s3 bucket in parquet format.</p>
 <div class="highlight"><pre><span></span><code><span class="nt">capabilities</span><span class="p">:</span>
-<span class="p p-Indicator">-</span> <span class="nt">copy</span><span class="p">:</span>
-    <span class="nt">supportedInterfaces</span><span class="p">:</span>
+<span class="p p-Indicator">-</span> <span class="nt">capability</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">copy</span>
+    <span class="l l-Scalar l-Scalar-Plain">supportedInterfaces</span><span class="p p-Indicator">:</span>
     <span class="p p-Indicator">-</span> <span class="nt">source</span><span class="p">:</span>
         <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">jdbc-db2</span>
         <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">table</span>
@@ -1410,14 +1410,14 @@ Note that a module that targets copy flows will omit the <code>api</code> field 
 </code></pre></div>
 <p>An example for a module that has an API for reading data, and supports reading both parquet and csv formats from s3.</p>
 <div class="highlight"><pre><span></span><code><span class="nt">capabilities</span><span class="p">:</span>
-<span class="p p-Indicator">-</span> <span class="nt">read</span><span class="p">:</span>
-    <span class="nt">api</span><span class="p">:</span>
+<span class="p p-Indicator">-</span> <span class="nt">capability</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">read</span>
+    <span class="l l-Scalar l-Scalar-Plain">api</span><span class="p p-Indicator">:</span>
       <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fybrik-arrow-flight</span>
       <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">arrow</span>
       <span class="nt">endpoint</span><span class="p">:</span>
         <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">80</span>
         <span class="nt">scheme</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">grpc</span>
-    <span class="nt">supportedInterfaces</span><span class="p">:</span>
+  <span class=" -Error">  </span><span class="nt">supportedInterfaces</span><span class="p">:</span>
     <span class="p p-Indicator">-</span> <span class="nt">source</span><span class="p">:</span>
         <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">s3</span>
         <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">parquet</span>
@@ -1428,20 +1428,13 @@ Note that a module that targets copy flows will omit the <code>api</code> field 
 </code></pre></div>
 <p><code>capabilites.actions</code>  are taken from a defined <a href="about:blank">Enforcement Actions Taxonomy</a> 
 a module that does not perform any transformation on the data may omit the <code>capabilities.actions</code> field.</p>
-<p>The following is an example of how a module would declare that it knows how to redact, remove or encrypt data.  For each action there is a level indication, which can be data set level, column level, or row level.  In the example shown column level is indicated, and the actions arguments indicate the columns on which the transformation should be performed.</p>
+<p>The following is an example of how a module would declare that it knows how to redact, remove or encrypt data.</p>
 <div class="highlight"><pre><span></span><code><span class="nt">capabilities</span><span class="p">:</span>
 <span class="p p-Indicator">-</span> <span class="nt">read</span><span class="p">:</span>
     <span class="nt">actions</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="nt">id</span><span class="p">:</span> <span class="s">&quot;redact-ID&quot;</span>
-      <span class="nt">level</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span> <span class="c1"># column</span>
-      <span class="nt">args</span><span class="p">:</span>
-        <span class="nt">column_name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">column_value</span>
-    <span class="p p-Indicator">-</span> <span class="nt">id</span><span class="p">:</span> <span class="s">&quot;removed-ID&quot;</span>
-      <span class="nt">level</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span> <span class="c1"># column</span>
-      <span class="nt">args</span><span class="p">:</span>
-        <span class="nt">column_name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">column_value</span>
-    <span class="p p-Indicator">-</span> <span class="nt">id</span><span class="p">:</span> <span class="s">&quot;encrypt-ID&quot;</span>
-      <span class="nt">level</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span> <span class="c1"># column</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="s">&quot;RedactAction&quot;</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="s">&quot;RemoveAction&quot;</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="s">&quot;EncryptAction&quot;</span>
 </code></pre></div>
 <h3 id="full-examples">Full Examples</h3>
 <p>The following are examples of YAMLs from fully implemented modules:</p>
