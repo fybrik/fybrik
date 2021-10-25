@@ -5,24 +5,17 @@ package validate
 
 import (
 	log "log"
-	"path/filepath"
 
 	"github.com/xeipuuv/gojsonschema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
 // ValidateResource validates the given resource JSON against the taxonomy file provided
-func TaxonomyCheck(resourceJSON []byte, taxonomy string, resourceName string) []*field.Error {
+func TaxonomyCheck(resourceJSON []byte, taxonomyString string, resourceName string) []*field.Error {
 	var allErrs []*field.Error
 
-	// Load taxonomy from file mounted in configMap
-	path, err := filepath.Abs(taxonomy)
-	if err != nil {
-		log.Printf("Invalid taxonomy filepath %s\n", err)
-	}
-
 	// Validate resource against taxonomy
-	taxonomyLoader := gojsonschema.NewReferenceLoader("file://" + path)
+	taxonomyLoader := gojsonschema.NewStringLoader(taxonomyString)
 	documentLoader := gojsonschema.NewStringLoader(string(resourceJSON))
 	result, err := gojsonschema.Validate(taxonomyLoader, documentLoader)
 	if err != nil {
