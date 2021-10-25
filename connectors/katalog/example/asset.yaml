@@ -23,7 +23,7 @@ spec:
         - PII
       oldbalanceOrg:
         tags:
-        - sensitive
+        - PII
       newbalanceOrig:
         tags:
-        - sensitive
+        - PII

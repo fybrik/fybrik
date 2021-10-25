@@ -4,20 +4,27 @@
 package lib
 
 import (
-	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
 
-	"emperror.dev/errors"
 	"github.com/buger/jsonparser"
-	"github.com/hashicorp/go-retryablehttp"
+
+	"github.com/tidwall/pretty"
 )
 
-func performHTTPReq(standardClient *http.Client, address string, httpMethod string, content string, contentType string) *http.Response {
-	reqURL, _ := url.Parse(address)
+func performHTTPReq(standardClient *http.Client, address string, httpMethod string, content string, contentType string) (*http.Response, error) {
+	reqURL, err := url.Parse(address)
+	if err != nil {
+		return nil, err
+	}
+	if reqURL.Scheme != "http" && reqURL.Scheme != "https" {
+		err := errors.New("opa server url scheme should be http or https")
+		return nil, err
+	}
 
 	reqBody := ioutil.NopCloser(strings.NewReader(content))
 
@@ -37,11 +44,11 @@ func performHTTPReq(standardClient *http.Client, address string, httpMethod stri
 	res, err := standardClient.Do(req)
 
 	if err != nil {
-		log.Fatal("Error:", err)
+		return nil, err
 	}
 	log.Println(httpMethod + " succeeded")
 
-	return res
+	return res, nil
 }
 
 func doesOpaHaveUserPoliciesLoaded(responsedata []byte) (string, bool) {
@@ -57,36 +64,27 @@ func doesOpaHaveUserPoliciesLoaded(responsedata []byte) (string, bool) {
 	return decisionid, true
 }
 
-func EvaluatePoliciesOnInput(inputMap map[string]interface{}, opaServerURL string, policyToBeEvaluated string) (string, error) {
-	if !strings.HasPrefix(opaServerURL, "http://") {
-		opaServerURL = "http://" + opaServerURL + "/"
-	}
-	if !strings.HasSuffix(opaServerURL, "/") {
-		opaServerURL += "/"
-	}
+func EvaluatePoliciesOnInput(inputJSON string, opaServerURL string, policyToBeEvaluated string, standardClient *http.Client) (string, error) {
 	log.Println("using opaServerURL in OPAConnector EvaluatePoliciesOnInput: ", opaServerURL)
-
-	retryClient := retryablehttp.NewClient()
-	retryClient.RetryMax = 10
-	standardClient := retryClient.HTTPClient // *http.Client
 
 	// input HTTP req
 	httpMethod := "POST"
-	toPrintBytes, _ := json.MarshalIndent(inputMap, "", "\t")
-	inputJSON := "{ \"input\": " + string(toPrintBytes) + " }"
-	log.Println("inputJSON")
-	log.Println(inputJSON)
+	log.Println("inputJSON in pretty print ")
+	res1 := pretty.Pretty([]byte(inputJSON))
+	log.Println("res = ", string(res1))
+
 	contentType := "application/json"
 	log.Println("opaServerURL")
 	log.Println(opaServerURL)
 
-	res := performHTTPReq(standardClient, opaServerURL+"v1/data/"+policyToBeEvaluated, httpMethod, inputJSON, contentType)
+	res, err := performHTTPReq(standardClient, opaServerURL+"/v1/data/"+policyToBeEvaluated, httpMethod, inputJSON, contentType)
+	if err != nil {
+		return "", err
+	}
 	data, _ := ioutil.ReadAll(res.Body)
 	log.Printf("body from input http response: %s\n", data)
 	log.Printf("status from input http response: %d\n", res.StatusCode)
-	if err := res.Body.Close(); err != nil {
-		return "", errors.Wrap(err, "error closing http connection")
-	}
+	res.Body.Close()
 
 	log.Println("responsestring data")
 	log.Println(string(data))
@@ -94,9 +92,8 @@ func EvaluatePoliciesOnInput(inputMap map[string]interface{}, opaServerURL strin
 	currentData := string(data)
 	decisionid, flag := doesOpaHaveUserPoliciesLoaded(data)
 	if !flag {
-		// simulating ALlow Enforcement Action
-		// if deny and transform rules are empty, allow will be returned from opa connector
-		currentData = "{\"decision_id\":\"" + decisionid + "\"," + "\"result\": { \"deny\": [], \"transform\": []}" + "}"
+		// simulating Allow Enforcement Action. No result implies allow.
+		currentData = "{\"decision_id\":\"" + decisionid + "\",\"result\": []}"
 		log.Println("currentData - modified")
 		log.Println(currentData)
 	}

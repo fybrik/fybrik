@@ -8,50 +8,45 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
+	clients "fybrik.io/fybrik/pkg/connectors/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
-	"google.golang.org/grpc"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 )
 
 // CatalogReader - Reader struct which has information to read from catalog, this struct does not have any information related to the application context. any request specific info is passed as parameters to functions belonging to this struct.
 type CatalogReader struct {
-	catalogConnectorAddress string
-	timeOut                 int
+	DataCatalog *clients.DataCatalog
 }
 
-func NewCatalogReader(address string, timeOut int) *CatalogReader {
-	return &CatalogReader{catalogConnectorAddress: address, timeOut: timeOut}
+func NewCatalogReader(dataCatalog *clients.DataCatalog) *CatalogReader {
+	return &CatalogReader{DataCatalog: dataCatalog}
 }
 
 // return map  datasetID -> metadata of dataset in form of map
-func (r *CatalogReader) GetDatasetsMetadataFromCatalog(in *pb.ApplicationContext) (map[string]interface{}, error) {
-	log.Println("Create new catalog connection using catalog connector address: ", r.catalogConnectorAddress)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(r.timeOut)*time.Second)
-	defer cancel()
-	conn, err := grpc.DialContext(ctx, r.catalogConnectorAddress, grpc.WithInsecure())
-	if err != nil {
-		return nil, fmt.Errorf("connection to external catalog connector failed: %v", err)
-	}
-	defer conn.Close()
-	client := pb.NewDataCatalogServiceClient(conn)
-
-	creds := in.GetCredentialPath()
-
-	// datasetID -> metadata of dataset in form of map
+func (r *CatalogReader) GetDatasetsMetadataFromCatalog(in *taxonomymodels.PolicyManagerRequest, creds string) (map[string]interface{}, error) {
 	datasetsMetadata := make(map[string]interface{})
-	for _, datasetContext := range in.GetDatasets() {
-		dataset := datasetContext.GetDataset()
-		datasetID := dataset.GetDatasetId()
-
-		if _, present := datasetsMetadata[datasetID]; !present {
-			metadataMap, err := r.GetDatasetMetadata(&ctx, client, datasetID, creds)
-
-			if err != nil {
-				return nil, err
-			}
-			datasetsMetadata[datasetID] = metadataMap
+	datasetID := (in.GetResource()).Name
+	if _, present := datasetsMetadata[datasetID]; !present {
+		objToSend := &pb.CatalogDatasetRequest{CredentialPath: creds, DatasetId: datasetID}
+		info, err := (*r.DataCatalog).GetDatasetInfo(context.Background(), objToSend)
+		if err != nil {
+			return nil, err
 		}
+
+		log.Printf("Received Response from External Catalog Connector for  dataSetID: %s\n", datasetID)
+		log.Printf("Response received from External Catalog Connector is given below:")
+		responseBytes, errJSON := json.MarshalIndent(info, "", "\t")
+		if errJSON != nil {
+			return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
+		}
+		log.Print(string(responseBytes))
+		metadataMap := make(map[string]interface{})
+		err = json.Unmarshal(responseBytes, &metadataMap)
+		if err != nil {
+			return nil, fmt.Errorf("error in unmarshalling responseBytes (datasetID = %s): %v", datasetID, err)
+		}
+		datasetsMetadata[datasetID] = metadataMap
 	}
 
 	return datasetsMetadata, nil

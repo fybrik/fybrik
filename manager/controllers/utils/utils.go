@@ -4,7 +4,7 @@
 package utils
 
 import (
-	"crypto/sha256"
+	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -49,7 +49,7 @@ func StructToMap(data interface{}) (map[string]interface{}, error) {
 
 // Hash generates a name based on the unique identifier
 func Hash(value string, hashLength int) string {
-	data := sha256.Sum256([]byte(value))
+	data := sha512.Sum512([]byte(value))
 	hashedStr := hex.EncodeToString(data[:])
 	if hashLength >= len(hashedStr) {
 		return hashedStr
@@ -138,4 +138,18 @@ func GetModuleCapabilities(module *app.FybrikModule, requestedCapability app.Cap
 		}
 	}
 	return capFound, capList
+}
+
+// Intersection finds a common subset of two given sets of strings
+func Intersection(set1 []string, set2 []string) []string {
+	res := []string{}
+	for _, elem1 := range set1 {
+		for _, elem2 := range set2 {
+			if elem1 == elem2 {
+				res = append(res, elem1)
+				break
+			}
+		}
+	}
+	return res
 }

@@ -112,10 +112,8 @@ DOCKER_PUBLIC_TAGNAME ?= master
 DOCKER_PUBLIC_NAMES := \
 	manager \
 	dummy-mover \
-	egr-connector \
 	katalog-connector \
-	opa-connector \
-	openpolicyagent-connector
+	opa-connector
 
 define do-docker-retag-and-push-public
 	for name in ${DOCKER_PUBLIC_NAMES}; do \
@@ -136,10 +134,8 @@ helm-push-public:
 save-images:
 	docker save -o images.tar ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME} \
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/dummy-mover:${DOCKER_TAGNAME} \
-		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/egr-connector:${DOCKER_TAGNAME} \
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/katalog-connector:${DOCKER_TAGNAME} \
-		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:${DOCKER_TAGNAME} \
-		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/openpolicyagent-connector:${DOCKER_TAGNAME}
+		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:${DOCKER_TAGNAME}
 
 include hack/make-rules/tools.mk
 include hack/make-rules/verify.mk

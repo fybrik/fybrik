@@ -11,18 +11,18 @@ import (
 	"time"
 
 	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/environment"
 
 	"emperror.dev/errors"
 	corev1 "k8s.io/api/core/v1"
 
+	"fybrik.io/fybrik/manager/controllers/motion"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/multicluster/razee"
 	"fybrik.io/fybrik/pkg/storage"
-
-	"fybrik.io/fybrik/manager/controllers/motion"
 
 	"k8s.io/apimachinery/pkg/fields"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
@@ -144,8 +144,18 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			}
 		}()
 
+		adminConfigEvaluator := adminconfig.NewDefaultConfig()
+		adminConfigEvaluator.SetupWithInfrastructureManager(&adminconfig.InfrastructureManager{ClusterManager: clusterManager, Client: mgr.GetClient()})
 		// Initiate the FybrikApplication Controller
-		applicationController := app.NewFybrikApplicationReconciler(mgr, "FybrikApplication", policyManager, catalog, clusterManager, storage.NewProvisionImpl(mgr.GetClient()))
+		applicationController := app.NewFybrikApplicationReconciler(
+			mgr,
+			"FybrikApplication",
+			policyManager,
+			catalog,
+			clusterManager,
+			storage.NewProvisionImpl(mgr.GetClient()),
+			adminConfigEvaluator,
+		)
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "FybrikApplication")
 			return 1

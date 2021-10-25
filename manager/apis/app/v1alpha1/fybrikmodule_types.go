@@ -4,7 +4,6 @@
 package v1alpha1
 
 import (
-	connectors "fybrik.io/fybrik/pkg/connectors/protobuf"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -81,18 +80,10 @@ type Dependency struct {
 	Name string `json:"name"`
 }
 
-// SupportedAction declares an action that the module supports (action identifier and its scope)
-type SupportedAction struct {
-	// +required
-	ID string `json:"id,omitempty"`
-	// +optional
-	Level connectors.EnforcementAction_EnforcementActionLevel `json:"level,omitempty"`
-}
-
 // EndpointSpec is used both by the module creator and by the status of the fybrikapplication
 type EndpointSpec struct {
 	// Hostname is the hostname to connect to for connecting to a module exposed service.
-	// By default this equals "{{ .Release.Name }}.{{ .Release.Namespace }}" of the module.
+	// By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module.
 	// <br/>
 	// Module developers can overide the default behavior by providing a template that may use
 	// the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.
@@ -222,6 +213,10 @@ type ChartSpec struct {
 	// Name of helm chart
 	// +required
 	Name string `json:"name"`
+
+	// Name of secret containing helm registry credentials
+	// +optional
+	ChartPullSecret string `json:"chartPullSecret,omitempty"`
 
 	// Values to pass to helm chart installation
 	// +optional

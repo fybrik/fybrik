@@ -1,9 +1,0 @@
-target/
-generatedsources/
-
-.classpath
-.factorypath
-.project
-.settings/
-
-*.log
