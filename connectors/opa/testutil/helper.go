@@ -24,7 +24,7 @@ import (
 var EnvValues = map[string]string{
 	"CONNECTION_TIMEOUT":    "120",
 	"CATALOG_CONNECTOR_URL": "localhost:50084",
-	"OPA_SERVER_URL":        "localhost:8282",
+	"OPA_SERVER_URL":        "http://localhost:8282",
 	"CATALOG_PROVIDER_NAME": "dummy_catalog",
 }
 

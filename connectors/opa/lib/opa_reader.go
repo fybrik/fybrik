@@ -46,9 +46,13 @@ func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *taxonomymodel
 
 					tagVal := make(map[string]interface{})
 					for i := 0; i < len(tagArr); i++ {
-						splitStr := strings.Split(tagArr[i], " = ")
-						// residency = Turkey
-						tagVal[splitStr[0]] = splitStr[1]
+						if strings.Contains(tagArr[i], " = ") {
+							splitStr := strings.Split(tagArr[i], " = ")
+							// metadata-key = metadata-value
+							tagVal[splitStr[0]] = splitStr[1]
+						} else {
+							tagVal[tagArr[i]] = "true"
+						}
 					}
 					log.Println("tagVal: ", tagVal)
 					resource := in.GetResource()

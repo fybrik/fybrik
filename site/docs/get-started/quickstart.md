@@ -105,7 +105,7 @@ Run the following to install vault and the plugin in development mode:
     git clone https://github.com/fybrik/fybrik.git
     cd fybrik
     helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-    helm install fybrik charts/fybrik --set global.tag=master -n fybrik-system --wait
+    helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait
     ```
 
 The control plane includes a `manager` service that connects to a data catalog and to a policy manager. 
@@ -118,6 +118,13 @@ helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait
 
 
 ## Install modules
+
+??? tip "Install latest development version from GitHub"
+
+    To apply the latest development version of arrow-flight-module:
+    ```bash
+    kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
+    ```
 
 [Modules](../concepts/modules.md) are plugins that the control plane deploys whenever required. The [arrow flight module](https://github.com/fybrik/arrow-flight-module) enables reading data through Apache Arrow Flight API. 
 

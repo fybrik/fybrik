@@ -63,10 +63,8 @@ spec:
           protocol: s3
           dataformat: orc
       actions:
-      - id: redact-ID
-        level: 2  # column
-      - id: removed-ID
-        level: 2  # column
+      - name: RedactAction
+      - name: RemoveAction
   chart:
     name: ghcr.io/fybrik/fybrik-implicit-copy-batch:0.1.0
   statusIndicators:

@@ -27,7 +27,5 @@ spec:
           protocol: s3
           dataformat: csv
       actions:
-      - id: RedactAction
-        level: 2  # column
-      - id: RemoveAction
-        level: 2  # column
+      - name: RedactAction
+      - name: RemoveAction
