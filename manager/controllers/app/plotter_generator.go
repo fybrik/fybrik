@@ -156,7 +156,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 			return err
 		}
 		var copyDataAssetID = datasetID + "-copy"
-		actions := actionsToArbitrary(copySelector.Actions)
+		actions := createActionStructure(copySelector.Actions)
 		if len(item.Configuration.ConfigDecisions[app.Copy].Clusters) > 0 {
 			copyCluster = item.Configuration.ConfigDecisions[app.Copy].Clusters[0]
 		} else {
@@ -217,7 +217,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 		} else {
 			readAssetID = datasetID + "-copy"
 		}
-		actions := actionsToArbitrary(readSelector.Actions)
+		actions := createActionStructure(readSelector.Actions)
 		if len(item.Configuration.ConfigDecisions[app.Read].Clusters) > 0 {
 			readCluster = item.Configuration.ConfigDecisions[app.Read].Clusters[0]
 		} else {

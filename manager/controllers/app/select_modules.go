@@ -11,7 +11,6 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/multicluster"
-	"fybrik.io/fybrik/pkg/serde"
 	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 	v1 "k8s.io/api/core/v1"
 )
@@ -227,11 +226,11 @@ func GetSupportedReadSources(module *app.FybrikModule) []*app.InterfaceDetails {
 	return list
 }
 
-func actionsToArbitrary(actions []taxonomymodels.Action) []serde.Arbitrary {
-	result := []serde.Arbitrary{}
+func createActionStructure(actions []taxonomymodels.Action) []app.SupportedAction {
+	result := []app.SupportedAction{}
 	for _, action := range actions {
-		raw := serde.NewArbitrary(action)
-		result = append(result, *raw)
+		supportedAction := app.SupportedAction{Action: action}
+		result = append(result, supportedAction)
 	}
 	return result
 }

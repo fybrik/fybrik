@@ -8,7 +8,6 @@
 package v1alpha1
 
 import (
-	"fybrik.io/fybrik/pkg/serde"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -262,7 +261,7 @@ func (in *CopyModuleArgs) DeepCopyInto(out *CopyModuleArgs) {
 	in.Destination.DeepCopyInto(&out.Destination)
 	if in.Transformations != nil {
 		in, out := &in.Transformations, &out.Transformations
-		*out = make([]serde.Arbitrary, len(*in))
+		*out = make([]SupportedAction, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -1119,7 +1118,7 @@ func (in *ReadModuleArgs) DeepCopyInto(out *ReadModuleArgs) {
 	in.Source.DeepCopyInto(&out.Source)
 	if in.Transformations != nil {
 		in, out := &in.Transformations, &out.Transformations
-		*out = make([]serde.Arbitrary, len(*in))
+		*out = make([]SupportedAction, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -1218,7 +1217,7 @@ func (in *StepParameters) DeepCopyInto(out *StepParameters) {
 	}
 	if in.Actions != nil {
 		in, out := &in.Actions, &out.Actions
-		*out = make([]serde.Arbitrary, len(*in))
+		*out = make([]SupportedAction, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -1362,7 +1361,7 @@ func (in *WriteModuleArgs) DeepCopyInto(out *WriteModuleArgs) {
 	in.Destination.DeepCopyInto(&out.Destination)
 	if in.Transformations != nil {
 		in, out := &in.Transformations, &out.Transformations
-		*out = make([]serde.Arbitrary, len(*in))
+		*out = make([]SupportedAction, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
