@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	log "log"
 
+	_ "embed"
 	validate "fybrik.io/fybrik/pkg/taxonomy/validate"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -15,6 +16,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
+
+//go:embed taxonomy/fybrik_application.json
+var taxonomyString string
 
 func (r *FybrikApplication) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
@@ -29,15 +33,13 @@ var _ webhook.Validator = &FybrikApplication{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *FybrikApplication) ValidateCreate() error {
 	log.Printf("Validating fybrikapplication %s for creation", r.Name)
-	taxonomyFile := "/tmp/taxonomy/fybrik_application.json"
-	return r.ValidateFybrikApplication(taxonomyFile)
+	return r.ValidateFybrikApplication(taxonomyString)
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *FybrikApplication) ValidateUpdate(old runtime.Object) error {
 	log.Printf("Validating fybrikapplication %s for update", r.Name)
-	taxonomyFile := "/tmp/taxonomy/fybrik_application.json"
-	return r.ValidateFybrikApplication(taxonomyFile)
+	return r.ValidateFybrikApplication(taxonomyString)
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
@@ -45,7 +47,7 @@ func (r *FybrikApplication) ValidateDelete() error {
 	return nil
 }
 
-func (r *FybrikApplication) ValidateFybrikApplication(taxonomyFile string) error {
+func (r *FybrikApplication) ValidateFybrikApplication(taxonomyString string) error {
 	var allErrs []*field.Error
 
 	// Convert Fybrik application Go struct to JSON
@@ -55,7 +57,7 @@ func (r *FybrikApplication) ValidateFybrikApplication(taxonomyFile string) error
 	}
 
 	// Validate Fybrik application against taxonomy
-	allErrs = validate.TaxonomyCheck(applicationJSON, taxonomyFile, "Fybrik application")
+	allErrs = validate.TaxonomyCheck(applicationJSON, taxonomyString, "Fybrik application")
 
 	// Return any error
 	if len(allErrs) == 0 {
