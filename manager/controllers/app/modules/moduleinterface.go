@@ -60,7 +60,8 @@ func (m *Selector) SupportsGovernanceActions(module *app.FybrikModule, actions [
 func (m *Selector) SupportsGovernanceAction(module *app.FybrikModule, action taxonomymodels.Action) bool {
 	// Loop over the data transforms (actions) performed by the module for this capability
 	for _, act := range m.ModuleCapability.Actions {
-		if act.ID == action.Name {
+		// TODO(shlomitk1): check for matching of additional fields declared by the module
+		if act.Name == action.Name {
 			return true
 		}
 	}
