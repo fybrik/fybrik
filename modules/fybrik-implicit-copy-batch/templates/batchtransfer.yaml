@@ -61,15 +61,15 @@ spec:
   {{ range .Values.copy.transformations }}
   {{ if eq .name "RedactAction" }}
   - action: "RedactColumns"
-    name: "redacting column: {{ .args.column_name }}"
-    columns: [ {{ .args.column_name | quote }} ]
+    name: "redacting columns: {{ .RedactAction.columns }}"
+    columns: {{ .RedactAction.columns }} 
     options:
       redactValue: "XXXXXX"
   {{ end }}
   {{ if eq .name "RemoveAction" }}
   - action: "RemoveColumns"
-    name: "redacting column: {{ .args.column_name }}"
-    columns: [ "{{ .args.column_name }}" ]
+    name: "redacting columns: {{ .RemoveAction.columns }}"
+    columns: {{ .RemoveAction.columns }}
   {{ end }}
   {{ end }}
   {{ end }}
