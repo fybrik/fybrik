@@ -14,6 +14,21 @@ manager:
   # traffic from a localhost registry. Used only for development and integration tests.
   socat: true
 
+opaServer:
+  # Bootstrap policies to load upon startup
+  bootstrapPolicies:
+    notebookSamplePolicy: |-
+      package dataapi.authz
+
+      rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": description}] {
+        description := "Redact columns tagged as PII in datasets tagged with finance = true"
+        input.action.actionType == "read"
+        input.resource.tags.finance
+        column_names := [input.resource.columns[i].name | input.resource.columns[i].tags.PII]
+      }
+
+
 # S3 mock service installed in fybrik namespace
 s3mock:
   enabled: true
+
