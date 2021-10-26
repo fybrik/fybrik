@@ -22,7 +22,7 @@ $(TOOLBIN)/helm:
 
 INSTALL_TOOLS += $(TOOLBIN)/golangci-lint
 $(TOOLBIN)/golangci-lint:
-	GOBIN=$(ABSTOOLBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.31.0
+	GOBIN=$(ABSTOOLBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/kubebuilder
