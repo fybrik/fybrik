@@ -5,7 +5,7 @@ go 1.16
 require (
 	emperror.dev/errors v0.7.0
 	fybrik.io/openapi2crd v0.4.0
-	github.com/IBM/satcon-client-go v0.1.2-0.20210329192404-b8fa1c732712
+	github.com/IBM/satcon-client-go v0.2.1-0.20211022193037-8b15cccd3c96
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/apache/arrow/go/arrow v0.0.0-20210907151234-f40856a768f2
 	github.com/aws/aws-sdk-go v1.40.37
@@ -30,7 +30,7 @@ require (
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
-	github.com/onsi/ginkgo v1.16.4
+	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.14.0
 	github.com/opencontainers/runc v1.0.0-rc95 // indirect
 	github.com/pkg/errors v0.9.1
