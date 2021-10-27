@@ -66,7 +66,7 @@ func TestMain(m *testing.M) {
 	fmt.Println("TestMain function called = opa_connector_test ")
 
 	tu.EnvValues["CATALOG_CONNECTOR_URL"] = "localhost:" + "50085"
-	tu.EnvValues["OPA_SERVER_URL"] = "localhost:" + "8383"
+	tu.EnvValues["OPA_SERVER_URL"] = "http://localhost:" + "8383"
 	tu.EnvValues["CATALOG_PROVIDER_NAME"] = "dummy_catalog"
 
 	go tu.MockCatalogConnector(50085)
