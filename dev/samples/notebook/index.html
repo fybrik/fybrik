@@ -1268,6 +1268,7 @@ rule[{&quot;action&quot;: {&quot;name&quot;:&quot;RedactAction&quot;, &quot;colu
   input.action.actionType == &quot;read&quot;
   input.resource.tags.finance
   column_names := [input.resource.columns[i].name | input.resource.columns[i].tags.PII]
+  count(column_names) &gt; 0
 }
 </code></pre></div>
 <p>In this sample only the policy above is applied. Copy the policy to a file named <code>sample-policy.rego</code> and then run:</p>
