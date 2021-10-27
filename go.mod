@@ -60,4 +60,7 @@ require (
 	sigs.k8s.io/yaml v1.2.0
 )
 
+// This replace is for https://github.com/advisories/GHSA-w73w-5m7g-f7qc
+replace github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt v3.2.1+incompatible
+
 replace helm.sh/helm/v3 v3.6.2 => github.com/fybrik/helm/v3 v3.6.2-fybrik-update
