@@ -164,6 +164,10 @@ jobs:
       if: ${{ github.event_name != 'pull_request' }}
       run: docker load -i images.tar
     - run: docker images
+    # Versions are created as follows:
+    # tags starting with v will be released as what comes after `v`. (e.g. refs/tags/v1.0 -> 1.0) (as well as 'latest' tag)
+    # release branches in e.g. (refs/heads/releases/1.0 -> 1.0-rc )
+    # other branches (e.g. master) will be released with branch name as version
     - id: version
       name: Infer version
       run: |
@@ -174,6 +178,11 @@ jobs:
             push_tag_event='false'
             branch="${GITHUB_REF#refs/heads/}"
             version=$branch
+        fi
+        if [[ $version == releases/* ]] ;
+        then
+           releaseVersion="${GITHUB_REF#refs/heads/releases/}"
+           version="$releaseVersion-rc"
         fi
         echo ::set-output name=version::$version
         echo ::set-output name=push_tag_event::$push_tag_event

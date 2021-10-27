@@ -4,6 +4,7 @@
 package lib
 
 import (
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -15,8 +16,15 @@ import (
 	"github.com/tidwall/pretty"
 )
 
-func performHTTPReq(standardClient *http.Client, address string, httpMethod string, content string, contentType string) *http.Response {
-	reqURL, _ := url.Parse(address)
+func performHTTPReq(standardClient *http.Client, address string, httpMethod string, content string, contentType string) (*http.Response, error) {
+	reqURL, err := url.Parse(address)
+	if err != nil {
+		return nil, err
+	}
+	if reqURL.Scheme != "http" && reqURL.Scheme != "https" {
+		err := errors.New("opa server url scheme should be http or https")
+		return nil, err
+	}
 
 	reqBody := ioutil.NopCloser(strings.NewReader(content))
 
@@ -36,11 +44,11 @@ func performHTTPReq(standardClient *http.Client, address string, httpMethod stri
 	res, err := standardClient.Do(req)
 
 	if err != nil {
-		log.Fatal("Error:", err)
+		return nil, err
 	}
 	log.Println(httpMethod + " succeeded")
 
-	return res
+	return res, nil
 }
 
 func doesOpaHaveUserPoliciesLoaded(responsedata []byte) (string, bool) {
@@ -57,12 +65,6 @@ func doesOpaHaveUserPoliciesLoaded(responsedata []byte) (string, bool) {
 }
 
 func EvaluatePoliciesOnInput(inputJSON string, opaServerURL string, policyToBeEvaluated string, standardClient *http.Client) (string, error) {
-	if !strings.HasPrefix(opaServerURL, "http://") {
-		opaServerURL = "http://" + opaServerURL + "/"
-	}
-	if !strings.HasSuffix(opaServerURL, "/") {
-		opaServerURL += "/"
-	}
 	log.Println("using opaServerURL in OPAConnector EvaluatePoliciesOnInput: ", opaServerURL)
 
 	// input HTTP req
@@ -75,7 +77,10 @@ func EvaluatePoliciesOnInput(inputJSON string, opaServerURL string, policyToBeEv
 	log.Println("opaServerURL")
 	log.Println(opaServerURL)
 
-	res := performHTTPReq(standardClient, opaServerURL+"v1/data/"+policyToBeEvaluated, httpMethod, inputJSON, contentType)
+	res, err := performHTTPReq(standardClient, opaServerURL+"/v1/data/"+policyToBeEvaluated, httpMethod, inputJSON, contentType)
+	if err != nil {
+		return "", err
+	}
 	data, _ := ioutil.ReadAll(res.Body)
 	log.Printf("body from input http response: %s\n", data)
 	log.Printf("status from input http response: %d\n", res.StatusCode)

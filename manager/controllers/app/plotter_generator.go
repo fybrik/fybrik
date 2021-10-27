@@ -5,7 +5,7 @@ package app
 
 import (
 	"bytes"
-	"strings"
+	"net/url"
 	"text/template"
 
 	"emperror.dev/errors"
@@ -56,12 +56,14 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 		p.Log.Info("Dataset creation failed: " + err.Error())
 		return nil, err
 	}
-	var endpoint string
-	if strings.HasPrefix(bucket.Endpoint, "http://") {
-		endpoint = bucket.Endpoint[7:]
-	} else {
-		endpoint = bucket.Endpoint
+
+	// S3 endpoint should not include the url scheme only the host name
+	// thus ignoring it if such exists.
+	url, err := url.Parse(bucket.Endpoint)
+	if err != nil {
+		return nil, err
 	}
+	endpoint := url.Host
 	datastore := &pb.DataStore{
 		Type: pb.DataStore_S3,
 		Name: "S3",
@@ -156,7 +158,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 			return err
 		}
 		var copyDataAssetID = datasetID + "-copy"
-		actions := actionsToArbitrary(copySelector.Actions)
+		actions := createActionStructure(copySelector.Actions)
 		if len(item.Configuration.ConfigDecisions[app.Copy].Clusters) > 0 {
 			copyCluster = item.Configuration.ConfigDecisions[app.Copy].Clusters[0]
 		} else {
@@ -217,7 +219,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 		} else {
 			readAssetID = datasetID + "-copy"
 		}
-		actions := actionsToArbitrary(readSelector.Actions)
+		actions := createActionStructure(readSelector.Actions)
 		if len(item.Configuration.ConfigDecisions[app.Read].Clusters) > 0 {
 			readCluster = item.Configuration.ConfigDecisions[app.Read].Clusters[0]
 		} else {

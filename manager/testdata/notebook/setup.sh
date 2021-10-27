@@ -16,13 +16,8 @@ kubectl expose deployment my-notebook --port=80 --target-port=8888
 kubectl -n fybrik-notebook-sample apply -f example-asset.yaml
 kubectl -n fybrik-notebook-sample apply -f s3credentials.yaml
 
-# TODO Use remote version when compatible
-# kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml -n fybrik-system
-kubectl apply -n fybrik-system -f arrow-flight-module.yaml
-
-kubectl -n fybrik-system create configmap sample-policy --from-file=sample-policy.rego
-kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy=rego
-while [[ $(kubectl get cm sample-policy -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
+# Use master version of arrow-flight-module according to https://github.com/fybrik/arrow-flight-module#version-compatbility-matrix
+kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
 
 # Forward port of test S3 instance
 kubectl port-forward -n fybrik-system svc/s3 9090:9090 &

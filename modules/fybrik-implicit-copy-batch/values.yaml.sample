@@ -37,11 +37,14 @@ copy:
         secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
 
   transformations:
-  - id: "redact-ID"
-    level: 2 # column
-    args:
-      column_name: col1
-  - id: "removed-ID"
-    level: 2 # column
-    args:
-      column_name: col2
+  - name: "RedactAction"
+    RedactAction:
+      columns: 
+      - col1
+      - col2
+  - name: "RemoveAction"
+    RemoveAction:
+      columns: 
+      - col1
+      - col2
+  

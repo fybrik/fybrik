@@ -57,11 +57,7 @@ run-notebook-tests:
 	$(MAKE) cluster-prepare-wait
 	$(MAKE) deploy
 	$(MAKE) configure-vault
-	$(MAKE) -C modules helm
-	$(MAKE) -C modules helm-uninstall # Uninstalls the deployed tests from previous command
-	$(MAKE) -C pkg/helm test
 	$(MAKE) -C manager run-notebook-tests
-	$(MAKE) -C modules test
 
 .PHONY: run-deploy-tests
 run-deploy-tests:
