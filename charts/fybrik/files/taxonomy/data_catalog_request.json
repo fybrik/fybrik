@@ -1,0 +1,19 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"title": "Data Catalog Request",
+	"type": "object",
+	"properties": {
+	  "datasetid": {
+		"$ref": "#/definitions/datasetid"
+	  }
+	},
+	"additionalProperties": false,
+	"required": [
+	  "datasetid"
+	],
+	"definitions": {
+        "datasetid": {
+            "type": "string"
+        }
+	}
+  }

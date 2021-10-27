@@ -1,0 +1,20 @@
+definitions:
+  Authentication:
+    description: "Authentication parameters"
+    type: object
+    properties:
+      username:
+        description: Username for basic authentication
+        type: string
+      password:
+        description: Password for basic authentication
+        type: string
+      api_key:
+        description: API key used in various IAM enabled services
+        type: string
+      access_key:
+        description: Access key also known as AccessKeyId
+        type: string
+      secret_key:
+        description: Secret key also known as SecretAccessKey
+        type: string
