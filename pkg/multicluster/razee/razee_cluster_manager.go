@@ -5,7 +5,6 @@ package razee
 
 import (
 	"fmt"
-	"net/http"
 	"strconv"
 	"strings"
 
@@ -342,7 +341,7 @@ func NewRazeeLocalManager(url string, login string, password string, clusterGrou
 	if err != nil {
 		return nil, err
 	}
-	con, _ := client.New(url, http.DefaultClient, localAuth)
+	con, _ := client.New(url, localAuth)
 	logger := ctrl.Log.WithName("RazeeManager")
 	me, err := con.Users.Me()
 	if err != nil {
@@ -368,7 +367,7 @@ func NewRazeeOAuthManager(url string, apiKey string, clusterGroup string) (multi
 	if err != nil {
 		return nil, err
 	}
-	con, _ := client.New(url, http.DefaultClient, auth)
+	con, _ := client.New(url, auth)
 	logger := ctrl.Log.WithName("RazeeManager")
 	me, err := con.Users.Me()
 	if err != nil {
@@ -397,7 +396,7 @@ func NewSatConfManager(apikey string, clusterGroup string) (multicluster.Cluster
 	if iamClient == nil {
 		return nil, errors.New("the IAMClient returned nil for IBM Cloud Satellite Config")
 	}
-	con, _ := client.New("https://config.satellite.cloud.ibm.com/graphql", http.DefaultClient, iamClient.Client)
+	con, _ := client.New("https://config.satellite.cloud.ibm.com/graphql", iamClient.Client)
 
 	me, err := con.Users.Me()
 	if err != nil {
