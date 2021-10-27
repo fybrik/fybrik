@@ -10,7 +10,7 @@
       "type": "object",
       "properties": {
         "spec": {
-          "$ref": "#/components/schemas/AssetSpec"
+          "$ref": "#/definitions/AssetSpec"
         }
       },
       "required": [
