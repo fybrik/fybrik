@@ -4,7 +4,6 @@
 package v1alpha1
 
 import (
-	"fybrik.io/fybrik/pkg/serde"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -64,7 +63,7 @@ type StepParameters struct {
 
 	// Actions are the data transformations that the module supports
 	// +optional
-	Actions []serde.Arbitrary `json:"action,omitempty"`
+	Actions []SupportedAction `json:"action,omitempty"`
 }
 
 // DataFlowStep contains details on a single data flow step

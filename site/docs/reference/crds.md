@@ -1508,7 +1508,7 @@ Endpoint provides the endpoint spec from which the asset will be served to the a
         <td><b>hostname</b></td>
         <td>string</td>
         <td>
-          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals "{{ .Release.Name }}.{{ .Release.Namespace }}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
+          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1838,7 +1838,7 @@ Capability declares what this module knows how to do and the types of data it kn
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#fybrikmodulespeccapabilitiesindexactionsindex">actions</a></b></td>
+        <td><b>actions</b></td>
         <td>[]object</td>
         <td>
           Actions are the data transformations that the module supports<br/>
@@ -1883,42 +1883,6 @@ Capability declares what this module knows how to do and the types of data it kn
             <i>Enum</i>: copy, read, write, transform<br/>
         </td>
         <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### FybrikModule.spec.capabilities[index].actions[index]
-<sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiesindex)</sup></sup>
-
-
-
-SupportedAction declares an action that the module supports (action identifier and its scope)
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>id</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>level</b></td>
-        <td>integer</td>
-        <td>
-          <br/>
-          <br/>
-            <i>Format</i>: int32<br/>
-        </td>
-        <td>false</td>
       </tr></tbody>
 </table>
 
@@ -1984,7 +1948,7 @@ EndpointSpec is used both by the module creator and by the status of the fybrika
         <td><b>hostname</b></td>
         <td>string</td>
         <td>
-          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals "{{ .Release.Name }}.{{ .Release.Namespace }}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
+          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -2857,7 +2821,7 @@ EndpointSpec is used both by the module creator and by the status of the fybrika
         <td><b>hostname</b></td>
         <td>string</td>
         <td>
-          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals "{{ .Release.Name }}.{{ .Release.Namespace }}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
+          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -2995,7 +2959,7 @@ EndpointSpec is used both by the module creator and by the status of the fybrika
         <td><b>hostname</b></td>
         <td>string</td>
         <td>
-          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals "{{ .Release.Name }}.{{ .Release.Namespace }}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
+          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
         </td>
         <td>false</td>
       </tr><tr>

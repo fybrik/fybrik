@@ -4,7 +4,6 @@
 package v1alpha1
 
 import (
-	"fybrik.io/fybrik/pkg/serde"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -27,7 +26,7 @@ type CopyModuleArgs struct {
 
 	// Transformations are different types of processing that may be done to the data as it is copied.
 	// +optional
-	Transformations []serde.Arbitrary `json:"transformations,omitempty"`
+	Transformations []SupportedAction `json:"transformations,omitempty"`
 }
 
 // ReadModuleArgs define the input parameters for modules that read data from location A
@@ -43,7 +42,7 @@ type ReadModuleArgs struct {
 
 	// Transformations are different types of processing that may be done to the data
 	// +optional
-	Transformations []serde.Arbitrary `json:"transformations,omitempty"`
+	Transformations []SupportedAction `json:"transformations,omitempty"`
 }
 
 // WriteModuleArgs define the input parameters for modules that write data to location B
@@ -59,7 +58,7 @@ type WriteModuleArgs struct {
 
 	// Transformations are different types of processing that may be done to the data as it is written.
 	// +optional
-	Transformations []serde.Arbitrary `json:"transformations,omitempty"`
+	Transformations []SupportedAction `json:"transformations,omitempty"`
 }
 
 // ModuleArguments are the parameters passed to a component that runs in the data path

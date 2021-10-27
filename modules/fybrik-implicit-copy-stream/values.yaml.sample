@@ -35,13 +35,11 @@ copy:
         secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
 
   transformations:
-  - args:
-      column: SSN
-    id: redact-ID
-    level: 2
-    name: redact
-  - args:
-      column: BLOOD_TYPE
-    id: encrypt-ID
-    level: 2
-    name: encrypt
+  - RedactAction:
+      columns: 
+      - SSN
+    name: RedactAction
+  - EncryptAction:
+      columns: 
+      - BLOOD_TYPE
+    name: EncryptAction

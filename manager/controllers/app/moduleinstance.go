@@ -287,7 +287,7 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 			var copyDataAssetID = datasetID + "-copy"
 
 			// append moduleinstances to the list
-			actions := actionsToArbitrary(copySelector.Actions)
+			actions := createActionStructure(copySelector.Actions)
 			copyCluster, err := copySelector.SelectCluster(item, m.Clusters)
 			if err != nil {
 				m.Log.Info("Could not determine the cluster for copy: " + err.Error())
@@ -360,7 +360,7 @@ func (m *ModuleManager) AddFlowInfoForAsset(item modules.DataInfo, appContext *a
 				readAssetID = datasetID + "-copy"
 			}
 
-			actions := actionsToArbitrary(readSelector.Actions)
+			actions := createActionStructure(readSelector.Actions)
 			readCluster, err := readSelector.SelectCluster(item, m.Clusters)
 			if err != nil {
 				m.Log.Info("Could not determine the cluster for read: " + err.Error())
@@ -641,11 +641,11 @@ func (m *ModuleManager) GetProcessingGeography(applicationContext *app.FybrikApp
 	return "", errors.New("Unknown cluster: " + clusterName)
 }
 
-func actionsToArbitrary(actions []*taxonomymodels.PolicyManagerResultItem) []serde.Arbitrary {
-	result := []serde.Arbitrary{}
+func createActionStructure(actions []*taxonomymodels.PolicyManagerResultItem) []app.SupportedAction {
+	result := []app.SupportedAction{}
 	for _, action := range actions {
-		raw := serde.NewArbitrary(action)
-		result = append(result, *raw)
+		supportedAction := app.SupportedAction{Action: action.GetAction()}
+		result = append(result, supportedAction)
 	}
 	return result
 }
