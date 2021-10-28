@@ -324,7 +324,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 	// workload cluster is common for all datasets in the given application
 	workloadCluster, err := r.GetWorkloadCluster(applicationContext)
 	if err != nil {
-		r.Log.V(0).Info("selector.clusterName field is not specified for an existing workload; local cluster cannot be determined")
+		r.Log.V(0).Info("could not determine in which cluster the workload runs: " + err.Error())
 		return ctrl.Result{}, err
 	}
 	var requirements []DataInfo
@@ -442,6 +442,7 @@ func (r *FybrikApplicationReconciler) GetWorkloadCluster(application *api.Fybrik
 			return multicluster.Cluster{}, nil
 		}
 		// the workload runs in a local cluster
+		r.Log.V(0).Info("selector.clusterName field is not specified for an existing workload - a local cluster is assumed")
 		localClusterManager, err := local.NewManager(r.Client, utils.GetSystemNamespace())
 		if err != nil {
 			return multicluster.Cluster{}, err
