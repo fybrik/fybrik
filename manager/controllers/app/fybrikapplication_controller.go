@@ -321,13 +321,19 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 	}
 
 	// create a list of requirements for creating a data flow (actions, interface to app, data format) per a single data set
+	// workload cluster is common for all datasets in the given application
+	workloadCluster, err := r.GetWorkloadCluster(applicationContext)
+	if err != nil {
+		r.Log.V(0).Info("could not determine in which cluster the workload runs: " + err.Error())
+		return ctrl.Result{}, err
+	}
 	var requirements []DataInfo
 	for _, dataset := range applicationContext.Spec.Data {
 		req := DataInfo{
 			Context: dataset.DeepCopy(),
 		}
 		r.Log.V(0).Info("Preparing requirements for " + req.Context.DataSetID)
-		if err := r.constructDataInfo(&req, applicationContext); err != nil {
+		if err := r.constructDataInfo(&req, applicationContext, workloadCluster); err != nil {
 			AnalyzeError(applicationContext, req.Context.DataSetID, err)
 			r.Log.V(0).Info("Error: " + err.Error())
 			continue
@@ -371,7 +377,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 	return ctrl.Result{}, nil
 }
 
-func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *api.FybrikApplication) error {
+func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *api.FybrikApplication, workloadCluster multicluster.Cluster) error {
 	var err error
 	// Call the DataCatalog service to get info about the dataset
 	var response *pb.CatalogDatasetInfo
@@ -406,13 +412,11 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 	}
 	adminconfig.SetApplicationInfo(input, configEvaluatorInput)
 	adminconfig.SetAssetRequirements(input, *req.Context, configEvaluatorInput)
-	if configEvaluatorInput.Workload.Cluster, err = r.GetWorkloadCluster(input); err != nil {
-		return err
-	}
+	configEvaluatorInput.Workload.Cluster = workloadCluster
 	// Read policies for data that is processed in the workload geography
 	if configEvaluatorInput.AssetRequirements.Usage[api.ReadFlow] {
 		actionType := model.READ
-		reqAction := model.PolicyManagerRequestAction{ActionType: &actionType, Destination: &configEvaluatorInput.Workload.Cluster.Metadata.Region}
+		reqAction := model.PolicyManagerRequestAction{ActionType: &actionType, Destination: &workloadCluster.Metadata.Region}
 		req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, input, &reqAction)
 		if err != nil {
 			return err
@@ -428,26 +432,17 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 	return nil
 }
 
-// GetLocalCluster returns the local cluster metadata
-func (r *FybrikApplicationReconciler) GetLocalCluster() (multicluster.Cluster, error) {
-	// the workload runs in a local cluster
-	localClusterManager, err := local.NewManager(r.Client, utils.GetSystemNamespace())
-	if err != nil {
-		return multicluster.Cluster{}, err
-	}
-	clusters, err := localClusterManager.GetClusters()
-	if err != nil || len(clusters) != 1 {
-		return multicluster.Cluster{}, err
-	}
-	return clusters[0], nil
-}
-
 // GetWorkloadCluster returns a workload cluster
 // If no cluster has been specified for a workload, a local cluster is assumed.
 func (r *FybrikApplicationReconciler) GetWorkloadCluster(application *api.FybrikApplication) (multicluster.Cluster, error) {
 	clusterName := application.Spec.Selector.ClusterName
 	if clusterName == "" {
+		// if no workload selector is specified - it is not a read scenario, skip
+		if application.Spec.Selector.WorkloadSelector.Size() == 0 {
+			return multicluster.Cluster{}, nil
+		}
 		// the workload runs in a local cluster
+		r.Log.V(0).Info("selector.clusterName field is not specified for an existing workload - a local cluster is assumed")
 		localClusterManager, err := local.NewManager(r.Client, utils.GetSystemNamespace())
 		if err != nil {
 			return multicluster.Cluster{}, err
