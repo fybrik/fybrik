@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 ROOT_DIR := ..
 include $(ROOT_DIR)/Makefile.env
 #include Makefile.env
