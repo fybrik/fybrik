@@ -20,11 +20,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/event"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/utils"
 )
 
 // FybrikModuleReconciler reconciles a FybrikModule object
@@ -35,9 +32,7 @@ type FybrikModuleReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// Reconcile reconciles FybrikModule CRD
-// It receives FybrikModule CRD and selects the appropriate modules that will run
-// The outcome is a Plotter containing multiple Blueprints that run on different clusters
+// Reconcile validates FybrikModule CRD
 func (r *FybrikModuleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("FybrikModule", req.NamespacedName)
 	// obtain FybrikModule resource
@@ -59,7 +54,8 @@ func (r *FybrikModuleReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	// check if module has been validated before or if validated module is outdated
 	if string(moduleContext.Status.ValidModule) == "" || observedStatus.ValidatedGeneration != moduleVersion {
 		// do validation on moduleContext
-		err := ValidateFybrikModule(moduleContext, "/tmp/taxonomy/fybrik_module.json")
+		const moduleTaxonomyFile = "/tmp/taxonomy/fybrik_module.json"
+		err := ValidateFybrikModule(moduleContext, moduleTaxonomyFile)
 		log.V(0).Info("Reconciler validating Fybrik module")
 		moduleContext.Status.ValidatedGeneration = moduleVersion
 		// if validation fails
@@ -98,13 +94,13 @@ func ValidateFybrikModule(module *api.FybrikModule, taxonomyFile string) error {
 	var allErrs []*field.Error
 
 	// Convert Fybrik module Go struct to JSON
-	applicationJSON, err := json.Marshal(module)
+	moduleJSON, err := json.Marshal(module)
 	if err != nil {
 		return err
 	}
 
 	// Validate Fybrik module against taxonomy
-	allErrs = validate.TaxonomyCheck(applicationJSON, taxonomyFile, "Fybrik module")
+	allErrs = validate.TaxonomyCheck(moduleJSON, taxonomyFile, "Fybrik module")
 
 	// Return any error
 	if len(allErrs) == 0 {
@@ -118,23 +114,7 @@ func ValidateFybrikModule(module *api.FybrikModule, taxonomyFile string) error {
 
 // SetupWithManager registers Module controller
 func (r *FybrikModuleReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	// 'UpdateFunc' and 'CreateFunc' used to judge if the event came from within the blueprint's namespace.
-	// If that is true, the event will be processed by the reconciler.
-	// If it's not then it is a rogue event created by someone outside of the control plane.
-
-	moduleNamespace := utils.GetSystemNamespace()
-
-	p := predicate.Funcs{
-		CreateFunc: func(e event.CreateEvent) bool {
-			return e.Object.GetNamespace() == moduleNamespace
-		},
-		UpdateFunc: func(e event.UpdateEvent) bool {
-			return e.ObjectOld.GetNamespace() == moduleNamespace
-		},
-	}
-
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&api.FybrikModule{}).
-		WithEventFilter(p).
 		Complete(r)
 }

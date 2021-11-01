@@ -226,7 +226,7 @@ type ChartSpec struct {
 
 // FybrikModuleStatus defines the observed state of FybrikModule.
 type FybrikModuleStatus struct {
-	// ErrorMessage indicates that an error has happened during the reconcile, unrelated to a specific asset
+	// ErrorMessage indicates that an error has happened during the module validation
 	// +optional
 	ErrorMessage string `json:"errorMessage,omitempty"`
 
