@@ -166,6 +166,16 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 				return 1
 			}
 		}
+
+		// Initiate the FybrikModule Controller
+		moduleController := app.NewFybrikModuleReconciler(
+			mgr,
+			"FybrikModule",
+		)
+		if err := moduleController.SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "FybrikModule")
+			return 1
+		}
 	}
 
 	if enablePlotterController {

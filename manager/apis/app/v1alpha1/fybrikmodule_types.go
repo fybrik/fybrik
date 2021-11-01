@@ -4,6 +4,7 @@
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -223,6 +224,21 @@ type ChartSpec struct {
 	Values map[string]string `json:"values,omitempty"`
 }
 
+// FybrikModuleStatus defines the observed state of FybrikModule.
+type FybrikModuleStatus struct {
+	// ErrorMessage indicates that an error has happened during the reconcile, unrelated to a specific asset
+	// +optional
+	ErrorMessage string `json:"errorMessage,omitempty"`
+
+	// ValidatedGeneration is the version of the FybrikModule that has been validated with the taxonomy defined.
+	// +optional
+	ValidatedGeneration int64 `json:"validatedGeneration,omitempty"`
+
+	// ValidModule indicates whether the FybrikModule is valid given the defined taxonomy
+	// +optional
+	ValidModule corev1.ConditionStatus `json:"validModule,omitempty"`
+}
+
 // +kubebuilder:object:root=true
 
 // FybrikModule is a description of an injectable component.
@@ -236,7 +252,8 @@ type FybrikModule struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	// +required
-	Spec FybrikModuleSpec `json:"spec"`
+	Spec   FybrikModuleSpec   `json:"spec"`
+	Status FybrikModuleStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
