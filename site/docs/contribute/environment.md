@@ -31,6 +31,8 @@ make install-tools
 
 This installs additional dependencies to `hack/tools/bin`. The `make` targets (e.g., `make test`) are configured to use the binaries from `hack/tools/bin`. However, you may want to add some of these tools to your system PATH for direct usage from your terminal (e.g., for using `kubectl`).
 
+Please note: For version 0.5 and lower of fybrik, Helm version greater than 3.3 but less than 3.7 is required.
+
 ## Editors
 
 The project is predominantly written in Go so we recommend [Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-vscode.Go) for its good Go support. Alternatively you can select from [Editors](https://golang.org/doc/editors.html)
@@ -44,4 +46,7 @@ a docker registry as a proxy for all public images. This registry runs in a dock
 ```shell
 export DOCKER_USERNAME='your github username'
 export DOCKER_PASSWORD='your github personal develper token'
+
+export DOCKERHUB_USERNAME='your docker hub username'
+export DOCKERHUB_PASSWORD='your password'
 ```
