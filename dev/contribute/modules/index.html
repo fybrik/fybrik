@@ -12,7 +12,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.3.4">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.3.6">
     
     
       
@@ -20,7 +20,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.db9e7362.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.a57b2b03.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.3f5d1f46.min.css">
@@ -962,6 +962,8 @@
       </a>
       
         
+
+
 <nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
@@ -1067,13 +1069,6 @@
         
           <li class="md-nav__item">
   <a href="#speccapabilities" class="md-nav__link">
-    spec.capabilities
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#speccapabilities_1" class="md-nav__link">
     spec.capabilities
   </a>
   
@@ -1139,6 +1134,8 @@
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
                     
+
+
 <nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
@@ -1244,13 +1241,6 @@
         
           <li class="md-nav__item">
   <a href="#speccapabilities" class="md-nav__link">
-    spec.capabilities
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#speccapabilities_1" class="md-nav__link">
     spec.capabilities
   </a>
   
@@ -1343,6 +1333,9 @@ helm chart push &lt;registry&gt;/&lt;path&gt;:&lt;version&gt;
 <span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">FybrikModule</span> <span class="c1"># always this value</span>
 <span class="nt">metadata</span><span class="p">:</span>
   <span class="nt">name</span><span class="p">:</span> <span class="s">&quot;&lt;module</span><span class="nv"> </span><span class="s">name&gt;&quot;</span> <span class="c1"># the name of your new module</span>
+  <span class="nt">labels</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="s">&quot;&lt;module</span><span class="nv"> </span><span class="s">name&gt;&quot;</span> <span class="c1"># the name of your new module</span>
+    <span class="nt">version</span><span class="p">:</span> <span class="s">&quot;&lt;semantic</span><span class="nv"> </span><span class="s">version&gt;&quot;</span>
   <span class="nt">namespace</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fybrik-system</span>  <span class="c1"># control plane namespace. Always fybrik-system</span>
 <span class="nt">spec</span><span class="p">:</span>
    <span class="l l-Scalar l-Scalar-Plain">...</span>
@@ -1351,7 +1344,10 @@ helm chart push &lt;registry&gt;/&lt;path&gt;:&lt;version&gt;
 <h3 id="specchart"><code>spec.chart</code></h3>
 <p>This is a link to a the Helm chart stored in the <a href="https://helm.sh/docs/topics/registries/">image registry</a>. This is similar to how a Kubernetes <code>Pod</code> references a container image. See <a href="#module-helm-chart">Module Helm chart</a> for more details.</p>
 <div class="highlight"><pre><span></span><code>spec:
-  chart: &quot;&lt;helm chart link&gt;&quot; # e.g.: ghcr.io/username/chartname:chartversion
+  chart: 
+    name: &quot;&lt;helm chart link&gt;&quot; # e.g.: ghcr.io/username/chartname:chartversion
+    values:
+      image.tag: v0.0.1
 </code></pre></div>
 <h3 id="specstatusindicators"><code>spec.statusIndicators</code></h3>
 <p>Used for tracking the status of the module in terms of success or failure. In many cases this can be omitted and the status will be detected automatically.</p>
@@ -1370,33 +1366,50 @@ helm chart push &lt;registry&gt;/&lt;path&gt;:&lt;version&gt;
 </code></pre></div></p>
 <h3 id="spectype"><code>spec.type</code></h3>
 <p>The <code>type</code> field may be one of the following vaues:</p>
-<p>1)service - Indicates that module workload implements the modules logic, and is deployed for every workload.</p>
+<p>1)service - Indicates that module workload implements the modules logic, and is deployed by the fybrik control plane.</p>
 <p>2) config - In this case the logic is performed by a component deployed externally, i.e. not by the fybrik control plane.  Such components can be assumed to support multiple workloads.</p>
-<p>3) plugin - This type of module enables a sub-set of often used capabilities to be implemented once and re-used by any module that supports plugins of the declared type.</p>
+<p>3) plugin (FUTURE) - This type of module enables a sub-set of often used capabilities to be implemented once and re-used by any module that supports plugins of the declared type.</p>
 <h3 id="specplugintype"><code>spec.pluginType</code></h3>
-<p>The types of plugins supported by this module.  Example: vault, fybrik-wasm ...</p>
+<p>(Future Functionality)
+The types of plugins supported by this module.  Example: vault, fybrik-wasm ...</p>
 <h3 id="speccapabilities"><code>spec.capabilities</code></h3>
 <p>Each module may support one or more capabilities.  Currently there are four capabilities: <code>read</code> for enabling an application to read data or prepare data for being read, <code>write</code> for enabling an application to write data, and <code>copy</code> for performing an implicit data copy on behalf of the application, and <code>transform</code> for altering data based on governance policies. A module provides one or more of these capabilities.  </p>
-<div class="highlight"><pre><span></span><code><span class="nt">capabilityType</span><span class="p">:</span> <span class="c1"># Indicate the data flow(s) in which the control plane should consider using this module </span>
+<p><code>capabilities.capability</code></p>
+<p>Indicates which of the types of capabilities this instance describes.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">capability</span><span class="p">:</span> <span class="c1"># Indicate the capabilities for which the control plane should consider using this module </span>
 <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">read</span>  <span class="c1"># optional</span>
 <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">write</span> <span class="c1"># optional</span>
 <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">copy</span>  <span class="c1"># optional</span>
 <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">transform</span> <span class="c1"># optional</span>
 </code></pre></div>
-<h3 id="speccapabilities_1"><code>spec.capabilities</code></h3>
-<p><code>capabilites.supportedInterfaces</code> lists the supported data services from which the module can read data and to which it can write 
-* <code>scope</code> indicate whether the capability acts on the <code>asset</code>, <code>workload</code> or <code>cluster</code> level
-* <code>protocol</code> field can take a value such as <code>kafka</code>, <code>s3</code>, <code>jdbc-db2</code>, <code>fybrik-arrow-flight</code>, etc.
-* <code>format</code> field can take a value such as <code>avro</code>, <code>parquet</code>, <code>json</code>, or <code>csv</code>.
-Note that a module that targets copy flows will omit the <code>api</code> field and contain just <code>source</code> and <code>sink</code>, a module that only supports reading data assets will omit the <code>sink</code> field and only contain <code>api</code> and <code>source</code></p>
-<p><code>capabilites.api</code> describes the api exposed by the module to the user's workload for the particular capability:
-* <code>protocol</code> field can take a value such as <code>kafka</code>, <code>s3</code>, <code>jdbc-db2</code>, <code>fybrik-arrow-flight</code>, etc 
-* <code>dataformat</code> field can take a value such as <code>parquet</code>, <code>csv</code>, <code>arrow</code>, etc
-* <code>endpoint</code> field describes the endpoint exposed the module</p>
-<p><code>capabilites.api.endpoint</code> describes the endpoint from a networking perspective:
-* <code>hostname</code> field is the hostname to be used when accessing the module. Equals the release name. Can be omitted.
-* <code>port</code> field is the port of the service exposed by the module.
-* <code>scheme</code> field can take a value such as <code>http</code>, <code>https</code>, <code>grpc</code>, <code>grpc+tls</code>, <code>jdbc:oracle:thin:@</code>, etc</p>
+<p><code>capability.scope</code></p>
+<p>The capability provided by the module may work on one of several different scopes:</p>
+<ul>
+<li>workload - deployed once by fybrik and available for use by the data planes of all the datasets</li>
+<li>asset - deployed by fybrik for each dataset</li>
+<li>cluster - deployed outside of fybrik and can be used by multiple fybbrik workloads in a given cluster</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="nt">scope</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">&lt;scope of the capability&gt;</span> <span class="c1"># cluster, workload, asset</span>
+</code></pre></div>
+<p><code>capabilites.supportedInterfaces</code> </p>
+<p>Lists the supported data services from which the module can read data (sources) and to which it can write (sinks).  There can be multiple sources and sinks.  For each, a protocol and format are provided.</p>
+<ul>
+<li><code>protocol</code> field can take a value such as <code>kafka</code>, <code>s3</code>, <code>jdbc-db2</code>, <code>fybrik-arrow-flight</code>, etc.</li>
+<li><code>format</code> field can take a value such as <code>avro</code>, <code>parquet</code>, <code>json</code>, or <code>csv</code>.</li>
+</ul>
+<p>Note that a module that targets copy flows will omit the <code>api</code> field and contain just <code>source</code> and <code>sink</code>, a module that only supports reading data assets will omit the <code>sink</code> field and only contain <code>api</code> and <code>source</code></p>
+<p><code>capabilites.api</code> describes the api exposed by the module to the user's workload for the particular capability.</p>
+<ul>
+<li><code>protocol</code> field can take a value such as <code>kafka</code>, <code>s3</code>, <code>jdbc-db2</code>, <code>fybrik-arrow-flight</code>, etc </li>
+<li><code>dataformat</code> field can take a value such as <code>parquet</code>, <code>csv</code>, <code>arrow</code>, etc</li>
+<li><code>endpoint</code> field describes the endpoint exposed the module</li>
+</ul>
+<p><code>capabilites.api.endpoint</code> describes the endpoint from a networking perspective:</p>
+<ul>
+<li><code>hostname</code> field is the hostname to be used when accessing the module. Equals the release name. Can be omitted.</li>
+<li><code>port</code> field is the port of the service exposed by the module.</li>
+<li><code>scheme</code> field can take a value such as <code>http</code>, <code>https</code>, <code>grpc</code>, <code>grpc+tls</code>, <code>jdbc:oracle:thin:@</code>, etc</li>
+</ul>
 <p>An example for a module that copies data from a db2 database table to an s3 bucket in parquet format.</p>
 <div class="highlight"><pre><span></span><code><span class="nt">capabilities</span><span class="p">:</span>
 <span class="p p-Indicator">-</span> <span class="nt">capability</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">copy</span>
@@ -1428,7 +1441,7 @@ Note that a module that targets copy flows will omit the <code>api</code> field 
 </code></pre></div>
 <p><code>capabilites.actions</code>  are taken from a defined <a href="about:blank">Enforcement Actions Taxonomy</a> 
 a module that does not perform any transformation on the data may omit the <code>capabilities.actions</code> field.</p>
-<p>The following is an example of how a module would declare that it knows how to redact, remove or encrypt data.</p>
+<p>The following is an example of how a module would declare that it knows how to redact, remove or encrypt data.  Additional properties may be associated with each action.</p>
 <div class="highlight"><pre><span></span><code><span class="nt">capabilities</span><span class="p">:</span>
 <span class="p p-Indicator">-</span> <span class="nt">read</span><span class="p">:</span>
     <span class="nt">actions</span><span class="p">:</span>
@@ -1529,10 +1542,10 @@ a module that does not perform any transformation on the data may omit the <code
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.8397ff9e.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.fcfe8b6d.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.1e84347e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.b1047164.min.js"></script>
       
     
   </body>
