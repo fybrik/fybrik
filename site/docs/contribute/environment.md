@@ -31,7 +31,7 @@ make install-tools
 
 This installs additional dependencies to `hack/tools/bin`. The `make` targets (e.g., `make test`) are configured to use the binaries from `hack/tools/bin`. However, you may want to add some of these tools to your system PATH for direct usage from your terminal (e.g., for using `kubectl`).
 
-Please note: For version 0.5 and lower of fybrik, Helm version greater than 3.3 but less than 3.7 is required.
+Please note: For fybrik version 0.5 and lower, Helm version greater than 3.3 but less than 3.7 is required when contributing.
 
 ## Editors
 
@@ -44,9 +44,6 @@ One option to fix the limit is to use a docker hub login for downloading the ima
 a docker registry as a proxy for all public images. This registry runs in a docker container next to the kind clusters. 
 
 ```shell
-export DOCKER_USERNAME='your github username'
-export DOCKER_PASSWORD='your github personal develper token'
-
 export DOCKERHUB_USERNAME='your docker hub username'
 export DOCKERHUB_PASSWORD='your password'
 ```
