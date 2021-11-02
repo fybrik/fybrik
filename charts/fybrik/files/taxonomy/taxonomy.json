@@ -15,8 +15,32 @@
     "AppInfo": {
       "type": "object"
     },
+    "Authentication": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name"
+      ]
+    },
     "Capability": {
       "type": "string"
+    },
+    "Connection": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name"
+      ]
     },
     "Dataformat": {
       "type": "string"

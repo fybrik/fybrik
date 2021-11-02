@@ -7,15 +7,7 @@
       "type": "string"
     },
     "Asset": {
-      "type": "object",
-      "properties": {
-        "spec": {
-          "$ref": "#/definitions/AssetSpec"
-        }
-      },
-      "required": [
-        "spec"
-      ]
+      "$ref": "#/definitions/AssetSpec"
     }
   },
   "additionalProperties": false,
@@ -44,18 +36,7 @@
       ]
     },
     "SecretRef": {
-      "description": "Reference to a Secret resource holding credentials for this asset",
-      "type": "object",
-      "properties": {
-        "name": {
-          "description": "Name of the Secret resource (must exist in the same namespace)",
-          "type": "string"
-        },
-        "$ref": "taxonomy.json#/definitions/Authentication"
-      },
-      "required": [
-        "name"
-      ]
+      "$ref": "taxonomy.json#/definitions/Authentication"
     },
     "AssetDetails": {
       "type": "object",
@@ -73,37 +54,15 @@
       ]
     },
     "AssetMetadata": {
-      "owner": {
-        "type": "string"
-      },
-      "geography": {
-        "type": "string"
-      },
-      "tags": {
-        "$ref": "taxonomy.json#/definitions/Tags"
-      },
-      "ComponentMetadata": {
-        "type": "object",
-        "description": "metadata for each component in asset (e.g., column)",
-        "additionalProperties": {
-          "$ref": "#/definitions//ComponentMetadata"
-        }
-      }
-    },
-    "ComponentMetadata": {
       "type": "object",
       "properties": {
-        "componentType": {
+        "owner": {
           "type": "string"
         },
-        "namedMetadata": {
-          "additionalProperties": {
-            "type": "string",
-            "description": "Named terms, that exist in Catalog toxonomy and the values for these terms for columns we will have 'SchemaDetails' key, that willinclude technical schema details for this column TODO: Consider create special field for schema outside of metadata"
-          }
+        "geography": {
+          "type": "string"
         },
         "tags": {
-          "description": "Tags - can be any free text added to a component (no taxonomy)",
           "$ref": "taxonomy.json#/definitions/Tags"
         }
       }
