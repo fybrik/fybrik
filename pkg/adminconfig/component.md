@@ -13,7 +13,7 @@ Design a component that will evaluate config policy decisions based on the fybri
 
 ## Proposal
 
-### Input (`adminconfig.EvaluatorInput')
+### Input (`adminconfig.EvaluatorInput`)
 
 A dynamic input constructed per a FybrikApplication, per a single dataset.
 It provides general application data such as workload cluster and application properties, as well as dataset details (user requirements, metadata, required actions.
