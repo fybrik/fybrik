@@ -65,7 +65,7 @@ set -a; . .env; set +a
 
 ### Copy taxonomy JSON files locally
 ```bash
-cp -R charts/fybrik/files/taxonomy /tmp
+cp -R ../charts/fybrik/files/taxonomy /tmp
 ```
 
 ### Run the manager
