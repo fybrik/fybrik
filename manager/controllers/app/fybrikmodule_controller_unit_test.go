@@ -70,6 +70,7 @@ func TestFybrikModuleWithInvalidInterface(t *testing.T) {
 
 	newModule := &app.FybrikModule{}
 	err = cl.Get(context.Background(), req.NamespacedName, newModule)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrik module")
 	g.Expect(newModule.Status.ValidModule).To(gomega.BeIdenticalTo(corev1.ConditionFalse))
 }
 
@@ -110,6 +111,7 @@ func TestFybrikModuleWithInvalidActions(t *testing.T) {
 
 	newModule := &app.FybrikModule{}
 	err = cl.Get(context.Background(), req.NamespacedName, newModule)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrik module")
 	g.Expect(newModule.Status.ValidModule).To(gomega.BeIdenticalTo(corev1.ConditionFalse))
 }
 
@@ -150,5 +152,6 @@ func TestFybrikModuleWithValidFields(t *testing.T) {
 
 	newModule := &app.FybrikModule{}
 	err = cl.Get(context.Background(), req.NamespacedName, newModule)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrik module")
 	g.Expect(newModule.Status.ValidModule).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 }
