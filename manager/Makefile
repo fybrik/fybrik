@@ -87,7 +87,7 @@ run-notebook-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-notebook-tests: export DOCKER_TAGNAME?=master
 run-notebook-tests: export USE_MOCKUP_CONNECTOR?=true
 run-notebook-tests: wait_for_manager
-	pushd testdata/notebook && ./setup.sh && popd
+	cd testdata/notebook && ./setup.sh
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestS3Notebook -count 1
 
 
