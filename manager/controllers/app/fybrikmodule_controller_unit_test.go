@@ -43,9 +43,9 @@ func TestFybrikModuleWithInvalidInterface(t *testing.T) {
 
 	namespaced := types.NamespacedName{
 		Name:      "module-with-interface-errors",
-		Namespace: "default",
+		Namespace: "fybrik-system",
 	}
-	filename := "../../testdata/unittests/FybrikModule-interfaceErrors.yaml"
+	filename := "../../testdata/unittests/fybrikmodule-interfaceErrors.yaml"
 	fybrikApp := &app.FybrikModule{}
 	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
 	fybrikApp.SetGeneration(1)
@@ -84,9 +84,9 @@ func TestFybrikModuleWithInvalidActions(t *testing.T) {
 
 	namespaced := types.NamespacedName{
 		Name:      "module-with-actions-errors",
-		Namespace: "default",
+		Namespace: "fybrik-system",
 	}
-	filename := "../../testdata/unittests/FybrikModule-actionsErrors.yaml"
+	filename := "../../testdata/unittests/fybrikmodule-actionsErrors.yaml"
 	fybrikApp := &app.FybrikModule{}
 	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
 	fybrikApp.SetGeneration(1)
