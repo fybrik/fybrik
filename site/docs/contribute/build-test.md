@@ -21,7 +21,7 @@ NO_SIMULATED_PROGRESS=true USE_EXISTING_CLUSTER=true make -C manager test
 ```
 
 Please be aware that the controller is running locally in this case! If a controller is already deployed onto the
-cluster then the tests can be run with the command below. This will ensure that the tests are only creating CRDs on 
+cluster then the tests can be run with the command below. This will ensure that the tests are only creating custom resources on 
 the cluster and checking their status:
 ```bash
 USE_EXISTING_CONTROLLER=true NO_SIMULATED_PROGRESS=true USE_EXISTING_CLUSTER=true make -C manager test

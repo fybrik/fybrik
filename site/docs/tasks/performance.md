@@ -1,10 +1,10 @@
 # Performance
 
-When using many fybric applications at the same time the CRD operations may take some time. This is due to the default 
+When using many fybric applications at the same time the custom resource operations may take some time. This is due to the default 
 concurrency of controllers being one at a time and the Kubernetes client being rate limited by default.
 In order to increase the parallelism there are multiple parameters that can be controlled.
 
-Each controller parallelism (for each fybrik CRD) can be controlled separately. When increasing this number it's highly 
+Each controller parallelism (for each fybrik custom resource) can be controlled separately. When increasing this number it's highly 
 recommended to also increase the managers Kubernetes client QPS and Boost settings so that the controller won't be limited
 by the amount of queries it can execute to the Kubernetes API.
 

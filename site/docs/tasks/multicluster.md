@@ -68,7 +68,7 @@ coordinator:
 ### Installing using IBM Satellite Config
 
 When using [IBM Satellite Config](https://cloud.ibm.com/satellite) the RazeeDash API is running as a service in the
-cloud and all CRD distribution is handled by the cloud. The process here describes how an already existing Kubernetes
+cloud and all custom resource distribution is handled by the cloud. The process here describes how an already existing Kubernetes
 cluster can be registered and configured. 
 
 Prerequisites:
