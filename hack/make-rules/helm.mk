@@ -3,7 +3,9 @@ HELM_VALUES ?= \
 
 CHART := ${DOCKER_NAME}
 HELM_RELEASE ?= rel1-${DOCKER_NAME}
+PREFIX ?= oci
 TEMP := /tmp
+CHART_PATH ?= ${PREFIX}://${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/
 
 export HELM_EXPERIMENTAL_OCI=1
 export GODEBUG=x509ignoreCN=0
@@ -29,15 +31,13 @@ helm-install: $(TOOLBIN)/helm
 
 .PHONY: helm-chart-push
 helm-chart-push: helm-login $(TOOLBIN)/helm
-	$(ABSTOOLBIN)/helm chart save ../${CHART} ${IMG}
-	$(ABSTOOLBIN)/helm chart list ../${CHART}
-	$(ABSTOOLBIN)/helm chart push ${IMG}
-	$(ABSTOOLBIN)/helm chart remove ${IMG}
+	$(ABSTOOLBIN)/helm package ../${CHART} --destination=${TEMP}
+	$(ABSTOOLBIN)/helm push ${TEMP}/${CHART}-${DOCKER_TAGNAME}.tgz ${CHART_PATH}
+	rm -rf ${TEMP}/${CHART}-${DOCKER_TAGNAME}.tgz
 
 .PHONY: helm-chart-pull
 helm-chart-pull: helm-login $(TOOLBIN)/helm
-	$(ABSTOOLBIN)/helm chart pull ${IMG} 
-	$(ABSTOOLBIN)/helm chart list
+	$(ABSTOOLBIN)/helm pull ${CHART_PATH}/${CHART} --version ${DOCKER_TAGNAME}
 
 .PHONY: helm-chart-list
 helm-chart-list: $(TOOLBIN)/helm
@@ -45,8 +45,7 @@ helm-chart-list: $(TOOLBIN)/helm
 
 .PHONY: helm-chart-install
 helm-chart-install: $(TOOLBIN)/helm
-	$(ABSTOOLBIN)/helm chart export --destination=${TEMP} ${IMG} 
-	$(ABSTOOLBIN)/helm install ${HELM_RELEASE} ${TEMP}/${CHART} ${HELM_VALUES}
+	$(ABSTOOLBIN)/helm install ${HELM_RELEASE} ${CHART_PATH}/${CHART} --version ${DOCKER_TAGNAME} ${HELM_VALUES}
 	$(ABSTOOLBIN)/helm list
 
 .PHONY: helm-template
@@ -63,3 +62,4 @@ helm-actions:
 
 .PHONY: helm-all
 helm-all: helm-verify helm-chart-push helm-chart-pull helm-uninstall helm-chart-install
+

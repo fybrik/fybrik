@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
@@ -23,7 +24,7 @@ var (
 	debugOption = (os.Getenv("HELM_DEBUG") == "true")
 )
 
-const chartPath = "/opt/fybrik/charts/"
+const chartsMountPath = "/opt/fybrik/charts/"
 
 func getConfig(kubeNamespace string) (*action.Configuration, error) {
 	actionConfig := new(action.Configuration)
@@ -62,11 +63,9 @@ type Interface interface {
 	Status(kubeNamespace string, releaseName string) (*release.Release, error)
 	RegistryLogin(hostname string, username string, password string, insecure bool) error
 	RegistryLogout(hostname string) error
-	ChartRemove(ref string) error
-	ChartSave(chart *chart.Chart, ref string) error
-	ChartLoad(ref string) (*chart.Chart, error)
-	ChartPush(chart *chart.Chart, ref string) error
-	ChartPull(ref string) error
+	Pull(ref string, destination string) error
+	Load(ref string, chartPath string) (*chart.Chart, error)
+	Package(chartPath string, destinationPath string, version string) error
 	GetResources(kubeNamespace string, releaseName string) ([]*unstructured.Unstructured, error)
 }
 
@@ -116,34 +115,24 @@ func (r *Fake) RegistryLogout(hostname string) error {
 	return nil
 }
 
-// ChartRemove helm chart from cache
-func (r *Fake) ChartRemove(ref string) error {
-	return nil
-}
-
-// ChartSave helm chart from cache
-func (r *Fake) ChartSave(chart *chart.Chart, ref string) error {
-	return nil
-}
-
-// ChartLoad helm chart from cache
-func (r *Fake) ChartLoad(ref string) (*chart.Chart, error) {
-	return nil, nil
-}
-
-// ChartPush helm chart to repo
-func (r *Fake) ChartPush(chart *chart.Chart, ref string) error {
-	return nil
-}
-
 // ChartPull helm chart from repo
-func (r *Fake) ChartPull(ref string) error {
+func (r *Fake) Pull(ref string, destination string) error {
 	return nil
+}
+
+// Load helm chart
+func (r *Fake) Load(ref string, chartPath string) (*chart.Chart, error) {
+	return nil, nil
 }
 
 // GetResources returns allocated resources for the specified release (their current state)
 func (r *Fake) GetResources(kubeNamespace string, releaseName string) ([]*unstructured.Unstructured, error) {
 	return r.resources, nil
+}
+
+// Package helm chart from repo
+func (r *Fake) Package(chartPath string, destinationPath string, version string) error {
+	return nil
 }
 
 func NewEmptyFake() *Fake {
@@ -174,12 +163,31 @@ func (r *Impl) Uninstall(kubeNamespace string, releaseName string) (*release.Uni
 	return uninstall.Run(releaseName)
 }
 
-// Install helm release
+// Load helm chart
+func (r *Impl) Load(ref string, chartPath string) (*chart.Chart, error) {
+	chart, err := loader.Load(chartsMountPath + ref)
+	if err == nil {
+		return chart, err
+	}
+	// Construct the packed chart path
+	chartRef, err := ParseReference(ref)
+	if err != nil {
+		return nil, err
+	}
+	_, chartName := filepath.Split(chartRef.Repo)
+	packedChartPath := chartPath + "/" + chartName + "-" + chartRef.Tag + ".tgz"
+	chart, err = loader.Load(packedChartPath)
+
+	return chart, err
+}
+
+// Install helm release from packaged chart
 func (r *Impl) Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error) {
 	cfg, err := getConfig(kubeNamespace)
 	if err != nil {
 		return nil, err
 	}
+
 	install := action.NewInstall(cfg)
 	install.ReleaseName = releaseName
 	install.Namespace = kubeNamespace
@@ -229,69 +237,33 @@ func (r *Impl) RegistryLogout(hostname string) error {
 	return logout.Run(&buf, hostname)
 }
 
-// ChartRemove helm chart from cache
-func (r *Impl) ChartRemove(ref string) error {
+// Package helm chart from repo
+func (r *Impl) Package(chartPath string, destinationPath string, version string) error {
+	client := action.NewPackage()
+	if version != "" {
+		client.Version = version
+	}
+	client.Destination = destinationPath
+
+	_, err := client.Run(chartPath, nil)
+	return err
+}
+
+// Pull helm chart from repo
+func (r *Impl) Pull(ref string, destination string) error {
+	chartRef, err := ParseReference(ref)
+	if err != nil {
+		return err
+	}
 	cfg, err := getConfig("")
 	if err != nil {
 		return err
 	}
-	remove := action.NewChartRemove(cfg)
-	var buf bytes.Buffer
-	return remove.Run(&buf, ref)
-}
-
-// ChartSave helm chart from cache
-func (r *Impl) ChartSave(chart *chart.Chart, ref string) error {
-	cfg, err := getConfig("")
-	if err != nil {
-		return err
-	}
-	save := action.NewChartSave(cfg)
-	var buf bytes.Buffer
-	return save.Run(&buf, chart, ref)
-}
-
-// ChartLoad helm chart from cache
-func (r *Impl) ChartLoad(ref string) (*chart.Chart, error) {
-	// check for chart mounted in container
-	chart, err := loader.Load(chartPath + ref)
-	if err == nil {
-		return chart, err
-	}
-
-	cfg, err := getConfig("")
-	if err != nil {
-		return nil, err
-	}
-	load := action.NewChartLoad(cfg)
-	return load.Run(ref)
-}
-
-// ChartPush helm chart to repo
-func (r *Impl) ChartPush(chart *chart.Chart, ref string) error {
-	cfg, err := getConfig("")
-	if err != nil {
-		return err
-	}
-	push := action.NewChartPush(cfg)
-	var buf bytes.Buffer
-	return push.Run(&buf, ref)
-}
-
-// ChartPull helm chart from repo
-func (r *Impl) ChartPull(ref string) error {
-	// if chart mounted in container, no need to pull
-	if _, err := os.Stat(chartPath + ref); err == nil {
-		return nil
-	}
-
-	cfg, err := getConfig("")
-	if err != nil {
-		return err
-	}
-	push := action.NewChartPull(cfg)
-	var buf bytes.Buffer
-	return push.Run(&buf, ref)
+	client := action.NewPullWithOpts(action.WithConfig(cfg))
+	client.Version = chartRef.Tag
+	client.DestDir = destination
+	_, err = client.Run("oci://" + chartRef.Repo)
+	return err
 }
 
 // GetResources returns allocated resources for the specified release (their current state)
