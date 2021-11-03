@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.5.0
+    controller-gen.kubebuilder.io/version: v0.7.0
   creationTimestamp: null
   name: plotters.app.fybrik.io
 spec:
@@ -241,7 +241,7 @@ spec:
                                                 description: Hostname is the hostname
                                                   to connect to for connecting to
                                                   a module exposed service. By default
-                                                  this equals "fybrik-crd.fybrik-system"
+                                                  this equals to "fybrik-crd.fybrik-system"
                                                   of the module. <br/> Module developers
                                                   can overide the default behavior
                                                   by providing a template that may
@@ -301,7 +301,7 @@ spec:
                                                     description: Hostname is the hostname
                                                       to connect to for connecting
                                                       to a module exposed service.
-                                                      By default this equals "fybrik-crd.fybrik-system"
+                                                      By default this equals to "fybrik-crd.fybrik-system"
                                                       of the module. <br/> Module
                                                       developers can overide the default
                                                       behavior by providing a template
@@ -395,6 +395,10 @@ spec:
                             description: Chart contains the information needed to
                               use helm to install the capability
                             properties:
+                              chartPullSecret:
+                                description: Name of secret containing helm registry
+                                  credentials
+                                type: string
                               name:
                                 description: Name of helm chart
                                 type: string
