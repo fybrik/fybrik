@@ -62,7 +62,7 @@ type Infrastructure struct {
 ### Output (`adminconfig.EvaluatorOutput`)
 
 The result of evaluating config policies on a given dataset contains deployment `Decision` for each capablility, after merging all relevant decisions for the capability.
- A conflict during evaluation result is marked by `'Valid == false`
+ A conflict during evaluation result is marked by `Valid == false`
  
 ```
 // EvaluatorOutput is an output of ConfigurationPoliciesEvaluator.
