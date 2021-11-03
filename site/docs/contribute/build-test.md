@@ -46,6 +46,9 @@ tests on it:
 make run-integration-tests
 ```
 
+It is sometimes useful to to call the integration test commands step by step, e.g., if you want to only repeat a specific step which failed without having to rerun the entire sequence. You can find the commands of the `run-integration-tests` target in the [Makefile](https://github.com/fybrik/fybrik/blob/master/Makefile).
+
+
 You can run `make kind-cleanup` to delete the created clusters when you're done.
 
 ## Building in a multi cluster environment
