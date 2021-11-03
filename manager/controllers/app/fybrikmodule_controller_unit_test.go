@@ -124,8 +124,8 @@ func TestFybrikModuleWithValidFields(t *testing.T) {
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	namespaced := types.NamespacedName{
-		Name:      "valid-module",
-		Namespace: "default",
+		Name:      "implicit-copy-batch-s3",
+		Namespace: "fybrik-system",
 	}
 	filename := "../../testdata/unittests/copy-csv-parquet.yaml"
 	fybrikApp := &app.FybrikModule{}
