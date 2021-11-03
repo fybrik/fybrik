@@ -7,11 +7,11 @@ Design a component that will evaluate config policy decisions based on the fybri
 
 ## Goals
 
-1. Design an input for the policy evaluator
-2. Design an output returned by the policy evaluator.
-3. Design an interface for policy evaluation. A default implementation will not evaluate OPA policies but rather capture hard-coded deployment decisions.
+1. Design an interface between the config policy evaluator and the manager.
 
-## Proposal
+2. Design an interface between the config policy evaluator and OPA
+
+## Interface with the manager
 
 ### Input (`adminconfig.EvaluatorInput`)
 
@@ -79,24 +79,28 @@ type EvaluatorOutput struct {
 
 `Decision` is a result of evaluating a configuration policy which satisfies the predicates of the policy.
 `Deploy` is a deployment decision (require, forbid or allow).
-`Clusters` restricts the choice of the deployment clusters.
-`Restrictions` restricts the choice of the modules to be deployed.
+`Restrictions` restricts the choice of the modules to be deployed, deployment clusters, storage accounts, etc.
 `Justifications` provides a full list of policies that have been evaluated.
 
 ```
+type Restrictions struct {
+	// Restrictions on clusters used for deployment
+	Clusters []string
+	// Restrictions on modules of the type “key”: “value” when the key is a module property (e.g. scope, type) and the value is an allowed value (e.g. asset, plugin)
+	ModuleRestrictions map[string]string
+}
+
 type Decision struct {
 	// a decision regarding deployment: True = require, False = forbid, Unknown = allow
 	Deploy corev1.ConditionStatus
-	// Deployment clusters
-	Clusters []string
-	// Deployment restrictions, e.g. type = plugin
-	Restrictions map[string]string
-	// Descriptions of policies that have been used for evaluation
+	// Deployment restrictions on modules, clusters and additional resources
+	Restrictions DeploymentRestrictions
+	// Descriptions of policies that have been triggered during evaluation
 	Jusifications []string
 }
 ```
 
-### Interface (`adminconfig.EvaluatorInterface`)
+### Functionality (`adminconfig.EvaluatorInterface`)
 
 Any implementation of the config policy evaluator should implement this interface.
 
@@ -110,3 +114,22 @@ type EvaluatorInterface interface {
 
 `SetupWithInfrastructureManager` attaches `InfrastructureManager` to the evaluator to obtain the `Infrastructure` object.
 `Evaluate` evaluates config policies based on `EvaluatorInput` and returns `EvaluatorOutput`.
+
+## Interface with OPA
+
+Configuration policies are written in Rego language and are evaluated using OPA (Open Policy Agent).
+Interaction between the evaluator and OPA is done using internal OPA golang packages (see https://pkg.go.dev/github.com/open-policy-agent/opa/rego#Rego.Eval)
+
+### Policies
+
+#### Syntax
+
+TBD
+
+#### Mechanism for loading policies
+
+TBD - file(s) provided during deployment or a config map?
+
+#### Merging policy decisions
+
+TBD
