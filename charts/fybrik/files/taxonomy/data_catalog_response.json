@@ -4,29 +4,30 @@
   "type": "object",
   "properties": {
     "name": {
-      "type": "string"
+      "type": "string",
+      "description": "Name of the asset"
     },
-    "Asset": {
-      "$ref": "#/definitions/AssetSpec"
+    "asset": {
+      "$ref": "#/definitions/assetSpec"
     }
   },
   "additionalProperties": false,
   "required": [
     "name",
-    "Asset"
+    "asset"
   ],
   "definitions": {
-    "AssetSpec": {
+    "assetSpec": {
       "type": "object",
       "properties": {
-        "secretRef": {
-          "$ref": "#/definitions/SecretRef"
+        "secret": {
+          "$ref": "#/definitions/secret"
         },
         "assetMetadata": {
-          "$ref": "#/definitions/AssetMetadata"
+          "$ref": "#/definitions/assetMetadata"
         },
         "assetDetails": {
-          "$ref": "#/definitions/AssetDetails"
+          "$ref": "#/definitions/assetDetails"
         }
       },
       "required": [
@@ -35,10 +36,10 @@
         "assetDetails"
       ]
     },
-    "SecretRef": {
+    "secret": {
       "$ref": "taxonomy.json#/definitions/Authentication"
     },
-    "AssetDetails": {
+    "assetDetails": {
       "type": "object",
       "description": "Asset details",
       "properties": {
@@ -53,7 +54,7 @@
         "connection"
       ]
     },
-    "AssetMetadata": {
+    "assetMetadata": {
       "type": "object",
       "properties": {
         "owner": {

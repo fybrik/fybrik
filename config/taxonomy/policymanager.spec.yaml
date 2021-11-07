@@ -34,31 +34,3 @@ paths:
                 $ref: "../../charts/fybrik/files/taxonomy/policy_manager_response.json"
         '400':
           description: Invalid status value
-
-  /getDatasetInfo:
-      post:
-        summary: getDatasetInfo.
-        parameters:
-          - in: header
-            name: X-Request-DataCatalog-Cred
-            schema:
-              type: string
-            required: true
-        requestBody:
-          description: Data Catalog Request Object.
-          required: true
-          content:
-            application/json:
-              schema:
-                type: object
-                $ref: "../../charts/fybrik/files/taxonomy/data_catalog_request.json"
-        responses:
-          '200':
-            description: successful operation
-            content:
-              application/json:
-                schema:
-                  type: object
-                  $ref: "../../charts/fybrik/files/taxonomy/data_catalog_response.json"
-          '400':
-            description: Invalid status value

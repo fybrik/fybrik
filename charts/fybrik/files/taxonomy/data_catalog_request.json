@@ -1,19 +1,14 @@
 {
 	"$schema": "http://json-schema.org/draft-04/schema#",
-	"title": "Data Catalog Request",
+	"title": "Data Catalog Request - GetDatasetDetails",
 	"type": "object",
 	"properties": {
-	  "datasetid": {
-		"$ref": "#/definitions/datasetid"
+	  "assetID": {
+		"type": "string"
 	  }
 	},
 	"additionalProperties": false,
 	"required": [
-	  "datasetid"
-	],
-	"definitions": {
-        "datasetid": {
-            "type": "string"
-        }
-	}
-  }
+	  "assetID"
+	]
+}
