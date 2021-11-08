@@ -89,12 +89,15 @@ func (r *RegoPolicyEvaluator) prepareQuery() (rego.PreparedEvalQuery, error) {
 	}
 	modules := map[string]string{}
 	for _, info := range files {
-		fileName := info.Name()
-		module, err := ReadFile(RegoPolicyDirectory + fileName)
+		name := info.Name()
+		module, err := ioutil.ReadFile(RegoPolicyDirectory + name)
 		if err != nil {
 			return rego.PreparedEvalQuery{}, err
 		}
-		modules[fileName] = module
+		if err != nil {
+			return rego.PreparedEvalQuery{}, err
+		}
+		modules[name] = string(module)
 	}
 	compiler, err := ast.CompileModules(modules)
 
@@ -251,13 +254,4 @@ func (r *RegoPolicyEvaluator) merge(newDecision Decision, oldDecision Decision) 
 	}
 	mergedDecision.Policy.Description += newDecision.Policy.Description
 	return true, mergedDecision
-}
-
-// a helper function for reading file content
-func ReadFile(name string) (string, error) {
-	content, err := ioutil.ReadFile(name)
-	if err != nil {
-		return "", errors.Wrap(err, "Could not read a file "+name)
-	}
-	return string(content), nil
 }
