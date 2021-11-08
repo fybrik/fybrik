@@ -25,7 +25,6 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
 	../config/taxonomy/example/application/appinfo.yaml ../config/taxonomy/example/application/interface.yaml \
 	../config/taxonomy/example/catalog/locations.yaml ../config/taxonomy/example/catalog/tags.yaml \
 	../config/taxonomy/example/module/actions.yaml ../config/taxonomy/example/module/capability.yaml ../config/taxonomy/example/module/plugintype.yaml
-	cp testdata/unittests/sampletaxonomy/taxonomy.json /tmp/taxonomy/taxonomy.json
 
 # Run tests
 test: export BLUEPRINT_NAMESPACE?=fybrik-blueprints
