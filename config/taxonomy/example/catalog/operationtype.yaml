@@ -1,0 +1,3 @@
+definitions:
+  OperationType:
+    enum: ["read", "create", "delete"]

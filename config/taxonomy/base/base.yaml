@@ -51,3 +51,5 @@ definitions:
       additionalProperties: true
       required:
         - name
+  OperationType:
+    type: string

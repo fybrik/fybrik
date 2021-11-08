@@ -151,6 +151,14 @@
         }
       }
     },
+    "OperationType": {
+      "type": "string",
+      "enum": [
+        "create",
+        "delete",
+        "read"
+      ]
+    },
     "PluginType": {
       "type": "string"
     },

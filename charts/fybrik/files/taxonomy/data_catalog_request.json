@@ -5,6 +5,9 @@
 	"properties": {
 	  "assetID": {
 		"type": "string"
+	  },
+	  "operationType": {
+		"$ref": "taxonomy.json#/definitions/OperationType"
 	  }
 	},
 	"additionalProperties": false,
