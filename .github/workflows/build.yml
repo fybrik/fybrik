@@ -102,6 +102,31 @@ jobs:
         path: images.tar
         retention-days: 1
 
+  notebook-sample:
+    name: Notebook sample
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_HOSTNAME: "localhost:5000"
+      DOCKER_NAMESPACE: fybrik-system
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - uses: actions/checkout@v2
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/go/pkg/mod
+          ${{ github.workspace }}/hack/tools/bin
+        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
+    - name: Install tools
+      run: make install-tools
+    - name: Notebook tests
+      run: make run-notebook-tests
+
   tekton-pipelines:
     name: Tekton Tests
     runs-on: ubuntu-latest
