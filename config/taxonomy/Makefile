@@ -20,8 +20,11 @@ generate-base-policymanager: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.js
 		--enable-post-process-file \
 		--type-mappings=object=interface{}
 
+charts/taxonomy-catalogconnector.json:
+	go run $(ROOT_DIR)/main.go taxonomy compile --codegen --base ./base/base.yaml ./example/catalog/authentication.yaml ./example/catalog/connection.yaml --out $(ROOT_DIR)/charts/fybrik/files/taxonomy/taxonomy.json
+
 .PHONY: generate-base-catalogconnector
-generate-base-catalogconnector: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
+generate-base-catalogconnector: $(TOOLBIN)/openapi-generator-cli charts/taxonomy-catalogconnector.json
 	mkdir -p $(ROOT_DIR)/pkg/taxonomy/model/base
 	$(TOOLBIN)/openapi-generator-cli generate -i ./catalogconnector.spec.yaml -g go -o $(ROOT_DIR)/pkg/taxonomy/model/base --global-property=models,modelDocs=false \
 		--additional-properties=packageName=base \
