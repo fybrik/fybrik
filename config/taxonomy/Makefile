@@ -22,6 +22,8 @@ generate-base-policymanager: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.js
 
 charts/taxonomy-catalogconnector.json:
 	go run $(ROOT_DIR)/main.go taxonomy compile --codegen --base ./base/base.yaml ./example/catalog/authentication.yaml ./example/catalog/connection.yaml --out $(ROOT_DIR)/charts/fybrik/files/taxonomy/taxonomy.json
+	go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/data_catalog_request.json
+	go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/data_catalog_response.json
 
 .PHONY: generate-base-catalogconnector
 generate-base-catalogconnector: $(TOOLBIN)/openapi-generator-cli charts/taxonomy-catalogconnector.json
