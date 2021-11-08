@@ -5,10 +5,10 @@
 apiVersion: app.fybrik.io/v1alpha1
 kind: FybrikModule
 metadata:
-  name: module-with-interface-errors
+  name: valid-module
   namespace: fybrik-system
   labels:
-    name: module-with-interface-errors
+    name: valid-module
     version: 0.1.0 
 spec:
   type: service
@@ -17,7 +17,10 @@ spec:
       supportedInterfaces:
       - source:
           protocol: kafka
-          dataformat: csv
+          dataformat: json
+        sink:
+          protocol: s3
+          dataformat: parquet
       actions:
       - name: RedactAction
         columns:

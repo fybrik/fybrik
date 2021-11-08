@@ -6,6 +6,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"encoding/json"
 
@@ -98,7 +99,6 @@ func ValidateFybrikModule(module *api.FybrikModule, taxonomyFile string) error {
 	if err != nil {
 		return err
 	}
-
 	// Validate Fybrik module against taxonomy
 	allErrs = validate.TaxonomyCheck(moduleJSON, taxonomyFile, "Fybrik module")
 

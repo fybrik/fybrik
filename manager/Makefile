@@ -21,7 +21,11 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
 	mkdir testdata/unittests/sampletaxonomy || true
 	cp ../charts/fybrik/files/taxonomy/*.json testdata/unittests/basetaxonomy
 	cp ../charts/fybrik/files/taxonomy/*.json testdata/unittests/sampletaxonomy
-	go run ../main.go taxonomy compile --out testdata/unittests/sampletaxonomy/taxonomy.json --base ../config/taxonomy/base/base.yaml ../config/taxonomy/example/application/appinfo.yaml ../config/taxonomy/example/application/interface.yaml ../config/taxonomy/example/catalog/locations.yaml ../config/taxonomy/example/catalog/tags.yaml ../config/taxonomy/example/module/actions.yaml 
+	go run ../main.go taxonomy compile --out testdata/unittests/sampletaxonomy/taxonomy.json --base ../config/taxonomy/base/base.yaml \
+	../config/taxonomy/example/application/appinfo.yaml ../config/taxonomy/example/application/interface.yaml \
+	../config/taxonomy/example/catalog/locations.yaml ../config/taxonomy/example/catalog/tags.yaml \
+	../config/taxonomy/example/module/actions.yaml ../config/taxonomy/example/module/capability.yaml ../config/taxonomy/example/module/plugintype.yaml
+	cp testdata/unittests/sampletaxonomy/taxonomy.json /tmp/taxonomy/taxonomy.json
 
 # Run tests
 test: export BLUEPRINT_NAMESPACE?=fybrik-blueprints

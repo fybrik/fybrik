@@ -1695,16 +1695,7 @@ FybrikModuleStatus defines the observed state of FybrikModule.
         <td><b>errorMessage</b></td>
         <td>string</td>
         <td>
-          ErrorMessage indicates that an error has happened during the reconcile, unrelated to a specific asset<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>observedGeneration</b></td>
-        <td>integer</td>
-        <td>
-          ObservedGeneration is taken from the FybrikModule metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether the Blueprint status changed.<br/>
-          <br/>
-            <i>Format</i>: int64<br/>
+          ErrorMessage indicates that an error has happened during the module validation<br/>
         </td>
         <td>false</td>
       </tr><tr>

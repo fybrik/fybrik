@@ -275,15 +275,8 @@ spec:
             properties:
               errorMessage:
                 description: ErrorMessage indicates that an error has happened during
-                  the reconcile, unrelated to a specific asset
+                  the module validation
                 type: string
-              observedGeneration:
-                description: ObservedGeneration is taken from the FybrikModule metadata.  This
-                  is used to determine during reconcile whether reconcile was called
-                  because the desired state changed, or whether the Blueprint status
-                  changed.
-                format: int64
-                type: integer
               validModule:
                 description: ValidModule indicates whether the FybrikModule is valid
                   given the defined taxonomy

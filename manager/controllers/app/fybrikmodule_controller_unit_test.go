@@ -124,10 +124,10 @@ func TestFybrikModuleWithValidFields(t *testing.T) {
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	namespaced := types.NamespacedName{
-		Name:      "implicit-copy-batch-s3",
+		Name:      "valid-module",
 		Namespace: "fybrik-system",
 	}
-	filename := "../../testdata/unittests/copy-csv-parquet.yaml"
+	filename := "../../testdata/unittests/fybrikmodule-validActions.yaml"
 	fybrikApp := &app.FybrikModule{}
 	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
 	fybrikApp.SetGeneration(1)
