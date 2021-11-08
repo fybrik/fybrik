@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
 
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
@@ -74,8 +75,7 @@ func (r *RegoPolicyEvaluator) prepareQuery() (rego.PreparedEvalQuery, error) {
 	if bytes, err = yaml.Marshal(r.Data); err != nil {
 		return rego.PreparedEvalQuery{}, errors.Wrap(err, "couldn't marshall Data structure")
 	}
-	fmt.Println("Data\n" + string(bytes))
-	if err = yaml.Unmarshal([]byte(bytes), &json); err != nil {
+	if err = yaml.Unmarshal(bytes, &json); err != nil {
 		return rego.PreparedEvalQuery{}, errors.Wrap(err, "couldn't unmarshall Data structure")
 	}
 	// Manually create the storage layer. inmem.NewFromObject returns an
@@ -90,7 +90,8 @@ func (r *RegoPolicyEvaluator) prepareQuery() (rego.PreparedEvalQuery, error) {
 	modules := map[string]string{}
 	for _, info := range files {
 		name := info.Name()
-		module, err := ioutil.ReadFile(RegoPolicyDirectory + name)
+		fileName := filepath.Join(RegoPolicyDirectory, name)
+		module, err := ioutil.ReadFile(filepath.Clean(fileName))
 		if err != nil {
 			return rego.PreparedEvalQuery{}, err
 		}
@@ -185,12 +186,15 @@ func (r *RegoPolicyEvaluator) getOPADecisions(rs rego.ResultSet) (DecisionPerCap
 					for capability, newDecision := range rule {
 						// apply defaults for undefined fields
 						// string -> ConditionStatus conversion
-						if newDecision.Deploy == "" {
-							newDecision.Deploy = defaultDecision.Deploy
-						} else if newDecision.Deploy == "true" {
+						switch newDecision.Deploy {
+						case "true":
 							newDecision.Deploy = corev1.ConditionTrue
-						} else if newDecision.Deploy == "false" {
+						case "false":
 							newDecision.Deploy = corev1.ConditionFalse
+						case "":
+							newDecision.Deploy = defaultDecision.Deploy
+						default:
+							return nil, errors.New("Illegal value for Deploy: " + string(newDecision.Deploy))
 						}
 						if len(newDecision.DeploymentRestrictions.Clusters) == 0 {
 							newDecision.DeploymentRestrictions.Clusters = defaultDecision.DeploymentRestrictions.Clusters
