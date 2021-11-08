@@ -47,7 +47,7 @@
           "$ref": "taxonomy.json#/definitions/Connection"
         },
         "dataFormat": {
-          "type": "string"
+          "$ref": "taxonomy.json#/definitions/Dataformat"
         }
       },
       "required": [
