@@ -6,7 +6,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"encoding/json"
 
