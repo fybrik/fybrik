@@ -14,32 +14,32 @@ import (
 // WorkloadInfo holds workload details such as cluster/region, type, etc.
 type WorkloadInfo struct {
 	// Cluster where the user workload is running
-	Cluster multicluster.Cluster
+	Cluster multicluster.Cluster `json:"cluster"`
 }
 
 // Request is a request to use a specific asset
 type Request struct {
 	// asset identifier
-	DatasetID string
+	DatasetID string `json:"datasetID"`
 	// requested interface
-	Interface api.InterfaceDetails
+	Interface api.InterfaceDetails `json:"interface"`
 	// requested usage, e.g. "read": true, "write": false
-	Usage map[api.DataFlow]bool
+	Usage map[api.DataFlow]bool `json:"usage"`
 }
 
 // EvaluatorInput is an input to Configuration Policies Evaluator.
 // Used to evaluate configuration policies.
 type EvaluatorInput struct {
 	// Workload configuration
-	Workload WorkloadInfo
+	Workload WorkloadInfo `json:"workload"`
 	// Application properties
-	AppInfo api.ApplicationDetails
+	AppInfo api.ApplicationDetails `json:"application,omitempty"`
 	// Asset metadata
-	AssetMetadata *assetmetadata.DataDetails
+	AssetMetadata *assetmetadata.DataDetails `json:"dataset"`
 	// Requirements for asset usage
-	AssetRequirements Request
+	AssetRequirements Request `json:"request"`
 	// Governance Actions for reading data (relevant for read scenarios only)
-	GovernanceActions []model.Action
+	GovernanceActions []model.Action `json:"actions"`
 }
 
 // SetApplicationInfo generates a new AppInfo object based on FybrikApplication and updates the input structure

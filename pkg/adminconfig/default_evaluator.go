@@ -31,15 +31,6 @@ func (r *DefaultConfig) SetupWithInfrastructureManager(mgr *InfrastructureManage
 	}
 }
 
-// DefaultDecision creates a Decision object with some defaults e.g. any cluster is available
-func (r *DefaultConfig) DefaultDecision(in *EvaluatorInput) Decision {
-	anyCluster := []string{in.Workload.Cluster.Name}
-	for _, cluster := range r.Data.Clusters {
-		anyCluster = append(anyCluster, cluster.Name)
-	}
-	return Decision{Deploy: corev1.ConditionUnknown, Clusters: anyCluster}
-}
-
 // Evaluate replaces hard-coded decisions in manager by default configuration
 // The following logic is implemented:
 /* 	Read capability is deployed in a read-type scenario.
@@ -63,11 +54,15 @@ func (r *DefaultConfig) Evaluate(in *EvaluatorInput) (EvaluatorOutput, error) {
 	if in.AssetRequirements.Usage[api.ReadFlow] {
 		deployRead = corev1.ConditionTrue
 	}
-	decisions[api.Read] = Decision{Deploy: deployRead, Clusters: []string{in.Workload.Cluster.Name},
-		Restrictions: map[string]string{"capabilities.scope": "workload"}}
+	decisions[api.Read] = Decision{Deploy: deployRead,
+		DeploymentRestrictions: Restrictions{
+			Clusters:           []string{in.Workload.Cluster.Name},
+			ModuleRestrictions: map[string]string{"capabilities.scope": "workload"},
+		},
+	}
 	decisions[api.Write] = Decision{Deploy: corev1.ConditionFalse}
 
-	copyDecision := r.DefaultDecision(in)
+	copyDecision := DefaultDecision(r.Data)
 	if in.AssetRequirements.Usage[api.CopyFlow] {
 		copyDecision.Deploy = corev1.ConditionTrue
 	}
@@ -80,11 +75,11 @@ func (r *DefaultConfig) Evaluate(in *EvaluatorInput) (EvaluatorOutput, error) {
 	}
 	if deployRead == corev1.ConditionTrue && len(in.GovernanceActions) > 0 && in.Workload.Cluster.Metadata.Region != in.AssetMetadata.Geography {
 		copyDecision.Deploy = corev1.ConditionTrue
-		copyDecision.Clusters = clustersInRegion
+		copyDecision.DeploymentRestrictions.Clusters = clustersInRegion
 	}
 
-	transformDecision := r.DefaultDecision(in)
-	transformDecision.Clusters = clustersInRegion
+	transformDecision := DefaultDecision(r.Data)
+	transformDecision.DeploymentRestrictions.Clusters = clustersInRegion
 
 	decisions[api.Transform] = transformDecision
 	decisions[api.Copy] = copyDecision
