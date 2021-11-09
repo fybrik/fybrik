@@ -56,7 +56,6 @@ func (r *FybrikModuleReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		// do validation on moduleContext
 		const moduleTaxonomyFile = "/tmp/taxonomy/fybrik_module.json"
 		err := ValidateFybrikModule(moduleContext, moduleTaxonomyFile)
-		log.V(0).Info("Reconciler validating Fybrik module")
 		moduleContext.Status.ValidatedGeneration = moduleVersion
 		// if validation fails
 		if err != nil {

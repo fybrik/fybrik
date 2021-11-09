@@ -46,13 +46,13 @@ func TestFybrikModuleWithInvalidInterface(t *testing.T) {
 		Namespace: "fybrik-system",
 	}
 	filename := "../../testdata/unittests/fybrikmodule-interfaceErrors.yaml"
-	fybrikApp := &app.FybrikModule{}
-	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
-	fybrikApp.SetGeneration(1)
+	fybrikModule := &app.FybrikModule{}
+	g.Expect(readObjectFromFile(filename, fybrikModule)).NotTo(gomega.HaveOccurred())
+	fybrikModule.SetGeneration(1)
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
-		fybrikApp,
+		fybrikModule,
 	}
 	// Register operator types with the runtime scheme.
 	s := utils.NewScheme(g)
@@ -87,13 +87,13 @@ func TestFybrikModuleWithInvalidActions(t *testing.T) {
 		Namespace: "fybrik-system",
 	}
 	filename := "../../testdata/unittests/fybrikmodule-actionsErrors.yaml"
-	fybrikApp := &app.FybrikModule{}
-	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
-	fybrikApp.SetGeneration(1)
+	fybrikModule := &app.FybrikModule{}
+	g.Expect(readObjectFromFile(filename, fybrikModule)).NotTo(gomega.HaveOccurred())
+	fybrikModule.SetGeneration(1)
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
-		fybrikApp,
+		fybrikModule,
 	}
 	// Register operator types with the runtime scheme.
 	s := utils.NewScheme(g)
@@ -128,13 +128,13 @@ func TestFybrikModuleWithValidFields(t *testing.T) {
 		Namespace: "fybrik-system",
 	}
 	filename := "../../testdata/unittests/fybrikmodule-validActions.yaml"
-	fybrikApp := &app.FybrikModule{}
-	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
-	fybrikApp.SetGeneration(1)
+	fybrikModule := &app.FybrikModule{}
+	g.Expect(readObjectFromFile(filename, fybrikModule)).NotTo(gomega.HaveOccurred())
+	fybrikModule.SetGeneration(1)
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
-		fybrikApp,
+		fybrikModule,
 	}
 	// Register operator types with the runtime scheme.
 	s := utils.NewScheme(g)
