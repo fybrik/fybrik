@@ -3,7 +3,7 @@ Component for Config Policy Decisions
 
 ## Summary
 
-Design a component that will evaluate config policies and provide the manager with deployment decisions, such as what capabilities should be deployed, while restriciting the choice of the clusters, modules and other resources used for the deployment. The evaluation process is based on the workload in use by the fybrikapplication, asset metadata and infrastructure (e.g. available clusters).
+Design a component that will evaluate config policies and provide the manager with deployment decisions, such as what capabilities should be deployed, while restricting the choice of the clusters, modules and other resources used for the deployment. The evaluation process is based on the workload in use by the fybrikapplication, asset metadata and infrastructure (e.g. available clusters).
 
 ## Goals
 
