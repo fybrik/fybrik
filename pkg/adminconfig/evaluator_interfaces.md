@@ -134,6 +134,23 @@ type EvaluatorInterface interface {
 Configuration policies are written in Rego language and are evaluated using OPA (Open Policy Agent).
 Interaction between the evaluator and OPA is done using internal OPA golang packages (see https://pkg.go.dev/github.com/open-policy-agent/opa/rego#Rego.Eval)
 
+Information that passes from config policies' evaluator to OPA has three main ingredeients:
+
+- The `data` json object with infrastructure details, such as available clusters, available object stores, etc. Infrastructure is known at the deployment time and is not changed frequently. The `Infrastructure` object is obtained using `InfrastructureManager` that has interfaces and clients that can access various kubernetes resources, such as configmaps and custom resources. 
+
+- `Modules` with policies created by IT administrator. Modules exist at the deployment time and are unlikely to be changed frequently. 
+
+- Dynamic `input` that has the details of the workload, asset metadata and the user request. Inputs are constructed on each reconciliation of FybrikApplication.
+
+Interaction with OPA is done in two steps. First, a `PreparedEvalQuery` is created using the `data` json and compiled `modules`. This should be done upon changes in policies and/or infrastructure details. Then, the query is evaluated on `input` during each time the plotter object needs to be generated.
+
+The mechanism of tracking the changes in infrastructure and policies is TBD. In the initial approach, infrastructure and modules are loaded once.
+
+After the query is evaluated, it is parsed into a list of decisions per capability. Then, all decisions on the same capability are merged into one. For example, a decision to deploy read at the workload scope and a decision to deploy read in the workload cluster will result in a single decision to deploy read at the workload scope in the workload cluster. A decision to deploy a capability in clusterA, merged with a decision to deploy this capability in 
+any available cluster, will result in a decision to deploy in clusterA.
+
+If the merge process does not succeed to provide a consistent solution, `Valid` will be set to false in `EvaluatorOutput`, and plotter generation will fail.
+
 ### Policies
 
 #### Syntax
@@ -157,9 +174,13 @@ Rules are written in the following syntax: `config[{capability: decision}]` wher
 }
 ```
 
-#### Default policies
+#### Mandatory policies
 
-The policies below come with the fybrik deployment. They define the deployment of basic capabilities, such as read and write.
+Mandatory policies come with the fybrik deployment. They define the deployment of basic capabilities, such as read and write. 
+Mandatory policies reside in /tmp/adminconfig/ directory of the manager pod. 
+Any other policy package will be loaded in addition to these policies.
+
+The package below defines the mandatory policies.
 
 ```
 package adminconfig.default_policies
@@ -179,7 +200,13 @@ config[{"write": decision}] {
 
 #### Extended policies
 
-The extended policies define advanced deployment requirements, such as where read or transform modules should run, what should be the scope of module deployments, and more. These policies are provided as a sample and should be replaced for the production deployment.
+The extended policies define advanced deployment requirements, such as where read or transform modules should run, what should be the scope of module deployments, and more. 
+
+In the initial approach, the extended policies will be loaded during the control plane deployment, and will reside in /tmp/adminconfig/ together with the mandatory policies.
+
+In the future, the extended policies will be loaded dynamically via a configmap.
+
+The policies below are provided as a sample and should be replaced for the production deployment.
 
 ```
 package adminconfig.quickstart_policies
