@@ -65,7 +65,7 @@ The result of evaluating config policies on a given dataset contains deployment 
  A conflict during evaluation result is marked by `Valid == false`
  For each capability, the decision will provide the manager with the following information:
  - whether the capability should be deployed, should not be deployed, or is allowed to be deployed based on manager decision.
- - a restriction on the clusters where the capability will be deployes
+ - a restriction on the clusters where the capability will be deployed
  - a restriction on the modules deploying this capability (e.g. deployment scope)
  
 ```
