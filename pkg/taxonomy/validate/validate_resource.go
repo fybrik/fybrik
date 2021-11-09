@@ -14,7 +14,7 @@ import (
 // ValidateResource validates the given resource JSON against the taxonomy file provided
 func TaxonomyCheck(resourceJSON []byte, taxonomy string, resourceName string) []*field.Error {
 	var allErrs []*field.Error
-	log.Printf("Taxonomy check function \n")
+
 	// Load taxonomy from file mounted in configMap
 	path, err := filepath.Abs(taxonomy)
 	if err != nil {
@@ -23,7 +23,6 @@ func TaxonomyCheck(resourceJSON []byte, taxonomy string, resourceName string) []
 
 	// Validate resource against taxonomy
 	taxonomyLoader := gojsonschema.NewReferenceLoader("file://" + path)
-	log.Printf("Taxonomy file is " + path)
 	documentLoader := gojsonschema.NewStringLoader(string(resourceJSON))
 	result, err := gojsonschema.Validate(taxonomyLoader, documentLoader)
 	if err != nil {
