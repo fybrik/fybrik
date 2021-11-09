@@ -33,7 +33,6 @@ type PackageExpressions map[string]RuleExpressions
 const RegoPolicyDirectory = "/tmp/adminconfig/"
 
 // RegoPolicyEvaluator implements EvaluatorInterface
-// It evaluates policies from pkg/adminconfig/policies directory
 type RegoPolicyEvaluator struct {
 	Manager      *InfrastructureManager
 	Data         *Infrastructure

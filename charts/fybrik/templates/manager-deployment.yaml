@@ -136,6 +136,9 @@ spec:
         - name: fybrik-taxonomy
           configMap:
             name: fybrik-taxonomy-config
+        - name: fybrik-adminconfig
+          configMap:
+            name: fybrik-adminconfig
         {{- if .Values.manager.chartVolume }}
         - name: charts
           persistentVolumeClaim:

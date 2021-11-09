@@ -18,7 +18,7 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
 	mkdir /tmp/taxonomy || true
 	mkdir /tmp/adminconfig || true
 	cp ../charts/fybrik/files/taxonomy/*.json /tmp/taxonomy/
-	cp ../pkg/adminconfig/policies/*.rego /tmp/adminconfig/
+	cp ../charts/adminconfig/*.rego /tmp/adminconfig/
 	mkdir testdata/unittests/basetaxonomy || true
 	mkdir testdata/unittests/sampletaxonomy || true
 	cp ../charts/fybrik/files/taxonomy/*.json testdata/unittests/basetaxonomy
