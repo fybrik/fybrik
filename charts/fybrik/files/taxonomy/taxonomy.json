@@ -49,7 +49,10 @@
       "additionalProperties": false
     },
     "OperationType": {
-      "type": "string"
+      "type": "string",
+      "enum": [
+        "read"
+      ]
     },
     "PluginType": {
       "type": "string"

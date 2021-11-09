@@ -45,3 +45,4 @@ definitions:
         - name
   OperationType:
     type: string
+    enum: ["read"]
