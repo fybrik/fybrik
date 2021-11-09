@@ -88,6 +88,9 @@ func (r *RegoPolicyEvaluator) prepareQuery() (rego.PreparedEvalQuery, error) {
 	}
 	modules := map[string]string{}
 	for _, info := range files {
+		if info.IsDir() {
+			continue
+		}
 		name := info.Name()
 		fileName := filepath.Join(RegoPolicyDirectory, name)
 		module, err := ioutil.ReadFile(filepath.Clean(fileName))
