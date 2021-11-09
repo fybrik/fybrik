@@ -66,7 +66,7 @@ set -a; . .env; set +a
 ### Copy taxonomy JSON files and config policies locally
 ```bash
 cp -R ../charts/fybrik/files/taxonomy /tmp
-cp -R ../charts/adminconfig/* /tmp/adminconfig/
+cp -R ../charts/fybrik/files/adminconfig/* /tmp/adminconfig/
 ```
 
 ### Run the manager
