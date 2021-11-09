@@ -64,8 +64,8 @@
         "geography": {
           "type": "string"
         },
-        "tags": {
-          "$ref": "taxonomy.json#/definitions/Tags"
+        "metadata": {
+          "$ref":"policy_manager_request.json#/definitions/Resource"
         }
       }
     }
