@@ -43,13 +43,5 @@ definitions:
       additionalProperties: true
       required:
         - name
-  Authentication:
-      type: object
-      properties:
-        name:
-          type: string
-      additionalProperties: true
-      required:
-        - name
   OperationType:
     type: string

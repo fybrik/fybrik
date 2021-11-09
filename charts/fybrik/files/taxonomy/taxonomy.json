@@ -15,91 +15,20 @@
     "AppInfo": {
       "type": "object"
     },
-    "Authentication": {
+    "Capability": {
+      "type": "string"
+    },
+    "Connection": {
       "type": "object",
-      "description": "Authentication parameters",
       "properties": {
-        "access_key": {
-          "type": "string",
-          "description": "Access key also known as AccessKeyId"
-        },
-        "api_key": {
-          "type": "string",
-          "description": "API key used in various IAM enabled services"
-        },
         "name": {
           "type": "string"
-        },
-        "password": {
-          "type": "string",
-          "description": "Password for basic authentication"
-        },
-        "secret_key": {
-          "type": "string",
-          "description": "Secret key also known as SecretAccessKey"
-        },
-        "username": {
-          "type": "string",
-          "description": "Username for basic authentication"
         }
       },
       "additionalProperties": true,
       "required": [
         "name"
       ]
-    },
-    "Capability": {
-      "type": "string"
-    },
-    "Connection": {
-      "type": "object",
-      "description": "Connection information",
-      "properties": {
-        "DB2": {
-          "$ref": "#/definitions/DB2"
-        },
-        "Kafka": {
-          "$ref": "#/definitions/Kafka"
-        },
-        "S3": {
-          "$ref": "#/definitions/S3"
-        },
-        "name": {
-          "$ref": "#/definitions/ConnectionName"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "name"
-      ]
-    },
-    "ConnectionName": {
-      "type": "string",
-      "enum": [
-        "DB2",
-        "Kafka",
-        "S3"
-      ]
-    },
-    "DB2": {
-      "type": "object",
-      "properties": {
-        "database": {
-          "type": "string"
-        },
-        "port": {
-          "type": "string"
-        },
-        "ssl": {
-          "type": "string"
-        },
-        "table": {
-          "type": "string"
-        },
-        "url": {
-          "type": "string"
-        }
-      }
     },
     "Dataformat": {
       "type": "string"
@@ -119,45 +48,8 @@
       },
       "additionalProperties": false
     },
-    "Kafka": {
-      "type": "object",
-      "properties": {
-        "bootstrap_servers": {
-          "type": "string"
-        },
-        "key_deserializer": {
-          "type": "string"
-        },
-        "sasl_mechanism": {
-          "type": "string"
-        },
-        "schema_registry": {
-          "type": "string"
-        },
-        "security_protocol": {
-          "type": "string"
-        },
-        "ssl_truststore": {
-          "type": "string"
-        },
-        "ssl_truststore_password": {
-          "type": "string"
-        },
-        "topic_name": {
-          "type": "string"
-        },
-        "value_deserializer": {
-          "type": "string"
-        }
-      }
-    },
     "OperationType": {
-      "type": "string",
-      "enum": [
-        "create",
-        "delete",
-        "read"
-      ]
+      "type": "string"
     },
     "PluginType": {
       "type": "string"
@@ -171,29 +63,6 @@
     },
     "Protocol": {
       "type": "string"
-    },
-    "S3": {
-      "type": "object",
-      "description": "Connection information for S3 compatible object store",
-      "properties": {
-        "bucket": {
-          "type": "string"
-        },
-        "endpoint": {
-          "type": "string"
-        },
-        "objectKey": {
-          "type": "string"
-        },
-        "region": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "bucket",
-        "endpoint",
-        "objectKey"
-      ]
     },
     "Tags": {
       "type": "object",

@@ -20,8 +20,8 @@
     "assetSpec": {
       "type": "object",
       "properties": {
-        "secret": {
-          "$ref": "#/definitions/secret"
+        "assetCredentials": {
+          "$ref": "#/definitions/vaultPluginPath"
         },
         "assetMetadata": {
           "$ref": "#/definitions/assetMetadata"
@@ -31,13 +31,14 @@
         }
       },
       "required": [
-        "secretRef",
+        "assetCredentials",
         "assetMetadata",
         "assetDetails"
       ]
     },
-    "secret": {
-      "$ref": "taxonomy.json#/definitions/Authentication"
+    "vaultPluginPath": {
+      "type": "string",
+      "description": "This has the vault plugin path where the data credentials will be stored as kubernetes secrets. This value is assumed to be known to the catalog connector."
     },
     "assetDetails": {
       "type": "object",
