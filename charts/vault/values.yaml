@@ -9,4 +9,4 @@ plugins:
     namespaces: 
       #- fybrik-notebook-sample
       #- fybrik-system
-blueprintNamespace: "fybrik-blueprints"
+modulesNamespace: "fybrik-blueprints"
