@@ -9,7 +9,7 @@ subjects:
   name:  vault
   namespace: {{ $.Release.Namespace }}
 roleRef:
-  kind: ClusterRole
+  kind: Role
   name: vault-secrets-manager
   apiGroup: rbac.authorization.k8s.io
 ---
