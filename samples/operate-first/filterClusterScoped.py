@@ -37,6 +37,7 @@ def createKustomizations():
 
 def main():
     splitToYamls('fybrik-crd.yaml')
+    splitToYamls('fybrik-vault.yaml')
     print("Successfully split files into yamls and wrote to appropriate directories\n")   
     
     createKustomizations()
