@@ -147,15 +147,15 @@ func TestS3Notebook(t *testing.T) {
 		return application.Status.Ready
 	}, timeout, interval).Should(gomega.Equal(true))
 
-	blueprintNamespace := utils.GetBlueprintNamespace()
-	fmt.Printf("blueprint namespace notebook test: %s\n", blueprintNamespace)
+	modulesNamespace := utils.GetDefaultModulesNamespace()
+	fmt.Printf("data access module namespace notebook test: %s\n", modulesNamespace)
 
 	// Forward port of arrow flight service to local port
-	svcName := strings.Replace(application.Status.AssetStates["fybrik-notebook-sample/data-csv"].Endpoint.Hostname, "."+blueprintNamespace, "", 1)
+	svcName := strings.Replace(application.Status.AssetStates["fybrik-notebook-sample/data-csv"].Endpoint.Hostname, "."+modulesNamespace, "", 1)
 	port := application.Status.AssetStates["fybrik-notebook-sample/data-csv"].Endpoint.Port
 
 	By("Starting kubectl port-forward for arrow-flight")
-	listenPort, err := test.RunPortForward(blueprintNamespace, svcName, int(port))
+	listenPort, err := test.RunPortForward(modulesNamespace, svcName, int(port))
 	g.Expect(err).To(gomega.BeNil())
 
 	// Reading data via arrow flight

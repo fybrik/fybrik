@@ -312,7 +312,7 @@ func moduleAPIToService(api *app.ModuleAPI, scope app.CapabilityScope, appContex
 		instanceName = utils.CreateStepName(moduleName, assetID)
 	}
 	releaseName := utils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
-	blueprintNamespace := utils.GetBlueprintNamespace()
+	releaseNamespace := utils.GetDefaultModulesNamespace()
 
 	type Release struct {
 		Name      string `json:"Name"`
@@ -331,7 +331,7 @@ func moduleAPIToService(api *app.ModuleAPI, scope app.CapabilityScope, appContex
 	args := HostnameTemplateArgs{
 		Release: Release{
 			Name:      releaseName,
-			Namespace: blueprintNamespace,
+			Namespace: releaseNamespace,
 		},
 		Values: Values{
 			Labels: appContext.Labels,

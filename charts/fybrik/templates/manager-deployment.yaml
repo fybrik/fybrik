@@ -90,8 +90,8 @@ spec:
               value: "false"
             {{- end }}
 
-            - name: BLUEPRINT_NAMESPACE
-              value: {{ include "fybrik.getBlueprintNamespace" . }}
+            - name: MODULES_NAMESPACE
+              value: {{ include "fybrik.getModulesNamespace" . }}
 
             {{- if .Values.applicationNamespace }}
             - name: APPLICATION_NAMESPACE

@@ -20,7 +20,7 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 
 .PHONY: test
-test: export BLUEPRINT_NAMESPACE?=fybrik-blueprints
+test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
 test:
 	$(MAKE) -C manager pre-test

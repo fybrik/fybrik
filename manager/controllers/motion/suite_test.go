@@ -22,7 +22,6 @@ import (
 	. "github.com/onsi/gomega"
 	kbatch "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -100,9 +99,9 @@ var _ = BeforeSuite(func(done Done) {
 	} else {
 		fmt.Printf("Setup fake environment... \n")
 
-		blueprintNamespace := utils.GetBlueprintNamespace()
-		fmt.Printf("Motion test suite using blueprint namespace: %s\n", blueprintNamespace)
-		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": blueprintNamespace})
+		modulesNamespace := utils.GetDefaultModulesNamespace()
+		fmt.Printf("Motion test suite managing resources in the namespace: %s\n", modulesNamespace)
+		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": modulesNamespace})
 		selectorsByObject := cache.SelectorsByObject{
 			&motionv1.BatchTransfer{}:       {Field: workerNamespaceSelector},
 			&motionv1.StreamTransfer{}:      {Field: workerNamespaceSelector},
@@ -131,9 +130,9 @@ var _ = BeforeSuite(func(done Done) {
 		}()
 
 		k8sClient = mgr.GetClient()
-		err = k8sClient.Create(context.Background(), &v1.Namespace{
+		err = k8sClient.Create(context.Background(), &corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: blueprintNamespace,
+				Name: modulesNamespace,
 			},
 		})
 		Expect(err).ToNot(HaveOccurred())

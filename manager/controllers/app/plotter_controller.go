@@ -341,9 +341,6 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	// Reconciliation loop per cluster
 	isReady := true
 
-	blueprintNamespace := utils.GetBlueprintNamespace()
-	r.Log.Info("Using blueprint namespace: " + blueprintNamespace)
-
 	blueprintsMap := r.getBlueprintsMap(plotter)
 
 	var errorCollection []error
@@ -427,7 +424,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        plotter.Name,
-					Namespace:   blueprintNamespace,
+					Namespace:   plotter.Namespace,
 					ClusterName: cluster,
 					Labels: map[string]string{
 						"razee/watch-resource":        "debug",
