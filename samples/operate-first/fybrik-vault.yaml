@@ -1,14 +1,3 @@
-# Source: vault/templates/vault-cluster-role.yaml
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: vault-secrets-manager
-rules:
-  - apiGroups: [""]
-    resources:
-      - secrets
-    verbs: ["get"]
----
 # Source: vault/charts/vault/templates/server-clusterrolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
