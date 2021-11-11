@@ -2,7 +2,7 @@ ROOT_DIR := ../..
 include $(ROOT_DIR)/Makefile.env
 export RELEASE_NAME=fybrik
 export CRD_RELEASE_NAME=fybrik-crd
-export VAULT_RELEASE_NAME=fybrik-vault
+export VAULT_RELEASE_NAME=vault
 export NAMESPACE=fybrik-system
 export Fybrik_CHART_PATH=$(ROOT_DIR)/charts/fybrik
 export CRD_CHART_PATH=$(ROOT_DIR)/charts/fybrik-crd
