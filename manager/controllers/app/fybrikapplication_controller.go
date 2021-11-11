@@ -58,7 +58,7 @@ type FybrikApplicationReconciler struct {
 }
 
 const (
-	APP_TAXONOMY = "/tmp/taxonomy/fybrik_application.json"
+	ApplicationTaxonomy = "/tmp/taxonomy/fybrik_application.json"
 )
 
 // Reconcile reconciles FybrikApplication CRD
@@ -89,7 +89,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	// check if webhooks are enabled and application has been validated before or if validated application is outdated
 	if os.Getenv("ENABLE_WEBHOOKS") != "true" && (string(applicationContext.Status.ValidApplication) == "" || observedStatus.ValidatedGeneration != appVersion) {
 		// do validation on applicationContext
-		err := applicationContext.ValidateFybrikApplication(APP_TAXONOMY)
+		err := applicationContext.ValidateFybrikApplication(ApplicationTaxonomy)
 		log.V(0).Info("Reconciler validating Fybrik application")
 		applicationContext.Status.ValidatedGeneration = appVersion
 		// if validation fails
