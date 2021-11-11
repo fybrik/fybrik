@@ -169,7 +169,7 @@ If the merge process does not succeed to provide a consistent solution, `Valid` 
 
 #### Syntax
 
-Policies are written in rego files. Each file declares a package `adminconfig.<name>`, e.g. `adminconfig.default_policies`
+Policies are written in rego files. Each file declares a package `adminconfig`.
 
 Rules are written in the following syntax: `config[{capability: decision}]` where
 
@@ -179,7 +179,7 @@ Rules are written in the following syntax: `config[{capability: decision}]` wher
 
 ```
 { 
-	"policy": {"ID": <id>, "description": <description>}, 
+	"policy": {"ID": <id>, "policySetID": <setId>, "description": <description>}, 
 	"deploy": <true, false>,
 	"restrictions": {
 		"modules": <map {key, value}>,
@@ -188,16 +188,18 @@ Rules are written in the following syntax: `config[{capability: decision}]` wher
 }
 ```
 
-#### Mandatory policies
+#### Policy Set ID
 
-Mandatory policies come with the fybrik deployment. They define the deployment of basic capabilities, such as read and write. 
-Mandatory policies reside in /tmp/adminconfig/ directory of the manager pod. 
-Any other policy package will be loaded in addition to these policies.
+We want to support evaluating different sets of policies for different FybrikApplications. Our recomendation would be to deploy multiple rego files when each file includes policies for a single policy set. A policy decision will return a policy set id along with policy id and desciption. Manager will then match the policy set id of received decisions with the one defined in FybrikApplication and will ignore those that do not match.
 
-The package below defines the mandatory policies.
+If a policy does not specify a policy set id, it will be considered as relevant for all FybrikApplications.
+In a similar way, all policies a re relevant for a FybrikApplication that does not specify a policy set id, to support a use-case of a single policy set for all.
 
+#### Out of the box policies
+
+Out of the box policies come with the fybrik deployment. They define the deployment of basic capabilities, such as read and write. 
 ```
-package adminconfig.default_policies
+package adminconfig
 
 config[{"read": decision}] {
     read_request := input.request.usage.read
@@ -216,18 +218,14 @@ config[{"write": decision}] {
 
 The extended policies define advanced deployment requirements, such as where read or transform modules should run, what should be the scope of module deployments, and more. 
 
-In the initial approach, the extended policies will be loaded during the control plane deployment, and will reside in /tmp/adminconfig/ together with the mandatory policies.
-
-In the future, the extended policies will be loaded dynamically via a configmap.
-
 The policies below are provided as a sample and should be replaced for the production deployment.
 
 ```
-package adminconfig.quickstart_policies
+package adminconfig
 
 config[{"transform": decision}] {
     policy := {"ID": "transform-geo", "description":"Governance based transformations must take place in the geography where the data is stored"}
-    clusters := [ data.clusters[i].name | data.clusters[i].metadata.region == input.dataset.geography ]
+    clusters := [ data.clusters[i].name | data.clusters[i].metadata.region == input.request.dataset.geography ]
     decision := {"policy": policy, "restrictions": {"clusters": clusters}}
 }
 
@@ -253,7 +251,7 @@ config[{"copy": decision}] {
     input.request.usage.read == true
     input.dataset.geography != input.workload.cluster.region
     count(input.actions) > 0
-    clusters :=  [ data.clusters[i].name | data.clusters[i].metadata.region == input.dataset.geography ]
+    clusters :=  [ data.clusters[i].name | data.clusters[i].metadata.region == input.request.dataset.geography ]
     policy := {"ID": "copy-remote", "description":"Implicit copies should be used if the data is in a different region than the compute, and transformations are required"}
     decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters}}
 }
