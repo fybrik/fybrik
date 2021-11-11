@@ -32,6 +32,10 @@ type FybrikModuleReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+const (
+	MODULE_TAXONOMY = "/tmp/taxonomy/fybrik_module.json"
+)
+
 // Reconcile validates FybrikModule CRD
 func (r *FybrikModuleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("FybrikModule", req.NamespacedName)
@@ -54,8 +58,7 @@ func (r *FybrikModuleReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	// check if module has been validated before or if validated module is outdated
 	if string(moduleContext.Status.ValidModule) == "" || observedStatus.ValidatedGeneration != moduleVersion {
 		// do validation on moduleContext
-		const moduleTaxonomyFile = "/tmp/taxonomy/fybrik_module.json"
-		err := ValidateFybrikModule(moduleContext, moduleTaxonomyFile)
+		err := ValidateFybrikModule(moduleContext, MODULE_TAXONOMY)
 		moduleContext.Status.ValidatedGeneration = moduleVersion
 		// if validation fails
 		if err != nil {

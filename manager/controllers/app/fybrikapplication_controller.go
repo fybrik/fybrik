@@ -57,6 +57,10 @@ type FybrikApplicationReconciler struct {
 	ConfigEvaluator   adminconfig.EvaluatorInterface
 }
 
+const (
+	APP_TAXONOMY = "/tmp/taxonomy/fybrik_application.json"
+)
+
 // Reconcile reconciles FybrikApplication CRD
 // It receives FybrikApplication CRD and selects the appropriate modules that will run
 // The outcome is a Plotter containing multiple Blueprints that run on different clusters
@@ -85,7 +89,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	// check if webhooks are enabled and application has been validated before or if validated application is outdated
 	if os.Getenv("ENABLE_WEBHOOKS") != "true" && (string(applicationContext.Status.ValidApplication) == "" || observedStatus.ValidatedGeneration != appVersion) {
 		// do validation on applicationContext
-		err := applicationContext.ValidateFybrikApplication("/tmp/taxonomy/fybrik_application.json")
+		err := applicationContext.ValidateFybrikApplication(APP_TAXONOMY)
 		log.V(0).Info("Reconciler validating Fybrik application")
 		applicationContext.Status.ValidatedGeneration = appVersion
 		// if validation fails
