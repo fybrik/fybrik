@@ -4,11 +4,9 @@ plugins:
     enabled: true
     # If true secrets can be read from any namespace. Otherwise they can be read only from
     # selected namespaces listed in namespaces field.
-    clusterScope: false
+    clusterScope: true
     # A list of namespaces that Vault can read Kuberenets secrets from.
     namespaces:
-      - fybrik-applications
-      - fybrik-system
     #- fybrik-notebook-sample
     #- fybrik-system
 modulesNamespace: "fybrik-blueprints"
