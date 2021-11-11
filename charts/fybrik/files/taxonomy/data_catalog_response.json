@@ -3,30 +3,28 @@
   "title": "Data Catalog Response",
   "type": "object",
   "properties": {
-    "dataCatalogResponse":{
-      "$ref": "#/definitions/dataCatalogResponse"
+    "name": {
+      "$ref": "#/definitions/assetName"
+    },
+    "operationType": {
+      "$ref": "taxonomy.json#/definitions/OperationType"
+    },
+    "asset": {
+      "$ref": "#/definitions/assetSpec"
     }
   },
+  "required": [
+    "name",
+    "asset"
+  ],
   "additionalProperties": false,
   "definitions": {
-    "dataCatalogResponse":{
-      "type": "object",
-      "properties":{
-        "name": {
-          "type": "string",
-          "description": "Name of the asset"
-        },
-        "operationType": {
-          "$ref": "taxonomy.json#/definitions/OperationType"
-        },
-        "asset": {
-          "$ref": "#/definitions/assetSpec"
-        }
-      },
-      "required": [
-        "name",
-        "asset"
-      ]
+    "assetName": {
+      "type": "string",
+      "description": "Name of the asset"
+    },
+    "asset": {
+      "$ref": "#/definitions/assetSpec"
     },
     "assetSpec": {
       "type": "object",
