@@ -85,14 +85,15 @@ type EvaluatorOutput struct {
 	// Dataset identifier
 	DatasetID string
 	// Unique fybrikapplication id used for logging
-	UID string `json:"uid"`
+	UID string 
 	// Policy set id used in the evaluation
-	PolicySetID string `json:"policySetID"`
+	PolicySetID string 
 	// Decisions per capability (after being merged)
 	ConfigDecisions DecisionPerCapabilityMap
 }
 ```
 
+`DecisionPerCapabilityMap` maps a capability to a deployment decision related to this capability. 
 `Decision` is a result of evaluating a configuration policy which satisfies the predicates of the policy.
 `Deploy` is a deployment decision (require, forbid or allow).
 `DeploymentRestrictions` restricts the choice of the modules to be deployed, deployment clusters, storage accounts, etc.
@@ -268,4 +269,3 @@ config[{"copy": decision}] {
 Stage 1: policies are provided via files in /tmp/adminconfig/ directory during the control plane deployment.
 
 Stage 2: dynamic load of policies from a configmap. TBD - design a mechanism to track the changes in policies and recompile.
-
