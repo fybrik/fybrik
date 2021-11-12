@@ -1,0 +1,39 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Common definitions for Data Catalog",
+    "type": "object",
+    "definitions": {
+        "Resource": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the data set"
+                },
+                "tags": {
+                    "$ref": "taxonomy.json#/definitions/Tags"
+                },
+                "columns": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "tags": {
+                                "$ref": "taxonomy.json#/definitions/Tags"
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "name"
+            ]
+        }
+    }
+}

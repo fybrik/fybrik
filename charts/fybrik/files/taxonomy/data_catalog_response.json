@@ -1,13 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Data Catalog Response",
+  "title": "Data Catalog Response - GetAssetDetails",
   "type": "object",
   "properties": {
     "name": {
       "$ref": "#/definitions/assetName"
-    },
-    "operationType": {
-      "$ref": "taxonomy.json#/definitions/OperationType"
     },
     "asset": {
       "$ref": "#/definitions/assetSpec"
@@ -22,9 +19,6 @@
     "assetName": {
       "type": "string",
       "description": "Name of the asset"
-    },
-    "asset": {
-      "$ref": "#/definitions/assetSpec"
     },
     "assetSpec": {
       "type": "object",
@@ -74,7 +68,7 @@
           "type": "string"
         },
         "metadata": {
-          "$ref":"policy_manager_request.json#/definitions/Resource"
+          "$ref": "data_catalog.json#/definitions/Resource"
         }
       }
     }

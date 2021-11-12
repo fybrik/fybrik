@@ -48,12 +48,6 @@
       },
       "additionalProperties": false
     },
-    "OperationType": {
-      "type": "string",
-      "enum": [
-        "read"
-      ]
-    },
     "PluginType": {
       "type": "string"
     },
