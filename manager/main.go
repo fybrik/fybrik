@@ -74,7 +74,6 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		&corev1.ConfigMap{}:             {Field: systemNamespaceSelector},
 		&appv1.Blueprint{}:              {Field: systemNamespaceSelector},
 		&corev1.Secret{}:                {Field: workerNamespaceSelector},
-		&corev1.PersistentVolumeClaim{}: {Field: workerNamespaceSelector},
 	}
 
 	client := ctrl.GetConfigOrDie()
