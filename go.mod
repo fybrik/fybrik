@@ -34,7 +34,6 @@ require (
 	github.com/onsi/gomega v1.14.0
 	github.com/opencontainers/runc v1.0.0-rc95 // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/robfig/cron v1.2.0
 	github.com/rogpeppe/go-internal v1.6.0 // indirect
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1

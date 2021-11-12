@@ -81,10 +81,6 @@ spec:
     description: image name for the katalog-connector.  Only necessary to switch this if you want to swap back and forth between alternate images
     name: KATALOG_IMAGE
     type: string
-  - default: dummy-mover:latest
-    description: image name for the dummy data mover.  Only necessary to switch this if you want to swap back and forth between alternate images
-    name: dummy-image
-    type: string
   - description: Not currently used.  Leave as-is
     name: deployment-name
     type: string
@@ -230,68 +226,6 @@ spec:
       value: docker://$(params.docker-hostname)/$(params.docker-namespace)/$(params.MANAGER_IMAGE)@$(tasks.build-image-manager.results.IMAGE_DIGEST)
     - name: destImageURL
       value: docker://us.icr.io/$(params.va-scan-namespace)/$(params.MANAGER_IMAGE)@$(tasks.build-image-manager.results.IMAGE_DIGEST)
-    - name: srcTLSverify
-      value: "false"
-    - name: destTLSverify
-      value: "false"
-    when:
-    - Input: $(params.transfer-images-to-icr)
-      Operator: in
-      Values:
-      - "true"
-    workspaces:
-      - name: images-url
-        workspace: images-url
-  - name: build-image-dummy-mover
-    params:
-    - name: IMAGE
-      value: $(params.docker-hostname)/$(params.docker-namespace)/$(params.dummy-image)
-    - name: DOCKERFILE
-      value: fybrik/test/dummy-mover/Dockerfile.dummy-mover
-    - name: TLSVERIFY
-      value: "false"
-    - name: BUILD_EXTRA_ARGS
-      value: --build-arg REGISTRY=$(params.dockerhub-hostname)
-    - name: HELM_PROPERTY
-      value: dummymover.image
-    - name: docker-hostname
-      value: "$(params.docker-hostname)"
-    - name: docker-namespace
-      value: "$(params.docker-namespace)"
-    - name: modulesNamespace
-      value: "$(params.modulesNamespace)"
-    runAfter:
-    - fetch-repository
-    taskRef:
-      kind: Task
-      name: buildah
-    workspaces:
-    - name: source
-      workspace: shared-workspace
-    when:
-    - Input: $(params.IMAGE_DIGEST)
-      Operator: in
-      Values:
-      - "none"
-    - Input: $(params.INCREMENTAL_RESTART)
-      Operator: notin
-      Values:
-      - "true"
-    - Input: $(params.COMPONENT_NAME)
-      Operator: in
-      Values:
-      - "all"
-      - "fybrik/dummy-mover"
-  - name: transfer-image-dummy-mover-vulnerability-advisor
-    retries: 3
-    taskRef:
-      kind: Task
-      name: skopeo-copy
-    params:
-    - name: srcImageURL
-      value: docker://$(params.docker-hostname)/$(params.docker-namespace)/$(params.dummy-image)@$(tasks.build-image-dummy-mover.results.IMAGE_DIGEST)
-    - name: destImageURL
-      value: docker://us.icr.io/$(params.va-scan-namespace)/$(params.dummy-image)@$(tasks.build-image-dummy-mover.results.IMAGE_DIGEST)
     - name: srcTLSverify
       value: "false"
     - name: destTLSverify
