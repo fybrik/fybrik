@@ -13,7 +13,7 @@ You can do that [directly from GitHub](https://docs.github.com/en/pull-requests/
 
 ## 2. Optionally create Pull Requests to `releases/X.Y.Z`
 
-For any change that is required on top of the base you should create a Pull Request targeting the release branch. 
+For any change that is required on top of the base you should create a Pull Request targeting the **new** release branch. 
 
 Pull requests to the release branch may contain bug fixes, security fixes and updated documentation.
 
