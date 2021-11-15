@@ -14,7 +14,7 @@ spec:
     notebook-copy-batch:
       name: notebook-copy-batch
       chart:
-        name: localhost:5000/fybrik-system/fybrik-template:0.1.0
+        name: ghcr.io/fybrik/fybrik-implicit-copy-batch:0.1.0
       arguments:
         copy:
           assetID: xyz        
@@ -52,7 +52,7 @@ spec:
     notebook-read-module:
       name: arrow-flight
       chart:
-        name: ghcr.io/fybrik/fybrik-template:0.1.0
+        name: localhost:5000/fybrik-system/fybrik-template:0.1.0
       arguments:
         read:
         - source:
