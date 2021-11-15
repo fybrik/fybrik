@@ -16,7 +16,7 @@ import (
 )
 
 func deployBlueprint(namespace string, shouldSucceed bool) {
-	const timeout = time.Second * 30
+	const timeout = time.Second * 90
 	const interval = time.Millisecond * 100
 
 	blueprint := &app.Blueprint{}
