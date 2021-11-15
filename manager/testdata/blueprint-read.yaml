@@ -18,7 +18,7 @@ spec:
       name: notebook-read-module
       instanceName: notebook-read-module-instance1
       chart:
-        name: ghcr.io/fybrik/fybrik-template:0.1.0
+        name: localhost:5000/fybrik-system/fybrik-template:0.1.0
       apis:
       - capability: read
         api:
