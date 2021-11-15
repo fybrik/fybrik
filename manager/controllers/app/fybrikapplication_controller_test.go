@@ -55,9 +55,9 @@ var _ = Describe("FybrikApplication Controller", func() {
 				secret2 := &corev1.Secret{Type: corev1.SecretTypeOpaque, StringData: map[string]string{"password": "123"}}
 				secret2.Name = "test-secret"
 
-				blueprintNamespace := utils.GetBlueprintNamespace()
-				fmt.Printf("Application test using blueprint namespace: %s\n", blueprintNamespace)
-				secret2.Namespace = blueprintNamespace
+				modulesNamespace := utils.GetDefaultModulesNamespace()
+				fmt.Printf("Application test using data access module namespace: %s\n", modulesNamespace)
+				secret2.Namespace = modulesNamespace
 				Expect(k8sClient.Create(context.TODO(), secret2)).NotTo(HaveOccurred(), "a secret could not be created")
 				secretList := &corev1.SecretList{}
 				Expect(k8sClient.List(context.Background(), secretList)).NotTo(HaveOccurred())
@@ -133,7 +133,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 				return plotter.Status.ObservedState.Ready
 			}, timeout*10, interval).Should(BeTrue(), "plotter is not ready")
 
-			blueprintObjectKey := client.ObjectKey{Namespace: utils.GetBlueprintNamespace(), Name: plotter.Name}
+			blueprintObjectKey := client.ObjectKey{Namespace: plotter.Namespace, Name: plotter.Name}
 			By("Expecting Blueprint to contain application labels")
 			blueprint := &apiv1alpha1.Blueprint{}
 			Eventually(func() error {
@@ -156,7 +156,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 			By("Status should contain the details of the endpoint")
 			Expect(len(application.Status.AssetStates)).To(Equal(1))
 			// TODO endpoint details are not set yet
-			fqdn := "test-app-e2e-default-read-module-test-e2e." + blueprintObjectKey.Namespace
+			fqdn := "test-app-e2e-default-read-module-test-e2e." + utils.GetDefaultModulesNamespace()
 			Expect(application.Status.AssetStates["s3/redact-dataset"].Endpoint).To(Equal(apiv1alpha1.EndpointSpec{
 				Hostname: fqdn,
 				Port:     80,

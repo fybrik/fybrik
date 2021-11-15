@@ -60,7 +60,7 @@ func deployBlueprint(namespace string, shouldSucceed bool) {
 var _ = Describe("Blueprint Controller Real Env", func() {
 	Context("Blueprint", func() {
 
-		blueprintNamespace := utils.GetBlueprintNamespace()
+		blueprintNamespace := utils.GetSystemNamespace()
 		fmt.Printf("blueprintNamespace: %s\n", blueprintNamespace)
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test

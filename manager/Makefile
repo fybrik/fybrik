@@ -28,7 +28,7 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
 	cp testdata/unittests/sampletaxonomy/taxonomy.json /tmp/taxonomy/taxonomy.json
 
 # Run tests
-test: export BLUEPRINT_NAMESPACE?=fybrik-blueprints
+test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
 test: pre-test
 	go test ./... -v  -coverprofile cover.out

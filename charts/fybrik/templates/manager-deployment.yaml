@@ -72,7 +72,6 @@ spec:
             {{- end }}
             {{- if .Values.worker.enabled }}
             - "--enable-blueprint-controller"
-            - "--enable-motion-controller"
             {{- end }}
             {{- end }}
           envFrom:
@@ -90,8 +89,8 @@ spec:
               value: "false"
             {{- end }}
 
-            - name: BLUEPRINT_NAMESPACE
-              value: {{ include "fybrik.getBlueprintNamespace" . }}
+            - name: MODULES_NAMESPACE
+              value: {{ include "fybrik.getModulesNamespace" . }}
 
             {{- if .Values.applicationNamespace }}
             - name: APPLICATION_NAMESPACE

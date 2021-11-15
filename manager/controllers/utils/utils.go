@@ -68,11 +68,6 @@ func GetReleaseNameByStepName(applicationName string, namespace string, moduleIn
 	return HelmConformName(fullName)
 }
 
-// Generate fqdn for a module
-func GenerateModuleEndpointFQDN(releaseName string, blueprintNamespace string) string {
-	return releaseName + "." + blueprintNamespace + ".svc.cluster.local"
-}
-
 // Some k8s objects only allow for a length of 63 characters.
 // This method shortens the name keeping a prefix and using the last 5 characters of the
 // new name for the hash of the postfix.
