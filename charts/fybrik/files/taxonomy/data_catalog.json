@@ -10,6 +10,12 @@
                     "type": "string",
                     "description": "Name of the data set"
                 },
+                "owner": {
+                    "type": "string"
+                },
+                "geography": {
+                    "type": "string"
+                },
                 "tags": {
                     "$ref": "taxonomy.json#/definitions/Tags"
                 },

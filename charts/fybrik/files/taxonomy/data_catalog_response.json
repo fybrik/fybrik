@@ -3,47 +3,28 @@
   "title": "Data Catalog Response - GetAssetDetails",
   "type": "object",
   "properties": {
-    "name": {
-      "$ref": "#/definitions/assetName"
+    "resourceMetadata": {
+      "$ref": "data_catalog.json#/definitions/Resource"
     },
-    "asset": {
-      "$ref": "#/definitions/assetSpec"
+    "details": {
+      "$ref": "#/definitions/details"
+    },
+    "credentials": {
+      "$ref": "#/definitions/vaultPluginPath"
     }
   },
   "required": [
-    "name",
-    "asset"
+    "resourceMetadata",
+    "details",
+    "credentials"
   ],
   "additionalProperties": false,
   "definitions": {
-    "assetName": {
-      "type": "string",
-      "description": "Name of the asset"
-    },
-    "assetSpec": {
-      "type": "object",
-      "properties": {
-        "assetCredentials": {
-          "$ref": "#/definitions/vaultPluginPath"
-        },
-        "assetMetadata": {
-          "$ref": "#/definitions/assetMetadata"
-        },
-        "assetDetails": {
-          "$ref": "#/definitions/assetDetails"
-        }
-      },
-      "required": [
-        "assetCredentials",
-        "assetMetadata",
-        "assetDetails"
-      ]
-    },
     "vaultPluginPath": {
       "type": "string",
       "description": "This has the vault plugin path where the data credentials will be stored as kubernetes secrets. This value is assumed to be known to the catalog connector."
     },
-    "assetDetails": {
+    "details": {
       "type": "object",
       "description": "Asset details",
       "properties": {
@@ -57,20 +38,6 @@
       "required": [
         "connection"
       ]
-    },
-    "assetMetadata": {
-      "type": "object",
-      "properties": {
-        "owner": {
-          "type": "string"
-        },
-        "geography": {
-          "type": "string"
-        },
-        "metadata": {
-          "$ref": "data_catalog.json#/definitions/Resource"
-        }
-      }
     }
   }
 }
