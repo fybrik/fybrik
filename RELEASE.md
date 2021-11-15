@@ -6,7 +6,8 @@ The process of creating a release is described in this document. Replace `X.Y.Z`
 
 The `releases/X.Y.Z` branch should be created from a base branch. 
 
-For minor releases the base is `master` and for patch releases the base is `releases/X.Y.(Z-1)`.
+For major and minor releases the base is `master` and for patch releases (fixes) the base is `releases/X.Y.(Z-1)`.
+A new patch release should be created before merging pull-requests as described in the next section.
 
 You can do that [directly from GitHub](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository#creating-a-branch).
 
