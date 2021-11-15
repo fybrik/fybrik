@@ -6,8 +6,8 @@ kind: Blueprint
 metadata:
   name: blueprint-with-copy
   labels:
-    app.fybrik.io/appNamespace: default
-    app.fybrik.io/appName: notebook
+    app.fybrik.io/app-namespace: default
+    app.fybrik.io/app-name: notebook
 spec:
   cluster: cluster1
   modules:
