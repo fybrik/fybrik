@@ -240,7 +240,7 @@ type FybrikModuleStatus struct {
 }
 
 // +kubebuilder:object:root=true
-
+// +kubebuilder:subresource:status
 // FybrikModule is a description of an injectable component.
 // the parameters it requires, as well as the specification of how to instantiate such a component.
 // It is used as metadata only.  There is no status nor reconciliation.
