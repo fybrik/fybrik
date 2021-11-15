@@ -5,7 +5,6 @@ package utils
 
 import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
 	"github.com/onsi/gomega"
 	kbatch "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -27,10 +26,6 @@ func NewScheme(g *gomega.WithT) *runtime.Scheme {
 		g.Expect(err).NotTo(gomega.HaveOccurred())
 	}
 	err = app.AddToScheme(s)
-	if g != nil {
-		g.Expect(err).NotTo(gomega.HaveOccurred())
-	}
-	err = motionv1.AddToScheme(s)
 	if g != nil {
 		g.Expect(err).NotTo(gomega.HaveOccurred())
 	}
