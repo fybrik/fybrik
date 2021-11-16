@@ -17,15 +17,15 @@ import (
 // This structure is in use by the manager and other components, such as policy manager and config policies evaluator
 type DataDetails struct {
 	// Name of the asset
-	Name string
+	Name string `json:"name"`
 	// Interface is the protocol and format
-	Interface app.InterfaceDetails
+	Interface app.InterfaceDetails `json:"interface"`
 	// Geography is the geo-location of the asset
-	Geography string
+	Geography string `json:"geography"`
 	// Connection is the connection details in raw format as received from the connector
-	Connection serde.Arbitrary
+	Connection serde.Arbitrary `json:"connection"`
 	// Metadata
-	TagMetadata *pb.DatasetMetadata
+	TagMetadata *pb.DatasetMetadata `json:"tag,omitempty"`
 }
 
 // Transforms a CatalogDatasetInfo into a DataDetails struct

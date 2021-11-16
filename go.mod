@@ -32,6 +32,7 @@ require (
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.14.0
+	github.com/open-policy-agent/opa v0.34.0
 	github.com/opencontainers/runc v1.0.0-rc95 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/rogpeppe/go-internal v1.6.0 // indirect
@@ -41,7 +42,7 @@ require (
 	github.com/tidwall/pretty v1.0.1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
-	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602
+	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
 	google.golang.org/genproto v0.0.0-20210707164411-8c882eb9abba // indirect
 	google.golang.org/grpc v1.39.0
 	google.golang.org/protobuf v1.27.1

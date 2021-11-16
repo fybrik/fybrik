@@ -159,8 +159,8 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 		}
 		var copyDataAssetID = datasetID + "-copy"
 		actions := createActionStructure(copySelector.Actions)
-		if len(item.Configuration.ConfigDecisions[app.Copy].Clusters) > 0 {
-			copyCluster = item.Configuration.ConfigDecisions[app.Copy].Clusters[0]
+		if len(item.Configuration.ConfigDecisions[app.Copy].DeploymentRestrictions.Clusters) > 0 {
+			copyCluster = item.Configuration.ConfigDecisions[app.Copy].DeploymentRestrictions.Clusters[0]
 		} else {
 			msg := "Coud not determine the cluster for copy"
 			p.Log.Info(msg)
@@ -220,8 +220,8 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 			readAssetID = datasetID + "-copy"
 		}
 		actions := createActionStructure(readSelector.Actions)
-		if len(item.Configuration.ConfigDecisions[app.Read].Clusters) > 0 {
-			readCluster = item.Configuration.ConfigDecisions[app.Read].Clusters[0]
+		if len(item.Configuration.ConfigDecisions[app.Read].DeploymentRestrictions.Clusters) > 0 {
+			readCluster = item.Configuration.ConfigDecisions[app.Read].DeploymentRestrictions.Clusters[0]
 		} else {
 			msg := "Coud not determine the cluster for read"
 			p.Log.Info(msg)

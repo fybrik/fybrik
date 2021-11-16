@@ -9,17 +9,33 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// DecisionPolicy is a justification for a policy that consists of a unique id, id of a policy set and a human readable desciption
+type DecisionPolicy struct {
+	ID          string `json:"ID"`
+	PolicySetID string `json:"policySetID"`
+	Description string `json:"description,omitempty"`
+}
+
+// Deployment restrictions on modules, clusters and additional resources that will be added in the future
+type Restrictions struct {
+	// Restrictions on clusters used for deployment
+	Clusters []string `json:"clusters,omitempty"`
+	// Restrictions on modules of the type “key”: “value” when the key is a module property (e.g. scope, type)
+	// and the value is an allowed value (e.g. asset, plugin)
+	ModuleRestrictions map[string]string `json:"modules,omitempty"`
+}
+
 // Decision is a result of evaluating a configuration policy which satisfies the specified predicates
 type Decision struct {
 	// a decision regarding deployment: True = require, False = forbid, Unknown = allow
-	Deploy corev1.ConditionStatus
-	// Deployment clusters
-	Clusters []string
-	// Deployment restrictions, e.g. type = plugin
-	Restrictions map[string]string
+	Deploy corev1.ConditionStatus `json:"deploy,omitempty"`
+	// Deployment restrictions on modules, clusters and additional resources
+	DeploymentRestrictions Restrictions `json:"restrictions,omitempty"`
 	// Descriptions of policies that have been used for evaluation
-	Jusifications []string
+	Policy DecisionPolicy `json:"policy,omitempty"`
 }
+
+type DecisionPerCapabilityMap map[api.CapabilityType]Decision
 
 // EvaluatorOutput is an output of ConfigurationPoliciesEvaluator.
 // Used by manager to decide which modules are deployed and in which cluster.
@@ -28,6 +44,10 @@ type EvaluatorOutput struct {
 	Valid bool
 	// Dataset identifier
 	DatasetID string
+	// Unique fybrikapplication id used for logging
+	UID string `json:"uid"`
+	// Policy set id used in the evaluation
+	PolicySetID string `json:"policySetID"`
 	// Decisions per capability (after being merged)
-	ConfigDecisions map[api.CapabilityType]Decision
+	ConfigDecisions DecisionPerCapabilityMap
 }

@@ -114,6 +114,8 @@ spec:
             {{- end }}     
             - mountPath: /tmp/taxonomy
               name: fybrik-taxonomy
+            - mountPath: /tmp/adminconfig
+              name: fybrik-adminconfig
             {{- if .Values.manager.chartVolume }}
             - mountPath: /opt/fybrik/
               name: charts
@@ -130,10 +132,12 @@ spec:
             defaultMode: 420
             secretName: webhook-server-cert
         {{- end }}
-
         - name: fybrik-taxonomy
           configMap:
             name: fybrik-taxonomy-config
+        - name: fybrik-adminconfig
+          configMap:
+            name: fybrik-adminconfig
         {{- if .Values.manager.chartVolume }}
         - name: charts
           persistentVolumeClaim:

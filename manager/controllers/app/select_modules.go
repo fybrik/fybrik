@@ -84,12 +84,15 @@ func (p *PlotterGenerator) buildReadFlow(item *DataInfo, appContext *app.FybrikA
 	if selector.SelectModule(p.Modules, app.Read) {
 		// check deployment cluster
 		if len(item.Actions) > 0 {
-			clusters := utils.Intersection(item.Configuration.ConfigDecisions[app.Read].Clusters, item.Configuration.ConfigDecisions[app.Transform].Clusters)
+			clusters := utils.Intersection(
+				item.Configuration.ConfigDecisions[app.Read].DeploymentRestrictions.Clusters,
+				item.Configuration.ConfigDecisions[app.Transform].DeploymentRestrictions.Clusters,
+			)
 			readDecision := item.Configuration.ConfigDecisions[app.Read]
-			readDecision.Clusters = clusters
+			readDecision.DeploymentRestrictions.Clusters = clusters
 			item.Configuration.ConfigDecisions[app.Read] = readDecision
 		}
-		if len(item.Configuration.ConfigDecisions[app.Read].Clusters) > 0 {
+		if len(item.Configuration.ConfigDecisions[app.Read].DeploymentRestrictions.Clusters) > 0 {
 			selectors[app.Read] = selector
 			return selectors, nil
 		}
@@ -121,8 +124,14 @@ func (p *PlotterGenerator) buildReadFlowWithCopy(item *DataInfo, appContext *app
 	actionsOnCopy := []taxonomymodels.Action{}
 	if len(item.Actions) > 0 {
 		// intersect deployment clusters for read+transform, copy+transform
-		readAndTransformClusters := utils.Intersection(item.Configuration.ConfigDecisions[app.Read].Clusters, item.Configuration.ConfigDecisions[app.Transform].Clusters)
-		copyAndTransformClusters := utils.Intersection(item.Configuration.ConfigDecisions[app.Copy].Clusters, item.Configuration.ConfigDecisions[app.Transform].Clusters)
+		readAndTransformClusters := utils.Intersection(
+			item.Configuration.ConfigDecisions[app.Read].DeploymentRestrictions.Clusters,
+			item.Configuration.ConfigDecisions[app.Transform].DeploymentRestrictions.Clusters,
+		)
+		copyAndTransformClusters := utils.Intersection(
+			item.Configuration.ConfigDecisions[app.Copy].DeploymentRestrictions.Clusters,
+			item.Configuration.ConfigDecisions[app.Transform].DeploymentRestrictions.Clusters,
+		)
 		if len(readAndTransformClusters) == 0 {
 			// read module can not run transformations because of the cluster restriction
 			actionsOnCopy = item.Actions
@@ -138,6 +147,18 @@ func (p *PlotterGenerator) buildReadFlowWithCopy(item *DataInfo, appContext *app
 			}
 			readSelector.Actions = actionsOnRead
 		}
+		if len(actionsOnRead) > 0 {
+			readDecision := item.Configuration.ConfigDecisions[app.Read]
+			readDecision.DeploymentRestrictions.Clusters = readAndTransformClusters
+			item.Configuration.ConfigDecisions[app.Read] = readDecision
+		}
+		if len(actionsOnCopy) > 0 {
+			copyDecision := item.Configuration.ConfigDecisions[app.Copy]
+			copyDecision.DeploymentRestrictions.Clusters = copyAndTransformClusters
+			copyDecision.Deploy = v1.ConditionTrue
+			item.Configuration.ConfigDecisions[app.Copy] = copyDecision
+		}
+
 		// WRITE actions that should be done by the copy module
 		// TODO(shlomitk1): generalize the regions the temporary copy can be done to, currently assumes workload geography
 		operation := new(taxonomymodels.PolicyManagerRequestAction)
@@ -202,6 +223,14 @@ func (p *PlotterGenerator) buildCopyFlow(item *DataInfo, appContext *app.FybrikA
 		}
 		if selector.SelectModule(p.Modules, app.Copy) {
 			// the flow is ready
+			if len(actionsOnCopy) != 0 {
+				copyDecision := item.Configuration.ConfigDecisions[app.Copy]
+				copyDecision.DeploymentRestrictions.Clusters = utils.Intersection(
+					item.Configuration.ConfigDecisions[app.Copy].DeploymentRestrictions.Clusters,
+					item.Configuration.ConfigDecisions[app.Transform].DeploymentRestrictions.Clusters,
+				)
+				item.Configuration.ConfigDecisions[app.Copy] = copyDecision
+			}
 			selectors[app.Copy] = selector
 			return selectors, nil
 		}
