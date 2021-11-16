@@ -6,7 +6,6 @@ The `manager` binary includes all of the controllers that this project defines b
 - `enable-all-controllers` to enable all controllers
 - `enable-application-controller` to enable the controller for `FybrikApplication`
 - `enable-blueprint-controller` to enable the controller for `Blueprint`
-- `enable-motion-controller` to enable the controllers for `BatchTransfer` and `StreamTransfer`
 
 
 ## Run and debug locally
