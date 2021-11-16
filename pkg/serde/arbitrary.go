@@ -37,10 +37,8 @@ func (in *Arbitrary) DeepCopy() *Arbitrary {
 }
 
 func (in *Arbitrary) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &in.Data); err != nil {
-		return err
-	}
-	return nil
+	err := json.Unmarshal(data, &in.Data)
+	return err
 }
 
 func (in *Arbitrary) MarshalJSON() ([]byte, error) {
