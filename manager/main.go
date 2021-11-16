@@ -62,18 +62,15 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	}
 	setupLog.Info("Application namespace: " + applicationNamespace)
 
-	modulesNamespace := utils.GetDefaultModulesNamespace()
-
 	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
-	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": modulesNamespace})
 	selectorsByObject := cache.SelectorsByObject{
-		&appv1.FybrikApplication{}:      {Field: applicationNamespaceSelector},
-		&appv1.Plotter{}:                {Field: systemNamespaceSelector},
-		&appv1.FybrikModule{}:           {Field: systemNamespaceSelector},
-		&appv1.FybrikStorageAccount{}:   {Field: systemNamespaceSelector},
-		&corev1.ConfigMap{}:             {Field: systemNamespaceSelector},
-		&appv1.Blueprint{}:              {Field: systemNamespaceSelector},
-		&corev1.Secret{}:                {Field: workerNamespaceSelector},
+		&appv1.FybrikApplication{}:    {Field: applicationNamespaceSelector},
+		&appv1.Plotter{}:              {Field: systemNamespaceSelector},
+		&appv1.FybrikModule{}:         {Field: systemNamespaceSelector},
+		&appv1.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
+		&corev1.ConfigMap{}:           {Field: systemNamespaceSelector},
+		&appv1.Blueprint{}:            {Field: systemNamespaceSelector},
+		&corev1.Secret{}:              {Field: systemNamespaceSelector},
 	}
 
 	client := ctrl.GetConfigOrDie()

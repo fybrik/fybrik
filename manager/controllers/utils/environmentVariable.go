@@ -32,11 +32,3 @@ func GetControllerNamespace() string {
 func GetApplicationNamespace() string {
 	return os.Getenv("APPLICATION_NAMESPACE")
 }
-
-func GetBatchTransferNamespace() string {
-	return GetDefaultModulesNamespace()
-}
-
-func GetStreamTransferNamespace() string {
-	return GetDefaultModulesNamespace()
-}

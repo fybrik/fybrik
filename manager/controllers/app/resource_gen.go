@@ -101,10 +101,8 @@ func (c *PlotterInterface) CreateOrUpdateResource(owner *app.ResourceReference, 
 // DeleteResource deletes the generated Plotter resource
 func (c *PlotterInterface) DeleteResource(ref *app.ResourceReference) error {
 	resource := c.GetResourceSignature(ref)
-	if err := c.Client.Delete(context.Background(), resource); err != nil {
-		return err
-	}
-	return nil
+	err := c.Client.Delete(context.Background(), resource)
+	return err
 }
 
 // GetResourceStatus returns the generated Plotter status
