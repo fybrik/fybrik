@@ -5,13 +5,6 @@
 kubectl create namespace fybrik-notebook-sample
 kubectl config set-context --current --namespace=fybrik-notebook-sample
 
-# Create jupyter notebook for debugging. TODO Remove when tests are working
-kubectl create deployment my-notebook --image=jupyter/base-notebook --port=8888 -- start.sh jupyter lab --LabApp.token=''
-kubectl set env deployment my-notebook JUPYTER_ENABLE_LAB=yes
-kubectl label deployment my-notebook app.kubernetes.io/name=my-notebook
-kubectl wait --for=condition=available --timeout=120s deployment/my-notebook
-kubectl expose deployment my-notebook --port=80 --target-port=8888
-
 # Create asset and secret
 kubectl -n fybrik-notebook-sample apply -f example-asset.yaml
 kubectl -n fybrik-notebook-sample apply -f s3credentials.yaml

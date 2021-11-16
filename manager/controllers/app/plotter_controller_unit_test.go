@@ -26,8 +26,8 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-// TestBatchTransferController runs BatchTransferReconciler.Reconcile() against a
-// fake client that tracks a BatchTransfer object.
+// TestPlotterController runs PlotterReconciler.Reconcile() against a
+// fake client that tracks a Plotter object.
 // This test does not require a Kubernetes environment to run.
 // This mechanism of testing can be used to test corner cases of the reconcile function.
 func TestPlotterController(t *testing.T) {
@@ -74,7 +74,7 @@ func TestPlotterController(t *testing.T) {
 			}}},
 	}
 
-	// Create a BatchTransferReconciler object with the scheme and fake client.
+	// Create a PlotterReconciler object with the scheme and fake client.
 	r := &PlotterReconciler{
 		Client:         cl,
 		Log:            ctrl.Log.WithName("test-controller"),

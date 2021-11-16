@@ -10,7 +10,6 @@ import (
 	"time"
 
 	tu "fybrik.io/fybrik/connectors/opa/testutil"
-	clients "fybrik.io/fybrik/pkg/connectors/clients"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	"github.com/hashicorp/go-retryablehttp"
 	"gotest.tools/assert"
@@ -37,7 +36,7 @@ func TestMainOpaConnector(t *testing.T) {
 	srv := NewOpaReader(opaServerURL, standardClient)
 
 	connectionTimeout := time.Duration(timeOutSecs) * time.Second
-	dataCatalog, err := clients.NewGrpcDataCatalog(catalogProviderName, catalogConnectorURL, connectionTimeout)
+	dataCatalog, err := connectors.NewGrpcDataCatalog(catalogProviderName, catalogConnectorURL, connectionTimeout)
 	assert.NilError(t, err)
 
 	catalogReader := NewCatalogReader(&dataCatalog)
