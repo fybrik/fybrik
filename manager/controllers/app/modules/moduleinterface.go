@@ -113,7 +113,6 @@ func (m *Selector) SupportsInterface(module *app.FybrikModule, requestedCapabili
 				return capability.DeepCopy(), true
 			}
 			for _, inter := range capability.SupportedInterfaces {
-
 				if inter.Source == nil {
 					continue
 				}
@@ -126,7 +125,6 @@ func (m *Selector) SupportsInterface(module *app.FybrikModule, requestedCapabili
 				if inter.Sink.DataFormat != m.Destination.DataFormat || inter.Sink.Protocol != m.Destination.Protocol {
 					continue
 				}
-
 				return capability.DeepCopy(), true
 			}
 		}
