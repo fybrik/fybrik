@@ -52,7 +52,7 @@ spec:
     notebook-read-module:
       name: arrow-flight
       chart:
-        name: localhost:5000/fybrik-system/fybrik-template:0.1.0
+        name: ghcr.io/fybrik/fybrik-template:0.1.0
       arguments:
         read:
         - source:
