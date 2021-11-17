@@ -1192,7 +1192,9 @@ kubectl config set-context --current --namespace<span class="o">=</span>fybrik-n
 <p>This sample uses the <a href="https://www.kaggle.com/ealaxi/paysim1">Synthetic Financial Datasets For Fraud Detection</a> dataset<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> as the data that the notebook needs to read. Download and extract the file to your machine. You should now see a file named <code>PS_20174392719_1491204439457_log.csv</code>. Alternatively, use a sample of 100 lines of the same dataset by downloading <a href="https://raw.githubusercontent.com/fybrik/fybrik/master/samples/notebook/PS_20174392719_1491204439457_log.csv"><code>PS_20174392719_1491204439457_log.csv</code></a> from GitHub.</p>
 <p>Upload the CSV file to an object storage of your choice such as AWS S3, IBM Cloud Object Storage or Ceph.
 Make a note of the service endpoint, bucket name, and access credentials. You will need them later.</p>
-<details class="tip"><summary>Setup and upload to localstack</summary><p>For experimentation you can install localstack to your cluster instead of using a cloud service.</p>
+<details class="tip">
+<summary>Setup and upload to localstack</summary>
+<p>For experimentation you can install localstack to your cluster instead of using a cloud service.</p>
 <ol>
 <li>Define variables for access key and secret key
   <div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;myaccesskey&quot;</span>

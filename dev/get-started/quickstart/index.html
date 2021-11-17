@@ -1154,7 +1154,9 @@ Many clusters already include cert-manager. Check if <code>cert-manager</code> n
 </code></pre></div>
 <h2 id="install-hashicorp-vault-and-plugins">Install Hashicorp Vault and plugins</h2>
 <p><a href="https://www.vaultproject.io/">Hashicorp Vault</a> and a <a href="https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader">secrets-kubernetes-reader</a> plugin are used by Fybrik for credential management.</p>
-<details class="tip"><summary>Install latest development version from GitHub</summary><p>The published Helm charts are only available for released versions.
+<details class="tip">
+<summary>Install latest development version from GitHub</summary>
+<p>The published Helm charts are only available for released versions.
 To install the <code>dev</code> version install the charts from the source code.
 For example:</p>
 <div class="tabbed-set" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">Kubernetes</label><div class="tabbed-content">
@@ -1202,7 +1204,9 @@ kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="n
 </div>
 </div>
 <h2 id="install-control-plane">Install control plane</h2>
-<details class="tip"><summary>Install latest development version from GitHub</summary><p>The published Helm charts are only available for released versions. 
+<details class="tip">
+<summary>Install latest development version from GitHub</summary>
+<p>The published Helm charts are only available for released versions. 
 To install the <code>dev</code> version install the charts from the source code.
 For example:
 <div class="highlight"><pre><span></span><code>git clone https://github.com/fybrik/fybrik.git
@@ -1217,7 +1221,9 @@ Install the latest release of Fybrik with a built-in data catalog and with <a hr
 helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait
 </code></pre></div>
 <h2 id="install-modules">Install modules</h2>
-<details class="tip"><summary>Install latest development version from GitHub</summary><p>To apply the latest development version of arrow-flight-module:
+<details class="tip">
+<summary>Install latest development version from GitHub</summary>
+<p>To apply the latest development version of arrow-flight-module:
 <div class="highlight"><pre><span></span><code>kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
 </code></pre></div></p>
 </details>
