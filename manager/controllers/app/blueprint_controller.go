@@ -138,7 +138,7 @@ func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) 
 func getDomainFromImageName(image string) (string, error) {
 	named, err := distributionref.ParseNormalizedNamed(image)
 	if err != nil {
-		return "", fmt.Errorf("couldn't parse image name: %v", err)
+		return "", errors.WithMessage(err, "couldn't parse image name: "+image)
 	}
 
 	return distributionref.Domain(named), nil
@@ -168,32 +168,36 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log logr.L
 			if pullSecret.Type == "kubernetes.io/dockerconfigjson" {
 				pullSecrets = append(pullSecrets, pullSecret)
 			}
-		}
-
-		// create a keyring of all dockerconfigjson secrets, to be used for lookup
-		keyring := credentialprovider.NewDockerKeyring()
-		keyring, _ = credentialprovidersecrets.MakeDockerKeyring(pullSecrets, keyring)
-		repoToPull, err := getDomainFromImageName(chartSpec.Name)
-		if err != nil {
-			return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed to parse image name")
-		}
-
-		creds, withCredentials := keyring.Lookup(chartSpec.Name)
-		if withCredentials {
-			for _, cred := range creds {
-				err := r.Helmer.RegistryLogin(repoToPull, cred.Username, cred.Password, false)
-				if err == nil {
-					registrySuccessfulLogin = repoToPull
-					break
-				} else {
-					log.Info("Failed to login to helm registry: " + repoToPull)
-				}
-			}
 		} else {
-			log.Info("Could not find ChartPullSecret. Will try to pull chart anyway")
+			return ctrl.Result{}, errors.WithMessage(err, "could not find ChartPullSecret: "+chartSpec.ChartPullSecret)
+		}
+
+		if len(pullSecrets) != 0 {
+			// create a keyring of all dockerconfigjson secrets, to be used for lookup
+			keyring := credentialprovider.NewDockerKeyring()
+			keyring, _ = credentialprovidersecrets.MakeDockerKeyring(pullSecrets, keyring)
+			repoToPull, err := getDomainFromImageName(chartSpec.Name)
+			if err != nil {
+				return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed to parse image name")
+			}
+
+			creds, withCredentials := keyring.Lookup(chartSpec.Name)
+			if withCredentials {
+				for _, cred := range creds {
+					err := r.Helmer.RegistryLogin(repoToPull, cred.Username, cred.Password, false)
+					if err == nil {
+						registrySuccessfulLogin = repoToPull
+						break
+					} else {
+						log.Info("Failed to login to helm registry: " + repoToPull)
+					}
+				}
+			} else {
+				log.Info("there is a mismatch between helm chart: " + chartSpec.Name +
+					" and the registries associated with secret: " + chartSpec.ChartPullSecret)
+			}
 		}
 	}
-
 	err := r.Helmer.ChartPull(chartSpec.Name)
 	// if we logged into a registry, let us try to logout
 	if registrySuccessfulLogin != "" {
