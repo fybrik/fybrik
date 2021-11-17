@@ -26,26 +26,14 @@
                                 "type": "array",
                                 "items": {
                                     "type": "object",
-                                    "oneOf": [
-                                        {
-                                            "source": {
-                                                "$ref": "taxonomy.json#/definitions/Interface"
-                                            }
+                                    "properties": {
+                                        "source": {
+                                            "$ref": "taxonomy.json#/definitions/Interface"
                                         },
-                                        {
-                                            "sink": {
-                                                "$ref": "taxonomy.json#/definitions/Interface"
-                                            }
-                                        },
-                                        {
-                                            "source": {
-                                                "$ref": "taxonomy.json#/definitions/Interface"
-                                            },
-                                            "sink": {
-                                                "$ref": "taxonomy.json#/definitions/Interface"
-                                            }
+                                        "sink": {
+                                            "$ref": "taxonomy.json#/definitions/Interface"
                                         }
-                                    ]
+                                    }
                                 }
                             },
                             "actions": {

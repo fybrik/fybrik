@@ -1,6 +1,6 @@
 definitions:
   Action:
-    oneOf:
+    anyOf:
       - $ref: "#/definitions/RedactAction"
       - $ref: "#/definitions/RemoveAction"
       - $ref: "#/definitions/Deny"
