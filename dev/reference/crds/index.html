@@ -985,6 +985,13 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#fybrikmodulestatus" class="md-nav__link">
+    FybrikModule.status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fybrikmodulespec" class="md-nav__link">
     FybrikModule.spec
   </a>
@@ -2027,6 +2034,13 @@
   
     <nav class="md-nav" aria-label="FybrikModule">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulestatus" class="md-nav__link">
+    FybrikModule.status
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#fybrikmodulespec" class="md-nav__link">
@@ -3930,12 +3944,57 @@
       <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
       <td>true</td>
       </tr><tr>
+        <td><b><a href="#fybrikmodulestatus">status</a></b></td>
+        <td>object</td>
+        <td>
+          FybrikModuleStatus defines the observed state of FybrikModule.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b><a href="#fybrikmodulespec">spec</a></b></td>
         <td>object</td>
         <td>
           FybrikModuleSpec contains the info common to all modules, which are one of the components that process, load, write, audit, monitor the data used by the data scientist's application.<br/>
         </td>
         <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikmodulestatus">FybrikModule.status</h4>
+<p><sup><sup><a href="#fybrikmodule">↩ Parent</a></sup></sup></p>
+<p>FybrikModuleStatus defines the observed state of FybrikModule.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>errorMessage</b></td>
+        <td>string</td>
+        <td>
+          ErrorMessage indicates that an error has happened during the module validation<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>validModule</b></td>
+        <td>string</td>
+        <td>
+          ValidModule indicates whether the FybrikModule is valid given the defined taxonomy<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>validatedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ValidatedGeneration is the version of the FybrikModule that has been validated with the taxonomy defined.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
       </tr></tbody>
 </table>
 
