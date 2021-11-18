@@ -20,7 +20,7 @@ paths:
         description: Policy Manager Request Object.
         required: true
         content:
-          application/json: 
+          application/json:
             schema:
               type: object
               $ref: "../../charts/fybrik/files/taxonomy/policy_manager_request.json"

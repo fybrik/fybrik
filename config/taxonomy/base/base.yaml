@@ -35,4 +35,11 @@ definitions:
     type: string
   PluginType:
     type: string
-    
+  Connection:
+      type: object
+      properties:
+        name:
+          type: string
+      additionalProperties: true
+      required:
+        - name
