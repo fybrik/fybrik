@@ -1657,12 +1657,62 @@ FybrikModule is a description of an injectable component. the parameters it requ
       <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
       <td>true</td>
       </tr><tr>
+        <td><b><a href="#fybrikmodulestatus">status</a></b></td>
+        <td>object</td>
+        <td>
+          FybrikModuleStatus defines the observed state of FybrikModule.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b><a href="#fybrikmodulespec">spec</a></b></td>
         <td>object</td>
         <td>
           FybrikModuleSpec contains the info common to all modules, which are one of the components that process, load, write, audit, monitor the data used by the data scientist's application.<br/>
         </td>
         <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikModule.status
+<sup><sup>[↩ Parent](#fybrikmodule)</sup></sup>
+
+
+
+FybrikModuleStatus defines the observed state of FybrikModule.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>errorMessage</b></td>
+        <td>string</td>
+        <td>
+          ErrorMessage indicates that an error has happened during the module validation<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>validModule</b></td>
+        <td>string</td>
+        <td>
+          ValidModule indicates whether the FybrikModule is valid given the defined taxonomy<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>validatedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ValidatedGeneration is the version of the FybrikModule that has been validated with the taxonomy defined.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
       </tr></tbody>
 </table>
 

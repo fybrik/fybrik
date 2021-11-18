@@ -21,7 +21,7 @@ definitions:
         required: [protocol, dataformat]
       - properties:
           protocol:
-            enum: [db2-jdbc]
+            enum: [jdbc-db2]
           dataformat:
-            enum: [db2-jdbc]
+            enum: [table]
         required: [protocol, dataformat]

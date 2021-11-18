@@ -1,0 +1,36 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: app.fybrik.io/v1alpha1
+kind: FybrikModule
+metadata:
+  name: module-with-interface-errors
+  namespace: fybrik-system
+  labels:
+    name: module-with-interface-errors
+    version: 0.1.0 
+spec:
+  type: service
+  capabilities:
+    - capability: copy
+      supportedInterfaces:
+      - source:
+          protocol: kafka
+          dataformat: csv
+      actions:
+      - name: RedactAction
+        columns:
+          - first
+          - second
+      - name: RemoveAction
+        columns:
+          - third
+          - fourth
+  chart:
+    name: ghcr.io/fybrik/fybrik-implicit-copy-batch:0.1.0
+  statusIndicators:
+    - kind: BatchTransfer
+      successCondition: status.status == SUCCEEDED
+      failureCondition: status.status == FAILED
+      errorMessage: status.error
