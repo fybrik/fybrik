@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Data Catalog Request - GetAssetDetails",
+  "type": "object",
+  "properties": {
+    "assetID": {
+      "type": "string"
+    },
+    "operationType": {
+      "$ref": "#/definitions/operationType"
+    }
+  },
+  "additionalProperties": false,
+  "required": ["assetID", "operationType"],
+  "definitions": {
+    "operationType": {
+      "type": "string",
+      "enum": ["read"],
+      "description": "Type of operation requested for the asset"
+    }
+  }
+}
