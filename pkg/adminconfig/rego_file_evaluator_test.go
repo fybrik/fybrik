@@ -60,10 +60,10 @@ func NewEvaluator() *adminconfig.RegoPolicyEvaluator {
 			decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters}}
 		}
 		
-		# copy to the workload cluster if copy is requested
+		# copy to all clusters except clusterD if copy is required
 		config[{"copy": decision}] {
 			input.request.usage.copy == true
-			clusters :=  [ data.clusters[i].name | data.clusters[i].name == input.workload.cluster.name ]
+			clusters :=  [ data.clusters[i].name | data.clusters[i].name != "clusterD" ]
 			policy := {"policySetID": "1", "ID": "copy-3"}
 			decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters}}
 		}
@@ -121,4 +121,42 @@ var _ = Describe("Evaluate a policy", func() {
 		Expect(out.ConfigDecisions[v1alpha1.Copy].Deploy).To(Equal(corev1.ConditionFalse))
 	})
 
+	It("MergeClusters", func() {
+		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
+			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: true},
+			Metadata: &assetmetadata.DataDetails{Geography: "R1"}},
+			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "clusterA", Metadata: multicluster.ClusterMetadata{Region: "R1"}}}}
+		out, err := evaluator.Evaluate(&in)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(out.Valid).To(Equal(true))
+		Expect(out.ConfigDecisions[v1alpha1.Copy].DeploymentRestrictions.Clusters).To(ContainElements("clusterA", "clusterB"))
+	})
+
+	It("No conflict for policy set 1", func() {
+		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
+			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: true, v1alpha1.CopyFlow: true},
+			Metadata: &assetmetadata.DataDetails{Geography: "R2"}},
+			Workload: adminconfig.WorkloadInfo{
+				PolicySetID: "1",
+				Cluster:     multicluster.Cluster{Name: "clusterB", Metadata: multicluster.ClusterMetadata{Region: "R1"}}}}
+		out, err := evaluator.Evaluate(&in)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(out.Valid).To(Equal(true))
+		Expect(out.ConfigDecisions[v1alpha1.Copy].Deploy).To(Equal(corev1.ConditionTrue))
+		Expect(out.ConfigDecisions[v1alpha1.Copy].DeploymentRestrictions.Clusters).To(ContainElements("clusterC"))
+	})
+
+	It("No decisions for policy set 99", func() {
+		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
+			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: true, v1alpha1.CopyFlow: true},
+			Metadata: &assetmetadata.DataDetails{Geography: "R1"}},
+			Workload: adminconfig.WorkloadInfo{
+				PolicySetID: "99",
+				Cluster:     multicluster.Cluster{Name: "clusterC", Metadata: multicluster.ClusterMetadata{Region: "R2"}}}}
+		out, err := evaluator.Evaluate(&in)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(out.Valid).To(Equal(true))
+		Expect(out.ConfigDecisions[v1alpha1.Copy].Deploy).To(Equal(corev1.ConditionUnknown))
+		Expect(out.ConfigDecisions[v1alpha1.Copy].DeploymentRestrictions.Clusters).To(HaveLen(4))
+	})
 })
