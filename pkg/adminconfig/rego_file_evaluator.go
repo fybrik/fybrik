@@ -131,9 +131,8 @@ func (r *RegoPolicyEvaluator) Evaluate(in *EvaluatorInput) (EvaluatorOutput, err
 	}
 	bytes, _ := yaml.Marshal(&rs)
 	fmt.Println("Response: " + string(bytes))
-	valid := true
 	// merge decisions and build an output object for the manager
-	decisions, err := r.getOPADecisions(in, rs)
+	decisions, valid, err := r.getOPADecisions(in, rs)
 	if err != nil {
 		return EvaluatorOutput{Valid: valid, DatasetID: in.Request.DatasetID, ConfigDecisions: decisions}, err
 	}
@@ -168,21 +167,21 @@ func (r *RegoPolicyEvaluator) initDecisions() map[v1alpha1.CapabilityType]Decisi
 }
 
 // getOPADecisions parses the OPA decisions and merges decisions for the same capability
-func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.ResultSet) (DecisionPerCapabilityMap, error) {
+func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.ResultSet) (DecisionPerCapabilityMap, bool, error) {
 	decisions := r.initDecisions()
 	if len(rs) == 0 {
-		return decisions, errors.New("invalid opa evaluation - an empty result set has been received")
+		return decisions, false, errors.New("invalid opa evaluation - an empty result set has been received")
 	}
 	defaultDecision := DefaultDecision(r.Data)
 	for _, result := range rs {
 		for _, expr := range result.Expressions {
 			bytes, err := yaml.Marshal(expr.Value)
 			if err != nil {
-				return nil, err
+				return nil, false, err
 			}
 			ruleDecisions := RuleDecisionList{}
 			if err = yaml.Unmarshal(bytes, &ruleDecisions); err != nil {
-				return nil, errors.Wrap(err, "Unexpected OPA response structure")
+				return nil, false, errors.Wrap(err, "Unexpected OPA response structure")
 			}
 			for _, rule := range ruleDecisions {
 				for capability, newDecision := range rule {
@@ -200,7 +199,7 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 					case "":
 						newDecision.Deploy = defaultDecision.Deploy
 					default:
-						return nil, errors.New("Illegal value for Deploy: " + string(newDecision.Deploy))
+						return nil, false, errors.New("Illegal value for Deploy: " + string(newDecision.Deploy))
 					}
 					if len(newDecision.DeploymentRestrictions.Clusters) == 0 {
 						newDecision.DeploymentRestrictions.Clusters = defaultDecision.DeploymentRestrictions.Clusters
@@ -208,14 +207,15 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 					// a single decision should be made for a capability
 					valid, mergedDecision := r.merge(newDecision, decisions[capability])
 					if !valid {
-						return decisions, errors.New("Conflict while merging OPA decision " + newDecision.Policy.Description)
+						fmt.Println("Conflict while merging OPA decision " + newDecision.Policy.Description)
+						return decisions, false, nil
 					}
 					decisions[capability] = mergedDecision
 				}
 			}
 		}
 	}
-	return decisions, nil
+	return decisions, true, nil
 }
 
 // This function merges two decisions for the same capability using the following logic:
