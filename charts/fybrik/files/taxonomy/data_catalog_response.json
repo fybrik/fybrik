@@ -1,43 +1,18 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "Data Catalog Response - GetAssetDetails",
-    "type": "object",
-    "properties": {
-        "resourceMetadata": {
-            "$ref": "data_catalog.json#/definitions/Resource"
-        },
-        "details": {
-            "$ref": "#/definitions/details"
-        },
-        "credentials": {
-            "$ref": "#/definitions/vaultPluginPath"
-        }
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Data Catalog Response - GetAssetDetails",
+  "type": "object",
+  "properties": {
+    "resourceMetadata": {
+      "$ref": "data_catalog.json#/definitions/Resource"
     },
-    "required": [
-        "resourceMetadata",
-        "details",
-        "credentials"
-    ],
-    "additionalProperties": false,
-    "definitions": {
-        "vaultPluginPath": {
-            "type": "string",
-            "description": "This has the vault plugin path where the data credentials will be stored as kubernetes secrets. This value is assumed to be known to the catalog connector."
-        },
-        "details": {
-            "type": "object",
-            "description": "Asset details",
-            "properties": {
-                "connection": {
-                    "$ref": "taxonomy.json#/definitions/Connection"
-                },
-                "dataFormat": {
-                    "$ref": "taxonomy.json#/definitions/Dataformat"
-                }
-            },
-            "required": [
-                "connection"
-            ]
-        }
+    "details": {
+      "$ref": "data_catalog.json#/definitions/details"
+    },
+    "credentials": {
+      "$ref": "data_catalog.json#/definitions/credentials"
     }
+  },
+  "required": ["resourceMetadata", "details", "credentials"],
+  "additionalProperties": false
 }
