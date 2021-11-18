@@ -98,8 +98,9 @@ func TestRegoFileEvaluator(t *testing.T) {
 }
 
 var _ = Describe("Evaluate a policy", func() {
-
 	evaluator := NewEvaluator()
+
+	//nolint:dupl
 	It("Conflict", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: true, v1alpha1.CopyFlow: true},
@@ -110,6 +111,7 @@ var _ = Describe("Evaluate a policy", func() {
 		Expect(out.Valid).To(Equal(false))
 	})
 
+	//nolint:dupl
 	It("ValidSolution", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
@@ -121,6 +123,7 @@ var _ = Describe("Evaluate a policy", func() {
 		Expect(out.ConfigDecisions[v1alpha1.Copy].Deploy).To(Equal(corev1.ConditionFalse))
 	})
 
+	//nolint:dupl
 	It("MergeClusters", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: true},
@@ -132,6 +135,7 @@ var _ = Describe("Evaluate a policy", func() {
 		Expect(out.ConfigDecisions[v1alpha1.Copy].DeploymentRestrictions.Clusters).To(ContainElements("clusterA", "clusterB"))
 	})
 
+	//nolint:dupl
 	It("No conflict for policy set 1", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: true, v1alpha1.CopyFlow: true},
@@ -146,6 +150,7 @@ var _ = Describe("Evaluate a policy", func() {
 		Expect(out.ConfigDecisions[v1alpha1.Copy].DeploymentRestrictions.Clusters).To(ContainElements("clusterC"))
 	})
 
+	//nolint:dupl
 	It("No decisions for policy set 99", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: true, v1alpha1.CopyFlow: true},
