@@ -16,6 +16,7 @@ import (
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/open-policy-agent/opa/storage/inmem"
+	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -40,26 +41,38 @@ func NewEvaluator() *adminconfig.RegoPolicyEvaluator {
 	store := inmem.NewFromObject(json)
 	module := `
 		package adminconfig
-		
+
+		# do not copy in the same region unless requested so
+		config[{"copy": decision}] {
+			policy := {"policySetID": "1", "ID": "copy-1"}
+			input.request.usage.read == true
+			input.request.usage.copy == false
+			input.request.dataset.geography == input.workload.cluster.metadata.region
+			decision := {"policy": policy, "deploy": false}
+		}
+
 		# copy if regions differ
 		config[{"copy": decision}] {
 			input.request.usage.read == true
-			input.request.dataset.geography != input.workload.cluster.region
+			input.request.dataset.geography != input.workload.cluster.metadata.region
 			clusters :=  [ data.clusters[i].name | data.clusters[i].metadata.region == input.request.dataset.geography ]
-			decision := {"deploy": true, "restrictions": {"clusters": clusters}}
+			policy := {"policySetID": "1", "ID": "copy-2"}
+			decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters}}
 		}
 		
 		# copy to the workload cluster if copy is requested
 		config[{"copy": decision}] {
 			input.request.usage.copy == true
 			clusters :=  [ data.clusters[i].name | data.clusters[i].name == input.workload.cluster.name ]
-			decision := {"deploy": true, "restrictions": {"clusters": clusters}}
+			policy := {"policySetID": "1", "ID": "copy-3"}
+			decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters}}
 		}
 
 		# do not copy in a write scenario
 		config[{"copy": decision}] {
 			input.request.usage.write == true
-			decision := {"deploy": false}
+			policy := {"policySetID": "2", "ID": "copy-4"}
+			decision := {"policy": policy, "deploy": false}
 		}
 
 	`
@@ -95,6 +108,17 @@ var _ = Describe("Evaluate a policy", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(false))
+	})
+
+	It("ValidSolution", func() {
+		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
+			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
+			Metadata: &assetmetadata.DataDetails{Geography: "R1"}},
+			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "clusterA", Metadata: multicluster.ClusterMetadata{Region: "R1"}}}}
+		out, err := evaluator.Evaluate(&in)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(out.Valid).To(Equal(true))
+		Expect(out.ConfigDecisions[v1alpha1.Copy].Deploy).To(Equal(corev1.ConditionFalse))
 	})
 
 })

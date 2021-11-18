@@ -31,7 +31,7 @@ config[{"copy": decision}] {
 # configure when implicit copies should be made
 config[{"copy": decision}] {
     input.request.usage.read == true
-    input.request.dataset.geography != input.workload.cluster.region
+    input.request.dataset.geography != input.workload.cluster.metadata.region
     count(input.actions) > 0
     clusters :=  [ data.clusters[i].name | data.clusters[i].metadata.region == input.request.dataset.geography ]
     policy := {"ID": "copy-remote", "description":"Implicit copies should be used if the data is in a different region than the compute, and transformations are required"}
