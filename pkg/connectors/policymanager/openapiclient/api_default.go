@@ -26,43 +26,44 @@ var (
 // DefaultApiService DefaultApi service
 type DefaultApiService service
 
-type ApiGetPoliciesDecisionsRequest struct {
-	ctx _context.Context
-	ApiService *DefaultApiService
-	xRequestCred *string
+type ApiGetPoliciesDecisionsPostRequest struct {
+	ctx                  _context.Context
+	ApiService           *DefaultApiService
+	xRequestCred         *string
 	policyManagerRequest *PolicyManagerRequest
 }
 
-func (r ApiGetPoliciesDecisionsRequest) XRequestCred(xRequestCred string) ApiGetPoliciesDecisionsRequest {
+func (r ApiGetPoliciesDecisionsPostRequest) XRequestCred(xRequestCred string) ApiGetPoliciesDecisionsPostRequest {
 	r.xRequestCred = &xRequestCred
 	return r
 }
+
 // Policy Manager Request Object.
-func (r ApiGetPoliciesDecisionsRequest) PolicyManagerRequest(policyManagerRequest PolicyManagerRequest) ApiGetPoliciesDecisionsRequest {
+func (r ApiGetPoliciesDecisionsPostRequest) PolicyManagerRequest(policyManagerRequest PolicyManagerRequest) ApiGetPoliciesDecisionsPostRequest {
 	r.policyManagerRequest = &policyManagerRequest
 	return r
 }
 
-func (r ApiGetPoliciesDecisionsRequest) Execute() (PolicyManagerResponse, *_nethttp.Response, error) {
-	return r.ApiService.GetPoliciesDecisionsExecute(r)
+func (r ApiGetPoliciesDecisionsPostRequest) Execute() (PolicyManagerResponse, *_nethttp.Response, error) {
+	return r.ApiService.GetPoliciesDecisionsPostExecute(r)
 }
 
 /*
-GetPoliciesDecisions getPoliciesDecisions.
+GetPoliciesDecisionsPost getPoliciesDecisions.
 
  @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiGetPoliciesDecisionsRequest
+ @return ApiGetPoliciesDecisionsPostRequest
 */
-func (a *DefaultApiService) GetPoliciesDecisions(ctx _context.Context) ApiGetPoliciesDecisionsRequest {
-	return ApiGetPoliciesDecisionsRequest{
+func (a *DefaultApiService) GetPoliciesDecisionsPost(ctx _context.Context) ApiGetPoliciesDecisionsPostRequest {
+	return ApiGetPoliciesDecisionsPostRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
 //  @return PolicyManagerResponse
-func (a *DefaultApiService) GetPoliciesDecisionsExecute(r ApiGetPoliciesDecisionsRequest) (PolicyManagerResponse, *_nethttp.Response, error) {
+func (a *DefaultApiService) GetPoliciesDecisionsPostExecute(r ApiGetPoliciesDecisionsPostRequest) (PolicyManagerResponse, *_nethttp.Response, error) {
 	var (
 		localVarHTTPMethod   = _nethttp.MethodPost
 		localVarPostBody     interface{}
@@ -72,7 +73,7 @@ func (a *DefaultApiService) GetPoliciesDecisionsExecute(r ApiGetPoliciesDecision
 		localVarReturnValue  PolicyManagerResponse
 	)
 
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.GetPoliciesDecisions")
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.GetPoliciesDecisionsPost")
 	if err != nil {
 		return localVarReturnValue, nil, GenericOpenAPIError{error: err.Error()}
 	}

@@ -16,9 +16,9 @@ import (
 
 // PolicyManagerRequest struct for PolicyManagerRequest
 type PolicyManagerRequest struct {
-	Context *map[string]interface{} `json:"context,omitempty"`
-	Action PolicyManagerRequestAction `json:"action"`
-	Resource Resource `json:"resource"`
+	Context  *map[string]interface{}    `json:"context,omitempty"`
+	Action   PolicyManagerRequestAction `json:"action"`
+	Resource Resource                   `json:"resource"`
 }
 
 // NewPolicyManagerRequest instantiates a new PolicyManagerRequest object
@@ -85,7 +85,7 @@ func (o *PolicyManagerRequest) GetAction() PolicyManagerRequestAction {
 // GetActionOk returns a tuple with the Action field value
 // and a boolean to check if the value has been set.
 func (o *PolicyManagerRequest) GetActionOk() (*PolicyManagerRequestAction, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Action, true
@@ -109,7 +109,7 @@ func (o *PolicyManagerRequest) GetResource() Resource {
 // GetResourceOk returns a tuple with the Resource field value
 // and a boolean to check if the value has been set.
 func (o *PolicyManagerRequest) GetResourceOk() (*Resource, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Resource, true
@@ -169,5 +169,3 @@ func (v *NullablePolicyManagerRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

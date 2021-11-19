@@ -20,8 +20,8 @@ type ActionType string
 
 // List of ActionType
 const (
-	READ ActionType = "read"
-	WRITE ActionType = "write"
+	READ   ActionType = "read"
+	WRITE  ActionType = "write"
 	DELETE ActionType = "delete"
 )
 
@@ -110,4 +110,3 @@ func (v *NullableActionType) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-

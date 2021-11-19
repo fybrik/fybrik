@@ -10,7 +10,6 @@ paths:
   /getPoliciesDecisions:
     post:
       summary: getPoliciesDecisions.
-      operationId: getPoliciesDecisions
       parameters:
         - in: header
           name: X-Request-Cred

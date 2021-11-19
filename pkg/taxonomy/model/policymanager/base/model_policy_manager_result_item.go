@@ -53,7 +53,7 @@ func (o *PolicyManagerResultItem) GetPolicy() string {
 // GetPolicyOk returns a tuple with the Policy field value
 // and a boolean to check if the value has been set.
 func (o *PolicyManagerResultItem) GetPolicyOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Policy, true
@@ -77,7 +77,7 @@ func (o *PolicyManagerResultItem) GetAction() Action {
 // GetActionOk returns a tuple with the Action field value
 // and a boolean to check if the value has been set.
 func (o *PolicyManagerResultItem) GetActionOk() (*Action, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Action, true
@@ -134,5 +134,3 @@ func (v *NullablePolicyManagerResultItem) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-
