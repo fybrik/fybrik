@@ -15,7 +15,7 @@ import (
 	"emperror.dev/errors"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	random "fybrik.io/fybrik/pkg/random"
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 	"google.golang.org/grpc"
 )
 

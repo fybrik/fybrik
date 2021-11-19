@@ -20,12 +20,13 @@ type ActionType string
 
 // List of ActionType
 const (
-	READ   ActionType = "read"
-	WRITE  ActionType = "write"
+	READ ActionType = "read"
+	WRITE ActionType = "write"
 	DELETE ActionType = "delete"
 )
 
-var allowedActionTypeEnumValues = []ActionType{
+// All allowed values of ActionType enum
+var AllowedActionTypeEnumValues = []ActionType{
 	"read",
 	"write",
 	"delete",
@@ -38,7 +39,7 @@ func (v *ActionType) UnmarshalJSON(src []byte) error {
 		return err
 	}
 	enumTypeValue := ActionType(value)
-	for _, existing := range allowedActionTypeEnumValues {
+	for _, existing := range AllowedActionTypeEnumValues {
 		if existing == enumTypeValue {
 			*v = enumTypeValue
 			return nil
@@ -55,13 +56,13 @@ func NewActionTypeFromValue(v string) (*ActionType, error) {
 	if ev.IsValid() {
 		return &ev, nil
 	} else {
-		return nil, fmt.Errorf("invalid value '%v' for ActionType: valid values are %v", v, allowedActionTypeEnumValues)
+		return nil, fmt.Errorf("invalid value '%v' for ActionType: valid values are %v", v, AllowedActionTypeEnumValues)
 	}
 }
 
 // IsValid return true if the value is valid for the enum, false otherwise
 func (v ActionType) IsValid() bool {
-	for _, existing := range allowedActionTypeEnumValues {
+	for _, existing := range AllowedActionTypeEnumValues {
 		if existing == v {
 			return true
 		}
@@ -109,3 +110,4 @@ func (v *NullableActionType) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+

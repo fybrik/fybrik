@@ -11,7 +11,7 @@ import (
 	"strconv"
 
 	mockup "fybrik.io/fybrik/manager/controllers/mockup"
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 	"github.com/gin-gonic/gin"
 )
 

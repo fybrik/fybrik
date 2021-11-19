@@ -10,6 +10,7 @@ paths:
   /getPoliciesDecisions:
     post:
       summary: getPoliciesDecisions.
+      operationId: getPoliciesDecisions
       parameters:
         - in: header
           name: X-Request-Cred
@@ -22,7 +23,6 @@ paths:
         content:
           application/json:
             schema:
-              type: object
               $ref: "../../charts/fybrik/files/taxonomy/policy_manager_request.json"
       responses:
         '200':
@@ -30,7 +30,6 @@ paths:
           content:
             application/json:
               schema:
-                type: object
                 $ref: "../../charts/fybrik/files/taxonomy/policy_manager_response.json"
         '400':
           description: Invalid status value

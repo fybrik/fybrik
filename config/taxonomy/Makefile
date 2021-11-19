@@ -14,8 +14,8 @@ charts/taxonomy.json:
 
 .PHONY: generate-base-policymanager
 generate-base-policymanager: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
-	mkdir -p $(ROOT_DIR)/pkg/taxonomy/model/base
-	$(TOOLBIN)/openapi-generator-cli generate -i ./policymanager.spec.yaml -g go -o $(ROOT_DIR)/pkg/taxonomy/model/base --global-property=models,modelDocs=false \
+	mkdir -p $(ROOT_DIR)/pkg/taxonomy/model/policymanager/base
+	$(TOOLBIN)/openapi-generator-cli generate -i ./policymanager.spec.yaml -g go -o $(ROOT_DIR)/pkg/taxonomy/model/policymanager/base --global-property=models,modelDocs=false \
 		--additional-properties=packageName=base \
 		--enable-post-process-file \
 		--type-mappings=object=interface{}
@@ -33,15 +33,15 @@ generate-base-catalogconnector: $(TOOLBIN)/openapi-generator-cli charts/taxonomy
 		--enable-post-process-file \
 		--type-mappings=object=interface{}
 
-.PHONY: generate-client
-generate-client: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
-	mkdir -p $(ROOT_DIR)/pkg/connectors/openapiclient
+.PHONY: generate-client-policymanager
+generate-client-policymanager: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
+	mkdir -p $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient
 	$(TOOLBIN)/openapi-generator-cli generate -g go --additional-properties=packageName=openapiclient,isGoSubmodule=false \
-		--global-property=apis,supportingFiles,apiDocs=false -o $(ROOT_DIR)/pkg/connectors/openapiclient \
+		--global-property=apis,supportingFiles,apiDocs=false -o $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient \
 		-i policymanager.spec.yaml
-	rm -f $(ROOT_DIR)/pkg/connectors/openapiclient/go.mod $(ROOT_DIR)/pkg/connectors/openapiclient/go.sum $(ROOT_DIR)/pkg/connectors/openapiclient/.travis.yml
-	rm -f $(ROOT_DIR)/pkg/connectors/openapiclient/README.md $(ROOT_DIR)/pkg/connectors/openapiclient/git_push.sh
-	rm -r $(ROOT_DIR)/pkg/connectors/openapiclient/api
+	rm -f $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/go.mod $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/go.sum $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/.travis.yml
+	rm -f $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/README.md $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/git_push.sh
+	rm -r $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/api
 
 .PHONY: generate-server
 generate-server: clean-server $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
@@ -57,13 +57,13 @@ generate-server: clean-server $(TOOLBIN)/openapi-generator-cli charts/taxonomy.j
 .PHONY: clean
 clean:
 	rm -f $(ROOT_DIR)/charts/fybrik/files/taxonomy/taxonomy.json
-	rm -rf $(ROOT_DIR)/pkg/taxonomy/model/base
-	mkdir -p $(ROOT_DIR)/pkg/connectors/tmp
-	cp  $(ROOT_DIR)/pkg/connectors/openapiclient/model.go  $(ROOT_DIR)/pkg/connectors/tmp
-	rm -rf $(ROOT_DIR)/pkg/connectors/openapiclient
-	mkdir -p $(ROOT_DIR)/pkg/connectors/openapiclient
-	cp  $(ROOT_DIR)/pkg/connectors/tmp/model.go $(ROOT_DIR)/pkg/connectors/openapiclient
-	rm -rf $(ROOT_DIR)/pkg/connectors/tmp
+	rm -rf $(ROOT_DIR)/pkg/taxonomy/model/policymanager/base
+	mkdir -p $(ROOT_DIR)/pkg/connectors/policymanager/tmp
+	cp  $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/model.go  $(ROOT_DIR)/pkg/connectors/policymanager/tmp
+	rm -rf $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient
+	mkdir -p $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient
+	cp  $(ROOT_DIR)/pkg/connectors/policymanager/tmp/model.go $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient
+	rm -rf $(ROOT_DIR)/pkg/connectors/policymanager/tmp
 
 
 .PHONY: clean-server

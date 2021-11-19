@@ -5,7 +5,7 @@ package modules
 
 import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )
 
 // Selector is responsible for finding an appropriate module
