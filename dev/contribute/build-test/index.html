@@ -878,26 +878,6 @@
     Running integration tests
   </a>
   
-    <nav class="md-nav" aria-label="Running integration tests">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#running-in-one-step" class="md-nav__link">
-    Running in one step
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#running-step-by-step" class="md-nav__link">
-    Running step by step
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -1117,26 +1097,6 @@
     Running integration tests
   </a>
   
-    <nav class="md-nav" aria-label="Running integration tests">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#running-in-one-step" class="md-nav__link">
-    Running in one step
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#running-step-by-step" class="md-nav__link">
-    Running step by step
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -1209,53 +1169,13 @@ the cluster and checking their status:
 </tbody>
 </table>
 <h2 id="running-integration-tests">Running integration tests</h2>
-<h3 id="running-in-one-step">Running in one step</h3>
 <p>With the following you will then setup a kind cluster with the local registry,
 build and push current docker images and finally run the integration
 tests on it:</p>
 <div class="highlight"><pre><span></span><code>make run-integration-tests
 </code></pre></div>
-<h3 id="running-step-by-step">Running step by step</h3>
-<p>It is also possible to call the commands step by step, which sometimes is
-useful if you want to only repeat a specific step which failed without having
-to rerun  the entire sequence</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># use the local kind registry</span>
-<span class="nb">export</span> <span class="nv">DOCKER_HOSTNAME</span><span class="o">=</span>kind-registry:5000
-<span class="nb">export</span> <span class="nv">DOCKER_NAMESPACE</span><span class="o">=</span>fybrik-system
-
-<span class="c1"># build a local kind cluser</span>
-make kind
-
-<span class="c1"># deploy the the cluster 3rd party such as cert-manager and vault</span>
-make cluster-prepare
-
-<span class="c1"># build all docker images and push them to the local registry</span>
-make docker
-
-<span class="c1"># build the mock/test docker images and push them to local registry</span>
-make -C test/services docker-build docker-push
-
-<span class="c1"># wait until cluster-prepare setup really completed</span>
-make cluster-prepare-wait
-
-<span class="c1"># deploy the fybrik CRDs to the kind cluster</span>
-make -C manager deploy-crd
-
-<span class="c1"># deploy fybrik manager to the kind cluster</span>
-make -C manager deploy_it
-
-<span class="c1"># wait until manager is ready</span>
-make -C manager wait_for_manager
-
-<span class="c1"># configure Vault</span>
-make configure-vault
-
-<span class="c1"># build and push helm charts to the local registry</span>
-make helm
-
-<span class="c1"># actually run the integration tests</span>
-make -C manager run-integration-tests
-</code></pre></div>
+<p>It is sometimes useful to to call the integration test commands step by step, e.g., if you want to only repeat a specific step which failed without having to rerun the entire sequence. You can find the commands of the <code>run-integration-tests</code> target in the <a href="https://github.com/fybrik/fybrik/blob/master/Makefile">Makefile</a>.</p>
+<p>You can run <code>make kind-cleanup</code> to delete the created clusters when you're done.</p>
 <h2 id="building-in-a-multi-cluster-environment">Building in a multi cluster environment</h2>
 <p>As Fybrik can run in a multi-cluster environment there is also a test environment
 that can be used that simulates this scenario. Using kind one can spin up two separate kubernetes
@@ -1263,6 +1183,7 @@ clusters with differnt contexts and develop and test in these. </p>
 <p>Two kind clusters that share the same kind-registry can be set up using:
 <div class="highlight"><pre><span></span><code>make kind-setup-multi
 </code></pre></div></p>
+<p>You can run <code>make kind-cleanup</code> to delete the created clusters when you're done.</p>
                 
               
               
