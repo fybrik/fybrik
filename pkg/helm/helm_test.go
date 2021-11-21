@@ -90,7 +90,6 @@ func TestHelmRegistry(t *testing.T) {
 	}
 
 	if username != "" && password != "" {
-		Log(t, "user "+username+"pass "+password+"host "+hostname, err)
 		err = impl.RegistryLogin(hostname, username, password, insecure)
 		assert.Nil(t, err)
 		Log(t, "registry login", err)
