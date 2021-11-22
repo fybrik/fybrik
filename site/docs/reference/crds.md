@@ -1909,11 +1909,9 @@ Capability declares what this module knows how to do and the types of data it kn
         <td>false</td>
       </tr><tr>
         <td><b>scope</b></td>
-        <td>enum</td>
+        <td>string</td>
         <td>
           Scope indicates at what level the capability is used: workload, asset, cluster If not indicated it is assumed to be asset<br/>
-          <br/>
-            <i>Enum</i>: asset, workload, cluster<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1925,11 +1923,9 @@ Capability declares what this module knows how to do and the types of data it kn
         <td>false</td>
       </tr><tr>
         <td><b>capability</b></td>
-        <td>enum</td>
+        <td>string</td>
         <td>
           Capability declares what this module knows how to do - ex: read, write, transform...<br/>
-          <br/>
-            <i>Enum</i>: copy, read, write, transform<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3083,11 +3079,9 @@ ModuleInfo is a copy of FybrikModule Custom Resource.  It contains information t
     </thead>
     <tbody><tr>
         <td><b>scope</b></td>
-        <td>enum</td>
+        <td>string</td>
         <td>
           Scope indicates at what level the capability is used: workload, asset, cluster If not indicated it is assumed to be asset<br/>
-          <br/>
-            <i>Enum</i>: asset, workload, cluster<br/>
         </td>
         <td>false</td>
       </tr><tr>
