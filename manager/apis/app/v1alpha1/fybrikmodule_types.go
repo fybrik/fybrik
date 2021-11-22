@@ -9,6 +9,7 @@ import (
 )
 
 // CapabilityScope indicates the level at which a capability is implemented
+// +kubebuilder:validation:Enum=asset;workload;cluster
 type CapabilityScope string
 
 const (
