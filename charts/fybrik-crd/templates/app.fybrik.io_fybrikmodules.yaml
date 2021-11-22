@@ -123,6 +123,10 @@ spec:
                       description: 'Scope indicates at what level the capability is
                         used: workload, asset, cluster If not indicated it is assumed
                         to be asset'
+                      enum:
+                      - asset
+                      - workload
+                      - cluster
                       type: string
                     supportedInterfaces:
                       description: Copy should have one or more instances in the list,

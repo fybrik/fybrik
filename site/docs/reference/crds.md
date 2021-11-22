@@ -1909,9 +1909,11 @@ Capability declares what this module knows how to do and the types of data it kn
         <td>false</td>
       </tr><tr>
         <td><b>scope</b></td>
-        <td>string</td>
+        <td>enum</td>
         <td>
           Scope indicates at what level the capability is used: workload, asset, cluster If not indicated it is assumed to be asset<br/>
+          <br/>
+            <i>Enum</i>: asset, workload, cluster<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -3079,9 +3081,11 @@ ModuleInfo is a copy of FybrikModule Custom Resource.  It contains information t
     </thead>
     <tbody><tr>
         <td><b>scope</b></td>
-        <td>string</td>
+        <td>enum</td>
         <td>
           Scope indicates at what level the capability is used: workload, asset, cluster If not indicated it is assumed to be asset<br/>
+          <br/>
+            <i>Enum</i>: asset, workload, cluster<br/>
         </td>
         <td>false</td>
       </tr><tr>
