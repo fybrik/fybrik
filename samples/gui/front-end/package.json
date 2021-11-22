@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@babel/core": "^7.16.0",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.5.1",
     "@testing-library/jest-dom": "^5.15.0",
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^7.2.1",
@@ -11,6 +12,7 @@
     "axios": "^0.21.2",
     "browserslist": ">=4.16.5",
     "elliptic": ">=6.5.4",
+    "eslint-webpack-plugin": "^3.1.1",
     "glob-parent": ">=5.1.2",
     "hosted-git-info": ">=2.8.9",
     "immer": ">=9.0.6",
@@ -32,6 +34,7 @@
     "ssri": ">=7.1.1",
     "typescript": "^4.5.2",
     "uniqid": "^5.2.0",
+    "webpack-dev-server": "^4.5.0",
     "y18n": ">=4.0.1"
   },
   "scripts": {
@@ -60,10 +63,10 @@
   },
   "devDependencies": {
     "@craco/craco": "^5.6.4",
-    "@semantic-ui-react/craco-less": "^1.2.1",
-    "eslint-plugin-react-hooks": "^4.3.0",
-    "semantic-ui-less": "^2.4.1",
-    "semantic-ui-react": "^0.88.2"
+    "@semantic-ui-react/craco-less": ">=1.2.1",
+    "eslint-plugin-react-hooks": ">=4.3.0",
+    "semantic-ui-less": ">=2.4.1",
+    "semantic-ui-react": ">=0.88.2"
   },
   "proxy": "http://localhost:8080/"
 }
