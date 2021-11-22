@@ -473,8 +473,6 @@ spec:
                   each release should be mapped to the latest blueprint version or
                   be uninstalled.
                 type: object
-            required:
-            - modules
             type: object
         type: object
     served: true
