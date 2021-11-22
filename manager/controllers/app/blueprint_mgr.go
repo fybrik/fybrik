@@ -73,6 +73,8 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec, cl
 
 	spec.Cluster = clusterName
 
+	spec.ModulesNamespace = utils.GetDefaultModulesNamespace()
+
 	// Create the map that contains BlueprintModules
 
 	var blueprintModules = make(map[string]app.BlueprintModule)

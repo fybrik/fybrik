@@ -217,6 +217,10 @@ type PlotterSpec struct {
 	// +required
 	Flows []Flow `json:"flows"`
 
+	// ModulesNamespace is the namespace where modules should be allocated
+	// +required
+	ModulesNamespace string `json:"modulesNamespace"`
+
 	// Templates is a map holding the templates used in this plotter steps
 	// The key is the template name
 	// +required
