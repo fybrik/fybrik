@@ -102,38 +102,6 @@ const (
 	InvalidAssetDataStore       string = "the asset data store is not supported"
 )
 
-// Condition indices are static. Conditions always present in the status.
-const (
-	ReadyConditionIndex int64 = 0
-	DenyConditionIndex  int64 = 1
-	ErrorConditionIndex int64 = 2
-)
-
-// ConditionType represents a condition type
-type ConditionType string
-
-const (
-	// ErrorCondition means that an error was encountered during blueprint construction
-	ErrorCondition ConditionType = "Error"
-
-	// DenyCondition means that access to a dataset is denied
-	DenyCondition ConditionType = "Deny"
-
-	// ReadyCondition means that access to a dataset is granted
-	ReadyCondition ConditionType = "Ready"
-)
-
-// Condition describes the state of a FybrikApplication at a certain point.
-type Condition struct {
-	// Type of the condition
-	Type ConditionType `json:"type"`
-	// Status of the condition: true or false
-	Status corev1.ConditionStatus `json:"status"`
-	// Message contains the details of the current condition
-	// +optional
-	Message string `json:"message,omitempty"`
-}
-
 // ResourceReference contains resource identifier(name, namespace, kind)
 type ResourceReference struct {
 	// Name of the resource

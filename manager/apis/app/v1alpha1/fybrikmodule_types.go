@@ -4,7 +4,6 @@
 package v1alpha1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -226,17 +225,8 @@ type ChartSpec struct {
 
 // FybrikModuleStatus defines the observed state of FybrikModule.
 type FybrikModuleStatus struct {
-	// ErrorMessage indicates that an error has happened during the module validation
-	// +optional
-	ErrorMessage string `json:"errorMessage,omitempty"`
-
-	// ValidatedGeneration is the version of the FybrikModule that has been validated with the taxonomy defined.
-	// +optional
-	ValidatedGeneration int64 `json:"validatedGeneration,omitempty"`
-
-	// ValidModule indicates whether the FybrikModule is valid given the defined taxonomy
-	// +optional
-	ValidModule corev1.ConditionStatus `json:"validModule,omitempty"`
+	// Conditions indicate the module state after validation (Ready, Error)
+	Conditions []Condition `json:"conditions,omitempty"`
 }
 
 // +kubebuilder:object:root=true

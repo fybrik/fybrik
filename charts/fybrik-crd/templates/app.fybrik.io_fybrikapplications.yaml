@@ -210,6 +210,11 @@ spec:
                             description: Message contains the details of the current
                               condition
                             type: string
+                          observedGeneration:
+                            description: ObservedGeneration is the version of the
+                              resource for which the condition has been evaluated
+                            format: int64
+                            type: integer
                           status:
                             description: 'Status of the condition: true or false'
                             type: string
