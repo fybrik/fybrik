@@ -376,6 +376,10 @@ spec:
                   - subFlows
                   type: object
                 type: array
+              modulesNamespace:
+                description: ModulesNamespace is the namespace where modules should
+                  be allocated
+                type: string
               templates:
                 additionalProperties:
                   description: Template contains basic information about the required
@@ -452,6 +456,7 @@ spec:
             required:
             - assets
             - flows
+            - modulesNamespace
             - templates
             type: object
           status:

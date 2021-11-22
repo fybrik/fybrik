@@ -116,6 +116,10 @@ type BlueprintSpec struct {
 	// +required
 	Cluster string `json:"cluster"`
 
+	// ModulesNamespace is the namespace where modules should be allocated
+	// +required
+	ModulesNamespace string `json:"modulesNamespace"`
+
 	// Modules is a map which contains modules that indicate the data path components that run in this cluster
 	// The map key is InstanceName which is the unique name for the deployed instance related to this workload
 	// +required

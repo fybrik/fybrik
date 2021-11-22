@@ -111,6 +111,13 @@ BlueprintSpec defines the desired state of Blueprint, which defines the componen
           Modules is a map which contains modules that indicate the data path components that run in this cluster The map key is InstanceName which is the unique name for the deployed instance related to this workload<br/>
         </td>
         <td>true</td>
+      </tr><tr>
+        <td><b>modulesNamespace</b></td>
+        <td>string</td>
+        <td>
+          ModulesNamespace is the namespace where modules should be allocated<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 
@@ -2329,6 +2336,13 @@ PlotterSpec defines the desired state of Plotter, which is applied in a multi-cl
         <td>[]object</td>
         <td>
           <br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>modulesNamespace</b></td>
+        <td>string</td>
+        <td>
+          ModulesNamespace is the namespace where modules should be allocated<br/>
         </td>
         <td>true</td>
       </tr><tr>

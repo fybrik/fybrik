@@ -627,10 +627,11 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext *api.Fybr
 	}
 
 	plotterSpec := &api.PlotterSpec{
-		Selector:  applicationContext.Spec.Selector,
-		Assets:    map[string]api.AssetDetails{},
-		Flows:     []api.Flow{},
-		Templates: map[string]api.Template{},
+		Selector:         applicationContext.Spec.Selector,
+		Assets:           map[string]api.AssetDetails{},
+		Flows:            []api.Flow{},
+		ModulesNamespace: utils.GetDefaultModulesNamespace(),
+		Templates:        map[string]api.Template{},
 	}
 
 	for _, item := range requirements {
