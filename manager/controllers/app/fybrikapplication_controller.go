@@ -39,7 +39,7 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
-	model "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	model "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 	"fybrik.io/fybrik/pkg/vault"
 )
 

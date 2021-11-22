@@ -10,7 +10,7 @@ import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 	"fybrik.io/fybrik/pkg/vault"
 	"github.com/gdexlab/go-render/render"
 )

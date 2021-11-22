@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"strings"
 
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )
 
 type OpaReader struct {
