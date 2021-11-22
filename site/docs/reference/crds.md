@@ -1925,9 +1925,11 @@ Capability declares what this module knows how to do and the types of data it kn
         <td>false</td>
       </tr><tr>
         <td><b>capability</b></td>
-        <td>string</td>
+        <td>enum</td>
         <td>
           Capability declares what this module knows how to do - ex: read, write, transform...<br/>
+          <br/>
+            <i>Enum</i>: copy, read, write, transform<br/>
         </td>
         <td>true</td>
       </tr></tbody>
