@@ -49,6 +49,7 @@ rules:
   resources:
   - plotters/status
   - blueprints/status
+  - fybrikmodules/status
   verbs:
   - get
   - patch

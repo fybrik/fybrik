@@ -40,10 +40,8 @@ const (
 )
 
 // ModuleCapability indicates at a high level what is being performed - often on a datset, but potentially other things as well
-// +kubebuilder:validation:Enum=copy;read;write;transform
 type CapabilityType string
 
-// TODO - Should these come from the taxonomy?
 const (
 	// Copy moves data from one location to another - i.e implicit copy
 	Copy CapabilityType = "copy"

@@ -202,7 +202,7 @@ spec:
       matchLabels:
         app: my-notebook
   appInfo:
-    intent: fraud-detection
+    intent: Fraud Detection
   data:
     - dataSetID: "fybrik-notebook-sample/paysim-csv"
       requirements:
