@@ -546,8 +546,6 @@ spec:
                             reconcile, each release should be mapped to the latest
                             blueprint version or be uninstalled.
                           type: object
-                      required:
-                      - modules
                       type: object
                   required:
                   - name
