@@ -5,9 +5,10 @@ package model
 
 // Document represents a taxonomy schema document.
 type Document struct {
-	Schema        `json:",inline"`
+	Schema
 	SchemaVersion string                `json:"$schema,omitempty"`
 	Definitions   map[string]*SchemaRef `json:"definitions,omitempty"`
+	Type          string                `json:"type,omitempty"`
 }
 
 // Deref dereferences a $ref to the schema model that it points to

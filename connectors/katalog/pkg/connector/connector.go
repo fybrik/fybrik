@@ -5,6 +5,8 @@ package connector
 import (
 	"net"
 
+	"fybrik.io/fybrik/connectors/katalog/pkg/api"
+
 	connectors "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -15,7 +17,7 @@ import (
 
 func Start(address string) error {
 	scheme := runtime.NewScheme()
-	_ = AddToScheme(scheme)
+	_ = api.AddToScheme(scheme)
 
 	client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: scheme})
 	if err != nil {
