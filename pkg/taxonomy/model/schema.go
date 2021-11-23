@@ -11,10 +11,12 @@ type Schema struct {
 	Type                 string                    `json:"type,omitempty"`
 	Title                string                    `json:"title,omitempty"`
 	Description          string                    `json:"description,omitempty"`
+	Definitions          map[string]*SchemaRef     `json:"definitions,omitempty"`
 	Properties           Schemas                   `json:"properties,omitempty"`
 	AdditionalProperties *AdditionalPropertiesType `json:"additionalProperties,omitempty"`
 	Items                *SchemaRef                `json:"items,omitempty"`
 	Default              interface{}               `json:"default,omitempty"`
+	Version              string                    `json:"$schema,omitempty"`
 
 	// Composable
 	OneOf SchemaRefs `json:"oneOf,omitempty"`

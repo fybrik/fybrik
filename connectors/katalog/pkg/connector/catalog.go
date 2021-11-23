@@ -6,6 +6,8 @@ import (
 	"context"
 	"encoding/json"
 
+	"fybrik.io/fybrik/connectors/katalog/pkg/api"
+
 	"log"
 
 	connectors "fybrik.io/fybrik/pkg/connectors/protobuf"
@@ -61,7 +63,7 @@ func (s *DataCatalogService) GetDatasetInfo(ctx context.Context, req *connectors
 	}, nil
 }
 
-func buildDatasetMetadata(asset *Asset) *connectors.DatasetMetadata {
+func buildDatasetMetadata(asset *api.Asset) *connectors.DatasetMetadata {
 	assetMetadata := asset.Spec.AssetMetadata
 
 	var namedMetadata map[string]string
@@ -89,7 +91,7 @@ func buildDatasetMetadata(asset *Asset) *connectors.DatasetMetadata {
 	}
 }
 
-func buildDataStore(asset *Asset) (*connectors.DataStore, error) {
+func buildDataStore(asset *api.Asset) (*connectors.DataStore, error) {
 	connection := asset.Spec.AssetDetails.Connection
 	switch connection.Type {
 	case "s3":
@@ -136,10 +138,10 @@ func buildDataStore(asset *Asset) (*connectors.DataStore, error) {
 	}
 }
 
-func getAsset(ctx context.Context, client kclient.Client, namespace string, name string) (*Asset, error) {
+func getAsset(ctx context.Context, client kclient.Client, namespace string, name string) (*api.Asset, error) {
 	// Read asset as unstructured
 	object := &unstructured.Unstructured{}
-	object.SetGroupVersionKind(schema.GroupVersionKind{Group: GroupVersion.Group, Version: GroupVersion.Version, Kind: "Asset"})
+	object.SetGroupVersionKind(schema.GroupVersionKind{Group: api.GroupVersion.Group, Version: api.GroupVersion.Version, Kind: "Asset"})
 	object.SetNamespace(namespace)
 	object.SetName(name)
 
@@ -151,7 +153,7 @@ func getAsset(ctx context.Context, client kclient.Client, namespace string, name
 	}
 
 	// Decode into an Asset object
-	asset := &Asset{}
+	asset := &api.Asset{}
 	bytes, err := object.MarshalJSON()
 	if err != nil {
 		return nil, err

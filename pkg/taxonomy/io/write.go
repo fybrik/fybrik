@@ -9,13 +9,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"fybrik.io/fybrik/pkg/taxonomy/model"
 	"sigs.k8s.io/yaml"
 )
 
 // WriteDocumentToFile writes a document model to a JSON or YAML file.
 // The format is auto detected by the filename suffix with a fallback to JSON.
-func WriteDocumentToFile(doc *model.Document, outPath string) error {
+func WriteDocumentToFile(doc interface{}, outPath string) error {
 	var err error
 	var encoded []byte
 	if strings.HasSuffix(outPath, ".yaml") || strings.HasSuffix(outPath, ".yml") {
