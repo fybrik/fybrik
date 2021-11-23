@@ -17,9 +17,11 @@ import (
 // Resource struct for Resource
 type Resource struct {
 	// Name of the data set
-	Name    string                  `json:"name"`
-	Tags    *map[string]interface{} `json:"tags,omitempty"`
-	Columns *[]ResourceColumns      `json:"columns,omitempty"`
+	Name      string                  `json:"name"`
+	Owner     *string                 `json:"owner,omitempty"`
+	Geography *string                 `json:"geography,omitempty"`
+	Tags      *map[string]interface{} `json:"tags,omitempty"`
+	Columns   *[]ResourceColumns      `json:"columns,omitempty"`
 }
 
 // NewResource instantiates a new Resource object
@@ -62,6 +64,70 @@ func (o *Resource) GetNameOk() (*string, bool) {
 // SetName sets field value
 func (o *Resource) SetName(v string) {
 	o.Name = v
+}
+
+// GetOwner returns the Owner field value if set, zero value otherwise.
+func (o *Resource) GetOwner() string {
+	if o == nil || o.Owner == nil {
+		var ret string
+		return ret
+	}
+	return *o.Owner
+}
+
+// GetOwnerOk returns a tuple with the Owner field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Resource) GetOwnerOk() (*string, bool) {
+	if o == nil || o.Owner == nil {
+		return nil, false
+	}
+	return o.Owner, true
+}
+
+// HasOwner returns a boolean if a field has been set.
+func (o *Resource) HasOwner() bool {
+	if o != nil && o.Owner != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetOwner gets a reference to the given string and assigns it to the Owner field.
+func (o *Resource) SetOwner(v string) {
+	o.Owner = &v
+}
+
+// GetGeography returns the Geography field value if set, zero value otherwise.
+func (o *Resource) GetGeography() string {
+	if o == nil || o.Geography == nil {
+		var ret string
+		return ret
+	}
+	return *o.Geography
+}
+
+// GetGeographyOk returns a tuple with the Geography field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Resource) GetGeographyOk() (*string, bool) {
+	if o == nil || o.Geography == nil {
+		return nil, false
+	}
+	return o.Geography, true
+}
+
+// HasGeography returns a boolean if a field has been set.
+func (o *Resource) HasGeography() bool {
+	if o != nil && o.Geography != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetGeography gets a reference to the given string and assigns it to the Geography field.
+func (o *Resource) SetGeography(v string) {
+	o.Geography = &v
 }
 
 // GetTags returns the Tags field value if set, zero value otherwise.
@@ -132,6 +198,12 @@ func (o Resource) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
 		toSerialize["name"] = o.Name
+	}
+	if o.Owner != nil {
+		toSerialize["owner"] = o.Owner
+	}
+	if o.Geography != nil {
+		toSerialize["geography"] = o.Geography
 	}
 	if o.Tags != nil {
 		toSerialize["tags"] = o.Tags

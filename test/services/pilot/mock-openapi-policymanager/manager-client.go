@@ -11,7 +11,7 @@ import (
 	"time"
 
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )
 
 func getEnv(key string) string {

@@ -11,7 +11,7 @@ import (
 
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	"fybrik.io/fybrik/pkg/random"
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )
 
 // MockPolicyManager is a mock for PolicyManager interface used in tests
