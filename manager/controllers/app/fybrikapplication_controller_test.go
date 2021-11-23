@@ -139,7 +139,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 			Eventually(func() error {
 				return k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)
 			}, timeout, interval).Should(Succeed(), "Blueprint has not been created")
-			Expect(blueprint.Spec.ModulesNamespace).To(Equal("fybrik-blueprints"))
+			Expect(blueprint.Spec.ModulesNamespace).To(Equal(utils.GetDefaultModulesNamespace()))
 
 			for _, module := range blueprint.Spec.Modules {
 				Expect(module.Arguments.Labels["label1"]).To(Equal("foo"))
