@@ -6,16 +6,17 @@ package local
 import (
 	"testing"
 
-	"fybrik.io/fybrik/pkg/multicluster"
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+
+	"fybrik.io/fybrik/pkg/multicluster"
 )
 
-var _ multicluster.ClusterManager = &ClusterManager{}
+var _ multicluster.ClusterManager = &localClusterManager{}
 
 func TestLocalClusterManager(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
@@ -35,7 +36,7 @@ func TestLocalClusterManager(t *testing.T) {
 	}
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	namespace := "fybrik-system"
-	cm, err := NewManager(cl, namespace)
+	cm, err := NewClusterManager(cl, namespace)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(cm).NotTo(gomega.BeNil())
 	var actualClusters []multicluster.Cluster
