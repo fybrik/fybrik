@@ -1,0 +1,69 @@
+{
+  "definitions": {
+    "Action": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name"
+      ]
+    },
+    "AppInfo": {
+      "type": "object"
+    },
+    "Capability": {
+      "type": "string"
+    },
+    "Connection": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name"
+      ]
+    },
+    "Dataformat": {
+      "type": "string"
+    },
+    "DatasetID": {
+      "type": "string"
+    },
+    "Interface": {
+      "type": "object",
+      "properties": {
+        "dataformat": {
+          "$ref": "#/definitions/Dataformat"
+        },
+        "protocol": {
+          "$ref": "#/definitions/Protocol"
+        }
+      },
+      "additionalProperties": true
+    },
+    "PluginType": {
+      "type": "string"
+    },
+    "PolicyManagerRequestContext": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "ProcessingLocation": {
+      "type": "string"
+    },
+    "Protocol": {
+      "type": "string"
+    },
+    "Tags": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}
