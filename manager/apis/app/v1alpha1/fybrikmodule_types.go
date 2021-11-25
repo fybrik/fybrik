@@ -225,7 +225,7 @@ type ChartSpec struct {
 
 // FybrikModuleStatus defines the observed state of FybrikModule.
 type FybrikModuleStatus struct {
-	// Conditions indicate the module state after validation (Ready, Error)
+	// Conditions indicate the module states with respect to validation
 	Conditions []Condition `json:"conditions,omitempty"`
 }
 

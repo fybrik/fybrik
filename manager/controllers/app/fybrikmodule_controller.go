@@ -34,7 +34,8 @@ type FybrikModuleReconciler struct {
 }
 
 const (
-	ModuleTaxonomy = "/tmp/taxonomy/fybrik_module.json"
+	ModuleTaxonomy                 = "/tmp/taxonomy/fybrik_module.json"
+	ModuleValidationConditionIndex = 0
 )
 
 // Reconcile validates FybrikModule CRD
@@ -56,11 +57,11 @@ func (r *FybrikModuleReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	observedStatus := moduleContext.Status.DeepCopy()
 	moduleVersion := moduleContext.GetGeneration()
 	if len(moduleContext.Status.Conditions) == 0 {
-		moduleContext.Status.Conditions = []api.Condition{{Type: api.ReadyCondition, Status: corev1.ConditionUnknown, ObservedGeneration: 0}}
+		moduleContext.Status.Conditions = []api.Condition{{Type: api.ValidCondition, Status: corev1.ConditionUnknown, ObservedGeneration: 0}}
 	}
 
 	// check if module has been validated before or if validated module is outdated
-	condition := moduleContext.Status.Conditions[0]
+	condition := moduleContext.Status.Conditions[ModuleValidationConditionIndex]
 	if condition.ObservedGeneration != moduleVersion || condition.Status == corev1.ConditionUnknown {
 		// do validation on moduleContext
 		err := ValidateFybrikModule(moduleContext, ModuleTaxonomy)
@@ -75,7 +76,7 @@ func (r *FybrikModuleReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			condition.Status = v1.ConditionTrue
 			condition.Message = ""
 		}
-		moduleContext.Status.Conditions[0] = condition
+		moduleContext.Status.Conditions[ModuleValidationConditionIndex] = condition
 	}
 
 	// Update CRD status in case of change (other than deletion, which was handled separately)

@@ -15,13 +15,17 @@ const (
 	ErrorCondition ConditionType = "Error"
 	DenyCondition  ConditionType = "Deny"
 	ReadyCondition ConditionType = "Ready"
+	ValidCondition ConditionType = "Valid"
 )
 
 // Condition describes the state of a FybrikApplication at a certain point.
 type Condition struct {
 	// Type of the condition
 	Type ConditionType `json:"type"`
-	// Status of the condition: true or false
+	// Status of the condition, one of (`True`, `False`, `Unknown`).
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:Enum=True;False;Unknown
+	// +kubebuilder:default:=Unknown
 	Status corev1.ConditionStatus `json:"status"`
 	// Message contains the details of the current condition
 	// +optional

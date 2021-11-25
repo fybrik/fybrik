@@ -570,13 +570,18 @@ spec:
                       format: int64
                       type: integer
                     status:
-                      description: 'Status of the condition: true or false'
+                      default: Unknown
+                      description: Status of the condition, one of (`True`, `False`,
+                        `Unknown`).
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
                       type: string
                     type:
                       description: Type of the condition
                       type: string
                   required:
-                  - status
                   - type
                   type: object
                 type: array
