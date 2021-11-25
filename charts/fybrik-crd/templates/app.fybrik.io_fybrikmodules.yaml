@@ -98,11 +98,6 @@ spec:
                     capability:
                       description: 'Capability declares what this module knows how
                         to do - ex: read, write, transform...'
-                      enum:
-                      - copy
-                      - read
-                      - write
-                      - transform
                       type: string
                     plugins:
                       description: Plugins enable the module to add libraries to perform
