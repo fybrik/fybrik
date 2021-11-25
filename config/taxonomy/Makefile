@@ -48,6 +48,7 @@ generate-client-datacatalog: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.js
 		-i datacatalog.spec.yaml
 	rm -f $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/go.mod $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/go.sum $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/.travis.yml
 	rm -f $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/README.md $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/git_push.sh
+	rm -f $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/.gitignore $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/.openapi-generator-ignore $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/.openapi-generator/FILES
 	rm -r $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/api
 	
 .PHONY: generate-server

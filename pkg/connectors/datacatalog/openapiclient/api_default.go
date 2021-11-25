@@ -27,17 +27,16 @@ var (
 type DefaultApiService service
 
 type ApiGetAssetInfoPostRequest struct {
-	ctx                     _context.Context
-	ApiService              *DefaultApiService
+	ctx _context.Context
+	ApiService *DefaultApiService
 	xRequestDataCatalogCred *string
-	dataCatalogRequest      *DataCatalogRequest
+	dataCatalogRequest *DataCatalogRequest
 }
 
 func (r ApiGetAssetInfoPostRequest) XRequestDataCatalogCred(xRequestDataCatalogCred string) ApiGetAssetInfoPostRequest {
 	r.xRequestDataCatalogCred = &xRequestDataCatalogCred
 	return r
 }
-
 // Data Catalog Request Object.
 func (r ApiGetAssetInfoPostRequest) DataCatalogRequest(dataCatalogRequest DataCatalogRequest) ApiGetAssetInfoPostRequest {
 	r.dataCatalogRequest = &dataCatalogRequest
@@ -57,7 +56,7 @@ GetAssetInfoPost getAssetInfo
 func (a *DefaultApiService) GetAssetInfoPost(ctx _context.Context) ApiGetAssetInfoPostRequest {
 	return ApiGetAssetInfoPostRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
