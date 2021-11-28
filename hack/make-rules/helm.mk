@@ -2,6 +2,7 @@ HELM_VALUES ?= \
 	--set hello=world1
 
 CHART := ${DOCKER_NAME}
+HELM_TAGNAME ?= '0.0.0'
 HELM_RELEASE ?= rel1-${DOCKER_NAME}
 CHART_SCHEME ?= oci
 TEMP := /tmp
@@ -31,13 +32,13 @@ helm-install: $(TOOLBIN)/helm
 
 .PHONY: helm-chart-push
 helm-chart-push: helm-login $(TOOLBIN)/helm
-	$(ABSTOOLBIN)/helm package ../${CHART} --destination=${TEMP}
-	$(ABSTOOLBIN)/helm push ${TEMP}/${CHART}-${DOCKER_TAGNAME}.tgz ${CHART_PATH}
-	rm -rf ${TEMP}/${CHART}-${DOCKER_TAGNAME}.tgz
+	$(ABSTOOLBIN)/helm package ../${CHART} --version=${HELM_TAGNAME} --destination=${TEMP}
+	$(ABSTOOLBIN)/helm push ${TEMP}/${CHART}-${HELM_TAGNAME}.tgz ${CHART_PATH}
+	rm -rf ${TEMP}/${CHART}-${HELM_TAGNAME}.tgz
 
 .PHONY: helm-chart-pull
 helm-chart-pull: helm-login $(TOOLBIN)/helm
-	$(ABSTOOLBIN)/helm pull ${CHART_PATH}/${CHART} --version ${DOCKER_TAGNAME}
+	$(ABSTOOLBIN)/helm pull ${CHART_PATH}/${CHART} --version ${HELM_TAGNAME}
 
 .PHONY: helm-chart-list
 helm-chart-list: $(TOOLBIN)/helm
@@ -45,7 +46,7 @@ helm-chart-list: $(TOOLBIN)/helm
 
 .PHONY: helm-chart-install
 helm-chart-install: $(TOOLBIN)/helm
-	$(ABSTOOLBIN)/helm install ${HELM_RELEASE} ${CHART_PATH}/${CHART} --version ${DOCKER_TAGNAME} ${HELM_VALUES}
+	$(ABSTOOLBIN)/helm install ${HELM_RELEASE} ${CHART_PATH}/${CHART} --version ${HELM_TAGNAME} ${HELM_VALUES}
 	$(ABSTOOLBIN)/helm list
 
 .PHONY: helm-template
