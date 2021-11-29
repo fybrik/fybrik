@@ -11,6 +11,8 @@ charts/taxonomy.json:
 	go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/policy_manager_response.json
 	go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/fybrik_application.json
 	go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/fybrik_module.json
+	go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/data_catalog_request.json
+	go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/data_catalog_response.json
 
 .PHONY: generate-base-policymanager
 generate-base-policymanager: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
@@ -20,15 +22,10 @@ generate-base-policymanager: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.js
 		--enable-post-process-file \
 		--type-mappings=object=interface{}
 
-charts/taxonomy-catalogconnector.json:
-	go run $(ROOT_DIR)/main.go taxonomy compile --codegen --base ./base/base.yaml ./example/catalog/connection.yaml  --out $(ROOT_DIR)/charts/fybrik/files/taxonomy/taxonomy.json
-	go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/data_catalog_request.json
-	go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/data_catalog_response.json
-
-.PHONY: generate-base-catalogconnector
-generate-base-catalogconnector: $(TOOLBIN)/openapi-generator-cli charts/taxonomy-catalogconnector.json
-	mkdir -p $(ROOT_DIR)/pkg/taxonomy/model/base
-	$(TOOLBIN)/openapi-generator-cli generate -i ./catalogconnector.spec.yaml -g go -o $(ROOT_DIR)/pkg/taxonomy/model/base --global-property=models,modelDocs=false \
+.PHONY: generate-base-datacatalog
+generate-base-datacatalog: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
+	mkdir -p $(ROOT_DIR)/pkg/taxonomy/model/datacatalog/base
+	$(TOOLBIN)/openapi-generator-cli generate -i ./datacatalog.spec.yaml -g go -o $(ROOT_DIR)/pkg/taxonomy/model/datacatalog/base --global-property=models,modelDocs=false \
 		--additional-properties=packageName=base \
 		--enable-post-process-file \
 		--type-mappings=object=interface{}
@@ -43,6 +40,17 @@ generate-client-policymanager: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.
 	rm -f $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/README.md $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/git_push.sh
 	rm -r $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/api
 
+.PHONY: generate-client-datacatalog
+generate-client-datacatalog: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
+	mkdir -p $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient
+	$(TOOLBIN)/openapi-generator-cli generate -g go --additional-properties=packageName=openapiclient,isGoSubmodule=false \
+		--global-property=apis,supportingFiles,apiDocs=false -o $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient \
+		-i datacatalog.spec.yaml
+	rm -f $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/go.mod $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/go.sum $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/.travis.yml
+	rm -f $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/README.md $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/git_push.sh
+	rm -f $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/.gitignore $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/.openapi-generator-ignore $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/.openapi-generator/FILES
+	rm -r $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/api
+	
 .PHONY: generate-server
 generate-server: clean-server $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
 	mkdir -p $(ROOT_DIR)/connectors/opa
