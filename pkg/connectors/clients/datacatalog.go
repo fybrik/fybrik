@@ -6,11 +6,11 @@ package clients
 import (
 	"io"
 
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
+	datacatalogTaxonomyModels "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 )
 
 // DataCatalog is an interface of a facade to a data catalog.
 type DataCatalog interface {
-	pb.DataCatalogServiceServer
+	GetAssetInfo(in *datacatalogTaxonomyModels.DataCatalogRequest, creds string) (*datacatalogTaxonomyModels.DataCatalogResponse, error)
 	io.Closer
 }
