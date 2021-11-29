@@ -10,6 +10,7 @@ metadata:
     app.fybrik.io/app-name: notebook
 spec:
   cluster: cluster1
+  modulesNamespace: fybrik-blueprints
   modules:
     notebook-copy-batch:
       name: notebook-copy-batch
@@ -71,4 +72,3 @@ spec:
                 secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
             format: parquet
           assetID: xyz
-  modulesNamespace: fybrik-blueprints
