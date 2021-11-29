@@ -44,4 +44,4 @@ spec:
                 authPath: /v1/auth/kubernetes/login
                 role: module
                 secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
-            format: parquet
+            format: parquet           
