@@ -71,3 +71,4 @@ spec:
                 secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
             format: parquet
           assetID: xyz
+  modulesNamespace: fybrik-blueprints
