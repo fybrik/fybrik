@@ -13,6 +13,7 @@ spec:
     matchLabels:
       app: notebook
   cluster: cluster1
+  modulesNamespace: fybrik-blueprints
   modules:
     notebook-read-module:
       name: notebook-read-module
@@ -43,5 +44,4 @@ spec:
                 authPath: /v1/auth/kubernetes/login
                 role: module
                 secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
-            format: parquet
-  modulesNamespace: fybrik-blueprints           
+            format: parquet           
