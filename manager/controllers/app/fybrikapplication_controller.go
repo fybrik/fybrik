@@ -167,7 +167,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext *api.Fyb
 	// Temporary fix: all assets that are not in Deny state are updated based on the received status
 	for _, dataCtx := range applicationContext.Spec.Data {
 		assetID := dataCtx.DataSetID
-		if applicationContext.Status.AssetStates[assetID].Conditions[api.DenyConditionIndex].Status == v1.ConditionTrue {
+		if applicationContext.Status.AssetStates[assetID].Conditions[DenyConditionIndex].Status == v1.ConditionTrue {
 			// should not appear in the plotter status
 			continue
 		}

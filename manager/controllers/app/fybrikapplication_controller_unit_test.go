@@ -271,7 +271,7 @@ func TestDenyOnRead(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// Expect Deny condition
-	cond := application.Status.AssetStates["s3/deny-dataset"].Conditions[app.DenyConditionIndex]
+	cond := application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex]
 	g.Expect(cond.Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue), "Deny condition is not set")
 	g.Expect(cond.Message).To(gomega.ContainSubstring(app.ReadAccessDenied))
 	g.Expect(application.Status.Ready).To(gomega.BeTrue())
@@ -537,7 +537,7 @@ func TestMultipleDatasets(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// check Deny for the first dataset
-	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage["db2/redact-dataset"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
 	// check plotter creation
@@ -618,8 +618,8 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 
 	// check Deny states
-	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
-	g.Expect(application.Status.AssetStates["local/redact-dataset"].Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["local/redact-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 }
