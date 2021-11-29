@@ -1470,12 +1470,24 @@ Condition describes the state of a FybrikApplication at a certain point.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>status</b></td>
-        <td>string</td>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
         <td>
-          Status of the condition: true or false<br/>
+          ObservedGeneration is the version of the resource for which the condition has been evaluated<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>enum</td>
+        <td>
+          Status of the condition, one of (`True`, `False`, `Unknown`).<br/>
+          <br/>
+            <i>Enum</i>: True, False, Unknown<br/>
+            <i>Default</i>: Unknown<br/>
+        </td>
+        <td>false</td>
       </tr><tr>
         <td><b>type</b></td>
         <td>string</td>
@@ -1691,28 +1703,65 @@ FybrikModuleStatus defines the observed state of FybrikModule.
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>errorMessage</b></td>
+        <td><b><a href="#fybrikmodulestatusconditionsindex">conditions</a></b></td>
+        <td>[]object</td>
+        <td>
+          Conditions indicate the module states with respect to validation<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikModule.status.conditions[index]
+<sup><sup>[↩ Parent](#fybrikmodulestatus)</sup></sup>
+
+
+
+Condition describes the state of a FybrikApplication at a certain point.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>message</b></td>
         <td>string</td>
         <td>
-          ErrorMessage indicates that an error has happened during the module validation<br/>
+          Message contains the details of the current condition<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>validModule</b></td>
-        <td>string</td>
-        <td>
-          ValidModule indicates whether the FybrikModule is valid given the defined taxonomy<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>validatedGeneration</b></td>
+        <td><b>observedGeneration</b></td>
         <td>integer</td>
         <td>
-          ValidatedGeneration is the version of the FybrikModule that has been validated with the taxonomy defined.<br/>
+          ObservedGeneration is the version of the resource for which the condition has been evaluated<br/>
           <br/>
             <i>Format</i>: int64<br/>
         </td>
         <td>false</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>enum</td>
+        <td>
+          Status of the condition, one of (`True`, `False`, `Unknown`).<br/>
+          <br/>
+            <i>Enum</i>: True, False, Unknown<br/>
+            <i>Default</i>: Unknown<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>type</b></td>
+        <td>string</td>
+        <td>
+          Type of the condition<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 
@@ -3446,12 +3495,24 @@ Condition describes the state of a FybrikApplication at a certain point.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>status</b></td>
-        <td>string</td>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
         <td>
-          Status of the condition: true or false<br/>
+          ObservedGeneration is the version of the resource for which the condition has been evaluated<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>enum</td>
+        <td>
+          Status of the condition, one of (`True`, `False`, `Unknown`).<br/>
+          <br/>
+            <i>Enum</i>: True, False, Unknown<br/>
+            <i>Default</i>: Unknown<br/>
+        </td>
+        <td>false</td>
       </tr><tr>
         <td><b>type</b></td>
         <td>string</td>
