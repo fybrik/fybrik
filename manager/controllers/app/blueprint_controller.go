@@ -146,7 +146,7 @@ func getDomainFromImageName(image string) (string, error) {
 
 func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log logr.Logger, chartSpec app.ChartSpec, args map[string]interface{}, blueprint *app.Blueprint, releaseName string) (ctrl.Result, error) {
 	log.Info(fmt.Sprintf("--- Chart Ref ---\n\n%v\n\n", chartSpec.Name))
-	kubeNamespace := utils.GetDefaultModulesNamespace()
+	kubeNamespace := blueprint.Spec.ModulesNamespace
 
 	args = CopyMap(args)
 	for k, v := range chartSpec.Values {
@@ -275,7 +275,7 @@ func (r *BlueprintReconciler) updateModuleState(blueprint *app.Blueprint, instan
 }
 
 func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, blueprint *app.Blueprint) (ctrl.Result, error) {
-	modulesNamespace := utils.GetDefaultModulesNamespace()
+	modulesNamespace := blueprint.Spec.ModulesNamespace
 	// Gather all templates and process them into a list of resources to apply
 	// force-update if the blueprint spec is different
 	updateRequired := blueprint.Status.ObservedGeneration != blueprint.GetGeneration()
