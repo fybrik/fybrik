@@ -13,6 +13,12 @@ const DefaultBlueprintNamespace = "fybrik-blueprints"
 // Controller namespace defines a namespace where
 const DefaultControllerNamespace = "fybrik-system"
 
+// Returns a verbosity level as an integer based on
+// https://github.com/rs/zerolog#leveled-logging
+func GetLoggingVerbosity() string {
+	return os.Getenv("LOGGING_VERBOSITY")
+}
+
 func GetBlueprintNamespace() string {
 	blueprintNamespace := os.Getenv("BLUEPRINT_NAMESPACE")
 	if len(blueprintNamespace) == 0 {
