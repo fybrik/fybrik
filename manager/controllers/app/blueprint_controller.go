@@ -24,15 +24,20 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/helm"
+	credentialprovider "github.com/vdemeester/k8s-pkg-credentialprovider"
+	credentialprovidersecrets "github.com/vdemeester/k8s-pkg-credentialprovider/secrets"
 	corev1 "k8s.io/api/core/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
+
+	distributionref "github.com/distribution/distribution/reference"
 )
 
 // BlueprintReconciler reconciles a Blueprint object
@@ -130,7 +135,16 @@ func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) 
 	return errors.New(strings.Join(errs, "; "))
 }
 
-func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.ChartSpec, args map[string]interface{}, blueprint *app.Blueprint, releaseName string) (ctrl.Result, error) {
+func getDomainFromImageName(image string) (string, error) {
+	named, err := distributionref.ParseNormalizedNamed(image)
+	if err != nil {
+		return "", errors.WithMessage(err, "couldn't parse image name: "+image)
+	}
+
+	return distributionref.Domain(named), nil
+}
+
+func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log logr.Logger, chartSpec app.ChartSpec, args map[string]interface{}, blueprint *app.Blueprint, releaseName string) (ctrl.Result, error) {
 	log.Info(fmt.Sprintf("--- Chart Ref ---\n\n%v\n\n", chartSpec.Name))
 	kubeNamespace := utils.GetDefaultModulesNamespace()
 
@@ -141,7 +155,57 @@ func (r *BlueprintReconciler) applyChartResource(log logr.Logger, chartSpec app.
 	nbytes, _ := yaml.Marshal(args)
 	log.Info(fmt.Sprintf("--- Values.yaml ---\n\n%s\n\n", nbytes))
 
+	var registrySuccessfulLogin string
+
+	if chartSpec.ChartPullSecret != "" {
+		// obtain ChartPullSecret
+		pullSecret := corev1.Secret{}
+		pullSecrets := []corev1.Secret{}
+
+		if err := r.Get(ctx, types.NamespacedName{Namespace: utils.GetSystemNamespace(), Name: chartSpec.ChartPullSecret},
+			&pullSecret); err == nil {
+			// if this is not a dockerconfigjson, ignore
+			if pullSecret.Type == "kubernetes.io/dockerconfigjson" {
+				pullSecrets = append(pullSecrets, pullSecret)
+			}
+		} else {
+			return ctrl.Result{}, errors.WithMessage(err, "could not find ChartPullSecret: "+chartSpec.ChartPullSecret)
+		}
+
+		if len(pullSecrets) != 0 {
+			// create a keyring of all dockerconfigjson secrets, to be used for lookup
+			keyring := credentialprovider.NewDockerKeyring()
+			keyring, _ = credentialprovidersecrets.MakeDockerKeyring(pullSecrets, keyring)
+			repoToPull, err := getDomainFromImageName(chartSpec.Name)
+			if err != nil {
+				return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed to parse image name")
+			}
+
+			creds, withCredentials := keyring.Lookup(chartSpec.Name)
+			if withCredentials {
+				for _, cred := range creds {
+					err := r.Helmer.RegistryLogin(repoToPull, cred.Username, cred.Password, false)
+					if err == nil {
+						registrySuccessfulLogin = repoToPull
+						break
+					} else {
+						log.Info("Failed to login to helm registry: " + repoToPull)
+					}
+				}
+			} else {
+				log.Info("there is a mismatch between helm chart: " + chartSpec.Name +
+					" and the registries associated with secret: " + chartSpec.ChartPullSecret)
+			}
+		}
+	}
 	err := r.Helmer.ChartPull(chartSpec.Name)
+	// if we logged into a registry, let us try to logout
+	if registrySuccessfulLogin != "" {
+		logoutErr := r.Helmer.RegistryLogout(registrySuccessfulLogin)
+		if logoutErr != nil {
+			return ctrl.Result{}, errors.WithMessage(err, "failed to logout from helm registry: "+registrySuccessfulLogin)
+		}
+	}
 	if err != nil {
 		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart pull")
 	}
@@ -250,7 +314,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
 			// Process templates with arguments
 			chart := module.Chart
-			if _, err := r.applyChartResource(log, chart, args, blueprint, releaseName); err != nil {
+			if _, err := r.applyChartResource(ctx, log, chart, args, blueprint, releaseName); err != nil {
 				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
 				r.updateModuleState(blueprint, instanceName, false, err.Error())
 			} else {
