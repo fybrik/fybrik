@@ -21,13 +21,6 @@ config[{"read": decision}] {
     decision := {"policy": policy, "restrictions": {"clusters": [ input.workload.cluster.name]}}
 }
 
-# copy requested by the user
-config[{"copy": decision}] {
-    input.request.usage.copy == true
-    policy := {"ID": "copy-request", "description":"Copy capability is requested by the user"}
-    decision := {"policy": policy, "deploy": true}
-}
-
 # configure when implicit copies should be made
 config[{"copy": decision}] {
     input.request.usage.read == true

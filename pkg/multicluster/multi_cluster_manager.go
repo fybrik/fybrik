@@ -4,9 +4,11 @@
 package multicluster
 
 import (
-	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+
+	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
 )
 
 type ClusterLister interface {
@@ -30,6 +32,18 @@ type ClusterMetadata struct {
 type Cluster struct {
 	Name     string          `json:"name"`
 	Metadata ClusterMetadata `json:"metadata"`
+}
+
+func CreateCluster(cm corev1.ConfigMap) Cluster {
+	cluster := Cluster{
+		Name: cm.Data["ClusterName"],
+		Metadata: ClusterMetadata{
+			Region:        cm.Data["Region"],
+			Zone:          cm.Data["Zone"],
+			VaultAuthPath: cm.Data["VaultAuthPath"],
+		},
+	}
+	return cluster
 }
 
 // Decode json into runtime.Object, which is a pointer (such as &corev1.ConfigMapList)

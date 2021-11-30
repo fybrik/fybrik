@@ -50,7 +50,7 @@ func (r *PlotterReconciler) RefineInstances(instances []ModuleInstanceSpec) []Mo
 }
 
 // GenerateBlueprints creates Blueprint specs (one per cluster)
-func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec) map[string]app.BlueprintSpec {
+func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, plotter *app.Plotter) map[string]app.BlueprintSpec {
 	blueprintMap := make(map[string]app.BlueprintSpec)
 	instanceMap := make(map[string][]ModuleInstanceSpec)
 	for _, moduleInstance := range instances {
@@ -59,7 +59,7 @@ func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec) m
 	for key, instanceList := range instanceMap {
 		// unite several instances of a read/write module
 		instances := r.RefineInstances(instanceList)
-		blueprintMap[key] = r.GenerateBlueprint(instances, key)
+		blueprintMap[key] = r.GenerateBlueprint(instances, key, plotter)
 	}
 	utils.PrintStructure(blueprintMap, r.Log, "BlueprintMap")
 	return blueprintMap
@@ -68,10 +68,12 @@ func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec) m
 // GenerateBlueprint creates the Blueprint spec based on the datasets and the governance actions required, which dictate the modules that must run in the fybrik
 // Credentials for accessing data set are stored in a credential management system (such as vault) and the paths for accessing them are included in the blueprint.
 // The credentials themselves are not included in the blueprint.
-func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec, clusterName string) app.BlueprintSpec {
+func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec, clusterName string, plotter *app.Plotter) app.BlueprintSpec {
 	var spec app.BlueprintSpec
 
 	spec.Cluster = clusterName
+
+	spec.ModulesNamespace = plotter.Spec.ModulesNamespace
 
 	// Create the map that contains BlueprintModules
 

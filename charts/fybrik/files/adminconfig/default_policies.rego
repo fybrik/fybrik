@@ -16,9 +16,9 @@ config[{"write": decision}] {
     decision := {"policy": policy, "deploy": write_request}
 }
 
-# allow implicit copies by default
+# copy requested by the user
 config[{"copy": decision}] {
-    input.request.usage.read == true
-    policy := {"ID": "copy-default", "description":"Implicit copies are allowed in read scenarios"}
-    decision := {"policy": policy}
+    input.request.usage.copy == true
+    policy := {"ID": "copy-request", "description":"Copy capability is requested by the user"}
+    decision := {"policy": policy, "deploy": true}
 }

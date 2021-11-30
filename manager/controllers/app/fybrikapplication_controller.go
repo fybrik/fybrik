@@ -462,7 +462,7 @@ func (r *FybrikApplicationReconciler) GetWorkloadCluster(application *api.Fybrik
 		}
 		// the workload runs in a local cluster
 		r.Log.V(0).Info("selector.clusterName field is not specified for an existing workload - a local cluster is assumed")
-		localClusterManager, err := local.NewManager(r.Client, utils.GetSystemNamespace())
+		localClusterManager, err := local.NewClusterManager(r.Client, utils.GetSystemNamespace())
 		if err != nil {
 			return multicluster.Cluster{}, err
 		}
@@ -646,10 +646,11 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext *api.Fybr
 	}
 
 	plotterSpec := &api.PlotterSpec{
-		Selector:  applicationContext.Spec.Selector,
-		Assets:    map[string]api.AssetDetails{},
-		Flows:     []api.Flow{},
-		Templates: map[string]api.Template{},
+		Selector:         applicationContext.Spec.Selector,
+		Assets:           map[string]api.AssetDetails{},
+		Flows:            []api.Flow{},
+		ModulesNamespace: utils.GetDefaultModulesNamespace(),
+		Templates:        map[string]api.Template{},
 	}
 
 	for _, item := range requirements {

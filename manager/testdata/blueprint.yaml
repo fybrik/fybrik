@@ -10,6 +10,7 @@ metadata:
     app.fybrik.io/app-name: notebook
 spec:
   cluster: cluster1
+  modulesNamespace: fybrik-blueprints
   modules:
     notebook-copy-batch:
       name: notebook-copy-batch

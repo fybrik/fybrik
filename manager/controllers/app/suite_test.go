@@ -122,7 +122,7 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 
 		// Setup plotter controller
-		clusterMgr, err := local.NewManager(mgr.GetClient(), controllerNamespace)
+		clusterMgr, err := local.NewClusterManager(mgr.GetClient(), controllerNamespace)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(clusterMgr).NotTo(BeNil())
 		err = NewPlotterReconciler(mgr, "Plotter", clusterMgr).SetupWithManager(mgr)
