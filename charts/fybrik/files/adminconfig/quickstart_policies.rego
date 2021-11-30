@@ -21,6 +21,13 @@ config[{"read": decision}] {
     decision := {"policy": policy, "restrictions": {"clusters": [ input.workload.cluster.name]}}
 }
 
+# allow implicit copies by default
+config[{"copy": decision}] {
+    input.request.usage.read == true
+    policy := {"ID": "copy-default", "description":"Implicit copies are allowed in read scenarios"}
+    decision := {"policy": policy}
+}
+
 # configure when implicit copies should be made
 config[{"copy": decision}] {
     input.request.usage.read == true
