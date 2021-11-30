@@ -15,7 +15,7 @@ require (
 	github.com/gdexlab/go-render v1.0.1
 	github.com/getkin/kin-openapi v0.66.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
-	github.com/gin-gonic/gin v1.7.3
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-chi/render v1.0.1
 	github.com/go-logr/logr v0.4.0
