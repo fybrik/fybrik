@@ -1,256 +1,78 @@
 // Copyright 2021 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package fybriklogging
+package logging
 
 import (
-	"encoding/json"
+	"fmt"
+	"os"
 
-	"github.com/go-logr/logr"
+	"fybrik.io/fybrik/manager/controllers/utils"
+	"github.com/rs/zerolog"
 )
 
-// LogType indicates the types of log entries supported.  Logging packages typically provide separate function
-// calls for the different log types.
-type LogType string
+// Fybrik recommends using zerolog for golang logging
+// Examples of how to use zerolog: https://github.com/rs/zerolog/blob/master/log_example_test.go
 
+// zerolog levels should be used as follows:
+// --------------------------------------------
+// panic (zerolog.PanicLevel, 5) - Errors that prevent the component from operating correctly and handling requests
+//     Ex: fybrik control plane did not deploy correctly
+//	   Ex: Data plane component crashed and cannot handle requests
+// fatal (zerolog.FatalLevel, 4) - Errors that prevent the component from successfully completing a particular task
+//	   Ex: fybrikapplication controller cannot generate a plotter
+//	   Ex: Arrow/Flight server used to read data cannot access data store
+// error (zerolog.ErrorLevel, 3) - Errors that are not fatal nor panic, but that the user / request initiator is made aware of (typical production setting for stable solution)
+//	   Ex: Dataset requested in fybrikapplication.spec is not allowed to be used
+// 	   Ex: Query to Arrow/Flight server used to read data returns an error because of incorrect dataset ID
+// warn (zerolog.WarnLevel, 2) - Errors not shared with the user / request initiator, typically from which the component recovers on its own
+// info (zerolog.InfoLevel, 1) - High level health information that makes it clear the overall status, but without much detail (highest level used in production)
+// debug (zerolog.DebugLevel, 0) - Additional information needed to help identify problems (typically used during testing)
+// trace (zerolog.TraceLevel, -1) - For tracing step by step flow of control (typically used during development)
+
+// Component Types
 const (
-	ERROR LogType = "error" // Errors encountered in the code
-	INFO  LogType = "info"  // Info logs are things you want to tell the user or administrator which are not errors.
+	CONTROLLER string = "Controller" // A control plane controller
+	MODULE     string = "Module"     // A fybrikmodule that describes a deployable or pre-deployed service
+	CONNECTOR  string = "Connector"  // A component that connects an external system to the fybrik control plane - data governance policy manager, data catalog, credential manager
 )
 
-// VerbosityLevel allows one to decide how "chatty" you want your logs to be.
-type VerbosityLevel int
-
+// Action Types
 const (
-	MANDATORY VerbosityLevel = 0
-	DEBUG     VerbosityLevel = 1
-	TRACE     VerbosityLevel = 2
+	DELETE string = "Delete"
+	CREATE string = "Create"
+	UPDATE string = "Update"
 )
 
-// LogEntry defines the information for a single entry stored in the system logs.
-// It is assumed that the timestamp is added automatically and thus not included in the log entry structure.
-// Verbosity and log type are added by the log library via which the entries are sent to stdout or stderr.
-type LogEntry struct {
-	// Caller indicates the cluster, component and function that generated the message in the format "cluster/component/function"
-	// Use the buildCallerPath function to construct this.
-	// +required
-	Caller string `json:"caller"`
+// Log Entry Params - beyond timestamp, caller, err, and msg provided via zerologger
+const (
+	ACTION        string = "Action"        // optional
+	DATASETID     string = "DataSetID"     // optional
+	FYBRIKAPPUUID string = "FybrikAppUUID" // mandatory
+	FORUSER       string = "ForUser"       // optional
+	AUDIT         string = "Audit"         // optional
+	CLUSTER       string = "Cluster"       // mandatory
+)
 
-	// Message being logged.
-	// +required
-	Message string `json:"message"`
+// LogInit insures that all log entries have a cluster, timestamp, caller type, file and line from which it was called.
+// FYBRIKAPPUUID is mandatory as well, but is not known when the logger is initialized.
+func LogInit(callerType string, callerName string, cluster string) zerolog.Logger {
+	// UNIX Time is faster and smaller than most timestamps
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
-	// Unique id of the kubernetes fybrikapplication (Needs to be unique over time in order to support history and not just current workloads)
-	// +required
-	FybrikAppGUID string `json:"fybrikAppGuid"`
-
-	// ForUser should be true if the message should be shared with the end user in the FybrikApplication status.
-	// Assumed false if not indicated.
-	// +optional
-	ForUser bool `json:"forUser,omitempty"`
-
-	// ForArchive should be true if the message should be archived long term.
-	// For example, contains full contents of FybrikApplication and its status and should be stored for auditing purposes.
-	// Assumed false if not indicated
-	// +optional
-	ForArchive bool `json:"forArchive,omitempty"`
-
-	// DataSetID is a unique identifier for the data set.
-	// It should include an indicator of the catalog from which it came, as well as the catalog id.
-	// +optional
-	DataSetID string `json:"datasetID,omitempty"`
-
-	// ResponseTime of the current operation in milliseconds.
-	// This is an optional parameter that can use in monitoring dashboards such as Kibana.
-	// +optional
-	ResponseTime int64 `json:"responseTime,omitempty"`
-
-	// Action is the current operation being called.
-	// For example, “create_plotter” or “update_blueprint”.
-	// +optional
-	Action string `json:"action,omitempty"`
-}
-
-// ------ User Facing Log Functions ---------
-// Components (control plane and data plane) that interface with the user / user workload should log interactions their USER LEVEL log entries via user level logging functions. LogFAError, LogFAStruct, LogFAUpdate
-// This ensures that they are logged with ForUser and ForArchive set to true
-// Log entries not relevant to users should be logged with the internal logging functions
-
-// LogFAStruct writes to the log file a log entry containing for example, the FybrikApplication structure or a subset (spec or status) of it.
-// The log entry indicates it's a user level entry and should be archived.
-// This could be used by data path components as well to log user level structures.
-// It is logged as INFO/MANDATORY
-func LogFAStruct(log logr.Logger, arg interface{}, argName string, caller string, guid string, cluster string, function string) {
-	logEntry := LogEntry{
-		Caller:        buildCallerPath(cluster, caller, function),
-		Message:       "",
-		FybrikAppGUID: guid,
-		ForUser:       true,
-		ForArchive:    true,
-	}
-	printStructure(arg, argName, log, &logEntry, VerbosityLevel(MANDATORY))
-}
-
-// LogFAUpdate writes fybrikapplication updates as INFO/MANDATORY and ForArchive and ForUser are true
-// This may be used by data plane components, as well as the control plane, to log user level updates.
-func LogFAUpdate(log logr.Logger, caller string, guid string, msg string, cluster string, function string, dataset string, action string) {
-	logEntry := LogEntry{
-		Caller:        buildCallerPath(cluster, caller, function),
-		Message:       msg,
-		FybrikAppGUID: guid,
-		ForUser:       true,
-		ForArchive:    true,
-		Action:        action,
-		DataSetID:     dataset,
-	}
-
-	// Add optional fields where relevant
-	if action != "" {
-		logEntry.Action = action
-	}
-	if dataset != "" {
-		logEntry.DataSetID = dataset
-	}
-
-	log.V(int(MANDATORY)).Info(logEntryToJson(&logEntry))
-}
-
-// LogFAError writes fybrikapplication.status errors as ERROR/MANDATORY and ForArchive and ForUser are true
-// This may be used by data plane components, as well as the control plane, to log user level errors.
-func LogFAError(log logr.Logger, err error, caller string, guid string, msg string, cluster string, function string, dataset string, action string) {
-	logEntry := LogEntry{
-		Caller:        buildCallerPath(cluster, caller, function),
-		Message:       msg,
-		FybrikAppGUID: guid,
-		ForUser:       true,
-		ForArchive:    true,
-		Action:        action,
-		DataSetID:     dataset,
-	}
-
-	// Add optional fields where relevant
-	if action != "" {
-		logEntry.Action = action
-	}
-	if dataset != "" {
-		logEntry.DataSetID = dataset
-	}
-
-	log.V(int(MANDATORY)).Error(err, logEntryToJson(&logEntry))
-}
-
-// ----- Non-User Logging Functions --------
-// Non-user facing INFO/TRACE and INFO/DEBUG will have ForArchive and ForUser set to false
-// Errors for which there is a recovery should be ERROR/DEBUG and ForArchive and ForUser set to false
-// Errors for which there is no recovery but not shared with the user (fybrikapplication.status or a data plane component's status) should be ERROR/MANDATORY. ForArchive true and ForUser set to false
-
-// LogDebugInfo prints debugging information.  Verbosity should be either DEBUG or TRACE.
-// ForUser and ForArchive are not included in the entry because they are assumed to be false if not present
-func LogDebugInfo(log logr.Logger, verbosity VerbosityLevel, caller string, guid string, msg string, cluster string, function string, dataset string, action string, responseTime int64) {
-	logEntry := LogEntry{
-		Caller:        buildCallerPath(cluster, caller, function),
-		Message:       msg,
-		FybrikAppGUID: guid,
-	}
-
-	// Add optional fields where relevant
-	if action != "" {
-		logEntry.Action = action
-	}
-	if dataset != "" {
-		logEntry.DataSetID = dataset
-	}
-	if responseTime != 0 {
-		logEntry.ResponseTime = responseTime
-	}
-
-	log.V(int(verbosity)).Info(logEntryToJson(&logEntry))
-}
-
-// LogError prints errors that may or may not have been shared via fybrikapplication.status
-// If recovered is true then it is logged as DEBUG, otherwise as MANDATORY
-// ForUser and ForArchive are not included in the entry because they are assumed to be false if not present
-func LogError(log logr.Logger, err error, recovered bool, caller string, guid string, msg string, cluster string, function string, dataset string, action string, responseTime int64) {
-	logEntry := LogEntry{
-		Caller:        buildCallerPath(cluster, caller, function),
-		Message:       msg,
-		FybrikAppGUID: guid,
-	}
-
-	// Add optional fields where relevant
-	if action != "" {
-		logEntry.Action = action
-	}
-	if dataset != "" {
-		logEntry.DataSetID = dataset
-	}
-	if responseTime != 0 {
-		logEntry.ResponseTime = responseTime
-	}
-
-	var verbosity VerbosityLevel
-	if recovered == false {
-		verbosity = MANDATORY
+	// Get the logging verbosity level from the environment variable
+	// It should be one of these: https://github.com/rs/zerolog#leveled-logging
+	verbosityStr := utils.GetLoggingVerbosity()
+	if len(verbosityStr) > 0 {
+		var verbosity zerolog.Level
+		fmt.Sscan(verbosityStr, verbosity)
+		zerolog.SetGlobalLevel(verbosity)
 	} else {
-		verbosity = DEBUG
-	}
-	log.V(int(verbosity)).Error(err, logEntryToJson(&logEntry))
-}
-
-// LogDebugStruct writes to the log file a log entry containing a structure for the purpose of logging or tracing.
-// LogFAStruct should be used for user level structures since they are archived and can be shared with the fybrikapplication creator.
-// Verbosity should usually be either debug or trace
-func LogDebugStruct(log logr.Logger, verbosity VerbosityLevel, arg interface{}, argName string, caller string, guid string, cluster string, function string) {
-	logEntry := LogEntry{
-		Caller:        buildCallerPath(cluster, caller, function),
-		Message:       "",
-		FybrikAppGUID: guid,
-	}
-	printStructure(arg, argName, log, &logEntry, verbosity)
-}
-
-// ----- INTERNAL FUNCTIONS -------
-// Called only by functions in this package
-
-// LogEntryToJson converts the LogEntry structure to json and then to a string, which can be logged.
-// If the json creation fails a simple string entry is returned indicated the json error.
-func logEntryToJson(entry *LogEntry) string {
-	// Convert the structure to json
-	jsonStruct, err := json.Marshal(entry)
-
-	if err != nil {
-		msg := "Error parsing log entry structure to be logged. Log entry contained message: " + entry.Message
-		return msg
+		// No environment variable set, so use Info as default
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 
-	return string(jsonStruct)
-}
-
-// printStructure prints the structure in a textual format
-func printStructure(argStruct interface{}, argName string, log logr.Logger, entry *LogEntry, verbosity VerbosityLevel) {
-
-	tempMap := make(map[string]interface{}, 1)
-	tempMap[argName] = argStruct
-
-	// Convert the structure to json
-	jsonStruct, err := json.Marshal(tempMap)
-
-	// Got an error parsing the structure to be logged.  Log the error.
-	if err != nil {
-		entry.Message = `{"Error parsing the " + argName + " structure to be logged.")`
-		entry.Caller = entry.Caller + "/PrintStructure"
-
-		log.V(int(DEBUG)).Error(err, logEntryToJson(entry))
-		return
-	}
-
-	// Log it
-	//	entry.Message = `{` + argName + `:` + string(jsonStruct) + `}`
-	entry.Message = string(jsonStruct)
-	log.V(int(verbosity)).Info(logEntryToJson(entry))
-}
-
-// buildCallerPath concatentates the cluster, component and function into one string, because the log entry puts them in one field
-func buildCallerPath(cluster string, component string, function string) string {
-	return cluster + "/" + component + "/" + function
+	// Initialize the logger with the parameters known at the time of its initiation
+	// All entries include timestamp and caller that generated them
+	return zerolog.New(os.Stdout).With().Timestamp().Caller().Str(callerType, callerName).Str(CLUSTER, cluster).Logger()
 }
