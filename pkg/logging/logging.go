@@ -4,6 +4,7 @@
 package logging
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -35,6 +36,7 @@ const (
 	CONTROLLER string = "Controller" // A control plane controller
 	MODULE     string = "Module"     // A fybrikmodule that describes a deployable or pre-deployed service
 	CONNECTOR  string = "Connector"  // A component that connects an external system to the fybrik control plane - data governance policy manager, data catalog, credential manager
+	SERVICE    string = "Service"    // A data plane service - the service itself, not the module that describes it
 )
 
 // Action Types
@@ -45,18 +47,19 @@ const (
 )
 
 // Log Entry Params - beyond timestamp, caller, err, and msg provided via zerologger
+// Cluster will not be included since not all components know how to determine on which cluster they run.
+// Instead it will be assumed that the logging agents will add this information as they gather the logs.
 const (
 	ACTION        string = "Action"        // optional
 	DATASETID     string = "DataSetID"     // optional
 	FYBRIKAPPUUID string = "FybrikAppUUID" // mandatory
 	FORUSER       string = "ForUser"       // optional
 	AUDIT         string = "Audit"         // optional
-	CLUSTER       string = "Cluster"       // mandatory
 )
 
 // LogInit insures that all log entries have a cluster, timestamp, caller type, file and line from which it was called.
 // FYBRIKAPPUUID is mandatory as well, but is not known when the logger is initialized.
-func LogInit(callerType string, callerName string, cluster string) zerolog.Logger {
+func LogInit(callerType string, callerName string) zerolog.Logger {
 	// UNIX Time is faster and smaller than most timestamps
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
@@ -74,5 +77,15 @@ func LogInit(callerType string, callerName string, cluster string) zerolog.Logge
 
 	// Initialize the logger with the parameters known at the time of its initiation
 	// All entries include timestamp and caller that generated them
-	return zerolog.New(os.Stdout).With().Timestamp().Caller().Str(callerType, callerName).Str(CLUSTER, cluster).Logger()
+	return zerolog.New(os.Stdout).With().Timestamp().Caller().Str(callerType, callerName).Logger()
+}
+
+// LogStructure prints out a the provided structure to the log in json format.
+func LogStructure(argName string, argStruct interface{}, log zerolog.Logger, forUser bool, audit bool) {
+	jsonStruct, err := json.Marshal(argStruct)
+	if err != nil {
+		log.Warn().Msg("Failed converting " + argName + " to json")
+	} else {
+		log.Trace().Bool(FORUSER, forUser).Bool(AUDIT, audit).RawJSON(argName, jsonStruct)
+	}
 }
