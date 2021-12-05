@@ -188,9 +188,8 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log logr.L
 					if err == nil {
 						registrySuccessfulLogin = repoToPull
 						break
-					} else {
-						log.Info("Failed to login to helm registry: " + repoToPull)
 					}
+					log.Info("Failed to login to helm registry: " + repoToPull)
 				}
 			} else {
 				log.Info("there is a mismatch between helm chart: " + chartSpec.Name +
