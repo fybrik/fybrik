@@ -35,7 +35,7 @@ type DataInfo struct {
 
 // Temporary hard-coded capability representing Actions of read/copy capability.
 // A change to modules is requested to add "transform" as an additional capability to the existing read and copy modules.
-const TRANSFORM = "transform"
+const Transform = "transform"
 
 // Node represents an access point to data (as a physical source/sink, or a virtual endpoint)
 // A virtual endpoint is activated by the workload for read/write actions.
@@ -44,7 +44,7 @@ type Node struct {
 	Virtual    bool
 }
 
-// Edge represents a module capability that gets data via source and retuns data via sink interface
+// Edge represents a module capability that gets data via source and returns data via sink interface
 type Edge struct {
 	Source          *Node
 	Sink            *Node
@@ -76,7 +76,7 @@ func (p *PlotterGenerator) FindPaths(item *DataInfo, appContext *app.FybrikAppli
 	source := Node{Connection: &item.DataDetails.Interface, Virtual: false}
 	// data sink, either a virtual endpoint in read scenarios, or a datastore as in ingest scenario
 	destination := Node{Connection: &item.Context.Requirements.Interface, Virtual: (appContext.Spec.Selector.WorkloadSelector.Size() > 0)}
-	//find data paths of length up to 2 from data source to the workload, not including transformations or branches
+	// find data paths of length up to 2 from data source to the workload, not including transformations or branches
 	solutions := p.findPathsWithinLimit(item, &source, &destination, 2)
 	// get valid solutions by extending data paths with transformations and selecting an appropriate cluster for each capability
 	solutions = p.validSolutions(item, solutions, appContext)
@@ -211,8 +211,8 @@ func (p *PlotterGenerator) findPathsWithinLimit(item *DataInfo, source *Node, si
 					paths := p.findPathsWithinLimit(item, source, &Node{Connection: inter.Source}, n-1)
 					// add the selected module to the found paths
 					for i := range paths {
-						aux_edge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: &Node{Connection: inter.Source}, Sink: sink}
-						paths[i].DataPath = append(paths[i].DataPath, ResolvedEdge{Edge: aux_edge})
+						auxEdge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: &Node{Connection: inter.Source}, Sink: sink}
+						paths[i].DataPath = append(paths[i].DataPath, ResolvedEdge{Edge: auxEdge})
 					}
 					if len(paths) > 0 {
 						solutions = append(solutions, paths...)
@@ -338,7 +338,7 @@ func validateClusterRestrictions(item *DataInfo, edge *ResolvedEdge, cluster mul
 		return false
 	}
 	if len(edge.Actions) > 0 {
-		if !validateClusterRestrictionsPerCapability(item, TRANSFORM, cluster) {
+		if !validateClusterRestrictionsPerCapability(item, Transform, cluster) {
 			return false
 		}
 	}
@@ -346,7 +346,7 @@ func validateClusterRestrictions(item *DataInfo, edge *ResolvedEdge, cluster mul
 }
 
 func validateClusterRestrictionsPerCapability(item *DataInfo, capability string, cluster multicluster.Cluster) bool {
-	restrictions := item.Configuration.ConfigDecisions[capability].DeploymentRestrictions[adminconfig.CLUSTERS]
+	restrictions := item.Configuration.ConfigDecisions[capability].DeploymentRestrictions[adminconfig.Clusters]
 	if len(restrictions) == 0 {
 		return true
 	}

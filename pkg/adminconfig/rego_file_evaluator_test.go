@@ -115,7 +115,7 @@ var _ = Describe("Evaluate a policy", func() {
 		Expect(out.Valid).To(Equal(true))
 		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions["clusters"]["name"]).To(ContainElements("clusterB", "clusterC"))
 		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions["modules"]["type"]).To(ContainElements("service", "config", "plugin"))
-		//Expect(out.ConfigDecisions["copy"].DeploymentRestrictions["modules"]["scope"]).To(ContainElements("asset"))
+		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions["modules"]["scope"]).To(ContainElements("asset"))
 	})
 
 	//nolint:dupl

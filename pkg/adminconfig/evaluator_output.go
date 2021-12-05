@@ -17,9 +17,9 @@ type RestrictedEntity string
 
 // Restricted entities
 const (
-	MODULES          RestrictedEntity = "modules"
-	CLUSTERS         RestrictedEntity = "clusters"
-	STORAGE_ACCOUNTS RestrictedEntity = "storage"
+	Modules         RestrictedEntity = "modules"
+	Clusters        RestrictedEntity = "clusters"
+	StorageAccounts RestrictedEntity = "storage"
 )
 
 // DecisionPolicy is a justification for a policy that consists of a unique id, id of a policy set and a human readable desciption
