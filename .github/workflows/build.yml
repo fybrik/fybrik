@@ -215,9 +215,9 @@ jobs:
       if: ${{ github.event_name != 'pull_request' }}
       env:
         DOCKER_PUBLIC_TAGNAME:  ${{ steps.version.outputs.version }}
-      run: make docker-retag-and-push-public
+      run: make docker-retag-and-push-public && make helm-push-public
     - name: Publish latest image tag on push tag event
       if: github.event_name != 'pull_request' && steps.version.outputs.push_tag_event == 'true'
       env:
         DOCKER_PUBLIC_TAGNAME: 'latest'
-      run: make docker-retag-and-push-public
+      run: make docker-retag-and-push-public && make helm-push-public
