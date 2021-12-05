@@ -46,10 +46,10 @@ type Node struct {
 
 // Edge represents a module capability that gets data via source and retuns data via sink interface
 type Edge struct {
-	Source           *Node
-	Sink             *Node
-	Module           *app.FybrikModule
-	ModuleCapability *app.ModuleCapability
+	Source          *Node
+	Sink            *Node
+	Module          *app.FybrikModule
+	CapabilityIndex int
 }
 
 // ResolvedEdge extends an Edge by adding actions that a module should perform, and the cluster where the module will be deployed
@@ -100,6 +100,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, appContex
 	for ind := range solution.DataPath {
 		element := &solution.DataPath[ind]
 		element.Actions = []taxonomymodels.Action{}
+		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
 		if !element.Edge.Sink.Virtual {
 			// storage is required, plus more actions on copy may be needed
 			for _, region := range p.StorageAccountRegions {
@@ -137,7 +138,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, appContex
 		requiredActions = unsupported
 		// select a cluster for the capability that satisfy cluster restrictions specified in admin config policies
 		if !p.findCluster(item, element, appContext) {
-			p.Log.V(0).Info("Could not find an available cluster for " + element.ModuleCapability.Capability)
+			p.Log.V(0).Info("Could not find an available cluster for " + moduleCapability.Capability)
 			return false
 		}
 	}
@@ -149,7 +150,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, appContex
 	// Are all capabilities that need to be deployed supported in this data path?
 	supportedCapabilities := []string{}
 	for _, element := range solution.DataPath {
-		supportedCapabilities = append(supportedCapabilities, element.ModuleCapability.Capability)
+		supportedCapabilities = append(supportedCapabilities, element.Module.Spec.Capabilities[element.CapabilityIndex].Capability)
 	}
 	for capability, decision := range item.Configuration.ConfigDecisions {
 		if decision.Deploy == v1.ConditionTrue {
@@ -180,12 +181,12 @@ func (p *PlotterGenerator) findCluster(item *DataInfo, element *ResolvedEdge, ap
 func (p *PlotterGenerator) findPathsWithinLimit(item *DataInfo, source *Node, sink *Node, n int) []Solution {
 	solutions := []Solution{}
 	for _, module := range p.Modules {
-		for _, capability := range module.Spec.Capabilities {
+		for capabilityInd, capability := range module.Spec.Capabilities {
 			// check if capability is allowed
 			if !allowCapability(item, capability.Capability) {
 				continue
 			}
-			edge := Edge{Module: module, ModuleCapability: &capability, Source: nil, Sink: nil}
+			edge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: nil, Sink: nil}
 			// check that the module + module capability satisfy the requirements from the admin config policies
 			if !validateModuleRestrictions(item, &edge) {
 				continue
@@ -205,12 +206,12 @@ func (p *PlotterGenerator) findPathsWithinLimit(item *DataInfo, source *Node, si
 			}
 			// try to build data paths using the selected module capability
 			if n > 1 {
-				for _, inter := range edge.ModuleCapability.SupportedInterfaces {
+				for _, inter := range capability.SupportedInterfaces {
 					// recursive call to find paths of length = n-1 using the supported source of the selected module capability
 					paths := p.findPathsWithinLimit(item, source, &Node{Connection: inter.Source}, n-1)
 					// add the selected module to the found paths
 					for i := range paths {
-						aux_edge := Edge{Module: module, ModuleCapability: &capability, Source: &Node{Connection: inter.Source}, Sink: sink}
+						aux_edge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: &Node{Connection: inter.Source}, Sink: sink}
 						paths[i].DataPath = append(paths[i].DataPath, ResolvedEdge{Edge: aux_edge})
 					}
 					if len(paths) > 0 {
@@ -276,7 +277,8 @@ func supportsGovernanceActions(edge *Edge, actions []taxonomymodels.Action) bool
 // supportsGovernanceAction checks whether the module supports the required governance action
 func supportsGovernanceAction(edge *Edge, action taxonomymodels.Action) bool {
 	// Loop over the data transforms (actions) performed by the module for this capability
-	for _, act := range edge.ModuleCapability.Actions {
+	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
+	for _, act := range capability.Actions {
 		// TODO(shlomitk1): check for matching of additional fields declared by the module
 		if act.Name == action.Name {
 			return true
@@ -294,10 +296,11 @@ func match(source *app.InterfaceDetails, sink *app.InterfaceDetails) bool {
 
 // supportsSourceInterface indicates whether the source interface requirements are met.
 func supportsSourceInterface(edge *Edge, source *Node) bool {
-	if edge.ModuleCapability.API != nil && source.Virtual {
-		return match(&edge.ModuleCapability.API.InterfaceDetails, source.Connection)
+	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
+	if capability.API != nil && source.Virtual {
+		return match(&capability.API.InterfaceDetails, source.Connection)
 	}
-	for _, inter := range edge.ModuleCapability.SupportedInterfaces {
+	for _, inter := range capability.SupportedInterfaces {
 		// connection via Source
 		if inter.Source != nil && match(inter.Source, source.Connection) {
 			return true
@@ -308,10 +311,11 @@ func supportsSourceInterface(edge *Edge, source *Node) bool {
 
 // supportsSinkInterface indicates whether the sink interface requirements are met.
 func supportsSinkInterface(edge *Edge, sink *Node) bool {
-	if edge.ModuleCapability.API != nil && sink.Virtual {
-		return match(&edge.ModuleCapability.API.InterfaceDetails, sink.Connection)
+	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
+	if capability.API != nil && sink.Virtual {
+		return match(&capability.API.InterfaceDetails, sink.Connection)
 	}
-	for _, inter := range edge.ModuleCapability.SupportedInterfaces {
+	for _, inter := range capability.SupportedInterfaces {
 		if inter.Sink != nil && match(inter.Sink, sink.Connection) {
 			return true
 		}
@@ -329,7 +333,8 @@ func validateModuleRestrictions(item *DataInfo, edge *Edge) bool {
 }
 
 func validateClusterRestrictions(item *DataInfo, edge *ResolvedEdge, cluster multicluster.Cluster) bool {
-	if !validateClusterRestrictionsPerCapability(item, edge.ModuleCapability.Capability, cluster) {
+	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
+	if !validateClusterRestrictionsPerCapability(item, capability.Capability, cluster) {
 		return false
 	}
 	if len(edge.Actions) > 0 {
