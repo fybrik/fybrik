@@ -4,12 +4,26 @@
 package adminconfig
 
 import (
-	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-
 	corev1 "k8s.io/api/core/v1"
 )
 
+// Restriction maps a property to a list of allowed values
+// For example, a module restriction can map "type" to ["plugin", "config"], and "scope" to ["workload"]
+// Semantics is a disjunction of values, i.e. a type can be either plugin or config
+type Restriction map[string][]string
+
+// RestrictedEntity is an entity to be restricted, such as clusters, modules, storageaccounts.
+type RestrictedEntity string
+
+// Restricted entities
+const (
+	MODULES          RestrictedEntity = "modules"
+	CLUSTERS         RestrictedEntity = "clusters"
+	STORAGE_ACCOUNTS RestrictedEntity = "storage"
+)
+
 // DecisionPolicy is a justification for a policy that consists of a unique id, id of a policy set and a human readable desciption
+// TODO(shlomitk1): add effective date, expiration date.
 type DecisionPolicy struct {
 	ID          string `json:"ID"`
 	PolicySetID string `json:"policySetID"`
@@ -17,13 +31,7 @@ type DecisionPolicy struct {
 }
 
 // Deployment restrictions on modules, clusters and additional resources that will be added in the future
-type Restrictions struct {
-	// Restrictions on clusters used for deployment
-	Clusters []string `json:"clusters,omitempty"`
-	// Restrictions on modules of the type “key”: “value” when the key is a module property (e.g. scope, type)
-	// and the value is an allowed value (e.g. asset, plugin)
-	ModuleRestrictions map[string]string `json:"modules,omitempty"`
-}
+type Restrictions map[RestrictedEntity]Restriction
 
 // Decision is a result of evaluating a configuration policy which satisfies the specified predicates
 type Decision struct {
@@ -35,7 +43,7 @@ type Decision struct {
 	Policy DecisionPolicy `json:"policy,omitempty"`
 }
 
-type DecisionPerCapabilityMap map[api.CapabilityType]Decision
+type DecisionPerCapabilityMap map[string]Decision
 
 // EvaluatorOutput is an output of ConfigurationPoliciesEvaluator.
 // Used by manager to decide which modules are deployed and in which cluster.

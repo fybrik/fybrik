@@ -10,11 +10,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
-	"github.com/open-policy-agent/opa/storage/inmem"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
@@ -29,8 +27,6 @@ const RegoPolicyDirectory = "/tmp/adminconfig/"
 
 // RegoPolicyEvaluator implements EvaluatorInterface
 type RegoPolicyEvaluator struct {
-	Manager      *InfrastructureManager
-	Data         *Infrastructure
 	Query        rego.PreparedEvalQuery
 	ReadyForEval bool
 }
@@ -38,44 +34,14 @@ type RegoPolicyEvaluator struct {
 // NewRegoPolicyEvaluator constructs a new RegoPolicyEvaluator object
 func NewRegoPolicyEvaluator() *RegoPolicyEvaluator {
 	return &RegoPolicyEvaluator{
-		Manager:      nil,
-		Data:         nil,
 		Query:        rego.PreparedEvalQuery{},
 		ReadyForEval: false,
-	}
-}
-
-// SetupWithInfrastructureManager connects the evaluator to the infrastructure manager for obtaining infrastructure details
-func (r *RegoPolicyEvaluator) SetupWithInfrastructureManager(mgr *InfrastructureManager) {
-	r.Manager = mgr
-	r.Data = nil
-	// get infrastructure details using a new manager
-	if data, err := mgr.SetInfrastructure(); err != nil {
-		r.Data = data
 	}
 }
 
 // prepareQuery prepares a query for OPA evaluation - data object and compiled modules
 // This function is called upon the change in either the infrastructure data or rego files
 func (r *RegoPolicyEvaluator) prepareQuery() (rego.PreparedEvalQuery, error) {
-	var err error
-	if r.Data == nil {
-		if r.Data, err = r.Manager.SetInfrastructure(); err != nil {
-			return rego.PreparedEvalQuery{}, errors.Wrap(err, "could not set infrastructure")
-		}
-	}
-	var json map[string]interface{}
-	var bytes []byte
-	if bytes, err = yaml.Marshal(r.Data); err != nil {
-		return rego.PreparedEvalQuery{}, errors.Wrap(err, "couldn't marshall Data structure")
-	}
-	if err = yaml.Unmarshal(bytes, &json); err != nil {
-		return rego.PreparedEvalQuery{}, errors.Wrap(err, "couldn't unmarshall Data structure")
-	}
-	// Manually create the storage layer. inmem.NewFromObject returns an
-	// in-memory store containing the supplied data.
-	store := inmem.NewFromObject(json)
-
 	// read and compile rego files
 	files, err := ioutil.ReadDir(RegoPolicyDirectory)
 	if err != nil {
@@ -104,7 +70,6 @@ func (r *RegoPolicyEvaluator) prepareQuery() (rego.PreparedEvalQuery, error) {
 	}
 	rego := rego.New(
 		rego.Query("data.adminconfig.config"),
-		rego.Store(store),
 		rego.Compiler(compiler),
 	)
 	return rego.PrepareForEval(context.Background())
@@ -157,22 +122,12 @@ func (r *RegoPolicyEvaluator) prepareInputForOPA(in *EvaluatorInput) (map[string
 	return input, errors.Wrap(err, "failed  to unmarshal the input structure")
 }
 
-func (r *RegoPolicyEvaluator) initDecisions() map[v1alpha1.CapabilityType]Decision {
-	return map[v1alpha1.CapabilityType]Decision{
-		v1alpha1.Read:      DefaultDecision(r.Data),
-		v1alpha1.Copy:      DefaultDecision(r.Data),
-		v1alpha1.Transform: DefaultDecision(r.Data),
-		v1alpha1.Write:     DefaultDecision(r.Data),
-	}
-}
-
 // getOPADecisions parses the OPA decisions and merges decisions for the same capability
 func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.ResultSet) (DecisionPerCapabilityMap, bool, error) {
-	decisions := r.initDecisions()
+	decisions := map[string]Decision{}
 	if len(rs) == 0 {
 		return decisions, false, errors.New("invalid opa evaluation - an empty result set has been received")
 	}
-	defaultDecision := DefaultDecision(r.Data)
 	for _, result := range rs {
 		for _, expr := range result.Expressions {
 			bytes, err := yaml.Marshal(expr.Value)
@@ -197,20 +152,22 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 					case "false":
 						newDecision.Deploy = corev1.ConditionFalse
 					case "":
-						newDecision.Deploy = defaultDecision.Deploy
+						newDecision.Deploy = corev1.ConditionUnknown
 					default:
 						return nil, false, errors.New("Illegal value for Deploy: " + string(newDecision.Deploy))
 					}
-					if len(newDecision.DeploymentRestrictions.Clusters) == 0 {
-						newDecision.DeploymentRestrictions.Clusters = defaultDecision.DeploymentRestrictions.Clusters
-					}
 					// a single decision should be made for a capability
-					valid, mergedDecision := r.merge(newDecision, decisions[capability])
-					if !valid {
-						fmt.Println("Conflict while merging OPA decision " + newDecision.Policy.Description)
-						return decisions, false, nil
+					decision, exists := decisions[capability]
+					if !exists {
+						decisions[capability] = newDecision
+					} else {
+						valid, mergedDecision := r.merge(newDecision, decision)
+						if !valid {
+							fmt.Println("Conflict while merging OPA decision " + newDecision.Policy.Description)
+							return decisions, false, nil
+						}
+						decisions[capability] = mergedDecision
 					}
-					decisions[capability] = mergedDecision
 				}
 			}
 		}
@@ -235,21 +192,26 @@ func (r *RegoPolicyEvaluator) merge(newDecision Decision, oldDecision Decision) 
 		}
 	}
 	mergedDecision.Deploy = deploy
-	// merge cluster restricitions
-	mergedDecision.DeploymentRestrictions.Clusters = utils.Intersection(
-		newDecision.DeploymentRestrictions.Clusters,
-		oldDecision.DeploymentRestrictions.Clusters,
-	)
-	if len(mergedDecision.DeploymentRestrictions.Clusters) == 0 {
-		return false, mergedDecision
+	// merge restrictions
+	mergedDecision.DeploymentRestrictions = oldDecision.DeploymentRestrictions
+	if mergedDecision.DeploymentRestrictions == nil {
+		mergedDecision.DeploymentRestrictions = make(Restrictions)
 	}
-	// merge module restrictions
-	mergedDecision.DeploymentRestrictions.ModuleRestrictions = oldDecision.DeploymentRestrictions.ModuleRestrictions
-	for key, val := range newDecision.DeploymentRestrictions.ModuleRestrictions {
-		if mergedDecision.DeploymentRestrictions.ModuleRestrictions[key] == "" {
-			mergedDecision.DeploymentRestrictions.ModuleRestrictions[key] = val
-		} else if mergedDecision.DeploymentRestrictions.ModuleRestrictions[key] != val {
-			return false, mergedDecision
+	for entity, restrictions := range newDecision.DeploymentRestrictions {
+		if mergedRestriction, found := mergedDecision.DeploymentRestrictions[entity]; !found {
+			mergedDecision.DeploymentRestrictions[entity] = restrictions
+		} else {
+			for key, values := range restrictions {
+				if len(mergedRestriction[key]) == 0 {
+					mergedRestriction[key] = values
+				} else {
+					mergedRestriction[key] = utils.Intersection(mergedRestriction[key], values)
+					if len(mergedRestriction[key]) == 0 {
+						return false, mergedDecision
+					}
+				}
+			}
+			mergedDecision.DeploymentRestrictions[entity] = mergedRestriction
 		}
 	}
 	// merge policies descriptions/ids

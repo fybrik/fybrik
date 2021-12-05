@@ -47,6 +47,15 @@ func StructToMap(data interface{}) (map[string]interface{}, error) {
 	return mapData, nil
 }
 
+func HasString(value string, values []string) bool {
+	for _, v := range values {
+		if v == value {
+			return true
+		}
+	}
+	return false
+}
+
 // Hash generates a name based on the unique identifier
 func Hash(value string, hashLength int) string {
 	data := sha512.Sum512([]byte(value))
@@ -123,7 +132,7 @@ func SupportsInterface(array []*app.InterfaceDetails, element *app.InterfaceDeta
 // GetModuleCapabilities checks if the requested capability is supported by the module.  If so it returns
 // the ModuleCapability structure.  There could be more than one, since multiple structures could exist with
 // the same CapabilityType but different protocols, dataformats and/or actions.
-func GetModuleCapabilities(module *app.FybrikModule, requestedCapability app.CapabilityType) (bool, []app.ModuleCapability) {
+func GetModuleCapabilities(module *app.FybrikModule, requestedCapability string) (bool, []app.ModuleCapability) {
 	capList := []app.ModuleCapability{}
 	capFound := false
 	for _, cap := range module.Spec.Capabilities {

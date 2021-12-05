@@ -634,10 +634,16 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext *api.Fybr
 		return nil, nil, err
 	}
 	// create a plotter generator that will select modules to be orchestrated based on user requirements and module capabilities
+	clusters, err := r.ClusterManager.GetClusters()
+	if err != nil {
+		return nil, nil, err
+	}
+
 	plotterGen := &PlotterGenerator{
 		Client:                r.Client,
 		Log:                   r.Log,
 		Modules:               moduleMap,
+		Clusters:              clusters,
 		Owner:                 client.ObjectKeyFromObject(applicationContext),
 		PolicyManager:         r.PolicyManager,
 		Provision:             r.Provision,
