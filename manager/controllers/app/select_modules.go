@@ -298,7 +298,9 @@ func match(source *app.InterfaceDetails, sink *app.InterfaceDetails) bool {
 func supportsSourceInterface(edge *Edge, source *Node) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
 	if capability.API != nil && source.Virtual {
-		return match(&capability.API.InterfaceDetails, source.Connection)
+		if match(&capability.API.InterfaceDetails, source.Connection) {
+			return true
+		}
 	}
 	for _, inter := range capability.SupportedInterfaces {
 		// connection via Source
@@ -313,7 +315,9 @@ func supportsSourceInterface(edge *Edge, source *Node) bool {
 func supportsSinkInterface(edge *Edge, sink *Node) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
 	if capability.API != nil && sink.Virtual {
-		return match(&capability.API.InterfaceDetails, sink.Connection)
+		if match(&capability.API.InterfaceDetails, sink.Connection) {
+			return true
+		}
 	}
 	for _, inter := range capability.SupportedInterfaces {
 		if inter.Sink != nil && match(inter.Sink, sink.Connection) {
