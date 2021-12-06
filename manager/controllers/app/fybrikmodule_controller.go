@@ -16,6 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
 	"github.com/go-logr/logr"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -33,7 +34,8 @@ type FybrikModuleReconciler struct {
 }
 
 const (
-	ModuleTaxonomy = "/tmp/taxonomy/fybrik_module.json"
+	ModuleTaxonomy                 = "/tmp/taxonomy/fybrik_module.json"
+	ModuleValidationConditionIndex = 0
 )
 
 // Reconcile validates FybrikModule CRD
@@ -54,22 +56,27 @@ func (r *FybrikModuleReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	observedStatus := moduleContext.Status.DeepCopy()
 	moduleVersion := moduleContext.GetGeneration()
+	if len(moduleContext.Status.Conditions) == 0 {
+		moduleContext.Status.Conditions = []api.Condition{{Type: api.ValidCondition, Status: corev1.ConditionUnknown, ObservedGeneration: 0}}
+	}
 
 	// check if module has been validated before or if validated module is outdated
-	if string(moduleContext.Status.ValidModule) == "" || observedStatus.ValidatedGeneration != moduleVersion {
+	condition := moduleContext.Status.Conditions[ModuleValidationConditionIndex]
+	if condition.ObservedGeneration != moduleVersion || condition.Status == corev1.ConditionUnknown {
 		// do validation on moduleContext
 		err := ValidateFybrikModule(moduleContext, ModuleTaxonomy)
-		moduleContext.Status.ValidatedGeneration = moduleVersion
+		condition.ObservedGeneration = moduleVersion
 		// if validation fails
 		if err != nil {
 			// set error message
 			log.V(0).Info("Fybrik module validation failed " + err.Error())
-			moduleContext.Status.ErrorMessage = err.Error()
-			moduleContext.Status.ValidModule = v1.ConditionFalse
+			condition.Message = err.Error()
+			condition.Status = v1.ConditionFalse
 		} else {
-			moduleContext.Status.ValidModule = v1.ConditionTrue
-			moduleContext.Status.ErrorMessage = ""
+			condition.Status = v1.ConditionTrue
+			condition.Message = ""
 		}
+		moduleContext.Status.Conditions[ModuleValidationConditionIndex] = condition
 	}
 
 	// Update CRD status in case of change (other than deletion, which was handled separately)

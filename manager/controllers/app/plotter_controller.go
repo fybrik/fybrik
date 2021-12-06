@@ -303,7 +303,7 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]ap
 			}
 		}
 	}
-	blueprints := r.GenerateBlueprints(moduleInstances)
+	blueprints := r.GenerateBlueprints(moduleInstances, plotter)
 
 	return blueprints
 }

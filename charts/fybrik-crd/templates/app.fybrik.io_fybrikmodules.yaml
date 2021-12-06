@@ -268,19 +268,37 @@ spec:
           status:
             description: FybrikModuleStatus defines the observed state of FybrikModule.
             properties:
-              errorMessage:
-                description: ErrorMessage indicates that an error has happened during
-                  the module validation
-                type: string
-              validModule:
-                description: ValidModule indicates whether the FybrikModule is valid
-                  given the defined taxonomy
-                type: string
-              validatedGeneration:
-                description: ValidatedGeneration is the version of the FybrikModule
-                  that has been validated with the taxonomy defined.
-                format: int64
-                type: integer
+              conditions:
+                description: Conditions indicate the module states with respect to
+                  validation
+                items:
+                  description: Condition describes the state of a FybrikApplication
+                    at a certain point.
+                  properties:
+                    message:
+                      description: Message contains the details of the current condition
+                      type: string
+                    observedGeneration:
+                      description: ObservedGeneration is the version of the resource
+                        for which the condition has been evaluated
+                      format: int64
+                      type: integer
+                    status:
+                      default: Unknown
+                      description: Status of the condition, one of (`True`, `False`,
+                        `Unknown`).
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: Type of the condition
+                      type: string
+                  required:
+                  - type
+                  type: object
+                type: array
             type: object
         required:
         - spec

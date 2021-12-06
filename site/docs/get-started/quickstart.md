@@ -63,7 +63,7 @@ helm install cert-manager jetstack/cert-manager \
 		cd fybrik
 		helm dependency update charts/vault
 		helm install vault charts/vault --create-namespace -n fybrik-system \
-			--set "global.openshift=true" \
+			--set "vault.global.openshift=true" \
 			--set "vault.injector.enabled=false" \
 			--set "vault.server.dev.enabled=true" \
 			--values charts/vault/env/dev/vault-single-cluster-values.yaml
@@ -87,7 +87,7 @@ Run the following to install vault and the plugin in development mode:
 
     ```bash
     helm install vault fybrik-charts/vault --create-namespace -n fybrik-system \
-        --set "global.openshift=true" \
+        --set "vault.global.openshift=true" \
         --set "vault.injector.enabled=false" \
         --set "vault.server.dev.enabled=true" \
         --values https://raw.githubusercontent.com/fybrik/fybrik/v0.4.0/charts/vault/env/dev/vault-single-cluster-values.yaml
