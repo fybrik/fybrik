@@ -13,12 +13,12 @@ import (
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
+	"fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/pkg/multicluster"
-	"fybrik.io/fybrik/pkg/serde"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -181,9 +181,16 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			addCredentials(dataStore, plotterModule.VaultAuthPath, app.ReadFlow)
 		} else {
 			// Fill in the DataSource from the step arguments
+			apiInfo, err := utils.StructToMap(plotterModule.ModuleArguments.Source.API)
+			if err != nil {
+				return nil
+			}
 			dataStore = &app.DataStore{
-				Connection: serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
-				Format:     plotterModule.ModuleArguments.Source.API.Format,
+				Connection: app.ConnectionDetails{
+					Connection: base.Connection{
+						AdditionalProperties: apiInfo,
+					}},
+				Format: plotterModule.ModuleArguments.Source.API.Format,
 			}
 		}
 		blueprintModule.Args.Read = []app.ReadModuleArgs{
@@ -217,9 +224,16 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			addCredentials(dataStore, plotterModule.VaultAuthPath, app.ReadFlow)
 		} else {
 			// Fill in the DataSource from the step arguments
+			apiInfo, err := utils.StructToMap(plotterModule.ModuleArguments.Source.API)
+			if err != nil {
+				return nil
+			}
 			dataStore = &app.DataStore{
-				Connection: serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
-				Format:     plotterModule.ModuleArguments.Source.API.Format,
+				Connection: app.ConnectionDetails{
+					Connection: base.Connection{
+						AdditionalProperties: apiInfo,
+					}},
+				Format: plotterModule.ModuleArguments.Source.API.Format,
 			}
 		}
 		// Get only the writeFlow related creds

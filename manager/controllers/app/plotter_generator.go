@@ -12,9 +12,8 @@ import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
-	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
+	"fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 	vault "fybrik.io/fybrik/pkg/vault"
 	"github.com/Masterminds/sprig/v3"
 	"github.com/go-logr/logr"
@@ -24,8 +23,9 @@ import (
 
 // NewAssetInfo points to the provisoned storage and hold information about the new asset
 type NewAssetInfo struct {
-	Storage *storage.ProvisionedBucket
-	Details *pb.DatasetDetails
+	Storage    *storage.ProvisionedBucket
+	Connection app.ConnectionDetails
+	Metadata   app.AssetMetadata
 }
 
 // PlotterGenerator constructs a plotter based on the requirements (governance actions, data location) and the existing set of FybrikModules
@@ -41,10 +41,21 @@ type PlotterGenerator struct {
 	StorageAccountRegions []string
 }
 
+type S3Properties struct {
+	Endpoint  string `json:"endpoint"`
+	Bucket    string `json:"bucket"`
+	ObjectKey string `json:"object_key"`
+	Region    string `json:"region"`
+}
+
+type S3DataStore struct {
+	S3 S3Properties `json:"S3"`
+}
+
 // GetCopyDestination creates a Dataset for bucket allocation by implicit copies or ingest.
 func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterface *app.InterfaceDetails, geo string) (*app.DataStore, error) {
 	// provisioned storage for COPY
-	originalAssetName := item.DataDetails.Name
+	originalAssetName := item.DataDetails.ResourceMetadata.Name
 	var bucket *storage.ProvisionedBucket
 	var err error
 	if bucket, err = AllocateBucket(p.Client, p.Log, p.Owner, originalAssetName, geo); err != nil {
@@ -64,25 +75,26 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 		return nil, err
 	}
 	endpoint := url.Host
-	datastore := &pb.DataStore{
-		Type: pb.DataStore_S3,
-		Name: "S3",
-		S3: &pb.S3DataStore{
+
+	newDataStore := S3DataStore{
+		S3: S3Properties{
 			Bucket:    bucket.Name,
 			Endpoint:  endpoint,
 			ObjectKey: originalAssetName + utils.Hash(p.Owner.Name+p.Owner.Namespace, 10),
 		},
 	}
-	connection := serde.NewArbitrary(datastore)
-	assetInfo := NewAssetInfo{
-		Storage: bucket,
-		Details: &pb.DatasetDetails{
-			Name:       originalAssetName,
-			Geo:        item.DataDetails.Geography,
-			DataFormat: destinationInterface.DataFormat,
-			DataStore:  datastore,
-			Metadata:   item.DataDetails.TagMetadata,
+	properties, err := utils.StructToMap(newDataStore)
+	if err != nil {
+		return nil, err
+	}
+	connection := app.ConnectionDetails{
+		Connection: base.Connection{Name: "S3",
+			AdditionalProperties: properties,
 		}}
+	assetInfo := NewAssetInfo{
+		Storage:    bucket,
+		Connection: connection,
+		Metadata:   app.AssetMetadata{Resource: item.DataDetails.ResourceMetadata}}
 	p.ProvisionedStorage[item.Context.DataSetID] = assetInfo
 	utils.PrintStructure(&assetInfo, p.Log, "ProvisionedStorage element")
 
@@ -117,7 +129,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 	templates := []app.Template{}
 
 	// Set the value received from the catalog connector.
-	vaultSecretPath := item.VaultSecretPath
+	vaultSecretPath := item.DataDetails.Credentials
 	vaultMap := make(map[string]app.Vault)
 	vaultMap[string(app.ReadFlow)] = app.Vault{
 		SecretPath: vaultSecretPath,
@@ -125,9 +137,9 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 		Address:    utils.GetVaultAddress(),
 	}
 	sourceDataStore := &app.DataStore{
-		Connection: &item.DataDetails.Connection,
+		Connection: app.ConnectionDetails{Connection: item.DataDetails.Details.Connection},
 		Vault:      vaultMap,
-		Format:     item.DataDetails.Interface.DataFormat,
+		Format:     *item.DataDetails.Details.DataFormat,
 	}
 
 	assets[datasetID] = app.AssetDetails{

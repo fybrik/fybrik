@@ -4,7 +4,6 @@
 package v1alpha1
 
 import (
-	"fybrik.io/fybrik/pkg/serde"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -153,7 +152,8 @@ type DatasetDetails struct {
 	// Reference to a secret where the credentials are stored
 	SecretRef string `json:"secretRef,omitempty"`
 	// Dataset information
-	Details serde.Arbitrary `json:"details,omitempty"`
+	Connection ConnectionDetails `json:"connection,omitempty"`
+	Metadata   AssetMetadata     `json:"metadata,omitempty"`
 }
 
 // AssetState defines the observed state of an asset

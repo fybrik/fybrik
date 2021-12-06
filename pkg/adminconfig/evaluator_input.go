@@ -6,7 +6,6 @@ package adminconfig
 import (
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 
-	assetmetadata "fybrik.io/fybrik/manager/controllers/app/assetmetadata"
 	"fybrik.io/fybrik/pkg/multicluster"
 	model "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )
@@ -35,7 +34,7 @@ type EvaluatorInput struct {
 	// Application properties
 	AppInfo api.ApplicationDetails
 	// Asset metadata
-	AssetMetadata *assetmetadata.DataDetails
+	AssetMetadata api.AssetMetadata
 	// Requirements for asset usage
 	AssetRequirements Request
 	// Governance Actions for reading data (relevant for read scenarios only)

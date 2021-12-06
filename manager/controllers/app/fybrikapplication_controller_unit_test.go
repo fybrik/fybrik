@@ -165,7 +165,8 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveKey("s3-csv/redact-dataset"))
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveKey("s3-csv/redact-dataset-copy"))
 	dataStore := plotter.Spec.Assets["s3-csv/redact-dataset"].DataStore
-	dataStoreMap := dataStore.Connection.Data.(map[string]interface{})
+	dataStoreMap, err := utils.StructToMap(dataStore.Connection)
+	g.Expect(err).To(gomega.BeNil())
 	g.Expect(dataStoreMap).To(gomega.HaveKey("s3"))
 	s3Config := dataStoreMap["s3"].(map[string]interface{})
 	g.Expect(s3Config["endpoint"]).To(gomega.Equal("s3.eu-gb.cloud-object-storage.appdomain.cloud"))

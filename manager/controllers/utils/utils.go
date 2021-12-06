@@ -7,27 +7,11 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"runtime"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	datacatalogTaxonomyModels "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 )
-
-// GetProtocol returns the existing data protocol
-// func GetProtocol(info *dc.DatasetDetails) (string, error) {
-func GetProtocol(info *datacatalogTaxonomyModels.Connection) (string, error) {
-	switch info.Name {
-	case "S3":
-		return app.S3, nil
-	case "Kafka":
-		return app.Kafka, nil
-	case "DB2":
-		return app.JdbcDb2, nil
-	}
-	return "", errors.New(app.InvalidAssetDataStore)
-}
 
 // IsDenied returns true if the data access is denied
 func IsDenied(actionName string) bool {

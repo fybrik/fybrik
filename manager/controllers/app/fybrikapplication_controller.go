@@ -33,10 +33,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/app/assetmetadata"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/multicluster"
-	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
 	datacatalogTaxonomyModels "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 	model "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
@@ -391,33 +389,14 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
 
-	// ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	// defer cancel()
-
-	// if response, err = r.DataCatalog.GetDatasetInfo(ctx, &pb.CatalogDatasetRequest{
-	// 	CredentialPath: credentialPath,
-	// 	DatasetId:      req.Context.DataSetID,
-	// }); err != nil {
-	// 	return err
-	// }
-
 	if response, err = r.DataCatalog.GetAssetInfo(&datacatalogTaxonomyModels.DataCatalogRequest{AssetID: req.Context.DataSetID}, credentialPath); err != nil {
 		return err
 	}
 
-	details := response.GetDetails()
-	dataDetails, err := assetmetadata.CatalogDatasetToDataDetails(response)
-	if err != nil {
-		return err
-	}
-	req.DataDetails = dataDetails
-	req.VaultSecretPath = ""
-	if details.CredentialsInfo != nil {
-		req.VaultSecretPath = details.CredentialsInfo.VaultSecretPath
-	}
-
+	response.DeepCopyInto(&req.DataDetails)
+	req.Interface = api.InterfaceDetails{Protocol: req.DataDetails.Details.Connection.Name, DataFormat: *req.DataDetails.Details.DataFormat}
 	configEvaluatorInput := &adminconfig.EvaluatorInput{
-		AssetMetadata: dataDetails,
+		AssetMetadata: api.AssetMetadata{Resource: response.ResourceMetadata},
 	}
 	adminconfig.SetApplicationInfo(input, configEvaluatorInput)
 	adminconfig.SetAssetRequirements(input, *req.Context, configEvaluatorInput)
@@ -588,11 +567,11 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 	}
 	// add or update new buckets
 	for datasetID, info := range provisionedStorage {
-		raw := serde.NewArbitrary(info.Details)
 		applicationContext.Status.ProvisionedStorage[datasetID] = api.DatasetDetails{
 			DatasetRef: info.Storage.Name,
 			SecretRef:  info.Storage.SecretRef.Name,
-			Details:    *raw,
+			Connection: info.Connection,
+			Metadata:   info.Metadata,
 		}
 	}
 	// check that the buckets have been created successfully using Dataset status

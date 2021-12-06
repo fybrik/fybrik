@@ -3,8 +3,6 @@
 
 package v1alpha1
 
-import "fybrik.io/fybrik/pkg/serde"
-
 type DataFlow string
 
 const (
@@ -29,7 +27,7 @@ type DataStore struct {
 	Vault map[string]Vault `json:"vault"`
 	// Connection has the relevant details for accesing the data (url, table, ssl, etc.)
 	// +required
-	Connection *serde.Arbitrary `json:"connection"`
+	Connection ConnectionDetails `json:"connection"`
 	// Format represents data format (e.g. parquet) as received from catalog connectors
 	// +required
 	Format string `json:"format"`

@@ -837,6 +837,13 @@ BlueprintStatus defines the observed state of Blueprint This includes readiness,
         </tr>
     </thead>
     <tbody><tr>
+        <td><b><a href="#blueprintstatusmoduleskey">modules</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          ModulesState is a map which holds the status of each module its key is the instance name which is the unique name for the deployed instance related to this workload<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>observedGeneration</b></td>
         <td>integer</td>
         <td>
@@ -859,23 +866,16 @@ BlueprintStatus defines the observed state of Blueprint This includes readiness,
           Releases map each release to the observed generation of the blueprint containing this release. At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.<br/>
         </td>
         <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintstatusmoduleskey">modules</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          ModulesState is a map which holds the status of each module its key is the instance name which is the unique name for the deployed instance related to this workload<br/>
-        </td>
-        <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### Blueprint.status.observedState
+#### Blueprint.status.modules[key]
 <sup><sup>[↩ Parent](#blueprintstatus)</sup></sup>
 
 
 
-ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
+ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
 
 <table>
     <thead>
@@ -904,12 +904,12 @@ ObservedState includes information to be reported back to the FybrikApplication 
 </table>
 
 
-#### Blueprint.status.modules[key]
+#### Blueprint.status.observedState
 <sup><sup>[↩ Parent](#blueprintstatus)</sup></sup>
 
 
 
-ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
+ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
 
 <table>
     <thead>
@@ -1597,6 +1597,13 @@ DatasetDetails contain dataset connection and metadata required to register this
         </tr>
     </thead>
     <tbody><tr>
+        <td><b>connection</b></td>
+        <td>object</td>
+        <td>
+          Dataset information<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>datasetRef</b></td>
         <td>string</td>
         <td>
@@ -1604,10 +1611,10 @@ DatasetDetails contain dataset connection and metadata required to register this
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>details</b></td>
+        <td><b>metadata</b></td>
         <td>object</td>
         <td>
-          Dataset information<br/>
+          <br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1925,11 +1932,9 @@ Capability declares what this module knows how to do and the types of data it kn
         <td>false</td>
       </tr><tr>
         <td><b>capability</b></td>
-        <td>enum</td>
+        <td>string</td>
         <td>
           Capability declares what this module knows how to do - ex: read, write, transform...<br/>
-          <br/>
-            <i>Enum</i>: copy, read, write, transform<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3321,6 +3326,13 @@ BlueprintStatus defines the observed state of Blueprint This includes readiness,
         </tr>
     </thead>
     <tbody><tr>
+        <td><b><a href="#plotterstatusblueprintskeystatusmoduleskey">modules</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          ModulesState is a map which holds the status of each module its key is the instance name which is the unique name for the deployed instance related to this workload<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>observedGeneration</b></td>
         <td>integer</td>
         <td>
@@ -3343,23 +3355,16 @@ BlueprintStatus defines the observed state of Blueprint This includes readiness,
           Releases map each release to the observed generation of the blueprint containing this release. At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.<br/>
         </td>
         <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterstatusblueprintskeystatusmoduleskey">modules</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          ModulesState is a map which holds the status of each module its key is the instance name which is the unique name for the deployed instance related to this workload<br/>
-        </td>
-        <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### Plotter.status.blueprints[key].status.observedState
+#### Plotter.status.blueprints[key].status.modules[key]
 <sup><sup>[↩ Parent](#plotterstatusblueprintskeystatus)</sup></sup>
 
 
 
-ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
+ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
 
 <table>
     <thead>
@@ -3388,12 +3393,12 @@ ObservedState includes information to be reported back to the FybrikApplication 
 </table>
 
 
-#### Plotter.status.blueprints[key].status.modules[key]
+#### Plotter.status.blueprints[key].status.observedState
 <sup><sup>[↩ Parent](#plotterstatusblueprintskeystatus)</sup></sup>
 
 
 
-ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
+ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
 
 <table>
     <thead>

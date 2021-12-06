@@ -6,21 +6,21 @@ package app
 import (
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/app/assetmetadata"
 	"fybrik.io/fybrik/manager/controllers/app/modules"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/multicluster"
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
+	catalogmodels "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
+	actionmodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 	v1 "k8s.io/api/core/v1"
 )
 
 // DataInfo defines all the information about the given data set that comes from the fybrikapplication spec and from the connectors.
 type DataInfo struct {
-	// Source connection details
-	DataDetails *assetmetadata.DataDetails
-	// The path to Vault secret which holds the dataset credentials
-	VaultSecretPath string
+	// Dataset connection, metadata and the path to Vault secret which holds the dataset credentials
+	DataDetails catalogmodels.DataCatalogResponse
+	// Data format and protocol
+	Interface app.InterfaceDetails
 	// Pointer to the relevant data context in the Fybrik application spec
 	Context *app.DataContext
 	// Evaluated config policies
@@ -28,7 +28,7 @@ type DataInfo struct {
 	// Workload cluster
 	WorkloadCluster multicluster.Cluster
 	// Governance actions to perform on this asset
-	Actions []taxonomymodels.Action
+	Actions []actionmodels.Action
 }
 
 // SelectModules selects the specific modules and the relevant capabilities in order to construct a data flow for the given asset
@@ -76,7 +76,7 @@ func (p *PlotterGenerator) buildReadFlow(item *DataInfo, appContext *app.FybrikA
 	selector := &modules.Selector{
 		Destination:  &item.Context.Requirements.Interface,
 		Actions:      item.Actions,
-		Source:       &item.DataDetails.Interface,
+		Source:       &item.Interface,
 		Dependencies: []*app.FybrikModule{},
 		Module:       nil,
 		Message:      "",
@@ -105,7 +105,7 @@ func (p *PlotterGenerator) buildReadFlowWithCopy(item *DataInfo, appContext *app
 	// TODO(shlomitk1): consider multiple options for read module compatibility
 	readSelector := &modules.Selector{
 		Destination:  &item.Context.Requirements.Interface,
-		Actions:      []taxonomymodels.Action{},
+		Actions:      []actionmodels.Action{},
 		Source:       nil,
 		Dependencies: []*app.FybrikModule{},
 		Module:       nil,
@@ -117,8 +117,8 @@ func (p *PlotterGenerator) buildReadFlowWithCopy(item *DataInfo, appContext *app
 	}
 	// find a copy module that matches the selected read module (common interface and action support)
 	interfaces := GetSupportedReadSources(readSelector.GetModule())
-	actionsOnRead := []taxonomymodels.Action{}
-	actionsOnCopy := []taxonomymodels.Action{}
+	actionsOnRead := []actionmodels.Action{}
+	actionsOnCopy := []actionmodels.Action{}
 	if len(item.Actions) > 0 {
 		// intersect deployment clusters for read+transform, copy+transform
 		readAndTransformClusters := utils.Intersection(item.Configuration.ConfigDecisions[app.Read].Clusters, item.Configuration.ConfigDecisions[app.Transform].Clusters)
@@ -140,8 +140,8 @@ func (p *PlotterGenerator) buildReadFlowWithCopy(item *DataInfo, appContext *app
 		}
 		// WRITE actions that should be done by the copy module
 		// TODO(shlomitk1): generalize the regions the temporary copy can be done to, currently assumes workload geography
-		operation := new(taxonomymodels.PolicyManagerRequestAction)
-		operation.SetActionType(taxonomymodels.WRITE)
+		operation := new(actionmodels.PolicyManagerRequestAction)
+		operation.SetActionType(actionmodels.WRITE)
 		operation.SetDestination(item.WorkloadCluster.Metadata.Region)
 		actions, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
 		actionsOnCopy = append(actionsOnCopy, actions...)
@@ -156,7 +156,7 @@ func (p *PlotterGenerator) buildReadFlowWithCopy(item *DataInfo, appContext *app
 	// find a module that supports COPY, supports required governance actions, has the required dependencies, with source in module sources and a non-empty intersection between requested and supported interfaces.
 	for _, copyDest := range interfaces {
 		selector := &modules.Selector{
-			Source:               &item.DataDetails.Interface,
+			Source:               &item.Interface,
 			Actions:              actionsOnCopy,
 			Destination:          copyDest,
 			Dependencies:         make([]*app.FybrikModule, 0),
@@ -180,8 +180,8 @@ func (p *PlotterGenerator) buildCopyFlow(item *DataInfo, appContext *app.FybrikA
 	// find a region for storage allocation
 	// TODO(shlomitk1): prefer the workload cluster if specified
 	for _, region := range p.StorageAccountRegions {
-		operation := new(taxonomymodels.PolicyManagerRequestAction)
-		operation.SetActionType(taxonomymodels.WRITE)
+		operation := new(actionmodels.PolicyManagerRequestAction)
+		operation.SetActionType(actionmodels.WRITE)
 		operation.SetDestination(region)
 
 		actionsOnCopy, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
@@ -192,7 +192,7 @@ func (p *PlotterGenerator) buildCopyFlow(item *DataInfo, appContext *app.FybrikA
 			return selectors, err
 		}
 		selector := &modules.Selector{
-			Source:               &item.DataDetails.Interface,
+			Source:               &item.Interface,
 			Actions:              actionsOnCopy,
 			Destination:          &item.Context.Requirements.Interface,
 			Dependencies:         make([]*app.FybrikModule, 0),
@@ -226,7 +226,7 @@ func GetSupportedReadSources(module *app.FybrikModule) []*app.InterfaceDetails {
 	return list
 }
 
-func createActionStructure(actions []taxonomymodels.Action) []app.SupportedAction {
+func createActionStructure(actions []actionmodels.Action) []app.SupportedAction {
 	result := []app.SupportedAction{}
 	for _, action := range actions {
 		supportedAction := app.SupportedAction{Action: action}

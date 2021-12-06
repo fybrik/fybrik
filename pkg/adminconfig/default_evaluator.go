@@ -74,11 +74,11 @@ func (r *DefaultConfig) Evaluate(in *EvaluatorInput) (EvaluatorOutput, error) {
 
 	clustersInRegion := []string{}
 	for _, cluster := range r.Data.Clusters {
-		if cluster.Metadata.Region == in.AssetMetadata.Geography {
+		if cluster.Metadata.Region == *in.AssetMetadata.Geography {
 			clustersInRegion = append(clustersInRegion, cluster.Name)
 		}
 	}
-	if deployRead == corev1.ConditionTrue && len(in.GovernanceActions) > 0 && in.Workload.Cluster.Metadata.Region != in.AssetMetadata.Geography {
+	if deployRead == corev1.ConditionTrue && len(in.GovernanceActions) > 0 && in.Workload.Cluster.Metadata.Region != *in.AssetMetadata.Geography {
 		copyDecision.Deploy = corev1.ConditionTrue
 		copyDecision.Clusters = clustersInRegion
 	}
