@@ -381,6 +381,21 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 	return ctrl.Result{}, nil
 }
 
+// CreateDataRequest generates a new DataRequest object for a specific asset based on FybrikApplication and asset metadata
+func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataContext, assetMetadata *assetmetadata.DataDetails) adminconfig.DataRequest {
+	usage := make(map[api.DataFlow]bool)
+	// request to read is determined by the workload selector presence
+	usage[api.ReadFlow] = (application.Spec.Selector.WorkloadSelector.Size() > 0)
+	// explicit request to copy
+	usage[api.CopyFlow] = dataCtx.Requirements.Copy.Required
+	return adminconfig.DataRequest{
+		DatasetID: dataCtx.DataSetID,
+		Interface: dataCtx.Requirements.Interface,
+		Usage:     usage,
+		Metadata:  assetMetadata,
+	}
+}
+
 func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *api.FybrikApplication, workloadCluster multicluster.Cluster) error {
 	var err error
 	// Call the DataCatalog service to get info about the dataset
@@ -411,14 +426,12 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 		req.VaultSecretPath = details.CredentialsInfo.VaultSecretPath
 	}
 
-	configEvaluatorInput := &adminconfig.EvaluatorInput{
-		AssetMetadata: dataDetails,
-	}
-	adminconfig.SetApplicationInfo(input, configEvaluatorInput)
-	adminconfig.SetAssetRequirements(input, *req.Context, configEvaluatorInput)
+	configEvaluatorInput := &adminconfig.EvaluatorInput{}
+	configEvaluatorInput.Workload.Properties = input.Spec.AppInfo.DeepCopy()
 	configEvaluatorInput.Workload.Cluster = workloadCluster
+	configEvaluatorInput.Request = CreateDataRequest(input, *req.Context, req.DataDetails)
 	// Read policies for data that is processed in the workload geography
-	if configEvaluatorInput.AssetRequirements.Usage[api.ReadFlow] {
+	if configEvaluatorInput.Request.Usage[api.ReadFlow] {
 		actionType := model.READ
 		reqAction := model.PolicyManagerRequestAction{ActionType: &actionType, Destination: &workloadCluster.Metadata.Region}
 		req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, input, &reqAction)
@@ -429,8 +442,10 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 	configEvaluatorInput.GovernanceActions = req.Actions
 	configDecisions, err := r.ConfigEvaluator.Evaluate(configEvaluatorInput)
 	if err != nil {
+		r.Log.V(0).Info("Error evaluating policies " + err.Error())
 		return err
 	}
+	utils.PrintStructure(configDecisions, r.Log, "Config Policies")
 	req.WorkloadCluster = configEvaluatorInput.Workload.Cluster
 	req.Configuration = configDecisions
 	return nil
@@ -619,10 +634,16 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext *api.Fybr
 		return nil, nil, err
 	}
 	// create a plotter generator that will select modules to be orchestrated based on user requirements and module capabilities
+	clusters, err := r.ClusterManager.GetClusters()
+	if err != nil {
+		return nil, nil, err
+	}
+
 	plotterGen := &PlotterGenerator{
 		Client:                r.Client,
 		Log:                   r.Log,
 		Modules:               moduleMap,
+		Clusters:              clusters,
 		Owner:                 client.ObjectKeyFromObject(applicationContext),
 		PolicyManager:         r.PolicyManager,
 		Provision:             r.Provision,
