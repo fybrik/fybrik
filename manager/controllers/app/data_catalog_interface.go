@@ -9,9 +9,7 @@ import (
 	"encoding/json"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/utils"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
-	"fybrik.io/fybrik/pkg/vault"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -31,25 +29,30 @@ func (r *FybrikApplicationReconciler) RegisterAsset(catalogID string, info *app.
 		return "", err
 	}
 
-	var creds *pb.Credentials
-	if creds, err = SecretToCredentials(r.Client, types.NamespacedName{Name: info.SecretRef, Namespace: utils.GetSystemNamespace()}); err != nil {
-		return "", err
-	}
-	var credentialPath string
-	if input.Spec.SecretRef != "" {
-		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
-	}
+	// the below code is commented for the time being till we support RegisterDatasetInfo in the OpenAPI taxonomy. Returning a default string till then.
 
-	response, err := r.DataCatalog.RegisterDatasetInfo(context.Background(), &pb.RegisterAssetRequest{
-		Creds:                creds,
-		DatasetDetails:       datasetDetails,
-		DestinationCatalogId: catalogID,
-		CredentialPath:       credentialPath,
-	})
-	if err != nil {
-		return "", err
-	}
-	return response.GetAssetId(), nil
+	// var creds *pb.Credentials
+	// if creds, err = SecretToCredentials(r.Client, types.NamespacedName{Name: info.SecretRef, Namespace: utils.GetSystemNamespace()}); err != nil {
+	// 	return "", err
+	// }
+	// var credentialPath string
+	// if input.Spec.SecretRef != "" {
+	// 	credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+	// }
+
+	// response, err := r.DataCatalog.RegisterDatasetInfo(context.Background(), &pb.RegisterAssetRequest{
+	// 	Creds:                creds,
+	// 	DatasetDetails:       datasetDetails,
+	// 	DestinationCatalogId: catalogID,
+	// 	CredentialPath:       credentialPath,
+	// })
+	// if err != nil {
+	// 	return "", err
+	// }
+	// return response.GetAssetId(), nil
+
+	// the above code is commented for the time being till we support RegisterDatasetInfo in the OpenAPI taxonomy. Returning a default string till then.
+	return "DefaultAssetId", nil
 }
 
 var translationMap = map[string]string{

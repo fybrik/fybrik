@@ -11,6 +11,7 @@ import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
+	datacatalogTaxonomyModels "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 )
 
 // DataDetails is the asset metadata received from the catalog connector
@@ -30,22 +31,28 @@ type DataDetails struct {
 
 // Transforms a CatalogDatasetInfo into a DataDetails struct
 // TODO Think about getting rid of one or the other and reuse
-func CatalogDatasetToDataDetails(response *pb.CatalogDatasetInfo) (*DataDetails, error) {
+// func CatalogDatasetToDataDetails(response *pb.CatalogDatasetInfo) (*DataDetails, error) {
+func CatalogDatasetToDataDetails(response *datacatalogTaxonomyModels.DataCatalogResponse) (*DataDetails, error) {
 	details := response.GetDetails()
 	if details == nil {
 		return nil, errors.New("no metadata found for " + response.DatasetId)
 	}
-	format := details.DataFormat
-	connection := serde.NewArbitrary(details.DataStore)
-	protocol, err := utils.GetProtocol(details)
+	//format := details.DataFormat
+	format := response.Details.DataFormat
+	if format == nil {
+		format = new(string)
+	}
+	//connection := serde.NewArbitrary(details.DataStore)
+	connection := serde.NewArbitrary(response.Details.Connection)
+	protocol, err := utils.GetProtocol(&response.Details.Connection)
 
 	return &DataDetails{
-		Name: details.Name,
+		Name: response.ResourceMetadata.Name,
 		Interface: app.InterfaceDetails{
 			Protocol:   protocol,
-			DataFormat: format,
+			DataFormat: *format,
 		},
-		Geography:   details.Geo,
+		Geography:   *response.ResourceMetadata.Geography,
 		Connection:  *connection,
 		TagMetadata: details.Metadata,
 	}, err

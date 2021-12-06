@@ -11,6 +11,7 @@ import (
 
 	clients "fybrik.io/fybrik/pkg/connectors/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
+	datacatalogTaxonomyModels "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )
 
@@ -28,8 +29,11 @@ func (r *CatalogReader) GetDatasetsMetadataFromCatalog(in *taxonomymodels.Policy
 	datasetsMetadata := make(map[string]interface{})
 	datasetID := (in.GetResource()).Name
 	if _, present := datasetsMetadata[datasetID]; !present {
-		objToSend := &pb.CatalogDatasetRequest{CredentialPath: creds, DatasetId: datasetID}
-		info, err := (*r.DataCatalog).GetDatasetInfo(context.Background(), objToSend)
+		// objToSend := &pb.CatalogDatasetRequest{CredentialPath: creds, DatasetId: datasetID}
+		objToSend := datacatalogTaxonomyModels.DataCatalogRequest{AssetID: datasetID}
+
+		info, err := (*r.DataCatalog).GetAssetInfo(&objToSend, creds)
+		// info, err := (*r.DataCatalog).GetDatasetInfo(context.Background(), objToSend)
 		if err != nil {
 			return nil, err
 		}

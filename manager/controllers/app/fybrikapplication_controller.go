@@ -18,7 +18,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
@@ -39,6 +38,7 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
+	datacatalogTaxonomyModels "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 	model "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 	"fybrik.io/fybrik/pkg/vault"
 )
@@ -384,19 +384,24 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *api.FybrikApplication, workloadCluster multicluster.Cluster) error {
 	var err error
 	// Call the DataCatalog service to get info about the dataset
-	var response *pb.CatalogDatasetInfo
+	// var response *pb.CatalogDatasetInfo
+	var response *datacatalogTaxonomyModels.DataCatalogResponse
 	var credentialPath string
 	if input.Spec.SecretRef != "" {
 		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
+	// ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	// defer cancel()
 
-	if response, err = r.DataCatalog.GetDatasetInfo(ctx, &pb.CatalogDatasetRequest{
-		CredentialPath: credentialPath,
-		DatasetId:      req.Context.DataSetID,
-	}); err != nil {
+	// if response, err = r.DataCatalog.GetDatasetInfo(ctx, &pb.CatalogDatasetRequest{
+	// 	CredentialPath: credentialPath,
+	// 	DatasetId:      req.Context.DataSetID,
+	// }); err != nil {
+	// 	return err
+	// }
+
+	if response, err = r.DataCatalog.GetAssetInfo(&datacatalogTaxonomyModels.DataCatalogRequest{AssetID: req.Context.DataSetID}, credentialPath); err != nil {
 		return err
 	}
 
