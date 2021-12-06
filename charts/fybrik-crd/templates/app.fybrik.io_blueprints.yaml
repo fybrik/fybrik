@@ -416,9 +416,14 @@ spec:
                   InstanceName which is the unique name for the deployed instance
                   related to this workload
                 type: object
+              modulesNamespace:
+                description: ModulesNamespace is the namespace where modules should
+                  be allocated
+                type: string
             required:
             - cluster
             - modules
+            - modulesNamespace
             type: object
           status:
             description: BlueprintStatus defines the observed state of Blueprint This

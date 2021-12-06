@@ -14,7 +14,6 @@ import (
 	"testing"
 
 	apiv1alpha1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/test"
 	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
@@ -147,7 +146,7 @@ func TestS3Notebook(t *testing.T) {
 		return application.Status.Ready
 	}, timeout, interval).Should(gomega.Equal(true))
 
-	modulesNamespace := utils.GetDefaultModulesNamespace()
+	modulesNamespace := plotter.Spec.ModulesNamespace
 	fmt.Printf("data access module namespace notebook test: %s\n", modulesNamespace)
 
 	// Forward port of arrow flight service to local port

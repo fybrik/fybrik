@@ -139,6 +139,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 			Eventually(func() error {
 				return k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)
 			}, timeout, interval).Should(Succeed(), "Blueprint has not been created")
+			Expect(blueprint.Spec.ModulesNamespace).To(Equal(utils.GetDefaultModulesNamespace()))
 
 			for _, module := range blueprint.Spec.Modules {
 				Expect(module.Arguments.Labels["label1"]).To(Equal("foo"))
@@ -156,7 +157,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 			By("Status should contain the details of the endpoint")
 			Expect(len(application.Status.AssetStates)).To(Equal(1))
 			// TODO endpoint details are not set yet
-			fqdn := "test-app-e2e-default-read-module-test-e2e." + utils.GetDefaultModulesNamespace()
+			fqdn := "test-app-e2e-default-read-module-test-e2e." + blueprint.Spec.ModulesNamespace
 			Expect(application.Status.AssetStates["s3/redact-dataset"].Endpoint).To(Equal(apiv1alpha1.EndpointSpec{
 				Hostname: fqdn,
 				Port:     80,

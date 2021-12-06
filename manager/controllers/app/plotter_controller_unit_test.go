@@ -59,9 +59,9 @@ func TestPlotterController(t *testing.T) {
 	s := utils.NewScheme(g)
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
-	dummyManager := &dummy.ClusterManager{
-		DeployedBlueprints: make(map[string]*app.Blueprint),
-		Clusters: []multicluster.Cluster{{
+	dummyManager := dummy.NewDummyClusterManager(
+		make(map[string]*app.Blueprint),
+		[]multicluster.Cluster{{
 			Name: "thegreendragon",
 			Metadata: struct {
 				Region        string
@@ -71,15 +71,14 @@ func TestPlotterController(t *testing.T) {
 				Region:        "theshire",
 				Zone:          "hobbiton",
 				VaultAuthPath: "kubernetes",
-			}}},
-	}
+			}}})
 
 	// Create a PlotterReconciler object with the scheme and fake client.
 	r := &PlotterReconciler{
 		Client:         cl,
 		Log:            ctrl.Log.WithName("test-controller"),
 		Scheme:         s,
-		ClusterManager: dummyManager,
+		ClusterManager: &dummyManager,
 	}
 
 	// Mock request to simulate Reconcile() being called on an event for a
