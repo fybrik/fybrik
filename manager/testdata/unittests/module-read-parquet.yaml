@@ -8,7 +8,7 @@ metadata:
   namespace: fybrik-system
 spec:
   chart:
-    name: localhost:5000/fybrik-system/fybrik-template:0.1.0
+    name:  ghcr.io/fybrik/fybrik-template:0.1.0
   type: service
   capabilities:
     - capability: read
