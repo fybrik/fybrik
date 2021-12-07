@@ -15,12 +15,12 @@ jobs:
       - name: Checkout Operate First repository
         uses: actions/checkout@v2
         with:
-          repository: eletonia/apps
+          repository: fybrik/operate-first-apps
           path: operate-first-repo
       - name: Checkout Fybrik repository
         uses: actions/checkout@v2
         with:
-          repository: eletonia/fybrik
+          repository: fybrik/fybrik
           path: fybrik-repo
       - run: |
           rm -r fybrik-repo/samples/operate-first/*/
