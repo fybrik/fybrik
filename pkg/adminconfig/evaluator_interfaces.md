@@ -22,7 +22,7 @@ It provides general application data such as workload cluster and application pr
 // and additional properties defined in the taxonomy, e.g. workload type
 type WorkloadInfo struct {
 	// Unique fybrikapplication id used for logging
-	UID string `json:"uid"`
+	UUID string `json:"uuid"`
 	// Policy set id to allow evaluation of a specific set of policies per fybrikapplication
 	PolicySetID string `json:"policySetID"`
 	// Cluster where the user workload is running
@@ -85,7 +85,7 @@ type EvaluatorOutput struct {
 	// Dataset identifier
 	DatasetID string
 	// Unique fybrikapplication id used for logging
-	UID string 
+	UUID string 
 	// Policy set id used in the evaluation
 	PolicySetID string 
 	// Decisions per capability (after being merged)

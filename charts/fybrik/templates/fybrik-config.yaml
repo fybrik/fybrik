@@ -5,6 +5,7 @@ metadata:
   name: fybrik-config
 data:
   {{- if .Values.coordinator.enabled }}
+  DATAPATH_MAX_SIZE: {{ .Values.manager.dataPathMaxSize}}
   CONNECTION_TIMEOUT: {{ .Values.manager.connectionTimeout | default .Values.global.connectionTimeout | quote }}
   CATALOG_PROVIDER_NAME: {{ .Values.coordinator.catalog | quote }}
   CATALOG_CONNECTOR_URL: {{ .Values.coordinator.catalogConnectorURL | default (printf "%s-connector:80" .Values.coordinator.catalog) | quote }}

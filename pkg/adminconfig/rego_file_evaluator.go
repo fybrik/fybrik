@@ -5,12 +5,12 @@ package adminconfig
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
 
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"github.com/go-logr/logr"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/pkg/errors"
@@ -27,20 +27,23 @@ const RegoPolicyDirectory = "/tmp/adminconfig/"
 
 // RegoPolicyEvaluator implements EvaluatorInterface
 type RegoPolicyEvaluator struct {
+	Log          logr.Logger
 	Query        rego.PreparedEvalQuery
 	ReadyForEval bool
 }
 
 // NewRegoPolicyEvaluator constructs a new RegoPolicyEvaluator object
-func NewRegoPolicyEvaluator() *RegoPolicyEvaluator {
+func NewRegoPolicyEvaluator(log logr.Logger) *RegoPolicyEvaluator {
 	return &RegoPolicyEvaluator{
+		Log:          log,
 		Query:        rego.PreparedEvalQuery{},
 		ReadyForEval: false,
 	}
 }
 
-// prepareQuery prepares a query for OPA evaluation - data object and compiled modules
-// This function is called upon the change in either the infrastructure data or rego files
+// prepareQuery prepares a query for OPA evaluation - data object and compiled modules.
+// This function is called upon the change in rego files.
+// Monitoring changes in rego files will be implemented in the future version.
 func (r *RegoPolicyEvaluator) prepareQuery() (rego.PreparedEvalQuery, error) {
 	// read and compile rego files
 	files, err := ioutil.ReadDir(RegoPolicyDirectory)
@@ -55,9 +58,6 @@ func (r *RegoPolicyEvaluator) prepareQuery() (rego.PreparedEvalQuery, error) {
 		}
 		fileName := filepath.Join(RegoPolicyDirectory, name)
 		module, err := ioutil.ReadFile(filepath.Clean(fileName))
-		if err != nil {
-			return rego.PreparedEvalQuery{}, err
-		}
 		if err != nil {
 			return rego.PreparedEvalQuery{}, err
 		}
@@ -95,7 +95,7 @@ func (r *RegoPolicyEvaluator) Evaluate(in *EvaluatorInput) (EvaluatorOutput, err
 		return EvaluatorOutput{Valid: false}, errors.Wrap(err, "failed to evaluate a query")
 	}
 	bytes, _ := yaml.Marshal(&rs)
-	fmt.Println("Response: " + string(bytes))
+	r.Log.V(1).Info("Response: " + string(bytes))
 	// merge decisions and build an output object for the manager
 	decisions, valid, err := r.getOPADecisions(in, rs)
 	if err != nil {
@@ -105,7 +105,7 @@ func (r *RegoPolicyEvaluator) Evaluate(in *EvaluatorInput) (EvaluatorOutput, err
 		Valid:           valid,
 		DatasetID:       in.Request.DatasetID,
 		PolicySetID:     in.Workload.PolicySetID,
-		UID:             in.Workload.UID,
+		UUID:            in.Workload.UUID,
 		ConfigDecisions: decisions,
 	}, nil
 }
@@ -117,7 +117,7 @@ func (r *RegoPolicyEvaluator) prepareInputForOPA(in *EvaluatorInput) (map[string
 	if err != nil {
 		return input, errors.Wrap(err, "failed to marshal the input structure")
 	}
-	fmt.Println("Input:\n" + string(bytes))
+	r.Log.V(1).Info("Input:\n" + string(bytes))
 	err = yaml.Unmarshal(bytes, &input)
 	return input, errors.Wrap(err, "failed  to unmarshal the input structure")
 }
@@ -163,7 +163,7 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 					} else {
 						valid, mergedDecision := r.merge(newDecision, decision)
 						if !valid {
-							fmt.Println("Conflict while merging OPA decision " + newDecision.Policy.Description)
+							r.Log.Error(errors.New("Conflict"), "while merging OPA decisions", "decisions", decision.Policy.Description, "decision", newDecision.Policy.Description)
 							return decisions, false, nil
 						}
 						decisions[capability] = mergedDecision
@@ -177,8 +177,7 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 
 // This function merges two decisions for the same capability using the following logic:
 // deploy: true/false take precedence over undefined, true and false result in a conflict.
-// cluster restrictions: the result of merge is an intersection of cluster sets from both decisions.
-// module restrictions: new pairs <key, value> are added, if both exist - compatibility is checked.
+// restrictions: new pairs <key, value> are added, if both exist - compatibility is checked.
 // policy: concatenation of IDs and descriptions.
 func (r *RegoPolicyEvaluator) merge(newDecision Decision, oldDecision Decision) (bool, Decision) {
 	mergedDecision := Decision{}

@@ -4,6 +4,7 @@
 package app
 
 import (
+	"fmt"
 	"strings"
 
 	"emperror.dev/errors"
@@ -76,8 +77,12 @@ func (p *PlotterGenerator) FindPaths(item *DataInfo, appContext *app.FybrikAppli
 	source := Node{Connection: &item.DataDetails.Interface, Virtual: false}
 	// data sink, either a virtual endpoint in read scenarios, or a datastore as in ingest scenario
 	destination := Node{Connection: &item.Context.Requirements.Interface, Virtual: (appContext.Spec.Selector.WorkloadSelector.Size() > 0)}
-	// find data paths of length up to 2 from data source to the workload, not including transformations or branches
-	solutions := p.findPathsWithinLimit(item, &source, &destination, 2)
+	// find data paths of length up to DATAPATH_LIMIT from data source to the workload, not including transformations or branches
+	bound, err := utils.GetDataPathMaxSize()
+	if err != nil {
+		fmt.Println("Warning: a default value for DATAPATH_LIMIT will be used")
+	}
+	solutions := p.findPathsWithinLimit(item, &source, &destination, bound)
 	// get valid solutions by extending data paths with transformations and selecting an appropriate cluster for each capability
 	solutions = p.validSolutions(item, solutions, appContext)
 	return solutions

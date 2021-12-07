@@ -9,6 +9,7 @@ import (
 
 // Restriction maps a property to a list of allowed values
 // For example, a module restriction can map "type" to ["plugin", "config"], and "scope" to ["workload"]
+// These values come from FybrikModule taxonomy.
 // Semantics is a disjunction of values, i.e. a type can be either plugin or config
 type Restriction map[string][]string
 
@@ -53,9 +54,9 @@ type EvaluatorOutput struct {
 	// Dataset identifier
 	DatasetID string
 	// Unique fybrikapplication id used for logging
-	UID string `json:"uid"`
+	UUID string
 	// Policy set id used in the evaluation
-	PolicySetID string `json:"policySetID"`
+	PolicySetID string
 	// Decisions per capability (after being merged)
 	ConfigDecisions DecisionPerCapabilityMap
 }

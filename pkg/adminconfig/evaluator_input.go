@@ -15,7 +15,7 @@ import (
 // and additional properties defined in the taxonomy, e.g. workload type
 type WorkloadInfo struct {
 	// Unique fybrikapplication id used for logging
-	UID string `json:"uid"`
+	UUID string `json:"uuid"`
 	// Policy set id to allow evaluation of a specific set of policies per fybrikapplication
 	PolicySetID string `json:"policySetID"`
 	// Cluster where the user workload is running

@@ -109,7 +109,6 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 }
 
 // Adds the asset details, flows and templates to the given plotter spec.
-// Write path is not yet implemented
 func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.FybrikApplication, plotterSpec *app.PlotterSpec) error {
 	p.Log.Info("Choose modules for " + item.Context.DataSetID)
 	var err error
