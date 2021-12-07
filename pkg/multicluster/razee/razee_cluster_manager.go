@@ -5,29 +5,32 @@ package razee
 
 import (
 	"fmt"
-	"net/http"
+	corev1 "k8s.io/api/core/v1"
 	"strconv"
 	"strings"
 
 	"emperror.dev/errors"
-	"github.com/IBM/satcon-client-go/client/types"
-
-	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/pkg/multicluster"
 	"github.com/IBM/satcon-client-go/client"
 	"github.com/IBM/satcon-client-go/client/auth/apikey"
 	"github.com/IBM/satcon-client-go/client/auth/iam"
 	"github.com/IBM/satcon-client-go/client/auth/local"
+	"github.com/IBM/satcon-client-go/client/types"
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
+
+	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/pkg/multicluster"
 )
 
 const (
-	clusterMetadataConfigMapSL string = "/api/v1/namespaces/fybrik-system/configmaps/cluster-metadata"
+	clusterMetadataConfigMapSL = "/api/v1/namespaces/fybrik-system/configmaps/cluster-metadata"
+	endPointURL                = "https://config.satellite.cloud.ibm.com/graphql"
+	bluePrintSelfLink          = "/apis/app.fybrik.io/v1alpha1/namespaces/%s/blueprints/%s"
+	channelNameTemplate        = "fybrik.io-%s-%s"
+	groupNameTemplate          = "fybrik-%s"
 )
 
 var (
@@ -38,14 +41,14 @@ func init() {
 	_ = v1alpha1.AddToScheme(scheme)
 }
 
-type ClusterManager struct {
+type razeeClusterManager struct {
 	orgID        string
 	clusterGroup string
 	con          client.SatCon
 	log          logr.Logger
 }
 
-func (r *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
+func (r *razeeClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	var clusters []multicluster.Cluster
 	var razeeClusters []types.Cluster
 	var err error
@@ -77,29 +80,22 @@ func (r *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 			continue
 		}
 		scheme := runtime.NewScheme()
-		clusterMetadataConfigmap := v1.ConfigMap{}
-		err = multicluster.Decode(resourceContent.Content, scheme, &clusterMetadataConfigmap)
+		cmcm := corev1.ConfigMap{}
+		err = multicluster.Decode(resourceContent.Content, scheme, &cmcm)
 		if err != nil {
 			return nil, err
 		}
-		cluster := multicluster.Cluster{
-			Name: clusterMetadataConfigmap.Data["ClusterName"],
-			Metadata: multicluster.ClusterMetadata{
-				Region:        clusterMetadataConfigmap.Data["Region"],
-				Zone:          clusterMetadataConfigmap.Data["Zone"],
-				VaultAuthPath: clusterMetadataConfigmap.Data["VaultAuthPath"],
-			},
-		}
+		cluster := multicluster.CreateCluster(cmcm)
 		clusters = append(clusters, cluster)
 	}
 	return clusters, nil
 }
 
 func createBluePrintSelfLink(namespace string, name string) string {
-	return fmt.Sprintf("/apis/app.fybrik.io/v1alpha1/namespaces/%s/blueprints/%s", namespace, name)
+	return fmt.Sprintf(bluePrintSelfLink, namespace, name)
 }
 
-func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name string) (*v1alpha1.Blueprint, error) {
+func (r *razeeClusterManager) GetBlueprint(clusterName string, namespace string, name string) (*v1alpha1.Blueprint, error) {
 	selfLink := createBluePrintSelfLink(namespace, name)
 	cluster, err := r.con.Clusters.ClusterByName(r.orgID, clusterName)
 	if err != nil {
@@ -132,7 +128,7 @@ func (r *ClusterManager) GetBlueprint(clusterName string, namespace string, name
 }
 
 func getGroupName(cluster string) string {
-	return "fybrik-" + cluster
+	return fmt.Sprintf(groupNameTemplate, cluster)
 }
 
 type Collection struct {
@@ -141,7 +137,7 @@ type Collection struct {
 	Items           []metav1.Object `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
-func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+func (r *razeeClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	groupName := getGroupName(cluster)
 	channelName := channelName(cluster, blueprint.Name)
 	version := "0"
@@ -243,7 +239,7 @@ func (r *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	return nil
 }
 
-func (r *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+func (r *razeeClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	channelName := channelName(cluster, blueprint.Name)
 
 	content, err := yaml.Marshal(blueprint)
@@ -296,7 +292,7 @@ func (r *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blu
 	return nil
 }
 
-func (r *ClusterManager) DeleteBlueprint(cluster string, namespace string, name string) error {
+func (r *razeeClusterManager) DeleteBlueprint(cluster string, namespace string, name string) error {
 	channelName := channelName(cluster, name)
 	channel, err := r.con.Channels.ChannelByName(r.orgID, channelName)
 	if err != nil {
@@ -331,18 +327,19 @@ func (r *ClusterManager) DeleteBlueprint(cluster string, namespace string, name 
 	return nil
 }
 
-// The channel name should be per cluster and plotter so it cannot be based on
+// The channel name should be per cluster and plotter, so it cannot be based on
 // the namespace that is random for every blueprint
 func channelName(cluster string, name string) string {
-	return "fybrik.io" + "-" + cluster + "-" + name
+	return fmt.Sprintf(channelNameTemplate, cluster, name)
 }
 
-func NewRazeeLocalManager(url string, login string, password string, clusterGroup string) (multicluster.ClusterManager, error) {
+// NewRazeeLocalClusterManager creates an instance of Razee based ClusterManager with userName/password authentication
+func NewRazeeLocalClusterManager(url string, login string, password string, clusterGroup string) (multicluster.ClusterManager, error) {
 	localAuth, err := local.NewClient(url, login, password)
 	if err != nil {
 		return nil, err
 	}
-	con, _ := client.New(url, http.DefaultClient, localAuth)
+	con, _ := client.New(url, localAuth)
 	logger := ctrl.Log.WithName("RazeeManager")
 	me, err := con.Users.Me()
 	if err != nil {
@@ -355,7 +352,7 @@ func NewRazeeLocalManager(url string, login string, password string, clusterGrou
 
 	logger.Info("Initializing Razee local", "orgId", me.OrgId, "clusterGroup", clusterGroup)
 
-	return &ClusterManager{
+	return &razeeClusterManager{
 		orgID:        me.OrgId,
 		clusterGroup: clusterGroup,
 		con:          con,
@@ -363,12 +360,13 @@ func NewRazeeLocalManager(url string, login string, password string, clusterGrou
 	}, nil
 }
 
-func NewRazeeOAuthManager(url string, apiKey string, clusterGroup string) (multicluster.ClusterManager, error) {
+// NewRazeeOAuthClusterManager creates an instance of Razee based ClusterManager with OAuth authentication
+func NewRazeeOAuthClusterManager(url string, apiKey string, clusterGroup string) (multicluster.ClusterManager, error) {
 	auth, err := apikey.NewClient(apiKey)
 	if err != nil {
 		return nil, err
 	}
-	con, _ := client.New(url, http.DefaultClient, auth)
+	con, _ := client.New(url, auth)
 	logger := ctrl.Log.WithName("RazeeManager")
 	me, err := con.Users.Me()
 	if err != nil {
@@ -381,7 +379,7 @@ func NewRazeeOAuthManager(url string, apiKey string, clusterGroup string) (multi
 
 	logger.Info("Initializing Razee using oauth", "orgId", me.OrgId, "clusterGroup", clusterGroup)
 
-	return &ClusterManager{
+	return &razeeClusterManager{
 		orgID:        me.OrgId,
 		clusterGroup: clusterGroup,
 		con:          con,
@@ -389,7 +387,8 @@ func NewRazeeOAuthManager(url string, apiKey string, clusterGroup string) (multi
 	}, nil
 }
 
-func NewSatConfManager(apikey string, clusterGroup string) (multicluster.ClusterManager, error) {
+// NewSatConfClusterManager creates an instance of Razee based ClusterManager with Satellite authentication
+func NewSatConfClusterManager(apikey string, clusterGroup string) (multicluster.ClusterManager, error) {
 	iamClient, err := iam.NewIAMClient(apikey, "")
 	if err != nil {
 		return nil, err
@@ -397,7 +396,10 @@ func NewSatConfManager(apikey string, clusterGroup string) (multicluster.Cluster
 	if iamClient == nil {
 		return nil, errors.New("the IAMClient returned nil for IBM Cloud Satellite Config")
 	}
-	con, _ := client.New("https://config.satellite.cloud.ibm.com/graphql", http.DefaultClient, iamClient.Client)
+	con, err := client.New(endPointURL, iamClient.Client)
+	if err != nil {
+		return nil, err
+	}
 
 	me, err := con.Users.Me()
 	if err != nil {
@@ -412,7 +414,7 @@ func NewSatConfManager(apikey string, clusterGroup string) (multicluster.Cluster
 
 	logger.Info("Initializing Razee with IBM Satellite Config", "orgId", me.OrgId, "clusterGroup", clusterGroup)
 
-	return &ClusterManager{
+	return &razeeClusterManager{
 		orgID:        me.OrgId,
 		clusterGroup: clusterGroup,
 		con:          con,

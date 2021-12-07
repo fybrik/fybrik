@@ -7,8 +7,8 @@ metadata:
   name: plotter
   namespace: fybrik-system
   labels:
-    app.fybrik.io/appNamespace: default
-    app.fybrik.io/appName: notebook
+    app.fybrik.io/app-namespace: default
+    app.fybrik.io/app-name: notebook
 spec:
   assets:
     S3:

@@ -116,6 +116,10 @@ type BlueprintSpec struct {
 	// +required
 	Cluster string `json:"cluster"`
 
+	// ModulesNamespace is the namespace where modules should be allocated
+	// +required
+	ModulesNamespace string `json:"modulesNamespace"`
+
 	// Modules is a map which contains modules that indicate the data path components that run in this cluster
 	// The map key is InstanceName which is the unique name for the deployed instance related to this workload
 	// +required
@@ -138,8 +142,8 @@ type BlueprintStatus struct {
 
 	// ModulesState is a map which holds the status of each module
 	// its key is the instance name which is the unique name for the deployed instance related to this workload
-	// +required
-	ModulesState map[string]ObservedState `json:"modules"`
+	// +optional
+	ModulesState map[string]ObservedState `json:"modules,omitempty"`
 
 	// Releases map each release to the observed generation of the blueprint containing this release.
 	// At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.
@@ -210,6 +214,6 @@ func CreateMetaBlueprintWithoutState(blueprint *Blueprint) MetaBlueprint {
 }
 
 const (
-	BlueprintNamespaceLabel = "app.fybrik.io/blueprintNamespace"
-	BlueprintNameLabel      = "app.fybrik.io/blueprintName"
+	BlueprintNamespaceLabel = "app.fybrik.io/blueprint-namespace"
+	BlueprintNameLabel      = "app.fybrik.io/blueprint-name"
 )

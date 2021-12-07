@@ -6,13 +6,14 @@ kind: Blueprint
 metadata:
   name: blueprint-with-read
   labels:
-    app.fybrik.io/appNamespace: default
-    app.fybrik.io/appName: notebook
+    app.fybrik.io/app-namespace: default
+    app.fybrik.io/app-name: notebook
 spec:
   selector:
     matchLabels:
       app: notebook
   cluster: cluster1
+  modulesNamespace: fybrik-blueprints
   modules:
     notebook-read-module:
       name: notebook-read-module
@@ -43,4 +44,4 @@ spec:
                 authPath: /v1/auth/kubernetes/login
                 role: module
                 secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
-            format: parquet
+            format: parquet           

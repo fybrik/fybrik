@@ -39,189 +39,6 @@
 
 
 
-<a name="data_catalog_response.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## data_catalog_response.proto
-
-
- <!-- end services -->
-
-
-<a name="connectors.CatalogDatasetInfo"></a>
-
-### CatalogDatasetInfo
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| dataset_id | [string](#string) |  |  |
-| details | [DatasetDetails](#connectors.DatasetDetails) |  |  |
-
-
-
-
-
- <!-- end messages -->
-
- <!-- end enums -->
-
- <!-- end HasExtensions -->
-
-
-
-<a name="policy_manager_response.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## policy_manager_response.proto
-
-
- <!-- end services -->
-
-
-<a name="connectors.ComponentVersion"></a>
-
-### ComponentVersion
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| name | [string](#string) |  |  |
-| id | [string](#string) |  |  |
-| version | [string](#string) |  |  |
-
-
-
-
-
-
-<a name="connectors.DatasetDecision"></a>
-
-### DatasetDecision
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| dataset | [DatasetIdentifier](#connectors.DatasetIdentifier) |  |  |
-| decisions | [OperationDecision](#connectors.OperationDecision) | repeated |  |
-
-
-
-
-
-
-<a name="connectors.EnforcementAction"></a>
-
-### EnforcementAction
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| name | [string](#string) |  |  |
-| id | [string](#string) |  |  |
-| level | [EnforcementAction.EnforcementActionLevel](#connectors.EnforcementAction.EnforcementActionLevel) |  |  |
-| args | [EnforcementAction.ArgsEntry](#connectors.EnforcementAction.ArgsEntry) | repeated |  |
-
-
-
-
-
-
-<a name="connectors.EnforcementAction.ArgsEntry"></a>
-
-### EnforcementAction.ArgsEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | [string](#string) |  |  |
-| value | [string](#string) |  |  |
-
-
-
-
-
-
-<a name="connectors.OperationDecision"></a>
-
-### OperationDecision
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| operation | [AccessOperation](#connectors.AccessOperation) |  |  |
-| enforcement_actions | [EnforcementAction](#connectors.EnforcementAction) | repeated |  |
-| used_policies | [Policy](#connectors.Policy) | repeated |  |
-
-
-
-
-
-
-<a name="connectors.PoliciesDecisions"></a>
-
-### PoliciesDecisions
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| component_versions | [ComponentVersion](#connectors.ComponentVersion) | repeated |  |
-| dataset_decisions | [DatasetDecision](#connectors.DatasetDecision) | repeated | one per dataset |
-| general_decisions | [OperationDecision](#connectors.OperationDecision) | repeated |  |
-
-
-
-
-
-
-<a name="connectors.Policy"></a>
-
-### Policy
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| id | [string](#string) |  |  |
-| name | [string](#string) |  |  |
-| description | [string](#string) |  |  |
-| type | [string](#string) |  |  |
-| hierarchy | [string](#string) | repeated |  |
-
-
-
-
-
- <!-- end messages -->
-
-
-<a name="connectors.EnforcementAction.EnforcementActionLevel"></a>
-
-### EnforcementAction.EnforcementActionLevel
-
-
-| Name | Number | Description |
-| ---- | ------ | ----------- |
-| UNKNOWN | 0 |  |
-| DATASET | 1 |  |
-| COLUMN | 2 |  |
-| ROW | 3 |  |
-| CELL | 4 |  |
-
-
- <!-- end enums -->
-
- <!-- end HasExtensions -->
-
-
-
 <a name="data_catalog_request.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
@@ -254,126 +71,31 @@
 
 
 
-<a name="policy_manager_request.proto"></a>
+<a name="data_catalog_response.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## policy_manager_request.proto
+## data_catalog_response.proto
 
 
  <!-- end services -->
 
 
-<a name="connectors.AccessOperation"></a>
+<a name="connectors.CatalogDatasetInfo"></a>
 
-### AccessOperation
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| type | [AccessOperation.AccessType](#connectors.AccessOperation.AccessType) |  |  |
-| destination | [string](#string) |  | Destination for transfer or write. |
-
-
-
-
-
-
-<a name="connectors.ApplicationContext"></a>
-
-### ApplicationContext
+### CatalogDatasetInfo
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| credential_path | [string](#string) |  | link to vault plugin for reading k8s secret with user credentials |
-| app_info | [ApplicationDetails](#connectors.ApplicationDetails) |  |  |
-| datasets | [DatasetContext](#connectors.DatasetContext) | repeated |  |
-| general_operations | [AccessOperation](#connectors.AccessOperation) | repeated |  |
-
-
-
-
-
-
-<a name="connectors.ApplicationDetails"></a>
-
-### ApplicationDetails
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| processing_geography | [string](#string) |  |  |
-| properties | [ApplicationDetails.PropertiesEntry](#connectors.ApplicationDetails.PropertiesEntry) | repeated |  |
-
-
-
-
-
-
-<a name="connectors.ApplicationDetails.PropertiesEntry"></a>
-
-### ApplicationDetails.PropertiesEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | [string](#string) |  |  |
-| value | [string](#string) |  |  |
-
-
-
-
-
-
-<a name="connectors.DatasetContext"></a>
-
-### DatasetContext
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| dataset | [DatasetIdentifier](#connectors.DatasetIdentifier) |  |  |
-| operation | [AccessOperation](#connectors.AccessOperation) |  |  |
-
-
-
-
-
-
-<a name="connectors.DatasetIdentifier"></a>
-
-### DatasetIdentifier
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| dataset_id | [string](#string) |  | identifier of asset - always needed. JSON expected. Interpreted by the Connector, can contain any additional information as part of JSON |
+| dataset_id | [string](#string) |  |  |
+| details | [DatasetDetails](#connectors.DatasetDetails) |  |  |
 
 
 
 
 
  <!-- end messages -->
-
-
-<a name="connectors.AccessOperation.AccessType"></a>
-
-### AccessOperation.AccessType
-
-
-| Name | Number | Description |
-| ---- | ------ | ----------- |
-| UNKNOWN | 0 |  |
-| READ | 1 |  |
-| COPY | 2 |  |
-| WRITE | 3 |  |
-
 
  <!-- end enums -->
 
@@ -399,63 +121,6 @@
 | RegisterDatasetInfo | [RegisterAssetRequest](#connectors.RegisterAssetRequest) | [RegisterAssetResponse](#connectors.RegisterAssetResponse) |  |
 
  <!-- end services -->
-
- <!-- end messages -->
-
- <!-- end enums -->
-
- <!-- end HasExtensions -->
-
-
-
-<a name="policy_manager_service.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## policy_manager_service.proto
-
-
-
-<a name="connectors.PolicyManagerService"></a>
-
-### PolicyManagerService
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| GetPoliciesDecisions | [ApplicationContext](#connectors.ApplicationContext) | [PoliciesDecisions](#connectors.PoliciesDecisions) |  |
-
- <!-- end services -->
-
- <!-- end messages -->
-
- <!-- end enums -->
-
- <!-- end HasExtensions -->
-
-
-
-<a name="register_asset_response.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## register_asset_response.proto
-
-
- <!-- end services -->
-
-
-<a name="connectors.RegisterAssetResponse"></a>
-
-### RegisterAssetResponse
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| asset_id | [string](#string) |  | Returns the id of the new asset registered in a catalog |
-
-
-
-
 
  <!-- end messages -->
 
@@ -661,7 +326,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| endpoint | [string](#string) |  |  |
+| endpoint | [string](#string) |  | endpoint should contain only the host name without the scheme i.e., "s3.eu-gb.cloud-object-storage.appdomain.cloud" |
 | bucket | [string](#string) |  |  |
 | object_key | [string](#string) |  | can be object name or the prefix for dataset |
 | region | [string](#string) |  | WKC does not return it, it will stay empty in our case!!! |
@@ -693,6 +358,310 @@
 
 
 
+<a name="policy_manager_request.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## policy_manager_request.proto
+
+
+ <!-- end services -->
+
+
+<a name="connectors.AccessOperation"></a>
+
+### AccessOperation
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| type | [AccessOperation.AccessType](#connectors.AccessOperation.AccessType) |  |  |
+| destination | [string](#string) |  | Destination for transfer or write. |
+
+
+
+
+
+
+<a name="connectors.ApplicationContext"></a>
+
+### ApplicationContext
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| credential_path | [string](#string) |  | link to vault plugin for reading k8s secret with user credentials |
+| app_info | [ApplicationDetails](#connectors.ApplicationDetails) |  |  |
+| datasets | [DatasetContext](#connectors.DatasetContext) | repeated |  |
+| general_operations | [AccessOperation](#connectors.AccessOperation) | repeated |  |
+
+
+
+
+
+
+<a name="connectors.ApplicationDetails"></a>
+
+### ApplicationDetails
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| processing_geography | [string](#string) |  |  |
+| properties | [ApplicationDetails.PropertiesEntry](#connectors.ApplicationDetails.PropertiesEntry) | repeated |  |
+
+
+
+
+
+
+<a name="connectors.ApplicationDetails.PropertiesEntry"></a>
+
+### ApplicationDetails.PropertiesEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [string](#string) |  |  |
+| value | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="connectors.DatasetContext"></a>
+
+### DatasetContext
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| dataset | [DatasetIdentifier](#connectors.DatasetIdentifier) |  |  |
+| operation | [AccessOperation](#connectors.AccessOperation) |  |  |
+
+
+
+
+
+
+<a name="connectors.DatasetIdentifier"></a>
+
+### DatasetIdentifier
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| dataset_id | [string](#string) |  | identifier of asset - always needed. JSON expected. Interpreted by the Connector, can contain any additional information as part of JSON |
+
+
+
+
+
+ <!-- end messages -->
+
+
+<a name="connectors.AccessOperation.AccessType"></a>
+
+### AccessOperation.AccessType
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| UNKNOWN | 0 |  |
+| READ | 1 |  |
+| COPY | 2 |  |
+| WRITE | 3 |  |
+
+
+ <!-- end enums -->
+
+ <!-- end HasExtensions -->
+
+
+
+<a name="policy_manager_response.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## policy_manager_response.proto
+
+
+ <!-- end services -->
+
+
+<a name="connectors.ComponentVersion"></a>
+
+### ComponentVersion
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | [string](#string) |  |  |
+| id | [string](#string) |  |  |
+| version | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="connectors.DatasetDecision"></a>
+
+### DatasetDecision
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| dataset | [DatasetIdentifier](#connectors.DatasetIdentifier) |  |  |
+| decisions | [OperationDecision](#connectors.OperationDecision) | repeated |  |
+
+
+
+
+
+
+<a name="connectors.EnforcementAction"></a>
+
+### EnforcementAction
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | [string](#string) |  |  |
+| id | [string](#string) |  |  |
+| level | [EnforcementAction.EnforcementActionLevel](#connectors.EnforcementAction.EnforcementActionLevel) |  |  |
+| args | [EnforcementAction.ArgsEntry](#connectors.EnforcementAction.ArgsEntry) | repeated |  |
+
+
+
+
+
+
+<a name="connectors.EnforcementAction.ArgsEntry"></a>
+
+### EnforcementAction.ArgsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [string](#string) |  |  |
+| value | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="connectors.OperationDecision"></a>
+
+### OperationDecision
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| operation | [AccessOperation](#connectors.AccessOperation) |  |  |
+| enforcement_actions | [EnforcementAction](#connectors.EnforcementAction) | repeated |  |
+| used_policies | [Policy](#connectors.Policy) | repeated |  |
+
+
+
+
+
+
+<a name="connectors.PoliciesDecisions"></a>
+
+### PoliciesDecisions
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| component_versions | [ComponentVersion](#connectors.ComponentVersion) | repeated |  |
+| dataset_decisions | [DatasetDecision](#connectors.DatasetDecision) | repeated | one per dataset |
+| general_decisions | [OperationDecision](#connectors.OperationDecision) | repeated |  |
+
+
+
+
+
+
+<a name="connectors.Policy"></a>
+
+### Policy
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+| name | [string](#string) |  |  |
+| description | [string](#string) |  |  |
+| type | [string](#string) |  |  |
+| hierarchy | [string](#string) | repeated |  |
+
+
+
+
+
+ <!-- end messages -->
+
+
+<a name="connectors.EnforcementAction.EnforcementActionLevel"></a>
+
+### EnforcementAction.EnforcementActionLevel
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| UNKNOWN | 0 |  |
+| DATASET | 1 |  |
+| COLUMN | 2 |  |
+| ROW | 3 |  |
+| CELL | 4 |  |
+
+
+ <!-- end enums -->
+
+ <!-- end HasExtensions -->
+
+
+
+<a name="policy_manager_service.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## policy_manager_service.proto
+
+
+
+<a name="connectors.PolicyManagerService"></a>
+
+### PolicyManagerService
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| GetPoliciesDecisions | [ApplicationContext](#connectors.ApplicationContext) | [PoliciesDecisions](#connectors.PoliciesDecisions) |  |
+
+ <!-- end services -->
+
+ <!-- end messages -->
+
+ <!-- end enums -->
+
+ <!-- end HasExtensions -->
+
+
+
 <a name="register_asset_request.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
@@ -714,6 +683,37 @@
 | dataset_details | [DatasetDetails](#connectors.DatasetDetails) |  |  |
 | destination_catalog_id | [string](#string) |  |  |
 | credential_path | [string](#string) |  | link to vault plugin for reading k8s secret with user credentials |
+
+
+
+
+
+ <!-- end messages -->
+
+ <!-- end enums -->
+
+ <!-- end HasExtensions -->
+
+
+
+<a name="register_asset_response.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## register_asset_response.proto
+
+
+ <!-- end services -->
+
+
+<a name="connectors.RegisterAssetResponse"></a>
+
+### RegisterAssetResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| asset_id | [string](#string) |  | Returns the id of the new asset registered in a catalog |
 
 
 

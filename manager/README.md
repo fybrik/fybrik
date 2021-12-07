@@ -6,7 +6,6 @@ The `manager` binary includes all of the controllers that this project defines b
 - `enable-all-controllers` to enable all controllers
 - `enable-application-controller` to enable the controller for `FybrikApplication`
 - `enable-blueprint-controller` to enable the controller for `Blueprint`
-- `enable-motion-controller` to enable the controllers for `BatchTransfer` and `StreamTransfer`
 
 
 ## Run and debug locally
@@ -63,6 +62,11 @@ then run the following to export all of the variables:
 set -a; . .env; set +a
 ```
 
+### Copy taxonomy JSON files locally
+```bash
+cp -R ../charts/fybrik/files/taxonomy /tmp
+```
+
 ### Run the manager
 
 ### From command line
@@ -102,13 +106,11 @@ The rest of this README describes the directory structure.
 
 Holds the Customer Resource Definitions (CRDs) of the project:
 - `app.fybrik.io/v1alpha1`: Includes `FybrikApplication`, administrator APIs `FybrikModule` and `FybrikBucket`, and internal CRDs `Blueprint` and `Plotter`.
-- `motion.fybrik.io/v1alpha1`: Includes data movements APIs `BatchTransfer` and `StreamTransfer`. Usually not used directly but rather invoked as a module.
 
 ### `controllers`
 
 Holds the customer controllers of the project:
 - `controllers/app` holds the controllers for `app.fybrik.io` APIs `FybrikApplication`, `Blueprint` and `Plotter`.
-- `controllers/motion` holds the controllers for `motion.fybrik.io` APIs `BatchTransfer` and `StreamTransfer`.
 
 ### `testdata`
 

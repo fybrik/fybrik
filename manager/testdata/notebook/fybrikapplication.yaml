@@ -15,8 +15,7 @@ spec:
       matchLabels:
         app: my-notebook
   appInfo:
-    intent: Marketing
-    role: HR
+    intent: Fraud Detection
   data:
     - dataSetID: 'fybrik-notebook-sample/data-csv'
       requirements:

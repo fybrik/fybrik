@@ -39,10 +39,8 @@ const (
 )
 
 // ModuleCapability indicates at a high level what is being performed - often on a datset, but potentially other things as well
-// +kubebuilder:validation:Enum=copy;read;write;transform
 type CapabilityType string
 
-// TODO - Should these come from the taxonomy?
 const (
 	// Copy moves data from one location to another - i.e implicit copy
 	Copy CapabilityType = "copy"
@@ -223,8 +221,14 @@ type ChartSpec struct {
 	Values map[string]string `json:"values,omitempty"`
 }
 
-// +kubebuilder:object:root=true
+// FybrikModuleStatus defines the observed state of FybrikModule.
+type FybrikModuleStatus struct {
+	// Conditions indicate the module states with respect to validation
+	Conditions []Condition `json:"conditions,omitempty"`
+}
 
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 // FybrikModule is a description of an injectable component.
 // the parameters it requires, as well as the specification of how to instantiate such a component.
 // It is used as metadata only.  There is no status nor reconciliation.
@@ -236,7 +240,8 @@ type FybrikModule struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	// +required
-	Spec FybrikModuleSpec `json:"spec"`
+	Spec   FybrikModuleSpec   `json:"spec"`
+	Status FybrikModuleStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true

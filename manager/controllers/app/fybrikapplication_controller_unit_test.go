@@ -271,7 +271,7 @@ func TestDenyOnRead(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// Expect Deny condition
-	cond := application.Status.AssetStates["s3/deny-dataset"].Conditions[app.DenyConditionIndex]
+	cond := application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex]
 	g.Expect(cond.Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue), "Deny condition is not set")
 	g.Expect(cond.Message).To(gomega.ContainSubstring(app.ReadAccessDenied))
 	g.Expect(application.Status.Ready).To(gomega.BeTrue())
@@ -537,7 +537,7 @@ func TestMultipleDatasets(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// check Deny for the first dataset
-	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage["db2/redact-dataset"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
 	// check plotter creation
@@ -618,8 +618,8 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 
 	// check Deny states
-	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
-	g.Expect(application.Status.AssetStates["local/redact-dataset"].Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["local/redact-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 }
@@ -1122,4 +1122,81 @@ func TestFybrikApplicationWithInvalidInterface(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	g.Expect(getErrorMessages(newApp)).NotTo(gomega.BeEmpty())
 	g.Expect(newApp.Status.Ready).NotTo(gomega.BeTrue())
+}
+
+// This test checks the ingest scenario - copy is required, no workload specified.
+// Two copy modules exist. One of them has an incorrect structure (sinks and sources in different capabilities)
+func TestCopyModule(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	assetName := "s3-external/allow-theshire"
+	namespaced := types.NamespacedName{
+		Name:      "ingest",
+		Namespace: "default",
+	}
+	application := &app.FybrikApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.Spec.Data[0].DataSetID = assetName
+	application.SetGeneration(1)
+
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+	invalidModule := &app.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", invalidModule)).NotTo(gomega.HaveOccurred())
+	invalidModule.Namespace = utils.GetControllerNamespace()
+	invalidModule.Name = "copy-module-with-invalid-structure"
+	capability := invalidModule.Spec.Capabilities[0]
+	sink := capability.SupportedInterfaces[0].Sink
+	source := capability.SupportedInterfaces[0].Source
+	capability.SupportedInterfaces = []app.ModuleInOut{{Source: source}, {Sink: sink}}
+	invalidModule.Spec.Capabilities[0] = capability
+	g.Expect(cl.Create(context.TODO(), invalidModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
+
+	copyModule := &app.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	copyModule.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
+
+	// Create storage account
+	secret := &corev1.Secret{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", secret)).NotTo(gomega.HaveOccurred())
+	secret.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.Background(), secret)).NotTo(gomega.HaveOccurred())
+	account := &app.FybrikStorageAccount{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	account.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
+
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+
+	// check plotter creation
+	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
+	plotterObjectKey := types.NamespacedName{
+		Namespace: application.Status.Generated.Namespace,
+		Name:      application.Status.Generated.Name,
+	}
+	plotter := &app.Plotter{}
+	err = cl.Get(context.Background(), plotterObjectKey, plotter)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
 }

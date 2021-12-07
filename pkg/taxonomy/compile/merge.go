@@ -68,7 +68,7 @@ func mergeSchemaRef(dst, src *model.SchemaRef) *model.SchemaRef {
 			}
 		} else if src.AdditionalProperties.Schema != nil {
 			// handle override to `additionalProperties: [object]`
-			var maybeSchema *model.SchemaRef = nil
+			var maybeSchema *model.SchemaRef
 			if dst.AdditionalProperties != nil {
 				maybeSchema = dst.AdditionalProperties.Schema
 			}

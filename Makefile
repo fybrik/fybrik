@@ -20,7 +20,7 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 
 .PHONY: test
-test: export BLUEPRINT_NAMESPACE?=fybrik-blueprints
+test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
 test:
 	$(MAKE) -C manager pre-test
@@ -57,11 +57,7 @@ run-notebook-tests:
 	$(MAKE) cluster-prepare-wait
 	$(MAKE) deploy
 	$(MAKE) configure-vault
-	$(MAKE) -C modules helm
-	$(MAKE) -C modules helm-uninstall # Uninstalls the deployed tests from previous command
-	$(MAKE) -C pkg/helm test
 	$(MAKE) -C manager run-notebook-tests
-	$(MAKE) -C modules test
 
 .PHONY: run-deploy-tests
 run-deploy-tests:
@@ -90,20 +86,17 @@ cluster-prepare-wait:
 .PHONY: docker-minimal-it
 docker-minimal-it:
 	$(MAKE) -C manager docker-build docker-push
-	$(MAKE) -C test/dummy-mover docker-build docker-push
 	$(MAKE) -C test/services docker-build docker-push
 
 .PHONY: docker-build
 docker-build:
 	$(MAKE) -C manager docker-build
 	$(MAKE) -C connectors docker-build
-	$(MAKE) -C test/dummy-mover docker-build
 
 .PHONY: docker-push
 docker-push:
 	$(MAKE) -C manager docker-push
 	$(MAKE) -C connectors docker-push
-	$(MAKE) -C test/dummy-mover docker-push
 
 DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
 DOCKER_PUBLIC_NAMESPACE ?= fybrik
@@ -111,7 +104,6 @@ DOCKER_PUBLIC_TAGNAME ?= master
 
 DOCKER_PUBLIC_NAMES := \
 	manager \
-	dummy-mover \
 	katalog-connector \
 	opa-connector
 
@@ -133,7 +125,6 @@ helm-push-public:
 .PHONY: save-images
 save-images:
 	docker save -o images.tar ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME} \
-		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/dummy-mover:${DOCKER_TAGNAME} \
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/katalog-connector:${DOCKER_TAGNAME} \
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:${DOCKER_TAGNAME}
 

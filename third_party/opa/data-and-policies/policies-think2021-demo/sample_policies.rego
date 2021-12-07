@@ -9,6 +9,7 @@ rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": desc
 	input.resource.tags.residency == "Turkey"
 	input.action.processingLocation != "Turkey"
 	column_names := [input.resource.columns[i].name | input.resource.columns[i].tags.Confidential]
+	count(column_names) > 0
 }
 
 rule[{"action": {"name":"Deny"}, "policy": description}] {

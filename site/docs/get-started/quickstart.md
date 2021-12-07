@@ -8,7 +8,7 @@ Follow this guide to install Fybrik using default parameters that are suitable f
 
 Ensure that you have the following:
 
-- [Helm](https://helm.sh/) 3.3 or newer must be installed and configured on your machine.
+- [Helm](https://helm.sh/) 3.3 or greater must be installed and configured on your machine.
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) 1.18 or newer must be installed on your machine.
 - Access to a Kubernetes cluster such as [Kind](http://kind.sigs.k8s.io/) as a cluster administrator.
 
@@ -63,7 +63,7 @@ helm install cert-manager jetstack/cert-manager \
 		cd fybrik
 		helm dependency update charts/vault
 		helm install vault charts/vault --create-namespace -n fybrik-system \
-			--set "global.openshift=true" \
+			--set "vault.global.openshift=true" \
 			--set "vault.injector.enabled=false" \
 			--set "vault.server.dev.enabled=true" \
 			--values charts/vault/env/dev/vault-single-cluster-values.yaml
@@ -87,7 +87,7 @@ Run the following to install vault and the plugin in development mode:
 
     ```bash
     helm install vault fybrik-charts/vault --create-namespace -n fybrik-system \
-        --set "global.openshift=true" \
+        --set "vault.global.openshift=true" \
         --set "vault.injector.enabled=false" \
         --set "vault.server.dev.enabled=true" \
         --values https://raw.githubusercontent.com/fybrik/fybrik/v0.4.0/charts/vault/env/dev/vault-single-cluster-values.yaml

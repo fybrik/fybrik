@@ -21,10 +21,14 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
 	mkdir testdata/unittests/sampletaxonomy || true
 	cp ../charts/fybrik/files/taxonomy/*.json testdata/unittests/basetaxonomy
 	cp ../charts/fybrik/files/taxonomy/*.json testdata/unittests/sampletaxonomy
-	go run ../main.go taxonomy compile --out testdata/unittests/sampletaxonomy/taxonomy.json --base ../config/taxonomy/base/base.yaml ../config/taxonomy/example/application/appinfo.yaml ../config/taxonomy/example/application/interface.yaml ../config/taxonomy/example/catalog/locations.yaml ../config/taxonomy/example/catalog/tags.yaml ../config/taxonomy/example/module/actions.yaml 
+	go run ../main.go taxonomy compile --out testdata/unittests/sampletaxonomy/taxonomy.json --base ../config/taxonomy/base/base.yaml \
+	../config/taxonomy/example/application/appinfo.yaml ../config/taxonomy/example/application/interface.yaml \
+	../config/taxonomy/example/catalog/locations.yaml ../config/taxonomy/example/catalog/tags.yaml \
+	../config/taxonomy/example/module/actions.yaml ../config/taxonomy/example/module/capability.yaml ../config/taxonomy/example/module/plugintype.yaml
+	cp testdata/unittests/sampletaxonomy/taxonomy.json /tmp/taxonomy/taxonomy.json
 
 # Run tests
-test: export BLUEPRINT_NAMESPACE?=fybrik-blueprints
+test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
 test: pre-test
 	go test ./... -v  -coverprofile cover.out
@@ -74,7 +78,6 @@ run-integration-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-integration-tests: export DOCKER_TAGNAME?=master
 run-integration-tests: export USE_MOCKUP_CONNECTOR?=true
 run-integration-tests: wait_for_manager
-	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestMotionAPIs -count 1
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestAPIs -count 1
 
 .PHONY: run-notebook-tests
@@ -83,7 +86,7 @@ run-notebook-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-notebook-tests: export DOCKER_TAGNAME?=master
 run-notebook-tests: export USE_MOCKUP_CONNECTOR?=true
 run-notebook-tests: wait_for_manager
-	pushd testdata/notebook && ./setup.sh && popd
+	cd testdata/notebook && ./setup.sh
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestS3Notebook -count 1
 
 

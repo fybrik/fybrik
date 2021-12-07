@@ -132,6 +132,7 @@ rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": desc
   input.action.actionType == "read"
   input.resource.tags.finance
   column_names := [input.resource.columns[i].name | input.resource.columns[i].tags.PII]
+  count(column_names) > 0
 }
 ```
 
@@ -201,7 +202,7 @@ spec:
       matchLabels:
         app: my-notebook
   appInfo:
-    intent: fraud-detection
+    intent: Fraud Detection
   data:
     - dataSetID: "fybrik-notebook-sample/paysim-csv"
       requirements:

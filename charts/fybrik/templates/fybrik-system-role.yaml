@@ -5,9 +5,37 @@ metadata:
   name: {{ template "fybrik.fullname" . }}-system-role
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - events
+  - secrets
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - "coordination.k8s.io"
+  resources:
+  - leases
+  - leases/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - app.fybrik.io
   resources:
   - plotters
+  - blueprints
   verbs:
   - create
   - delete
@@ -20,6 +48,8 @@ rules:
   - app.fybrik.io
   resources:
   - plotters/status
+  - blueprints/status
+  - fybrikmodules/status
   verbs:
   - get
   - patch
@@ -41,52 +71,6 @@ rules:
   - com.ie.ibm.hpsys
   resources:
   - datasets
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - app.fybrik.io
-  resources:
-  - plotters
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - app.fybrik.io
-  resources:
-  - plotters/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - "coordination.k8s.io"
-  resources:
-  - leases
-  - leases/finalizers
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - events
-  - configmaps
   verbs:
   - create
   - delete

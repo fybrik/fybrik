@@ -9,7 +9,6 @@ import (
 
 	"fybrik.io/fybrik/pkg/multicluster"
 
-	"fmt"
 	"testing"
 
 	"fybrik.io/fybrik/manager/controllers/utils"
@@ -27,8 +26,8 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-// TestBatchTransferController runs BatchTransferReconciler.Reconcile() against a
-// fake client that tracks a BatchTransfer object.
+// TestPlotterController runs PlotterReconciler.Reconcile() against a
+// fake client that tracks a Plotter object.
 // This test does not require a Kubernetes environment to run.
 // This mechanism of testing can be used to test corner cases of the reconcile function.
 func TestPlotterController(t *testing.T) {
@@ -37,13 +36,9 @@ func TestPlotterController(t *testing.T) {
 	// Set the logger to development mode for verbose logs.
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
-	controllerNamespace := utils.GetControllerNamespace()
-	blueprintNamespace := utils.GetBlueprintNamespace()
-	fmt.Printf("Using controller namespace: %s; using blueprint namespace %s\n: ", controllerNamespace, blueprintNamespace)
-
 	var (
 		name      = "plotter"
-		namespace = controllerNamespace
+		namespace = utils.GetSystemNamespace()
 	)
 
 	var err error
@@ -53,7 +48,7 @@ func TestPlotterController(t *testing.T) {
 	err = yaml.Unmarshal(plotterYAML, plotter)
 	g.Expect(err).To(gomega.BeNil(), "Cannot read plotter file for test")
 
-	plotter.Namespace = controllerNamespace
+	plotter.Namespace = namespace
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
@@ -64,9 +59,9 @@ func TestPlotterController(t *testing.T) {
 	s := utils.NewScheme(g)
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
-	dummyManager := &dummy.ClusterManager{
-		DeployedBlueprints: make(map[string]*app.Blueprint),
-		Clusters: []multicluster.Cluster{{
+	dummyManager := dummy.NewDummyClusterManager(
+		make(map[string]*app.Blueprint),
+		[]multicluster.Cluster{{
 			Name: "thegreendragon",
 			Metadata: struct {
 				Region        string
@@ -76,15 +71,14 @@ func TestPlotterController(t *testing.T) {
 				Region:        "theshire",
 				Zone:          "hobbiton",
 				VaultAuthPath: "kubernetes",
-			}}},
-	}
+			}}})
 
-	// Create a BatchTransferReconciler object with the scheme and fake client.
+	// Create a PlotterReconciler object with the scheme and fake client.
 	r := &PlotterReconciler{
 		Client:         cl,
 		Log:            ctrl.Log.WithName("test-controller"),
 		Scheme:         s,
-		ClusterManager: dummyManager,
+		ClusterManager: &dummyManager,
 	}
 
 	// Mock request to simulate Reconcile() being called on an event for a
@@ -108,7 +102,7 @@ func TestPlotterController(t *testing.T) {
 	g.Expect(plotter.Status.Blueprints).To(gomega.HaveKey("thegreendragon"))
 	blueprintMeta := plotter.Status.Blueprints["thegreendragon"]
 	g.Expect(blueprintMeta.Name).To(gomega.Equal(plotter.Name))
-	g.Expect(blueprintMeta.Namespace).To(gomega.Equal(blueprintNamespace))
+	g.Expect(blueprintMeta.Namespace).To(gomega.Equal(plotter.Namespace))
 
 	// Simulate that blueprint changes state to Ready=true
 	blueprint := dummyManager.DeployedBlueprints["thegreendragon"]

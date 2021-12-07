@@ -19,9 +19,8 @@ import (
 	"time"
 
 	openapiserver "fybrik.io/fybrik/connectors/opa/go"
-	sw "fybrik.io/fybrik/connectors/opa/go"
 	opabl "fybrik.io/fybrik/connectors/opa/lib"
-	clients "fybrik.io/fybrik/pkg/connectors/clients"
+	"fybrik.io/fybrik/pkg/connectors/clients"
 	"github.com/hashicorp/go-retryablehttp"
 )
 
@@ -67,7 +66,7 @@ func main() {
 		CatalogReader: catalogReader,
 	}
 
-	router := sw.NewRouter(connController)
+	router := openapiserver.NewRouter(connController)
 
 	log.Printf("Server started")
 	log.Fatal(router.Run(":8080"))

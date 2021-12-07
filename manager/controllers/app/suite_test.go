@@ -89,11 +89,11 @@ var _ = BeforeSuite(func(done Done) {
 	} else {
 		fmt.Printf("Setup fake environment... \n")
 		controllerNamespace := utils.GetControllerNamespace()
-		blueprintNamespace := utils.GetBlueprintNamespace()
-		fmt.Printf("Suite test: Using controller namespace: %s; using blueprint namespace %s\n: ", controllerNamespace, blueprintNamespace)
+		modulesNamespace := utils.GetDefaultModulesNamespace()
+		fmt.Printf("Suite test: Using controller namespace: %s; using data access module namespace %s\n: ", controllerNamespace, modulesNamespace)
 
 		systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
-		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": blueprintNamespace})
+		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetDefaultModulesNamespace()})
 		// the testing environment will restrict access to secrets, modules and storage accounts
 		mgr, err = ctrl.NewManager(cfg, ctrl.Options{
 			Scheme:             scheme.Scheme,
@@ -122,7 +122,7 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 
 		// Setup plotter controller
-		clusterMgr, err := local.NewManager(mgr.GetClient(), controllerNamespace)
+		clusterMgr, err := local.NewClusterManager(mgr.GetClient(), controllerNamespace)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(clusterMgr).NotTo(BeNil())
 		err = NewPlotterReconciler(mgr, "Plotter", clusterMgr).SetupWithManager(mgr)
@@ -142,7 +142,7 @@ var _ = BeforeSuite(func(done Done) {
 
 		Expect(k8sClient.Create(context.Background(), &corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: blueprintNamespace,
+				Name: modulesNamespace,
 			},
 		}))
 		Expect(k8sClient.Create(context.Background(), &corev1.ConfigMap{

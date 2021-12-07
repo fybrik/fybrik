@@ -17,7 +17,6 @@ import (
 	"emperror.dev/errors"
 	corev1 "k8s.io/api/core/v1"
 
-	"fybrik.io/fybrik/manager/controllers/motion"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/multicluster/local"
@@ -33,7 +32,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	appv1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/app"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/helm"
@@ -47,7 +45,6 @@ var (
 )
 
 func init() {
-	_ = motionv1.AddToScheme(scheme)
 	_ = appv1.AddToScheme(scheme)
 	_ = corev1.AddToScheme(scheme)
 	_ = kbatch.AddToScheme(scheme)
@@ -55,7 +52,7 @@ func init() {
 }
 
 func run(namespace string, metricsAddr string, enableLeaderElection bool,
-	enableApplicationController, enableBlueprintController, enablePlotterController, enableMotionController bool) int {
+	enableApplicationController, enableBlueprintController, enablePlotterController bool) int {
 	setupLog.Info("creating manager")
 
 	var applicationNamespaceSelector fields.Selector
@@ -65,25 +62,15 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	}
 	setupLog.Info("Application namespace: " + applicationNamespace)
 
-	blueprintNamespace := utils.GetBlueprintNamespace()
-
 	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
-	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": blueprintNamespace})
 	selectorsByObject := cache.SelectorsByObject{
-		&appv1.FybrikApplication{}:      {Field: applicationNamespaceSelector},
-		&appv1.Plotter{}:                {Field: systemNamespaceSelector},
-		&appv1.FybrikModule{}:           {Field: systemNamespaceSelector},
-		&appv1.FybrikStorageAccount{}:   {Field: systemNamespaceSelector},
-		&corev1.ConfigMap{}:             {Field: systemNamespaceSelector},
-		&appv1.Blueprint{}:              {Field: workerNamespaceSelector},
-		&motionv1.BatchTransfer{}:       {Field: workerNamespaceSelector},
-		&motionv1.StreamTransfer{}:      {Field: workerNamespaceSelector},
-		&kbatch.Job{}:                   {Field: workerNamespaceSelector},
-		&kbatch.CronJob{}:               {Field: workerNamespaceSelector},
-		&corev1.Secret{}:                {Field: workerNamespaceSelector},
-		&corev1.Pod{}:                   {Field: workerNamespaceSelector},
-		&kapps.Deployment{}:             {Field: workerNamespaceSelector},
-		&corev1.PersistentVolumeClaim{}: {Field: workerNamespaceSelector},
+		&appv1.FybrikApplication{}:    {Field: applicationNamespaceSelector},
+		&appv1.Plotter{}:              {Field: systemNamespaceSelector},
+		&appv1.FybrikModule{}:         {Field: systemNamespaceSelector},
+		&appv1.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
+		&corev1.ConfigMap{}:           {Field: systemNamespaceSelector},
+		&appv1.Blueprint{}:            {Field: systemNamespaceSelector},
+		&corev1.Secret{}:              {Field: systemNamespaceSelector},
 	}
 
 	client := ctrl.GetConfigOrDie()
@@ -166,6 +153,16 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 				return 1
 			}
 		}
+
+		// Initiate the FybrikModule Controller
+		moduleController := app.NewFybrikModuleReconciler(
+			mgr,
+			"FybrikModule",
+		)
+		if err := moduleController.SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "FybrikModule")
+			return 1
+		}
 	}
 
 	if enablePlotterController {
@@ -188,14 +185,6 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		}
 	}
 
-	if enableMotionController {
-		setupLog.Info("creating motion controllers")
-		if err := motion.SetupMotionControllers(mgr); err != nil {
-			setupLog.Error(err, "unable to setup motion controllers")
-			return 1
-		}
-	}
-
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
@@ -213,7 +202,6 @@ func main() {
 	var enableApplicationController bool
 	var enableBlueprintController bool
 	var enablePlotterController bool
-	var enableMotionController bool
 	var enableAllControllers bool
 	address := utils.ListeningAddress(8085)
 
@@ -226,8 +214,6 @@ func main() {
 		"Enable blueprint controller of the manager. This manages CRDs of type Blueprint.")
 	flag.BoolVar(&enablePlotterController, "enable-plotter-controller", false,
 		"Enable plotter controller of the manager. This manages CRDs of type Plotter.")
-	flag.BoolVar(&enableMotionController, "enable-motion-controller", false,
-		"Enable motion controller of the manager. This manages CRDs of type BatchTransfer or StreamTransfer.")
 	flag.BoolVar(&enableAllControllers, "enable-all-controllers", false,
 		"Enables all controllers.")
 	flag.StringVar(&namespace, "namespace", "", "The namespace to which this controller manager is limited.")
@@ -237,10 +223,9 @@ func main() {
 		enableApplicationController = true
 		enableBlueprintController = true
 		enablePlotterController = true
-		enableMotionController = true
 	}
 
-	if !enableApplicationController && !enablePlotterController && !enableBlueprintController && !enableMotionController {
+	if !enableApplicationController && !enablePlotterController && !enableBlueprintController {
 		setupLog.Info("At least one controller flag must be set!")
 		os.Exit(1)
 	}
@@ -248,7 +233,7 @@ func main() {
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	os.Exit(run(namespace, metricsAddr, enableLeaderElection,
-		enableApplicationController, enableBlueprintController, enablePlotterController, enableMotionController))
+		enableApplicationController, enableBlueprintController, enablePlotterController))
 }
 
 func newDataCatalog() (connectors.DataCatalog, error) {
@@ -295,18 +280,18 @@ func newClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error)
 		password := strings.TrimSpace(os.Getenv("RAZEE_PASSWORD"))
 
 		setupLog.Info("Using razee local at " + razeeURL)
-		return razee.NewRazeeLocalManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password, multiClusterGroup)
+		return razee.NewRazeeLocalClusterManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password, multiClusterGroup)
 	} else if apiKey, satConf := os.LookupEnv("IAM_API_KEY"); satConf {
 		setupLog.Info("Using IBM Satellite config")
-		return razee.NewSatConfManager(strings.TrimSpace(apiKey), multiClusterGroup)
+		return razee.NewSatConfClusterManager(strings.TrimSpace(apiKey), multiClusterGroup)
 	} else if apiKey, razeeOauth := os.LookupEnv("API_KEY"); razeeOauth {
 		setupLog.Info("Using Razee oauth")
 
 		razeeURL := strings.TrimSpace(os.Getenv("RAZEE_URL"))
-		return razee.NewRazeeOAuthManager(strings.TrimSpace(razeeURL), strings.TrimSpace(apiKey), multiClusterGroup)
+		return razee.NewRazeeOAuthClusterManager(strings.TrimSpace(razeeURL), strings.TrimSpace(apiKey), multiClusterGroup)
 	} else {
 		setupLog.Info("Using local cluster manager")
-		return local.NewManager(mgr.GetClient(), utils.GetSystemNamespace())
+		return local.NewClusterManager(mgr.GetClient(), utils.GetSystemNamespace())
 	}
 }
 

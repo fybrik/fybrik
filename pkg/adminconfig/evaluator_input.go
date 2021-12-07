@@ -8,7 +8,7 @@ import (
 
 	assetmetadata "fybrik.io/fybrik/manager/controllers/app/assetmetadata"
 	"fybrik.io/fybrik/pkg/multicluster"
-	model "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	model "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )
 
 // WorkloadInfo holds workload details such as cluster/region, type, etc.

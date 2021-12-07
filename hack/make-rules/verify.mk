@@ -46,7 +46,7 @@ GOLINT_LINTERS ?= \
 	--enable=errcheck \
 	--enable=gocritic \
 	--enable=gofmt \
-	--enable=golint \
+	--enable=revive \
 	--enable=gosimple \
 	--enable=govet \
 	--enable=ineffassign \
@@ -59,8 +59,12 @@ GOLINT_LINTERS ?= \
 	--enable=varcheck \
 	--enable=whitespace
 
+CODE_MAINT += revive
+.PHONY: revive
+revive: $(TOOLBIN)/revive
+	$(TOOLBIN)/revive -config lint-rules.toml -formatter stylish ./...
+
 CODE_MAINT += lint
-.PHONY: lint
 lint: $(TOOLBIN)/golangci-lint
 	$(TOOLBIN)/golangci-lint run ${GOLINT_LINTERS} --timeout=5m ./...
 
