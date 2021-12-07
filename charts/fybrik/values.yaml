@@ -113,7 +113,7 @@ manager:
   connectionTimeout: 
 
   # Override data path limits in manager
-  dataPathMaxSize:
+  dataPathMaxSize: "2"
 
   # Image name or a hub/image[:tag]
   image: "manager"

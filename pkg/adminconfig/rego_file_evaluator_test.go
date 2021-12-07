@@ -16,6 +16,7 @@ import (
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
 	corev1 "k8s.io/api/core/v1"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 func NewEvaluator() *adminconfig.RegoPolicyEvaluator {
@@ -70,7 +71,7 @@ func NewEvaluator() *adminconfig.RegoPolicyEvaluator {
 	)
 	query, err := rego.PrepareForEval(context.Background())
 	Expect(err).ToNot(HaveOccurred())
-	return &adminconfig.RegoPolicyEvaluator{ReadyForEval: true, Query: query}
+	return &adminconfig.RegoPolicyEvaluator{Log: ctrl.Log.WithName("ConfigPolicyEvaluator"), ReadyForEval: true, Query: query}
 }
 
 func TestRegoFileEvaluator(t *testing.T) {
