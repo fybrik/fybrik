@@ -57,7 +57,12 @@ func (m *grpcDataCatalog) GetAssetInfo(
 	if errStatus.Code() == codes.InvalidArgument {
 		return nil, errors.New(app.InvalidAssetID)
 	}
-	log.Println("GRPC result returned from GetAssetInfo:", result)
+	log.Println("GRPC result returned from GetAssetInfo:")
+	responseBytes, errJSON := json.MarshalIndent(result, "", "\t")
+	if errJSON != nil {
+		return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
+	}
+	log.Print(string(responseBytes))
 	dataCatalogResp, err := ConvertDataCatalogGrpcRespToOpenAPIResp(result)
 	if err != nil {
 		log.Println("Error during conversion to open api response: ", err)
