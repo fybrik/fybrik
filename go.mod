@@ -10,7 +10,7 @@ require (
 	github.com/apache/arrow/go/arrow v0.0.0-20210907151234-f40856a768f2
 	github.com/aws/aws-sdk-go v1.40.37
 	github.com/buger/jsonparser v1.1.1
-	github.com/containerd/containerd v1.4.11 // indirect
+	github.com/containerd/containerd v1.4.12 // indirect
 	github.com/distribution/distribution v2.7.1+incompatible
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/gdexlab/go-render v1.0.1
@@ -25,7 +25,7 @@ require (
 	github.com/google/uuid v1.2.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.0
-	github.com/hashicorp/vault/api v1.2.0
+	github.com/hashicorp/vault/api v1.3.0
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
@@ -46,7 +46,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
 	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
 	google.golang.org/genproto v0.0.0-20210707164411-8c882eb9abba // indirect
-	google.golang.org/grpc v1.39.0
+	google.golang.org/grpc v1.41.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools v2.2.0+incompatible
