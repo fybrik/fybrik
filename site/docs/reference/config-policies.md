@@ -4,6 +4,17 @@
 
 Configuration policies configure the data plane construction. They define what capabilities should be deployed (e.g. read, copy), where they can be deployed, and influence the selection of modules that will be installed.
 
+## Input to policies
+
+The `input` object includes general application data such as workload cluster and application properties, as well as dataset details (user requirements, metadata, required actions).
+
+Available properties:
+- `cluster.name`: name of the workload cluster
+- `cluster.metadata.region`: region of the workload cluster
+- `properties`: application/workload properties defined in FybrikApplication, e.g. `properties.intent`
+- `request.metadata`: asset metadata as defined in catalog taxonomy, e.g `request.metadata.geography`
+- `usage`: a set of boolean properties associated with data use: `usage.read`, `usage.write`, `usage.copy`
+
 ## Syntax 
 
 Policies are written in rego files. Each file declares a package `adminconfig`.
@@ -37,13 +48,26 @@ config[{"read": decision}] {
 }
 ```
 
+`policy` provides policy metadata: unique ID, human-readable description and `policySetID` (see ### Policy Set ID)
+
+`restrictions` provides restrictions for `modules`, `clusters` and `storageaccounts`.
+Each restriction provides a list of allowed values for a property of module/cluster/storageaccount object. For example, to restrict a module type to either "service" or "plugin", we'll use "type" as a key, and [ "service","plugin ] as a list of allowed values.
+Properties of a module can be found inside [`FybrikModule`](../reference/crds.md#fybrikmodule) Spec.
+Properties of a storage account are listed inside [`FybrikStorageAccount`](../reference/crds.md#fybrikstorageaccount).
+Cluster is not a custom resource. It has the following properties:
+- name: cluster name
+- metadata.region: cluster region
+- metadata.zone: cluster zone
+
+`deploy` receives "true"/"false" values. These values indicate whether the capability should or should not be deployed. If not specified in the policy, it's up to Fybrik to decide on the capability deployment.
+
 ### Policy Set ID
 
 Fybrik supports evaluating different sets of policies for different FybrikApplications. It is possible to define a policy for a specific `policySetID` which will be trigered only if it matches the `policySetID` defined in FybrikApplication. 
 If a policy does not specify a policy set id, it will be considered as relevant for all FybrikApplications.
 In a similar way, all policies are relevant for a FybrikApplication that does not specify a policy set id, to support a use-case of a single policy set for all.
 
-#### Out of the box policies
+### Out of the box policies
 
 Out of the box policies come with the fybrik deployment. They define the deployment of basic capabilities, such as read and write. 
 ```
@@ -62,7 +86,7 @@ config[{"write": decision}] {
 }
 ```
 
-#### Extended policies
+### Extended policies
 
 The extended policies define advanced deployment requirements, such as where read or transform modules should run, what should be the scope of module deployments, and more. 
 
