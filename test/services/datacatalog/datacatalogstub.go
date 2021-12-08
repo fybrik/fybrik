@@ -39,19 +39,6 @@ var router *gin.Engine
 // 	}
 // }
 
-func constructDataCatalogRequest(inputString string) *datacatalogTaxonomyModels.DataCatalogRequest {
-	log.Println("in datacatalogstub constructDataCatalogRequest")
-	log.Println("inputString")
-	log.Println(inputString)
-	var input datacatalogTaxonomyModels.DataCatalogRequest
-	err := json.Unmarshal([]byte(inputString), &input)
-	if err != nil {
-		return nil
-	}
-	log.Println("input:", input)
-	return &input
-}
-
 func main() {
 	router = gin.Default()
 
@@ -64,9 +51,14 @@ func main() {
 		input, _ := ioutil.ReadAll(c.Request.Body)
 		log.Println("input extracted from POST request body in mockup data catalog:", string(input))
 
-		dataCatalogReq := constructDataCatalogRequest(string(input))
+		var dataCatalogReq datacatalogTaxonomyModels.DataCatalogRequest
+		err := json.Unmarshal(input, &dataCatalogReq)
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
 		dataCatalog := &mockup.DataCatalogDummy{}
-		dataCatalogResp, err := dataCatalog.GetAssetInfo(dataCatalogReq, creds)
+		dataCatalogResp, err := dataCatalog.GetAssetInfo(&dataCatalogReq, creds)
 		if err != nil {
 			c.String(http.StatusInternalServerError, "Error in getAssetInfo!")
 			return

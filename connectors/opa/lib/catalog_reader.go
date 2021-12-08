@@ -30,7 +30,7 @@ func (r *CatalogReader) GetDatasetsMetadataFromCatalog(in *taxonomymodels.Policy
 	datasetID := (in.GetResource()).Name
 	if _, present := datasetsMetadata[datasetID]; !present {
 		// objToSend := &pb.CatalogDatasetRequest{CredentialPath: creds, DatasetId: datasetID}
-		objToSend := datacatalogTaxonomyModels.DataCatalogRequest{AssetID: datasetID}
+		objToSend := datacatalogTaxonomyModels.DataCatalogRequest{AssetID: datasetID, OperationType: datacatalogTaxonomyModels.READ}
 
 		info, err := (*r.DataCatalog).GetAssetInfo(&objToSend, creds)
 		// info, err := (*r.DataCatalog).GetDatasetInfo(context.Background(), objToSend)

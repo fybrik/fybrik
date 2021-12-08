@@ -390,7 +390,10 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
 
-	if response, err = r.DataCatalog.GetAssetInfo(&datacatalogTaxonomyModels.DataCatalogRequest{AssetID: req.Context.DataSetID}, credentialPath); err != nil {
+	if response, err = r.DataCatalog.GetAssetInfo(&datacatalogTaxonomyModels.DataCatalogRequest{
+		AssetID:       req.Context.DataSetID,
+		OperationType: datacatalogTaxonomyModels.READ},
+		credentialPath); err != nil {
 		return err
 	}
 
