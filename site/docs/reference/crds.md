@@ -2217,17 +2217,17 @@ FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>endpoint</b></td>
-        <td>string</td>
+        <td><b>endpointsMap</b></td>
+        <td>map[string]string</td>
         <td>
-          Endpoint<br/>
+          Endpoints based on regions<br/>
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b>regions</b></td>
-        <td>[]string</td>
+        <td><b>id</b></td>
+        <td>string</td>
         <td>
-          Regions<br/>
+          Identification of a storage account<br/>
         </td>
         <td>true</td>
       </tr><tr>

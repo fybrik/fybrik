@@ -4,8 +4,7 @@ metadata:
   name: account-theshire
   namespace: fybrik-system
 spec:
-  endpoint: http://s3.eu.cloud-object-storage.appdomain.cloud
+  id: TheShireCloudStrorage
   secretRef: credentials-theshire
-  regions:
-    - theshire
-
+  endpointsMap:
+    http://s3.eu.cloud-object-storage.appdomain.cloud: theshire

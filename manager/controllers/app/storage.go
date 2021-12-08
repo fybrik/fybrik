@@ -37,15 +37,23 @@ func AllocateBucket(c client.Client, log logr.Logger, owner types.NamespacedName
 		log.Info(err.Error())
 		return nil, err
 	}
+
 	for _, account := range accountList.Items {
 		utils.PrintStructure(account, log, "Account ")
-		if !includesGeography(account.Spec.Regions, geo) {
+		regions := make([]string, 0, len(account.Spec.EndpointsMap))
+		endpoints := make([]string, 0, len(account.Spec.EndpointsMap))
+
+		for key, value := range account.Spec.EndpointsMap {
+			endpoints = append(endpoints, key)
+			regions = append(regions, value)
+		}
+		if !includesGeography(regions, geo) {
 			continue
 		}
 		genName := generateDatasetName(owner, id)
 		return &storage.ProvisionedBucket{
 			Name:      genName,
-			Endpoint:  account.Spec.Endpoint,
+			Endpoint:  endpoints,
 			SecretRef: types.NamespacedName{Name: account.Spec.SecretRef, Namespace: utils.GetSystemNamespace()},
 		}, nil
 	}

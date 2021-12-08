@@ -59,7 +59,7 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 
 	// S3 endpoint should not include the url scheme only the host name
 	// thus ignoring it if such exists.
-	url, err := url.Parse(bucket.Endpoint)
+	url, err := url.Parse(bucket.Endpoint[0])
 	if err != nil {
 		return nil, err
 	}
