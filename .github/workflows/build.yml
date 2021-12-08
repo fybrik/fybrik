@@ -197,17 +197,20 @@ jobs:
       name: Infer version
       run: |
         version="${GITHUB_REF#refs/tags/v}"
+        echo "HELM_PUBLIC_TAGNAME=${version}" >> $GITHUB_ENV
         push_tag_event='true'
         if  [[ $version == refs/* ]] ;
         then
             push_tag_event='false'
             branch="${GITHUB_REF#refs/heads/}"
             version=$branch
+            echo "HELM_PUBLIC_TAGNAME=0.0.0-${version}" >> $GITHUB_ENV
         fi
         if [[ $version == releases/* ]] ;
         then
            releaseVersion="${GITHUB_REF#refs/heads/releases/}"
            version="$releaseVersion-rc"
+           echo "HELM_PUBLIC_TAGNAME=$releaseVersion-rc" >> $GITHUB_ENV
         fi
         echo ::set-output name=version::$version
         echo ::set-output name=push_tag_event::$push_tag_event
@@ -220,4 +223,5 @@ jobs:
       if: github.event_name != 'pull_request' && steps.version.outputs.push_tag_event == 'true'
       env:
         DOCKER_PUBLIC_TAGNAME: 'latest'
+        HELM_PUBLIC_TAGNAME: '0.0.0-latest'
       run: make docker-retag-and-push-public && make helm-push-public

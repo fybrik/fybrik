@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	debugOption = (os.Getenv("HELM_DEBUG") == "true")
+	debugOption = os.Getenv("HELM_DEBUG") == "true"
 )
 
 const chartsMountPath = "/opt/fybrik/charts/"
@@ -170,15 +170,13 @@ func (r *Impl) Load(ref string, chartPath string) (*chart.Chart, error) {
 		return chart, err
 	}
 	// Construct the packed chart path
-	chartRef, err := ParseReference(ref)
+	chartRef, err := action.ParseReference(ref)
 	if err != nil {
 		return nil, err
 	}
 	_, chartName := filepath.Split(chartRef.Repo)
 	packedChartPath := chartPath + "/" + chartName + "-" + chartRef.Tag + ".tgz"
-	chart, err = loader.Load(packedChartPath)
-
-	return chart, err
+	return loader.Load(packedChartPath)
 }
 
 // Install helm release from packaged chart
@@ -251,7 +249,7 @@ func (r *Impl) Package(chartPath string, destinationPath string, version string)
 
 // Pull helm chart from repo
 func (r *Impl) Pull(ref string, destination string) error {
-	chartRef, err := ParseReference(ref)
+	chartRef, err := action.ParseReference(ref)
 	if err != nil {
 		return err
 	}

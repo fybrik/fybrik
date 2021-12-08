@@ -220,7 +220,6 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolo
 	if err != nil {
 		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart pull")
 	}
-
 	// if we logged into a registry, let us try to logout
 	if registrySuccessfulLogin != "" {
 		logoutErr := r.Helmer.RegistryLogout(registrySuccessfulLogin)
