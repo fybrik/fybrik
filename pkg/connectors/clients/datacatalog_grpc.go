@@ -89,7 +89,6 @@ func (m *grpcDataCatalog) Close() error {
 }
 
 func ConvertDataCatalogOpenAPIReqToGrpcReq(in *datacatalogTaxonomyModels.DataCatalogRequest, creds string) (*pb.CatalogDatasetRequest, error) {
-
 	dataCatalogReq := &pb.CatalogDatasetRequest{
 		CredentialPath: creds, DatasetId: in.GetAssetID()}
 	log.Println("Constructed GRPC data catalog request: ", dataCatalogReq)
@@ -129,20 +128,25 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 	}
 
 	var additionalProp map[string]interface{}
-	if result.GetDetails().DataStore.Type == pb.DataStore_S3 {
+	var err error
+	switch result.GetDetails().DataStore.Type {
+	case pb.DataStore_S3:
 		dsStore := result.GetDetails().GetDataStore().S3
 		dataStoreInfo, _ := json.Marshal(dsStore)
-		json.Unmarshal(dataStoreInfo, &additionalProp)
-	} else if result.GetDetails().DataStore.Type == pb.DataStore_KAFKA {
+		err = json.Unmarshal(dataStoreInfo, &additionalProp)
+	case pb.DataStore_KAFKA:
 		dsStore := result.GetDetails().GetDataStore().Kafka
 		dataStoreInfo, _ := json.Marshal(dsStore)
-		json.Unmarshal(dataStoreInfo, &additionalProp)
-	} else if result.GetDetails().DataStore.Type == pb.DataStore_DB2 {
+		err = json.Unmarshal(dataStoreInfo, &additionalProp)
+	case pb.DataStore_DB2:
 		dsStore := result.GetDetails().GetDataStore().Db2
 		dataStoreInfo, _ := json.Marshal(dsStore)
-		json.Unmarshal(dataStoreInfo, &additionalProp)
-	} else { // DataStore.LOCAL
+		err = json.Unmarshal(dataStoreInfo, &additionalProp)
+	default: // DataStore.LOCAL
 		additionalProp = make(map[string]interface{})
+	}
+	if err != nil {
+		return nil, errors.New("error during unmarshal of dataStoreInfo")
 	}
 
 	connection := datacatalogTaxonomyModels.Connection{

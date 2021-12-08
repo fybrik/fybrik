@@ -23,11 +23,11 @@ import (
 // - an error if happened
 // - the new asset identifier
 func (r *FybrikApplicationReconciler) RegisterAsset(catalogID string, info *app.DatasetDetails, input *app.FybrikApplication) (string, error) {
-	//datasetDetails := &pb.DatasetDetails{}
-	//err := info.Details.Into(datasetDetails)
-	//if err != nil {
-	//	return "", err
-	//}
+	// datasetDetails := &pb.DatasetDetails{}
+	// err := info.Details.Into(datasetDetails)
+	// if err != nil {
+	// 	 return "", err
+	// }
 
 	// the below code is commented for the time being till we support RegisterDatasetInfo in the OpenAPI taxonomy. Returning a default string till then.
 
