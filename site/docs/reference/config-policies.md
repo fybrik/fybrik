@@ -1,0 +1,113 @@
+# Configuration Policies
+
+## What are configuration policies?
+
+Configuration policies configure the data plane construction. They define what capabilities should be deployed (e.g. read, copy), where they can be deployed, and influence the selection of modules that will be installed.
+
+## Syntax 
+
+Policies are written in rego files. Each file declares a package `adminconfig`.
+
+Rules are written in the following syntax: `config[{capability: decision}]` where
+
+`capability` represents a required module capability, such as "read", "write", "transform" and "copy".
+
+`decision` is a JSON structure that matches `Decision` defined above. 
+
+```
+{ 
+	"policy": {"ID": <id>, "policySetID": <setId>, "description": <description>}, 
+	"deploy": <true, false>,
+	"restrictions": {
+		"modules": <map {key, list-of-values}>,
+		"clusters": <map {key, list-of-values}>,
+	},
+}
+```
+
+For example, the policy above restricts the choice of clusters and modules for a read capability by narrowing the choice of deployment clusters to the workload cluster, and restricting the module type to service.
+
+```
+config[{"read": decision}] {
+    input.request.usage.read == true
+    policy := {"ID": "read-ID", "description":"Deploy read as a service in the workload cluster"}
+    clusters := { "name" : [ input.workload.cluster.name ] }
+    modules := { "type": ["service"]}
+    decision := {"policy": policy, "restrictions": {"clusters": clusters, "modules": modules}}
+}
+```
+
+### Policy Set ID
+
+Fybrik supports evaluating different sets of policies for different FybrikApplications. It is possible to define a policy for a specific `policySetID` which will be trigered only if it matches the `policySetID` defined in FybrikApplication. 
+If a policy does not specify a policy set id, it will be considered as relevant for all FybrikApplications.
+In a similar way, all policies are relevant for a FybrikApplication that does not specify a policy set id, to support a use-case of a single policy set for all.
+
+#### Out of the box policies
+
+Out of the box policies come with the fybrik deployment. They define the deployment of basic capabilities, such as read and write. 
+```
+package adminconfig
+
+config[{"read": decision}] {
+    read_request := input.request.usage.read
+    policy := {"ID": "read-default", "description":"Read capability is requested for read workloads"}
+    decision := {"policy": policy, "deploy": read_request}
+}
+
+config[{"write": decision}] {
+    write_request := input.request.usage.write 
+    policy := {"ID": "write-default", "description":"Write capability is requested for workloads that write data"}
+    decision := {"policy": policy, "deploy": write_request}
+}
+```
+
+#### Extended policies
+
+The extended policies define advanced deployment requirements, such as where read or transform modules should run, what should be the scope of module deployments, and more. 
+
+The policies below are provided as a sample and can be updated for the production deployment.
+
+```
+package adminconfig
+
+# configure where transformations take place
+config[{"transform": decision}] {
+    policy := {"ID": "transform-geo", "description":"Governance based transformations must take place in the geography where the data is stored"}
+    clusters := { "metadata.region" : [ input.request.dataset.geography ] }
+    decision := {"policy": policy, "restrictions": {"clusters": clusters}}
+}
+
+# configure the scope of the read capability
+config[{"read": decision}] {
+    input.request.usage.read == true
+    policy := {"ID": "read-scope", "description":"Deploy read at the workload scope"}
+    decision := {"policy": policy, "restrictions": {"modules": {"capabilities.scope" : ["workload"]}}}
+}
+
+# configure where the read capability will be deployed
+config[{"read": decision}] {
+    input.request.usage.read == true
+    policy := {"ID": "read-location", "description":"Deploy read in the workload cluster"}
+    clusters := { "name" : [ input.workload.cluster.name ] }
+    decision := {"policy": policy, "restrictions": {"clusters": clusters}}
+}
+
+# allow implicit copies by default
+config[{"copy": decision}] {
+    input.request.usage.read == true
+    policy := {"ID": "copy-default", "description":"Implicit copies are allowed in read scenarios"}
+    decision := {"policy": policy}
+}
+
+# configure when implicit copies should be made
+config[{"copy": decision}] {
+    input.request.usage.read == true
+    input.request.dataset.geography != input.workload.cluster.metadata.region
+    count(input.actions) > 0
+    clusters := { "metadata.region" : [ input.request.dataset.geography ] }
+    policy := {"ID": "copy-remote", "description":"Implicit copies should be used if the data is in a different region than the compute, and transformations are required"}
+    decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters}}
+}
+
+```

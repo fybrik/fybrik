@@ -54,17 +54,6 @@ type EvaluatorInput struct {
 	GovernanceActions []model.Action `json:"actions"`
 }
 ```
-On top of the dynamic input based on a specific FybrikApplication, an `Infrastructure` object is used by the config policy evaluator to get deployment infrastructure information: available clusters, available storage, bandwidth metrics, etc. Evaluator uses `InfrastructureManager` to obtain the `Infrastructure` data. In the initial implementation the infrastructure metadata will be stored in a config file, and manually updated. In the future updates may be done by automated processes outside of fybrik.
-
-
-In the current implementation, `Infrastructure` is defined as:
-```
-type Infrastructure struct {
-	// Clusters available for deployment
-	Clusters []multicluster.Cluster `json:"clusters"`
-}
-```
-Future versions will include additional attributes (storage, bandwidth, ...). The attributes will be defined in the taxonomy. 
 
 
 ### Output (`adminconfig.EvaluatorOutput`)
@@ -149,9 +138,7 @@ Configuration policies are written in Rego language and are evaluated using OPA 
 Interaction between the evaluator and OPA is done using internal OPA golang packages (see https://pkg.go.dev/github.com/open-policy-agent/opa/rego#Rego.Eval)
 OPA supports different ways of evaluating policies, such as communicating with a deployed server using REST APIs, or a GO library which can be integrated into the solution. We have chosen to take the second approach for two reasons: the evaluation has less overhead than the REST API because all the communication happens in the same operating-system process, and second, we do not see this as being a pluggable component in the fybrik architecture.
 
-Information that passes from config policies' evaluator to OPA has three main ingredeients:
-
-- The `data` json object with infrastructure details, such as available clusters, available object stores, etc. Infrastructure is known at the deployment time and is not changed frequently. The `Infrastructure` object is obtained using `InfrastructureManager` that has interfaces and clients that can access various kubernetes resources, such as configmaps and custom resources. 
+Information that passes from config policies' evaluator to OPA has two main ingredeients:
 
 - `Rego Modules` with policies created by IT administrator. Modules exist at the deployment time and are unlikely to be changed frequently. 
 
@@ -159,7 +146,7 @@ Information that passes from config policies' evaluator to OPA has three main in
 
 Interaction with OPA is done in two steps. First, a `PreparedEvalQuery` is created using the `data` json and compiled `modules`. This should be done upon changes in policies and/or infrastructure details. Then, the query is evaluated on `input` during each time the plotter object needs to be generated.
 
-The mechanism of tracking the changes in infrastructure and policies is TBD. In the first implementation, infrastructure and policies are loaded at the deployment start and are assumed not to be changed. The future version will track the changes and recompile the query upon the change.
+The mechanism of tracking the changes in policies is TBD. In the first implementation, policies are loaded at the deployment start and are assumed not to be changed. The future version will track the changes and recompile the query upon the change.
 
 After the query is evaluated, it is parsed into a list of decisions per capability. Then, all decisions on the same capability are merged into one. For example, a decision to deploy read at the workload scope and a decision to deploy read in the workload cluster will result in a single decision to deploy read at the workload scope in the workload cluster. A decision to deploy a capability in clusterA, merged with a decision to deploy this capability in 
 any available cluster, will result in a decision to deploy in clusterA.
@@ -183,8 +170,8 @@ Rules are written in the following syntax: `config[{capability: decision}]` wher
 	"policy": {"ID": <id>, "policySetID": <setId>, "description": <description>}, 
 	"deploy": <true, false>,
 	"restrictions": {
-		"modules": <map {key, value}>,
-		"clusters": <list of cluster names>,
+		"modules": <map {key, list-of-values}>,
+		"clusters": <map {key, list-of-values}>,
 	},
 }
 ```
@@ -224,44 +211,45 @@ The policies below are provided as a sample and should be replaced for the produ
 ```
 package adminconfig
 
+# configure where transformations take place
 config[{"transform": decision}] {
     policy := {"ID": "transform-geo", "description":"Governance based transformations must take place in the geography where the data is stored"}
-    clusters := [ data.clusters[i].name | data.clusters[i].metadata.region == input.request.dataset.geography ]
+    clusters := { "metadata.region" : [ input.request.dataset.geography ] }
     decision := {"policy": policy, "restrictions": {"clusters": clusters}}
 }
 
+# configure the scope of the read capability
 config[{"read": decision}] {
     input.request.usage.read == true
     policy := {"ID": "read-scope", "description":"Deploy read at the workload scope"}
-    decision := {"policy": policy, "restrictions": {"modules": {"capabilities.scope" : "workload"}}}
+    decision := {"policy": policy, "restrictions": {"modules": {"capabilities.scope" : ["workload"]}}}
 }
 
+# configure where the read capability will be deployed
 config[{"read": decision}] {
     input.request.usage.read == true
     policy := {"ID": "read-location", "description":"Deploy read in the workload cluster"}
-    decision := {"policy": policy, "restrictions": {"clusters": [ input.workload.cluster.name]}}
+    clusters := { "name" : [ input.workload.cluster.name ] }
+    decision := {"policy": policy, "restrictions": {"clusters": clusters}}
 }
 
-config[{"copy": decision}] {
-    input.request.usage.copy == true
-    policy := {"ID": "copy-request", "description":"Copy capability is requested by the user"}
-    decision := {"policy": policy, "deploy": true}
-}
-
-config[{"copy": decision}] {
-    input.request.usage.read == true
-    input.request.dataset.geography != input.workload.cluster.region
-    count(input.actions) > 0
-    clusters :=  [ data.clusters[i].name | data.clusters[i].metadata.region == input.request.dataset.geography ]
-    policy := {"ID": "copy-remote", "description":"Implicit copies should be used if the data is in a different region than the compute, and transformations are required"}
-    decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters}}
-}
-
+# allow implicit copies by default
 config[{"copy": decision}] {
     input.request.usage.read == true
     policy := {"ID": "copy-default", "description":"Implicit copies are allowed in read scenarios"}
     decision := {"policy": policy}
 }
+
+# configure when implicit copies should be made
+config[{"copy": decision}] {
+    input.request.usage.read == true
+    input.request.dataset.geography != input.workload.cluster.metadata.region
+    count(input.actions) > 0
+    clusters := { "metadata.region" : [ input.request.dataset.geography ] }
+    policy := {"ID": "copy-remote", "description":"Implicit copies should be used if the data is in a different region than the compute, and transformations are required"}
+    decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters}}
+}
+
 ```
 
 #### Mechanism for loading policies

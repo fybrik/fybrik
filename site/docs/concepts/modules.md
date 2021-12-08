@@ -46,12 +46,7 @@ A module may be used in one or more of these flows, as is indicated in the modul
 
 ## Control plane choice of modules
 
-A user workload description `FybrikApplicaton` includes a list of the data sets required, the technologies that will be used to read them, and information about the location and reason for the use of the data.  This information together with input from data and enterprise policies, determine which modules are chosen by the control plane. Currently the logic for choosing the modules for the data plane is as follows:
-1. If the user is requesting to read data, find all the read flow related modules
-1. If the data set protocol/format and the protocol/format requested by the user do not match, then make an implicit copy of the data, storing it such that it is readable via the protocol/format requested by the user.
-1. If the governance action(s) required on the data set are not supported by the read module, and it is supported by the implicit copy module ... then make an implicit copy. Otherwise no need for implicit copy, and read will be done from the source directly.
-
-<!-- TODO: Update to address multi-cluster logic -->
+A user workload description `FybrikApplicaton` includes a list of the data sets required, the technologies that will be used to read them, and information about the location and reason for the use of the data.  This information together with input from data and [enterprise policies](../reference/config-policies.md), determine which modules are chosen by the control plane and where they are deployed. 
 
 ## Available modules
 
