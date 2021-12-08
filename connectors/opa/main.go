@@ -20,7 +20,7 @@ import (
 
 	openapiserver "fybrik.io/fybrik/connectors/opa/go"
 	opabl "fybrik.io/fybrik/connectors/opa/lib"
-	"fybrik.io/fybrik/pkg/connectors/clients"
+	"fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	"github.com/hashicorp/go-retryablehttp"
 )
 

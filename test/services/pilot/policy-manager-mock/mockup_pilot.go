@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -95,7 +95,7 @@ func constructInputParameters() (*pb.ApplicationContext, string) {
 
 // TODO: newPolicyManager is a duplicate of newPolicyManager from main.go
 
-func newPolicyManager() (connectors.PolicyManager, error) {
+func newPolicyManager() (pmclient.PolicyManager, error) {
 	connectionTimeout := os.Getenv("CONNECTION_TIMEOUT")
 	timeOutInSeconds, err := strconv.Atoi(connectionTimeout)
 	if err != nil {
@@ -104,7 +104,7 @@ func newPolicyManager() (connectors.PolicyManager, error) {
 
 	mainPolicyManagerName := os.Getenv("MAIN_POLICY_MANAGER_NAME")
 	mainPolicyManagerURL := os.Getenv("MAIN_POLICY_MANAGER_CONNECTOR_URL")
-	policyManager, err := connectors.NewGrpcPolicyManager(
+	policyManager, err := pmclient.NewGrpcPolicyManager(
 		mainPolicyManagerName, mainPolicyManagerURL, time.Duration(timeOutInSeconds)*time.Second)
 	setupLog.Info("setting main policy manager", "Name", mainPolicyManagerName, "URL", mainPolicyManagerURL, "Timeout (sec)", timeOutInSeconds)
 	if err != nil {
@@ -123,12 +123,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	openapiReq, creds, _ := connectors.ConvertGrpcReqToOpenAPIReq(applicationContext)
+	openapiReq, creds, _ := pmclient.ConvertGrpcReqToOpenAPIReq(applicationContext)
 	openapiResp, _ := policyManager.GetPoliciesDecisions(openapiReq, creds)
 
 	datasets := applicationContext.GetDatasets()
 	op := datasets[0].GetOperation()
-	r, err := connectors.ConvertOpenAPIRespToGrpcResp(openapiResp, datasetID, op)
+	r, err := pmclient.ConvertOpenAPIRespToGrpcResp(openapiResp, datasetID, op)
 
 	if err != nil {
 		errStatus, _ := status.FromError(err)

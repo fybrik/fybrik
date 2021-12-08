@@ -10,7 +10,8 @@ import (
 	"time"
 
 	tu "fybrik.io/fybrik/connectors/opa/testutil"
-	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
+	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"github.com/hashicorp/go-retryablehttp"
 	"gotest.tools/assert"
 )
@@ -36,11 +37,11 @@ func TestMainOpaConnector(t *testing.T) {
 	srv := NewOpaReader(opaServerURL, standardClient)
 
 	connectionTimeout := time.Duration(timeOutSecs) * time.Second
-	dataCatalog, err := connectors.NewGrpcDataCatalog(catalogProviderName, catalogConnectorURL, connectionTimeout)
+	dataCatalog, err := dcclient.NewGrpcDataCatalog(catalogProviderName, catalogConnectorURL, connectionTimeout)
 	assert.NilError(t, err)
 
 	catalogReader := NewCatalogReader(&dataCatalog)
-	policyManagerReq, creds, err := connectors.ConvertGrpcReqToOpenAPIReq(applicationContext)
+	policyManagerReq, creds, err := pmclient.ConvertGrpcReqToOpenAPIReq(applicationContext)
 	assert.NilError(t, err)
 
 	policyManagerResp, err := srv.GetOPADecisions(policyManagerReq, creds, catalogReader, policyToBeEvaluated)
@@ -49,7 +50,7 @@ func TestMainOpaConnector(t *testing.T) {
 	datasets := applicationContext.GetDatasets()
 	op := datasets[0].GetOperation()
 	datasetID := datasets[0].GetDataset().GetDatasetId()
-	policiesDecisions, err := connectors.ConvertOpenAPIRespToGrpcResp(&policyManagerResp, datasetID, op)
+	policiesDecisions, err := pmclient.ConvertOpenAPIRespToGrpcResp(&policyManagerResp, datasetID, op)
 	assert.NilError(t, err)
 	fmt.Println("policiesDecisions returned")
 	fmt.Println(policiesDecisions)

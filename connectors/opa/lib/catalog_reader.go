@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"log"
 
-	clients "fybrik.io/fybrik/pkg/connectors/clients"
+	clients "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	datacatalogTaxonomyModels "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"

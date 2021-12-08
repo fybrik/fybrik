@@ -17,7 +17,8 @@ import (
 	local "fybrik.io/fybrik/pkg/multicluster/local"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
-	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
+	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
@@ -47,8 +48,8 @@ type FybrikApplicationReconciler struct {
 	Name              string
 	Log               logr.Logger
 	Scheme            *runtime.Scheme
-	PolicyManager     connectors.PolicyManager
-	DataCatalog       connectors.DataCatalog
+	PolicyManager     pmclient.PolicyManager
+	DataCatalog       dcclient.DataCatalog
 	ResourceInterface ContextInterface
 	ClusterManager    multicluster.ClusterLister
 	Provision         storage.ProvisionInterface
@@ -456,7 +457,7 @@ func (r *FybrikApplicationReconciler) GetWorkloadCluster(application *api.Fybrik
 
 // NewFybrikApplicationReconciler creates a new reconciler for FybrikApplications
 func NewFybrikApplicationReconciler(mgr ctrl.Manager, name string,
-	policyManager connectors.PolicyManager, catalog connectors.DataCatalog, cm multicluster.ClusterLister,
+	policyManager pmclient.PolicyManager, catalog dcclient.DataCatalog, cm multicluster.ClusterLister,
 	provision storage.ProvisionInterface, configEvaluator adminconfig.EvaluatorInterface) *FybrikApplicationReconciler {
 	return &FybrikApplicationReconciler{
 		Client:            mgr.GetClient(),

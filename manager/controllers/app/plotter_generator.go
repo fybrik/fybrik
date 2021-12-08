@@ -11,7 +11,7 @@ import (
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
-	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"fybrik.io/fybrik/pkg/storage"
 	"fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 	vault "fybrik.io/fybrik/pkg/vault"
@@ -34,7 +34,7 @@ type PlotterGenerator struct {
 	Log                   logr.Logger
 	Modules               map[string]*app.FybrikModule
 	Owner                 types.NamespacedName
-	PolicyManager         connectors.PolicyManager
+	PolicyManager         pmclient.PolicyManager
 	Provision             storage.ProvisionInterface
 	VaultConnection       vault.Interface
 	ProvisionedStorage    map[string]NewAssetInfo

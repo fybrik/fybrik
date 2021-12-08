@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"fybrik.io/fybrik/pkg/connectors/clients"
+	"fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 )
 

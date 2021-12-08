@@ -9,14 +9,14 @@ import (
 	"log"
 	"strings"
 
-	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"fybrik.io/fybrik/pkg/random"
 	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )
 
 // MockPolicyManager is a mock for PolicyManager interface used in tests
 type MockPolicyManager struct {
-	connectors.PolicyManager
+	pmclient.PolicyManager
 }
 
 // GetPoliciesDecisions implements the PolicyCompiler interface
