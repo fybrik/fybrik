@@ -56,8 +56,8 @@ func NewTestCatalog() *DataCatalogDummy {
 
 	var connection catalogmodels.Connection
 	var connectionStr = `{
-		"Name": "S3",
-		"S3": {
+		"name": "s3",
+		"s3": {
 			"Endpoint":  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
 			"Bucket":    "fybrik-test-bucket",
 			"ObjectKey": "test.csv"
@@ -113,8 +113,8 @@ func NewTestCatalog() *DataCatalogDummy {
 	dataformat2 := "parquet"
 	var connection2 catalogmodels.Connection
 	var connectionStr2 = `{
-		"Name": "cos",
-		"S3": {
+		"name": "s3",
+		"s3": {
 			"Endpoint":  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
 	 		"Bucket":    "fybrik-test-bucket",
 	 		"ObjectKey": "small.parq"
@@ -162,8 +162,8 @@ func NewTestCatalog() *DataCatalogDummy {
 	dataformat3 := "csv"
 	var connection3 catalogmodels.Connection
 	var connectionStr3 = `{
-		"Name": "cos",
-		"S3": {
+		"name": "s3",
+		"s3": {
 			"Endpoint":  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
 			"Bucket":    "fybrik-test-bucket",
 			"ObjectKey": "small.csv"
@@ -212,8 +212,8 @@ func NewTestCatalog() *DataCatalogDummy {
 	dataformat4 := "table"
 	var connection4 catalogmodels.Connection
 	var connectionStr4 = `{
-		"Name": "DB2",
-		"DB2": {
+		"name": "DB2",
+		"db2": {
 			"Database": "BLUDB",
 			"Table":    "NQD60833.SMALL",
 			"Url":      "dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net",
@@ -266,8 +266,8 @@ func NewTestCatalog() *DataCatalogDummy {
 	dataformat5 := "json"
 	var connection5 catalogmodels.Connection
 	var connectionStr5 = `{
-		"Name": "Kafka",
-		"Kafka": {
+		"name": "Kafka",
+		"kafka": {
 			"TopicName":             "topic",
 			"SecurityProtocol":      "SASL_SSL",
 			"SaslMechanism":         "SCRAM-SHA-512",
@@ -328,7 +328,7 @@ func NewTestCatalog() *DataCatalogDummy {
 	dataformat6 := "csv"
 	var connection6 catalogmodels.Connection
 	var connectionStr6 = `{
-		"Name": "local file"
+		"name": "local"
 		}`
 	err = json.Unmarshal([]byte(connectionStr6), &connection6)
 	if err != nil {
@@ -337,7 +337,7 @@ func NewTestCatalog() *DataCatalogDummy {
 
 	dummyCatalog.dataDetails["local"] = catalogmodels.DataCatalogResponse{
 		ResourceMetadata: catalogmodels.Resource{
-			Name:      "file.csv",
+			Name:      "local file",
 			Geography: &geo6,
 			Tags:      &tags,
 		},
