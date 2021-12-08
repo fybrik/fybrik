@@ -9,12 +9,6 @@ include $(ROOT_DIR)/hack/make-rules/tools.mk
 
 all: docker-build docker-push
 
-#.PHONY: generate
-#generate: $(TOOLBIN)/oapi-codegen $(TOOLBIN)/openapi2crd
-#	$(TOOLBIN)/oapi-codegen -generate "types,skip-prune" -package taxonomy -o pkg/taxonomy/taxonomy.gen.go ./manifests/taxonomy.yaml
-#	$(TOOLBIN)/oapi-codegen -generate "types,skip-prune" -import-mapping=taxonomy.yaml:fybrik.io/fybrik/connectors/katalog/pkg/taxonomy -package api -o pkg/api/spec.gen.go ./manifests/spec.yaml
-#	$(TOOLBIN)/openapi2crd manifests/spec.yaml -g katalog.fybrik.io/v1alpha1/Asset -o $(ROOT_DIR)/charts/fybrik-crd/templates/katalog.fybrik.io_assets.yaml
-
 .PHONY: generate
 generate: $(TOOLBIN)/controller-gen
 	$(TOOLBIN)/controller-gen --version
@@ -27,6 +21,23 @@ generate-data-catalog-json: generate
 	-i charts/fybrik-crd/templates/katalog.fybrik.io_assets.yaml \
 	-o $(TAXONOMY_FOLDER)/$(DATA_CATALOG_FILE_NAME) \
 	-t "Common definitions for Data Catalog"
+
+.PHONY: generate-server
+generate-server: $(TOOLBIN)/openapi-generator-cli
+	mkdir -p $(ROOT_DIR)/connectors/katalog/server
+	$(TOOLBIN)/openapi-generator-cli generate -g go-gin-server \
+		--additional-properties=packageName=openapiserver,serverPort=8081,sourceFolder=openapiserver \
+		--global-property=apis,supportingFiles -o $(ROOT_DIR)/connectors/katalog/server \
+		-i manifests/taxonomy.spec.yaml
+	rm -f $(ROOT_DIR)/connectors/katalog/server/go.mod $(ROOT_DIR)/connectors/katalog/server/.openapi-generator-ignore
+	rm -f $(ROOT_DIR)/connectors/katalog/server/Dockerfile $(ROOT_DIR)/connectors/katalog/server/go/README.md
+	rm -r $(ROOT_DIR)/connectors/katalog/server/api $(ROOT_DIR)/connectors/katalog/server/.openapi-generator
+
+.PHONY: clean-server
+clean-server:
+	mkdir -p $(ROOT_DIR)/connectors/katalog/server/go
+	cp  $(ROOT_DIR)/connectors/katalog/server/go/model.go $(ROOT_DIR)/connectors/katalog/server/go
+	rm -rf $(ROOT_DIR)/connectors/katalog/server/go/model.go
 
 docker-build: generate source-build
 	docker build . -t ${IMG}
