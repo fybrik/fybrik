@@ -243,12 +243,20 @@ func newDataCatalog() (connectors.DataCatalog, error) {
 	}
 	providerName := os.Getenv("CATALOG_PROVIDER_NAME")
 	connectorURL := os.Getenv("CATALOG_CONNECTOR_URL")
-	connector, err := connectors.NewGrpcDataCatalog(providerName, connectorURL, connectionTimeout)
-	setupLog.Info("setting data catalog client", "Name", providerName, "URL", connectorURL, "Timeout", connectionTimeout)
+
+	var dataCatalog connectors.DataCatalog
+	if strings.HasPrefix(connectorURL, "http") {
+		dataCatalog, err = connectors.NewOpenAPIDataCatalog(providerName, connectorURL, connectionTimeout)
+		setupLog.Info("setting data catalog client", "Name", providerName, "URL", connectorURL, "Timeout", connectionTimeout)
+	} else {
+		dataCatalog, err = connectors.NewGrpcDataCatalog(providerName, connectorURL, connectionTimeout)
+		setupLog.Info("setting data catalog client", "Name", providerName, "URL", connectorURL, "Timeout", connectionTimeout)
+	}
 	if err != nil {
 		return nil, err
 	}
-	return connector, nil
+
+	return dataCatalog, nil
 }
 
 func newPolicyManager() (connectors.PolicyManager, error) {
