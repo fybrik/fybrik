@@ -6,7 +6,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"fybrik.io/fybrik/connectors/katalog/pkg/api"
+	"fybrik.io/fybrik/connectors/katalog/pkg/v1alpha1"
 
 	"log"
 
@@ -46,12 +46,12 @@ func (s *DataCatalogService) GetDatasetInfo(ctx context.Context, req *connectors
 		return nil, err
 	}
 
-	log.Printf("In GetDatasetInfo: VaultSecretPath is " + vault.PathForReadingKubeSecret(namespace, asset.Spec.SecretRef.Name))
+	log.Printf("In GetDatasetInfo: VaultSecretPath is " + vault.PathForReadingKubeSecret(namespace, asset.Spec.VaultPluginPath))
 	return &connectors.CatalogDatasetInfo{
 		DatasetId: req.DatasetId,
 		Details: &connectors.DatasetDetails{
 			Name:       req.DatasetId,
-			DataOwner:  emptyIfNil(asset.Spec.AssetMetadata.Owner),
+			DataOwner:  emptyIfNil(&asset.Spec.AssetMetadata.Owner),
 			DataFormat: emptyIfNil(asset.Spec.AssetDetails.DataFormat),
 			Geo:        emptyIfNil(asset.Spec.AssetMetadata.Geography),
 			DataStore:  datastore,
@@ -63,7 +63,7 @@ func (s *DataCatalogService) GetDatasetInfo(ctx context.Context, req *connectors
 	}, nil
 }
 
-func buildDatasetMetadata(asset *api.Asset) *connectors.DatasetMetadata {
+func buildDatasetMetadata(asset *v1alpha1.Asset) *connectors.DatasetMetadata {
 	assetMetadata := asset.Spec.AssetMetadata
 
 	var namedMetadata map[string]string
@@ -91,7 +91,7 @@ func buildDatasetMetadata(asset *api.Asset) *connectors.DatasetMetadata {
 	}
 }
 
-func buildDataStore(asset *api.Asset) (*connectors.DataStore, error) {
+func buildDataStore(asset *v1alpha1.Asset) (*connectors.DataStore, error) {
 	connection := asset.Spec.AssetDetails.Connection
 	switch connection.Type {
 	case "s3":
@@ -138,10 +138,10 @@ func buildDataStore(asset *api.Asset) (*connectors.DataStore, error) {
 	}
 }
 
-func getAsset(ctx context.Context, client kclient.Client, namespace string, name string) (*api.Asset, error) {
+func getAsset(ctx context.Context, client kclient.Client, namespace string, name string) (*v1alpha1.Asset, error) {
 	// Read asset as unstructured
 	object := &unstructured.Unstructured{}
-	object.SetGroupVersionKind(schema.GroupVersionKind{Group: api.GroupVersion.Group, Version: api.GroupVersion.Version, Kind: "Asset"})
+	object.SetGroupVersionKind(schema.GroupVersionKind{Group: v1alpha1.GroupVersion.Group, Version: v1alpha1.GroupVersion.Version, Kind: "Asset"})
 	object.SetNamespace(namespace)
 	object.SetName(name)
 
@@ -153,7 +153,7 @@ func getAsset(ctx context.Context, client kclient.Client, namespace string, name
 	}
 
 	// Decode into an Asset object
-	asset := &api.Asset{}
+	asset := &v1alpha1.Asset{}
 	bytes, err := object.MarshalJSON()
 	if err != nil {
 		return nil, err

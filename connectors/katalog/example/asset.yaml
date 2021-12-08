@@ -3,27 +3,23 @@ kind: Asset
 metadata:
   name: data-csv
 spec:
-  secretRef: 
-    name: data-csv-creds
-  assetDetails:
-    dataFormat: csv
+  vaultPluginPath: vaultPluginPath
+  details:
+    dataFormat:
+      type: csv
     connection:
       type: s3
       s3:
         endpoint: "http://minio:9000"
         bucket: demo
         objectKey: data.csv
-  assetMetadata:
+  resource:
+    name: demoAsset
+    owner: Alice
     geography: us-south
     tags:
-    - finance
-    componentsMetadata:
-      nameOrig: 
+      tag: PII
+    columns:
+      - name: c1
         tags:
-        - PII
-      oldbalanceOrg:
-        tags:
-        - PII
-      newbalanceOrig:
-        tags:
-        - PII
+          tag: PII

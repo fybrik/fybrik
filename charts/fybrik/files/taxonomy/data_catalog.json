@@ -1,14 +1,9 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Common definitions for Data Catalog",
   "type": "object",
+  "title": "Common definitions for Data Catalog",
   "definitions": {
     "credentials": {
       "$ref": "#/definitions/vaultPluginPath"
-    },
-    "vaultPluginPath": {
-      "type": "string",
-      "description": "This has the vault plugin path where the data credentials will be stored as kubernetes secrets. This value is assumed to be known to the catalog connector."
     },
     "details": {
       "type": "object",
@@ -21,24 +16,14 @@
           "$ref": "taxonomy.json#/definitions/Dataformat"
         }
       },
-      "required": ["connection"]
+      "required": [
+        "connection"
+      ]
     },
-    "Resource": {
+    "resource": {
       "type": "object",
+      "description": "AssetMetadata defines model for AssetMetadata.",
       "properties": {
-        "name": {
-          "type": "string",
-          "description": "Name of the data set"
-        },
-        "owner": {
-          "type": "string"
-        },
-        "geography": {
-          "type": "string"
-        },
-        "tags": {
-          "$ref": "taxonomy.json#/definitions/Tags"
-        },
         "columns": {
           "type": "array",
           "items": {
@@ -51,11 +36,34 @@
                 "$ref": "taxonomy.json#/definitions/Tags"
               }
             },
-            "required": ["name"]
+            "required": [
+              "name"
+            ]
           }
+        },
+        "geography": {
+          "type": "string",
+          "description": "The geography of the asset"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the data set"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "tags": {
+          "$ref": "taxonomy.json#/definitions/Tags"
         }
       },
-      "required": ["name"]
+      "required": [
+        "name"
+      ]
+    },
+    "vaultPluginPath": {
+      "type": "string",
+      "description": "This has the vault plugin path where the data credentials will be stored as kubernetes secrets. This value is assumed to be known to the catalog connector. Implements::credentials"
     }
-  }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema#"
 }

@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "resourceMetadata": {
-      "$ref": "data_catalog.json#/definitions/Resource"
+      "$ref": "data_catalog.json#/definitions/resource"
     },
     "details": {
       "$ref": "data_catalog.json#/definitions/details"

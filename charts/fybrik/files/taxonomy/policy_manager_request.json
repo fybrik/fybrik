@@ -10,7 +10,7 @@
       "$ref": "#/definitions/PolicyManagerRequestAction"
     },
     "resource": {
-      "$ref": "data_catalog.json#/definitions/Resource"
+      "$ref": "data_catalog.json#/definitions/resource"
     }
   },
   "additionalProperties": false,

@@ -16,7 +16,7 @@ spec:
     singular: asset
   scope: Namespaced
   versions:
-  - name: api
+  - name: v1alpha1
     schema:
       openAPIV3Schema:
         properties:
@@ -41,12 +41,13 @@ spec:
                   connection:
                     description: Connection information, runtime schema provided in
                       taxonomy.json#/definitions/Connection
-                    format: byte
-                    type: string
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
                   dataFormat:
                     description: DataFormat information, runtime schema provided in
                       taxonomy.json#/definitions/Dataformat
                     type: object
+                    x-kubernetes-preserve-unknown-fields: true
                 required:
                 - connection
                 type: object
@@ -61,8 +62,8 @@ spec:
                         tags:
                           description: Tags associated with the column, runtime schema
                             provided in taxonomy.json#/definitions/Tags
-                          format: byte
-                          type: string
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
                       required:
                       - name
                       type: object
@@ -78,8 +79,8 @@ spec:
                   tags:
                     description: Tags associated with the asset, runtime schema provided
                       in taxonomy.json#/definitions/Tags
-                    format: byte
-                    type: string
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
                 required:
                 - name
                 type: object

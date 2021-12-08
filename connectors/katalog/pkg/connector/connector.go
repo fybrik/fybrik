@@ -5,7 +5,7 @@ package connector
 import (
 	"net"
 
-	"fybrik.io/fybrik/connectors/katalog/pkg/api"
+	"fybrik.io/fybrik/connectors/katalog/pkg/v1alpha1"
 
 	connectors "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"github.com/pkg/errors"
@@ -17,7 +17,7 @@ import (
 
 func Start(address string) error {
 	scheme := runtime.NewScheme()
-	_ = api.AddToScheme(scheme)
+	_ = v1alpha1.AddToScheme(scheme)
 
 	client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: scheme})
 	if err != nil {
