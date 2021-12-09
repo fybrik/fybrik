@@ -36,7 +36,7 @@ type ProvisionedBucket struct {
 	// Bucket name
 	Name string
 	// Endpoint
-	Endpoint []string
+	Endpoint string
 	// Secret containing credentials
 	SecretRef types.NamespacedName
 }
@@ -101,7 +101,7 @@ func equal(required *ProvisionedBucket, existing *unstructured.Unstructured) boo
 	if required.Name != getValue(obj, "spec", "local", "bucket") {
 		return false
 	}
-	if required.Endpoint[0] != getValue(obj, "spec", "local", "endpoint") {
+	if required.Endpoint != getValue(obj, "spec", "local", "endpoint") {
 		return false
 	}
 	if required.SecretRef.Name != getValue(obj, "spec", "local", "secret-name") {
@@ -130,7 +130,7 @@ func (r *ProvisionImpl) CreateDataset(ref *types.NamespacedName, bucket *Provisi
 		"type":             "COS",
 		"secret-name":      bucket.SecretRef.Name,
 		"secret-namespace": bucket.SecretRef.Namespace,
-		"endpoint":         bucket.Endpoint[0],
+		"endpoint":         bucket.Endpoint,
 		"bucket":           bucket.Name,
 		"provision":        "true"}
 

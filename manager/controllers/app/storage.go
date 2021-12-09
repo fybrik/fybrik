@@ -17,15 +17,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-func includesGeography(array []string, element string) bool {
-	for _, geo := range array {
-		if geo == element {
-			return true
-		}
-	}
-	return false
-}
-
 // AllocateBucket allocates a bucket in the relevant geo
 // The buckets are created as temporary, i.e. to be removed after the owner Dataset is deleted
 // After a successful copy and registering a dataset, the bucket will become persistent
@@ -40,22 +31,17 @@ func AllocateBucket(c client.Client, log logr.Logger, owner types.NamespacedName
 
 	for _, account := range accountList.Items {
 		utils.PrintStructure(account, log, "Account ")
-		regions := make([]string, 0, len(account.Spec.EndpointsMap))
-		endpoints := make([]string, 0, len(account.Spec.EndpointsMap))
-
-		for key, value := range account.Spec.EndpointsMap {
-			endpoints = append(endpoints, key)
-			regions = append(regions, value)
+		for key, value := range account.Spec.Endpoints {
+			if geo != key {
+				continue
+			}
+			genName := generateDatasetName(owner, id)
+			return &storage.ProvisionedBucket{
+				Name:      genName,
+				Endpoint:  value,
+				SecretRef: types.NamespacedName{Name: account.Spec.SecretRef, Namespace: utils.GetSystemNamespace()},
+			}, nil
 		}
-		if !includesGeography(regions, geo) {
-			continue
-		}
-		genName := generateDatasetName(owner, id)
-		return &storage.ProvisionedBucket{
-			Name:      genName,
-			Endpoint:  endpoints,
-			SecretRef: types.NamespacedName{Name: account.Spec.SecretRef, Namespace: utils.GetSystemNamespace()},
-		}, nil
 	}
 	return nil, fmt.Errorf("could not allocate a bucket in %s", geo)
 }

@@ -18,7 +18,7 @@ type FybrikStorageAccountSpec struct {
 	SecretRef string `json:"secretRef"`
 	// +required
 	// Endpoints based on regions
-	EndpointsMap map[string]string `json:"endpointsMap"`
+	Endpoints map[string]string `json:"endpoints"`
 }
 
 // FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount

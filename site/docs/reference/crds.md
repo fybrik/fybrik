@@ -2217,7 +2217,7 @@ FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>endpointsMap</b></td>
+        <td><b>endpoints</b></td>
         <td>map[string]string</td>
         <td>
           Endpoints based on regions<br/>

@@ -6,5 +6,5 @@ metadata:
 spec:
   id: TheShireCloudStrorage
   secretRef: credentials-theshire
-  endpointsMap:
-    http://s3.eu.cloud-object-storage.appdomain.cloud: theshire
+  endpoints:
+    theshire: http://s3.eu.cloud-object-storage.appdomain.cloud
