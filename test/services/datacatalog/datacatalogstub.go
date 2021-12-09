@@ -54,10 +54,9 @@ func main() {
 		var dataCatalogReq datacatalogTaxonomyModels.DataCatalogRequest
 		err := json.Unmarshal(input, &dataCatalogReq)
 		if err != nil {
-			log.Println(err.Error())
 			return
 		}
-		dataCatalog := &mockup.DataCatalogDummy{}
+		dataCatalog := mockup.NewTestCatalog()
 		dataCatalogResp, err := dataCatalog.GetAssetInfo(&dataCatalogReq, creds)
 		if err != nil {
 			c.String(http.StatusInternalServerError, "Error in getAssetInfo!")
