@@ -59,6 +59,43 @@ func NewTestCatalog() *DataCatalogDummy {
 	parquet_format := "parquet"
 	db2_format := "table"
 	json_format := "json"
+
+	s3_connection := catalogmodels.Connection{}
+	s3_map := make(map[string]interface{})
+	s3_map["name"] = "s3"
+	s3_map["endpoint"] = "s3.cloud-object-storage"
+	s3_map["bucket"] = "test-bucket"
+	s3_map["objectKey"] = "test"
+	bytes, _ := json.MarshalIndent(s3_map, "", "\t")
+	_ = json.Unmarshal(bytes, &s3_connection)
+
+	db2_connection := catalogmodels.Connection{}
+	db2_map := make(map[string]interface{})
+	db2_map["name"] = "jdbc-db2"
+	db2_map["database"] = "test-db"
+	db2_map["table"] = "test-table"
+	db2_map["url"] = "dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net"
+	db2_map["port"] = "5000"
+	db2_map["ssl"] = "false"
+	bytes, _ = json.MarshalIndent(db2_map, "", "\t")
+	_ = json.Unmarshal(bytes, &db2_connection)
+
+	kafka_connection := catalogmodels.Connection{}
+	kafka_map := make(map[string]interface{})
+	kafka_map["name"] = "kafka"
+	kafka_map["topicName"] = "topic"
+	kafka_map["securityProtocol"] = "SASL_SSL"
+	kafka_map["saslMechanism"] = "SCRAM-SHA-512"
+	kafka_map["sslTruststore"] = "xyz123"
+	kafka_map["sslTruststorePassword"] = "passwd"
+	kafka_map["schemaRegistry"] = "kafka-registry"
+	kafka_map["bootstrapServers"] = "http://kafka-servers"
+	kafka_map["keyDeserializer"] = "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
+	kafka_map["valueDeserializer"] = "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
+
+	bytes, _ = json.MarshalIndent(kafka_map, "", "\t")
+	_ = json.Unmarshal(bytes, &kafka_connection)
+
 	dummyCatalog.dataDetails["s3-external"] = catalogmodels.DataCatalogResponse{
 		ResourceMetadata: catalogmodels.Resource{
 			Name:      "xxx",
@@ -67,14 +104,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 		Credentials: "dummy",
 		Details: catalogmodels.Details{
-			Connection: catalogmodels.Connection{
-				Name: "s3",
-				AdditionalProperties: map[string]interface{}{
-					"endpoint":  "s3.cloud-object-storage",
-					"bucket":    "test-bucket",
-					"objectKey": "test.csv",
-				},
-			},
+			Connection: s3_connection,
 			DataFormat: &csv_format,
 		},
 	}
@@ -87,14 +117,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 		Credentials: "dummy",
 		Details: catalogmodels.Details{
-			Connection: catalogmodels.Connection{
-				Name: "s3",
-				AdditionalProperties: map[string]interface{}{
-					"endpoint":  "s3.cloud-object-storage",
-					"bucket":    "test-bucket",
-					"objectKey": "test.parq",
-				},
-			},
+			Connection: s3_connection,
 			DataFormat: &parquet_format,
 		},
 	}
@@ -107,14 +130,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 		Credentials: "dummy",
 		Details: catalogmodels.Details{
-			Connection: catalogmodels.Connection{
-				Name: "s3",
-				AdditionalProperties: map[string]interface{}{
-					"endpoint":  "s3.cloud-object-storage",
-					"bucket":    "test-bucket",
-					"objectKey": "test.csv",
-				},
-			},
+			Connection: s3_connection,
 			DataFormat: &csv_format,
 		},
 	}
@@ -127,16 +143,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 		Credentials: "dummy",
 		Details: catalogmodels.Details{
-			Connection: catalogmodels.Connection{
-				Name: "jdbc-db2",
-				AdditionalProperties: map[string]interface{}{
-					"database": "BLUDB",
-					"table":    "NQD60833.SMALL",
-					"url":      "dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net",
-					"port":     "50000",
-					"ssl":      "false",
-				},
-			},
+			Connection: db2_connection,
 			DataFormat: &db2_format,
 		},
 	}
@@ -149,20 +156,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 		Credentials: "dummy",
 		Details: catalogmodels.Details{
-			Connection: catalogmodels.Connection{
-				Name: "kafka",
-				AdditionalProperties: map[string]interface{}{
-					"topicName":             "topic",
-					"securityProtocol":      "SASL_SSL",
-					"saslMechanism":         "SCRAM-SHA-512",
-					"sslTruststore":         "xyz123",
-					"sslTruststorePassword": "passwd",
-					"schemaRegistry":        "kafka-registry",
-					"bootstrapServers":      "http://kafka-servers",
-					"keyDeserializer":       "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer",
-					"valueDeserializer":     "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer",
-				},
-			},
+			Connection: kafka_connection,
 			DataFormat: &json_format,
 		},
 	}

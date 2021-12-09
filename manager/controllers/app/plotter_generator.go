@@ -5,15 +5,16 @@ package app
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/url"
 	"text/template"
 
 	"emperror.dev/errors"
+	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"fybrik.io/fybrik/pkg/storage"
-	"fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 	vault "fybrik.io/fybrik/pkg/vault"
 	"github.com/Masterminds/sprig/v3"
 	"github.com/go-logr/logr"
@@ -41,17 +42,6 @@ type PlotterGenerator struct {
 	StorageAccountRegions []string
 }
 
-type S3Properties struct {
-	Endpoint  string `json:"endpoint"`
-	Bucket    string `json:"bucket"`
-	ObjectKey string `json:"object_key"`
-	Region    string `json:"region"`
-}
-
-type S3DataStore struct {
-	S3 S3Properties `json:"S3"`
-}
-
 // GetCopyDestination creates a Dataset for bucket allocation by implicit copies or ingest.
 func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterface *app.InterfaceDetails, geo string) (*app.DataStore, error) {
 	// provisioned storage for COPY
@@ -75,22 +65,19 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 		return nil, err
 	}
 	endpoint := url.Host
-
-	newDataStore := S3DataStore{
-		S3: S3Properties{
-			Bucket:    bucket.Name,
-			Endpoint:  endpoint,
-			ObjectKey: originalAssetName + utils.Hash(p.Owner.Name+p.Owner.Namespace, 10),
-		},
-	}
-	properties, err := utils.StructToMap(newDataStore)
+	properties := make(map[string]interface{})
+	properties["name"] = "s3"
+	properties["bucket"] = bucket.Name
+	properties["endpoint"] = endpoint
+	properties["objectKey"] = originalAssetName + utils.Hash(p.Owner.Name+p.Owner.Namespace, 10)
+	bytes, err := json.MarshalIndent(properties, "", "\t")
 	if err != nil {
 		return nil, err
 	}
-	connection := app.ConnectionDetails{
-		Connection: base.Connection{Name: "S3",
-			AdditionalProperties: properties,
-		}}
+	var connection api.ConnectionDetails
+	if err = json.Unmarshal(bytes, &connection); err != nil {
+		return nil, err
+	}
 	assetInfo := NewAssetInfo{
 		Storage:    bucket,
 		Connection: connection,

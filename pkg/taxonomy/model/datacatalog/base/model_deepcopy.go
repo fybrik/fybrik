@@ -3,7 +3,9 @@
 
 package base
 
-import "github.com/mohae/deepcopy"
+import (
+	"github.com/mohae/deepcopy"
+)
 
 func (in *Connection) DeepCopyInto(out *Connection) {
 	copy, _ := deepcopy.Copy(in).(*Connection)

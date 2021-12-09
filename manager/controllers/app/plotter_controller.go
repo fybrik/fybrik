@@ -5,6 +5,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"math"
 	"reflect"
 	"strings"
@@ -13,7 +14,6 @@ import (
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
-	"fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	"emperror.dev/errors"
@@ -185,12 +185,17 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			if err != nil {
 				return nil
 			}
+			apiInfo["name"] = "API"
+			bytes, err := json.MarshalIndent(apiInfo, "", "\t")
+			if err != nil {
+				return nil
+			}
 			dataStore = &app.DataStore{
-				Connection: app.ConnectionDetails{
-					Connection: base.Connection{
-						AdditionalProperties: apiInfo,
-					}},
-				Format: plotterModule.ModuleArguments.Source.API.Format,
+				Connection: app.ConnectionDetails{},
+				Format:     plotterModule.ModuleArguments.Source.API.Format,
+			}
+			if err = json.Unmarshal(bytes, &dataStore.Connection); err != nil {
+				return nil
 			}
 		}
 		blueprintModule.Args.Read = []app.ReadModuleArgs{
@@ -228,12 +233,17 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			if err != nil {
 				return nil
 			}
+			apiInfo["name"] = "API"
+			bytes, err := json.MarshalIndent(apiInfo, "", "\t")
+			if err != nil {
+				return nil
+			}
 			dataStore = &app.DataStore{
-				Connection: app.ConnectionDetails{
-					Connection: base.Connection{
-						AdditionalProperties: apiInfo,
-					}},
-				Format: plotterModule.ModuleArguments.Source.API.Format,
+				Connection: app.ConnectionDetails{},
+				Format:     plotterModule.ModuleArguments.Source.API.Format,
+			}
+			if err = json.Unmarshal(bytes, &dataStore.Connection); err != nil {
+				return nil
 			}
 		}
 		// Get only the writeFlow related creds
