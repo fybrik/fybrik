@@ -54,58 +54,58 @@ func NewTestCatalog() *DataCatalogDummy {
 	tags := make(map[string]interface{})
 	tags["tags"] = []string{"PI"}
 	geo := "theshire"
-	geo_external := "neverland"
-	csv_format := "csv"
-	parquet_format := "parquet"
-	db2_format := "table"
-	json_format := "json"
+	geoExternal := "neverland"
+	csvFormat := "csv"
+	parquetFormat := "parquet"
+	db2Format := "table"
+	jsonFormat := "json"
 
-	s3_connection := catalogmodels.Connection{}
-	s3_map := make(map[string]interface{})
-	s3_map["name"] = "s3"
-	s3_map["endpoint"] = "s3.cloud-object-storage"
-	s3_map["bucket"] = "test-bucket"
-	s3_map["objectKey"] = "test"
-	bytes, _ := json.MarshalIndent(s3_map, "", "\t")
-	_ = json.Unmarshal(bytes, &s3_connection)
+	s3Connection := catalogmodels.Connection{}
+	s3Map := make(map[string]interface{})
+	s3Map["name"] = "s3"
+	s3Map["endpoint"] = "s3.cloud-object-storage"
+	s3Map["bucket"] = "test-bucket"
+	s3Map["objectKey"] = "test"
+	bytes, _ := json.MarshalIndent(s3Map, "", "\t")
+	_ = json.Unmarshal(bytes, &s3Connection)
 
-	db2_connection := catalogmodels.Connection{}
-	db2_map := make(map[string]interface{})
-	db2_map["name"] = "jdbc-db2"
-	db2_map["database"] = "test-db"
-	db2_map["table"] = "test-table"
-	db2_map["url"] = "dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net"
-	db2_map["port"] = "5000"
-	db2_map["ssl"] = "false"
-	bytes, _ = json.MarshalIndent(db2_map, "", "\t")
-	_ = json.Unmarshal(bytes, &db2_connection)
+	db2Connection := catalogmodels.Connection{}
+	db2Map := make(map[string]interface{})
+	db2Map["name"] = "jdbc-db2"
+	db2Map["database"] = "test-db"
+	db2Map["table"] = "test-table"
+	db2Map["url"] = "dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net"
+	db2Map["port"] = "5000"
+	db2Map["ssl"] = "false"
+	bytes, _ = json.MarshalIndent(db2Map, "", "\t")
+	_ = json.Unmarshal(bytes, &db2Connection)
 
-	kafka_connection := catalogmodels.Connection{}
-	kafka_map := make(map[string]interface{})
-	kafka_map["name"] = "kafka"
-	kafka_map["topicName"] = "topic"
-	kafka_map["securityProtocol"] = "SASL_SSL"
-	kafka_map["saslMechanism"] = "SCRAM-SHA-512"
-	kafka_map["sslTruststore"] = "xyz123"
-	kafka_map["sslTruststorePassword"] = "passwd"
-	kafka_map["schemaRegistry"] = "kafka-registry"
-	kafka_map["bootstrapServers"] = "http://kafka-servers"
-	kafka_map["keyDeserializer"] = "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
-	kafka_map["valueDeserializer"] = "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
+	kafkaConnection := catalogmodels.Connection{}
+	kafkaMap := make(map[string]interface{})
+	kafkaMap["name"] = "kafka"
+	kafkaMap["topicName"] = "topic"
+	kafkaMap["securityProtocol"] = "SASL_SSL"
+	kafkaMap["saslMechanism"] = "SCRAM-SHA-512"
+	kafkaMap["sslTruststore"] = "xyz123"
+	kafkaMap["sslTruststorePassword"] = "passwd"
+	kafkaMap["schemaRegistry"] = "kafka-registry"
+	kafkaMap["bootstrapServers"] = "http://kafka-servers"
+	kafkaMap["keyDeserializer"] = "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
+	kafkaMap["valueDeserializer"] = "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
 
-	bytes, _ = json.MarshalIndent(kafka_map, "", "\t")
-	_ = json.Unmarshal(bytes, &kafka_connection)
+	bytes, _ = json.MarshalIndent(kafkaMap, "", "\t")
+	_ = json.Unmarshal(bytes, &kafkaConnection)
 
 	dummyCatalog.dataDetails["s3-external"] = catalogmodels.DataCatalogResponse{
 		ResourceMetadata: catalogmodels.Resource{
 			Name:      "xxx",
-			Geography: &geo_external,
+			Geography: &geoExternal,
 			Tags:      &tags,
 		},
 		Credentials: "dummy",
 		Details: catalogmodels.Details{
-			Connection: s3_connection,
-			DataFormat: &csv_format,
+			Connection: s3Connection,
+			DataFormat: &csvFormat,
 		},
 	}
 
@@ -117,8 +117,8 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 		Credentials: "dummy",
 		Details: catalogmodels.Details{
-			Connection: s3_connection,
-			DataFormat: &parquet_format,
+			Connection: s3Connection,
+			DataFormat: &parquetFormat,
 		},
 	}
 
@@ -130,8 +130,8 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 		Credentials: "dummy",
 		Details: catalogmodels.Details{
-			Connection: s3_connection,
-			DataFormat: &csv_format,
+			Connection: s3Connection,
+			DataFormat: &csvFormat,
 		},
 	}
 
@@ -143,8 +143,8 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 		Credentials: "dummy",
 		Details: catalogmodels.Details{
-			Connection: db2_connection,
-			DataFormat: &db2_format,
+			Connection: db2Connection,
+			DataFormat: &db2Format,
 		},
 	}
 
@@ -156,8 +156,8 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 		Credentials: "dummy",
 		Details: catalogmodels.Details{
-			Connection: kafka_connection,
-			DataFormat: &json_format,
+			Connection: kafkaConnection,
+			DataFormat: &jsonFormat,
 		},
 	}
 	return &dummyCatalog
