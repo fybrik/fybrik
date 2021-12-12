@@ -10,6 +10,7 @@ import (
 	"fybrik.io/fybrik/manager/controllers/app/modules"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
+	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/multicluster"
 	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 	v1 "k8s.io/api/core/v1"
@@ -43,7 +44,7 @@ func (p *PlotterGenerator) SelectModules(item *DataInfo, appContext *app.FybrikA
 	// read flow, copy is not required (either allowed or forbidden)
 	if item.Configuration.ConfigDecisions[app.Read].Deploy == v1.ConditionTrue &&
 		item.Configuration.ConfigDecisions[app.Copy].Deploy != v1.ConditionTrue {
-		p.Log.Info("Looking for a data path with no copy")
+		p.Log.Trace().Msg("Looking for a data path with no copy")
 		selectors, err = p.buildReadFlow(item, appContext)
 		if err == nil {
 			// read flow is ready
@@ -52,13 +53,13 @@ func (p *PlotterGenerator) SelectModules(item *DataInfo, appContext *app.FybrikA
 		// read flow, no read module was selected
 		// if copy is forbidden - report an error
 		if item.Configuration.ConfigDecisions[app.Copy].Deploy == v1.ConditionFalse {
-			p.Log.Info("Could not build a read flow for " + item.Context.DataSetID + " : " + err.Error())
+			p.Log.Error().Err(err).Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not build a read flow for the dataset")
 			return selectors, err
 		}
 	}
 	// read + copy
 	if item.Configuration.ConfigDecisions[app.Read].Deploy == v1.ConditionTrue {
-		p.Log.Info("Copy is required in addition to the read module")
+		p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Copy is required in addition to the read module")
 		return p.buildReadFlowWithCopy(item, appContext)
 	}
 
@@ -112,7 +113,7 @@ func (p *PlotterGenerator) buildReadFlowWithCopy(item *DataInfo, appContext *app
 		Message:      "",
 	}
 	if !readSelector.SelectModule(p.Modules, app.Read) {
-		p.Log.Info("Could not find a read module for " + item.Context.DataSetID + "; no module supports the requested interface")
+		p.Log.Error().Err(errors.New("No read module found")).Str(logging.DATASETID, item.Context.DataSetID).Msg("No module supports the requested interface")
 		return selectors, errors.New(readSelector.GetError())
 	}
 	// find a copy module that matches the selected read module (common interface and action support)
@@ -171,7 +172,7 @@ func (p *PlotterGenerator) buildReadFlowWithCopy(item *DataInfo, appContext *app
 			return selectors, nil
 		}
 	}
-	p.Log.Info("Could not find a copy module for " + item.Context.DataSetID)
+	p.Log.Error().Str(logging.DATASETID, item.Context.DataSetID).Msg("No copy module found for dataset.")
 	return selectors, errors.New("Copy is required but the data path could not be constructed")
 }
 
@@ -206,7 +207,7 @@ func (p *PlotterGenerator) buildCopyFlow(item *DataInfo, appContext *app.FybrikA
 			return selectors, nil
 		}
 	}
-	p.Log.Info("Could not find a copy module for " + item.Context.DataSetID)
+	p.Log.Error().Str(logging.DATASETID, item.Context.DataSetID).Msg("No copy module found for dataset.")
 	return nil, errors.New(string(app.Copy) + " : " + app.ModuleNotFound)
 }
 

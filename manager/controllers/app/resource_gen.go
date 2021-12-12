@@ -20,7 +20,7 @@ import (
 // ContextInterface is an interface for communication with a generated resource (e.g. Blueprint)
 type ContextInterface interface {
 	ResourceExists(ref *app.ResourceReference) bool
-	CreateOrUpdateResource(owner *app.ResourceReference, ref *app.ResourceReference, plotterSpec *app.PlotterSpec, labels map[string]string) error
+	CreateOrUpdateResource(owner *app.ResourceReference, ref *app.ResourceReference, plotterSpec *app.PlotterSpec, labels map[string]string, uuid string) error
 	DeleteResource(ref *app.ResourceReference) error
 	GetResourceStatus(ref *app.ResourceReference) (app.ObservedState, error)
 	CreateResourceReference(owner *app.ResourceReference) *app.ResourceReference
@@ -73,7 +73,7 @@ func (c *PlotterInterface) GetResourceSignature(ref *app.ResourceReference) *app
 }
 
 // CreateOrUpdateResource creates a new Plotter resource or updates an existing one
-func (c *PlotterInterface) CreateOrUpdateResource(owner *app.ResourceReference, ref *app.ResourceReference, plotterSpec *app.PlotterSpec, labels map[string]string) error {
+func (c *PlotterInterface) CreateOrUpdateResource(owner *app.ResourceReference, ref *app.ResourceReference, plotterSpec *app.PlotterSpec, labels map[string]string, uuid string) error {
 	plotter := c.GetResourceSignature(ref)
 	if err := c.Client.Get(context.Background(), types.NamespacedName{Namespace: ref.Namespace, Name: ref.Name}, plotter); err == nil {
 		if equality.Semantic.DeepEqual(&plotter.Spec, plotterSpec) {
@@ -90,6 +90,10 @@ func (c *PlotterInterface) CreateOrUpdateResource(owner *app.ResourceReference, 
 		debugLabels := ownerLabels(types.NamespacedName{Namespace: owner.Namespace, Name: owner.Name})
 		for key, val := range debugLabels {
 			plotter.Labels[key] = val
+		}
+		if plotter.Annotations == nil {
+			plotter.Annotations = make(map[string]string)
+			plotter.Annotations[utils.FYBRIKAPPUUID] = uuid // For logging
 		}
 		return nil
 	}); err != nil {

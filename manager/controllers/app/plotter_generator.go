@@ -13,11 +13,12 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
+	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
 	vault "fybrik.io/fybrik/pkg/vault"
 	"github.com/Masterminds/sprig/v3"
-	"github.com/go-logr/logr"
+	"github.com/rs/zerolog"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -31,7 +32,7 @@ type NewAssetInfo struct {
 // PlotterGenerator constructs a plotter based on the requirements (governance actions, data location) and the existing set of FybrikModules
 type PlotterGenerator struct {
 	Client                client.Client
-	Log                   logr.Logger
+	Log                   zerolog.Logger
 	Modules               map[string]*app.FybrikModule
 	Owner                 types.NamespacedName
 	PolicyManager         connectors.PolicyManager
@@ -48,12 +49,12 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 	var bucket *storage.ProvisionedBucket
 	var err error
 	if bucket, err = AllocateBucket(p.Client, p.Log, p.Owner, originalAssetName, geo); err != nil {
-		p.Log.Info("Bucket allocation failed: " + err.Error())
+		p.Log.Error().Err(err).Msg("Bucket allocation failed")
 		return nil, err
 	}
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
 	if err = p.Provision.CreateDataset(bucketRef, bucket, &p.Owner); err != nil {
-		p.Log.Info("Dataset creation failed: " + err.Error())
+		p.Log.Error().Err(err).Msg("Dataset creation failed")
 		return nil, err
 	}
 
@@ -84,7 +85,7 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 			Metadata:   item.DataDetails.TagMetadata,
 		}}
 	p.ProvisionedStorage[item.Context.DataSetID] = assetInfo
-	utils.PrintStructure(&assetInfo, p.Log, "ProvisionedStorage element")
+	logging.LogStructure("ProvisionedStorage element", assetInfo, p.Log, false, true)
 
 	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
 	vaultMap := make(map[string]app.Vault)
@@ -110,7 +111,7 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 // Write path is not yet implemented
 func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.FybrikApplication, plotterSpec *app.PlotterSpec) error {
 	datasetID := item.Context.DataSetID
-	p.Log.Info("Choose modules for " + datasetID)
+	p.Log.Trace().Str(logging.DATASETID, datasetID).Msg("Choose modules for dataset")
 
 	subflows := make([]app.SubFlow, 0)
 	assets := map[string]app.AssetDetails{}
@@ -142,7 +143,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 	if err != nil {
 		return err
 	}
-	p.Log.V(0).Info("Generating a plotter")
+	p.Log.Trace().Str(logging.DATASETID, datasetID).Msg("Generating a plotter")
 	readSelector := selectors[app.Read]
 	copySelector := selectors[app.Copy]
 	// sanity
@@ -151,10 +152,10 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 	}
 	var copyCluster, readCluster string
 	if copySelector != nil {
-		p.Log.Info("Found copy module " + copySelector.GetModule().Name + " for " + datasetID)
+		p.Log.Trace().Str(logging.DATASETID, datasetID).Msg("Found copy module " + copySelector.GetModule().Name + " for dataset")
 		// copy should be applied - allocate storage
 		if sinkDataStore, err = p.GetCopyDestination(item, copySelector.Destination, copySelector.StorageAccountRegion); err != nil {
-			p.Log.Info("Allocation failed: " + err.Error())
+			p.Log.Error().Err(err).Msg("Allocation of storage for copy failed")
 			return err
 		}
 		var copyDataAssetID = datasetID + "-copy"
@@ -163,7 +164,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 			copyCluster = item.Configuration.ConfigDecisions[app.Copy].Clusters[0]
 		} else {
 			msg := "Coud not determine the cluster for copy"
-			p.Log.Info(msg)
+			p.Log.Error().Str(logging.DATASETID, datasetID).Msg(msg)
 			return errors.New(msg)
 		}
 		// The default capability scope is of type Asset
@@ -201,7 +202,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 				},
 			},
 		}
-		p.Log.Info("Add subflow")
+		p.Log.Trace().Str(logging.DATASETID, datasetID).Msg("Add subflow")
 		subFlow := app.SubFlow{
 			Name:     "",
 			FlowType: app.CopyFlow,
@@ -209,10 +210,10 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 			Steps:    [][]app.DataFlowStep{steps},
 		}
 		subflows = append(subflows, subFlow)
-		p.Log.Info("Adding copy module")
+		p.Log.Trace().Str(logging.DATASETID, datasetID).Msg("Adding copy module")
 	}
 	if readSelector != nil {
-		p.Log.Info("Adding read path")
+		p.Log.Trace().Str(logging.DATASETID, datasetID).Msg("Adding read path")
 		var readAssetID string
 		if sinkDataStore == nil {
 			readAssetID = datasetID
@@ -224,7 +225,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 			readCluster = item.Configuration.ConfigDecisions[app.Read].Clusters[0]
 		} else {
 			msg := "Coud not determine the cluster for read"
-			p.Log.Info(msg)
+			p.Log.Error().Str(logging.DATASETID, datasetID).Msg(msg)
 			return errors.New(msg)
 		}
 		// The default capability scope is of type Asset
@@ -261,7 +262,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 				},
 			},
 		}
-		p.Log.Info("Add subflow")
+		p.Log.Trace().Str(logging.DATASETID, datasetID).Msg("Add subflow")
 		subFlow := app.SubFlow{
 			Name:     "",
 			FlowType: app.ReadFlow,

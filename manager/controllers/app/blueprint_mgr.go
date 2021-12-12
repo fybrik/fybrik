@@ -6,6 +6,7 @@ package app
 import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/logging"
 	// Temporary - shouldn't have something specific to implicit copies
 )
 
@@ -53,6 +54,7 @@ func (r *PlotterReconciler) RefineInstances(instances []ModuleInstanceSpec) []Mo
 func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, plotter *app.Plotter) map[string]app.BlueprintSpec {
 	blueprintMap := make(map[string]app.BlueprintSpec)
 	instanceMap := make(map[string][]ModuleInstanceSpec)
+	uuid := plotter.GetAnnotations()[utils.FYBRIKAPPUUID]
 	for _, moduleInstance := range instances {
 		instanceMap[moduleInstance.ClusterName] = append(instanceMap[moduleInstance.ClusterName], moduleInstance)
 	}
@@ -61,7 +63,9 @@ func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, p
 		instances := r.RefineInstances(instanceList)
 		blueprintMap[key] = r.GenerateBlueprint(instances, key, plotter)
 	}
-	utils.PrintStructure(blueprintMap, r.Log, "BlueprintMap")
+
+	log := r.Log.With().Str(logging.FYBRIKAPPUUID, uuid).Logger()
+	logging.LogStructure("BlueprintMap", blueprintMap, log, false, false)
 	return blueprintMap
 }
 

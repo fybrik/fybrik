@@ -11,6 +11,7 @@ import (
 
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/pkg/environment"
+	"fybrik.io/fybrik/pkg/logging"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -19,7 +20,7 @@ import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"helm.sh/helm/v3/pkg/release"
 
-	"github.com/go-logr/logr"
+	"github.com/rs/zerolog"
 	yaml "gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -44,7 +45,7 @@ import (
 type BlueprintReconciler struct {
 	client.Client
 	Name   string
-	Log    logr.Logger
+	Log    zerolog.Logger
 	Scheme *runtime.Scheme
 	Helmer helm.Interface
 }
@@ -52,27 +53,30 @@ type BlueprintReconciler struct {
 // Reconcile receives a Blueprint CRD
 //nolint:dupl
 func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.WithValues("blueprint", req.NamespacedName)
 	var err error
 
 	blueprint := app.Blueprint{}
 	if err := r.Get(ctx, req.NamespacedName, &blueprint); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
+
+	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
+	log := r.Log.With().Str(logging.CONTROLLER, "Blueprint").Str(logging.FYBRIKAPPUUID, uuid).Str("blueprint", req.NamespacedName.String()).Logger()
+
 	if res, err := r.reconcileFinalizers(&blueprint); err != nil {
-		log.V(0).Info("Could not reconcile finalizers: " + err.Error())
+		log.Error().Err(err).Msg("Could not reconcile blueprint " + blueprint.GetName() + " finalizers")
 		return res, err
 	}
 
 	// If the object has a scheduled deletion time, update status and return
 	if !blueprint.DeletionTimestamp.IsZero() {
 		// The object is being deleted
-		log.V(0).Info("Reconcile: Deleting Blueprint " + blueprint.GetName())
+		log.Trace().Str(logging.ACTION, logging.DELETE).Msg("Deleting blueprint " + blueprint.GetName())
 		return ctrl.Result{}, nil
 	}
 
 	observedStatus := blueprint.Status.DeepCopy()
-	log.V(0).Info("Reconcile: Installing/Updating Blueprint " + blueprint.GetName())
+	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("Installing/Updating blueprint " + blueprint.GetName())
 
 	result, err := r.reconcile(ctx, log, &blueprint)
 	if err != nil {
@@ -85,7 +89,7 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 	}
 
-	log.Info("blueprint reconcile cycle completed", "result", result)
+	log.Trace().Msg("blueprint reconcile cycle completed.") // TODO - Add result to log?
 	return result, nil
 }
 
@@ -101,7 +105,7 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) (ctr
 		if hasFinalizer { // Finalizer was created when the object was created
 			// the finalizer is present - delete the allocated resources
 			if err := r.deleteExternalResources(blueprint); err != nil {
-				r.Log.V(0).Info("Error while deleting owned resources: " + err.Error())
+				r.Log.Error().Err(err).Msg("Error while deleting owned resources")
 			}
 			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 			ctrlutil.RemoveFinalizer(blueprint, finalizerName)
@@ -144,8 +148,12 @@ func getDomainFromImageName(image string) (string, error) {
 	return distributionref.Domain(named), nil
 }
 
-func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log logr.Logger, chartSpec app.ChartSpec, args map[string]interface{}, blueprint *app.Blueprint, releaseName string) (ctrl.Result, error) {
-	log.Info(fmt.Sprintf("--- Chart Ref ---\n\n%v\n\n", chartSpec.Name))
+func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolog.Logger, chartSpec app.ChartSpec, args map[string]interface{}, blueprint *app.Blueprint, releaseName string) (ctrl.Result, error) {
+	// Get the unique id for the specific fybrikapplication instance.  Used for logging.
+	uuid := blueprint.GetAnnotations()[utils.FYBRIKAPPUUID]
+	alog := log.With().Str(logging.CONTROLLER, "Blueprint").Str(logging.FYBRIKAPPUUID, uuid).Str("blueprint", blueprint.GetName()).Logger()
+
+	alog.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Chart Ref ---\n\n" + chartSpec.Name + "\n\n")
 	kubeNamespace := blueprint.Spec.ModulesNamespace
 
 	args = CopyMap(args)
@@ -153,7 +161,7 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log logr.L
 		SetMapField(args, k, v)
 	}
 	nbytes, _ := yaml.Marshal(args)
-	log.Info(fmt.Sprintf("--- Values.yaml ---\n\n%s\n\n", nbytes))
+	alog.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Values.yaml ---\n\n" + string(nbytes) + "\n\n")
 
 	var registrySuccessfulLogin string
 
@@ -189,11 +197,11 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log logr.L
 						registrySuccessfulLogin = repoToPull
 						break
 					} else {
-						log.Info("Failed to login to helm registry: " + repoToPull)
+						alog.Error().Msg("Failed to login to helm registry: " + repoToPull)
 					}
 				}
 			} else {
-				log.Info("there is a mismatch between helm chart: " + chartSpec.Name +
+				alog.Error().Msg("there is a mismatch between helm chart: " + chartSpec.Name +
 					" and the registries associated with secret: " + chartSpec.ChartPullSecret)
 			}
 		}
@@ -226,7 +234,7 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log logr.L
 			return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed install")
 		}
 	}
-	log.Info(fmt.Sprintf("--- Release Status ---\n\n%s\n\n", rel.Info.Status))
+	alog.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Release Status ---\n\n" + string(rel.Info.Status) + "\n\n")
 	return ctrl.Result{}, nil
 }
 
@@ -274,7 +282,10 @@ func (r *BlueprintReconciler) updateModuleState(blueprint *app.Blueprint, instan
 	blueprint.Status.ModulesState[instanceName] = state
 }
 
-func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, blueprint *app.Blueprint) (ctrl.Result, error) {
+func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger, blueprint *app.Blueprint) (ctrl.Result, error) {
+	uuid := blueprint.GetAnnotations()[utils.FYBRIKAPPUUID] // used for logging
+	alog := log.With().Str(logging.CONTROLLER, "Blueprint").Str(logging.FYBRIKAPPUUID, uuid).Str("blueprint", blueprint.GetName()).Logger()
+
 	modulesNamespace := blueprint.Spec.ModulesNamespace
 	// Gather all templates and process them into a list of resources to apply
 	// force-update if the blueprint spec is different
@@ -298,6 +309,8 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		}
 		module.Arguments.Labels[app.BlueprintNameLabel] = blueprint.Name
 		module.Arguments.Labels[app.BlueprintNamespaceLabel] = blueprint.Namespace
+		module.Arguments.Labels[utils.FYBRIKAPPUUID] = uuid // used for log correlation
+
 		// Get arguments by type
 		var args map[string]interface{}
 		args, err := utils.StructToMap(module.Arguments)
@@ -306,7 +319,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		}
 
 		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], instanceName)
-		log.V(0).Info("Release name: " + releaseName)
+		alog.Trace().Msg("Release name: " + releaseName)
 		numReleases++
 		// check the release status
 		rel, err := r.Helmer.Status(modulesNamespace, releaseName)
@@ -321,7 +334,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 				r.updateModuleState(blueprint, instanceName, false, "")
 			}
 		} else if rel.Info.Status == release.StatusDeployed {
-			status, errMsg := r.checkReleaseStatus(releaseName, modulesNamespace)
+			status, errMsg := r.checkReleaseStatus(releaseName, modulesNamespace, uuid)
 			if status == corev1.ConditionFalse {
 				blueprint.Status.ObservedState.Error += "ResourceAllocationFailure: " + errMsg + "\n"
 				r.updateModuleState(blueprint, instanceName, false, errMsg)
@@ -337,7 +350,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log logr.Logger, bl
 		if version != blueprint.Status.ObservedGeneration {
 			_, err := r.Helmer.Uninstall(modulesNamespace, release)
 			if err != nil {
-				log.V(0).Info("Error uninstalling release " + release + " : " + err.Error())
+				alog.Error().Err(err).Str(logging.ACTION, logging.DELETE).Msg("Error uninstalling release " + release)
 			} else {
 				delete(blueprint.Status.Releases, release)
 			}
@@ -362,7 +375,7 @@ func NewBlueprintReconciler(mgr ctrl.Manager, name string, helmer helm.Interface
 	return &BlueprintReconciler{
 		Client: mgr.GetClient(),
 		Name:   name,
-		Log:    ctrl.Log.WithName("controllers").WithName(name),
+		Log:    logging.LogInit(logging.CONTROLLER, name),
 		Scheme: mgr.GetScheme(),
 		Helmer: helmer,
 	}
@@ -384,7 +397,7 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		},
 	}
 	numReconciles := environment.GetEnvAsInt(controllers.BlueprintConcurrentReconcilesConfiguration, controllers.DefaultBlueprintConcurrentReconciles)
-	mgr.GetLogger().Info(fmt.Sprintf("Concurrent blueprint reconciles: %d", numReconciles))
+	r.Log.Trace().Str(logging.CONTROLLER, "Blueprint").Msg("Concurrent blueprint reconciles: " + fmt.Sprint(numReconciles))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
@@ -419,13 +432,14 @@ func (r *BlueprintReconciler) checkResourceStatus(res *unstructured.Unstructured
 		// Could not retrieve the list of modules, will retry later
 		return corev1.ConditionUnknown, ""
 	}
+	uuid := res.GetAnnotations()[utils.FYBRIKAPPUUID]
 	if expected == nil {
 		// use kstatus to compute the status of the resources for them the expected results have not been specified
 		// Current status of a deployed release indicates that the resource has been successfully reconciled
 		// Failed status indicates a failure
 		computedResult, err := kstatus.Compute(res)
 		if err != nil {
-			r.Log.V(0).Info("Error computing the status of " + res.GetKind() + " : " + err.Error())
+			r.Log.Error().Err(err).Msg("Error computing the status of " + res.GetKind())
 			return corev1.ConditionUnknown, ""
 		}
 		switch computedResult.Status {
@@ -438,10 +452,10 @@ func (r *BlueprintReconciler) checkResourceStatus(res *unstructured.Unstructured
 		}
 	}
 	// use expected values to compute the status
-	if r.matchesCondition(res, expected.SuccessCondition) {
+	if r.matchesCondition(res, expected.SuccessCondition, uuid) {
 		return corev1.ConditionTrue, ""
 	}
-	if r.matchesCondition(res, expected.FailureCondition) {
+	if r.matchesCondition(res, expected.FailureCondition, uuid) {
 		return corev1.ConditionFalse, getErrorMessage(res, expected.ErrorMessage)
 	}
 	return corev1.ConditionUnknown, ""
@@ -456,10 +470,10 @@ func getErrorMessage(res *unstructured.Unstructured, fieldPath string) string {
 	return labelsImpl.Get(fieldPath)
 }
 
-func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, condition string) bool {
+func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, condition string, uuid string) bool {
 	selector, err := labels.Parse(condition)
 	if err != nil {
-		r.Log.V(0).Info("condition " + condition + "failed to parse: " + err.Error())
+		r.Log.Error().Err(err).Str(logging.CONTROLLER, "Blueprint").Str(logging.FYBRIKAPPUUID, uuid).Msg("condition " + condition + "failed to parse")
 		return false
 	}
 	// get selector requirements, 'selectable' property is ignored
@@ -474,18 +488,20 @@ func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, c
 	return true
 }
 
-func (r *BlueprintReconciler) checkReleaseStatus(releaseName string, namespace string) (corev1.ConditionStatus, string) {
+func (r *BlueprintReconciler) checkReleaseStatus(releaseName string, namespace string, uuid string) (corev1.ConditionStatus, string) {
+	log := r.Log.With().Str(logging.CONTROLLER, "Blueprint").Str(logging.FYBRIKAPPUUID, uuid).Logger()
+
 	// get all resources for the given helm release in their current state
 	resources, err := r.Helmer.GetResources(namespace, releaseName)
 	if err != nil {
-		r.Log.V(0).Info("Error getting resources: " + err.Error())
+		log.Error().Err(err).Msg("Error getting resources")
 		return corev1.ConditionUnknown, ""
 	}
 	// return True if all resources are ready, False - if any resource failed, Unknown - otherwise
 	numReady := 0
 	for _, res := range resources {
 		state, errMsg := r.checkResourceStatus(res)
-		r.Log.V(0).Info("Status of " + res.GetKind() + " " + res.GetName() + " is " + string(state))
+		log.Debug().Msg("Status of " + res.GetKind() + " " + res.GetName() + " is " + string(state))
 		if state == corev1.ConditionFalse {
 			return state, errMsg
 		}

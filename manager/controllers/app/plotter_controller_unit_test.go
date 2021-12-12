@@ -12,13 +12,13 @@ import (
 	"testing"
 
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/logging"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/pkg/multicluster/dummy"
 	"github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -76,7 +76,7 @@ func TestPlotterController(t *testing.T) {
 	// Create a PlotterReconciler object with the scheme and fake client.
 	r := &PlotterReconciler{
 		Client:         cl,
-		Log:            ctrl.Log.WithName("test-controller"),
+		Log:            logging.LogInit(logging.CONTROLLER, "test-controller"),
 		Scheme:         s,
 		ClusterManager: &dummyManager,
 	}
