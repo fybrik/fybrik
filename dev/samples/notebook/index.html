@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.0.2">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.0">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.816931ca.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.82f3c0b9.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.9204c3b2.min.css">
@@ -40,10 +40,9 @@
       
     
     
-    <script>function __md_scope(e,t,_){return new URL(_||(t===localStorage?"../..":"../.."),location).pathname+"."+e}function __md_get(e,t=localStorage,_){return JSON.parse(t.getItem(__md_scope(e,t,_)))}function __md_set(e,t,_=localStorage,o){try{_.setItem(__md_scope(e,_,o),JSON.stringify(t))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
-
 
     
     
@@ -1265,6 +1264,10 @@ aws configure <span class="nb">set</span> aws_access_key_id <span class="si">${<
 </code></pre></div>
 <p>The asset is now registered in the catalog. The identifier of the asset is <code>fybrik-notebook-sample/paysim-csv</code> (i.e. <code>&lt;namespace&gt;/&lt;name&gt;</code>). You will use that name in the <code>FybrikApplication</code> later.</p>
 <p>Notice the <code>assetMetadata</code> field above. It specifies the dataset geography and tags. These attributes can later be used in policies.</p>
+<p>For example, in the yaml above, the <code>geography</code> is set to <code>theshire</code>, you need make sure it is same with the region of your fybrik control plane, you can get the information with the below command:</p>
+<div class="highlight"><pre><span></span><code>kubectl get configmap cluster-metadata -n fybrik-system -o <span class="s1">&#39;jsonpath={.data.Region}&#39;</span>
+</code></pre></div>
+<p><a href="../../get-started/quickstart/">Quick Start</a> installs a fybrik control plane with the region <code>theshire</code> by default. If you change it or the <code>geography</code> in the yaml above, a <a href="https://github.com/fybrik/mover">copy module</a> will be required by the policies, but we do not install any copy module in the <a href="../../get-started/quickstart/">Quick Start</a>.</p>
 <h2 id="define-data-access-policies">Define data access policies</h2>
 <p>Define an <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a> policy to redact the columns tagged as <code>PII</code> for datasets tagged with <code>finance</code>. Below is the policy (written in <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego">Rego</a> language):</p>
 <div class="highlight"><pre><span></span><code>package dataapi.authz
@@ -1488,10 +1491,10 @@ df: pd.DataFrame <span class="o">=</span> reader.read_pandas<span class="o">()</
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.01824240.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.cefbb252.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.ff0eccb3.min.js"></script>
+      <script src="../../assets/javascripts/bundle.17f42bbf.min.js"></script>
       
     
   </body>
