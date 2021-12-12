@@ -2,7 +2,7 @@
 
 ## What are configuration policies?
 
-Configuration policies configure the data plane construction. They define what capabilities should be deployed (e.g. read, copy), where they can be deployed, and influence the selection of modules that will be installed.
+Configuration policies are the mechanism via which the organization may influence the construction of the data plane, taking into account infrastructure capabilities and costs. Fybrik takes into account the workload context, the data metadata, the data governance policies and the configuration policies when defining the data plane. The configuration policies influence what capabilities should be deployed (e.g. read, copy), in which clusters they should be deployed, and selection of the most appropriate module that implements the capability.
 
 ## Input to policies
 
