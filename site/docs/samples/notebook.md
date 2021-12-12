@@ -119,6 +119,13 @@ The asset is now registered in the catalog. The identifier of the asset is `fybr
 
 Notice the `assetMetadata` field above. It specifies the dataset geography and tags. These attributes can later be used in policies.
 
+For example, in the yaml above, the `geography` is set to `theshire`, you need make sure it is same with the region of your fybrik control plane, you can get the information with the below command:
+
+```shell
+kubectl get configmap cluster-metadata -n fybrik-system -o 'jsonpath={.data.Region}'
+```
+
+[Quick Start](../get-started/quickstart.md) installs a fybrik control plane with the region `theshire` by default. If you change it or the `geography` in the yaml above, a [copy module](https://github.com/fybrik/mover) will be required by the policies, but we do not install any copy module in the [Quick Start](../get-started/quickstart.md).
 
 ## Define data access policies
 
