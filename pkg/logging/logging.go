@@ -89,7 +89,6 @@ func PrettyLogging() bool {
 // LogInit insures that all log entries have a cluster, timestamp, caller type, file and line from which it was called.
 // FYBRIKAPPUUID is mandatory as well, but is not known when the logger is initialized.
 func LogInit(callerType string, callerName string) zerolog.Logger {
-
 	// Get the logging verbosity level from the environment variable
 	// It should be one of these: https://github.com/rs/zerolog#leveled-logging
 	verbosity := GetLoggingVerbosity()

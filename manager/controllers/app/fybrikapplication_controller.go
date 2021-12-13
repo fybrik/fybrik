@@ -123,7 +123,6 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	// reconcile is required if the spec has been changed, or the previous reconcile has failed to allocate a Plotter resource
 	generationComplete := r.ResourceInterface.ResourceExists(observedStatus.Generated) && (observedStatus.Generated.AppVersion == appVersion)
 	if (!generationComplete) || (observedStatus.ObservedGeneration != appVersion) {
-
 		if result, err := r.reconcile(applicationContext); err != nil {
 			// another attempt will be done
 			// users should be informed in case of errors
