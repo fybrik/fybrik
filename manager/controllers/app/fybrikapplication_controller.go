@@ -460,10 +460,10 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 	configEvaluatorInput.GovernanceActions = req.Actions
 	configDecisions, err := r.ConfigEvaluator.Evaluate(configEvaluatorInput)
 	if err != nil {
-		r.Log.V(0).Info("Error evaluating policies " + err.Error())
+		r.Log.Error().Err(err).Msg("Error evaluating config policies")
 		return err
 	}
-	utils.PrintStructure(configDecisions, r.Log, "Config Policies")
+	logging.LogStructure("Config Policy Decisions", configDecisions, r.Log, false, false)
 	req.WorkloadCluster = configEvaluatorInput.Workload.Cluster
 	req.Configuration = configDecisions
 	return nil
