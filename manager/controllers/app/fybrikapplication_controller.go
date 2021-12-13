@@ -77,7 +77,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	}
 
 	uuid := utils.GetFybrikApplicationUUID(applicationContext)
-	log := sublog.With().Str(logging.FYBRIKAPPUUID, uuid).Logger()
+	log := sublog.With().Str(utils.FybrikAppUUID, uuid).Logger()
 
 	// Log the fybrikapplication
 	logging.LogStructure("fybrikapplication", applicationContext, log, true, true)
@@ -100,12 +100,12 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	if os.Getenv("ENABLE_WEBHOOKS") != "true" && (string(applicationContext.Status.ValidApplication) == "" || observedStatus.ValidatedGeneration != appVersion) {
 		// do validation on applicationContext
 		err := applicationContext.ValidateFybrikApplication(ApplicationTaxonomy)
-		log.Trace().Msg("Reconciler validating Fybrik application")
+		log.Debug().Msg("Reconciler validating Fybrik application")
 		applicationContext.Status.ValidatedGeneration = appVersion
 		// if validation fails
 		if err != nil {
 			// set error message
-			log.Fatal().Err(err).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).Msg("FybrikApplication valdiation failed")
+			log.Error().Err(err).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).Msg("FybrikApplication valdiation failed")
 			applicationContext.Status.ErrorMessage = err.Error()
 			applicationContext.Status.ValidApplication = v1.ConditionFalse
 			if err := r.Client.Status().Update(ctx, applicationContext); err != nil {
@@ -170,7 +170,7 @@ func getBucketResourceRef(name string) *types.NamespacedName {
 
 func (r *FybrikApplicationReconciler) checkReadiness(applicationContext *api.FybrikApplication, status api.ObservedState) error {
 	uuid := utils.GetFybrikApplicationUUID(applicationContext)
-	log := r.Log.With().Str(logging.FYBRIKAPPUUID, uuid).Logger()
+	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).Logger()
 
 	if applicationContext.Status.AssetStates == nil {
 		initStatus(applicationContext)
@@ -202,7 +202,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext *api.Fyb
 			provisionedBucketRef, found := applicationContext.Status.ProvisionedStorage[assetID]
 			if !found {
 				message := "No copy has been created for the asset " + assetID + " required to be registered"
-				log.Info().Str(logging.DATASETID, assetID).Msg("No copy has been created for the asset " + assetID + " required to be registered")
+				log.Info().Str(logging.DATASETID, assetID).Msg(message)
 				setErrorCondition(applicationContext, assetID, message)
 				continue
 			}
@@ -283,7 +283,7 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 		return nil
 	}
 
-	r.Log.Trace().Str(logging.FYBRIKAPPUUID, utils.GetFybrikApplicationUUID(applicationContext)).Str(logging.ACTION, logging.DELETE).Msg("Reconcile: FybrikApplication is deleting the generated " + applicationContext.Status.Generated.Kind)
+	r.Log.Trace().Str(utils.FybrikAppUUID, utils.GetFybrikApplicationUUID(applicationContext)).Str(logging.ACTION, logging.DELETE).Msg("Reconcile: FybrikApplication is deleting the generated " + applicationContext.Status.Generated.Kind)
 	if err := r.ResourceInterface.DeleteResource(applicationContext.Status.Generated); err != nil {
 		return err
 	}
@@ -321,7 +321,7 @@ func setReadModulesEndpoints(applicationContext *api.FybrikApplication, flows []
 // or a status update from the generated resource
 func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikApplication) (ctrl.Result, error) {
 	uuid := utils.GetFybrikApplicationUUID(applicationContext)
-	log := r.Log.With().Str(logging.FYBRIKAPPUUID, uuid).Logger()
+	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).Logger()
 
 	// Log the request received - i.e. the fybrikapplication.spec
 	log.Trace().Msg("*** reconcile ***")
@@ -346,7 +346,8 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 	// workload cluster is common for all datasets in the given application
 	workloadCluster, err := r.GetWorkloadCluster(applicationContext)
 	if err != nil {
-		log.Fatal().Err(err).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).Str(logging.ACTION, logging.CREATE).Msg("Could not determine in which cluster the workload runs")
+		// fatal
+		log.Info().Err(err).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).Str(logging.ACTION, logging.CREATE).Msg("Could not determine in which cluster the workload runs")
 		return ctrl.Result{}, err
 	}
 	var requirements []DataInfo
@@ -354,7 +355,6 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 		req := DataInfo{
 			Context: dataset.DeepCopy(),
 		}
-		r.Log.Trace().Str(logging.DATASETID, req.Context.DataSetID).Str(logging.ACTION, logging.CREATE).Msg("Preparing requirements for dataset")
 		if err := r.constructDataInfo(&req, applicationContext, workloadCluster); err != nil {
 			AnalyzeError(applicationContext, req.Context.DataSetID, err)
 			log.Error().Err(err).Str(logging.DATASETID, req.Context.DataSetID).Msg("Error constructing data info")
@@ -369,7 +369,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 
 	provisionedStorage, plotterSpec, err := r.buildSolution(applicationContext, requirements)
 	if err != nil {
-		r.Log.Fatal().Err(err).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).Msg("Plotter construction failed")
+		r.Log.Error().Err(err).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).Msg("Plotter construction failed")
 	}
 	// check if can proceed
 	if err != nil || getErrorMessages(applicationContext) != "" {
@@ -479,7 +479,7 @@ func (r *FybrikApplicationReconciler) GetWorkloadCluster(application *api.Fybrik
 			return multicluster.Cluster{}, nil
 		}
 		// the workload runs in a local cluster
-		r.Log.Warn().Err(errors.New("selector.clusterName field is not specified")).Str(logging.FYBRIKAPPUUID, utils.GetFybrikApplicationUUID(application)).Str(logging.ACTION, logging.CREATE).Msg("No workload cluster indicated, so a local cluster is assumed")
+		r.Log.Warn().Err(errors.New("selector.clusterName field is not specified")).Str(utils.FybrikAppUUID, utils.GetFybrikApplicationUUID(application)).Str(logging.ACTION, logging.CREATE).Msg("No workload cluster indicated, so a local cluster is assumed")
 		localClusterManager, err := local.NewClusterManager(r.Client, utils.GetSystemNamespace())
 		if err != nil {
 			return multicluster.Cluster{}, err
@@ -574,9 +574,9 @@ func ownerLabels(id types.NamespacedName) map[string]string {
 }
 
 // GetAllModules returns all CRDs of the kind FybrikModule mapped by their name
-func (r *FybrikApplicationReconciler) GetAllModules(fybrikappuuid string) (map[string]*api.FybrikModule, error) {
+func (r *FybrikApplicationReconciler) GetAllModules(fybrikAppUUID string) (map[string]*api.FybrikModule, error) {
 	ctx := context.Background()
-	log := r.Log.With().Str(logging.FYBRIKAPPUUID, fybrikappuuid).Logger()
+	log := r.Log.With().Str(utils.FybrikAppUUID, fybrikAppUUID).Logger()
 
 	moduleMap := make(map[string]*api.FybrikModule)
 	var moduleList api.FybrikModuleList
@@ -633,7 +633,7 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 			return false, nil
 		}
 		if !res.Provisioned {
-			r.Log.Warn().Err(errors.New(res.ErrorMsg)).Str(logging.FYBRIKAPPUUID, utils.GetFybrikApplicationUUID(applicationContext)).Str(logging.ACTION, logging.CREATE).Str(logging.DATASETID, id).Msg("No bucket has been provisioned for " + id)
+			r.Log.Warn().Err(errors.New(res.ErrorMsg)).Str(utils.FybrikAppUUID, utils.GetFybrikApplicationUUID(applicationContext)).Str(logging.ACTION, logging.CREATE).Str(logging.DATASETID, id).Msg("No bucket has been provisioned for " + id)
 			// TODO(shlomitk1): analyze the error
 			if res.ErrorMsg != "" {
 				return false, errors.New(res.ErrorMsg)
@@ -646,7 +646,7 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 
 func (r *FybrikApplicationReconciler) buildSolution(applicationContext *api.FybrikApplication, requirements []DataInfo) (map[string]NewAssetInfo, *api.PlotterSpec, error) {
 	uuid := utils.GetFybrikApplicationUUID(applicationContext)
-	log := r.Log.With().Str(logging.FYBRIKAPPUUID, uuid).Logger()
+	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).Logger()
 
 	// get deployed modules
 	moduleMap, err := r.GetAllModules(uuid)

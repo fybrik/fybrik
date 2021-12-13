@@ -40,7 +40,7 @@ global:
   # Default connection timeout for GRPC connections.
   connectionTimeout: 120
   # Human readable logs
-  prettyLogging: true
+  prettyLogging: false
   # zerolog verbosity level 
   # ref: https://github.com/rs/zerolog#leveled-logging
   loggingVerbosity: -1
@@ -274,16 +274,7 @@ opaServer:
   #     mask["/input"]
 
   # Bootstrap policies to load upon startup
-  bootstrapPolicies:
-    notebookSamplePolicy: |-
-      package dataapi.authz
-
-      rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": description}] {
-        description := "Redact columns tagged as PII in datasets tagged with finance = true"
-        input.action.actionType == "read"
-        input.resource.tags.finance
-        column_names := [input.resource.columns[i].name | input.resource.columns[i].tags.PII]
-      }
+  bootstrapPolicies: {}
 
 # Katalog connector component
 katalogConnector:

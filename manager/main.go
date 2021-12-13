@@ -227,7 +227,7 @@ func main() {
 	}
 
 	if !enableApplicationController && !enablePlotterController && !enableBlueprintController {
-		setupLog.Fatal().Msg("At least one controller flag must be set!")
+		setupLog.Debug().Msg("At least one controller flag must be set!")
 		os.Exit(1)
 	}
 

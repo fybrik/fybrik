@@ -54,7 +54,7 @@ func (r *PlotterReconciler) RefineInstances(instances []ModuleInstanceSpec) []Mo
 func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, plotter *app.Plotter) map[string]app.BlueprintSpec {
 	blueprintMap := make(map[string]app.BlueprintSpec)
 	instanceMap := make(map[string][]ModuleInstanceSpec)
-	uuid := plotter.GetAnnotations()[utils.FYBRIKAPPUUID]
+	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
 	for _, moduleInstance := range instances {
 		instanceMap[moduleInstance.ClusterName] = append(instanceMap[moduleInstance.ClusterName], moduleInstance)
 	}
@@ -64,7 +64,7 @@ func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, p
 		blueprintMap[key] = r.GenerateBlueprint(instances, key, plotter)
 	}
 
-	log := r.Log.With().Str(logging.FYBRIKAPPUUID, uuid).Logger()
+	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).Logger()
 	logging.LogStructure("BlueprintMap", blueprintMap, log, false, false)
 	return blueprintMap
 }

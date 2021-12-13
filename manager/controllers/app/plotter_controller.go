@@ -53,8 +53,8 @@ func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, err
 	}
 
-	uuid := plotter.GetAnnotations()[utils.FYBRIKAPPUUID]
-	log := sublog.With().Str(logging.FYBRIKAPPUUID, uuid).Logger()
+	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
+	log := sublog.With().Str(utils.FybrikAppUUID, uuid).Logger()
 
 	// If the object has a scheduled deletion time, update status and return
 	if !plotter.DeletionTimestamp.IsZero() {
@@ -247,7 +247,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 // The key is the cluster name.
 func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]app.BlueprintSpec {
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
-	log := r.Log.With().Str(logging.CONTROLLER, "Plotter").Str(logging.FYBRIKAPPUUID, uuid).Logger()
+	log := r.Log.With().Str(logging.CONTROLLER, "Plotter").Str(utils.FybrikAppUUID, uuid).Logger()
 
 	log.Trace().Msg("Constructing Blueprints from Plotter")
 	moduleInstances := make([]ModuleInstanceSpec, 0)
@@ -341,7 +341,7 @@ func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap m
 
 func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []error) {
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
-	log := r.Log.With().Str(logging.CONTROLLER, "Plotter").Str(logging.FYBRIKAPPUUID, uuid).Logger()
+	log := r.Log.With().Str(logging.CONTROLLER, "Plotter").Str(utils.FybrikAppUUID, uuid).Logger()
 
 	if plotter.Status.Blueprints == nil {
 		plotter.Status.Blueprints = make(map[string]app.MetaBlueprint)
@@ -443,7 +443,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 						app.ApplicationNamespaceLabel: plotter.Labels[app.ApplicationNamespaceLabel],
 					},
 					Annotations: map[string]string{
-						utils.FYBRIKAPPUUID: uuid, // Pass on the globally unique id of the fybrikapplication instance for logging purposes
+						utils.FybrikAppUUID: uuid, // Pass on the globally unique id of the fybrikapplication instance for logging purposes
 					},
 				},
 				Spec: blueprintSpec,
@@ -452,7 +452,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			err := r.ClusterManager.CreateBlueprint(cluster, blueprint)
 			if err != nil {
 				errorCollection = append(errorCollection, err)
-				log.Fatal().Err(err).Str(logging.CLUSTER, cluster).Str(logging.ACTION, logging.CREATE).Msg("Could not create blueprint for cluster")
+				log.Error().Err(err).Str(logging.CLUSTER, cluster).Str(logging.ACTION, logging.CREATE).Msg("Could not create blueprint for cluster")
 				r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, err.Error())
 				continue
 			}
@@ -471,7 +471,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			if err != nil {
 				if !strings.HasPrefix(err.Error(), "Query channelByName error. Could not find the channel with name") {
 					errorCollection = append(errorCollection, err)
-					log.Fatal().Err(err).Str(logging.CLUSTER, cluster).Str(logging.BLUEPRINT, remoteBlueprint.Name).Str(logging.ACTION, logging.DELETE).Msg("Could not delete remote blueprint after spec changed!")
+					log.Error().Err(err).Str(logging.CLUSTER, cluster).Str(logging.BLUEPRINT, remoteBlueprint.Name).Str(logging.ACTION, logging.DELETE).Msg("Could not delete remote blueprint after spec changed!")
 					continue
 				}
 			}

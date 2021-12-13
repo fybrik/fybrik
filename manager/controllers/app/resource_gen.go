@@ -93,7 +93,7 @@ func (c *PlotterInterface) CreateOrUpdateResource(owner *app.ResourceReference, 
 		}
 		if plotter.Annotations == nil {
 			plotter.Annotations = make(map[string]string)
-			plotter.Annotations[utils.FYBRIKAPPUUID] = uuid // For logging
+			plotter.Annotations[utils.FybrikAppUUID] = uuid // For logging
 		}
 		return nil
 	}); err != nil {

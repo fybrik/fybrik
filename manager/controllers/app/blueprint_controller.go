@@ -61,7 +61,7 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
-	log := r.Log.With().Str(logging.CONTROLLER, "Blueprint").Str(logging.FYBRIKAPPUUID, uuid).Str("blueprint", req.NamespacedName.String()).Logger()
+	log := r.Log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Str("blueprint", req.NamespacedName.String()).Logger()
 
 	if res, err := r.reconcileFinalizers(&blueprint); err != nil {
 		log.Error().Err(err).Msg("Could not reconcile blueprint " + blueprint.GetName() + " finalizers")
@@ -89,7 +89,7 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 	}
 
-	log.Trace().Msg("blueprint reconcile cycle completed.") // TODO - Add result to log?
+	log.Debug().Msg("blueprint reconcile cycle completed.") // TODO - Add result to log?
 	return result, nil
 }
 
@@ -150,10 +150,10 @@ func getDomainFromImageName(image string) (string, error) {
 
 func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolog.Logger, chartSpec app.ChartSpec, args map[string]interface{}, blueprint *app.Blueprint, releaseName string) (ctrl.Result, error) {
 	// Get the unique id for the specific fybrikapplication instance.  Used for logging.
-	uuid := blueprint.GetAnnotations()[utils.FYBRIKAPPUUID]
-	alog := log.With().Str(logging.CONTROLLER, "Blueprint").Str(logging.FYBRIKAPPUUID, uuid).Str("blueprint", blueprint.GetName()).Logger()
+	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
+	log = log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Str("blueprint", blueprint.GetName()).Logger()
 
-	alog.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Chart Ref ---\n\n" + chartSpec.Name + "\n\n")
+	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Chart Ref ---\n\n" + chartSpec.Name + "\n\n")
 	kubeNamespace := blueprint.Spec.ModulesNamespace
 
 	args = CopyMap(args)
@@ -161,7 +161,7 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolo
 		SetMapField(args, k, v)
 	}
 	nbytes, _ := yaml.Marshal(args)
-	alog.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Values.yaml ---\n\n" + string(nbytes) + "\n\n")
+	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Values.yaml ---\n\n" + string(nbytes) + "\n\n")
 
 	var registrySuccessfulLogin string
 
@@ -197,10 +197,10 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolo
 						registrySuccessfulLogin = repoToPull
 						break
 					}
-					alog.Error().Msg("Failed to login to helm registry: " + repoToPull)
+					log.Error().Msg("Failed to login to helm registry: " + repoToPull)
 				}
 			} else {
-				alog.Error().Msg("there is a mismatch between helm chart: " + chartSpec.Name +
+				log.Error().Msg("there is a mismatch between helm chart: " + chartSpec.Name +
 					" and the registries associated with secret: " + chartSpec.ChartPullSecret)
 			}
 		}
@@ -233,7 +233,7 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolo
 			return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed install")
 		}
 	}
-	alog.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Release Status ---\n\n" + string(rel.Info.Status) + "\n\n")
+	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Release Status ---\n\n" + string(rel.Info.Status) + "\n\n")
 	return ctrl.Result{}, nil
 }
 
@@ -282,8 +282,8 @@ func (r *BlueprintReconciler) updateModuleState(blueprint *app.Blueprint, instan
 }
 
 func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger, blueprint *app.Blueprint) (ctrl.Result, error) {
-	uuid := blueprint.GetAnnotations()[utils.FYBRIKAPPUUID] // used for logging
-	alog := log.With().Str(logging.CONTROLLER, "Blueprint").Str(logging.FYBRIKAPPUUID, uuid).Str("blueprint", blueprint.GetName()).Logger()
+	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
+	log = log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Str("blueprint", blueprint.GetName()).Logger()
 
 	modulesNamespace := blueprint.Spec.ModulesNamespace
 	// Gather all templates and process them into a list of resources to apply
@@ -308,7 +308,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger,
 		}
 		module.Arguments.Labels[app.BlueprintNameLabel] = blueprint.Name
 		module.Arguments.Labels[app.BlueprintNamespaceLabel] = blueprint.Namespace
-		module.Arguments.Labels[utils.FYBRIKAPPUUID] = uuid // used for log correlation
+		module.Arguments.Labels[utils.FybrikAppUUID] = uuid // used for log correlation
 
 		// Get arguments by type
 		var args map[string]interface{}
@@ -318,7 +318,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger,
 		}
 
 		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], instanceName)
-		alog.Trace().Msg("Release name: " + releaseName)
+		log.Trace().Msg("Release name: " + releaseName)
 		numReleases++
 		// check the release status
 		rel, err := r.Helmer.Status(modulesNamespace, releaseName)
@@ -349,7 +349,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger,
 		if version != blueprint.Status.ObservedGeneration {
 			_, err := r.Helmer.Uninstall(modulesNamespace, release)
 			if err != nil {
-				alog.Error().Err(err).Str(logging.ACTION, logging.DELETE).Msg("Error uninstalling release " + release)
+				log.Error().Err(err).Str(logging.ACTION, logging.DELETE).Msg("Error uninstalling release " + release)
 			} else {
 				delete(blueprint.Status.Releases, release)
 			}
@@ -431,7 +431,8 @@ func (r *BlueprintReconciler) checkResourceStatus(res *unstructured.Unstructured
 		// Could not retrieve the list of modules, will retry later
 		return corev1.ConditionUnknown, ""
 	}
-	uuid := res.GetAnnotations()[utils.FYBRIKAPPUUID]
+	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(res.GetAnnotations())
+
 	if expected == nil {
 		// use kstatus to compute the status of the resources for them the expected results have not been specified
 		// Current status of a deployed release indicates that the resource has been successfully reconciled
@@ -472,7 +473,7 @@ func getErrorMessage(res *unstructured.Unstructured, fieldPath string) string {
 func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, condition string, uuid string) bool {
 	selector, err := labels.Parse(condition)
 	if err != nil {
-		r.Log.Error().Err(err).Str(logging.CONTROLLER, "Blueprint").Str(logging.FYBRIKAPPUUID, uuid).Msg("condition " + condition + "failed to parse")
+		r.Log.Error().Err(err).Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Msg("condition " + condition + "failed to parse")
 		return false
 	}
 	// get selector requirements, 'selectable' property is ignored
@@ -488,7 +489,7 @@ func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, c
 }
 
 func (r *BlueprintReconciler) checkReleaseStatus(releaseName string, namespace string, uuid string) (corev1.ConditionStatus, string) {
-	log := r.Log.With().Str(logging.CONTROLLER, "Blueprint").Str(logging.FYBRIKAPPUUID, uuid).Logger()
+	log := r.Log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Logger()
 
 	// get all resources for the given helm release in their current state
 	resources, err := r.Helmer.GetResources(namespace, releaseName)

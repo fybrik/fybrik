@@ -20,8 +20,7 @@ import (
 //     Ex: fybrik control plane did not deploy correctly
 //	   Ex: Data plane component crashed and cannot handle requests
 // fatal (zerolog.FatalLevel, 4) - Errors that prevent the component from successfully completing a particular task
-//	   Ex: fybrikapplication controller cannot generate a plotter
-//	   Ex: Arrow/Flight server used to read data cannot access data store
+//	   Avoid using fatal in the control lane. It causes an Error condition to the pod, which restarts the pod.
 // error (zerolog.ErrorLevel, 3) - Errors that are not fatal nor panic, but that the user / request initiator is made aware of (typical production setting for stable solution)
 //	   Ex: Dataset requested in fybrikapplication.spec is not allowed to be used
 // 	   Ex: Query to Arrow/Flight server used to read data returns an error because of incorrect dataset ID
@@ -47,20 +46,20 @@ const (
 	UPDATE string = "Update"
 )
 
-// Log Entry Params - beyond timestamp, caller, err, and msg provided via zerologger
-// Cluster will not be included since not all components know how to determine on which cluster they run.
-// Instead it will be assumed that the logging agents will add this information as they gather the logs.
+// Log Entry Params - those listed in the constants below and
+// FybrikApplicationUUID defined in fybrik.io/manager/utils/utils.go
+// caller (file and line), error, message, timestamp - Provided by the logging mechanism
+// Cluster will not be included since not all components know how to determine on which cluster they run.  Instead it will be assumed that the logging agents will add this information as they gather the logs.
 const (
-	ACTION        string = "Action"        // optional
-	DATASETID     string = "DataSetID"     // optional
-	FYBRIKAPPUUID string = "FybrikAppUUID" // mandatory in scopes where it exists
-	FORUSER       string = "ForUser"       // optional
-	AUDIT         string = "Audit"         // optional
-	CLUSTER       string = "Cluster"       // optional
-	PLOTTER       string = "Plotter"       // optional
-	BLUEPRINT     string = "Blueprint"     // optional
-	NAMESPACE     string = "Namespace"     // optional
-	RESPONSETIME  string = "ResponseTime"  // optional
+	ACTION       string = "Action"       // optional
+	DATASETID    string = "DataSetID"    // optional
+	FORUSER      string = "ForUser"      // optional
+	AUDIT        string = "Audit"        // optional
+	CLUSTER      string = "Cluster"      // optional
+	PLOTTER      string = "Plotter"      // optional
+	BLUEPRINT    string = "Blueprint"    // optional
+	NAMESPACE    string = "Namespace"    // optional
+	RESPONSETIME string = "ResponseTime" // optional
 )
 
 // GetLoggingVerbosity returns the level as per https://github.com/rs/zerolog#leveled-logging
@@ -69,7 +68,7 @@ func GetLoggingVerbosity() zerolog.Level {
 
 	verbosityInt, err := strconv.Atoi(verbosityStr)
 	if err != nil {
-		fmt.Println("Error reading verbosity")
+		fmt.Println("Trouble reading verbosity. Found " + verbosityStr + ". Using trace as default")
 		return zerolog.TraceLevel
 	}
 	return zerolog.Level(verbosityInt)
@@ -87,7 +86,7 @@ func PrettyLogging() bool {
 }
 
 // LogInit insures that all log entries have a cluster, timestamp, caller type, file and line from which it was called.
-// FYBRIKAPPUUID is mandatory as well, but is not known when the logger is initialized.
+// FybrikAppUuid is mandatory as well, but is not known when the logger is initialized.
 func LogInit(callerType string, callerName string) zerolog.Logger {
 	// Get the logging verbosity level from the environment variable
 	// It should be one of these: https://github.com/rs/zerolog#leveled-logging
@@ -96,19 +95,17 @@ func LogInit(callerType string, callerName string) zerolog.Logger {
 	var log zerolog.Logger
 	zerolog.SetGlobalLevel(verbosity)
 
-	log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Str(callerType, callerName).Logger()
-
 	// Initialize the logger with the parameters known at the time of its initiation
 	// All entries include timestamp and caller that generated them
 
 	// If PRETTY_LOGGING
 	// Include the filename and line if we're debugging
 	if PrettyLogging() {
-		log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Str(callerType, callerName).Logger()
+		log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Str(callerType, callerName).Caller().Logger()
 	} else {
 		// UNIX Time is faster and smaller than most timestamps
 		//		zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-		log = zerolog.New(os.Stdout).With().Timestamp().Str(callerType, callerName).Logger()
+		log = zerolog.New(os.Stdout).With().Timestamp().Str(callerType, callerName).Caller().Logger()
 	}
 
 	log.Debug().Msg("Logging verbosity level is " + log.GetLevel().String())
