@@ -11,47 +11,68 @@ charts/taxonomy.json:
 	go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/policy_manager_response.json
 	go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/fybrik_application.json
 	go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/fybrik_module.json
+	go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/data_catalog_request.json
+	go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/data_catalog_response.json
 
-.PHONY: generate-base
-generate-base: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
-	mkdir -p $(ROOT_DIR)/pkg/taxonomy/model/base
-	$(TOOLBIN)/openapi-generator-cli generate -i ./codegen.spec.yaml -g go -o $(ROOT_DIR)/pkg/taxonomy/model/base --global-property=models,modelDocs=false \
+.PHONY: generate-base-policymanager
+generate-base-policymanager: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
+	mkdir -p $(ROOT_DIR)/pkg/taxonomy/model/policymanager/base
+	$(TOOLBIN)/openapi-generator-cli generate -i ./policymanager.spec.yaml -g go -o $(ROOT_DIR)/pkg/taxonomy/model/policymanager/base --global-property=models,modelDocs=false \
 		--additional-properties=packageName=base \
 		--enable-post-process-file \
 		--type-mappings=object=interface{}
 
-.PHONY: generate-client
-generate-client: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
-	mkdir -p $(ROOT_DIR)/pkg/connectors/openapiclient
-	$(TOOLBIN)/openapi-generator-cli generate -g go --additional-properties=packageName=openapiclient,isGoSubmodule=false \
-		--global-property=apis,supportingFiles,apiDocs=false -o $(ROOT_DIR)/pkg/connectors/openapiclient \
-		-i codegen.spec.yaml
-	rm -f $(ROOT_DIR)/pkg/connectors/openapiclient/go.mod $(ROOT_DIR)/pkg/connectors/openapiclient/go.sum $(ROOT_DIR)/pkg/connectors/openapiclient/.travis.yml
-	rm -f $(ROOT_DIR)/pkg/connectors/openapiclient/README.md $(ROOT_DIR)/pkg/connectors/openapiclient/git_push.sh
-	rm -r $(ROOT_DIR)/pkg/connectors/openapiclient/api 
+.PHONY: generate-base-datacatalog
+generate-base-datacatalog: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
+	mkdir -p $(ROOT_DIR)/pkg/taxonomy/model/datacatalog/base
+	$(TOOLBIN)/openapi-generator-cli generate -i ./datacatalog.spec.yaml -g go -o $(ROOT_DIR)/pkg/taxonomy/model/datacatalog/base --global-property=models,modelDocs=false \
+		--additional-properties=packageName=base \
+		--enable-post-process-file \
+		--type-mappings=object=interface{}
 
+.PHONY: generate-client-policymanager
+generate-client-policymanager: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
+	mkdir -p $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient
+	$(TOOLBIN)/openapi-generator-cli generate -g go --additional-properties=packageName=openapiclient,isGoSubmodule=false \
+		--global-property=apis,supportingFiles,apiDocs=false -o $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient \
+		-i policymanager.spec.yaml
+	rm -f $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/go.mod $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/go.sum $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/.travis.yml
+	rm -f $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/README.md $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/git_push.sh
+	rm -r $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/api
+
+.PHONY: generate-client-datacatalog
+generate-client-datacatalog: $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
+	mkdir -p $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient
+	$(TOOLBIN)/openapi-generator-cli generate -g go --additional-properties=packageName=openapiclient,isGoSubmodule=false \
+		--global-property=apis,supportingFiles,apiDocs=false -o $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient \
+		-i datacatalog.spec.yaml
+	rm -f $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/go.mod $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/go.sum $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/.travis.yml
+	rm -f $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/README.md $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/git_push.sh
+	rm -f $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/.gitignore $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/.openapi-generator-ignore $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/.openapi-generator/FILES
+	rm -r $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/api
+	
 .PHONY: generate-server
 generate-server: clean-server $(TOOLBIN)/openapi-generator-cli charts/taxonomy.json
 	mkdir -p $(ROOT_DIR)/connectors/opa
 	$(TOOLBIN)/openapi-generator-cli generate -g go-gin-server \
 		--additional-properties=packageName=openapiserver,serverPort=8081,sourceFolder=openapiserver \
 		--global-property=apis,supportingFiles -o $(ROOT_DIR)/connectors/opa \
-		-i codegen.spec.yaml
-	rm -f $(ROOT_DIR)/connectors/opa/go.mod $(ROOT_DIR)/connectors/opa/.openapi-generator-ignore  
-	rm -f $(ROOT_DIR)/connectors/opa/Dockerfile $(ROOT_DIR)/connectors/opa/go/README.md 
+		-i policymanager.spec.yaml
+	rm -f $(ROOT_DIR)/connectors/opa/go.mod $(ROOT_DIR)/connectors/opa/.openapi-generator-ignore
+	rm -f $(ROOT_DIR)/connectors/opa/Dockerfile $(ROOT_DIR)/connectors/opa/go/README.md
 	rm -r $(ROOT_DIR)/connectors/opa/api $(ROOT_DIR)/connectors/opa/.openapi-generator
 
 .PHONY: clean
 clean:
 	rm -f $(ROOT_DIR)/charts/fybrik/files/taxonomy/taxonomy.json
-	rm -rf $(ROOT_DIR)/pkg/taxonomy/model/base
-	mkdir -p $(ROOT_DIR)/pkg/connectors/tmp
-	cp  $(ROOT_DIR)/pkg/connectors/openapiclient/model.go  $(ROOT_DIR)/pkg/connectors/tmp
-	rm -rf $(ROOT_DIR)/pkg/connectors/openapiclient
-	mkdir -p $(ROOT_DIR)/pkg/connectors/openapiclient
-	cp  $(ROOT_DIR)/pkg/connectors/tmp/model.go $(ROOT_DIR)/pkg/connectors/openapiclient
-	rm -rf $(ROOT_DIR)/pkg/connectors/tmp
-	
+	rm -rf $(ROOT_DIR)/pkg/taxonomy/model/policymanager/base
+	mkdir -p $(ROOT_DIR)/pkg/connectors/policymanager/tmp
+	cp  $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/model.go  $(ROOT_DIR)/pkg/connectors/policymanager/tmp
+	rm -rf $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient
+	mkdir -p $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient
+	cp  $(ROOT_DIR)/pkg/connectors/policymanager/tmp/model.go $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient
+	rm -rf $(ROOT_DIR)/pkg/connectors/policymanager/tmp
+
 
 .PHONY: clean-server
 clean-server:

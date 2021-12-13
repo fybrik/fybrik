@@ -39,7 +39,7 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
-	model "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	model "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 	"fybrik.io/fybrik/pkg/vault"
 )
 
@@ -56,6 +56,10 @@ type FybrikApplicationReconciler struct {
 	Provision         storage.ProvisionInterface
 	ConfigEvaluator   adminconfig.EvaluatorInterface
 }
+
+const (
+	ApplicationTaxonomy = "/tmp/taxonomy/fybrik_application.json"
+)
 
 // Reconcile reconciles FybrikApplication CRD
 // It receives FybrikApplication CRD and selects the appropriate modules that will run
@@ -85,7 +89,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	// check if webhooks are enabled and application has been validated before or if validated application is outdated
 	if os.Getenv("ENABLE_WEBHOOKS") != "true" && (string(applicationContext.Status.ValidApplication) == "" || observedStatus.ValidatedGeneration != appVersion) {
 		// do validation on applicationContext
-		err := applicationContext.ValidateFybrikApplication("/tmp/taxonomy/fybrik_application.json")
+		err := applicationContext.ValidateFybrikApplication(ApplicationTaxonomy)
 		log.V(0).Info("Reconciler validating Fybrik application")
 		applicationContext.Status.ValidatedGeneration = appVersion
 		// if validation fails
@@ -163,7 +167,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext *api.Fyb
 	// Temporary fix: all assets that are not in Deny state are updated based on the received status
 	for _, dataCtx := range applicationContext.Spec.Data {
 		assetID := dataCtx.DataSetID
-		if applicationContext.Status.AssetStates[assetID].Conditions[api.DenyConditionIndex].Status == v1.ConditionTrue {
+		if applicationContext.Status.AssetStates[assetID].Conditions[DenyConditionIndex].Status == v1.ConditionTrue {
 			// should not appear in the plotter status
 			continue
 		}
@@ -443,7 +447,7 @@ func (r *FybrikApplicationReconciler) GetWorkloadCluster(application *api.Fybrik
 		}
 		// the workload runs in a local cluster
 		r.Log.V(0).Info("selector.clusterName field is not specified for an existing workload - a local cluster is assumed")
-		localClusterManager, err := local.NewManager(r.Client, utils.GetSystemNamespace())
+		localClusterManager, err := local.NewClusterManager(r.Client, utils.GetSystemNamespace())
 		if err != nil {
 			return multicluster.Cluster{}, err
 		}
@@ -629,10 +633,11 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext *api.Fybr
 	}
 
 	plotterSpec := &api.PlotterSpec{
-		Selector:  applicationContext.Spec.Selector,
-		Assets:    map[string]api.AssetDetails{},
-		Flows:     []api.Flow{},
-		Templates: map[string]api.Template{},
+		Selector:         applicationContext.Spec.Selector,
+		Assets:           map[string]api.AssetDetails{},
+		Flows:            []api.Flow{},
+		ModulesNamespace: utils.GetDefaultModulesNamespace(),
+		Templates:        map[string]api.Template{},
 	}
 
 	for _, item := range requirements {

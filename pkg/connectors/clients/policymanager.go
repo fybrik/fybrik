@@ -7,7 +7,7 @@ import (
 	"io"
 
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )
 
 // PolicyManager is an interface of a facade to connect to a policy manager.

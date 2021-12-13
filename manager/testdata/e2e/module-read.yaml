@@ -9,7 +9,7 @@ metadata:
 spec:
   type: service
   chart:
-    name: localhost:5000/fybrik-system/fybrik-template:0.1.0
+    name: ghcr.io/fybrik/fybrik-template:0.1.0
   capabilities:
     - capability: read
       scope: workload

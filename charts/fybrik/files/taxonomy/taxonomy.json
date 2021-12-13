@@ -18,6 +18,18 @@
     "Capability": {
       "type": "string"
     },
+    "Connection": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name"
+      ]
+    },
     "Dataformat": {
       "type": "string"
     },
@@ -34,7 +46,7 @@
           "$ref": "#/definitions/Protocol"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "PluginType": {
       "type": "string"

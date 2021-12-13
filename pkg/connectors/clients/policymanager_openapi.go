@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	openapiclient "fybrik.io/fybrik/pkg/connectors/openapiclient"
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	openapiclient "fybrik.io/fybrik/pkg/connectors/policymanager/openapiclient"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )
 
 var _ PolicyManager = (*openAPIPolicyManager)(nil)

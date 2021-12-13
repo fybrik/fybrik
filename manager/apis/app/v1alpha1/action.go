@@ -4,7 +4,7 @@
 package v1alpha1
 
 import (
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )
 
 // +kubebuilder:validation:Type=object

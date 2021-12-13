@@ -111,6 +111,13 @@ BlueprintSpec defines the desired state of Blueprint, which defines the componen
           Modules is a map which contains modules that indicate the data path components that run in this cluster The map key is InstanceName which is the unique name for the deployed instance related to this workload<br/>
         </td>
         <td>true</td>
+      </tr><tr>
+        <td><b>modulesNamespace</b></td>
+        <td>string</td>
+        <td>
+          ModulesNamespace is the namespace where modules should be allocated<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 
@@ -837,6 +844,13 @@ BlueprintStatus defines the observed state of Blueprint This includes readiness,
         </tr>
     </thead>
     <tbody><tr>
+        <td><b><a href="#blueprintstatusmoduleskey">modules</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          ModulesState is a map which holds the status of each module its key is the instance name which is the unique name for the deployed instance related to this workload<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>observedGeneration</b></td>
         <td>integer</td>
         <td>
@@ -859,23 +873,16 @@ BlueprintStatus defines the observed state of Blueprint This includes readiness,
           Releases map each release to the observed generation of the blueprint containing this release. At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.<br/>
         </td>
         <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintstatusmoduleskey">modules</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          ModulesState is a map which holds the status of each module its key is the instance name which is the unique name for the deployed instance related to this workload<br/>
-        </td>
-        <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### Blueprint.status.observedState
+#### Blueprint.status.modules[key]
 <sup><sup>[↩ Parent](#blueprintstatus)</sup></sup>
 
 
 
-ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
+ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
 
 <table>
     <thead>
@@ -904,12 +911,12 @@ ObservedState includes information to be reported back to the FybrikApplication 
 </table>
 
 
-#### Blueprint.status.modules[key]
+#### Blueprint.status.observedState
 <sup><sup>[↩ Parent](#blueprintstatus)</sup></sup>
 
 
 
-ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
+ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
 
 <table>
     <thead>
@@ -1470,12 +1477,24 @@ Condition describes the state of a FybrikApplication at a certain point.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>status</b></td>
-        <td>string</td>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
         <td>
-          Status of the condition: true or false<br/>
+          ObservedGeneration is the version of the resource for which the condition has been evaluated<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>enum</td>
+        <td>
+          Status of the condition, one of (`True`, `False`, `Unknown`).<br/>
+          <br/>
+            <i>Enum</i>: True, False, Unknown<br/>
+            <i>Default</i>: Unknown<br/>
+        </td>
+        <td>false</td>
       </tr><tr>
         <td><b>type</b></td>
         <td>string</td>
@@ -1657,10 +1676,97 @@ FybrikModule is a description of an injectable component. the parameters it requ
       <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
       <td>true</td>
       </tr><tr>
+        <td><b><a href="#fybrikmodulestatus">status</a></b></td>
+        <td>object</td>
+        <td>
+          FybrikModuleStatus defines the observed state of FybrikModule.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b><a href="#fybrikmodulespec">spec</a></b></td>
         <td>object</td>
         <td>
           FybrikModuleSpec contains the info common to all modules, which are one of the components that process, load, write, audit, monitor the data used by the data scientist's application.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikModule.status
+<sup><sup>[↩ Parent](#fybrikmodule)</sup></sup>
+
+
+
+FybrikModuleStatus defines the observed state of FybrikModule.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikmodulestatusconditionsindex">conditions</a></b></td>
+        <td>[]object</td>
+        <td>
+          Conditions indicate the module states with respect to validation<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikModule.status.conditions[index]
+<sup><sup>[↩ Parent](#fybrikmodulestatus)</sup></sup>
+
+
+
+Condition describes the state of a FybrikApplication at a certain point.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>message</b></td>
+        <td>string</td>
+        <td>
+          Message contains the details of the current condition<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ObservedGeneration is the version of the resource for which the condition has been evaluated<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>enum</td>
+        <td>
+          Status of the condition, one of (`True`, `False`, `Unknown`).<br/>
+          <br/>
+            <i>Enum</i>: True, False, Unknown<br/>
+            <i>Default</i>: Unknown<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>type</b></td>
+        <td>string</td>
+        <td>
+          Type of the condition<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -1875,11 +1981,9 @@ Capability declares what this module knows how to do and the types of data it kn
         <td>false</td>
       </tr><tr>
         <td><b>capability</b></td>
-        <td>enum</td>
+        <td>string</td>
         <td>
           Capability declares what this module knows how to do - ex: read, write, transform...<br/>
-          <br/>
-            <i>Enum</i>: copy, read, write, transform<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -2329,6 +2433,13 @@ PlotterSpec defines the desired state of Plotter, which is applied in a multi-cl
         <td>[]object</td>
         <td>
           <br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>modulesNamespace</b></td>
+        <td>string</td>
+        <td>
+          ModulesNamespace is the namespace where modules should be allocated<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -3271,6 +3382,13 @@ BlueprintStatus defines the observed state of Blueprint This includes readiness,
         </tr>
     </thead>
     <tbody><tr>
+        <td><b><a href="#plotterstatusblueprintskeystatusmoduleskey">modules</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          ModulesState is a map which holds the status of each module its key is the instance name which is the unique name for the deployed instance related to this workload<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>observedGeneration</b></td>
         <td>integer</td>
         <td>
@@ -3293,23 +3411,16 @@ BlueprintStatus defines the observed state of Blueprint This includes readiness,
           Releases map each release to the observed generation of the blueprint containing this release. At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.<br/>
         </td>
         <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterstatusblueprintskeystatusmoduleskey">modules</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          ModulesState is a map which holds the status of each module its key is the instance name which is the unique name for the deployed instance related to this workload<br/>
-        </td>
-        <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### Plotter.status.blueprints[key].status.observedState
+#### Plotter.status.blueprints[key].status.modules[key]
 <sup><sup>[↩ Parent](#plotterstatusblueprintskeystatus)</sup></sup>
 
 
 
-ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
+ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
 
 <table>
     <thead>
@@ -3338,12 +3449,12 @@ ObservedState includes information to be reported back to the FybrikApplication 
 </table>
 
 
-#### Plotter.status.blueprints[key].status.modules[key]
+#### Plotter.status.blueprints[key].status.observedState
 <sup><sup>[↩ Parent](#plotterstatusblueprintskeystatus)</sup></sup>
 
 
 
-ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
+ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
 
 <table>
     <thead>
@@ -3396,12 +3507,24 @@ Condition describes the state of a FybrikApplication at a certain point.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>status</b></td>
-        <td>string</td>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
         <td>
-          Status of the condition: true or false<br/>
+          ObservedGeneration is the version of the resource for which the condition has been evaluated<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>enum</td>
+        <td>
+          Status of the condition, one of (`True`, `False`, `Unknown`).<br/>
+          <br/>
+            <i>Enum</i>: True, False, Unknown<br/>
+            <i>Default</i>: Unknown<br/>
+        </td>
+        <td>false</td>
       </tr><tr>
         <td><b>type</b></td>
         <td>string</td>

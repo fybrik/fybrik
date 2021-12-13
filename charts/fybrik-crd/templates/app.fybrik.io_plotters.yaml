@@ -376,6 +376,10 @@ spec:
                   - subFlows
                   type: object
                 type: array
+              modulesNamespace:
+                description: ModulesNamespace is the namespace where modules should
+                  be allocated
+                type: string
               templates:
                 additionalProperties:
                   description: Template contains basic information about the required
@@ -452,6 +456,7 @@ spec:
             required:
             - assets
             - flows
+            - modulesNamespace
             - templates
             type: object
           status:
@@ -546,8 +551,6 @@ spec:
                             reconcile, each release should be mapped to the latest
                             blueprint version or be uninstalled.
                           type: object
-                      required:
-                      - modules
                       type: object
                   required:
                   - name
@@ -564,14 +567,24 @@ spec:
                     message:
                       description: Message contains the details of the current condition
                       type: string
+                    observedGeneration:
+                      description: ObservedGeneration is the version of the resource
+                        for which the condition has been evaluated
+                      format: int64
+                      type: integer
                     status:
-                      description: 'Status of the condition: true or false'
+                      default: Unknown
+                      description: Status of the condition, one of (`True`, `False`,
+                        `Unknown`).
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
                       type: string
                     type:
                       description: Type of the condition
                       type: string
                   required:
-                  - status
                   - type
                   type: object
                 type: array

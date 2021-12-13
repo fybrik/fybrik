@@ -11,7 +11,7 @@ import (
 
 	clients "fybrik.io/fybrik/pkg/connectors/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )
 
 // CatalogReader - Reader struct which has information to read from catalog, this struct does not have any information related to the application context. any request specific info is passed as parameters to functions belonging to this struct.

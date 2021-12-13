@@ -4,7 +4,7 @@
 package openapiclient
 
 import (
-	"fybrik.io/fybrik/pkg/taxonomy/model/base"
+	"fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )
 
 type PolicyManagerRequest = base.PolicyManagerRequest

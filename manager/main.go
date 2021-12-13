@@ -153,6 +153,16 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 				return 1
 			}
 		}
+
+		// Initiate the FybrikModule Controller
+		moduleController := app.NewFybrikModuleReconciler(
+			mgr,
+			"FybrikModule",
+		)
+		if err := moduleController.SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "FybrikModule")
+			return 1
+		}
 	}
 
 	if enablePlotterController {
@@ -270,18 +280,18 @@ func newClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error)
 		password := strings.TrimSpace(os.Getenv("RAZEE_PASSWORD"))
 
 		setupLog.Info("Using razee local at " + razeeURL)
-		return razee.NewRazeeLocalManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password, multiClusterGroup)
+		return razee.NewRazeeLocalClusterManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password, multiClusterGroup)
 	} else if apiKey, satConf := os.LookupEnv("IAM_API_KEY"); satConf {
 		setupLog.Info("Using IBM Satellite config")
-		return razee.NewSatConfManager(strings.TrimSpace(apiKey), multiClusterGroup)
+		return razee.NewSatConfClusterManager(strings.TrimSpace(apiKey), multiClusterGroup)
 	} else if apiKey, razeeOauth := os.LookupEnv("API_KEY"); razeeOauth {
 		setupLog.Info("Using Razee oauth")
 
 		razeeURL := strings.TrimSpace(os.Getenv("RAZEE_URL"))
-		return razee.NewRazeeOAuthManager(strings.TrimSpace(razeeURL), strings.TrimSpace(apiKey), multiClusterGroup)
+		return razee.NewRazeeOAuthClusterManager(strings.TrimSpace(razeeURL), strings.TrimSpace(apiKey), multiClusterGroup)
 	} else {
 		setupLog.Info("Using local cluster manager")
-		return local.NewManager(mgr.GetClient(), utils.GetSystemNamespace())
+		return local.NewClusterManager(mgr.GetClient(), utils.GetSystemNamespace())
 	}
 }
 
