@@ -133,8 +133,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			}
 		}()
 
-		adminConfigEvaluator := adminconfig.NewDefaultConfig()
-		adminConfigEvaluator.SetupWithInfrastructureManager(&adminconfig.InfrastructureManager{ClusterManager: clusterManager, Client: mgr.GetClient()})
+		adminConfigEvaluator := adminconfig.NewRegoPolicyEvaluator(ctrl.Log.WithName("ConfigPolicyEvaluator"))
 		// Initiate the FybrikApplication Controller
 		applicationController := app.NewFybrikApplicationReconciler(
 			mgr,

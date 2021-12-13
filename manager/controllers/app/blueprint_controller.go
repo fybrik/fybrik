@@ -196,9 +196,8 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolo
 					if err == nil {
 						registrySuccessfulLogin = repoToPull
 						break
-					} else {
-						alog.Error().Msg("Failed to login to helm registry: " + repoToPull)
 					}
+					alog.Error().Msg("Failed to login to helm registry: " + repoToPull)
 				}
 			} else {
 				alog.Error().Msg("there is a mismatch between helm chart: " + chartSpec.Name +

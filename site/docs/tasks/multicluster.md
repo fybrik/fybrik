@@ -82,7 +82,7 @@ Prerequisites:
 The step below has to be executed for each cluster that should be added to
 the Fybrik instance. This step is the same for coordinator and remote clusters.
 
-1. In the IBM Satellite Cloud service under the **Clusters** tab click on **Attach cluster**.
+1. In the IBM Satellite Cloud service under the **Clusters** tab click on **Register cluster**.
 2. Enter a cluster name in the popup dialog and click **Register cluster**. (Please don't use spaces in the name)
 3. The next dialog will offer you a `kubectl` command that can be executed on the cluster that should be attached.
 4. After executing the `kubectl` command the Razee services will be installed in the `razeedeploy` namespace and the cluster

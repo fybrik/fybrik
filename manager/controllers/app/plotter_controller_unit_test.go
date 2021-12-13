@@ -63,11 +63,7 @@ func TestPlotterController(t *testing.T) {
 		make(map[string]*app.Blueprint),
 		[]multicluster.Cluster{{
 			Name: "thegreendragon",
-			Metadata: struct {
-				Region        string
-				Zone          string
-				VaultAuthPath string
-			}{
+			Metadata: multicluster.ClusterMetadata{
 				Region:        "theshire",
 				Zone:          "hobbiton",
 				VaultAuthPath: "kubernetes",

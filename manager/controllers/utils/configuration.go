@@ -6,6 +6,7 @@ package utils
 import (
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/onsi/ginkgo"
@@ -37,6 +38,20 @@ func GetModulesRole() string {
 // which is used for managing data set credentials
 func GetVaultAddress() string {
 	return os.Getenv(VaultAddressKey)
+}
+
+// GetDataPathMaxSize bounds the data path size (number of modules that access data for read/write/copy, not including transformations)
+func GetDataPathMaxSize() (int, error) {
+	defaultLimit := 2
+	limitStr := os.Getenv("DATAPATH_LIMIT")
+	if limitStr == "" {
+		return defaultLimit, nil
+	}
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		return defaultLimit, err
+	}
+	return limit, nil
 }
 
 // GetDataCatalogServiceAddress returns the address where data catalog is running
