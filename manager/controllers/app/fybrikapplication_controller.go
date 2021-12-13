@@ -567,7 +567,9 @@ func (r *FybrikApplicationReconciler) getStorageAccountRegions() ([]string, erro
 		return regions, err
 	}
 	for _, account := range accountList.Items {
-		regions = append(regions, account.Spec.Regions...)
+		for key := range account.Spec.Endpoints {
+			regions = append(regions, key)
+		}
 	}
 	return regions, nil
 }

@@ -39,22 +39,21 @@ spec:
           spec:
             description: FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
             properties:
-              endpoint:
-                description: Endpoint
-                type: string
-              regions:
-                description: Regions
-                items:
+              endpoints:
+                additionalProperties:
                   type: string
-                minItems: 1
-                type: array
+                description: Endpoints based on regions
+                type: object
+              id:
+                description: Identification of a storage account
+                type: string
               secretRef:
                 description: A name of k8s secret deployed in the control plane. This
                   secret includes secretKey and accessKey credentials for S3 bucket
                 type: string
             required:
-            - endpoint
-            - regions
+            - endpoints
+            - id
             - secretRef
             type: object
           status:
