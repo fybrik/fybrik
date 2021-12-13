@@ -14,7 +14,7 @@ import (
 // TODO(shlomitk1): define infrastructure taxonomy to be used in this structure
 type Infrastructure struct {
 	// Clusters available for deployment
-	Clusters []multicluster.Cluster
+	Clusters []multicluster.Cluster `json:"clusters"`
 }
 
 // InfrastructureManager retrieves the infrastructure data, such as ClusterManager interface, kubernetes client, etc.

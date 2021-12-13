@@ -60,8 +60,7 @@ func createClusterMetadata() *corev1.ConfigMap {
 func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) *FybrikApplicationReconciler {
 	// environment: cluster-metadata configmap
 	_ = cl.Create(context.Background(), createClusterMetadata())
-	adminConfigEvaluator := adminconfig.NewDefaultConfig()
-	adminConfigEvaluator.SetupWithInfrastructureManager(&adminconfig.InfrastructureManager{ClusterManager: &mockup.ClusterLister{}, Client: cl})
+	adminConfigEvaluator := adminconfig.NewRegoPolicyEvaluator(ctrl.Log.WithName("ConfigPolicyEvaluator"))
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	return &FybrikApplicationReconciler{
 		Client:        cl,
@@ -327,8 +326,7 @@ func TestNoReadPath(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// Expect an error
-	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring(app.ModuleNotFound))
-	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring("read"))
+	g.Expect(getErrorMessages(application)).NotTo(gomega.BeEmpty())
 }
 
 // Tests finding a module for copy

@@ -112,6 +112,9 @@ manager:
   # Override GRPC connection timeout in manager
   connectionTimeout: 
 
+  # Override data path limits in manager
+  dataPathMaxSize: "2"
+
   # Image name or a hub/image[:tag]
   image: "manager"
   # Overrides global.imagePullPolicy
