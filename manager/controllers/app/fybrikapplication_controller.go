@@ -399,7 +399,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 }
 
 // CreateDataRequest generates a new DataRequest object for a specific asset based on FybrikApplication and asset metadata
-func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataContext, assetMetadata *assetmetadata.DataDetails) adminconfig.DataRequest {
+func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataContext, assetMetadata *dc.Resource) adminconfig.DataRequest {
 	usage := make(map[api.DataFlow]bool)
 	// request to read is determined by the workload selector presence
 	usage[api.ReadFlow] = (application.Spec.Selector.WorkloadSelector.Size() > 0)
@@ -439,7 +439,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 	configEvaluatorInput := &adminconfig.EvaluatorInput{}
 	configEvaluatorInput.Workload.Properties = input.Spec.AppInfo.DeepCopy()
 	configEvaluatorInput.Workload.Cluster = workloadCluster
-	configEvaluatorInput.Request = CreateDataRequest(input, *req.Context, req.DataDetails)
+	configEvaluatorInput.Request = CreateDataRequest(input, *req.Context, req.DataDetails.Metadata)
 	// Read policies for data that is processed in the workload geography
 	if configEvaluatorInput.Request.Usage[api.ReadFlow] {
 		actionType := pm.READ

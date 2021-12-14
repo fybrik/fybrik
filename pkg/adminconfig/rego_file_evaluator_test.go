@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/app/assetmetadata"
 	adminconfig "fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
@@ -87,7 +86,7 @@ var _ = Describe("Evaluate a policy", func() {
 	It("Conflict", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: true, v1alpha1.CopyFlow: true},
-			Metadata: &assetmetadata.DataDetails{Metadata: &base.Resource{Geography: &geo}}},
+			Metadata: &base.Resource{Geography: &geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "neverland-cluster", Metadata: multicluster.ClusterMetadata{Region: "neverland"}}}}
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
@@ -98,7 +97,7 @@ var _ = Describe("Evaluate a policy", func() {
 	It("ValidSolution", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
-			Metadata: &assetmetadata.DataDetails{Metadata: &base.Resource{Geography: &geo}}},
+			Metadata: &base.Resource{Geography: &geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "thegreendragon", Metadata: multicluster.ClusterMetadata{Region: "theshire"}}}}
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
@@ -110,7 +109,7 @@ var _ = Describe("Evaluate a policy", func() {
 	It("Merge", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: true},
-			Metadata: &assetmetadata.DataDetails{Metadata: &base.Resource{Geography: &geo}}},
+			Metadata: &base.Resource{Geography: &geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "neverland-cluster", Metadata: multicluster.ClusterMetadata{Region: "neverland"}}}}
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
@@ -124,7 +123,7 @@ var _ = Describe("Evaluate a policy", func() {
 	It("No conflict for policy set 2", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: true, v1alpha1.CopyFlow: true},
-			Metadata: &assetmetadata.DataDetails{Metadata: &base.Resource{Geography: &geo}}},
+			Metadata: &base.Resource{Geography: &geo}},
 			Workload: adminconfig.WorkloadInfo{
 				PolicySetID: "2",
 				Cluster:     multicluster.Cluster{Name: "neverland-cluster", Metadata: multicluster.ClusterMetadata{Region: "neverland"}}}}
@@ -138,7 +137,7 @@ var _ = Describe("Evaluate a policy", func() {
 	It("No decisions for policy set 99", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: true, v1alpha1.CopyFlow: true},
-			Metadata: &assetmetadata.DataDetails{Metadata: &base.Resource{Geography: &geo}}},
+			Metadata: &base.Resource{Geography: &geo}},
 			Workload: adminconfig.WorkloadInfo{
 				PolicySetID: "99",
 				Cluster:     multicluster.Cluster{Name: "neverland-cluster", Metadata: multicluster.ClusterMetadata{Region: "neverland"}}}}
