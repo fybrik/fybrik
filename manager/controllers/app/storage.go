@@ -10,27 +10,28 @@ import (
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/pkg/storage"
-	"github.com/go-logr/logr"
+	"github.com/rs/zerolog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/logging"
 	"k8s.io/apimachinery/pkg/types"
 )
 
 // AllocateBucket allocates a bucket in the relevant geo
 // The buckets are created as temporary, i.e. to be removed after the owner Dataset is deleted
 // After a successful copy and registering a dataset, the bucket will become persistent
-func AllocateBucket(c client.Client, log logr.Logger, owner types.NamespacedName, id string, geo string) (*storage.ProvisionedBucket, error) {
+func AllocateBucket(c client.Client, log zerolog.Logger, owner types.NamespacedName, id string, geo string) (*storage.ProvisionedBucket, error) {
 	ctx := context.Background()
-	log.Info("Searching for a storage account matching the geography " + geo)
+	log.Trace().Msg("Searching for a storage account matching the geography " + geo)
 	var accountList app.FybrikStorageAccountList
 	if err := c.List(ctx, &accountList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
-		log.Info(err.Error())
+		log.Error().Err(err).Msg("Error listing storage accounts")
 		return nil, err
 	}
 
 	for _, account := range accountList.Items {
-		utils.PrintStructure(account, log, "Account ")
+		logging.LogStructure("Account", account, log, false, false)
 		for key, value := range account.Spec.Endpoints {
 			if geo != key {
 				continue

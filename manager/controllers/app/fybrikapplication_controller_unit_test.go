@@ -12,6 +12,7 @@ import (
 
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
+	"fybrik.io/fybrik/pkg/logging"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -65,7 +66,7 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 	return &FybrikApplicationReconciler{
 		Client:        cl,
 		Name:          "TestReconciler",
-		Log:           ctrl.Log.WithName("test-controller"),
+		Log:           logging.LogInit(logging.CONTROLLER, "test-controller"),
 		Scheme:        s,
 		PolicyManager: &mockup.MockPolicyManager{},
 		DataCatalog:   mockup.NewTestCatalog(),

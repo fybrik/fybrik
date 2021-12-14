@@ -4,6 +4,9 @@ kind: ConfigMap
 metadata:
   name: fybrik-config
 data:
+  PRETTY_LOGGING: {{ .Values.global.prettyLogging | quote }}
+  LOGGING_VERBOSITY: {{ .Values.global.loggingVerbosity | quote }}
+  
   {{- if .Values.coordinator.enabled }}
   DATAPATH_MAX_SIZE: {{ .Values.manager.dataPathMaxSize | quote }}
   CONNECTION_TIMEOUT: {{ .Values.manager.connectionTimeout | default .Values.global.connectionTimeout | quote }}
