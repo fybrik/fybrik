@@ -19,7 +19,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-const timeout = time.Second * 120
+const timeout = time.Second * 1000
 const interval = time.Millisecond * 100
 
 var _ = Describe("FybrikApplication Controller", func() {
