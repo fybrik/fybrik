@@ -10,6 +10,7 @@ import (
 	"log"
 	"strings"
 
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	catalogmodels "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 )
 
@@ -39,7 +40,7 @@ func (d *DataCatalogDummy) GetAssetInfo(in *catalogmodels.DataCatalogRequest, cr
 		return &dataDetails, nil
 	}
 
-	return nil, errors.New("could not find data details")
+	return nil, errors.New(app.InvalidAssetID)
 }
 
 func (d *DataCatalogDummy) Close() error {
