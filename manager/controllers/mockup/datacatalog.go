@@ -61,39 +61,45 @@ func NewTestCatalog() *DataCatalogDummy {
 	jsonFormat := "json"
 
 	s3Connection := catalogmodels.Connection{}
+	s3Config := make(map[string]interface{})
 	s3Map := make(map[string]interface{})
-	s3Map["name"] = "s3"
 	s3Map["endpoint"] = "s3.cloud-object-storage"
 	s3Map["bucket"] = "test-bucket"
 	s3Map["objectKey"] = "test"
-	bytes, _ := json.MarshalIndent(s3Map, "", "\t")
+	s3Config["name"] = "s3"
+	s3Config["s3"] = s3Map
+
+	bytes, _ := json.MarshalIndent(s3Config, "", "\t")
 	_ = json.Unmarshal(bytes, &s3Connection)
 
 	db2Connection := catalogmodels.Connection{}
 	db2Map := make(map[string]interface{})
-	db2Map["name"] = "jdbc-db2"
 	db2Map["database"] = "test-db"
 	db2Map["table"] = "test-table"
 	db2Map["url"] = "dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net"
 	db2Map["port"] = "5000"
 	db2Map["ssl"] = "false"
-	bytes, _ = json.MarshalIndent(db2Map, "", "\t")
+	db2Config := make(map[string]interface{})
+	db2Config["name"] = "jdbc-db2"
+	db2Config["jdbc-db2"] = db2Map
+	bytes, _ = json.MarshalIndent(db2Config, "", "\t")
 	_ = json.Unmarshal(bytes, &db2Connection)
 
 	kafkaConnection := catalogmodels.Connection{}
 	kafkaMap := make(map[string]interface{})
-	kafkaMap["name"] = "kafka"
-	kafkaMap["topicName"] = "topic"
-	kafkaMap["securityProtocol"] = "SASL_SSL"
-	kafkaMap["saslMechanism"] = "SCRAM-SHA-512"
-	kafkaMap["sslTruststore"] = "xyz123"
-	kafkaMap["sslTruststorePassword"] = "passwd"
-	kafkaMap["schemaRegistry"] = "kafka-registry"
-	kafkaMap["bootstrapServers"] = "http://kafka-servers"
-	kafkaMap["keyDeserializer"] = "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
-	kafkaMap["valueDeserializer"] = "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
-
-	bytes, _ = json.MarshalIndent(kafkaMap, "", "\t")
+	kafkaMap["topic_name"] = "topic"
+	kafkaMap["security_protocol"] = "SASL_SSL"
+	kafkaMap["sasl_mechanism"] = "SCRAM-SHA-512"
+	kafkaMap["ssl_truststore"] = "xyz123"
+	kafkaMap["ssl_truststore_password"] = "passwd"
+	kafkaMap["schema_registry"] = "kafka-registry"
+	kafkaMap["bootstrap_servers"] = "http://kafka-servers"
+	kafkaMap["key_deserializer"] = "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
+	kafkaMap["value_deserializer"] = "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
+	kafkaConfig := make(map[string]interface{})
+	kafkaConfig["name"] = "kafka"
+	kafkaConfig["kafka"] = kafkaMap
+	bytes, _ = json.MarshalIndent(kafkaConfig, "", "\t")
 	_ = json.Unmarshal(bytes, &kafkaConnection)
 
 	dummyCatalog.dataDetails["s3-external"] = catalogmodels.DataCatalogResponse{
