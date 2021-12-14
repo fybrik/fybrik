@@ -296,15 +296,12 @@ spec:
                   description: DatasetDetails contain dataset connection and metadata
                     required to register this dataset in the enterprise catalog
                   properties:
-                    connection:
-                      description: Dataset information
-                      type: object
-                      x-kubernetes-preserve-unknown-fields: true
                     datasetRef:
                       description: Reference to a Dataset resource containing the
                         request to provision storage
                       type: string
-                    metadata:
+                    details:
+                      description: Dataset information
                       type: object
                       x-kubernetes-preserve-unknown-fields: true
                     secretRef:

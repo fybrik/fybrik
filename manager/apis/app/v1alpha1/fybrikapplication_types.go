@@ -113,15 +113,12 @@ type ResourceReference struct {
 	AppVersion int64 `json:"appVersion"`
 }
 
-// DatasetDetails contain dataset connection and metadata required to register this dataset in the enterprise catalog
+// DatasetDetails holds details of the provisioned storage
 type DatasetDetails struct {
 	// Reference to a Dataset resource containing the request to provision storage
 	DatasetRef string `json:"datasetRef,omitempty"`
 	// Reference to a secret where the credentials are stored
 	SecretRef string `json:"secretRef,omitempty"`
-	// Dataset information
-	Connection ConnectionDetails `json:"connection,omitempty"`
-	Metadata   AssetMetadata     `json:"metadata,omitempty"`
 }
 
 // AssetState defines the observed state of an asset

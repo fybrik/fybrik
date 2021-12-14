@@ -62,9 +62,10 @@ then run the following to export all of the variables:
 set -a; . .env; set +a
 ```
 
-### Copy taxonomy JSON files locally
+### Copy taxonomy JSON files and config policies locally
 ```bash
 cp -R ../charts/fybrik/files/taxonomy /tmp
+cp -R ../charts/fybrik/files/adminconfig/* /tmp/adminconfig/
 ```
 
 ### Run the manager

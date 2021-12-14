@@ -5,7 +5,7 @@ package app
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
 	"math"
 	"reflect"
 	"strings"
@@ -14,12 +14,14 @@ import (
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
+	"fybrik.io/fybrik/pkg/logging"
+	"github.com/rs/zerolog"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/pkg/multicluster"
-	"github.com/go-logr/logr"
+	"fybrik.io/fybrik/pkg/serde"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -32,7 +34,7 @@ import (
 type PlotterReconciler struct {
 	client.Client
 	Name           string
-	Log            logr.Logger
+	Log            zerolog.Logger
 	Scheme         *runtime.Scheme
 	ClusterManager multicluster.ClusterManager
 }
@@ -40,26 +42,29 @@ type PlotterReconciler struct {
 // Reconcile receives a Plotter CRD
 //nolint:dupl
 func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.WithValues("plotter", req.NamespacedName)
+	sublog := r.Log.With().Str(logging.CONTROLLER, "Plotter").Str("plotter", req.NamespacedName.String()).Logger()
 
 	plotter := app.Plotter{}
 	if err := r.Get(ctx, req.NamespacedName, &plotter); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 	if err := r.reconcileFinalizers(&plotter); err != nil {
-		log.V(0).Info("Could not reconcile finalizers " + err.Error())
+		sublog.Error().Err(err).Msg("Could not reconcile finalizers ")
 		return ctrl.Result{}, err
 	}
+
+	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
+	log := sublog.With().Str(utils.FybrikAppUUID, uuid).Logger()
 
 	// If the object has a scheduled deletion time, update status and return
 	if !plotter.DeletionTimestamp.IsZero() {
 		// The object is being deleted
-		log.V(0).Info("Reconcile: Deleting Plotter " + plotter.GetName())
+		log.Trace().Str(logging.ACTION, logging.DELETE).Msg("Reconcile: Deleting Plotter " + plotter.GetName())
 		return ctrl.Result{}, nil
 	}
 
 	observedStatus := plotter.Status.DeepCopy()
-	log.V(0).Info("Reconcile: Installing/Updating Plotter " + plotter.GetName())
+	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("Reconcile: Installing/Updating Plotter " + plotter.GetName())
 
 	result, reconcileErrors := r.reconcile(&plotter)
 
@@ -70,14 +75,15 @@ func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	if reconcileErrors != nil {
-		log.Info("returning with errors", "result", result)
+		log.Error().Msg("Returning with errors") // TODO - return result?
+		//		log.Info("returning with errors", "result", result)
 		for _, s := range reconcileErrors {
-			log.Error(s, "Error:")
+			log.Error().Err(s).Msg("Error:")
 		}
 		return ctrl.Result{}, errors.Wrap(reconcileErrors[0], "failed to reconcile plotter")
 	}
 
-	log.Info("plotter reconcile cycle completed", "result", result)
+	log.Trace().Msg("Plotter reconcile completed") // TODO - Return result?
 	return result, nil
 }
 
@@ -181,21 +187,9 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			addCredentials(dataStore, plotterModule.VaultAuthPath, app.ReadFlow)
 		} else {
 			// Fill in the DataSource from the step arguments
-			apiInfo, err := utils.StructToMap(plotterModule.ModuleArguments.Source.API)
-			if err != nil {
-				return nil
-			}
-			apiInfo["name"] = "API"
-			bytes, err := json.MarshalIndent(apiInfo, "", "\t")
-			if err != nil {
-				return nil
-			}
 			dataStore = &app.DataStore{
-				Connection: app.ConnectionDetails{},
+				Connection: serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
 				Format:     plotterModule.ModuleArguments.Source.API.Format,
-			}
-			if err = json.Unmarshal(bytes, &dataStore.Connection); err != nil {
-				return nil
 			}
 		}
 		blueprintModule.Args.Read = []app.ReadModuleArgs{
@@ -229,21 +223,9 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			addCredentials(dataStore, plotterModule.VaultAuthPath, app.ReadFlow)
 		} else {
 			// Fill in the DataSource from the step arguments
-			apiInfo, err := utils.StructToMap(plotterModule.ModuleArguments.Source.API)
-			if err != nil {
-				return nil
-			}
-			apiInfo["name"] = "API"
-			bytes, err := json.MarshalIndent(apiInfo, "", "\t")
-			if err != nil {
-				return nil
-			}
 			dataStore = &app.DataStore{
-				Connection: app.ConnectionDetails{},
+				Connection: serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
 				Format:     plotterModule.ModuleArguments.Source.API.Format,
-			}
-			if err = json.Unmarshal(bytes, &dataStore.Connection); err != nil {
-				return nil
 			}
 		}
 		// Get only the writeFlow related creds
@@ -264,7 +246,10 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 // getBlueprintsMap constructs a map of blueprints driven by the plotter structure.
 // The key is the cluster name.
 func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]app.BlueprintSpec {
-	r.Log.V(1).Info("Constructing Blueprints from Plotter")
+	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
+	log := r.Log.With().Str(logging.CONTROLLER, "Plotter").Str(utils.FybrikAppUUID, uuid).Logger()
+
+	log.Trace().Msg("Constructing Blueprints from Plotter")
 	moduleInstances := make([]ModuleInstanceSpec, 0)
 
 	clusters, _ := r.ClusterManager.GetClusters()
@@ -355,6 +340,9 @@ func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap m
 }
 
 func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []error) {
+	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
+	log := r.Log.With().Str(logging.CONTROLLER, "Plotter").Str(utils.FybrikAppUUID, uuid).Logger()
+
 	if plotter.Status.Blueprints == nil {
 		plotter.Status.Blueprints = make(map[string]app.MetaBlueprint)
 	}
@@ -370,13 +358,13 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	var errorCollection []error
 	for cluster := range blueprintsMap {
 		blueprintSpec := blueprintsMap[cluster]
-		r.Log.V(1).Info("Handling spec for cluster " + cluster)
+		log.Trace().Msg("Handling spec for cluster " + cluster)
 		if blueprint, exists := plotter.Status.Blueprints[cluster]; exists {
-			r.Log.V(2).Info("Found status for cluster " + cluster)
+			log.Trace().Msg("Found status for cluster " + cluster)
 
 			remoteBlueprint, err := r.ClusterManager.GetBlueprint(cluster, blueprint.Namespace, blueprint.Name)
 			if err != nil {
-				r.Log.Error(err, "Could not fetch blueprint", "name", blueprint.Name)
+				log.Error().Err(err).Msg("Could not fetch blueprint named " + blueprint.Name)
 				errorCollection = append(errorCollection, err)
 
 				// The following does a simple exponential backoff with a minimum of 5 seconds
@@ -389,25 +377,24 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			}
 
 			if remoteBlueprint == nil {
-				r.Log.Info("Could not yet find remote blueprint")
+				log.Warn().Msg("Could not yet find remote blueprint")
 				isReady = false
 				r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, "Could not yet find remote blueprint")
 				continue // Continue with next blueprint
 			}
 
-			r.Log.V(2).Info("Remote blueprint: ", "rbp", remoteBlueprint)
+			logging.LogStructure("Remote blueprint", remoteBlueprint, log, false, true)
 
 			if !reflect.DeepEqual(blueprintSpec, remoteBlueprint.Spec) {
-				r.Log.V(1).Info("Blueprint specs differ",
-					"plotter.generation", plotter.Generation,
-					"plotter.observedGeneration", plotter.Status.ObservedGeneration)
+				r.Log.Warn().Msg("Blueprint specs differ.  plotter.generation " + fmt.Sprint(plotter.Generation) + " plotter.observedGeneration " + fmt.Sprint(plotter.Status.ObservedGeneration))
 				if plotter.Generation != plotter.Status.ObservedGeneration {
-					r.Log.V(1).Info("Updating blueprint...")
+					log.Trace().Str(logging.ACTION, logging.UPDATE).Msg("Updating blueprint...")
 					remoteBlueprint.Spec = blueprintSpec
 					remoteBlueprint.ObjectMeta.Annotations = map[string]string(nil) // reset annotations
 					err := r.ClusterManager.UpdateBlueprint(cluster, remoteBlueprint)
 					if err != nil {
-						r.Log.Error(err, "Could not update blueprint", "newSpec", blueprintSpec)
+						log.Error().Err(err).Msg("Could not update blueprint")
+						logging.LogStructure("blueprint spec", blueprintSpec, log, false, false)
 						errorCollection = append(errorCollection, err)
 						isReady = false
 						r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, err.Error())
@@ -420,13 +407,13 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 					r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, "Blueprint changes just applied")
 					continue // Continue with next blueprint
 				}
-				r.Log.V(1).Info("Not updating blueprint as generation did not change")
+				log.Trace().Msg("Not updating blueprint as generation did not change")
 				isReady = false
 				r.updatePlotterAssetsState(assetToStatusMap, remoteBlueprint)
 				continue
 			}
 
-			r.Log.V(2).Info("Status of remote blueprint ", "status", remoteBlueprint.Status)
+			logging.LogStructure("Remote blueprint status", remoteBlueprint.Status, log, false, false)
 
 			plotter.Status.Blueprints[cluster] = app.CreateMetaBlueprint(remoteBlueprint)
 
@@ -440,7 +427,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			}
 			r.updatePlotterAssetsState(assetToStatusMap, remoteBlueprint)
 		} else {
-			r.Log.V(2).Info("Found no status for cluster " + cluster)
+			log.Warn().Msg("Found no status for cluster " + cluster)
 			blueprint := &app.Blueprint{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "Blueprint",
@@ -455,6 +442,9 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 						app.ApplicationNameLabel:      plotter.Labels[app.ApplicationNameLabel],
 						app.ApplicationNamespaceLabel: plotter.Labels[app.ApplicationNamespaceLabel],
 					},
+					Annotations: map[string]string{
+						utils.FybrikAppUUID: uuid, // Pass on the globally unique id of the fybrikapplication instance for logging purposes
+					},
 				},
 				Spec: blueprintSpec,
 			}
@@ -462,7 +452,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			err := r.ClusterManager.CreateBlueprint(cluster, blueprint)
 			if err != nil {
 				errorCollection = append(errorCollection, err)
-				r.Log.Error(err, "Could not create blueprint for cluster", "cluster", cluster)
+				log.Error().Err(err).Str(logging.CLUSTER, cluster).Str(logging.ACTION, logging.CREATE).Msg("Could not create blueprint for cluster")
 				r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, err.Error())
 				continue
 			}
@@ -481,16 +471,12 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			if err != nil {
 				if !strings.HasPrefix(err.Error(), "Query channelByName error. Could not find the channel with name") {
 					errorCollection = append(errorCollection, err)
-					r.Log.Error(err, "Could not delete remote blueprint after spec changed!", "cluster", cluster)
+					log.Error().Err(err).Str(logging.CLUSTER, cluster).Str(logging.BLUEPRINT, remoteBlueprint.Name).Str(logging.ACTION, logging.DELETE).Msg("Could not delete remote blueprint after spec changed!")
 					continue
 				}
 			}
 			delete(plotter.Status.Blueprints, cluster)
-			r.Log.V(1).Info("Successfully removed blueprint from plotter",
-				"plotter", plotter.Name,
-				"cluster", cluster,
-				"namespace", remoteBlueprint.Namespace,
-				"name", remoteBlueprint.Name)
+			log.Trace().Str(logging.PLOTTER, plotter.Name).Str(logging.CLUSTER, cluster).Str(logging.NAMESPACE, remoteBlueprint.Namespace).Str(logging.BLUEPRINT, remoteBlueprint.Name).Msg("Successfully removed blueprint from plotter")
 		}
 	}
 
@@ -506,7 +492,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 		}
 
 		if errorCollection == nil {
-			r.Log.V(2).Info("Plotter is ready!", "plotter", plotter.Name)
+			log.Trace().Str(logging.PLOTTER, plotter.Name).Msg("Plotter is ready!")
 			return ctrl.Result{}, nil
 		}
 
@@ -517,7 +503,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 		backoffFactor := int(math.Min(math.Exp2(elapsedTime.Minutes()), 60.0))
 		requeueAfter := time.Duration(4+backoffFactor) * time.Second
 
-		r.Log.V(2).Info("Plotter is ready!", "plotter", plotter.Name, "backoffFactor", backoffFactor, "elapsedTime", elapsedTime)
+		log.Trace().Str(logging.PLOTTER, plotter.Name).Str("BackoffFactor", fmt.Sprint(backoffFactor)).Str(logging.RESPONSETIME, elapsedTime.String()).Msg("Plotter is ready!")
 
 		return ctrl.Result{RequeueAfter: requeueAfter}, errorCollection
 	}
@@ -542,7 +528,7 @@ func NewPlotterReconciler(mgr ctrl.Manager, name string, manager multicluster.Cl
 	return &PlotterReconciler{
 		Client:         mgr.GetClient(),
 		Name:           name,
-		Log:            ctrl.Log.WithName("controllers").WithName(name),
+		Log:            logging.LogInit(logging.CONTROLLER, name),
 		Scheme:         mgr.GetScheme(),
 		ClusterManager: manager,
 	}

@@ -8,6 +8,11 @@ global:
   tag: "master"
   imagePullPolicy: "Always"
 
+  prettyLogging: false
+  # zerolog verbosity level 
+  # ref: https://github.com/rs/zerolog#leveled-logging
+  loggingVerbosity: -1
+
 # Cluster metadata values
 cluster:
   # Set to the name of the cluster.

@@ -6,6 +6,7 @@ package utils
 import (
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/onsi/ginkgo"
@@ -39,6 +40,20 @@ func GetVaultAddress() string {
 	return os.Getenv(VaultAddressKey)
 }
 
+// GetDataPathMaxSize bounds the data path size (number of modules that access data for read/write/copy, not including transformations)
+func GetDataPathMaxSize() (int, error) {
+	defaultLimit := 2
+	limitStr := os.Getenv("DATAPATH_LIMIT")
+	if limitStr == "" {
+		return defaultLimit, nil
+	}
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		return defaultLimit, err
+	}
+	return limit, nil
+}
+
 // GetDataCatalogServiceAddress returns the address where data catalog is running
 func GetDataCatalogServiceAddress() string {
 	return os.Getenv(CatalogConnectorServiceAddressKey)
@@ -60,4 +75,6 @@ func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
 	SetIfNotSet("CONNECTION_TIMEOUT", "120", t)
 	SetIfNotSet("MAIN_POLICY_MANAGER_CONNECTOR_URL", "localhost:50090", t)
 	SetIfNotSet("MAIN_POLICY_MANAGER_NAME", "MOCK", t)
+	SetIfNotSet("LOGGING_VERBOSITY", "-1", t)
+	SetIfNotSet("PRETTY_LOGGING", "true", t)
 }

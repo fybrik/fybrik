@@ -9,15 +9,16 @@ import (
 
 	"encoding/json"
 
+	"fybrik.io/fybrik/pkg/logging"
 	validate "fybrik.io/fybrik/pkg/taxonomy/validate"
+
+	"github.com/rs/zerolog"
+	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
-	"github.com/go-logr/logr"
-	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -29,7 +30,7 @@ import (
 type FybrikModuleReconciler struct {
 	client.Client
 	Name   string
-	Log    logr.Logger
+	Log    zerolog.Logger
 	Scheme *runtime.Scheme
 }
 
@@ -40,11 +41,12 @@ const (
 
 // Reconcile validates FybrikModule CRD
 func (r *FybrikModuleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.WithValues("FybrikModule", req.NamespacedName)
+	log := r.Log.With().Str(logging.CONTROLLER, "FybrikModule").Str("module", req.NamespacedName.String()).Logger()
+
 	// obtain FybrikModule resource
 	moduleContext := &api.FybrikModule{}
 	if err := r.Get(ctx, req.NamespacedName, moduleContext); err != nil {
-		log.V(0).Info("The reconciled object was not found")
+		log.Warn().Msg("The reconciled object was not found")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
@@ -57,19 +59,19 @@ func (r *FybrikModuleReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	observedStatus := moduleContext.Status.DeepCopy()
 	moduleVersion := moduleContext.GetGeneration()
 	if len(moduleContext.Status.Conditions) == 0 {
-		moduleContext.Status.Conditions = []api.Condition{{Type: api.ValidCondition, Status: corev1.ConditionUnknown, ObservedGeneration: 0}}
+		moduleContext.Status.Conditions = []api.Condition{{Type: api.ValidCondition, Status: v1.ConditionUnknown, ObservedGeneration: 0}}
 	}
 
 	// check if module has been validated before or if validated module is outdated
 	condition := moduleContext.Status.Conditions[ModuleValidationConditionIndex]
-	if condition.ObservedGeneration != moduleVersion || condition.Status == corev1.ConditionUnknown {
+	if condition.ObservedGeneration != moduleVersion || condition.Status == v1.ConditionUnknown {
 		// do validation on moduleContext
 		err := ValidateFybrikModule(moduleContext, ModuleTaxonomy)
 		condition.ObservedGeneration = moduleVersion
 		// if validation fails
 		if err != nil {
 			// set error message
-			log.V(0).Info("Fybrik module validation failed " + err.Error())
+			log.Error().Err(err).Msg("Fybrik module validation failed ")
 			condition.Message = err.Error()
 			condition.Status = v1.ConditionFalse
 		} else {
@@ -81,7 +83,7 @@ func (r *FybrikModuleReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	// Update CRD status in case of change (other than deletion, which was handled separately)
 	if !equality.Semantic.DeepEqual(&moduleContext.Status, observedStatus) && moduleContext.DeletionTimestamp.IsZero() {
-		log.V(0).Info("Reconcile: Updating status for desired generation " + fmt.Sprint(moduleContext.GetGeneration()))
+		log.Trace().Msg("Reconcile: Updating status for desired generation " + fmt.Sprint(moduleContext.GetGeneration()))
 		if err := r.Client.Status().Update(ctx, moduleContext); err != nil {
 			return ctrl.Result{}, err
 		}
@@ -94,7 +96,7 @@ func NewFybrikModuleReconciler(mgr ctrl.Manager, name string) *FybrikModuleRecon
 	return &FybrikModuleReconciler{
 		Client: mgr.GetClient(),
 		Name:   name,
-		Log:    ctrl.Log.WithName("controllers").WithName(name),
+		Log:    logging.LogInit(logging.CONTROLLER, name),
 		Scheme: mgr.GetScheme(),
 	}
 }

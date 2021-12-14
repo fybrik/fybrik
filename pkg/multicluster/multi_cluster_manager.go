@@ -24,14 +24,14 @@ type ClusterManager interface {
 }
 
 type ClusterMetadata struct {
-	Region        string
-	Zone          string
-	VaultAuthPath string
+	Region        string `json:"region"`
+	Zone          string `json:"zone,omitempty"`
+	VaultAuthPath string `json:"vaultAuthPath,omitempty"`
 }
 
 type Cluster struct {
-	Name     string
-	Metadata ClusterMetadata
+	Name     string          `json:"name"`
+	Metadata ClusterMetadata `json:"metadata"`
 }
 
 func CreateCluster(cm corev1.ConfigMap) Cluster {

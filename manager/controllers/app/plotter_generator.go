@@ -5,35 +5,36 @@ package app
 
 import (
 	"bytes"
-	"encoding/json"
 	"net/url"
 	"text/template"
 
 	"emperror.dev/errors"
-	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
+	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
+	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/multicluster"
+	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
 	vault "fybrik.io/fybrik/pkg/vault"
 	"github.com/Masterminds/sprig/v3"
-	"github.com/go-logr/logr"
+	"github.com/rs/zerolog"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // NewAssetInfo points to the provisoned storage and hold information about the new asset
 type NewAssetInfo struct {
-	Storage    *storage.ProvisionedBucket
-	Connection app.ConnectionDetails
-	Metadata   app.AssetMetadata
+	Storage *storage.ProvisionedBucket
 }
 
 // PlotterGenerator constructs a plotter based on the requirements (governance actions, data location) and the existing set of FybrikModules
 type PlotterGenerator struct {
 	Client                client.Client
-	Log                   logr.Logger
+	Log                   zerolog.Logger
 	Modules               map[string]*app.FybrikModule
+	Clusters              []multicluster.Cluster
 	Owner                 types.NamespacedName
 	PolicyManager         pmclient.PolicyManager
 	Provision             storage.ProvisionInterface
@@ -45,16 +46,16 @@ type PlotterGenerator struct {
 // GetCopyDestination creates a Dataset for bucket allocation by implicit copies or ingest.
 func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterface *app.InterfaceDetails, geo string) (*app.DataStore, error) {
 	// provisioned storage for COPY
-	originalAssetName := item.DataDetails.ResourceMetadata.Name
+	originalAssetName := item.DataDetails.Metadata.Name
 	var bucket *storage.ProvisionedBucket
 	var err error
 	if bucket, err = AllocateBucket(p.Client, p.Log, p.Owner, originalAssetName, geo); err != nil {
-		p.Log.Info("Bucket allocation failed: " + err.Error())
+		p.Log.Error().Err(err).Msg("Bucket allocation failed")
 		return nil, err
 	}
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
 	if err = p.Provision.CreateDataset(bucketRef, bucket, &p.Owner); err != nil {
-		p.Log.Info("Dataset creation failed: " + err.Error())
+		p.Log.Error().Err(err).Msg("Dataset creation failed")
 		return nil, err
 	}
 
@@ -65,25 +66,21 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 		return nil, err
 	}
 	endpoint := url.Host
-	properties := make(map[string]interface{})
-	properties["name"] = "s3"
-	properties["bucket"] = bucket.Name
-	properties["endpoint"] = endpoint
-	properties["objectKey"] = originalAssetName + utils.Hash(p.Owner.Name+p.Owner.Namespace, 10)
-	bytes, err := json.MarshalIndent(properties, "", "\t")
-	if err != nil {
-		return nil, err
+	datastore := &pb.DataStore{
+		Type: pb.DataStore_S3,
+		Name: "S3",
+		S3: &pb.S3DataStore{
+			Bucket:    bucket.Name,
+			Endpoint:  endpoint,
+			ObjectKey: originalAssetName + utils.Hash(p.Owner.Name+p.Owner.Namespace, 10),
+		},
 	}
-	var connection api.ConnectionDetails
-	if err = json.Unmarshal(bytes, &connection); err != nil {
-		return nil, err
-	}
+	connection := serde.NewArbitrary(datastore)
 	assetInfo := NewAssetInfo{
-		Storage:    bucket,
-		Connection: connection,
-		Metadata:   app.AssetMetadata{Resource: item.DataDetails.ResourceMetadata}}
+		Storage: bucket,
+	}
 	p.ProvisionedStorage[item.Context.DataSetID] = assetInfo
-	utils.PrintStructure(&assetInfo, p.Log, "ProvisionedStorage element")
+	logging.LogStructure("ProvisionedStorage element", assetInfo, p.Log, false, true)
 
 	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
 	vaultMap := make(map[string]app.Vault)
@@ -106,17 +103,15 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 }
 
 // Adds the asset details, flows and templates to the given plotter spec.
-// Write path is not yet implemented
 func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.FybrikApplication, plotterSpec *app.PlotterSpec) error {
-	datasetID := item.Context.DataSetID
-	p.Log.Info("Choose modules for " + datasetID)
-
+	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Choose modules for dataset")
+	var err error
 	subflows := make([]app.SubFlow, 0)
 	assets := map[string]app.AssetDetails{}
 	templates := []app.Template{}
 
 	// Set the value received from the catalog connector.
-	vaultSecretPath := item.DataDetails.Credentials
+	vaultSecretPath := item.VaultSecretPath
 	vaultMap := make(map[string]app.Vault)
 	vaultMap[string(app.ReadFlow)] = app.Vault{
 		SecretPath: vaultSecretPath,
@@ -124,12 +119,12 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 		Address:    utils.GetVaultAddress(),
 	}
 	sourceDataStore := &app.DataStore{
-		Connection: app.ConnectionDetails{Connection: item.DataDetails.Details.Connection},
+		Connection: &item.DataDetails.Connection,
 		Vault:      vaultMap,
-		Format:     *item.DataDetails.Details.DataFormat,
+		Format:     item.DataDetails.Interface.DataFormat,
 	}
 
-	assets[datasetID] = app.AssetDetails{
+	assets[item.Context.DataSetID] = app.AssetDetails{
 		AdvertisedAssetID: "",
 		DataStore:         *sourceDataStore,
 	}
@@ -137,140 +132,98 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 	// DataStore for destination will be determined if an implicit copy is required
 	var sinkDataStore *app.DataStore
 
-	selectors, err := p.SelectModules(&item, appContext)
-	if err != nil {
-		return err
+	solutions := p.FindPaths(&item, appContext)
+	if len(solutions) == 0 {
+		return errors.New("Data path could not be constructed")
 	}
-	p.Log.V(0).Info("Generating a plotter")
-	readSelector := selectors[app.Read]
-	copySelector := selectors[app.Copy]
-	// sanity
-	if readSelector == nil && copySelector == nil {
-		return errors.New("Can't generate a plotter - no modules available")
-	}
-	var copyCluster, readCluster string
-	if copySelector != nil {
-		p.Log.Info("Found copy module " + copySelector.GetModule().Name + " for " + datasetID)
-		// copy should be applied - allocate storage
-		if sinkDataStore, err = p.GetCopyDestination(item, copySelector.Destination, copySelector.StorageAccountRegion); err != nil {
-			p.Log.Info("Allocation failed: " + err.Error())
-			return err
-		}
-		var copyDataAssetID = datasetID + "-copy"
-		actions := createActionStructure(copySelector.Actions)
-		if len(item.Configuration.ConfigDecisions[app.Copy].Clusters) > 0 {
-			copyCluster = item.Configuration.ConfigDecisions[app.Copy].Clusters[0]
-		} else {
-			msg := "Coud not determine the cluster for copy"
-			p.Log.Info(msg)
-			return errors.New(msg)
-		}
-		// The default capability scope is of type Asset
-		scope := copySelector.ModuleCapability.Scope
+	p.Log.Trace().Msg("Generating a plotter")
+	selection := solutions[0]
+	datasetID := item.Context.DataSetID
+	for _, element := range selection.DataPath {
+		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
+		p.Log.Trace().Msg("Adding module for " + moduleCapability.Capability)
+		actions := createActionStructure(element.Actions)
 		template := app.Template{
-			Name: "copy",
+			Name: moduleCapability.Capability,
 			Modules: []app.ModuleInfo{{
-				Name:  "copy",
-				Type:  copySelector.Module.Spec.Type,
-				Chart: copySelector.Module.Spec.Chart,
-				Scope: scope,
+				Name:  element.Module.Name,
+				Type:  element.Module.Spec.Type,
+				Chart: element.Module.Spec.Chart,
+				Scope: moduleCapability.Scope,
 			}},
 		}
 		templates = append(templates, template)
-		copyAsset := app.AssetDetails{
-			AdvertisedAssetID: datasetID,
-			DataStore:         *sinkDataStore,
+		var api *app.Service
+		if moduleCapability.API != nil {
+			api, err = moduleAPIToService(moduleCapability.API, moduleCapability.Scope,
+				appContext, element.Module.Name, datasetID)
+			if err != nil {
+				return err
+			}
 		}
-		assets[copyDataAssetID] = copyAsset
-		steps := []app.DataFlowStep{
-			{
-				Name:     "",
-				Cluster:  copyCluster,
-				Template: "copy",
-				Parameters: &app.StepParameters{
-					Source: &app.StepSource{
-						AssetID: datasetID,
-						API:     nil,
-					},
-					Sink: &app.StepSink{
-						AssetID: copyDataAssetID,
-					},
-					API:     nil,
-					Actions: actions,
-				},
-			},
-		}
-		p.Log.Info("Add subflow")
-		subFlow := app.SubFlow{
-			Name:     "",
-			FlowType: app.CopyFlow,
-			Triggers: []app.SubFlowTrigger{app.InitTrigger},
-			Steps:    [][]app.DataFlowStep{steps},
-		}
-		subflows = append(subflows, subFlow)
-		p.Log.Info("Adding copy module")
-	}
-	if readSelector != nil {
-		p.Log.Info("Adding read path")
-		var readAssetID string
-		if sinkDataStore == nil {
-			readAssetID = datasetID
-		} else {
-			readAssetID = datasetID + "-copy"
-		}
-		actions := createActionStructure(readSelector.Actions)
-		if len(item.Configuration.ConfigDecisions[app.Read].Clusters) > 0 {
-			readCluster = item.Configuration.ConfigDecisions[app.Read].Clusters[0]
-		} else {
-			msg := "Coud not determine the cluster for read"
-			p.Log.Info(msg)
-			return errors.New(msg)
-		}
-		// The default capability scope is of type Asset
-		scope := readSelector.ModuleCapability.Scope
-		template := app.Template{
-			Name: "read",
-			Modules: []app.ModuleInfo{
+		var subFlow app.SubFlow
+		if !element.Sink.Virtual {
+			// allocate storage and create a temoprary asset
+			if sinkDataStore, err = p.GetCopyDestination(item, element.Sink.Connection, element.StorageAccountRegion); err != nil {
+				p.Log.Error().Err(err).Msg("Storage allocation failed")
+				return err
+			}
+			copyAssetID := datasetID + "-copy"
+			copyAsset := app.AssetDetails{
+				AdvertisedAssetID: datasetID,
+				DataStore:         *sinkDataStore,
+			}
+			assets[copyAssetID] = copyAsset
+			steps := []app.DataFlowStep{
 				{
-					Name:  readSelector.Module.Name,
-					Type:  readSelector.Module.Spec.Type,
-					Chart: readSelector.Module.Spec.Chart,
-					Scope: scope,
-				},
-			},
-		}
-		templates = append(templates, template)
-		api, err := moduleAPIToService(readSelector.ModuleCapability.API, readSelector.ModuleCapability.Scope,
-			appContext, readSelector.Module.Name, readAssetID)
-		if err != nil {
-			return err
-		}
-		steps := []app.DataFlowStep{
-			{
-				Name:     "",
-				Cluster:  readCluster,
-				Template: "read",
-				Parameters: &app.StepParameters{
-					Source: &app.StepSource{
-						AssetID: readAssetID,
-						API:     nil,
+					Name:     "",
+					Cluster:  element.Cluster,
+					Template: moduleCapability.Capability,
+					Parameters: &app.StepParameters{
+						Source: &app.StepSource{
+							AssetID: datasetID,
+							API:     nil,
+						},
+						Sink: &app.StepSink{
+							AssetID: copyAssetID,
+						},
+						API:     api,
+						Actions: actions,
 					},
-					API:     api,
-					Actions: actions,
 				},
-			},
+			}
+			datasetID = copyAssetID
+			subFlow = app.SubFlow{
+				Name:     "",
+				FlowType: app.CopyFlow,
+				Triggers: []app.SubFlowTrigger{app.InitTrigger},
+				Steps:    [][]app.DataFlowStep{steps},
+			}
+		} else {
+			steps := []app.DataFlowStep{
+				{
+					Name:     "",
+					Cluster:  element.Cluster,
+					Template: moduleCapability.Capability,
+					Parameters: &app.StepParameters{
+						Source: &app.StepSource{
+							AssetID: datasetID,
+							API:     nil,
+						},
+						API:     api,
+						Actions: actions,
+					},
+				},
+			}
+			subFlow = app.SubFlow{
+				Name:     "",
+				FlowType: app.ReadFlow,
+				Triggers: []app.SubFlowTrigger{app.WorkloadTrigger},
+				Steps:    [][]app.DataFlowStep{steps},
+			}
 		}
-		p.Log.Info("Add subflow")
-		subFlow := app.SubFlow{
-			Name:     "",
-			FlowType: app.ReadFlow,
-			Triggers: []app.SubFlowTrigger{app.WorkloadTrigger},
-			Steps:    [][]app.DataFlowStep{steps},
-		}
-
 		subflows = append(subflows, subFlow)
 	}
-
 	// If everything finished without errors build the flow and add it to the plotter spec
 	// Also add new assets as well as templates
 	flowType := subflows[len(subflows)-1].FlowType
@@ -290,7 +243,6 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 	for _, template := range templates {
 		plotterSpec.Templates[template.Name] = template
 	}
-
 	return nil
 }
 

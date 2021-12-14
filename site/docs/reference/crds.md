@@ -1616,13 +1616,6 @@ DatasetDetails contain dataset connection and metadata required to register this
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>connection</b></td>
-        <td>object</td>
-        <td>
-          Dataset information<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
         <td><b>datasetRef</b></td>
         <td>string</td>
         <td>
@@ -1630,10 +1623,10 @@ DatasetDetails contain dataset connection and metadata required to register this
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>metadata</b></td>
+        <td><b>details</b></td>
         <td>object</td>
         <td>
-          <br/>
+          Dataset information<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -2328,17 +2321,17 @@ FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>endpoint</b></td>
-        <td>string</td>
+        <td><b>endpoints</b></td>
+        <td>map[string]string</td>
         <td>
-          Endpoint<br/>
+          Endpoints based on regions<br/>
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b>regions</b></td>
-        <td>[]string</td>
+        <td><b>id</b></td>
+        <td>string</td>
         <td>
-          Regions<br/>
+          Identification of a storage account<br/>
         </td>
         <td>true</td>
       </tr><tr>

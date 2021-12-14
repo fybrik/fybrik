@@ -3,22 +3,10 @@
 
 package v1alpha1
 
-import (
-	"encoding/json"
-
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
-)
-
-// +kubebuilder:validation:Type=object
-// +kubebuilder:pruning:PreserveUnknownFields
-type AssetMetadata struct {
-	taxonomymodels.Resource
-}
-
-func (metadata *AssetMetadata) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, &metadata.Resource)
-}
-
-func (metadata *AssetMetadata) MarshalJSON() ([]byte, error) {
-	return metadata.Resource.MarshalJSON()
+// ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
+type ObservedState struct {
+	// Ready represents that the modules have been orchestrated successfully and the data is ready for usage
+	Ready bool `json:"ready,omitempty"`
+	// Error indicates that there has been an error to orchestrate the modules and provides the error message
+	Error string `json:"error,omitempty"`
 }

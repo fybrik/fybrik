@@ -12,6 +12,7 @@ import (
 
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
+	"fybrik.io/fybrik/pkg/logging"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -60,13 +61,12 @@ func createClusterMetadata() *corev1.ConfigMap {
 func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) *FybrikApplicationReconciler {
 	// environment: cluster-metadata configmap
 	_ = cl.Create(context.Background(), createClusterMetadata())
-	adminConfigEvaluator := adminconfig.NewDefaultConfig()
-	adminConfigEvaluator.SetupWithInfrastructureManager(&adminconfig.InfrastructureManager{ClusterManager: &mockup.ClusterLister{}, Client: cl})
+	adminConfigEvaluator := adminconfig.NewRegoPolicyEvaluator(ctrl.Log.WithName("ConfigPolicyEvaluator"))
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	return &FybrikApplicationReconciler{
 		Client:        cl,
 		Name:          "TestReconciler",
-		Log:           ctrl.Log.WithName("test-controller"),
+		Log:           logging.LogInit(logging.CONTROLLER, "test-controller"),
 		Scheme:        s,
 		PolicyManager: &mockup.MockPolicyManager{},
 		DataCatalog:   mockup.NewTestCatalog(),
@@ -165,8 +165,7 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveKey("s3-csv/redact-dataset"))
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveKey("s3-csv/redact-dataset-copy"))
 	dataStore := plotter.Spec.Assets["s3-csv/redact-dataset"].DataStore
-	dataStoreMap, err := utils.StructToMap(dataStore.Connection)
-	g.Expect(err).To(gomega.BeNil())
+	dataStoreMap := dataStore.Connection.Data.(map[string]interface{})
 	g.Expect(dataStoreMap).To(gomega.HaveKey("s3"))
 	s3Config := dataStoreMap["s3"].(map[string]interface{})
 	g.Expect(s3Config["endpoint"]).To(gomega.Equal("s3.eu-gb.cloud-object-storage.appdomain.cloud"))
@@ -328,8 +327,7 @@ func TestNoReadPath(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// Expect an error
-	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring(app.ModuleNotFound))
-	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring("read"))
+	g.Expect(getErrorMessages(application)).NotTo(gomega.BeEmpty())
 }
 
 // Tests finding a module for copy

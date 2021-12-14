@@ -9,7 +9,7 @@ import (
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
-	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
+	connectors "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 	"fybrik.io/fybrik/pkg/vault"
 	"github.com/gdexlab/go-render/render"
@@ -38,7 +38,7 @@ func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operati
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
-func LookupPolicyDecisions(datasetID string, policyManager pmclient.PolicyManager, input *app.FybrikApplication, op *taxonomymodels.PolicyManagerRequestAction) ([]taxonomymodels.Action, error) {
+func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, input *app.FybrikApplication, op *taxonomymodels.PolicyManagerRequestAction) ([]taxonomymodels.Action, error) {
 	// call external policy manager to get governance instructions for this operation
 	openapiReq := ConstructOpenAPIReq(datasetID, input, op)
 	output := render.AsCode(openapiReq)
