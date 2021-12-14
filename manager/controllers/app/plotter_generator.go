@@ -5,6 +5,7 @@ package app
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/url"
 	"text/template"
 
@@ -12,11 +13,11 @@ import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
+	dc "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 	vault "fybrik.io/fybrik/pkg/vault"
 	"github.com/Masterminds/sprig/v3"
 	"github.com/rs/zerolog"
@@ -66,15 +67,18 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 		return nil, err
 	}
 	endpoint := url.Host
-	datastore := &pb.DataStore{
-		Type: pb.DataStore_S3,
-		Name: "S3",
-		S3: &pb.S3DataStore{
-			Bucket:    bucket.Name,
-			Endpoint:  endpoint,
-			ObjectKey: originalAssetName + utils.Hash(p.Owner.Name+p.Owner.Namespace, 10),
-		},
-	}
+	datastore := dc.Connection{}
+	s3Config := make(map[string]interface{})
+	s3Map := make(map[string]interface{})
+	s3Map["endpoint"] = endpoint
+	s3Map["bucket"] = bucket.Name
+	s3Map["object_key"] = originalAssetName + utils.Hash(p.Owner.Name+p.Owner.Namespace, 10)
+	s3Config["name"] = "s3"
+	s3Config["s3"] = s3Map
+
+	bytes, _ := json.MarshalIndent(s3Config, "", "\t")
+	_ = json.Unmarshal(bytes, &datastore)
+
 	connection := serde.NewArbitrary(datastore)
 	assetInfo := NewAssetInfo{
 		Storage: bucket,

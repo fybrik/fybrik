@@ -7,26 +7,11 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"runtime"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	dc "fybrik.io/fybrik/pkg/connectors/protobuf"
 )
-
-// GetProtocol returns the existing data protocol
-func GetProtocol(info *dc.DatasetDetails) (string, error) {
-	switch info.DataStore.Type {
-	case dc.DataStore_S3:
-		return app.S3, nil
-	case dc.DataStore_KAFKA:
-		return app.Kafka, nil
-	case dc.DataStore_DB2:
-		return app.JdbcDb2, nil
-	}
-	return "", errors.New(app.InvalidAssetDataStore)
-}
 
 // IsDenied returns true if the data access is denied
 func IsDenied(actionName string) bool {
