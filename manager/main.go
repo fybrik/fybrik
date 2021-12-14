@@ -252,7 +252,7 @@ func newDataCatalog() (dcclient.DataCatalog, error) {
 	} else {
 		dataCatalog, err = dcclient.NewGrpcDataCatalog(providerName, connectorURL, connectionTimeout)
 	}
-	return dataCatalog, nil
+	return dataCatalog, err
 }
 
 func newPolicyManager() (pmclient.PolicyManager, error) {
