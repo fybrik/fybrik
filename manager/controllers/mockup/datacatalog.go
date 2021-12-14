@@ -63,9 +63,9 @@ func NewTestCatalog() *DataCatalogDummy {
 	s3Connection := catalogmodels.Connection{}
 	s3Config := make(map[string]interface{})
 	s3Map := make(map[string]interface{})
-	s3Map["endpoint"] = "s3.cloud-object-storage"
-	s3Map["bucket"] = "test-bucket"
-	s3Map["objectKey"] = "test"
+	s3Map["endpoint"] = "s3.eu-gb.cloud-object-storage.appdomain.cloud"
+	s3Map["bucket"] = "fybrik-test-bucket"
+	s3Map["object_key"] = "small.csv"
 	s3Config["name"] = "s3"
 	s3Config["s3"] = s3Map
 
