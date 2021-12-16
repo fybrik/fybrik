@@ -24,7 +24,7 @@ func deployBlueprint(namespace string, shouldSucceed bool) {
 
 	// Set the correct namespace
 	blueprint.SetNamespace(namespace)
-	blueprint.Spec.ModulesNamespace = namespace
+	blueprint.Spec.ModulesNamespace = utils.GetDefaultModulesNamespace()
 	fmt.Printf("Blueprint controller unit test - blueprint namespace : %s\n", namespace)
 	blueprintKey := client.ObjectKeyFromObject(blueprint)
 
