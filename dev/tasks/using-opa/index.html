@@ -15,7 +15,7 @@
     
     
       
-        <title>Using OPA - Fybrik</title>
+        <title>Using OPA for Data Governance - Fybrik</title>
       
     
     
@@ -64,7 +64,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#using-opa" class="md-skip">
+        <a href="#using-opa-for-data-governance" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Using OPA
+              Using OPA for Data Governance
             
           </span>
         </div>
@@ -596,12 +596,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Using OPA
+          Using OPA for Data Governance
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Using OPA
+        Using OPA for Data Governance
       </a>
       
         
@@ -663,7 +663,7 @@
   
     <li class="md-nav__item">
       <a href="../custom-taxonomy/" class="md-nav__link">
-        Using a Custom Taxonomy for Resource Validation
+        Background
       </a>
     </li>
   
@@ -1082,7 +1082,9 @@
 </a>
 
 
-<h1 id="using-opa">Using OPA</h1>
+<h1 id="using-opa-for-data-governance">Using OPA for Data Governance</h1>
+<p><a href="https://www.openpolicyagent.org/">Open Policy Agent</a> may be used as a data governance policy engine with Fybrik via the <a href="https://fybrik.io/dev/concepts/connectors/">connector</a> mechanism.</p>
+<p>When OPA is used for data governance, it is deployed as a stand-alone service.  Policies are defined in rego and uploaded to OPA.</p>
 <p>There are <a href="https://www.openpolicyagent.org/docs/latest/management/">several ways</a> to manage policies and data of the OPA service. </p>
 <p>One simple approach is to use <a href="https://github.com/open-policy-agent/kube-mgmt">OPA kube-mgmt</a> and manage Rego policies in Kubernetes <code>Configmap</code> resources. By default Fybrik installs OPA with kube-mgmt enabled. </p>
 <p>This task shows how to use OPA with kube-mgmt.</p>
