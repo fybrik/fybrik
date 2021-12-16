@@ -28,3 +28,24 @@ webhooks:
         resources:
           - fybrikapplications
     sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: webhook-service
+        namespace: '{{ .Release.Namespace }}'
+        path: /validate-app-fybrik-io-v1alpha1-fybrikmodule
+    failurePolicy: Fail
+    name: vfybrikmodule.kb.io
+    rules:
+      - apiGroups:
+          - app.fybrik.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - fybrikmodules
+    sideEffects: None
