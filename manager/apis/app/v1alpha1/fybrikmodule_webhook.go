@@ -44,13 +44,13 @@ func (r *FybrikModule) ValidateDelete() error {
 func (r *FybrikModule) ValidateFybrikModule(taxonomyFile string) error {
 	var allErrs []*field.Error
 
-	// Convert Fybrik application Go struct to JSON
+	// Convert FybrikModule Go struct to JSON
 	moduleJSON, err := json.Marshal(r)
 	if err != nil {
 		return err
 	}
 
-	// Validate Fybrik application against taxonomy
+	// Validate Fybrik module against taxonomy
 	allErrs = validate.TaxonomyCheck(moduleJSON, taxonomyFile, "Fybrik module")
 
 	// Return any error
