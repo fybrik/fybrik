@@ -27,11 +27,11 @@ The plotter augments the application workload and data sources with additional s
 
 Fybrik is an open solution that can be extended to work with a wide range of tools and data stores. For example, the injectable [modules](./modules.md) and the [connectors](./connectors.md) to external systems (e.g., to a data catalog) can all be third party.
 
-The logic used by fybrik to generate the data planes is customizable.  An organization can determine how best its infrastructure should be leverage via [config policies](./config-policies.md)
+The logic used by fybrik to generate the data planes is customizable.  An organization can determine how best its infrastructure should be leveraged via [config policies](./config-policies.md)
 
 ## Applications
 
-Fybrik considers applications as first level entities. Before running a workload, an application needs to be registred to a Fybrik control plane by applying a `FybrikApplication` resource. This is the declarative definition provided by the data user. The registration provides context about the application such as the purpose for which it's running, the data assets that it accesses, and a selector to identify the workload. Additional context such as geo-location is extracted from the platform. 
+Fybrik considers applications as first level entities. Before running a workload, an application needs to be registered to a Fybrik control plane by applying a `FybrikApplication` resource. This is the declarative definition provided by the data user. The registration provides context about the application such as the purpose for which it's running, the data assets that it accesses, and a selector to identify the workload. Additional context such as geo-location is extracted from the platform. 
 
 The actions taken by Fybrik are based on policies and the context of the application. Specifically, Fybrik does not consider end-users of an application. It is the responsibility of the application to implement mechanisms such as end user authentication if required, e.g. using Istio [authorization with JWT](https://istio.io/docs/tasks/security/authorization/authz-jwt/).
 
@@ -41,12 +41,12 @@ There are specific situations in which there is no workload associated with a `F
 
 While Fybrik handles enforcement of data governance policies, if one could access the data not through the platform then we lose control over data usage.
 
-For this reason, Fybrik does not let user applications ever observe data access credentials, both for externally created data assets nor for data assets created by the Fybrik control plane and applications running in it.
+For this reason, Fybrik does not let user applications ever observe data access credentials, neither for externally created data assets nor for data assets created by the Fybrik control plane and applications running in it.
 
 Instead, modules run in the data path to handle access to data, including passing the data access credentials to upstream data stores. Security is preserved by authorizing the applications based on their Pod identities.
 
 ## Multicluster
 Fybrik supports data paths that access data stores that are external to the cluster such as cloud managed object stores or databases as well as data stores within the cluster such as databases running in Kubernetes. All applications and modules however will run within a cluster that has Fybrik installed.
 
-Multi-cloud and hybrid cloud scenarios are supported out of the box by running Fybrik in multiple Kubernetes clusters and configuring the manager to use a multi cluster coordination mechanism such as razee. This enables cases such as running, for example, transformations on-prem while creating an implicit copy of an on-prem SoR table to a public cloud storage system.
+Multi-cloud and hybrid cloud scenarios are supported out of the box by running Fybrik in multiple Kubernetes clusters and configuring the manager to use a multi-cluster coordination mechanism such as razee. This enables cases such as running, for example, transformations on-prem while creating an implicit copy of an on-prem SoR table to a public cloud storage system.
 
