@@ -46,7 +46,7 @@ A module may be used in one or more of these flows, as is indicated in the modul
 
 ## Control plane choice of modules
 
-A user workload description `FybrikApplicaton` includes a list of the data sets required, the technologies that will be used to read them, and information about the location and reason for the use of the data.  This information together with input from data and [enterprise policies](../reference/config-policies.md), determine which modules are chosen by the control plane and where they are deployed. 
+A user workload description `FybrikApplicaton` includes a list of the data sets required, the technologies that will be used to access them, the access type (e.g. read, copy), information about the location and reason for the use of the data.  This information together with input from data and [enterprise policies](config-policies.md), determine which modules are chosen by the control plane and where they are deployed. 
 
 ## Available modules
 
