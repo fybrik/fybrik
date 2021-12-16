@@ -11,7 +11,7 @@ This page describes the information that your code should provide in all log ent
 All fybrik components, whether control plane or data plane components, should write log entries to stdout and stderr in json format.
 The contents of the log entries are detailed in fybrik.io/pkg/logging/logging.go.
 
-The fybrik control plane uses zerolog[github.com/rs/zerolog] for its golang components, and provides a library of fybrik specific helper functions to be used with it.
+The fybrik control plane uses [zerolog](github.com/rs/zerolog) for its golang components, and provides a library of fybrik specific helper functions to be used with it.
 Examples of how to use zerolog: https://github.com/rs/zerolog/blob/master/log_example_test.go
 
 TBD - fybrik logging helper functions for python and java.

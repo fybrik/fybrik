@@ -4,7 +4,7 @@ Fybrik is a cloud native platform to unify data access and governance, enabling 
 
 Fybrik allows:
 
-* **Data users** to use data in a self-service model without manual processes, without neededing to confer with data stewards, and without dealing with credentials. Use common tools and frameworks for reading from and exporting data to data lakes or data warehouses.
+* **Data users** to use data in a self-service model without manual processes, without needing to confer with data stewards, and without dealing with credentials. Use common tools and frameworks for reading from and exporting data to data lakes or data warehouses.
 * **Data stewards** to control data usage by applications. Use the organization's _policy manager_ and _data catalog_ of choice and let Fybrik automatically enforce data governance policies, whether they be based on laws, industry standards or enterprise policies.
 * **Data operators** to automate data lifecycle mangement removing the need for manual processes and custom jobs created by data operators, providing them with [config policies](.config-policies.md) to optimize the data flows orchestrated by fybrik.
 
