@@ -1,3 +1,9 @@
+# Background
+Fybrik acts as an orchestrator of independent components.  For example, the author of the data governance policy manager, which provides the governance decisions, and the components that enforce those decisions are not necessarily the same.  Thus, there is no common terminology between them.  Similarly, the data formats and protocols defined in the data catalog may be defined differently than the components used for reading/writing data.
+
+In order to enable all these independent components to be used in a single architecture, Fybrik provides a taxonomy.  It provides a mechanism for all the components to interact using a common dialect.
+
+
 # Using a Custom Taxonomy for Resource Validation
 
 The project defines a set of immutable structural JSON schemas, or "taxonomies" for resources deployed in Fybrik. 
