@@ -9,8 +9,12 @@ kubectl config set-context --current --namespace=fybrik-notebook-sample
 kubectl -n fybrik-notebook-sample apply -f example-asset.yaml
 kubectl -n fybrik-notebook-sample apply -f s3credentials.yaml
 
+kubectl get validatingwebhookcpnfigurations -o yaml
+kubectl get service webhook-service -n fybrik-system -o yaml
 # Use master version of arrow-flight-module according to https://github.com/fybrik/arrow-flight-module#version-compatbility-matrix
 kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
+
+kubectl get fybrikmodules -n fybrik-system -o yaml
 
 # Forward port of test S3 instance
 kubectl port-forward -n fybrik-system svc/s3 9090:9090 &
