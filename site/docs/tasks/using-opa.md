@@ -1,4 +1,7 @@
-# Using OPA
+# Using OPA for Data Governance
+[Open Policy Agent](https://www.openpolicyagent.org/) may be used as a data governance policy engine with Fybrik via the [connector](https://fybrik.io/dev/concepts/connectors/) mechanism.
+
+When OPA is used for data governance, it is deployed as a stand-alone service.  Policies are defined in rego and uploaded to OPA.
 
 There are [several ways](https://www.openpolicyagent.org/docs/latest/management/) to manage policies and data of the OPA service. 
 
