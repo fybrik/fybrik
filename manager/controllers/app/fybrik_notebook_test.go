@@ -26,7 +26,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 	"google.golang.org/grpc"
-	"gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -127,8 +126,6 @@ func TestS3Notebook(t *testing.T) {
 	By("Expecting plotter to be constructed")
 	g.Eventually(func() *apiv1alpha1.ResourceReference {
 		_ = k8sClient.Get(context.Background(), applicationKey, application)
-		bytes, _ := yaml.Marshal(application)
-		log.Println(string(bytes))
 		return application.Status.Generated
 	}, timeout, interval).ShouldNot(gomega.BeNil())
 
