@@ -102,12 +102,34 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 
 	for colName, compMetaData := range result.GetDetails().Metadata.GetComponentsMetadata() {
 		if compMetaData != nil {
-			tagsInResp := make(map[string]interface{})
-			tagsInResp["tags"] = compMetaData.GetTags()
-			rscCol := datacatalogTaxonomyModels.ResourceColumns{
-				Name: colName,
-				Tags: &tagsInResp}
-			resourceCols = append(resourceCols, rscCol)
+			// tagsInResp := make(interface{})
+			// tagsInResp["tags"] = compMetaData.GetTags()
+			// rscCol := datacatalogTaxonomyModels.ResourceColumns{
+			// 	Name: colName}
+			rscCol1 := datacatalogTaxonomyModels.ResourceColumns{
+				Name: colName}
+			rsCalMap := make(map[string]interface{})
+			rsCalMap["tags"] = compMetaData.GetTags()
+
+			responseBytes, errJSON := json.MarshalIndent(rsCalMap, "", "\t")
+			if errJSON != nil {
+				return nil, fmt.Errorf("error Marshalling in ConvertDataCatalogGrpcRespToOpenAPIResp: %v", errJSON)
+			}
+			log.Print("responseBytes after MarshalIndent in ConvertDataCatalogGrpcRespToOpenAPIResp:" + string(responseBytes))
+
+			if err := json.Unmarshal(responseBytes, &rscCol1.Tags); err != nil {
+				return nil, fmt.Errorf("error UnMarshalling in ConvertDataCatalogGrpcRespToOpenAPIResp: %v", errJSON)
+			}
+
+			// just printing - start
+			responseBytes1, errJSON := json.MarshalIndent(rscCol1, "", "\t")
+			if errJSON != nil {
+				return nil, fmt.Errorf("error Marshalling in ConvertDataCatalogGrpcRespToOpenAPIResp: %v", errJSON)
+			}
+			log.Print("responseBytes after MarshalIndent in ConvertDataCatalogGrpcRespToOpenAPIResp:" + string(responseBytes1))
+			// just printing - start
+
+			resourceCols = append(resourceCols, rscCol1)
 		}
 	}
 
@@ -127,30 +149,39 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 		Columns:   &resourceCols,
 	}
 
-	var additionalProp map[string]interface{}
+	additionalProp := make(map[string]interface{})
+	var connectionDetails interface{}
+	var connectionName string
 	var err error
 	switch result.GetDetails().DataStore.Type {
 	case pb.DataStore_S3:
 		dsStore := result.GetDetails().GetDataStore().S3
 		dataStoreInfo, _ := json.Marshal(dsStore)
-		err = json.Unmarshal(dataStoreInfo, &additionalProp)
+		err = json.Unmarshal(dataStoreInfo, &connectionDetails)
+		additionalProp[pb.DataStore_DataStoreType_name[int32(pb.DataStore_S3)]] = connectionDetails
+		connectionName = pb.DataStore_DataStoreType_name[int32(pb.DataStore_S3)]
 	case pb.DataStore_KAFKA:
 		dsStore := result.GetDetails().GetDataStore().Kafka
 		dataStoreInfo, _ := json.Marshal(dsStore)
-		err = json.Unmarshal(dataStoreInfo, &additionalProp)
+		err = json.Unmarshal(dataStoreInfo, &connectionDetails)
+		additionalProp[pb.DataStore_DataStoreType_name[int32(pb.DataStore_KAFKA)]] = connectionDetails
+		connectionName = pb.DataStore_DataStoreType_name[int32(pb.DataStore_KAFKA)]
 	case pb.DataStore_DB2:
 		dsStore := result.GetDetails().GetDataStore().Db2
 		dataStoreInfo, _ := json.Marshal(dsStore)
-		err = json.Unmarshal(dataStoreInfo, &additionalProp)
+		err = json.Unmarshal(dataStoreInfo, &connectionDetails)
+		additionalProp[pb.DataStore_DataStoreType_name[int32(pb.DataStore_DB2)]] = connectionDetails
+		connectionName = pb.DataStore_DataStoreType_name[int32(pb.DataStore_DB2)]
 	default: // DataStore.LOCAL
-		additionalProp = make(map[string]interface{})
+		// log something
+		connectionName = "local"
 	}
 	if err != nil {
 		return nil, errors.New("error during unmarshal of dataStoreInfo")
 	}
 
 	connection := datacatalogTaxonomyModels.Connection{
-		Name:                 result.GetDetails().DataStore.Name,
+		Name:                 connectionName,
 		AdditionalProperties: additionalProp,
 	}
 
