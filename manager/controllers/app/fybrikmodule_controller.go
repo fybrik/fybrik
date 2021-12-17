@@ -64,14 +64,14 @@ func (r *FybrikModuleReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	// check if module has been validated before or if validated module is outdated
-	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
-		// validated by FybrikModule webhook - skip validation
-		return ctrl.Result{}, nil
-	}
 	condition := moduleContext.Status.Conditions[ModuleValidationConditionIndex]
 	if condition.ObservedGeneration != moduleVersion || condition.Status == v1.ConditionUnknown {
 		// do validation on moduleContext
-		err := ValidateFybrikModule(moduleContext, ModuleTaxonomy)
+		var err error
+		if os.Getenv("ENABLE_WEBHOOKS") != "true" {
+			// validation was not done by the webhook
+			err = ValidateFybrikModule(moduleContext, ModuleTaxonomy)
+		}
 		condition.ObservedGeneration = moduleVersion
 		// if validation fails
 		if err != nil {
