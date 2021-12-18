@@ -189,28 +189,32 @@ jobs:
       if: ${{ github.event_name != 'pull_request' }}
       run: docker load -i images.tar
     - run: docker images
-    # Versions are created as follows:
-    # tags starting with v will be released as what comes after `v`. (e.g. refs/tags/v1.0 -> 1.0) (as well as 'latest' tag)
-    # release branches in e.g. (refs/heads/releases/1.0 -> 1.0-rc )
-    # other branches (e.g. master) will be released with branch name as version
+    # Versions are created as follows: (In helm 3.7 OCI reference tags must be valid SemVer)
+    # tags starting with v will be released as what comes after `v`. (e.g. refs/tags/v1.0 -> 1.0) This applies to
+    # both docker images tags and helm chart tags. In addition, latest tag will be used for docker image
+    # and 0.0.0-latest for helm chart.
+    # release branches in e.g. (refs/heads/releases/1.0 -> 1.0-rc) This applies to both docker
+    # images tags and helm chart tags.
+    # other branches (e.g. master) will be released with branch name as version for the docker images tags.
+    # For the helm chart OCI reference tag 0.0.0-<branch-name> will be used.
     - id: version
       name: Infer version
       run: |
         version="${GITHUB_REF#refs/tags/v}"
-        echo "HELM_PUBLIC_TAGNAME=${version}" >> $GITHUB_ENV
+        echo "HELM_TAG=${version}" >> $GITHUB_ENV
         push_tag_event='true'
         if  [[ $version == refs/* ]] ;
         then
             push_tag_event='false'
             branch="${GITHUB_REF#refs/heads/}"
             version=$branch
-            echo "HELM_PUBLIC_TAGNAME=0.0.0-${version}" >> $GITHUB_ENV
+            echo "HELM_TAG=0.0.0-${version}" >> $GITHUB_ENV
         fi
         if [[ $version == releases/* ]] ;
         then
            releaseVersion="${GITHUB_REF#refs/heads/releases/}"
            version="$releaseVersion-rc"
-           echo "HELM_PUBLIC_TAGNAME=$releaseVersion-rc" >> $GITHUB_ENV
+           echo "HELM_TAG=$releaseVersion-rc" >> $GITHUB_ENV
         fi
         echo ::set-output name=version::$version
         echo ::set-output name=push_tag_event::$push_tag_event
@@ -221,7 +225,6 @@ jobs:
       run: make docker-retag-and-push-public && make helm-push-public
     - name: Publish latest image tag on push tag event
       if: github.event_name != 'pull_request' && steps.version.outputs.push_tag_event == 'true'
-      env:
         DOCKER_PUBLIC_TAGNAME: 'latest'
-        HELM_PUBLIC_TAGNAME: '0.0.0-latest'
+        HELM_TAG: '0.0.0-latest'
       run: make docker-retag-and-push-public && make helm-push-public

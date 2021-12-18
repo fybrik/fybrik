@@ -3,9 +3,8 @@ all: helm-all
 
 ROOT_DIR := ../..
 DOCKER_NAME := fybrik-template
-DOCKER_TAGNAME := 0.1.0
-# In helm 3.7+ OCI reference tags should be valid SemVer
-HELM_TAGNAME := 0.1.0
+CHART_LOCAL_PATH := ../${DOCKER_NAME}
+DOCKER_TAGNAME ?= 0.0.0
 
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/docker.mk
