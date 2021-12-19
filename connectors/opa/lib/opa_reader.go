@@ -23,7 +23,6 @@ func NewOpaReader(opasrvurl string, client *http.Client) *OpaReader {
 }
 
 func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo2(in *taxonomymodels.PolicyManagerRequest, catalogMetadata *datacatalogTaxonomyModels.DataCatalogResponse) (*taxonomymodels.PolicyManagerRequest, error) {
-
 	// just printing - start
 	responseBytes1, errJSON := json.MarshalIndent(catalogMetadata.ResourceMetadata, "", "\t")
 	if errJSON != nil {
