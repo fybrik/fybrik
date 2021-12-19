@@ -158,20 +158,20 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 		dsStore := result.GetDetails().GetDataStore().S3
 		dataStoreInfo, _ := json.Marshal(dsStore)
 		err = json.Unmarshal(dataStoreInfo, &connectionDetails)
-		additionalProp[pb.DataStore_DataStoreType_name[int32(pb.DataStore_S3)]] = connectionDetails
-		connectionName = pb.DataStore_DataStoreType_name[int32(pb.DataStore_S3)]
+		connectionName = "s3"
+		additionalProp[connectionName] = connectionDetails
 	case pb.DataStore_KAFKA:
 		dsStore := result.GetDetails().GetDataStore().Kafka
 		dataStoreInfo, _ := json.Marshal(dsStore)
 		err = json.Unmarshal(dataStoreInfo, &connectionDetails)
-		additionalProp[pb.DataStore_DataStoreType_name[int32(pb.DataStore_KAFKA)]] = connectionDetails
-		connectionName = pb.DataStore_DataStoreType_name[int32(pb.DataStore_KAFKA)]
+		connectionName = "kafka"
+		additionalProp[connectionName] = connectionDetails
 	case pb.DataStore_DB2:
 		dsStore := result.GetDetails().GetDataStore().Db2
 		dataStoreInfo, _ := json.Marshal(dsStore)
 		err = json.Unmarshal(dataStoreInfo, &connectionDetails)
-		additionalProp[pb.DataStore_DataStoreType_name[int32(pb.DataStore_DB2)]] = connectionDetails
-		connectionName = pb.DataStore_DataStoreType_name[int32(pb.DataStore_DB2)]
+		connectionName = "db2"
+		additionalProp[connectionName] = connectionDetails
 	default: // DataStore.LOCAL
 		// log something
 		connectionName = "local"

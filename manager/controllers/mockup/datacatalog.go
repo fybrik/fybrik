@@ -81,8 +81,8 @@ func NewTestCatalog() *DataCatalogDummy {
 	db2Map["port"] = "5000"
 	db2Map["ssl"] = "false"
 	db2Config := make(map[string]interface{})
-	db2Config["name"] = "jdbc-db2"
-	db2Config["jdbc-db2"] = db2Map
+	db2Config["name"] = "db2"
+	db2Config["db2"] = db2Map
 	bytes, _ = json.MarshalIndent(db2Config, "", "\t")
 	_ = json.Unmarshal(bytes, &db2Connection)
 
