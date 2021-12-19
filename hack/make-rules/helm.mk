@@ -58,9 +58,9 @@ helm-chart-push: helm-login
 helm-chart-pull: helm-login
 	$(ABSTOOLBIN)/helm pull ${CHART_REGISTRY_PATH}/${CHART_NAME} --version ${HELM_TAG}
 
-.PHONY: helm-chart-list
-helm-chart-list: $(TOOLBIN)/helm 
-	$(ABSTOOLBIN)/helm chart list
+.PHONY: helm-list
+helm-list: $(TOOLBIN)/helm
+	$(ABSTOOLBIN)/helm list
 
 .PHONY: helm-chart-install
 helm-chart-install: $(TOOLBIN)/helm
@@ -80,5 +80,5 @@ helm-actions: $(TOOLBIN)/helm
 	$(ABSTOOLBIN)/helm show values --version ${HELM_TAG}  ${CHART_REGISTRY_PATH} | yq -y -r .actions
 
 .PHONY: helm-all
-helm-all: helm-verify helm-chart-push helm-chart-pull helm-uninstall helm-chart-install
+helm-all: helm-verify helm-chart-push helm-chart-pull helm-chart-install helm-uninstall
 
