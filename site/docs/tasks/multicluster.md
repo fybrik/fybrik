@@ -93,6 +93,8 @@ Kubernetes secret that is created by the helm chart. Overwriting the `coordinato
 multicluster tooling.
 A configuration using IBM Satellite Config would look like the following for the coordinator cluster:
 ```
+global:
+  multiclusetrOrchestrator: razee
 coordinator:
   # Configures the Razee instance to be used by the coordinator manager in a multicluster setup
   razee:
@@ -103,6 +105,8 @@ coordinator:
 
 For the remote cluster the coordinator will be disabled:
 ```
+global:
+  multiclusetrOrchestrator: razee
 coordinator:
     enabled: false
 ```
