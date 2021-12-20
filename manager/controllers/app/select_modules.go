@@ -12,6 +12,7 @@ import (
 	"fybrik.io/fybrik/manager/controllers/app/assetmetadata"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
+	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/multicluster"
 	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 	v1 "k8s.io/api/core/v1"
@@ -126,7 +127,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, appContex
 				element.StorageAccountRegion = region
 			}
 			if element.StorageAccountRegion == "" {
-				p.Log.V(0).Info("Could not find a storage account, aborting data path construction")
+				p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find a storage account, aborting data path construction")
 				return false
 			}
 		}
@@ -143,13 +144,13 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, appContex
 		requiredActions = unsupported
 		// select a cluster for the capability that satisfy cluster restrictions specified in admin config policies
 		if !p.findCluster(item, element, appContext) {
-			p.Log.V(0).Info("Could not find an available cluster for " + moduleCapability.Capability)
+			p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find an available cluster for " + moduleCapability.Capability)
 			return false
 		}
 	}
 	// Are all actions supported by the capabilities in this data path?
 	if len(requiredActions) > 0 {
-		p.Log.V(0).Info("Not all governance actions are supported, aborting data path construction")
+		p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Not all governance actions are supported, aborting data path construction")
 		return false
 	}
 	// Are all capabilities that need to be deployed supported in this data path?

@@ -13,12 +13,13 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	connectors "fybrik.io/fybrik/pkg/connectors/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
+	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
 	vault "fybrik.io/fybrik/pkg/vault"
 	"github.com/Masterminds/sprig/v3"
-	"github.com/go-logr/logr"
+	"github.com/rs/zerolog"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -32,7 +33,7 @@ type NewAssetInfo struct {
 // PlotterGenerator constructs a plotter based on the requirements (governance actions, data location) and the existing set of FybrikModules
 type PlotterGenerator struct {
 	Client                client.Client
-	Log                   logr.Logger
+	Log                   zerolog.Logger
 	Modules               map[string]*app.FybrikModule
 	Clusters              []multicluster.Cluster
 	Owner                 types.NamespacedName
@@ -50,12 +51,12 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 	var bucket *storage.ProvisionedBucket
 	var err error
 	if bucket, err = AllocateBucket(p.Client, p.Log, p.Owner, originalAssetName, geo); err != nil {
-		p.Log.Info("Bucket allocation failed: " + err.Error())
+		p.Log.Error().Err(err).Msg("Bucket allocation failed")
 		return nil, err
 	}
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
 	if err = p.Provision.CreateDataset(bucketRef, bucket, &p.Owner); err != nil {
-		p.Log.Info("Dataset creation failed: " + err.Error())
+		p.Log.Error().Err(err).Msg("Dataset creation failed")
 		return nil, err
 	}
 
@@ -86,7 +87,7 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 			Metadata:   item.DataDetails.TagMetadata,
 		}}
 	p.ProvisionedStorage[item.Context.DataSetID] = assetInfo
-	utils.PrintStructure(&assetInfo, p.Log, "ProvisionedStorage element")
+	logging.LogStructure("ProvisionedStorage element", assetInfo, p.Log, false, true)
 
 	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
 	vaultMap := make(map[string]app.Vault)
@@ -110,7 +111,7 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 
 // Adds the asset details, flows and templates to the given plotter spec.
 func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.FybrikApplication, plotterSpec *app.PlotterSpec) error {
-	p.Log.Info("Choose modules for " + item.Context.DataSetID)
+	p.Log.Trace().Str(logging.DATASETID, item.DataDetails.Name).Msg("Choose modules for dataset")
 	var err error
 	subflows := make([]app.SubFlow, 0)
 	assets := map[string]app.AssetDetails{}
@@ -142,12 +143,12 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 	if len(solutions) == 0 {
 		return errors.New("Data path could not be constructed")
 	}
-	p.Log.V(0).Info("Generating a plotter")
+	p.Log.Trace().Msg("Generating a plotter")
 	selection := solutions[0]
 	datasetID := item.Context.DataSetID
 	for _, element := range selection.DataPath {
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
-		p.Log.Info("Adding module for " + moduleCapability.Capability)
+		p.Log.Trace().Msg("Adding module for " + moduleCapability.Capability)
 		actions := createActionStructure(element.Actions)
 		template := app.Template{
 			Name: moduleCapability.Capability,
@@ -171,7 +172,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 		if !element.Sink.Virtual {
 			// allocate storage and create a temoprary asset
 			if sinkDataStore, err = p.GetCopyDestination(item, element.Sink.Connection, element.StorageAccountRegion); err != nil {
-				p.Log.Info("Allocation failed: " + err.Error())
+				p.Log.Error().Err(err).Msg("Storage allocation failed")
 				return err
 			}
 			copyAssetID := datasetID + "-copy"

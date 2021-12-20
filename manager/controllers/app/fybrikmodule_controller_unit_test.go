@@ -8,13 +8,13 @@ import (
 	"testing"
 
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/logging"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -28,7 +28,7 @@ func createTestFybrikModuleController(cl client.Client, s *runtime.Scheme) *Fybr
 	return &FybrikModuleReconciler{
 		Client: cl,
 		Name:   "TestModuleReconciler",
-		Log:    ctrl.Log.WithName("test-module-controller"),
+		Log:    logging.LogInit(logging.CONTROLLER, "test-module-controller"),
 		Scheme: s,
 	}
 }

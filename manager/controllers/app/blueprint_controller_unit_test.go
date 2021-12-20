@@ -11,12 +11,12 @@ import (
 
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/helm"
+	"fybrik.io/fybrik/pkg/logging"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -49,6 +49,7 @@ func TestBlueprintReconcile(t *testing.T) {
 	blueprint, err := readBlueprint("../../testdata/blueprint.yaml")
 	g.Expect(err).To(gomega.BeNil(), "Cannot read blueprint file for test")
 	blueprint.Namespace = blueprintNamespace
+	blueprint.Spec.ModulesNamespace = utils.GetDefaultModulesNamespace()
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
@@ -64,7 +65,7 @@ func TestBlueprintReconcile(t *testing.T) {
 	r := &BlueprintReconciler{
 		Client: cl,
 		Name:   "BlueprintTestController",
-		Log:    ctrl.Log.WithName("test-blueprint-controller"),
+		Log:    logging.LogInit(logging.CONTROLLER, "test-blueprint-controller"),
 		Scheme: s,
 		Helmer: helm.NewEmptyFake(),
 	}

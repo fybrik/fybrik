@@ -369,6 +369,11 @@ if [[ ${is_openshift} == "true" ]]; then
 else
     kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "regcred"}]}'
     kubectl patch serviceaccount default -p '{"secrets": [{"name": "regcred"}]}'
+
+    if [[ ${cluster_scoped} == "false" ]]; then
+      kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "regcred"}]}' -n ${modules_namespace}
+      kubectl patch serviceaccount default -p '{"secrets": [{"name": "regcred"}]}' -n ${modules_namespace}
+    fi
 fi
 
 extra_params="${extra_params} -p deployVault='true'"

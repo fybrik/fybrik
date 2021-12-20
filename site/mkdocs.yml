@@ -19,6 +19,7 @@ nav:
     - concepts/connectors.md
     - concepts/modules.md
     - concepts/vault_plugins.md
+  - concepts/config-policies.md
 - Tasks:
   - tasks/control-plane-security.md
   - tasks/using-opa.md
