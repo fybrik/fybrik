@@ -186,6 +186,10 @@ func (p *PlotterGenerator) findCluster(item *DataInfo, element *ResolvedEdge, ap
 func (p *PlotterGenerator) findPathsWithinLimit(item *DataInfo, source *Node, sink *Node, n int) []Solution {
 	solutions := []Solution{}
 	for _, module := range p.Modules {
+		// check if the module has been validated successfully
+		if len(module.Status.Conditions) == 0 || module.Status.Conditions[ModuleValidationConditionIndex].Status != v1.ConditionTrue {
+			continue
+		}
 		for capabilityInd, capability := range module.Spec.Capabilities {
 			// check if capability is allowed
 			if !allowCapability(item, capability.Capability) {
