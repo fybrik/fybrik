@@ -50,16 +50,6 @@ func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalogTaxonomyModels.DataCata
 	}
 	// response from `GetAssetInfoPost`: DataCatalogResponse
 	fmt.Fprintf(os.Stdout, "Response from `DefaultApi.GetAssetInfoPost` in GetAssetInfo of datacatalog_openapi.go: %v\n", resp)
-
-	// resp, r, err := m.client.DefaultApi.GetPoliciesDecisionsPost(context.Background()).XRequestCred(creds).DataCatalogRequest(*in).Execute()
-	// resp, r, err := m.client.DefaultApi.GetPoliciesDecisions(context.Background()).Input(*in).Creds(creds).Execute()
-	// if err != nil {
-	// 	fmt.Fprintf(os.Stderr, "Error when calling `DefaultApi.GetPoliciesDecisions``: %v\n", err)
-	// 	fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
-	// 	return nil, errors.Wrap(err, fmt.Sprintf("get policies decisions from %s failed", m.name))
-	// }
-	// response from `GetPoliciesDecisions`: []DataCatalogResponse
-	// log.Println("1Response from `DefaultApi.GetPoliciesDecisions`: \n", resp)
 	return &resp, nil
 }
 

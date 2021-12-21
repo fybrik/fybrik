@@ -21,24 +21,6 @@ const (
 
 var router *gin.Engine
 
-// func main() {
-// 	address := utils.ListeningAddress(PORT)
-// 	log.Printf("starting mock catalog server on address %s", address)
-
-// 	listener, err := net.Listen("tcp", address)
-// 	if err != nil {
-// 		log.Fatalf("listening error: %v", err)
-// 	}
-
-// 	server := grpc.NewServer()
-// 	service := mockup.NewTestCatalog()
-
-// 	pb.RegisterDataCatalogServiceServer(server, service)
-// 	if err := server.Serve(listener); err != nil {
-// 		log.Fatalf("cannot serve mock data catalog: %v", err)
-// 	}
-// }
-
 func main() {
 	router = gin.Default()
 

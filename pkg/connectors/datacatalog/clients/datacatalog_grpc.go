@@ -102,10 +102,6 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 
 	for colName, compMetaData := range result.GetDetails().Metadata.GetComponentsMetadata() {
 		if compMetaData != nil {
-			// tagsInResp := make(interface{})
-			// tagsInResp["tags"] = compMetaData.GetTags()
-			// rscCol := datacatalogTaxonomyModels.ResourceColumns{
-			// 	Name: colName}
 			rscCol1 := datacatalogTaxonomyModels.ResourceColumns{
 				Name: colName}
 			rsCalMap := make(map[string]interface{})
@@ -130,7 +126,7 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 				return nil, fmt.Errorf("error Marshalling in ConvertDataCatalogGrpcRespToOpenAPIResp: %v", errJSON)
 			}
 			log.Print("responseBytes after MarshalIndent in ConvertDataCatalogGrpcRespToOpenAPIResp:" + string(responseBytes1))
-			// just printing - start
+			// just printing - end
 
 			resourceCols = append(resourceCols, rscCol1)
 		}
