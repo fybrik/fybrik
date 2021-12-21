@@ -136,13 +136,11 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 		}
 	}
 
-	datasetTags := make([]interface{}, 0)
 	tags := result.GetDetails().Metadata.DatasetTags
-	for i := 0; i < len(tags); i++ {
-		datasetTags = append(datasetTags, tags[i])
-	}
 	tagsInResponse := make(map[string]interface{})
-	tagsInResponse["tags"] = datasetTags
+	for i := 0; i < len(tags); i++ {
+		tagsInResponse[tags[i]] = true
+	}
 
 	resourceMetaData := &datacatalogTaxonomyModels.Resource{
 		Name:      result.GetDetails().Name,
