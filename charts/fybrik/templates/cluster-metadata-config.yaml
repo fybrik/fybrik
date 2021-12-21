@@ -3,10 +3,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cluster-metadata
-  {{- if eq .Values.global.multiclusterOrchestrator "razee" }}
   labels:
     razee/watch-resource: "debug"
-  {{- end }}
 data:
   ClusterName: {{ required "cluster name must be set" .Values.cluster.name | quote }}
   Region: {{ required "cluster region must be set" .Values.cluster.region | quote }}

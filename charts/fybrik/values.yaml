@@ -44,8 +44,6 @@ global:
   # zerolog verbosity level 
   # ref: https://github.com/rs/zerolog#leveled-logging
   loggingVerbosity: -1
-  # Multicluster orchestrator used.
-  multiclusterOrchestrator: ""
 
 # Cluster metadata values
 cluster:
