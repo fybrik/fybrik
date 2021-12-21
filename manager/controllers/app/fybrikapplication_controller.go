@@ -185,7 +185,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext *api.Fyb
 			continue
 		}
 		if status.Error != "" {
-			setErrorCondition(applicationContext, assetID, status.Error)
+			setErrorCondition(log, applicationContext, assetID, nil, status.Error)
 			continue
 		}
 		if !status.Ready {
@@ -203,11 +203,11 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext *api.Fyb
 			if !found {
 				message := "No copy has been created for the asset " + assetID + " required to be registered"
 				log.Info().Str(logging.DATASETID, assetID).Msg(message)
-				setErrorCondition(applicationContext, assetID, message)
+				setErrorCondition(log, applicationContext, assetID, nil, message)
 				continue
 			}
 			if err := r.Provision.SetPersistent(getBucketResourceRef(provisionedBucketRef.DatasetRef), true); err != nil {
-				setErrorCondition(applicationContext, assetID, err.Error())
+				setErrorCondition(log, applicationContext, assetID, err, err.Error())
 				continue
 			}
 			// register the asset: experimental feature
@@ -217,7 +217,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext *api.Fyb
 				applicationContext.Status.AssetStates[assetID] = state
 			} else {
 				// log an error and make a new attempt to register the asset
-				setErrorCondition(applicationContext, assetID, err.Error())
+				setErrorCondition(log, applicationContext, assetID, err, err.Error())
 				continue
 			}
 		}
@@ -356,7 +356,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 			Context: dataset.DeepCopy(),
 		}
 		if err := r.constructDataInfo(&req, applicationContext, workloadCluster); err != nil {
-			AnalyzeError(applicationContext, req.Context.DataSetID, err)
+			AnalyzeError(r.Log, applicationContext, req.Context.DataSetID, err)
 			log.Error().Err(err).Str(logging.DATASETID, req.Context.DataSetID).Msg("Error constructing data info")
 			continue
 		}
@@ -554,15 +554,15 @@ func (r *FybrikApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 // AnalyzeError analyzes whether the given error is fatal, or a retrial attempt can be made.
 // Reasons for retrial can be either communication problems with external services, or kubernetes problems to perform some action on a resource.
 // A retrial is achieved by returning an error to the reconcile method
-func AnalyzeError(application *api.FybrikApplication, assetID string, err error) {
+func AnalyzeError(log zerolog.Logger, application *api.FybrikApplication, assetID string, err error) {
 	if err == nil {
 		return
 	}
 	switch err.Error() {
 	case api.InvalidAssetID, api.ReadAccessDenied, api.CopyNotAllowed, api.WriteNotAllowed, api.InvalidAssetDataStore:
-		setDenyCondition(application, assetID, err.Error())
+		setDenyCondition(log, application, assetID, err, err.Error())
 	default:
-		setErrorCondition(application, assetID, err.Error())
+		setErrorCondition(log, application, assetID, err, err.Error())
 	}
 }
 
@@ -688,7 +688,7 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext *api.Fybr
 	for _, item := range requirements {
 		err := plotterGen.AddFlowInfoForAsset(item, applicationContext, plotterSpec)
 		if err != nil {
-			AnalyzeError(applicationContext, item.Context.DataSetID, err)
+			AnalyzeError(r.Log, applicationContext, item.Context.DataSetID, err)
 			continue
 		}
 	}
