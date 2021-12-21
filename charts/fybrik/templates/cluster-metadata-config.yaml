@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cluster-metadata
-  {{- if eq .Values.global.multiclusetrOrchestrator "razee" }}
+  {{- if eq .Values.global.multiclusterOrchestrator "razee" }}
   labels:
     razee/watch-resource: "debug"
   {{- end }}

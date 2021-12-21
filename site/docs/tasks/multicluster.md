@@ -94,7 +94,7 @@ multicluster tooling.
 A configuration using IBM Satellite Config would look like the following for the coordinator cluster:
 ```
 global:
-  multiclusetrOrchestrator: razee
+  multiclusterOrchestrator: razee
 coordinator:
   # Configures the Razee instance to be used by the coordinator manager in a multicluster setup
   razee:
@@ -106,7 +106,7 @@ coordinator:
 For the remote cluster the coordinator will be disabled:
 ```
 global:
-  multiclusetrOrchestrator: razee
+  multiclusterOrchestrator: razee
 coordinator:
     enabled: false
 ```
