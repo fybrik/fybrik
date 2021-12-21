@@ -49,6 +49,7 @@ func TestBlueprintReconcile(t *testing.T) {
 	blueprint, err := readBlueprint("../../testdata/blueprint.yaml")
 	g.Expect(err).To(gomega.BeNil(), "Cannot read blueprint file for test")
 	blueprint.Namespace = blueprintNamespace
+	blueprint.Spec.ModulesNamespace = utils.GetDefaultModulesNamespace()
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{

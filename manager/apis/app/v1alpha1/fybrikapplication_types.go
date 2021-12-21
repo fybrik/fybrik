@@ -64,12 +64,13 @@ type DataContext struct {
 // based on policies and rules defined in an external data policy manager.
 type ApplicationDetails map[string]string
 
-// FybrikApplicationSpec defines the desired state of FybrikApplication.
+// FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.
+// Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets
+// Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog
 type FybrikApplicationSpec struct {
 
 	// Selector enables to connect the resource to the application
 	// Application labels should match the labels in the selector.
-	// For some flows the selector may not be used.
 	// +optional
 	Selector Selector `json:"selector"`
 
@@ -79,7 +80,7 @@ type FybrikApplicationSpec struct {
 	SecretRef string `json:"secretRef,omitempty"`
 
 	// AppInfo contains information describing the reasons for the processing
-	// that will be done by the Data Scientist's application.
+	// that will be done by the application.
 	// +required
 	AppInfo ApplicationDetails `json:"appInfo"`
 
@@ -174,14 +175,14 @@ type FybrikApplicationStatus struct {
 	ProvisionedStorage map[string]DatasetDetails `json:"provisionedStorage,omitempty"`
 }
 
-// FybrikApplication provides information about the application being used by a Data Scientist,
-// the nature of the processing, and the data sets that the Data Scientist has chosen for processing by the application.
-// The FybrikApplication controller (aka pilot) obtains instructions regarding any governance related changes that must
+// FybrikApplication provides information about the application whose data is being operated on,
+// the nature of the processing, and the data sets chosen for processing by the application.
+// The FybrikApplication controller obtains instructions regarding any governance related changes that must
 // be performed on the data, identifies the modules capable of performing such changes, and finally
-// generates the Blueprint which defines the secure runtime environment and all the components
-// in it.  This runtime environment provides the Data Scientist's application with access to the data requested
+// generates the Plotter which defines the secure runtime environment and all the components
+// in it.  This runtime environment provides the application with access to the data requested
 // in a secure manner and without having to provide any credentials for the data sets.  The credentials are obtained automatically
-// by the manager from an external credential management system, which may or may not be part of a data catalog.
+// by the manager from the credential management system.
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 type FybrikApplication struct {
