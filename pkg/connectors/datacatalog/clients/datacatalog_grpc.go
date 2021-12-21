@@ -109,7 +109,10 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 			rscCol1 := datacatalogTaxonomyModels.ResourceColumns{
 				Name: colName}
 			rsCalMap := make(map[string]interface{})
-			rsCalMap["tags"] = compMetaData.GetTags()
+			tags := compMetaData.GetTags()
+			for i := 0; i < len(tags); i++ {
+				rsCalMap[tags[i]] = true
+			}
 
 			responseBytes, errJSON := json.MarshalIndent(rsCalMap, "", "\t")
 			if errJSON != nil {
