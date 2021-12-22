@@ -48,7 +48,7 @@ func main() {
 	})
 
 	router.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "Hello World!")
+		c.String(http.StatusOK, "Serving REST APIs as part of data catalog stub")
 	})
 
 	log.Fatal(router.Run(":" + strconv.Itoa(PORT)))

@@ -54,7 +54,6 @@ func (r *OpaReader) GetOPADecisions(in *policymanagerTaxonomyModels.PolicyManage
 	objToSend := datacatalogTaxonomyModels.DataCatalogRequest{AssetID: datasetID, OperationType: datacatalogTaxonomyModels.READ}
 
 	info, err := (*r.dataCatalog).GetAssetInfo(&objToSend, creds)
-	// info, err := (*r.DataCatalog).GetDatasetInfo(context.Background(), objToSend)
 	if err != nil {
 		return policymanagerTaxonomyModels.PolicyManagerResponse{}, err
 	}

@@ -104,13 +104,13 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 		if compMetaData != nil {
 			rscCol := datacatalogTaxonomyModels.ResourceColumns{
 				Name: colName}
-			rsCalMap := make(map[string]interface{})
+			rsColMap := make(map[string]interface{})
 			tags := compMetaData.GetTags()
 			for i := 0; i < len(tags); i++ {
-				rsCalMap[tags[i]] = true
+				rsColMap[tags[i]] = true
 			}
 
-			responseBytes, errJSON := json.MarshalIndent(rsCalMap, "", "\t")
+			responseBytes, errJSON := json.MarshalIndent(rsColMap, "", "\t")
 			if errJSON != nil {
 				return nil, fmt.Errorf("error Marshalling in ConvertDataCatalogGrpcRespToOpenAPIResp: %v", errJSON)
 			}
