@@ -127,6 +127,8 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(clusterMgr).NotTo(BeNil())
 		err = NewPlotterReconciler(mgr, "Plotter", clusterMgr).SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
+		err = NewFybrikModuleReconciler(mgr, "FybrikModule").SetupWithManager(mgr)
+		Expect(err).ToNot(HaveOccurred())
 
 		go func() {
 			err = mgr.Start(ctrl.SetupSignalHandler())
