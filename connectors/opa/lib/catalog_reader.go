@@ -12,7 +12,7 @@ import (
 	clients "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	datacatalogTaxonomyModels "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
+	policymanagerTaxonomyModels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )
 
 // CatalogReader - Reader struct which has information to read from catalog, this struct does not have any information related to the application context. any request specific info is passed as parameters to functions belonging to this struct.
@@ -25,15 +25,13 @@ func NewCatalogReader(dataCatalog *clients.DataCatalog) *CatalogReader {
 }
 
 // return map  datasetID -> metadata of dataset in form of map
-func (r *CatalogReader) GetDatasetsMetadataFromCatalog(in *taxonomymodels.PolicyManagerRequest, creds string) (map[string]interface{}, error) {
+func (r *CatalogReader) GetDatasetsMetadataFromCatalog(in *policymanagerTaxonomyModels.PolicyManagerRequest, creds string) (map[string]interface{}, error) {
 	datasetsMetadata := make(map[string]interface{})
 	datasetID := (in.GetResource()).Name
 	if _, present := datasetsMetadata[datasetID]; !present {
-		// objToSend := &pb.CatalogDatasetRequest{CredentialPath: creds, DatasetId: datasetID}
 		objToSend := datacatalogTaxonomyModels.DataCatalogRequest{AssetID: datasetID, OperationType: datacatalogTaxonomyModels.READ}
 
 		info, err := (*r.DataCatalog).GetAssetInfo(&objToSend, creds)
-		// info, err := (*r.DataCatalog).GetDatasetInfo(context.Background(), objToSend)
 		if err != nil {
 			return nil, err
 		}

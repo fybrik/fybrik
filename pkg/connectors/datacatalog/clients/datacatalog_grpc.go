@@ -102,7 +102,7 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 
 	for colName, compMetaData := range result.GetDetails().Metadata.GetComponentsMetadata() {
 		if compMetaData != nil {
-			rscCol1 := datacatalogTaxonomyModels.ResourceColumns{
+			rscCol := datacatalogTaxonomyModels.ResourceColumns{
 				Name: colName}
 			rsCalMap := make(map[string]interface{})
 			tags := compMetaData.GetTags()
@@ -116,19 +116,19 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 			}
 			log.Print("responseBytes after MarshalIndent in ConvertDataCatalogGrpcRespToOpenAPIResp:" + string(responseBytes))
 
-			if err := json.Unmarshal(responseBytes, &rscCol1.Tags); err != nil {
+			if err := json.Unmarshal(responseBytes, &rscCol.Tags); err != nil {
 				return nil, fmt.Errorf("error UnMarshalling in ConvertDataCatalogGrpcRespToOpenAPIResp: %v", errJSON)
 			}
 
 			// just printing - start
-			responseBytes1, errJSON := json.MarshalIndent(rscCol1, "", "\t")
+			responseBytes, errJSON = json.MarshalIndent(rscCol, "", "\t")
 			if errJSON != nil {
 				return nil, fmt.Errorf("error Marshalling in ConvertDataCatalogGrpcRespToOpenAPIResp: %v", errJSON)
 			}
-			log.Print("responseBytes after MarshalIndent in ConvertDataCatalogGrpcRespToOpenAPIResp:" + string(responseBytes1))
+			log.Print("responseBytes after MarshalIndent in ConvertDataCatalogGrpcRespToOpenAPIResp:" + string(responseBytes))
 			// just printing - end
 
-			resourceCols = append(resourceCols, rscCol1)
+			resourceCols = append(resourceCols, rscCol)
 		}
 	}
 

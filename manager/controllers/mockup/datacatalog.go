@@ -53,7 +53,7 @@ func NewTestCatalog() *DataCatalogDummy {
 	}
 
 	tags := make(map[string]interface{})
-	tags["tags"] = []string{"PI"}
+	tags["PI"] = true
 	geo := "theshire"
 	geoExternal := "neverland"
 	csvFormat := "csv"
