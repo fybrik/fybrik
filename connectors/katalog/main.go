@@ -4,11 +4,12 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
-	"github.com/spf13/cobra"
+	sw "fybrik.io/fybrik/connectors/katalog/go"
 
-	"fybrik.io/fybrik/connectors/katalog/pkg/connector"
+	"github.com/spf13/cobra"
 )
 
 // RootCmd defines the root cli command
@@ -24,13 +25,16 @@ func RootCmd() *cobra.Command {
 // RunCmd defines the command for running the connector
 func RunCmd() *cobra.Command {
 	ip := ""
-	port := 8080
+	port := 8081
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run the connector",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			log.Printf("Server started")
+
+			router := sw.NewRouter()
 			address := fmt.Sprintf("%s:%d", ip, port)
-			return connector.Start(address)
+			return router.Run(address)
 		},
 	}
 	cmd.Flags().StringVar(&ip, "ip", ip, "IP address")

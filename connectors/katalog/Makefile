@@ -27,7 +27,7 @@ generate-server: $(TOOLBIN)/openapi-generator-cli
 	mkdir -p $(ROOT_DIR)/connectors/katalog/server
 	$(TOOLBIN)/openapi-generator-cli generate -g go-gin-server \
 		--additional-properties=packageName=openapiserver,serverPort=8081,sourceFolder=openapiserver \
-		--global-property=apis,supportingFiles -o $(ROOT_DIR)/connectors/katalog/server \
+		--global-property=apis,supportingFiles -o $(ROOT_DIR)/connectors/katalog \
 		-i manifests/taxonomy.spec.yaml
 	rm -f $(ROOT_DIR)/connectors/katalog/server/go.mod $(ROOT_DIR)/connectors/katalog/server/.openapi-generator-ignore
 	rm -f $(ROOT_DIR)/connectors/katalog/server/Dockerfile $(ROOT_DIR)/connectors/katalog/server/go/README.md
