@@ -28,22 +28,22 @@ func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *policymanager
 	// just printing - start
 	responseBytes, errJSON := json.MarshalIndent(catalogMetadata.ResourceMetadata, "", "\t")
 	if errJSON != nil {
-		return nil, fmt.Errorf("error Marshalling catalogMetadata in updatePolicyManagerRequestWithResourceInfo2: %v", errJSON)
+		return nil, fmt.Errorf("error Marshalling catalogMetadata in updatePolicyManagerRequestWithResourceInfo: %v", errJSON)
 	}
-	log.Print("catalogMetadata.ResourceMetadata after MarshalIndent in updatePolicyManagerRequestWithResourceInfo2:" + string(responseBytes))
+	log.Print("catalogMetadata.ResourceMetadata after MarshalIndent in updatePolicyManagerRequestWithResourceInfo:" + string(responseBytes))
 	// just printing - end
 
 	err := json.Unmarshal(responseBytes, &in.Resource)
 	if err != nil {
-		return nil, fmt.Errorf("error UnMarshalling in updatePolicyManagerRequestWithResourceInfo2: %v", err)
+		return nil, fmt.Errorf("error UnMarshalling in updatePolicyManagerRequestWithResourceInfo: %v", err)
 	}
 
 	// just printing - start
 	responseBytes, errJSON = json.MarshalIndent(in, "", "\t")
 	if errJSON != nil {
-		return nil, fmt.Errorf("error Marshalling taxonomymodels.PolicyManagerRequest in updatePolicyManagerRequestWithResourceInfo2: %v", errJSON)
+		return nil, fmt.Errorf("error Marshalling taxonomymodels.PolicyManagerRequest in updatePolicyManagerRequestWithResourceInfo: %v", errJSON)
 	}
-	log.Print("returning updated taxonomymodels.PolicyManagerRequest in updatePolicyManagerRequestWithResourceInfo2:" + string(responseBytes))
+	log.Print("returning updated taxonomymodels.PolicyManagerRequest in updatePolicyManagerRequestWithResourceInfo:" + string(responseBytes))
 	// just printing - end
 
 	return in, nil
