@@ -202,7 +202,6 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext *api.Fyb
 			provisionedBucketRef, found := applicationContext.Status.ProvisionedStorage[assetID]
 			if !found {
 				message := "No copy has been created for the asset " + assetID + " required to be registered"
-				log.Info().Str(logging.DATASETID, assetID).Msg(message)
 				setErrorCondition(log, applicationContext, assetID, nil, message)
 				continue
 			}
@@ -357,7 +356,6 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 		}
 		if err := r.constructDataInfo(&req, applicationContext, workloadCluster); err != nil {
 			AnalyzeError(r.Log, applicationContext, req.Context.DataSetID, err)
-			log.Error().Err(err).Str(logging.DATASETID, req.Context.DataSetID).Msg("Error constructing data info")
 			continue
 		}
 		requirements = append(requirements, req)
