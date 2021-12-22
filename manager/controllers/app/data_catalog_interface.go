@@ -23,33 +23,7 @@ import (
 // - an error if happened
 // - the new asset identifier
 func (r *FybrikApplicationReconciler) RegisterAsset(catalogID string, info *app.DatasetDetails, input *app.FybrikApplication) (string, error) {
-	/*	datasetDetails := &pb.DatasetDetails{}
-		err := info.Details.Into(datasetDetails)
-		if err != nil {
-			return "", err
-		}
-
-		var creds *pb.Credentials
-		if creds, err = SecretToCredentials(r.Client, types.NamespacedName{Name: info.SecretRef, Namespace: utils.GetSystemNamespace()}); err != nil {
-			return "", err
-		}
-		var credentialPath string
-		if input.Spec.SecretRef != "" {
-			credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
-		}
-
-		response, err := r.DataCatalog.RegisterDatasetInfo(context.Background(), &pb.RegisterAssetRequest{
-			Creds:                creds,
-			DatasetDetails:       datasetDetails,
-			DestinationCatalogId: catalogID,
-			CredentialPath:       credentialPath,
-		})
-		if err != nil {
-			return "", err
-		}
-		return response.GetAssetId(), nil
-	*/
-	return "", errors.New("Unsupported feature")
+	return "", errors.New("unsupported feature")
 }
 
 var translationMap = map[string]string{

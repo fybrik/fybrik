@@ -76,7 +76,6 @@ func (m *grpcDataCatalog) GetAssetInfo(
 	}
 	log.Println("Marshalled value of data catalog response: ", string(res))
 	return dataCatalogResp, nil
-	// return result, err
 }
 
 func (m *grpcDataCatalog) RegisterDatasetInfo(ctx context.Context, in *pb.RegisterAssetRequest) (*pb.RegisterAssetResponse, error) {
