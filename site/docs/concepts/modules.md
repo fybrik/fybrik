@@ -46,7 +46,7 @@ A module may be used in one or more of these flows, as is indicated in the modul
 
 ## Control plane choice of modules
 
-A user workload description `FybrikApplicaton` includes a list of the data sets required, the technologies that will be used to read them, and information about the location and reason for the use of the data.  This information together with input from data and [enterprise policies](../reference/config-policies.md), determine which modules are chosen by the control plane and where they are deployed. 
+A user workload description `FybrikApplicaton` includes a list of the data sets required, the technologies that will be used to access them, the access type (e.g. read, copy), information about the location and reason for the use of the data.  This information together with input from data and [enterprise policies](config-policies.md), determine which modules are chosen by the control plane and where they are deployed. 
 
 ## Available modules
 
@@ -55,7 +55,7 @@ The table below lists the currently available modules:
 Name | Description | FybrikModule | Prerequisite
 ---  | ---         | ---       | ---
 [arrow-flight-module](https://github.com/fybrik/arrow-flight-module) | reading datasets while performing data transformations | https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml |
-[implicit-copy](https://github.com/fybrik/mover) | copies data between any two supported data stores, for example S3 and Kafka, and applies transformations. | https://raw.githubusercontent.com/fybrik/fybrik/master/modules/implicit-copy-batch-module.yaml<br> <br>https://raw.githubusercontent.com/fybrik/fybrik/master/modules/implicit-copy-stream-module.yaml | - [Datashim](https://github.com/datashim-io/datashim) deployment.<br>- [`FybrikStorageAccount`](../../reference/crds#fybrikstorageaccount) resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data.
+[implicit-copy](https://github.com/fybrik/mover) | copies data between any two supported data stores, for example S3 and Kafka, and applies transformations. | https://raw.githubusercontent.com/fybrik/data-movement-operator/master/modules/implicit-copy-batch-module.yaml<br> <br>https://raw.githubusercontent.com/fybrik/data-movement-operator/master/modules/implicit-copy-stream-module.yaml | - [Datashim](https://github.com/datashim-io/datashim) deployment.<br>- [`FybrikStorageAccount`](../../reference/crds#fybrikstorageaccount) resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data.
 
 ## Contributing
 

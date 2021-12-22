@@ -22,6 +22,7 @@ applicationNamespace: ""
 # Taxonomy file for taxonomy ConfigMap
 taxonomyOverride: ""
 
+
 # Global configuration applies to multiple components installed by this chart
 global:
   # Default hub for Fybrik images.
@@ -38,6 +39,11 @@ global:
   imagePullSecrets: []
   # Default connection timeout for GRPC connections.
   connectionTimeout: 120
+  # Human readable logs
+  prettyLogging: false
+  # zerolog verbosity level 
+  # ref: https://github.com/rs/zerolog#leveled-logging
+  loggingVerbosity: -1
 
 # Cluster metadata values
 cluster:
@@ -107,7 +113,7 @@ worker:
 manager:
   # Set to true to deploy the manager component or false to skip its deployment.
   # Defaults to true if `coordinator.enabled` or `worker.enabled` is true.
-  enabled: auto
+  enabled: true
   
   # Override GRPC connection timeout in manager
   connectionTimeout: 
@@ -118,7 +124,7 @@ manager:
   # Image name or a hub/image[:tag]
   image: "manager"
   # Overrides global.imagePullPolicy
-  imagePullPolicy: ""
+  imagePullPolicy: "Always"
 
   # Set to true to enable socat in the manager pod to forward
   # traffic from a localhost registry. Used only for development.
@@ -266,6 +272,8 @@ opaServer:
   #   log: |-
   #     package system.log
   #     mask["/input"]
+
+  # Bootstrap policies to load upon startup
   bootstrapPolicies: {}
 
 # Katalog connector component

@@ -8,6 +8,11 @@ global:
   tag: "master"
   imagePullPolicy: "Always"
 
+  prettyLogging: false
+  # zerolog verbosity level 
+  # ref: https://github.com/rs/zerolog#leveled-logging
+  loggingVerbosity: -1
+
 # Manager component
 manager:
   # Set to true to enable socat in the manager pod to forward

@@ -157,3 +157,22 @@ func Intersection(set1 []string, set2 []string) []string {
 	}
 	return res
 }
+
+const FybrikAppUUID = "FybrikApplicationUUID"
+
+// GetFybrikApplicationUUID returns a globally unique ID for the FybrikApplication instance.
+// It must be unique over time and across clusters, even after the instance has been deleted, because this ID will be used for logging purposes.
+func GetFybrikApplicationUUID(fapp *app.FybrikApplication) string {
+	// Use the clusterwise unique kubernetes id.
+	// No need to add cluster because FybrikApplication instances can only be created on the coordinator cluster.
+	return string(fapp.GetObjectMeta().GetUID())
+}
+
+// GetFybrikApplicationUUIDfromAnnotations returns the UUID passed to the resource in its annotations
+func GetFybrikApplicationUUIDfromAnnotations(annotations map[string]string) string {
+	uuid, founduuid := annotations[FybrikAppUUID]
+	if !founduuid {
+		return "UUID missing"
+	}
+	return uuid
+}

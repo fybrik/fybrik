@@ -75,4 +75,6 @@ func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
 	SetIfNotSet("CONNECTION_TIMEOUT", "120", t)
 	SetIfNotSet("MAIN_POLICY_MANAGER_CONNECTOR_URL", "localhost:50090", t)
 	SetIfNotSet("MAIN_POLICY_MANAGER_NAME", "MOCK", t)
+	SetIfNotSet("LOGGING_VERBOSITY", "-1", t)
+	SetIfNotSet("PRETTY_LOGGING", "true", t)
 }
