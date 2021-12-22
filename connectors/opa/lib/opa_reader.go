@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 
+	clients "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	datacatalogTaxonomyModels "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 	policymanagerTaxonomyModels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )
@@ -16,10 +17,11 @@ import (
 type OpaReader struct {
 	opaServerURL string
 	opaClient    *http.Client
+	dataCatalog  *clients.DataCatalog
 }
 
-func NewOpaReader(opasrvurl string, client *http.Client) *OpaReader {
-	return &OpaReader{opaServerURL: opasrvurl, opaClient: client}
+func NewOpaReader(opasrvurl string, client *http.Client, dataCatalog *clients.DataCatalog) *OpaReader {
+	return &OpaReader{opaServerURL: opasrvurl, opaClient: client, dataCatalog: dataCatalog}
 }
 
 func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *policymanagerTaxonomyModels.PolicyManagerRequest, catalogMetadata *datacatalogTaxonomyModels.DataCatalogResponse) (*policymanagerTaxonomyModels.PolicyManagerRequest, error) {
@@ -47,11 +49,11 @@ func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *policymanager
 	return in, nil
 }
 
-func (r *OpaReader) GetOPADecisions(in *policymanagerTaxonomyModels.PolicyManagerRequest, creds string, catalogReader *CatalogReader, policyToBeEvaluated string) (policymanagerTaxonomyModels.PolicyManagerResponse, error) {
+func (r *OpaReader) GetOPADecisions(in *policymanagerTaxonomyModels.PolicyManagerRequest, creds string, policyToBeEvaluated string) (policymanagerTaxonomyModels.PolicyManagerResponse, error) {
 	datasetID := (in.GetResource()).Name
 	objToSend := datacatalogTaxonomyModels.DataCatalogRequest{AssetID: datasetID, OperationType: datacatalogTaxonomyModels.READ}
 
-	info, err := (*catalogReader.DataCatalog).GetAssetInfo(&objToSend, creds)
+	info, err := (*r.dataCatalog).GetAssetInfo(&objToSend, creds)
 	// info, err := (*r.DataCatalog).GetDatasetInfo(context.Background(), objToSend)
 	if err != nil {
 		return policymanagerTaxonomyModels.PolicyManagerResponse{}, err

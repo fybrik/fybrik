@@ -34,17 +34,15 @@ func TestMainOpaConnector(t *testing.T) {
 	retryClient.RetryMax = 10
 	standardClient := retryClient.HTTPClient // *http.Client
 
-	srv := NewOpaReader(opaServerURL, standardClient)
-
 	connectionTimeout := time.Duration(timeOutSecs) * time.Second
 	dataCatalog, err := dcclient.NewGrpcDataCatalog(catalogProviderName, catalogConnectorURL, connectionTimeout)
 	assert.NilError(t, err)
 
-	catalogReader := NewCatalogReader(&dataCatalog)
+	srv := NewOpaReader(opaServerURL, standardClient, &dataCatalog)
 	policyManagerReq, creds, err := pmclient.ConvertGrpcReqToOpenAPIReq(applicationContext)
 	assert.NilError(t, err)
 
-	policyManagerResp, err := srv.GetOPADecisions(policyManagerReq, creds, catalogReader, policyToBeEvaluated)
+	policyManagerResp, err := srv.GetOPADecisions(policyManagerReq, creds, policyToBeEvaluated)
 	assert.NilError(t, err)
 
 	datasets := applicationContext.GetDatasets()

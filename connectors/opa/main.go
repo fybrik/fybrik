@@ -52,18 +52,16 @@ func main() {
 		log.Println("Error during creation of data catalog connection!")
 		return
 	}
-	catalogReader := opabl.NewCatalogReader(&dataCatalog)
 
 	retryClient := retryablehttp.NewClient()
 	retryClient.RetryMax = 10
 	standardClient := retryClient.HTTPClient // *http.Client
 
-	opaReader := opabl.NewOpaReader(opaServerURL, standardClient)
+	opaReader := opabl.NewOpaReader(opaServerURL, standardClient, &dataCatalog)
 
 	connController := &openapiserver.ConnectorController{
-		OpaServerURL:  opaServerURL,
-		OpaReader:     opaReader,
-		CatalogReader: catalogReader,
+		OpaServerURL: opaServerURL,
+		OpaReader:    opaReader,
 	}
 
 	router := openapiserver.NewRouter(connController)
