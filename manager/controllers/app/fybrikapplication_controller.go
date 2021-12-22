@@ -185,7 +185,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext *api.Fyb
 			continue
 		}
 		if status.Error != "" {
-			setErrorCondition(log, applicationContext, assetID, nil, status.Error)
+			setErrorCondition(log, applicationContext, assetID, status.Error)
 			continue
 		}
 		if !status.Ready {
@@ -202,11 +202,11 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext *api.Fyb
 			provisionedBucketRef, found := applicationContext.Status.ProvisionedStorage[assetID]
 			if !found {
 				message := "No copy has been created for the asset " + assetID + " required to be registered"
-				setErrorCondition(log, applicationContext, assetID, nil, message)
+				setErrorCondition(log, applicationContext, assetID, message)
 				continue
 			}
 			if err := r.Provision.SetPersistent(getBucketResourceRef(provisionedBucketRef.DatasetRef), true); err != nil {
-				setErrorCondition(log, applicationContext, assetID, err, err.Error())
+				setErrorCondition(log, applicationContext, assetID, err.Error())
 				continue
 			}
 			// register the asset: experimental feature
@@ -216,7 +216,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext *api.Fyb
 				applicationContext.Status.AssetStates[assetID] = state
 			} else {
 				// log an error and make a new attempt to register the asset
-				setErrorCondition(log, applicationContext, assetID, err, err.Error())
+				setErrorCondition(log, applicationContext, assetID, err.Error())
 				continue
 			}
 		}
@@ -558,9 +558,9 @@ func AnalyzeError(log zerolog.Logger, application *api.FybrikApplication, assetI
 	}
 	switch err.Error() {
 	case api.InvalidAssetID, api.ReadAccessDenied, api.CopyNotAllowed, api.WriteNotAllowed, api.InvalidAssetDataStore:
-		setDenyCondition(log, application, assetID, err, err.Error())
+		setDenyCondition(log, application, assetID, err.Error())
 	default:
-		setErrorCondition(log, application, assetID, err, err.Error())
+		setErrorCondition(log, application, assetID, err.Error())
 	}
 }
 

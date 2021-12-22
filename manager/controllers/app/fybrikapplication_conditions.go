@@ -46,7 +46,7 @@ func resetAssetState(application *api.FybrikApplication, assetID string) {
 	application.Status.AssetStates[assetID] = api.AssetState{Conditions: conditions}
 }
 
-func setErrorCondition(log zerolog.Logger, application *api.FybrikApplication, assetID string, err error, msg string) {
+func setErrorCondition(log zerolog.Logger, application *api.FybrikApplication, assetID string, msg string) {
 	errMsg := "An error was received for asset " + assetID
 	errMsg += " . If the error persists, please contact an operator."
 	errMsg += "Error description: " + msg
@@ -54,17 +54,17 @@ func setErrorCondition(log zerolog.Logger, application *api.FybrikApplication, a
 		Type:    api.ErrorCondition,
 		Status:  corev1.ConditionTrue,
 		Message: errMsg}
-	log.Error().Err(err).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
+	log.Error().Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
 		Str(utils.FybrikAppUUID, utils.GetFybrikApplicationUUID(application)).
 		Str(logging.DATASETID, assetID).Msg("Setting error condition: " + errMsg)
 }
 
-func setDenyCondition(log zerolog.Logger, application *api.FybrikApplication, assetID string, err error, msg string) {
+func setDenyCondition(log zerolog.Logger, application *api.FybrikApplication, assetID string, msg string) {
 	application.Status.AssetStates[assetID].Conditions[DenyConditionIndex] = api.Condition{
 		Type:    api.DenyCondition,
 		Status:  corev1.ConditionTrue,
 		Message: msg}
-	log.Error().Err(err).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
+	log.Error().Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
 		Str(utils.FybrikAppUUID, utils.GetFybrikApplicationUUID(application)).
 		Str(logging.DATASETID, assetID).Msg("Setting deny condition: " + msg)
 }
