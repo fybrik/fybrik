@@ -134,7 +134,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			}
 		}()
 
-		adminConfigEvaluator := adminconfig.NewRegoPolicyEvaluator(ctrl.Log.WithName("ConfigPolicyEvaluator"))
+		adminConfigEvaluator := adminconfig.NewRegoPolicyEvaluator()
 		// Initiate the FybrikApplication Controller
 		applicationController := app.NewFybrikApplicationReconciler(
 			mgr,

@@ -3,7 +3,9 @@
 
 package adminconfig
 
+import "github.com/rs/zerolog"
+
 // EvaluatorInterface is an interface for config policies' evaluator
 type EvaluatorInterface interface {
-	Evaluate(in *EvaluatorInput) (EvaluatorOutput, error)
+	Evaluate(in *EvaluatorInput, log zerolog.Logger) (EvaluatorOutput, error)
 }

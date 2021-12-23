@@ -436,10 +436,11 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 	req.DataDetails = dataDetails
 	req.VaultSecretPath = ""
 	req.VaultSecretPath = response.Credentials
-
+	uuid := utils.GetFybrikApplicationUUID(input)
 	configEvaluatorInput := &adminconfig.EvaluatorInput{}
 	configEvaluatorInput.Workload.Properties = input.Spec.AppInfo.DeepCopy()
 	configEvaluatorInput.Workload.Cluster = workloadCluster
+	configEvaluatorInput.Workload.UUID = uuid
 	configEvaluatorInput.Request = CreateDataRequest(input, *req.Context, req.DataDetails.Metadata)
 	// Read policies for data that is processed in the workload geography
 	if configEvaluatorInput.Request.Usage[api.ReadFlow] {
@@ -451,7 +452,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 		}
 	}
 	configEvaluatorInput.GovernanceActions = req.Actions
-	configDecisions, err := r.ConfigEvaluator.Evaluate(configEvaluatorInput)
+	configDecisions, err := r.ConfigEvaluator.Evaluate(configEvaluatorInput, r.Log)
 	if err != nil {
 		r.Log.Error().Err(err).Msg("Error evaluating config policies")
 		return err

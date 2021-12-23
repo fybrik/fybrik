@@ -9,6 +9,7 @@ import (
 
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	adminconfig "fybrik.io/fybrik/pkg/adminconfig"
+	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/multicluster"
 	. "github.com/onsi/ginkgo"
@@ -16,8 +17,9 @@ import (
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
 	corev1 "k8s.io/api/core/v1"
-	ctrl "sigs.k8s.io/controller-runtime"
 )
+
+var log = logging.LogInit(logging.CONNECTOR, "ConfigPolicyEvaluator")
 
 func NewEvaluator() *adminconfig.RegoPolicyEvaluator {
 	module := `
@@ -71,7 +73,7 @@ func NewEvaluator() *adminconfig.RegoPolicyEvaluator {
 	)
 	query, err := rego.PrepareForEval(context.Background())
 	Expect(err).ToNot(HaveOccurred())
-	return &adminconfig.RegoPolicyEvaluator{Log: ctrl.Log.WithName("ConfigPolicyEvaluator"), ReadyForEval: true, Query: query}
+	return &adminconfig.RegoPolicyEvaluator{ReadyForEval: true, Query: query}
 }
 
 func TestRegoFileEvaluator(t *testing.T) {
@@ -88,7 +90,7 @@ var _ = Describe("Evaluate a policy", func() {
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: true, v1alpha1.CopyFlow: true},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "neverland-cluster", Metadata: multicluster.ClusterMetadata{Region: "neverland"}}}}
-		out, err := evaluator.Evaluate(&in)
+		out, err := evaluator.Evaluate(&in, log)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(false))
 	})
@@ -99,7 +101,7 @@ var _ = Describe("Evaluate a policy", func() {
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "thegreendragon", Metadata: multicluster.ClusterMetadata{Region: "theshire"}}}}
-		out, err := evaluator.Evaluate(&in)
+		out, err := evaluator.Evaluate(&in, log)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
 		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(corev1.ConditionFalse))
@@ -111,7 +113,7 @@ var _ = Describe("Evaluate a policy", func() {
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: true},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "neverland-cluster", Metadata: multicluster.ClusterMetadata{Region: "neverland"}}}}
-		out, err := evaluator.Evaluate(&in)
+		out, err := evaluator.Evaluate(&in, log)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
 		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions["clusters"]["name"]).To(ContainElements("clusterB", "clusterC"))
@@ -127,7 +129,7 @@ var _ = Describe("Evaluate a policy", func() {
 			Workload: adminconfig.WorkloadInfo{
 				PolicySetID: "2",
 				Cluster:     multicluster.Cluster{Name: "neverland-cluster", Metadata: multicluster.ClusterMetadata{Region: "neverland"}}}}
-		out, err := evaluator.Evaluate(&in)
+		out, err := evaluator.Evaluate(&in, log)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
 		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(corev1.ConditionFalse))
@@ -141,7 +143,7 @@ var _ = Describe("Evaluate a policy", func() {
 			Workload: adminconfig.WorkloadInfo{
 				PolicySetID: "99",
 				Cluster:     multicluster.Cluster{Name: "neverland-cluster", Metadata: multicluster.ClusterMetadata{Region: "neverland"}}}}
-		out, err := evaluator.Evaluate(&in)
+		out, err := evaluator.Evaluate(&in, log)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
 		Expect(out.ConfigDecisions).To(BeEmpty())
