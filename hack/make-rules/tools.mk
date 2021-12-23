@@ -118,6 +118,11 @@ INSTALL_TOOLS += $(TOOLBIN)/crdoc
 $(TOOLBIN)/crdoc:
 	GOBIN=$(ABSTOOLBIN) go install fybrik.io/crdoc@v0.4.0
 
+INSTALL_TOOLS += $(TOOLBIN)/json-schema-generator
+$(TOOLBIN)/json-schema-generator:
+	cd $(TOOLS_DIR); ./install_json-schema-generator.sh
+	$(call post-install-check)
+
 INSTALL_TOOLS += $(TOOLBIN)/yq
 $(TOOLBIN)/yq:
 	cd $(TOOLS_DIR); ./install_yq.sh

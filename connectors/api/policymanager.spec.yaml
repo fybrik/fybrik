@@ -22,13 +22,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "../../charts/fybrik/files/taxonomy/policy_manager_request.json"
+              $ref: "../../charts/fybrik/files/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsRequest"
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: "../../charts/fybrik/files/taxonomy/policy_manager_response.json"
+                $ref: "../../charts/fybrik/files/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsResponse"
         '400':
           description: Invalid status value

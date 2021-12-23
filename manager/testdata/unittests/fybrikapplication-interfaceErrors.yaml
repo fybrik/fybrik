@@ -18,5 +18,5 @@ spec:
     - dataSetID: s3/redact-dataset
       requirements:
         interface: 
-          protocol: kafka
+          protocol: Kafka
           dataformat: csv

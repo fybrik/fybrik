@@ -1,0 +1,81 @@
+{
+  "title": "policymanager.json",
+  "definitions": {
+    "GetPolicyDecisionsRequest": {
+      "type": "object",
+      "required": [
+        "action",
+        "resource"
+      ],
+      "properties": {
+        "action": {
+          "$ref": "#/definitions/RequestAction"
+        },
+        "context": {
+          "$ref": "taxonomy.json#/definitions/PolicyManagerRequestContext"
+        },
+        "resource": {
+          "$ref": "datacatalog.json#/definitions/ResourceMetadata"
+        }
+      }
+    },
+    "GetPolicyDecisionsResponse": {
+      "type": "object",
+      "required": [
+        "result"
+      ],
+      "properties": {
+        "decision_id": {
+          "type": "string"
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ResultItem"
+          }
+        }
+      }
+    },
+    "RequestAction": {
+      "type": "object",
+      "required": [
+        "actionType"
+      ],
+      "properties": {
+        "actionType": {
+          "$ref": "#/definitions/RequestActionType"
+        },
+        "destination": {
+          "type": "string"
+        },
+        "processingLocation": {
+          "$ref": "taxonomy.json#/definitions/ProcessingLocation"
+        }
+      }
+    },
+    "RequestActionType": {
+      "type": "string",
+      "enum": [
+        "read",
+        "write",
+        "delete"
+      ]
+    },
+    "ResultItem": {
+      "type": "object",
+      "required": [
+        "policy",
+        "action"
+      ],
+      "properties": {
+        "action": {
+          "$ref": "taxonomy.json#/definitions/Action"
+        },
+        "policy": {
+          "description": "The policy on which the decision was based",
+          "type": "string"
+        }
+      }
+    }
+  }
+}

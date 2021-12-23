@@ -6,6 +6,12 @@ export KUBE_NAMESPACE ?= fybrik-system
 license: $(TOOLBIN)/license_finder
 	$(call license_go,.)
 
+.PHONY: generate
+generate: $(TOOLBIN)/controller-gen $(TOOLBIN)/json-schema-generator
+	$(TOOLBIN)/json-schema-generator -r ./pkg/model/... -o charts/fybrik/files/taxonomy/
+	$(TOOLBIN)/controller-gen object:headerFile=./hack/boilerplate.go.txt,year=$(shell date +%Y) paths="./..."
+	$(MAKE) -C site generate
+
 .PHONY: docker-mirror-read
 docker-mirror-read:
 	$(TOOLS_DIR)/docker_mirror.sh $(TOOLS_DIR)/docker_mirror.conf

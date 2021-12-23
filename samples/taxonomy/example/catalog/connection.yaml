@@ -5,6 +5,7 @@ definitions:
       - $ref: "#/definitions/S3"
       - $ref: "#/definitions/DB2"
       - $ref: "#/definitions/Kafka"
+      - $ref: "#/definitions/FybrikArrowFlight"
   S3:
     description: Connection information for S3 compatible object store
     type: object
@@ -54,4 +55,9 @@ definitions:
       topic_name:
         type: string
       value_deserializer:
+        type: string
+  FybrikArrowFlight:
+    type: object
+    properties:
+      endpoint:
         type: string
