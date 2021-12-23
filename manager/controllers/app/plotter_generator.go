@@ -5,7 +5,6 @@ package app
 
 import (
 	"bytes"
-	"encoding/json"
 	"net/url"
 	"text/template"
 
@@ -14,10 +13,10 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
-	dc "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 	vault "fybrik.io/fybrik/pkg/vault"
 	"github.com/Masterminds/sprig/v3"
 	"github.com/rs/zerolog"
@@ -66,20 +65,20 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 	if err != nil {
 		return nil, err
 	}
-	endpoint := url.Host
-	datastore := dc.Connection{}
-	s3Config := make(map[string]interface{})
-	s3Map := make(map[string]interface{})
-	s3Map["endpoint"] = endpoint
-	s3Map["bucket"] = bucket.Name
-	s3Map["object_key"] = originalAssetName + utils.Hash(p.Owner.Name+p.Owner.Namespace, 10)
-	s3Config["name"] = "s3"
-	s3Config["s3"] = s3Map
 
-	bytes, _ := json.MarshalIndent(s3Config, "", "\t")
-	_ = json.Unmarshal(bytes, &datastore)
+	connection := taxonomy.Connection{
+		Name: "s3",
+		AdditionalProperties: serde.Properties{
+			Items: map[string]interface{}{
+				"s3": map[string]interface{}{
+					"endpoint":   url.Host,
+					"bucket":     bucket.Name,
+					"object_key": originalAssetName + utils.Hash(p.Owner.Name+p.Owner.Namespace, 10),
+				},
+			},
+		},
+	}
 
-	connection := serde.NewArbitrary(datastore)
 	assetInfo := NewAssetInfo{
 		Storage: bucket,
 	}
@@ -102,7 +101,7 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 	return &app.DataStore{
 		Vault:      vaultMap,
 		Connection: connection,
-		Format:     destinationInterface.DataFormat,
+		Format:     string(destinationInterface.DataFormat),
 	}, nil
 }
 
@@ -123,9 +122,9 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 		Address:    utils.GetVaultAddress(),
 	}
 	sourceDataStore := &app.DataStore{
-		Connection: &item.DataDetails.Connection,
+		Connection: item.DataDetails.Connection,
 		Vault:      vaultMap,
-		Format:     item.DataDetails.Interface.DataFormat,
+		Format:     string(item.DataDetails.Interface.DataFormat),
 	}
 
 	assets[item.Context.DataSetID] = app.AssetDetails{
@@ -146,7 +145,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 	for _, element := range selection.DataPath {
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
 		p.Log.Trace().Msg("Adding module for " + moduleCapability.Capability)
-		actions := createActionStructure(element.Actions)
+		actions := element.Actions
 		template := app.Template{
 			Name: moduleCapability.Capability,
 			Modules: []app.ModuleInfo{{
@@ -310,7 +309,7 @@ func moduleAPIToService(api *app.ModuleAPI, scope app.CapabilityScope, appContex
 			Port:     api.Endpoint.Port,
 			Scheme:   api.Endpoint.Scheme,
 		},
-		Format: api.DataFormat,
+		Format: string(api.DataFormat),
 	}
 
 	return service, nil

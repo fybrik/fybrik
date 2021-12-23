@@ -4,6 +4,7 @@
 package environment
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 )
@@ -30,4 +31,12 @@ func GetEnvAsFloat32(key string, defaultValue float32) float32 {
 		}
 	}
 	return defaultValue
+}
+
+func MustGetEnv(key string) (string, error) {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		return "", fmt.Errorf("missing required environment variable: %s", key)
+	}
+	return value, nil
 }

@@ -6,9 +6,9 @@ package adminconfig
 import (
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 
+	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
-	dc "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
-	pm "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )
 
 // WorkloadInfo holds workload details such as the cluster where the workload is running,
@@ -33,7 +33,7 @@ type DataRequest struct {
 	// requested usage, e.g. "read": true, "write": false
 	Usage map[api.DataFlow]bool `json:"usage"`
 	// Asset metadata
-	Metadata *dc.Resource `json:"dataset"`
+	Metadata *datacatalog.ResourceMetadata `json:"dataset"`
 }
 
 // EvaluatorInput is an input to Configuration Policies Evaluator.
@@ -44,5 +44,5 @@ type EvaluatorInput struct {
 	// Requirements for asset usage
 	Request DataRequest `json:"request"`
 	// Governance Actions for reading data (relevant for read scenarios only)
-	GovernanceActions []pm.Action `json:"actions"`
+	GovernanceActions []taxonomy.Action `json:"actions"`
 }

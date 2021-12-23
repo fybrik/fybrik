@@ -48,7 +48,7 @@ func TestMainOpaConnector(t *testing.T) {
 	datasets := applicationContext.GetDatasets()
 	op := datasets[0].GetOperation()
 	datasetID := datasets[0].GetDataset().GetDatasetId()
-	policiesDecisions, err := pmclient.ConvertOpenAPIRespToGrpcResp(&policyManagerResp, datasetID, op)
+	policiesDecisions, err := pmclient.ConvertOpenAPIRespToGrpcResp(policyManagerResp, datasetID, op)
 	assert.NilError(t, err)
 	fmt.Println("policiesDecisions returned")
 	fmt.Println(policiesDecisions)

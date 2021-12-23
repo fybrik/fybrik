@@ -14,6 +14,9 @@ import (
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/environment"
+	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/model/policymanager"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	local "fybrik.io/fybrik/pkg/multicluster/local"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
@@ -38,8 +41,6 @@ import (
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/storage"
-	dc "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
-	pm "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 	"fybrik.io/fybrik/pkg/vault"
 )
 
@@ -399,7 +400,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 }
 
 // CreateDataRequest generates a new DataRequest object for a specific asset based on FybrikApplication and asset metadata
-func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataContext, assetMetadata *dc.Resource) adminconfig.DataRequest {
+func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataContext, assetMetadata *datacatalog.ResourceMetadata) adminconfig.DataRequest {
 	usage := make(map[api.DataFlow]bool)
 	// request to read is determined by the workload selector presence
 	usage[api.ReadFlow] = (application.Spec.Selector.WorkloadSelector.Size() > 0)
@@ -420,10 +421,10 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
 	var err error
-	var response *dc.DataCatalogResponse
-	if response, err = r.DataCatalog.GetAssetInfo(&dc.DataCatalogRequest{
-		AssetID:       req.Context.DataSetID,
-		OperationType: dc.READ},
+	var response *datacatalog.GetAssetResponse
+	if response, err = r.DataCatalog.GetAssetInfo(&datacatalog.GetAssetRequest{
+		AssetID:       taxonomy.AssetID(req.Context.DataSetID),
+		OperationType: datacatalog.READ},
 		credentialPath); err != nil {
 		return err
 	}
@@ -442,8 +443,8 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 	configEvaluatorInput.Request = CreateDataRequest(input, *req.Context, req.DataDetails.Metadata)
 	// Read policies for data that is processed in the workload geography
 	if configEvaluatorInput.Request.Usage[api.ReadFlow] {
-		actionType := pm.READ
-		reqAction := pm.PolicyManagerRequestAction{ActionType: &actionType, Destination: &workloadCluster.Metadata.Region}
+		actionType := policymanager.READ
+		reqAction := policymanager.RequestAction{ActionType: actionType, Destination: workloadCluster.Metadata.Region}
 		req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, input, &reqAction)
 		if err != nil {
 			return err

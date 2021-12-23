@@ -3,9 +3,8 @@
 
 package openapiclient
 
-import (
-	"fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
-)
+import "fybrik.io/fybrik/pkg/model/policymanager"
 
-type PolicyManagerRequest = base.PolicyManagerRequest
-type PolicyManagerResponse = base.PolicyManagerResponse
+// TODO(roee88): rename
+type PolicyManagerRequest = policymanager.GetPolicyDecisionsRequest
+type PolicyManagerResponse = policymanager.GetPolicyDecisionsResponse

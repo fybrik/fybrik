@@ -25,6 +25,7 @@ spec:
             role: module
             secretPath: "/v1/kubernetes-secrets/s3-write?namespace=default"
         connection:
+          name: s3
           s3:
             bucket: my-bucket
             endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
@@ -40,6 +41,7 @@ spec:
             role: module
             secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
         connection:
+          name: db2
           db2:
             port: "5000"
             table: SMALL

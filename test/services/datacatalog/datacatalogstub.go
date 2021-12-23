@@ -11,7 +11,7 @@ import (
 	"strconv"
 
 	"fybrik.io/fybrik/manager/controllers/mockup"
-	datacatalogTaxonomyModels "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
+	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,24 +26,32 @@ func main() {
 
 	router.POST("/getAssetInfo", func(c *gin.Context) {
 		creds := ""
-		if values := c.Request.Header["X-Request-DataCatalog-Cred"]; len(values) > 0 {
+		if values := c.Request.Header["X-Request-Datacatalog-Cred"]; len(values) > 0 {
 			creds = values[0]
 		}
 		log.Println("creds extracted from POST request in mockup data catalog:", creds)
-		input, _ := ioutil.ReadAll(c.Request.Body)
-		log.Println("input extracted from POST request body in mockup data catalog:", string(input))
 
-		var dataCatalogReq datacatalogTaxonomyModels.DataCatalogRequest
-		err := json.Unmarshal(input, &dataCatalogReq)
+		input, err := ioutil.ReadAll(c.Request.Body)
 		if err != nil {
+			c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 			return
 		}
+
+		log.Println("input extracted from POST request body in mockup data catalog:", string(input))
+		var dataCatalogReq datacatalog.GetAssetRequest
+
+		if err := json.Unmarshal(input, &dataCatalogReq); err != nil {
+			c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+			return
+		}
+
 		dataCatalog := mockup.NewTestCatalog()
 		dataCatalogResp, err := dataCatalog.GetAssetInfo(&dataCatalogReq, creds)
 		if err != nil {
-			c.String(http.StatusInternalServerError, "Error in getAssetInfo!")
+			c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 			return
 		}
+
 		c.JSON(http.StatusOK, dataCatalogResp)
 	})
 

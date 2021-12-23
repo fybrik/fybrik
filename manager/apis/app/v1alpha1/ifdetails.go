@@ -3,24 +3,20 @@
 
 package v1alpha1
 
+import "fybrik.io/fybrik/pkg/model/taxonomy"
+
 // Values used in tests and for grpc connection with connectors.
+// TODO(roee88): used only in tests so should be moved
 const (
-	S3          string = "s3"
-	Kafka       string = "kafka"
-	JdbcDb2     string = "db2"
-	ArrowFlight string = "fybrik-arrow-flight"
-	Arrow       string = "arrow"
-	Parquet     string = "parquet"
-	Table       string = "table"
+	S3          taxonomy.ConnectionType = "s3"
+	Kafka       taxonomy.ConnectionType = "kafka"
+	JdbcDb2     taxonomy.ConnectionType = "db2"
+	ArrowFlight taxonomy.ConnectionType = "fybrik-arrow-flight"
+	Arrow       taxonomy.DataFormat     = "arrow"
+	Parquet     taxonomy.DataFormat     = "parquet"
+	Table       taxonomy.DataFormat     = "table"
 )
 
 // InterfaceDetails indicate how the application or module receive or write the data
-type InterfaceDetails struct {
-	// Protocol defines the interface protocol used for data transactions
-	// +required
-	Protocol string `json:"protocol"`
-
-	// DataFormat defines the data format type
-	// +optional
-	DataFormat string `json:"dataformat,omitempty"` // To be removed in future
-}
+// TODO(roee88): remove redundant definition
+type InterfaceDetails taxonomy.Interface

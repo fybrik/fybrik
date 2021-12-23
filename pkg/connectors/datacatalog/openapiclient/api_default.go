@@ -107,7 +107,7 @@ func (a *DefaultApiService) GetAssetInfoPostExecute(r ApiGetAssetInfoPostRequest
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
-	localVarHeaderParams["X-Request-DataCatalog-Cred"] = parameterToString(*r.xRequestDataCatalogCred, "")
+	localVarHeaderParams["X-Request-Datacatalog-Cred"] = parameterToString(*r.xRequestDataCatalogCred, "")
 	// body params
 	localVarPostBody = r.dataCatalogRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFormFileName, localVarFileName, localVarFileBytes)

@@ -7,12 +7,12 @@ import (
 	"io"
 
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
+	"fybrik.io/fybrik/pkg/model/policymanager"
 )
 
 // PolicyManager is an interface of a facade to connect to a policy manager.
 type PolicyManager interface {
-	GetPoliciesDecisions(in *taxonomymodels.PolicyManagerRequest, creds string) (*taxonomymodels.PolicyManagerResponse, error)
+	GetPoliciesDecisions(in *policymanager.GetPolicyDecisionsRequest, creds string) (*policymanager.GetPolicyDecisionsResponse, error)
 	io.Closer
 }
 

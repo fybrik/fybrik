@@ -10,8 +10,9 @@ import (
 	"net/http"
 
 	clients "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
-	datacatalogTaxonomyModels "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
-	policymanagerTaxonomyModels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
+	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/model/policymanager"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
 type OpaReader struct {
@@ -24,7 +25,7 @@ func NewOpaReader(opasrvurl string, client *http.Client, dataCatalog *clients.Da
 	return &OpaReader{opaServerURL: opasrvurl, opaClient: client, dataCatalog: dataCatalog}
 }
 
-func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *policymanagerTaxonomyModels.PolicyManagerRequest, catalogMetadata *datacatalogTaxonomyModels.DataCatalogResponse) (*policymanagerTaxonomyModels.PolicyManagerRequest, error) {
+func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *policymanager.GetPolicyDecisionsRequest, catalogMetadata *datacatalog.GetAssetResponse) (*policymanager.GetPolicyDecisionsRequest, error) {
 	// just printing - start
 	responseBytes, errJSON := json.MarshalIndent(catalogMetadata.ResourceMetadata, "", "\t")
 	if errJSON != nil {
@@ -49,20 +50,20 @@ func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *policymanager
 	return in, nil
 }
 
-func (r *OpaReader) GetOPADecisions(in *policymanagerTaxonomyModels.PolicyManagerRequest, creds string, policyToBeEvaluated string) (policymanagerTaxonomyModels.PolicyManagerResponse, error) {
-	datasetID := (in.GetResource()).Name
-	objToSend := datacatalogTaxonomyModels.DataCatalogRequest{AssetID: datasetID, OperationType: datacatalogTaxonomyModels.READ}
+func (r *OpaReader) GetOPADecisions(in *policymanager.GetPolicyDecisionsRequest, creds string, policyToBeEvaluated string) (*policymanager.GetPolicyDecisionsResponse, error) {
+	datasetID := in.Resource.Name
+	objToSend := datacatalog.GetAssetRequest{AssetID: taxonomy.AssetID(datasetID), OperationType: datacatalog.READ}
 
 	info, err := (*r.dataCatalog).GetAssetInfo(&objToSend, creds)
 	if err != nil {
-		return policymanagerTaxonomyModels.PolicyManagerResponse{}, err
+		return nil, err
 	}
 
 	log.Printf("Received Response from External Catalog Connector for  dataSetID: %s\n", datasetID)
 	log.Printf("Response received from External Catalog Connector is given below:")
 	responseBytes, errJSON := json.MarshalIndent(info, "", "\t")
 	if errJSON != nil {
-		return policymanagerTaxonomyModels.PolicyManagerResponse{}, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
+		return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
 	}
 	log.Print(string(responseBytes))
 
@@ -71,7 +72,7 @@ func (r *OpaReader) GetOPADecisions(in *policymanagerTaxonomyModels.PolicyManage
 	b, err := json.Marshal(*in)
 	if err != nil {
 		fmt.Println(err)
-		return policymanagerTaxonomyModels.PolicyManagerResponse{}, fmt.Errorf("error during marshal in GetOPADecisions: %v", err)
+		return nil, fmt.Errorf("error during marshal in GetOPADecisions: %v", err)
 	}
 	inputJSON := "{ \"input\": " + string(b) + " }"
 	fmt.Println("updated stringified policy manager request in GetOPADecisions", inputJSON)
@@ -79,22 +80,22 @@ func (r *OpaReader) GetOPADecisions(in *policymanagerTaxonomyModels.PolicyManage
 	opaEval, err := EvaluatePoliciesOnInput(inputJSON, r.opaServerURL, policyToBeEvaluated, r.opaClient)
 	if err != nil {
 		log.Printf("error in EvaluatePoliciesOnInput : %v", err)
-		return policymanagerTaxonomyModels.PolicyManagerResponse{}, fmt.Errorf("error in EvaluatePoliciesOnInput : %v", err)
+		return nil, fmt.Errorf("error in EvaluatePoliciesOnInput : %v", err)
 	}
 	log.Println("OPA Eval : " + opaEval)
 
-	policyManagerResponse := new(policymanagerTaxonomyModels.PolicyManagerResponse)
-	err = json.Unmarshal([]byte(opaEval), &policyManagerResponse)
+	policyManagerResponse := &policymanager.GetPolicyDecisionsResponse{}
+	err = json.Unmarshal([]byte(opaEval), policyManagerResponse)
 	if err != nil {
-		return policymanagerTaxonomyModels.PolicyManagerResponse{}, fmt.Errorf("error in GetOPADecisions during unmarshalling OPA response to Policy Manager Response : %v", err)
+		return nil, fmt.Errorf("error in GetOPADecisions during unmarshalling OPA response to Policy Manager Response : %v", err)
 	}
 	log.Println("unmarshalled policyManagerResp in GetOPADecisions:", policyManagerResponse)
 
 	res, err := json.MarshalIndent(policyManagerResponse, "", "\t")
 	if err != nil {
-		return policymanagerTaxonomyModels.PolicyManagerResponse{}, fmt.Errorf("error in GetOPADecisions during MarshalIndent Policy Manager Response : %v", err)
+		return nil, fmt.Errorf("error in GetOPADecisions during MarshalIndent Policy Manager Response : %v", err)
 	}
 	log.Println("Marshalled PolicyManagerResponse from OPA response in GetOPADecisions:", string(res))
 
-	return *policyManagerResponse, nil
+	return policyManagerResponse, nil
 }

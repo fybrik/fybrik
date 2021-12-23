@@ -12,7 +12,7 @@ paths:
         summary: getAssetInfo
         parameters:
           - in: header
-            name: X-Request-DataCatalog-Cred
+            name: X-Request-Datacatalog-Cred
             schema:
               type: string
             required: true

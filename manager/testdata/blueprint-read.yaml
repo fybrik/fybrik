@@ -32,7 +32,7 @@ spec:
         - assetID: xyz
           source:
             connection:
-              name: S3
+              name: s3
               s3:
                 bucket: fybrik-test-bucket
                 endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
@@ -44,4 +44,4 @@ spec:
                 authPath: /v1/auth/kubernetes/login
                 role: module
                 secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
-            format: parquet           
+            format: parquet
