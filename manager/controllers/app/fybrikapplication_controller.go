@@ -220,7 +220,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext *api.Fyb
 				continue
 			}
 		}
-		setReadyCondition(applicationContext, assetID)
+		setReadyCondition(log, applicationContext, assetID)
 	}
 	return nil
 }

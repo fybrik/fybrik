@@ -69,8 +69,11 @@ func setDenyCondition(log zerolog.Logger, application *api.FybrikApplication, as
 		Str(logging.DATASETID, assetID).Msg("Setting deny condition: " + msg)
 }
 
-func setReadyCondition(application *api.FybrikApplication, assetID string) {
+func setReadyCondition(log zerolog.Logger, application *api.FybrikApplication, assetID string) {
 	application.Status.AssetStates[assetID].Conditions[ReadyConditionIndex].Status = corev1.ConditionTrue
+	log.Info().Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
+		Str(utils.FybrikAppUUID, utils.GetFybrikApplicationUUID(application)).
+		Str(logging.DATASETID, assetID).Msg("Setting ready condition")
 }
 
 // determine if the application is ready
