@@ -5,18 +5,19 @@ package app
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/url"
 	"text/template"
 
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
-	connectors "fybrik.io/fybrik/pkg/connectors/clients"
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
+	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
+	dc "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 	vault "fybrik.io/fybrik/pkg/vault"
 	"github.com/Masterminds/sprig/v3"
 	"github.com/rs/zerolog"
@@ -27,7 +28,6 @@ import (
 // NewAssetInfo points to the provisoned storage and hold information about the new asset
 type NewAssetInfo struct {
 	Storage *storage.ProvisionedBucket
-	Details *pb.DatasetDetails
 }
 
 // PlotterGenerator constructs a plotter based on the requirements (governance actions, data location) and the existing set of FybrikModules
@@ -37,7 +37,7 @@ type PlotterGenerator struct {
 	Modules               map[string]*app.FybrikModule
 	Clusters              []multicluster.Cluster
 	Owner                 types.NamespacedName
-	PolicyManager         connectors.PolicyManager
+	PolicyManager         pmclient.PolicyManager
 	Provision             storage.ProvisionInterface
 	VaultConnection       vault.Interface
 	ProvisionedStorage    map[string]NewAssetInfo
@@ -47,7 +47,7 @@ type PlotterGenerator struct {
 // GetCopyDestination creates a Dataset for bucket allocation by implicit copies or ingest.
 func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterface *app.InterfaceDetails, geo string) (*app.DataStore, error) {
 	// provisioned storage for COPY
-	originalAssetName := item.DataDetails.Name
+	originalAssetName := item.DataDetails.Metadata.Name
 	var bucket *storage.ProvisionedBucket
 	var err error
 	if bucket, err = AllocateBucket(p.Client, p.Log, p.Owner, originalAssetName, geo); err != nil {
@@ -67,25 +67,22 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 		return nil, err
 	}
 	endpoint := url.Host
-	datastore := &pb.DataStore{
-		Type: pb.DataStore_S3,
-		Name: "S3",
-		S3: &pb.S3DataStore{
-			Bucket:    bucket.Name,
-			Endpoint:  endpoint,
-			ObjectKey: originalAssetName + utils.Hash(p.Owner.Name+p.Owner.Namespace, 10),
-		},
-	}
+	datastore := dc.Connection{}
+	s3Config := make(map[string]interface{})
+	s3Map := make(map[string]interface{})
+	s3Map["endpoint"] = endpoint
+	s3Map["bucket"] = bucket.Name
+	s3Map["object_key"] = originalAssetName + utils.Hash(p.Owner.Name+p.Owner.Namespace, 10)
+	s3Config["name"] = "s3"
+	s3Config["s3"] = s3Map
+
+	bytes, _ := json.MarshalIndent(s3Config, "", "\t")
+	_ = json.Unmarshal(bytes, &datastore)
+
 	connection := serde.NewArbitrary(datastore)
 	assetInfo := NewAssetInfo{
 		Storage: bucket,
-		Details: &pb.DatasetDetails{
-			Name:       originalAssetName,
-			Geo:        item.DataDetails.Geography,
-			DataFormat: destinationInterface.DataFormat,
-			DataStore:  datastore,
-			Metadata:   item.DataDetails.TagMetadata,
-		}}
+	}
 	p.ProvisionedStorage[item.Context.DataSetID] = assetInfo
 	logging.LogStructure("ProvisionedStorage element", assetInfo, p.Log, false, true)
 
@@ -111,7 +108,7 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 
 // Adds the asset details, flows and templates to the given plotter spec.
 func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.FybrikApplication, plotterSpec *app.PlotterSpec) error {
-	p.Log.Trace().Str(logging.DATASETID, item.DataDetails.Name).Msg("Choose modules for dataset")
+	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Choose modules for dataset")
 	var err error
 	subflows := make([]app.SubFlow, 0)
 	assets := map[string]app.AssetDetails{}

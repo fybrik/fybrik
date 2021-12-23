@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )
 
@@ -32,7 +32,7 @@ func main() {
 
 	mainPolicyManagerURL := "http://opa-connector.fybrik-system:80"
 	log.Println("mainPolicyManagerURL set to :", mainPolicyManagerURL)
-	policyManager, err := connectors.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
+	policyManager, err := pmclient.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
 	if err != nil {
 		return
 	}

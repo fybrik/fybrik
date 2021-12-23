@@ -5,13 +5,11 @@ package app
 
 import (
 	"context"
+	"errors"
 
 	"encoding/json"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/utils"
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
-	"fybrik.io/fybrik/pkg/vault"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -25,31 +23,7 @@ import (
 // - an error if happened
 // - the new asset identifier
 func (r *FybrikApplicationReconciler) RegisterAsset(catalogID string, info *app.DatasetDetails, input *app.FybrikApplication) (string, error) {
-	datasetDetails := &pb.DatasetDetails{}
-	err := info.Details.Into(datasetDetails)
-	if err != nil {
-		return "", err
-	}
-
-	var creds *pb.Credentials
-	if creds, err = SecretToCredentials(r.Client, types.NamespacedName{Name: info.SecretRef, Namespace: utils.GetSystemNamespace()}); err != nil {
-		return "", err
-	}
-	var credentialPath string
-	if input.Spec.SecretRef != "" {
-		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
-	}
-
-	response, err := r.DataCatalog.RegisterDatasetInfo(context.Background(), &pb.RegisterAssetRequest{
-		Creds:                creds,
-		DatasetDetails:       datasetDetails,
-		DestinationCatalogId: catalogID,
-		CredentialPath:       credentialPath,
-	})
-	if err != nil {
-		return "", err
-	}
-	return response.GetAssetId(), nil
+	return "", errors.New("unsupported feature")
 }
 
 var translationMap = map[string]string{
@@ -80,18 +54,14 @@ func SecretToCredentialMap(cl client.Client, secretRef types.NamespacedName) (ma
 }
 
 // SecretToCredentials fetches a secret and constructs Credentials structure
-func SecretToCredentials(cl client.Client, secretRef types.NamespacedName) (*pb.Credentials, error) {
+func SecretToCredentials(cl client.Client, secretRef types.NamespacedName) (string, error) {
 	credsMap, err := SecretToCredentialMap(cl, secretRef)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	jsonStr, err := json.Marshal(credsMap)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	var creds pb.Credentials
-	if err := json.Unmarshal(jsonStr, &creds); err != nil {
-		return nil, err
-	}
-	return &creds, nil
+	return string(jsonStr), nil
 }

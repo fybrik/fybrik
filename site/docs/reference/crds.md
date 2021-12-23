@@ -1604,7 +1604,7 @@ Generated resource identifier
 
 
 
-DatasetDetails contain dataset connection and metadata required to register this dataset in the enterprise catalog
+DatasetDetails holds details of the provisioned storage
 
 <table>
     <thead>
@@ -1620,13 +1620,6 @@ DatasetDetails contain dataset connection and metadata required to register this
         <td>string</td>
         <td>
           Reference to a Dataset resource containing the request to provision storage<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>details</b></td>
-        <td>object</td>
-        <td>
-          Dataset information<br/>
         </td>
         <td>false</td>
       </tr><tr>

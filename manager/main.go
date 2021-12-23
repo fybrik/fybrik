@@ -19,7 +19,8 @@ import (
 	"emperror.dev/errors"
 	corev1 "k8s.io/api/core/v1"
 
-	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
+	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/multicluster/razee"
@@ -237,22 +238,24 @@ func main() {
 		enableApplicationController, enableBlueprintController, enablePlotterController))
 }
 
-func newDataCatalog() (connectors.DataCatalog, error) {
+func newDataCatalog() (dcclient.DataCatalog, error) {
 	connectionTimeout, err := getConnectionTimeout()
 	if err != nil {
 		return nil, err
 	}
 	providerName := os.Getenv("CATALOG_PROVIDER_NAME")
 	connectorURL := os.Getenv("CATALOG_CONNECTOR_URL")
-	connector, err := connectors.NewGrpcDataCatalog(providerName, connectorURL, connectionTimeout)
 	setupLog.Info().Str("Name", providerName).Str("URL", connectorURL).Str("Timeout", connectionTimeout.String()).Msg("setting data catalog client")
-	if err != nil {
-		return nil, err
+	var dataCatalog dcclient.DataCatalog
+	if strings.HasPrefix(connectorURL, "http") {
+		dataCatalog, err = dcclient.NewOpenAPIDataCatalog(providerName, connectorURL, connectionTimeout)
+	} else {
+		dataCatalog, err = dcclient.NewGrpcDataCatalog(providerName, connectorURL, connectionTimeout)
 	}
-	return connector, nil
+	return dataCatalog, err
 }
 
-func newPolicyManager() (connectors.PolicyManager, error) {
+func newPolicyManager() (pmclient.PolicyManager, error) {
 	connectionTimeout, err := getConnectionTimeout()
 	if err != nil {
 		return nil, err
@@ -262,11 +265,11 @@ func newPolicyManager() (connectors.PolicyManager, error) {
 	mainPolicyManagerURL := os.Getenv("MAIN_POLICY_MANAGER_CONNECTOR_URL")
 	setupLog.Info().Str("Name", mainPolicyManagerName).Str("URL", mainPolicyManagerURL).Str("Timeout", connectionTimeout.String()).Msg("setting main policy manager client")
 
-	var policyManager connectors.PolicyManager
+	var policyManager pmclient.PolicyManager
 	if strings.HasPrefix(mainPolicyManagerURL, "http") {
-		policyManager, err = connectors.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
+		policyManager, err = pmclient.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
 	} else {
-		policyManager, err = connectors.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
+		policyManager, err = pmclient.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
 	}
 
 	return policyManager, err

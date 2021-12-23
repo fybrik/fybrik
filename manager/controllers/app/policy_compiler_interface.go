@@ -9,7 +9,7 @@ import (
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
-	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	connectors "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 	"fybrik.io/fybrik/pkg/vault"
 	"github.com/gdexlab/go-render/render"

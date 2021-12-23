@@ -148,6 +148,7 @@ func GetCatalogInfo(credentialPath string, datasetID string) *pb.CatalogDatasetI
 			DatasetTags:          datasetTags,
 			ComponentsMetadata:   componentsMetadata,
 		},
+		CredentialsInfo: &pb.CredentialsInfo{VaultSecretPath: "dummyvaultpath"},
 	}
 
 	datasetInfo = &pb.CatalogDatasetInfo{DatasetId: "mock-datasetID", Details: datasetDetails}

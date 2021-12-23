@@ -4,33 +4,52 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"log"
-	"net"
+	"net/http"
+	"strconv"
 
 	"fybrik.io/fybrik/manager/controllers/mockup"
-	"fybrik.io/fybrik/manager/controllers/utils"
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
-	"google.golang.org/grpc"
+	datacatalogTaxonomyModels "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
+	"github.com/gin-gonic/gin"
 )
 
 const (
 	PORT = 8080
 )
 
+var router *gin.Engine
+
 func main() {
-	address := utils.ListeningAddress(PORT)
-	log.Printf("starting mock catalog server on address %s", address)
+	router = gin.Default()
 
-	listener, err := net.Listen("tcp", address)
-	if err != nil {
-		log.Fatalf("listening error: %v", err)
-	}
+	router.POST("/getAssetInfo", func(c *gin.Context) {
+		creds := ""
+		if values := c.Request.Header["X-Request-DataCatalog-Cred"]; len(values) > 0 {
+			creds = values[0]
+		}
+		log.Println("creds extracted from POST request in mockup data catalog:", creds)
+		input, _ := ioutil.ReadAll(c.Request.Body)
+		log.Println("input extracted from POST request body in mockup data catalog:", string(input))
 
-	server := grpc.NewServer()
-	service := mockup.NewTestCatalog()
+		var dataCatalogReq datacatalogTaxonomyModels.DataCatalogRequest
+		err := json.Unmarshal(input, &dataCatalogReq)
+		if err != nil {
+			return
+		}
+		dataCatalog := mockup.NewTestCatalog()
+		dataCatalogResp, err := dataCatalog.GetAssetInfo(&dataCatalogReq, creds)
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Error in getAssetInfo!")
+			return
+		}
+		c.JSON(http.StatusOK, dataCatalogResp)
+	})
 
-	pb.RegisterDataCatalogServiceServer(server, service)
-	if err := server.Serve(listener); err != nil {
-		log.Fatalf("cannot serve mock data catalog: %v", err)
-	}
+	router.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "Serving REST APIs as part of data catalog stub")
+	})
+
+	log.Fatal(router.Run(":" + strconv.Itoa(PORT)))
 }

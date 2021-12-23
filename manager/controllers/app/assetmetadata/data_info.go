@@ -9,44 +9,35 @@ import (
 	"fybrik.io/fybrik/pkg/serde"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/utils"
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
+	dc "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
 )
 
-// DataDetails is the asset metadata received from the catalog connector
+// DataDetails is the asset metadata and connection information received from the catalog connector
 // This structure is in use by the manager and other components, such as policy manager and config policies evaluator
 type DataDetails struct {
-	// Name of the asset
-	Name string `json:"name"`
+	// Resource metadata
+	Metadata *dc.Resource `json:"metadata"`
 	// Interface is the protocol and format
 	Interface app.InterfaceDetails `json:"interface"`
-	// Geography is the geo-location of the asset
-	Geography string `json:"geography"`
 	// Connection is the connection details in raw format as received from the connector
 	Connection serde.Arbitrary `json:"connection"`
-	// Metadata
-	TagMetadata *pb.DatasetMetadata `json:"tag,omitempty"`
 }
 
 // Transforms a CatalogDatasetInfo into a DataDetails struct
 // TODO Think about getting rid of one or the other and reuse
-func CatalogDatasetToDataDetails(response *pb.CatalogDatasetInfo) (*DataDetails, error) {
-	details := response.GetDetails()
-	if details == nil {
-		return nil, errors.New("no metadata found for " + response.DatasetId)
+func CatalogDatasetToDataDetails(response *dc.DataCatalogResponse) (*DataDetails, error) {
+	if response == nil {
+		return nil, errors.New("no metadata found")
 	}
-	format := details.DataFormat
-	connection := serde.NewArbitrary(details.DataStore)
-	protocol, err := utils.GetProtocol(details)
-
+	connection := serde.NewArbitrary(response.Details.Connection)
+	metadata := &dc.Resource{}
+	response.ResourceMetadata.DeepCopyInto(metadata)
 	return &DataDetails{
-		Name: details.Name,
 		Interface: app.InterfaceDetails{
-			Protocol:   protocol,
-			DataFormat: format,
+			Protocol:   response.Details.Connection.Name,
+			DataFormat: *response.Details.DataFormat,
 		},
-		Geography:   details.Geo,
-		Connection:  *connection,
-		TagMetadata: details.Metadata,
-	}, err
+		Connection: *connection,
+		Metadata:   metadata,
+	}, nil
 }

@@ -4,7 +4,6 @@
 package v1alpha1
 
 import (
-	"fybrik.io/fybrik/pkg/serde"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -115,14 +114,12 @@ type ResourceReference struct {
 	AppVersion int64 `json:"appVersion"`
 }
 
-// DatasetDetails contain dataset connection and metadata required to register this dataset in the enterprise catalog
+// DatasetDetails holds details of the provisioned storage
 type DatasetDetails struct {
 	// Reference to a Dataset resource containing the request to provision storage
 	DatasetRef string `json:"datasetRef,omitempty"`
 	// Reference to a secret where the credentials are stored
 	SecretRef string `json:"secretRef,omitempty"`
-	// Dataset information
-	Details serde.Arbitrary `json:"details,omitempty"`
 }
 
 // AssetState defines the observed state of an asset

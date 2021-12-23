@@ -16,7 +16,7 @@ spec:
     - capability: copy
       supportedInterfaces:
       - source:
-          protocol: jdbc-db2
+          protocol: db2
           dataformat: table
         sink:
           protocol: s3

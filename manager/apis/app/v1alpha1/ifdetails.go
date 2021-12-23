@@ -7,7 +7,7 @@ package v1alpha1
 const (
 	S3          string = "s3"
 	Kafka       string = "kafka"
-	JdbcDb2     string = "jdbc-db2"
+	JdbcDb2     string = "db2"
 	ArrowFlight string = "fybrik-arrow-flight"
 	Arrow       string = "arrow"
 	Parquet     string = "parquet"

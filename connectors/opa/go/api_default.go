@@ -24,14 +24,13 @@ import (
 )
 
 type ConnectorController struct {
-	OpaServerURL  string
-	OpaReader     *opabl.OpaReader
-	CatalogReader *opabl.CatalogReader
+	OpaServerURL string
+	OpaReader    *opabl.OpaReader
 }
 
 func (e *ConnectorController) contactOPA(input taxonomymodels.PolicyManagerRequest, creds string) (taxonomymodels.PolicyManagerResponse, error) {
 	policyToBeEvaluated := "dataapi/authz/verdict"
-	eval, err := e.OpaReader.GetOPADecisions(&input, creds, e.CatalogReader, policyToBeEvaluated)
+	eval, err := e.OpaReader.GetOPADecisions(&input, creds, policyToBeEvaluated)
 	if err != nil {
 		return taxonomymodels.PolicyManagerResponse{}, errors.Wrap(err, "GetOPADecisions error in contactOPA")
 	}

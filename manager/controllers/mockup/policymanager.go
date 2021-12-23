@@ -9,7 +9,7 @@ import (
 	"log"
 	"strings"
 
-	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	connectors "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"fybrik.io/fybrik/pkg/random"
 	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 )

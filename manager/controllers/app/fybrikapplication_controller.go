@@ -17,10 +17,9 @@ import (
 	local "fybrik.io/fybrik/pkg/multicluster/local"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
-	connectors "fybrik.io/fybrik/pkg/connectors/clients"
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
-
 	"emperror.dev/errors"
+	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
+	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"github.com/rs/zerolog"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -38,9 +37,9 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/multicluster"
-	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
-	model "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
+	dc "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
+	pm "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
 	"fybrik.io/fybrik/pkg/vault"
 )
 
@@ -50,8 +49,8 @@ type FybrikApplicationReconciler struct {
 	Name              string
 	Log               zerolog.Logger
 	Scheme            *runtime.Scheme
-	PolicyManager     connectors.PolicyManager
-	DataCatalog       connectors.DataCatalog
+	PolicyManager     pmclient.PolicyManager
+	DataCatalog       dcclient.DataCatalog
 	ResourceInterface ContextInterface
 	ClusterManager    multicluster.ClusterLister
 	Provision         storage.ProvisionInterface
@@ -400,7 +399,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 }
 
 // CreateDataRequest generates a new DataRequest object for a specific asset based on FybrikApplication and asset metadata
-func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataContext, assetMetadata *assetmetadata.DataDetails) adminconfig.DataRequest {
+func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataContext, assetMetadata *dc.Resource) adminconfig.DataRequest {
 	usage := make(map[api.DataFlow]bool)
 	// request to read is determined by the workload selector presence
 	usage[api.ReadFlow] = (application.Spec.Selector.WorkloadSelector.Size() > 0)
@@ -415,43 +414,36 @@ func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataConte
 }
 
 func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *api.FybrikApplication, workloadCluster multicluster.Cluster) error {
-	var err error
 	// Call the DataCatalog service to get info about the dataset
-	var response *pb.CatalogDatasetInfo
 	var credentialPath string
 	if input.Spec.SecretRef != "" {
 		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
-
-	if response, err = r.DataCatalog.GetDatasetInfo(ctx, &pb.CatalogDatasetRequest{
-		CredentialPath: credentialPath,
-		DatasetId:      req.Context.DataSetID,
-	}); err != nil {
+	var err error
+	var response *dc.DataCatalogResponse
+	if response, err = r.DataCatalog.GetAssetInfo(&dc.DataCatalogRequest{
+		AssetID:       req.Context.DataSetID,
+		OperationType: dc.READ},
+		credentialPath); err != nil {
 		return err
 	}
 
-	details := response.GetDetails()
 	dataDetails, err := assetmetadata.CatalogDatasetToDataDetails(response)
 	if err != nil {
 		return err
 	}
 	req.DataDetails = dataDetails
 	req.VaultSecretPath = ""
-	if details.CredentialsInfo != nil {
-		req.VaultSecretPath = details.CredentialsInfo.VaultSecretPath
-	}
+	req.VaultSecretPath = response.Credentials
 
 	configEvaluatorInput := &adminconfig.EvaluatorInput{}
 	configEvaluatorInput.Workload.Properties = input.Spec.AppInfo.DeepCopy()
 	configEvaluatorInput.Workload.Cluster = workloadCluster
-	configEvaluatorInput.Request = CreateDataRequest(input, *req.Context, req.DataDetails)
+	configEvaluatorInput.Request = CreateDataRequest(input, *req.Context, req.DataDetails.Metadata)
 	// Read policies for data that is processed in the workload geography
 	if configEvaluatorInput.Request.Usage[api.ReadFlow] {
-		actionType := model.READ
-		reqAction := model.PolicyManagerRequestAction{ActionType: &actionType, Destination: &workloadCluster.Metadata.Region}
+		actionType := pm.READ
+		reqAction := pm.PolicyManagerRequestAction{ActionType: &actionType, Destination: &workloadCluster.Metadata.Region}
 		req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, input, &reqAction)
 		if err != nil {
 			return err
@@ -505,7 +497,7 @@ func (r *FybrikApplicationReconciler) GetWorkloadCluster(application *api.Fybrik
 
 // NewFybrikApplicationReconciler creates a new reconciler for FybrikApplications
 func NewFybrikApplicationReconciler(mgr ctrl.Manager, name string,
-	policyManager connectors.PolicyManager, catalog connectors.DataCatalog, cm multicluster.ClusterLister,
+	policyManager pmclient.PolicyManager, catalog dcclient.DataCatalog, cm multicluster.ClusterLister,
 	provision storage.ProvisionInterface, configEvaluator adminconfig.EvaluatorInterface) *FybrikApplicationReconciler {
 	return &FybrikApplicationReconciler{
 		Client:            mgr.GetClient(),
@@ -619,11 +611,9 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 	}
 	// add or update new buckets
 	for datasetID, info := range provisionedStorage {
-		raw := serde.NewArbitrary(info.Details)
 		applicationContext.Status.ProvisionedStorage[datasetID] = api.DatasetDetails{
 			DatasetRef: info.Storage.Name,
 			SecretRef:  info.Storage.SecretRef.Name,
-			Details:    *raw,
 		}
 	}
 	// check that the buckets have been created successfully using Dataset status
