@@ -338,7 +338,7 @@ func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*policymanager.
 						return nil, fmt.Errorf("error in unmarshalling actionBytes : %v", err)
 					}
 					// just for printing
-					actionOnColsBytes, errJSON := json.MarshalIndent(actionOnCols, "", "\t")
+					actionOnColsBytes, errJSON := json.MarshalIndent(&actionOnCols, "", "\t")
 					if errJSON != nil {
 						return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
 					}

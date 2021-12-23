@@ -16,8 +16,8 @@ const (
 )
 
 type RequestAction struct {
-	ActionType         RequestActionType           `json:"action_type"`
-	ProcessingLocation taxonomy.ProcessingLocation `json:"processing_location,omitempty"`
+	ActionType         RequestActionType           `json:"actionType"`
+	ProcessingLocation taxonomy.ProcessingLocation `json:"processingLocation,omitempty"`
 	Destination        string                      `json:"destination,omitempty"`
 }
 

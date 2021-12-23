@@ -27,7 +27,7 @@ func NewOpaReader(opasrvurl string, client *http.Client, dataCatalog *clients.Da
 
 func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *policymanager.GetPolicyDecisionsRequest, catalogMetadata *datacatalog.GetAssetResponse) (*policymanager.GetPolicyDecisionsRequest, error) {
 	// just printing - start
-	responseBytes, errJSON := json.MarshalIndent(catalogMetadata.ResourceMetadata, "", "\t")
+	responseBytes, errJSON := json.MarshalIndent(&catalogMetadata.ResourceMetadata, "", "\t")
 	if errJSON != nil {
 		return nil, fmt.Errorf("error Marshalling catalogMetadata in updatePolicyManagerRequestWithResourceInfo: %v", errJSON)
 	}
@@ -69,7 +69,7 @@ func (r *OpaReader) GetOPADecisions(in *policymanager.GetPolicyDecisionsRequest,
 
 	in, _ = r.updatePolicyManagerRequestWithResourceInfo(in, info)
 
-	b, err := json.Marshal(*in)
+	b, err := json.Marshal(in)
 	if err != nil {
 		fmt.Println(err)
 		return nil, fmt.Errorf("error during marshal in GetOPADecisions: %v", err)

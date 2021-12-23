@@ -34,7 +34,7 @@ func (d *DataCatalogDummy) GetAssetInfo(in *datacatalog.GetAssetRequest, creds s
 	dataDetails, found := d.dataDetails[catalogID]
 	if found {
 		log.Printf("GetAssetInfo in DataCatalogDummy returns:")
-		responseBytes, errJSON := json.MarshalIndent(dataDetails, "", "\t")
+		responseBytes, errJSON := json.MarshalIndent(&dataDetails, "", "\t")
 		if errJSON != nil {
 			return nil, fmt.Errorf("error in GetAssetInfo in DataCatalogDummy: %v", errJSON)
 		}

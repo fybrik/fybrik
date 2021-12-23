@@ -121,7 +121,7 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 			}
 
 			// just printing - start
-			responseBytes, errJSON = json.MarshalIndent(rscCol, "", "\t")
+			responseBytes, errJSON = json.MarshalIndent(&rscCol, "", "\t")
 			if errJSON != nil {
 				return nil, fmt.Errorf("error Marshalling in ConvertDataCatalogGrpcRespToOpenAPIResp: %v", errJSON)
 			}
