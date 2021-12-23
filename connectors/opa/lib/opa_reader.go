@@ -42,9 +42,9 @@ func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *policymanager
 	// just printing - start
 	responseBytes, errJSON = json.MarshalIndent(in, "", "\t")
 	if errJSON != nil {
-		return nil, fmt.Errorf("error Marshalling taxonomymodels.PolicyManagerRequest in updatePolicyManagerRequestWithResourceInfo: %v", errJSON)
+		return nil, fmt.Errorf("error Marshalling GetPolicyDecisionsRequest in updatePolicyManagerRequestWithResourceInfo: %v", errJSON)
 	}
-	log.Print("returning updated taxonomymodels.PolicyManagerRequest in updatePolicyManagerRequestWithResourceInfo:" + string(responseBytes))
+	log.Print("returning updated GetPolicyDecisionsRequest in updatePolicyManagerRequestWithResourceInfo:" + string(responseBytes))
 	// just printing - end
 
 	return in, nil
