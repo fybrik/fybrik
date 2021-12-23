@@ -80,13 +80,9 @@ func (in *ResourceMetadata) DeepCopyInto(out *ResourceMetadata) {
 	in.Tags.DeepCopyInto(&out.Tags)
 	if in.Columns != nil {
 		in, out := &in.Columns, &out.Columns
-		*out = new([]ResourceColumn)
-		if **in != nil {
-			in, out := *in, *out
-			*out = make([]ResourceColumn, len(*in))
-			for i := range *in {
-				(*in)[i].DeepCopyInto(&(*out)[i])
-			}
+		*out = make([]ResourceColumn, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
 }

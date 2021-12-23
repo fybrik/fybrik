@@ -25,7 +25,7 @@ type ResourceMetadata struct {
 	// Tags associated with the asset
 	Tags taxonomy.Tags `json:"tags,omitempty"`
 	// Columns associated with the asset
-	Columns *[]ResourceColumn `json:"columns,omitempty"`
+	Columns []ResourceColumn `json:"columns,omitempty"`
 }
 
 // ResourceColumn represents a column in a tabular resource
