@@ -1407,13 +1407,13 @@ The types of plugins supported by this module.  Example: vault, fybrik-wasm ...<
 <p><code>capabilites.supportedInterfaces</code> </p>
 <p>Lists the supported data services from which the module can read data (sources) and to which it can write (sinks).  There can be multiple sources and sinks.  For each, a protocol and format are provided.</p>
 <ul>
-<li><code>protocol</code> field can take a value such as <code>kafka</code>, <code>s3</code>, <code>jdbc-db2</code>, <code>fybrik-arrow-flight</code>, etc.</li>
+<li><code>protocol</code> field can take a value such as <code>kafka</code>, <code>s3</code>, <code>db2</code>, <code>fybrik-arrow-flight</code>, etc.</li>
 <li><code>format</code> field can take a value such as <code>avro</code>, <code>parquet</code>, <code>json</code>, or <code>csv</code>.</li>
 </ul>
 <p>Note that a module that targets copy flows will omit the <code>api</code> field and contain just <code>source</code> and <code>sink</code>, a module that only supports reading data assets will omit the <code>sink</code> field and only contain <code>api</code> and <code>source</code></p>
 <p><code>capabilites.api</code> describes the api exposed by the module to the user's workload for the particular capability.</p>
 <ul>
-<li><code>protocol</code> field can take a value such as <code>kafka</code>, <code>s3</code>, <code>jdbc-db2</code>, <code>fybrik-arrow-flight</code>, etc </li>
+<li><code>protocol</code> field can take a value such as <code>kafka</code>, <code>s3</code>, <code>db2</code>, <code>fybrik-arrow-flight</code>, etc </li>
 <li><code>dataformat</code> field can take a value such as <code>parquet</code>, <code>csv</code>, <code>arrow</code>, etc</li>
 <li><code>endpoint</code> field describes the endpoint exposed the module</li>
 </ul>
@@ -1428,7 +1428,7 @@ The types of plugins supported by this module.  Example: vault, fybrik-wasm ...<
 <span class="p p-Indicator">-</span> <span class="nt">capability</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">copy</span>
     <span class="l l-Scalar l-Scalar-Plain">supportedInterfaces</span><span class="p p-Indicator">:</span>
     <span class="p p-Indicator">-</span> <span class="nt">source</span><span class="p">:</span>
-        <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">jdbc-db2</span>
+        <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">db2</span>
         <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">table</span>
       <span class="nt">sink</span><span class="p">:</span>
         <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">s3</span>
