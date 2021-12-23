@@ -12,7 +12,7 @@ kubectl config use-context kind-control
 make -C third_party/razee all
 
 kubectl config use-context kind-control
-make -C cluster-prepare
+make cluster-prepare
 make docker-minimal-it
 make cluster-prepare-wait
 make deploy
