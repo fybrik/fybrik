@@ -36,6 +36,7 @@ spec:
             format: parquet
           source:
             connection:
+              name: db2
               db2:
                 port: "5000"
                 table: NQD60833.SMALL
@@ -58,7 +59,7 @@ spec:
         read:
         - source:
             connection:
-              name: S3
+              name: s3
               s3:
                 bucket: fybrik-test-bucket
                 endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud

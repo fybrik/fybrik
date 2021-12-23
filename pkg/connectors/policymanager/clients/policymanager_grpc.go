@@ -14,8 +14,11 @@ import (
 
 	"emperror.dev/errors"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
+	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/model/policymanager"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	random "fybrik.io/fybrik/pkg/random"
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
+	"fybrik.io/fybrik/pkg/serde"
 	"google.golang.org/grpc"
 )
 
@@ -46,7 +49,7 @@ func NewGrpcPolicyManager(name string, connectionURL string, connectionTimeout t
 }
 
 func (m *grpcPolicyManager) GetPoliciesDecisions(
-	in *taxonomymodels.PolicyManagerRequest, creds string) (*taxonomymodels.PolicyManagerResponse, error) {
+	in *policymanager.GetPolicyDecisionsRequest, creds string) (*policymanager.GetPolicyDecisionsResponse, error) {
 	log.Println("open api request received for getting policy decisions: ", *in)
 	appContext, _ := ConvertOpenAPIReqToGrpcReq(in, creds)
 	log.Println("grpc application context to be used for getting policy decisions: ", appContext)
@@ -77,10 +80,10 @@ func (m *grpcPolicyManager) Close() error {
 	return m.connection.Close()
 }
 
-func ConvertGrpcReqToOpenAPIReq(in *pb.ApplicationContext) (*taxonomymodels.PolicyManagerRequest, string, error) {
-	req := taxonomymodels.PolicyManagerRequest{}
-	action := taxonomymodels.PolicyManagerRequestAction{}
-	resource := taxonomymodels.Resource{}
+func ConvertGrpcReqToOpenAPIReq(in *pb.ApplicationContext) (*policymanager.GetPolicyDecisionsRequest, string, error) {
+	req := policymanager.GetPolicyDecisionsRequest{}
+	action := policymanager.RequestAction{}
+	resource := datacatalog.ResourceMetadata{}
 
 	creds := in.GetCredentialPath()
 
@@ -89,40 +92,40 @@ func ConvertGrpcReqToOpenAPIReq(in *pb.ApplicationContext) (*taxonomymodels.Poli
 	for i := 0; i < len(datasets); i++ {
 		operation := datasets[i].GetOperation()
 		destination := operation.GetDestination()
-		action.SetDestination(destination)
+		action.Destination = destination
 		operationType := operation.GetType()
 		if operationType == pb.AccessOperation_READ {
-			action.SetActionType(taxonomymodels.READ)
+			action.ActionType = policymanager.READ
 		}
 		if operationType == pb.AccessOperation_WRITE {
-			action.SetActionType(taxonomymodels.WRITE)
+			action.ActionType = policymanager.WRITE
 		}
 		datasetID := datasets[i].GetDataset().GetDatasetId()
-		resource.SetName(datasetID)
+		resource.Name = datasetID
 	}
-	req.SetResource(resource)
+	req.Resource = resource
 
 	processingGeo := in.GetAppInfo().GetProcessingGeography()
-	action.SetProcessingLocation(processingGeo)
-	req.SetAction(action)
+	action.ProcessingLocation = taxonomy.ProcessingLocation(processingGeo)
+	req.Action = action
 
 	reqContext := make(map[string]interface{})
 	properties := in.GetAppInfo().GetProperties()
 	reqContext["intent"] = properties["intent"]
 	reqContext["role"] = properties["role"]
-	req.SetContext(reqContext)
+	req.Context = taxonomy.PolicyManagerRequestContext{Properties: serde.Properties{Items: reqContext}}
 
 	return &req, creds, nil
 }
 
-func ConvertOpenAPIReqToGrpcReq(in *taxonomymodels.PolicyManagerRequest, creds string) (*pb.ApplicationContext, error) {
+func ConvertOpenAPIReqToGrpcReq(in *policymanager.GetPolicyDecisionsRequest, creds string) (*pb.ApplicationContext, error) {
 	credentialPath := creds
-	action := in.GetAction()
-	processingGeo := (&action).GetProcessingLocation()
+	action := in.Action
+	processingGeo := action.ProcessingLocation
 	log.Println("processingGeo: ", processingGeo)
 
 	properties := make(map[string]string)
-	context := in.GetContext()
+	context := in.Context.Items
 	if intent, ok := context["intent"].(string); ok {
 		properties["intent"] = intent
 	}
@@ -130,21 +133,21 @@ func ConvertOpenAPIReqToGrpcReq(in *taxonomymodels.PolicyManagerRequest, creds s
 		properties["role"] = role
 	}
 
-	appInfo := &pb.ApplicationDetails{ProcessingGeography: processingGeo, Properties: properties}
+	appInfo := &pb.ApplicationDetails{ProcessingGeography: string(processingGeo), Properties: properties}
 
 	datasetContextList := []*pb.DatasetContext{}
-	resource := in.GetResource()
-	datasetID := (&resource).GetName()
+	resource := in.Resource
+	datasetID := resource.Name
 	dataset := &pb.DatasetIdentifier{DatasetId: datasetID}
 
-	destination := (&action).GetDestination()
-	actionType := (&action).GetActionType()
+	destination := action.Destination
+	actionType := action.ActionType
 
 	var grpcActionType pb.AccessOperation_AccessType
 	switch actionType {
-	case taxonomymodels.READ:
+	case policymanager.READ:
 		grpcActionType = pb.AccessOperation_READ
-	case taxonomymodels.WRITE:
+	case policymanager.WRITE:
 		grpcActionType = pb.AccessOperation_WRITE
 	default: // default is read
 		grpcActionType = pb.AccessOperation_READ
@@ -162,23 +165,23 @@ func ConvertOpenAPIReqToGrpcReq(in *taxonomymodels.PolicyManagerRequest, creds s
 }
 
 func ConvertOpenAPIRespToGrpcResp(
-	out *taxonomymodels.PolicyManagerResponse,
+	out *policymanager.GetPolicyDecisionsResponse,
 	datasetID string, op *pb.AccessOperation) (*pb.PoliciesDecisions, error) {
 	res, err := json.MarshalIndent(out, "", "\t")
 	log.Println("err :", err)
 	log.Println("Marshalled response in ConvertOpenAPIRespToGrpcResp:", string(res))
 
-	resultItems := out.GetResult()
+	resultItems := out.Result
 	enforcementActions := make([]*pb.EnforcementAction, 0)
 	usedPolicies := make([]*pb.Policy, 0)
 
 	for i := 0; i < len(resultItems); i++ {
-		action := resultItems[i].GetAction()
+		action := resultItems[i].Action
 		log.Println("printing action ConvertOpenAPIRespToGrpcResp ", action)
 		log.Println("printing action.AdditionalProperties ConvertOpenAPIRespToGrpcResp ", action.AdditionalProperties)
-		name := action.GetName()
+		name := string(action.Name)
 		log.Println("name received in ConvertOpenAPIRespToGrpcResp", name)
-		additionalProperties := action.AdditionalProperties
+		additionalProperties := action.AdditionalProperties.Items
 
 		if strings.EqualFold("redact", name) {
 			if additionalProperties != nil {
@@ -190,7 +193,7 @@ func ConvertOpenAPIRespToGrpcResp(
 							Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": colNames[j].(string)}}
 						enforcementActions = append(enforcementActions, newEnforcementAction)
 
-						policy := resultItems[i].GetPolicy()
+						policy := resultItems[i].Policy
 						newUsedPolicy := &pb.Policy{Description: policy}
 						usedPolicies = append(usedPolicies, newUsedPolicy)
 					}
@@ -210,7 +213,7 @@ func ConvertOpenAPIRespToGrpcResp(
 							Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": colNames[j].(string)}}
 						enforcementActions = append(enforcementActions, newEnforcementAction)
 
-						policy := resultItems[i].GetPolicy()
+						policy := resultItems[i].Policy
 						newUsedPolicy := &pb.Policy{Description: policy}
 						usedPolicies = append(usedPolicies, newUsedPolicy)
 					}
@@ -228,7 +231,7 @@ func ConvertOpenAPIRespToGrpcResp(
 							Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": colNames[j].(string)}}
 						enforcementActions = append(enforcementActions, newEnforcementAction)
 
-						policy := resultItems[i].GetPolicy()
+						policy := resultItems[i].Policy
 						newUsedPolicy := &pb.Policy{Description: policy}
 						usedPolicies = append(usedPolicies, newUsedPolicy)
 					}
@@ -240,7 +243,7 @@ func ConvertOpenAPIRespToGrpcResp(
 			newEnforcementAction := &pb.EnforcementAction{Name: "Deny", Id: "Deny-ID", Level: pb.EnforcementAction_DATASET, Args: map[string]string{}}
 			enforcementActions = append(enforcementActions, newEnforcementAction)
 
-			policy := resultItems[i].GetPolicy()
+			policy := resultItems[i].Policy
 			log.Println("policy got in ConvertOpenAPIRespToGrpcResp: ", policy)
 			// if policy == "" {
 			// 	policy = "Default Message: Deny access to Dataset"
@@ -270,7 +273,7 @@ func ConvertOpenAPIRespToGrpcResp(
 	return policiesDecision, nil
 }
 
-func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*taxonomymodels.PolicyManagerResponse, error) {
+func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*policymanager.GetPolicyDecisionsResponse, error) {
 	// convert GRPC response to Open Api Response - start
 	// we dont get decision id returned from OPA from GRPC response. So we generate random hex string
 	decisionID, _ := random.Hex(20)
@@ -279,7 +282,7 @@ func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*taxonomymodels
 	var datasetDecisions []*pb.DatasetDecision
 	var decisions []*pb.OperationDecision
 	datasetDecisions = result.GetDatasetDecisions()
-	respResult := []taxonomymodels.PolicyManagerResultItem{}
+	respResult := []policymanager.ResultItem{}
 
 	// we assume only one dataset decision is passed
 	for i := 0; i < len(datasetDecisions); i++ {
@@ -301,10 +304,10 @@ func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*taxonomymodels
 				log.Println("args received: ", args)
 				log.Println("name received: ", name)
 				log.Println("level received: ", level)
-				policyManagerResult := taxonomymodels.PolicyManagerResultItem{}
+				policyManagerResult := policymanager.ResultItem{}
 
 				if level == pb.EnforcementAction_COLUMN {
-					actionOnCols := taxonomymodels.Action{}
+					actionOnCols := taxonomy.Action{}
 					action := make(map[string]interface{})
 					if name == "redact" {
 						action["name"] = "redact"
@@ -335,26 +338,26 @@ func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*taxonomymodels
 						return nil, fmt.Errorf("error in unmarshalling actionBytes : %v", err)
 					}
 					// just for printing
-					actionOnColsBytes, errJSON := json.MarshalIndent(actionOnCols, "", "\t")
+					actionOnColsBytes, errJSON := json.MarshalIndent(&actionOnCols, "", "\t")
 					if errJSON != nil {
 						return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
 					}
 					log.Println("actionOnColsBytes: ", string(actionOnColsBytes))
 
-					policyManagerResult.SetAction(actionOnCols)
+					policyManagerResult.Action = actionOnCols
 				}
 
 				if level == pb.EnforcementAction_DATASET || level == pb.EnforcementAction_UNKNOWN {
 					if name == "Deny" {
-						actionOnDataset := taxonomymodels.Action{}
-						actionOnDataset.SetName("Deny")
-						policyManagerResult.SetAction(actionOnDataset)
+						actionOnDataset := taxonomy.Action{}
+						actionOnDataset.Name = "Deny"
+						policyManagerResult.Action = actionOnDataset
 					}
 				}
 				if k < len(usedPoliciesList) {
 					policy := usedPoliciesList[k].GetDescription()
 					log.Println("usedPoliciesList[k].GetDescription()", policy)
-					policyManagerResult.SetPolicy(policy)
+					policyManagerResult.Policy = policy
 				}
 				if name != "Allow" {
 					// dont do anything For "Allow" action as this is convention now.
@@ -367,7 +370,7 @@ func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*taxonomymodels
 		}
 	}
 	// convert GRPC response to Open Api Response - end
-	policyManagerResp := &taxonomymodels.PolicyManagerResponse{DecisionId: &decisionID, Result: respResult}
+	policyManagerResp := &policymanager.GetPolicyDecisionsResponse{DecisionID: decisionID, Result: respResult}
 
 	log.Println("policyManagerResp in convGrpcRespToOpenApiResp", policyManagerResp)
 

@@ -10,7 +10,7 @@ import (
 	"time"
 
 	openapiclient "fybrik.io/fybrik/pkg/connectors/datacatalog/openapiclient"
-	datacatalogTaxonomyModels "fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
+	"fybrik.io/fybrik/pkg/model/datacatalog"
 )
 
 var _ DataCatalog = (*openAPIDataCatalog)(nil)
@@ -21,7 +21,7 @@ type openAPIDataCatalog struct {
 }
 
 // NewopenApiDataCatalog creates a DataCatalog facade that connects to a openApi service
-func NewOpenAPIDataCatalog(name string, connectionURL string, connectionTimeout time.Duration) (DataCatalog, error) {
+func NewOpenAPIDataCatalog(name string, connectionURL string, connectionTimeout time.Duration) DataCatalog {
 	configuration := &openapiclient.Configuration{
 		DefaultHeader: make(map[string]string),
 		UserAgent:     "OpenAPI-Generator/1.0.0/go",
@@ -39,10 +39,10 @@ func NewOpenAPIDataCatalog(name string, connectionURL string, connectionTimeout 
 	return &openAPIDataCatalog{
 		name:   name,
 		client: apiClient,
-	}, nil
+	}
 }
 
-func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalogTaxonomyModels.DataCatalogRequest, creds string) (*datacatalogTaxonomyModels.DataCatalogResponse, error) {
+func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds string) (*datacatalog.GetAssetResponse, error) {
 	resp, r, err := m.client.DefaultApi.GetAssetInfoPost(context.Background()).XRequestDataCatalogCred(creds).DataCatalogRequest(*in).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `DefaultApi.GetAssetInfoPost``: %v\n", err)

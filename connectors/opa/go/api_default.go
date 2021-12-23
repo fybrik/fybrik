@@ -18,7 +18,7 @@ import (
 
 	"emperror.dev/errors"
 	opabl "fybrik.io/fybrik/connectors/opa/lib"
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/policymanager/base"
+	"fybrik.io/fybrik/pkg/model/policymanager"
 	"github.com/gdexlab/go-render/render"
 	"github.com/gin-gonic/gin"
 )
@@ -28,11 +28,11 @@ type ConnectorController struct {
 	OpaReader    *opabl.OpaReader
 }
 
-func (e *ConnectorController) contactOPA(input taxonomymodels.PolicyManagerRequest, creds string) (taxonomymodels.PolicyManagerResponse, error) {
+func (e *ConnectorController) contactOPA(input *policymanager.GetPolicyDecisionsRequest, creds string) (*policymanager.GetPolicyDecisionsResponse, error) {
 	policyToBeEvaluated := "dataapi/authz/verdict"
-	eval, err := e.OpaReader.GetOPADecisions(&input, creds, policyToBeEvaluated)
+	eval, err := e.OpaReader.GetOPADecisions(input, creds, policyToBeEvaluated)
 	if err != nil {
-		return taxonomymodels.PolicyManagerResponse{}, errors.Wrap(err, "GetOPADecisions error in contactOPA")
+		return nil, errors.Wrap(err, "GetOPADecisions error in contactOPA")
 	}
 
 	output := render.AsCode(eval)
@@ -43,8 +43,8 @@ func (e *ConnectorController) contactOPA(input taxonomymodels.PolicyManagerReque
 
 func (e *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 	log.Println("in GetPoliciesDecisions of V2 OPA Connector!")
-	input := new(taxonomymodels.PolicyManagerRequest)
-	if err := c.ShouldBindJSON(input); err != nil {
+	var input policymanager.GetPolicyDecisionsRequest
+	if err := c.ShouldBindJSON(&input); err != nil {
 		log.Println("Error during ShouldBindJSON:", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -52,7 +52,7 @@ func (e *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 	output := render.AsCode(input)
 	log.Println("bound PolicyManagerRequest:", output)
 
-	resp, err := e.contactOPA(*input, c.Request.Header["X-Request-Cred"][0])
+	resp, err := e.contactOPA(&input, c.Request.Header["X-Request-Cred"][0])
 	if err != nil {
 		log.Println("Error during contactOPA: ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{})

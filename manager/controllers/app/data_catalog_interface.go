@@ -23,7 +23,7 @@ import (
 // - an error if happened
 // - the new asset identifier
 func (r *FybrikApplicationReconciler) RegisterAsset(catalogID string, info *app.DatasetDetails, input *app.FybrikApplication) (string, error) {
-	return "", errors.New("unsupported feature")
+	return "", errors.New("Unsupported feature")
 }
 
 var translationMap = map[string]string{

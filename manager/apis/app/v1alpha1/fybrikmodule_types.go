@@ -4,6 +4,7 @@
 package v1alpha1
 
 import (
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -122,7 +123,7 @@ type ModuleCapability struct {
 
 	// Actions are the data transformations that the module supports
 	// +optional
-	Actions []SupportedAction `json:"actions,omitempty"`
+	Actions []taxonomy.Action `json:"actions,omitempty"`
 
 	// Plugins enable the module to add libraries to perform actions rather than implementing them by itself
 	// +optional

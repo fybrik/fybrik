@@ -3,9 +3,7 @@
 
 package openapiclient
 
-import (
-	"fybrik.io/fybrik/pkg/taxonomy/model/datacatalog/base"
-)
+import "fybrik.io/fybrik/pkg/model/datacatalog"
 
-type DataCatalogRequest = base.DataCatalogRequest
-type DataCatalogResponse = base.DataCatalogResponse
+type DataCatalogRequest = datacatalog.GetAssetRequest
+type DataCatalogResponse = datacatalog.GetAssetResponse

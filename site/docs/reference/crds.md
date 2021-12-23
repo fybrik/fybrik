@@ -317,7 +317,7 @@ CopyArgs are parameters specific to modules that copy data from one data store t
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>transformations</b></td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentscopytransformationsindex">transformations</a></b></td>
         <td>[]object</td>
         <td>
           Transformations are different types of processing that may be done to the data as it is copied.<br/>
@@ -348,6 +348,33 @@ CopyArgs are parameters specific to modules that copy data from one data store t
 </table>
 
 
+#### Blueprint.spec.modules[key].arguments.copy.transformations[index]
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopy)</sup></sup>
+
+
+
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
 #### Blueprint.spec.modules[key].arguments.copy.destination
 <sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopy)</sup></sup>
 
@@ -365,7 +392,7 @@ Destination is the data store to which the data will be copied
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>connection</b></td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentscopydestinationconnection">connection</a></b></td>
         <td>object</td>
         <td>
           Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
@@ -383,6 +410,33 @@ Destination is the data store to which the data will be copied
         <td>map[string]object</td>
         <td>
           Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].arguments.copy.destination.connection
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopydestination)</sup></sup>
+
+
+
+Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -454,7 +508,7 @@ Source is the where the data currently resides
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>connection</b></td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentscopysourceconnection">connection</a></b></td>
         <td>object</td>
         <td>
           Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
@@ -472,6 +526,33 @@ Source is the where the data currently resides
         <td>map[string]object</td>
         <td>
           Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].arguments.copy.source.connection
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopysource)</sup></sup>
+
+
+
+Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -543,7 +624,7 @@ ReadModuleArgs define the input parameters for modules that read data from locat
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>transformations</b></td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsreadindextransformationsindex">transformations</a></b></td>
         <td>[]object</td>
         <td>
           Transformations are different types of processing that may be done to the data<br/>
@@ -567,6 +648,33 @@ ReadModuleArgs define the input parameters for modules that read data from locat
 </table>
 
 
+#### Blueprint.spec.modules[key].arguments.read[index].transformations[index]
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsreadindex)</sup></sup>
+
+
+
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
 #### Blueprint.spec.modules[key].arguments.read[index].source
 <sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsreadindex)</sup></sup>
 
@@ -584,7 +692,7 @@ Source of the read path module
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>connection</b></td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsreadindexsourceconnection">connection</a></b></td>
         <td>object</td>
         <td>
           Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
@@ -602,6 +710,33 @@ Source of the read path module
         <td>map[string]object</td>
         <td>
           Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].arguments.read[index].source.connection
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsreadindexsource)</sup></sup>
+
+
+
+Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -673,7 +808,7 @@ WriteModuleArgs define the input parameters for modules that write data to locat
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>transformations</b></td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentswriteindextransformationsindex">transformations</a></b></td>
         <td>[]object</td>
         <td>
           Transformations are different types of processing that may be done to the data as it is written.<br/>
@@ -697,6 +832,33 @@ WriteModuleArgs define the input parameters for modules that write data to locat
 </table>
 
 
+#### Blueprint.spec.modules[key].arguments.write[index].transformations[index]
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentswriteindex)</sup></sup>
+
+
+
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
 #### Blueprint.spec.modules[key].arguments.write[index].destination
 <sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentswriteindex)</sup></sup>
 
@@ -714,7 +876,7 @@ Destination is the data store to which the data will be written
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>connection</b></td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentswriteindexdestinationconnection">connection</a></b></td>
         <td>object</td>
         <td>
           Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
@@ -732,6 +894,33 @@ Destination is the data store to which the data will be written
         <td>map[string]object</td>
         <td>
           Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].arguments.write[index].destination.connection
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentswriteindexdestination)</sup></sup>
+
+
+
+Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -1936,7 +2125,7 @@ Capability declares what this module knows how to do and the types of data it kn
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>actions</b></td>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindexactionsindex">actions</a></b></td>
         <td>[]object</td>
         <td>
           Actions are the data transformations that the module supports<br/>
@@ -1977,6 +2166,33 @@ Capability declares what this module knows how to do and the types of data it kn
         <td>string</td>
         <td>
           Capability declares what this module knows how to do - ex: read, write, transform...<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikModule.spec.capabilities[index].actions[index]
+<sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiesindex)</sup></sup>
+
+
+
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -2606,7 +2822,7 @@ DataStore contains the details for accesing the data that are sent by catalog co
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>connection</b></td>
+        <td><b><a href="#plotterspecassetskeyassetdetailsconnection">connection</a></b></td>
         <td>object</td>
         <td>
           Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
@@ -2624,6 +2840,33 @@ DataStore contains the details for accesing the data that are sent by catalog co
         <td>map[string]object</td>
         <td>
           Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.assets[key].assetDetails.connection
+<sup><sup>[↩ Parent](#plotterspecassetskeyassetdetails)</sup></sup>
+
+
+
+Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -2839,7 +3082,7 @@ Step parameters TODO why not flatten the parameters into this data flow step
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>action</b></td>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersactionindex">action</a></b></td>
         <td>[]object</td>
         <td>
           Actions are the data transformations that the module supports<br/>
@@ -2866,6 +3109,33 @@ Step parameters TODO why not flatten the parameters into this data flow step
           StepSource is the source of this step: it could be assetID or an enpoint of another step<br/>
         </td>
         <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.action[index]
+<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameters)</sup></sup>
+
+
+
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 

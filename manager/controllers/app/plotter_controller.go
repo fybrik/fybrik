@@ -15,6 +15,7 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"github.com/rs/zerolog"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
@@ -188,7 +189,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
-				Connection: serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
+				Connection: connectionFromService(plotterModule.ModuleArguments.Source.API),
 				Format:     plotterModule.ModuleArguments.Source.API.Format,
 			}
 		}
@@ -224,7 +225,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
-				Connection: serde.NewArbitrary(plotterModule.ModuleArguments.Source.API),
+				Connection: connectionFromService(plotterModule.ModuleArguments.Source.API),
 				Format:     plotterModule.ModuleArguments.Source.API.Format,
 			}
 		}
@@ -542,4 +543,14 @@ func (r *PlotterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
 		For(&app.Plotter{}).
 		Complete(r)
+}
+
+// TODO(roee88): this is temporary until we fix the API structures to use Connection properly
+func connectionFromService(service *app.Service) taxonomy.Connection {
+	properties := serde.Properties{}
+	properties.Items["endpoint"] = service
+	return taxonomy.Connection{
+		Name:                 "endpoint",
+		AdditionalProperties: properties,
+	}
 }

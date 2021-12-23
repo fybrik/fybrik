@@ -11,11 +11,12 @@ import (
 	"runtime"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
 // IsDenied returns true if the data access is denied
-func IsDenied(actionName string) bool {
-	return (actionName == "Deny") // TODO FIX THIS
+func IsDenied(actionName taxonomy.ActionName) bool {
+	return actionName == "Deny" // TODO FIX THIS
 }
 
 // StructToMap converts a struct to a map using JSON marshal

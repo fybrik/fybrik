@@ -124,6 +124,11 @@ spec:
                                 connection:
                                   description: Connection has the relevant details
                                     for accesing the data (url, table, ssl, etc.)
+                                  properties:
+                                    name:
+                                      type: string
+                                  required:
+                                  - name
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
                                 format:
@@ -173,6 +178,11 @@ spec:
                                 connection:
                                   description: Connection has the relevant details
                                     for accesing the data (url, table, ssl, etc.)
+                                  properties:
+                                    name:
+                                      type: string
+                                  required:
+                                  - name
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
                                 format:
@@ -219,6 +229,11 @@ spec:
                               description: Transformations are different types of
                                 processing that may be done to the data as it is copied.
                               items:
+                                properties:
+                                  name:
+                                    type: string
+                                required:
+                                - name
                                 type: object
                                 x-kubernetes-preserve-unknown-fields: true
                               type: array
@@ -250,6 +265,11 @@ spec:
                                   connection:
                                     description: Connection has the relevant details
                                       for accesing the data (url, table, ssl, etc.)
+                                    properties:
+                                      name:
+                                        type: string
+                                    required:
+                                    - name
                                     type: object
                                     x-kubernetes-preserve-unknown-fields: true
                                   format:
@@ -296,6 +316,11 @@ spec:
                                 description: Transformations are different types of
                                   processing that may be done to the data
                                 items:
+                                  properties:
+                                    name:
+                                      type: string
+                                  required:
+                                  - name
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
                                 type: array
@@ -323,6 +348,11 @@ spec:
                                   connection:
                                     description: Connection has the relevant details
                                       for accesing the data (url, table, ssl, etc.)
+                                    properties:
+                                      name:
+                                        type: string
+                                    required:
+                                    - name
                                     type: object
                                     x-kubernetes-preserve-unknown-fields: true
                                   format:
@@ -370,6 +400,11 @@ spec:
                                   processing that may be done to the data as it is
                                   written.
                                 items:
+                                  properties:
+                                    name:
+                                      type: string
+                                  required:
+                                  - name
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
                                 type: array
