@@ -106,3 +106,80 @@ For the remote cluster the coordinator will be disabled:
 coordinator:
     enabled: false
 ```
+
+
+## Configure Vault for multi-cluster deployment
+
+The Fybrik uses [HashiCorp Vault](https://www.vaultproject.io/) to provide running Fybrik modules in the clusters with the dataset credentials when accessing data. This is done using [Vault plugin system](https://www.vaultproject.io/docs/internals/plugins) as described in [here](../concepts/vault_plugins.md).
+
+
+This section describe the steps to enable the modules to authenticate to Vault in order for them to retrieve the dataset credentials.
+Some of the steps described below are not specific to the Fybrik project but rather are Vault specific and can be found in Vault related online tutorials.
+
+Module authentication is done by configuring Vault to use [Kubernetes auth method](https://www.vaultproject.io/docs/auth/kubernetes) in each cluster. Using this method the modules can authenticate to Vault by providing their service account token. Behind the scenes Vault authenticates the token by submitting TokenReview request to the API server of the kubernetes cluster where the module is running.
+
+### Prerequisites unless Fybrik modules are running on the same cluster as the Vault instance:
+
+1. The running Vault instance should have connectivity to the cluster API server for each cluster running Fybrik modules.
+2. The running Vault instance should have an Ingress resource to enable Fybrik modules getting credentials.
+
+### Enabling Kubernetes auth for each cluster with running Fybrik modules:
+
+1. Create a token reviewer service account called vault-auth in the fybrik-system namespace and give it permissions to create tokenreviews.authentication.k8s.io at the cluster scope:
+```bash
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-auth
+  namespace: fybrik-system
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vault-auth
+  namespace: fybrik-system
+  annotations:
+    kubernetes.io/service-account.name: vault-auth
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: role-tokenreview-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: vault-auth
+    namespace: fybrik-system
+```
+
+1. Login to Vault.
+
+1. Enable the Kubernetes auth method in a new path:
+```bash   
+vault auth enable -path=<auth path> kubernetes
+```
+
+1. Use the /config endpoint to configure Vault to talk to Kubernetes:
+```bash
+TOKEN_REVIEW_JWT=$(kubectl get secret vault-auth -n fybrik-system -o jsonpath="{.data.token}" | base64 --decode)
+vault write auth/<auth path>/config \
+    token_reviewer_jwt="$TOKEN_REVIEW_JWT" \
+    kubernetes_host=<Kubernetes api server address> \
+    kubernetes_ca_cert=@ca.crt
+```
+More details on the parameters in the command above can be found [here](https://www.vaultproject.io/api/auth/kubernetes).
+
+1. Add Vault policy and role to allow the modules to get the dataset credentials. More details on defining Vault policy for Fybrik can be found [here](../concepts/vault_plugins.md). Vault role which binds the policy to the modules can be defined as in the following example:
+```bash
+vault write auth/<auth path>/role/module \
+    bound_service_account_names="*" \
+    bound_service_account_namespaces=<modules namespace> \
+    policies="allow-all-dataset-creds" \
+    ttl=24h
+```
+1. Deploy Fybrik helm chart with `--set cluster.vaultAuthPath=<auth path>` parameter
+
