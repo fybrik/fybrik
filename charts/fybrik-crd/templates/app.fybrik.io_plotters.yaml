@@ -127,6 +127,11 @@ spec:
                         connection:
                           description: Connection has the relevant details for accesing
                             the data (url, table, ssl, etc.)
+                          properties:
+                            name:
+                              type: string
+                          required:
+                          - name
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
                         format:
@@ -227,6 +232,11 @@ spec:
                                         description: Actions are the data transformations
                                           that the module supports
                                         items:
+                                          properties:
+                                            name:
+                                              type: string
+                                          required:
+                                          - name
                                           type: object
                                           x-kubernetes-preserve-unknown-fields: true
                                         type: array

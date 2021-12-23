@@ -52,6 +52,11 @@ spec:
                       description: Actions are the data transformations that the module
                         supports
                       items:
+                        properties:
+                          name:
+                            type: string
+                        required:
+                        - name
                         type: object
                         x-kubernetes-preserve-unknown-fields: true
                       type: array
