@@ -952,7 +952,7 @@ ObservedState includes information to be reported back to the FybrikApplication 
 
 
 
-FybrikApplication provides information about the application being used by a Data Scientist, the nature of the processing, and the data sets that the Data Scientist has chosen for processing by the application. The FybrikApplication controller (aka pilot) obtains instructions regarding any governance related changes that must be performed on the data, identifies the modules capable of performing such changes, and finally generates the Blueprint which defines the secure runtime environment and all the components in it.  This runtime environment provides the Data Scientist's application with access to the data requested in a secure manner and without having to provide any credentials for the data sets.  The credentials are obtained automatically by the manager from an external credential management system, which may or may not be part of a data catalog.
+FybrikApplication provides information about the application whose data is being operated on, the nature of the processing, and the data sets chosen for processing by the application. The FybrikApplication controller obtains instructions regarding any governance related changes that must be performed on the data, identifies the modules capable of performing such changes, and finally generates the Plotter which defines the secure runtime environment and all the components in it.  This runtime environment provides the application with access to the data requested in a secure manner and without having to provide any credentials for the data sets.  The credentials are obtained automatically by the manager from the credential management system.
 
 <table>
     <thead>
@@ -984,7 +984,7 @@ FybrikApplication provides information about the application being used by a Dat
         <td><b><a href="#fybrikapplicationspec">spec</a></b></td>
         <td>object</td>
         <td>
-          FybrikApplicationSpec defines the desired state of FybrikApplication.<br/>
+          FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1003,7 +1003,7 @@ FybrikApplication provides information about the application being used by a Dat
 
 
 
-FybrikApplicationSpec defines the desired state of FybrikApplication.
+FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog
 
 <table>
     <thead>
@@ -1025,14 +1025,14 @@ FybrikApplicationSpec defines the desired state of FybrikApplication.
         <td><b><a href="#fybrikapplicationspecselector">selector</a></b></td>
         <td>object</td>
         <td>
-          Selector enables to connect the resource to the application Application labels should match the labels in the selector. For some flows the selector may not be used.<br/>
+          Selector enables to connect the resource to the application Application labels should match the labels in the selector.<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>appInfo</b></td>
         <td>map[string]string</td>
         <td>
-          AppInfo contains information describing the reasons for the processing that will be done by the Data Scientist's application.<br/>
+          AppInfo contains information describing the reasons for the processing that will be done by the application.<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -1051,7 +1051,7 @@ FybrikApplicationSpec defines the desired state of FybrikApplication.
 
 
 
-Selector enables to connect the resource to the application Application labels should match the labels in the selector. For some flows the selector may not be used.
+Selector enables to connect the resource to the application Application labels should match the labels in the selector.
 
 <table>
     <thead>
