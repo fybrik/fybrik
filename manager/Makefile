@@ -46,14 +46,15 @@ source-build: generate fmt vet
 run: generate fmt vet manifests
 	go run ./main.go --enable-all-controllers --metrics-bind-addr=0
 
-# Generate manifests e.g. CRD, RBAC etc.
+# Generate code
+# TODO: all generation should move to the top-level makefile
 .PHONY: generate
 generate: $(TOOLBIN)/controller-gen
 	$(TOOLBIN)/controller-gen --version
-	$(TOOLBIN)/controller-gen object:headerFile=$(ROOT_DIR)/hack/boilerplate.go.txt,year=$(shell date +%Y) paths="./..."
+	$(TOOLBIN)/controller-gen object:headerFile=$(ROOT_DIR)/hack/boilerplate.go.txt,year=$(shell date +%Y) paths="$(ROOT_DIR)/..."
 	$(MAKE) -C $(ROOT_DIR)/site generate
 
-# Generate code
+# Generate manifests e.g. CRD, RBAC etc.
 .PHONY: manifests
 manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
 	$(TOOLBIN)/controller-gen --version
