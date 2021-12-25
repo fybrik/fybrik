@@ -442,7 +442,11 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 	// Read policies for data that is processed in the workload geography
 	if configEvaluatorInput.Request.Usage[api.ReadFlow] {
 		actionType := policymanager.READ
-		reqAction := policymanager.RequestAction{ActionType: actionType, Destination: workloadCluster.Metadata.Region}
+		reqAction := policymanager.RequestAction{
+			ActionType:         actionType,
+			Destination:        workloadCluster.Metadata.Region,
+			ProcessingLocation: taxonomy.ProcessingLocation(workloadCluster.Metadata.Region),
+		}
 		req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, input, &reqAction)
 		if err != nil {
 			return err

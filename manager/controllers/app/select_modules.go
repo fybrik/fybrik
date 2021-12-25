@@ -115,6 +115,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, appContex
 				operation := new(policymanager.RequestAction)
 				operation.ActionType = policymanager.WRITE
 				operation.Destination = region
+				operation.ProcessingLocation = taxonomy.ProcessingLocation(region)
 				actions, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
 				if err != nil && err.Error() == app.WriteNotAllowed {
 					continue
