@@ -172,7 +172,7 @@ Note that a module that targets copy flows will omit the `api` field and contain
 `capabilites.api` describes the api exposed by the module to the user's workload for the particular capability.
 
 * `protocol` field can take a value such as `kafka`, `s3`, `db2`, `fybrik-arrow-flight`, etc 
-* `dataformat` field can take a value such as `parquet`, `csv`, `arrow`, etc
+* `dataformat` field can take a value such as `parquet`, `csv`, `avro`, etc
 * `endpoint` field describes the endpoint exposed the module
 
 `capabilites.api.endpoint` describes the endpoint from a networking perspective:
@@ -189,7 +189,6 @@ capabilities:
     supportedInterfaces:
     - source:
         protocol: db2
-        dataformat: table
       sink:
         protocol: s3
         dataformat: parquet
@@ -202,7 +201,6 @@ capabilities:
 - capability: read
     api:
       protocol: fybrik-arrow-flight
-      dataformat: arrow
       endpoint:
         port: 80
         scheme: grpc

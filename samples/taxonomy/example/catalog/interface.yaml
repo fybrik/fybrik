@@ -3,17 +3,17 @@ definitions:
     oneOf:
       - properties:
           protocol:
-            enum: [Kafka]
+            enum: [kafka]
           dataformat:
             enum: [json, avro]
         required: [protocol, dataformat]
       - properties:
           protocol:
-            enum: [S3]
+            enum: [s3]
           dataformat:
             enum: [csv, parquet]
         required: [protocol, dataformat]
       - properties:
           protocol:
-            enum: [FybrikArrowFlight, DB2]
+            enum: [fybrik-arrow-flight, db2]
         required: [protocol]

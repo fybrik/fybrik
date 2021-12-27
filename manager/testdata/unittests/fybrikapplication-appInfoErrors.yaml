@@ -17,4 +17,4 @@ spec:
     - dataSetID: s3/redact-dataset
       requirements:
         interface: 
-          protocol: FybrikArrowFlight
+          protocol: fybrik-arrow-flight

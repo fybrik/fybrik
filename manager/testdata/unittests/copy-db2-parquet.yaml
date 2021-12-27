@@ -17,7 +17,6 @@ spec:
       supportedInterfaces:
       - source:
           protocol: db2
-          dataformat: table
         sink:
           protocol: s3
           dataformat: parquet

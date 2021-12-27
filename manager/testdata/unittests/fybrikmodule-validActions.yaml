@@ -23,13 +23,15 @@ spec:
           dataformat: parquet
       actions:
       - name: RedactAction
-        columns:
-          - first
-          - second
+        RedactAction:
+          columns:
+            - first
+            - second
       - name: RemoveAction
-        columns:
-          - third
-          - fourth
+        RemoveAction:
+          columns:
+            - third
+            - fourth
   chart:
     name: ghcr.io/fybrik/fybrik-implicit-copy-batch:0.1.0
   statusIndicators:

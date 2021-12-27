@@ -295,7 +295,7 @@ func TestNoReadPath(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "db2/allow-dataset",
-		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.JdbcDb2, DataFormat: app.Table}},
+		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.JdbcDb2}},
 	}
 	application.SetGeneration(1)
 
@@ -353,11 +353,11 @@ func TestWrongCopyModule(t *testing.T) {
 	application.Spec.Data = []app.DataContext{
 		{
 			DataSetID:    "s3/allow-dataset",
-			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 		},
 		{
 			DataSetID:    "kafka/allow-dataset",
-			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 		},
 	}
 	application.SetGeneration(1)
@@ -417,7 +417,7 @@ func TestActionSupport(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "db2/redact-dataset",
-		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 
@@ -481,15 +481,15 @@ func TestMultipleDatasets(t *testing.T) {
 	application.Spec.Data = []app.DataContext{
 		{
 			DataSetID:    "s3/deny-dataset",
-			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 		},
 		{
 			DataSetID:    "s3/allow-dataset",
-			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 		},
 		{
 			DataSetID:    "db2/redact-dataset",
-			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 		},
 	}
 	application.SetGeneration(1)
@@ -575,15 +575,15 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 	application.Spec.Data = []app.DataContext{
 		{
 			DataSetID:    "s3/deny-dataset",
-			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 		},
 		{
 			DataSetID:    "local/redact-dataset",
-			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 		},
 		{
 			DataSetID:    "s3/allow-dataset",
-			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 		},
 	}
 	application.SetGeneration(1)
@@ -639,7 +639,7 @@ func TestMultipleRegions(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "s3-external/redact-dataset",
-		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 
@@ -870,7 +870,7 @@ func TestPlotterUpdate(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "s3/allow-dataset",
-		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 

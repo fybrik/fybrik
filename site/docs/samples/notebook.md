@@ -215,7 +215,6 @@ spec:
       requirements:
         interface: 
           protocol: fybrik-arrow-flight
-          dataformat: arrow
 EOF
 ```
 
@@ -223,7 +222,7 @@ Notice that:
 
 * The `selector` field matches the labels of our Jupyter notebook workload.
 * The `data` field includes a `dataSetID` that matches the asset identifier in the catalog.
-* The `protocol` and `dataformat` indicate that the developer wants to consume the data using Apache Arrow Flight.
+* The `protocol` indicates that the developer wants to consume the data using Apache Arrow Flight. For some protocols a `dataformat` can be specified as well (e.g., `s3` protocol and `parquet` format).
 
 
 Run the following command to wait until the `FybrikApplication` is ready:
