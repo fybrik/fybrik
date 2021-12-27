@@ -1414,7 +1414,7 @@ The types of plugins supported by this module.  Example: vault, fybrik-wasm ...<
 <p><code>capabilites.api</code> describes the api exposed by the module to the user's workload for the particular capability.</p>
 <ul>
 <li><code>protocol</code> field can take a value such as <code>kafka</code>, <code>s3</code>, <code>db2</code>, <code>fybrik-arrow-flight</code>, etc </li>
-<li><code>dataformat</code> field can take a value such as <code>parquet</code>, <code>csv</code>, <code>arrow</code>, etc</li>
+<li><code>dataformat</code> field can take a value such as <code>parquet</code>, <code>csv</code>, <code>avro</code>, etc</li>
 <li><code>endpoint</code> field describes the endpoint exposed the module</li>
 </ul>
 <p><code>capabilites.api.endpoint</code> describes the endpoint from a networking perspective:</p>
@@ -1429,7 +1429,6 @@ The types of plugins supported by this module.  Example: vault, fybrik-wasm ...<
     <span class="l l-Scalar l-Scalar-Plain">supportedInterfaces</span><span class="p p-Indicator">:</span>
     <span class="p p-Indicator">-</span> <span class="nt">source</span><span class="p">:</span>
         <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">db2</span>
-        <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">table</span>
       <span class="nt">sink</span><span class="p">:</span>
         <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">s3</span>
         <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">parquet</span>
@@ -1439,7 +1438,6 @@ The types of plugins supported by this module.  Example: vault, fybrik-wasm ...<
 <span class="p p-Indicator">-</span> <span class="nt">capability</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">read</span>
     <span class="l l-Scalar l-Scalar-Plain">api</span><span class="p p-Indicator">:</span>
       <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fybrik-arrow-flight</span>
-      <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">arrow</span>
       <span class="nt">endpoint</span><span class="p">:</span>
         <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">80</span>
         <span class="nt">scheme</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">grpc</span>

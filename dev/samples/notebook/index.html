@@ -1355,14 +1355,13 @@ kubectl expose deployment my-notebook --port<span class="o">=</span><span class=
       <span class="nt">requirements</span><span class="p">:</span>
         <span class="nt">interface</span><span class="p">:</span> 
           <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fybrik-arrow-flight</span>
-          <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">arrow</span>
 <span class="l l-Scalar l-Scalar-Plain">EOF</span>
 </code></pre></div>
 <p>Notice that:</p>
 <ul>
 <li>The <code>selector</code> field matches the labels of our Jupyter notebook workload.</li>
 <li>The <code>data</code> field includes a <code>dataSetID</code> that matches the asset identifier in the catalog.</li>
-<li>The <code>protocol</code> and <code>dataformat</code> indicate that the developer wants to consume the data using Apache Arrow Flight.</li>
+<li>The <code>protocol</code> indicates that the developer wants to consume the data using Apache Arrow Flight. For some protocols a <code>dataformat</code> can be specified as well (e.g., <code>s3</code> protocol and <code>parquet</code> format).</li>
 </ul>
 <p>Run the following command to wait until the <code>FybrikApplication</code> is ready:</p>
 <div class="highlight"><pre><span></span><code><span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get fybrikapplication my-notebook -o <span class="s1">&#39;jsonpath={.status.ready}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s2">&quot;true&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for FybrikApplication&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>

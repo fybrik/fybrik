@@ -1040,7 +1040,8 @@ However, since the taxonomy is meant to be configurable, a <code>taxonomy.json</
 <p>This task describes how to deploy Fybrik with a custom <code>taxonomy.json</code> file that is generated with the Taxonomy Compile CLI tool. </p>
 <h2 id="taxonomy-compile-cli-tool">Taxonomy Compile CLI tool</h2>
 <p>A CLI tool for compiling a base taxonomy and zero or more taxonomy layers is provided in our repo.</p>
-<p><code>base.yaml</code> can be found in <a href="https://github.com/fybrik/fybrik/blob/master/config/taxonomy/base/base.yaml"><code>config/taxonomy/base</code></a> and example layers can be found in <a href="https://github.com/fybrik/fybrik/tree/master/config/taxonomy/example"><code>config/taxonomy/example</code></a>.</p>
+<p>The base taxonomy can be found in 
+<code>base.yaml</code> can be found in <a href="https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/taxonomy/taxonomy.json"><code>charts/fybrik/files/taxonomy/taxonomy.json</code></a> and example layers can be found in <a href="https://github.com/fybrik/fybrik/tree/master/samples/taxonomy/example"><code>samples/taxonomy/example</code></a>.</p>
 <p>The following command can be used from the root directory of our repo to run the Taxonomy Compile CLI tool. </p>
 <p>Usage:
 <div class="highlight"><pre><span></span><code>  go run main.go taxonomy compile --out &lt;outputFile&gt; --base &lt;baseFile&gt; <span class="o">[</span>&lt;layerFile&gt; ...<span class="o">]</span> <span class="o">[</span>--codegen<span class="o">]</span>
@@ -1059,7 +1060,7 @@ However, since the taxonomy is meant to be configurable, a <code>taxonomy.json</
 </ul>
 <p>This will generate a <code>taxonomy.json</code> file with the layers specified. </p>
 <h2 id="deploy-fybrik-with-custom-taxonomy">Deploy Fybrik with Custom Taxonomy</h2>
-<p>To deploy Fybrik with the generated <code>taxonomy.json</code> file, follow the <a href="https://fybrik.io/v0.4/get-started/quickstart/"><code>quickstart guide</code></a> but use the command below instead of <code>helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait</code>:</p>
+<p>To deploy Fybrik with the generated <code>taxonomy.json</code> file, follow the <a href="https://fybrik.io/latest/get-started/quickstart/"><code>quickstart guide</code></a> but use the command below instead of <code>helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait</code>:</p>
 <p><div class="highlight"><pre><span></span><code>helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait --set-file <span class="nv">taxonomyOverride</span><span class="o">=</span>taxonomy.json
 </code></pre></div>
 The <code>--set-file</code> flag will pass in your custom <code>taxonomy.json</code> file to use for taxonomy validation in Fybrik.
