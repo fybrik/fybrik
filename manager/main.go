@@ -154,6 +154,10 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 				setupLog.Error().Err(err).Str(logging.WEBHOOK, "FybrikApplication").Msg("unable to create webhook")
 				return 1
 			}
+			if err := (&appv1.FybrikModule{}).SetupWebhookWithManager(mgr); err != nil {
+				setupLog.Error().Err(err).Str(logging.WEBHOOK, "FybrikModule").Msg("unable to create webhook")
+				return 1
+			}
 		}
 
 		// Initiate the FybrikModule Controller
