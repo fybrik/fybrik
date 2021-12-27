@@ -66,7 +66,7 @@ func (t *transformer) oneOfRefsTransform(key string, schema *model.SchemaRef) *m
 		return schema
 	}
 
-	if nameProp, ok := schema.Properties["name"]; !ok || nameProp.Type != "string" {
+	if _, exists := schema.Properties["name"]; !exists {
 		// this transform does not apply here because name property is missing
 		return schema
 	}
