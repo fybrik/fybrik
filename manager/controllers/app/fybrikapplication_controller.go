@@ -36,7 +36,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/app/assetmetadata"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/multicluster"
@@ -352,7 +351,8 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext *api.FybrikAp
 	var requirements []DataInfo
 	for _, dataset := range applicationContext.Spec.Data {
 		req := DataInfo{
-			Context: dataset.DeepCopy(),
+			Context:     dataset.DeepCopy(),
+			DataDetails: &datacatalog.GetAssetResponse{},
 		}
 		if err := r.constructDataInfo(&req, applicationContext, workloadCluster); err != nil {
 			AnalyzeError(r.Log, applicationContext, req.Context.DataSetID, err)
@@ -426,19 +426,11 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 		credentialPath); err != nil {
 		return err
 	}
-
-	dataDetails, err := assetmetadata.CatalogDatasetToDataDetails(response)
-	if err != nil {
-		return err
-	}
-	req.DataDetails = dataDetails
-	req.VaultSecretPath = ""
-	req.VaultSecretPath = response.Credentials
-
+	response.DeepCopyInto(req.DataDetails)
 	configEvaluatorInput := &adminconfig.EvaluatorInput{}
 	configEvaluatorInput.Workload.Properties = input.Spec.AppInfo.DeepCopy()
 	configEvaluatorInput.Workload.Cluster = workloadCluster
-	configEvaluatorInput.Request = CreateDataRequest(input, *req.Context, req.DataDetails.Metadata)
+	configEvaluatorInput.Request = CreateDataRequest(input, *req.Context, &req.DataDetails.ResourceMetadata)
 	// Read policies for data that is processed in the workload geography
 	if configEvaluatorInput.Request.Usage[api.ReadFlow] {
 		actionType := policymanager.READ
