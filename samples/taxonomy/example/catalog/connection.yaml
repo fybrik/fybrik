@@ -2,10 +2,11 @@ definitions:
   Connection:
     description: Connection information
     oneOf:
-      - $ref: "#/definitions/S3"
-      - $ref: "#/definitions/DB2"
-      - $ref: "#/definitions/Kafka"
-  S3:
+      - $ref: "#/definitions/s3"
+      - $ref: "#/definitions/db2"
+      - $ref: "#/definitions/kafka"
+      - $ref: "#/definitions/fybrik-arrow-flight"
+  s3:
     description: Connection information for S3 compatible object store
     type: object
     properties:
@@ -21,7 +22,7 @@ definitions:
     - bucket
     - endpoint
     - objectKey
-  DB2:
+  db2:
     type: object
     properties:
       database:
@@ -34,7 +35,7 @@ definitions:
         type: string
       url:
         type: string
-  Kafka:
+  kafka:
     type: object
     properties:
       bootstrap_servers:
@@ -54,4 +55,9 @@ definitions:
       topic_name:
         type: string
       value_deserializer:
+        type: string
+  fybrik-arrow-flight:
+    type: object
+    properties:
+      endpoint:
         type: string

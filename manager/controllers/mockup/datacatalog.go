@@ -63,7 +63,6 @@ func NewTestCatalog() *DataCatalogDummy {
 	// TODO(roee88): some of these are also defined in ifdetails.go
 	var csvFormat taxonomy.DataFormat = "csv"
 	var parquetFormat taxonomy.DataFormat = "parquet"
-	var db2Format taxonomy.DataFormat = "table"
 	var jsonFormat taxonomy.DataFormat = "json"
 
 	s3Connection := taxonomy.Connection{
@@ -162,7 +161,6 @@ func NewTestCatalog() *DataCatalogDummy {
 		Credentials: "dummy",
 		Details: datacatalog.ResourceDetails{
 			Connection: db2Connection,
-			DataFormat: db2Format,
 		},
 	}
 

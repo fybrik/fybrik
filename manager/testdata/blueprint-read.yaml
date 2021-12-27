@@ -25,8 +25,7 @@ spec:
         api:
           service:
           interfaceDetails:
-            protocol: arrow-flight
-            dataformat: arrow
+            protocol: fybrik-arrow-flight
       arguments:
         read:
         - assetID: xyz

@@ -16,8 +16,8 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ValidateSchema validates that the input schema adheres to the requirements defined in
-// https://github.com/fybrik/fybrik/blob/master/config/taxonomy/HOWTO_SPEC.md
+// ValidateSchema validates that the input schema is a draft4 JSON schema
+// that adheres to structural requirements
 func ValidateSchema(path string) error {
 	path, err := filepath.Abs(path)
 	if err != nil {

@@ -3,12 +3,6 @@ definitions:
     oneOf:
       - properties:
           protocol:
-            enum: [fybrik-arrow-flight]
-          dataformat:
-            enum: [arrow]
-        required: [protocol, dataformat]
-      - properties:
-          protocol:
             enum: [kafka]
           dataformat:
             enum: [json, avro]
@@ -21,7 +15,5 @@ definitions:
         required: [protocol, dataformat]
       - properties:
           protocol:
-            enum: [db2]
-          dataformat:
-            enum: [table]
-        required: [protocol, dataformat]
+            enum: [fybrik-arrow-flight, db2]
+        required: [protocol]

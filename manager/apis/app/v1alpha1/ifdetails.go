@@ -12,9 +12,8 @@ const (
 	Kafka       taxonomy.ConnectionType = "kafka"
 	JdbcDb2     taxonomy.ConnectionType = "db2"
 	ArrowFlight taxonomy.ConnectionType = "fybrik-arrow-flight"
-	Arrow       taxonomy.DataFormat     = "arrow"
-	Parquet     taxonomy.DataFormat     = "parquet"
-	Table       taxonomy.DataFormat     = "table"
+
+	Parquet taxonomy.DataFormat = "parquet"
 )
 
 // InterfaceDetails indicate how the application or module receive or write the data

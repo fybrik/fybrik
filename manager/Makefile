@@ -15,18 +15,17 @@ include $(ROOT_DIR)/hack/make-rules/verify.mk
 
 
 pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
-	mkdir /tmp/taxonomy || true
-	mkdir /tmp/adminconfig || true
+	mkdir -p /tmp/taxonomy
+	mkdir -p /tmp/adminconfig
 	cp ../charts/fybrik/files/taxonomy/*.json /tmp/taxonomy/
 	cp ../charts/fybrik/files/adminconfig/*.rego /tmp/adminconfig/
-	mkdir testdata/unittests/basetaxonomy || true
-	mkdir testdata/unittests/sampletaxonomy || true
+	mkdir -p testdata/unittests/basetaxonomy
+	mkdir -p testdata/unittests/sampletaxonomy
 	cp ../charts/fybrik/files/taxonomy/*.json testdata/unittests/basetaxonomy
 	cp ../charts/fybrik/files/taxonomy/*.json testdata/unittests/sampletaxonomy
-	go run ../main.go taxonomy compile --out testdata/unittests/sampletaxonomy/taxonomy.json --base ../config/taxonomy/base/base.yaml \
-	../config/taxonomy/example/application/appinfo.yaml ../config/taxonomy/example/application/interface.yaml \
-	../config/taxonomy/example/catalog/locations.yaml ../config/taxonomy/example/catalog/tags.yaml \
-	../config/taxonomy/example/module/actions.yaml ../config/taxonomy/example/module/capability.yaml ../config/taxonomy/example/module/plugintype.yaml
+	go run $(ROOT_DIR)/main.go taxonomy compile -o testdata/unittests/sampletaxonomy/taxonomy.json \
+  	-b $(ROOT_DIR)/charts/fybrik/files/taxonomy/taxonomy.json \
+		$(shell find $(ROOT_DIR)/samples/taxonomy/example -type f -name '*.yaml')
 	cp testdata/unittests/sampletaxonomy/taxonomy.json /tmp/taxonomy/taxonomy.json
 
 # Run tests

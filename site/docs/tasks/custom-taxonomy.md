@@ -1,4 +1,5 @@
 # Background
+
 Fybrik acts as an orchestrator of independent components.  For example, the author of the data governance policy manager, which provides the governance decisions, and the components that enforce those decisions are not necessarily the same.  Thus, there is no common terminology between them.  Similarly, the data formats and protocols defined in the data catalog may be defined differently than the components used for reading/writing data.
 
 In order to enable all these independent components to be used in a single architecture, Fybrik provides a taxonomy.  It provides a mechanism for all the components to interact using a common dialect.
@@ -19,9 +20,11 @@ The `taxonomy.json` file is generated from a base taxonomy and zero or more taxo
 This task describes how to deploy Fybrik with a custom `taxonomy.json` file that is generated with the Taxonomy Compile CLI tool. 
 
 ## Taxonomy Compile CLI tool 
+
 A CLI tool for compiling a base taxonomy and zero or more taxonomy layers is provided in our repo.
 
-`base.yaml` can be found in [`config/taxonomy/base`](https://github.com/fybrik/fybrik/blob/master/config/taxonomy/base/base.yaml) and example layers can be found in [`config/taxonomy/example`](https://github.com/fybrik/fybrik/tree/master/config/taxonomy/example).
+The base taxonomy can be found in 
+`base.yaml` can be found in [`charts/fybrik/files/taxonomy/taxonomy.json`](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/taxonomy/taxonomy.json) and example layers can be found in [`samples/taxonomy/example`](https://github.com/fybrik/fybrik/tree/master/samples/taxonomy/example).
 
 The following command can be used from the root directory of our repo to run the Taxonomy Compile CLI tool. 
 
@@ -42,7 +45,7 @@ This will generate a `taxonomy.json` file with the layers specified.
 
 ## Deploy Fybrik with Custom Taxonomy
 
-To deploy Fybrik with the generated `taxonomy.json` file, follow the [`quickstart guide`](https://fybrik.io/v0.4/get-started/quickstart/) but use the command below instead of `helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait`:
+To deploy Fybrik with the generated `taxonomy.json` file, follow the [`quickstart guide`](https://fybrik.io/latest/get-started/quickstart/) but use the command below instead of `helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait`:
 
 ```bash
 helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait --set-file taxonomyOverride=taxonomy.json
