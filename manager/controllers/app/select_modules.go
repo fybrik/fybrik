@@ -9,10 +9,10 @@ import (
 
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/app/assetmetadata"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
@@ -23,9 +23,7 @@ import (
 // DataInfo defines all the information about the given data set that comes from the fybrikapplication spec and from the connectors.
 type DataInfo struct {
 	// Source connection details
-	DataDetails *assetmetadata.DataDetails
-	// The path to Vault secret which holds the dataset credentials
-	VaultSecretPath string
+	DataDetails *datacatalog.GetAssetResponse
 	// Pointer to the relevant data context in the Fybrik application spec
 	Context *app.DataContext
 	// Evaluated config policies
@@ -76,7 +74,13 @@ type Solution struct {
 // Optimization is done by the shortest path (the paths are sorted by the length). To be changed in future versions.
 func (p *PlotterGenerator) FindPaths(item *DataInfo, appContext *app.FybrikApplication) []Solution {
 	// data source as appears in the asset metadata
-	source := Node{Connection: &item.DataDetails.Interface, Virtual: false}
+	source := Node{
+		Connection: &app.InterfaceDetails{
+			Protocol:   item.DataDetails.Details.Connection.Name,
+			DataFormat: item.DataDetails.Details.DataFormat,
+		},
+		Virtual: false,
+	}
 	// data sink, either a virtual endpoint in read scenarios, or a datastore as in ingest scenario
 	destination := Node{Connection: &item.Context.Requirements.Interface, Virtual: (appContext.Spec.Selector.WorkloadSelector.Size() > 0)}
 	// find data paths of length up to DATAPATH_LIMIT from data source to the workload, not including transformations or branches

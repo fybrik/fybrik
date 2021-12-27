@@ -46,7 +46,7 @@ type PlotterGenerator struct {
 // GetCopyDestination creates a Dataset for bucket allocation by implicit copies or ingest.
 func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterface *app.InterfaceDetails, geo string) (*app.DataStore, error) {
 	// provisioned storage for COPY
-	originalAssetName := item.DataDetails.Metadata.Name
+	originalAssetName := item.DataDetails.ResourceMetadata.Name
 	var bucket *storage.ProvisionedBucket
 	var err error
 	if bucket, err = AllocateBucket(p.Client, p.Log, p.Owner, originalAssetName, geo); err != nil {
@@ -114,7 +114,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 	templates := []app.Template{}
 
 	// Set the value received from the catalog connector.
-	vaultSecretPath := item.VaultSecretPath
+	vaultSecretPath := item.DataDetails.Credentials
 	vaultMap := make(map[string]app.Vault)
 	vaultMap[string(app.ReadFlow)] = app.Vault{
 		SecretPath: vaultSecretPath,
@@ -122,9 +122,9 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 		Address:    utils.GetVaultAddress(),
 	}
 	sourceDataStore := &app.DataStore{
-		Connection: item.DataDetails.Connection,
+		Connection: item.DataDetails.Details.Connection,
 		Vault:      vaultMap,
-		Format:     string(item.DataDetails.Interface.DataFormat),
+		Format:     string(item.DataDetails.Details.DataFormat),
 	}
 
 	assets[item.Context.DataSetID] = app.AssetDetails{
