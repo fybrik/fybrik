@@ -9,36 +9,33 @@ import (
 	"strings"
 	"time"
 
-	"fybrik.io/fybrik/manager/controllers"
-	"fybrik.io/fybrik/pkg/environment"
-	"fybrik.io/fybrik/pkg/logging"
+	"emperror.dev/errors"
+	distributionref "github.com/distribution/distribution/reference"
+	"github.com/rs/zerolog"
+	credentialprovider "github.com/vdemeester/k8s-pkg-credentialprovider"
+	credentialprovidersecrets "github.com/vdemeester/k8s-pkg-credentialprovider/secrets"
+	"gopkg.in/yaml.v2"
+	"helm.sh/helm/v3/pkg/release"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
-	"emperror.dev/errors"
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"helm.sh/helm/v3/pkg/release"
-
-	"github.com/rs/zerolog"
-	yaml "gopkg.in/yaml.v2"
-	"k8s.io/apimachinery/pkg/api/equality"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-
+	fapp "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/helm"
-	credentialprovider "github.com/vdemeester/k8s-pkg-credentialprovider"
-	credentialprovidersecrets "github.com/vdemeester/k8s-pkg-credentialprovider/secrets"
-	corev1 "k8s.io/api/core/v1"
-	labels "k8s.io/apimachinery/pkg/labels"
-	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
-
-	distributionref "github.com/distribution/distribution/reference"
+	"fybrik.io/fybrik/pkg/logging"
 )
 
 // BlueprintReconciler reconciles a Blueprint object
@@ -55,7 +52,7 @@ type BlueprintReconciler struct {
 func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var err error
 
-	blueprint := app.Blueprint{}
+	blueprint := fapp.Blueprint{}
 	if err := r.Get(ctx, req.NamespacedName, &blueprint); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
@@ -94,7 +91,7 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 }
 
 // reconcileFinalizers reconciles finalizers for Blueprint
-func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) (ctrl.Result, error) {
+func (r *BlueprintReconciler) reconcileFinalizers(blueprint *fapp.Blueprint) (ctrl.Result, error) {
 	// finalizer
 	finalizerName := r.Name + ".finalizer"
 	hasFinalizer := ctrlutil.ContainsFinalizer(blueprint, finalizerName)
@@ -126,7 +123,7 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *app.Blueprint) (ctr
 	return ctrl.Result{}, nil
 }
 
-func (r *BlueprintReconciler) deleteExternalResources(blueprint *app.Blueprint) error {
+func (r *BlueprintReconciler) deleteExternalResources(blueprint *fapp.Blueprint) error {
 	errs := make([]string, 0)
 	for release := range blueprint.Status.Releases {
 		if _, err := r.Helmer.Uninstall(blueprint.Namespace, release); err != nil {
@@ -148,7 +145,7 @@ func getDomainFromImageName(image string) (string, error) {
 	return distributionref.Domain(named), nil
 }
 
-func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolog.Logger, chartSpec app.ChartSpec, args map[string]interface{}, blueprint *app.Blueprint, releaseName string) (ctrl.Result, error) {
+func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolog.Logger, chartSpec fapp.ChartSpec, args map[string]interface{}, blueprint *fapp.Blueprint, releaseName string) (ctrl.Result, error) {
 	// Get the unique id for the specific fybrikapplication instance.  Used for logging.
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
 	log = log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Str("blueprint", blueprint.GetName()).Logger()
@@ -273,15 +270,15 @@ func SetMapField(obj map[string]interface{}, k string, v interface{}) bool {
 }
 
 // updateModuleState updates the module state
-func (r *BlueprintReconciler) updateModuleState(blueprint *app.Blueprint, instanceName string, isReady bool, err string) {
-	state := app.ObservedState{
+func (r *BlueprintReconciler) updateModuleState(blueprint *fapp.Blueprint, instanceName string, isReady bool, err string) {
+	state := fapp.ObservedState{
 		Ready: isReady,
 		Error: err,
 	}
 	blueprint.Status.ModulesState[instanceName] = state
 }
 
-func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger, blueprint *app.Blueprint) (ctrl.Result, error) {
+func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger, blueprint *fapp.Blueprint) (ctrl.Result, error) {
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
 	log = log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Str("blueprint", blueprint.GetName()).Logger()
 
@@ -297,7 +294,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger,
 		blueprint.Status.Releases = map[string]int64{}
 	}
 	if blueprint.Status.ModulesState == nil {
-		blueprint.Status.ModulesState = make(map[string]app.ObservedState)
+		blueprint.Status.ModulesState = make(map[string]fapp.ObservedState)
 	}
 	// count the overall number of Helm releases and how many of them are ready
 	numReleases, numReady := 0, 0
@@ -306,8 +303,8 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger,
 		if module.Arguments.Labels == nil {
 			module.Arguments.Labels = map[string]string{}
 		}
-		module.Arguments.Labels[app.BlueprintNameLabel] = blueprint.Name
-		module.Arguments.Labels[app.BlueprintNamespaceLabel] = blueprint.Namespace
+		module.Arguments.Labels[fapp.BlueprintNameLabel] = blueprint.Name
+		module.Arguments.Labels[fapp.BlueprintNamespaceLabel] = blueprint.Namespace
 		module.Arguments.Labels[utils.FybrikAppUUID] = uuid // used for log correlation
 
 		// Get arguments by type
@@ -317,7 +314,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger,
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
 
-		releaseName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel], blueprint.Labels[app.ApplicationNamespaceLabel], instanceName)
+		releaseName := utils.GetReleaseName(blueprint.Labels[fapp.ApplicationNameLabel], blueprint.Labels[fapp.ApplicationNamespaceLabel], instanceName)
 		log.Trace().Msg("Release name: " + releaseName)
 		numReleases++
 		// check the release status
@@ -400,16 +397,16 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
-		For(&app.Blueprint{}).
+		For(&fapp.Blueprint{}).
 		WithEventFilter(p).
 		Complete(r)
 }
 
-func (r *BlueprintReconciler) getExpectedResults(kind string) (*app.ResourceStatusIndicator, error) {
+func (r *BlueprintReconciler) getExpectedResults(kind string) (*fapp.ResourceStatusIndicator, error) {
 	// Assumption: specification for each resource kind is done in one place.
 	ctx := context.Background()
 
-	var moduleList app.FybrikModuleList
+	var moduleList fapp.FybrikModuleList
 	if err := r.List(ctx, &moduleList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
 		return nil, err
 	}
