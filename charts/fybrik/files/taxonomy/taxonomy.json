@@ -60,22 +60,6 @@
         }
       }
     },
-    "Service": {
-      "type": "object",
-      "required": [
-        "endpoint"
-      ],
-      "properties": {
-        "endpoint": {
-          "$ref": "#/definitions/Connection",
-          "description": "Endpoint defines the access connection to the data"
-        },
-        "format": {
-          "$ref": "#/definitions/DataFormat",
-          "description": "Format defines the data format type"
-        }
-      }
-    },
     "PluginType": {
       "type": "string"
     },

@@ -64,7 +64,8 @@ spec:
                       description: API indicates to the application how to access
                         the capabilities provided by the module
                       properties:
-                        endpoint:
+                        connection:
+                          description: Connection information
                           properties:
                             name:
                               type: string
@@ -72,12 +73,11 @@ spec:
                           - name
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
-                        format:
-                          description: Format represents data format (e.g. parquet)
-                            as received from catalog connectors
+                        dataFormat:
+                          description: Data format
                           type: string
                       required:
-                      - endpoint
+                      - connection
                       type: object
                     capability:
                       description: 'Capability declares what this module knows how

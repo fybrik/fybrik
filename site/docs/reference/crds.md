@@ -2200,29 +2200,29 @@ API indicates to the application how to access the capabilities provided by the 
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>format</b></td>
+        <td><b>dataFormat</b></td>
         <td>string</td>
         <td>
-          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+          Data format<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#fybrikmodulespeccapabilitiesindexapiendpoint">endpoint</a></b></td>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindexapiconnection">connection</a></b></td>
         <td>object</td>
         <td>
-          <br/>
+          Connection information<br/>
         </td>
         <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### FybrikModule.spec.capabilities[index].api.endpoint
+#### FybrikModule.spec.capabilities[index].api.connection
 <sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiesindexapi)</sup></sup>
 
 
 
-
+Connection information
 
 <table>
     <thead>
@@ -3053,7 +3053,7 @@ Step parameters TODO why not flatten the parameters into this data flow step
         <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapi">api</a></b></td>
         <td>object</td>
         <td>
-          Service holds information for accessing a module instance<br/>
+          ResourceDetails includes asset connection details<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -3106,7 +3106,7 @@ Step parameters TODO why not flatten the parameters into this data flow step
 
 
 
-Service holds information for accessing a module instance
+ResourceDetails includes asset connection details
 
 <table>
     <thead>
@@ -3118,29 +3118,29 @@ Service holds information for accessing a module instance
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>format</b></td>
+        <td><b>dataFormat</b></td>
         <td>string</td>
         <td>
-          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+          Data format<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapiendpoint">endpoint</a></b></td>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapiconnection">connection</a></b></td>
         <td>object</td>
         <td>
-          <br/>
+          Connection information<br/>
         </td>
         <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.api.endpoint
+#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.api.connection
 <sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparametersapi)</sup></sup>
 
 
 
-
+Connection information
 
 <table>
     <thead>
@@ -3209,7 +3209,7 @@ StepSource is the source of this step: it could be assetID or an enpoint of anot
         <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapi">api</a></b></td>
         <td>object</td>
         <td>
-          Service holds information for accessing a module instance<br/>
+          API holds information for accessing a module instance<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -3228,7 +3228,7 @@ StepSource is the source of this step: it could be assetID or an enpoint of anot
 
 
 
-Service holds information for accessing a module instance
+API holds information for accessing a module instance
 
 <table>
     <thead>
@@ -3240,29 +3240,29 @@ Service holds information for accessing a module instance
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>format</b></td>
+        <td><b>dataFormat</b></td>
         <td>string</td>
         <td>
-          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+          Data format<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapiendpoint">endpoint</a></b></td>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapiconnection">connection</a></b></td>
         <td>object</td>
         <td>
-          <br/>
+          Connection information<br/>
         </td>
         <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.source.api.endpoint
+#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.source.api.connection
 <sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapi)</sup></sup>
 
 
 
-
+Connection information
 
 <table>
     <thead>

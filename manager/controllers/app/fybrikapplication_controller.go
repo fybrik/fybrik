@@ -300,7 +300,7 @@ func setReadModulesEndpoints(applicationContext *api.FybrikApplication, flows []
 						// Check the last step in the sequential flow that is for read (this will expose the reading api)
 						lastStep := sequentialSteps[len(sequentialSteps)-1]
 						if lastStep.Parameters.API != nil {
-							readEndpointMap[flow.AssetID] = lastStep.Parameters.API.Endpoint
+							readEndpointMap[flow.AssetID] = lastStep.Parameters.API.Connection
 						}
 					}
 				}

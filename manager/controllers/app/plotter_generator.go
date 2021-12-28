@@ -13,6 +13,7 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
@@ -156,7 +157,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 			}},
 		}
 		templates = append(templates, template)
-		var api *app.Service
+		var api *datacatalog.ResourceDetails
 		if moduleCapability.API != nil {
 			api, err = moduleAPIToService(moduleCapability.API, moduleCapability.Scope,
 				appContext, element.Module.Name, datasetID)
@@ -249,7 +250,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 	return nil
 }
 
-func moduleAPIToService(api *app.Service, scope app.CapabilityScope, appContext *app.FybrikApplication, moduleName string, assetID string) (*app.Service, error) {
+func moduleAPIToService(api *datacatalog.ResourceDetails, scope app.CapabilityScope, appContext *app.FybrikApplication, moduleName string, assetID string) (*datacatalog.ResourceDetails, error) {
 	instanceName := moduleName
 	if scope == app.Asset {
 		// if the scope of the module is asset then concat its id to the module name
@@ -288,9 +289,9 @@ func moduleAPIToService(api *app.Service, scope app.CapabilityScope, appContext 
 	if err != nil {
 		return nil, errors.Wrap(err, "could not serialize values")
 	}
-	newConnection := taxonomy.Connection{Name: api.Endpoint.Name, AdditionalProperties: serde.Properties{Items: make(map[string]interface{})}}
+	newConnection := taxonomy.Connection{Name: api.Connection.Name, AdditionalProperties: serde.Properties{Items: make(map[string]interface{})}}
 	newProps := make(map[string]interface{})
-	props := api.Endpoint.AdditionalProperties.Items[string(api.Endpoint.Name)].(map[string]interface{})
+	props := api.Connection.AdditionalProperties.Items[string(api.Connection.Name)].(map[string]interface{})
 	for key, val := range props {
 		if templateStr, ok := val.(string); ok {
 			fieldTemplate, err := template.New(key).Funcs(sprig.TxtFuncMap()).Parse(templateStr)
@@ -306,10 +307,10 @@ func moduleAPIToService(api *app.Service, scope app.CapabilityScope, appContext 
 			newProps[key] = val
 		}
 	}
-	newConnection.AdditionalProperties.Items[string(api.Endpoint.Name)] = newProps
-	var service = &app.Service{
-		Endpoint: newConnection,
-		Format:   api.Format,
+	newConnection.AdditionalProperties.Items[string(api.Connection.Name)] = newProps
+	var service = &datacatalog.ResourceDetails{
+		Connection: newConnection,
+		DataFormat: api.DataFormat,
 	}
 	return service, nil
 }

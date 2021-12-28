@@ -4,6 +4,7 @@
 package v1alpha1
 
 import (
+	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -62,23 +63,6 @@ type Dependency struct {
 	Name string `json:"name"`
 }
 
-// EndpointSpec is used both by the module creator and by the status of the fybrikapplication
-type EndpointSpec struct {
-	// Hostname is the hostname to connect to for connecting to a module exposed service.
-	// By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module.
-	// <br/>
-	// Module developers can overide the default behavior by providing a template that may use
-	// the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.
-	// +optional
-	Hostname string `json:"hostname,omitempty"`
-	// +required
-	Port int32 `json:"port"`
-
-	// For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc
-	// +required
-	Scheme string `json:"scheme"`
-}
-
 type Plugin struct {
 	// PluginType indicates the technology used for the module and the plugin to interact
 	// The values supported should come from the module taxonomy
@@ -111,7 +95,7 @@ type ModuleCapability struct {
 
 	// API indicates to the application how to access the capabilities provided by the module
 	// +optional
-	API *Service `json:"api,omitempty"`
+	API *datacatalog.ResourceDetails `json:"api,omitempty"`
 
 	// Actions are the data transformations that the module supports
 	// +optional

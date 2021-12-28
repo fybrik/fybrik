@@ -4,6 +4,7 @@
 package v1alpha1
 
 import (
+	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -20,16 +21,6 @@ type AssetDetails struct {
 	DataStore DataStore `json:"assetDetails"`
 }
 
-// Service holds information for accessing a module instance
-type Service struct {
-	//+required
-	Endpoint taxonomy.Connection `json:"endpoint"`
-
-	// Format represents data format (e.g. parquet) as received from catalog connectors
-	// +optional
-	Format taxonomy.DataFormat `json:"format"`
-}
-
 // StepSource is the source of this step: it could be assetID
 // or an enpoint of another step
 type StepSource struct {
@@ -37,8 +28,9 @@ type StepSource struct {
 	// +optional
 	AssetID string `json:"assetId,omitempty"`
 
-	//+optional
-	API *Service `json:"api,omitempty"`
+	// API holds information for accessing a module instance
+	// +optional
+	API *datacatalog.ResourceDetails `json:"api,omitempty"`
 }
 
 // StepSink holds information to where the target data will be written:
@@ -60,7 +52,7 @@ type StepParameters struct {
 	Sink *StepSink `json:"sink,omitempty"`
 
 	// +optional
-	API *Service `json:"api,omitempty"`
+	API *datacatalog.ResourceDetails `json:"api,omitempty"`
 
 	// Actions are the data transformations that the module supports
 	// +optional

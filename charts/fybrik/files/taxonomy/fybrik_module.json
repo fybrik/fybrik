@@ -20,7 +20,7 @@
                                 "$ref": "taxonomy.json#/definitions/Capability"
                             },
                             "api": {
-                                "$ref": "taxonomy.json#/definitions/Service"
+                                "$ref": "datacatalog.json#/definitions/ResourceDetails"
                             },
                             "supportedInterfaces": {
                                 "type": "array",

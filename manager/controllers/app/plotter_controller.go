@@ -187,8 +187,8 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
-				Connection: plotterModule.ModuleArguments.Source.API.Endpoint,
-				Format:     plotterModule.ModuleArguments.Source.API.Format,
+				Connection: plotterModule.ModuleArguments.Source.API.Connection,
+				Format:     plotterModule.ModuleArguments.Source.API.DataFormat,
 			}
 		}
 		blueprintModule.Args.Read = []app.ReadModuleArgs{
@@ -223,8 +223,8 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
-				Connection: plotterModule.ModuleArguments.Source.API.Endpoint,
-				Format:     plotterModule.ModuleArguments.Source.API.Format,
+				Connection: plotterModule.ModuleArguments.Source.API.Connection,
+				Format:     plotterModule.ModuleArguments.Source.API.DataFormat,
 			}
 		}
 		// Get only the writeFlow related creds

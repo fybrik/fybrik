@@ -240,10 +240,11 @@ spec:
                                           x-kubernetes-preserve-unknown-fields: true
                                         type: array
                                       api:
-                                        description: Service holds information for
-                                          accessing a module instance
+                                        description: ResourceDetails includes asset
+                                          connection details
                                         properties:
-                                          endpoint:
+                                          connection:
+                                            description: Connection information
                                             properties:
                                               name:
                                                 type: string
@@ -251,13 +252,11 @@ spec:
                                             - name
                                             type: object
                                             x-kubernetes-preserve-unknown-fields: true
-                                          format:
-                                            description: Format represents data format
-                                              (e.g. parquet) as received from catalog
-                                              connectors
+                                          dataFormat:
+                                            description: Data format
                                             type: string
                                         required:
-                                        - endpoint
+                                        - connection
                                         type: object
                                       sink:
                                         description: 'StepSink holds information to
@@ -279,10 +278,11 @@ spec:
                                           of another step'
                                         properties:
                                           api:
-                                            description: Service holds information
-                                              for accessing a module instance
+                                            description: API holds information for
+                                              accessing a module instance
                                             properties:
-                                              endpoint:
+                                              connection:
+                                                description: Connection information
                                                 properties:
                                                   name:
                                                     type: string
@@ -290,13 +290,11 @@ spec:
                                                 - name
                                                 type: object
                                                 x-kubernetes-preserve-unknown-fields: true
-                                              format:
-                                                description: Format represents data
-                                                  format (e.g. parquet) as received
-                                                  from catalog connectors
+                                              dataFormat:
+                                                description: Data format
                                                 type: string
                                             required:
-                                            - endpoint
+                                            - connection
                                             type: object
                                           assetId:
                                             description: AssetID identifies the source
