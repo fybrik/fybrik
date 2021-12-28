@@ -2,12 +2,14 @@ definitions:
   AppInfo:
     properties:
       intent:
+        type: string
         enum:
           - Marketing
           - Customer Support
           - Fraud Detection
           - Customer Behavior Analysis
       role:
+        type: string
         enum:
           - Sales
           - HR

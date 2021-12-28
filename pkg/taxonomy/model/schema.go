@@ -3,6 +3,10 @@
 
 package model
 
+import (
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
+)
+
 // Schema is specified by OpenAPI/Swagger 3.0 standard
 // The following fields are removed because they are not defined in JSON Schema DRAFT4 standard:
 // Example, ExternalDocs, Nullable, ReadOnly, WriteOnly, AllowEmptyValue, XML, Deprecated, Discriminator.
@@ -14,7 +18,7 @@ type Schema struct {
 	Properties           Schemas                   `json:"properties,omitempty"`
 	AdditionalProperties *AdditionalPropertiesType `json:"additionalProperties,omitempty"`
 	Items                *SchemaRef                `json:"items,omitempty"`
-	Default              interface{}               `json:"default,omitempty"`
+	Default              *apiextensions.JSON       `json:"default,omitempty"`
 
 	// Composable
 	OneOf SchemaRefs `json:"oneOf,omitempty"`
@@ -24,15 +28,15 @@ type Schema struct {
 
 	// Object
 	Required []string `json:"required,omitempty"`
-	MinProps uint64   `json:"minProperties,omitempty"`
-	MaxProps *uint64  `json:"maxProperties,omitempty"`
+	MinProps *int64   `json:"minProperties,omitempty"`
+	MaxProps *int64   `json:"maxProperties,omitempty"`
 
 	// String
-	Format    string        `json:"format,omitempty"`
-	Enum      []interface{} `json:"enum,omitempty"`
-	MinLength uint64        `json:"minLength,omitempty"`
-	MaxLength *uint64       `json:"maxLength,omitempty"`
-	Pattern   string        `json:"pattern,omitempty"`
+	Format    string               `json:"format,omitempty"`
+	Enum      []apiextensions.JSON `json:"enum,omitempty"`
+	MinLength *int64               `json:"minLength,omitempty"`
+	MaxLength *int64               `json:"maxLength,omitempty"`
+	Pattern   string               `json:"pattern,omitempty"`
 
 	// Number
 	Min          *float64 `json:"minimum,omitempty"`
@@ -42,7 +46,43 @@ type Schema struct {
 	ExclusiveMax bool     `json:"exclusiveMaximum,omitempty"`
 
 	// Array
-	MinItems    uint64  `json:"minItems,omitempty"`
-	MaxItems    *uint64 `json:"maxItems,omitempty"`
-	UniqueItems bool    `json:"uniqueItems,omitempty"`
+	MinItems    *int64 `json:"minItems,omitempty"`
+	MaxItems    *int64 `json:"maxItems,omitempty"`
+	UniqueItems bool   `json:"uniqueItems,omitempty"`
+}
+
+func (schema *Schema) ToJSONSchemaProps(flattenBy *Document) *apiextensions.JSONSchemaProps {
+	if schema == nil {
+		return nil
+	}
+
+	return &apiextensions.JSONSchemaProps{
+		Description:          schema.Description,
+		Type:                 schema.Type,
+		Format:               schema.Format,
+		Title:                schema.Title,
+		Default:              schema.Default,
+		Maximum:              schema.Max,
+		ExclusiveMaximum:     schema.ExclusiveMax,
+		Minimum:              schema.Min,
+		ExclusiveMinimum:     schema.ExclusiveMin,
+		MaxLength:            schema.MaxLength,
+		MinLength:            schema.MinLength,
+		Pattern:              schema.Pattern,
+		MaxItems:             schema.MaxItems,
+		MinItems:             schema.MinItems,
+		UniqueItems:          schema.UniqueItems,
+		MultipleOf:           schema.MultipleOf,
+		Enum:                 schema.Enum,
+		MaxProperties:        schema.MaxProps,
+		MinProperties:        schema.MinProps,
+		Required:             schema.Required,
+		Items:                &apiextensions.JSONSchemaPropsOrArray{Schema: schema.Items.ToJSONSchemaProps(flattenBy)},
+		AllOf:                schema.AllOf.ToJSONSchemaProps(flattenBy),
+		OneOf:                schema.OneOf.ToJSONSchemaProps(flattenBy),
+		AnyOf:                schema.AnyOf.ToJSONSchemaProps(flattenBy),
+		Not:                  schema.Not.ToJSONSchemaProps(flattenBy),
+		Properties:           schema.Properties.ToJSONSchemaProps(flattenBy),
+		AdditionalProperties: schema.AdditionalProperties.ToJSONSchemaProps(flattenBy),
+	}
 }
