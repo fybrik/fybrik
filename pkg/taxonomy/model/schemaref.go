@@ -3,7 +3,11 @@
 
 package model
 
-import "strings"
+import (
+	"strings"
+
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
+)
 
 // SchemaRef is either a schema or a reference to a schema
 type SchemaRef struct {
@@ -25,4 +29,40 @@ func (s *SchemaRef) RefName() string {
 		return s.Ref[strings.LastIndex(s.Ref, "/")+1:]
 	}
 	return ""
+}
+
+func (schemaRef *SchemaRef) ToJSONSchemaProps(flattenBy *Document) *apiextensions.JSONSchemaProps {
+	if schemaRef == nil {
+		return nil
+	}
+
+	if schemaRef.Ref != "" && flattenBy != nil {
+		return flattenBy.Deref(schemaRef).ToJSONSchemaProps(flattenBy)
+	}
+
+	if schemaRef.Ref != "" {
+		return &apiextensions.JSONSchemaProps{
+			Ref: &schemaRef.Ref,
+		}
+	}
+
+	return schemaRef.Schema.ToJSONSchemaProps(flattenBy)
+}
+
+func (schemaRefs *SchemaRefs) ToJSONSchemaProps(flattenBy *Document) []apiextensions.JSONSchemaProps {
+	result := make([]apiextensions.JSONSchemaProps, len(*schemaRefs))
+	for index, schema := range *schemaRefs {
+		result[index] = *schema.ToJSONSchemaProps(flattenBy)
+	}
+	return result
+}
+
+func (schemas *Schemas) ToJSONSchemaProps(flattenBy *Document) map[string]apiextensions.JSONSchemaProps {
+	result := make(map[string]apiextensions.JSONSchemaProps)
+	if schemas != nil {
+		for k, v := range *schemas {
+			result[k] = *v.ToJSONSchemaProps(flattenBy)
+		}
+	}
+	return result
 }

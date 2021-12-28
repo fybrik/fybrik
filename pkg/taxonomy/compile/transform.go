@@ -8,6 +8,7 @@ import (
 
 	"fybrik.io/fybrik/pkg/slices"
 	"fybrik.io/fybrik/pkg/taxonomy/model"
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
 )
 
 // transform applies transformations over an input document to make it structural.
@@ -78,7 +79,7 @@ func (t *transformer) oneOfRefsTransform(key string, schema *model.SchemaRef) *m
 		}
 	}
 
-	var options []interface{}
+	var options []apiextensions.JSON
 	for _, v := range schema.OneOf {
 		// Extract name
 		name := v.Title
@@ -114,7 +115,7 @@ func (t *transformer) oneOfRefsTransform(key string, schema *model.SchemaRef) *m
 		schema.OneOf = append(schema.OneOf, &model.SchemaRef{
 			Schema: model.Schema{
 				Properties: model.Schemas{
-					"name": &model.SchemaRef{Schema: model.Schema{Enum: []interface{}{option}}},
+					"name": &model.SchemaRef{Schema: model.Schema{Enum: []apiextensions.JSON{option}}},
 				},
 				Required: []string{"name", option.(string)},
 			},
@@ -135,7 +136,7 @@ func (t *transformer) propogateEnum(key string, schema *model.SchemaRef) *model.
 		t.propogateEnumFromValidationGroup(propertyName, property, schema.AnyOf)
 		t.propogateEnumFromValidationGroup(propertyName, property, schema.OneOf)
 
-		slices.UniqueInterfaceSlice(&property.Enum)
+		slices.UniqueJSONSlice(&property.Enum)
 	}
 	return schema
 }
