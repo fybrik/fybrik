@@ -11,6 +11,10 @@ generate: $(TOOLBIN)/crdoc $(TOOLBIN)/protoc $(TOOLBIN)/protoc-gen-doc
 	PATH=$(TOOLBIN) protoc -I=$(CONNECTORS_PROTO) --doc_out=./docs/reference/ --doc_opt=./templates/proto/protoc.tmpl,connectors.md $(sort $(wildcard ./$(CONNECTORS_PROTO)/*.proto))
 	go mod tidy
 
+generate-openapi-doc:
+	$(TOOLBIN)/openapi-generator-cli generate -i $(ROOT_DIR)/connectors/api/datacatalog.spec.yaml -g markdown -o  $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-datacatalog
+	$(TOOLBIN)/openapi-generator-cli generate -i $(ROOT_DIR)/connectors/api/policymanager.spec.yaml -g markdown -o $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-policymanager
+
 .PHONY: run
 run: generate
-	mkdocs serve
+	python -m mkdocs serve

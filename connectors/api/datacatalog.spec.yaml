@@ -22,13 +22,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "../charts/fybrik/files/taxonomy/datacatalog.json#/definitions/GetAssetRequest"
+                $ref: "../../charts/fybrik/files/taxonomy/datacatalog.json#/definitions/GetAssetRequest"
         responses:
           '200':
             description: successful operation
             content:
               application/json:
                 schema:
-                  $ref: "../charts/fybrik/files/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
+                  $ref: "../../charts/fybrik/files/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
           '400':
             description: Bad request - server cannot process the request due to client error
