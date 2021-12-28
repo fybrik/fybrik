@@ -1172,7 +1172,9 @@ Many clusters already include cert-manager. Check if <code>cert-manager</code> n
 <p>The published Helm charts are only available for released versions.
 To install the <code>dev</code> version install the charts from the source code.
 For example:</p>
-<div class="tabbed-set" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">Kubernetes</label><div class="tabbed-content">
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Kubernetes</label><label for="__tabbed_1_2">OpenShift</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
 <div class="highlight"><pre><span></span><code>git clone https://github.com/fybrik/fybrik.git
 <span class="nb">cd</span> fybrik
 helm dependency update charts/vault
@@ -1183,7 +1185,7 @@ helm install vault charts/vault --create-namespace -n fybrik-system <span class=
 kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n fybrik-system --timeout<span class="o">=</span>120s
 </code></pre></div>
 </div>
-<input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><label for="__tabbed_1_2">OpenShift</label><div class="tabbed-content">
+<div class="tabbed-block">
 <div class="highlight"><pre><span></span><code>git clone https://github.com/fybrik/fybrik.git
 <span class="nb">cd</span> fybrik
 helm dependency update charts/vault
@@ -1194,11 +1196,14 @@ helm install vault charts/vault --create-namespace -n fybrik-system <span class=
     --values charts/vault/env/dev/vault-single-cluster-values.yaml
 kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n fybrik-system --timeout<span class="o">=</span>120s
 </code></pre></div>
+</div>
 </div>
 </div>
 </details>
 <p>Run the following to install vault and the plugin in development mode:</p>
-<div class="tabbed-set" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><label for="__tabbed_2_1">Kubernetes</label><div class="tabbed-content">
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Kubernetes</label><label for="__tabbed_2_2">OpenShift</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
 <div class="highlight"><pre><span></span><code>helm install vault fybrik-charts/vault --create-namespace -n fybrik-system <span class="se">\</span>
     --set <span class="s2">&quot;vault.injector.enabled=false&quot;</span> <span class="se">\</span>
     --set <span class="s2">&quot;vault.server.dev.enabled=true&quot;</span> <span class="se">\</span>
@@ -1206,7 +1211,7 @@ kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="n
 kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n fybrik-system --timeout<span class="o">=</span>120s
 </code></pre></div>
 </div>
-<input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><label for="__tabbed_2_2">OpenShift</label><div class="tabbed-content">
+<div class="tabbed-block">
 <div class="highlight"><pre><span></span><code>helm install vault fybrik-charts/vault --create-namespace -n fybrik-system <span class="se">\</span>
     --set <span class="s2">&quot;vault.global.openshift=true&quot;</span> <span class="se">\</span>
     --set <span class="s2">&quot;vault.injector.enabled=false&quot;</span> <span class="se">\</span>
@@ -1214,6 +1219,7 @@ kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="n
     --values https://raw.githubusercontent.com/fybrik/fybrik/v0.4.0/charts/vault/env/dev/vault-single-cluster-values.yaml
 kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n fybrik-system --timeout<span class="o">=</span>120s
 </code></pre></div>
+</div>
 </div>
 </div>
 <h2 id="install-control-plane">Install control plane</h2>
