@@ -29,6 +29,7 @@ import (
 var client kclient.Client
 
 func init() {
+	v1alpha1.SchemeBuilder.Register(&v1alpha1.Asset{})
 	scheme := runtime.NewScheme()
 	_ = v1alpha1.AddToScheme(scheme)
 	var err error
@@ -68,7 +69,7 @@ func GetAssetInfoPost(c *gin.Context) {
 		for i, c := range *asset.Spec.AssetMetadata.Columns {
 			columns[i] = catalog.ResourceColumn{
 				Name: c.Name,
-				Tags: c.Tags, // TODO: parse it to the right structure
+				Tags: c.Tags,
 			}
 		}
 	}
@@ -78,9 +79,10 @@ func GetAssetInfoPost(c *gin.Context) {
 			Name:      asset.Spec.AssetMetadata.Name,
 			Owner:     asset.Spec.AssetMetadata.Owner,
 			Geography: asset.Spec.AssetMetadata.Geography,
-			Tags:      asset.Spec.AssetMetadata.Tags, // TODO: parse it to the right structure
+			Tags:      asset.Spec.AssetMetadata.Tags,
 			Columns:   &columns,
 		},
+		Details:     asset.Spec.AssetDetails,
 		Credentials: asset.Spec.VaultPluginPath,
 	}
 

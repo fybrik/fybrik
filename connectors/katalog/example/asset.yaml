@@ -2,13 +2,13 @@ apiVersion: katalog.fybrik.io/v1alpha1
 kind: Asset
 metadata:
   name: data-csv
+  namespace: default
 spec:
   vaultPluginPath: vaultPluginPath
   details:
-    dataFormat:
-      type: csv
+    dataFormat: csv
     connection:
-      type: s3
+      name: s3
       s3:
         endpoint: "http://minio:9000"
         bucket: demo

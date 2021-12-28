@@ -25,7 +25,7 @@ func RootCmd() *cobra.Command {
 // RunCmd defines the command for running the connector
 func RunCmd() *cobra.Command {
 	ip := ""
-	port := 8081
+	port := 8080
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run the connector",
