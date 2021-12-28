@@ -392,17 +392,17 @@ Destination is the data store to which the data will be copied
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopydestinationconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b>format</b></td>
         <td>string</td>
         <td>
           Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentscopydestinationconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -508,17 +508,17 @@ Source is the where the data currently resides
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopysourceconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b>format</b></td>
         <td>string</td>
         <td>
           Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentscopysourceconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -692,17 +692,17 @@ Source of the read path module
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsreadindexsourceconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b>format</b></td>
         <td>string</td>
         <td>
           Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsreadindexsourceconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -876,17 +876,17 @@ Destination is the data store to which the data will be written
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentswriteindexdestinationconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b>format</b></td>
         <td>string</td>
         <td>
           Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentswriteindexdestinationconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -1712,26 +1712,10 @@ Endpoint provides the endpoint spec from which the asset will be served to the a
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>hostname</b></td>
+        <td><b>name</b></td>
         <td>string</td>
         <td>
-          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>port</b></td>
-        <td>integer</td>
-        <td>
           <br/>
-          <br/>
-            <i>Format</i>: int32<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>scheme</b></td>
-        <td>string</td>
-        <td>
-          For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -2135,7 +2119,7 @@ Capability declares what this module knows how to do and the types of data it kn
         <td><b><a href="#fybrikmodulespeccapabilitiesindexapi">api</a></b></td>
         <td>object</td>
         <td>
-          API indicates to the application how to access the capabilities provided by the module TODO This is optional but in ModuleAPI the endpoint is required?<br/>
+          API indicates to the application how to access the capabilities provided by the module<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -2204,7 +2188,7 @@ Capability declares what this module knows how to do and the types of data it kn
 
 
 
-API indicates to the application how to access the capabilities provided by the module TODO This is optional but in ModuleAPI the endpoint is required?
+API indicates to the application how to access the capabilities provided by the module
 
 <table>
     <thead>
@@ -2216,24 +2200,17 @@ API indicates to the application how to access the capabilities provided by the 
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>dataformat</b></td>
+        <td><b>format</b></td>
         <td>string</td>
         <td>
-          DataFormat defines the data format type<br/>
+          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#fybrikmodulespeccapabilitiesindexapiendpoint">endpoint</a></b></td>
         <td>object</td>
         <td>
-          EndpointSpec is used both by the module creator and by the status of the fybrikapplication<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>protocol</b></td>
-        <td>string</td>
-        <td>
-          Protocol defines the interface protocol used for data transactions<br/>
+          <br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -2245,7 +2222,7 @@ API indicates to the application how to access the capabilities provided by the 
 
 
 
-EndpointSpec is used both by the module creator and by the status of the fybrikapplication
+
 
 <table>
     <thead>
@@ -2257,26 +2234,10 @@ EndpointSpec is used both by the module creator and by the status of the fybrika
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>hostname</b></td>
+        <td><b>name</b></td>
         <td>string</td>
         <td>
-          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>port</b></td>
-        <td>integer</td>
-        <td>
           <br/>
-          <br/>
-            <i>Format</i>: int32<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>scheme</b></td>
-        <td>string</td>
-        <td>
-          For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -2822,17 +2783,17 @@ DataStore contains the details for accesing the data that are sent by catalog co
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#plotterspecassetskeyassetdetailsconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b>format</b></td>
         <td>string</td>
         <td>
           Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecassetskeyassetdetailsconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -3157,17 +3118,17 @@ Service holds information for accessing a module instance
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapiendpoint">endpoint</a></b></td>
-        <td>object</td>
-        <td>
-          EndpointSpec is used both by the module creator and by the status of the fybrikapplication<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b>format</b></td>
         <td>string</td>
         <td>
           Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapiendpoint">endpoint</a></b></td>
+        <td>object</td>
+        <td>
+          <br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3179,7 +3140,7 @@ Service holds information for accessing a module instance
 
 
 
-EndpointSpec is used both by the module creator and by the status of the fybrikapplication
+
 
 <table>
     <thead>
@@ -3191,26 +3152,10 @@ EndpointSpec is used both by the module creator and by the status of the fybrika
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>hostname</b></td>
+        <td><b>name</b></td>
         <td>string</td>
         <td>
-          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>port</b></td>
-        <td>integer</td>
-        <td>
           <br/>
-          <br/>
-            <i>Format</i>: int32<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>scheme</b></td>
-        <td>string</td>
-        <td>
-          For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3295,17 +3240,17 @@ Service holds information for accessing a module instance
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapiendpoint">endpoint</a></b></td>
-        <td>object</td>
-        <td>
-          EndpointSpec is used both by the module creator and by the status of the fybrikapplication<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b>format</b></td>
         <td>string</td>
         <td>
           Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapiendpoint">endpoint</a></b></td>
+        <td>object</td>
+        <td>
+          <br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3317,7 +3262,7 @@ Service holds information for accessing a module instance
 
 
 
-EndpointSpec is used both by the module creator and by the status of the fybrikapplication
+
 
 <table>
     <thead>
@@ -3329,26 +3274,10 @@ EndpointSpec is used both by the module creator and by the status of the fybrika
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>hostname</b></td>
+        <td><b>name</b></td>
         <td>string</td>
         <td>
-          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>port</b></td>
-        <td>integer</td>
-        <td>
           <br/>
-          <br/>
-            <i>Format</i>: int32<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>scheme</b></td>
-        <td>string</td>
-        <td>
-          For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc<br/>
         </td>
         <td>true</td>
       </tr></tbody>

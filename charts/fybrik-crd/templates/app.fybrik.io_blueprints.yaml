@@ -168,7 +168,6 @@ spec:
                                   type: object
                               required:
                               - connection
-                              - format
                               - vault
                               type: object
                             source:
@@ -222,7 +221,6 @@ spec:
                                   type: object
                               required:
                               - connection
-                              - format
                               - vault
                               type: object
                             transformations:
@@ -309,7 +307,6 @@ spec:
                                     type: object
                                 required:
                                 - connection
-                                - format
                                 - vault
                                 type: object
                               transformations:
@@ -392,7 +389,6 @@ spec:
                                     type: object
                                 required:
                                 - connection
-                                - format
                                 - vault
                                 type: object
                               transformations:

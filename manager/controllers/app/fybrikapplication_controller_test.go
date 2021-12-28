@@ -156,13 +156,14 @@ var _ = Describe("FybrikApplication Controller", func() {
 
 			By("Status should contain the details of the endpoint")
 			Expect(len(application.Status.AssetStates)).To(Equal(1))
-			// TODO endpoint details are not set yet
 			fqdn := "test-app-e2e-default-read-module-test-e2e." + blueprint.Spec.ModulesNamespace
-			Expect(application.Status.AssetStates["s3/redact-dataset"].Endpoint).To(Equal(apiv1alpha1.EndpointSpec{
-				Hostname: fqdn,
-				Port:     80,
-				Scheme:   "grpc",
-			}))
+			connection := application.Status.AssetStates["s3/redact-dataset"].Endpoint
+			Expect(connection).ToNot(BeNil())
+			connectionMap := connection.AdditionalProperties.Items
+			Expect(connectionMap).To(HaveKey("fybrik-arrow-flight"))
+			config := connectionMap["fybrik-arrow-flight"].(map[string]interface{})
+			Expect(config["hostname"]).To(Equal(fqdn))
+			Expect(config["scheme"]).To(Equal("grpc"))
 		})
 	})
 })

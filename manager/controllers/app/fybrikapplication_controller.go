@@ -291,7 +291,7 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 
 // setReadModulesEndpoints populates the ReadEndpointsMap map in the status of the fybrikapplication
 func setReadModulesEndpoints(applicationContext *api.FybrikApplication, flows []api.Flow) {
-	readEndpointMap := make(map[string]api.EndpointSpec)
+	readEndpointMap := make(map[string]taxonomy.Connection)
 	for _, flow := range flows {
 		if flow.FlowType == api.ReadFlow {
 			for _, subflow := range flow.SubFlows {

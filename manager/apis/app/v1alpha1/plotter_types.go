@@ -23,11 +23,11 @@ type AssetDetails struct {
 // Service holds information for accessing a module instance
 type Service struct {
 	//+required
-	Endpoint EndpointSpec `json:"endpoint"`
+	Endpoint taxonomy.Connection `json:"endpoint"`
 
 	// Format represents data format (e.g. parquet) as received from catalog connectors
-	// +required
-	Format string `json:"format"`
+	// +optional
+	Format taxonomy.DataFormat `json:"format"`
 }
 
 // StepSource is the source of this step: it could be assetID

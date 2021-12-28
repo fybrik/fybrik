@@ -59,5 +59,13 @@ definitions:
   fybrik-arrow-flight:
     type: object
     properties:
-      endpoint:
+      hostname:
         type: string
+      port:
+        type: string
+      scheme:
+        type: string
+    required:
+    - hostname  
+    - port
+    - scheme

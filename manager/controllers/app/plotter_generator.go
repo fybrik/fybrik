@@ -101,7 +101,7 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 	return &app.DataStore{
 		Vault:      vaultMap,
 		Connection: connection,
-		Format:     string(destinationInterface.DataFormat),
+		Format:     destinationInterface.DataFormat,
 	}, nil
 }
 
@@ -124,7 +124,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 	sourceDataStore := &app.DataStore{
 		Connection: item.DataDetails.Details.Connection,
 		Vault:      vaultMap,
-		Format:     string(item.DataDetails.Details.DataFormat),
+		Format:     item.DataDetails.Details.DataFormat,
 	}
 
 	assets[item.Context.DataSetID] = app.AssetDetails{
@@ -249,16 +249,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 	return nil
 }
 
-func moduleAPIToService(api *app.ModuleAPI, scope app.CapabilityScope, appContext *app.FybrikApplication, moduleName string, assetID string) (*app.Service, error) {
-	hostnameTemplateString := api.Endpoint.Hostname
-	if hostnameTemplateString == "" {
-		hostnameTemplateString = "{{ .Release.Name }}.{{ .Release.Namespace }}"
-	}
-	hostnameTemplate, err := template.New("hostname").Funcs(sprig.TxtFuncMap()).Parse(hostnameTemplateString)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not parse hostname %s as a template", hostnameTemplateString)
-	}
-
+func moduleAPIToService(api *app.Service, scope app.CapabilityScope, appContext *app.FybrikApplication, moduleName string, assetID string) (*app.Service, error) {
 	instanceName := moduleName
 	if scope == app.Asset {
 		// if the scope of the module is asset then concat its id to the module name
@@ -277,12 +268,12 @@ func moduleAPIToService(api *app.ModuleAPI, scope app.CapabilityScope, appContex
 		Labels map[string]string `json:"labels,omitempty"`
 	}
 
-	type HostnameTemplateArgs struct {
+	type APITemplateArgs struct {
 		Release Release `json:"Release"`
 		Values  Values  `json:"Values,omitempty"`
 	}
 
-	args := HostnameTemplateArgs{
+	args := APITemplateArgs{
 		Release: Release{
 			Name:      releaseName,
 			Namespace: releaseNamespace,
@@ -295,22 +286,32 @@ func moduleAPIToService(api *app.ModuleAPI, scope app.CapabilityScope, appContex
 	// the following is required for proper types (e.g., labels must be map[string]interface{})
 	values, err := utils.StructToMap(args)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not serialize values for hostname field")
+		return nil, errors.Wrap(err, "could not serialize values")
 	}
-
-	var hostname bytes.Buffer
-	if err := hostnameTemplate.Execute(&hostname, values); err != nil {
-		return nil, errors.Wrapf(err, "could not process template %s", hostnameTemplateString)
+	newConnection := taxonomy.Connection{Name: api.Endpoint.Name, AdditionalProperties: serde.Properties{Items: make(map[string]interface{})}}
+	newProps := make(map[string]interface{})
+	props := api.Endpoint.AdditionalProperties.Items[string(api.Endpoint.Name)].(map[string]interface{})
+	for key, val := range props {
+		switch val.(type) {
+		case string:
+			templateStr := val.(string)
+			fieldTemplate, err := template.New(key).Funcs(sprig.TxtFuncMap()).Parse(templateStr)
+			if err != nil {
+				return nil, errors.Wrapf(err, "could not parse %s as a template", templateStr)
+			}
+			var newValue bytes.Buffer
+			if err = fieldTemplate.Execute(&newValue, values); err != nil {
+				return nil, errors.Wrapf(err, "could not process template %s", templateStr)
+			}
+			newProps[key] = newValue.String()
+		default:
+			newProps[key] = val
+		}
 	}
-
+	newConnection.AdditionalProperties.Items[string(api.Endpoint.Name)] = newProps
 	var service = &app.Service{
-		Endpoint: app.EndpointSpec{
-			Hostname: hostname.String(),
-			Port:     api.Endpoint.Port,
-			Scheme:   api.Endpoint.Scheme,
-		},
-		Format: string(api.DataFormat),
+		Endpoint: newConnection,
+		Format:   api.Format,
 	}
-
 	return service, nil
 }

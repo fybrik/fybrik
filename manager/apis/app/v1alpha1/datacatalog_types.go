@@ -31,6 +31,6 @@ type DataStore struct {
 	// +required
 	Connection taxonomy.Connection `json:"connection"`
 	// Format represents data format (e.g. parquet) as received from catalog connectors
-	// +required
-	Format string `json:"format"`
+	// +optional
+	Format taxonomy.DataFormat `json:"format,omitempty"`
 }

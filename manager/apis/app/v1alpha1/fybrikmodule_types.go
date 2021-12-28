@@ -79,13 +79,6 @@ type EndpointSpec struct {
 	Scheme string `json:"scheme"`
 }
 
-type ModuleAPI struct {
-	// +required
-	InterfaceDetails `json:",inline"`
-	// +required
-	Endpoint EndpointSpec `json:"endpoint"`
-}
-
 type Plugin struct {
 	// PluginType indicates the technology used for the module and the plugin to interact
 	// The values supported should come from the module taxonomy
@@ -117,9 +110,8 @@ type ModuleCapability struct {
 	SupportedInterfaces []ModuleInOut `json:"supportedInterfaces,omitempty"`
 
 	// API indicates to the application how to access the capabilities provided by the module
-	// TODO This is optional but in ModuleAPI the endpoint is required?
 	// +optional
-	API *ModuleAPI `json:"api,omitempty"`
+	API *Service `json:"api,omitempty"`
 
 	// Actions are the data transformations that the module supports
 	// +optional
