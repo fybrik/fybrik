@@ -292,9 +292,7 @@ func moduleAPIToService(api *app.Service, scope app.CapabilityScope, appContext 
 	newProps := make(map[string]interface{})
 	props := api.Endpoint.AdditionalProperties.Items[string(api.Endpoint.Name)].(map[string]interface{})
 	for key, val := range props {
-		switch val.(type) {
-		case string:
-			templateStr := val.(string)
+		if templateStr, ok := val.(string); ok {
 			fieldTemplate, err := template.New(key).Funcs(sprig.TxtFuncMap()).Parse(templateStr)
 			if err != nil {
 				return nil, errors.Wrapf(err, "could not parse %s as a template", templateStr)
@@ -304,7 +302,7 @@ func moduleAPIToService(api *app.Service, scope app.CapabilityScope, appContext 
 				return nil, errors.Wrapf(err, "could not process template %s", templateStr)
 			}
 			newProps[key] = newValue.String()
-		default:
+		} else {
 			newProps[key] = val
 		}
 	}
