@@ -4,7 +4,6 @@ go 1.16
 
 require (
 	emperror.dev/errors v0.7.0
-	fybrik.io/openapi2crd v0.4.0
 	github.com/IBM/satcon-client-go v0.2.1-0.20211027144622-4f54f37377a3
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/apache/arrow/go/arrow v0.0.0-20210907151234-f40856a768f2
@@ -14,7 +13,6 @@ require (
 	github.com/distribution/distribution v2.7.1+incompatible
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/gdexlab/go-render v1.0.1
-	github.com/getkin/kin-openapi v0.66.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-chi/chi v4.1.2+incompatible

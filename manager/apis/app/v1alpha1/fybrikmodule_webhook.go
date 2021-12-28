@@ -51,7 +51,10 @@ func (r *FybrikModule) ValidateFybrikModule(taxonomyFile string) error {
 	}
 
 	// Validate Fybrik module against taxonomy
-	allErrs = validate.TaxonomyCheck(moduleJSON, taxonomyFile, "Fybrik module")
+	allErrs, err = validate.TaxonomyCheck(moduleJSON, taxonomyFile)
+	if err != nil {
+		return err
+	}
 
 	// Return any error
 	if len(allErrs) == 0 {

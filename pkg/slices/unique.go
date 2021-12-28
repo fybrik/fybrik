@@ -8,22 +8,23 @@ import (
 	"encoding/json"
 
 	"github.com/mpvl/unique"
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
 )
 
-// UniqueInterfaceSlice removes duplicate entries from an interface slice
+// UniqueJSONSlice removes duplicate entries from an interface slice
 // where items are considered duplicate if their JSON representation
 // is the same.
-func UniqueInterfaceSlice(items *[]interface{}) {
-	unique.Sort(interfaceSlice{items})
+func UniqueJSONSlice(items *[]apiextensions.JSON) {
+	unique.Sort(jsonSlice{items})
 }
 
-// interfaceSlice attaches the methods of unique.Interface to []interface{}.
-type interfaceSlice struct{ P *[]interface{} }
+// interfaceSlice attaches the methods of unique.Interface to []apiextensions.JSON.
+type jsonSlice struct{ P *[]apiextensions.JSON }
 
-func (p interfaceSlice) Len() int       { return len(*p.P) }
-func (p interfaceSlice) Swap(i, j int)  { (*p.P)[i], (*p.P)[j] = (*p.P)[j], (*p.P)[i] }
-func (p interfaceSlice) Truncate(n int) { *p.P = (*p.P)[:n] }
-func (p interfaceSlice) Less(i, j int) bool {
+func (p jsonSlice) Len() int       { return len(*p.P) }
+func (p jsonSlice) Swap(i, j int)  { (*p.P)[i], (*p.P)[j] = (*p.P)[j], (*p.P)[i] }
+func (p jsonSlice) Truncate(n int) { *p.P = (*p.P)[:n] }
+func (p jsonSlice) Less(i, j int) bool {
 	left := (*p.P)[i]
 	leftBytes, err := json.Marshal(left)
 	if err != nil {
