@@ -26,31 +26,31 @@ func (d *Document) Deref(in *SchemaRef) *SchemaRef {
 }
 
 // ToJSONSchemaProps creates a JSONSchemaProps from the document
-func (document *Document) ToJSONSchemaProps() *apiextensions.JSONSchemaProps {
-	if document == nil {
+func (d *Document) ToJSONSchemaProps() *apiextensions.JSONSchemaProps {
+	if d == nil {
 		return nil
 	}
-	props := document.Schema.ToJSONSchemaProps(nil)
-	props.Schema = apiextensions.JSONSchemaURL(document.SchemaVersion)
+	props := d.Schema.ToJSONSchemaProps(nil)
+	props.Schema = apiextensions.JSONSchemaURL(d.SchemaVersion)
 	props.Definitions = make(apiextensions.JSONSchemaDefinitions)
-	for key, value := range document.Definitions {
+	for key, value := range d.Definitions {
 		props.Definitions[key] = *value.ToJSONSchemaProps(nil)
 	}
 	return props
 }
 
 // ToFlatJSONSchemaProps creates a JSONSchemaProps from the definitions section in the document
-func (document *Document) ToFlatJSONSchemaProps() *apiextensions.JSONSchemaProps {
-	if document == nil {
+func (d *Document) ToFlatJSONSchemaProps() *apiextensions.JSONSchemaProps {
+	if d == nil {
 		return nil
 	}
 
-	props := document.Schema.ToJSONSchemaProps(document)
+	props := d.Schema.ToJSONSchemaProps(d)
 	props.Type = "object"
-	props.Schema = apiextensions.JSONSchemaURL(document.SchemaVersion)
-	props.Properties = make(map[string]apiextensions.JSONSchemaProps, len(document.Definitions))
-	for key, value := range document.Definitions {
-		props.Properties[key] = *value.ToJSONSchemaProps(document)
+	props.Schema = apiextensions.JSONSchemaURL(d.SchemaVersion)
+	props.Properties = make(map[string]apiextensions.JSONSchemaProps, len(d.Definitions))
+	for key, value := range d.Definitions {
+		props.Properties[key] = *value.ToJSONSchemaProps(d)
 	}
 	return props
 }

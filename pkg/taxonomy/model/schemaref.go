@@ -24,9 +24,9 @@ type Schemas map[string]*SchemaRef
 // RefName returns the name from a reference.
 // For example given a reference `$ref: "#/definitions/MyObject"`
 //  the returned value is "MyObject".
-func (s *SchemaRef) RefName() string {
-	if s != nil && s.Ref != "" {
-		return s.Ref[strings.LastIndex(s.Ref, "/")+1:]
+func (schemaRef *SchemaRef) RefName() string {
+	if schemaRef != nil && schemaRef.Ref != "" {
+		return schemaRef.Ref[strings.LastIndex(schemaRef.Ref, "/")+1:]
 	}
 	return ""
 }
