@@ -17,4 +17,4 @@ generate-openapi-doc:
 
 .PHONY: run
 run: generate
-	python -m mkdocs serve
+	mkdocs serve
