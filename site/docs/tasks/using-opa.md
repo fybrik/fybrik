@@ -5,7 +5,7 @@ When OPA is used for data governance, it is deployed as a stand-alone service.  
 
 ## Fybrik Default Policies
 
-Fybrik <strong><em>denys by default </em></strong>any request if no rule is triggered. This behavior can be changed to <strong><em>allow by default</em></strong> by creating the following rule and upload it to OPA in methods described in this page:
+Fybrik <strong><em>denys by default </em></strong>any request if no rule is triggered. This behavior can be changed to <strong><em>allow by default</em></strong> by creating the following rule and upload it to OPA using methods described in this page:
 
 ```yaml
 package dataapi.authz
@@ -21,7 +21,7 @@ You can also add conditions like
  }
 ```
 
-That would make it allow only if the conditions match and no other rule said otherwise (e.g., no other rule said that we should redact a column).
+The verdict `allow` will be reached only if the conditions hold, and no other rule has been triggered, e.g. a rule requiring column redaction.
 
 ## Managing OPA policies
 
@@ -73,7 +73,7 @@ Delete the policy with `kubectl delete configmap <policy-name> -n fybrik-system`
 
 ### Using `opaServer.bootstrapPolicies` field
 
-Another method to upload policies to OPA is to write them in `opaServer.bootstrapPolicies` field in [values.yaml](https://raw.githubusercontent.com/fybrik/charts/master/charts/fybrik/values.yaml) file used for the Fybrik helm chart deployment.
+Another method to upload policies to OPA is to write them as `opaServer.bootstrapPolicies` field in [values.yaml](https://raw.githubusercontent.com/fybrik/charts/master/charts/fybrik/values.yaml) file used for the Fybrik deployment.
 In this approach the policies are uploaded upon OPA startup.
 
 ```bash
