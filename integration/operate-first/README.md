@@ -1,5 +1,5 @@
 # Deploying Fybrik on Operate First
-[Operate First](https://www.operate-first.cloud/) is a concept of bringing pre-release open source software to a production cloud environment. The Mass Open Cloud (MOC) is a production cloud resource where projects are run. Deploying Fybrik on Operate First is the first step to integrating Fybrik with Open Data Hub, making Fybrik more easily accessible to data scientists. 
+[Operate First](https://www.operate-first.cloud/) is a concept of bringing pre-release open source software to a production cloud environment. The Mass Open Cloud (MOC) is a production cloud resource where projects are run. Deploying Fybrik on Operate First is the first step to integrating Fybrik with Open Data Hub, making Fybrik more easily accessible to data scientists. For further questions about Operate First or contributing to [Operate First GitHub](https://github.com/operate-first) repositories, join the Slack channel [here](http://operatefirst.slack.com/)
 
 ## Accessing the [MOC](https://massopen.cloud/) Smaug cluster
 The Smaug cluster is where all user workloads are deployed. A deployment of [Open Data Hub](https://opendatahub.io/) (ODH) is also managed on the Smaug cluster. This is valuable to Fybrik since this ODH Deployment includes JupyterHub.
