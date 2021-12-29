@@ -4,11 +4,14 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
-	"github.com/spf13/cobra"
+	"github.com/gin-gonic/gin"
 
-	"fybrik.io/fybrik/connectors/katalog/pkg/connector"
+	sw "fybrik.io/fybrik/connectors/katalog/go"
+
+	"github.com/spf13/cobra"
 )
 
 // RootCmd defines the root cli command
@@ -29,8 +32,12 @@ func RunCmd() *cobra.Command {
 		Use:   "run",
 		Short: "Run the connector",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			log.Printf("Server started")
+
+			gin.SetMode(gin.ReleaseMode)
+			router := sw.NewRouter()
 			address := fmt.Sprintf("%s:%d", ip, port)
-			return connector.Start(address)
+			return router.Run(address)
 		},
 	}
 	cmd.Flags().StringVar(&ip, "ip", ip, "IP address")
