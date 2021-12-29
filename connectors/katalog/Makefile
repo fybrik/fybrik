@@ -15,17 +15,6 @@ generate: $(TOOLBIN)/controller-gen
 	$(TOOLBIN)/controller-gen object:headerFile=$(ROOT_DIR)/hack/boilerplate.go.txt,year=$(shell date +%Y) paths=./pkg/v1alpha1/...
 	$(TOOLBIN)/controller-gen crd output:crd:artifacts:config=$(ROOT_DIR)/charts/fybrik-crd/templates/ paths=./pkg/v1alpha1/...
 
-.PHONY: generate-server
-generate-server: $(TOOLBIN)/openapi-generator-cli
-	mkdir -p $(ROOT_DIR)/connectors/katalog/server
-	$(TOOLBIN)/openapi-generator-cli generate -g go-gin-server \
-		--additional-properties=packageName=openapiserver,serverPort=8081,sourceFolder=openapiserver \
-		--global-property=apis,supportingFiles -o $(ROOT_DIR)/connectors/katalog \
-		-i manifests/taxonomy.spec.yaml
-	rm -f $(ROOT_DIR)/connectors/katalog/server/go.mod $(ROOT_DIR)/connectors/katalog/server/.openapi-generator-ignore
-	rm -f $(ROOT_DIR)/connectors/katalog/server/Dockerfile $(ROOT_DIR)/connectors/katalog/server/go/README.md
-	rm -r $(ROOT_DIR)/connectors/katalog/server/api $(ROOT_DIR)/connectors/katalog/server/.openapi-generator
-
 docker-build: generate source-build
 	docker build . -t ${IMG}
 	rm katalog
