@@ -4,7 +4,6 @@ package v1alpha1
 
 import (
 	"fybrik.io/fybrik/pkg/model/catalog"
-	// "fybrik.io/fybrik/pkg/model/catalog/"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
