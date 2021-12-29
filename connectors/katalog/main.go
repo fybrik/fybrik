@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/gin-gonic/gin"
+
 	sw "fybrik.io/fybrik/connectors/katalog/go"
 
 	"github.com/spf13/cobra"
@@ -32,6 +34,7 @@ func RunCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			log.Printf("Server started")
 
+			gin.SetMode(gin.ReleaseMode)
 			router := sw.NewRouter()
 			address := fmt.Sprintf("%s:%d", ip, port)
 			return router.Run(address)

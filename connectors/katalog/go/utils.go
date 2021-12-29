@@ -7,20 +7,6 @@ import (
 	"strings"
 )
 
-func emptyIfNil(val *string) string {
-	if val == nil {
-		return ""
-	}
-	return *val
-}
-
-func emptyArrayIfNil(val *[]string) []string {
-	if val == nil {
-		return []string{}
-	}
-	return *val
-}
-
 func splitNamespacedName(value string) (namespace string, name string, err error) {
 	identifier := strings.SplitN(value, "/", 2)
 	if len(identifier) != 2 {

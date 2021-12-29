@@ -40,7 +40,6 @@ func init() {
 
 // GetAssetInfoPost - getAssetInfo
 func GetAssetInfoPost(c *gin.Context) {
-	log.Println("in GetAssetInfoPost of Katalog connector!")
 	input := new(taxonomymodels.DataCatalogRequest)
 	if err := c.ShouldBindJSON(input); err != nil {
 		log.Println("Error during ShouldBindJSON:", err.Error())
