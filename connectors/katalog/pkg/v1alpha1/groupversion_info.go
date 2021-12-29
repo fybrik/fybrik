@@ -1,19 +1,12 @@
-// Copyright 2021 IBM Corp.
-// SPDX-License-Identifier: Apache-2.0
-package connector
+// +kubebuilder:object:generate=true
+// +groupName=katalog.fybrik.io
+
+package v1alpha1
 
 import (
-	"fybrik.io/fybrik/connectors/katalog/pkg/api"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
-
-type Asset struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-	api.Asset         `json:",inline"`
-}
 
 var (
 	// GroupVersion is group version used to register these objects
