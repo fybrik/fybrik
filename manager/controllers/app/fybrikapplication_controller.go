@@ -291,7 +291,7 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 
 // setReadModulesEndpoints populates the ReadEndpointsMap map in the status of the fybrikapplication
 func setReadModulesEndpoints(applicationContext *api.FybrikApplication, flows []api.Flow) {
-	readEndpointMap := make(map[string]api.EndpointSpec)
+	readEndpointMap := make(map[string]taxonomy.Connection)
 	for _, flow := range flows {
 		if flow.FlowType == api.ReadFlow {
 			for _, subflow := range flow.SubFlows {
@@ -300,7 +300,7 @@ func setReadModulesEndpoints(applicationContext *api.FybrikApplication, flows []
 						// Check the last step in the sequential flow that is for read (this will expose the reading api)
 						lastStep := sequentialSteps[len(sequentialSteps)-1]
 						if lastStep.Parameters.API != nil {
-							readEndpointMap[flow.AssetID] = lastStep.Parameters.API.Endpoint
+							readEndpointMap[flow.AssetID] = lastStep.Parameters.API.Connection
 						}
 					}
 				}

@@ -238,25 +238,12 @@ spec:
                       description: Endpoint provides the endpoint spec from which
                         the asset will be served to the application
                       properties:
-                        hostname:
-                          description: Hostname is the hostname to connect to for
-                            connecting to a module exposed service. By default this
-                            equals to "{{.Release.Name}}.{{.Release.Namespace}}" of
-                            the module. <br/> Module developers can overide the default
-                            behavior by providing a template that may use the ".Release.Name",
-                            ".Release.Namespace" and ".Values.labels" variables.
-                          type: string
-                        port:
-                          format: int32
-                          type: integer
-                        scheme:
-                          description: 'For example: http, https, grpc, grpc+tls,
-                            jdbc:oracle:thin:@ etc'
+                        name:
                           type: string
                       required:
-                      - port
-                      - scheme
+                      - name
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                   type: object
                 description: AssetStates provides a status per asset
                 type: object

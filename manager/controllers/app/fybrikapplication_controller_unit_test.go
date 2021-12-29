@@ -188,11 +188,13 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(readFlow.Steps[0][0].Cluster).To(gomega.Equal("thegreendragon"))
 	// Check statuses
 	g.Expect(application.Status.Ready).To(gomega.Equal(false))
-	assetState := application.Status.AssetStates[application.Spec.Data[0].DataSetID]
-	g.Expect(assetState.Endpoint).To(gomega.Not(gomega.BeNil()))
-	g.Expect(assetState.Endpoint.Port).To(gomega.Equal(int32(80)))
-	g.Expect(assetState.Endpoint.Hostname).To(gomega.Equal("read-path.notebook-default-arrow-flight-module.notebook"))
-	g.Expect(assetState.Endpoint.Scheme).To(gomega.Equal("grpc"))
+	endpoint := application.Status.AssetStates[application.Spec.Data[0].DataSetID].Endpoint
+	g.Expect(endpoint).To(gomega.Not(gomega.BeNil()))
+	connectionMap := endpoint.AdditionalProperties.Items
+	g.Expect(connectionMap).To(gomega.HaveKey("fybrik-arrow-flight"))
+	config := connectionMap["fybrik-arrow-flight"].(map[string]interface{})
+	g.Expect(config["hostname"]).To(gomega.Equal("read-path.notebook-default-arrow-flight-module.notebook"))
+	g.Expect(config["scheme"]).To(gomega.Equal("grpc"))
 }
 
 // This test checks proper reconciliation of FybrikApplication finalizers

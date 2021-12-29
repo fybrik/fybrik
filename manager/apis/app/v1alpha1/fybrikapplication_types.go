@@ -4,6 +4,7 @@
 package v1alpha1
 
 import (
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -134,7 +135,7 @@ type AssetState struct {
 
 	// Endpoint provides the endpoint spec from which the asset will be served to the application
 	// +optional
-	Endpoint EndpointSpec `json:"endpoint,omitempty"`
+	Endpoint taxonomy.Connection `json:"endpoint,omitempty"`
 }
 
 // FybrikApplicationStatus defines the observed state of FybrikApplication.
