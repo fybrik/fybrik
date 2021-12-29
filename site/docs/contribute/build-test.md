@@ -46,7 +46,7 @@ tests on it:
 make run-integration-tests
 ```
 
-It is sometimes useful to to call the integration test commands step by step, e.g., if you want to only repeat a specific step which failed without having to rerun the entire sequence. You can find the commands of the `run-integration-tests` target in the [Makefile](https://github.com/fybrik/fybrik/blob/master/Makefile).
+It is sometimes useful to call the integration test commands step by step, e.g., if you want to only repeat a specific step which failed without having to rerun the entire sequence. You can find the commands of the `run-integration-tests` target in the [Makefile](https://github.com/fybrik/fybrik/blob/master/Makefile).
 
 
 You can run `make kind-cleanup` to delete the created clusters when you're done.
@@ -55,7 +55,7 @@ You can run `make kind-cleanup` to delete the created clusters when you're done.
 
 As Fybrik can run in a multi-cluster environment there is also a test environment
 that can be used that simulates this scenario. Using kind one can spin up two separate kubernetes
-clusters with differnt contexts and develop and test in these. 
+clusters with different contexts and develop and test in these. 
 
 Two kind clusters that share the same kind-registry can be set up using:
 ```bash
