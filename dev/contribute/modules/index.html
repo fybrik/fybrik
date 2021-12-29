@@ -1325,7 +1325,7 @@
 </code></pre></div>
 <h2 id="module-helm-chart">Module Helm Chart</h2>
 <p>For any module chosen by the control plane to be part of the data path, the control plane needs to be able to install/remove/upgrade an instance of the module. Fybrik uses <a href="https://helm.sh/docs/intro/using_helm/">Helm</a> to provide this functionality. Follow the Helm <a href="https://helm.sh/docs/chart_template_guide/getting_started/">getting started</a> guide if you are unfamiliar with Helm. Note that Helm 3.3 or above is required.</p>
-<p>The names of the Kubernetes resources deployed by the module helm chart must contain the release name to avoid resource conflicts. A Kubernetes <code>service</code> resource which is used to access the module must have a name equal to the release name (this service name is also used in the optional <a href="../../reference/crds/#fybrikmodulespeccapabilitiesapiendpoint"><code>spec.capabilites.api.endpoint.hostname</code></a> field).</p>
+<p>The names of the Kubernetes resources deployed by the module helm chart must contain the release name to avoid resource conflicts. A Kubernetes <code>service</code> resource which is used to access the module must have a name equal to the release name (this service name is also used in the optional <a href="../../reference/crds/#fybrikmodulespeccapabilitiesapiendpoint"><code>spec.capabilities.api.endpoint.hostname</code></a> field).</p>
 <p>Because the chart is installed by the control plane, the input <code>values</code> to the chart must match the relevant type of <a href="../../reference/crds/#blueprintspecflowstepsindexarguments">arguments</a>. </p>
 <!-- TODO: expand this when we support setting values in the FybrikModule YAML: https://github.com/fybrik/fybrik/pull/42 -->
 

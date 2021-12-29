@@ -1187,12 +1187,12 @@ build and push current docker images and finally run the integration
 tests on it:</p>
 <div class="highlight"><pre><span></span><code>make run-integration-tests
 </code></pre></div>
-<p>It is sometimes useful to to call the integration test commands step by step, e.g., if you want to only repeat a specific step which failed without having to rerun the entire sequence. You can find the commands of the <code>run-integration-tests</code> target in the <a href="https://github.com/fybrik/fybrik/blob/master/Makefile">Makefile</a>.</p>
+<p>It is sometimes useful to call the integration test commands step by step, e.g., if you want to only repeat a specific step which failed without having to rerun the entire sequence. You can find the commands of the <code>run-integration-tests</code> target in the <a href="https://github.com/fybrik/fybrik/blob/master/Makefile">Makefile</a>.</p>
 <p>You can run <code>make kind-cleanup</code> to delete the created clusters when you're done.</p>
 <h2 id="building-in-a-multi-cluster-environment">Building in a multi cluster environment</h2>
 <p>As Fybrik can run in a multi-cluster environment there is also a test environment
 that can be used that simulates this scenario. Using kind one can spin up two separate kubernetes
-clusters with differnt contexts and develop and test in these. </p>
+clusters with different contexts and develop and test in these. </p>
 <p>Two kind clusters that share the same kind-registry can be set up using:
 <div class="highlight"><pre><span></span><code>make kind-setup-multi
 </code></pre></div></p>

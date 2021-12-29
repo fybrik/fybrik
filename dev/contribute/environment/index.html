@@ -1134,9 +1134,9 @@ a remote Linux machine, or any other solution such as a virtual machine.</p>
 <p>This installs additional dependencies to <code>hack/tools/bin</code>. The <code>make</code> targets (e.g., <code>make test</code>) are configured to use the binaries from <code>hack/tools/bin</code>. However, you may want to add some of these tools to your system PATH for direct usage from your terminal (e.g., for using <code>kubectl</code>).</p>
 <p>Please note: For fybrik version 0.5 and lower, Helm version greater than 3.3 but less than 3.7 is required when contributing.</p>
 <h2 id="editors">Editors</h2>
-<p>The project is predominantly written in Go so we recommend <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.Go">Visual Studio Code</a> for its good Go support. Alternatively you can select from <a href="https://golang.org/doc/editors.html">Editors</a></p>
+<p>The project is predominantly written in Go, so we recommend <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.Go">Visual Studio Code</a> for its good Go support. Alternatively you can select from <a href="https://golang.org/doc/editors.html">Editors</a></p>
 <h2 id="docker-hub-rate-limits">Docker hub rate limits</h2>
-<p>As docker hub introduced rate limits on docker image downloads this may effect development using the local kind setup.
+<p>As docker hub introduced rate limits on docker image downloads this may affect development using the local kind setup.
 One option to fix the limit is to use a docker hub login for downloading the images. The environment will run
 a docker registry as a proxy for all public images. This registry runs in a docker container next to the kind clusters. </p>
 <div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">DOCKERHUB_USERNAME</span><span class="o">=</span><span class="s1">&#39;your docker hub username&#39;</span>

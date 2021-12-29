@@ -1116,7 +1116,7 @@
 <ul>
 <li><strong>Data users</strong> to use data in a self-service model without manual processes, without needing to confer with data stewards, and without dealing with credentials. Use common tools and frameworks for reading from and exporting data to data lakes or data warehouses.</li>
 <li><strong>Data stewards</strong> to control data usage by applications. Use the organization's <em>policy manager</em> and <em>data catalog</em> of choice and let Fybrik automatically enforce data governance policies, whether they be based on laws, industry standards or enterprise policies.</li>
-<li><strong>Data operators</strong> to automate data lifecycle mangement removing the need for manual processes and custom jobs created by data operators, providing them with <a href=".config-policies.md">config policies</a> to optimize the data flows orchestrated by fybrik.</li>
+<li><strong>Data operators</strong> to automate data lifecycle management removing the need for manual processes and custom jobs created by data operators, providing them with <a href="../config-policies/">config policies</a> to optimize the data flows orchestrated by fybrik.</li>
 </ul>
 <h2 id="how-does-it-work">How does it work?</h2>
 <p><img alt="Concept" src="../../static/general-concept.png" /></p>
@@ -1131,7 +1131,7 @@ The plotter augments the application workload and data sources with additional s
 <ul>
 <li>Integrates business logic with non-functional data centric requirements such as enabling data access regardless of its physical location, caching, lineage tracking, etc.</li>
 <li>Enforces governance relating to the data and its lifecycle; including limiting what data the business logic can access, performing transformations as needed, controlling what the business logic can export and to where</li>
-<li>Makes data available in locations where it is needed. Thus in a multi cluster scenario it may copy data from one location to another, something known as an implicit copy.  The implicit copy is deleted when no longer needed.</li>
+<li>Makes data available in locations where it is needed. Thus, in a multi cluster scenario it may copy data from one location to another, something known as an implicit copy.  The implicit copy is deleted when no longer needed.</li>
 </ul>
 <p>Fybrik is an open solution that can be extended to work with a wide range of tools and data stores. For example, the injectable <a href="../modules/">modules</a> and the <a href="../connectors/">connectors</a> to external systems (e.g., to a data catalog) can all be third party.</p>
 <p>The logic used by fybrik to generate the data planes is customizable.  An organization can determine how best its infrastructure should be leveraged via <a href="../config-policies/">config policies</a></p>
@@ -1145,7 +1145,7 @@ The plotter augments the application workload and data sources with additional s
 <p>Instead, modules run in the data path to handle access to data, including passing the data access credentials to upstream data stores. Security is preserved by authorizing the applications based on their Pod identities.</p>
 <h2 id="multicluster">Multicluster</h2>
 <p>Fybrik supports data paths that access data stores that are external to the cluster such as cloud managed object stores or databases as well as data stores within the cluster such as databases running in Kubernetes. All applications and modules however will run within a cluster that has Fybrik installed.</p>
-<p>Multi-cloud and hybrid cloud scenarios are supported out of the box by running Fybrik in multiple Kubernetes clusters and configuring the manager to use a multi-cluster coordination mechanism such as razee. This enables cases such as running, for example, transformations on-prem while creating an implicit copy of an on-prem SoR table to a public cloud storage system.</p>
+<p>Multi-cloud and hybrid cloud scenarios are supported out of the box by running Fybrik in multiple Kubernetes clusters and configuring the manager to use a multi-cluster coordination mechanism such as Razee. This enables cases such as running, for example, transformations on-prem while creating an implicit copy of an on-prem SoR table to a public cloud storage system.</p>
 
               
             </article>
