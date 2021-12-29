@@ -16,6 +16,8 @@ import (
 	"log"
 	"net/http"
 
+	"fybrik.io/fybrik/connectors/katalog/util"
+
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 
 	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -48,7 +50,7 @@ func GetAssetInfoPost(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	namespace, name, err := util.splitNamespacedName(string(input.AssetID))
+	namespace, name, err := util.SplitNamespacedName(string(input.AssetID))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
