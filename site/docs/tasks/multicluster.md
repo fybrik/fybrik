@@ -47,6 +47,7 @@ In order to configure Fybrik to use the installed Razee on Kubernetes the values
 to the following:
 ```
 coordinator:
+  razee:
     # URL for Razee deployment
     url: "https://your-razee-service:3333/graphql"
     # Razee deployment with oauth API key authentication requires the apiKey parameter
