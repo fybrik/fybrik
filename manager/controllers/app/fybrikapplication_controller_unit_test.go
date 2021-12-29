@@ -61,7 +61,6 @@ func createClusterMetadata() *corev1.ConfigMap {
 func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) *FybrikApplicationReconciler {
 	// environment: cluster-metadata configmap
 	_ = cl.Create(context.Background(), createClusterMetadata())
-	adminConfigEvaluator := adminconfig.NewRegoPolicyEvaluator(ctrl.Log.WithName("ConfigPolicyEvaluator"))
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	return &FybrikApplicationReconciler{
 		Client:        cl,
@@ -75,7 +74,7 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 		},
 		ClusterManager:  &mockup.ClusterLister{},
 		Provision:       &storage.ProvisionTest{},
-		ConfigEvaluator: adminConfigEvaluator,
+		ConfigEvaluator: adminconfig.NewRegoPolicyEvaluator(logging.LogInit("test", "ConfigPolicyEvaluator")),
 	}
 }
 
@@ -96,7 +95,7 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).To(gomega.BeNil(), "Cannot read fybrikapplication file for test")
 	application.SetGeneration(1)
-
+	application.SetUID("1")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -250,6 +249,7 @@ func TestDenyOnRead(t *testing.T) {
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet}},
 	}
 	application.SetGeneration(1)
+	application.SetUID("2")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -300,7 +300,7 @@ func TestNoReadPath(t *testing.T) {
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.JdbcDb2}},
 	}
 	application.SetGeneration(1)
-
+	application.SetUID("3")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -363,7 +363,7 @@ func TestWrongCopyModule(t *testing.T) {
 		},
 	}
 	application.SetGeneration(1)
-
+	application.SetUID("4")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -422,7 +422,7 @@ func TestActionSupport(t *testing.T) {
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 	}
 	application.SetGeneration(1)
-
+	application.SetUID("5")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -495,7 +495,7 @@ func TestMultipleDatasets(t *testing.T) {
 		},
 	}
 	application.SetGeneration(1)
-
+	application.SetUID("6")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -589,7 +589,7 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 		},
 	}
 	application.SetGeneration(1)
-
+	application.SetUID("7")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -644,7 +644,7 @@ func TestMultipleRegions(t *testing.T) {
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 	}
 	application.SetGeneration(1)
-
+	application.SetUID("8")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -725,7 +725,7 @@ func TestCopyData(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
 	application.SetGeneration(1)
-
+	application.SetUID("9")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -814,7 +814,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
 	application.SetGeneration(1)
-
+	application.SetUID("10")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -875,7 +875,7 @@ func TestPlotterUpdate(t *testing.T) {
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 	}
 	application.SetGeneration(1)
-
+	application.SetUID("11")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -954,6 +954,7 @@ func TestSyncWithPlotter(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
 	// imitate a ready phase for the earlier generation
 	application.SetGeneration(2)
+	application.SetUID("12")
 	application.Finalizers = []string{"TestReconciler.finalizer"}
 	controllerNamespace := utils.GetControllerNamespace()
 	fmt.Printf("FybrikApplication unit test: controller namespace " + controllerNamespace)
@@ -1009,7 +1010,7 @@ func TestFybrikApplicationWithNoDatasets(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data = []app.DataContext{}
 	application.SetGeneration(1)
-
+	application.SetUID("13")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -1055,7 +1056,7 @@ func TestFybrikApplicationWithInvalidAppInfo(t *testing.T) {
 	fybrikApp := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
 	fybrikApp.SetGeneration(1)
-
+	fybrikApp.SetUID("14")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		fybrikApp,
@@ -1099,7 +1100,7 @@ func TestFybrikApplicationWithInvalidInterface(t *testing.T) {
 	fybrikApp := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
 	fybrikApp.SetGeneration(1)
-
+	fybrikApp.SetUID("15")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		fybrikApp,
@@ -1142,7 +1143,7 @@ func TestCopyModule(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
 	application.SetGeneration(1)
-
+	application.SetUID("16")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,

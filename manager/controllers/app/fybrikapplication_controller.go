@@ -428,6 +428,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 	}
 	response.DeepCopyInto(req.DataDetails)
 	configEvaluatorInput := &adminconfig.EvaluatorInput{}
+	configEvaluatorInput.Workload.UUID = utils.GetFybrikApplicationUUID(input)
 	configEvaluatorInput.Workload.Properties = input.Spec.AppInfo.DeepCopy()
 	configEvaluatorInput.Workload.Cluster = workloadCluster
 	configEvaluatorInput.Request = CreateDataRequest(input, *req.Context, &req.DataDetails.ResourceMetadata)
@@ -493,18 +494,19 @@ func (r *FybrikApplicationReconciler) GetWorkloadCluster(application *api.Fybrik
 // NewFybrikApplicationReconciler creates a new reconciler for FybrikApplications
 func NewFybrikApplicationReconciler(mgr ctrl.Manager, name string,
 	policyManager pmclient.PolicyManager, catalog dcclient.DataCatalog, cm multicluster.ClusterLister,
-	provision storage.ProvisionInterface, configEvaluator adminconfig.EvaluatorInterface) *FybrikApplicationReconciler {
+	provision storage.ProvisionInterface) *FybrikApplicationReconciler {
+	log := logging.LogInit(logging.CONTROLLER, name)
 	return &FybrikApplicationReconciler{
 		Client:            mgr.GetClient(),
 		Name:              name,
-		Log:               logging.LogInit(logging.CONTROLLER, name),
+		Log:               log,
 		Scheme:            mgr.GetScheme(),
 		PolicyManager:     policyManager,
 		ResourceInterface: NewPlotterInterface(mgr.GetClient()),
 		ClusterManager:    cm,
 		Provision:         provision,
 		DataCatalog:       catalog,
-		ConfigEvaluator:   configEvaluator,
+		ConfigEvaluator:   adminconfig.NewRegoPolicyEvaluator(log),
 	}
 }
 
