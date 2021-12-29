@@ -48,7 +48,7 @@ func GetAssetInfoPost(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	namespace, name, err := splitNamespacedName(string(input.AssetID))
+	namespace, name, err := util.splitNamespacedName(string(input.AssetID))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

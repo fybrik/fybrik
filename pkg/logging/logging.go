@@ -47,7 +47,6 @@ const (
 )
 
 // Log Entry Params - those listed in the constants below and
-// FybrikApplicationUUID defined in fybrik.io/manager/utils/utils.go
 // caller (file and line), error, message, timestamp - Provided by the logging mechanism
 // Cluster will not be included since not all components know how to determine on which cluster they run.  Instead it will be assumed that the logging agents will add this information as they gather the logs.
 const (
