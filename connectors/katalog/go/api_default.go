@@ -48,15 +48,15 @@ func GetAssetInfoPost(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	var namespacedName types.NamespacedName
-	if namespace, name, err := splitNamespacedName(string(input.AssetID)); err != nil {
+	namespace, name, err := splitNamespacedName(string(input.AssetID))
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
-	} else {
-		namespacedName = types.NamespacedName{
-			Name:      name,
-			Namespace: namespace,
-		}
+	}
+
+	namespacedName := types.NamespacedName{
+		Name:      name,
+		Namespace: namespace,
 	}
 
 	asset := v1alpha1.Asset{}
