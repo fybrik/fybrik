@@ -77,7 +77,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: fybrik-config
-            {{- if include "fybrik.isRazeeEnabled" . }}
+            {{- if include "fybrik.isRazeeConfigurationEnabled" . }}
             - secretRef:
                 name: razee-credentials
             {{- end }}
