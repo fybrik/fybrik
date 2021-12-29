@@ -6,7 +6,7 @@ Fybrik allows:
 
 * **Data users** to use data in a self-service model without manual processes, without needing to confer with data stewards, and without dealing with credentials. Use common tools and frameworks for reading from and exporting data to data lakes or data warehouses.
 * **Data stewards** to control data usage by applications. Use the organization's _policy manager_ and _data catalog_ of choice and let Fybrik automatically enforce data governance policies, whether they be based on laws, industry standards or enterprise policies.
-* **Data operators** to automate data lifecycle mangement removing the need for manual processes and custom jobs created by data operators, providing them with [config policies](.config-policies.md) to optimize the data flows orchestrated by fybrik.
+* **Data operators** to automate data lifecycle management removing the need for manual processes and custom jobs created by data operators, providing them with [config policies](./config-policies.md) to optimize the data flows orchestrated by fybrik.
 
 ## How does it work?
 
@@ -23,7 +23,7 @@ The plotter augments the application workload and data sources with additional s
 
 - Integrates business logic with non-functional data centric requirements such as enabling data access regardless of its physical location, caching, lineage tracking, etc.
 - Enforces governance relating to the data and its lifecycle; including limiting what data the business logic can access, performing transformations as needed, controlling what the business logic can export and to where
-- Makes data available in locations where it is needed. Thus in a multi cluster scenario it may copy data from one location to another, something known as an implicit copy.  The implicit copy is deleted when no longer needed.
+- Makes data available in locations where it is needed. Thus, in a multi cluster scenario it may copy data from one location to another, something known as an implicit copy.  The implicit copy is deleted when no longer needed.
 
 Fybrik is an open solution that can be extended to work with a wide range of tools and data stores. For example, the injectable [modules](./modules.md) and the [connectors](./connectors.md) to external systems (e.g., to a data catalog) can all be third party.
 
@@ -48,5 +48,5 @@ Instead, modules run in the data path to handle access to data, including passin
 ## Multicluster
 Fybrik supports data paths that access data stores that are external to the cluster such as cloud managed object stores or databases as well as data stores within the cluster such as databases running in Kubernetes. All applications and modules however will run within a cluster that has Fybrik installed.
 
-Multi-cloud and hybrid cloud scenarios are supported out of the box by running Fybrik in multiple Kubernetes clusters and configuring the manager to use a multi-cluster coordination mechanism such as razee. This enables cases such as running, for example, transformations on-prem while creating an implicit copy of an on-prem SoR table to a public cloud storage system.
+Multi-cloud and hybrid cloud scenarios are supported out of the box by running Fybrik in multiple Kubernetes clusters and configuring the manager to use a multi-cluster coordination mechanism such as Razee. This enables cases such as running, for example, transformations on-prem while creating an implicit copy of an on-prem SoR table to a public cloud storage system.
 

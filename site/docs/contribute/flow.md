@@ -29,7 +29,7 @@ Here’s how to submit a pull request:
     git merge upstream/master
     git push origin master
     ```
-- **[Create a branch](https://guides.github.com/introduction/flow/)** for your edits from master. Note that your should never add edits to the master branch itself.
+- **[Create a branch](https://guides.github.com/introduction/flow/)** for your edits from master. Note that you should never add edits to the master branch itself.
     ```shell
     git checkout -b <branch name>
     ```

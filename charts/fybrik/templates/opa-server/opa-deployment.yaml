@@ -46,7 +46,7 @@ spec:
             {{- $files := .Files }}
             {{- range $path, $_ :=  $files.Glob  "files/opa-server/policy-lib/**.rego" }}
             {{- $fileName := include "fybrik.opaServerPolicyFileName" (tuple $path ) }}
-            {{- printf "\ncat <<EOF >> /bootstrap/policy-lib-%s" $fileName | indent 12 }}
+            {{- printf "\ncat <<EOF > /bootstrap/policy-lib-%s" $fileName | indent 12 }}
             {{ $files.Get $path | indent 12 }}
             EOF
             {{ end }}
