@@ -3,17 +3,39 @@
 
 When OPA is used for data governance, it is deployed as a stand-alone service.  Policies are defined in rego and uploaded to OPA.
 
+## Fybrik Default Policies
+
+Fybrik <strong><em>denys by default </em></strong>any request if no rule is triggered. This behavior can be changed to <strong><em>allow by default</em></strong> by creating the following rule and upload it to OPA in methods described in this page:
+
+```yaml
+package dataapi.authz
+
+rule [{}] { true }
+```
+
+You can also add conditions like
+
+```yaml
+ rule[{}] {
+  // conditions here
+ }
+```
+
+That would make it allow only if the conditions match and no other rule said otherwise (e.g., no other rule said that we should redact a column).
+
+## Managing OPA policies
+
 There are [several ways](https://www.openpolicyagent.org/docs/latest/management/) to manage policies and data of the OPA service. 
 
 One simple approach is to use [OPA kube-mgmt](https://github.com/open-policy-agent/kube-mgmt) and manage Rego policies in Kubernetes `Configmap` resources. By default, Fybrik installs OPA with kube-mgmt enabled. 
 
-This task shows how to use OPA with kube-mgmt.
+The following two sections show how to use OPA with kube-mgmt.
 
 !!! warning 
     
     Due to size limits you must ensure that each configmap is smaller than 1MB when base64 encoded.
 
-## Using a configmap YAML
+### Using a configmap YAML
 
 1. Create a configmap with a Rego policy and a `openpolicyagent.org/policy=rego` label in the `fybrik-system` namespace:
     ```yaml
@@ -37,7 +59,7 @@ This task shows how to use OPA with kube-mgmt.
     kubectl delete -f <policy-name>.yaml
    ```
 
-## Using a Rego file
+### Using a Rego file
 
 You can use `kubectl` to create a configmap from a Rego file. To create a configmap named `<policy-name>` from a Rego file in path `<policy-name.rego>`:
 
@@ -47,3 +69,19 @@ kubectl label configmap <policy-name> openpolicyagent.org/policy=rego -n fybrik-
 ```
 
 Delete the policy with `kubectl delete configmap <policy-name> -n fybrik-system`.
+
+
+### Using `opaServer.bootstrapPolicies` field
+
+Another method to upload policies to OPA is to write them in `opaServer.bootstrapPolicies` field in [values.yaml](https://raw.githubusercontent.com/fybrik/charts/master/charts/fybrik/values.yaml) file used for the Fybrik helm chart deployment.
+In this approach the policies are uploaded upon OPA startup.
+
+```bash
+opaServer:
+  # Bootstrap policies to load upon startup
+  bootstrapPolicies:
+    allowSamplePolicy: |-
+      package dataapi.authz
+
+      rule [{}] { true }
+```
