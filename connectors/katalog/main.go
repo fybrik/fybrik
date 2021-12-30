@@ -4,14 +4,17 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
+	"emperror.dev/errors"
 	"github.com/gin-gonic/gin"
-
-	sw "fybrik.io/fybrik/connectors/katalog/go"
-
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/runtime"
+	kclient "sigs.k8s.io/controller-runtime/pkg/client"
+	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
+
+	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
+	"fybrik.io/fybrik/connectors/katalog/pkg/connector"
 )
 
 // RootCmd defines the root cli command
@@ -32,12 +35,25 @@ func RunCmd() *cobra.Command {
 		Use:   "run",
 		Short: "Run the connector",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			log.Printf("Server started")
-
 			gin.SetMode(gin.ReleaseMode)
-			router := sw.NewRouter()
-			address := fmt.Sprintf("%s:%d", ip, port)
-			return router.Run(address)
+
+			scheme := runtime.NewScheme()
+			err := v1alpha1.AddToScheme(scheme)
+			if err != nil {
+				return errors.Wrap(err, "unable to add katalog v1alpha1 to schema")
+			}
+
+			client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: scheme})
+			if err != nil {
+				return errors.Wrap(err, "failed to create a Kubernetes client")
+			}
+
+			controller := connector.NewConnectorController(client)
+			router := connector.NewRouter(controller)
+			router.Use(gin.Logger())
+
+			bindAddress := fmt.Sprintf("%s:%d", ip, port)
+			return router.Run(bindAddress)
 		},
 	}
 	cmd.Flags().StringVar(&ip, "ip", ip, "IP address")

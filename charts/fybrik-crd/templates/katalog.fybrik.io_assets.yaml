@@ -19,6 +19,7 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
+        description: Asset defines an asset in the catalog
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -33,7 +34,6 @@ spec:
           metadata:
             type: object
           spec:
-            description: AssetSpec defines model for AssetSpec.
             properties:
               details:
                 description: Asset details
@@ -53,8 +53,8 @@ spec:
                 required:
                 - connection
                 type: object
-              resource:
-                description: ResourceMetadata defines model for resource metadata
+              metadata:
+                description: Asset metadata
                 properties:
                   columns:
                     description: Columns associated with the asset
@@ -89,15 +89,21 @@ spec:
                 required:
                 - name
                 type: object
-              vaultPluginPath:
-                description: This has the vault plugin path where the data credentials
-                  will be stored as kubernetes secrets. This value is assumed to be
-                  known to the catalog connector. Implements::credentials
-                type: string
+              secretRef:
+                description: Reference to a Secret resource holding credentials for
+                  this asset
+                properties:
+                  name:
+                    description: Name of the Secret resource (must exist in the same
+                      namespace)
+                    type: string
+                required:
+                - name
+                type: object
             required:
             - details
-            - resource
-            - vaultPluginPath
+            - metadata
+            - secretRef
             type: object
         type: object
     served: true

@@ -90,28 +90,28 @@ metadata:
 spec:
   secretRef: 
     name: paysim-csv
-  assetDetails:
+  details:
     dataFormat: csv
     connection:
-      type: s3
+      name: s3
       s3:
         endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
         bucket: "demo"
         objectKey: "PS_20174392719_1491204439457_log.csv"
-  assetMetadata:
+  metadata:
     geography: theshire
     tags:
-    - finance
-    componentsMetadata:
-      nameOrig: 
+      finance: true
+    columns:
+      - name: nameOrig
         tags:
-        - PII
-      oldbalanceOrg:
+          PII: true
+      - name: oldbalanceOrg
         tags:
-        - PII
-      newbalanceOrig:
+          PII: true
+      - name: newbalanceOrig
         tags:
-        - PII
+          PII: true
 EOF
 ```
 
