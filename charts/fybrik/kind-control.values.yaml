@@ -26,6 +26,7 @@ cluster:
 
 # Configuration when deploying to a coordinator cluster.
 coordinator:
+  catalogConnectorURL: "http://katalog-connector:80"
   vault:
     # vault service in local setup is exposed via nodeport
     address: http://control-control-plane:31752
@@ -33,7 +34,7 @@ coordinator:
   # Configures the Razee instance to be used by the coordinator manager in a multicluster setup
   razee:
     # URL for Razee local deployment
-    url: "http://razeedash-api-lb.razee.svc.cluster.local:8081"
+    url: "http://razeedash-api-lb.razee.svc.cluster.local:8081/graphql"
     # Usernane for Razee local deployment (dev only - fake login)
     user: "razee-dev@example.com"
     # Password for Razee local deployment (dev only - fake password)
