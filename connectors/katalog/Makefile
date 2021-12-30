@@ -9,7 +9,7 @@ include $(ROOT_DIR)/hack/make-rules/tools.mk
 
 all: docker-build docker-push
 
-docker-build: generate source-build
+docker-build: source-build
 	docker build . -t ${IMG}
 	rm -rf bin
 
@@ -18,7 +18,7 @@ source-build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o bin/katalog main.go
 
 .PHONY: run
-run: generate
+run:
 	go run main.go run
 
 .PHONY: test
