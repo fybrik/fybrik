@@ -5,7 +5,7 @@ When OPA is used for data governance, it is deployed as a stand-alone service.  
 
 ## Fybrik Default Policies
 
-Fybrik <strong><em>denys by default </em></strong>any request if no rule is triggered. This behavior can be changed to <strong><em>allow by default</em></strong> by creating the following rule and upload it to OPA using methods described in this page:
+Fybrik ***denys by default*** any request if no rule is triggered. This behavior can be changed to ***allow by default*** by creating the following rule and upload it to OPA using methods described in this page:
 
 ```yaml
 package dataapi.authz
