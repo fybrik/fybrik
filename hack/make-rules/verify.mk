@@ -38,43 +38,25 @@ CODE_MAINT += tidy
 tidy:
 	go mod tidy
 
-GOLINT_LINTERS ?= \
-	--disable-all \
-	--enable=deadcode \
-	--enable=dogsled \
-	--enable=dupl \
-	--enable=errcheck \
-	--enable=gocritic \
-	--enable=gofmt \
-	--enable=revive \
-	--enable=gosimple \
-	--enable=govet \
-	--enable=ineffassign \
-	--enable=misspell \
-	--enable=nakedret \
-	--enable=structcheck \
-	--enable=typecheck \
-	--enable=unconvert \
-	--enable=unused \
-	--enable=varcheck \
-	--enable=whitespace
-
-CODE_MAINT += revive
 .PHONY: revive
 revive: $(TOOLBIN)/revive
 	$(TOOLBIN)/revive -config lint-rules.toml -formatter stylish ./...
 
-CODE_MAINT += lint
+.PHONY: lint
 lint: $(TOOLBIN)/golangci-lint
-	$(TOOLBIN)/golangci-lint run ${GOLINT_LINTERS} --timeout=5m ./...
+	$(TOOLBIN)/golangci-lint run
 
 .PHONY: lint-fix
 lint-fix: $(TOOLBIN)/golangci-lint
-	$(TOOLBIN)/golangci-lint run --fix ${GOLINT_LINTERS} ./...
+	$(TOOLBIN)/golangci-lint run --fix
 
-.PHONY: lint-todo
-lint-todo: $(TOOLBIN)/golangci-lint
-	$(TOOLBIN)/golangci-lint run --enable=godox ${GOLINT_LINTERS} ./...
+.PHONY: lint-updated
+lint-updated: $(TOOLBIN)/golangci-lint
+	$(TOOLBIN)/golangci-lint run --new-from-rev=HEAD~
+
+.PHONY: lint-godox
+lint-godox: $(TOOLBIN)/golangci-lint
+	$(TOOLBIN)/golangci-lint run --enable=godox
 
 .PHONY: misspell
 misspell: $(TOOLBIN)/misspell
@@ -83,6 +65,10 @@ misspell: $(TOOLBIN)/misspell
 .PHONY: misspell-fix
 misspell-fix: $(TOOLBIN)/misspell
 	$(TOOLBIN)/misspell -w ./**
+
+.PHONY: goimports-fix
+goimports-fix-file: $(TOOLBIN)/goimports
+	$(TOOLBIN)/goimports -local fybrik.io/fybrik -w
 
 CODE_MAINT += protos-lint
 .PHONY: protos-lint
@@ -94,3 +80,6 @@ protos-lint: $(TOOLBIN)/protoc $(TOOLBIN)/protoc-gen-lint
 
 .PHONY: verify
 verify: $(CODE_MAINT)
+
+.PHONY: verify-lint
+verify-lint: $(CODE_MAINT) lint-updated

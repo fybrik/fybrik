@@ -86,6 +86,13 @@ $(TOOLBIN)/misspell:
 	GOBIN=$(ABSTOOLBIN) go install github.com/client9/misspell/cmd/misspell@v0.3.4
 	$(call post-install-check)
 
+INSTALL_TOOLS += $(TOOLBIN)/goimports
+$(TOOLBIN)/goimports:
+	GOBIN=$(ABSTOOLBIN) go install golang.org/x/tools/cmd/goimports@v0.1.8
+	$(call post-install-check)
+	echo $(ABSTOOLBIN)/goimports -local fybrik.io/fybrik -w '$$'1 > $(ABSTOOLBIN)/fixgoimports.sh
+	chmod 755 $(ABSTOOLBIN)/fixgoimports.sh
+
 $(TOOLBIN)/license_finder:
 	gem install license_finder -v 6.5.0 --bindir=$(ABSTOOLBIN)
 	$(call post-install-check)
