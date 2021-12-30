@@ -1188,6 +1188,7 @@ The API Key can also be retrieved from the UI following these two steps.</p>
 <p>In order to configure Fybrik to use the installed Razee on Kubernetes the values of the helm charts have to be adapted
 to the following:
 <div class="highlight"><pre><span></span><code>coordinator:
+  razee:
     # URL for Razee deployment
     url: &quot;https://your-razee-service:3333/graphql&quot;
     # Razee deployment with oauth API key authentication requires the apiKey parameter
