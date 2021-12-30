@@ -26,10 +26,10 @@ func GetSystemNamespace() string {
 			return ns
 		}
 	}
-	return "fybrik-system"
+	return DefaultControllerNamespace
 }
 
-// GetModulesRole returns the modules assigned authentification role for accessing dataset credentials
+// GetModulesRole returns the modules assigned authentication role for accessing dataset credentials
 func GetModulesRole() string {
 	return os.Getenv(VaultModulesRole)
 }
