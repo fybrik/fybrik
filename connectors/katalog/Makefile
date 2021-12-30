@@ -9,12 +9,6 @@ include $(ROOT_DIR)/hack/make-rules/tools.mk
 
 all: docker-build docker-push
 
-.PHONY: generate
-generate: $(TOOLBIN)/controller-gen
-	$(TOOLBIN)/controller-gen --version
-	$(TOOLBIN)/controller-gen object:headerFile=$(ROOT_DIR)/hack/boilerplate.go.txt,year=$(shell date +%Y) paths=./pkg/apis/katalog/v1alpha1/...
-	$(TOOLBIN)/controller-gen crd output:crd:artifacts:config=$(ROOT_DIR)/charts/fybrik-crd/templates/ paths=./pkg/apis/katalog/v1alpha1/...
-
 docker-build: generate source-build
 	docker build . -t ${IMG}
 	rm -rf bin

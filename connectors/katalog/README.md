@@ -10,7 +10,7 @@ See [documentation](https://fybrik.io/latest/reference/katalog/) in the website.
 
 ## Develop, Build and Deploy
 
-After making changes to the CRD you must run `make generate`.
+After making changes to the CRD you must run `make generate manifests` from the project's root directory.
 
 Build and push the connector image with `make all`.
 
