@@ -1,6 +1,4 @@
 ROOT_DIR := ../..
-TAXONOMY_FOLDER = charts/fybrik/files/taxonomy
-DATA_CATALOG_FILE_NAME = data_catalog.json
 DOCKER_NAME = katalog-connector
 
 include $(ROOT_DIR)/Makefile.env

@@ -6,8 +6,8 @@ package connector
 import "github.com/gin-gonic/gin"
 
 // NewRouter returns a new router.
-func NewRouter(controller *ConnectorController) *gin.Engine {
+func NewRouter(handler *Handler) *gin.Engine {
 	router := gin.Default()
-	router.POST("/getAssetInfo", controller.getAssetInfo)
+	router.POST("/getAssetInfo", handler.getAssetInfo)
 	return router
 }

@@ -17,17 +17,17 @@ import (
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type ConnectorController struct {
+type Handler struct {
 	client kclient.Client
 }
 
-func NewConnectorController(client kclient.Client) *ConnectorController {
-	return &ConnectorController{
+func NewHandler(client kclient.Client) *Handler {
+	return &Handler{
 		client: client,
 	}
 }
 
-func (r *ConnectorController) getAssetInfo(c *gin.Context) {
+func (r *Handler) getAssetInfo(c *gin.Context) {
 	// Parse request
 	var request datacatalog.GetAssetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {

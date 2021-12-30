@@ -67,7 +67,7 @@ func TestGetAssetInfo(t *testing.T) {
 	schema := runtime.NewScheme()
 	_ = v1alpha1.AddToScheme(schema)
 	client := fake.NewClientBuilder().WithScheme(schema).WithObjects(asset).Build()
-	controller := NewConnectorController(client)
+	handler := NewHandler(client)
 
 	// Create a fake request to Katalog connector
 	request := &datacatalog.GetAssetRequest{
@@ -82,7 +82,7 @@ func TestGetAssetInfo(t *testing.T) {
 	c.Request = httptest.NewRequest(http.MethodPost, "http://localhost/", bytes.NewBuffer(requestBytes))
 
 	// Call getAssetInfo with the fake request
-	controller.getAssetInfo(c)
+	handler.getAssetInfo(c)
 	t.Run("getAssetInfo", func(t *testing.T) {
 		assert.Equal(t, 200, w.Code)
 
@@ -92,6 +92,5 @@ func TestGetAssetInfo(t *testing.T) {
 		g.Expect(&response.Details).To(BeEquivalentTo(&asset.Spec.Details))
 		g.Expect(&response.ResourceMetadata).To(BeEquivalentTo(&asset.Spec.Metadata))
 		g.Expect(response.Credentials).To(BeEquivalentTo("/v1/kubernetes-secrets/creds-demo-asset?namespace=demo"))
-
 	})
 }

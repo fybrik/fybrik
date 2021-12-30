@@ -48,8 +48,8 @@ func RunCmd() *cobra.Command {
 				return errors.Wrap(err, "failed to create a Kubernetes client")
 			}
 
-			controller := connector.NewConnectorController(client)
-			router := connector.NewRouter(controller)
+			handler := connector.NewHandler(client)
+			router := connector.NewRouter(handler)
 			router.Use(gin.Logger())
 
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
