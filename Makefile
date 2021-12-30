@@ -2,6 +2,7 @@ include Makefile.env
 export DOCKER_TAGNAME ?= master
 export KUBE_NAMESPACE ?= fybrik-system
 
+.PHONY: all
 all: generate manifests verify
 
 .PHONY: license

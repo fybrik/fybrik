@@ -4,14 +4,13 @@ include $(ROOT_DIR)/Makefile.env
 .PHONY: all
 all: manager
 
+DOCKER_NAME ?= manager
+KUBE_NAMESPACE ?= fybrik-system
+CONTROLLER_NAMESPACE ?= ${KUBE_NAMESPACE}
+
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/hack/make-rules/verify.mk
-
-DOCKER_NAME ?= manager
-GO_OUTPUT_FILE = manager
-KUBE_NAMESPACE ?= fybrik-system
-CONTROLLER_NAMESPACE ?= ${KUBE_NAMESPACE}
 
 # Build manager binary
 manager:
