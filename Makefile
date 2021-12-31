@@ -2,6 +2,9 @@ include Makefile.env
 export DOCKER_TAGNAME ?= master
 export KUBE_NAMESPACE ?= fybrik-system
 
+.PHONY: all
+all: generate manifests verify
+
 .PHONY: license
 license: $(TOOLBIN)/license_finder
 	$(call license_go,.)
@@ -11,6 +14,17 @@ generate: $(TOOLBIN)/controller-gen $(TOOLBIN)/json-schema-generator
 	$(TOOLBIN)/json-schema-generator -r ./pkg/model/... -o charts/fybrik/files/taxonomy/
 	$(TOOLBIN)/controller-gen object:headerFile=./hack/boilerplate.go.txt,year=$(shell date +%Y) paths="./..."
 	$(MAKE) -C site generate
+
+.PHONY: manifests
+manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
+	$(TOOLBIN)/controller-gen --version
+	$(TOOLBIN)/controller-gen crd output:crd:artifacts:config=charts/fybrik-crd/templates/ paths=./manager/apis/...
+	$(TOOLBIN)/controller-gen webhook paths=./manager/apis/... output:stdout | \
+		$(TOOLBIN)/yq eval '.metadata.annotations."cert-manager.io/inject-ca-from" |= "{{ .Release.Namespace }}/serving-cert"' - | \
+		$(TOOLBIN)/yq eval '.metadata.annotations."certmanager.k8s.io/inject-ca-from" |= "{{ .Release.Namespace }}/serving-cert"' - | \
+		$(TOOLBIN)/yq eval '(.metadata.name | select(. == "mutating-webhook-configuration")) = "{{ .Release.Namespace }}-mutating-webhook"' - | \
+		$(TOOLBIN)/yq eval '(.metadata.name | select(. == "validating-webhook-configuration")) = "{{ .Release.Namespace }}-validating-webhook"' - | \
+		$(TOOLBIN)/yq eval '(.webhooks.[].clientConfig.service.namespace) = "{{ .Release.Namespace }}"' - > charts/fybrik/files/webhook-configs.yaml
 
 .PHONY: docker-mirror-read
 docker-mirror-read:
@@ -25,13 +39,25 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 	$(TOOLBIN)/helm install fybrik charts/fybrik --values $(VALUES_FILE) \
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 
+pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
+	mkdir -p /tmp/taxonomy
+	mkdir -p /tmp/adminconfig
+	cp charts/fybrik/files/taxonomy/*.json /tmp/taxonomy/
+	cp charts/fybrik/files/adminconfig/*.rego /tmp/adminconfig/
+	mkdir -p manager/testdata/unittests/basetaxonomy
+	mkdir -p manager/testdata/unittests/sampletaxonomy
+	cp charts/fybrik/files/taxonomy/*.json manager/testdata/unittests/basetaxonomy
+	cp charts/fybrik/files/taxonomy/*.json manager/testdata/unittests/sampletaxonomy
+	go run main.go taxonomy compile -o manager/testdata/unittests/sampletaxonomy/taxonomy.json \
+  	-b charts/fybrik/files/taxonomy/taxonomy.json \
+		$(shell find samples/taxonomy/example -type f -name '*.yaml')
+	cp manager/testdata/unittests/sampletaxonomy/taxonomy.json /tmp/taxonomy/taxonomy.json
+
 .PHONY: test
 test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
-test:
-	$(MAKE) -C manager pre-test
+test: pre-test
 	go test -v ./...
-	# The tests for connectors/egeria are dropped because there are none
 
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
@@ -64,18 +90,6 @@ run-notebook-tests:
 	$(MAKE) deploy
 	$(MAKE) configure-vault
 	$(MAKE) -C manager run-notebook-tests
-
-.PHONY: run-deploy-tests
-run-deploy-tests:
-	$(MAKE) kind
-	$(MAKE) cluster-prepare
-	kubectl config set-context --current --namespace=$(KUBE_NAMESPACE)
-	$(MAKE) -C third_party/opa deploy
-	kubectl apply -f ./manager/config/prod/deployment_configmap.yaml
-	$(MAKE) -C connectors deploy
-	kubectl get pod --all-namespaces
-	kubectl wait --for=condition=ready pod --all-namespaces --all --timeout=120s
-	$(MAKE) configure-vault
 
 .PHONY: cluster-prepare
 cluster-prepare:

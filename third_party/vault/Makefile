@@ -5,6 +5,8 @@ include $(ROOT_DIR)/hack/make-rules/tools.mk
 KUBE_NAMESPACE ?= fybrik-system
 WITH_OPENSHIFT ?= false
 
+VAULT_VALUES_FILE ?= $(ROOT_DIR)/charts/vault/env/dev/plugin-secrets-kubernetes-reader-values.yaml
+
 .PHONY: deploy
 deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 	@echo "Installing vault ..."
@@ -15,7 +17,7 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 		--set "vault.global.openshift=$(WITH_OPENSHIFT)" \
                 --set "vault.injector.enabled=false" \
                 --set "vault.server.dev.enabled=true" \
-		--values $(ROOT_DIR)/charts/vault/env/dev/plugin-secrets-kubernetes-reader-values.yaml \
+		--values $(VAULT_VALUES_FILE) \
 		--namespace $(KUBE_NAMESPACE) \
 		--wait --timeout 120s
 

@@ -291,7 +291,7 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 
 // setReadModulesEndpoints populates the ReadEndpointsMap map in the status of the fybrikapplication
 func setReadModulesEndpoints(applicationContext *api.FybrikApplication, flows []api.Flow) {
-	readEndpointMap := make(map[string]api.EndpointSpec)
+	readEndpointMap := make(map[string]taxonomy.Connection)
 	for _, flow := range flows {
 		if flow.FlowType == api.ReadFlow {
 			for _, subflow := range flow.SubFlows {
@@ -300,7 +300,7 @@ func setReadModulesEndpoints(applicationContext *api.FybrikApplication, flows []
 						// Check the last step in the sequential flow that is for read (this will expose the reading api)
 						lastStep := sequentialSteps[len(sequentialSteps)-1]
 						if lastStep.Parameters.API != nil {
-							readEndpointMap[flow.AssetID] = lastStep.Parameters.API.Endpoint
+							readEndpointMap[flow.AssetID] = lastStep.Parameters.API.Connection
 						}
 					}
 				}
@@ -428,6 +428,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 	}
 	response.DeepCopyInto(req.DataDetails)
 	configEvaluatorInput := &adminconfig.EvaluatorInput{}
+	configEvaluatorInput.Workload.UUID = utils.GetFybrikApplicationUUID(input)
 	configEvaluatorInput.Workload.Properties = input.Spec.AppInfo.DeepCopy()
 	configEvaluatorInput.Workload.Cluster = workloadCluster
 	configEvaluatorInput.Request = CreateDataRequest(input, *req.Context, &req.DataDetails.ResourceMetadata)
@@ -493,18 +494,19 @@ func (r *FybrikApplicationReconciler) GetWorkloadCluster(application *api.Fybrik
 // NewFybrikApplicationReconciler creates a new reconciler for FybrikApplications
 func NewFybrikApplicationReconciler(mgr ctrl.Manager, name string,
 	policyManager pmclient.PolicyManager, catalog dcclient.DataCatalog, cm multicluster.ClusterLister,
-	provision storage.ProvisionInterface, configEvaluator adminconfig.EvaluatorInterface) *FybrikApplicationReconciler {
+	provision storage.ProvisionInterface) *FybrikApplicationReconciler {
+	log := logging.LogInit(logging.CONTROLLER, name)
 	return &FybrikApplicationReconciler{
 		Client:            mgr.GetClient(),
 		Name:              name,
-		Log:               logging.LogInit(logging.CONTROLLER, name),
+		Log:               log,
 		Scheme:            mgr.GetScheme(),
 		PolicyManager:     policyManager,
 		ResourceInterface: NewPlotterInterface(mgr.GetClient()),
 		ClusterManager:    cm,
 		Provision:         provision,
 		DataCatalog:       catalog,
-		ConfigEvaluator:   configEvaluator,
+		ConfigEvaluator:   adminconfig.NewRegoPolicyEvaluator(log),
 	}
 }
 

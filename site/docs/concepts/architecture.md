@@ -5,7 +5,7 @@ and securing the use of data across an organization. The figure below showcases 
 current architecture of the Fybrik platform, running on top of Kubernetes. 
 The storage systems shown in the lower half of the figure are merely an example.
 
-The core parts of Fybrik are based on [Kubernetes operators](https://www.openshift.com/learn/topics/operators) and custom resource definitions in order to define its work items and reconcile the state of them.
+The core parts of Fybrik are based on Kubernetes controllers and Custom Resource Definitions (CRDs) in order to define its work items and reconcile the state of them.
 
 The primary interaction object for a data user is the `FybrikApplication` CRD where a user defines which data should be used for which purpose. The following chart and description describe the architecture and components of Fybrik relative to when they are used.
 
@@ -18,7 +18,7 @@ Fybrik connects to external services to receive data governance decisions, metad
 
 Once a developer submits a `FybrikApplication` CRD to Kubernetes, the FybrikApplicationController will make sure that all the specs are fulfilled and will make sure that the data is read/written/copied/deleted according to the data governance policies. The `FybrikApplication` holds metadata about the application such as the data assets required by the application, the processing purpose and the method of access the user wishes (protocol e.g. S3 or Arrow flight). 
 It uses this information to check with the data governance policy manager (4) if the data flow requested is allowed
-and whether restrictive policies such as masking or hashing have to be applied. It compiles plotters based on on the governance decisions received via the data governance policy connector and chooses the modules (5) which are best fit for the requirements that the user specified regarding the access protocol and availability, and based on the [config policies](./config-policies.md) defined.
+and whether restrictive policies such as masking or hashing have to be applied. It compiles plotters based on the governance decisions received via the data governance policy connector and chooses the modules (5) which are best fit for the requirements that the user specified regarding the access protocol and availability, and based on the [config policies](./config-policies.md) defined.
 As data assets may reside in different clusters/clouds a `Blueprint` CRD is created for each cluster, containing the information regarding the services to be deployed or configured in the given cluster.
 
 Depending on the setup the `PlotterController` will use various methods to distribute the blueprints. In a multi cluster setup the default distribution implementation is using [Razee](http://razee.io) to control remote blueprints, but several multi-cloud tools

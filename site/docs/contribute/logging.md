@@ -4,7 +4,7 @@ This page describes the information that your code should provide in all log ent
 
 # Background
 * Log entries should be written to stdout and stderr.
-* Fybrik does not collect nor aggregate logs.  This may be done by external tools. (ex: logstash, fluentd, etc)
+* Fybrik does not collect nor aggregate logs.  This may be done by external tools. (ex: logstash, fluentd, etc.)
 * A globally unique identifier for each FybrikApplication instance is passed to all control plane and data plane components to be included in log entries.  This enables corrrelation of log entries across different logs and clusters for the specific instance, even if the name of the FybrikApplication is reused over time.
 
 # Log Entry Contents

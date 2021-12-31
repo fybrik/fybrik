@@ -144,7 +144,7 @@ func Intersection(set1 []string, set2 []string) []string {
 	return res
 }
 
-const FybrikAppUUID = "FybrikApplicationUUID"
+const FybrikAppUUID = "app.fybrik.io/app-uuid"
 
 // GetFybrikApplicationUUID returns a globally unique ID for the FybrikApplication instance.
 // It must be unique over time and across clusters, even after the instance has been deleted, because this ID will be used for logging purposes.

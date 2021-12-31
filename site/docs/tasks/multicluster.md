@@ -1,7 +1,7 @@
 # Multicluster setup
 
 Fybrik is dynamic in its multi cluster capabilities in that it has abstractions to support multiple
-different cross-cluster orchestration mechanisms. Currently only one multi cluster orchestration mechanism is implemented
+different cross-cluster orchestration mechanisms. Currently, only one multi cluster orchestration mechanism is implemented
 and is using [Razee](http://razee.io) for the orchestration.
 
 ## Multicluster operation with Razee
@@ -32,7 +32,7 @@ Please follow the instructions in the Razee documentation to install [RazeeDash]
 the [cluster subscription agent](https://github.com/razee-io/Razee/blob/master/README.md#automating-the-deployment-of-kubernetes-resources-across-clusters-and-environments).
 At the moment Razee supports GitHub, GitHub Enterprise and BitBucket for the OAUTH Authentication of this installation.
 
-Please be aware that the RazeeDash API needs to be reachable from all clusters. Thus there may be the need for routes, ingresses or node ports
+Please be aware that the RazeeDash API needs to be reachable from all clusters. Thus, there may be the need for routes, ingresses or node ports
  in order to expose it to other networks and clusters.
 
 <!-- TODO maybe add a description on how to install it including openshift routes etc -->
@@ -47,6 +47,7 @@ In order to configure Fybrik to use the installed Razee on Kubernetes the values
 to the following:
 ```
 coordinator:
+  razee:
     # URL for Razee deployment
     url: "https://your-razee-service:3333/graphql"
     # Razee deployment with oauth API key authentication requires the apiKey parameter

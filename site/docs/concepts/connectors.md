@@ -34,7 +34,7 @@ The default installation of Fybrik installs [Katalog](../reference/katalog.md), 
 Data governance policies are defined externally in the data governance manager of choice. 
 
 Enforcing data governance policies requires a Policy Decision Point (PDP) that dictates what enforcement actions need to take place.
-Fybrik supports a wide and extendible set of enforcement actions to perform on data read, copy, (future) write or delete. These include transformation of data, verification of the data, and various restrictions on the external activity of an application that can access the data.
+Fybrik supports a wide and extendable set of enforcement actions to perform on data read, copy, (future) write or delete. These include transformation of data, verification of the data, and various restrictions on the external activity of an application that can access the data.
 
 A PDP returns a list of enforcement actions given a set of policies and specific context about the application and the data it uses. 
 Fybrik includes a PDP that is powered by [Open Policy Agent](https://www.openpolicyagent.org/) (OPA). However, the PDP can also use external policy managers via connectors, to cover some or even all policy types. 
