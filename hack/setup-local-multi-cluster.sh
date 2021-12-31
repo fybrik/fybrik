@@ -24,7 +24,7 @@ export VALUES_FILE=charts/fybrik/kind-kind.values.yaml
 kubectl config use-context kind-kind
 make -C third_party/cert-manager deploy
 make -C third_party/datashim deploy
-make cluster-prepare-wait
+make -C third_party/datashim deploy-wait
 make deploy
 
 # Switch to control cluster after setup
