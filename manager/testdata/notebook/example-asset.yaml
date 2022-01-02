@@ -14,6 +14,7 @@ spec:
         bucket: bucket1
         objectKey: data.csv
   metadata:
+    name: fybrik-notebook-sample/data-csv
     owner: Alice
     geography: theshire
     tags:

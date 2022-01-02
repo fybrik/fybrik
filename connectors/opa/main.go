@@ -47,7 +47,7 @@ func main() {
 	opaServerURL := getEnv("OPA_SERVER_URL")
 
 	connectionTimeout := time.Duration(timeOut) * time.Second
-	dataCatalog, err := clients.NewGrpcDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout)
+	dataCatalog, err := clients.NewDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout)
 	if err != nil {
 		log.Println("Error during creation of data catalog connection!")
 		return
