@@ -5,25 +5,27 @@ metadata:
 spec:
   secretRef:
     name: data-csv-creds
-  assetDetails:
+  details:
     dataFormat: csv
     connection:
-      type: s3
+      name: s3
       s3:
         endpoint: "http://s3.fybrik-system:9090"
         bucket: bucket1
         objectKey: data.csv
-  assetMetadata:
+  metadata:
+    name: fybrik-notebook-sample/data-csv
+    owner: Alice
     geography: theshire
     tags:
-      - finance
-    componentsMetadata:
-      nameOrig:
+      finance: true
+    columns:
+      - name: nameOrig
         tags:
-          - PII
-      oldbalanceOrg:
+          PII: true
+      - name: oldbalanceOrg
         tags:
-          - sensitive
-      newbalanceOrig:
+          sensitive: true
+      - name: newbalanceOrig
         tags:
-          - sensitive
+          sensitive: true

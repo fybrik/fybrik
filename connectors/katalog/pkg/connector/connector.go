@@ -1,38 +1,58 @@
 // Copyright 2021 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
+
 package connector
 
 import (
-	"net"
+	"context"
+	"fmt"
+	"net/http"
+	"strings"
 
-	connectors "fybrik.io/fybrik/pkg/connectors/protobuf"
-	"github.com/pkg/errors"
-	"google.golang.org/grpc"
-	"k8s.io/apimachinery/pkg/runtime"
+	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
+	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/vault"
+	"github.com/gin-gonic/gin"
+	"k8s.io/apimachinery/pkg/types"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
-	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-func Start(address string) error {
-	scheme := runtime.NewScheme()
-	_ = AddToScheme(scheme)
+type Handler struct {
+	client kclient.Client
+}
 
-	client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: scheme})
-	if err != nil {
-		return errors.Wrap(err, "failed to create client")
+func NewHandler(client kclient.Client) *Handler {
+	return &Handler{
+		client: client,
+	}
+}
+
+func (r *Handler) getAssetInfo(c *gin.Context) {
+	// Parse request
+	var request datacatalog.GetAssetRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
-	listener, err := net.Listen("tcp", address)
-	if err != nil {
-		return errors.Wrap(err, "failed to create a listerning socket")
+	splittedID := strings.SplitN(string(request.AssetID), "/", 2)
+	if len(splittedID) != 2 {
+		errorMessage := fmt.Sprintf("request has an invalid asset ID %s (must be in namespace/name format)", request.AssetID)
+		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+	}
+	namespace, name := splittedID[0], splittedID[1]
+
+	asset := &v1alpha1.Asset{}
+	if err := r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
-	server := grpc.NewServer()
-	connectors.RegisterDataCatalogServiceServer(server, &DataCatalogService{client: client})
-
-	if err := server.Serve(listener); err != nil {
-		return errors.Wrap(err, "connector server errored")
+	response := datacatalog.GetAssetResponse{
+		ResourceMetadata: asset.Spec.Metadata,
+		Details:          asset.Spec.Details,
+		Credentials:      vault.PathForReadingKubeSecret(namespace, asset.Spec.SecretRef.Name),
 	}
 
-	return nil
+	c.JSON(http.StatusOK, &response)
 }

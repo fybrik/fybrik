@@ -22,9 +22,8 @@ type Action struct {
 }
 
 func (o Action) MarshalJSON() ([]byte, error) {
-	toSerialize := map[string]interface{}{}
-	if true {
-		toSerialize["name"] = o.Name
+	toSerialize := map[string]interface{}{
+		"name": o.Name,
 	}
 
 	for key, value := range o.AdditionalProperties.Items {
@@ -35,11 +34,14 @@ func (o Action) MarshalJSON() ([]byte, error) {
 }
 
 func (o *Action) UnmarshalJSON(bytes []byte) (err error) {
-	varConnection := make(map[string]interface{})
-	if err = json.Unmarshal(bytes, &varConnection); err == nil {
-		o.Name = ActionName(varConnection["name"].(string))
-		delete(varConnection, "name")
-		o.AdditionalProperties = serde.Properties{Items: varConnection}
+	items := make(map[string]interface{})
+	if err = json.Unmarshal(bytes, &items); err == nil {
+		o.Name = ActionName(items["name"].(string))
+		delete(items, "name")
+		if len(items) == 0 {
+			items = nil
+		}
+		o.AdditionalProperties = serde.Properties{Items: items}
 	}
 	return err
 }
