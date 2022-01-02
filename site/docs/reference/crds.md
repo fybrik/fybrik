@@ -67,14 +67,14 @@ Blueprint is the Schema for the blueprints API
         <td><b><a href="#blueprintspec">spec</a></b></td>
         <td>object</td>
         <td>
-          BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path that run in a particular cluster.  In a single cluster environment there is one blueprint.  In a multi-cluster environment there is one Blueprint per cluster per workload (FybrikApplication).<br/>
+          BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path that run in a particular cluster. In a single cluster environment there is one blueprint per workload (FybrikApplication). In a multi-cluster environment there is one Blueprint per cluster per workload (FybrikApplication).<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#blueprintstatus">status</a></b></td>
         <td>object</td>
         <td>
-          BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators forthe Kubernetes resources owned by the Blueprint for cleanup and status monitoring<br/>
+          BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -86,7 +86,7 @@ Blueprint is the Schema for the blueprints API
 
 
 
-BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path that run in a particular cluster.  In a single cluster environment there is one blueprint.  In a multi-cluster environment there is one Blueprint per cluster per workload (FybrikApplication).
+BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path that run in a particular cluster. In a single cluster environment there is one blueprint per workload (FybrikApplication). In a multi-cluster environment there is one Blueprint per cluster per workload (FybrikApplication).
 
 <table>
     <thead>
@@ -108,7 +108,7 @@ BlueprintSpec defines the desired state of Blueprint, which defines the componen
         <td><b><a href="#blueprintspecmoduleskey">modules</a></b></td>
         <td>map[string]object</td>
         <td>
-          Modules is a map which contains modules that indicate the data path components that run in this cluster The map key is InstanceName which is the unique name for the deployed instance related to this workload<br/>
+          Modules is a map which contains modules that indicate the data path components that run in this cluster The map key is moduleInstanceName which is the unique name for the deployed instance related to this workload<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -163,7 +163,7 @@ BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the in
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          Name of the fybrikmodule on which this is based<br/>
+          Name of the FybrikModule on which this is based<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -1021,7 +1021,7 @@ Chart contains the location of the helm chart with info detailing how to deploy
 
 
 
-BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators forthe Kubernetes resources owned by the Blueprint for cleanup and status monitoring
+BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring
 
 <table>
     <thead>
@@ -1036,7 +1036,7 @@ BlueprintStatus defines the observed state of Blueprint This includes readiness,
         <td><b><a href="#blueprintstatusmoduleskey">modules</a></b></td>
         <td>map[string]object</td>
         <td>
-          ModulesState is a map which holds the status of each module its key is the instance name which is the unique name for the deployed instance related to this workload<br/>
+          ModulesState is a map which holds the status of each module its key is the moduleInstanceName which is the unique name for the deployed instance related to this workload<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -3550,7 +3550,7 @@ MetaBlueprint defines blueprint metadata (name, namespace) and status
         <td><b><a href="#plotterstatusblueprintskeystatus">status</a></b></td>
         <td>object</td>
         <td>
-          BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators forthe Kubernetes resources owned by the Blueprint for cleanup and status monitoring<br/>
+          BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3562,7 +3562,7 @@ MetaBlueprint defines blueprint metadata (name, namespace) and status
 
 
 
-BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators forthe Kubernetes resources owned by the Blueprint for cleanup and status monitoring
+BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring
 
 <table>
     <thead>
@@ -3577,7 +3577,7 @@ BlueprintStatus defines the observed state of Blueprint This includes readiness,
         <td><b><a href="#plotterstatusblueprintskeystatusmoduleskey">modules</a></b></td>
         <td>map[string]object</td>
         <td>
-          ModulesState is a map which holds the status of each module its key is the instance name which is the unique name for the deployed instance related to this workload<br/>
+          ModulesState is a map which holds the status of each module its key is the moduleInstanceName which is the unique name for the deployed instance related to this workload<br/>
         </td>
         <td>false</td>
       </tr><tr>
