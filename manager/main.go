@@ -260,14 +260,7 @@ func newPolicyManager() (pmclient.PolicyManager, error) {
 	mainPolicyManagerURL := os.Getenv("MAIN_POLICY_MANAGER_CONNECTOR_URL")
 	setupLog.Info().Str("Name", mainPolicyManagerName).Str("URL", mainPolicyManagerURL).Str("Timeout", connectionTimeout.String()).Msg("setting main policy manager client")
 
-	var policyManager pmclient.PolicyManager
-	if strings.HasPrefix(mainPolicyManagerURL, "http") {
-		policyManager, err = pmclient.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
-	} else {
-		policyManager, err = pmclient.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
-	}
-
-	return policyManager, err
+	return pmclient.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
 }
 
 // newClusterManager decides based on the environment variables that are set which
