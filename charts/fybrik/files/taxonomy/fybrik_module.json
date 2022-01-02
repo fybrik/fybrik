@@ -39,7 +39,7 @@
                             "actions": {
                                 "type": "array",
                                 "items": {
-                                    "$ref": "taxonomy.json#/definitions/Action"
+                                    "$ref": "taxonomy.json#/definitions/ActionName"
                                 }
                             }
                         },

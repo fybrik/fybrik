@@ -52,13 +52,14 @@ spec:
                       description: Actions are the data transformations that the module
                         supports
                       items:
+                        description: Action is the data transformation that the module
+                          supports
                         properties:
                           name:
                             type: string
                         required:
                         - name
                         type: object
-                        x-kubernetes-preserve-unknown-fields: true
                       type: array
                     api:
                       description: API indicates to the application how to access

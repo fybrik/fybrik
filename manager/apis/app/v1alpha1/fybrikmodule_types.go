@@ -74,6 +74,12 @@ type Plugin struct {
 	DataFormat string `json:"dataFormat"`
 }
 
+// Action is the data transformation that the module supports
+type Action struct {
+	// +required
+	Name taxonomy.ActionName `json:"name"`
+}
+
 // Capability declares what this module knows how to do and the types of data it knows how to handle
 type ModuleCapability struct {
 
@@ -99,7 +105,7 @@ type ModuleCapability struct {
 
 	// Actions are the data transformations that the module supports
 	// +optional
-	Actions []taxonomy.Action `json:"actions,omitempty"`
+	Actions []Action `json:"actions,omitempty"`
 
 	// Plugins enable the module to add libraries to perform actions rather than implementing them by itself
 	// +optional
