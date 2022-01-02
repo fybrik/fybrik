@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.4">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.edf004c2.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.bb3983ee.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
@@ -1443,50 +1443,29 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#assetspecassetdetails" class="md-nav__link">
-    Asset.spec.assetDetails
+  <a href="#assetspecdetails" class="md-nav__link">
+    Asset.spec.details
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#assetspecassetdetailsconnection" class="md-nav__link">
-    Asset.spec.assetDetails.connection
+  <a href="#assetspecdetailsconnection" class="md-nav__link">
+    Asset.spec.details.connection
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#assetspecassetdetailsconnectiondb2" class="md-nav__link">
-    Asset.spec.assetDetails.connection.db2
+  <a href="#assetspecmetadata" class="md-nav__link">
+    Asset.spec.metadata
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#assetspecassetdetailsconnectionkafka" class="md-nav__link">
-    Asset.spec.assetDetails.connection.kafka
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#assetspecassetdetailsconnections3" class="md-nav__link">
-    Asset.spec.assetDetails.connection.s3
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#assetspecassetmetadata" class="md-nav__link">
-    Asset.spec.assetMetadata
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#assetspecassetmetadatacomponentsmetadatakey" class="md-nav__link">
-    Asset.spec.assetMetadata.componentsMetadata[key]
+  <a href="#assetspecmetadatacolumnsindex" class="md-nav__link">
+    Asset.spec.metadata.columns[index]
   </a>
   
 </li>
@@ -2570,50 +2549,29 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#assetspecassetdetails" class="md-nav__link">
-    Asset.spec.assetDetails
+  <a href="#assetspecdetails" class="md-nav__link">
+    Asset.spec.details
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#assetspecassetdetailsconnection" class="md-nav__link">
-    Asset.spec.assetDetails.connection
+  <a href="#assetspecdetailsconnection" class="md-nav__link">
+    Asset.spec.details.connection
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#assetspecassetdetailsconnectiondb2" class="md-nav__link">
-    Asset.spec.assetDetails.connection.db2
+  <a href="#assetspecmetadata" class="md-nav__link">
+    Asset.spec.metadata
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#assetspecassetdetailsconnectionkafka" class="md-nav__link">
-    Asset.spec.assetDetails.connection.kafka
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#assetspecassetdetailsconnections3" class="md-nav__link">
-    Asset.spec.assetDetails.connection.s3
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#assetspecassetmetadata" class="md-nav__link">
-    Asset.spec.assetMetadata
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#assetspecassetmetadatacomponentsmetadatakey" class="md-nav__link">
-    Asset.spec.assetMetadata.componentsMetadata[key]
+  <a href="#assetspecmetadatacolumnsindex" class="md-nav__link">
+    Asset.spec.metadata.columns[index]
   </a>
   
 </li>
@@ -6029,6 +5987,7 @@
 </ul>
 <h3 id="asset">Asset</h3>
 <p><sup><sup><a href="#katalogfybrikiov1alpha1">↩ Parent</a></sup></sup></p>
+<p>Asset defines an asset in the catalog</p>
 <table>
     <thead>
         <tr>
@@ -6061,7 +6020,7 @@
         <td>
           <br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr></tbody>
 </table>
 
@@ -6077,17 +6036,17 @@
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#assetspecassetdetails">assetDetails</a></b></td>
+        <td><b><a href="#assetspecdetails">details</a></b></td>
         <td>object</td>
         <td>
           Asset details<br/>
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b><a href="#assetspecassetmetadata">assetMetadata</a></b></td>
+        <td><b><a href="#assetspecmetadata">metadata</a></b></td>
         <td>object</td>
         <td>
-          <br/>
+          Asset metadata<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -6100,7 +6059,7 @@
       </tr></tbody>
 </table>
 
-<h4 id="assetspecassetdetails">Asset.spec.assetDetails</h4>
+<h4 id="assetspecdetails">Asset.spec.details</h4>
 <p><sup><sup><a href="#assetspec">↩ Parent</a></sup></sup></p>
 <p>Asset details</p>
 <table>
@@ -6116,11 +6075,11 @@
         <td><b>dataFormat</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Data format<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#assetspecassetdetailsconnection">connection</a></b></td>
+        <td><b><a href="#assetspecdetailsconnection">connection</a></b></td>
         <td>object</td>
         <td>
           Connection information<br/>
@@ -6129,8 +6088,8 @@
       </tr></tbody>
 </table>
 
-<h4 id="assetspecassetdetailsconnection">Asset.spec.assetDetails.connection</h4>
-<p><sup><sup><a href="#assetspecassetdetails">↩ Parent</a></sup></sup></p>
+<h4 id="assetspecdetailsconnection">Asset.spec.details.connection</h4>
+<p><sup><sup><a href="#assetspecdetails">↩ Parent</a></sup></sup></p>
 <p>Connection information</p>
 <table>
     <thead>
@@ -6142,199 +6101,7 @@
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#assetspecassetdetailsconnectiondb2">db2</a></b></td>
-        <td>object</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#assetspecassetdetailsconnectionkafka">kafka</a></b></td>
-        <td>object</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#assetspecassetdetailsconnections3">s3</a></b></td>
-        <td>object</td>
-        <td>
-          Connection information for S3 compatible object store<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>type</b></td>
-        <td>enum</td>
-        <td>
-          <br/>
-          <br/>
-            <i>Enum</i>: s3, db2, kafka<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-<h4 id="assetspecassetdetailsconnectiondb2">Asset.spec.assetDetails.connection.db2</h4>
-<p><sup><sup><a href="#assetspecassetdetailsconnection">↩ Parent</a></sup></sup></p>
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>database</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>port</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>ssl</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>table</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>url</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-<h4 id="assetspecassetdetailsconnectionkafka">Asset.spec.assetDetails.connection.kafka</h4>
-<p><sup><sup><a href="#assetspecassetdetailsconnection">↩ Parent</a></sup></sup></p>
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>bootstrap_servers</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>key_deserializer</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>sasl_mechanism</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>schema_registry</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>security_protocol</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>ssl_truststore</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>ssl_truststore_password</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>topic_name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>value_deserializer</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-<h4 id="assetspecassetdetailsconnections3">Asset.spec.assetDetails.connection.s3</h4>
-<p><sup><sup><a href="#assetspecassetdetailsconnection">↩ Parent</a></sup></sup></p>
-<p>Connection information for S3 compatible object store</p>
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>region</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>bucket</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>endpoint</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>objectKey</b></td>
+        <td><b>name</b></td>
         <td>string</td>
         <td>
           <br/>
@@ -6343,8 +6110,9 @@
       </tr></tbody>
 </table>
 
-<h4 id="assetspecassetmetadata">Asset.spec.assetMetadata</h4>
+<h4 id="assetspecmetadata">Asset.spec.metadata</h4>
 <p><sup><sup><a href="#assetspec">↩ Parent</a></sup></sup></p>
+<p>Asset metadata</p>
 <table>
     <thead>
         <tr>
@@ -6355,45 +6123,46 @@
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#assetspecassetmetadatacomponentsmetadatakey">componentsMetadata</a></b></td>
-        <td>map[string]object</td>
+        <td><b><a href="#assetspecmetadatacolumnsindex">columns</a></b></td>
+        <td>[]object</td>
         <td>
-          metadata for each component in asset (e.g., column)<br/>
+          Columns associated with the asset<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>geography</b></td>
         <td>string</td>
         <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>namedMetadata</b></td>
-        <td>map[string]string</td>
-        <td>
-          <br/>
+          Geography of the resource<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>owner</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Owner of the resource<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>tags</b></td>
-        <td>[]string</td>
+        <td>object</td>
         <td>
           Tags associated with the asset<br/>
         </td>
         <td>false</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the resource<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 
-<h4 id="assetspecassetmetadatacomponentsmetadatakey">Asset.spec.assetMetadata.componentsMetadata[key]</h4>
-<p><sup><sup><a href="#assetspecassetmetadata">↩ Parent</a></sup></sup></p>
+<h4 id="assetspecmetadatacolumnsindex">Asset.spec.metadata.columns[index]</h4>
+<p><sup><sup><a href="#assetspecmetadata">↩ Parent</a></sup></sup></p>
+<p>ResourceColumn represents a column in a tabular resource</p>
 <table>
     <thead>
         <tr>
@@ -6404,26 +6173,19 @@
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>componentType</b></td>
+        <td><b>tags</b></td>
+        <td>object</td>
+        <td>
+          Tags associated with the column<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the column<br/>
         </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>namedMetadata</b></td>
-        <td>map[string]string</td>
-        <td>
-          Named terms, that exist in Catalog toxonomy and the values for these terms for columns we will have "SchemaDetails" key, that will include technical schema details for this column TODO: Consider create special field for schema outside of metadata<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>tags</b></td>
-        <td>[]string</td>
-        <td>
-          Tags - can be any free text added to a component (no taxonomy)<br/>
-        </td>
-        <td>false</td>
+        <td>true</td>
       </tr></tbody>
 </table>
 
@@ -6530,10 +6292,10 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.0bbba5b5.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.361d90f1.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.e1a181d9.min.js"></script>
+      <script src="../../assets/javascripts/bundle.289a2a4b.min.js"></script>
       
     
   </body>
