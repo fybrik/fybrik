@@ -33,7 +33,7 @@ func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *policymanager
 	log.Print("catalogMetadata.ResourceMetadata after MarshalIndent in updatePolicyManagerRequestWithResourceInfo:" + string(responseBytes))
 	// just printing - end
 
-	err := json.Unmarshal(responseBytes, &in.Resource)
+	err := json.Unmarshal(responseBytes, &in.Resource.Metadata)
 	if err != nil {
 		return nil, fmt.Errorf("error UnMarshalling in updatePolicyManagerRequestWithResourceInfo: %v", err)
 	}
