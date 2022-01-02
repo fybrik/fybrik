@@ -9,7 +9,6 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/apache/arrow/go/arrow v0.0.0-20210907151234-f40856a768f2
 	github.com/aws/aws-sdk-go v1.40.37
-	github.com/buger/jsonparser v1.1.1
 	github.com/containerd/containerd v1.4.12 // indirect
 	github.com/distribution/distribution v2.7.1+incompatible
 	github.com/fatih/color v1.9.0 // indirect
@@ -41,7 +40,7 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.0
-	github.com/tidwall/pretty v1.0.1
+	github.com/tidwall/pretty v1.0.1 // indirect
 	github.com/vdemeester/k8s-pkg-credentialprovider v1.22.4
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
@@ -49,7 +48,6 @@ require (
 	google.golang.org/grpc v1.41.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
-	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.6.2
 	k8s.io/api v0.22.4
 	k8s.io/apiextensions-apiserver v0.21.3
