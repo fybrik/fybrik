@@ -1,5 +1,10 @@
 ROOT_DIR := ../..
 include $(ROOT_DIR)/Makefile.env
+export HELM_EXPERIMENTAL_OCI=1
+
+CHART_NAME=mychart
+VERSION=0.7.0
+CHART_FILE_NAME=$(CHART_NAME)-$(VERSION).tgz
 
 SOURCE := \
 	helm.go \
@@ -8,8 +13,13 @@ SOURCE := \
 TARGET := main
 
 .PHONY: test
-test:
-	go test -v $(SOURCE)
+test: $(ABSTOOLBIN)/helm
+	$(eval TMP := $(shell mktemp -d))
+	cd $(TMP) && $(ABSTOOLBIN)/helm create $(CHART_NAME)
+	cd $(TMP) && $(ABSTOOLBIN)/helm package $(CHART_NAME) -d $(TMP)  --version $(VERSION)
+	cd $(TMP) && $(ABSTOOLBIN)/helm push $(TMP)/$(CHART_FILE_NAME) oci://localhost:5000/fybrik-system/
+	rm -rf $(TMP)/$(CHART_FILE_NAME)
+	TMP_CHART=$(TMP)/$(CHART_NAME) go test -v $(SOURCE)
 
 .PHONY: build
 build:

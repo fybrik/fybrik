@@ -6,6 +6,8 @@ package app
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"strings"
 	"time"
 
@@ -202,7 +204,19 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolo
 			}
 		}
 	}
-	err := r.Helmer.ChartPull(chartSpec.Name)
+	tmpDir, err := ioutil.TempDir("", "fybrik-helm-")
+	if err != nil {
+		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed to create temporary directory for chart pull")
+	}
+	defer func(log zerolog.Logger) {
+		if err = os.RemoveAll(tmpDir); err != nil {
+			log.Error().Msg("Error while calling RemoveAll on directory created for pulling helm chart")
+		}
+	}(log)
+	err = r.Helmer.Pull(chartSpec.Name, tmpDir)
+	if err != nil {
+		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart pull")
+	}
 	// if we logged into a registry, let us try to logout
 	if registrySuccessfulLogin != "" {
 		logoutErr := r.Helmer.RegistryLogout(registrySuccessfulLogin)
@@ -210,10 +224,7 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolo
 			return ctrl.Result{}, errors.WithMessage(err, "failed to logout from helm registry: "+registrySuccessfulLogin)
 		}
 	}
-	if err != nil {
-		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart pull")
-	}
-	chart, err := r.Helmer.ChartLoad(chartSpec.Name)
+	chart, err := r.Helmer.Load(chartSpec.Name, tmpDir)
 	if err != nil {
 		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart load")
 	}
