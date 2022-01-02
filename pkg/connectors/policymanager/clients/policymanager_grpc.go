@@ -14,7 +14,6 @@ import (
 
 	"emperror.dev/errors"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
-	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	random "fybrik.io/fybrik/pkg/random"
@@ -83,7 +82,7 @@ func (m *grpcPolicyManager) Close() error {
 func ConvertGrpcReqToOpenAPIReq(in *pb.ApplicationContext) (*policymanager.GetPolicyDecisionsRequest, string, error) {
 	req := policymanager.GetPolicyDecisionsRequest{}
 	action := policymanager.RequestAction{}
-	resource := datacatalog.ResourceMetadata{}
+	resource := policymanager.Resource{}
 
 	creds := in.GetCredentialPath()
 
@@ -101,7 +100,7 @@ func ConvertGrpcReqToOpenAPIReq(in *pb.ApplicationContext) (*policymanager.GetPo
 			action.ActionType = policymanager.WRITE
 		}
 		datasetID := datasets[i].GetDataset().GetDatasetId()
-		resource.Name = datasetID
+		resource.ID = taxonomy.AssetID(datasetID)
 	}
 	req.Resource = resource
 
@@ -137,7 +136,7 @@ func ConvertOpenAPIReqToGrpcReq(in *policymanager.GetPolicyDecisionsRequest, cre
 
 	datasetContextList := []*pb.DatasetContext{}
 	resource := in.Resource
-	datasetID := resource.Name
+	datasetID := string(resource.ID)
 	dataset := &pb.DatasetIdentifier{DatasetId: datasetID}
 
 	destination := action.Destination

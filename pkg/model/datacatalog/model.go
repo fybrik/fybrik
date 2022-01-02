@@ -17,7 +17,7 @@ const (
 // ResourceMetadata defines model for resource metadata
 type ResourceMetadata struct {
 	// Name of the resource
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 	// Owner of the resource
 	Owner string `json:"owner,omitempty"`
 	// Geography of the resource

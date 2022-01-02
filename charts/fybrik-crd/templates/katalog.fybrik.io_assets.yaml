@@ -86,8 +86,6 @@ spec:
                     description: Tags associated with the asset
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
-                required:
-                - name
                 type: object
               secretRef:
                 description: Reference to a Secret resource holding credentials for

@@ -10,7 +10,6 @@ import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	connectors "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
-	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
@@ -19,26 +18,20 @@ import (
 )
 
 func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operation *policymanager.RequestAction) *policymanager.GetPolicyDecisionsRequest {
-	req := policymanager.GetPolicyDecisionsRequest{}
-	action := policymanager.RequestAction{}
-	resource := datacatalog.ResourceMetadata{}
-
-	resource.Name = datasetID
-	req.Resource = resource
-
-	action.Destination = operation.Destination
-	action.ActionType = operation.ActionType
-	action.ProcessingLocation = operation.ProcessingLocation
-	req.Action = action
-
-	req.Context = taxonomy.PolicyManagerRequestContext{Properties: serde.Properties{
-		Items: make(map[string]interface{}),
-	}}
+	context := make(map[string]interface{}, len(input.Spec.AppInfo))
 	for k, v := range input.Spec.AppInfo {
-		req.Context.Items[k] = v
+		context[k] = v
 	}
 
-	return &req
+	return &policymanager.GetPolicyDecisionsRequest{
+		Context: taxonomy.PolicyManagerRequestContext{Properties: serde.Properties{
+			Items: context,
+		}},
+		Action: *operation,
+		Resource: policymanager.Resource{
+			ID: taxonomy.AssetID(datasetID),
+		},
+	}
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
