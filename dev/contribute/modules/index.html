@@ -1324,7 +1324,7 @@
 <div class="highlight"><pre><span></span><code>$ curl --header &quot;X-Vault-Token: ...&quot; -X GET https://&lt;address&gt;/&lt;secretPath&gt;
 </code></pre></div>
 <h2 id="module-helm-chart">Module Helm Chart</h2>
-<p>For any module chosen by the control plane to be part of the data path, the control plane needs to be able to install/remove/upgrade an instance of the module. Fybrik uses <a href="https://helm.sh/docs/intro/using_helm/">Helm</a> to provide this functionality. Follow the Helm <a href="https://helm.sh/docs/chart_template_guide/getting_started/">getting started</a> guide if you are unfamiliar with Helm. Note that Helm 3.3 or above is required.</p>
+<p>For any module chosen by the control plane to be part of the data path, the control plane needs to be able to install/remove/upgrade an instance of the module. Fybrik uses <a href="https://helm.sh/docs/intro/using_helm/">Helm</a> to provide this functionality. Follow the Helm <a href="https://helm.sh/docs/chart_template_guide/getting_started/">getting started</a> guide if you are unfamiliar with Helm. Note that Helm 3.7 or above is required.</p>
 <p>The names of the Kubernetes resources deployed by the module helm chart must contain the release name to avoid resource conflicts. A Kubernetes <code>service</code> resource which is used to access the module must have a name equal to the release name (this service name is also used in the optional <a href="../../reference/crds/#fybrikmodulespeccapabilitiesapiendpoint"><code>spec.capabilities.api.endpoint.hostname</code></a> field).</p>
 <p>Because the chart is installed by the control plane, the input <code>values</code> to the chart must match the relevant type of <a href="../../reference/crds/#blueprintspecflowstepsindexarguments">arguments</a>. </p>
 <!-- TODO: expand this when we support setting values in the FybrikModule YAML: https://github.com/fybrik/fybrik/pull/42 -->
@@ -1333,11 +1333,11 @@
 <p>For a full example see the <a href="https://github.com/fybrik/arrow-flight-module/tree/cd168bb6cdf666c2ec1df960395c0dc1c8feeaa9/helm/afm">Arrow Flight Module chart</a>.</p>
 <h3 id="publishing-the-helm-chart">Publishing the Helm Chart</h3>
 <p>Once your Helm chart is ready, you need to push it to a <a href="https://helm.sh/docs/topics/registries/">OCI-based registry</a> such as <a href="https://ghcr.io">ghcr.io</a>. This allows the control plane of Fybrik to later pull the chart whenever it needs to be installed.</p>
-<p>You can use the <a href="https://github.com/fybrik/fybrik/blob/master/hack/make-rules/helm.mk">hack/make-rules/helm.mk</a> Makefile, or manually push the chart:</p>
+<p>You can use the <a href="https://github.com/fybrik/fybrik/blob/master/hack/make-rules/helm.mk">hack/make-rules/helm.mk</a> Makefile, or manually push the chart as described in the <a href="https://github.com/helm/community/blob/main/hips/hip-0006.md">link</a>:</p>
 <div class="highlight"><pre><span></span><code><span class="nv">HELM_EXPERIMENTAL_OCI</span><span class="o">=</span><span class="m">1</span> 
 helm registry login -u &lt;username&gt; &lt;registry&gt;
-helm chart save &lt;chart folder&gt; &lt;registry&gt;/&lt;path&gt;:&lt;version&gt;
-helm chart push &lt;registry&gt;/&lt;path&gt;:&lt;version&gt;
+helm package &lt;chart folder&gt; -d &lt;local-chart-path&gt;
+helm push &lt;local-chart-path&gt; oci://&lt;registry&gt;/&lt;path&gt;
 </code></pre></div>
 <h2 id="fybrikmodule-yaml">FybrikModule YAML</h2>
 <p><code>FybrikModule</code> is a kubernetes Custom Resource Definition (CRD) which describes to the control plane the functionality provided by the module.  The FybrikModule CRD has no controller. The specification of the <code>FybrikModule</code> Kubernetes CRD is available in the <a href="../../reference/crds/#fybrikmodule">API documentation</a>. </p>
