@@ -825,6 +825,7 @@ spec:
     - upgrade-helm-full
     - build-image-datacatalog
     - build-image-serverpolicymanager
+    - run-unit-tests-full-deploy
     when:
     - Input: $(params.skipTests)
       Operator: notin
