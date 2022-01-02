@@ -1261,7 +1261,8 @@ aws configure <span class="nb">set</span> aws_access_key_id <span class="si">${<
 <span class="w">        </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;demo&quot;</span><span class="w"></span>
 <span class="w">        </span><span class="nt">objectKey</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;PS_20174392719_1491204439457_log.csv&quot;</span><span class="w"></span>
 <span class="w">  </span><span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">geography</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">theshire</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Synthetic Financial Datasets For Fraud Detection</span><span class="w"></span>
+<span class="w">    </span><span class="nt">geography</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">theshire</span><span class="w"> </span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
 <span class="w">      </span><span class="nt">finance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
 <span class="w">    </span><span class="nt">columns</span><span class="p">:</span><span class="w"></span>
@@ -1289,8 +1290,8 @@ aws configure <span class="nb">set</span> aws_access_key_id <span class="si">${<
 rule[{&quot;action&quot;: {&quot;name&quot;:&quot;RedactAction&quot;, &quot;columns&quot;: column_names}, &quot;policy&quot;: description}] {
   description := &quot;Redact columns tagged as PII in datasets tagged with finance = true&quot;
   input.action.actionType == &quot;read&quot;
-  input.resource.tags.finance
-  column_names := [input.resource.columns[i].name | input.resource.columns[i].tags.PII]
+  input.resource.metadata.tags.finance
+  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.PII]
   count(column_names) &gt; 0
 }
 </code></pre></div>
