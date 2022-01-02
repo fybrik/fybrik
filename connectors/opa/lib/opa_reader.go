@@ -12,7 +12,6 @@ import (
 	clients "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
-	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
 type OpaReader struct {
@@ -51,8 +50,8 @@ func (r *OpaReader) updatePolicyManagerRequestWithResourceInfo(in *policymanager
 }
 
 func (r *OpaReader) GetOPADecisions(in *policymanager.GetPolicyDecisionsRequest, creds string, policyToBeEvaluated string) (*policymanager.GetPolicyDecisionsResponse, error) {
-	datasetID := in.Resource.Name
-	objToSend := datacatalog.GetAssetRequest{AssetID: taxonomy.AssetID(datasetID), OperationType: datacatalog.READ}
+	datasetID := in.Resource.ID
+	objToSend := datacatalog.GetAssetRequest{AssetID: datasetID, OperationType: datacatalog.READ}
 
 	info, err := (*r.dataCatalog).GetAssetInfo(&objToSend, creds)
 	if err != nil {

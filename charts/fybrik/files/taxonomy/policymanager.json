@@ -15,7 +15,7 @@
           "$ref": "taxonomy.json#/definitions/PolicyManagerRequestContext"
         },
         "resource": {
-          "$ref": "datacatalog.json#/definitions/ResourceMetadata"
+          "$ref": "#/definitions/Resource"
         }
       }
     },
@@ -60,6 +60,20 @@
         "write",
         "delete"
       ]
+    },
+    "Resource": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "taxonomy.json#/definitions/AssetID"
+        },
+        "metadata": {
+          "$ref": "datacatalog.json#/definitions/ResourceMetadata"
+        }
+      }
     },
     "ResultItem": {
       "type": "object",

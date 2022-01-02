@@ -80,9 +80,6 @@
     "ResourceMetadata": {
       "description": "ResourceMetadata defines model for resource metadata",
       "type": "object",
-      "required": [
-        "name"
-      ],
       "properties": {
         "columns": {
           "description": "Columns associated with the asset",

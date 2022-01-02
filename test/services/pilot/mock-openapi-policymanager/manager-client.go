@@ -11,7 +11,6 @@ import (
 	"time"
 
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
-	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
@@ -54,8 +53,8 @@ func main() {
 			ActionType:         policymanager.READ,
 			ProcessingLocation: "Netherlands",
 		},
-		Resource: datacatalog.ResourceMetadata{
-			Name: "{\"asset_id\": \"5067b64a-67bc-4067-9117-0aff0a9963ea\", \"catalog_id\": \"0fd6ff25-7327-4b55-8ff2-56cc1c934824\"}",
+		Resource: policymanager.Resource{
+			ID: "{\"asset_id\": \"5067b64a-67bc-4067-9117-0aff0a9963ea\", \"catalog_id\": \"0fd6ff25-7327-4b55-8ff2-56cc1c934824\"}",
 		},
 	}
 

@@ -26,7 +26,7 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 	log.Printf("ProcessingGeography: %s", input.Action.ProcessingLocation)
 	log.Printf("Destination: " + input.Action.Destination)
 
-	datasetID := input.Resource.Name
+	datasetID := string(input.Resource.ID)
 	log.Printf("   DataSetID: " + datasetID)
 	respResult := []policymanager.ResultItem{}
 	policyManagerResult := policymanager.ResultItem{}
