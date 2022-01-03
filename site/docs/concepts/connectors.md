@@ -11,7 +11,7 @@ Connectors are [Open API](https://www.openapis.org/) services that the Fybrik co
 
 Yes. Fybrik provides some default connectors described in this page but anyone can develop their own connectors.
 
-A connector needs to implement one or more of the interfaces described in the [API documentation](../reference/openapigenerator-doc-datacatalog/README.md), depending on the connector type. Note that a single Kubernetes service can implement all interfaces if the system it connects to supports the required functionality, but it can also be different services.
+A connector needs to implement one or more of the interfaces described in the [API documentation](../reference/connectors-datacatalog/README.md), depending on the connector type. Note that a single Kubernetes service can implement all interfaces if the system it connects to supports the required functionality, but it can also be different services.
 
 In addition, to benefit from the [control plane security](../tasks/control-plane-security.md) feature ensure that the `Pods` of your connector:
 1. Have a `fybrik.io/componentType: connector` label 

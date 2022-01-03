@@ -12,14 +12,14 @@ generate: $(TOOLBIN)/crdoc $(TOOLBIN)/protoc $(TOOLBIN)/protoc-gen-doc
 	go mod tidy
 
 generate-openapi-doc:
-	rm -rf $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-datacatalog
-	rm -rf $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-policymanager
+	rm -rf $(ROOT_DIR)/site/docs/reference/connectors-datacatalog
+	rm -rf $(ROOT_DIR)/site/docs/reference/connectors-policymanager
 	rm -rf ${PWD}/out
 	rm -rf ${PWD}/connectors
 	rm -rf ${PWD}/local
 
-	mkdir -p $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-datacatalog
-	mkdir -p $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-policymanager
+	mkdir -p $(ROOT_DIR)/site/docs/reference/connectors-datacatalog
+	mkdir -p $(ROOT_DIR)/site/docs/reference/connectors-policymanager
 	mkdir -p  ${PWD}/local/connectors/api/
 	mkdir -p ${PWD}/local
 	mkdir -p  ${PWD}/local/templates/openapigenerator
@@ -51,12 +51,12 @@ generate-openapi-doc:
 	-t /local/templates/openapigenerator \
 	-o /local/out/policymanager
 
-	cp -r ${PWD}/local/out/datacatalog/. $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-datacatalog
-	cp -r ${PWD}/local/out/policymanager/. $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-policymanager
+	cp -r ${PWD}/local/out/datacatalog/. $(ROOT_DIR)/site/docs/reference/connectors-datacatalog
+	cp -r ${PWD}/local/out/policymanager/. $(ROOT_DIR)/site/docs/reference/connectors-policymanager
 
 	rm -rf ${PWD}/local
 
 
 .PHONY: run
 run: generate
-	mkdocs serve --quiet
+	python -m mkdocs serve --quiet

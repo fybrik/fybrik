@@ -28,10 +28,9 @@ nav:
   - tasks/performance.md
 - Reference:
   - reference/crds.md
-  - Connectors API: reference/connectors.md
-  - Connectors API (OpenAPI): 
-    - DataCatalog: reference/openapigenerator-doc-datacatalog/README.md
-    - PolicyManager: reference/openapigenerator-doc-policymanager/README.md
+  - Connectors API:
+    - Data catalog: reference/connectors-datacatalog/README.md
+    - Policy manager: reference/connectors-policymanager/README.md
   - Components:
     - reference/ddc.md
     - reference/katalog.md
