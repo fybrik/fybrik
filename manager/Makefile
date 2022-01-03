@@ -8,17 +8,19 @@ DOCKER_NAME ?= manager
 KUBE_NAMESPACE ?= fybrik-system
 CONTROLLER_NAMESPACE ?= ${KUBE_NAMESPACE}
 
+GIT_COMMIT := "$(shell git rev-list -1 HEAD)"
+
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/hack/make-rules/verify.mk
 
 # Build manager binary
 manager:
-	go build -o bin/manager main.go
+	go build -ldflags "-X main.gitCommit=$(GIT_COMMIT)" -o bin/manager main.go
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run:
-	go run ./main.go --enable-all-controllers --metrics-bind-addr=0
+	go run -ldflags "-X main.gitCommit=$(GIT_COMMIT)" ./main.go --enable-all-controllers --metrics-bind-addr=0
 
 source-build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o manager main.go
