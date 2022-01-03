@@ -6,11 +6,12 @@ include $(ROOT_DIR)/hack/make-rules/tools.mk
 CONNECTORS_PROTO := $(ROOT_DIR)/pkg/connectors/protos
 
 .PHONY: generate
-generate: $(TOOLBIN)/crdoc $(TOOLBIN)/protoc $(TOOLBIN)/protoc-gen-doc
+generate: $(TOOLBIN)/crdoc $(TOOLBIN)/protoc $(TOOLBIN)/protoc-gen-doc generate-openapi-doc
 	PATH=$(TOOLBIN) crdoc --template ./templates/crd/main.tmpl --resources $(ROOT_DIR)/charts/fybrik-crd/templates --output ./docs/reference/crds.md
 	PATH=$(TOOLBIN) protoc -I=$(CONNECTORS_PROTO) --doc_out=./docs/reference/ --doc_opt=./templates/proto/protoc.tmpl,connectors.md $(sort $(wildcard ./$(CONNECTORS_PROTO)/*.proto))
 	go mod tidy
 
+.PHONY: generate-openapi-doc
 generate-openapi-doc:
 	rm -rf $(ROOT_DIR)/site/docs/reference/connectors-datacatalog
 	rm -rf $(ROOT_DIR)/site/docs/reference/connectors-policymanager
