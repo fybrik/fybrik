@@ -8,7 +8,6 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/apache/arrow/go/arrow v0.0.0-20210907151234-f40856a768f2
 	github.com/aws/aws-sdk-go v1.40.37
-	github.com/buger/jsonparser v1.1.1
 	github.com/distribution/distribution v2.7.1+incompatible
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/gdexlab/go-render v1.0.1
