@@ -8,7 +8,7 @@ DOCKER_NAME ?= manager
 KUBE_NAMESPACE ?= fybrik-system
 CONTROLLER_NAMESPACE ?= ${KUBE_NAMESPACE}
 
-GIT_COMMIT := "$(shell git rev-list -1 HEAD)"
+GIT_COMMIT := $(shell git rev-list -1 HEAD)
 
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 include $(ROOT_DIR)/hack/make-rules/docker.mk
