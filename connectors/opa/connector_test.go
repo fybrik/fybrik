@@ -67,11 +67,11 @@ func TestGetPoliciesDecisions(t *testing.T) {
 	defer catalogConnectorMock.Close()
 
 	// OPA mock
-	expectedOpaRequest := &policymanager.GetPolicyDecisionsRequest{
+	expectedOpaRequest := map[string]interface{}{"input": &policymanager.GetPolicyDecisionsRequest{
 		Context:  request.Context,
 		Action:   request.Action,
 		Resource: policymanager.Resource{ID: taxonomy.AssetID("assetID"), Metadata: &mockedCatalogResponse.ResourceMetadata},
-	}
+	}}
 	mockedOpaResponse := &policymanager.GetPolicyDecisionsResponse{
 		DecisionID: "ABCD",
 		Result: []policymanager.ResultItem{
@@ -91,7 +91,7 @@ func TestGetPoliciesDecisions(t *testing.T) {
 			},
 		},
 	}
-	opaMock := createMockServer(t, "opa", expectedOpaRequest, mockedOpaResponse)
+	opaMock := createMockServer(t, "opa", &expectedOpaRequest, mockedOpaResponse)
 	defer opaMock.Close()
 
 	// Create OPA connector controller for testing
@@ -105,6 +105,7 @@ func TestGetPoliciesDecisions(t *testing.T) {
 	w := httptest.NewRecorder()
 	gin.SetMode(gin.TestMode)
 	c, _ := gin.CreateTestContext(w)
+
 	requestBytes, err := json.Marshal(&request)
 	if err != nil {
 		t.Fatal(err)

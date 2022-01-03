@@ -59,17 +59,17 @@ func (r *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 	// Enrich request with catalog information
 	request.Resource.Metadata = &assetInfo.ResourceMetadata
 
+	// Add "input" hierarchy
+	inputStruct := map[string]interface{}{"input": &request}
 	// Marshal request as JSON
-	requestBytes, err := json.Marshal(&request)
+	requestBody, err := json.Marshal(&inputStruct)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	requestBody := "{ \"input\": " + string(requestBytes) + " }"
-
 	// Send request to OPA
 	endpoint := fmt.Sprintf("%s/%s", strings.TrimRight(r.OpaServerURL, "/"), strings.TrimLeft(policyEndpoint, "/"))
-	responseFromOPA, err := r.OpaClient.Post(endpoint, "application/json", bytes.NewBuffer([]byte(requestBody)))
+	responseFromOPA, err := r.OpaClient.Post(endpoint, "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
