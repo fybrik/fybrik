@@ -1,4 +1,4 @@
-# Documentation for Policy Manager Service
+# Policy Manager Service
 
 <a name="documentation-for-api-endpoints"></a>
 ## Documentation for API Endpoints
@@ -13,14 +13,14 @@ Class | Method | HTTP request | Description
 <a name="documentation-for-models"></a>
 ## Documentation for Models
 
- - [Action](./Models/Action.md)
- - [GetPolicyDecisionsRequest](./Models/GetPolicyDecisionsRequest.md)
- - [GetPolicyDecisionsResponse](./Models/GetPolicyDecisionsResponse.md)
- - [RequestAction](./Models/RequestAction.md)
- - [RequestActionType](./Models/RequestActionType.md)
- - [ResourceColumn](./Models/ResourceColumn.md)
- - [ResourceMetadata](./Models/ResourceMetadata.md)
- - [ResultItem](./Models/ResultItem.md)
+ - [Action](Models/Action.md)
+ - [GetPolicyDecisionsRequest](Models/GetPolicyDecisionsRequest.md)
+ - [GetPolicyDecisionsResponse](Models/GetPolicyDecisionsResponse.md)
+ - [RequestAction](Models/RequestAction.md)
+ - [RequestActionType](Models/RequestActionType.md)
+ - [ResourceColumn](Models/ResourceColumn.md)
+ - [ResourceMetadata](Models/ResourceMetadata.md)
+ - [ResultItem](Models/ResultItem.md)
 
 
 <a name="documentation-for-authorization"></a>

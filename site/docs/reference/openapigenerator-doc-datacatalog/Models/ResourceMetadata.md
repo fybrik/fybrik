@@ -1,13 +1,13 @@
 # ResourceMetadata
+ResourceMetadata defines model for resource metadata
 ## Properties
-
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**columns** | [**List**](ResourceColumn.md) | Columns associated with the asset | [optional] [default to null]
-**geography** | **String** | Geography of the resource | [optional] [default to null]
-**name** | **String** | Name of the resource | [default to null]
-**owner** | **String** | Owner of the resource | [optional] [default to null]
-**tags** | **Map** |  | [optional] [default to null]
+**columns** | List | Columns associated with the asset | [optional] [default: null]
+**geography** | String | Geography of the resource | [optional] [default: null]
+**name** | String | Name of the resource | [default: null]
+**owner** | String | Owner of the resource | [optional] [default: null]
+**tags** | Map |  | [optional] [default: null]
 
-[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to API-Specification]](../README.md)
 

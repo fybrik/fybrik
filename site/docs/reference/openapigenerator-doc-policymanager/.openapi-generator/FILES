@@ -1,3 +1,4 @@
+.openapi-generator-ignore
 Apis/DefaultApi.md
 Models/Action.md
 Models/GetPolicyDecisionsRequest.md

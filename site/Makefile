@@ -16,17 +16,20 @@ generate-openapi-doc:
 	rm -rf $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-policymanager
 	rm -rf ${PWD}/out
 	rm -rf ${PWD}/connectors
+	rm -rf ${PWD}/local
 
 	mkdir -p $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-datacatalog
 	mkdir -p $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-policymanager
-	mkdir -p ./local/connectors/api/
+	mkdir -p  ${PWD}/local/connectors/api/
 	mkdir -p ${PWD}/local
+	mkdir -p  ${PWD}/local/templates/openapigenerator
 
-	cp $(ROOT_DIR)/connectors/api/datacatalog.spec.yaml ./local/connectors/api/
-	cp $(ROOT_DIR)/connectors/api/policymanager.spec.yaml ./local/connectors/api/
-	cp $(ROOT_DIR)/charts/fybrik/files/taxonomy/datacatalog.json ./local/connectors/api/datacatalog.json
-	cp $(ROOT_DIR)/charts/fybrik/files/taxonomy/policymanager.json ./local/connectors/api/policymanager.json
-	cp $(ROOT_DIR)/charts/fybrik/files/taxonomy/taxonomy.json ./local/connectors/api/taxonomy.json
+	cp $(ROOT_DIR)/connectors/api/datacatalog.spec.yaml ${PWD}/local/connectors/api/
+	cp $(ROOT_DIR)/connectors/api/policymanager.spec.yaml  ${PWD}/local/connectors/api/
+	cp $(ROOT_DIR)/charts/fybrik/files/taxonomy/datacatalog.json  ${PWD}/local/connectors/api/datacatalog.json
+	cp $(ROOT_DIR)/charts/fybrik/files/taxonomy/policymanager.json  ${PWD}/local/connectors/api/policymanager.json
+	cp $(ROOT_DIR)/charts/fybrik/files/taxonomy/taxonomy.json  ${PWD}/local/connectors/api/taxonomy.json
+	cp -r ${PWD}/templates/openapigenerator/.  ${PWD}/local/templates/openapigenerator
 
 	sed -i 's/..\/..\/charts\/fybrik\/files\/taxonomy\/datacatalog.json\#\/definitions\/GetAssetRequest/datacatalog.json#\/definitions\/GetAssetRequest/g' ./local/connectors/api/datacatalog.spec.yaml
 	sed -i 's/..\/..\/charts\/fybrik\/files\/taxonomy\/datacatalog.json#\/definitions\/GetAssetResponse/datacatalog.json#\/definitions\/GetAssetResponse/g' ./local/connectors/api/datacatalog.spec.yaml
@@ -37,21 +40,23 @@ generate-openapi-doc:
 	docker run --user $(shell id -u):$(shell id -g) --rm \
 	-v ${PWD}/local:/local openapitools/openapi-generator-cli generate \
 	-i /local/connectors/api/datacatalog.spec.yaml \
-	-g go \
+	-g markdown \
+	-t /local/templates/openapigenerator \
 	-o /local/out/datacatalog
 
 	docker run --user $(shell id -u):$(shell id -g) --rm \
 	-v ${PWD}/local:/local openapitools/openapi-generator-cli generate \
 	-i /local/connectors/api/policymanager.spec.yaml \
-	-g go \
+	-g markdown \
+	-t /local/templates/openapigenerator \
 	-o /local/out/policymanager
 
-	cp -r ${PWD}/local/out/datacatalog $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-datacatalog
-	cp -r ${PWD}/local/out/policymanager $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-policymanager
+	cp -r ${PWD}/local/out/datacatalog/. $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-datacatalog
+	cp -r ${PWD}/local/out/policymanager/. $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-policymanager
 
 	rm -rf ${PWD}/local
 
 
 .PHONY: run
 run: generate
-	mkdocs serve
+	python -m mkdocs serve
