@@ -1139,16 +1139,19 @@
 
 
 <h1 id="connectors">Connectors</h1>
-<p>The project currently has two extension mechanisms, namely connectors and modules. 
+<p>The project currently has two extension mechanisms, namely connectors and modules.
 This page describes what connectors are and what connectors are installed using the default Fybrik installation.</p>
 <h2 id="what-are-connectors">What are connectors?</h2>
 <p>Connectors are <a href="https://www.openapis.org/">Open API</a> services that the Fybrik control plane uses to connect to external systems. Specifically, the control plane needs connectors to a data catalog and a data governance policy manager. These connector services are deployed alongside the control plane.</p>
 <h2 id="can-i-write-my-own-connectors">Can I write my own connectors?</h2>
 <p>Yes. Fybrik provides some default connectors described in this page but anyone can develop their own connectors.</p>
 <p>A connector needs to implement one or more of the interfaces described in the <a href="../../reference/connectors/">API documentation</a>, depending on the connector type. Note that a single Kubernetes service can implement all interfaces if the system it connects to, supports the required functionality, but it can also be different services.</p>
-<p>In addition, to benefit from the <a href="../../tasks/control-plane-security/">control plane security</a> feature ensure that the <code>Pods</code> of your connector:
-1. Have a <code>fybrik.io/componentType: connector</code> label 
-1. Have a <code>sidecar.istio.io/inject: "true"</code> annotation</p>
+<p>In addition, to benefit from the <a href="../../tasks/control-plane-security/">control plane security</a> feature ensure that the <code>Pods</code> 
+of your connector:</p>
+<ol>
+<li>Have a <code>fybrik.io/componentType: connector</code> label </li>
+<li>Have a <code>sidecar.istio.io/inject: "true"</code> annotation</li>
+</ol>
 <h2 id="connector-types">Connector types</h2>
 <h3 id="data-catalog">Data catalog</h3>
 <p>Fybrik assumes the use of an enterprise data catalog. For example, to reference a required data asset in a <code>FybrikApplication</code> resource, you provide a link to the asset in the catalog.</p>
