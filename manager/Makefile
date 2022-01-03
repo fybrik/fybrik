@@ -15,17 +15,21 @@ include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/hack/make-rules/verify.mk
 
 # Build manager binary
+.PHONY: manager
 manager:
 	go build -ldflags "-X main.gitCommit=$(GIT_COMMIT)" -o bin/manager main.go
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
+.PHONY: run
 run:
 	go run -ldflags "-X main.gitCommit=$(GIT_COMMIT)" ./main.go --enable-all-controllers --metrics-bind-addr=0
 
+.PHONY: source-build
 source-build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o manager main.go
 
 # Overwrite docker-build from docker.mk
+.PHONY: docker-build
 docker-build: source-build
 	docker build . -t ${IMG} -f Dockerfile
 	rm manager
