@@ -44,7 +44,6 @@ func (r *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	// Get asset metadata from catalog connector
 	requestToCatalog := &datacatalog.GetAssetRequest{
 		AssetID:       request.Resource.ID,
@@ -61,15 +60,16 @@ func (r *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 	request.Resource.Metadata = &assetInfo.ResourceMetadata
 
 	// Marshal request as JSON
-	requestBody, err := json.Marshal(&request)
+	requestBytes, err := json.Marshal(&request)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	requestBody := "{ \"input\": " + string(requestBytes) + " }"
 
 	// Send request to OPA
 	endpoint := fmt.Sprintf("%s/%s", strings.TrimRight(r.OpaServerURL, "/"), strings.TrimLeft(policyEndpoint, "/"))
-	responseFromOPA, err := r.OpaClient.Post(endpoint, "application/json", bytes.NewBuffer(requestBody))
+	responseFromOPA, err := r.OpaClient.Post(endpoint, "application/json", bytes.NewBuffer([]byte(requestBody)))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
