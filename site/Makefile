@@ -12,8 +12,48 @@ generate: $(TOOLBIN)/crdoc $(TOOLBIN)/protoc $(TOOLBIN)/protoc-gen-doc
 	go mod tidy
 
 generate-openapi-doc:
-	$(TOOLBIN)/openapi-generator-cli generate -i $(ROOT_DIR)/connectors/api/datacatalog.spec.yaml -g markdown -o  $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-datacatalog
-	$(TOOLBIN)/openapi-generator-cli generate -i $(ROOT_DIR)/connectors/api/policymanager.spec.yaml -g markdown -o $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-policymanager
+	rm -rf $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-datacatalog
+	rm -rf $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-policymanager
+	rm -rf ${PWD}/out
+	rm -rf ${PWD}/connectors
+
+	mkdir -p $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-datacatalog
+	mkdir -p $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-policymanager
+	mkdir -p ./local/connectors/api/
+	mkdir -p ${PWD}/local
+
+	cp $(ROOT_DIR)/connectors/api/datacatalog.spec.yaml ./local/connectors/api/
+	cp $(ROOT_DIR)/connectors/api/policymanager.spec.yaml ./local/connectors/api/
+	cp $(ROOT_DIR)/charts/fybrik/files/taxonomy/datacatalog.json ./local/connectors/api/datacatalog.json
+	cp $(ROOT_DIR)/charts/fybrik/files/taxonomy/policymanager.json ./local/connectors/api/policymanager.json
+	cp $(ROOT_DIR)/charts/fybrik/files/taxonomy/taxonomy.json ./local/connectors/api/taxonomy.json
+
+	sed -i 's/..\/..\/charts\/fybrik\/files\/taxonomy\/datacatalog.json\#\/definitions\/GetAssetRequest/datacatalog.json#\/definitions\/GetAssetRequest/g' ./local/connectors/api/datacatalog.spec.yaml
+	sed -i 's/..\/..\/charts\/fybrik\/files\/taxonomy\/datacatalog.json#\/definitions\/GetAssetResponse/datacatalog.json#\/definitions\/GetAssetResponse/g' ./local/connectors/api/datacatalog.spec.yaml
+
+	sed -i 's/..\/..\/charts\/fybrik\/files\/taxonomy\/policymanager.json\#\/definitions\/GetPolicyDecisionsRequest/policymanager.json#\/definitions\/GetPolicyDecisionsRequest/g' ./local/connectors/api/policymanager.spec.yaml
+	sed -i 's/..\/..\/charts\/fybrik\/files\/taxonomy\/policymanager.json\#\/definitions\/GetPolicyDecisionsResponse/policymanager.json#\/definitions\/GetPolicyDecisionsResponse/g' ./local/connectors/api/policymanager.spec.yaml
+
+	docker run --rm \
+	-v ${PWD}/local:/local openapitools/openapi-generator-cli generate \
+	-i /local/connectors/api/datacatalog.spec.yaml \
+	-g go \
+	-o /local/out/datacatalog
+
+	docker run --rm \
+	-v ${PWD}/local:/local openapitools/openapi-generator-cli generate \
+	-i /local/connectors/api/policymanager.spec.yaml \
+	-g go \
+	-o /local/out/policymanager
+
+	cp -r ${PWD}/local/out/datacatalog $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-datacatalog
+	cp -r ${PWD}/local/out/policymanager $(ROOT_DIR)/site/docs/reference/openapigenerator-doc-policymanager
+
+	# docker volume rm local
+	# docker run --rm -v ${PWD}/local:/local openapitools/openapi-generator-cli 
+
+	rm -rf ${PWD}/local
+
 
 .PHONY: run
 run: generate
