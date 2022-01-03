@@ -1,6 +1,6 @@
 # Connectors
 
-The project currently has two extension mechanisms, namely connectors and modules. 
+The project currently has two extension mechanisms, namely connectors and modules.
 This page describes what connectors are and what connectors are installed using the default Fybrik installation.
 
 ## What are connectors?
@@ -13,7 +13,9 @@ Yes. Fybrik provides some default connectors described in this page but anyone c
 
 A connector needs to implement one or more of the interfaces described in the [API documentation](../reference/connectors.md), depending on the connector type. Note that a single Kubernetes service can implement all interfaces if the system it connects to, supports the required functionality, but it can also be different services.
 
-In addition, to benefit from the [control plane security](../tasks/control-plane-security.md) feature ensure that the `Pods` of your connector:
+In addition, to benefit from the [control plane security](../tasks/control-plane-security.md) feature ensure that the `Pods` 
+of your connector:
+
 1. Have a `fybrik.io/componentType: connector` label 
 1. Have a `sidecar.istio.io/inject: "true"` annotation
 
