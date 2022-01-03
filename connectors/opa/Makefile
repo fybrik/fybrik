@@ -10,7 +10,7 @@ NEED_TEST_COVERAGE_STATISTICS=1
 NEED_TEST_COVERAGE_STATISTICS_IN_HTML=0
 
 CATALOG_PROVIDER_NAME ?= "katalog"
-CATALOG_CONNECTOR_URL ?= "katalg-connector:50090"
+CATALOG_CONNECTOR_URL ?= "http://katalog-connector:50090"
 
 docker-all: docker-build docker-push 
 
