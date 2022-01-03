@@ -38,14 +38,14 @@ generate-openapi-doc:
 	sed -i 's/..\/..\/charts\/fybrik\/files\/taxonomy\/policymanager.json\#\/definitions\/GetPolicyDecisionsResponse/policymanager.json#\/definitions\/GetPolicyDecisionsResponse/g' ./local/connectors/api/policymanager.spec.yaml
 
 	docker run --user $(shell id -u):$(shell id -g) --rm \
-	-v ${PWD}/local:/local openapitools/openapi-generator-cli generate \
+	-v ${PWD}/local:/local openapitools/openapi-generator-cli:v5.3.1 generate \
 	-i /local/connectors/api/datacatalog.spec.yaml \
 	-g markdown \
 	-t /local/templates/openapigenerator \
 	-o /local/out/datacatalog
 
 	docker run --user $(shell id -u):$(shell id -g) --rm \
-	-v ${PWD}/local:/local openapitools/openapi-generator-cli generate \
+	-v ${PWD}/local:/local openapitools/openapi-generator-cli:v5.3.1 generate \
 	-i /local/connectors/api/policymanager.spec.yaml \
 	-g markdown \
 	-t /local/templates/openapigenerator \
