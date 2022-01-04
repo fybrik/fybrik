@@ -4,7 +4,6 @@ include $(ROOT_DIR)/hack/make-rules/tools.mk
 
 ABS_ROOT_DIR := $(abspath ${ROOT_DIR})
 OPENAPI_GENERATOR_IMG := openapitools/openapi-generator-cli:v5.3.1
-CONNECTORS_PROTO := $(ROOT_DIR)/pkg/connectors/protos
 
 .PHONY: generate
 generate: generate-crd-docs generate-connectors-docs
@@ -12,7 +11,6 @@ generate: generate-crd-docs generate-connectors-docs
 .PHONY: generate-crd-docs
 generate-crd-docs: $(TOOLBIN)/crdoc
 	PATH=$(TOOLBIN) crdoc --template ./templates/crd/main.tmpl --resources $(ROOT_DIR)/charts/fybrik-crd/templates --output ./docs/reference/crds.md
-	go mod tidy
 
 .PHONY: generate-connectors-docs
 generate-connectors-docs:
