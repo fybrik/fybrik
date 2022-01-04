@@ -36,4 +36,4 @@ generate-connectors-docs:
 
 .PHONY: run
 run: generate
-	python -m mkdocs serve --quiet
+	mkdocs serve --quiet
