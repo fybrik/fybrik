@@ -33,7 +33,7 @@ func NewRouter(controller *ConnectorController) *gin.Engine {
 // RootCmd defines the root cli command
 func RootCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "opa",
+		Use:   "opa-connector",
 		Short: "Kubernetes based policy manager connector for Fybrik",
 	}
 	cmd.AddCommand(RunCmd())
