@@ -8,7 +8,6 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/apache/arrow/go/arrow v0.0.0-20210907151234-f40856a768f2
 	github.com/aws/aws-sdk-go v1.40.37
-	github.com/buger/jsonparser v1.1.1
 	github.com/distribution/distribution v2.7.1+incompatible
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/gdexlab/go-render v1.0.1
@@ -33,7 +32,7 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.0
-	github.com/tidwall/pretty v1.0.1
+	github.com/tidwall/pretty v1.0.1 // indirect
 	github.com/vdemeester/k8s-pkg-credentialprovider v1.22.4
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
