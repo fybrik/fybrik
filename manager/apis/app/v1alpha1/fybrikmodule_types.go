@@ -99,11 +99,15 @@ type ModuleCapability struct {
 
 	// Actions are the data transformations that the module supports
 	// +optional
-	Actions []taxonomy.Action `json:"actions,omitempty"`
+	Actions []ModuleSupportedAction `json:"actions,omitempty"`
 
 	// Plugins enable the module to add libraries to perform actions rather than implementing them by itself
 	// +optional
 	Plugins []Plugin `json:"plugins,omitempty"`
+}
+
+type ModuleSupportedAction struct {
+	Name taxonomy.ActionName `json:"name"`
 }
 
 // ResourceStatusIndicator is used to determine the status of an orchestrated resource

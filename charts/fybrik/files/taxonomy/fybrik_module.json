@@ -39,7 +39,12 @@
                             "actions": {
                                 "type": "array",
                                 "items": {
-                                    "$ref": "taxonomy.json#/definitions/Action"
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "$ref": "taxonomy.json#/definitions/ActionName"
+                                        }
+                                    }
                                 }
                             }
                         },
