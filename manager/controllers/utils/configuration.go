@@ -17,7 +17,15 @@ import (
 const (
 	CatalogConnectorServiceAddressKey string = "CATALOG_CONNECTOR_URL"
 	VaultAddressKey                   string = "VAULT_ADDRESS"
-	VaultModulesRole                  string = "VAULT_MODULES_ROLE"
+	VaultModulesRoleKey               string = "VAULT_MODULES_ROLE"
+	EnableWebhooksKey                 string = "ENABLE_WEBHOOKS"
+	ConnectionTimeoutKey              string = "CONNECTION_TIMEOUT"
+	MainPolicyManagerNameKey          string = "MAIN_POLICY_MANAGER_NAME"
+	MainPolicyManagerConnectorUrlKey  string = "MAIN_POLICY_MANAGER_CONNECTOR_URL"
+	LoggingVerbosityKey               string = "LOGGING_VERBOSITY"
+	PrettyLoggingKey                  string = "PRETTY_LOGGING"
+	CatalogProviderNameKey            string = "CATALOG_PROVIDER_NAME"
+	DatapathLimitKey                  string = "DATAPATH_LIMIT"
 )
 
 // GetSystemNamespace returns the namespace of control plane
@@ -32,7 +40,7 @@ func GetSystemNamespace() string {
 
 // GetModulesRole returns the modules assigned authentication role for accessing dataset credentials
 func GetModulesRole() string {
-	return os.Getenv(VaultModulesRole)
+	return os.Getenv(VaultModulesRoleKey)
 }
 
 // GetVaultAddress returns the address and port of the vault system,
@@ -44,7 +52,7 @@ func GetVaultAddress() string {
 // GetDataPathMaxSize bounds the data path size (number of modules that access data for read/write/copy, not including transformations)
 func GetDataPathMaxSize() (int, error) {
 	defaultLimit := 2
-	limitStr := os.Getenv("DATAPATH_LIMIT")
+	limitStr := os.Getenv(DatapathLimitKey)
 	if limitStr == "" {
 		return defaultLimit, nil
 	}
@@ -71,13 +79,12 @@ func SetIfNotSet(key string, value string, t ginkgo.GinkgoTInterface) {
 func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
 	SetIfNotSet(CatalogConnectorServiceAddressKey, "http://localhost:50085", t)
 	SetIfNotSet(VaultAddressKey, "http://127.0.0.1:8200/", t)
-	SetIfNotSet("RUN_WITHOUT_VAULT", "1", t)
-	SetIfNotSet("ENABLE_WEBHOOKS", "false", t)
-	SetIfNotSet("CONNECTION_TIMEOUT", "120", t)
-	SetIfNotSet("MAIN_POLICY_MANAGER_CONNECTOR_URL", "http://localhost:50090", t)
-	SetIfNotSet("MAIN_POLICY_MANAGER_NAME", "MOCK", t)
-	SetIfNotSet("LOGGING_VERBOSITY", "-1", t)
-	SetIfNotSet("PRETTY_LOGGING", "true", t)
+	SetIfNotSet(EnableWebhooksKey, "false", t)
+	SetIfNotSet(ConnectionTimeoutKey, "120", t)
+	SetIfNotSet(MainPolicyManagerConnectorUrlKey, "http://localhost:50090", t)
+	SetIfNotSet(MainPolicyManagerNameKey, "MOCK", t)
+	SetIfNotSet(LoggingVerbosityKey, "-1", t)
+	SetIfNotSet(PrettyLoggingKey, "true", t)
 }
 
 func logEnvVariable(log zerolog.Logger, key string) {
@@ -90,9 +97,10 @@ func logEnvVariable(log zerolog.Logger, key string) {
 }
 
 func LogEnvVariables(log zerolog.Logger) {
-	envVarArray := [...]string{CatalogConnectorServiceAddressKey, VaultAddressKey, VaultModulesRole, "RUN_WITHOUT_VAULT",
-		"ENABLE_WEBHOOKS", "CONNECTION_TIMEOUT", "MAIN_POLICY_MANAGER_CONNECTOR_URL", "MAIN_POLICY_MANAGER_NAME",
-		"LOGGING_VERBOSITY", "PRETTY_LOGGING", "CATALOG_PROVIDER_NAME"}
+	envVarArray := [...]string{CatalogConnectorServiceAddressKey, VaultAddressKey, VaultModulesRoleKey,
+		EnableWebhooksKey, ConnectionTimeoutKey, MainPolicyManagerConnectorUrlKey,
+		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey, DatapathLimitKey,
+		CatalogConnectorServiceAddressKey}
 
 	log.Info().Msg("Manager configured with the following environment variables:")
 	for _, envVar := range envVarArray {
