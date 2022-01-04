@@ -107,6 +107,8 @@ type ModuleCapability struct {
 }
 
 type ModuleSupportedAction struct {
+	// Unique name of an action supported by the module
+	// +required
 	Name taxonomy.ActionName `json:"name"`
 }
 
