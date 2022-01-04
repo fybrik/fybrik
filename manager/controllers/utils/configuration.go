@@ -26,10 +26,10 @@ func GetSystemNamespace() string {
 			return ns
 		}
 	}
-	return "fybrik-system"
+	return DefaultControllerNamespace
 }
 
-// GetModulesRole returns the modules assigned authentification role for accessing dataset credentials
+// GetModulesRole returns the modules assigned authentication role for accessing dataset credentials
 func GetModulesRole() string {
 	return os.Getenv(VaultModulesRole)
 }
@@ -68,12 +68,12 @@ func SetIfNotSet(key string, value string, t ginkgo.GinkgoTInterface) {
 }
 
 func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
-	SetIfNotSet(CatalogConnectorServiceAddressKey, "localhost:50085", t)
+	SetIfNotSet(CatalogConnectorServiceAddressKey, "http://localhost:50085", t)
 	SetIfNotSet(VaultAddressKey, "http://127.0.0.1:8200/", t)
 	SetIfNotSet("RUN_WITHOUT_VAULT", "1", t)
 	SetIfNotSet("ENABLE_WEBHOOKS", "false", t)
 	SetIfNotSet("CONNECTION_TIMEOUT", "120", t)
-	SetIfNotSet("MAIN_POLICY_MANAGER_CONNECTOR_URL", "localhost:50090", t)
+	SetIfNotSet("MAIN_POLICY_MANAGER_CONNECTOR_URL", "http://localhost:50090", t)
 	SetIfNotSet("MAIN_POLICY_MANAGER_NAME", "MOCK", t)
 	SetIfNotSet("LOGGING_VERBOSITY", "-1", t)
 	SetIfNotSet("PRETTY_LOGGING", "true", t)

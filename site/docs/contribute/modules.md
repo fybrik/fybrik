@@ -36,9 +36,9 @@ $ curl --header "X-Vault-Token: ..." -X GET https://<address>/<secretPath>
 
 ## Module Helm Chart
 
-For any module chosen by the control plane to be part of the data path, the control plane needs to be able to install/remove/upgrade an instance of the module. Fybrik uses [Helm](https://helm.sh/docs/intro/using_helm/) to provide this functionality. Follow the Helm [getting started](https://helm.sh/docs/chart_template_guide/getting_started/) guide if you are unfamiliar with Helm. Note that Helm 3.3 or above is required.
+For any module chosen by the control plane to be part of the data path, the control plane needs to be able to install/remove/upgrade an instance of the module. Fybrik uses [Helm](https://helm.sh/docs/intro/using_helm/) to provide this functionality. Follow the Helm [getting started](https://helm.sh/docs/chart_template_guide/getting_started/) guide if you are unfamiliar with Helm. Note that Helm 3.7 or above is required.
 
-The names of the Kubernetes resources deployed by the module helm chart must contain the release name to avoid resource conflicts. A Kubernetes `service` resource which is used to access the module must have a name equal to the release name (this service name is also used in the optional [`spec.capabilites.api.endpoint.hostname`](../reference/crds.md#fybrikmodulespeccapabilitiesapiendpoint) field).
+The names of the Kubernetes resources deployed by the module helm chart must contain the release name to avoid resource conflicts. A Kubernetes `service` resource which is used to access the module must have a name equal to the release name (this service name is also used in the optional [`spec.capabilities.api.endpoint.hostname`](../reference/crds.md#fybrikmodulespeccapabilitiesapiendpoint) field).
 
 Because the chart is installed by the control plane, the input `values` to the chart must match the relevant type of [arguments](../reference/crds.md#blueprintspecflowstepsindexarguments). 
 <!-- TODO: expand this when we support setting values in the FybrikModule YAML: https://github.com/fybrik/fybrik/pull/42 -->
@@ -51,13 +51,13 @@ For a full example see the [Arrow Flight Module chart](https://github.com/fybrik
 
 Once your Helm chart is ready, you need to push it to a [OCI-based registry](https://helm.sh/docs/topics/registries/) such as [ghcr.io](https://ghcr.io). This allows the control plane of Fybrik to later pull the chart whenever it needs to be installed.
 
-You can use the [hack/make-rules/helm.mk](https://github.com/fybrik/fybrik/blob/master/hack/make-rules/helm.mk) Makefile, or manually push the chart:
+You can use the [hack/make-rules/helm.mk](https://github.com/fybrik/fybrik/blob/master/hack/make-rules/helm.mk) Makefile, or manually push the chart as described in the [link](https://github.com/helm/community/blob/main/hips/hip-0006.md):
 
 ```bash
 HELM_EXPERIMENTAL_OCI=1 
 helm registry login -u <username> <registry>
-helm chart save <chart folder> <registry>/<path>:<version>
-helm chart push <registry>/<path>:<version>
+helm package <chart folder> -d <local-chart-path>
+helm push <local-chart-path> oci://<registry>/<path>
 ```
 
 ## FybrikModule YAML

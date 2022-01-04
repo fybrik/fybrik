@@ -90,28 +90,29 @@ metadata:
 spec:
   secretRef: 
     name: paysim-csv
-  assetDetails:
+  details:
     dataFormat: csv
     connection:
-      type: s3
+      name: s3
       s3:
         endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
         bucket: "demo"
         objectKey: "PS_20174392719_1491204439457_log.csv"
-  assetMetadata:
-    geography: theshire
+  metadata:
+    name: Synthetic Financial Datasets For Fraud Detection
+    geography: theshire 
     tags:
-    - finance
-    componentsMetadata:
-      nameOrig: 
+      finance: true
+    columns:
+      - name: nameOrig
         tags:
-        - PII
-      oldbalanceOrg:
+          PII: true
+      - name: oldbalanceOrg
         tags:
-        - PII
-      newbalanceOrig:
+          PII: true
+      - name: newbalanceOrig
         tags:
-        - PII
+          PII: true
 EOF
 ```
 
@@ -137,8 +138,8 @@ package dataapi.authz
 rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": description}] {
   description := "Redact columns tagged as PII in datasets tagged with finance = true"
   input.action.actionType == "read"
-  input.resource.tags.finance
-  column_names := [input.resource.columns[i].name | input.resource.columns[i].tags.PII]
+  input.resource.metadata.tags.finance
+  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.PII]
   count(column_names) > 0
 }
 ```
@@ -235,9 +236,9 @@ while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.ready
 
 In your **terminal**, run the following command to print the [endpoint](../../reference/crds/#fybrikapplicationstatusreadendpointsmapkey) to use for reading the data. It fetches the code from the `FybrikApplication` resource:
 ```bash
-ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.scheme})
-ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.hostname})
-ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.port})
+ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.scheme})
+ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.hostname})
+ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.port})
 printf "${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}"
 ```
 The next steps use the endpoint to read the data in a python notebook

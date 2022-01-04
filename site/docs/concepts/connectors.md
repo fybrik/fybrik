@@ -1,6 +1,6 @@
 # Connectors
 
-The project currently has two extension mechanisms, namely connectors and modules. 
+The project currently has two extension mechanisms, namely connectors and modules.
 This page describes what connectors are and what connectors are installed using the default Fybrik installation.
 
 ## What are connectors?
@@ -11,9 +11,11 @@ Connectors are [Open API](https://www.openapis.org/) services that the Fybrik co
 
 Yes. Fybrik provides some default connectors described in this page but anyone can develop their own connectors.
 
-A connector needs to implement one or more of the interfaces described in the [API documentation](../reference/connectors.md), depending on the connector type. Note that a single Kubernetes service can implement all interfaces if the system it connects to supports the required functionality, but it can also be different services.
+A connector needs to implement one or more of the interfaces described in the [API documentation](../reference/connectors.md), depending on the connector type. Note that a single Kubernetes service can implement all interfaces if the system it connects to, supports the required functionality, but it can also be different services.
 
-In addition, to benefit from the [control plane security](../tasks/control-plane-security.md) feature ensure that the `Pods` of your connector:
+In addition, to benefit from the [control plane security](../tasks/control-plane-security.md) feature ensure that the `Pods` 
+of your connector:
+
 1. Have a `fybrik.io/componentType: connector` label 
 1. Have a `sidecar.istio.io/inject: "true"` annotation
 
@@ -34,7 +36,7 @@ The default installation of Fybrik installs [Katalog](../reference/katalog.md), 
 Data governance policies are defined externally in the data governance manager of choice. 
 
 Enforcing data governance policies requires a Policy Decision Point (PDP) that dictates what enforcement actions need to take place.
-Fybrik supports a wide and extendible set of enforcement actions to perform on data read, copy, (future) write or delete. These include transformation of data, verification of the data, and various restrictions on the external activity of an application that can access the data.
+Fybrik supports a wide and extendable set of enforcement actions to perform on data read, copy, (future) write or delete. These include transformation of data, verification of the data, and various restrictions on the external activity of an application that can access the data.
 
 A PDP returns a list of enforcement actions given a set of policies and specific context about the application and the data it uses. 
 Fybrik includes a PDP that is powered by [Open Policy Agent](https://www.openpolicyagent.org/) (OPA). However, the PDP can also use external policy managers via connectors, to cover some or even all policy types. 

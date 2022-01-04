@@ -7,10 +7,10 @@ import (
 	"os"
 )
 
-// DefaultModulesNamespace defines a namespace where module resources will be allocated
+// DefaultModulesNamespace defines a default namespace where module resources will be allocated
 const DefaultModulesNamespace = "fybrik-blueprints"
 
-// Controller namespace defines a namespace where
+// DefaultControllerNamespace defines a default namespace where fybrik control plane is running
 const DefaultControllerNamespace = "fybrik-system"
 
 func GetDefaultModulesNamespace() string {

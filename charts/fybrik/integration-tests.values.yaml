@@ -5,7 +5,7 @@
 # Global configuration applies to multiple components installed by this chart
 global:
   hub: localhost:5000/fybrik-system
-  tag: "master"
+  tag: "0.0.0"
   imagePullPolicy: "Always"
 
   prettyLogging: false
@@ -20,10 +20,6 @@ coordinator:
   # Configures the catalog system name to be used by the coordinator manager.
   # Accepted values are "katalog", "egeria" or any meaningful name if a third party connector is used.
   catalog: "katalog"
-
-  # Overrides the catalog connector URL.
-  # Defaults to `<catalog>-connector:80`.
-  catalogConnectorURL: "http://katalog-connector:80"
 
 # Manager component
 manager:

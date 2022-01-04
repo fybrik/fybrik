@@ -5,9 +5,10 @@ package razee
 
 import (
 	"fmt"
-	corev1 "k8s.io/api/core/v1"
 	"strconv"
 	"strings"
+
+	corev1 "k8s.io/api/core/v1"
 
 	"emperror.dev/errors"
 	"github.com/IBM/satcon-client-go/client"
@@ -16,12 +17,12 @@ import (
 	"github.com/IBM/satcon-client-go/client/auth/local"
 	"github.com/IBM/satcon-client-go/client/types"
 	"github.com/ghodss/yaml"
-	"github.com/go-logr/logr"
+	"github.com/rs/zerolog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
 
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/multicluster"
 )
 
@@ -45,7 +46,7 @@ type razeeClusterManager struct {
 	orgID        string
 	clusterGroup string
 	con          client.SatCon
-	log          logr.Logger
+	log          zerolog.Logger
 }
 
 func (r *razeeClusterManager) GetClusters() ([]multicluster.Cluster, error) {
@@ -53,14 +54,14 @@ func (r *razeeClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	var razeeClusters []types.Cluster
 	var err error
 	if r.clusterGroup != "" {
-		r.log.Info("Using clusterGroup to fetch cluster info", "clusterGroup", r.clusterGroup)
+		r.log.Info().Str("clusterGroup", r.clusterGroup).Msg("Using clusterGroup to fetch cluster info")
 		group, err := r.con.Groups.GroupByName(r.orgID, r.clusterGroup)
 		if err != nil {
 			return nil, err
 		}
 		razeeClusters = group.Clusters
 	} else {
-		r.log.Info("Using all clusters in organization as reference clusters.")
+		r.log.Info().Msg("Using all clusters in organization as reference clusters.")
 		razeeClusters, err = r.con.Clusters.ClustersByOrgID(r.orgID)
 		if err != nil {
 			return nil, err
@@ -70,13 +71,13 @@ func (r *razeeClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	for _, c := range razeeClusters {
 		resourceContent, err := r.con.Resources.ResourceContent(r.orgID, c.ClusterID, clusterMetadataConfigMapSL)
 		if err != nil {
-			r.log.Error(err, "Could not fetch cluster information", "cluster", c.Name)
+			r.log.Error().Err(err).Str("cluster", c.Name).Msg("Could not fetch cluster information")
 			return nil, err
 		}
 		// If no content for the resource was found the cluster is not part of Fybrik or not installed
 		// correctly. Fybrik should ignore those clusters and continue.
 		if resourceContent == nil {
-			r.log.Info("Resource content returned is nil! Skipping cluster", "cluster", c.Name)
+			r.log.Error().Err(err).Str("cluster", c.Name).Msg("Resource content returned is nil! Skipping cluster")
 			continue
 		}
 		scheme := runtime.NewScheme()
@@ -102,18 +103,19 @@ func (r *razeeClusterManager) GetBlueprint(clusterName string, namespace string,
 		return nil, err
 	}
 	jsonData, err := r.con.Resources.ResourceContent(r.orgID, cluster.ClusterID, selfLink)
+	log := r.log.With().Str("cluster", clusterName).Str("name", name).Str("namespace", namespace).Logger()
 	if err != nil {
-		r.log.Error(err, "Error while fetching resource content of blueprint", "cluster", clusterName, "name", name)
+		log.Error().Err(err).Msg("Error while fetching resource content of blueprint")
 		return nil, err
 	}
 	if jsonData == nil {
-		r.log.Info("Could not get any resource data", "cluster", cluster, "namespace", namespace, "name", name)
+		log.Warn().Msg("Could not get any resource data")
 		return nil, nil
 	}
-	r.log.V(2).Info("Blueprint data: '" + jsonData.Content + "'")
+	log.Debug().Str("Blueprint data", jsonData.Content)
 
 	if jsonData.Content == "" {
-		r.log.Info("Retrieved empty data for ", "cluster", cluster, "namespace", namespace, "name", name)
+		log.Warn().Msg("Retrieved empty data")
 		return nil, nil
 	}
 
@@ -121,7 +123,7 @@ func (r *razeeClusterManager) GetBlueprint(clusterName string, namespace string,
 	blueprint := v1alpha1.Blueprint{}
 	err = multicluster.Decode(jsonData.Content, scheme, &blueprint)
 	if blueprint.Namespace == "" {
-		r.log.Info("Retrieved an empty blueprint for ", "cluster", cluster, "namespace", namespace, "name", name)
+		log.Warn().Msg("Retrieved an empty blueprint")
 		return nil, nil
 	}
 	return &blueprint, err
@@ -141,13 +143,12 @@ func (r *razeeClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha
 	groupName := getGroupName(cluster)
 	channelName := channelName(cluster, blueprint.Name)
 	version := "0"
-
+	logging.LogStructure("Blueprint to create", blueprint, r.log, false, false)
 	content, err := yaml.Marshal(blueprint)
 	if err != nil {
 		return err
 	}
 
-	r.log.Info("Blueprint content to create: " + string(content))
 	rCluster, err := r.con.Clusters.ClusterByName(r.orgID, cluster)
 	if err != nil {
 		return errors.Wrap(err, "error while fetching cluster by name")
@@ -160,9 +161,9 @@ func (r *razeeClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha
 	group, err := r.con.Groups.GroupByName(r.orgID, groupName)
 	if err != nil {
 		if err.Error() == "Cannot destructure property 'req_id' of 'context' as it is undefined." {
-			r.log.Info("Group does not exist. Creating group.")
+			r.log.Info().Msg("Group does not exist. Creating group.")
 		} else {
-			r.log.Error(err, "Error while fetching group by name", "group", groupName)
+			r.log.Error().Err(err).Str("group", groupName).Msg("Error while fetching group by name")
 			return err
 		}
 	}
@@ -179,7 +180,7 @@ func (r *razeeClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha
 
 	_, err = r.con.Groups.GroupClusters(r.orgID, groupUUID, []string{rCluster.ClusterID})
 	if err != nil {
-		r.log.Error(err, "Error while creating group", "group", groupName, "cluster", rCluster, "groupUUID", groupUUID)
+		r.log.Error().Err(err).Str("group", groupName).Str("cluster", rCluster.Name).Str("groupUUID", groupUUID).Msg("Error while creating group")
 		return err
 	}
 
@@ -192,7 +193,7 @@ func (r *razeeClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha
 	}
 	if existingChannel != nil {
 		// Channel already exists. Update channel instead of creating
-		r.log.Info("Channel already exists! Updating channel version...", "existingChannel", existingChannel)
+		r.log.Info().Str("existingChannel", existingChannel.Name).Msg("Channel already exists! Updating channel version...")
 		return r.UpdateBlueprint(cluster, blueprint)
 	}
 
@@ -208,9 +209,9 @@ func (r *razeeClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha
 		// Remove channel if channelVersion could not be created
 		removeChannel, channelRemoveErr := r.con.Channels.RemoveChannel(r.orgID, channel.UUID)
 		if channelRemoveErr != nil {
-			r.log.Error(channelRemoveErr, "Unable to remove channel after error")
+			r.log.Error().Err(channelRemoveErr).Msg("Unable to remove channel after error")
 		} else if removeChannel.Success {
-			r.log.Info("Rolled back channel version after error")
+			r.log.Info().Msg("Rolled back channel version after error")
 		}
 
 		return err
@@ -222,20 +223,20 @@ func (r *razeeClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha
 		// Remove channelVersion and channel if the subscription could not be created
 		removeChannelVersion, versionRemoveErr := r.con.Versions.RemoveChannelVersion(r.orgID, channelVersion.VersionUUID)
 		if versionRemoveErr != nil {
-			r.log.Error(versionRemoveErr, "Unable to remove channel version after error")
+			r.log.Error().Err(versionRemoveErr).Msg("Unable to remove channel version after error")
 		} else if removeChannelVersion.Success {
-			r.log.Info("Rolled back channel version after error")
+			r.log.Info().Msg("Rolled back channel version after error")
 		}
 		removeChannel, channelRemoveErr := r.con.Channels.RemoveChannel(r.orgID, channel.UUID)
 		if channelRemoveErr != nil {
-			r.log.Error(channelRemoveErr, "Unable to remove channel after error")
+			r.log.Error().Err(channelRemoveErr).Msg("Unable to remove channel after error")
 		} else if removeChannel.Success {
-			r.log.Info("Rolled back channel after error")
+			r.log.Info().Msg("Rolled back channel after error")
 		}
 		return err
 	}
 
-	r.log.Info("Successfully created subscription!")
+	r.log.Info().Msg("Successfully created subscription!")
 	return nil
 }
 
@@ -246,7 +247,7 @@ func (r *razeeClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha
 	if err != nil {
 		return err
 	}
-	r.log.Info("Blueprint content to update: " + string(content))
+	logging.LogStructure("Blueprint to update", blueprint, r.log, false, false)
 
 	max := 0
 	channelInfo, err := r.con.Channels.ChannelByName(r.orgID, channelName)
@@ -270,16 +271,16 @@ func (r *razeeClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha
 	}
 	subscriptionUUID := channelInfo.Subscriptions[0].UUID
 
-	r.log.V(1).Info("Creating new channel version", "nextVersion", nextVersion, "subscriptionUUID", subscriptionUUID, "channelUuid", channelInfo.UUID)
+	r.log.Trace().Str("nextVersion", nextVersion).Str("subscriptionUUID", subscriptionUUID).Str("channelUUID", channelInfo.UUID).Msg("Creating new channel version")
 
 	// create channel version
 	channelVersion, err := r.con.Versions.AddChannelVersion(r.orgID, channelInfo.UUID, nextVersion, content, "")
 	if err != nil {
-		r.log.Error(err, "er")
+		r.log.Error().Err(err)
 		return err
 	}
 
-	r.log.V(2).Info("Updating subscription...")
+	r.log.Trace().Msg("Updating subscription...")
 
 	// update subscription
 	_, err = r.con.Subscriptions.SetSubscription(r.orgID, subscriptionUUID, channelVersion.VersionUUID)
@@ -287,7 +288,7 @@ func (r *razeeClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha
 		return err
 	}
 
-	r.log.Info("Subscription successfully updated!")
+	r.log.Info().Msg("Subscription successfully updated!")
 
 	return nil
 }
@@ -304,7 +305,7 @@ func (r *razeeClusterManager) DeleteBlueprint(cluster string, namespace string, 
 			return err
 		}
 		if subscription.Success {
-			r.log.Info("Successfully deleted subscription " + subscription.UUID)
+			r.log.Info().Msg("Successfully deleted subscription " + subscription.UUID)
 		}
 	}
 	for _, v := range channel.Versions {
@@ -313,7 +314,7 @@ func (r *razeeClusterManager) DeleteBlueprint(cluster string, namespace string, 
 			return err
 		}
 		if version.Success {
-			r.log.Info("Successfully deleted version " + version.UUID)
+			r.log.Info().Msg("Successfully deleted version " + version.UUID)
 		}
 	}
 
@@ -322,7 +323,7 @@ func (r *razeeClusterManager) DeleteBlueprint(cluster string, namespace string, 
 		return err
 	}
 	if removeChannel.Success {
-		r.log.Info("Successfully deleted channel " + removeChannel.UUID)
+		r.log.Info().Msg("Successfully deleted channel " + removeChannel.UUID)
 	}
 	return nil
 }
@@ -340,7 +341,7 @@ func NewRazeeLocalClusterManager(url string, login string, password string, clus
 		return nil, err
 	}
 	con, _ := client.New(url, localAuth)
-	logger := ctrl.Log.WithName("RazeeManager")
+	logger := logging.LogInit(logging.CONTROLLER, "RazeeManager")
 	me, err := con.Users.Me()
 	if err != nil {
 		return nil, err
@@ -350,7 +351,7 @@ func NewRazeeLocalClusterManager(url string, login string, password string, clus
 		return nil, errors.New("could not retrieve login information of Razee")
 	}
 
-	logger.Info("Initializing Razee local", "orgId", me.OrgId, "clusterGroup", clusterGroup)
+	logger.Info().Str("clusterGroup", clusterGroup).Str("orgID", me.OrgId).Msg("Initializing Razee local")
 
 	return &razeeClusterManager{
 		orgID:        me.OrgId,
@@ -367,7 +368,7 @@ func NewRazeeOAuthClusterManager(url string, apiKey string, clusterGroup string)
 		return nil, err
 	}
 	con, _ := client.New(url, auth)
-	logger := ctrl.Log.WithName("RazeeManager")
+	logger := logging.LogInit(logging.CONTROLLER, "RazeeManager")
 	me, err := con.Users.Me()
 	if err != nil {
 		return nil, err
@@ -377,7 +378,7 @@ func NewRazeeOAuthClusterManager(url string, apiKey string, clusterGroup string)
 		return nil, errors.New("could not retrieve login information of Razee")
 	}
 
-	logger.Info("Initializing Razee using oauth", "orgId", me.OrgId, "clusterGroup", clusterGroup)
+	logger.Info().Str("orgID", me.OrgId).Str("clusterGroup", clusterGroup).Msg("Initializing Razee using oauth")
 
 	return &razeeClusterManager{
 		orgID:        me.OrgId,
@@ -410,9 +411,9 @@ func NewSatConfClusterManager(apikey string, clusterGroup string) (multicluster.
 		return nil, errors.New("could not retrieve login information of Razee")
 	}
 
-	logger := ctrl.Log.WithName("RazeeManager")
+	logger := logging.LogInit(logging.CONTROLLER, "RazeeManager")
 
-	logger.Info("Initializing Razee with IBM Satellite Config", "orgId", me.OrgId, "clusterGroup", clusterGroup)
+	logger.Info().Str("clusterGroup", clusterGroup).Str("orgID", me.OrgId).Msg("Initializing Razee with IBM Satellite Config")
 
 	return &razeeClusterManager{
 		orgID:        me.OrgId,

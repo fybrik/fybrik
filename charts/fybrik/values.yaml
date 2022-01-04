@@ -66,7 +66,7 @@ coordinator:
   catalog: "katalog"
 
   # Overrides the catalog connector URL.
-  # Defaults to `<catalog>-connector:80`.
+  # Defaults to `http://<catalog>-connector:80`.
   catalogConnectorURL: ""
 
   # Configures the policy manager system name to be used by the coordinator manager.
@@ -74,8 +74,8 @@ coordinator:
   policyManager: "opa"
 
   # Overrides the policy manager connector URL.
-  # Defaults to `<policyManager>-connector:80`.
-  policyManagerConnectorURL: "http://opa-connector:80"
+  # Defaults to `http://<policyManager>-connector:80`.
+  policyManagerConnectorURL: ""
 
   # Configure the vault instance to be used by the coordinator manager
   vault:

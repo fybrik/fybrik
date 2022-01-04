@@ -5,7 +5,7 @@
 
 source ./common.sh
 
-DESIRED_VERSION=v3.6.3
+DESIRED_VERSION=v3.7.0
 
 header_text "Checking for bin/helm $DESIRED_VERSION"
 [[ -f bin/helm &&  `bin/helm version --template='{{.Version}}'` == $DESIRED_VERSION ]] && exit 0
@@ -18,3 +18,4 @@ curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scr
 chmod 700 get_helm.sh
 HELM_INSTALL_DIR=bin ./get_helm.sh -v $DESIRED_VERSION --no-sudo
 rm -rf get_helm.sh
+

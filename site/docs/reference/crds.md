@@ -67,14 +67,14 @@ Blueprint is the Schema for the blueprints API
         <td><b><a href="#blueprintspec">spec</a></b></td>
         <td>object</td>
         <td>
-          BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path that run in a particular cluster.  In a single cluster environment there is one blueprint.  In a multi-cluster environment there is one Blueprint per cluster per workload (FybrikApplication).<br/>
+          BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path that run in a particular cluster. In a single cluster environment there is one blueprint per workload (FybrikApplication). In a multi-cluster environment there is one Blueprint per cluster per workload (FybrikApplication).<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#blueprintstatus">status</a></b></td>
         <td>object</td>
         <td>
-          BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators forthe Kubernetes resources owned by the Blueprint for cleanup and status monitoring<br/>
+          BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -86,7 +86,7 @@ Blueprint is the Schema for the blueprints API
 
 
 
-BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path that run in a particular cluster.  In a single cluster environment there is one blueprint.  In a multi-cluster environment there is one Blueprint per cluster per workload (FybrikApplication).
+BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path that run in a particular cluster. In a single cluster environment there is one blueprint per workload (FybrikApplication). In a multi-cluster environment there is one Blueprint per cluster per workload (FybrikApplication).
 
 <table>
     <thead>
@@ -108,7 +108,7 @@ BlueprintSpec defines the desired state of Blueprint, which defines the componen
         <td><b><a href="#blueprintspecmoduleskey">modules</a></b></td>
         <td>map[string]object</td>
         <td>
-          Modules is a map which contains modules that indicate the data path components that run in this cluster The map key is InstanceName which is the unique name for the deployed instance related to this workload<br/>
+          Modules is a map which contains modules that indicate the data path components that run in this cluster The map key is moduleInstanceName which is the unique name for the deployed instance related to this workload<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -163,7 +163,7 @@ BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the in
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          Name of the fybrikmodule on which this is based<br/>
+          Name of the FybrikModule on which this is based<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -392,17 +392,17 @@ Destination is the data store to which the data will be copied
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopydestinationconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b>format</b></td>
         <td>string</td>
         <td>
           Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentscopydestinationconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -508,17 +508,17 @@ Source is the where the data currently resides
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopysourceconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b>format</b></td>
         <td>string</td>
         <td>
           Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentscopysourceconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -692,17 +692,17 @@ Source of the read path module
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsreadindexsourceconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b>format</b></td>
         <td>string</td>
         <td>
           Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsreadindexsourceconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -876,17 +876,17 @@ Destination is the data store to which the data will be written
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentswriteindexdestinationconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b>format</b></td>
         <td>string</td>
         <td>
           Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentswriteindexdestinationconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -1021,7 +1021,7 @@ Chart contains the location of the helm chart with info detailing how to deploy
 
 
 
-BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators forthe Kubernetes resources owned by the Blueprint for cleanup and status monitoring
+BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring
 
 <table>
     <thead>
@@ -1036,7 +1036,7 @@ BlueprintStatus defines the observed state of Blueprint This includes readiness,
         <td><b><a href="#blueprintstatusmoduleskey">modules</a></b></td>
         <td>map[string]object</td>
         <td>
-          ModulesState is a map which holds the status of each module its key is the instance name which is the unique name for the deployed instance related to this workload<br/>
+          ModulesState is a map which holds the status of each module its key is the moduleInstanceName which is the unique name for the deployed instance related to this workload<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1712,26 +1712,10 @@ Endpoint provides the endpoint spec from which the asset will be served to the a
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>hostname</b></td>
+        <td><b>name</b></td>
         <td>string</td>
         <td>
-          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>port</b></td>
-        <td>integer</td>
-        <td>
           <br/>
-          <br/>
-            <i>Format</i>: int32<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>scheme</b></td>
-        <td>string</td>
-        <td>
-          For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -2135,7 +2119,7 @@ Capability declares what this module knows how to do and the types of data it kn
         <td><b><a href="#fybrikmodulespeccapabilitiesindexapi">api</a></b></td>
         <td>object</td>
         <td>
-          API indicates to the application how to access the capabilities provided by the module TODO This is optional but in ModuleAPI the endpoint is required?<br/>
+          API indicates to the application how to access the capabilities provided by the module<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -2204,7 +2188,7 @@ Capability declares what this module knows how to do and the types of data it kn
 
 
 
-API indicates to the application how to access the capabilities provided by the module TODO This is optional but in ModuleAPI the endpoint is required?
+API indicates to the application how to access the capabilities provided by the module
 
 <table>
     <thead>
@@ -2216,36 +2200,29 @@ API indicates to the application how to access the capabilities provided by the 
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>dataformat</b></td>
+        <td><b>dataFormat</b></td>
         <td>string</td>
         <td>
-          DataFormat defines the data format type<br/>
+          Data format<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#fybrikmodulespeccapabilitiesindexapiendpoint">endpoint</a></b></td>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindexapiconnection">connection</a></b></td>
         <td>object</td>
         <td>
-          EndpointSpec is used both by the module creator and by the status of the fybrikapplication<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>protocol</b></td>
-        <td>string</td>
-        <td>
-          Protocol defines the interface protocol used for data transactions<br/>
+          Connection information<br/>
         </td>
         <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### FybrikModule.spec.capabilities[index].api.endpoint
+#### FybrikModule.spec.capabilities[index].api.connection
 <sup><sup>[↩ Parent](#fybrikmodulespeccapabilitiesindexapi)</sup></sup>
 
 
 
-EndpointSpec is used both by the module creator and by the status of the fybrikapplication
+Connection information
 
 <table>
     <thead>
@@ -2257,26 +2234,10 @@ EndpointSpec is used both by the module creator and by the status of the fybrika
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>hostname</b></td>
+        <td><b>name</b></td>
         <td>string</td>
         <td>
-          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>port</b></td>
-        <td>integer</td>
-        <td>
           <br/>
-          <br/>
-            <i>Format</i>: int32<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>scheme</b></td>
-        <td>string</td>
-        <td>
-          For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -2822,17 +2783,17 @@ DataStore contains the details for accesing the data that are sent by catalog co
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#plotterspecassetskeyassetdetailsconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b>format</b></td>
         <td>string</td>
         <td>
           Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecassetskeyassetdetailsconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -3092,7 +3053,7 @@ Step parameters TODO why not flatten the parameters into this data flow step
         <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapi">api</a></b></td>
         <td>object</td>
         <td>
-          Service holds information for accessing a module instance<br/>
+          ResourceDetails includes asset connection details<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -3145,7 +3106,7 @@ Step parameters TODO why not flatten the parameters into this data flow step
 
 
 
-Service holds information for accessing a module instance
+ResourceDetails includes asset connection details
 
 <table>
     <thead>
@@ -3157,29 +3118,29 @@ Service holds information for accessing a module instance
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapiendpoint">endpoint</a></b></td>
-        <td>object</td>
-        <td>
-          EndpointSpec is used both by the module creator and by the status of the fybrikapplication<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>format</b></td>
+        <td><b>dataFormat</b></td>
         <td>string</td>
         <td>
-          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+          Data format<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapiconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection information<br/>
         </td>
         <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.api.endpoint
+#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.api.connection
 <sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparametersapi)</sup></sup>
 
 
 
-EndpointSpec is used both by the module creator and by the status of the fybrikapplication
+Connection information
 
 <table>
     <thead>
@@ -3191,26 +3152,10 @@ EndpointSpec is used both by the module creator and by the status of the fybrika
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>hostname</b></td>
+        <td><b>name</b></td>
         <td>string</td>
         <td>
-          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>port</b></td>
-        <td>integer</td>
-        <td>
           <br/>
-          <br/>
-            <i>Format</i>: int32<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>scheme</b></td>
-        <td>string</td>
-        <td>
-          For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3264,7 +3209,7 @@ StepSource is the source of this step: it could be assetID or an enpoint of anot
         <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapi">api</a></b></td>
         <td>object</td>
         <td>
-          Service holds information for accessing a module instance<br/>
+          API holds information for accessing a module instance<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -3283,7 +3228,7 @@ StepSource is the source of this step: it could be assetID or an enpoint of anot
 
 
 
-Service holds information for accessing a module instance
+API holds information for accessing a module instance
 
 <table>
     <thead>
@@ -3295,29 +3240,29 @@ Service holds information for accessing a module instance
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapiendpoint">endpoint</a></b></td>
-        <td>object</td>
-        <td>
-          EndpointSpec is used both by the module creator and by the status of the fybrikapplication<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>format</b></td>
+        <td><b>dataFormat</b></td>
         <td>string</td>
         <td>
-          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+          Data format<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapiconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection information<br/>
         </td>
         <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.source.api.endpoint
+#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.source.api.connection
 <sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapi)</sup></sup>
 
 
 
-EndpointSpec is used both by the module creator and by the status of the fybrikapplication
+Connection information
 
 <table>
     <thead>
@@ -3329,26 +3274,10 @@ EndpointSpec is used both by the module creator and by the status of the fybrika
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>hostname</b></td>
+        <td><b>name</b></td>
         <td>string</td>
         <td>
-          Hostname is the hostname to connect to for connecting to a module exposed service. By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module. <br/> Module developers can overide the default behavior by providing a template that may use the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>port</b></td>
-        <td>integer</td>
-        <td>
           <br/>
-          <br/>
-            <i>Format</i>: int32<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>scheme</b></td>
-        <td>string</td>
-        <td>
-          For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3621,7 +3550,7 @@ MetaBlueprint defines blueprint metadata (name, namespace) and status
         <td><b><a href="#plotterstatusblueprintskeystatus">status</a></b></td>
         <td>object</td>
         <td>
-          BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators forthe Kubernetes resources owned by the Blueprint for cleanup and status monitoring<br/>
+          BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3633,7 +3562,7 @@ MetaBlueprint defines blueprint metadata (name, namespace) and status
 
 
 
-BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators forthe Kubernetes resources owned by the Blueprint for cleanup and status monitoring
+BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring
 
 <table>
     <thead>
@@ -3648,7 +3577,7 @@ BlueprintStatus defines the observed state of Blueprint This includes readiness,
         <td><b><a href="#plotterstatusblueprintskeystatusmoduleskey">modules</a></b></td>
         <td>map[string]object</td>
         <td>
-          ModulesState is a map which holds the status of each module its key is the instance name which is the unique name for the deployed instance related to this workload<br/>
+          ModulesState is a map which holds the status of each module its key is the moduleInstanceName which is the unique name for the deployed instance related to this workload<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -3951,7 +3880,7 @@ Resource Types:
 
 
 
-
+Asset defines an asset in the catalog
 
 <table>
     <thead>
@@ -3985,7 +3914,7 @@ Resource Types:
         <td>
           <br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr></tbody>
 </table>
 
@@ -4007,17 +3936,17 @@ Resource Types:
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#assetspecassetdetails">assetDetails</a></b></td>
+        <td><b><a href="#assetspecdetails">details</a></b></td>
         <td>object</td>
         <td>
           Asset details<br/>
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b><a href="#assetspecassetmetadata">assetMetadata</a></b></td>
+        <td><b><a href="#assetspecmetadata">metadata</a></b></td>
         <td>object</td>
         <td>
-          <br/>
+          Asset metadata<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -4031,7 +3960,7 @@ Resource Types:
 </table>
 
 
-#### Asset.spec.assetDetails
+#### Asset.spec.details
 <sup><sup>[↩ Parent](#assetspec)</sup></sup>
 
 
@@ -4051,11 +3980,11 @@ Asset details
         <td><b>dataFormat</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Data format<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#assetspecassetdetailsconnection">connection</a></b></td>
+        <td><b><a href="#assetspecdetailsconnection">connection</a></b></td>
         <td>object</td>
         <td>
           Connection information<br/>
@@ -4065,8 +3994,8 @@ Asset details
 </table>
 
 
-#### Asset.spec.assetDetails.connection
-<sup><sup>[↩ Parent](#assetspecassetdetails)</sup></sup>
+#### Asset.spec.details.connection
+<sup><sup>[↩ Parent](#assetspecdetails)</sup></sup>
 
 
 
@@ -4082,216 +4011,7 @@ Connection information
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#assetspecassetdetailsconnectiondb2">db2</a></b></td>
-        <td>object</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#assetspecassetdetailsconnectionkafka">kafka</a></b></td>
-        <td>object</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#assetspecassetdetailsconnections3">s3</a></b></td>
-        <td>object</td>
-        <td>
-          Connection information for S3 compatible object store<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>type</b></td>
-        <td>enum</td>
-        <td>
-          <br/>
-          <br/>
-            <i>Enum</i>: s3, db2, kafka<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Asset.spec.assetDetails.connection.db2
-<sup><sup>[↩ Parent](#assetspecassetdetailsconnection)</sup></sup>
-
-
-
-
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>database</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>port</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>ssl</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>table</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>url</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Asset.spec.assetDetails.connection.kafka
-<sup><sup>[↩ Parent](#assetspecassetdetailsconnection)</sup></sup>
-
-
-
-
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>bootstrap_servers</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>key_deserializer</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>sasl_mechanism</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>schema_registry</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>security_protocol</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>ssl_truststore</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>ssl_truststore_password</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>topic_name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>value_deserializer</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Asset.spec.assetDetails.connection.s3
-<sup><sup>[↩ Parent](#assetspecassetdetailsconnection)</sup></sup>
-
-
-
-Connection information for S3 compatible object store
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>region</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>bucket</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>endpoint</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>objectKey</b></td>
+        <td><b>name</b></td>
         <td>string</td>
         <td>
           <br/>
@@ -4301,12 +4021,12 @@ Connection information for S3 compatible object store
 </table>
 
 
-#### Asset.spec.assetMetadata
+#### Asset.spec.metadata
 <sup><sup>[↩ Parent](#assetspec)</sup></sup>
 
 
 
-
+Asset metadata
 
 <table>
     <thead>
@@ -4318,36 +4038,36 @@ Connection information for S3 compatible object store
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#assetspecassetmetadatacomponentsmetadatakey">componentsMetadata</a></b></td>
-        <td>map[string]object</td>
+        <td><b><a href="#assetspecmetadatacolumnsindex">columns</a></b></td>
+        <td>[]object</td>
         <td>
-          metadata for each component in asset (e.g., column)<br/>
+          Columns associated with the asset<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>geography</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Geography of the resource<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>namedMetadata</b></td>
-        <td>map[string]string</td>
+        <td><b>name</b></td>
+        <td>string</td>
         <td>
-          <br/>
+          Name of the resource<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>owner</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Owner of the resource<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>tags</b></td>
-        <td>[]string</td>
+        <td>object</td>
         <td>
           Tags associated with the asset<br/>
         </td>
@@ -4356,12 +4076,12 @@ Connection information for S3 compatible object store
 </table>
 
 
-#### Asset.spec.assetMetadata.componentsMetadata[key]
-<sup><sup>[↩ Parent](#assetspecassetmetadata)</sup></sup>
+#### Asset.spec.metadata.columns[index]
+<sup><sup>[↩ Parent](#assetspecmetadata)</sup></sup>
 
 
 
-
+ResourceColumn represents a column in a tabular resource
 
 <table>
     <thead>
@@ -4373,26 +4093,19 @@ Connection information for S3 compatible object store
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>componentType</b></td>
+        <td><b>tags</b></td>
+        <td>object</td>
+        <td>
+          Tags associated with the column<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the column<br/>
         </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>namedMetadata</b></td>
-        <td>map[string]string</td>
-        <td>
-          Named terms, that exist in Catalog toxonomy and the values for these terms for columns we will have "SchemaDetails" key, that will include technical schema details for this column TODO: Consider create special field for schema outside of metadata<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>tags</b></td>
-        <td>[]string</td>
-        <td>
-          Tags - can be any free text added to a component (no taxonomy)<br/>
-        </td>
-        <td>false</td>
+        <td>true</td>
       </tr></tbody>
 </table>
 

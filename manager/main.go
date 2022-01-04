@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"fybrik.io/fybrik/manager/controllers"
-	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
 
@@ -43,6 +42,7 @@ import (
 )
 
 var (
+	gitCommit string
 	scheme   = kruntime.NewScheme()
 	setupLog = logging.LogInit(logging.SETUP, "main")
 )
@@ -56,7 +56,7 @@ func init() {
 
 func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	enableApplicationController, enableBlueprintController, enablePlotterController bool) int {
-	setupLog.Trace().Msg("creating manager")
+	setupLog.Info().Msg("creating manager. based on git commit: " + gitCommit)
 
 	var applicationNamespaceSelector fields.Selector
 	applicationNamespace := utils.GetApplicationNamespace()
@@ -134,7 +134,6 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			}
 		}()
 
-		adminConfigEvaluator := adminconfig.NewRegoPolicyEvaluator(ctrl.Log.WithName("ConfigPolicyEvaluator"))
 		// Initiate the FybrikApplication Controller
 		applicationController := app.NewFybrikApplicationReconciler(
 			mgr,
@@ -143,7 +142,6 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			catalog,
 			clusterManager,
 			storage.NewProvisionImpl(mgr.GetClient()),
-			adminConfigEvaluator,
 		)
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create controller")

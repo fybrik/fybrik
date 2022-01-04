@@ -10,10 +10,11 @@ import (
 	"strings"
 
 	"fybrik.io/fybrik/manager/controllers/utils"
-	"github.com/go-logr/logr"
+	"fybrik.io/fybrik/pkg/logging"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
 )
@@ -27,13 +28,13 @@ const RegoPolicyDirectory = "/tmp/adminconfig/"
 
 // RegoPolicyEvaluator implements EvaluatorInterface
 type RegoPolicyEvaluator struct {
-	Log          logr.Logger
+	Log          zerolog.Logger
 	Query        rego.PreparedEvalQuery
 	ReadyForEval bool
 }
 
 // NewRegoPolicyEvaluator constructs a new RegoPolicyEvaluator object
-func NewRegoPolicyEvaluator(log logr.Logger) *RegoPolicyEvaluator {
+func NewRegoPolicyEvaluator(log zerolog.Logger) *RegoPolicyEvaluator {
 	return &RegoPolicyEvaluator{
 		Log:          log,
 		Query:        rego.PreparedEvalQuery{},
@@ -94,8 +95,8 @@ func (r *RegoPolicyEvaluator) Evaluate(in *EvaluatorInput) (EvaluatorOutput, err
 	if err != nil {
 		return EvaluatorOutput{Valid: false}, errors.Wrap(err, "failed to evaluate a query")
 	}
-	bytes, _ := yaml.Marshal(&rs)
-	r.Log.V(1).Info("Response: " + string(bytes))
+	log := r.Log.With().Str(utils.FybrikAppUUID, in.Workload.UUID).Logger()
+	logging.LogStructure("Admin policy evaluation", &rs, log, false, true)
 	// merge decisions and build an output object for the manager
 	decisions, valid, err := r.getOPADecisions(in, rs)
 	if err != nil {
@@ -112,18 +113,20 @@ func (r *RegoPolicyEvaluator) Evaluate(in *EvaluatorInput) (EvaluatorOutput, err
 
 // prepares an input in OPA format
 func (r *RegoPolicyEvaluator) prepareInputForOPA(in *EvaluatorInput) (map[string]interface{}, error) {
+	log := r.Log.With().Str(utils.FybrikAppUUID, in.Workload.UUID).Logger()
+	logging.LogStructure("Evaluator Input", in, log, false, false)
 	var input map[string]interface{}
 	bytes, err := yaml.Marshal(in)
 	if err != nil {
 		return input, errors.Wrap(err, "failed to marshal the input structure")
 	}
-	r.Log.V(1).Info("Input:\n" + string(bytes))
 	err = yaml.Unmarshal(bytes, &input)
 	return input, errors.Wrap(err, "failed  to unmarshal the input structure")
 }
 
 // getOPADecisions parses the OPA decisions and merges decisions for the same capability
 func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.ResultSet) (DecisionPerCapabilityMap, bool, error) {
+	log := r.Log.With().Str(utils.FybrikAppUUID, in.Workload.UUID).Logger()
 	decisions := map[string]Decision{}
 	if len(rs) == 0 {
 		return decisions, false, errors.New("invalid opa evaluation - an empty result set has been received")
@@ -163,7 +166,8 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 					} else {
 						valid, mergedDecision := r.merge(newDecision, decision)
 						if !valid {
-							r.Log.Error(errors.New("Conflict"), "while merging OPA decisions", "decisions", decision.Policy.Description, "decision", newDecision.Policy.Description)
+							joinedStr := strings.Join([]string{decision.Policy.Description, newDecision.Policy.Description}, ";")
+							log.Error().Str("decisions", joinedStr).Msg("Conflict while merging OPA decisions")
 							return decisions, false, nil
 						}
 						decisions[capability] = mergedDecision

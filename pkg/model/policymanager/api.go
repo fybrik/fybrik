@@ -4,7 +4,6 @@
 package policymanager
 
 import (
-	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
@@ -12,7 +11,7 @@ import (
 type GetPolicyDecisionsRequest struct {
 	Context  taxonomy.PolicyManagerRequestContext `json:"context,omitempty"`
 	Action   RequestAction                        `json:"action"`
-	Resource datacatalog.ResourceMetadata         `json:"resource"`
+	Resource Resource                             `json:"resource"`
 }
 
 // +fybrik:validation:object

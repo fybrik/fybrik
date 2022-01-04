@@ -35,11 +35,11 @@ Please note: For fybrik version 0.5 and lower, Helm version greater than 3.3 but
 
 ## Editors
 
-The project is predominantly written in Go so we recommend [Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-vscode.Go) for its good Go support. Alternatively you can select from [Editors](https://golang.org/doc/editors.html)
+The project is predominantly written in Go, so we recommend [Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-vscode.Go) for its good Go support. Alternatively you can select from [Editors](https://golang.org/doc/editors.html)
 
 ## Docker hub rate limits
 
-As docker hub introduced rate limits on docker image downloads this may effect development using the local kind setup.
+As docker hub introduced rate limits on docker image downloads this may affect development using the local kind setup.
 One option to fix the limit is to use a docker hub login for downloading the images. The environment will run
 a docker registry as a proxy for all public images. This registry runs in a docker container next to the kind clusters. 
 

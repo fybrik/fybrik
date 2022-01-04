@@ -3,7 +3,10 @@
 
 package policymanager
 
-import "fybrik.io/fybrik/pkg/model/taxonomy"
+import (
+	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
+)
 
 // +kubebuilder:validation:Enum=read;write;delete
 type RequestActionType string
@@ -19,6 +22,11 @@ type RequestAction struct {
 	ActionType         RequestActionType           `json:"actionType"`
 	ProcessingLocation taxonomy.ProcessingLocation `json:"processingLocation,omitempty"`
 	Destination        string                      `json:"destination,omitempty"`
+}
+
+type Resource struct {
+	ID       taxonomy.AssetID              `json:"id"`
+	Metadata *datacatalog.ResourceMetadata `json:"metadata,omitempty"`
 }
 
 type ResultItem struct {

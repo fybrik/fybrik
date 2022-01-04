@@ -88,9 +88,9 @@ true
 {{- end }}
 
 {{/*
-isRazeeEnabled checks if razee configuration is enabled
+isRazeeConfigurationEnabled checks if razee configuration is enabled
 */}}
-{{- define "fybrik.isRazeeEnabled" -}}
+{{- define "fybrik.isRazeeConfigurationEnabled" -}}
 {{- if or .Values.coordinator.razee.user .Values.coordinator.razee.apiKey .Values.coordinator.razee.iamKey -}}
 true
 {{- end -}}

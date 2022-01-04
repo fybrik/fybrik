@@ -105,10 +105,6 @@ $(TOOLBIN)/oapi-codegen:
 	GOBIN=$(ABSTOOLBIN) go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.4.2
 	$(call post-install-check)
 
-INSTALL_TOOLS += $(TOOLBIN)/openapi2crd
-$(TOOLBIN)/openapi2crd:
-	GOBIN=$(ABSTOOLBIN) go install fybrik.io/openapi2crd@v0.4.0
-
 INSTALL_TOOLS += $(TOOLBIN)/openapi-generator-cli
 $(TOOLBIN)/openapi-generator-cli:
 	cd $(TOOLS_DIR); chmod +x ./install_openapi-generator-cli.sh; ./install_openapi-generator-cli.sh
