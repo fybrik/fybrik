@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/onsi/ginkgo"
+	"github.com/rs/zerolog"
 )
 
 // Attributes that are defined in a config map or the runtime environment
@@ -77,4 +78,24 @@ func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
 	SetIfNotSet("MAIN_POLICY_MANAGER_NAME", "MOCK", t)
 	SetIfNotSet("LOGGING_VERBOSITY", "-1", t)
 	SetIfNotSet("PRETTY_LOGGING", "true", t)
+}
+
+func logEnvVariable(log zerolog.Logger, key string) {
+	value, found := os.LookupEnv(key)
+	if found {
+		log.Info().Msg("Env variable " + key + " set to \"" + value + "\"")
+	} else {
+		log.Info().Msg("Env variable " + key + " not set")
+	}
+}
+
+func LogEnvVariables(log zerolog.Logger) {
+	envVarArray := [...]string{CatalogConnectorServiceAddressKey, VaultAddressKey, VaultModulesRole, "RUN_WITHOUT_VAULT",
+		"ENABLE_WEBHOOKS", "CONNECTION_TIMEOUT", "MAIN_POLICY_MANAGER_CONNECTOR_URL", "MAIN_POLICY_MANAGER_NAME",
+		"LOGGING_VERBOSITY", "PRETTY_LOGGING", "CATALOG_PROVIDER_NAME"}
+
+	log.Info().Msg("Manager configured with the following environment variables:")
+	for _, envVar := range envVarArray {
+		logEnvVariable(log, envVar)
+	}
 }

@@ -57,6 +57,7 @@ func init() {
 func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	enableApplicationController, enableBlueprintController, enablePlotterController bool) int {
 	setupLog.Info().Msg("creating manager. based on git commit: " + gitCommit)
+	utils.LogEnvVariables(setupLog)
 
 	var applicationNamespaceSelector fields.Selector
 	applicationNamespace := utils.GetApplicationNamespace()
