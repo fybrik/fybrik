@@ -43,8 +43,8 @@ import (
 
 var (
 	gitCommit string
-	scheme   = kruntime.NewScheme()
-	setupLog = logging.LogInit(logging.SETUP, "main")
+	scheme    = kruntime.NewScheme()
+	setupLog  = logging.LogInit(logging.SETUP, "main")
 )
 
 func init() {

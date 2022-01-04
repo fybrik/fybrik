@@ -34,8 +34,9 @@ jobs:
         key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Verify
-      run: make verify
-
+      run: |
+        make generate manifests verify
+        git diff --exit-code
   test:
     name: Unit tests
     runs-on: ubuntu-latest
