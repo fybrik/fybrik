@@ -37,9 +37,11 @@ Default taxonomies are provided by fybrik, and are meant as a starting point on 
 
 ## Validation Points
 
-Fybrik validates the structures and values it receives from all external components.
+Fybrik validates the structures and values it receives from all external components.  
 
-_Add diagram_
+Webhooks are used for validation of FybrikApplication.yaml and for FybrikModule.yaml if webhooks are enabled.  If not enabled, the validation is done in the FybrikApplication controller (manager) and the FybrikModule controller.
+
+If webhooks are enabled then invalid yamls are automatically rejected and no resource is created.  However, if webhooks are turned off the resource is created and an error is indicated in its status should taxonomy validation fail.
 
 ## Summary
 
