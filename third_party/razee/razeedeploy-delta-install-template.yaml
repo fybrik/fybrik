@@ -74,7 +74,7 @@ spec:
                "--razeedash-org-key=$ORGAPIKEY",
                "--razeedash-cluster-id=$CLUSTERID",
                "--razeedash-cluster-metadata64=$CLUSTERNAMEB64",
-               "--cs", "--rr", "--rrs3", "--wk", "--mtp", "--ffsld", "--ms"]
+               "--cs=3.1.0", "--rr", "--rrs3", "--wk", "--mtp", "--ffsld", "--ms"]
         # see README.md for args options. https://github.com/razee-io/razeedeploy-delta/blob/master/README.md
       restartPolicy: Never
   backoffLimit: 2
