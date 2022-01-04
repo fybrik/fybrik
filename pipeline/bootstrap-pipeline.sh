@@ -272,7 +272,7 @@ helper_text="If this step fails, tekton related pods may be restarting or initia
 1. Please rerun in a minute or so
 "
 set -x
-kubectl apply -f ${repo_root}/pipeline/tasks/shell.yaml
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/shell.yaml" 3 true 60
 kubectl apply -f ${repo_root}/pipeline/tasks/make.yaml
 kubectl apply -f ${repo_root}/pipeline/tasks/git-clone.yaml
 kubectl apply -f ${repo_root}/pipeline/tasks/buildah.yaml
