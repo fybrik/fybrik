@@ -4,6 +4,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -28,6 +29,9 @@ func NewRouter(controller *ConnectorController) *gin.Engine {
 }
 
 func main() {
+	ip := ""
+	port := 8080
+
 	// Parse environment variables
 	opaServerURL, err := environment.MustGetEnv(envOPAServerURL)
 	if err != nil {
@@ -62,7 +66,9 @@ func main() {
 	router := NewRouter(controller)
 	router.Use(gin.Logger())
 
-	err = router.Run(":8080")
+	bindAddress := fmt.Sprintf("%s:%d", ip, port)
+	err = router.Run(bindAddress)
+
 	if err != nil {
 		log.Fatal(err)
 	}
