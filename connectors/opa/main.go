@@ -5,13 +5,15 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"os"
 	"strings"
 	"time"
 
+	"emperror.dev/errors"
 	"fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	"fybrik.io/fybrik/pkg/environment"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/cobra"
 )
 
 const (
@@ -28,48 +30,72 @@ func NewRouter(controller *ConnectorController) *gin.Engine {
 	return router
 }
 
-func main() {
+// RootCmd defines the root cli command
+func RootCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "opa",
+		Short: "Kubernetes based policy manager connector for Fybrik",
+	}
+	cmd.AddCommand(RunCmd())
+	return cmd
+}
+
+// RunCmd defines the command for running the connector
+func RunCmd() *cobra.Command {
 	ip := ""
 	port := 8080
+	cmd := &cobra.Command{
+		Use:   "run",
+		Short: "Run opa connector",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			gin.SetMode(gin.ReleaseMode)
+			// Parse environment variables
+			opaServerURL, err := environment.MustGetEnv(envOPAServerURL)
+			if err != nil {
+				return errors.Wrap(err, "failed to retrieve URL for communicating with OPA server")
+			}
 
-	// Parse environment variables
-	opaServerURL, err := environment.MustGetEnv(envOPAServerURL)
-	if err != nil {
-		log.Fatal(err.Error())
+			if !strings.HasPrefix(opaServerURL, "https://") && !strings.HasPrefix(opaServerURL, "http://") {
+				return errors.New("server URL for OPA server must have http or https schema")
+			}
+
+			catalogConnectorAddress, err := environment.MustGetEnv(envCatalogConnectorURL)
+			if err != nil {
+				return errors.Wrap(err, "failed to retrieve URL for communicating with data catalog")
+			}
+
+			catalogProviderName, err := environment.MustGetEnv(envCatalogProviderName)
+			if err != nil {
+				return errors.Wrap(err, "failed to get catalog provider name from the environment")
+			}
+
+			timeout := environment.GetEnvAsInt(envConnectionTimeout, 10)
+			connectionTimeout := time.Duration(timeout) * time.Second
+
+			// Create data catalog client
+			catalogClient, err := clients.NewDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout)
+			if err != nil {
+				return errors.Wrap(err, "failed to create a data catalog client")
+			}
+
+			// Create and start connector
+			controller := NewConnectorController(opaServerURL, catalogClient)
+			router := NewRouter(controller)
+			router.Use(gin.Logger())
+
+			bindAddress := fmt.Sprintf("%s:%d", ip, port)
+			return router.Run(bindAddress)
+		},
 	}
+	cmd.Flags().StringVar(&ip, "ip", ip, "IP address")
+	cmd.Flags().IntVar(&port, "port", port, "Listening port")
+	return cmd
+}
 
-	if !strings.HasPrefix(opaServerURL, "https://") && !strings.HasPrefix(opaServerURL, "http://") {
-		log.Fatal("server URL for OPA server must have http or https schema")
-	}
-
-	catalogConnectorAddress, err := environment.MustGetEnv(envCatalogConnectorURL)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	catalogProviderName, err := environment.MustGetEnv(envCatalogProviderName)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	timeout := environment.GetEnvAsInt(envConnectionTimeout, 10)
-	connectionTimeout := time.Duration(timeout) * time.Second
-
-	// Create data catalog client
-	catalogClient, err := clients.NewDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Create and start connector
-	controller := NewConnectorController(opaServerURL, catalogClient)
-	router := NewRouter(controller)
-	router.Use(gin.Logger())
-
-	bindAddress := fmt.Sprintf("%s:%d", ip, port)
-	err = router.Run(bindAddress)
-
-	if err != nil {
-		log.Fatal(err)
+func main() {
+	// Run the cli
+	if err := RootCmd().Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }
