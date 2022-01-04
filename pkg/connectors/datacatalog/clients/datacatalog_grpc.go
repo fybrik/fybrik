@@ -64,6 +64,9 @@ func (m *grpcDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds st
 		return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
 	}
 	log.Print(string(responseBytes))
+	if responseBytes == nil {
+		return nil, fmt.Errorf("data asset does not exist")
+	}
 	dataCatalogResp, err := ConvertDataCatalogGrpcRespToOpenAPIResp(result)
 	if err != nil {
 		log.Println("Error during conversion to open api response: ", err)
