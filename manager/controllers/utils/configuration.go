@@ -21,7 +21,7 @@ const (
 	EnableWebhooksKey                 string = "ENABLE_WEBHOOKS"
 	ConnectionTimeoutKey              string = "CONNECTION_TIMEOUT"
 	MainPolicyManagerNameKey          string = "MAIN_POLICY_MANAGER_NAME"
-	MainPolicyManagerConnectorUrlKey  string = "MAIN_POLICY_MANAGER_CONNECTOR_URL"
+	MainPolicyManagerConnectorURLKey  string = "MAIN_POLICY_MANAGER_CONNECTOR_URL"
 	LoggingVerbosityKey               string = "LOGGING_VERBOSITY"
 	PrettyLoggingKey                  string = "PRETTY_LOGGING"
 	CatalogProviderNameKey            string = "CATALOG_PROVIDER_NAME"
@@ -81,7 +81,7 @@ func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
 	SetIfNotSet(VaultAddressKey, "http://127.0.0.1:8200/", t)
 	SetIfNotSet(EnableWebhooksKey, "false", t)
 	SetIfNotSet(ConnectionTimeoutKey, "120", t)
-	SetIfNotSet(MainPolicyManagerConnectorUrlKey, "http://localhost:50090", t)
+	SetIfNotSet(MainPolicyManagerConnectorURLKey, "http://localhost:50090", t)
 	SetIfNotSet(MainPolicyManagerNameKey, "MOCK", t)
 	SetIfNotSet(LoggingVerbosityKey, "-1", t)
 	SetIfNotSet(PrettyLoggingKey, "true", t)
@@ -98,7 +98,7 @@ func logEnvVariable(log zerolog.Logger, key string) {
 
 func LogEnvVariables(log zerolog.Logger) {
 	envVarArray := [...]string{CatalogConnectorServiceAddressKey, VaultAddressKey, VaultModulesRoleKey,
-		EnableWebhooksKey, ConnectionTimeoutKey, MainPolicyManagerConnectorUrlKey,
+		EnableWebhooksKey, ConnectionTimeoutKey, MainPolicyManagerConnectorURLKey,
 		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey, DatapathLimitKey,
 		CatalogConnectorServiceAddressKey}
 
