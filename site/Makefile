@@ -13,8 +13,7 @@ generate: $(TOOLBIN)/crdoc $(TOOLBIN)/protoc $(TOOLBIN)/protoc-gen-doc generate-
 
 .PHONY: generate-openapi-doc
 generate-openapi-doc:
-	rm -rf $(ROOT_DIR)/site/docs/reference/connectors-datacatalog
-	rm -rf $(ROOT_DIR)/site/docs/reference/connectors-policymanager
+	rm -rf ./docs/reference/connectors-*
 	rm -rf ${PWD}/out
 	rm -rf ${PWD}/connectors
 	rm -rf ${PWD}/local
