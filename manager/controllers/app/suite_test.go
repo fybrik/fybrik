@@ -62,11 +62,20 @@ var _ = BeforeSuite(func(done Done) {
 		logf.Log.Info(pathErr.Error())
 	}
 	By("bootstrapping test environment")
-	testEnv = &envtest.Environment{
-		CRDDirectoryPaths: []string{
-			filepath.Join(path, "..", "..", "..", "charts", "fybrik-crd", "templates"),
-		},
-		ErrorIfCRDPathMissing: true,
+	if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
+		fmt.Printf("Using existing environment; don't load CRDs. \n")
+		useexistingcluster := true
+		testEnv = &envtest.Environment{
+			UseExistingCluster: &useexistingcluster,
+		}
+	} else {
+		fmt.Printf("Using fake environment; so set path to CRDs so they are installed. \n")
+		testEnv = &envtest.Environment{
+			CRDDirectoryPaths: []string{
+				filepath.Join(path, "..", "..", "..", "charts", "fybrik-crd", "templates"),
+			},
+			ErrorIfCRDPathMissing: true,
+		}
 	}
 
 	utils.DefaultTestConfiguration(GinkgoT())
