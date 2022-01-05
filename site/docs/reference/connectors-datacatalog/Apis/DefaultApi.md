@@ -4,12 +4,12 @@ All URIs are relative to *https://localhost:8080*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**getAssetInfoPost**](DefaultApi.md#getAssetInfoPost) | **POST** /getAssetInfo | getAssetInfo
+[**getAssetInfo**](DefaultApi.md#getAssetInfo) | **POST** /getAssetInfo | getAssetInfo
 
 
-<a name="getAssetInfoPost"></a>
-## **getAssetInfoPost**
-> GetAssetResponse getAssetInfoPost(X-Request-Datacatalog-CredGetAssetRequest)
+<a name="getAssetInfo"></a>
+## **getAssetInfo**
+> GetAssetResponse getAssetInfo(X-Request-Datacatalog-CredGetAssetRequest)
 
 getAssetInfo
 

@@ -16,7 +16,7 @@ generate-crd-docs: $(TOOLBIN)/crdoc
 generate-connectors-docs:
 	rm -rf ./docs/reference/connectors-*
 
-	docker run --user $(shell id -u):$(shell id -g) --rm -v "${ABS_ROOT_DIR}":/workdir \
+	docker run --user $(shell id -u):$(shell stat -c %g "${ABS_ROOT_DIR}") --rm -v "${ABS_ROOT_DIR}":/workdir \
 			${OPENAPI_GENERATOR_IMG} generate \
 			-i /workdir/connectors/api/datacatalog.spec.yaml \
 			-g markdown \
@@ -24,7 +24,7 @@ generate-connectors-docs:
 			-o  /workdir/site/docs/reference/connectors-datacatalog
 
 
-	docker run --user $(shell id -u):$(shell id -g) --rm -v "${ABS_ROOT_DIR}":/workdir \
+	docker run --user $(shell id -u):$(shell stat -c %g "${ABS_ROOT_DIR}") --rm -v "${ABS_ROOT_DIR}":/workdir \
 			${OPENAPI_GENERATOR_IMG} generate \
 			-i /workdir/connectors/api/policymanager.spec.yaml \
 			-g markdown \
@@ -34,4 +34,5 @@ generate-connectors-docs:
 
 .PHONY: run
 run: generate
-	mkdocs serve --quiet
+	@echo "\nServing on http://127.0.0.1:8000/"
+	python -m mkdocs serve --quiet

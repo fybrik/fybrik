@@ -10,6 +10,7 @@ paths:
   /getAssetInfo:
       post:
         summary: getAssetInfo
+        operationId: getAssetInfo
         parameters:
           - in: header
             name: X-Request-Datacatalog-Cred

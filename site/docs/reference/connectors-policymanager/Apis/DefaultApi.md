@@ -4,14 +4,14 @@ All URIs are relative to *https://localhost:8080*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**getPoliciesDecisionsPost**](DefaultApi.md#getPoliciesDecisionsPost) | **POST** /getPoliciesDecisions | getPoliciesDecisions.
+[**getPoliciesDecisions**](DefaultApi.md#getPoliciesDecisions) | **POST** /getPoliciesDecisions | getPoliciesDecisions
 
 
-<a name="getPoliciesDecisionsPost"></a>
-## **getPoliciesDecisionsPost**
-> GetPolicyDecisionsResponse getPoliciesDecisionsPost(X-Request-CredGetPolicyDecisionsRequest)
+<a name="getPoliciesDecisions"></a>
+## **getPoliciesDecisions**
+> GetPolicyDecisionsResponse getPoliciesDecisions(X-Request-CredGetPolicyDecisionsRequest)
 
-getPoliciesDecisions.
+getPoliciesDecisions
 
 
 ### Parameters

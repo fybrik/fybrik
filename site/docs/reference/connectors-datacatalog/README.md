@@ -7,7 +7,7 @@ All URIs are relative to *https://localhost:8080*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*DefaultApi* | [**getAssetInfoPost**](Apis/DefaultApi.md#getassetinfopost) | **POST** /getAssetInfo | getAssetInfo
+*DefaultApi* | [**getAssetInfo**](Apis/DefaultApi.md#getassetinfo) | **POST** /getAssetInfo | getAssetInfo
 
 
 <a name="documentation-for-models"></a>

@@ -7,7 +7,7 @@ All URIs are relative to *https://localhost:8080*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*DefaultApi* | [**getPoliciesDecisionsPost**](Apis/DefaultApi.md#getpoliciesdecisionspost) | **POST** /getPoliciesDecisions | getPoliciesDecisions.
+*DefaultApi* | [**getPoliciesDecisions**](Apis/DefaultApi.md#getpoliciesdecisions) | **POST** /getPoliciesDecisions | getPoliciesDecisions
 
 
 <a name="documentation-for-models"></a>
