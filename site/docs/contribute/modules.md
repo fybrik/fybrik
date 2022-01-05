@@ -62,7 +62,7 @@ helm push <local-chart-path> oci://<registry>/<path>
 
 ## FybrikModule YAML
 
-`FybrikModule` is a kubernetes Custom Resource Definition (CRD) which describes to the control plane the functionality provided by the module.  The FybrikModule CRD has no controller. The specification of the `FybrikModule` Kubernetes CRD is available in the [API documentation](../reference/crds.md#fybrikmodule). 
+`FybrikModule` is a kubernetes Custom Resource Definition (custom resource) which describes to the control plane the functionality provided by the module.  The FybrikModule custom resource has no controller. The specification of the `FybrikModule` Kubernetes custom resource is available in the [API documentation](../reference/crds.md#fybrikmodule). 
 
 The YAML file begins with standard Kubernetes metadata followed by the `FybrikModule` specification:
 ```yaml
