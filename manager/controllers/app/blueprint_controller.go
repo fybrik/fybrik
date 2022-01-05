@@ -126,7 +126,7 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *fapp.Blueprint) (ct
 func (r *BlueprintReconciler) deleteExternalResources(blueprint *fapp.Blueprint) error {
 	errs := make([]string, 0)
 	for release := range blueprint.Status.Releases {
-		if _, err := r.Helmer.Uninstall(blueprint.Namespace, release); err != nil {
+		if _, err := r.Helmer.Uninstall(blueprint.Spec.ModulesNamespace, release); err != nil {
 			errs = append(errs, err.Error())
 		}
 	}
