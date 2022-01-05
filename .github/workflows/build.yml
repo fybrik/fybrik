@@ -12,7 +12,6 @@ on:
 
 env:
   GO_VERSION: 1.16
-  JAVA_VERSION: 11
 
 jobs:
   verify:
@@ -40,10 +39,6 @@ jobs:
     name: Unit tests
     runs-on: ubuntu-latest
     steps:
-    - name: Set up JDK
-      uses: actions/setup-java@v1
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
     - name: Install Go
       uses: actions/setup-go@v2
       with:
@@ -68,10 +63,6 @@ jobs:
       DOCKER_HOSTNAME: "localhost:5000"
       DOCKER_NAMESPACE: fybrik-system
     steps:
-    - name: Set up JDK
-      uses: actions/setup-java@v1
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
     - name: Install Go
       uses: actions/setup-go@v2
       with:
@@ -134,10 +125,6 @@ jobs:
       DOCKER_HOSTNAME: "localhost:5000"
       DOCKER_NAMESPACE: fybrik-system
     steps:
-    - name: Set up JDK
-      uses: actions/setup-java@v1
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
     - name: Install Go
       uses: actions/setup-go@v2
       with:
