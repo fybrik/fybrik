@@ -238,7 +238,7 @@ The following are examples of YAMLs from fully implemented modules:
 ## Getting Started
 In order to help module developers get started there are two example "hello world" modules:
 * [Hello world module](https://github.com/fybrik/hello-world-module)
-* [Hellow world read module](https://github.com/fybrik/hello-world-read-module)
+* [Hello world read module](https://github.com/fybrik/hello-world-read-module)
 
 An example of a fully functional module is the [arrow flight module][https://github.com/fybrik/arrow-flight-module]
 
