@@ -16,8 +16,6 @@ generate-crd-docs: $(TOOLBIN)/crdoc
 generate-connectors-docs:
 	rm -rf ./docs/reference/connectors-*
 
-datacatalog.spec.yaml
-
 	docker run --user $(shell id -u):$(shell stat -c %g "${ABS_ROOT_DIR}") --rm -v "${ABS_ROOT_DIR}":/workdir \
 			alpine:latest ls /workdir/
 
