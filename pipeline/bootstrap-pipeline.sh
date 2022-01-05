@@ -64,7 +64,7 @@ helm_image=
 build_image=
 if [[ "${github}" == "github.com" ]]; then
     is_public_repo="true"
-    build_image="docker.io/yakinikku/suede_compile:dind"
+    build_image="docker.io/yakinikku/suede_compile:latest"
     helm_image="docker.io/lachlanevenson/k8s-helm:latest"
     extra_params="${extra_params} -p build_image=${build_image} -p helm_image=${helm_image}"
     cp ${repo_root}/pipeline/statefulset.yaml ${TMP}/
