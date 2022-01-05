@@ -17,9 +17,6 @@ generate-connectors-docs:
 	rm -rf ./docs/reference/connectors-*
 
 	docker run --user $(shell id -u):$(shell stat -c %g "${ABS_ROOT_DIR}") --rm -v "${ABS_ROOT_DIR}":/workdir \
-			alpine:latest ls /workdir/
-
-	docker run --user $(shell id -u):$(shell stat -c %g "${ABS_ROOT_DIR}") --rm -v "${ABS_ROOT_DIR}":/workdir \
 			${OPENAPI_GENERATOR_IMG} generate \
 			-i /workdir/connectors/api/datacatalog.spec.yaml \
 			-g markdown \
