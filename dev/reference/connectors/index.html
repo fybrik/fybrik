@@ -15,7 +15,7 @@
     
     
       
-        <title>Connectors API - Fybrik</title>
+        <title>Protocol Documentation - Fybrik</title>
       
     
     
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Connectors API
+              Protocol Documentation
             
           </span>
         </div>
@@ -234,15 +234,13 @@
         
   
   
-    
-  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../crds/" class="md-tabs__link md-tabs__link--active">
+      <a href="../crds/" class="md-tabs__link">
         Reference
       </a>
     </li>
@@ -646,14 +644,12 @@
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
       
       
       
@@ -688,420 +684,58 @@
               
   
   
+  
     
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" type="checkbox" id="__nav_5_2" >
       
       
-        <label class="md-nav__link md-nav__link--active" for="__toc">
+      
+      
+        <label class="md-nav__link" for="__nav_5_2">
           Connectors API
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <a href="./" class="md-nav__link md-nav__link--active">
-        Connectors API
+      <nav class="md-nav" aria-label="Connectors API" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_2">
+          <span class="md-nav__icon md-icon"></span>
+          Connectors API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../connectors-datacatalog/" class="md-nav__link">
+        Data catalog
       </a>
-      
-        
+    </li>
+  
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+            
+          
+            
+              
   
   
   
-    
+    <li class="md-nav__item">
+      <a href="../connectors-policymanager/" class="md-nav__link">
+        Policy manager
+      </a>
+    </li>
   
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#credentialsproto" class="md-nav__link">
-    credentials.proto
-  </a>
-  
-    <nav class="md-nav" aria-label="credentials.proto">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#credentials" class="md-nav__link">
-    Credentials
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#data_catalog_requestproto" class="md-nav__link">
-    data_catalog_request.proto
-  </a>
-  
-    <nav class="md-nav" aria-label="data_catalog_request.proto">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#catalogdatasetrequest" class="md-nav__link">
-    CatalogDatasetRequest
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#data_catalog_responseproto" class="md-nav__link">
-    data_catalog_response.proto
-  </a>
-  
-    <nav class="md-nav" aria-label="data_catalog_response.proto">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#catalogdatasetinfo" class="md-nav__link">
-    CatalogDatasetInfo
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#data_catalog_serviceproto" class="md-nav__link">
-    data_catalog_service.proto
-  </a>
-  
-    <nav class="md-nav" aria-label="data_catalog_service.proto">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#datacatalogservice" class="md-nav__link">
-    DataCatalogService
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#dataset_detailsproto" class="md-nav__link">
-    dataset_details.proto
-  </a>
-  
-    <nav class="md-nav" aria-label="dataset_details.proto">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#credentialsinfo" class="md-nav__link">
-    CredentialsInfo
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#datacomponentmetadata" class="md-nav__link">
-    DataComponentMetadata
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#datacomponentmetadatanamedmetadataentry" class="md-nav__link">
-    DataComponentMetadata.NamedMetadataEntry
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#datastore" class="md-nav__link">
-    DataStore
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#datasetdetails" class="md-nav__link">
-    DatasetDetails
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#datasetmetadata" class="md-nav__link">
-    DatasetMetadata
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#datasetmetadatacomponentsmetadataentry" class="md-nav__link">
-    DatasetMetadata.ComponentsMetadataEntry
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#datasetmetadatadatasetnamedmetadataentry" class="md-nav__link">
-    DatasetMetadata.DatasetNamedMetadataEntry
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#db2datastore" class="md-nav__link">
-    Db2DataStore
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#kafkadatastore" class="md-nav__link">
-    KafkaDataStore
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#s3datastore" class="md-nav__link">
-    S3DataStore
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#datastoredatastoretype" class="md-nav__link">
-    DataStore.DataStoreType
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#policy_manager_requestproto" class="md-nav__link">
-    policy_manager_request.proto
-  </a>
-  
-    <nav class="md-nav" aria-label="policy_manager_request.proto">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#accessoperation" class="md-nav__link">
-    AccessOperation
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#applicationcontext" class="md-nav__link">
-    ApplicationContext
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#applicationdetails" class="md-nav__link">
-    ApplicationDetails
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#applicationdetailspropertiesentry" class="md-nav__link">
-    ApplicationDetails.PropertiesEntry
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#datasetcontext" class="md-nav__link">
-    DatasetContext
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#datasetidentifier" class="md-nav__link">
-    DatasetIdentifier
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#accessoperationaccesstype" class="md-nav__link">
-    AccessOperation.AccessType
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#policy_manager_responseproto" class="md-nav__link">
-    policy_manager_response.proto
-  </a>
-  
-    <nav class="md-nav" aria-label="policy_manager_response.proto">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#componentversion" class="md-nav__link">
-    ComponentVersion
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#datasetdecision" class="md-nav__link">
-    DatasetDecision
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#enforcementaction" class="md-nav__link">
-    EnforcementAction
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#enforcementactionargsentry" class="md-nav__link">
-    EnforcementAction.ArgsEntry
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#operationdecision" class="md-nav__link">
-    OperationDecision
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#policiesdecisions" class="md-nav__link">
-    PoliciesDecisions
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#policy" class="md-nav__link">
-    Policy
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#enforcementactionenforcementactionlevel" class="md-nav__link">
-    EnforcementAction.EnforcementActionLevel
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#policy_manager_serviceproto" class="md-nav__link">
-    policy_manager_service.proto
-  </a>
-  
-    <nav class="md-nav" aria-label="policy_manager_service.proto">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#policymanagerservice" class="md-nav__link">
-    PolicyManagerService
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#register_asset_requestproto" class="md-nav__link">
-    register_asset_request.proto
-  </a>
-  
-    <nav class="md-nav" aria-label="register_asset_request.proto">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#registerassetrequest" class="md-nav__link">
-    RegisterAssetRequest
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#register_asset_responseproto" class="md-nav__link">
-    register_asset_response.proto
-  </a>
-  
-    <nav class="md-nav" aria-label="register_asset_response.proto">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#registerassetresponse" class="md-nav__link">
-    RegisterAssetResponse
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#scalar-value-types" class="md-nav__link">
-    Scalar Value Types
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
+
+            
+          
+        </ul>
+      </nav>
     </li>
   
 
@@ -3237,41 +2871,6 @@
       </main>
       
         <footer class="md-footer">
-  
-    <nav class="md-footer__inner md-grid" aria-label="Footer">
-      
-        
-        <a href="../crds/" class="md-footer__link md-footer__link--prev" aria-label="Previous: API Reference" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              API Reference
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="../ddc/" class="md-footer__link md-footer__link--next" aria-label="Next: Data Distribution Controller" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              Data Distribution Controller
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
