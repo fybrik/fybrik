@@ -5,6 +5,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"os"
@@ -18,6 +19,7 @@ import (
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	local "fybrik.io/fybrik/pkg/multicluster/local"
+	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	"emperror.dev/errors"
@@ -26,8 +28,11 @@ import (
 	"github.com/rs/zerolog"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -412,6 +417,58 @@ func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataConte
 	}
 }
 
+func (r *FybrikApplicationReconciler) ValidateAssetRequest(request *datacatalog.GetAssetRequest, taxonomyFile string) error {
+	var allErrs []*field.Error
+
+	// Convert GetAssetRequest Go struct to JSON
+	requestJSON, err := json.Marshal(request)
+	if err != nil {
+		return err
+	}
+	r.Log.Info().Msg("requestJSON:" + string(requestJSON))
+
+	// Validate Fybrik module against taxonomy
+	allErrs, err = validate.TaxonomyCheck(requestJSON, taxonomyFile)
+	if err != nil {
+		return err
+	}
+
+	// Return any error
+	if len(allErrs) == 0 {
+		return nil
+	}
+
+	return apierrors.NewInvalid(
+		schema.GroupKind{Group: "app.fybrik.io", Kind: "DataCatalog-AssetRequest"},
+		string(request.AssetID), allErrs)
+}
+
+func (r *FybrikApplicationReconciler) ValidateAssetResponse(response *datacatalog.GetAssetResponse, taxonomyFile string) error {
+	var allErrs []*field.Error
+
+	// Convert GetAssetRequest Go struct to JSON
+	responseJSON, err := json.Marshal(response)
+	if err != nil {
+		return err
+	}
+	r.Log.Info().Msg("responseJSON:" + string(responseJSON))
+
+	// Validate Fybrik module against taxonomy
+	allErrs, err = validate.TaxonomyCheck(responseJSON, taxonomyFile)
+	if err != nil {
+		return err
+	}
+
+	// Return any error
+	if len(allErrs) == 0 {
+		return nil
+	}
+
+	return apierrors.NewInvalid(
+		schema.GroupKind{Group: "app.fybrik.io", Kind: "DataCatalog-AssetResponse"},
+		string(response.ResourceMetadata.Name), allErrs)
+}
+
 func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *api.FybrikApplication, workloadCluster multicluster.Cluster) error {
 	// Call the DataCatalog service to get info about the dataset
 	var credentialPath string
@@ -420,12 +477,27 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 	}
 	var err error
 	var response *datacatalog.GetAssetResponse
-	if response, err = r.DataCatalog.GetAssetInfo(&datacatalog.GetAssetRequest{
+	request := datacatalog.GetAssetRequest{
 		AssetID:       taxonomy.AssetID(req.Context.DataSetID),
-		OperationType: datacatalog.READ},
+		OperationType: datacatalog.READ}
+
+	taxonomyFile := "/tmp/taxonomy/datacatalog.json#/definitions/GetAssetRequest"
+	err = r.ValidateAssetRequest(&request, taxonomyFile)
+	if err != nil {
+		return err
+	}
+
+	if response, err = r.DataCatalog.GetAssetInfo(&request,
 		credentialPath); err != nil {
 		return err
 	}
+
+	taxonomyFile = "/tmp/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
+	err = r.ValidateAssetResponse(response, taxonomyFile)
+	if err != nil {
+		return err
+	}
+
 	response.DeepCopyInto(req.DataDetails)
 	configEvaluatorInput := &adminconfig.EvaluatorInput{}
 	configEvaluatorInput.Workload.UUID = utils.GetFybrikApplicationUUID(input)

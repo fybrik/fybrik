@@ -4,6 +4,7 @@
 package app
 
 import (
+	"encoding/json"
 	"log"
 
 	"emperror.dev/errors"
@@ -13,8 +14,12 @@ import (
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
+	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"fybrik.io/fybrik/pkg/vault"
 	"github.com/gdexlab/go-render/render"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
 func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operation *policymanager.RequestAction) *policymanager.GetPolicyDecisionsRequest {
@@ -34,6 +39,58 @@ func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operati
 	}
 }
 
+func ValidatePolicyDecisionsRequest(request *policymanager.GetPolicyDecisionsRequest, taxonomyFile string) error {
+	var allErrs []*field.Error
+
+	// Convert GetAssetRequest Go struct to JSON
+	requestJSON, err := json.Marshal(request)
+	if err != nil {
+		return err
+	}
+	log.Println("requestJSON (policy decisions):" + string(requestJSON))
+
+	// Validate Fybrik module against taxonomy
+	allErrs, err = validate.TaxonomyCheck(requestJSON, taxonomyFile)
+	if err != nil {
+		return err
+	}
+
+	// Return any error
+	if len(allErrs) == 0 {
+		return nil
+	}
+
+	return apierrors.NewInvalid(
+		schema.GroupKind{Group: "app.fybrik.io", Kind: "PolicyManager-GetPolicyDecisionsRequest"},
+		string(request.Resource.Metadata.Name), allErrs)
+}
+
+func ValidatePolicyDecisionsResponse(response *policymanager.GetPolicyDecisionsResponse, taxonomyFile string) error {
+	var allErrs []*field.Error
+
+	// Convert GetAssetRequest Go struct to JSON
+	responseJSON, err := json.Marshal(response)
+	if err != nil {
+		return err
+	}
+	log.Println("responseJSON (policy decisions):" + string(responseJSON))
+
+	// Validate Fybrik module against taxonomy
+	allErrs, err = validate.TaxonomyCheck(responseJSON, taxonomyFile)
+	if err != nil {
+		return err
+	}
+
+	// Return any error
+	if len(allErrs) == 0 {
+		return nil
+	}
+
+	return apierrors.NewInvalid(
+		schema.GroupKind{Group: "app.fybrik.io", Kind: "PolicyManager-GetPolicyDecisionsResponse"},
+		string(response.DecisionID), allErrs)
+}
+
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
 func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, input *app.FybrikApplication, op *policymanager.RequestAction) ([]taxonomy.Action, error) {
 	// call external policy manager to get governance instructions for this operation
@@ -45,11 +102,24 @@ func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyMana
 	if input.Spec.SecretRef != "" {
 		creds = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
+	taxonomyFile := "/tmp/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsRequest"
+	err := ValidatePolicyDecisionsRequest(openapiReq, taxonomyFile)
+	if err != nil {
+		return nil, err
+	}
+
 	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)
 	var actions []taxonomy.Action
 	if err != nil {
 		return actions, err
 	}
+
+	taxonomyFile = "/tmp/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsResponse"
+	err = ValidatePolicyDecisionsResponse(openapiResp, taxonomyFile)
+	if err != nil {
+		return actions, errors.New("Validation error")
+	}
+
 	output = render.AsCode(openapiResp)
 	log.Println("openapi response received from policy manager: ", output)
 
