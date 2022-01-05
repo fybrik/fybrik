@@ -437,7 +437,14 @@ set +x
 helper_text="If this step fails, run again - knative related pods may be restarting and unable to process the webhook
 "
 set -x
-kubectl apply -f ${repo_root}/pipeline/eventlistener/eventlistener.yaml
+if [[ ${is_openshift} == "true" ]]; then
+    kubectl apply -f ${repo_root}/pipeline/eventlistener/eventlistener.yaml
+else
+    sed -i.bak "s|serviceAccountName: pipeline|serviceAccountName: default|g" ${repo_root}/pipeline/eventlistener/eventlistener.yaml
+    kubectl apply -f ${repo_root}/pipeline/eventlistener/eventlistener.yaml
+    mv ${repo_root}/pipeline/eventlistener/eventlistener.yaml.bak ${repo_root}/pipeline/eventlistener/eventlistener.yaml
+fi
+
 helper_text=""
 set +e
 kubectl delete rolebinding generic-watcher
