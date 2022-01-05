@@ -1197,7 +1197,7 @@ the following environment variables can be set:
 <div class="highlight"><pre><span></span><code><span class="nv">NO_SIMULATED_PROGRESS</span><span class="o">=</span><span class="nb">true</span> <span class="nv">USE_EXISTING_CLUSTER</span><span class="o">=</span><span class="nb">true</span> make -C manager <span class="nb">test</span>
 </code></pre></div></p>
 <p>Please be aware that the controller is running locally in this case! If a controller is already deployed onto the
-cluster then the tests can be run with the command below. This will ensure that the tests are only creating CRDs on 
+cluster then the tests can be run with the command below. This will ensure that the tests are only creating custom resources on 
 the cluster and checking their status:
 <div class="highlight"><pre><span></span><code><span class="nv">USE_EXISTING_CONTROLLER</span><span class="o">=</span><span class="nb">true</span> <span class="nv">NO_SIMULATED_PROGRESS</span><span class="o">=</span><span class="nb">true</span> <span class="nv">USE_EXISTING_CLUSTER</span><span class="o">=</span><span class="nb">true</span> make -C manager <span class="nb">test</span>
 </code></pre></div></p>
