@@ -16,8 +16,7 @@ spec:
     - capability: copy
       supportedInterfaces:
       - source:
-          protocol: jdbc-db2
-          dataformat: table
+          protocol: db2
         sink:
           protocol: s3
           dataformat: parquet

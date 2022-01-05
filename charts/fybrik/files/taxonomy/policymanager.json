@@ -1,0 +1,95 @@
+{
+  "title": "policymanager.json",
+  "definitions": {
+    "GetPolicyDecisionsRequest": {
+      "type": "object",
+      "required": [
+        "action",
+        "resource"
+      ],
+      "properties": {
+        "action": {
+          "$ref": "#/definitions/RequestAction"
+        },
+        "context": {
+          "$ref": "taxonomy.json#/definitions/PolicyManagerRequestContext"
+        },
+        "resource": {
+          "$ref": "#/definitions/Resource"
+        }
+      }
+    },
+    "GetPolicyDecisionsResponse": {
+      "type": "object",
+      "required": [
+        "result"
+      ],
+      "properties": {
+        "decision_id": {
+          "type": "string"
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ResultItem"
+          }
+        }
+      }
+    },
+    "RequestAction": {
+      "type": "object",
+      "required": [
+        "actionType"
+      ],
+      "properties": {
+        "actionType": {
+          "$ref": "#/definitions/RequestActionType"
+        },
+        "destination": {
+          "type": "string"
+        },
+        "processingLocation": {
+          "$ref": "taxonomy.json#/definitions/ProcessingLocation"
+        }
+      }
+    },
+    "RequestActionType": {
+      "type": "string",
+      "enum": [
+        "read",
+        "write",
+        "delete"
+      ]
+    },
+    "Resource": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "taxonomy.json#/definitions/AssetID"
+        },
+        "metadata": {
+          "$ref": "datacatalog.json#/definitions/ResourceMetadata"
+        }
+      }
+    },
+    "ResultItem": {
+      "type": "object",
+      "required": [
+        "policy",
+        "action"
+      ],
+      "properties": {
+        "action": {
+          "$ref": "taxonomy.json#/definitions/Action"
+        },
+        "policy": {
+          "description": "The policy on which the decision was based",
+          "type": "string"
+        }
+      }
+    }
+  }
+}

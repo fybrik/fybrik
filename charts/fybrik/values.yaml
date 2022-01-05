@@ -13,7 +13,7 @@ fullnameOverride: ""
 
 clusterScoped: true
 
-blueprintNamespace: "fybrik-blueprints"
+modulesNamespace: "fybrik-blueprints"
 
 # Set if need to only watch for FybrikApplication from a specific namespace
 # The namespace must already exist
@@ -21,6 +21,7 @@ applicationNamespace: ""
 
 # Taxonomy file for taxonomy ConfigMap
 taxonomyOverride: ""
+
 
 # Global configuration applies to multiple components installed by this chart
 global:
@@ -38,6 +39,11 @@ global:
   imagePullSecrets: []
   # Default connection timeout for GRPC connections.
   connectionTimeout: 120
+  # Human readable logs
+  prettyLogging: false
+  # zerolog verbosity level 
+  # ref: https://github.com/rs/zerolog#leveled-logging
+  loggingVerbosity: -1
 
 # Cluster metadata values
 cluster:
@@ -60,7 +66,7 @@ coordinator:
   catalog: "katalog"
 
   # Overrides the catalog connector URL.
-  # Defaults to `<catalog>-connector:80`.
+  # Defaults to `http://<catalog>-connector:80`.
   catalogConnectorURL: ""
 
   # Configures the policy manager system name to be used by the coordinator manager.
@@ -68,8 +74,8 @@ coordinator:
   policyManager: "opa"
 
   # Overrides the policy manager connector URL.
-  # Defaults to `<policyManager>-connector:80`.
-  policyManagerConnectorURL: "http://opa-connector:80"
+  # Defaults to `http://<policyManager>-connector:80`.
+  policyManagerConnectorURL: ""
 
   # Configure the vault instance to be used by the coordinator manager
   vault:
@@ -107,15 +113,18 @@ worker:
 manager:
   # Set to true to deploy the manager component or false to skip its deployment.
   # Defaults to true if `coordinator.enabled` or `worker.enabled` is true.
-  enabled: auto
+  enabled: true
   
   # Override GRPC connection timeout in manager
   connectionTimeout: 
 
+  # Override data path limits in manager
+  dataPathMaxSize: "2"
+
   # Image name or a hub/image[:tag]
   image: "manager"
   # Overrides global.imagePullPolicy
-  imagePullPolicy: ""
+  imagePullPolicy: "Always"
 
   # Set to true to enable socat in the manager pod to forward
   # traffic from a localhost registry. Used only for development.
@@ -263,6 +272,8 @@ opaServer:
   #   log: |-
   #     package system.log
   #     mask["/input"]
+
+  # Bootstrap policies to load upon startup
   bootstrapPolicies: {}
 
 # Katalog connector component

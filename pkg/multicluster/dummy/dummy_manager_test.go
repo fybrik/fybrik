@@ -7,13 +7,14 @@ import (
 	"errors"
 	"testing"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/pkg/multicluster"
 	"github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/pkg/multicluster"
 )
 
-var _ multicluster.ClusterManager = &ClusterManager{}
+var _ multicluster.ClusterManager = &MockClusterManager{}
 
 func TestDummyMultiClusterManager(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
@@ -23,7 +24,7 @@ func TestDummyMultiClusterManager(t *testing.T) {
 			Namespace: "ns",
 		},
 	}
-	manager := ClusterManager{
+	manager := MockClusterManager{
 		DeployedBlueprints: make(map[string]*app.Blueprint),
 	}
 

@@ -1,0 +1,110 @@
+{
+  "title": "datacatalog.json",
+  "definitions": {
+    "GetAssetRequest": {
+      "type": "object",
+      "required": [
+        "assetID",
+        "operationType"
+      ],
+      "properties": {
+        "assetID": {
+          "$ref": "taxonomy.json#/definitions/AssetID"
+        },
+        "operationType": {
+          "$ref": "#/definitions/OperationType"
+        }
+      }
+    },
+    "GetAssetResponse": {
+      "type": "object",
+      "required": [
+        "resourceMetadata",
+        "details",
+        "credentials"
+      ],
+      "properties": {
+        "credentials": {
+          "description": "This has the vault plugin path where the data credentials will be stored as kubernetes secrets This value is assumed to be known to the catalog connector.",
+          "type": "string"
+        },
+        "details": {
+          "$ref": "#/definitions/ResourceDetails"
+        },
+        "resourceMetadata": {
+          "$ref": "#/definitions/ResourceMetadata"
+        }
+      }
+    },
+    "OperationType": {
+      "description": "OperationType Type of operation requested for the asset",
+      "type": "string",
+      "enum": [
+        "read"
+      ]
+    },
+    "ResourceColumn": {
+      "description": "ResourceColumn represents a column in a tabular resource",
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "description": "Name of the column",
+          "type": "string"
+        },
+        "tags": {
+          "$ref": "taxonomy.json#/definitions/Tags",
+          "description": "Tags associated with the column"
+        }
+      }
+    },
+    "ResourceDetails": {
+      "description": "ResourceDetails includes asset connection details",
+      "type": "object",
+      "required": [
+        "connection"
+      ],
+      "properties": {
+        "connection": {
+          "$ref": "taxonomy.json#/definitions/Connection",
+          "description": "Connection information"
+        },
+        "dataFormat": {
+          "$ref": "taxonomy.json#/definitions/DataFormat",
+          "description": "Data format"
+        }
+      }
+    },
+    "ResourceMetadata": {
+      "description": "ResourceMetadata defines model for resource metadata",
+      "type": "object",
+      "properties": {
+        "columns": {
+          "description": "Columns associated with the asset",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ResourceColumn"
+          }
+        },
+        "geography": {
+          "description": "Geography of the resource",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name of the resource",
+          "type": "string"
+        },
+        "owner": {
+          "description": "Owner of the resource",
+          "type": "string"
+        },
+        "tags": {
+          "$ref": "taxonomy.json#/definitions/Tags",
+          "description": "Tags associated with the asset"
+        }
+      }
+    }
+  }
+}

@@ -5,8 +5,21 @@
 # Global configuration applies to multiple components installed by this chart
 global:
   hub: localhost:5000/fybrik-system
-  tag: "master"
+  tag: "0.0.0"
   imagePullPolicy: "Always"
+
+  prettyLogging: false
+  # zerolog verbosity level 
+  # ref: https://github.com/rs/zerolog#leveled-logging
+  loggingVerbosity: -1
+
+coordinator:
+  # Set to false to disable coordinator components in manager.
+  enabled: true
+
+  # Configures the catalog system name to be used by the coordinator manager.
+  # Accepted values are "katalog", "egeria" or any meaningful name if a third party connector is used.
+  catalog: "katalog"
 
 # Manager component
 manager:
@@ -20,10 +33,6 @@ manager:
     value: "20"
   - name: PLOTTER_CONCURRENT_RECONCILES
     value: "2"
-  - name: BATCHTRANSFER_CONCURRENT_RECONCILES
-    value: "1"
-  - name: STREAMTRANSFER_CONCURRENT_RECONCILES
-    value: "1"
   - name: CLIENT_QPS
     value: "100.0"
   - name: CLIENT_BURST

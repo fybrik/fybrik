@@ -12,6 +12,7 @@ import (
 
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
+	"fybrik.io/fybrik/pkg/logging"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -60,13 +61,11 @@ func createClusterMetadata() *corev1.ConfigMap {
 func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) *FybrikApplicationReconciler {
 	// environment: cluster-metadata configmap
 	_ = cl.Create(context.Background(), createClusterMetadata())
-	adminConfigEvaluator := adminconfig.NewDefaultConfig()
-	adminConfigEvaluator.SetupWithInfrastructureManager(&adminconfig.InfrastructureManager{ClusterManager: &mockup.ClusterLister{}, Client: cl})
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	return &FybrikApplicationReconciler{
 		Client:        cl,
 		Name:          "TestReconciler",
-		Log:           ctrl.Log.WithName("test-controller"),
+		Log:           logging.LogInit(logging.CONTROLLER, "test-controller"),
 		Scheme:        s,
 		PolicyManager: &mockup.MockPolicyManager{},
 		DataCatalog:   mockup.NewTestCatalog(),
@@ -75,7 +74,7 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 		},
 		ClusterManager:  &mockup.ClusterLister{},
 		Provision:       &storage.ProvisionTest{},
-		ConfigEvaluator: adminConfigEvaluator,
+		ConfigEvaluator: adminconfig.NewRegoPolicyEvaluator(logging.LogInit("test", "ConfigPolicyEvaluator")),
 	}
 }
 
@@ -96,7 +95,7 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).To(gomega.BeNil(), "Cannot read fybrikapplication file for test")
 	application.SetGeneration(1)
-
+	application.SetUID("1")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -165,7 +164,7 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveKey("s3-csv/redact-dataset"))
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveKey("s3-csv/redact-dataset-copy"))
 	dataStore := plotter.Spec.Assets["s3-csv/redact-dataset"].DataStore
-	dataStoreMap := dataStore.Connection.Data.(map[string]interface{})
+	dataStoreMap := dataStore.Connection.AdditionalProperties.Items
 	g.Expect(dataStoreMap).To(gomega.HaveKey("s3"))
 	s3Config := dataStoreMap["s3"].(map[string]interface{})
 	g.Expect(s3Config["endpoint"]).To(gomega.Equal("s3.eu-gb.cloud-object-storage.appdomain.cloud"))
@@ -188,11 +187,13 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(readFlow.Steps[0][0].Cluster).To(gomega.Equal("thegreendragon"))
 	// Check statuses
 	g.Expect(application.Status.Ready).To(gomega.Equal(false))
-	assetState := application.Status.AssetStates[application.Spec.Data[0].DataSetID]
-	g.Expect(assetState.Endpoint).To(gomega.Not(gomega.BeNil()))
-	g.Expect(assetState.Endpoint.Port).To(gomega.Equal(int32(80)))
-	g.Expect(assetState.Endpoint.Hostname).To(gomega.Equal("read-path.notebook-default-arrow-flight-module.notebook"))
-	g.Expect(assetState.Endpoint.Scheme).To(gomega.Equal("grpc"))
+	endpoint := application.Status.AssetStates[application.Spec.Data[0].DataSetID].Endpoint
+	g.Expect(endpoint).To(gomega.Not(gomega.BeNil()))
+	connectionMap := endpoint.AdditionalProperties.Items
+	g.Expect(connectionMap).To(gomega.HaveKey("fybrik-arrow-flight"))
+	config := connectionMap["fybrik-arrow-flight"].(map[string]interface{})
+	g.Expect(config["hostname"]).To(gomega.Equal("read-path.notebook-default-arrow-flight-module.notebook"))
+	g.Expect(config["scheme"]).To(gomega.Equal("grpc"))
 }
 
 // This test checks proper reconciliation of FybrikApplication finalizers
@@ -248,6 +249,7 @@ func TestDenyOnRead(t *testing.T) {
 		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.S3, DataFormat: app.Parquet}},
 	}
 	application.SetGeneration(1)
+	application.SetUID("2")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -271,7 +273,7 @@ func TestDenyOnRead(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// Expect Deny condition
-	cond := application.Status.AssetStates["s3/deny-dataset"].Conditions[app.DenyConditionIndex]
+	cond := application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex]
 	g.Expect(cond.Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue), "Deny condition is not set")
 	g.Expect(cond.Message).To(gomega.ContainSubstring(app.ReadAccessDenied))
 	g.Expect(application.Status.Ready).To(gomega.BeTrue())
@@ -295,10 +297,10 @@ func TestNoReadPath(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "db2/allow-dataset",
-		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.JdbcDb2, DataFormat: app.Table}},
+		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.JdbcDb2}},
 	}
 	application.SetGeneration(1)
-
+	application.SetUID("3")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -327,8 +329,7 @@ func TestNoReadPath(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// Expect an error
-	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring(app.ModuleNotFound))
-	g.Expect(getErrorMessages(application)).To(gomega.ContainSubstring("read"))
+	g.Expect(getErrorMessages(application)).NotTo(gomega.BeEmpty())
 }
 
 // Tests finding a module for copy
@@ -354,15 +355,15 @@ func TestWrongCopyModule(t *testing.T) {
 	application.Spec.Data = []app.DataContext{
 		{
 			DataSetID:    "s3/allow-dataset",
-			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 		},
 		{
 			DataSetID:    "kafka/allow-dataset",
-			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 		},
 	}
 	application.SetGeneration(1)
-
+	application.SetUID("4")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -418,10 +419,10 @@ func TestActionSupport(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "db2/redact-dataset",
-		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 	}
 	application.SetGeneration(1)
-
+	application.SetUID("5")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -482,19 +483,19 @@ func TestMultipleDatasets(t *testing.T) {
 	application.Spec.Data = []app.DataContext{
 		{
 			DataSetID:    "s3/deny-dataset",
-			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 		},
 		{
 			DataSetID:    "s3/allow-dataset",
-			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 		},
 		{
 			DataSetID:    "db2/redact-dataset",
-			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 		},
 	}
 	application.SetGeneration(1)
-
+	application.SetUID("6")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -537,7 +538,7 @@ func TestMultipleDatasets(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// check Deny for the first dataset
-	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage["db2/redact-dataset"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
 	// check plotter creation
@@ -576,19 +577,19 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 	application.Spec.Data = []app.DataContext{
 		{
 			DataSetID:    "s3/deny-dataset",
-			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 		},
 		{
 			DataSetID:    "local/redact-dataset",
-			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 		},
 		{
 			DataSetID:    "s3/allow-dataset",
-			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+			Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 		},
 	}
 	application.SetGeneration(1)
-
+	application.SetUID("7")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -618,8 +619,8 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 
 	// check Deny states
-	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
-	g.Expect(application.Status.AssetStates["local/redact-dataset"].Conditions[app.DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["local/redact-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 }
@@ -640,10 +641,10 @@ func TestMultipleRegions(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "s3-external/redact-dataset",
-		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 	}
 	application.SetGeneration(1)
-
+	application.SetUID("8")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -724,7 +725,7 @@ func TestCopyData(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
 	application.SetGeneration(1)
-
+	application.SetUID("9")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -813,7 +814,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
 	application.SetGeneration(1)
-
+	application.SetUID("10")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -871,10 +872,10 @@ func TestPlotterUpdate(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "s3/allow-dataset",
-		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight, DataFormat: app.Arrow}},
+		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
 	}
 	application.SetGeneration(1)
-
+	application.SetUID("11")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -953,6 +954,7 @@ func TestSyncWithPlotter(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
 	// imitate a ready phase for the earlier generation
 	application.SetGeneration(2)
+	application.SetUID("12")
 	application.Finalizers = []string{"TestReconciler.finalizer"}
 	controllerNamespace := utils.GetControllerNamespace()
 	fmt.Printf("FybrikApplication unit test: controller namespace " + controllerNamespace)
@@ -1008,7 +1010,7 @@ func TestFybrikApplicationWithNoDatasets(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data = []app.DataContext{}
 	application.SetGeneration(1)
-
+	application.SetUID("13")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -1054,7 +1056,7 @@ func TestFybrikApplicationWithInvalidAppInfo(t *testing.T) {
 	fybrikApp := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
 	fybrikApp.SetGeneration(1)
-
+	fybrikApp.SetUID("14")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		fybrikApp,
@@ -1098,7 +1100,7 @@ func TestFybrikApplicationWithInvalidInterface(t *testing.T) {
 	fybrikApp := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
 	fybrikApp.SetGeneration(1)
-
+	fybrikApp.SetUID("15")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		fybrikApp,
@@ -1122,4 +1124,81 @@ func TestFybrikApplicationWithInvalidInterface(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	g.Expect(getErrorMessages(newApp)).NotTo(gomega.BeEmpty())
 	g.Expect(newApp.Status.Ready).NotTo(gomega.BeTrue())
+}
+
+// This test checks the ingest scenario - copy is required, no workload specified.
+// Two copy modules exist. One of them has an incorrect structure (sinks and sources in different capabilities)
+func TestCopyModule(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	assetName := "s3-external/allow-theshire"
+	namespaced := types.NamespacedName{
+		Name:      "ingest",
+		Namespace: "default",
+	}
+	application := &app.FybrikApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.Spec.Data[0].DataSetID = assetName
+	application.SetGeneration(1)
+	application.SetUID("16")
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+	invalidModule := &app.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", invalidModule)).NotTo(gomega.HaveOccurred())
+	invalidModule.Namespace = utils.GetControllerNamespace()
+	invalidModule.Name = "copy-module-with-invalid-structure"
+	capability := invalidModule.Spec.Capabilities[0]
+	sink := capability.SupportedInterfaces[0].Sink
+	source := capability.SupportedInterfaces[0].Source
+	capability.SupportedInterfaces = []app.ModuleInOut{{Source: source}, {Sink: sink}}
+	invalidModule.Spec.Capabilities[0] = capability
+	g.Expect(cl.Create(context.TODO(), invalidModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
+
+	copyModule := &app.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	copyModule.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
+
+	// Create storage account
+	secret := &corev1.Secret{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", secret)).NotTo(gomega.HaveOccurred())
+	secret.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.Background(), secret)).NotTo(gomega.HaveOccurred())
+	account := &app.FybrikStorageAccount{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	account.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
+
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+
+	// check plotter creation
+	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
+	plotterObjectKey := types.NamespacedName{
+		Namespace: application.Status.Generated.Namespace,
+		Name:      application.Status.Generated.Name,
+	}
+	plotter := &app.Plotter{}
+	err = cl.Get(context.Background(), plotterObjectKey, plotter)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
 }

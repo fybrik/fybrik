@@ -9,7 +9,8 @@ spec:
      matchLabels: {}
   appInfo:
     purpose: Ingest
-    role: Data Owner
+    role: Security
+    intent: Fraud Detection
   data:
     - dataSetID: s3-external/xxx
       requirements:

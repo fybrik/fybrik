@@ -43,9 +43,9 @@ spec:
           spec:
             description: BlueprintSpec defines the desired state of Blueprint, which
               defines the components of the workload's data path that run in a particular
-              cluster.  In a single cluster environment there is one blueprint.  In
-              a multi-cluster environment there is one Blueprint per cluster per workload
-              (FybrikApplication).
+              cluster. In a single cluster environment there is one blueprint per
+              workload (FybrikApplication). In a multi-cluster environment there is
+              one Blueprint per cluster per workload (FybrikApplication).
             properties:
               cluster:
                 description: Cluster indicates the cluster on which the Blueprint
@@ -124,6 +124,11 @@ spec:
                                 connection:
                                   description: Connection has the relevant details
                                     for accesing the data (url, table, ssl, etc.)
+                                  properties:
+                                    name:
+                                      type: string
+                                  required:
+                                  - name
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
                                 format:
@@ -163,7 +168,6 @@ spec:
                                   type: object
                               required:
                               - connection
-                              - format
                               - vault
                               type: object
                             source:
@@ -173,6 +177,11 @@ spec:
                                 connection:
                                   description: Connection has the relevant details
                                     for accesing the data (url, table, ssl, etc.)
+                                  properties:
+                                    name:
+                                      type: string
+                                  required:
+                                  - name
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
                                 format:
@@ -212,13 +221,17 @@ spec:
                                   type: object
                               required:
                               - connection
-                              - format
                               - vault
                               type: object
                             transformations:
                               description: Transformations are different types of
                                 processing that may be done to the data as it is copied.
                               items:
+                                properties:
+                                  name:
+                                    type: string
+                                required:
+                                - name
                                 type: object
                                 x-kubernetes-preserve-unknown-fields: true
                               type: array
@@ -250,6 +263,11 @@ spec:
                                   connection:
                                     description: Connection has the relevant details
                                       for accesing the data (url, table, ssl, etc.)
+                                    properties:
+                                      name:
+                                        type: string
+                                    required:
+                                    - name
                                     type: object
                                     x-kubernetes-preserve-unknown-fields: true
                                   format:
@@ -289,13 +307,17 @@ spec:
                                     type: object
                                 required:
                                 - connection
-                                - format
                                 - vault
                                 type: object
                               transformations:
                                 description: Transformations are different types of
                                   processing that may be done to the data
                                 items:
+                                  properties:
+                                    name:
+                                      type: string
+                                  required:
+                                  - name
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
                                 type: array
@@ -323,6 +345,11 @@ spec:
                                   connection:
                                     description: Connection has the relevant details
                                       for accesing the data (url, table, ssl, etc.)
+                                    properties:
+                                      name:
+                                        type: string
+                                    required:
+                                    - name
                                     type: object
                                     x-kubernetes-preserve-unknown-fields: true
                                   format:
@@ -362,7 +389,6 @@ spec:
                                     type: object
                                 required:
                                 - connection
-                                - format
                                 - vault
                                 type: object
                               transformations:
@@ -370,6 +396,11 @@ spec:
                                   processing that may be done to the data as it is
                                   written.
                                 items:
+                                  properties:
+                                    name:
+                                      type: string
+                                  required:
+                                  - name
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
                                 type: array
@@ -405,7 +436,7 @@ spec:
                       - name
                       type: object
                     name:
-                      description: Name of the fybrikmodule on which this is based
+                      description: Name of the FybrikModule on which this is based
                       type: string
                   required:
                   - chart
@@ -413,16 +444,21 @@ spec:
                   type: object
                 description: Modules is a map which contains modules that indicate
                   the data path components that run in this cluster The map key is
-                  InstanceName which is the unique name for the deployed instance
+                  moduleInstanceName which is the unique name for the deployed instance
                   related to this workload
                 type: object
+              modulesNamespace:
+                description: ModulesNamespace is the namespace where modules should
+                  be allocated
+                type: string
             required:
             - cluster
             - modules
+            - modulesNamespace
             type: object
           status:
             description: BlueprintStatus defines the observed state of Blueprint This
-              includes readiness, error message, and indicators forthe Kubernetes
+              includes readiness, error message, and indicators for the Kubernetes
               resources owned by the Blueprint for cleanup and status monitoring
             properties:
               modules:
@@ -440,8 +476,8 @@ spec:
                       type: boolean
                   type: object
                 description: ModulesState is a map which holds the status of each
-                  module its key is the instance name which is the unique name for
-                  the deployed instance related to this workload
+                  module its key is the moduleInstanceName which is the unique name
+                  for the deployed instance related to this workload
                 type: object
               observedGeneration:
                 description: ObservedGeneration is taken from the Blueprint metadata.  This
@@ -473,8 +509,6 @@ spec:
                   each release should be mapped to the latest blueprint version or
                   be uninstalled.
                 type: object
-            required:
-            - modules
             type: object
         type: object
     served: true

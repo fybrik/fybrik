@@ -10,8 +10,11 @@ import (
 	"strconv"
 	"time"
 
-	connectors "fybrik.io/fybrik/pkg/connectors/clients"
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
+	"fybrik.io/fybrik/pkg/model/policymanager"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
+	"fybrik.io/fybrik/pkg/serde"
+	"github.com/pkg/errors"
 )
 
 func getEnv(key string) string {
@@ -32,42 +35,44 @@ func main() {
 
 	mainPolicyManagerURL := "http://opa-connector.fybrik-system:80"
 	log.Println("mainPolicyManagerURL set to :", mainPolicyManagerURL)
-	policyManager, err := connectors.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
+	policyManager, err := pmclient.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
 	if err != nil {
 		return
 	}
 
 	creds := "http://vault.fybrik-system:8200/v1/kubernetes-secrets/<SECRET-NAME>?namespace=<NAMESPACE>"
-	input := taxonomymodels.NewPolicyManagerRequestWithDefaults()
 
-	reqCtx := make(map[string]interface{})
-	reqCtx["intent"] = "Fraud Detection"
-	reqCtx["role"] = "Data Scientist"
-	// reqCtx["role"] = "Business Analyst"
-	input.SetContext(reqCtx)
+	request := &policymanager.GetPolicyDecisionsRequest{
+		Context: taxonomy.PolicyManagerRequestContext{
+			Properties: serde.Properties{Items: map[string]interface{}{
+				"intent": "Fraud Detection",
+				"role":   "Data Scientist",
+			}},
+		},
+		Action: policymanager.RequestAction{
+			ActionType:         policymanager.READ,
+			ProcessingLocation: "Netherlands",
+		},
+		Resource: policymanager.Resource{
+			ID: "{\"asset_id\": \"5067b64a-67bc-4067-9117-0aff0a9963ea\", \"catalog_id\": \"0fd6ff25-7327-4b55-8ff2-56cc1c934824\"}",
+		},
+	}
 
-	action := taxonomymodels.PolicyManagerRequestAction{}
-	action.SetActionType(taxonomymodels.READ)
-	processLocation := "Netherlands"
-	action.SetProcessingLocation(processLocation)
-	input.SetAction(action)
-
-	input.SetResource(*taxonomymodels.NewResource("{\"asset_id\": \"5067b64a-67bc-4067-9117-0aff0a9963ea\", \"catalog_id\": \"0fd6ff25-7327-4b55-8ff2-56cc1c934824\"}"))
-
-	log.Println("in manager-client - policy manager request: ", input)
+	requestJSON, err := json.MarshalIndent(request, "", "  ")
+	if err != nil {
+		log.Fatal(errors.Wrap(err, "failed to serialize request to JSON"))
+	}
+	log.Println("in manager-client - policy manager request: ", string(requestJSON))
 	log.Println("in manager-client - creds: ", creds)
 
-	response, _ := policyManager.GetPoliciesDecisions(input, creds)
+	response, err := policyManager.GetPoliciesDecisions(request, creds)
+	if err != nil {
+		log.Fatal(errors.Wrap(err, "request to policy manager connector failed"))
+	}
 
-	bytes, _ := response.MarshalJSON()
-	log.Println("in manager-client - Response from `policyManager.GetPoliciesDecisions`: \n", string(bytes))
-
-	var resp taxonomymodels.PolicyManagerResponse
-	err = json.Unmarshal(bytes, &resp)
-	log.Println("err: ", err)
-	log.Println("resp: ", resp)
-
-	res, err := json.MarshalIndent(resp, "", "\t")
-	log.Println("err :", err)
-	log.Println("marshalled response:", string(res))
+	responseJSON, err := json.MarshalIndent(response, "", "  ")
+	if err != nil {
+		log.Fatal(errors.Wrap(err, "failed to serialize response to JSON"))
+	}
+	log.Println("in manager-client - Response from `policyManager.GetPoliciesDecisions`: \n", string(responseJSON))
 }

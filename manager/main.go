@@ -5,20 +5,21 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	"fybrik.io/fybrik/manager/controllers"
-	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/environment"
+	"fybrik.io/fybrik/pkg/logging"
 
 	"emperror.dev/errors"
 	corev1 "k8s.io/api/core/v1"
 
-	"fybrik.io/fybrik/manager/controllers/motion"
-	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
+	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/multicluster/razee"
@@ -33,7 +34,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	appv1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/app"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/helm"
@@ -42,12 +42,12 @@ import (
 )
 
 var (
+	gitCommit string
 	scheme   = kruntime.NewScheme()
-	setupLog = ctrl.Log.WithName("setup")
+	setupLog = logging.LogInit(logging.SETUP, "main")
 )
 
 func init() {
-	_ = motionv1.AddToScheme(scheme)
 	_ = appv1.AddToScheme(scheme)
 	_ = corev1.AddToScheme(scheme)
 	_ = kbatch.AddToScheme(scheme)
@@ -55,42 +55,33 @@ func init() {
 }
 
 func run(namespace string, metricsAddr string, enableLeaderElection bool,
-	enableApplicationController, enableBlueprintController, enablePlotterController, enableMotionController bool) int {
-	setupLog.Info("creating manager")
+	enableApplicationController, enableBlueprintController, enablePlotterController bool) int {
+	setupLog.Info().Msg("creating manager. based on git commit: " + gitCommit)
+	utils.LogEnvVariables(setupLog)
 
 	var applicationNamespaceSelector fields.Selector
 	applicationNamespace := utils.GetApplicationNamespace()
 	if len(applicationNamespace) > 0 {
 		applicationNamespaceSelector = fields.SelectorFromSet(fields.Set{"metadata.namespace": applicationNamespace})
 	}
-	setupLog.Info("Application namespace: " + applicationNamespace)
-
-	blueprintNamespace := utils.GetBlueprintNamespace()
+	setupLog.Info().Msg("Application namespace: " + applicationNamespace)
 
 	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
-	workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": blueprintNamespace})
 	selectorsByObject := cache.SelectorsByObject{
-		&appv1.FybrikApplication{}:      {Field: applicationNamespaceSelector},
-		&appv1.Plotter{}:                {Field: systemNamespaceSelector},
-		&appv1.FybrikModule{}:           {Field: systemNamespaceSelector},
-		&appv1.FybrikStorageAccount{}:   {Field: systemNamespaceSelector},
-		&corev1.ConfigMap{}:             {Field: systemNamespaceSelector},
-		&appv1.Blueprint{}:              {Field: workerNamespaceSelector},
-		&motionv1.BatchTransfer{}:       {Field: workerNamespaceSelector},
-		&motionv1.StreamTransfer{}:      {Field: workerNamespaceSelector},
-		&kbatch.Job{}:                   {Field: workerNamespaceSelector},
-		&kbatch.CronJob{}:               {Field: workerNamespaceSelector},
-		&corev1.Secret{}:                {Field: workerNamespaceSelector},
-		&corev1.Pod{}:                   {Field: workerNamespaceSelector},
-		&kapps.Deployment{}:             {Field: workerNamespaceSelector},
-		&corev1.PersistentVolumeClaim{}: {Field: workerNamespaceSelector},
+		&appv1.FybrikApplication{}:    {Field: applicationNamespaceSelector},
+		&appv1.Plotter{}:              {Field: systemNamespaceSelector},
+		&appv1.FybrikModule{}:         {Field: systemNamespaceSelector},
+		&appv1.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
+		&corev1.ConfigMap{}:           {Field: systemNamespaceSelector},
+		&appv1.Blueprint{}:            {Field: systemNamespaceSelector},
+		&corev1.Secret{}:              {Field: systemNamespaceSelector},
 	}
 
 	client := ctrl.GetConfigOrDie()
 	client.QPS = environment.GetEnvAsFloat32(controllers.KubernetesClientQPSConfiguration, controllers.DefaultKubernetesClientQPS)
 	client.Burst = environment.GetEnvAsInt(controllers.KubernetesClientBurstConfiguration, controllers.DefaultKubernetesClientBurst)
 
-	setupLog.Info("Manager client rate limits:", "qps", client.QPS, "burst", client.Burst)
+	setupLog.Info().Msg("Manager client rate limits: qps = " + fmt.Sprint(client.QPS) + " burst=" + fmt.Sprint(client.Burst))
 
 	mgr, err := ctrl.NewManager(client, ctrl.Options{
 		Scheme:             scheme,
@@ -102,50 +93,48 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		NewCache:           cache.BuilderWithOptions(cache.Options{SelectorsByObject: selectorsByObject}),
 	})
 	if err != nil {
-		setupLog.Error(err, "unable to start manager")
+		setupLog.Error().Err(err).Msg("unable to start manager")
 		return 1
 	}
 
 	// Initialize ClusterManager
-	setupLog.Info("creating cluster manager")
+	setupLog.Trace().Msg("creating cluster manager")
 	var clusterManager multicluster.ClusterManager
 	if enableApplicationController || enablePlotterController {
 		clusterManager, err = newClusterManager(mgr)
 		if err != nil {
-			setupLog.Error(err, "unable to initialize cluster manager")
+			setupLog.Error().Err(err).Msg("unable to initialize cluster manager")
 			return 1
 		}
 	}
 
 	if enableApplicationController {
-		setupLog.Info("creating FybrikApplication controller")
+		setupLog.Trace().Msg("creating FybrikApplication controller")
 
 		// Initialize PolicyManager interface
 		policyManager, err := newPolicyManager()
 		if err != nil {
-			setupLog.Error(err, "unable to create policy manager facade", "controller", "FybrikApplication")
+			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create policy manager facade")
 			return 1
 		}
 		defer func() {
 			if err := policyManager.Close(); err != nil {
-				setupLog.Error(err, "unable to close policy manager facade", "controller", "FybrikApplication")
+				setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to close policy manager facade")
 			}
 		}()
 
 		// Initialize DataCatalog interface
 		catalog, err := newDataCatalog()
 		if err != nil {
-			setupLog.Error(err, "unable to create data catalog facade", "controller", "FybrikApplication")
+			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create data catalog facade")
 			return 1
 		}
 		defer func() {
 			if err := catalog.Close(); err != nil {
-				setupLog.Error(err, "unable to close data catalog facade", "controller", "FybrikApplication")
+				setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to close data catalog facade")
 			}
 		}()
 
-		adminConfigEvaluator := adminconfig.NewDefaultConfig()
-		adminConfigEvaluator.SetupWithInfrastructureManager(&adminconfig.InfrastructureManager{ClusterManager: clusterManager, Client: mgr.GetClient()})
 		// Initiate the FybrikApplication Controller
 		applicationController := app.NewFybrikApplicationReconciler(
 			mgr,
@@ -154,51 +143,56 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			catalog,
 			clusterManager,
 			storage.NewProvisionImpl(mgr.GetClient()),
-			adminConfigEvaluator,
 		)
 		if err := applicationController.SetupWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create controller", "controller", "FybrikApplication")
+			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create controller")
 			return 1
 		}
 		if os.Getenv("ENABLE_WEBHOOKS") != "false" {
 			if err := (&appv1.FybrikApplication{}).SetupWebhookWithManager(mgr); err != nil {
-				setupLog.Error(err, "unable to create webhook", "webhook", "FybrikApplication")
+				setupLog.Error().Err(err).Str(logging.WEBHOOK, "FybrikApplication").Msg("unable to create webhook")
 				return 1
 			}
+			if err := (&appv1.FybrikModule{}).SetupWebhookWithManager(mgr); err != nil {
+				setupLog.Error().Err(err).Str(logging.WEBHOOK, "FybrikModule").Msg("unable to create webhook")
+				return 1
+			}
+		}
+
+		// Initiate the FybrikModule Controller
+		moduleController := app.NewFybrikModuleReconciler(
+			mgr,
+			"FybrikModule",
+		)
+		if err := moduleController.SetupWithManager(mgr); err != nil {
+			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikModule").Msg("unable to create controller")
+			return 1
 		}
 	}
 
 	if enablePlotterController {
 		// Initiate the Plotter Controller
-		setupLog.Info("creating Plotter controller")
+		setupLog.Trace().Msg("creating Plotter controller")
 		plotterController := app.NewPlotterReconciler(mgr, "Plotter", clusterManager)
 		if err := plotterController.SetupWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create controller", "controller", plotterController.Name)
+			setupLog.Error().Err(err).Str(logging.CONTROLLER, "Plotter").Msg("unable to create controller " + plotterController.Name)
 			return 1
 		}
 	}
 
 	if enableBlueprintController {
 		// Initiate the Blueprint Controller
-		setupLog.Info("creating Blueprint controller")
+		setupLog.Trace().Msg("creating Blueprint controller")
 		blueprintController := app.NewBlueprintReconciler(mgr, "Blueprint", new(helm.Impl))
 		if err := blueprintController.SetupWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create controller", "controller", blueprintController.Name)
+			setupLog.Error().Err(err).Str(logging.CONTROLLER, "Blueprint").Msg("unable to create controller " + blueprintController.Name)
 			return 1
 		}
 	}
 
-	if enableMotionController {
-		setupLog.Info("creating motion controllers")
-		if err := motion.SetupMotionControllers(mgr); err != nil {
-			setupLog.Error(err, "unable to setup motion controllers")
-			return 1
-		}
-	}
-
-	setupLog.Info("starting manager")
+	setupLog.Trace().Msg("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		setupLog.Error(err, "problem running manager")
+		setupLog.Error().Err(err).Str(logging.SETUP, "main").Msg("problem running manager")
 		return 1
 	}
 
@@ -213,7 +207,6 @@ func main() {
 	var enableApplicationController bool
 	var enableBlueprintController bool
 	var enablePlotterController bool
-	var enableMotionController bool
 	var enableAllControllers bool
 	address := utils.ListeningAddress(8085)
 
@@ -226,8 +219,6 @@ func main() {
 		"Enable blueprint controller of the manager. This manages CRDs of type Blueprint.")
 	flag.BoolVar(&enablePlotterController, "enable-plotter-controller", false,
 		"Enable plotter controller of the manager. This manages CRDs of type Plotter.")
-	flag.BoolVar(&enableMotionController, "enable-motion-controller", false,
-		"Enable motion controller of the manager. This manages CRDs of type BatchTransfer or StreamTransfer.")
 	flag.BoolVar(&enableAllControllers, "enable-all-controllers", false,
 		"Enables all controllers.")
 	flag.StringVar(&namespace, "namespace", "", "The namespace to which this controller manager is limited.")
@@ -237,36 +228,31 @@ func main() {
 		enableApplicationController = true
 		enableBlueprintController = true
 		enablePlotterController = true
-		enableMotionController = true
 	}
 
-	if !enableApplicationController && !enablePlotterController && !enableBlueprintController && !enableMotionController {
-		setupLog.Info("At least one controller flag must be set!")
+	if !enableApplicationController && !enablePlotterController && !enableBlueprintController {
+		setupLog.Debug().Msg("At least one controller flag must be set!")
 		os.Exit(1)
 	}
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	os.Exit(run(namespace, metricsAddr, enableLeaderElection,
-		enableApplicationController, enableBlueprintController, enablePlotterController, enableMotionController))
+		enableApplicationController, enableBlueprintController, enablePlotterController))
 }
 
-func newDataCatalog() (connectors.DataCatalog, error) {
+func newDataCatalog() (dcclient.DataCatalog, error) {
 	connectionTimeout, err := getConnectionTimeout()
 	if err != nil {
 		return nil, err
 	}
 	providerName := os.Getenv("CATALOG_PROVIDER_NAME")
 	connectorURL := os.Getenv("CATALOG_CONNECTOR_URL")
-	connector, err := connectors.NewGrpcDataCatalog(providerName, connectorURL, connectionTimeout)
-	setupLog.Info("setting data catalog client", "Name", providerName, "URL", connectorURL, "Timeout", connectionTimeout)
-	if err != nil {
-		return nil, err
-	}
-	return connector, nil
+	setupLog.Info().Str("Name", providerName).Str("URL", connectorURL).Str("Timeout", connectionTimeout.String()).Msg("setting data catalog client")
+	return dcclient.NewDataCatalog(providerName, connectorURL, connectionTimeout)
 }
 
-func newPolicyManager() (connectors.PolicyManager, error) {
+func newPolicyManager() (pmclient.PolicyManager, error) {
 	connectionTimeout, err := getConnectionTimeout()
 	if err != nil {
 		return nil, err
@@ -274,13 +260,13 @@ func newPolicyManager() (connectors.PolicyManager, error) {
 
 	mainPolicyManagerName := os.Getenv("MAIN_POLICY_MANAGER_NAME")
 	mainPolicyManagerURL := os.Getenv("MAIN_POLICY_MANAGER_CONNECTOR_URL")
-	setupLog.Info("setting main policy manager client", "Name", mainPolicyManagerName, "URL", mainPolicyManagerURL, "Timeout", connectionTimeout)
+	setupLog.Info().Str("Name", mainPolicyManagerName).Str("URL", mainPolicyManagerURL).Str("Timeout", connectionTimeout.String()).Msg("setting main policy manager client")
 
-	var policyManager connectors.PolicyManager
+	var policyManager pmclient.PolicyManager
 	if strings.HasPrefix(mainPolicyManagerURL, "http") {
-		policyManager, err = connectors.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
+		policyManager, err = pmclient.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
 	} else {
-		policyManager, err = connectors.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
+		policyManager, err = pmclient.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
 	}
 
 	return policyManager, err
@@ -294,19 +280,19 @@ func newClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error)
 		razeeURL := strings.TrimSpace(os.Getenv("RAZEE_URL"))
 		password := strings.TrimSpace(os.Getenv("RAZEE_PASSWORD"))
 
-		setupLog.Info("Using razee local at " + razeeURL)
-		return razee.NewRazeeLocalManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password, multiClusterGroup)
+		setupLog.Info().Msg("Using razee local at " + razeeURL)
+		return razee.NewRazeeLocalClusterManager(strings.TrimSpace(razeeURL), strings.TrimSpace(user), password, multiClusterGroup)
 	} else if apiKey, satConf := os.LookupEnv("IAM_API_KEY"); satConf {
-		setupLog.Info("Using IBM Satellite config")
-		return razee.NewSatConfManager(strings.TrimSpace(apiKey), multiClusterGroup)
+		setupLog.Info().Msg("Using IBM Satellite config")
+		return razee.NewSatConfClusterManager(strings.TrimSpace(apiKey), multiClusterGroup)
 	} else if apiKey, razeeOauth := os.LookupEnv("API_KEY"); razeeOauth {
-		setupLog.Info("Using Razee oauth")
+		setupLog.Info().Msg("Using Razee oauth")
 
 		razeeURL := strings.TrimSpace(os.Getenv("RAZEE_URL"))
-		return razee.NewRazeeOAuthManager(strings.TrimSpace(razeeURL), strings.TrimSpace(apiKey), multiClusterGroup)
+		return razee.NewRazeeOAuthClusterManager(strings.TrimSpace(razeeURL), strings.TrimSpace(apiKey), multiClusterGroup)
 	} else {
-		setupLog.Info("Using local cluster manager")
-		return local.NewManager(mgr.GetClient(), utils.GetSystemNamespace())
+		setupLog.Info().Msg("Using local cluster manager")
+		return local.NewClusterManager(mgr.GetClient(), utils.GetSystemNamespace())
 	}
 }
 

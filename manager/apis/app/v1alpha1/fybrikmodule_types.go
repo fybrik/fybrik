@@ -4,6 +4,8 @@
 package v1alpha1
 
 import (
+	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -38,25 +40,6 @@ const (
 	Feature DependencyType = "feature"
 )
 
-// ModuleCapability indicates at a high level what is being performed - often on a datset, but potentially other things as well
-// +kubebuilder:validation:Enum=copy;read;write;transform
-type CapabilityType string
-
-// TODO - Should these come from the taxonomy?
-const (
-	// Copy moves data from one location to another - i.e implicit copy
-	Copy CapabilityType = "copy"
-
-	// Write is accessed from within an application, typically through an SDK
-	Write CapabilityType = "write"
-
-	// Read is accessed from within an application, typically through an SDK
-	Read CapabilityType = "read"
-
-	// Transform processes and changes data
-	Transform CapabilityType = "transform"
-)
-
 // ModuleInOut specifies the protocol and format of the data input and output by the module - if any
 type ModuleInOut struct {
 	// Source specifies the input data protocol and format
@@ -80,30 +63,6 @@ type Dependency struct {
 	Name string `json:"name"`
 }
 
-// EndpointSpec is used both by the module creator and by the status of the fybrikapplication
-type EndpointSpec struct {
-	// Hostname is the hostname to connect to for connecting to a module exposed service.
-	// By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}" of the module.
-	// <br/>
-	// Module developers can overide the default behavior by providing a template that may use
-	// the ".Release.Name", ".Release.Namespace" and ".Values.labels" variables.
-	// +optional
-	Hostname string `json:"hostname,omitempty"`
-	// +required
-	Port int32 `json:"port"`
-
-	// For example: http, https, grpc, grpc+tls, jdbc:oracle:thin:@ etc
-	// +required
-	Scheme string `json:"scheme"`
-}
-
-type ModuleAPI struct {
-	// +required
-	InterfaceDetails `json:",inline"`
-	// +required
-	Endpoint EndpointSpec `json:"endpoint"`
-}
-
 type Plugin struct {
 	// PluginType indicates the technology used for the module and the plugin to interact
 	// The values supported should come from the module taxonomy
@@ -120,7 +79,7 @@ type ModuleCapability struct {
 
 	// Capability declares what this module knows how to do - ex: read, write, transform...
 	// +required
-	Capability CapabilityType `json:"capability"`
+	Capability string `json:"capability"`
 
 	// Scope indicates at what level the capability is used: workload, asset, cluster
 	// If not indicated it is assumed to be asset
@@ -135,13 +94,12 @@ type ModuleCapability struct {
 	SupportedInterfaces []ModuleInOut `json:"supportedInterfaces,omitempty"`
 
 	// API indicates to the application how to access the capabilities provided by the module
-	// TODO This is optional but in ModuleAPI the endpoint is required?
 	// +optional
-	API *ModuleAPI `json:"api,omitempty"`
+	API *datacatalog.ResourceDetails `json:"api,omitempty"`
 
 	// Actions are the data transformations that the module supports
 	// +optional
-	Actions []SupportedAction `json:"actions,omitempty"`
+	Actions []taxonomy.Action `json:"actions,omitempty"`
 
 	// Plugins enable the module to add libraries to perform actions rather than implementing them by itself
 	// +optional
@@ -223,8 +181,14 @@ type ChartSpec struct {
 	Values map[string]string `json:"values,omitempty"`
 }
 
-// +kubebuilder:object:root=true
+// FybrikModuleStatus defines the observed state of FybrikModule.
+type FybrikModuleStatus struct {
+	// Conditions indicate the module states with respect to validation
+	Conditions []Condition `json:"conditions,omitempty"`
+}
 
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 // FybrikModule is a description of an injectable component.
 // the parameters it requires, as well as the specification of how to instantiate such a component.
 // It is used as metadata only.  There is no status nor reconciliation.
@@ -236,7 +200,8 @@ type FybrikModule struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	// +required
-	Spec FybrikModuleSpec `json:"spec"`
+	Spec   FybrikModuleSpec   `json:"spec"`
+	Status FybrikModuleStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true

@@ -6,6 +6,7 @@ package app
 import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/logging"
 	// Temporary - shouldn't have something specific to implicit copies
 )
 
@@ -50,28 +51,33 @@ func (r *PlotterReconciler) RefineInstances(instances []ModuleInstanceSpec) []Mo
 }
 
 // GenerateBlueprints creates Blueprint specs (one per cluster)
-func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec) map[string]app.BlueprintSpec {
+func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, plotter *app.Plotter) map[string]app.BlueprintSpec {
 	blueprintMap := make(map[string]app.BlueprintSpec)
 	instanceMap := make(map[string][]ModuleInstanceSpec)
+	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
 	for _, moduleInstance := range instances {
 		instanceMap[moduleInstance.ClusterName] = append(instanceMap[moduleInstance.ClusterName], moduleInstance)
 	}
 	for key, instanceList := range instanceMap {
 		// unite several instances of a read/write module
 		instances := r.RefineInstances(instanceList)
-		blueprintMap[key] = r.GenerateBlueprint(instances, key)
+		blueprintMap[key] = r.GenerateBlueprint(instances, key, plotter)
 	}
-	utils.PrintStructure(blueprintMap, r.Log, "BlueprintMap")
+
+	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).Logger()
+	logging.LogStructure("BlueprintMap", blueprintMap, log, false, false)
 	return blueprintMap
 }
 
 // GenerateBlueprint creates the Blueprint spec based on the datasets and the governance actions required, which dictate the modules that must run in the fybrik
 // Credentials for accessing data set are stored in a credential management system (such as vault) and the paths for accessing them are included in the blueprint.
 // The credentials themselves are not included in the blueprint.
-func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec, clusterName string) app.BlueprintSpec {
+func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec, clusterName string, plotter *app.Plotter) app.BlueprintSpec {
 	var spec app.BlueprintSpec
 
 	spec.Cluster = clusterName
+
+	spec.ModulesNamespace = plotter.Spec.ModulesNamespace
 
 	// Create the map that contains BlueprintModules
 

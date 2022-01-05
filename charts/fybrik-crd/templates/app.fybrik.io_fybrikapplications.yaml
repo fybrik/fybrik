@@ -20,17 +20,16 @@ spec:
     schema:
       openAPIV3Schema:
         description: FybrikApplication provides information about the application
-          being used by a Data Scientist, the nature of the processing, and the data
-          sets that the Data Scientist has chosen for processing by the application.
-          The FybrikApplication controller (aka pilot) obtains instructions regarding
-          any governance related changes that must be performed on the data, identifies
-          the modules capable of performing such changes, and finally generates the
-          Blueprint which defines the secure runtime environment and all the components
-          in it.  This runtime environment provides the Data Scientist's application
-          with access to the data requested in a secure manner and without having
-          to provide any credentials for the data sets.  The credentials are obtained
-          automatically by the manager from an external credential management system,
-          which may or may not be part of a data catalog.
+          whose data is being operated on, the nature of the processing, and the data
+          sets chosen for processing by the application. The FybrikApplication controller
+          obtains instructions regarding any governance related changes that must
+          be performed on the data, identifies the modules capable of performing such
+          changes, and finally generates the Plotter which defines the secure runtime
+          environment and all the components in it.  This runtime environment provides
+          the application with access to the data requested in a secure manner and
+          without having to provide any credentials for the data sets.  The credentials
+          are obtained automatically by the manager from the credential management
+          system.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -45,13 +44,18 @@ spec:
           metadata:
             type: object
           spec:
-            description: FybrikApplicationSpec defines the desired state of FybrikApplication.
+            description: FybrikApplicationSpec defines data flows needed by the application,
+              the purpose and other contextual information about the application.
+              Read flow - if selector is populated, fybrik builds a data plane for
+              reading the specified data sets Ingest flow - if no selector, and data/copy/required
+              is true then the data specified is copied into a bucket allocated by
+              fybrik and is cataloged in the data catalog
             properties:
               appInfo:
                 additionalProperties:
                   type: string
                 description: AppInfo contains information describing the reasons for
-                  the processing that will be done by the Data Scientist's application.
+                  the processing that will be done by the application.
                 type: object
               data:
                 description: Data contains the identifiers of the data to be used
@@ -129,8 +133,7 @@ spec:
                 type: string
               selector:
                 description: Selector enables to connect the resource to the application
-                  Application labels should match the labels in the selector. For
-                  some flows the selector may not be used.
+                  Application labels should match the labels in the selector.
                 properties:
                   clusterName:
                     description: Cluster name
@@ -210,14 +213,24 @@ spec:
                             description: Message contains the details of the current
                               condition
                             type: string
+                          observedGeneration:
+                            description: ObservedGeneration is the version of the
+                              resource for which the condition has been evaluated
+                            format: int64
+                            type: integer
                           status:
-                            description: 'Status of the condition: true or false'
+                            default: Unknown
+                            description: Status of the condition, one of (`True`,
+                              `False`, `Unknown`).
+                            enum:
+                            - "True"
+                            - "False"
+                            - Unknown
                             type: string
                           type:
                             description: Type of the condition
                             type: string
                         required:
-                        - status
                         - type
                         type: object
                       type: array
@@ -225,25 +238,12 @@ spec:
                       description: Endpoint provides the endpoint spec from which
                         the asset will be served to the application
                       properties:
-                        hostname:
-                          description: Hostname is the hostname to connect to for
-                            connecting to a module exposed service. By default this
-                            equals to "{{.Release.Name}}.{{.Release.Namespace}}" of
-                            the module. <br/> Module developers can overide the default
-                            behavior by providing a template that may use the ".Release.Name",
-                            ".Release.Namespace" and ".Values.labels" variables.
-                          type: string
-                        port:
-                          format: int32
-                          type: integer
-                        scheme:
-                          description: 'For example: http, https, grpc, grpc+tls,
-                            jdbc:oracle:thin:@ etc'
+                        name:
                           type: string
                       required:
-                      - port
-                      - scheme
+                      - name
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                   type: object
                 description: AssetStates provides a status per asset
                 type: object
@@ -283,17 +283,12 @@ spec:
                 type: integer
               provisionedStorage:
                 additionalProperties:
-                  description: DatasetDetails contain dataset connection and metadata
-                    required to register this dataset in the enterprise catalog
+                  description: DatasetDetails holds details of the provisioned storage
                   properties:
                     datasetRef:
                       description: Reference to a Dataset resource containing the
                         request to provision storage
                       type: string
-                    details:
-                      description: Dataset information
-                      type: object
-                      x-kubernetes-preserve-unknown-fields: true
                     secretRef:
                       description: Reference to a secret where the credentials are
                         stored

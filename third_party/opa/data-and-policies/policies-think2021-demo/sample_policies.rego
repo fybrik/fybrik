@@ -6,9 +6,9 @@ rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": desc
 	input.action.actionType == "read"
 	input.context.intent == "Fraud Detection"
 	input.context.role == "Data Scientist"
-	input.resource.tags.residency == "Turkey"
+	input.resource.metadata.tags.residency == "Turkey"
 	input.action.processingLocation != "Turkey"
-	column_names := [input.resource.columns[i].name | input.resource.columns[i].tags.Confidential]
+	column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.Confidential]
 	count(column_names) > 0
 }
 
@@ -18,7 +18,7 @@ rule[{"action": {"name":"Deny"}, "policy": description}] {
 	input.action.actionType == "read"
 	input.context.intent == "Fraud Detection"
 	input.context.role != "Data Scientist"
-	input.resource.tags.residency == "Turkey"
+	input.resource.metadata.tags.residency == "Turkey"
 }
 
 rule[{"action": {"name":"Deny"}, "policy": description}] {
@@ -27,8 +27,8 @@ rule[{"action": {"name":"Deny"}, "policy": description}] {
 	input.action.actionType == "read"
 	input.context.intent == "Customer Behaviour Analysis"
 	input.context.role == "Business Analyst"
-	input.resource.tags.residency == "Turkey"
-	column_names := [input.resource.columns[i].name | input.resource.columns[i].tags.Confidential]
+	input.resource.metadata.tags.residency == "Turkey"
+	column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.Confidential]
 	count(column_names) > 0
 }
 
@@ -38,7 +38,7 @@ rule[{"action": {"name":"Deny"}, "policy": description}] {
 	input.action.actionType == "read"
 	input.context.intent == "Customer Behaviour Analysis"
 	input.context.role != "Business Analyst"
-	input.resource.tags.residency == "Turkey"
+	input.resource.metadata.tags.residency == "Turkey"
 	input.action.processingLocation != "Turkey"
 }
 
@@ -46,7 +46,7 @@ rule[{"action": {"name":"Deny"}, "policy": description}] {
 	description = "If data residency is Turkey but processing geography is not Turkey then deny writing"
 	#user context and access type check
 	input.action.actionType == "write"
-	input.resource.tags.residency == "Turkey"
+	input.resource.metadata.tags.residency == "Turkey"
 	input.action.processingLocation != "Turkey"
 }
 
@@ -54,7 +54,7 @@ rule[{"action": {"name":"Deny"}, "policy": description}] {
 	description = "If data residency is not Turkey and processing geography is neither Turkey nor EEA then deny writing"
 	#user context and access type check
 	input.action.actionType == "write"
-	input.resource.tags.residency != "Turkey"
+	input.resource.metadata.tags.residency != "Turkey"
 	input.action.processingLocation != "Turkey"
 	input.action.processingLocation != "EEA"
 }

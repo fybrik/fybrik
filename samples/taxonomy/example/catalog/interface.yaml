@@ -1,0 +1,19 @@
+definitions:
+  Interface:
+    oneOf:
+      - properties:
+          protocol:
+            enum: [kafka]
+          dataformat:
+            enum: [json, avro]
+        required: [protocol, dataformat]
+      - properties:
+          protocol:
+            enum: [s3]
+          dataformat:
+            enum: [csv, parquet]
+        required: [protocol, dataformat]
+      - properties:
+          protocol:
+            enum: [fybrik-arrow-flight, db2]
+        required: [protocol]

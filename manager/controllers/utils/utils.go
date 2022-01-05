@@ -7,30 +7,16 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"runtime"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	dc "fybrik.io/fybrik/pkg/connectors/protobuf"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
-// GetProtocol returns the existing data protocol
-func GetProtocol(info *dc.DatasetDetails) (string, error) {
-	switch info.DataStore.Type {
-	case dc.DataStore_S3:
-		return app.S3, nil
-	case dc.DataStore_KAFKA:
-		return app.Kafka, nil
-	case dc.DataStore_DB2:
-		return app.JdbcDb2, nil
-	}
-	return "", errors.New(app.InvalidAssetDataStore)
-}
-
 // IsDenied returns true if the data access is denied
-func IsDenied(actionName string) bool {
-	return (actionName == "Deny") // TODO FIX THIS
+func IsDenied(actionName taxonomy.ActionName) bool {
+	return actionName == "Deny" // TODO FIX THIS
 }
 
 // StructToMap converts a struct to a map using JSON marshal
@@ -45,6 +31,15 @@ func StructToMap(data interface{}) (map[string]interface{}, error) {
 		return nil, err
 	}
 	return mapData, nil
+}
+
+func HasString(value string, values []string) bool {
+	for _, v := range values {
+		if v == value {
+			return true
+		}
+	}
+	return false
 }
 
 // Hash generates a name based on the unique identifier
@@ -66,11 +61,6 @@ func GetReleaseName(applicationName string, namespace string, instanceName strin
 func GetReleaseNameByStepName(applicationName string, namespace string, moduleInstanceName string) string {
 	fullName := applicationName + "-" + namespace + "-" + moduleInstanceName
 	return HelmConformName(fullName)
-}
-
-// Generate fqdn for a module
-func GenerateModuleEndpointFQDN(releaseName string, blueprintNamespace string) string {
-	return releaseName + "." + blueprintNamespace + ".svc.cluster.local"
 }
 
 // Some k8s objects only allow for a length of 63 characters.
@@ -128,7 +118,7 @@ func SupportsInterface(array []*app.InterfaceDetails, element *app.InterfaceDeta
 // GetModuleCapabilities checks if the requested capability is supported by the module.  If so it returns
 // the ModuleCapability structure.  There could be more than one, since multiple structures could exist with
 // the same CapabilityType but different protocols, dataformats and/or actions.
-func GetModuleCapabilities(module *app.FybrikModule, requestedCapability app.CapabilityType) (bool, []app.ModuleCapability) {
+func GetModuleCapabilities(module *app.FybrikModule, requestedCapability string) (bool, []app.ModuleCapability) {
 	capList := []app.ModuleCapability{}
 	capFound := false
 	for _, cap := range module.Spec.Capabilities {
@@ -152,4 +142,23 @@ func Intersection(set1 []string, set2 []string) []string {
 		}
 	}
 	return res
+}
+
+const FybrikAppUUID = "app.fybrik.io/app-uuid"
+
+// GetFybrikApplicationUUID returns a globally unique ID for the FybrikApplication instance.
+// It must be unique over time and across clusters, even after the instance has been deleted, because this ID will be used for logging purposes.
+func GetFybrikApplicationUUID(fapp *app.FybrikApplication) string {
+	// Use the clusterwise unique kubernetes id.
+	// No need to add cluster because FybrikApplication instances can only be created on the coordinator cluster.
+	return string(fapp.GetObjectMeta().GetUID())
+}
+
+// GetFybrikApplicationUUIDfromAnnotations returns the UUID passed to the resource in its annotations
+func GetFybrikApplicationUUIDfromAnnotations(annotations map[string]string) string {
+	uuid, founduuid := annotations[FybrikAppUUID]
+	if !founduuid {
+		return "UUID missing"
+	}
+	return uuid
 }

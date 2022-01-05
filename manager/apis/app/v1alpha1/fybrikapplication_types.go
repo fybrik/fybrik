@@ -4,7 +4,7 @@
 package v1alpha1
 
 import (
-	"fybrik.io/fybrik/pkg/serde"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -65,12 +65,13 @@ type DataContext struct {
 // based on policies and rules defined in an external data policy manager.
 type ApplicationDetails map[string]string
 
-// FybrikApplicationSpec defines the desired state of FybrikApplication.
+// FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.
+// Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets
+// Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog
 type FybrikApplicationSpec struct {
 
 	// Selector enables to connect the resource to the application
 	// Application labels should match the labels in the selector.
-	// For some flows the selector may not be used.
 	// +optional
 	Selector Selector `json:"selector"`
 
@@ -80,7 +81,7 @@ type FybrikApplicationSpec struct {
 	SecretRef string `json:"secretRef,omitempty"`
 
 	// AppInfo contains information describing the reasons for the processing
-	// that will be done by the Data Scientist's application.
+	// that will be done by the application.
 	// +required
 	AppInfo ApplicationDetails `json:"appInfo"`
 
@@ -102,38 +103,6 @@ const (
 	InvalidAssetDataStore       string = "the asset data store is not supported"
 )
 
-// Condition indices are static. Conditions always present in the status.
-const (
-	ReadyConditionIndex int64 = 0
-	DenyConditionIndex  int64 = 1
-	ErrorConditionIndex int64 = 2
-)
-
-// ConditionType represents a condition type
-type ConditionType string
-
-const (
-	// ErrorCondition means that an error was encountered during blueprint construction
-	ErrorCondition ConditionType = "Error"
-
-	// DenyCondition means that access to a dataset is denied
-	DenyCondition ConditionType = "Deny"
-
-	// ReadyCondition means that access to a dataset is granted
-	ReadyCondition ConditionType = "Ready"
-)
-
-// Condition describes the state of a FybrikApplication at a certain point.
-type Condition struct {
-	// Type of the condition
-	Type ConditionType `json:"type"`
-	// Status of the condition: true or false
-	Status corev1.ConditionStatus `json:"status"`
-	// Message contains the details of the current condition
-	// +optional
-	Message string `json:"message,omitempty"`
-}
-
 // ResourceReference contains resource identifier(name, namespace, kind)
 type ResourceReference struct {
 	// Name of the resource
@@ -146,14 +115,12 @@ type ResourceReference struct {
 	AppVersion int64 `json:"appVersion"`
 }
 
-// DatasetDetails contain dataset connection and metadata required to register this dataset in the enterprise catalog
+// DatasetDetails holds details of the provisioned storage
 type DatasetDetails struct {
 	// Reference to a Dataset resource containing the request to provision storage
 	DatasetRef string `json:"datasetRef,omitempty"`
 	// Reference to a secret where the credentials are stored
 	SecretRef string `json:"secretRef,omitempty"`
-	// Dataset information
-	Details serde.Arbitrary `json:"details,omitempty"`
 }
 
 // AssetState defines the observed state of an asset
@@ -168,7 +135,7 @@ type AssetState struct {
 
 	// Endpoint provides the endpoint spec from which the asset will be served to the application
 	// +optional
-	Endpoint EndpointSpec `json:"endpoint,omitempty"`
+	Endpoint taxonomy.Connection `json:"endpoint,omitempty"`
 }
 
 // FybrikApplicationStatus defines the observed state of FybrikApplication.
@@ -209,14 +176,14 @@ type FybrikApplicationStatus struct {
 	ProvisionedStorage map[string]DatasetDetails `json:"provisionedStorage,omitempty"`
 }
 
-// FybrikApplication provides information about the application being used by a Data Scientist,
-// the nature of the processing, and the data sets that the Data Scientist has chosen for processing by the application.
-// The FybrikApplication controller (aka pilot) obtains instructions regarding any governance related changes that must
+// FybrikApplication provides information about the application whose data is being operated on,
+// the nature of the processing, and the data sets chosen for processing by the application.
+// The FybrikApplication controller obtains instructions regarding any governance related changes that must
 // be performed on the data, identifies the modules capable of performing such changes, and finally
-// generates the Blueprint which defines the secure runtime environment and all the components
-// in it.  This runtime environment provides the Data Scientist's application with access to the data requested
+// generates the Plotter which defines the secure runtime environment and all the components
+// in it.  This runtime environment provides the application with access to the data requested
 // in a secure manner and without having to provide any credentials for the data sets.  The credentials are obtained automatically
-// by the manager from an external credential management system, which may or may not be part of a data catalog.
+// by the manager from the credential management system.
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 type FybrikApplication struct {
@@ -241,7 +208,7 @@ func init() {
 }
 
 const (
-	ApplicationClusterLabel   = "app.fybrik.io/appCluster"
-	ApplicationNamespaceLabel = "app.fybrik.io/appNamespace"
-	ApplicationNameLabel      = "app.fybrik.io/appName"
+	ApplicationClusterLabel   = "app.fybrik.io/app-cluster"
+	ApplicationNamespaceLabel = "app.fybrik.io/app-namespace"
+	ApplicationNameLabel      = "app.fybrik.io/app-name"
 )

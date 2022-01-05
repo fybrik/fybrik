@@ -9,17 +9,16 @@ import (
 
 // FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
 type FybrikStorageAccountSpec struct {
+	// Identification of a storage account
+	// +required
+	ID string `json:"id"`
 	// +required
 	// A name of k8s secret deployed in the control plane.
 	// This secret includes secretKey and accessKey credentials for S3 bucket
 	SecretRef string `json:"secretRef"`
 	// +required
-	// Endpoint
-	Endpoint string `json:"endpoint"`
-	// +required
-	// +kubebuilder:validation:MinItems=1
-	// Regions
-	Regions []string `json:"regions"`
+	// Endpoints based on regions
+	Endpoints map[string]string `json:"endpoints"`
 }
 
 // FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount

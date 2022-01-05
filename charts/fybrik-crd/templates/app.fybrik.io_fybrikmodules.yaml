@@ -52,57 +52,36 @@ spec:
                       description: Actions are the data transformations that the module
                         supports
                       items:
+                        properties:
+                          name:
+                            type: string
+                        required:
+                        - name
                         type: object
                         x-kubernetes-preserve-unknown-fields: true
                       type: array
                     api:
                       description: API indicates to the application how to access
-                        the capabilities provided by the module TODO This is optional
-                        but in ModuleAPI the endpoint is required?
+                        the capabilities provided by the module
                       properties:
-                        dataformat:
-                          description: DataFormat defines the data format type
-                          type: string
-                        endpoint:
-                          description: EndpointSpec is used both by the module creator
-                            and by the status of the fybrikapplication
+                        connection:
+                          description: Connection information
                           properties:
-                            hostname:
-                              description: Hostname is the hostname to connect to
-                                for connecting to a module exposed service. By default
-                                this equals to "{{.Release.Name}}.{{.Release.Namespace}}"
-                                of the module. <br/> Module developers can overide
-                                the default behavior by providing a template that
-                                may use the ".Release.Name", ".Release.Namespace"
-                                and ".Values.labels" variables.
-                              type: string
-                            port:
-                              format: int32
-                              type: integer
-                            scheme:
-                              description: 'For example: http, https, grpc, grpc+tls,
-                                jdbc:oracle:thin:@ etc'
+                            name:
                               type: string
                           required:
-                          - port
-                          - scheme
+                          - name
                           type: object
-                        protocol:
-                          description: Protocol defines the interface protocol used
-                            for data transactions
+                          x-kubernetes-preserve-unknown-fields: true
+                        dataFormat:
+                          description: Data format
                           type: string
                       required:
-                      - endpoint
-                      - protocol
+                      - connection
                       type: object
                     capability:
                       description: 'Capability declares what this module knows how
                         to do - ex: read, write, transform...'
-                      enum:
-                      - copy
-                      - read
-                      - write
-                      - transform
                       type: string
                     plugins:
                       description: Plugins enable the module to add libraries to perform
@@ -270,11 +249,48 @@ spec:
             - chart
             - type
             type: object
+          status:
+            description: FybrikModuleStatus defines the observed state of FybrikModule.
+            properties:
+              conditions:
+                description: Conditions indicate the module states with respect to
+                  validation
+                items:
+                  description: Condition describes the state of a FybrikApplication
+                    at a certain point.
+                  properties:
+                    message:
+                      description: Message contains the details of the current condition
+                      type: string
+                    observedGeneration:
+                      description: ObservedGeneration is the version of the resource
+                        for which the condition has been evaluated
+                      format: int64
+                      type: integer
+                    status:
+                      default: Unknown
+                      description: Status of the condition, one of (`True`, `False`,
+                        `Unknown`).
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: Type of the condition
+                      type: string
+                  required:
+                  - type
+                  type: object
+                type: array
+            type: object
         required:
         - spec
         type: object
     served: true
     storage: true
+    subresources:
+      status: {}
 status:
   acceptedNames:
     kind: ""

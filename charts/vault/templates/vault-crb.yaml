@@ -1,4 +1,4 @@
-{{- if eq .Values.plugins.vaultPluginSecretsKubernetesReader.clusterScope true }}
+{{- if .Values.plugins.vaultPluginSecretsKubernetesReader.clusterScope }}
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:

@@ -6,7 +6,6 @@ The `manager` binary includes all of the controllers that this project defines b
 - `enable-all-controllers` to enable all controllers
 - `enable-application-controller` to enable the controller for `FybrikApplication`
 - `enable-blueprint-controller` to enable the controller for `Blueprint`
-- `enable-motion-controller` to enable the controllers for `BatchTransfer` and `StreamTransfer`
 
 
 ## Run and debug locally
@@ -50,7 +49,7 @@ VAULT_ADDRESS="http://vault.fybrik-system:8200"
 MAIN_POLICY_MANAGER_NAME="opa"
 MAIN_POLICY_MANAGER_CONNECTOR_URL="http://localhost:49153"
 CATALOG_PROVIDER_NAME="katalog"
-CATALOG_CONNECTOR_URL="localhost:49152"
+CATALOG_CONNECTOR_URL="http://localhost:49152"
 CONNECTION_TIMEOUT="120"
 VAULT_MODULES_ROLE="module"
 ENABLE_WEBHOOKS="false"
@@ -61,6 +60,12 @@ then run the following to export all of the variables:
 
 ```bash
 set -a; . .env; set +a
+```
+
+### Copy taxonomy JSON files and config policies locally
+```bash
+cp -R ../charts/fybrik/files/taxonomy /tmp/
+cp -R ../charts/fybrik/files/adminconfig /tmp/
 ```
 
 ### Run the manager
@@ -102,13 +107,11 @@ The rest of this README describes the directory structure.
 
 Holds the Customer Resource Definitions (CRDs) of the project:
 - `app.fybrik.io/v1alpha1`: Includes `FybrikApplication`, administrator APIs `FybrikModule` and `FybrikBucket`, and internal CRDs `Blueprint` and `Plotter`.
-- `motion.fybrik.io/v1alpha1`: Includes data movements APIs `BatchTransfer` and `StreamTransfer`. Usually not used directly but rather invoked as a module.
 
 ### `controllers`
 
 Holds the customer controllers of the project:
 - `controllers/app` holds the controllers for `app.fybrik.io` APIs `FybrikApplication`, `Blueprint` and `Plotter`.
-- `controllers/motion` holds the controllers for `motion.fybrik.io` APIs `BatchTransfer` and `StreamTransfer`.
 
 ### `testdata`
 

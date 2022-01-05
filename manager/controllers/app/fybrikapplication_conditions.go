@@ -7,7 +7,20 @@ import (
 	"strings"
 
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/logging"
+	"github.com/rs/zerolog"
 	corev1 "k8s.io/api/core/v1"
+)
+
+// Condition indices are static. Conditions always present in the status.
+const (
+	// ReadyCondition means that access to a dataset is granted
+	ReadyConditionIndex int64 = 0
+	// DenyCondition means that access to a dataset is denied
+	DenyConditionIndex int64 = 1
+	// ErrorCondition means that an error was encountered during blueprint construction
+	ErrorConditionIndex int64 = 2
 )
 
 // Helper functions to manage conditions
@@ -27,31 +40,40 @@ func initStatus(application *api.FybrikApplication) {
 
 func resetAssetState(application *api.FybrikApplication, assetID string) {
 	conditions := make([]api.Condition, 3)
-	conditions[api.ErrorConditionIndex] = api.Condition{Type: api.ErrorCondition, Status: corev1.ConditionFalse}
-	conditions[api.DenyConditionIndex] = api.Condition{Type: api.DenyCondition, Status: corev1.ConditionFalse}
-	conditions[api.ReadyConditionIndex] = api.Condition{Type: api.ReadyCondition, Status: corev1.ConditionFalse}
+	conditions[ErrorConditionIndex] = api.Condition{Type: api.ErrorCondition, Status: corev1.ConditionFalse}
+	conditions[DenyConditionIndex] = api.Condition{Type: api.DenyCondition, Status: corev1.ConditionFalse}
+	conditions[ReadyConditionIndex] = api.Condition{Type: api.ReadyCondition, Status: corev1.ConditionFalse}
 	application.Status.AssetStates[assetID] = api.AssetState{Conditions: conditions}
 }
 
-func setErrorCondition(application *api.FybrikApplication, assetID string, msg string) {
+func setErrorCondition(log zerolog.Logger, application *api.FybrikApplication, assetID string, msg string) {
 	errMsg := "An error was received for asset " + assetID
 	errMsg += " . If the error persists, please contact an operator."
 	errMsg += "Error description: " + msg
-	application.Status.AssetStates[assetID].Conditions[api.ErrorConditionIndex] = api.Condition{
+	application.Status.AssetStates[assetID].Conditions[ErrorConditionIndex] = api.Condition{
 		Type:    api.ErrorCondition,
 		Status:  corev1.ConditionTrue,
 		Message: errMsg}
+	log.Error().Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
+		Str(utils.FybrikAppUUID, utils.GetFybrikApplicationUUID(application)).
+		Str(logging.DATASETID, assetID).Msg("Setting error condition: " + errMsg)
 }
 
-func setDenyCondition(application *api.FybrikApplication, assetID string, msg string) {
-	application.Status.AssetStates[assetID].Conditions[api.DenyConditionIndex] = api.Condition{
+func setDenyCondition(log zerolog.Logger, application *api.FybrikApplication, assetID string, msg string) {
+	application.Status.AssetStates[assetID].Conditions[DenyConditionIndex] = api.Condition{
 		Type:    api.DenyCondition,
 		Status:  corev1.ConditionTrue,
 		Message: msg}
+	log.Error().Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
+		Str(utils.FybrikAppUUID, utils.GetFybrikApplicationUUID(application)).
+		Str(logging.DATASETID, assetID).Msg("Setting deny condition: " + msg)
 }
 
-func setReadyCondition(application *api.FybrikApplication, assetID string) {
-	application.Status.AssetStates[assetID].Conditions[api.ReadyConditionIndex].Status = corev1.ConditionTrue
+func setReadyCondition(log zerolog.Logger, application *api.FybrikApplication, assetID string) {
+	application.Status.AssetStates[assetID].Conditions[ReadyConditionIndex].Status = corev1.ConditionTrue
+	log.Info().Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
+		Str(utils.FybrikAppUUID, utils.GetFybrikApplicationUUID(application)).
+		Str(logging.DATASETID, assetID).Msg("Setting ready condition")
 }
 
 // determine if the application is ready
@@ -67,8 +89,8 @@ func isReady(application *api.FybrikApplication) bool {
 		if len(assetState.Conditions) == 0 {
 			return false
 		}
-		if assetState.Conditions[api.DenyConditionIndex].Status == corev1.ConditionFalse &&
-			assetState.Conditions[api.ReadyConditionIndex].Status == corev1.ConditionFalse {
+		if assetState.Conditions[DenyConditionIndex].Status == corev1.ConditionFalse &&
+			assetState.Conditions[ReadyConditionIndex].Status == corev1.ConditionFalse {
 			return false
 		}
 	}
@@ -81,8 +103,8 @@ func getErrorMessages(application *api.FybrikApplication) string {
 	}
 	var errorMsgs []string
 	for _, state := range application.Status.AssetStates {
-		if state.Conditions[api.ErrorConditionIndex].Status == corev1.ConditionTrue {
-			errorMsgs = append(errorMsgs, state.Conditions[api.ErrorConditionIndex].Message)
+		if state.Conditions[ErrorConditionIndex].Status == corev1.ConditionTrue {
+			errorMsgs = append(errorMsgs, state.Conditions[ErrorConditionIndex].Message)
 		}
 	}
 	return strings.Join(errorMsgs, "\n")

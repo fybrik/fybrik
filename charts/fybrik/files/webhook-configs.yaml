@@ -1,56 +1,4 @@
 apiVersion: admissionregistration.k8s.io/v1
-kind: MutatingWebhookConfiguration
-metadata:
-  creationTimestamp: null
-  name: '{{ .Release.Namespace }}-mutating-webhook'
-  annotations:
-    cert-manager.io/inject-ca-from: '{{ .Release.Namespace }}/serving-cert'
-    certmanager.k8s.io/inject-ca-from: '{{ .Release.Namespace }}/serving-cert'
-webhooks:
-  - admissionReviewVersions:
-      - v1
-      - v1beta1
-    clientConfig:
-      service:
-        name: webhook-service
-        namespace: '{{ .Release.Namespace }}'
-        path: /mutate-motion-fybrik-io-v1alpha1-batchtransfer
-    failurePolicy: Fail
-    name: mbatchtransfer.kb.io
-    rules:
-      - apiGroups:
-          - motion.fybrik.io
-        apiVersions:
-          - v1alpha1
-        operations:
-          - CREATE
-          - UPDATE
-        resources:
-          - batchtransfers
-    sideEffects: None
-  - admissionReviewVersions:
-      - v1
-      - v1beta1
-    clientConfig:
-      service:
-        name: webhook-service
-        namespace: '{{ .Release.Namespace }}'
-        path: /mutate-motion-fybrik-io-v1alpha1-streamtransfer
-    failurePolicy: Fail
-    name: mstreamtransfer.kb.io
-    rules:
-      - apiGroups:
-          - motion.fybrik.io
-        apiVersions:
-          - v1alpha1
-        operations:
-          - CREATE
-          - UPDATE
-        resources:
-          - streamtransfers
-    sideEffects: None
----
-apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   creationTimestamp: null
@@ -87,38 +35,17 @@ webhooks:
       service:
         name: webhook-service
         namespace: '{{ .Release.Namespace }}'
-        path: /validate-motion-fybrik-io-v1alpha1-batchtransfer
+        path: /validate-app-fybrik-io-v1alpha1-fybrikmodule
     failurePolicy: Fail
-    name: vbatchtransfer.kb.io
+    name: vfybrikmodule.kb.io
     rules:
       - apiGroups:
-          - motion.fybrik.io
+          - app.fybrik.io
         apiVersions:
           - v1alpha1
         operations:
           - CREATE
           - UPDATE
         resources:
-          - batchtransfers
-    sideEffects: None
-  - admissionReviewVersions:
-      - v1
-      - v1beta1
-    clientConfig:
-      service:
-        name: webhook-service
-        namespace: '{{ .Release.Namespace }}'
-        path: /validate-motion-fybrik-io-v1alpha1-streamtransfer
-    failurePolicy: Fail
-    name: vstreamtransfer.kb.io
-    rules:
-      - apiGroups:
-          - motion.fybrik.io
-        apiVersions:
-          - v1alpha1
-        operations:
-          - CREATE
-          - UPDATE
-        resources:
-          - streamtransfers
+          - fybrikmodules
     sideEffects: None

@@ -102,6 +102,31 @@ jobs:
         path: images.tar
         retention-days: 1
 
+  notebook-sample:
+    name: Notebook sample
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_HOSTNAME: "localhost:5000"
+      DOCKER_NAMESPACE: fybrik-system
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - uses: actions/checkout@v2
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/go/pkg/mod
+          ${{ github.workspace }}/hack/tools/bin
+        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
+    - name: Install tools
+      run: make install-tools
+    - name: Notebook tests
+      run: make run-notebook-tests
+
   tekton-pipelines:
     name: Tekton Tests
     runs-on: ubuntu-latest
@@ -164,25 +189,31 @@ jobs:
       if: ${{ github.event_name != 'pull_request' }}
       run: docker load -i images.tar
     - run: docker images
-    # Versions are created as follows:
-    # tags starting with v will be released as what comes after `v`. (e.g. refs/tags/v1.0 -> 1.0) (as well as 'latest' tag)
-    # release branches in e.g. (refs/heads/releases/1.0 -> 1.0-rc )
-    # other branches (e.g. master) will be released with branch name as version
+    # Versions are created as follows (In helm 3.7 OCI reference tags must be valid SemVer):
+    # - Tags starting with v will be released as what comes after `v`. (e.g. refs/tags/v1.0 -> 1.0).
+    #   In addition, a version with tag `latest` will be released for docker image tags and `0.0.0-latest` for
+    #   helm chart OCI reference tags.
+    # - Release branches will be released as the release number (e.g. refs/heads/releases/1.0 -> 1.0-rc).
+    # - Other branches (e.g. master) will be released with branch name as version for the docker images.
+    #   For the helm chart OCI reference tag 0.0.0-<branch-name> will be used.
     - id: version
       name: Infer version
       run: |
         version="${GITHUB_REF#refs/tags/v}"
+        echo "HELM_TAG=${version}" >> $GITHUB_ENV
         push_tag_event='true'
         if  [[ $version == refs/* ]] ;
         then
             push_tag_event='false'
             branch="${GITHUB_REF#refs/heads/}"
             version=$branch
+            echo "HELM_TAG=0.0.0-${version}" >> $GITHUB_ENV
         fi
         if [[ $version == releases/* ]] ;
         then
            releaseVersion="${GITHUB_REF#refs/heads/releases/}"
            version="$releaseVersion-rc"
+           echo "HELM_TAG=$releaseVersion-rc" >> $GITHUB_ENV
         fi
         echo ::set-output name=version::$version
         echo ::set-output name=push_tag_event::$push_tag_event
@@ -195,4 +226,5 @@ jobs:
       if: github.event_name != 'pull_request' && steps.version.outputs.push_tag_event == 'true'
       env:
         DOCKER_PUBLIC_TAGNAME: 'latest'
+        HELM_TAG: '0.0.0-latest'
       run: make docker-retag-and-push-public && make helm-push-public

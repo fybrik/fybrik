@@ -127,6 +127,11 @@ spec:
                         connection:
                           description: Connection has the relevant details for accesing
                             the data (url, table, ssl, etc.)
+                          properties:
+                            name:
+                              type: string
+                          required:
+                          - name
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
                         format:
@@ -165,7 +170,6 @@ spec:
                           type: object
                       required:
                       - connection
-                      - format
                       - vault
                       type: object
                   required:
@@ -227,49 +231,32 @@ spec:
                                         description: Actions are the data transformations
                                           that the module supports
                                         items:
+                                          properties:
+                                            name:
+                                              type: string
+                                          required:
+                                          - name
                                           type: object
                                           x-kubernetes-preserve-unknown-fields: true
                                         type: array
                                       api:
-                                        description: Service holds information for
-                                          accessing a module instance
+                                        description: ResourceDetails includes asset
+                                          connection details
                                         properties:
-                                          endpoint:
-                                            description: EndpointSpec is used both
-                                              by the module creator and by the status
-                                              of the fybrikapplication
+                                          connection:
+                                            description: Connection information
                                             properties:
-                                              hostname:
-                                                description: Hostname is the hostname
-                                                  to connect to for connecting to
-                                                  a module exposed service. By default
-                                                  this equals to "{{.Release.Name}}.{{.Release.Namespace}}"
-                                                  of the module. <br/> Module developers
-                                                  can overide the default behavior
-                                                  by providing a template that may
-                                                  use the ".Release.Name", ".Release.Namespace"
-                                                  and ".Values.labels" variables.
-                                                type: string
-                                              port:
-                                                format: int32
-                                                type: integer
-                                              scheme:
-                                                description: 'For example: http, https,
-                                                  grpc, grpc+tls, jdbc:oracle:thin:@
-                                                  etc'
+                                              name:
                                                 type: string
                                             required:
-                                            - port
-                                            - scheme
+                                            - name
                                             type: object
-                                          format:
-                                            description: Format represents data format
-                                              (e.g. parquet) as received from catalog
-                                              connectors
+                                            x-kubernetes-preserve-unknown-fields: true
+                                          dataFormat:
+                                            description: Data format
                                             type: string
                                         required:
-                                        - endpoint
-                                        - format
+                                        - connection
                                         type: object
                                       sink:
                                         description: 'StepSink holds information to
@@ -291,46 +278,23 @@ spec:
                                           of another step'
                                         properties:
                                           api:
-                                            description: Service holds information
-                                              for accessing a module instance
+                                            description: API holds information for
+                                              accessing a module instance
                                             properties:
-                                              endpoint:
-                                                description: EndpointSpec is used
-                                                  both by the module creator and by
-                                                  the status of the fybrikapplication
+                                              connection:
+                                                description: Connection information
                                                 properties:
-                                                  hostname:
-                                                    description: Hostname is the hostname
-                                                      to connect to for connecting
-                                                      to a module exposed service.
-                                                      By default this equals to "{{.Release.Name}}.{{.Release.Namespace}}"
-                                                      of the module. <br/> Module
-                                                      developers can overide the default
-                                                      behavior by providing a template
-                                                      that may use the ".Release.Name",
-                                                      ".Release.Namespace" and ".Values.labels"
-                                                      variables.
-                                                    type: string
-                                                  port:
-                                                    format: int32
-                                                    type: integer
-                                                  scheme:
-                                                    description: 'For example: http,
-                                                      https, grpc, grpc+tls, jdbc:oracle:thin:@
-                                                      etc'
+                                                  name:
                                                     type: string
                                                 required:
-                                                - port
-                                                - scheme
+                                                - name
                                                 type: object
-                                              format:
-                                                description: Format represents data
-                                                  format (e.g. parquet) as received
-                                                  from catalog connectors
+                                                x-kubernetes-preserve-unknown-fields: true
+                                              dataFormat:
+                                                description: Data format
                                                 type: string
                                             required:
-                                            - endpoint
-                                            - format
+                                            - connection
                                             type: object
                                           assetId:
                                             description: AssetID identifies the source
@@ -376,6 +340,10 @@ spec:
                   - subFlows
                   type: object
                 type: array
+              modulesNamespace:
+                description: ModulesNamespace is the namespace where modules should
+                  be allocated
+                type: string
               templates:
                 additionalProperties:
                   description: Template contains basic information about the required
@@ -452,6 +420,7 @@ spec:
             required:
             - assets
             - flows
+            - modulesNamespace
             - templates
             type: object
           status:
@@ -487,9 +456,9 @@ spec:
                       type: string
                     status:
                       description: BlueprintStatus defines the observed state of Blueprint
-                        This includes readiness, error message, and indicators forthe
-                        Kubernetes resources owned by the Blueprint for cleanup and
-                        status monitoring
+                        This includes readiness, error message, and indicators for
+                        the Kubernetes resources owned by the Blueprint for cleanup
+                        and status monitoring
                       properties:
                         modules:
                           additionalProperties:
@@ -509,9 +478,9 @@ spec:
                                 type: boolean
                             type: object
                           description: ModulesState is a map which holds the status
-                            of each module its key is the instance name which is the
-                            unique name for the deployed instance related to this
-                            workload
+                            of each module its key is the moduleInstanceName which
+                            is the unique name for the deployed instance related to
+                            this workload
                           type: object
                         observedGeneration:
                           description: ObservedGeneration is taken from the Blueprint
@@ -546,8 +515,6 @@ spec:
                             reconcile, each release should be mapped to the latest
                             blueprint version or be uninstalled.
                           type: object
-                      required:
-                      - modules
                       type: object
                   required:
                   - name
@@ -564,14 +531,24 @@ spec:
                     message:
                       description: Message contains the details of the current condition
                       type: string
+                    observedGeneration:
+                      description: ObservedGeneration is the version of the resource
+                        for which the condition has been evaluated
+                      format: int64
+                      type: integer
                     status:
-                      description: 'Status of the condition: true or false'
+                      default: Unknown
+                      description: Status of the condition, one of (`True`, `False`,
+                        `Unknown`).
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
                       type: string
                     type:
                       description: Type of the condition
                       type: string
                   required:
-                  - status
                   - type
                   type: object
                 type: array

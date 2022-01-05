@@ -5,6 +5,5 @@ package adminconfig
 
 // EvaluatorInterface is an interface for config policies' evaluator
 type EvaluatorInterface interface {
-	SetupWithInfrastructureManager(mgr *InfrastructureManager)
 	Evaluate(in *EvaluatorInput) (EvaluatorOutput, error)
 }

@@ -20,32 +20,20 @@
                                 "$ref": "taxonomy.json#/definitions/Capability"
                             },
                             "api": {
-                                "$ref": "taxonomy.json#/definitions/Interface"
+                                "$ref": "datacatalog.json#/definitions/ResourceDetails"
                             },
                             "supportedInterfaces": {
                                 "type": "array",
                                 "items": {
                                     "type": "object",
-                                    "oneOf": [
-                                        {
-                                            "source": {
-                                                "$ref": "taxonomy.json#/definitions/Interface"
-                                            }
+                                    "properties": {
+                                        "source": {
+                                            "$ref": "taxonomy.json#/definitions/Interface"
                                         },
-                                        {
-                                            "sink": {
-                                                "$ref": "taxonomy.json#/definitions/Interface"
-                                            }
-                                        },
-                                        {
-                                            "source": {
-                                                "$ref": "taxonomy.json#/definitions/Interface"
-                                            },
-                                            "sink": {
-                                                "$ref": "taxonomy.json#/definitions/Interface"
-                                            }
+                                        "sink": {
+                                            "$ref": "taxonomy.json#/definitions/Interface"
                                         }
-                                    ]
+                                    }
                                 }
                             },
                             "actions": {

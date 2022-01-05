@@ -1,40 +1,64 @@
 {
+  "title": "taxonomy.json",
   "definitions": {
     "Action": {
       "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": true,
       "required": [
         "name"
-      ]
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/ActionName"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ActionName": {
+      "type": "string"
     },
     "AppInfo": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": true
+    },
+    "AssetID": {
+      "type": "string"
     },
     "Capability": {
       "type": "string"
     },
-    "Dataformat": {
+    "Connection": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/ConnectionType"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ConnectionType": {
       "type": "string"
     },
-    "DatasetID": {
+    "DataFormat": {
       "type": "string"
     },
     "Interface": {
       "type": "object",
+      "required": [
+        "protocol"
+      ],
       "properties": {
         "dataformat": {
-          "$ref": "#/definitions/Dataformat"
+          "$ref": "#/definitions/DataFormat",
+          "description": "DataFormat defines the data format type"
         },
         "protocol": {
-          "$ref": "#/definitions/Protocol"
+          "$ref": "#/definitions/ConnectionType",
+          "description": "Protocol defines the interface protocol used for data transactions"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "PluginType": {
       "type": "string"
@@ -44,9 +68,6 @@
       "additionalProperties": true
     },
     "ProcessingLocation": {
-      "type": "string"
-    },
-    "Protocol": {
       "type": "string"
     },
     "Tags": {

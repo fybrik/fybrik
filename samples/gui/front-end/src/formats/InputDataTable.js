@@ -51,9 +51,9 @@ const protocolOptions = [
     value: 'fybrik-arrow-flight'
   },
   {
-    key: 'jdbc-db2',
-    text: 'jdbc-db2',
-    value: 'jdbc-db2'
+    key: 'db2',
+    text: 'db2',
+    value: 'db2'
   },
   {
     key: 'kafka',

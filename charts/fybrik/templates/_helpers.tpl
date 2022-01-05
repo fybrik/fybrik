@@ -88,9 +88,9 @@ true
 {{- end }}
 
 {{/*
-isRazeeEnabled checks if razee configuration is enabled
+isRazeeConfigurationEnabled checks if razee configuration is enabled
 */}}
-{{- define "fybrik.isRazeeEnabled" -}}
+{{- define "fybrik.isRazeeConfigurationEnabled" -}}
 {{- if or .Values.coordinator.razee.user .Values.coordinator.razee.apiKey .Values.coordinator.razee.iamKey -}}
 true
 {{- end -}}
@@ -109,11 +109,11 @@ cert-manager.io/v1alpha2
 {{- end -}}
 
 {{/*
-Get blueprints namespace
+Get modules namespace
 */}}
-{{- define "fybrik.getBlueprintNamespace" -}}
-{{- if .Values.blueprintNamespace -}}
-{{- .Values.blueprintNamespace -}}
+{{- define "fybrik.getModulesNamespace" -}}
+{{- if .Values.modulesNamespace -}}
+{{- .Values.modulesNamespace -}}
 {{- else -}}
 {{- "fybrik-blueprints" -}}
 {{- end -}}

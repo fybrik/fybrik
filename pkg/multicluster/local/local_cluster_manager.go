@@ -8,49 +8,42 @@ import (
 	"fmt"
 
 	"emperror.dev/errors"
-	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/pkg/multicluster"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/pkg/multicluster"
 )
 
 const (
 	clusterMetadataConfigmapName string = "cluster-metadata"
 )
 
-// ClusterManager for local cluster configuration
-type ClusterManager struct {
+// localClusterManager for local cluster configuration
+type localClusterManager struct {
 	Client    client.Client
 	Namespace string
 }
 
 // GetClusters returns a list of registered clusters
-func (cm *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
-	clusterMetadataConfigmap := corev1.ConfigMap{}
+func (cm *localClusterManager) GetClusters() ([]multicluster.Cluster, error) {
+	cmcm := corev1.ConfigMap{}
 	namespacedName := client.ObjectKey{
 		Name:      clusterMetadataConfigmapName,
 		Namespace: cm.Namespace,
 	}
-	if err := cm.Client.Get(context.Background(), namespacedName, &clusterMetadataConfigmap); err != nil {
+	if err := cm.Client.Get(context.Background(), namespacedName, &cmcm); err != nil {
 		return nil, errors.Wrap(err, "error in GetClusters")
 	}
-	var clusters []multicluster.Cluster
-	cluster := multicluster.Cluster{
-		Name: clusterMetadataConfigmap.Data["ClusterName"],
-		Metadata: multicluster.ClusterMetadata{
-			Region:        clusterMetadataConfigmap.Data["Region"],
-			Zone:          clusterMetadataConfigmap.Data["Zone"],
-			VaultAuthPath: clusterMetadataConfigmap.Data["VaultAuthPath"],
-		},
-	}
-	clusters = append(clusters, cluster)
+	cluster := multicluster.CreateCluster(cmcm)
+	clusters := []multicluster.Cluster{cluster}
 	return clusters, nil
 }
 
 // GetLocalClusterName returns the local cluster name
-func (cm *ClusterManager) GetLocalClusterName() (string, error) {
+func (cm *localClusterManager) GetLocalClusterName() (string, error) {
 	clusters, err := cm.GetClusters()
 	if err != nil {
 		return "", err
@@ -62,7 +55,7 @@ func (cm *ClusterManager) GetLocalClusterName() (string, error) {
 }
 
 // GetBlueprint returns a blueprint matching the given name, namespace and cluster details
-func (cm *ClusterManager) GetBlueprint(cluster string, namespace string, name string) (*v1alpha1.Blueprint, error) {
+func (cm *localClusterManager) GetBlueprint(cluster string, namespace string, name string) (*v1alpha1.Blueprint, error) {
 	if localCluster, err := cm.GetLocalClusterName(); err != nil || localCluster != cluster {
 		return nil, fmt.Errorf("unregistered cluster: %s", cluster)
 	}
@@ -77,12 +70,12 @@ func (cm *ClusterManager) GetBlueprint(cluster string, namespace string, name st
 }
 
 // CreateBlueprint creates a blueprint resource or updates an existing one
-func (cm *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+func (cm *localClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	return cm.UpdateBlueprint(cluster, blueprint)
 }
 
-// UpdateBlueprint updates the given blueprint or creates a new one if does not exist
-func (cm *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+// UpdateBlueprint updates the given blueprint or creates a new one if it does not exist
+func (cm *localClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	if localCluster, err := cm.GetLocalClusterName(); err != nil || localCluster != cluster {
 		return fmt.Errorf("unregistered cluster: %s", cluster)
 	}
@@ -95,6 +88,7 @@ func (cm *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Bl
 	if _, err := ctrl.CreateOrUpdate(context.Background(), cm.Client, resource, func() error {
 		resource.Spec = blueprint.Spec
 		resource.ObjectMeta.Labels = blueprint.ObjectMeta.Labels
+		resource.ObjectMeta.Annotations = blueprint.ObjectMeta.Annotations
 		return nil
 	}); err != nil {
 		return err
@@ -103,7 +97,7 @@ func (cm *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Bl
 }
 
 // DeleteBlueprint deletes the blueprint resource
-func (cm *ClusterManager) DeleteBlueprint(cluster string, namespace string, name string) error {
+func (cm *localClusterManager) DeleteBlueprint(cluster string, namespace string, name string) error {
 	blueprint, err := cm.GetBlueprint(cluster, namespace, name)
 	if err != nil {
 		return err
@@ -111,9 +105,9 @@ func (cm *ClusterManager) DeleteBlueprint(cluster string, namespace string, name
 	return cm.Client.Delete(context.Background(), blueprint)
 }
 
-// NewManager creates a new ClusterManager for a local cluster configuration
-func NewManager(client client.Client, namespace string) (multicluster.ClusterManager, error) {
-	return &ClusterManager{
+// NewClusterManager creates an instance of ClusterManager for a local cluster configuration
+func NewClusterManager(client client.Client, namespace string) (multicluster.ClusterManager, error) {
+	return &localClusterManager{
 		Client:    client,
 		Namespace: namespace,
 	}, nil

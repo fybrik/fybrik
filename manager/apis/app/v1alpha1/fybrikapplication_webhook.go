@@ -55,7 +55,10 @@ func (r *FybrikApplication) ValidateFybrikApplication(taxonomyFile string) error
 	}
 
 	// Validate Fybrik application against taxonomy
-	allErrs = validate.TaxonomyCheck(applicationJSON, taxonomyFile, "Fybrik application")
+	allErrs, err = validate.TaxonomyCheck(applicationJSON, taxonomyFile)
+	if err != nil {
+		return err
+	}
 
 	// Return any error
 	if len(allErrs) == 0 {

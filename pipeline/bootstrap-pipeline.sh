@@ -137,25 +137,25 @@ fi
 unique_prefix=$(kubectl config view --minify --output 'jsonpath={..namespace}'; echo)
 
 if [[ "${unique_prefix}" == "fybrik-system" ]]; then
-  blueprint_namespace="fybrik-blueprints"
+  modules_namespace="fybrik-blueprints"
 else
-  blueprint_namespace="${unique_prefix}-blueprints"
+  modules_namespace="${unique_prefix}-blueprints"
 fi
-extra_params="${extra_params} -p blueprintNamespace=${blueprint_namespace}"
+extra_params="${extra_params} -p modulesNamespace=${modules_namespace}"
 
 if [[ ${cluster_scoped} == "false" ]]; then
   set +e
   rc=1
-  kubectl get ns ${blueprint_namespace}
+  kubectl get ns ${modules_namespace}
   rc=$?
   set -e
   # Create new project if necessary
   if [[ $rc -ne 0 ]]; then
     if [[ ${is_openshift} == "true" ]]; then
-      oc new-project ${blueprint_namespace}
+      oc new-project ${modules_namespace}
       oc project ${unique_prefix} 
     else
-      kubectl create ns ${blueprint_namespace} 
+      kubectl create ns ${modules_namespace} 
     fi
   fi
 fi
@@ -253,7 +253,7 @@ if [[ ${is_openshift} == "true" ]]; then
     oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:${unique_prefix}:pipeline
     oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:${unique_prefix}:root-sa
     oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${unique_prefix} --namespace ${unique_prefix}
-    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${blueprint_namespace} --namespace ${unique_prefix}
+    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${modules_namespace} --namespace ${unique_prefix}
     oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${unique_prefix}-app --namespace ${unique_prefix}
     
     # Temporary hack pending a better solution
@@ -272,7 +272,7 @@ helper_text="If this step fails, tekton related pods may be restarting or initia
 1. Please rerun in a minute or so
 "
 set -x
-kubectl apply -f ${repo_root}/pipeline/tasks/shell.yaml
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/shell.yaml" 3 true 60
 kubectl apply -f ${repo_root}/pipeline/tasks/make.yaml
 kubectl apply -f ${repo_root}/pipeline/tasks/git-clone.yaml
 kubectl apply -f ${repo_root}/pipeline/tasks/buildah.yaml
@@ -369,6 +369,11 @@ if [[ ${is_openshift} == "true" ]]; then
 else
     kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "regcred"}]}'
     kubectl patch serviceaccount default -p '{"secrets": [{"name": "regcred"}]}'
+
+    if [[ ${cluster_scoped} == "false" ]]; then
+      kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "regcred"}]}' -n ${modules_namespace}
+      kubectl patch serviceaccount default -p '{"secrets": [{"name": "regcred"}]}' -n ${modules_namespace}
+    fi
 fi
 
 extra_params="${extra_params} -p deployVault='true'"
@@ -563,8 +568,8 @@ spec:
     value: ${image_repo}
   - name: dockerhub-hostname
     value: ${dockerhub_hostname}
-  - name: blueprintNamespace
-    value: ${blueprint_namespace}
+  - name: modulesNamespace
+    value: ${modules_namespace}
   - name: docker-namespace
     value: ${unique_prefix} 
   - name: git-revision
@@ -626,13 +631,13 @@ kubectl get pipelinerun --no-headers
 kubectl get pipelinerun --no-headers | grep -e "Failed" -e "Completed"
 EOH
     chmod u+x ${TMP}/streams_csv_check_script.sh
-    try_command "${TMP}/streams_csv_check_script.sh"  60 false 30
+    try_command "${TMP}/streams_csv_check_script.sh"  60 false 31
     echo "debug: pods"
     kubectl describe pods
     echo "debug: events"
     kubectl get events
     echo "debug: taskruns"
-    for i in $(kubectl get taskrun --no-headers | grep "False" | cut -d' ' -f1); do kubectl logs $(kubectl get po -l tekton.dev/taskRun=$i --no-headers | cut -d' ' -f1) --all-containers --since=0s; done
+    for i in $(kubectl get taskrun --no-headers | grep -v "True" | cut -d' ' -f1); do kubectl logs $(kubectl get po -l tekton.dev/taskRun=$i --no-headers | cut -d' ' -f1) --all-containers --since=0s; done
     set +e
     kubectl get pipelinerun --no-headers | grep "True"
     rc=$?

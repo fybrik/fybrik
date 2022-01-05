@@ -9,16 +9,17 @@ metadata:
 spec:
   type: service
   chart:
-    name: localhost:5000/fybrik-system/fybrik-template:0.1.0
+    name: ghcr.io/fybrik/fybrik-template:0.1.0
   capabilities:
     - capability: read
       scope: workload
       api:
-        protocol: fybrik-arrow-flight
-        dataformat: arrow
-        endpoint:
-          port: 80
-          scheme: grpc
+        connection:
+          name: fybrik-arrow-flight
+          fybrik-arrow-flight:
+            hostname: "{{ .Release.Name }}.{{ .Release.Namespace }}"
+            port: 80
+            scheme: grpc
       supportedInterfaces:
       - source:
           protocol: s3

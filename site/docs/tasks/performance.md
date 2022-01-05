@@ -19,10 +19,6 @@ manager:
     value: "20"
   - name: PLOTTER_CONCURRENT_RECONCILES
     value: "2"
-  - name: BATCHTRANSFER_CONCURRENT_RECONCILES
-    value: "1"
-  - name: STREAMTRANSFER_CONCURRENT_RECONCILES
-    value: "1"
   - name: CLIENT_QPS
     value: "100.0"
   - name: CLIENT_BURST

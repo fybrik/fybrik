@@ -5,8 +5,13 @@
 # Global configuration applies to multiple components installed by this chart
 global:
   hub: localhost:5000/fybrik-system
-  tag: "master"
+  tag: "0.0.0"
   imagePullPolicy: "Always"
+
+  prettyLogging: false
+  # zerolog verbosity level 
+  # ref: https://github.com/rs/zerolog#leveled-logging
+  loggingVerbosity: -1
 
 # Manager component
 manager:
@@ -23,8 +28,8 @@ opaServer:
       rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": description}] {
         description := "Redact columns tagged as PII in datasets tagged with finance = true"
         input.action.actionType == "read"
-        input.resource.tags.finance
-        column_names := [input.resource.columns[i].name | input.resource.columns[i].tags.PII]
+        input.resource.metadata.tags.finance
+        column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.PII]
       }
 
 

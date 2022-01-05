@@ -11,7 +11,7 @@ import (
 	"strconv"
 
 	mockup "fybrik.io/fybrik/manager/controllers/mockup"
-	taxonomymodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+	"fybrik.io/fybrik/pkg/model/policymanager"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,11 +21,11 @@ const (
 
 var router *gin.Engine
 
-func constructPolicyManagerRequest(inputString string) *taxonomymodels.PolicyManagerRequest {
+func constructPolicyManagerRequest(inputString string) *policymanager.GetPolicyDecisionsRequest {
 	log.Println("inconstructPolicymanagerRequest")
 	log.Println("inputString")
 	log.Println(inputString)
-	var input taxonomymodels.PolicyManagerRequest
+	var input policymanager.GetPolicyDecisionsRequest
 	err := json.Unmarshal([]byte(inputString), &input)
 	if err != nil {
 		return nil
@@ -57,7 +57,7 @@ func main() {
 	})
 
 	router.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "Hello World!")
+		c.String(http.StatusOK, "Serving REST APIs as part of policy manager stub")
 	})
 
 	log.Fatal(router.Run(":" + strconv.Itoa(PORT)))
