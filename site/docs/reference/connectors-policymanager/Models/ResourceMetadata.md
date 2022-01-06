@@ -5,7 +5,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **columns** | List | Columns associated with the asset | [optional] [default: null]
 **geography** | String | Geography of the resource | [optional] [default: null]
-**name** | String | Name of the resource | [default: null]
+**name** | String | Name of the resource | [optional] [default: null]
 **owner** | String | Owner of the resource | [optional] [default: null]
 **tags** | Map |  | [optional] [default: null]
 

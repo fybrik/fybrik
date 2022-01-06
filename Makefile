@@ -43,6 +43,7 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 	$(TOOLBIN)/helm install fybrik charts/fybrik --values $(VALUES_FILE) \
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 
+.PHONY: pre-test
 pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
 	mkdir -p /tmp/taxonomy
 	mkdir -p /tmp/adminconfig

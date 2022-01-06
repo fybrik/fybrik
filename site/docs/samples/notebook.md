@@ -79,7 +79,7 @@ stringData:
 EOF
 ```
 
-Then, register the data asset itself in the catalog. Replace the values for `endpoint`, `bucket` and `objectKey` with values from the object storage service that you used and run:
+Then, register the data asset itself in the catalog. Replace the values for `endpoint`, `bucket` and `object_key` with values from the object storage service that you used and run:
 
 ```yaml
 cat << EOF | kubectl apply -f -
@@ -97,7 +97,7 @@ spec:
       s3:
         endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
         bucket: "demo"
-        objectKey: "PS_20174392719_1491204439457_log.csv"
+        object_key: "PS_20174392719_1491204439457_log.csv"
   metadata:
     name: Synthetic Financial Datasets For Fraud Detection
     geography: theshire 
@@ -118,7 +118,7 @@ EOF
 
 The asset is now registered in the catalog. The identifier of the asset is `fybrik-notebook-sample/paysim-csv` (i.e. `<namespace>/<name>`). You will use that name in the `FybrikApplication` later.
 
-Notice the `assetMetadata` field above. It specifies the dataset geography and tags. These attributes can later be used in policies.
+Notice the `metadata` field above. It specifies the dataset geography and tags. These attributes can later be used in policies.
 
 For example, in the yaml above, the `geography` is set to `theshire`, you need make sure it is same with the region of your fybrik control plane, you can get the information with the below command:
 
