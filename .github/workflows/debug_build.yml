@@ -10,7 +10,6 @@ on:
 
 env:
   GO_VERSION: 1.16
-  JAVA_VERSION: 11
 
 jobs:
   build-and-publish:
@@ -24,10 +23,6 @@ jobs:
       DOCKER_USERNAME: ${{ github.actor }}
       DOCKER_PASSWORD: ${{ github.token }}
     steps:
-    - name: Set up JDK
-      uses: actions/setup-java@v1
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
     - name: Install Go
       uses: actions/setup-go@v2
       with:
@@ -37,10 +32,9 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
-          ~/.m2/repository
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-custom-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-custom
     - run: echo "Pushing images to ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE} from branch ${{ github.ref }}"
     - name: Build and push docker images
