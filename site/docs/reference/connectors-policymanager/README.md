@@ -18,6 +18,7 @@ Class | Method | HTTP request | Description
  - [GetPolicyDecisionsResponse](Models/GetPolicyDecisionsResponse.md)
  - [RequestAction](Models/RequestAction.md)
  - [RequestActionType](Models/RequestActionType.md)
+ - [Resource](Models/Resource.md)
  - [ResourceColumn](Models/ResourceColumn.md)
  - [ResourceMetadata](Models/ResourceMetadata.md)
  - [ResultItem](Models/ResultItem.md)

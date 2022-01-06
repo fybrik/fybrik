@@ -2176,7 +2176,7 @@ Capability declares what this module knows how to do and the types of data it kn
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Unique name of an action supported by the module<br/>
         </td>
         <td>true</td>
       </tr></tbody>

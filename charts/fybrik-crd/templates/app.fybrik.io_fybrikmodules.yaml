@@ -54,6 +54,8 @@ spec:
                       items:
                         properties:
                           name:
+                            description: Unique name of an action supported by the
+                              module
                             type: string
                         required:
                         - name
