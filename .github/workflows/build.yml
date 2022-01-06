@@ -35,7 +35,7 @@ jobs:
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Verify
       run: |
-        make generate manifests verify
+        make generate generate-docs manifests verify
         git diff --exit-code
   test:
     name: Unit tests
