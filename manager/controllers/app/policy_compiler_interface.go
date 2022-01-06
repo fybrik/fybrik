@@ -62,7 +62,7 @@ func ValidatePolicyDecisionsRequest(request *policymanager.GetPolicyDecisionsReq
 
 	return apierrors.NewInvalid(
 		schema.GroupKind{Group: "app.fybrik.io", Kind: "PolicyManager-GetPolicyDecisionsRequest"},
-		string(request.Resource.Metadata.Name), allErrs)
+		request.Resource.Metadata.Name, allErrs)
 }
 
 func ValidatePolicyDecisionsResponse(response *policymanager.GetPolicyDecisionsResponse, taxonomyFile string) error {
@@ -88,7 +88,7 @@ func ValidatePolicyDecisionsResponse(response *policymanager.GetPolicyDecisionsR
 
 	return apierrors.NewInvalid(
 		schema.GroupKind{Group: "app.fybrik.io", Kind: "PolicyManager-GetPolicyDecisionsResponse"},
-		string(response.DecisionID), allErrs)
+		response.DecisionID, allErrs)
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation

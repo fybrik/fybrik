@@ -466,7 +466,7 @@ func (r *FybrikApplicationReconciler) ValidateAssetResponse(response *datacatalo
 
 	return apierrors.NewInvalid(
 		schema.GroupKind{Group: "app.fybrik.io", Kind: "DataCatalog-AssetResponse"},
-		string(response.ResourceMetadata.Name), allErrs)
+		response.ResourceMetadata.Name, allErrs)
 }
 
 func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *api.FybrikApplication, workloadCluster multicluster.Cluster) error {
