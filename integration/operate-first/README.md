@@ -36,7 +36,7 @@ After the cluster-scoped YAML files are generated, create a PR to the [operate-f
 ## Deploying Namespace-Scoped resources
 Operate First has an [ArgoCD](https://argo-cd.readthedocs.io/en/stable/) instance deployed on MOC that can be used to deploy OpenShift resources located on a Git Repository. Only namespace-scoped resources can be deployed with ArgoCD. Any cluster-scoped resource, such as CRDs or cluster roles, will be blocked by ArgoCD. The namespace-scoped resources required for Fybrik have been onboarded to ArgoCD by following [these instructions](https://github.com/operate-first/apps/blob/master/docs/content/argocd-gitops/onboarding_to_argocd.md) and an ArgoCD project has been created for Fybrik. You can login to [the ArgoCD instance](https://argocd.operate-first.cloud/applications?proj=&sync=&health=&namespace=&cluster=&labels=) with the same login method as above. We have deployed 3 [ArgoCD applications](https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#applications) which are automatically synced with the latest release of Fybrik. See the ArgoCD applications deployed below pointing to the corresponding Fybrik repositories:
 * fybrik -> https://github.com/fybrik/charts
-* vault -> https://github.com/fybrik/charts
+* vault -> https://github.com/fybrik/fybrik
 
 The complete ArgoCD application manifests have been added to the `operate-first/apps` repository [here](https://github.com/operate-first/apps/tree/master/argocd/overlays/moc-infra/applications/envs/moc/smaug/fybrik)
 
