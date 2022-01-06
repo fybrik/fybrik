@@ -40,7 +40,7 @@ Operate First has an [ArgoCD](https://argo-cd.readthedocs.io/en/stable/) instanc
 
 The complete ArgoCD application manifests have been added to the `operate-first/apps` repository [here](https://github.com/operate-first/apps/tree/master/argocd/overlays/moc-infra/applications/envs/moc/smaug/fybrik)
 
-## Running the Fybrik quickstart on Operate First
+## Running the Fybrik notebook sample on Operate First
 1) Follow the steps in [Fybrik notebook sample](https://fybrik.io/v0.5/samples/notebook/) to [prepare a dataset to be accessed by the notebook](https://fybrik.io/v0.5/samples/notebook/#prepare-a-dataset-to-be-accessed-by-the-notebook), [register the dataset in a data catalog](https://fybrik.io/v0.5/samples/notebook/#register-the-dataset-in-a-data-catalog), and [define data access policies](https://fybrik.io/v0.5/samples/notebook/#define-data-access-policies). Make sure to use the `fybrik-applications` namespace instead of the `fybrik-notebook-sample` namespace since `fybrik-applications` has already been created on the Smaug cluster. 
 2) Access the JupyterHub instance deployed on the Smaug OpenShift cluster [here](https://oauth-openshift.apps.smaug.na.operate-first.cloud/oauth/authorize?response_type=code&redirect_uri=https%3A%2F%2Fjupyterhub-opf-jupyterhub.apps.smaug.na.operate-first.cloud%2Fhub%2Foauth_callback&client_id=system%3Aserviceaccount%3Aopf-jupyterhub%3Ajupyterhub-hub&state=eyJzdGF0ZV9pZCI6ICIwY2ZkYzYwMjA4MjY0OGZiYWY5MDk3OWJkOGFhZjE4NyIsICJuZXh0X3VybCI6ICIvaHViLyJ9&scope=user%3Ainfo) and login with the above method. 
 3) Start a notebook server using the Elyra Notebook Image or any image of your choosing
