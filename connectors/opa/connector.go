@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	headerCredentials = "X-Request-Cred"
+	headerCredentials = "X-Request-Cred" // #nosec G101 -- This is a false positive
 	policyEndpoint    = "/v1/data/dataapi/authz/verdict"
 )
 

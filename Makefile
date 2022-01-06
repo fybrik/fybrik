@@ -3,7 +3,7 @@ export DOCKER_TAGNAME ?= 0.0.0
 export KUBE_NAMESPACE ?= fybrik-system
 
 .PHONY: all
-all: generate manifests verify
+all: generate generate-docs manifests verify
 
 .PHONY: license
 license: $(TOOLBIN)/license_finder
@@ -13,6 +13,9 @@ license: $(TOOLBIN)/license_finder
 generate: $(TOOLBIN)/controller-gen $(TOOLBIN)/json-schema-generator
 	$(TOOLBIN)/json-schema-generator -r ./pkg/model/... -o charts/fybrik/files/taxonomy/
 	$(TOOLBIN)/controller-gen object:headerFile=./hack/boilerplate.go.txt,year=$(shell date +%Y) paths="./..."
+
+.PHONY: generate-docs
+generate-docs:
 	$(MAKE) -C site generate
 
 .PHONY: manifests
@@ -40,6 +43,7 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 	$(TOOLBIN)/helm install fybrik charts/fybrik --values $(VALUES_FILE) \
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 
+.PHONY: pre-test
 pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
 	mkdir -p /tmp/taxonomy
 	mkdir -p /tmp/adminconfig

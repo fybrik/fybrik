@@ -56,6 +56,7 @@ third_party/egeria/egeria
 # Local development
 .env
 __debug_bin
+modules/fybrik-template/fybrik-template-0.0.0.tgz
 
 pipeline/custom_*
 pipeline/custom-pipeline.yaml

@@ -28,8 +28,10 @@ nav:
   - tasks/performance.md
 - Reference:
   - reference/crds.md
-  - Connectors API: reference/connectors.md
-  - Components: 
+  - Connectors API:
+    - Data catalog: reference/connectors-datacatalog/README.md
+    - Policy manager: reference/connectors-policymanager/README.md
+  - Components:
     - reference/ddc.md
     - reference/katalog.md
 - Contribute:
@@ -66,7 +68,7 @@ theme:
     - navigation.tabs
   favicon: static/logo.png # this icon appears in the browser's tab
   logo: static/logo.png # this icon appears in the top left corner on each page
-    
+
 markdown_extensions:
   - toc:
       permalink: false

@@ -12,7 +12,7 @@ spec:
       s3:
         endpoint: "http://s3.fybrik-system:9090"
         bucket: bucket1
-        objectKey: data.csv
+        object_key: data.csv
   metadata:
     name: Example Asset
     owner: Alice
