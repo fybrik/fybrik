@@ -4,6 +4,7 @@
 package v1alpha1
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -17,15 +18,28 @@ import (
 
 var cfg *rest.Config
 var c client.Client
+var testEnv *envtest.Environment
 
 func TestMain(m *testing.M) {
 	path, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
-	t := &envtest.Environment{
-		CRDDirectoryPaths:     []string{filepath.Join(path, "..", "..", "..", "..", "charts", "fybrik-crd", "templates")},
-		ErrorIfCRDPathMissing: true,
+
+	if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
+		fmt.Printf("apis/app/v1alpha1: Using existing environment; don't load CRDs. \n")
+		useexistingcluster := true
+		testEnv = &envtest.Environment{
+			UseExistingCluster: &useexistingcluster,
+		}
+	} else {
+		fmt.Printf("apis/app/v1alpha1: Using fake environment; so set path to CRDs so they are installed. \n")
+		testEnv = &envtest.Environment{
+			CRDDirectoryPaths: []string{
+				filepath.Join(path, "..", "..", "..", "..", "charts", "fybrik-crd", "templates"),
+			},
+			ErrorIfCRDPathMissing: true,
+		}
 	}
 
 	err = SchemeBuilder.AddToScheme(scheme.Scheme)
@@ -33,7 +47,7 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 
-	if cfg, err = t.Start(); err != nil {
+	if cfg, err = testEnv.Start(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -42,6 +56,6 @@ func TestMain(m *testing.M) {
 	}
 
 	code := m.Run()
-	_ = t.Stop()
+	_ = testEnv.Stop()
 	os.Exit(code)
 }
