@@ -5,6 +5,7 @@ Models/GetPolicyDecisionsRequest.md
 Models/GetPolicyDecisionsResponse.md
 Models/RequestAction.md
 Models/RequestActionType.md
+Models/Resource.md
 Models/ResourceColumn.md
 Models/ResourceMetadata.md
 Models/ResultItem.md
