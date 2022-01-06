@@ -1290,7 +1290,7 @@ aws configure <span class="nb">set</span> aws_access_key_id <span class="si">${<
 <span class="w">  </span><span class="nt">secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${SECRET_KEY}&quot;</span><span class="w"></span>
 <span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
 </code></pre></div>
-<p>Then, register the data asset itself in the catalog. Replace the values for <code>endpoint</code>, <code>bucket</code> and <code>objectKey</code> with values from the object storage service that you used and run:</p>
+<p>Then, register the data asset itself in the catalog. Replace the values for <code>endpoint</code>, <code>bucket</code> and <code>object_key</code> with values from the object storage service that you used and run:</p>
 <div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span><span class="w"></span>
 <span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">katalog.fybrik.io/v1alpha1</span><span class="w"></span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Asset</span><span class="w"></span>
@@ -1306,7 +1306,7 @@ aws configure <span class="nb">set</span> aws_access_key_id <span class="si">${<
 <span class="w">      </span><span class="nt">s3</span><span class="p">:</span><span class="w"></span>
 <span class="w">        </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://localstack.fybrik-notebook-sample.svc.cluster.local:4566&quot;</span><span class="w"></span>
 <span class="w">        </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;demo&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="nt">objectKey</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;PS_20174392719_1491204439457_log.csv&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="nt">object_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;PS_20174392719_1491204439457_log.csv&quot;</span><span class="w"></span>
 <span class="w">  </span><span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Synthetic Financial Datasets For Fraud Detection</span><span class="w"></span>
 <span class="w">    </span><span class="nt">geography</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">theshire</span><span class="w"> </span>
@@ -1325,7 +1325,7 @@ aws configure <span class="nb">set</span> aws_access_key_id <span class="si">${<
 <span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
 </code></pre></div>
 <p>The asset is now registered in the catalog. The identifier of the asset is <code>fybrik-notebook-sample/paysim-csv</code> (i.e. <code>&lt;namespace&gt;/&lt;name&gt;</code>). You will use that name in the <code>FybrikApplication</code> later.</p>
-<p>Notice the <code>assetMetadata</code> field above. It specifies the dataset geography and tags. These attributes can later be used in policies.</p>
+<p>Notice the <code>metadata</code> field above. It specifies the dataset geography and tags. These attributes can later be used in policies.</p>
 <p>For example, in the yaml above, the <code>geography</code> is set to <code>theshire</code>, you need make sure it is same with the region of your fybrik control plane, you can get the information with the below command:</p>
 <div class="highlight"><pre><span></span><code>kubectl get configmap cluster-metadata -n fybrik-system -o <span class="s1">&#39;jsonpath={.data.Region}&#39;</span>
 </code></pre></div>
