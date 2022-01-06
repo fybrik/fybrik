@@ -4,12 +4,12 @@ Fybrik interacts with multiple external components, such as the data catalog, da
 
 A taxonomy defines the terms and related values that need to be commonly understood and supported across the components in the system:
 
-FybrikApplication yaml - information provided about the workload and the datasets
-Fybrik manager
-Data catalog
-Data Governance Policy Manager
-Config Policy Manager
-FybrikModules
+* FybrikApplication yaml - information provided about the workload and the datasets
+* Fybrik manager (FybrikApplication controller)
+* Data catalog
+* Data Governance Policy Manager
+* Config Policy Manager
+* FybrikModules
 
 ## Issues Addressed by Taxonomy
 
@@ -39,9 +39,11 @@ Default taxonomies are provided by fybrik, and are meant as a starting point on 
 
 Fybrik validates the structures and values it receives from all external components.  
 
-Webhooks are used for validation of FybrikApplication.yaml and for FybrikModule.yaml if webhooks are enabled.  If not enabled, the validation is done in the FybrikApplication controller (manager) and the FybrikModule controller.
+For interface components (FybrikApplication and FybrikModule), validation occurs when the resource is created, updated or deleted.  How validation errors are received depends on whether fybrik is deployed with webhooks or not.
 
-If webhooks are enabled then invalid yamls are automatically rejected and no resource is created.  However, if webhooks are turned off the resource is created and an error is indicated in its status should taxonomy validation fail.
+1. If webhooks are deployed, errors are received from the kubernetes command (ex: `kubectl apply` ) and no resource is created.  
+2. If webhooks are *not* deployed, validation is done in the resource's controller.  If there is an error, the resource is created but its status will contain the error.  (Note: These resources will need to manually be removed by the person creating them.)
+
 
 ## Summary
 
