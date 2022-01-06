@@ -6,7 +6,7 @@ export DOCKER_HOSTNAME=localhost:5000
 export DOCKER_NAMESPACE=fybrik-system
 export HELM_EXPERIMENTAL_OCI=1
 export VALUES_FILE=charts/fybrik/kind-control.values.yaml
-export VAULT_VALUES_FILE=../../$(ROOT_DIR)charts/vault/env/dev/local-multi-cluster.yaml
+export VAULT_VALUES_FILE=charts/vault/env/dev/local-multi-cluster.yaml
 
 make kind-setup-multi
 kubectl config use-context kind-control
