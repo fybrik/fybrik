@@ -53,7 +53,7 @@ The `--set-file` flag will pass in your custom `taxonomy.json` file to use for t
 If this flag is not provided, Fybrik will use the default `taxonomy.json` file with no layers compiled into it. 
 
 
-After installing the fybrik helm chart, it is possible to upgrade Fybrik with an updated custom taxonomy file (`taxonomy.json`) with the following command:
+For an already deployed fybrik instance, it is possible to upgrade fybrik with an updated custom taxonomy file (`taxonomy.json`) with the following command:
 
 ```bash
 helm upgrade fybrik fybrik-charts/fybrik -n fybrik-system --wait --set-file taxonomyOverride=taxonomy.json
@@ -64,7 +64,9 @@ helm upgrade fybrik fybrik-charts/fybrik -n fybrik-system --wait --set-file taxo
 
 - Example 1: Add new intent for FybrikApplication
 
-Starting with installing Fybrik using the [`quickstart guide`](https://fybrik.io/latest/get-started/quickstart/) but stop before the command of `helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait`
+In this example we show how to update the application taxonomy. We show that when a FybrikApplication yaml containing a marketing intent is submitted, it's validation fails because initially the application taxonomy does not include marketing. We then describe how to add marketing to the taxonomy, enabling the validation to pass when we re-submit the FybrikApplication yaml.
+
+Follow the [`quickstart guide`](https://fybrik.io/latest/get-started/quickstart/) but stop before the command `helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait`
  (or `helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait` in development mode).
 
 The initial taxonomy to be used in this example is a base taxonomy that can be found in [`charts/fybrik/files/taxonomy/taxonomy.json`](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/taxonomy/taxonomy.json) with the following taxonomy layer:
@@ -85,13 +87,13 @@ definitions:
 Copy the taxonomy layer to a `taxonomy-layer.yaml` file.
 
 The working directory is the fybrik repository.
-In order to compile and merge the two taxonomies, the Taxonomy Compile CLI tool can be used in the following way:
+In order to compile and merge the two taxonomies, the Taxonomy Compile CLI tool is used in the following way:
 
 ```bash
   go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json taxonomy-layer.yaml
 ```
 
-This command will create a `custom-taxonomy.json` file, which will be used to install the fybrik helm chart using the following command:
+This command creates a `custom-taxonomy.json` file, which is included in the helm installation of fybrik using the following command:
 
 ```bash
 helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
@@ -124,7 +126,7 @@ EOF
 ```
 The expected error is `The FybrikApplication "taxonomy-test" is invalid: spec.appInfo.intent: Invalid value: "Marketing": spec.appInfo.intent must be one of the following: "Customer Behavior Analysis", "Customer Support", "Fraud Detection"`. Thus, no FybrikApplication CRD was created.
 
-To fix this, a new intent with `Marketing` value should be added to the taxonomy. Add a new value of "Marketing" in `custom-taxonomy.json` file in `intent` property to look like this:
+To fix this, a new intent with `Marketing` value should be added to the taxonomy. Add a new value of "Marketing" in `custom-taxonomy.json` file in `intent` property as follows:
 
 ```
 "intent": {
@@ -138,13 +140,13 @@ To fix this, a new intent with `Marketing` value should be added to the taxonomy
 }
 ```
 
-Now, an upgrading to fybrik helm chart is needed using the following command:
+Now we upgrade the fybrik helm chart using the following command:
 
 ```bash
 helm upgrade fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
 ```
 
-After updating fybrik to get fybrikapplications with `Marketing` intent, the deployment of a fybrikapplication.yaml that has an intent of `Marketing` should succeed:
+After updating fybrik to get fybrikapplications with `Marketing` intent, the deployment of a fybrikapplication.yaml that has an intent of `Marketing` will succeed:
 
 ```yaml
 cat << EOF | kubectl apply -f -
@@ -170,4 +172,4 @@ spec:
 EOF
 ```
 
-It msut create a `taxonomy-test` FybrikApplication CRD.
+The result is a FybrikApplication Custom Resource Definition instance called taxonomy-test.
