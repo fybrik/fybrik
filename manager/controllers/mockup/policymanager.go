@@ -42,20 +42,59 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 		// no need to construct any result item
 	case "deny-dataset":
 		actionOnDataset := taxonomy.Action{}
-		(&actionOnDataset).Name = "Deny"
+		action := make(map[string]interface{})
+		action["name"] = "Deny"
+		denyAction := map[string]interface{}{}
+		action["Deny"] = denyAction
+
+		actionBytes, errJSON := json.MarshalIndent(action, "", "\t")
+		if errJSON != nil {
+			return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
+		}
+		err := json.Unmarshal(actionBytes, &actionOnDataset)
+		if err != nil {
+			return nil, fmt.Errorf("error in unmarshalling actionBytes : %v", err)
+		}
+
 		policyManagerResult.Action = actionOnDataset
 		respResult = append(respResult, policyManagerResult)
 	case "allow-theshire":
 		if input.Action.Destination != "theshire" {
 			actionOnDataset := taxonomy.Action{}
-			(&actionOnDataset).Name = "Deny"
+			action := make(map[string]interface{})
+			action["name"] = "Deny"
+			denyAction := map[string]interface{}{}
+			action["Deny"] = denyAction
+
+			actionBytes, errJSON := json.MarshalIndent(action, "", "\t")
+			if errJSON != nil {
+				return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
+			}
+			err := json.Unmarshal(actionBytes, &actionOnDataset)
+			if err != nil {
+				return nil, fmt.Errorf("error in unmarshalling actionBytes : %v", err)
+			}
+
 			policyManagerResult.Action = actionOnDataset
 			respResult = append(respResult, policyManagerResult)
 		}
 	case "deny-theshire":
 		if input.Action.Destination == "theshire" {
 			actionOnDataset := taxonomy.Action{}
-			(&actionOnDataset).Name = "Deny"
+			action := make(map[string]interface{})
+			action["name"] = "Deny"
+			denyAction := map[string]interface{}{}
+			action["Deny"] = denyAction
+
+			actionBytes, errJSON := json.MarshalIndent(action, "", "\t")
+			if errJSON != nil {
+				return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
+			}
+			err := json.Unmarshal(actionBytes, &actionOnDataset)
+			if err != nil {
+				return nil, fmt.Errorf("error in unmarshalling actionBytes : %v", err)
+			}
+
 			policyManagerResult.Action = actionOnDataset
 			respResult = append(respResult, policyManagerResult)
 		}
@@ -63,7 +102,9 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 		actionOnCols := taxonomy.Action{}
 		action := make(map[string]interface{})
 		action["name"] = "RedactAction"
-		action["column"] = []string{"SSN"}
+		redactAction := make(map[string]interface{})
+		redactAction["columns"] = []string{"SSN"}
+		action["RedactAction"] = redactAction
 
 		actionBytes, errJSON := json.MarshalIndent(action, "", "\t")
 		if errJSON != nil {

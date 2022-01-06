@@ -14,14 +14,14 @@ definitions:
         type: string
       endpoint:
         type: string
-      objectKey:
+      object_key:
         type: string
       region:
         type: string
     required:
     - bucket
     - endpoint
-    - objectKey
+    - object_key
   db2:
     type: object
     properties:

@@ -11,6 +11,7 @@ import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	connectors "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
+	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
@@ -35,6 +36,9 @@ func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operati
 		Action: *operation,
 		Resource: policymanager.Resource{
 			ID: taxonomy.AssetID(datasetID),
+			Metadata: &datacatalog.ResourceMetadata{
+				Tags: taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{}}},
+			},
 		},
 	}
 }
@@ -77,12 +81,17 @@ func ValidatePolicyDecisionsResponse(response *policymanager.GetPolicyDecisionsR
 
 	// Validate Fybrik module against taxonomy
 	allErrs, err = validate.TaxonomyCheck(responseJSON, taxonomyFile)
+	log.Println("allErrs:")
+	log.Println(allErrs)
 	if err != nil {
+		log.Println("err: ")
+		log.Println(err)
 		return err
 	}
 
 	// Return any error
 	if len(allErrs) == 0 {
+		log.Println("returning nil")
 		return nil
 	}
 
@@ -117,6 +126,7 @@ func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyMana
 	taxonomyFile = "/tmp/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsResponse"
 	err = ValidatePolicyDecisionsResponse(openapiResp, taxonomyFile)
 	if err != nil {
+		log.Println("err after calling ValidatePolicyDecisionsResponse:", err)
 		return actions, errors.New("Validation error")
 	}
 
