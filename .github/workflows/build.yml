@@ -27,7 +27,6 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
-          ~/.m2/repository
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
         key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
@@ -48,10 +47,9 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
-          ~/.m2/repository
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Test
       run: make test
@@ -72,10 +70,9 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
-          ~/.m2/repository
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Install tools
       run: make install-tools
@@ -111,7 +108,7 @@ jobs:
         path: |
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Install tools
       run: make install-tools
@@ -136,10 +133,9 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
-          ~/.m2/repository
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Install tools
       run: make install-tools
