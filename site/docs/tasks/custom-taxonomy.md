@@ -51,3 +51,123 @@ helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait --set-file taxo
 ```
 The `--set-file` flag will pass in your custom `taxonomy.json` file to use for taxonomy validation in Fybrik.
 If this flag is not provided, Fybrik will use the default `taxonomy.json` file with no layers compiled into it. 
+
+
+After installing the fybrik helm chart, it is possible to upgrade Fybrik with an updated custom taxonomy file (`taxonomy.json`) with the following command:
+
+```bash
+helm upgrade fybrik fybrik-charts/fybrik -n fybrik-system --wait --set-file taxonomyOverride=taxonomy.json
+```
+
+
+## Examples of changing taxonomy
+
+- Example 1: Add new intent for FybrikApplication
+
+Starting with installing Fybrik using the [`quickstart guide`](https://fybrik.io/latest/get-started/quickstart/) but stop before the command of `helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait`
+ (or `helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait` in development mode).
+
+The initial taxonomy to be used in this example is a base taxonomy that can be found in [`charts/fybrik/files/taxonomy/taxonomy.json`](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/taxonomy/taxonomy.json) with the following taxonomy layer:
+
+```yaml
+definitions:
+  AppInfo:
+    properties:
+      intent:
+        type: string
+        enum:
+          - Customer Support
+          - Fraud Detection
+          - Customer Behavior Analysis
+    required:
+      - intent
+```
+Copy the taxonomy layer to a `taxonomy-layer.yaml` file.
+
+The working directory is the fybrik repository.
+In order to compile and merge the two taxonomies, the Taxonomy Compile CLI tool can be used in the following way:
+
+```bash
+  go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json taxonomy-layer.yaml
+```
+
+This command will create a `custom-taxonomy.json` file, which will be used to install the fybrik helm chart using the following command:
+
+```bash
+helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
+```
+
+Trying to deploy a fybrikapplication.yaml that has an intent of `Marketing` should fail validation beacuse there is no `Marketing` intent in the taxonomy. The following command should fail with a description of a validation error :
+
+```yaml
+cat << EOF | kubectl apply -f -
+apiVersion: app.fybrik.io/v1alpha1
+kind: FybrikApplication
+metadata:
+  name: taxonomy-test
+spec:
+  selector:
+   workloadSelector:
+     matchLabels: {
+       app: notebook
+     }
+  appInfo:
+    intent: Marketing
+    role: Business Analyst
+  data:
+    - dataSetID: "default/fake.csv"
+      requirements:
+        interface:
+          protocol: s3
+          dataformat: csv
+EOF
+```
+The expected error is `The FybrikApplication "taxonomy-test" is invalid: spec.appInfo.intent: Invalid value: "Marketing": spec.appInfo.intent must be one of the following: "Customer Behavior Analysis", "Customer Support", "Fraud Detection"`. Thus, no FybrikApplication CRD was created.
+
+To fix this, a new intent with `Marketing` value should be added to the taxonomy. Add a new value of "Marketing" in `custom-taxonomy.json` file in `intent` property to look like this:
+
+```
+"intent": {
+  "type": "string",
+  "enum": [
+    "Customer Behavior Analysis",
+    "Customer Support",
+    "Fraud Detection",
+    "Marketing"
+  ]
+}
+```
+
+Now, an upgrading to fybrik helm chart is needed using the following command:
+
+```bash
+helm upgrade fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
+```
+
+After updating fybrik to get fybrikapplications with `Marketing` intent, the deployment of a fybrikapplication.yaml that has an intent of `Marketing` should succeed:
+
+```yaml
+cat << EOF | kubectl apply -f -
+apiVersion: app.fybrik.io/v1alpha1
+kind: FybrikApplication
+metadata:
+  name: taxonomy-test
+spec:
+  selector:
+   workloadSelector:
+     matchLabels: {
+       app: notebook
+     }
+  appInfo:
+    intent: Marketing
+    role: Business Analyst
+  data:
+    - dataSetID: "default/fake.csv"
+      requirements:
+        interface:
+          protocol: s3
+          dataformat: csv
+EOF
+```
+
+It msut create a `taxonomy-test` FybrikApplication CRD.
