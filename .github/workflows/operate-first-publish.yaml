@@ -11,12 +11,11 @@ jobs:
     name: Update Operate First directory
     runs-on: ubuntu-latest
     steps:
-    
-      - name: Checkout Operate First repository
+      - name: Checkout forked Operate First repository
         uses: actions/checkout@v2
         with:
           repository: fybrik/operate-first-apps
-          path: operate-first-repo
+          path: operate-first-fork
       - name: Checkout Fybrik repository
         uses: actions/checkout@v2
         with:
@@ -37,6 +36,16 @@ jobs:
           app_id: ${{ secrets.CHARTS_APP_ID }}
           private_key: ${{ secrets.CHARTS_APP_PRIVATE_KEY  }}
           repository: fybrik/fybrik
+      - name: Push Pull Request Branch to Fork
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          push-to-fork: fybrik/operate-first-apps
+      - name: Checkout original Operate First repository
+        uses: actions/checkout@v2
+        with:
+          repository: operate-first/apps
+          path: operate-first-repo
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
