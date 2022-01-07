@@ -64,6 +64,7 @@ type FybrikApplicationReconciler struct {
 
 const (
 	ApplicationTaxonomy = "/tmp/taxonomy/fybrik_application.json"
+	DataCatalogTaxonomy = "/tmp/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
 )
 
 // Reconcile reconciles FybrikApplication CRD
@@ -417,32 +418,6 @@ func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataConte
 	}
 }
 
-func (r *FybrikApplicationReconciler) ValidateAssetRequest(request *datacatalog.GetAssetRequest, taxonomyFile string) error {
-	var allErrs []*field.Error
-
-	// Convert GetAssetRequest Go struct to JSON
-	requestJSON, err := json.Marshal(request)
-	if err != nil {
-		return err
-	}
-	r.Log.Info().Msg("requestJSON:" + string(requestJSON))
-
-	// Validate Fybrik module against taxonomy
-	allErrs, err = validate.TaxonomyCheck(requestJSON, taxonomyFile)
-	if err != nil {
-		return err
-	}
-
-	// Return any error
-	if len(allErrs) == 0 {
-		return nil
-	}
-
-	return apierrors.NewInvalid(
-		schema.GroupKind{Group: "app.fybrik.io", Kind: "DataCatalog-AssetRequest"},
-		string(request.AssetID), allErrs)
-}
-
 func (r *FybrikApplicationReconciler) ValidateAssetResponse(response *datacatalog.GetAssetResponse, taxonomyFile string) error {
 	var allErrs []*field.Error
 
@@ -481,19 +456,12 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 		AssetID:       taxonomy.AssetID(req.Context.DataSetID),
 		OperationType: datacatalog.READ}
 
-	taxonomyFile := "/tmp/taxonomy/datacatalog.json#/definitions/GetAssetRequest"
-	err = r.ValidateAssetRequest(&request, taxonomyFile)
-	if err != nil {
-		return err
-	}
-
 	if response, err = r.DataCatalog.GetAssetInfo(&request,
 		credentialPath); err != nil {
 		return err
 	}
 
-	taxonomyFile = "/tmp/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
-	err = r.ValidateAssetResponse(response, taxonomyFile)
+	err = r.ValidateAssetResponse(response, DataCatalogTaxonomy)
 	if err != nil {
 		return err
 	}

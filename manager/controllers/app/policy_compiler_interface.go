@@ -23,6 +23,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
+const (
+	PolicyManagerTaxonomy = "/tmp/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsResponse"
+)
+
 func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operation *policymanager.RequestAction) *policymanager.GetPolicyDecisionsRequest {
 	context := make(map[string]interface{}, len(input.Spec.AppInfo))
 	for k, v := range input.Spec.AppInfo {
@@ -41,32 +45,6 @@ func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operati
 			},
 		},
 	}
-}
-
-func ValidatePolicyDecisionsRequest(request *policymanager.GetPolicyDecisionsRequest, taxonomyFile string) error {
-	var allErrs []*field.Error
-
-	// Convert GetAssetRequest Go struct to JSON
-	requestJSON, err := json.Marshal(request)
-	if err != nil {
-		return err
-	}
-	log.Println("requestJSON (policy decisions):" + string(requestJSON))
-
-	// Validate Fybrik module against taxonomy
-	allErrs, err = validate.TaxonomyCheck(requestJSON, taxonomyFile)
-	if err != nil {
-		return err
-	}
-
-	// Return any error
-	if len(allErrs) == 0 {
-		return nil
-	}
-
-	return apierrors.NewInvalid(
-		schema.GroupKind{Group: "app.fybrik.io", Kind: "PolicyManager-GetPolicyDecisionsRequest"},
-		request.Resource.Metadata.Name, allErrs)
 }
 
 func ValidatePolicyDecisionsResponse(response *policymanager.GetPolicyDecisionsResponse, taxonomyFile string) error {
@@ -111,11 +89,6 @@ func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyMana
 	if input.Spec.SecretRef != "" {
 		creds = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
-	taxonomyFile := "/tmp/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsRequest"
-	err := ValidatePolicyDecisionsRequest(openapiReq, taxonomyFile)
-	if err != nil {
-		return nil, err
-	}
 
 	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)
 	var actions []taxonomy.Action
@@ -123,11 +96,10 @@ func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyMana
 		return actions, err
 	}
 
-	taxonomyFile = "/tmp/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsResponse"
-	err = ValidatePolicyDecisionsResponse(openapiResp, taxonomyFile)
+	err = ValidatePolicyDecisionsResponse(openapiResp, PolicyManagerTaxonomy)
 	if err != nil {
-		log.Println("err after calling ValidatePolicyDecisionsResponse:", err)
-		return actions, errors.New("Validation error")
+		log.Println("Error after calling ValidatePolicyDecisionsResponse:", err)
+		return actions, errors.New("Validation error: " + err.Error())
 	}
 
 	output = render.AsCode(openapiResp)
