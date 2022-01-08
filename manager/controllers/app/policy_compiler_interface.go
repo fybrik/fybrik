@@ -5,7 +5,6 @@ package app
 
 import (
 	"encoding/json"
-	"log"
 
 	"emperror.dev/errors"
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
@@ -18,6 +17,7 @@ import (
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"fybrik.io/fybrik/pkg/vault"
 	"github.com/gdexlab/go-render/render"
+	"github.com/rs/zerolog/log"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -55,21 +55,16 @@ func ValidatePolicyDecisionsResponse(response *policymanager.GetPolicyDecisionsR
 	if err != nil {
 		return err
 	}
-	log.Println("responseJSON (policy decisions):" + string(responseJSON))
+	log.Print("responseJSON (policy decisions):" + string(responseJSON))
 
 	// Validate Fybrik module against taxonomy
 	allErrs, err = validate.TaxonomyCheck(responseJSON, taxonomyFile)
-	log.Println("allErrs:")
-	log.Println(allErrs)
 	if err != nil {
-		log.Println("err: ")
-		log.Println(err)
 		return err
 	}
 
 	// Return any error
 	if len(allErrs) == 0 {
-		log.Println("returning nil")
 		return nil
 	}
 
@@ -83,7 +78,7 @@ func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyMana
 	// call external policy manager to get governance instructions for this operation
 	openapiReq := ConstructOpenAPIReq(datasetID, input, op)
 	output := render.AsCode(openapiReq)
-	log.Println("constructed openapi request: ", output)
+	log.Print("constructed openapi request: ", output)
 
 	var creds string
 	if input.Spec.SecretRef != "" {
@@ -98,12 +93,12 @@ func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyMana
 
 	err = ValidatePolicyDecisionsResponse(openapiResp, PolicyManagerTaxonomy)
 	if err != nil {
-		log.Println("Error after calling ValidatePolicyDecisionsResponse:", err)
+		log.Print("Error after calling ValidatePolicyDecisionsResponse:", err)
 		return actions, errors.New("Validation error: " + err.Error())
 	}
 
 	output = render.AsCode(openapiResp)
-	log.Println("openapi response received from policy manager: ", output)
+	log.Print("openapi response received from policy manager: ", output)
 
 	result := openapiResp.Result
 	for i := 0; i < len(result); i++ {
