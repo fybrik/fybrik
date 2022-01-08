@@ -61,7 +61,11 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 		denyAction := map[string]interface{}{}
 		action["Deny"] = denyAction
 
-		deserializeToTaxonomyAction(action, &actionOnDataset)
+		err := deserializeToTaxonomyAction(action, &actionOnDataset)
+		if err != nil {
+			log.Print("error in deserializeToTaxonomyAction for scenario deny-dataset :", err)
+			return nil, err
+		}
 		policyManagerResult.Action = actionOnDataset
 		respResult = append(respResult, policyManagerResult)
 
@@ -73,7 +77,11 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 			denyAction := map[string]interface{}{}
 			action["Deny"] = denyAction
 
-			deserializeToTaxonomyAction(action, &actionOnDataset)
+			err := deserializeToTaxonomyAction(action, &actionOnDataset)
+			if err != nil {
+				log.Print("error in deserializeToTaxonomyAction for scenario allow-theshire:", err)
+				return nil, err
+			}
 			policyManagerResult.Action = actionOnDataset
 			respResult = append(respResult, policyManagerResult)
 		}
@@ -86,7 +94,11 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 			denyAction := map[string]interface{}{}
 			action["Deny"] = denyAction
 
-			deserializeToTaxonomyAction(action, &actionOnDataset)
+			err := deserializeToTaxonomyAction(action, &actionOnDataset)
+			if err != nil {
+				log.Print("error in deserializeToTaxonomyAction for scenario deny-theshire:", err)
+				return nil, err
+			}
 			policyManagerResult.Action = actionOnDataset
 			respResult = append(respResult, policyManagerResult)
 		}
@@ -99,7 +111,11 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 		redactAction["columns"] = []string{"SSN"}
 		action["RedactAction"] = redactAction
 
-		deserializeToTaxonomyAction(action, &actionOnCols)
+		err := deserializeToTaxonomyAction(action, &actionOnCols)
+		if err != nil {
+			log.Print("error in deserializeToTaxonomyAction for scenario default:", err)
+			return nil, err
+		}
 		policyManagerResult.Action = actionOnCols
 		respResult = append(respResult, policyManagerResult)
 	}
