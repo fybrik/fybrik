@@ -12,34 +12,24 @@ import (
 	connectors "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
-	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/vault"
 	"github.com/gdexlab/go-render/render"
 )
 
-func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operation *policymanager.RequestAction) (*policymanager.GetPolicyDecisionsRequest, error) {
-	context, err := utils.StructToMap(&input.Spec.AppInfo)
-	if err != nil {
-		return nil, err
-	}
+func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operation *policymanager.RequestAction) *policymanager.GetPolicyDecisionsRequest {
 	return &policymanager.GetPolicyDecisionsRequest{
-		Context: taxonomy.PolicyManagerRequestContext{Properties: serde.Properties{
-			Items: context,
-		}},
-		Action: *operation,
+		Context: taxonomy.PolicyManagerRequestContext{Properties: input.Spec.AppInfo.Properties},
+		Action:  *operation,
 		Resource: policymanager.Resource{
 			ID: taxonomy.AssetID(datasetID),
 		},
-	}, nil
+	}
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
 func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, input *app.FybrikApplication, op *policymanager.RequestAction) ([]taxonomy.Action, error) {
 	// call external policy manager to get governance instructions for this operation
-	openapiReq, err := ConstructOpenAPIReq(datasetID, input, op)
-	if err != nil {
-		return nil, err
-	}
+	openapiReq := ConstructOpenAPIReq(datasetID, input, op)
 	output := render.AsCode(openapiReq)
 	log.Println("constructed openapi request: ", output)
 

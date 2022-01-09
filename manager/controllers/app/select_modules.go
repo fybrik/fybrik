@@ -160,14 +160,14 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, appContex
 		return false
 	}
 	// Are all capabilities that need to be deployed supported in this data path?
-	supportedCapabilities := []string{}
+	supportedCapabilities := map[taxonomy.Capability]bool{}
 	for _, element := range solution.DataPath {
-		supportedCapabilities = append(supportedCapabilities, string(element.Module.Spec.Capabilities[element.CapabilityIndex].Capability))
+		supportedCapabilities[element.Module.Spec.Capabilities[element.CapabilityIndex].Capability] = true
 	}
 	for capability, decision := range item.Configuration.ConfigDecisions {
 		if decision.Deploy == v1.ConditionTrue {
 			// check that it is supported
-			if !utils.HasString(capability, supportedCapabilities) {
+			if !supportedCapabilities[capability] {
 				return false
 			}
 		}
@@ -195,7 +195,7 @@ func (p *PlotterGenerator) findPathsWithinLimit(item *DataInfo, source *Node, si
 	for _, module := range p.Modules {
 		for capabilityInd, capability := range module.Spec.Capabilities {
 			// check if capability is allowed
-			if !allowCapability(item, string(capability.Capability)) {
+			if !allowCapability(item, capability.Capability) {
 				continue
 			}
 			edge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: nil, Sink: nil}
@@ -341,7 +341,7 @@ func supportsSinkInterface(edge *Edge, sink *Node) bool {
 	return false
 }
 
-func allowCapability(item *DataInfo, capability string) bool {
+func allowCapability(item *DataInfo, capability taxonomy.Capability) bool {
 	return item.Configuration.ConfigDecisions[capability].Deploy != v1.ConditionFalse
 }
 
@@ -352,7 +352,7 @@ func validateModuleRestrictions(item *DataInfo, edge *Edge) bool {
 
 func validateClusterRestrictions(item *DataInfo, edge *ResolvedEdge, cluster multicluster.Cluster) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
-	if !validateClusterRestrictionsPerCapability(item, string(capability.Capability), cluster) {
+	if !validateClusterRestrictionsPerCapability(item, capability.Capability, cluster) {
 		return false
 	}
 	if len(edge.Actions) > 0 {
@@ -363,7 +363,7 @@ func validateClusterRestrictions(item *DataInfo, edge *ResolvedEdge, cluster mul
 	return true
 }
 
-func validateClusterRestrictionsPerCapability(item *DataInfo, capability string, cluster multicluster.Cluster) bool {
+func validateClusterRestrictionsPerCapability(item *DataInfo, capability taxonomy.Capability, cluster multicluster.Cluster) bool {
 	restrictions := item.Configuration.ConfigDecisions[capability].DeploymentRestrictions[adminconfig.Clusters]
 	if len(restrictions) == 0 {
 		return true

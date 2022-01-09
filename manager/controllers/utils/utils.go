@@ -105,16 +105,6 @@ func ListeningAddress(port int) string {
 	return address
 }
 
-// SupportsInterface returns true iff the protocol/format list contains the given protocol/format interface
-func SupportsInterface(array []*app.InterfaceDetails, element *app.InterfaceDetails) bool {
-	for _, item := range array {
-		if item.DataFormat == element.DataFormat && item.Protocol == element.Protocol {
-			return true
-		}
-	}
-	return false
-}
-
 // Intersection finds a common subset of two given sets of strings
 func Intersection(set1 []string, set2 []string) []string {
 	res := []string{}
