@@ -429,7 +429,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 	response.DeepCopyInto(req.DataDetails)
 	configEvaluatorInput := &adminconfig.EvaluatorInput{}
 	configEvaluatorInput.Workload.UUID = utils.GetFybrikApplicationUUID(input)
-	configEvaluatorInput.Workload.Properties = input.Spec.AppInfo.DeepCopy()
+	input.Spec.AppInfo.DeepCopyInto(&configEvaluatorInput.Workload.Properties)
 	configEvaluatorInput.Workload.Cluster = workloadCluster
 	configEvaluatorInput.Request = CreateDataRequest(input, *req.Context, &req.DataDetails.ResourceMetadata)
 	// Read policies for data that is processed in the workload geography

@@ -152,10 +152,10 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 	datasetID := item.Context.DataSetID
 	for _, element := range selection.DataPath {
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
-		p.Log.Trace().Msg("Adding module for " + moduleCapability.Capability)
+		p.Log.Trace().Msg("Adding module for " + string(moduleCapability.Capability))
 		actions := element.Actions
 		template := app.Template{
-			Name: moduleCapability.Capability,
+			Name: string(moduleCapability.Capability),
 			Modules: []app.ModuleInfo{{
 				Name:  element.Module.Name,
 				Type:  element.Module.Spec.Type,
@@ -189,7 +189,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 				{
 					Name:     "",
 					Cluster:  element.Cluster,
-					Template: moduleCapability.Capability,
+					Template: string(moduleCapability.Capability),
 					Parameters: &app.StepParameters{
 						Source: &app.StepSource{
 							AssetID: datasetID,
@@ -215,7 +215,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 				{
 					Name:     "",
 					Cluster:  element.Cluster,
-					Template: moduleCapability.Capability,
+					Template: string(moduleCapability.Capability),
 					Parameters: &app.StepParameters{
 						Source: &app.StepSource{
 							AssetID: datasetID,

@@ -115,21 +115,6 @@ func SupportsInterface(array []*app.InterfaceDetails, element *app.InterfaceDeta
 	return false
 }
 
-// GetModuleCapabilities checks if the requested capability is supported by the module.  If so it returns
-// the ModuleCapability structure.  There could be more than one, since multiple structures could exist with
-// the same CapabilityType but different protocols, dataformats and/or actions.
-func GetModuleCapabilities(module *app.FybrikModule, requestedCapability string) (bool, []app.ModuleCapability) {
-	capList := []app.ModuleCapability{}
-	capFound := false
-	for _, cap := range module.Spec.Capabilities {
-		if cap.Capability == requestedCapability {
-			capList = append(capList, cap)
-			capFound = true
-		}
-	}
-	return capFound, capList
-}
-
 // Intersection finds a common subset of two given sets of strings
 func Intersection(set1 []string, set2 []string) []string {
 	res := []string{}

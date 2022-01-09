@@ -52,11 +52,10 @@ spec:
               fybrik and is cataloged in the data catalog
             properties:
               appInfo:
-                additionalProperties:
-                  type: string
                 description: AppInfo contains information describing the reasons for
                   the processing that will be done by the application.
                 type: object
+                x-kubernetes-preserve-unknown-fields: true
               data:
                 description: Data contains the identifiers of the data to be used
                   by the Data Scientist's application, and the protocol used to access

@@ -150,7 +150,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, appContex
 		requiredActions = unsupported
 		// select a cluster for the capability that satisfy cluster restrictions specified in admin config policies
 		if !p.findCluster(item, element, appContext) {
-			p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find an available cluster for " + moduleCapability.Capability)
+			p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find an available cluster for " + string(moduleCapability.Capability))
 			return false
 		}
 	}
@@ -162,7 +162,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, appContex
 	// Are all capabilities that need to be deployed supported in this data path?
 	supportedCapabilities := []string{}
 	for _, element := range solution.DataPath {
-		supportedCapabilities = append(supportedCapabilities, element.Module.Spec.Capabilities[element.CapabilityIndex].Capability)
+		supportedCapabilities = append(supportedCapabilities, string(element.Module.Spec.Capabilities[element.CapabilityIndex].Capability))
 	}
 	for capability, decision := range item.Configuration.ConfigDecisions {
 		if decision.Deploy == v1.ConditionTrue {
@@ -195,7 +195,7 @@ func (p *PlotterGenerator) findPathsWithinLimit(item *DataInfo, source *Node, si
 	for _, module := range p.Modules {
 		for capabilityInd, capability := range module.Spec.Capabilities {
 			// check if capability is allowed
-			if !allowCapability(item, capability.Capability) {
+			if !allowCapability(item, string(capability.Capability)) {
 				continue
 			}
 			edge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: nil, Sink: nil}
@@ -352,7 +352,7 @@ func validateModuleRestrictions(item *DataInfo, edge *Edge) bool {
 
 func validateClusterRestrictions(item *DataInfo, edge *ResolvedEdge, cluster multicluster.Cluster) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
-	if !validateClusterRestrictionsPerCapability(item, capability.Capability, cluster) {
+	if !validateClusterRestrictionsPerCapability(item, string(capability.Capability), cluster) {
 		return false
 	}
 	if len(edge.Actions) > 0 {

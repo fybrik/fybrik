@@ -17,12 +17,11 @@ import (
 	"github.com/gdexlab/go-render/render"
 )
 
-func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operation *policymanager.RequestAction) *policymanager.GetPolicyDecisionsRequest {
-	context := make(map[string]interface{}, len(input.Spec.AppInfo))
-	for k, v := range input.Spec.AppInfo {
-		context[k] = v
+func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operation *policymanager.RequestAction) (*policymanager.GetPolicyDecisionsRequest, error) {
+	context, err := utils.StructToMap(&input.Spec.AppInfo)
+	if err != nil {
+		return nil, err
 	}
-
 	return &policymanager.GetPolicyDecisionsRequest{
 		Context: taxonomy.PolicyManagerRequestContext{Properties: serde.Properties{
 			Items: context,
@@ -31,13 +30,16 @@ func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operati
 		Resource: policymanager.Resource{
 			ID: taxonomy.AssetID(datasetID),
 		},
-	}
+	}, nil
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
 func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, input *app.FybrikApplication, op *policymanager.RequestAction) ([]taxonomy.Action, error) {
 	// call external policy manager to get governance instructions for this operation
-	openapiReq := ConstructOpenAPIReq(datasetID, input, op)
+	openapiReq, err := ConstructOpenAPIReq(datasetID, input, op)
+	if err != nil {
+		return nil, err
+	}
 	output := render.AsCode(openapiReq)
 	log.Println("constructed openapi request: ", output)
 
