@@ -12,7 +12,6 @@ on:
 
 env:
   GO_VERSION: 1.16
-  JAVA_VERSION: 11
 
 jobs:
   verify:
@@ -28,22 +27,18 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
-          ~/.m2/repository
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
         key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Verify
-      run: make verify
-
+      run: |
+        make generate generate-docs manifests verify
+        git diff --exit-code
   test:
     name: Unit tests
     runs-on: ubuntu-latest
     steps:
-    - name: Set up JDK
-      uses: actions/setup-java@v1
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
     - name: Install Go
       uses: actions/setup-go@v2
       with:
@@ -53,10 +48,9 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
-          ~/.m2/repository
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Test
       run: make test
@@ -68,10 +62,6 @@ jobs:
       DOCKER_HOSTNAME: "localhost:5000"
       DOCKER_NAMESPACE: fybrik-system
     steps:
-    - name: Set up JDK
-      uses: actions/setup-java@v1
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
     - name: Install Go
       uses: actions/setup-go@v2
       with:
@@ -81,10 +71,9 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
-          ~/.m2/repository
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Install tools
       run: make install-tools
@@ -120,7 +109,7 @@ jobs:
         path: |
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Install tools
       run: make install-tools
@@ -134,10 +123,6 @@ jobs:
       DOCKER_HOSTNAME: "localhost:5000"
       DOCKER_NAMESPACE: fybrik-system
     steps:
-    - name: Set up JDK
-      uses: actions/setup-java@v1
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
     - name: Install Go
       uses: actions/setup-go@v2
       with:
@@ -149,10 +134,9 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
-          ~/.m2/repository
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-m2-${{ hashFiles('**/pom.xml') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Install tools
       run: make install-tools

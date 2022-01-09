@@ -54,11 +54,12 @@ spec:
                       items:
                         properties:
                           name:
+                            description: Unique name of an action supported by the
+                              module
                             type: string
                         required:
                         - name
                         type: object
-                        x-kubernetes-preserve-unknown-fields: true
                       type: array
                     api:
                       description: API indicates to the application how to access

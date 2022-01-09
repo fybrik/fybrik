@@ -5,8 +5,10 @@ include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 
+.PHONY: all
 all: docker-build docker-push
 
+.PHONY: docker-build
 docker-build: source-build
 	docker build . -t ${IMG}
 	rm -rf bin

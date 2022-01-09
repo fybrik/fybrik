@@ -6,6 +6,7 @@ package app
 import (
 	"bytes"
 	"net/url"
+	"strings"
 	"text/template"
 
 	"emperror.dev/errors"
@@ -47,10 +48,16 @@ type PlotterGenerator struct {
 // GetCopyDestination creates a Dataset for bucket allocation by implicit copies or ingest.
 func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterface *app.InterfaceDetails, geo string) (*app.DataStore, error) {
 	// provisioned storage for COPY
-	originalAssetName := item.DataDetails.ResourceMetadata.Name
+	var genBucketName, genObjectKeyName string
+	if item.DataDetails.ResourceMetadata.Name != "" {
+		genObjectKeyName = item.DataDetails.ResourceMetadata.Name + utils.Hash(p.Owner.Name+p.Owner.Namespace, 10)
+	} else {
+		genObjectKeyName = p.Owner.Name + utils.Hash(item.Context.DataSetID, 10)
+	}
+	genBucketName = generateBucketName(p.Owner, item.Context.DataSetID)
 	var bucket *storage.ProvisionedBucket
 	var err error
-	if bucket, err = AllocateBucket(p.Client, p.Log, p.Owner, originalAssetName, geo); err != nil {
+	if bucket, err = AllocateBucket(p.Client, p.Log, genBucketName, geo); err != nil {
 		p.Log.Error().Err(err).Msg("Bucket allocation failed")
 		return nil, err
 	}
@@ -74,7 +81,7 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 				"s3": map[string]interface{}{
 					"endpoint":   url.Host,
 					"bucket":     bucket.Name,
-					"object_key": originalAssetName + utils.Hash(p.Owner.Name+p.Owner.Namespace, 10),
+					"object_key": genObjectKeyName,
 				},
 			},
 		},
@@ -313,4 +320,10 @@ func moduleAPIToService(api *datacatalog.ResourceDetails, scope app.CapabilitySc
 		DataFormat: api.DataFormat,
 	}
 	return service, nil
+}
+
+func generateBucketName(owner types.NamespacedName, id string) string {
+	name := owner.Name + "-" + owner.Namespace + utils.Hash(id, 10)
+	name = strings.ReplaceAll(name, ".", "-")
+	return utils.K8sConformName(name)
 }

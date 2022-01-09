@@ -64,7 +64,7 @@ helm_image=
 build_image=
 if [[ "${github}" == "github.com" ]]; then
     is_public_repo="true"
-    build_image="docker.io/yakinikku/suede_compile"
+    build_image="docker.io/yakinikku/suede_compile:latest"
     helm_image="docker.io/lachlanevenson/k8s-helm:latest"
     extra_params="${extra_params} -p build_image=${build_image} -p helm_image=${helm_image}"
     cp ${repo_root}/pipeline/statefulset.yaml ${TMP}/
@@ -272,7 +272,7 @@ helper_text="If this step fails, tekton related pods may be restarting or initia
 1. Please rerun in a minute or so
 "
 set -x
-kubectl apply -f ${repo_root}/pipeline/tasks/shell.yaml
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/shell.yaml" 3 true 60
 kubectl apply -f ${repo_root}/pipeline/tasks/make.yaml
 kubectl apply -f ${repo_root}/pipeline/tasks/git-clone.yaml
 kubectl apply -f ${repo_root}/pipeline/tasks/buildah.yaml
