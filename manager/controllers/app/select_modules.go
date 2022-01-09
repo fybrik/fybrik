@@ -150,7 +150,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, appContex
 		requiredActions = unsupported
 		// select a cluster for the capability that satisfy cluster restrictions specified in admin config policies
 		if !p.findCluster(item, element, appContext) {
-			p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find an available cluster for " + moduleCapability.Capability)
+			p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find an available cluster for " + string(moduleCapability.Capability))
 			return false
 		}
 	}
@@ -160,14 +160,14 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, appContex
 		return false
 	}
 	// Are all capabilities that need to be deployed supported in this data path?
-	supportedCapabilities := []string{}
+	supportedCapabilities := map[taxonomy.Capability]bool{}
 	for _, element := range solution.DataPath {
-		supportedCapabilities = append(supportedCapabilities, element.Module.Spec.Capabilities[element.CapabilityIndex].Capability)
+		supportedCapabilities[element.Module.Spec.Capabilities[element.CapabilityIndex].Capability] = true
 	}
 	for capability, decision := range item.Configuration.ConfigDecisions {
 		if decision.Deploy == v1.ConditionTrue {
 			// check that it is supported
-			if !utils.HasString(capability, supportedCapabilities) {
+			if !supportedCapabilities[capability] {
 				return false
 			}
 		}
@@ -341,7 +341,7 @@ func supportsSinkInterface(edge *Edge, sink *Node) bool {
 	return false
 }
 
-func allowCapability(item *DataInfo, capability string) bool {
+func allowCapability(item *DataInfo, capability taxonomy.Capability) bool {
 	return item.Configuration.ConfigDecisions[capability].Deploy != v1.ConditionFalse
 }
 
@@ -363,7 +363,7 @@ func validateClusterRestrictions(item *DataInfo, edge *ResolvedEdge, cluster mul
 	return true
 }
 
-func validateClusterRestrictionsPerCapability(item *DataInfo, capability string, cluster multicluster.Cluster) bool {
+func validateClusterRestrictionsPerCapability(item *DataInfo, capability taxonomy.Capability, cluster multicluster.Cluster) bool {
 	restrictions := item.Configuration.ConfigDecisions[capability].DeploymentRestrictions[adminconfig.Clusters]
 	if len(restrictions) == 0 {
 		return true
