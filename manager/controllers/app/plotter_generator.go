@@ -152,7 +152,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 	datasetID := item.Context.DataSetID
 	for _, element := range selection.DataPath {
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
-		p.Log.Trace().Msgf("Adding module for %s", string(moduleCapability.Capability))
+		p.Log.Trace().Msgf("Adding module for %s", moduleCapability.Capability)
 		actions := element.Actions
 		template := app.Template{
 			Name: string(moduleCapability.Capability),
