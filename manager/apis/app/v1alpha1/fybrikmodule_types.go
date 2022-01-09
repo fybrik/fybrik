@@ -68,7 +68,7 @@ type Plugin struct {
 	// The values supported should come from the module taxonomy
 	// Examples of such mechanisms are vault plugins, wasm, etc
 	// +required
-	PluginType string `json:"pluginType"`
+	PluginType taxonomy.PluginType `json:"pluginType"`
 
 	// DataFormat indicates the format of data the plugin knows how to process
 	DataFormat string `json:"dataFormat"`
@@ -79,7 +79,7 @@ type ModuleCapability struct {
 
 	// Capability declares what this module knows how to do - ex: read, write, transform...
 	// +required
-	Capability string `json:"capability"`
+	Capability taxonomy.Capability `json:"capability"`
 
 	// Scope indicates at what level the capability is used: workload, asset, cluster
 	// If not indicated it is assumed to be asset
