@@ -21,7 +21,7 @@ type WorkloadInfo struct {
 	// Cluster where the user workload is running
 	Cluster multicluster.Cluster `json:"cluster"`
 	// Application/workload properties
-	Properties api.ApplicationDetails `json:"properties,omitempty"`
+	Properties taxonomy.AppInfo `json:"properties,omitempty"`
 }
 
 // DataRequest is a request to use a specific asset

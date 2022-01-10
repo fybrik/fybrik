@@ -4,6 +4,7 @@
 package adminconfig
 
 import (
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -44,7 +45,7 @@ type Decision struct {
 	Policy DecisionPolicy `json:"policy,omitempty"`
 }
 
-type DecisionPerCapabilityMap map[string]Decision
+type DecisionPerCapabilityMap map[taxonomy.Capability]Decision
 
 // EvaluatorOutput is an output of ConfigurationPoliciesEvaluator.
 // Used by manager to decide which modules are deployed and in which cluster.

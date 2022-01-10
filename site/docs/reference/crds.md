@@ -1219,7 +1219,7 @@ FybrikApplicationSpec defines data flows needed by the application, the purpose 
         <td>false</td>
       </tr><tr>
         <td><b>appInfo</b></td>
-        <td>map[string]string</td>
+        <td>object</td>
         <td>
           AppInfo contains information describing the reasons for the processing that will be done by the application.<br/>
         </td>

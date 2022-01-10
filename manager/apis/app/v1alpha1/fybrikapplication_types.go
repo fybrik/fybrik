@@ -60,11 +60,6 @@ type DataContext struct {
 	Requirements DataRequirements `json:"requirements"`
 }
 
-// ApplicationDetails provides information about the Data Scientist's application, which is deployed separately.
-// The information provided is used to determine if the data should be altered in any way prior to its use,
-// based on policies and rules defined in an external data policy manager.
-type ApplicationDetails map[string]string
-
 // FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.
 // Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets
 // Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog
@@ -83,7 +78,7 @@ type FybrikApplicationSpec struct {
 	// AppInfo contains information describing the reasons for the processing
 	// that will be done by the application.
 	// +required
-	AppInfo ApplicationDetails `json:"appInfo"`
+	AppInfo taxonomy.AppInfo `json:"appInfo"`
 
 	// Data contains the identifiers of the data to be used by the Data Scientist's application,
 	// and the protocol used to access it and the format expected.

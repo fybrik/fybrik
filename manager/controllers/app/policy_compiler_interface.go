@@ -28,16 +28,9 @@ const (
 )
 
 func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operation *policymanager.RequestAction) *policymanager.GetPolicyDecisionsRequest {
-	context := make(map[string]interface{}, len(input.Spec.AppInfo))
-	for k, v := range input.Spec.AppInfo {
-		context[k] = v
-	}
-
 	return &policymanager.GetPolicyDecisionsRequest{
-		Context: taxonomy.PolicyManagerRequestContext{Properties: serde.Properties{
-			Items: context,
-		}},
-		Action: *operation,
+		Context: taxonomy.PolicyManagerRequestContext{Properties: input.Spec.AppInfo.Properties},
+		Action:  *operation,
 		Resource: policymanager.Resource{
 			ID: taxonomy.AssetID(datasetID),
 			Metadata: &datacatalog.ResourceMetadata{
