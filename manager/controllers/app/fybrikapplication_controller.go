@@ -418,7 +418,7 @@ func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataConte
 	}
 }
 
-func (r *FybrikApplicationReconciler) ValidateAssetResponse(response *datacatalog.GetAssetResponse, taxonomyFile string) error {
+func (r *FybrikApplicationReconciler) ValidateAssetResponse(response *datacatalog.GetAssetResponse, taxonomyFile string, datasetID string) error {
 	var allErrs []*field.Error
 
 	// Convert GetAssetRequest Go struct to JSON
@@ -441,7 +441,7 @@ func (r *FybrikApplicationReconciler) ValidateAssetResponse(response *datacatalo
 
 	return apierrors.NewInvalid(
 		schema.GroupKind{Group: "app.fybrik.io", Kind: "DataCatalog-AssetResponse"},
-		response.ResourceMetadata.Name, allErrs)
+		datasetID, allErrs)
 }
 
 func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *api.FybrikApplication, workloadCluster multicluster.Cluster) error {
@@ -461,7 +461,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, input *ap
 		return err
 	}
 
-	err = r.ValidateAssetResponse(response, DataCatalogTaxonomy)
+	err = r.ValidateAssetResponse(response, DataCatalogTaxonomy, req.Context.DataSetID)
 	if err != nil {
 		return err
 	}
