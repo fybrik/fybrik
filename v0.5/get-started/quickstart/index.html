@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.1">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.5">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.23b6d78a.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ee0f47ba.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
@@ -1158,7 +1158,9 @@ Many clusters already include cert-manager. Check if <code>cert-manager</code> n
 <p>The published Helm charts are only available for released versions.
 To install the <code>dev</code> version install the charts from the source code.
 For example:</p>
-<div class="tabbed-set" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">Kubernetes</label><div class="tabbed-content">
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Kubernetes</label><label for="__tabbed_1_2">OpenShift</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
 <div class="highlight"><pre><span></span><code>git clone https://github.com/fybrik/fybrik.git
 <span class="nb">cd</span> fybrik
 helm dependency update charts/vault
@@ -1169,7 +1171,7 @@ helm install vault charts/vault --create-namespace -n fybrik-system <span class=
 kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n fybrik-system --timeout<span class="o">=</span>120s
 </code></pre></div>
 </div>
-<input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><label for="__tabbed_1_2">OpenShift</label><div class="tabbed-content">
+<div class="tabbed-block">
 <div class="highlight"><pre><span></span><code>git clone https://github.com/fybrik/fybrik.git
 <span class="nb">cd</span> fybrik
 helm dependency update charts/vault
@@ -1180,11 +1182,14 @@ helm install vault charts/vault --create-namespace -n fybrik-system <span class=
     --values charts/vault/env/dev/vault-single-cluster-values.yaml
 kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n fybrik-system --timeout<span class="o">=</span>120s
 </code></pre></div>
+</div>
 </div>
 </div>
 </details>
 <p>Run the following to install vault and the plugin in development mode:</p>
-<div class="tabbed-set" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><label for="__tabbed_2_1">Kubernetes</label><div class="tabbed-content">
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Kubernetes</label><label for="__tabbed_2_2">OpenShift</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
 <div class="highlight"><pre><span></span><code>helm install vault fybrik-charts/vault --create-namespace -n fybrik-system <span class="se">\</span>
     --set <span class="s2">&quot;vault.injector.enabled=false&quot;</span> <span class="se">\</span>
     --set <span class="s2">&quot;vault.server.dev.enabled=true&quot;</span> <span class="se">\</span>
@@ -1192,7 +1197,7 @@ kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="n
 kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n fybrik-system --timeout<span class="o">=</span>120s
 </code></pre></div>
 </div>
-<input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><label for="__tabbed_2_2">OpenShift</label><div class="tabbed-content">
+<div class="tabbed-block">
 <div class="highlight"><pre><span></span><code>helm install vault fybrik-charts/vault --create-namespace -n fybrik-system <span class="se">\</span>
     --set <span class="s2">&quot;global.openshift=true&quot;</span> <span class="se">\</span>
     --set <span class="s2">&quot;vault.injector.enabled=false&quot;</span> <span class="se">\</span>
@@ -1200,6 +1205,7 @@ kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="n
     --values https://raw.githubusercontent.com/fybrik/fybrik/v0.5.0/charts/vault/env/dev/vault-single-cluster-values.yaml
 kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n fybrik-system --timeout<span class="o">=</span>120s
 </code></pre></div>
+</div>
 </div>
 </div>
 <h2 id="install-control-plane">Install control plane</h2>
@@ -1320,10 +1326,10 @@ helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.c7dec7e7.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.b6ff8c07.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.da79ceb7.min.js"></script>
+      <script src="../../assets/javascripts/bundle.5e13d264.min.js"></script>
       
     
   </body>
