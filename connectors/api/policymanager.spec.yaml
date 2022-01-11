@@ -9,7 +9,7 @@ servers:
 paths:
   /getPoliciesDecisions:
     post:
-      summary: getPoliciesDecisions
+      summary: This REST API gets data governance decisions for the data sets indicated in FybrikApplication yaml based on the context indicated
       operationId: getPoliciesDecisions
       parameters:
         - in: header
