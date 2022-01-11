@@ -105,31 +105,6 @@ func ListeningAddress(port int) string {
 	return address
 }
 
-// SupportsInterface returns true iff the protocol/format list contains the given protocol/format interface
-func SupportsInterface(array []*app.InterfaceDetails, element *app.InterfaceDetails) bool {
-	for _, item := range array {
-		if item.DataFormat == element.DataFormat && item.Protocol == element.Protocol {
-			return true
-		}
-	}
-	return false
-}
-
-// GetModuleCapabilities checks if the requested capability is supported by the module.  If so it returns
-// the ModuleCapability structure.  There could be more than one, since multiple structures could exist with
-// the same CapabilityType but different protocols, dataformats and/or actions.
-func GetModuleCapabilities(module *app.FybrikModule, requestedCapability string) (bool, []app.ModuleCapability) {
-	capList := []app.ModuleCapability{}
-	capFound := false
-	for _, cap := range module.Spec.Capabilities {
-		if cap.Capability == requestedCapability {
-			capList = append(capList, cap)
-			capFound = true
-		}
-	}
-	return capFound, capList
-}
-
 // Intersection finds a common subset of two given sets of strings
 func Intersection(set1 []string, set2 []string) []string {
 	res := []string{}

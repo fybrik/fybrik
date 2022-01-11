@@ -3,7 +3,7 @@ export DOCKER_TAGNAME ?= 0.0.0
 export KUBE_NAMESPACE ?= fybrik-system
 
 .PHONY: all
-all: generate generate-docs manifests verify
+all: generate manifests generate-docs verify
 
 .PHONY: license
 license: $(TOOLBIN)/license_finder

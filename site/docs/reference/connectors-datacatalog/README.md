@@ -7,7 +7,7 @@ All URIs are relative to *https://localhost:8080*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*DefaultApi* | [**getAssetInfo**](Apis/DefaultApi.md#getassetinfo) | **POST** /getAssetInfo | getAssetInfo
+*DefaultApi* | [**getAssetInfo**](Apis/DefaultApi.md#getassetinfo) | **POST** /getAssetInfo | This REST API gets data asset information from the data catalog configured in fybrik for the data sets indicated in FybrikApplication yaml
 
 
 <a name="documentation-for-models"></a>

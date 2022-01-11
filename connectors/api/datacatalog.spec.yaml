@@ -9,7 +9,7 @@ servers:
 paths:
   /getAssetInfo:
       post:
-        summary: getAssetInfo
+        summary: This REST API gets data asset information from the data catalog configured in fybrik for the data sets indicated in FybrikApplication yaml
         operationId: getAssetInfo
         parameters:
           - in: header

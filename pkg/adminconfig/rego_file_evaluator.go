@@ -127,7 +127,7 @@ func (r *RegoPolicyEvaluator) prepareInputForOPA(in *EvaluatorInput) (map[string
 // getOPADecisions parses the OPA decisions and merges decisions for the same capability
 func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.ResultSet) (DecisionPerCapabilityMap, bool, error) {
 	log := r.Log.With().Str(utils.FybrikAppUUID, in.Workload.UUID).Logger()
-	decisions := map[string]Decision{}
+	decisions := DecisionPerCapabilityMap{}
 	if len(rs) == 0 {
 		return decisions, false, errors.New("invalid opa evaluation - an empty result set has been received")
 	}
