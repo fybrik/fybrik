@@ -26,7 +26,6 @@ import (
 	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -392,7 +391,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 
 	resourceRef := r.ResourceInterface.CreateResourceReference(ownerRef)
 	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, plotterSpec, applicationContext.Application.Labels, applicationContext.UUID); err != nil {
-		log.Error().Err(err).Str(logging.ACTION, logging.CREATE).Msg("Error creating " + resourceRef.Kind)
+		applicationContext.Log.Error().Err(err).Str(logging.ACTION, logging.CREATE).Msgf("Error creating %s", resourceRef.Kind)
 		if err.Error() == api.InvalidClusterConfiguration {
 			applicationContext.Application.Status.ErrorMessage = err.Error()
 			return ctrl.Result{}, nil
@@ -400,7 +399,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 		return ctrl.Result{}, err
 	}
 	applicationContext.Application.Status.Generated = resourceRef
-	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("Created " + resourceRef.Kind + " successfully!")
+	applicationContext.Log.Trace().Str(logging.ACTION, logging.CREATE).Msgf("Created %s successfully!", resourceRef.Kind)
 	return ctrl.Result{}, nil
 }
 
@@ -674,7 +673,7 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 		applicationContext.Log.Error().Err(err).Msg("Error while listing modules")
 		return nil, nil, err
 	}
-	log.Info().Msg("Listing modules")
+	applicationContext.Log.Info().Msg("Listing modules")
 	for m := range moduleMap {
 		applicationContext.Log.Info().Msgf("Module: %s", m)
 	}
