@@ -17,7 +17,6 @@ import (
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"fybrik.io/fybrik/pkg/vault"
 	"github.com/gdexlab/go-render/render"
-	"github.com/rs/zerolog/log"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -48,7 +47,6 @@ func ValidatePolicyDecisionsResponse(response *policymanager.GetPolicyDecisionsR
 	if err != nil {
 		return err
 	}
-	log.Print("responseJSON (policy decisions):" + string(responseJSON))
 
 	// Validate Fybrik module against taxonomy
 	allErrs, err = validate.TaxonomyCheck(responseJSON, taxonomyFile)
@@ -67,15 +65,15 @@ func ValidatePolicyDecisionsResponse(response *policymanager.GetPolicyDecisionsR
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
-func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, input *app.FybrikApplication, op *policymanager.RequestAction) ([]taxonomy.Action, error) {
+func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, appContext ApplicationContext, op *policymanager.RequestAction) ([]taxonomy.Action, error) {
 	// call external policy manager to get governance instructions for this operation
-	openapiReq := ConstructOpenAPIReq(datasetID, input, op)
+	openapiReq := ConstructOpenAPIReq(datasetID, appContext.Application, op)
 	output := render.AsCode(openapiReq)
-	log.Print("constructed openapi request: ", output)
+	appContext.Log.Debug().Msgf("request: %s", output)
 
 	var creds string
-	if input.Spec.SecretRef != "" {
-		creds = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+	if appContext.Application.Spec.SecretRef != "" {
+		creds = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(appContext.Application.Namespace, appContext.Application.Spec.SecretRef)
 	}
 
 	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)
@@ -86,12 +84,12 @@ func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyMana
 
 	err = ValidatePolicyDecisionsResponse(openapiResp, PolicyManagerTaxonomy)
 	if err != nil {
-		log.Print("Error after calling ValidatePolicyDecisionsResponse:", err)
+		appContext.Log.Error().Err(err).Msg("error while validating policy manager response")
 		return actions, errors.New("Validation error: " + err.Error())
 	}
 
 	output = render.AsCode(openapiResp)
-	log.Print("openapi response received from policy manager: ", output)
+	appContext.Log.Info().Msgf("response from policy manager: %s", output)
 
 	result := openapiResp.Result
 	for i := 0; i < len(result); i++ {
