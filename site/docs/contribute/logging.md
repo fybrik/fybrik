@@ -2,12 +2,12 @@
 
 This page describes the information that your code should provide in all log entries it generates, and some tools fybrik provides to ensure consistency across components.
 
-# Background
+## Background
 * Log entries should be written to stdout and stderr.
 * Fybrik does not collect nor aggregate logs.  This may be done by external tools. (ex: logstash, fluentd, etc.)
 * A globally unique identifier for each FybrikApplication instance is passed to all control plane and data plane components to be included in log entries.  This enables corrrelation of log entries across different logs and clusters for the specific instance, even if the name of the FybrikApplication is reused over time.
 
-# Log Entry Contents
+## Log Entry Contents
 All fybrik components, whether control plane or data plane components, should write log entries to stdout and stderr in json format.
 The contents of the log entries are detailed in fybrik.io/pkg/logging/logging.go.
 
@@ -16,7 +16,7 @@ Examples of how to use zerolog: https://github.com/rs/zerolog/blob/master/log_ex
 
 TBD - fybrik logging helper functions for python and java.
 
-# Log Entry Verbosity
+## Log Entry Verbosity
 Log levels should be used as follows:
 
 - panic (zerolog.PanicLevel, 5) - Errors that prevent the component from operating correctly and handling requests
@@ -33,7 +33,7 @@ Log levels should be used as follows:
 - debug (zerolog.DebugLevel, 0) - Additional information needed to help identify problems (typically used during testing)
 - trace (zerolog.TraceLevel, -1) - For tracing step by step flow of control (typically used during development)
 
-# Environment Variables
+## Environment Variables
 - LOGGING_VERBOSITY - should be set to one of the levels described in the previous section.  
 - PRETTY_LOGGING - If true log entries are in human readable format.  If false, they are in json. Should only be true during individual development, since json is preferred to enable easy parsing by aggregator tools.
 
