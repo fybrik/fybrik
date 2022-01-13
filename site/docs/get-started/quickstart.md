@@ -109,11 +109,11 @@ Run the following to install vault and the plugin in development mode:
     ```
 
 The control plane includes a `manager` service that connects to a data catalog and to a policy manager. 
-Install the latest release of Fybrik with a built-in data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
+Install the Fybrik release with a built-in data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
 
 ```bash
-helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system --wait
-helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait
+helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system xxxRelease --wait 
+helm install fybrik fybrik-charts/fybrik -n fybrik-system xxxRelease --wait 
 ```
 
 

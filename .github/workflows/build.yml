@@ -8,7 +8,7 @@ on:
       - '*'
   pull_request:
     branches:
-      - master
+      - main
 
 env:
   GO_VERSION: 1.16

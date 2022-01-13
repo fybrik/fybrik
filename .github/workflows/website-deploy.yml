@@ -1,19 +1,12 @@
 name: Website Deploy
 on:
   push:
-    tags:
-      - 'v*'
-    branches:
-      - master
-    paths:
-      - site/**
-      - .github/workflows/website-*
-      - pkg/connectors/protos/**
-      - charts/fybrik-crd/templates/**
-  workflow_dispatch:
+  pull_request:
 jobs:
   website-deploy:
     runs-on: ubuntu-latest
+    env:
+      QUICKSTART_FILE: './docs/get-started/deploy-version.txt'
     steps:
       - uses: actions/checkout@v2
         with:
@@ -34,10 +27,24 @@ jobs:
         name: Infer version
         run: echo ::set-output name=version::$(cut -d '.' -f 1,2 <<< "${GITHUB_REF#refs/*/}")
       - name: Build and Deploy (dev)
+        working-directory: ./site
+        uses: bluwy/substitute-string-action@v1
         if: steps.version.outputs.version == 'master'
-        working-directory: ./site
-        run: mike deploy --push --remote origin --branch site dev
+        with:
+          _input-file: $env.QUICKSTART_FILE
+          _format-key: '%%key%%'
+          _output-file: $env.QUICKSTART_FILE
+          xxxRelease: ""
+        #run: mike deploy --push --remote origin --branch site dev
+        run: echo $env.QUICKSTART_FILE
       - name: Build and Deploy (tag)
-        if: steps.version.outputs.version != 'master'
+        uses: bluwy/substitute-string-action@v1
+        if: steps.sub.outputs.result != 'master'
         working-directory: ./site
-        run: mike deploy --push --update-aliases --remote origin --branch site ${{ steps.version.outputs.version }} latest
+        with:
+          _input-file: $env.QUICKSTART_FILE
+          _output-file: $env.QUICKSTART_FILE
+          _format-key: '%%key%%'
+          xxxRelease: "--version ${{ steps.sub.outputs.note }}"
+        # run: mike deploy --push --update-aliases --remote origin --branch site ${{ steps.version.outputs.version }} latest
+        run: echo $env.QUICKSTART_FILE
