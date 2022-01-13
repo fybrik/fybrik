@@ -1,12 +1,22 @@
 name: Website Deploy
 on:
   push:
-  pull_request:
+    tags:
+      - 'v*'
+    branches:
+      - master
+    paths:
+      - site/**
+      - .github/workflows/website-*
+      - pkg/connectors/protos/**
+      - charts/fybrik-crd/templates/**
+  workflow_dispatch:
 jobs:
   website-deploy:
     runs-on: ubuntu-latest
     env:
-      QUICKSTART_FILE: './docs/get-started/deploy-version.txt'
+      QUICKSTART_FILE: './site/docs/get-started/quickstart.md'
+      WORK_DIR: './site'
     steps:
       - uses: actions/checkout@v2
         with:
@@ -26,25 +36,27 @@ jobs:
       - id: version
         name: Infer version
         run: echo ::set-output name=version::$(cut -d '.' -f 1,2 <<< "${GITHUB_REF#refs/*/}")
-      - name: Build and Deploy (dev)
-        working-directory: ./site
+      - name: Sub (dev)
         uses: bluwy/substitute-string-action@v1
         if: steps.version.outputs.version == 'master'
         with:
-          _input-file: $env.QUICKSTART_FILE
+          _input-file: ${{ env.QUICKSTART_FILE }}
           _format-key: '%%key%%'
-          _output-file: $env.QUICKSTART_FILE
-          xxxRelease: ""
-        #run: mike deploy --push --remote origin --branch site dev
-        run: echo $env.QUICKSTART_FILE
-      - name: Build and Deploy (tag)
+          _output-file: ${{ env.QUICKSTART_FILE }}
+          Release: ""
+      - name: Sub (tag)
         uses: bluwy/substitute-string-action@v1
-        if: steps.sub.outputs.result != 'master'
-        working-directory: ./site
+        if: steps.version.outputs.version != 'master'
         with:
-          _input-file: $env.QUICKSTART_FILE
-          _output-file: $env.QUICKSTART_FILE
+          _input-file: ${{ env.QUICKSTART_FILE }}
           _format-key: '%%key%%'
-          xxxRelease: "--version ${{ steps.sub.outputs.note }}"
-        # run: mike deploy --push --update-aliases --remote origin --branch site ${{ steps.version.outputs.version }} latest
-        run: echo $env.QUICKSTART_FILE
+          _output-file: ${{ env.QUICKSTART_FILE }}
+          Release: "--version ${{ steps.version.outputs.version }}"
+      - name: Build and Deploy (dev)
+        if: steps.version.outputs.version == 'master'
+        working-directory: ${{ env.WORK_DIR }}
+        run: mike deploy --push --remote origin --branch site dev
+      - name: Build and Deploy (tag)
+        if: steps.version.outputs.version != 'master'
+        working-directory: ${{ env.WORK_DIR }}
+        run: mike deploy --push --update-aliases --remote origin --branch site ${{ steps.version.outputs.version }} latest

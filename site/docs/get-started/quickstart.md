@@ -112,8 +112,8 @@ The control plane includes a `manager` service that connects to a data catalog a
 Install the Fybrik release with a built-in data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
 
 ```bash
-helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system xxxRelease --wait 
-helm install fybrik fybrik-charts/fybrik -n fybrik-system xxxRelease --wait 
+helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system %%Release%% --wait
+helm install fybrik fybrik-charts/fybrik -n fybrik-system %%Release%% --wait
 ```
 
 
