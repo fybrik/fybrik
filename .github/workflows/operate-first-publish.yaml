@@ -14,7 +14,7 @@ jobs:
       - name: Checkout forked Operate First repository
         uses: actions/checkout@v2
         with:
-          repository: fybrik/operate-first-apps
+          repository: eletonia/apps
           path: operate-first-fork
       - name: Checkout Fybrik repository
         uses: actions/checkout@v2
@@ -40,7 +40,7 @@ jobs:
       - name: Checkout original Operate First repository
         uses: actions/checkout@v2
         with:
-          repository: operate-first/apps
+          repository: fybrik/operate-first-apps
           path: operate-first-repo
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
@@ -48,7 +48,7 @@ jobs:
           path: operate-first-repo
           signoff: true
           token: ${{ steps.generate-token.outputs.token }}
-          push-to-fork: fybrik/operate-first-apps
+          push-to-fork: eletonia/apps
           title: 'Update Operate First files to new release'
           commit-message: Update Fybrik cluster-scoped resources for Operate First
           committer: GitHub <noreply@github.com>
