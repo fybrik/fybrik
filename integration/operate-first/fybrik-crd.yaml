@@ -43,9 +43,9 @@ spec:
           spec:
             description: BlueprintSpec defines the desired state of Blueprint, which
               defines the components of the workload's data path that run in a particular
-              cluster.  In a single cluster environment there is one blueprint.  In
-              a multi-cluster environment there is one Blueprint per cluster per workload
-              (FybrikApplication).
+              cluster. In a single cluster environment there is one blueprint per
+              workload (FybrikApplication). In a multi-cluster environment there is
+              one Blueprint per cluster per workload (FybrikApplication).
             properties:
               cluster:
                 description: Cluster indicates the cluster on which the Blueprint
@@ -124,6 +124,11 @@ spec:
                                 connection:
                                   description: Connection has the relevant details
                                     for accesing the data (url, table, ssl, etc.)
+                                  properties:
+                                    name:
+                                      type: string
+                                  required:
+                                  - name
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
                                 format:
@@ -163,7 +168,6 @@ spec:
                                   type: object
                               required:
                               - connection
-                              - format
                               - vault
                               type: object
                             source:
@@ -173,6 +177,11 @@ spec:
                                 connection:
                                   description: Connection has the relevant details
                                     for accesing the data (url, table, ssl, etc.)
+                                  properties:
+                                    name:
+                                      type: string
+                                  required:
+                                  - name
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
                                 format:
@@ -212,13 +221,17 @@ spec:
                                   type: object
                               required:
                               - connection
-                              - format
                               - vault
                               type: object
                             transformations:
                               description: Transformations are different types of
                                 processing that may be done to the data as it is copied.
                               items:
+                                properties:
+                                  name:
+                                    type: string
+                                required:
+                                - name
                                 type: object
                                 x-kubernetes-preserve-unknown-fields: true
                               type: array
@@ -250,6 +263,11 @@ spec:
                                   connection:
                                     description: Connection has the relevant details
                                       for accesing the data (url, table, ssl, etc.)
+                                    properties:
+                                      name:
+                                        type: string
+                                    required:
+                                    - name
                                     type: object
                                     x-kubernetes-preserve-unknown-fields: true
                                   format:
@@ -289,13 +307,17 @@ spec:
                                     type: object
                                 required:
                                 - connection
-                                - format
                                 - vault
                                 type: object
                               transformations:
                                 description: Transformations are different types of
                                   processing that may be done to the data
                                 items:
+                                  properties:
+                                    name:
+                                      type: string
+                                  required:
+                                  - name
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
                                 type: array
@@ -323,6 +345,11 @@ spec:
                                   connection:
                                     description: Connection has the relevant details
                                       for accesing the data (url, table, ssl, etc.)
+                                    properties:
+                                      name:
+                                        type: string
+                                    required:
+                                    - name
                                     type: object
                                     x-kubernetes-preserve-unknown-fields: true
                                   format:
@@ -362,7 +389,6 @@ spec:
                                     type: object
                                 required:
                                 - connection
-                                - format
                                 - vault
                                 type: object
                               transformations:
@@ -370,6 +396,11 @@ spec:
                                   processing that may be done to the data as it is
                                   written.
                                 items:
+                                  properties:
+                                    name:
+                                      type: string
+                                  required:
+                                  - name
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
                                 type: array
@@ -405,7 +436,7 @@ spec:
                       - name
                       type: object
                     name:
-                      description: Name of the fybrikmodule on which this is based
+                      description: Name of the FybrikModule on which this is based
                       type: string
                   required:
                   - chart
@@ -413,16 +444,21 @@ spec:
                   type: object
                 description: Modules is a map which contains modules that indicate
                   the data path components that run in this cluster The map key is
-                  InstanceName which is the unique name for the deployed instance
+                  moduleInstanceName which is the unique name for the deployed instance
                   related to this workload
                 type: object
+              modulesNamespace:
+                description: ModulesNamespace is the namespace where modules should
+                  be allocated
+                type: string
             required:
             - cluster
             - modules
+            - modulesNamespace
             type: object
           status:
             description: BlueprintStatus defines the observed state of Blueprint This
-              includes readiness, error message, and indicators forthe Kubernetes
+              includes readiness, error message, and indicators for the Kubernetes
               resources owned by the Blueprint for cleanup and status monitoring
             properties:
               modules:
@@ -440,8 +476,8 @@ spec:
                       type: boolean
                   type: object
                 description: ModulesState is a map which holds the status of each
-                  module its key is the instance name which is the unique name for
-                  the deployed instance related to this workload
+                  module its key is the moduleInstanceName which is the unique name
+                  for the deployed instance related to this workload
                 type: object
               observedGeneration:
                 description: ObservedGeneration is taken from the Blueprint metadata.  This
@@ -473,8 +509,6 @@ spec:
                   each release should be mapped to the latest blueprint version or
                   be uninstalled.
                 type: object
-            required:
-            - modules
             type: object
         type: object
     served: true
@@ -509,17 +543,16 @@ spec:
     schema:
       openAPIV3Schema:
         description: FybrikApplication provides information about the application
-          being used by a Data Scientist, the nature of the processing, and the data
-          sets that the Data Scientist has chosen for processing by the application.
-          The FybrikApplication controller (aka pilot) obtains instructions regarding
-          any governance related changes that must be performed on the data, identifies
-          the modules capable of performing such changes, and finally generates the
-          Blueprint which defines the secure runtime environment and all the components
-          in it.  This runtime environment provides the Data Scientist's application
-          with access to the data requested in a secure manner and without having
-          to provide any credentials for the data sets.  The credentials are obtained
-          automatically by the manager from an external credential management system,
-          which may or may not be part of a data catalog.
+          whose data is being operated on, the nature of the processing, and the data
+          sets chosen for processing by the application. The FybrikApplication controller
+          obtains instructions regarding any governance related changes that must
+          be performed on the data, identifies the modules capable of performing such
+          changes, and finally generates the Plotter which defines the secure runtime
+          environment and all the components in it.  This runtime environment provides
+          the application with access to the data requested in a secure manner and
+          without having to provide any credentials for the data sets.  The credentials
+          are obtained automatically by the manager from the credential management
+          system.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -534,14 +567,18 @@ spec:
           metadata:
             type: object
           spec:
-            description: FybrikApplicationSpec defines the desired state of FybrikApplication.
+            description: FybrikApplicationSpec defines data flows needed by the application,
+              the purpose and other contextual information about the application.
+              Read flow - if selector is populated, fybrik builds a data plane for
+              reading the specified data sets Ingest flow - if no selector, and data/copy/required
+              is true then the data specified is copied into a bucket allocated by
+              fybrik and is cataloged in the data catalog
             properties:
               appInfo:
-                additionalProperties:
-                  type: string
                 description: AppInfo contains information describing the reasons for
-                  the processing that will be done by the Data Scientist's application.
+                  the processing that will be done by the application.
                 type: object
+                x-kubernetes-preserve-unknown-fields: true
               data:
                 description: Data contains the identifiers of the data to be used
                   by the Data Scientist's application, and the protocol used to access
@@ -618,8 +655,7 @@ spec:
                 type: string
               selector:
                 description: Selector enables to connect the resource to the application
-                  Application labels should match the labels in the selector. For
-                  some flows the selector may not be used.
+                  Application labels should match the labels in the selector.
                 properties:
                   clusterName:
                     description: Cluster name
@@ -699,14 +735,24 @@ spec:
                             description: Message contains the details of the current
                               condition
                             type: string
+                          observedGeneration:
+                            description: ObservedGeneration is the version of the
+                              resource for which the condition has been evaluated
+                            format: int64
+                            type: integer
                           status:
-                            description: 'Status of the condition: true or false'
+                            default: Unknown
+                            description: Status of the condition, one of (`True`,
+                              `False`, `Unknown`).
+                            enum:
+                            - "True"
+                            - "False"
+                            - Unknown
                             type: string
                           type:
                             description: Type of the condition
                             type: string
                         required:
-                        - status
                         - type
                         type: object
                       type: array
@@ -714,25 +760,12 @@ spec:
                       description: Endpoint provides the endpoint spec from which
                         the asset will be served to the application
                       properties:
-                        hostname:
-                          description: Hostname is the hostname to connect to for
-                            connecting to a module exposed service. By default this
-                            equals to "fybrik-crd.fybrik-system" of
-                            the module. <br/> Module developers can overide the default
-                            behavior by providing a template that may use the ".Release.Name",
-                            ".Release.Namespace" and ".Values.labels" variables.
-                          type: string
-                        port:
-                          format: int32
-                          type: integer
-                        scheme:
-                          description: 'For example: http, https, grpc, grpc+tls,
-                            jdbc:oracle:thin:@ etc'
+                        name:
                           type: string
                       required:
-                      - port
-                      - scheme
+                      - name
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                   type: object
                 description: AssetStates provides a status per asset
                 type: object
@@ -772,17 +805,12 @@ spec:
                 type: integer
               provisionedStorage:
                 additionalProperties:
-                  description: DatasetDetails contain dataset connection and metadata
-                    required to register this dataset in the enterprise catalog
+                  description: DatasetDetails holds details of the provisioned storage
                   properties:
                     datasetRef:
                       description: Reference to a Dataset resource containing the
                         request to provision storage
                       type: string
-                    details:
-                      description: Dataset information
-                      type: object
-                      x-kubernetes-preserve-unknown-fields: true
                     secretRef:
                       description: Reference to a secret where the credentials are
                         stored
@@ -874,57 +902,37 @@ spec:
                       description: Actions are the data transformations that the module
                         supports
                       items:
+                        properties:
+                          name:
+                            description: Unique name of an action supported by the
+                              module
+                            type: string
+                        required:
+                        - name
                         type: object
-                        x-kubernetes-preserve-unknown-fields: true
                       type: array
                     api:
                       description: API indicates to the application how to access
-                        the capabilities provided by the module TODO This is optional
-                        but in ModuleAPI the endpoint is required?
+                        the capabilities provided by the module
                       properties:
-                        dataformat:
-                          description: DataFormat defines the data format type
-                          type: string
-                        endpoint:
-                          description: EndpointSpec is used both by the module creator
-                            and by the status of the fybrikapplication
+                        connection:
+                          description: Connection information
                           properties:
-                            hostname:
-                              description: Hostname is the hostname to connect to
-                                for connecting to a module exposed service. By default
-                                this equals to "fybrik-crd.fybrik-system"
-                                of the module. <br/> Module developers can overide
-                                the default behavior by providing a template that
-                                may use the ".Release.Name", ".Release.Namespace"
-                                and ".Values.labels" variables.
-                              type: string
-                            port:
-                              format: int32
-                              type: integer
-                            scheme:
-                              description: 'For example: http, https, grpc, grpc+tls,
-                                jdbc:oracle:thin:@ etc'
+                            name:
                               type: string
                           required:
-                          - port
-                          - scheme
+                          - name
                           type: object
-                        protocol:
-                          description: Protocol defines the interface protocol used
-                            for data transactions
+                          x-kubernetes-preserve-unknown-fields: true
+                        dataFormat:
+                          description: Data format
                           type: string
                       required:
-                      - endpoint
-                      - protocol
+                      - connection
                       type: object
                     capability:
                       description: 'Capability declares what this module knows how
                         to do - ex: read, write, transform...'
-                      enum:
-                      - copy
-                      - read
-                      - write
-                      - transform
                       type: string
                     plugins:
                       description: Plugins enable the module to add libraries to perform
@@ -1092,11 +1100,48 @@ spec:
             - chart
             - type
             type: object
+          status:
+            description: FybrikModuleStatus defines the observed state of FybrikModule.
+            properties:
+              conditions:
+                description: Conditions indicate the module states with respect to
+                  validation
+                items:
+                  description: Condition describes the state of a FybrikApplication
+                    at a certain point.
+                  properties:
+                    message:
+                      description: Message contains the details of the current condition
+                      type: string
+                    observedGeneration:
+                      description: ObservedGeneration is the version of the resource
+                        for which the condition has been evaluated
+                      format: int64
+                      type: integer
+                    status:
+                      default: Unknown
+                      description: Status of the condition, one of (`True`, `False`,
+                        `Unknown`).
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: Type of the condition
+                      type: string
+                  required:
+                  - type
+                  type: object
+                type: array
+            type: object
         required:
         - spec
         type: object
     served: true
     storage: true
+    subresources:
+      status: {}
 status:
   acceptedNames:
     kind: ""
@@ -1144,22 +1189,21 @@ spec:
           spec:
             description: FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
             properties:
-              endpoint:
-                description: Endpoint
-                type: string
-              regions:
-                description: Regions
-                items:
+              endpoints:
+                additionalProperties:
                   type: string
-                minItems: 1
-                type: array
+                description: Endpoints based on regions
+                type: object
+              id:
+                description: Identification of a storage account
+                type: string
               secretRef:
                 description: A name of k8s secret deployed in the control plane. This
                   secret includes secretKey and accessKey credentials for S3 bucket
                 type: string
             required:
-            - endpoint
-            - regions
+            - endpoints
+            - id
             - secretRef
             type: object
           status:
@@ -1304,6 +1348,11 @@ spec:
                         connection:
                           description: Connection has the relevant details for accesing
                             the data (url, table, ssl, etc.)
+                          properties:
+                            name:
+                              type: string
+                          required:
+                          - name
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
                         format:
@@ -1342,7 +1391,6 @@ spec:
                           type: object
                       required:
                       - connection
-                      - format
                       - vault
                       type: object
                   required:
@@ -1404,49 +1452,32 @@ spec:
                                         description: Actions are the data transformations
                                           that the module supports
                                         items:
+                                          properties:
+                                            name:
+                                              type: string
+                                          required:
+                                          - name
                                           type: object
                                           x-kubernetes-preserve-unknown-fields: true
                                         type: array
                                       api:
-                                        description: Service holds information for
-                                          accessing a module instance
+                                        description: ResourceDetails includes asset
+                                          connection details
                                         properties:
-                                          endpoint:
-                                            description: EndpointSpec is used both
-                                              by the module creator and by the status
-                                              of the fybrikapplication
+                                          connection:
+                                            description: Connection information
                                             properties:
-                                              hostname:
-                                                description: Hostname is the hostname
-                                                  to connect to for connecting to
-                                                  a module exposed service. By default
-                                                  this equals to "fybrik-crd.fybrik-system"
-                                                  of the module. <br/> Module developers
-                                                  can overide the default behavior
-                                                  by providing a template that may
-                                                  use the ".Release.Name", ".Release.Namespace"
-                                                  and ".Values.labels" variables.
-                                                type: string
-                                              port:
-                                                format: int32
-                                                type: integer
-                                              scheme:
-                                                description: 'For example: http, https,
-                                                  grpc, grpc+tls, jdbc:oracle:thin:@
-                                                  etc'
+                                              name:
                                                 type: string
                                             required:
-                                            - port
-                                            - scheme
+                                            - name
                                             type: object
-                                          format:
-                                            description: Format represents data format
-                                              (e.g. parquet) as received from catalog
-                                              connectors
+                                            x-kubernetes-preserve-unknown-fields: true
+                                          dataFormat:
+                                            description: Data format
                                             type: string
                                         required:
-                                        - endpoint
-                                        - format
+                                        - connection
                                         type: object
                                       sink:
                                         description: 'StepSink holds information to
@@ -1468,46 +1499,23 @@ spec:
                                           of another step'
                                         properties:
                                           api:
-                                            description: Service holds information
-                                              for accessing a module instance
+                                            description: API holds information for
+                                              accessing a module instance
                                             properties:
-                                              endpoint:
-                                                description: EndpointSpec is used
-                                                  both by the module creator and by
-                                                  the status of the fybrikapplication
+                                              connection:
+                                                description: Connection information
                                                 properties:
-                                                  hostname:
-                                                    description: Hostname is the hostname
-                                                      to connect to for connecting
-                                                      to a module exposed service.
-                                                      By default this equals to "fybrik-crd.fybrik-system"
-                                                      of the module. <br/> Module
-                                                      developers can overide the default
-                                                      behavior by providing a template
-                                                      that may use the ".Release.Name",
-                                                      ".Release.Namespace" and ".Values.labels"
-                                                      variables.
-                                                    type: string
-                                                  port:
-                                                    format: int32
-                                                    type: integer
-                                                  scheme:
-                                                    description: 'For example: http,
-                                                      https, grpc, grpc+tls, jdbc:oracle:thin:@
-                                                      etc'
+                                                  name:
                                                     type: string
                                                 required:
-                                                - port
-                                                - scheme
+                                                - name
                                                 type: object
-                                              format:
-                                                description: Format represents data
-                                                  format (e.g. parquet) as received
-                                                  from catalog connectors
+                                                x-kubernetes-preserve-unknown-fields: true
+                                              dataFormat:
+                                                description: Data format
                                                 type: string
                                             required:
-                                            - endpoint
-                                            - format
+                                            - connection
                                             type: object
                                           assetId:
                                             description: AssetID identifies the source
@@ -1553,6 +1561,10 @@ spec:
                   - subFlows
                   type: object
                 type: array
+              modulesNamespace:
+                description: ModulesNamespace is the namespace where modules should
+                  be allocated
+                type: string
               templates:
                 additionalProperties:
                   description: Template contains basic information about the required
@@ -1629,6 +1641,7 @@ spec:
             required:
             - assets
             - flows
+            - modulesNamespace
             - templates
             type: object
           status:
@@ -1664,9 +1677,9 @@ spec:
                       type: string
                     status:
                       description: BlueprintStatus defines the observed state of Blueprint
-                        This includes readiness, error message, and indicators forthe
-                        Kubernetes resources owned by the Blueprint for cleanup and
-                        status monitoring
+                        This includes readiness, error message, and indicators for
+                        the Kubernetes resources owned by the Blueprint for cleanup
+                        and status monitoring
                       properties:
                         modules:
                           additionalProperties:
@@ -1686,9 +1699,9 @@ spec:
                                 type: boolean
                             type: object
                           description: ModulesState is a map which holds the status
-                            of each module its key is the instance name which is the
-                            unique name for the deployed instance related to this
-                            workload
+                            of each module its key is the moduleInstanceName which
+                            is the unique name for the deployed instance related to
+                            this workload
                           type: object
                         observedGeneration:
                           description: ObservedGeneration is taken from the Blueprint
@@ -1723,8 +1736,6 @@ spec:
                             reconcile, each release should be mapped to the latest
                             blueprint version or be uninstalled.
                           type: object
-                      required:
-                      - modules
                       type: object
                   required:
                   - name
@@ -1741,14 +1752,24 @@ spec:
                     message:
                       description: Message contains the details of the current condition
                       type: string
+                    observedGeneration:
+                      description: ObservedGeneration is the version of the resource
+                        for which the condition has been evaluated
+                      format: int64
+                      type: integer
                     status:
-                      description: 'Status of the condition: true or false'
+                      default: Unknown
+                      description: Status of the condition, one of (`True`, `False`,
+                        `Unknown`).
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
                       type: string
                     type:
                       description: Type of the condition
                       type: string
                   required:
-                  - status
                   - type
                   type: object
                 type: array
@@ -1836,6 +1857,8 @@ status:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.7.0
   creationTimestamp: null
   name: assets.katalog.fybrik.io
 spec:
@@ -1850,118 +1873,73 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
+        description: Asset defines an asset in the catalog
         properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
           spec:
             properties:
-              assetDetails:
+              details:
                 description: Asset details
                 properties:
                   connection:
                     description: Connection information
                     properties:
-                      db2:
-                        properties:
-                          database:
-                            type: string
-                          port:
-                            type: string
-                          ssl:
-                            type: string
-                          table:
-                            type: string
-                          url:
-                            type: string
-                        type: object
-                      kafka:
-                        properties:
-                          bootstrap_servers:
-                            type: string
-                          key_deserializer:
-                            type: string
-                          sasl_mechanism:
-                            type: string
-                          schema_registry:
-                            type: string
-                          security_protocol:
-                            type: string
-                          ssl_truststore:
-                            type: string
-                          ssl_truststore_password:
-                            type: string
-                          topic_name:
-                            type: string
-                          value_deserializer:
-                            type: string
-                        type: object
-                      s3:
-                        description: Connection information for S3 compatible object
-                          store
-                        properties:
-                          bucket:
-                            type: string
-                          endpoint:
-                            type: string
-                          objectKey:
-                            type: string
-                          region:
-                            type: string
-                        required:
-                        - bucket
-                        - endpoint
-                        - objectKey
-                        type: object
-                      type:
-                        enum:
-                        - s3
-                        - db2
-                        - kafka
+                      name:
                         type: string
                     required:
-                    - type
+                    - name
                     type: object
+                    x-kubernetes-preserve-unknown-fields: true
                   dataFormat:
+                    description: Data format
                     type: string
                 required:
                 - connection
                 type: object
-              assetMetadata:
+              metadata:
+                description: Asset metadata
                 properties:
-                  componentsMetadata:
-                    additionalProperties:
+                  columns:
+                    description: Columns associated with the asset
+                    items:
+                      description: ResourceColumn represents a column in a tabular
+                        resource
                       properties:
-                        componentType:
+                        name:
+                          description: Name of the column
                           type: string
-                        namedMetadata:
-                          additionalProperties:
-                            type: string
-                          description: 'Named terms, that exist in Catalog toxonomy
-                            and the values for these terms for columns we will have
-                            "SchemaDetails" key, that will include technical schema
-                            details for this column TODO: Consider create special
-                            field for schema outside of metadata'
-                          type: object
                         tags:
-                          description: Tags - can be any free text added to a component
-                            (no taxonomy)
-                          items:
-                            type: string
-                          type: array
+                          description: Tags associated with the column
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                      required:
+                      - name
                       type: object
-                    description: metadata for each component in asset (e.g., column)
-                    type: object
+                    type: array
                   geography:
+                    description: Geography of the resource
                     type: string
-                  namedMetadata:
-                    additionalProperties:
-                      type: string
-                    type: object
+                  name:
+                    description: Name of the resource
+                    type: string
                   owner:
+                    description: Owner of the resource
                     type: string
                   tags:
                     description: Tags associated with the asset
-                    items:
-                      type: string
-                    type: array
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
                 type: object
               secretRef:
                 description: Reference to a Secret resource holding credentials for
@@ -1975,12 +1953,10 @@ spec:
                 - name
                 type: object
             required:
+            - details
+            - metadata
             - secretRef
-            - assetMetadata
-            - assetDetails
             type: object
-        required:
-        - spec
         type: object
     served: true
     storage: true
@@ -1988,8 +1964,5 @@ status:
   acceptedNames:
     kind: ""
     plural: ""
-  conditions: null
+  conditions: []
   storedVersions: []
----
-# Source: fybrik-crd/templates/katalog.fybrik.io_assets.yaml
-# The file is generated by openapi2crd
