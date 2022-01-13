@@ -37,11 +37,6 @@ jobs:
           app_id: ${{ secrets.CHARTS_APP_ID }}
           private_key: ${{ secrets.CHARTS_APP_PRIVATE_KEY  }}
           repository: fybrik/fybrik
-      - name: Push Pull Request Branch to Fork
-        uses: peter-evans/create-pull-request@v3
-        with:
-          token: ${{ steps.generate-token.outputs.token }}
-          push-to-fork: fybrik/operate-first-apps
       - name: Checkout original Operate First repository
         uses: actions/checkout@v2
         with:
@@ -53,6 +48,7 @@ jobs:
           path: operate-first-repo
           signoff: true
           token: ${{ steps.generate-token.outputs.token }}
+          push-to-fork: fybrik/operate-first-apps
           title: 'Update Operate First files to new release'
           commit-message: Update Fybrik cluster-scoped resources for Operate First
           committer: GitHub <noreply@github.com>
