@@ -249,7 +249,12 @@ func newDataCatalog() (dcclient.DataCatalog, error) {
 	providerName := os.Getenv("CATALOG_PROVIDER_NAME")
 	connectorURL := os.Getenv("CATALOG_CONNECTOR_URL")
 	setupLog.Info().Str("Name", providerName).Str("URL", connectorURL).Str("Timeout", connectionTimeout.String()).Msg("setting data catalog client")
-	return dcclient.NewDataCatalog(providerName, connectorURL, connectionTimeout)
+	return dcclient.NewDataCatalog(
+		providerName,
+		connectorURL,
+		connectionTimeout,
+		logging.LogInit(logging.CONNECTOR, providerName),
+	)
 }
 
 func newPolicyManager() (pmclient.PolicyManager, error) {
@@ -264,7 +269,12 @@ func newPolicyManager() (pmclient.PolicyManager, error) {
 
 	var policyManager pmclient.PolicyManager
 	if strings.HasPrefix(mainPolicyManagerURL, "http") {
-		policyManager, err = pmclient.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
+		policyManager, err = pmclient.NewOpenAPIPolicyManager(
+			mainPolicyManagerName,
+			mainPolicyManagerURL,
+			connectionTimeout,
+			logging.LogInit(logging.CONNECTOR, mainPolicyManagerName),
+		)
 	} else {
 		policyManager, err = pmclient.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
 	}

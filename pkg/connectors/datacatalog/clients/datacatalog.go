@@ -10,6 +10,7 @@ import (
 
 	"emperror.dev/errors"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"github.com/rs/zerolog"
 )
 
 // DataCatalog is an interface of a facade to a data catalog.
@@ -18,9 +19,9 @@ type DataCatalog interface {
 	io.Closer
 }
 
-func NewDataCatalog(catalogProviderName, catalogConnectorAddress string, connectionTimeout time.Duration) (DataCatalog, error) {
+func NewDataCatalog(catalogProviderName, catalogConnectorAddress string, connectionTimeout time.Duration, log zerolog.Logger) (DataCatalog, error) {
 	if strings.HasPrefix(catalogConnectorAddress, "http") {
-		return NewOpenAPIDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout), nil
+		return NewOpenAPIDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout, log), nil
 	}
 
 	catalogClient, err := NewGrpcDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout)

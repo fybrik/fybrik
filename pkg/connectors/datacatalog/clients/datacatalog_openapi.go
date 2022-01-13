@@ -5,12 +5,12 @@ package clients
 
 import (
 	"context"
-	"fmt"
-	"os"
 	"time"
 
 	openapiclient "fybrik.io/fybrik/pkg/connectors/datacatalog/openapiclient"
+	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"github.com/rs/zerolog"
 )
 
 var _ DataCatalog = (*openAPIDataCatalog)(nil)
@@ -18,10 +18,11 @@ var _ DataCatalog = (*openAPIDataCatalog)(nil)
 type openAPIDataCatalog struct {
 	name   string
 	client *openapiclient.APIClient
+	log    zerolog.Logger
 }
 
 // NewopenApiDataCatalog creates a DataCatalog facade that connects to a openApi service
-func NewOpenAPIDataCatalog(name string, connectionURL string, connectionTimeout time.Duration) DataCatalog {
+func NewOpenAPIDataCatalog(name string, connectionURL string, connectionTimeout time.Duration, log zerolog.Logger) DataCatalog {
 	configuration := &openapiclient.Configuration{
 		DefaultHeader: make(map[string]string),
 		UserAgent:     "OpenAPI-Generator/1.0.0/go",
@@ -39,17 +40,18 @@ func NewOpenAPIDataCatalog(name string, connectionURL string, connectionTimeout 
 	return &openAPIDataCatalog{
 		name:   name,
 		client: apiClient,
+		log:    log,
 	}
 }
 
 func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds string) (*datacatalog.GetAssetResponse, error) {
 	resp, r, err := m.client.DefaultApi.GetAssetInfoPost(context.Background()).XRequestDataCatalogCred(creds).DataCatalogRequest(*in).Execute()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error when calling `DefaultApi.GetAssetInfoPost``: %v\n", err)
-		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+		m.log.Error().Err(err).Msg("error when calling `DefaultApi.GetAssetInfoPost`")
+		logging.LogStructure("HTTP response", r, m.log, false, false)
 	}
 	// response from `GetAssetInfoPost`: DataCatalogResponse
-	fmt.Fprintf(os.Stdout, "Response from `DefaultApi.GetAssetInfoPost` in GetAssetInfo of datacatalog_openapi.go: %v\n", resp)
+	logging.LogStructure("datacatalog_openapi response", resp, m.log, false, false)
 	return &resp, nil
 }
 

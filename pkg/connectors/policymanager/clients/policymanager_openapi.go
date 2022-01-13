@@ -6,13 +6,13 @@ package clients
 import (
 	"context"
 	"fmt"
-	"log"
-	"os"
 	"time"
 
 	"emperror.dev/errors"
 	openapiclient "fybrik.io/fybrik/pkg/connectors/policymanager/openapiclient"
+	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/policymanager"
+	"github.com/rs/zerolog"
 )
 
 var _ PolicyManager = (*openAPIPolicyManager)(nil)
@@ -20,10 +20,11 @@ var _ PolicyManager = (*openAPIPolicyManager)(nil)
 type openAPIPolicyManager struct {
 	name   string
 	client *openapiclient.APIClient
+	log    zerolog.Logger
 }
 
 // NewopenApiPolicyManager creates a PolicyManager facade that connects to a openApi service
-func NewOpenAPIPolicyManager(name string, connectionURL string, connectionTimeout time.Duration) (PolicyManager, error) {
+func NewOpenAPIPolicyManager(name string, connectionURL string, connectionTimeout time.Duration, log zerolog.Logger) (PolicyManager, error) {
 	configuration := &openapiclient.Configuration{
 		DefaultHeader: make(map[string]string),
 		UserAgent:     "OpenAPI-Generator/1.0.0/go",
@@ -41,6 +42,7 @@ func NewOpenAPIPolicyManager(name string, connectionURL string, connectionTimeou
 	return &openAPIPolicyManager{
 		name:   name,
 		client: apiClient,
+		log:    log,
 	}, nil
 }
 
@@ -48,12 +50,12 @@ func (m *openAPIPolicyManager) GetPoliciesDecisions(in *policymanager.GetPolicyD
 	resp, r, err := m.client.DefaultApi.GetPoliciesDecisionsPost(context.Background()).XRequestCred(creds).PolicyManagerRequest(*in).Execute()
 	// resp, r, err := m.client.DefaultApi.GetPoliciesDecisions(context.Background()).Input(*in).Creds(creds).Execute()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error when calling `DefaultApi.GetPoliciesDecisions``: %v\n", err)
-		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+		m.log.Error().Err(err).Msg("error when calling `DefaultApi.GetPoliciesDecisions`")
+		logging.LogStructure("HTTP response", r, m.log, false, false)
 		return nil, errors.Wrap(err, fmt.Sprintf("get policies decisions from %s failed", m.name))
 	}
 	// response from `GetPoliciesDecisions`: []PolicymanagerResponse
-	log.Println("1Response from `DefaultApi.GetPoliciesDecisions`: \n", resp)
+	logging.LogStructure("policymanager_openapi response", resp, m.log, false, false)
 	return &resp, nil
 }
 

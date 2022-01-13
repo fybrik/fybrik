@@ -12,6 +12,7 @@ import (
 	"emperror.dev/errors"
 	"fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	"fybrik.io/fybrik/pkg/environment"
+	"fybrik.io/fybrik/pkg/logging"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 )
@@ -73,7 +74,8 @@ func RunCmd() *cobra.Command {
 			connectionTimeout := time.Duration(timeout) * time.Second
 
 			// Create data catalog client
-			catalogClient, err := clients.NewDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout)
+			log := logging.LogInit(logging.CONNECTOR, catalogProviderName)
+			catalogClient, err := clients.NewDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout, log)
 			if err != nil {
 				return errors.Wrap(err, "failed to create a data catalog client")
 			}
