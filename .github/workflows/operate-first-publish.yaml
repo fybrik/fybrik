@@ -19,7 +19,7 @@ jobs:
       - name: Checkout Fybrik repository
         uses: actions/checkout@v2
         with:
-          repository: fybrik/fybrik
+          repository: eletonia/fybrik
           path: fybrik-repo
       - run: |
           rm -r fybrik-repo/integration/operate-first/*/
@@ -30,13 +30,22 @@ jobs:
           pipenv install
           pipenv run python filterClusterScoped.py
           rm ./*.yaml
-          rsync -a --include='*/' --include='*.yaml' --exclude='*' ./ operate-first-fork/apps/cluster-scope/base
       - uses: tibdex/github-app-token@v1
         id: generate-token
         with:
           app_id: ${{ secrets.CHARTS_APP_ID }}
           private_key: ${{ secrets.CHARTS_APP_PRIVATE_KEY  }}
-          repository: fybrik/fybrik
+          repository: eletonia/fybrik
+      - name: Copy
+        uses: andstor/copycat-action@v3
+        with:
+          personal_token: ${{ secrets.PERSONAL_TOKEN }}
+          src_path: /.
+          dst_path: /cluster-scope/base
+          dst_owner: eletonia
+          dst_repo_name: apps
+          filter: '*/ *.yaml'
+          exclude: '*'
       - name: Checkout original Operate First repository
         uses: actions/checkout@v2
         with:
