@@ -5,6 +5,7 @@ package serde
 
 import (
 	"encoding/json"
+	"log"
 
 	"github.com/mohae/deepcopy"
 )
@@ -34,5 +35,10 @@ func (in *Properties) UnmarshalJSON(data []byte) error {
 }
 
 func (in *Properties) MarshalJSON() ([]byte, error) {
+	if in.Items == nil {
+		log.Println("in.Items is nil in MarshalJSON")
+		in.Items = map[string]interface{}{}
+		return json.Marshal(in.Items)
+	}
 	return json.Marshal(in.Items)
 }
