@@ -40,7 +40,7 @@ jobs:
         uses: andstor/copycat-action@v3
         with:
           personal_token: ${{ secrets.PERSONAL_TOKEN }}
-          src_path: /.
+          src_path: integration/operate-first
           dst_path: /cluster-scope/base
           dst_owner: eletonia
           dst_repo_name: apps
