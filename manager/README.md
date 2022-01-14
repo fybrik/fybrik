@@ -55,6 +55,14 @@ VAULT_MODULES_ROLE="module"
 ENABLE_WEBHOOKS="false"
 ```
 
+If the manager runs in the Razee environment, you also need to add the following environment variables:
+
+```bash
+RAZEE_USER="razee-dev@example.com"
+RAZEE_PASSWORD="password123"
+RAZEE_URL="http://localhost:3333/graphql"
+```
+
 If you plan to run manager from the command line,
 then run the following to export all of the variables:
 
