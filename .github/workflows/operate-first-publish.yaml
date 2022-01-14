@@ -11,6 +11,11 @@ jobs:
     name: Update Operate First directory
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout forked Operate First repository
+        uses: actions/checkout@v2
+        with:
+          repository: eletonia/apps
+          path: operate-first-fork
       - name: Checkout Fybrik repository
         uses: actions/checkout@v2
         with:
@@ -31,11 +36,12 @@ jobs:
           app_id: ${{ secrets.CHARTS_APP_ID }}
           private_key: ${{ secrets.CHARTS_APP_PRIVATE_KEY  }}
           repository: eletonia/fybrik
+      - uses: actions/checkout@v2
       - name: Copy
         uses: andstor/copycat-action@v3
         with:
           personal_token: ${{ secrets.PERSONAL_TOKEN }}
-          src_path: fybrik-repo/integration/operate-first
+          src_path: integration/operate-first
           dst_path: /cluster-scope/base
           dst_owner: eletonia
           dst_repo_name: apps
