@@ -85,7 +85,7 @@ func (p *PlotterGenerator) FindPaths(item *DataInfo, appContext *app.FybrikAppli
 	// find data paths of length up to DATAPATH_LIMIT from data source to the workload, not including transformations or branches
 	bound, err := utils.GetDataPathMaxSize()
 	if err != nil {
-		p.Log.Warn().Msg("Warning: a default value for DATAPATH_LIMIT will be used")
+		p.Log.Warn().Str(logging.DATASETID, item.Context.DataSetID).Msg("a default value for DATAPATH_LIMIT will be used")
 	}
 	solutions := p.findPathsWithinLimit(item, &source, &destination, bound)
 	// get valid solutions by extending data paths with transformations and selecting an appropriate cluster for each capability

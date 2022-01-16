@@ -45,13 +45,14 @@ func NewOpenAPIDataCatalog(name string, connectionURL string, connectionTimeout 
 }
 
 func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds string) (*datacatalog.GetAssetResponse, error) {
+	log := m.log.With().Str(logging.DATASETID, string(in.AssetID)).Logger()
 	resp, r, err := m.client.DefaultApi.GetAssetInfoPost(context.Background()).XRequestDataCatalogCred(creds).DataCatalogRequest(*in).Execute()
 	if err != nil {
-		m.log.Error().Err(err).Msg("error when calling `DefaultApi.GetAssetInfoPost`")
-		logging.LogStructure("HTTP response", r, m.log, false, false)
+		log.Error().Err(err).Msg("error when calling `DefaultApi.GetAssetInfoPost`")
+		logging.LogStructure("HTTP response", r, log, false, false)
 	}
 	// response from `GetAssetInfoPost`: DataCatalogResponse
-	logging.LogStructure("datacatalog_openapi response", resp, m.log, false, false)
+	logging.LogStructure("datacatalog_openapi response", resp, log, false, false)
 	return &resp, nil
 }
 

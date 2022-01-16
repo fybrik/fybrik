@@ -10,6 +10,7 @@ import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	connectors "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
+	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -69,7 +70,7 @@ func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyMana
 	// call external policy manager to get governance instructions for this operation
 	openapiReq := ConstructOpenAPIReq(datasetID, appContext.Application, op)
 	output := render.AsCode(openapiReq)
-	appContext.Log.Debug().Msgf("request: %s", output)
+	appContext.Log.Debug().Str(logging.DATASETID, datasetID).Msgf("request: %s", output)
 
 	var creds string
 	if appContext.Application.Spec.SecretRef != "" {
@@ -84,12 +85,12 @@ func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyMana
 
 	err = ValidatePolicyDecisionsResponse(openapiResp, PolicyManagerTaxonomy)
 	if err != nil {
-		appContext.Log.Error().Err(err).Msg("error while validating policy manager response")
+		appContext.Log.Error().Err(err).Str(logging.DATASETID, datasetID).Msg("error while validating policy manager response")
 		return actions, errors.New("Validation error: " + err.Error())
 	}
 
 	output = render.AsCode(openapiResp)
-	appContext.Log.Info().Msgf("response from policy manager: %s", output)
+	appContext.Log.Info().Str(logging.DATASETID, datasetID).Msgf("response from policy manager: %s", output)
 
 	result := openapiResp.Result
 	for i := 0; i < len(result); i++ {
