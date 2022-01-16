@@ -250,13 +250,15 @@
         
   
   
+    
+  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../" class="md-tabs__link">
+      <a href="../" class="md-tabs__link md-tabs__link--active">
         Contribute
       </a>
     </li>
@@ -828,12 +830,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" checked>
       
       
       
@@ -910,23 +914,99 @@
               
   
   
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Logging
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Logging
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#background" class="md-nav__link">
+    Background
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#log-entry-contents" class="md-nav__link">
+    Log Entry Contents
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#log-entry-verbosity" class="md-nav__link">
+    Log Entry Verbosity
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    Environment Variables
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
   
     
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_5" type="checkbox" id="__nav_6_5" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_6" type="checkbox" id="__nav_6_6" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_6_5">
+        <label class="md-nav__link" for="__nav_6_6">
           Documentation
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Documentation" data-md-level="2">
-        <label class="md-nav__title" for="__nav_6_5">
+        <label class="md-nav__title" for="__nav_6_6">
           <span class="md-nav__icon md-icon"></span>
           Documentation
         </label>
@@ -990,18 +1070,18 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_6" type="checkbox" id="__nav_6_6" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_7" type="checkbox" id="__nav_6_7" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_6_6">
+        <label class="md-nav__link" for="__nav_6_7">
           Plugins
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Plugins" data-md-level="2">
-        <label class="md-nav__title" for="__nav_6_6">
+        <label class="md-nav__title" for="__nav_6_7">
           <span class="md-nav__icon md-icon"></span>
           Plugins
         </label>
@@ -1054,6 +1134,42 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#background" class="md-nav__link">
+    Background
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#log-entry-contents" class="md-nav__link">
+    Log Entry Contents
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#log-entry-verbosity" class="md-nav__link">
+    Log Entry Verbosity
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    Environment Variables
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1071,19 +1187,19 @@
 
 <h1 id="logging">Logging</h1>
 <p>This page describes the information that your code should provide in all log entries it generates, and some tools fybrik provides to ensure consistency across components.</p>
-<h1 id="background">Background</h1>
+<h2 id="background">Background</h2>
 <ul>
 <li>Log entries should be written to stdout and stderr.</li>
 <li>Fybrik does not collect nor aggregate logs.  This may be done by external tools. (ex: logstash, fluentd, etc.)</li>
 <li>A globally unique identifier for each FybrikApplication instance is passed to all control plane and data plane components to be included in log entries.  This enables corrrelation of log entries across different logs and clusters for the specific instance, even if the name of the FybrikApplication is reused over time.</li>
 </ul>
-<h1 id="log-entry-contents">Log Entry Contents</h1>
+<h2 id="log-entry-contents">Log Entry Contents</h2>
 <p>All fybrik components, whether control plane or data plane components, should write log entries to stdout and stderr in json format.
 The contents of the log entries are detailed in fybrik.io/pkg/logging/logging.go.</p>
 <p>The fybrik control plane uses <a href="github.com/rs/zerolog">zerolog</a> for its golang components, and provides a library of fybrik specific helper functions to be used with it.
 Examples of how to use zerolog: https://github.com/rs/zerolog/blob/master/log_example_test.go</p>
 <p>TBD - fybrik logging helper functions for python and java.</p>
-<h1 id="log-entry-verbosity">Log Entry Verbosity</h1>
+<h2 id="log-entry-verbosity">Log Entry Verbosity</h2>
 <p>Log levels should be used as follows:</p>
 <ul>
 <li>panic (zerolog.PanicLevel, 5) - Errors that prevent the component from operating correctly and handling requests
@@ -1100,7 +1216,7 @@ Examples of how to use zerolog: https://github.com/rs/zerolog/blob/master/log_ex
 <li>debug (zerolog.DebugLevel, 0) - Additional information needed to help identify problems (typically used during testing)</li>
 <li>trace (zerolog.TraceLevel, -1) - For tracing step by step flow of control (typically used during development)</li>
 </ul>
-<h1 id="environment-variables">Environment Variables</h1>
+<h2 id="environment-variables">Environment Variables</h2>
 <ul>
 <li>LOGGING_VERBOSITY - should be set to one of the levels described in the previous section.  </li>
 <li>PRETTY_LOGGING - If true log entries are in human readable format.  If false, they are in json. Should only be true during individual development, since json is preferred to enable easy parsing by aggregator tools.</li>
@@ -1114,6 +1230,41 @@ Examples of how to use zerolog: https://github.com/rs/zerolog/blob/master/log_ex
       </main>
       
         <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../flow/" class="md-footer__link md-footer__link--prev" aria-label="Previous: GitHub Workflow" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              GitHub Workflow
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../documentation/" class="md-footer__link md-footer__link--next" aria-label="Next: Contribute Documentation" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Contribute Documentation
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
