@@ -48,6 +48,7 @@ config[{"read": decision}] {
 }
 ```
 
+
 `policy` provides policy metadata: unique ID, human-readable description and `policySetID` (see ### Policy Set ID)
 
 `restrictions` provides restrictions for `modules`, `clusters` and `storageaccounts`.
@@ -135,3 +136,18 @@ config[{"copy": decision}] {
 }
 
 ```
+
+### How to add / modify / delete policies
+
+Updating policies is done by updating `fybrik-adminconfig` config map in the controller plane.
+
+The steps below demonstrate how to add a new rego file (samples/adminconfig/quickstart-policies.rego)
+
+```
+mkdir -p /tmp/adminconfig
+cp samples/adminconfig/quickstart-policies.rego /tmp/adminconfig/
+cp charts/fybrik/files/adminconfig/* /tmp/adminconfig
+kubectl create configmap fybrik-adminconfig --from-file=/tmp/adminconfig -o yaml --dry-run=client | kubectl replace -n fybrik-system -f -
+rm -rf /tmp/adminconfig
+```
+   
