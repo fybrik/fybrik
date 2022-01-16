@@ -142,17 +142,21 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 
 	// DataStore for destination will be determined if an implicit copy is required
 	var sinkDataStore *app.DataStore
+	dataitem := item.Context.CatalogService + "/" + item.Context.DataSetID
 
 	solutions := p.FindPaths(&item, appContext)
 	if len(solutions) == 0 {
-		return errors.New("Data path could not be constructed")
+		msg := "Deployed modules do not provide the functionality required to construct a data path"
+		p.Log.Error().Str(logging.DATASETID, dataitem).Msg(msg)
+		logging.LogStructure("Module Map", p.Modules, p.Log, true, true)
+		return errors.New(msg + " for " + dataitem)
 	}
-	p.Log.Trace().Msg("Generating a plotter")
+	p.Log.Trace().Str(logging.DATASETID, dataitem).Msg("Generating a plotter")
 	selection := solutions[0]
 	datasetID := item.Context.DataSetID
 	for _, element := range selection.DataPath {
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
-		p.Log.Trace().Msgf("Adding module for %s", moduleCapability.Capability)
+		p.Log.Trace().Str(logging.DATASETID, dataitem).Msgf("Adding module for %s", moduleCapability.Capability)
 		actions := element.Actions
 		template := app.Template{
 			Name: string(moduleCapability.Capability),
@@ -176,7 +180,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 		if !element.Sink.Virtual {
 			// allocate storage and create a temoprary asset
 			if sinkDataStore, err = p.GetCopyDestination(item, element.Sink.Connection, element.StorageAccountRegion); err != nil {
-				p.Log.Error().Err(err).Msg("Storage allocation failed")
+				p.Log.Error().Err(err).Str(logging.DATASETID, dataitem).Msg("Storage allocation for copy failed")
 				return err
 			}
 			copyAssetID := datasetID + "-copy"
