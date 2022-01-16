@@ -6,6 +6,7 @@ package adminconfig_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	adminconfig "fybrik.io/fybrik/pkg/adminconfig"
@@ -24,8 +25,8 @@ func NewEvaluator() *adminconfig.RegoPolicyEvaluator {
 		package adminconfig
 
 		# read scenario, same location
-		config[{"copy": decision}] {
-			policy := {"policySetID": "1", "ID": "copy-1"}
+		config[{"test": decision}] {
+			policy := {"policySetID": "1", "ID": "test-1"}
 			input.request.usage.read == true
 			input.request.usage.copy == false
 			input.request.dataset.geography == input.workload.cluster.metadata.region
@@ -33,28 +34,28 @@ func NewEvaluator() *adminconfig.RegoPolicyEvaluator {
 		}
 
 		# read scenario, different locations
-		config[{"copy": decision}] {
+		config[{"test": decision}] {
 			input.request.usage.read == true
 			input.request.dataset.geography != input.workload.cluster.metadata.region
 			clusters :=  { "name": [ "clusterB", "clusterD", "clusterC" ] }
 			modules := {"scope": ["asset"]}
-			policy := {"policySetID": "1", "ID": "copy-2"}
+			policy := {"policySetID": "1", "ID": "test-2"}
 			decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters, "modules": modules}}
 		}
 		
 		# copy scenario
-		config[{"copy": decision}] {
+		config[{"test": decision}] {
 			input.request.usage.copy == true
 			clusters :=  { "name": [ "clusterA", "clusterB", "clusterC" ] }
 			modules := {"type": ["service","plugin","config"]}
-			policy := {"policySetID": "1", "ID": "copy-3"}
+			policy := {"policySetID": "1", "ID": "test-3"}
 			decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters, "modules": modules}}
 		}
 
 		# write scenario
-		config[{"copy": decision}] {
+		config[{"test": decision}] {
 			input.request.usage.write == true
-			policy := {"policySetID": "2", "ID": "copy-4"}
+			policy := {"policySetID": "2", "ID": "test-4"}
 			decision := {"policy": policy, "deploy": false}
 		}
 
@@ -71,7 +72,7 @@ func NewEvaluator() *adminconfig.RegoPolicyEvaluator {
 	)
 	query, err := rego.PrepareForEval(context.Background())
 	Expect(err).ToNot(HaveOccurred())
-	return &adminconfig.RegoPolicyEvaluator{Log: logging.LogInit("test", "ConfigPolicyEvaluator"), ReadyForEval: true, Query: query}
+	return &adminconfig.RegoPolicyEvaluator{Log: logging.LogInit("test", "ConfigPolicyEvaluator"), ReadyForEval: true, Query: query, Timestamp: time.Now()}
 }
 
 func TestRegoFileEvaluator(t *testing.T) {
@@ -102,7 +103,7 @@ var _ = Describe("Evaluate a policy", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(corev1.ConditionFalse))
+		Expect(out.ConfigDecisions["test"].Deploy).To(Equal(corev1.ConditionFalse))
 	})
 
 	//nolint:dupl
@@ -114,9 +115,9 @@ var _ = Describe("Evaluate a policy", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions["clusters"]["name"]).To(ContainElements("clusterB", "clusterC"))
-		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions["modules"]["type"]).To(ContainElements("service", "config", "plugin"))
-		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions["modules"]["scope"]).To(ContainElements("asset"))
+		Expect(out.ConfigDecisions["test"].DeploymentRestrictions["clusters"]["name"]).To(ContainElements("clusterB", "clusterC"))
+		Expect(out.ConfigDecisions["test"].DeploymentRestrictions["modules"]["type"]).To(ContainElements("service", "config", "plugin"))
+		Expect(out.ConfigDecisions["test"].DeploymentRestrictions["modules"]["scope"]).To(ContainElements("asset"))
 	})
 
 	//nolint:dupl
@@ -130,7 +131,7 @@ var _ = Describe("Evaluate a policy", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(corev1.ConditionFalse))
+		Expect(out.ConfigDecisions["test"].Deploy).To(Equal(corev1.ConditionFalse))
 	})
 
 	//nolint:dupl
