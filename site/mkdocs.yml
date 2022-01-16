@@ -40,6 +40,7 @@ nav:
   - contribute/environment.md
   - contribute/build-test.md
   - contribute/flow.md
+  - contribute/logging.md
   - Documentation:
     - contribute/documentation/index.md
     - contribute/documentation/formatting.md
