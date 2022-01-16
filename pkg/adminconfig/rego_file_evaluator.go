@@ -24,6 +24,12 @@ import (
 // A list of decisions per capability, e.g. {"read": {"deploy": true}, "write": {"deploy": false}}
 type RuleDecisionList []DecisionPerCapabilityMap
 
+// A structure returned as a result of evaluating adminconfig package
+type EvaluationOutputStructure struct {
+	Version string           `json:"version"`
+	Config  RuleDecisionList `json:"config"`
+}
+
 // A directory containing rego files that define admin config policies
 const RegoPolicyDirectory = "/tmp/adminconfig/"
 
@@ -92,7 +98,7 @@ func (r *RegoPolicyEvaluator) prepareQuery() (rego.PreparedEvalQuery, error) {
 		return rego.PreparedEvalQuery{}, errors.Wrap(err, "couldn't compile modules")
 	}
 	rego := rego.New(
-		rego.Query("data.adminconfig.config"),
+		rego.Query("data.adminconfig"),
 		rego.Compiler(compiler),
 	)
 	return rego.PrepareForEval(context.Background())
@@ -107,7 +113,7 @@ func (r *RegoPolicyEvaluator) Evaluate(in *EvaluatorInput) (EvaluatorOutput, err
 	} else {
 		recent, err := r.isRecent()
 		if err != nil {
-			log.Error().Err(err).Msg("")
+			log.Error().Err(err).Msg("error checking file timestamp")
 			return EvaluatorOutput{Valid: false}, err
 		}
 		if !recent {
@@ -173,11 +179,12 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 			if err != nil {
 				return nil, false, err
 			}
-			ruleDecisions := RuleDecisionList{}
-			if err = yaml.Unmarshal(bytes, &ruleDecisions); err != nil {
+			evalStruct := EvaluationOutputStructure{}
+			if err = yaml.Unmarshal(bytes, &evalStruct); err != nil {
 				return nil, false, errors.Wrap(err, "Unexpected OPA response structure")
 			}
-			for _, rule := range ruleDecisions {
+			log.Info().Str(logging.AUDIT, "true").Msgf("Version of admin config policies: %s", evalStruct.Version)
+			for _, rule := range evalStruct.Config {
 				for capability, newDecision := range rule {
 					// filter by policySetID
 					if newDecision.Policy.PolicySetID != "" && in.Workload.PolicySetID != "" && newDecision.Policy.PolicySetID != in.Workload.PolicySetID {

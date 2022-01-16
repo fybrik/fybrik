@@ -87,6 +87,21 @@ config[{"write": decision}] {
 }
 ```
 
+### Versioning 
+
+Policy versioning is done by defining a `version` variable inside the `adminconfig` package. 
+
+charts/fybrik/files/adminconfig/version.rego defines the version for the policies:
+
+```
+package adminconfig
+
+version := "0.0.1"
+
+```
+
+The version number should be increased upon an update to the policies.
+
 ### Extended policies
 
 The extended policies define advanced deployment requirements, such as where read or transform modules should run, what should be the scope of module deployments, and more. 
@@ -140,6 +155,8 @@ config[{"copy": decision}] {
 ### How to add / modify / delete policies
 
 Updating policies is done by updating `fybrik-adminconfig` config map in the controller plane.
+
+After each update, the version value in `version.rego` file should be increased.
 
 The steps below demonstrate how to add a new rego file (samples/adminconfig/quickstart-policies.rego)
 

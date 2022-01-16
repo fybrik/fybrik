@@ -24,6 +24,8 @@ func NewEvaluator() *adminconfig.RegoPolicyEvaluator {
 	module := `
 		package adminconfig
 
+		version := "0.0.0"
+
 		# read scenario, same location
 		config[{"test": decision}] {
 			policy := {"policySetID": "1", "ID": "test-1"}
@@ -67,7 +69,7 @@ func NewEvaluator() *adminconfig.RegoPolicyEvaluator {
 	Expect(err).ToNot(HaveOccurred())
 
 	rego := rego.New(
-		rego.Query("data.adminconfig.config"),
+		rego.Query("data.adminconfig"),
 		rego.Compiler(compiler),
 	)
 	query, err := rego.PrepareForEval(context.Background())
