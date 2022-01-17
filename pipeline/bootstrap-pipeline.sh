@@ -273,13 +273,13 @@ helper_text="If this step fails, tekton related pods may be restarting or initia
 "
 set -x
 try_command "kubectl apply -f ${repo_root}/pipeline/tasks/shell.yaml" 3 true 60
-try_command "kubectl apply -f ${repo_root}/pipeline/tasks/make.yaml 3 true 60
-try_command "kubectl apply -f ${repo_root}/pipeline/tasks/git-clone.yaml 3 true 60
-try_command "kubectl apply -f ${repo_root}/pipeline/tasks/buildah.yaml 3 true 60
-try_command "kubectl apply -f ${repo_root}/pipeline/tasks/skopeo-copy.yaml 3 true 60
-try_command "kubectl apply -f ${repo_root}/pipeline/tasks/openshift-client.yaml 3 true 60
-try_command "kubectl apply -f ${repo_root}/pipeline/tasks/helm-upgrade-from-source.yaml 3 true 60
-try_command "kubectl apply -f ${repo_root}/pipeline/tasks/helm-upgrade-from-repo.yaml 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/make.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/git-clone.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/buildah.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/skopeo-copy.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/openshift-client.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/helm-upgrade-from-source.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/helm-upgrade-from-repo.yaml" 3 true 60
 helper_text=""
 
 # Wipe old pipeline definitions in case of merge conflicts
