@@ -13,6 +13,8 @@ import (
 	"fybrik.io/fybrik/pkg/logging"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
+	"github.com/open-policy-agent/opa/storage/inmem"
+	"github.com/open-policy-agent/opa/util"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	corev1 "k8s.io/api/core/v1"
@@ -69,9 +71,20 @@ func (r *RegoPolicyEvaluator) prepareQuery() (rego.PreparedEvalQuery, error) {
 	if err != nil {
 		return rego.PreparedEvalQuery{}, errors.Wrap(err, "couldn't compile modules")
 	}
+	content, err := ioutil.ReadFile("/tmp/adminconfig/infrastructure.json")
+	if err != nil {
+		return rego.PreparedEvalQuery{}, err
+	}
+	var json map[string]interface{}
+	err = util.UnmarshalJSON(content, &json)
+	if err != nil {
+		return rego.PreparedEvalQuery{}, errors.Wrap(err, "couldn't parse Json")
+	}
+	store := inmem.NewFromObject(json)
 	rego := rego.New(
 		rego.Query("data.adminconfig.config"),
 		rego.Compiler(compiler),
+		rego.Store(store),
 	)
 	return rego.PrepareForEval(context.Background())
 }
