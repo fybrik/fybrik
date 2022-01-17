@@ -289,6 +289,7 @@ var _ = Describe("Hard policy enforcement", func() {
 		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(corev1.ConditionFalse))
 	})
 
+	//nolint:dupl
 	It("Cost Efficient Production Workloads - read", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
@@ -301,6 +302,7 @@ var _ = Describe("Hard policy enforcement", func() {
 		Expect(out.ConfigDecisions["read"].DeploymentRestrictions["clusters"]["metadata.region"]).To(ContainElements("Netherlands"))
 	})
 
+	//nolint:dupl
 	It("Cost Efficient Production Workloads - copy", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
@@ -313,6 +315,7 @@ var _ = Describe("Hard policy enforcement", func() {
 		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions["storageaccounts"]["values.id"]).To(ContainElements("Romania-storage"))
 	})
 
+	//nolint:dupl
 	It("High Priority Production Workloads - read", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
@@ -325,6 +328,7 @@ var _ = Describe("Hard policy enforcement", func() {
 		Expect(out.ConfigDecisions["read"].DeploymentRestrictions["clusters"]["metadata.region"]).To(ContainElements("Netherlands"))
 	})
 
+	//nolint:dupl
 	It("High Priority Production Workloads - copy", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
