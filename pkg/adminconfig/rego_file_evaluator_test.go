@@ -282,7 +282,7 @@ var _ = Describe("Hard policy enforcement", func() {
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "Netherlands-cluster", Metadata: multicluster.ClusterMetadata{Region: "Netherlands"}},
-				Properties: taxonomy.AppInfo{serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "DEV", "priority": "low"}}}}}
+				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "DEV", "priority": "low"}}}}}
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
@@ -294,7 +294,7 @@ var _ = Describe("Hard policy enforcement", func() {
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "Netherlands-cluster", Metadata: multicluster.ClusterMetadata{Region: "Netherlands"}},
-				Properties: taxonomy.AppInfo{serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "low"}}}}}
+				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "low"}}}}}
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
@@ -306,7 +306,7 @@ var _ = Describe("Hard policy enforcement", func() {
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "Netherlands-cluster", Metadata: multicluster.ClusterMetadata{Region: "Netherlands"}},
-				Properties: taxonomy.AppInfo{serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "low"}}}}}
+				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "low"}}}}}
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
@@ -318,7 +318,7 @@ var _ = Describe("Hard policy enforcement", func() {
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "Netherlands-cluster", Metadata: multicluster.ClusterMetadata{Region: "Netherlands"}},
-				Properties: taxonomy.AppInfo{serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "high"}}}}}
+				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "high"}}}}}
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
@@ -330,7 +330,7 @@ var _ = Describe("Hard policy enforcement", func() {
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "Netherlands-cluster", Metadata: multicluster.ClusterMetadata{Region: "Netherlands"}},
-				Properties: taxonomy.AppInfo{serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "high"}}}}}
+				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "high"}}}}}
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
