@@ -145,9 +145,11 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 	dataitem := item.Context.CatalogService + "/" + item.Context.DataSetID
 
 	solutions := p.FindPaths(&item, appContext)
+	// No data path found for the asset
 	if len(solutions) == 0 {
 		msg := "Deployed modules do not provide the functionality required to construct a data path"
 		p.Log.Error().Str(logging.DATASETID, dataitem).Msg(msg)
+		logging.LogStructure("Data Item Context", item, p.Log, true, true)
 		logging.LogStructure("Module Map", p.Modules, p.Log, true, true)
 		return errors.New(msg + " for " + dataitem)
 	}
