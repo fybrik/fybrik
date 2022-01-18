@@ -6,6 +6,8 @@ Follow this guide to install Fybrik using default parameters that are suitable f
 
 ## Before you begin
 
+{{ git.tag }}
+
 Ensure that you have the following:
 
 - [Helm](https://helm.sh/) 3.3 or greater must be installed and configured on your machine.
