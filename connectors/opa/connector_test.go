@@ -17,7 +17,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
-	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -96,8 +95,7 @@ func TestGetPoliciesDecisions(t *testing.T) {
 	defer opaMock.Close()
 
 	// Create OPA connector controller for testing
-	log := logging.LogInit(logging.CONNECTOR, "mock-catalog-connector")
-	catalogClient, err := clients.NewDataCatalog("mock", catalogConnectorMock.URL, time.Second, log)
+	catalogClient, err := clients.NewDataCatalog("mock", catalogConnectorMock.URL, time.Second)
 	if err != nil {
 		t.Fatal(err)
 	}
