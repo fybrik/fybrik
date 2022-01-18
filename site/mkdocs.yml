@@ -15,6 +15,7 @@ nav:
 - Concepts:
   - concepts/introduction.md
   - concepts/architecture.md
+  - concepts/taxonomy.md
   - Plugins:
     - concepts/connectors.md
     - concepts/modules.md
@@ -39,6 +40,7 @@ nav:
   - contribute/environment.md
   - contribute/build-test.md
   - contribute/flow.md
+  - contribute/logging.md
   - Documentation:
     - contribute/documentation/index.md
     - contribute/documentation/formatting.md

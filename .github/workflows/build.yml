@@ -192,8 +192,7 @@ jobs:
             branch="${GITHUB_REF#refs/heads/}"
             version=$branch
             echo "HELM_TAG=0.0.0-${version}" >> $GITHUB_ENV
-        fi
-        if [[ $version == releases/* ]] ;
+        elif [[ $version == releases/* ]] ;
         then
            releaseVersion="${GITHUB_REF#refs/heads/releases/}"
            version="$releaseVersion-rc"
