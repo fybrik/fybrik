@@ -447,6 +447,7 @@ func (r *FybrikApplicationReconciler) ValidateAssetResponse(response *datacatalo
 func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContext ApplicationContext, workloadCluster multicluster.Cluster) error {
 	// Call the DataCatalog service to get info about the dataset
 	input := appContext.Application
+	log := appContext.Log.With().Str(logging.DATASETID, req.Context.DataSetID).Logger()
 	var credentialPath string
 	if input.Spec.SecretRef != "" {
 		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
@@ -459,14 +460,16 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 
 	if response, err = r.DataCatalog.GetAssetInfo(&request,
 		credentialPath); err != nil {
+		log.Error().Err(err).Msg("failed to receive the catalog connector response")
 		return err
 	}
 
 	err = r.ValidateAssetResponse(response, DataCatalogTaxonomy, req.Context.DataSetID)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to validate the catalog connector response")
 		return err
 	}
-
+	logging.LogStructure("Catalog connector response", response, log, false, false)
 	response.DeepCopyInto(req.DataDetails)
 	configEvaluatorInput := &adminconfig.EvaluatorInput{}
 	configEvaluatorInput.Workload.UUID = utils.GetFybrikApplicationUUID(input)

@@ -253,7 +253,6 @@ func newDataCatalog() (dcclient.DataCatalog, error) {
 		providerName,
 		connectorURL,
 		connectionTimeout,
-		logging.LogInit(logging.CONNECTOR, providerName),
 	)
 }
 
@@ -273,7 +272,6 @@ func newPolicyManager() (pmclient.PolicyManager, error) {
 			mainPolicyManagerName,
 			mainPolicyManagerURL,
 			connectionTimeout,
-			logging.LogInit(logging.CONNECTOR, mainPolicyManagerName),
 		)
 	} else {
 		policyManager, err = pmclient.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)

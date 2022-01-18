@@ -5,12 +5,12 @@ package clients
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"emperror.dev/errors"
 	openapiclient "fybrik.io/fybrik/pkg/connectors/datacatalog/openapiclient"
-	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
-	"github.com/rs/zerolog"
 )
 
 var _ DataCatalog = (*openAPIDataCatalog)(nil)
@@ -18,11 +18,10 @@ var _ DataCatalog = (*openAPIDataCatalog)(nil)
 type openAPIDataCatalog struct {
 	name   string
 	client *openapiclient.APIClient
-	log    zerolog.Logger
 }
 
 // NewopenApiDataCatalog creates a DataCatalog facade that connects to a openApi service
-func NewOpenAPIDataCatalog(name string, connectionURL string, connectionTimeout time.Duration, log zerolog.Logger) DataCatalog {
+func NewOpenAPIDataCatalog(name string, connectionURL string, connectionTimeout time.Duration) DataCatalog {
 	configuration := &openapiclient.Configuration{
 		DefaultHeader: make(map[string]string),
 		UserAgent:     "OpenAPI-Generator/1.0.0/go",
@@ -40,19 +39,14 @@ func NewOpenAPIDataCatalog(name string, connectionURL string, connectionTimeout 
 	return &openAPIDataCatalog{
 		name:   name,
 		client: apiClient,
-		log:    log,
 	}
 }
 
 func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds string) (*datacatalog.GetAssetResponse, error) {
-	log := m.log.With().Str(logging.DATASETID, string(in.AssetID)).Logger()
-	resp, r, err := m.client.DefaultApi.GetAssetInfoPost(context.Background()).XRequestDataCatalogCred(creds).DataCatalogRequest(*in).Execute()
+	resp, _, err := m.client.DefaultApi.GetAssetInfoPost(context.Background()).XRequestDataCatalogCred(creds).DataCatalogRequest(*in).Execute()
 	if err != nil {
-		log.Error().Err(err).Msg("error when calling `DefaultApi.GetAssetInfoPost`")
-		logging.LogStructure("HTTP response", r, log, false, false)
+		return nil, errors.Wrap(err, fmt.Sprintf("get asset info from %s failed", m.name))
 	}
-	// response from `GetAssetInfoPost`: DataCatalogResponse
-	logging.LogStructure("datacatalog_openapi response", resp, log, false, false)
 	return &resp, nil
 }
 

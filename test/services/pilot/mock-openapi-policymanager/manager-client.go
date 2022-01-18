@@ -11,7 +11,6 @@ import (
 	"time"
 
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
-	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
@@ -40,7 +39,6 @@ func main() {
 		mainPolicyManagerName,
 		mainPolicyManagerURL,
 		connectionTimeout,
-		logging.LogInit(logging.CONNECTOR, "mock-policy-manager-connector"),
 	)
 	if err != nil {
 		return
