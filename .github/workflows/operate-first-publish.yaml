@@ -29,10 +29,10 @@ jobs:
           pip install pipenv
           pipenv install
           pipenv run python filterClusterScoped.py
-          rm ./*.yaml && popd && popd && popd
+          rm ./*.yaml && popd
           pwd
           ls
-          rsync -a --include='*/' --include='*.yaml' --exclude='*' fybrik-repo/integration/operate-first/ operate-first-fork/apps/cluster-scope/base
+          rsync -a --include='*/' --include='*.yaml' --exclude='*' fybrik-repo/integration/operate-first/ operate-first-fork/cluster-scope/base
       - uses: tibdex/github-app-token@v1
         id: generate-token
         with:
