@@ -11,16 +11,16 @@ jobs:
     name: Update Operate First directory
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Fybrik repository
+        uses: actions/checkout@v2
+        with:
+          repository: fybrik/fybrik
+          path: fybrik-repo
       - name: Checkout forked Operate First repository
         uses: actions/checkout@v2
         with:
           repository: eletonia/apps
           path: operate-first-fork
-      - name: Checkout Fybrik repository
-        uses: actions/checkout@v2
-        with:
-          repository: eletonia/fybrik
-          path: fybrik-repo
       - run: |
           rm -r fybrik-repo/integration/operate-first/*/
           pushd fybrik-repo/hack/tools && ./install_yq.sh && ./install_helm.sh && popd
@@ -29,33 +29,19 @@ jobs:
           pip install pipenv
           pipenv install
           pipenv run python filterClusterScoped.py
-          rm ./*.yaml
+          rm ./*.yaml && popd && popd && popd
+          pwd
+          ls
+          rsync -a --include='*/' --include='*.yaml' --exclude='*' fybrik-repo/integration/operate-first/ operate-first-fork/apps/cluster-scope/base
       - uses: tibdex/github-app-token@v1
         id: generate-token
         with:
           app_id: ${{ secrets.CHARTS_APP_ID }}
           private_key: ${{ secrets.CHARTS_APP_PRIVATE_KEY  }}
-          repository: eletonia/fybrik
-      - uses: actions/checkout@v2
-      - name: Copy
-        uses: andstor/copycat-action@v3
-        with:
-          personal_token: ${{ secrets.PERSONAL_TOKEN }}
-          src_path: integration/operate-first
-          dst_path: /cluster-scope/base
-          dst_owner: eletonia
-          dst_repo_name: apps
-          filter: '*/ *.yaml'
-          exclude: '*'
-      - name: Checkout original Operate First repository
-        uses: actions/checkout@v2
-        with:
-          repository: fybrik/operate-first-apps
-          path: operate-first-repo
+          repository: fybrik/fybrik
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
-          path: operate-first-repo
           signoff: true
           token: ${{ steps.generate-token.outputs.token }}
           push-to-fork: eletonia/apps
