@@ -80,5 +80,5 @@ helm-actions: $(TOOLBIN)/helm
 	$(ABSTOOLBIN)/helm show values --version ${HELM_TAG}  ${CHART_REGISTRY_PATH} | yq -y -r .actions
 
 .PHONY: helm-all
-helm-all: helm-verify helm-chart-push helm-chart-pull helm-chart-install helm-uninstall
+helm-all: helm-verify helm-chart-push helm-chart-pull helm-uninstall helm-chart-install
 
