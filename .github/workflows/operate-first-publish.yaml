@@ -19,7 +19,7 @@ jobs:
       - name: Checkout original Operate First repository
         uses: actions/checkout@v2
         with:
-          repository: fybrik/operate-first-apps
+          repository: operate-first/apps
           path: operate-first-repo
       - run: |
           rm -r fybrik-repo/integration/operate-first/*/
