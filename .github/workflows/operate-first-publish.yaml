@@ -16,11 +16,11 @@ jobs:
         with:
           repository: fybrik/fybrik
           path: fybrik-repo
-      - name: Checkout forked Operate First repository
+      - name: Checkout original Operate First repository
         uses: actions/checkout@v2
         with:
-          repository: eletonia/apps
-          path: operate-first-fork
+          repository: fybrik/operate-first-apps
+          path: operate-first-repo
       - run: |
           rm -r fybrik-repo/integration/operate-first/*/
           pushd fybrik-repo/hack/tools && ./install_yq.sh && ./install_helm.sh && popd
@@ -30,7 +30,7 @@ jobs:
           pipenv install
           pipenv run python filterClusterScoped.py
           rm ./*.yaml && popd
-          rsync -a --include='*/' --include='*.yaml' --exclude='*' fybrik-repo/integration/operate-first/ operate-first-fork/cluster-scope/base
+          rsync -a --include='*/' --include='*.yaml' --exclude='*' fybrik-repo/integration/operate-first/ operate-first-repo/cluster-scope/base
       - uses: tibdex/github-app-token@v1
         id: generate-token
         with:
@@ -40,7 +40,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
-          repository: operate-first/apps
+          path: operate-first-repo
           signoff: true
           token: ${{ steps.generate-token.outputs.token }}
           push-to-fork: eletonia/apps
