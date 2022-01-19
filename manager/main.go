@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
 
@@ -135,6 +136,12 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			}
 		}()
 
+		query, err := adminconfig.PrepareQuery()
+		if err != nil {
+			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to compile configuration policies")
+			return 1
+		}
+		evaluator := adminconfig.NewRegoPolicyEvaluator(logging.LogInit(logging.CONTROLLER, "FybrikApplication"), query)
 		// Initiate the FybrikApplication Controller
 		applicationController := app.NewFybrikApplicationReconciler(
 			mgr,
@@ -143,6 +150,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			catalog,
 			clusterManager,
 			storage.NewProvisionImpl(mgr.GetClient()),
+			evaluator,
 		)
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create controller")

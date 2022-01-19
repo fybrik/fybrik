@@ -534,7 +534,7 @@ func (r *FybrikApplicationReconciler) GetWorkloadCluster(application *api.Fybrik
 // NewFybrikApplicationReconciler creates a new reconciler for FybrikApplications
 func NewFybrikApplicationReconciler(mgr ctrl.Manager, name string,
 	policyManager pmclient.PolicyManager, catalog dcclient.DataCatalog, cm multicluster.ClusterLister,
-	provision storage.ProvisionInterface) *FybrikApplicationReconciler {
+	provision storage.ProvisionInterface, evaluator adminconfig.EvaluatorInterface) *FybrikApplicationReconciler {
 	log := logging.LogInit(logging.CONTROLLER, name)
 	return &FybrikApplicationReconciler{
 		Client:            mgr.GetClient(),
@@ -546,7 +546,7 @@ func NewFybrikApplicationReconciler(mgr ctrl.Manager, name string,
 		ClusterManager:    cm,
 		Provision:         provision,
 		DataCatalog:       catalog,
-		ConfigEvaluator:   adminconfig.NewRegoPolicyEvaluator(log),
+		ConfigEvaluator:   evaluator,
 	}
 }
 

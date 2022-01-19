@@ -152,19 +152,15 @@ config[{"copy": decision}] {
 
 ```
 
-### How to add / modify / delete policies
+### How to customize policies
 
-Updating policies is done by updating `fybrik-adminconfig` config map in the controller plane.
+In order to deploy Fybrik with customized policies, perform the following steps 
 
-After each update, the version value in `version.rego` file should be increased.
-
-The steps below demonstrate how to add a new rego file (samples/adminconfig/quickstart-policies.rego)
-
+1. Clone the github repository of Fybrik for the required release: `git clone -b releases/<version> https://github.com/fybrik/fybrik.git`
+2. Copy the rego files containing customized policies to fybrik/charts/fybrik/files/adminconfig/ folder 
+3. Install Fybrik:
 ```
-mkdir -p /tmp/adminconfig
-cp samples/adminconfig/quickstart-policies.rego /tmp/adminconfig/
-cp charts/fybrik/files/adminconfig/* /tmp/adminconfig
-kubectl create configmap fybrik-adminconfig --from-file=/tmp/adminconfig -o yaml --dry-run=client | kubectl replace -n fybrik-system -f -
-rm -rf /tmp/adminconfig
+cd fybrik
+helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
+helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait
 ```
-   

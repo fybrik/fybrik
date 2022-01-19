@@ -117,6 +117,8 @@ var _ = BeforeSuite(func(done Done) {
 
 		// Setup application controller
 		reconciler := createTestFybrikApplicationController(mgr.GetClient(), mgr.GetScheme())
+		Expect(reconciler).NotTo(BeNil())
+
 		err = reconciler.SetupWithManager(mgr)
 		Expect(err).ToNot(HaveOccurred())
 

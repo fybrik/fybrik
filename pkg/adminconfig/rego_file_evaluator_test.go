@@ -6,7 +6,6 @@ package adminconfig_test
 import (
 	"context"
 	"testing"
-	"time"
 
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	adminconfig "fybrik.io/fybrik/pkg/adminconfig"
@@ -74,7 +73,7 @@ func NewEvaluator() *adminconfig.RegoPolicyEvaluator {
 	)
 	query, err := rego.PrepareForEval(context.Background())
 	Expect(err).ToNot(HaveOccurred())
-	return &adminconfig.RegoPolicyEvaluator{Log: logging.LogInit("test", "ConfigPolicyEvaluator"), ReadyForEval: true, Query: query, Timestamp: time.Now()}
+	return &adminconfig.RegoPolicyEvaluator{Log: logging.LogInit("test", "ConfigPolicyEvaluator"), Query: query}
 }
 
 func TestRegoFileEvaluator(t *testing.T) {
