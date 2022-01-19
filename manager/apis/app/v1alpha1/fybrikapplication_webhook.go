@@ -5,7 +5,6 @@ package v1alpha1
 
 import (
 	"encoding/json"
-	log "log"
 
 	validate "fybrik.io/fybrik/pkg/taxonomy/validate"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -28,14 +27,12 @@ var _ webhook.Validator = &FybrikApplication{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *FybrikApplication) ValidateCreate() error {
-	log.Printf("Validating fybrikapplication %s for creation", r.Name)
 	taxonomyFile := "/tmp/taxonomy/fybrik_application.json"
 	return r.ValidateFybrikApplication(taxonomyFile)
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *FybrikApplication) ValidateUpdate(old runtime.Object) error {
-	log.Printf("Validating fybrikapplication %s for update", r.Name)
 	taxonomyFile := "/tmp/taxonomy/fybrik_application.json"
 	return r.ValidateFybrikApplication(taxonomyFile)
 }

@@ -200,8 +200,6 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 func TestFybrikApplicationFinalizers(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
-	// Set the logger to development mode for verbose logs.
-	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
@@ -219,12 +217,12 @@ func TestFybrikApplicationFinalizers(t *testing.T) {
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
-
-	g.Expect(r.reconcileFinalizers(application)).To(gomega.BeNil())
+	appContext := ApplicationContext{Application: application, Log: r.Log}
+	g.Expect(r.reconcileFinalizers(appContext)).To(gomega.BeNil())
 	g.Expect(application.Finalizers).NotTo(gomega.BeEmpty(), "finalizers have not been created")
 	// mark application as deleted
 	application.DeletionTimestamp = &metav1.Time{Time: time.Now()}
-	g.Expect(r.reconcileFinalizers(application)).To(gomega.BeNil())
+	g.Expect(r.reconcileFinalizers(appContext)).To(gomega.BeNil())
 	g.Expect(application.Finalizers).To(gomega.BeEmpty(), "finalizers have not been removed")
 }
 
