@@ -62,7 +62,7 @@ helm upgrade fybrik fybrik-charts/fybrik -n fybrik-system --wait --set-file taxo
 
 ## Examples of changing taxonomy
 
-- Example 1: Add new intent for FybrikApplication
+### Example 1: Add new intent for FybrikApplication
 
 In this example we show how to update the application taxonomy. We show that when a FybrikApplication yaml containing a `Marketing` intent is submitted, it's validation fails because initially the application's taxonomy does not include `Marketing`. We then describe how to add `Marketing` to the taxonomy, enabling the validation to pass when we re-submit the FybrikApplication yaml.
 
@@ -176,7 +176,7 @@ The result is a FybrikApplication Custom Resource Definition instance called tax
 
 
 
-- Example 2: Add new action for FybrikModule
+### Example 2: Add new action for FybrikModule
 
 In this example we show how to update the module taxonomy. We show that when a FybrikModule yaml containing a `RedactYAction` action is submitted, it's validation fails because initially the module's taxonomy does not include `RedactYAction`. We then describe how to add a new action `RedactYAction` to the taxonomy, enabling the validation to pass when we re-submit the FybrikModule yaml.
 
@@ -187,13 +187,33 @@ The initial taxonomy to be used in this example is a base taxonomy that can be f
 
 ```yaml
 definitions:
-  ActionName:
-    type: string
-    enum:
-      - RedactAction
-      - RemoveAction
-      - Deny
-      - RedactYAction
+  Action:
+    oneOf:
+      - $ref: "#/definitions/RedactAction"
+      - $ref: "#/definitions/RemoveAction"
+      - $ref: "#/definitions/Deny"
+  RedactAction:
+    type: object
+    properties:
+      columns:
+        items:
+          type: string
+        type: array
+    required:
+      - columns
+  RemoveAction:
+    type: object
+    properties:
+      columns:
+        items:
+          type: string
+        type: array
+    required:
+      - columns
+  Deny:
+    type: object
+    additionalProperties: false
+
 ```
 Copy the taxonomy layer to a `taxonomy-layer.yaml` file.
 
@@ -240,20 +260,53 @@ EOF
 ```
 The expected error is `The FybrikModule "taxonomy-module-test" is invalid: spec.capabilities.0.actions.0.name: Invalid value: "RedactYAction": spec.capabilities.0.actions.0.name must be one of the following: "Deny", "RedactAction", "RemoveAction"`. Thus, no FybrikModule CRD was created.
 
-To fix this, a new action name with `RedactYAction` value should be added to the taxonomy. Add a new value of "RedactYAction" in `custom-taxonomy.json` file in `ActionName` property as follows:
+To fix this, a new action name with `RedactYAction` value should be added to the taxonomy. Modify the `taxonomy-layer.yaml` file by add a new value of "RedactYAction". the file should look as follows:
+
+```yaml
+definitions:
+  Action:
+    oneOf:
+      - $ref: "#/definitions/RedactAction"
+      - $ref: "#/definitions/RedactYAction"
+      - $ref: "#/definitions/RemoveAction"
+      - $ref: "#/definitions/Deny"
+  RedactAction:
+    type: object
+    properties:
+      columns:
+        items:
+          type: string
+        type: array
+    required:
+      - columns
+  RedactYAction:
+    type: object
+    properties:
+      columns:
+        items:
+          type: string
+        type: array
+    required:
+      - columns
+  RemoveAction:
+    type: object
+    properties:
+      columns:
+        items:
+          type: string
+        type: array
+    required:
+      - columns
+  Deny:
+    type: object
+    additionalProperties: false
 
 ```
-"ActionName": {
-  "type": "string",
-  "enum": [
-    "Deny",
-    "RedactAction",
-    "RemoveAction",
-    "RedactYAction"
-  ]
-},
-```
+Now we create the `custom-taxonomy.json` file as before, by using the following command:
 
+```bash
+helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
+```
 Now we upgrade the fybrik helm chart using the following command:
 
 ```bash
