@@ -260,7 +260,7 @@ EOF
 ```
 The expected error is `The FybrikModule "taxonomy-module-test" is invalid: spec.capabilities.0.actions.0.name: Invalid value: "RedactYAction": spec.capabilities.0.actions.0.name must be one of the following: "Deny", "RedactAction", "RemoveAction"`. Thus, no FybrikModule CRD was created.
 
-To fix this, a new action name with `RedactYAction` value should be added to the taxonomy. Modify the `taxonomy-layer.yaml` file by add a new value of "RedactYAction". the file should look as follows:
+To fix this, a new action `RedactYAction` should be added to the taxonomy. Modify the `taxonomy-layer.yaml` file by add a new value of "RedactYAction". the file should look as follows:
 
 ```yaml
 definitions:
