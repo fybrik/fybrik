@@ -23,7 +23,7 @@ type ResourceMetadata struct {
 	// Geography of the resource
 	Geography string `json:"geography,omitempty"`
 	// Tags associated with the asset
-	Tags taxonomy.Tags `json:"tags,omitempty"`
+	Tags *taxonomy.Tags `json:"tags,omitempty"`
 	// Columns associated with the asset
 	Columns []ResourceColumn `json:"columns,omitempty"`
 }
@@ -33,7 +33,7 @@ type ResourceColumn struct {
 	// Name of the column
 	Name string `json:"name"`
 	// Tags associated with the column
-	Tags taxonomy.Tags `json:"tags,omitempty"`
+	Tags *taxonomy.Tags `json:"tags,omitempty"`
 }
 
 // ResourceDetails includes asset connection details
