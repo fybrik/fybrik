@@ -165,6 +165,7 @@ func (r *Impl) Uninstall(kubeNamespace string, releaseName string) (*release.Uni
 
 // Load helm chart
 func (r *Impl) Load(ref string, chartPath string) (*chart.Chart, error) {
+	// check for chart mounted in container
 	chart, err := loader.Load(chartsMountPath + ref)
 	if err == nil {
 		return chart, err
@@ -249,6 +250,10 @@ func (r *Impl) Package(chartPath string, destinationPath string, version string)
 
 // Pull helm chart from repo
 func (r *Impl) Pull(ref string, destination string) error {
+	// if chart mounted in container, no need to pull
+	if _, err := os.Stat(chartsMountPath + ref); err == nil {
+		return nil
+	}
 	chartRef, err := action.ParseReference(ref)
 	if err != nil {
 		return err
