@@ -305,8 +305,9 @@ definitions:
 Now we create the `custom-taxonomy.json` file as before, by using the following command:
 
 ```bash
-helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
+  go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json taxonomy-layer.yaml
 ```
+
 Now we upgrade the fybrik helm chart using the following command:
 
 ```bash
