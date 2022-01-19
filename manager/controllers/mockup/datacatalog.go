@@ -117,7 +117,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      "xxx",
 			Geography: geoExternal,
-			Tags:      tags,
+			Tags:      &tags,
 		},
 		Credentials: "dummy",
 		Details: datacatalog.ResourceDetails{
@@ -130,7 +130,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      "xxx",
 			Geography: geo,
-			Tags:      tags,
+			Tags:      &tags,
 		},
 		Credentials: "dummy",
 		Details: datacatalog.ResourceDetails{
@@ -143,7 +143,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      "xxx",
 			Geography: geo,
-			Tags:      tags,
+			Tags:      &tags,
 		},
 		Credentials: "dummy",
 		Details: datacatalog.ResourceDetails{
@@ -156,7 +156,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      "xxx",
 			Geography: geo,
-			Tags:      tags,
+			Tags:      &tags,
 		},
 		Credentials: "dummy",
 		Details: datacatalog.ResourceDetails{
@@ -168,7 +168,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      "xxx",
 			Geography: geo,
-			Tags:      tags,
+			Tags:      &tags,
 		},
 		Credentials: "dummy",
 		Details: datacatalog.ResourceDetails{

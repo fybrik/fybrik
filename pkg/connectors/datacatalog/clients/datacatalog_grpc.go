@@ -146,7 +146,7 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 		Name:      result.GetDetails().Name,
 		Owner:     result.GetDetails().DataOwner,
 		Geography: result.GetDetails().Geo,
-		Tags:      tagsInResponse,
+		Tags:      &tagsInResponse,
 		Columns:   resourceCols,
 	}
 

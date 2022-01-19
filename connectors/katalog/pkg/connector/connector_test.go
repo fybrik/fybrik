@@ -48,13 +48,13 @@ func TestGetAssetInfo(t *testing.T) {
 				Name:      "demoAsset",
 				Owner:     "Alice",
 				Geography: "us-south",
-				Tags: taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
+				Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
 					"finance": true,
 				}}},
 				Columns: []datacatalog.ResourceColumn{
 					{
 						Name: "c1",
-						Tags: taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
+						Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
 							"PII": true,
 						}}},
 					},

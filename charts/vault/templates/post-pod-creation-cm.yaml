@@ -10,7 +10,7 @@ data:
 {{- if semverCompare "<1.21-0" .Capabilities.KubeVersion.Version }}
       vault write auth/kubernetes/config kubernetes_host="https://kubernetes.default.svc:443"
 {{- else }}
-      vault write auth/kubernetes/config issuer="https://kubernetes.default.svc" kubernetes_host="https://kubernetes.default.svc:443"
+      vault write auth/kubernetes/config issuer="https://kubernetes.default.svc" kubernetes_host="https://kubernetes.default.svc:443" disable_iss_validation=true
 {{- end }}
       # register and enable secret engine
       SHA256=$(sha256sum /usr/local/libexec/vault/vault-plugin-secrets-kubernetes-reader | cut -d ' ' -f1)
