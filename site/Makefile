@@ -10,7 +10,12 @@ generate: generate-crd-docs generate-connectors-docs
 
 .PHONY: generate-crd-docs
 generate-crd-docs: $(TOOLBIN)/crdoc
-	PATH=$(TOOLBIN) crdoc --template ./templates/crd/main.tmpl --resources $(ROOT_DIR)/charts/fybrik-crd/templates --output ./docs/reference/crds.md
+	mkdir tmp_site
+	cp $(ROOT_DIR)/charts/fybrik-crd/templates/* tmp_site
+	cp $(ROOT_DIR)/charts/fybrik-crd/charts/asset-crd/templates/* tmp_site
+	PATH=$(TOOLBIN) crdoc --template ./templates/crd/main.tmpl --resources tmp_site --output ./docs/reference/crds.md
+	rm -r tmp_site
+
 
 .PHONY: generate-connectors-docs
 generate-connectors-docs:
