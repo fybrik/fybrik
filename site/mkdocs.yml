@@ -92,4 +92,3 @@ plugins:
       prebuild_index: python
       lang:
       - en
-  - macros

@@ -2,7 +2,7 @@ name: Website Deploy
 on:
   push:
     tags:
-      - 'v*'
+      - '^v[0-9]+\.[0-9]+(\.[0-9]+)*'
     branches:
       - master
     paths:
@@ -35,10 +35,17 @@ jobs:
           git config user.email "noreply@github.com"
       - id: version
         name: Infer version
-        run: echo ::set-output name=version::$(cut -d '.' -f 1,2 <<< "${GITHUB_REF#refs/*/}")
+        run: echo ::set-output name=version::"$(cut -d '.' -f 1,2 <<< "${GITHUB_REF#refs/*/}")
+      - id: release
+        run: echo ::set-output name=version::$(cut -c 2- <<< "${GITHUB_REF#refs/*/}")
+      - uses: actions-ecosystem/action-regex-match@v2
+        id: regex-match
+        with:
+          text: ${{ steps.release.outputs.version }}
+          regex: '^[0-9]+\.[0-9]+(\.[0-9]+)*'
       - name: Sub (dev)
         uses: bluwy/substitute-string-action@v1
-        if: steps.version.outputs.version == 'master'
+        if: ${{ ! steps.regex-match.outputs.match }}
         with:
           _input-file: ${{ env.QUICKSTART_FILE }}
           _format-key: '%%key%%'
@@ -46,17 +53,18 @@ jobs:
           Release: ""
       - name: Sub (tag)
         uses: bluwy/substitute-string-action@v1
-        if: steps.version.outputs.version != 'master'
+        if: ${{ steps.regex-match.outputs.match != '' }}
         with:
           _input-file: ${{ env.QUICKSTART_FILE }}
           _format-key: '%%key%%'
           _output-file: ${{ env.QUICKSTART_FILE }}
-          Release: "--version ${{ steps.version.outputs.version }}"
+          Release: "--version ${{ steps.release.outputs.version }}"
+      - run: cat ${{ env.QUICKSTART_FILE }}
       - name: Build and Deploy (dev)
-        if: steps.version.outputs.version == 'master'
+        if: ${{ ! steps.regex-match.outputs.match }}
         working-directory: ${{ env.WORK_DIR }}
         run: mike deploy --push --remote origin --branch site dev
       - name: Build and Deploy (tag)
-        if: steps.version.outputs.version != 'master'
+        if: ${{ steps.regex-match.outputs.match }}
         working-directory: ${{ env.WORK_DIR }}
         run: mike deploy --push --update-aliases --remote origin --branch site ${{ steps.version.outputs.version }} latest
