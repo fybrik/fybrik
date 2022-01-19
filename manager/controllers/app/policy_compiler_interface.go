@@ -34,7 +34,7 @@ func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication, operati
 		Resource: policymanager.Resource{
 			ID: taxonomy.AssetID(datasetID),
 			Metadata: &datacatalog.ResourceMetadata{
-				Tags: taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{}}},
+				Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{}}},
 			},
 		},
 	}
