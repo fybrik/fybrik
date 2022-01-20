@@ -614,6 +614,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#how-to-provide-custom-policies" class="md-nav__link">
+    How to provide custom policies
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1203,6 +1210,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#how-to-provide-custom-policies" class="md-nav__link">
+    How to provide custom policies
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1253,13 +1267,13 @@
 <p>For example, the policy above restricts the choice of clusters and modules for a read capability by narrowing the choice of deployment clusters to the workload cluster, and restricting the module type to service.</p>
 <div class="highlight"><pre><span></span><code>config[{&quot;read&quot;: decision}] {
     input.request.usage.read == true
-    policy := {&quot;ID&quot;: &quot;read-ID&quot;, &quot;description&quot;:&quot;Deploy read as a service in the workload cluster&quot;}
+    policy := {&quot;version&quot;: &quot;0.1&quot;, &quot;ID&quot;: &quot;read-ID&quot;, &quot;description&quot;:&quot;Deploy read as a service in the workload cluster&quot;}
     clusters := { &quot;name&quot; : [ input.workload.cluster.name ] }
     modules := { &quot;type&quot;: [&quot;service&quot;]}
     decision := {&quot;policy&quot;: policy, &quot;restrictions&quot;: {&quot;clusters&quot;: clusters, &quot;modules&quot;: modules}}
 }
 </code></pre></div>
-<p><code>policy</code> provides policy metadata: unique ID, human-readable description and <code>policySetID</code> (see ### Policy Set ID)</p>
+<p><code>policy</code> provides policy metadata: unique ID, human-readable description, version and <code>policySetID</code> (see ### Policy Set ID)</p>
 <p><code>restrictions</code> provides restrictions for <code>modules</code>, <code>clusters</code> and <code>storageaccounts</code>.
 Each restriction provides a list of allowed values for a property of module/cluster/storageaccount object. For example, to restrict a module type to either "service" or "plugin", we'll use "type" as a key, and [ "service","plugin ] as a list of allowed values.
 Properties of a module can be found inside <a href="../../reference/crds/#fybrikmodule"><code>FybrikModule</code></a> Spec.
@@ -1279,13 +1293,13 @@ In a similar way, all policies are relevant for a FybrikApplication that does no
 
 config[{&quot;read&quot;: decision}] {
     read_request := input.request.usage.read
-    policy := {&quot;ID&quot;: &quot;read-default&quot;, &quot;description&quot;:&quot;Read capability is requested for read workloads&quot;}
+    policy := {&quot;ID&quot;: &quot;read-default&quot;, &quot;description&quot;:&quot;Read capability is requested for read workloads&quot;, &quot;version&quot;: &quot;0.1&quot;}
     decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: read_request}
 }
 
 config[{&quot;write&quot;: decision}] {
     write_request := input.request.usage.write 
-    policy := {&quot;ID&quot;: &quot;write-default&quot;, &quot;description&quot;:&quot;Write capability is requested for workloads that write data&quot;}
+    policy := {&quot;ID&quot;: &quot;write-default&quot;, &quot;description&quot;:&quot;Write capability is requested for workloads that write data&quot;, &quot;version&quot;: &quot;0.1&quot;}
     decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: write_request}
 }
 </code></pre></div></p>
@@ -1296,7 +1310,7 @@ config[{&quot;write&quot;: decision}] {
 
 # configure where transformations take place
 config[{&quot;transform&quot;: decision}] {
-    policy := {&quot;ID&quot;: &quot;transform-geo&quot;, &quot;description&quot;:&quot;Governance based transformations must take place in the geography where the data is stored&quot;}
+    policy := {&quot;ID&quot;: &quot;transform-geo&quot;, &quot;description&quot;:&quot;Governance based transformations must take place in the geography where the data is stored&quot;, &quot;version&quot;: &quot;0.1&quot;}
     clusters := { &quot;metadata.region&quot; : [ input.request.dataset.geography ] }
     decision := {&quot;policy&quot;: policy, &quot;restrictions&quot;: {&quot;clusters&quot;: clusters}}
 }
@@ -1304,14 +1318,14 @@ config[{&quot;transform&quot;: decision}] {
 # configure the scope of the read capability
 config[{&quot;read&quot;: decision}] {
     input.request.usage.read == true
-    policy := {&quot;ID&quot;: &quot;read-scope&quot;, &quot;description&quot;:&quot;Deploy read at the workload scope&quot;}
+    policy := {&quot;ID&quot;: &quot;read-scope&quot;, &quot;description&quot;:&quot;Deploy read at the workload scope&quot;, &quot;version&quot;: &quot;0.1&quot;}
     decision := {&quot;policy&quot;: policy, &quot;restrictions&quot;: {&quot;modules&quot;: {&quot;capabilities.scope&quot; : [&quot;workload&quot;]}}}
 }
 
 # configure where the read capability will be deployed
 config[{&quot;read&quot;: decision}] {
     input.request.usage.read == true
-    policy := {&quot;ID&quot;: &quot;read-location&quot;, &quot;description&quot;:&quot;Deploy read in the workload cluster&quot;}
+    policy := {&quot;ID&quot;: &quot;read-location&quot;, &quot;description&quot;:&quot;Deploy read in the workload cluster&quot;, &quot;version&quot;: &quot;0.1&quot;}
     clusters := { &quot;name&quot; : [ input.workload.cluster.name ] }
     decision := {&quot;policy&quot;: policy, &quot;restrictions&quot;: {&quot;clusters&quot;: clusters}}
 }
@@ -1319,7 +1333,7 @@ config[{&quot;read&quot;: decision}] {
 # allow implicit copies by default
 config[{&quot;copy&quot;: decision}] {
     input.request.usage.read == true
-    policy := {&quot;ID&quot;: &quot;copy-default&quot;, &quot;description&quot;:&quot;Implicit copies are allowed in read scenarios&quot;}
+    policy := {&quot;ID&quot;: &quot;copy-default&quot;, &quot;description&quot;:&quot;Implicit copies are allowed in read scenarios&quot;, &quot;version&quot;: &quot;0.1&quot;}
     decision := {&quot;policy&quot;: policy}
 }
 
@@ -1329,10 +1343,21 @@ config[{&quot;copy&quot;: decision}] {
     input.request.dataset.geography != input.workload.cluster.metadata.region
     count(input.actions) &gt; 0
     clusters := { &quot;metadata.region&quot; : [ input.request.dataset.geography ] }
-    policy := {&quot;ID&quot;: &quot;copy-remote&quot;, &quot;description&quot;:&quot;Implicit copies should be used if the data is in a different region than the compute, and transformations are required&quot;}
+    policy := {&quot;ID&quot;: &quot;copy-remote&quot;, &quot;description&quot;:&quot;Implicit copies should be used if the data is in a different region than the compute, and transformations are required&quot;, &quot;version&quot;: &quot;0.1&quot;}
     decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: true, &quot;restrictions&quot;: {&quot;clusters&quot;: clusters}}
 }
 </code></pre></div>
+<h3 id="how-to-provide-custom-policies">How to provide custom policies</h3>
+<p>In order to deploy Fybrik with customized policies, perform the following steps </p>
+<ol>
+<li>Clone the github repository of Fybrik for the required release: <code>git clone -b releases/&lt;version&gt; https://github.com/fybrik/fybrik.git</code></li>
+<li>Copy the rego files containing customized policies to fybrik/charts/fybrik/files/adminconfig/ folder </li>
+<li>Install Fybrik:
+<div class="highlight"><pre><span></span><code>cd fybrik
+helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
+helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait
+</code></pre></div></li>
+</ol>
 
               
             </article>
