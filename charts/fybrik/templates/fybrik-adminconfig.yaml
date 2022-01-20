@@ -4,5 +4,5 @@ kind: ConfigMap
 metadata:
   name: fybrik-adminconfig
 data:
-  {{- (.Files.Glob "files/adminconfig/*.rego").AsConfig | nindent 2 }}
+  {{- (.Files.Glob "files/adminconfig/*.*").AsConfig | nindent 2 }}
 {{- end }}
