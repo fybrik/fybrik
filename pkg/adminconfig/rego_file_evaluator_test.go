@@ -90,15 +90,12 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 			decision := {"policy": policy, "deploy": false}
 		}
 
-		# Cost Efficient Production Workloads - read
+		# Production Workloads - read
 		config[{"read": decision}] {
 			input.request.usage.read == true
 			input.workload.properties.stage == "PROD"
-			input.workload.properties.priority != "high"
-			dataset_region := input.request.dataset.geography
-			workload_region := input.workload.cluster.metadata.region			
-			data.infrastructure.bandwidth.values[dataset_region][workload_region] == "S"
-			policy := {"description": "use cheaper storage"}
+			workload_region := input.workload.cluster.metadata.region
+			policy := {"description": "read in production workload"}
 			clusters := { "metadata.region" : [ workload_region ] }
 			decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters}}
 		}
@@ -114,21 +111,8 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 			policy := {"description": "use cheaper storage"}
 			accounts := [ data.infrastructure.storageaccounts.values[i].id | data.infrastructure.storageaccounts.values[i].cost <= "80"; 
 																	  		 data.infrastructure.storageaccounts.values[i].type == "object-storage";
-																	         data.infrastructure.bandwidth.values[data.infrastructure.storageaccounts.values[i].region][workload_region] != "S" ]
-			decision := {"policy": policy, "deploy": true, "restrictions": {"storageaccounts": {"values.id": accounts}}}
-		}
-
-		# High Priority Production Workloads - read
-		config[{"read": decision}] {
-			input.request.usage.read == true
-			input.workload.properties.stage == "PROD"
-			input.workload.properties.priority == "high"
-			dataset_region := input.request.dataset.geography
-			workload_region := input.workload.cluster.metadata.region	
-			dataset_region != workload_region		
-			policy := {"description": "focus on high performance"}
-		    clusters := { "metadata.region" : [ workload_region ] }
-			decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters}}
+																			 data.infrastructure.bandwidth.values[data.infrastructure.storageaccounts.values[i].region][workload_region] != "S" ]
+			decision := {"policy": policy, "deploy": true, "restrictions": {"storageaccounts": {"id": accounts}}}
 		}
 
 		# High Priority Production Workloads - copy
@@ -142,7 +126,7 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 			policy := {"description": "focus on high performance"}
 		    accounts := [data.infrastructure.storageaccounts.values[i].id | data.infrastructure.storageaccounts.values[i].region == workload_region; 
 																	 		data.infrastructure.storageaccounts.values[i].type == "object-storage" ]
-			decision := {"policy": policy, "deploy": true, "restrictions": {"storageaccounts": {"values.id": accounts}}}
+			decision := {"policy": policy, "deploy": true, "restrictions": {"storageaccounts": {"id": accounts}}}
 		}
 
 		# Transform
@@ -165,21 +149,20 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 				"units": "GB/sec",
 				"scale": {},
 				"values": {
-					"Netherlands": {"Netherlands": "L", "Romania": "M", "Australia": "S"},
-					"Romania": {"Romania": "L", "Netherlands": "M", "Australia": "S"},
-					"Australia": {"Australia": "L", "Romania": "S", "Netherlands": "S"}
+					"region3": {"region3": "L", "region1": "S"},
+					"region2": {"region2": "L", "region1": "M"}
 				}
 			},
 			"storageaccounts": {
 				"units": "dollar",
 				"scale": {},
 				"values": [
-					{"id": "Netherlands-storage", "region": "Netherlands", "type": "relational-database", "cost": "100"},
-					{"id": "Netherlands-storage", "region": "Netherlands", "type": "object-storage", "cost": "100"},
-					{"id": "Romania-storage", "region": "Romania", "type": "object-storage", "cost": "80"},
-					{"id": "Romania-storage", "region": "Romania", "type": "relational-database", "cost": "80"},
-					{"id": "Australia-storage", "region": "Australia", "type": "relational-database", "cost": "20"},
-					{"id": "Australia-storage", "region": "Australia", "type": "object-storage", "cost": "90"}
+					{"id": "region1-DB-storage", "region": "region1", "type": "relational-database", "cost": "100"},
+					{"id": "region1-object-store", "region": "region1", "type": "object-storage", "cost": "100"},
+					{"id": "region2-object-store", "region": "region2", "type": "object-storage", "cost": "80"},
+					{"id": "region2-DB-storage", "region": "region2", "type": "relational-database", "cost": "80"},
+					{"id": "region3-DB-storage", "region": "region3", "type": "relational-database", "cost": "20"},
+					{"id": "region3-object-store", "region": "region3", "type": "object-storage", "cost": "90"}
 				]
 			}
 		}
@@ -275,13 +258,13 @@ var _ = Describe("Evaluate a policy", func() {
 
 var _ = Describe("Hard policy enforcement", func() {
 	evaluator := EvaluatorWithInfrastructure()
-	geo := "Australia"
+	geo := "region3"
 	//nolint:dupl
 	It("No Copy for DEV Workloads", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
-			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "Netherlands-cluster", Metadata: multicluster.ClusterMetadata{Region: "Netherlands"}},
+			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "region1-cluster", Metadata: multicluster.ClusterMetadata{Region: "region1"}},
 				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "DEV", "priority": "low"}}}}}
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
@@ -290,16 +273,16 @@ var _ = Describe("Hard policy enforcement", func() {
 	})
 
 	//nolint:dupl
-	It("Cost Efficient Production Workloads - read", func() {
+	It("Production Workloads - read", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
-			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "Netherlands-cluster", Metadata: multicluster.ClusterMetadata{Region: "Netherlands"}},
+			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "region1-cluster", Metadata: multicluster.ClusterMetadata{Region: "region1"}},
 				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "low"}}}}}
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["read"].DeploymentRestrictions["clusters"]["metadata.region"]).To(ContainElements("Netherlands"))
+		Expect(out.ConfigDecisions["read"].DeploymentRestrictions["clusters"]["metadata.region"]).To(ContainElements("region1"))
 	})
 
 	//nolint:dupl
@@ -307,25 +290,12 @@ var _ = Describe("Hard policy enforcement", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
-			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "Netherlands-cluster", Metadata: multicluster.ClusterMetadata{Region: "Netherlands"}},
+			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "region1-cluster", Metadata: multicluster.ClusterMetadata{Region: "region1"}},
 				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "low"}}}}}
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions["storageaccounts"]["values.id"]).To(ContainElements("Romania-storage"))
-	})
-
-	//nolint:dupl
-	It("High Priority Production Workloads - read", func() {
-		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
-			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
-			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "Netherlands-cluster", Metadata: multicluster.ClusterMetadata{Region: "Netherlands"}},
-				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "high"}}}}}
-		out, err := evaluator.Evaluate(&in)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["read"].DeploymentRestrictions["clusters"]["metadata.region"]).To(ContainElements("Netherlands"))
+		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions["storageaccounts"]["id"]).To(ContainElements("region2-object-store"))
 	})
 
 	//nolint:dupl
@@ -333,11 +303,11 @@ var _ = Describe("Hard policy enforcement", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
-			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "Netherlands-cluster", Metadata: multicluster.ClusterMetadata{Region: "Netherlands"}},
+			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "region1-cluster", Metadata: multicluster.ClusterMetadata{Region: "region1"}},
 				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "high"}}}}}
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions["storageaccounts"]["values.id"]).To(ContainElements("Netherlands-storage"))
+		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions["storageaccounts"]["id"]).To(ContainElements("region1-object-store"))
 	})
 })

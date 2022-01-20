@@ -3,23 +3,12 @@
         "bandwidth": {
             "units": "GB/sec",
             "scale": {},
-            "values": {
-                "Netherlands": {"Netherlands": "L", "Romania": "M", "Australia": "S"},
-                "Romania": {"Romania": "L", "Netherlands": "M", "Australia": "S"},
-                "Australia": {"Australia": "L", "Romania": "S", "Netherlands": "S"}
-            }
+            "values": {}
         },
         "storageaccounts": {
             "units": "dollar",
             "scale": {},
-            "values": [
-                {"id": "Netherlands-storage", "region": "Netherlands", "type": "relational-database", "cost": "100"},
-                {"id": "Netherlands-storage", "region": "Netherlands", "type": "object-storage", "cost": "100"},
-                {"id": "Romania-storage", "region": "Romania", "type": "object-storage", "cost": "80"},
-                {"id": "Romania-storage", "region": "Romania", "type": "relational-database", "cost": "80"},
-                {"id": "Australia-storage", "region": "Australia", "type": "relational-database", "cost": "20"},
-                {"id": "Australia-storage", "region": "Australia", "type": "object-storage", "cost": "90"}
-            ]
+            "values": []
         }
     }
 }

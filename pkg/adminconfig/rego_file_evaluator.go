@@ -6,6 +6,7 @@ package adminconfig
 import (
 	"context"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -27,6 +28,9 @@ type RuleDecisionList []DecisionPerCapabilityMap
 
 // A directory containing rego files that define admin config policies
 const RegoPolicyDirectory = "/tmp/adminconfig/"
+
+//A .json file contains infrastructure information
+const InfrastructureJson = "infrastructure.json"
 
 // RegoPolicyEvaluator implements EvaluatorInterface
 type RegoPolicyEvaluator struct {
@@ -71,14 +75,18 @@ func (r *RegoPolicyEvaluator) prepareQuery() (rego.PreparedEvalQuery, error) {
 	if err != nil {
 		return rego.PreparedEvalQuery{}, errors.Wrap(err, "couldn't compile modules")
 	}
-	content, err := ioutil.ReadFile("/tmp/adminconfig/infrastructure.json")
-	if err != nil {
-		return rego.PreparedEvalQuery{}, err
-	}
+	infrastructureFile := filepath.Clean(filepath.Join(RegoPolicyDirectory, InfrastructureJson))
 	var json map[string]interface{}
-	err = util.UnmarshalJSON(content, &json)
-	if err != nil {
-		return rego.PreparedEvalQuery{}, errors.Wrap(err, "couldn't parse Json")
+	_, err = os.Stat(infrastructureFile)
+	if os.IsExist(err) {
+		content, err := ioutil.ReadFile(infrastructureFile)
+		if err != nil {
+			return rego.PreparedEvalQuery{}, err
+		}
+		err = util.UnmarshalJSON(content, &json)
+		if err != nil {
+			return rego.PreparedEvalQuery{}, errors.Wrap(err, "couldn't parse Json")
+		}
 	}
 	store := inmem.NewFromObject(json)
 	rego := rego.New(
