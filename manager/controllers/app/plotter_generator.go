@@ -5,7 +5,6 @@ package app
 
 import (
 	"bytes"
-	"net/url"
 	"strings"
 	"text/template"
 
@@ -67,19 +66,12 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 		return nil, err
 	}
 
-	// S3 endpoint should not include the url scheme only the host name
-	// thus ignoring it if such exists.
-	url, err := url.Parse(bucket.Endpoint)
-	if err != nil {
-		return nil, err
-	}
-
 	connection := taxonomy.Connection{
 		Name: "s3",
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
 				"s3": map[string]interface{}{
-					"endpoint":   url.Host,
+					"endpoint":   bucket.Endpoint,
 					"bucket":     bucket.Name,
 					"object_key": genObjectKeyName,
 				},
