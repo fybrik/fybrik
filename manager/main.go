@@ -136,6 +136,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			}
 		}()
 
+		// pre-compiling config policy files
 		query, err := adminconfig.PrepareQuery()
 		if err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to compile configuration policies")

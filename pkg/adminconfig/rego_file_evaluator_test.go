@@ -23,8 +23,6 @@ func NewEvaluator() *adminconfig.RegoPolicyEvaluator {
 	module := `
 		package adminconfig
 
-		version := "0.0.0"
-
 		# read scenario, same location
 		config[{"test": decision}] {
 			policy := {"policySetID": "1", "ID": "test-1"}

@@ -21,9 +21,9 @@ import (
 type RuleDecisionList []DecisionPerCapabilityMap
 
 // A structure returned as a result of evaluating adminconfig package
+// TODO(shlomitk1): extend with the soft policies
 type EvaluationOutputStructure struct {
-	Version string           `json:"version"`
-	Config  RuleDecisionList `json:"config"`
+	Config RuleDecisionList `json:"config"`
 }
 
 // RegoPolicyEvaluator implements EvaluatorInterface
@@ -98,7 +98,6 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 			if err = yaml.Unmarshal(bytes, &evalStruct); err != nil {
 				return nil, false, errors.Wrap(err, "Unexpected OPA response structure")
 			}
-			log.Info().Str(logging.AUDIT, "true").Msgf("Version of admin config policies: %s", evalStruct.Version)
 			for _, rule := range evalStruct.Config {
 				for capability, newDecision := range rule {
 					// filter by policySetID
