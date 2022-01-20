@@ -4,7 +4,6 @@
 package app
 
 import (
-	"fmt"
 	"strings"
 
 	"emperror.dev/errors"
@@ -86,7 +85,7 @@ func (p *PlotterGenerator) FindPaths(item *DataInfo, appContext *app.FybrikAppli
 	// find data paths of length up to DATAPATH_LIMIT from data source to the workload, not including transformations or branches
 	bound, err := utils.GetDataPathMaxSize()
 	if err != nil {
-		fmt.Println("Warning: a default value for DATAPATH_LIMIT will be used")
+		p.Log.Warn().Str(logging.DATASETID, item.Context.DataSetID).Msg("a default value for DATAPATH_LIMIT will be used")
 	}
 	solutions := p.findPathsWithinLimit(item, &source, &destination, bound)
 	// get valid solutions by extending data paths with transformations and selecting an appropriate cluster for each capability
@@ -95,18 +94,19 @@ func (p *PlotterGenerator) FindPaths(item *DataInfo, appContext *app.FybrikAppli
 }
 
 // extend the received data paths with transformations and select an appropriate cluster for each capability in a data path
-func (p *PlotterGenerator) validSolutions(item *DataInfo, solutions []Solution, appContext *app.FybrikApplication) []Solution {
+func (p *PlotterGenerator) validSolutions(item *DataInfo, solutions []Solution, application *app.FybrikApplication) []Solution {
 	validPaths := []Solution{}
 	for ind := range solutions {
-		if p.validate(item, solutions[ind], appContext) {
+		if p.validate(item, solutions[ind], application) {
 			validPaths = append(validPaths, solutions[ind])
 		}
 	}
 	return validPaths
 }
 
-func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, appContext *app.FybrikApplication) bool {
+func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, application *app.FybrikApplication) bool {
 	// start from data source, check supported actions and cluster restrictions
+	appContext := ApplicationContext{Application: application, Log: p.Log}
 	requiredActions := item.Actions
 	for ind := range solution.DataPath {
 		element := &solution.DataPath[ind]
@@ -149,7 +149,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, appContex
 		}
 		requiredActions = unsupported
 		// select a cluster for the capability that satisfy cluster restrictions specified in admin config policies
-		if !p.findCluster(item, element, appContext) {
+		if !p.findCluster(item, element) {
 			p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find an available cluster for " + string(moduleCapability.Capability))
 			return false
 		}
@@ -176,7 +176,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, appContex
 }
 
 // find a cluster that satisfies the requirements
-func (p *PlotterGenerator) findCluster(item *DataInfo, element *ResolvedEdge, appContext *app.FybrikApplication) bool {
+func (p *PlotterGenerator) findCluster(item *DataInfo, element *ResolvedEdge) bool {
 	for _, cluster := range p.Clusters {
 		if validateClusterRestrictions(item, element, cluster) {
 			element.Cluster = cluster.Name

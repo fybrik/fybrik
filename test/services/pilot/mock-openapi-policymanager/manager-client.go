@@ -35,7 +35,11 @@ func main() {
 
 	mainPolicyManagerURL := "http://opa-connector.fybrik-system:80"
 	log.Println("mainPolicyManagerURL set to :", mainPolicyManagerURL)
-	policyManager, err := pmclient.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
+	policyManager, err := pmclient.NewOpenAPIPolicyManager(
+		mainPolicyManagerName,
+		mainPolicyManagerURL,
+		connectionTimeout,
+	)
 	if err != nil {
 		return
 	}

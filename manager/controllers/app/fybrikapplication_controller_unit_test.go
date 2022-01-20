@@ -61,6 +61,10 @@ func createClusterMetadata() *corev1.ConfigMap {
 func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) *FybrikApplicationReconciler {
 	// environment: cluster-metadata configmap
 	_ = cl.Create(context.Background(), createClusterMetadata())
+	query, err := adminconfig.PrepareQuery()
+	if err != nil {
+		return nil
+	}
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	return &FybrikApplicationReconciler{
 		Client:        cl,
@@ -74,7 +78,7 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 		},
 		ClusterManager:  &mockup.ClusterLister{},
 		Provision:       &storage.ProvisionTest{},
-		ConfigEvaluator: adminconfig.NewRegoPolicyEvaluator(logging.LogInit("test", "ConfigPolicyEvaluator")),
+		ConfigEvaluator: adminconfig.NewRegoPolicyEvaluator(logging.LogInit("test", "ConfigPolicyEvaluator"), query),
 	}
 }
 
@@ -129,6 +133,7 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
 	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
 	// Mock request to simulate Reconcile() being called on an event for a
 	// watched resource .
 	req := reconcile.Request{
@@ -200,8 +205,6 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 func TestFybrikApplicationFinalizers(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
-	// Set the logger to development mode for verbose logs.
-	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
@@ -219,12 +222,13 @@ func TestFybrikApplicationFinalizers(t *testing.T) {
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
-
-	g.Expect(r.reconcileFinalizers(application)).To(gomega.BeNil())
+	g.Expect(r).NotTo(gomega.BeNil())
+	appContext := ApplicationContext{Application: application, Log: r.Log}
+	g.Expect(r.reconcileFinalizers(appContext)).To(gomega.BeNil())
 	g.Expect(application.Finalizers).NotTo(gomega.BeEmpty(), "finalizers have not been created")
 	// mark application as deleted
 	application.DeletionTimestamp = &metav1.Time{Time: time.Now()}
-	g.Expect(r.reconcileFinalizers(application)).To(gomega.BeNil())
+	g.Expect(r.reconcileFinalizers(appContext)).To(gomega.BeNil())
 	g.Expect(application.Finalizers).To(gomega.BeEmpty(), "finalizers have not been removed")
 }
 
@@ -263,6 +267,8 @@ func TestDenyOnRead(t *testing.T) {
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -319,6 +325,8 @@ func TestNoReadPath(t *testing.T) {
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -386,6 +394,8 @@ func TestWrongCopyModule(t *testing.T) {
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -445,6 +455,8 @@ func TestActionSupport(t *testing.T) {
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -528,6 +540,8 @@ func TestMultipleDatasets(t *testing.T) {
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -608,6 +622,8 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -677,6 +693,8 @@ func TestMultipleRegions(t *testing.T) {
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -760,6 +778,8 @@ func TestCopyData(t *testing.T) {
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -842,6 +862,8 @@ func TestCopyDataNotAllowed(t *testing.T) {
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -895,6 +917,8 @@ func TestPlotterUpdate(t *testing.T) {
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -981,6 +1005,8 @@ func TestSyncWithPlotter(t *testing.T) {
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -1024,6 +1050,8 @@ func TestFybrikApplicationWithNoDatasets(t *testing.T) {
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -1070,6 +1098,8 @@ func TestFybrikApplicationWithInvalidAppInfo(t *testing.T) {
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -1113,6 +1143,8 @@ func TestFybrikApplicationWithInvalidInterface(t *testing.T) {
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}
@@ -1182,6 +1214,8 @@ func TestCopyModule(t *testing.T) {
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
 	req := reconcile.Request{
 		NamespacedName: namespaced,
 	}

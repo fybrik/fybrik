@@ -22,7 +22,7 @@ generate-docs:
 manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
 	$(TOOLBIN)/controller-gen --version
 	$(TOOLBIN)/controller-gen crd output:crd:artifacts:config=charts/fybrik-crd/templates/ paths=./manager/apis/...
-	$(TOOLBIN)/controller-gen crd output:crd:artifacts:config=charts/fybrik-crd/templates/ paths=./connectors/katalog/pkg/apis/katalog/...
+	$(TOOLBIN)/controller-gen crd output:crd:artifacts:config=charts/fybrik-crd/charts/asset-crd/templates/ paths=./connectors/katalog/pkg/apis/katalog/...
 	$(TOOLBIN)/controller-gen webhook paths=./manager/apis/... output:stdout | \
 		$(TOOLBIN)/yq eval '.metadata.annotations."cert-manager.io/inject-ca-from" |= "{{ .Release.Namespace }}/serving-cert"' - | \
 		$(TOOLBIN)/yq eval '.metadata.annotations."certmanager.k8s.io/inject-ca-from" |= "{{ .Release.Namespace }}/serving-cert"' - | \
@@ -48,8 +48,8 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
 	mkdir -p /tmp/taxonomy
 	mkdir -p /tmp/adminconfig
 	cp charts/fybrik/files/taxonomy/*.json /tmp/taxonomy/
-	cp charts/fybrik/files/adminconfig/*.rego /tmp/adminconfig/
-	cp charts/fybrik/files/adminconfig/*.json /tmp/adminconfig/
+	cp charts/fybrik/files/adminconfig/* /tmp/adminconfig/
+	cp samples/adminconfig/* /tmp/adminconfig/
 	mkdir -p manager/testdata/unittests/basetaxonomy
 	mkdir -p manager/testdata/unittests/sampletaxonomy
 	cp charts/fybrik/files/taxonomy/*.json manager/testdata/unittests/basetaxonomy
@@ -75,6 +75,7 @@ run-integration-tests:
 	$(MAKE) docker-build docker-push
 	$(MAKE) -C test/services docker-build docker-push
 	$(MAKE) cluster-prepare-wait
+	$(MAKE) -C charts test
 	$(MAKE) deploy
 	$(MAKE) configure-vault
 	$(MAKE) -C modules helm

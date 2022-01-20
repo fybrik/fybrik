@@ -38,7 +38,7 @@ message Db2DataStore {
 }
 
 message S3DataStore {
-    string endpoint = 1;    // endpoint should contain only the host name without the scheme i.e., "s3.eu-gb.cloud-object-storage.appdomain.cloud"
+    string endpoint = 1;
     string bucket = 2;
     string object_key = 3; //can be object name or the prefix for dataset
     string region = 4;     // WKC does not return it, it will stay empty in our case!!!

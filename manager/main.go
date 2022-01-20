@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
 
@@ -135,6 +136,13 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			}
 		}()
 
+		// pre-compiling config policy files
+		query, err := adminconfig.PrepareQuery()
+		if err != nil {
+			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to compile configuration policies")
+			return 1
+		}
+		evaluator := adminconfig.NewRegoPolicyEvaluator(logging.LogInit(logging.CONTROLLER, "FybrikApplication"), query)
 		// Initiate the FybrikApplication Controller
 		applicationController := app.NewFybrikApplicationReconciler(
 			mgr,
@@ -143,6 +151,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			catalog,
 			clusterManager,
 			storage.NewProvisionImpl(mgr.GetClient()),
+			evaluator,
 		)
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create controller")
@@ -249,7 +258,11 @@ func newDataCatalog() (dcclient.DataCatalog, error) {
 	providerName := os.Getenv("CATALOG_PROVIDER_NAME")
 	connectorURL := os.Getenv("CATALOG_CONNECTOR_URL")
 	setupLog.Info().Str("Name", providerName).Str("URL", connectorURL).Str("Timeout", connectionTimeout.String()).Msg("setting data catalog client")
-	return dcclient.NewDataCatalog(providerName, connectorURL, connectionTimeout)
+	return dcclient.NewDataCatalog(
+		providerName,
+		connectorURL,
+		connectionTimeout,
+	)
 }
 
 func newPolicyManager() (pmclient.PolicyManager, error) {
@@ -264,7 +277,11 @@ func newPolicyManager() (pmclient.PolicyManager, error) {
 
 	var policyManager pmclient.PolicyManager
 	if strings.HasPrefix(mainPolicyManagerURL, "http") {
-		policyManager, err = pmclient.NewOpenAPIPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
+		policyManager, err = pmclient.NewOpenAPIPolicyManager(
+			mainPolicyManagerName,
+			mainPolicyManagerURL,
+			connectionTimeout,
+		)
 	} else {
 		policyManager, err = pmclient.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
 	}

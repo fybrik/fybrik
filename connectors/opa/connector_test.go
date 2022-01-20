@@ -50,13 +50,13 @@ func TestGetPoliciesDecisions(t *testing.T) {
 			Columns: []datacatalog.ResourceColumn{
 				{
 					Name: "nameDest",
-					Tags: taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
+					Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
 						"PII": true,
 					}}},
 				},
 				{
 					Name: "nameOrig",
-					Tags: taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
+					Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
 						"SPI": true,
 					}}},
 				},
