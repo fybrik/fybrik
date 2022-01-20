@@ -173,7 +173,7 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 	store := inmem.NewFromObject(json)
 
 	rego := rego.New(
-		rego.Query("data.adminconfig.config"),
+		rego.Query("data.adminconfig"),
 		rego.Compiler(compiler),
 		rego.Store(store),
 	)
