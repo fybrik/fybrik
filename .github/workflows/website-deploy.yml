@@ -15,8 +15,8 @@ jobs:
   website-deploy:
     runs-on: ubuntu-latest
     env:
-      QUICKSTART_FILE: './site/docs/get-started/quickstart.md'
       WORK_DIR: './site'
+      EXTERNAL_FILE: './site/external.yaml'
     steps:
       - uses: actions/checkout@v2
         with:
@@ -29,42 +29,35 @@ jobs:
         run: |
           pip install mkdocs-material=="8.*"
           pip install mike
+          pip install mkdocs-macros-plugin
       - name: setup git config
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "noreply@github.com"
       - id: version
         name: Infer version
-        run: echo ::set-output name=version::"$(cut -d '.' -f 1,2 <<< "${GITHUB_REF#refs/*/}")
+        run: echo ::set-output name=version::$(cut -d '.' -f 1,2 <<< "${GITHUB_REF#refs/*/}")
       - id: release
-        run: echo ::set-output name=version::$(cut -c 2- <<< "${GITHUB_REF#refs/*/}")
+        name: Infer release
+        run: echo ::set-output name=version::"${GITHUB_REF#refs/*/}"
       - uses: actions-ecosystem/action-regex-match@v2
         id: regex-match
         with:
-          text: ${{ steps.release.outputs.version }}
-          regex: '^[0-9]+\.[0-9]+(\.[0-9]+)*'
-      - name: Sub (dev)
-        uses: bluwy/substitute-string-action@v1
-        if: ${{ ! steps.regex-match.outputs.match }}
-        with:
-          _input-file: ${{ env.QUICKSTART_FILE }}
-          _format-key: '%%key%%'
-          _output-file: ${{ env.QUICKSTART_FILE }}
-          Release: ""
+          text:  ${{ steps.release.outputs.version }}
+          regex: '^v[0-9]+\.[0-9]+(\.[0-9]+)*'
       - name: Sub (tag)
         uses: bluwy/substitute-string-action@v1
-        if: ${{ steps.regex-match.outputs.match != '' }}
+        if: ${{ startsWith(steps.release.outputs.version, steps.regex-match.outputs.match) }}
         with:
-          _input-file: ${{ env.QUICKSTART_FILE }}
-          _format-key: '%%key%%'
-          _output-file: ${{ env.QUICKSTART_FILE }}
-          Release: "--version ${{ steps.release.outputs.version }}"
-      - run: cat ${{ env.QUICKSTART_FILE }}
+          _input-file: ${{ env.EXTERNAL_FILE }}
+          _format-key: '__key__'
+          _output-file: ${{ env.EXTERNAL_FILE }}
+          Release: ${{ steps.release.outputs.version }}
       - name: Build and Deploy (dev)
-        if: ${{ ! steps.regex-match.outputs.match }}
+        if: ${{ ! startsWith(steps.release.outputs.version, steps.regex-match.outputs.match) && !env.ACT }}
         working-directory: ${{ env.WORK_DIR }}
         run: mike deploy --push --remote origin --branch site dev
       - name: Build and Deploy (tag)
-        if: ${{ steps.regex-match.outputs.match }}
+        if: ${{ startsWith(steps.release.outputs.version, steps.regex-match.outputs.match) && !env.ACT }}
         working-directory: ${{ env.WORK_DIR }}
         run: mike deploy --push --update-aliases --remote origin --branch site ${{ steps.version.outputs.version }} latest

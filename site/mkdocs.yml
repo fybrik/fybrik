@@ -54,6 +54,7 @@ extra:
   social:
     - icon: fontawesome/brands/github-alt
       link: https://github.com/fybrik/fybrik
+  varRelease: "--version 0.7.0"
 
 theme:
   name: material
@@ -92,3 +93,7 @@ plugins:
       prebuild_index: python
       lang:
       - en
+  - macros:
+      include_yaml:
+        - ./external.yaml
+        - arrowFlight: "./arrowFlightReleases.yaml"
