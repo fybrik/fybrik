@@ -363,7 +363,7 @@ func validateClusterRestrictions(item *DataInfo, edge *ResolvedEdge, cluster mul
 }
 
 func validateClusterRestrictionsPerCapability(item *DataInfo, capability taxonomy.Capability, cluster multicluster.Cluster) bool {
-	restrictions := item.Configuration.ConfigDecisions[capability].DeploymentRestrictions[taxonomy.Clusters]
+	restrictions := item.Configuration.ConfigDecisions[capability].DeploymentRestrictions.Clusters
 	if len(restrictions) == 0 {
 		return true
 	}

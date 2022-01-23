@@ -292,9 +292,9 @@ var _ = Describe("Evaluate a policy", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["test"].DeploymentRestrictions["clusters"]["name"]).To(ContainElements("clusterB", "clusterC"))
-		Expect(out.ConfigDecisions["test"].DeploymentRestrictions["modules"]["type"]).To(ContainElements("service", "config", "plugin"))
-		Expect(out.ConfigDecisions["test"].DeploymentRestrictions["modules"]["scope"]).To(ContainElements("asset"))
+		Expect(out.ConfigDecisions["test"].DeploymentRestrictions.Clusters["name"]).To(ContainElements("clusterB", "clusterC"))
+		Expect(out.ConfigDecisions["test"].DeploymentRestrictions.Modules["type"]).To(ContainElements("service", "config", "plugin"))
+		Expect(out.ConfigDecisions["test"].DeploymentRestrictions.Modules["scope"]).To(ContainElements("asset"))
 	})
 
 	//nolint:dupl
@@ -352,7 +352,7 @@ var _ = Describe("Hard policy enforcement", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["read"].DeploymentRestrictions["clusters"]["metadata.region"]).To(ContainElements("region1"))
+		Expect(out.ConfigDecisions["read"].DeploymentRestrictions.Clusters["metadata.region"]).To(ContainElements("region1"))
 	})
 
 	//nolint:dupl
@@ -365,7 +365,7 @@ var _ = Describe("Hard policy enforcement", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions["storageaccounts"]["id"]).To(ContainElements("region2-object-store"))
+		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions.StorageAccounts["id"]).To(ContainElements("region2-object-store"))
 	})
 
 	//nolint:dupl
@@ -378,6 +378,6 @@ var _ = Describe("Hard policy enforcement", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions["storageaccounts"]["id"]).To(ContainElements("region1-object-store"))
+		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions.StorageAccounts["id"]).To(ContainElements("region1-object-store"))
 	})
 })

@@ -138,10 +138,6 @@
     "ProcessingLocation": {
       "type": "string"
     },
-    "RestrictedEntity": {
-      "description": "RestrictedEntity is an entity to be restricted, such as clusters, modules, storageaccounts.",
-      "type": "string"
-    },
     "Restriction": {
       "description": "Restriction maps a property to a list of allowed values. Semantics is a disjunction of values, i.e. a type can be either plugin or config.",
       "type": "object",
@@ -155,8 +151,16 @@
     "Restrictions": {
       "description": "Deployment restrictions on modules, clusters and additional resources that will be added in the future",
       "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/Restriction"
+      "properties": {
+        "clusters": {
+          "$ref": "#/definitions/Restriction"
+        },
+        "modules": {
+          "$ref": "#/definitions/Restriction"
+        },
+        "storageaccounts": {
+          "$ref": "#/definitions/Restriction"
+        }
       }
     },
     "RuleDecisionList": {

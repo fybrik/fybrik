@@ -19,16 +19,6 @@ const (
 // Semantics is a disjunction of values, i.e. a type can be either plugin or config.
 type Restriction map[string][]string
 
-// RestrictedEntity is an entity to be restricted, such as clusters, modules, storageaccounts.
-type RestrictedEntity string
-
-// Restricted entities
-const (
-	Modules         RestrictedEntity = "modules"
-	Clusters        RestrictedEntity = "clusters"
-	StorageAccounts RestrictedEntity = "storageaccounts"
-)
-
 // DecisionPolicy is a justification for a policy that consists of a unique id, id of a policy set and a human readable desciption
 type DecisionPolicy struct {
 	ID          string `json:"ID"`
@@ -38,7 +28,11 @@ type DecisionPolicy struct {
 }
 
 // Deployment restrictions on modules, clusters and additional resources that will be added in the future
-type Restrictions map[RestrictedEntity]Restriction
+type Restrictions struct {
+	Clusters        Restriction `json:"clusters,omitempty"`
+	Modules         Restriction `json:"modules,omitempty"`
+	StorageAccounts Restriction `json:"storageaccounts,omitempty"`
+}
 
 // Decision is a result of evaluating a configuration policy which satisfies the specified predicates
 type Decision struct {

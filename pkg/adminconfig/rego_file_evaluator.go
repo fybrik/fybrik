@@ -145,26 +145,26 @@ func (r *RegoPolicyEvaluator) merge(newDecision taxonomy.Decision, oldDecision t
 	mergedDecision.Deploy = deploy
 	// merge restrictions
 	mergedDecision.DeploymentRestrictions = oldDecision.DeploymentRestrictions
-	if mergedDecision.DeploymentRestrictions == nil {
-		mergedDecision.DeploymentRestrictions = make(taxonomy.Restrictions)
+	if mergedDecision.DeploymentRestrictions.Clusters == nil {
+		mergedDecision.DeploymentRestrictions.Clusters = make(taxonomy.Restriction)
 	}
-	for entity, restrictions := range newDecision.DeploymentRestrictions {
-		if mergedRestriction, found := mergedDecision.DeploymentRestrictions[entity]; !found {
-			mergedDecision.DeploymentRestrictions[entity] = restrictions
-		} else {
-			for key, values := range restrictions {
-				if len(mergedRestriction[key]) == 0 {
-					mergedRestriction[key] = values
-				} else {
-					mergedRestriction[key] = utils.Intersection(mergedRestriction[key], values)
-					if len(mergedRestriction[key]) == 0 {
-						return false, mergedDecision
-					}
-				}
-			}
-			mergedDecision.DeploymentRestrictions[entity] = mergedRestriction
-		}
+	if err := mergeRestrictions(&mergedDecision.DeploymentRestrictions.Clusters, &newDecision.DeploymentRestrictions.Clusters); err != nil {
+		return false, taxonomy.Decision{}
 	}
+	if mergedDecision.DeploymentRestrictions.Modules == nil {
+		mergedDecision.DeploymentRestrictions.Modules = make(taxonomy.Restriction)
+	}
+	if err := mergeRestrictions(&mergedDecision.DeploymentRestrictions.Modules, &newDecision.DeploymentRestrictions.Modules); err != nil {
+		return false, taxonomy.Decision{}
+	}
+	if mergedDecision.DeploymentRestrictions.StorageAccounts == nil {
+		mergedDecision.DeploymentRestrictions.StorageAccounts = make(taxonomy.Restriction)
+	}
+
+	if err := mergeRestrictions(&mergedDecision.DeploymentRestrictions.StorageAccounts, &newDecision.DeploymentRestrictions.StorageAccounts); err != nil {
+		return false, taxonomy.Decision{}
+	}
+
 	// merge policies descriptions/ids
 	mergedDecision.Policy = oldDecision.Policy
 	if mergedDecision.Policy.ID != "" {
@@ -176,6 +176,23 @@ func (r *RegoPolicyEvaluator) merge(newDecision taxonomy.Decision, oldDecision t
 	}
 	mergedDecision.Policy.Description += newDecision.Policy.Description
 	return true, mergedDecision
+}
+
+func mergeRestrictions(r1 *taxonomy.Restriction, r2 *taxonomy.Restriction) error {
+	if r2 == nil {
+		return nil
+	}
+	for key, values := range *r2 {
+		if len((*r1)[key]) == 0 {
+			(*r1)[key] = values
+		} else {
+			(*r1)[key] = utils.Intersection((*r1)[key], values)
+			if len((*r1)[key]) == 0 {
+				return errors.New("unable to merge restrictions")
+			}
+		}
+	}
+	return nil
 }
 
 func validateStructure(obj interface{}, taxonomySchema string, uuid string) error {
