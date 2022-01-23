@@ -145,7 +145,11 @@ helm install fybrik fybrik-charts/fybrik -n fybrik-system {{ fybrikVersionFlag }
 Install the {{ arrowFlightRelease }}[^1] release of arrow-flight-module:
 
 ```bash
-kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/download/{{ arrowFlightRelease }}/module.yaml -n fybrik-system
+{% if arrowFlightRelease != 'latest' %}
+  kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/download/{{ arrowFlightRelease }}/module.yaml -n fybrik-system
+{% else %}
+  kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/{{ arrowFlightRelease }}/download/module.yaml -n fybrik-system
+{% endif %}
 ```
 
 [^1]: Refer to the [documentation](https://github.com/fybrik/arrow-flight-module/blob/master/README.md#register-as-a-fybrik-module) of arrow-flight-module for other versions
