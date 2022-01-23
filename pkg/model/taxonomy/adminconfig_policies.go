@@ -53,3 +53,47 @@ type RuleDecisionList []DecisionPerCapabilityMap
 type EvaluationOutputStructure struct {
 	Config RuleDecisionList `json:"config"`
 }
+
+func (in Restriction) DeepCopyInto(out *Restriction) {
+	{
+		*out = make(Restriction)
+		for key, val := range in {
+			outVal := []string{}
+			if val != nil {
+				copy(outVal, val)
+			}
+			(*out)[key] = outVal
+		}
+	}
+}
+
+func (in Restriction) DeepCopy() Restriction {
+	if in == nil {
+		return nil
+	}
+	out := new(Restriction)
+	in.DeepCopyInto(out)
+	return *out
+}
+
+func (in RuleDecisionList) DeepCopyInto(out *RuleDecisionList) {
+	{
+		*out = RuleDecisionList{}
+		for i := range in {
+			decision := in[i]
+			if decision != nil {
+				copiedDecision := decision.DeepCopy()
+				*out = append(*out, copiedDecision)
+			}
+		}
+	}
+}
+
+func (in RuleDecisionList) DeepCopy() RuleDecisionList {
+	if in == nil {
+		return nil
+	}
+	out := new(RuleDecisionList)
+	in.DeepCopyInto(out)
+	return *out
+}
