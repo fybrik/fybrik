@@ -15,7 +15,6 @@ import (
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
@@ -165,7 +164,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 		supportedCapabilities[element.Module.Spec.Capabilities[element.CapabilityIndex].Capability] = true
 	}
 	for capability, decision := range item.Configuration.ConfigDecisions {
-		if decision.Deploy == v1.ConditionTrue {
+		if decision.Deploy == taxonomy.StatusTrue {
 			// check that it is supported
 			if !supportedCapabilities[capability] {
 				return false
@@ -342,7 +341,7 @@ func supportsSinkInterface(edge *Edge, sink *Node) bool {
 }
 
 func allowCapability(item *DataInfo, capability taxonomy.Capability) bool {
-	return item.Configuration.ConfigDecisions[capability].Deploy != v1.ConditionFalse
+	return item.Configuration.ConfigDecisions[capability].Deploy != taxonomy.StatusFalse
 }
 
 func validateModuleRestrictions(item *DataInfo, edge *Edge) bool {
@@ -364,7 +363,7 @@ func validateClusterRestrictions(item *DataInfo, edge *ResolvedEdge, cluster mul
 }
 
 func validateClusterRestrictionsPerCapability(item *DataInfo, capability taxonomy.Capability, cluster multicluster.Cluster) bool {
-	restrictions := item.Configuration.ConfigDecisions[capability].DeploymentRestrictions[adminconfig.Clusters]
+	restrictions := item.Configuration.ConfigDecisions[capability].DeploymentRestrictions[taxonomy.Clusters]
 	if len(restrictions) == 0 {
 		return true
 	}

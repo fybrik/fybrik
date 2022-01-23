@@ -20,8 +20,38 @@ import (
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/open-policy-agent/opa/storage/inmem"
 	"github.com/open-policy-agent/opa/util"
-	corev1 "k8s.io/api/core/v1"
 )
+
+func EvaluatorWithInvalidRules() *adminconfig.RegoPolicyEvaluator {
+	module := `
+		package adminconfig
+
+		config[{"test": decision}] {
+			input.workload.properties.rule == "test-deployment"
+			policy := {"ID": "invlaid-status"}
+			decision := {"policy": policy, "deploy": "anything"}
+		}
+
+		config[{"test": decision}] {
+			input.workload.properties.rule == "test-required-policy-id"
+			policy := {"name": "invalid-attribute"}
+			decision := {"policy": policy}
+		}
+	`
+	// Compile the module. The keys are used as identifiers in error messages.
+	compiler, err := ast.CompileModules(map[string]string{
+		"example.rego": module,
+	})
+	Expect(err).ToNot(HaveOccurred())
+
+	rego := rego.New(
+		rego.Query("data.adminconfig"),
+		rego.Compiler(compiler),
+	)
+	query, err := rego.PrepareForEval(context.Background())
+	Expect(err).ToNot(HaveOccurred())
+	return &adminconfig.RegoPolicyEvaluator{Log: logging.LogInit("test", "ConfigPolicyEvaluator"), Query: query}
+}
 
 func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 	module := `
@@ -33,7 +63,7 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 			input.request.usage.read == true
 			input.request.usage.copy == false
 			input.request.dataset.geography == input.workload.cluster.metadata.region
-			decision := {"policy": policy, "deploy": false}
+			decision := {"policy": policy, "deploy": "False"}
 		}
 
 		# read scenario, different locations
@@ -43,7 +73,7 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 			clusters :=  { "name": [ "clusterB", "clusterD", "clusterC" ] }
 			modules := {"scope": ["asset"]}
 			policy := {"policySetID": "1", "ID": "test-2"}
-			decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters, "modules": modules}}
+			decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": clusters, "modules": modules}}
 		}
 		
 		# copy scenario
@@ -52,16 +82,21 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 			clusters :=  { "name": [ "clusterA", "clusterB", "clusterC" ] }
 			modules := {"type": ["service","plugin","config"]}
 			policy := {"policySetID": "1", "ID": "test-3"}
-			decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters, "modules": modules}}
+			decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": clusters, "modules": modules}}
 		}
 
 		# write scenario
 		config[{"test": decision}] {
 			input.request.usage.write == true
 			policy := {"policySetID": "2", "ID": "test-4"}
-			decision := {"policy": policy, "deploy": false}
+			decision := {"policy": policy, "deploy": "False"}
 		}
 
+		# default scenario
+		config[{"test": decision}] {
+			policy := {"ID": "default", "policySetID": "1"}
+			decision := {"policy": policy}
+		}
 	`
 	// Compile the module. The keys are used as identifiers in error messages.
 	compiler, err := ast.CompileModules(map[string]string{
@@ -86,8 +121,8 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 		config[{"copy": decision}] {
 			input.request.usage.read == true
 			input.workload.properties.stage == "DEV"
-			policy := {"description": "do not copy in DEV workload"}
-			decision := {"policy": policy, "deploy": false}
+			policy := {"description": "do not copy in DEV workload", "ID": "copy-dev"}
+			decision := {"policy": policy, "deploy": "False"}
 		}
 
 		# Production Workloads - read
@@ -95,9 +130,9 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 			input.request.usage.read == true
 			input.workload.properties.stage == "PROD"
 			workload_region := input.workload.cluster.metadata.region
-			policy := {"description": "read in production workload"}
+			policy := {"description": "read in production workload", "ID": "read-prod"}
 			clusters := { "metadata.region" : [ workload_region ] }
-			decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters}}
+			decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": clusters}}
 		}
 
 		# Cost Efficient Production Workloads - copy
@@ -108,11 +143,11 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 			dataset_region := input.request.dataset.geography
 			workload_region := input.workload.cluster.metadata.region			
 			data.infrastructure.bandwidth.values[dataset_region][workload_region] == "S"
-			policy := {"description": "use cheaper storage"}
+			policy := {"description": "use cheaper storage", "ID": "copy-prod-med"}
 			accounts := [ data.infrastructure.storageaccounts.values[i].id | data.infrastructure.storageaccounts.values[i].cost <= "80"; 
 																	  		 data.infrastructure.storageaccounts.values[i].type == "object-storage";
 																			 data.infrastructure.bandwidth.values[data.infrastructure.storageaccounts.values[i].region][workload_region] != "S" ]
-			decision := {"policy": policy, "deploy": true, "restrictions": {"storageaccounts": {"id": accounts}}}
+			decision := {"policy": policy, "deploy": "True", "restrictions": {"storageaccounts": {"id": accounts}}}
 		}
 
 		# High Priority Production Workloads - copy
@@ -123,10 +158,10 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 			dataset_region := input.request.dataset.geography
 			workload_region := input.workload.cluster.metadata.region	
 			dataset_region != workload_region		
-			policy := {"description": "focus on high performance"}
+			policy := {"description": "focus on high performance", "ID": "copy-prod-high"}
 		    accounts := [data.infrastructure.storageaccounts.values[i].id | data.infrastructure.storageaccounts.values[i].region == workload_region; 
 																	 		data.infrastructure.storageaccounts.values[i].type == "object-storage" ]
-			decision := {"policy": policy, "deploy": true, "restrictions": {"storageaccounts": {"id": accounts}}}
+			decision := {"policy": policy, "deploy": "True", "restrictions": {"storageaccounts": {"id": accounts}}}
 		}
 
 		# Transform
@@ -187,6 +222,41 @@ func TestRegoFileEvaluator(t *testing.T) {
 	RunSpecs(t, "Config Policy Evaluator Suite")
 }
 
+var _ = Describe("Invalid structure", func() {
+	evaluator := EvaluatorWithInvalidRules()
+	//nolint:dupl
+	It("Invalid deployment status", func() {
+		in := adminconfig.EvaluatorInput{
+			Workload: adminconfig.WorkloadInfo{
+				Properties: taxonomy.AppInfo{
+					Properties: serde.Properties{
+						Items: map[string]interface{}{"rule": "test-deployment"},
+					},
+				},
+			},
+		}
+		out, err := evaluator.Evaluate(&in)
+		Expect(err).To(HaveOccurred())
+		Expect(out.Valid).To(Equal(false))
+	})
+
+	//nolint:dupl
+	It("Missing policy id", func() {
+		in := adminconfig.EvaluatorInput{
+			Workload: adminconfig.WorkloadInfo{
+				Properties: taxonomy.AppInfo{
+					Properties: serde.Properties{
+						Items: map[string]interface{}{"rule": "test-required-policy-id"},
+					},
+				},
+			},
+		}
+		out, err := evaluator.Evaluate(&in)
+		Expect(err).To(HaveOccurred())
+		Expect(out.Valid).To(Equal(false))
+	})
+})
+
 var _ = Describe("Evaluate a policy", func() {
 	evaluator := BaseEvaluator()
 	geo := "theshire"
@@ -210,7 +280,7 @@ var _ = Describe("Evaluate a policy", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["test"].Deploy).To(Equal(corev1.ConditionFalse))
+		Expect(out.ConfigDecisions["test"].Deploy).To(Equal(taxonomy.StatusFalse))
 	})
 
 	//nolint:dupl
@@ -238,7 +308,7 @@ var _ = Describe("Evaluate a policy", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["test"].Deploy).To(Equal(corev1.ConditionFalse))
+		Expect(out.ConfigDecisions["test"].Deploy).To(Equal(taxonomy.StatusFalse))
 	})
 
 	//nolint:dupl
@@ -269,7 +339,7 @@ var _ = Describe("Hard policy enforcement", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(corev1.ConditionFalse))
+		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(taxonomy.StatusFalse))
 	})
 
 	//nolint:dupl

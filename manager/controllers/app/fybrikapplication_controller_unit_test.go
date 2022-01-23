@@ -59,10 +59,12 @@ func createClusterMetadata() *corev1.ConfigMap {
 
 // create FybrikApplication controller with mockup interfaces
 func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) *FybrikApplicationReconciler {
+	log := logging.LogInit("test", "ConfigPolicyEvaluator")
 	// environment: cluster-metadata configmap
 	_ = cl.Create(context.Background(), createClusterMetadata())
 	query, err := adminconfig.PrepareQuery()
 	if err != nil {
+		log.Error().Err(err).Msg("could not compile a query")
 		return nil
 	}
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -78,7 +80,7 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 		},
 		ClusterManager:  &mockup.ClusterLister{},
 		Provision:       &storage.ProvisionTest{},
-		ConfigEvaluator: adminconfig.NewRegoPolicyEvaluator(logging.LogInit("test", "ConfigPolicyEvaluator"), query),
+		ConfigEvaluator: adminconfig.NewRegoPolicyEvaluator(log, query),
 	}
 }
 

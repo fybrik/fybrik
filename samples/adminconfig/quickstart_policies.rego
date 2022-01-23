@@ -36,5 +36,5 @@ config[{"copy": decision}] {
     count(input.actions) > 0
     clusters := { "metadata.region" : [ input.request.dataset.geography ] }
     policy := {"ID": "copy-remote", "description":"Implicit copies should be used if the data is in a different region than the compute, and transformations are required", "version": "0.1"}
-    decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters}}
+    decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": clusters}}
 }

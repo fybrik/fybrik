@@ -168,7 +168,7 @@ Rules are written in the following syntax: `config[{capability: decision}]` wher
 ```
 { 
 	"policy": {"ID": <id>, "policySetID": <setId>, "description": <description>}, 
-	"deploy": <true, false>,
+	"deploy": <"True", "False">,
 	"restrictions": {
 		"modules": <map {key, list-of-values}>,
 		"clusters": <map {key, list-of-values}>,
@@ -190,15 +190,15 @@ Out of the box policies come with the fybrik deployment. They define the deploym
 package adminconfig
 
 config[{"read": decision}] {
-    read_request := input.request.usage.read
+    input.request.usage.read
     policy := {"ID": "read-default", "description":"Read capability is requested for read workloads"}
-    decision := {"policy": policy, "deploy": read_request}
+    decision := {"policy": policy, "deploy": "True"}
 }
 
 config[{"write": decision}] {
-    write_request := input.request.usage.write 
+    input.request.usage.write 
     policy := {"ID": "write-default", "description":"Write capability is requested for workloads that write data"}
-    decision := {"policy": policy, "deploy": write_request}
+    decision := {"policy": policy, "deploy": "True"}
 }
 ```
 
@@ -247,7 +247,7 @@ config[{"copy": decision}] {
     count(input.actions) > 0
     clusters := { "metadata.region" : [ input.request.dataset.geography ] }
     policy := {"ID": "copy-remote", "description":"Implicit copies should be used if the data is in a different region than the compute, and transformations are required"}
-    decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters}}
+    decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": clusters}}
 }
 
 ```
