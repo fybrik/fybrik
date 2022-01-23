@@ -1,6 +1,6 @@
 module fybrik.io/fybrik
 
-go 1.16
+go 1.17
 
 require (
 	emperror.dev/errors v0.7.0
