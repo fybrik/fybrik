@@ -75,27 +75,3 @@ func (in Restriction) DeepCopy() Restriction {
 	in.DeepCopyInto(out)
 	return *out
 }
-
-/*
-func (in RuleDecisionList) DeepCopyInto(out *RuleDecisionList) {
-	{
-		*out = RuleDecisionList{}
-		for i := range in {
-			decision := in[i]
-			if decision != nil {
-				copiedDecision := decision.DeepCopy()
-				*out = append(*out, copiedDecision)
-			}
-		}
-	}
-}
-
-func (in RuleDecisionList) DeepCopy() RuleDecisionList {
-	if in == nil {
-		return nil
-	}
-	out := new(RuleDecisionList)
-	in.DeepCopyInto(out)
-	return *out
-}
-*/
