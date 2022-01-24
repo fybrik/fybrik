@@ -54,6 +54,7 @@ extra:
   social:
     - icon: fontawesome/brands/github-alt
       link: https://github.com/fybrik/fybrik
+  varRelease: "--version 0.7.0"
 
 theme:
   name: material
@@ -87,8 +88,12 @@ markdown_extensions:
       emoji_generator: !!python/name:materialx.emoji.to_svg
 
 plugins:
-  # disable temporarely because its freezing the page
+  # disable temporarily because it's freezing the page
   - search:
       prebuild_index: python
       lang:
       - en
+  - macros:
+      include_yaml:
+        - ./external.yaml
+        - arrowFlight: "./arrowFlightReleases.yaml"
