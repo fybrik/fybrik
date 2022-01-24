@@ -25,6 +25,24 @@ Collaborators with `write` permissions can cherry-pick a Pull Request that is me
 
 You should ensure that all Pull Requests that target the release branch are reviewed and merged before proceeding to the next step.
 
+## 3. Optionally update the ArrowFlight releases file
+
+The file `./site/arrowFlightReleases` contains a map between fybrik and the arrow-flight-module releases. 
+The quick start uses this file to map to a relevant arrow-flight release. 
+* If there is a perfect march for the fybrik release is defined, its value will be used. 
+* Otherwise, the major fybrik release will be checked. 
+* If there is no matches, the `latest` arrow-flight release will be used.
+
+For example, if the file content is:
+
+```yaml
+v0.5: v0.5.0
+v0.5.3: v0.5.3
+v0.6: v0.6.0
+```
+The v0.5.3 fybrik release will use the v0.5.3 release of arrow-flight.
+The v0.6.1 fybrik release will be mapped to the v0.6.0 of arrow-flight.
+
 ## 3. Create a [new release](https://github.com/fybrik/fybrik/releases/new) 
 
 Use `vX.Y.Z` tag and set `releases/X.Y.Z` as the target.
