@@ -27,7 +27,7 @@ You should ensure that all Pull Requests that target the release branch are revi
 
 ## 3. Optionally update the ArrowFlight releases file
 
-The file `./site/arrowFlightReleases` contains a map between fybrik and teh arrow-flight-module releases. 
+The file `./site/arrowFlightReleases` contains a map between fybrik and the arrow-flight-module releases. 
 The quick start uses this file to map to a relevant arrow-flight release. 
 * If there is a perfect march for the fybrik release is defined, its value will be used. 
 * Otherwise, the major fybrik release will be checked. 
