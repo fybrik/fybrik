@@ -10,7 +10,7 @@ import (
 
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/logging"
-	"fybrik.io/fybrik/pkg/model/taxonomy"
+	"fybrik.io/fybrik/pkg/model/adminrules"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/pkg/errors"
@@ -20,7 +20,7 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-const TaxonomySchema string = "/tmp/taxonomy/taxonomy.json#/definitions/EvaluationOutputStructure"
+const ValidationPath string = "/tmp/taxonomy/adminrules.json#/definitions/EvaluationOutputStructure"
 
 // RegoPolicyEvaluator implements EvaluatorInterface
 type RegoPolicyEvaluator struct {
@@ -78,22 +78,22 @@ func (r *RegoPolicyEvaluator) prepareInputForOPA(in *EvaluatorInput) (map[string
 }
 
 // getOPADecisions parses the OPA decisions and merges decisions for the same capability
-func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.ResultSet) (taxonomy.DecisionPerCapabilityMap, bool, error) {
+func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.ResultSet) (adminrules.DecisionPerCapabilityMap, bool, error) {
 	log := r.Log.With().Str(utils.FybrikAppUUID, in.Workload.UUID).Logger()
-	decisions := taxonomy.DecisionPerCapabilityMap{}
+	decisions := adminrules.DecisionPerCapabilityMap{}
 	if len(rs) == 0 {
 		return decisions, false, errors.New("invalid opa evaluation - an empty result set has been received")
 	}
 	for _, result := range rs {
 		for _, expr := range result.Expressions {
-			if err := validateStructure(expr.Value, TaxonomySchema, in.Workload.UUID); err != nil {
+			if err := validateStructure(expr.Value, ValidationPath, in.Workload.UUID); err != nil {
 				return nil, false, err
 			}
 			bytes, err := yaml.Marshal(expr.Value)
 			if err != nil {
 				return nil, false, err
 			}
-			evalStruct := taxonomy.EvaluationOutputStructure{}
+			evalStruct := adminrules.EvaluationOutputStructure{}
 			if err = yaml.Unmarshal(bytes, &evalStruct); err != nil {
 				return nil, false, errors.Wrap(err, "Unexpected OPA response structure")
 			}
@@ -105,7 +105,7 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 					}
 					// apply defaults for undefined fields
 					if newDecision.Deploy == "" {
-						newDecision.Deploy = taxonomy.StatusUnknown
+						newDecision.Deploy = adminrules.StatusUnknown
 					}
 					// a single decision should be made for a capability
 					decision, exists := decisions[capability]
@@ -131,13 +131,13 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 // deploy: true/false take precedence over undefined, true and false result in a conflict.
 // restrictions: new pairs <key, value> are added, if both exist - compatibility is checked.
 // policy: concatenation of IDs and descriptions.
-func (r *RegoPolicyEvaluator) merge(newDecision taxonomy.Decision, oldDecision taxonomy.Decision) (bool, taxonomy.Decision) {
-	mergedDecision := taxonomy.Decision{}
+func (r *RegoPolicyEvaluator) merge(newDecision adminrules.Decision, oldDecision adminrules.Decision) (bool, adminrules.Decision) {
+	mergedDecision := adminrules.Decision{}
 	// merge deployment decisions
 	deploy := oldDecision.Deploy
-	if deploy == taxonomy.StatusUnknown {
+	if deploy == adminrules.StatusUnknown {
 		deploy = newDecision.Deploy
-	} else if newDecision.Deploy != taxonomy.StatusUnknown {
+	} else if newDecision.Deploy != adminrules.StatusUnknown {
 		if newDecision.Deploy != deploy {
 			return false, mergedDecision
 		}
@@ -146,23 +146,23 @@ func (r *RegoPolicyEvaluator) merge(newDecision taxonomy.Decision, oldDecision t
 	// merge restrictions
 	mergedDecision.DeploymentRestrictions = oldDecision.DeploymentRestrictions
 	if mergedDecision.DeploymentRestrictions.Clusters == nil {
-		mergedDecision.DeploymentRestrictions.Clusters = make(taxonomy.Restriction)
+		mergedDecision.DeploymentRestrictions.Clusters = make(adminrules.Restriction)
 	}
 	if err := mergeRestrictions(&mergedDecision.DeploymentRestrictions.Clusters, &newDecision.DeploymentRestrictions.Clusters); err != nil {
-		return false, taxonomy.Decision{}
+		return false, adminrules.Decision{}
 	}
 	if mergedDecision.DeploymentRestrictions.Modules == nil {
-		mergedDecision.DeploymentRestrictions.Modules = make(taxonomy.Restriction)
+		mergedDecision.DeploymentRestrictions.Modules = make(adminrules.Restriction)
 	}
 	if err := mergeRestrictions(&mergedDecision.DeploymentRestrictions.Modules, &newDecision.DeploymentRestrictions.Modules); err != nil {
-		return false, taxonomy.Decision{}
+		return false, adminrules.Decision{}
 	}
 	if mergedDecision.DeploymentRestrictions.StorageAccounts == nil {
-		mergedDecision.DeploymentRestrictions.StorageAccounts = make(taxonomy.Restriction)
+		mergedDecision.DeploymentRestrictions.StorageAccounts = make(adminrules.Restriction)
 	}
 
 	if err := mergeRestrictions(&mergedDecision.DeploymentRestrictions.StorageAccounts, &newDecision.DeploymentRestrictions.StorageAccounts); err != nil {
-		return false, taxonomy.Decision{}
+		return false, adminrules.Decision{}
 	}
 
 	// merge policies descriptions/ids
@@ -178,7 +178,7 @@ func (r *RegoPolicyEvaluator) merge(newDecision taxonomy.Decision, oldDecision t
 	return true, mergedDecision
 }
 
-func mergeRestrictions(r1 *taxonomy.Restriction, r2 *taxonomy.Restriction) error {
+func mergeRestrictions(r1 *adminrules.Restriction, r2 *adminrules.Restriction) error {
 	if r2 == nil {
 		return nil
 	}
@@ -201,7 +201,7 @@ func validateStructure(obj interface{}, taxonomySchema string, uuid string) erro
 	if err != nil {
 		return err
 	}
-	allErrs, err := validate.TaxonomyCheck(bytes, TaxonomySchema)
+	allErrs, err := validate.TaxonomyCheck(bytes, ValidationPath)
 	if err != nil {
 		return err
 	}

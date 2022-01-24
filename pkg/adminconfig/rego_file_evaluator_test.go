@@ -10,6 +10,7 @@ import (
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	adminconfig "fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/model/adminrules"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
@@ -280,7 +281,7 @@ var _ = Describe("Evaluate a policy", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["test"].Deploy).To(Equal(taxonomy.StatusFalse))
+		Expect(out.ConfigDecisions["test"].Deploy).To(Equal(adminrules.StatusFalse))
 	})
 
 	//nolint:dupl
@@ -308,7 +309,7 @@ var _ = Describe("Evaluate a policy", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["test"].Deploy).To(Equal(taxonomy.StatusFalse))
+		Expect(out.ConfigDecisions["test"].Deploy).To(Equal(adminrules.StatusFalse))
 	})
 
 	//nolint:dupl
@@ -339,7 +340,7 @@ var _ = Describe("Hard policy enforcement", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(taxonomy.StatusFalse))
+		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(adminrules.StatusFalse))
 	})
 
 	//nolint:dupl

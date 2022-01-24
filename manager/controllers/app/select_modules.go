@@ -11,6 +11,7 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/model/adminrules"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -164,7 +165,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 		supportedCapabilities[element.Module.Spec.Capabilities[element.CapabilityIndex].Capability] = true
 	}
 	for capability, decision := range item.Configuration.ConfigDecisions {
-		if decision.Deploy == taxonomy.StatusTrue {
+		if decision.Deploy == adminrules.StatusTrue {
 			// check that it is supported
 			if !supportedCapabilities[capability] {
 				return false
@@ -341,7 +342,7 @@ func supportsSinkInterface(edge *Edge, sink *Node) bool {
 }
 
 func allowCapability(item *DataInfo, capability taxonomy.Capability) bool {
-	return item.Configuration.ConfigDecisions[capability].Deploy != taxonomy.StatusFalse
+	return item.Configuration.ConfigDecisions[capability].Deploy != adminrules.StatusFalse
 }
 
 func validateModuleRestrictions(item *DataInfo, edge *Edge) bool {

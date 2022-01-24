@@ -1,9 +1,9 @@
 // Copyright 2022 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package taxonomy
+package adminrules
 
-type PolicySetID string
+import "fybrik.io/fybrik/pkg/model/taxonomy"
 
 // +kubebuilder:validation:Enum=True;False;Unknown
 type DeploymentStatus string
@@ -44,7 +44,7 @@ type Decision struct {
 	Policy DecisionPolicy `json:"policy,omitempty"`
 }
 
-type DecisionPerCapabilityMap map[Capability]Decision
+type DecisionPerCapabilityMap map[taxonomy.Capability]Decision
 
 // A list of decisions per capability, e.g. {"read": {"deploy": "True"}, "write": {"deploy": "False"}}
 type RuleDecisionList []DecisionPerCapabilityMap
@@ -54,6 +54,7 @@ type EvaluationOutputStructure struct {
 	Config RuleDecisionList `json:"config"`
 }
 
+/*
 func (in Restriction) DeepCopyInto(out *Restriction) {
 	{
 		*out = make(Restriction)
@@ -97,3 +98,4 @@ func (in RuleDecisionList) DeepCopy() RuleDecisionList {
 	in.DeepCopyInto(out)
 	return *out
 }
+*/
