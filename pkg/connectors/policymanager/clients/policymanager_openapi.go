@@ -6,8 +6,6 @@ package clients
 import (
 	"context"
 	"fmt"
-	"log"
-	"os"
 	"time"
 
 	"emperror.dev/errors"
@@ -45,15 +43,10 @@ func NewOpenAPIPolicyManager(name string, connectionURL string, connectionTimeou
 }
 
 func (m *openAPIPolicyManager) GetPoliciesDecisions(in *policymanager.GetPolicyDecisionsRequest, creds string) (*policymanager.GetPolicyDecisionsResponse, error) {
-	resp, r, err := m.client.DefaultApi.GetPoliciesDecisionsPost(context.Background()).XRequestCred(creds).PolicyManagerRequest(*in).Execute()
-	// resp, r, err := m.client.DefaultApi.GetPoliciesDecisions(context.Background()).Input(*in).Creds(creds).Execute()
+	resp, _, err := m.client.DefaultApi.GetPoliciesDecisionsPost(context.Background()).XRequestCred(creds).PolicyManagerRequest(*in).Execute()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error when calling `DefaultApi.GetPoliciesDecisions``: %v\n", err)
-		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 		return nil, errors.Wrap(err, fmt.Sprintf("get policies decisions from %s failed", m.name))
 	}
-	// response from `GetPoliciesDecisions`: []PolicymanagerResponse
-	log.Println("1Response from `DefaultApi.GetPoliciesDecisions`: \n", resp)
 	return &resp, nil
 }
 

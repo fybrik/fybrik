@@ -5,7 +5,6 @@ package app
 
 import (
 	"bytes"
-	"net/url"
 	"strings"
 	"text/template"
 
@@ -67,19 +66,12 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 		return nil, err
 	}
 
-	// S3 endpoint should not include the url scheme only the host name
-	// thus ignoring it if such exists.
-	url, err := url.Parse(bucket.Endpoint)
-	if err != nil {
-		return nil, err
-	}
-
 	connection := taxonomy.Connection{
 		Name: "s3",
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
 				"s3": map[string]interface{}{
-					"endpoint":   url.Host,
+					"endpoint":   bucket.Endpoint,
 					"bucket":     bucket.Name,
 					"object_key": genObjectKeyName,
 				},
@@ -114,7 +106,7 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 }
 
 // Adds the asset details, flows and templates to the given plotter spec.
-func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.FybrikApplication, plotterSpec *app.PlotterSpec) error {
+func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.FybrikApplication, plotterSpec *app.PlotterSpec) error {
 	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Choose modules for dataset")
 	var err error
 	subflows := make([]app.SubFlow, 0)
@@ -143,7 +135,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 	// DataStore for destination will be determined if an implicit copy is required
 	var sinkDataStore *app.DataStore
 
-	solutions := p.FindPaths(&item, appContext)
+	solutions := p.FindPaths(&item, application)
 	// No data path found for the asset
 	if len(solutions) == 0 {
 		msg := "Deployed modules do not provide the functionality required to construct a data path"
@@ -172,7 +164,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, appContext *app.Fy
 		var api *datacatalog.ResourceDetails
 		if moduleCapability.API != nil {
 			api, err = moduleAPIToService(moduleCapability.API, moduleCapability.Scope,
-				appContext, element.Module.Name, datasetID)
+				application, element.Module.Name, datasetID)
 			if err != nil {
 				return err
 			}

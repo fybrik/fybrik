@@ -2,7 +2,7 @@ name: Website Deploy
 on:
   push:
     tags:
-      - 'v*'
+      - '^v[0-9]+\.[0-9]+(\.[0-9]+)*'
     branches:
       - master
     paths:
@@ -14,6 +14,9 @@ on:
 jobs:
   website-deploy:
     runs-on: ubuntu-latest
+    env:
+      WORK_DIR: './site'
+      EXTERNAL_FILE: './site/external.yaml'
     steps:
       - uses: actions/checkout@v2
         with:
@@ -26,6 +29,7 @@ jobs:
         run: |
           pip install mkdocs-material=="8.*"
           pip install mike
+          pip install mkdocs-macros-plugin
       - name: setup git config
         run: |
           git config user.name "GitHub Actions Bot"
@@ -33,11 +37,27 @@ jobs:
       - id: version
         name: Infer version
         run: echo ::set-output name=version::$(cut -d '.' -f 1,2 <<< "${GITHUB_REF#refs/*/}")
+      - id: release
+        name: Infer release
+        run: echo ::set-output name=version::"${GITHUB_REF#refs/*/}"
+      - uses: actions-ecosystem/action-regex-match@v2
+        id: regex-match
+        with:
+          text:  ${{ steps.release.outputs.version }}
+          regex: '^v[0-9]+\.[0-9]+(\.[0-9]+)*'
+      - name: Sub (tag)
+        uses: bluwy/substitute-string-action@v1
+        if: ${{ startsWith(steps.release.outputs.version, steps.regex-match.outputs.match) }}
+        with:
+          _input-file: ${{ env.EXTERNAL_FILE }}
+          _format-key: '__key__'
+          _output-file: ${{ env.EXTERNAL_FILE }}
+          Release: ${{ steps.release.outputs.version }}
       - name: Build and Deploy (dev)
-        if: steps.version.outputs.version == 'master'
-        working-directory: ./site
+        if: ${{ ! startsWith(steps.release.outputs.version, steps.regex-match.outputs.match) && !env.ACT }}
+        working-directory: ${{ env.WORK_DIR }}
         run: mike deploy --push --remote origin --branch site dev
       - name: Build and Deploy (tag)
-        if: steps.version.outputs.version != 'master'
-        working-directory: ./site
+        if: ${{ startsWith(steps.release.outputs.version, steps.regex-match.outputs.match) && !env.ACT }}
+        working-directory: ${{ env.WORK_DIR }}
         run: mike deploy --push --update-aliases --remote origin --branch site ${{ steps.version.outputs.version }} latest
