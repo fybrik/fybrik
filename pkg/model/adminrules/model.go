@@ -54,7 +54,6 @@ type EvaluationOutputStructure struct {
 	Config RuleDecisionList `json:"config"`
 }
 
-/*
 func (in Restriction) DeepCopyInto(out *Restriction) {
 	{
 		*out = make(Restriction)
@@ -77,6 +76,7 @@ func (in Restriction) DeepCopy() Restriction {
 	return *out
 }
 
+/*
 func (in RuleDecisionList) DeepCopyInto(out *RuleDecisionList) {
 	{
 		*out = RuleDecisionList{}
