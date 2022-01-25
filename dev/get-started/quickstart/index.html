@@ -15,7 +15,7 @@
     
     
       
-        <title>Quick Start Guide - Fybrik</title>
+        <title>Quickstart - Fybrik</title>
       
     
     
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Quick Start Guide
+              Quickstart
             
           </span>
         </div>
@@ -369,12 +369,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Quick Start Guide
+          Quickstart
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Quick Start Guide
+        Quickstart
       </a>
       
         
@@ -1282,7 +1282,7 @@ kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="n
 <div class="highlight"><pre><span></span><code>helm install vault fybrik-charts/vault --create-namespace -n fybrik-system <span class="se">\</span>
     --set <span class="s2">&quot;vault.injector.enabled=false&quot;</span> <span class="se">\</span>
     --set <span class="s2">&quot;vault.server.dev.enabled=true&quot;</span> <span class="se">\</span>
-    --values https://raw.githubusercontent.com/fybrik/fybrik/v0.5.3/charts/vault/env/dev/vault-single-cluster-values.yaml
+    --values https://raw.githubusercontent.com/fybrik/fybrik/master/charts/vault/env/dev/vault-single-cluster-values.yaml
 kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n fybrik-system --timeout<span class="o">=</span>120s
 </code></pre></div>
 </div>
@@ -1291,7 +1291,7 @@ kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="n
     --set <span class="s2">&quot;vault.global.openshift=true&quot;</span> <span class="se">\</span>
     --set <span class="s2">&quot;vault.injector.enabled=false&quot;</span> <span class="se">\</span>
     --set <span class="s2">&quot;vault.server.dev.enabled=true&quot;</span> <span class="se">\</span>
-    --values https://raw.githubusercontent.com/fybrik/fybrik/v0.5.3/charts/vault/env/dev/vault-single-cluster-values.yaml
+    --values https://raw.githubusercontent.com/fybrik/fybrik/master/charts/vault/env/dev/vault-single-cluster-values.yaml
 kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n fybrik-system --timeout<span class="o">=</span>120s
 </code></pre></div>
 </div>
@@ -1310,9 +1310,9 @@ helm install fybrik charts/fybrik --set global.tag<span class="o">=</span>master
 </code></pre></div></p>
 </details>
 <p>The control plane includes a <code>manager</code> service that connects to a data catalog and to a policy manager. 
-Install the latest release of Fybrik with a built-in data catalog and with <a href="https://www.openpolicyagent.org">Open Policy Agent</a> as the policy manager:</p>
-<div class="highlight"><pre><span></span><code>helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system --wait
-helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait
+Install the Fybrik release with a built-in data catalog and with <a href="https://www.openpolicyagent.org">Open Policy Agent</a> as the policy manager:</p>
+<div class="highlight"><pre><span></span><code>helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system --version master --wait
+helm install fybrik fybrik-charts/fybrik -n fybrik-system --version master  --wait
 </code></pre></div>
 <h2 id="install-modules">Install modules</h2>
 <details class="tip">
@@ -1323,7 +1323,7 @@ helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait
 </details>
 <p><a href="../../concepts/modules/">Modules</a> are plugins that the control plane deploys whenever required. The <a href="https://github.com/fybrik/arrow-flight-module">arrow flight module</a> enables reading data through Apache Arrow Flight API. </p>
 <p>Install the latest<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> release of arrow-flight-module:</p>
-<div class="highlight"><pre><span></span><code>kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml -n fybrik-system
+<div class="highlight"><pre><span></span><code>  kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml -n fybrik-system
 </code></pre></div>
 <div class="footnote">
 <hr />
