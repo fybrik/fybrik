@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.8">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.0">
     
     
       
@@ -19,10 +19,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.6e60f8b8.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.82f3c0b9.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.9204c3b2.min.css">
         
           
           
@@ -1216,14 +1216,14 @@
 <p>When OPA is used for data governance, it is deployed as a stand-alone service.  Policies are defined in rego and uploaded to OPA.</p>
 <h2 id="fybrik-default-policies">Fybrik Default Policies</h2>
 <p>Fybrik <strong><em>denys by default</em></strong> any request if no rule is triggered. This behavior can be changed to <strong><em>allow by default</em></strong> by creating the following rule and upload it to OPA using methods described in this page:</p>
-<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">package dataapi.authz</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">package dataapi.authz</span>
 
-<span class="l l-Scalar l-Scalar-Plain">rule [{}] { true }</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">rule [{}] { true }</span>
 </code></pre></div>
 <p>You can also add conditions like</p>
-<div class="highlight"><pre><span></span><code><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rule[{}] {</span><span class="w"></span>
-<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">// conditions here</span><span class="w"></span>
-<span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code> <span class="l l-Scalar l-Scalar-Plain">rule[{}] {</span>
+  <span class="l l-Scalar l-Scalar-Plain">// conditions here</span>
+ <span class="l l-Scalar l-Scalar-Plain">}</span>
 </code></pre></div>
 <p>The verdict <code>allow</code> will be reached only if the conditions hold, and no other rule has been triggered, e.g. a rule requiring column redaction.</p>
 <h2 id="managing-opa-policies">Managing OPA policies</h2>
@@ -1237,16 +1237,16 @@
 <h3 id="using-a-configmap-yaml">Using a configmap YAML</h3>
 <ol>
 <li>Create a configmap with a Rego policy and a <code>openpolicyagent.org/policy=rego</code> label in the <code>fybrik-system</code> namespace:
-    <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span><span class="w"></span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ConfigMap</span><span class="w"></span>
-<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;policy-name&gt;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-system</span><span class="w"></span>
-<span class="w">  </span><span class="nt">labels</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">openpolicyagent.org/policy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rego</span><span class="w"></span>
-<span class="nt">data</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">main</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span><span class="w"></span>
-<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">&lt;you rego policy here&gt;</span><span class="w"></span>
+    <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ConfigMap</span>
+<span class="nt">metadata</span><span class="p">:</span>
+  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">&lt;policy-name&gt;</span>
+  <span class="nt">namespace</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fybrik-system</span>
+  <span class="nt">labels</span><span class="p">:</span>
+    <span class="nt">openpolicyagent.org/policy</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">rego</span>
+<span class="nt">data</span><span class="p">:</span>
+  <span class="nt">main</span><span class="p">:</span> <span class="p p-Indicator">|</span>
+  <span class="l l-Scalar l-Scalar-Plain">&lt;you rego policy here&gt;</span>
 </code></pre></div></li>
 <li>Apply the configmap:
     <div class="highlight"><pre><span></span><code>kubectl apply -f &lt;policy-name&gt;.yaml
@@ -1354,10 +1354,10 @@ In this approach the policies are uploaded upon OPA startup.</p>
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.22074ed6.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.cefbb252.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.960e086b.min.js"></script>
+      <script src="../../assets/javascripts/bundle.17f42bbf.min.js"></script>
       
     
   </body>
