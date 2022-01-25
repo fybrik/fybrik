@@ -58,7 +58,6 @@ type EvaluationOutputStructure struct {
 	Config RuleDecisionList `json:"config"`
 }
 
-/*
 // Manual work-around because auto-generated code does not pass gosec checks
 func (in Restriction) DeepCopyInto(out *Restriction) {
 	{
@@ -81,4 +80,3 @@ func (in Restriction) DeepCopy() Restriction {
 	in.DeepCopyInto(out)
 	return *out
 }
-*/
