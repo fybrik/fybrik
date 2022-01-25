@@ -3,7 +3,12 @@
 
 package adminconfig
 
-import "fybrik.io/fybrik/pkg/model/adminrules"
+import (
+	"fybrik.io/fybrik/pkg/model/adminrules"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
+)
+
+type DecisionPerCapabilityMap map[taxonomy.Capability]adminrules.Decision
 
 // EvaluatorOutput is an output of ConfigurationPoliciesEvaluator.
 // Used by manager to decide which modules are deployed and in which cluster.
@@ -17,5 +22,7 @@ type EvaluatorOutput struct {
 	// Policy set id used in the evaluation
 	PolicySetID string
 	// Decisions per capability (after being merged)
-	ConfigDecisions adminrules.DecisionPerCapabilityMap
+	ConfigDecisions DecisionPerCapabilityMap
+	// Affecting policies
+	Policies []adminrules.DecisionPolicy
 }

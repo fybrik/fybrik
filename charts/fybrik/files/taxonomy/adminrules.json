@@ -19,10 +19,19 @@
         }
       }
     },
-    "DecisionPerCapabilityMap": {
+    "DecisionPerCapability": {
       "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/Decision"
+      "required": [
+        "capability",
+        "decision"
+      ],
+      "properties": {
+        "capability": {
+          "$ref": "taxonomy.json#/definitions/Capability"
+        },
+        "decision": {
+          "$ref": "#/definitions/Decision"
+        }
       }
     },
     "DecisionPolicy": {
@@ -67,13 +76,9 @@
       }
     },
     "Restriction": {
-      "description": "Restriction maps a property to a list of allowed values. Semantics is a disjunction of values, i.e. a type can be either plugin or config.",
       "type": "object",
       "additionalProperties": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
+        "$ref": "#/definitions/StringList"
       }
     },
     "Restrictions": {
@@ -92,10 +97,17 @@
       }
     },
     "RuleDecisionList": {
-      "description": "A list of decisions per capability, e.g. {\"read\": {\"deploy\": \"True\"}, \"write\": {\"deploy\": \"False\"}}",
+      "description": "A list of decisions, e.g. [{\"capability\": \"read\", \"decision\": {\"deploy\": \"True\"}}, {\"capability\": \"write\", \"decision\": {\"deploy\": \"False\"}}]",
       "type": "array",
       "items": {
-        "$ref": "#/definitions/DecisionPerCapabilityMap"
+        "$ref": "#/definitions/DecisionPerCapability"
+      }
+    },
+    "StringList": {
+      "description": "Restriction maps a property to a list of allowed values. Semantics is a disjunction of values, i.e. a type can be either plugin or config.",
+      "type": "array",
+      "items": {
+        "type": "string"
       }
     }
   }

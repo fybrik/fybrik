@@ -17,7 +17,8 @@ const (
 
 // Restriction maps a property to a list of allowed values.
 // Semantics is a disjunction of values, i.e. a type can be either plugin or config.
-type Restriction map[string][]string
+type StringList []string
+type Restriction map[string]StringList
 
 // DecisionPolicy is a justification for a policy that consists of a unique id, id of a policy set and a human readable desciption
 type DecisionPolicy struct {
@@ -44,16 +45,21 @@ type Decision struct {
 	Policy DecisionPolicy `json:"policy,omitempty"`
 }
 
-type DecisionPerCapabilityMap map[taxonomy.Capability]Decision
+type DecisionPerCapability struct {
+	Capability taxonomy.Capability `json:"capability"`
+	Decision   Decision            `json:"decision"`
+}
 
-// A list of decisions per capability, e.g. {"read": {"deploy": "True"}, "write": {"deploy": "False"}}
-type RuleDecisionList []DecisionPerCapabilityMap
+// A list of decisions, e.g. [{"capability": "read", "decision": {"deploy": "True"}}, {"capability": "write", "decision": {"deploy": "False"}}]
+type RuleDecisionList []DecisionPerCapability
 
 // Result of query evaluation
 type EvaluationOutputStructure struct {
 	Config RuleDecisionList `json:"config"`
 }
 
+/*
+// Manual work-around because auto-generated code does not pass gosec checks
 func (in Restriction) DeepCopyInto(out *Restriction) {
 	{
 		*out = make(Restriction)
@@ -75,3 +81,4 @@ func (in Restriction) DeepCopy() Restriction {
 	in.DeepCopyInto(out)
 	return *out
 }
+*/

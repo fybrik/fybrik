@@ -27,13 +27,13 @@ func EvaluatorWithInvalidRules() *adminconfig.RegoPolicyEvaluator {
 	module := `
 		package adminconfig
 
-		config[{"test": decision}] {
+		config[{"capability": "read", "decision": decision}] {
 			input.workload.properties.rule == "test-deployment"
 			policy := {"ID": "invlaid-status"}
 			decision := {"policy": policy, "deploy": "anything"}
 		}
 
-		config[{"test": decision}] {
+		config[{"capability": "read", "decision": decision}] {
 			input.workload.properties.rule == "test-required-policy-id"
 			policy := {"name": "invalid-attribute"}
 			decision := {"policy": policy}
@@ -56,10 +56,10 @@ func EvaluatorWithInvalidRules() *adminconfig.RegoPolicyEvaluator {
 
 func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 	module := `
-		package adminconfig
+		package test
 
 		# read scenario, same location
-		config[{"test": decision}] {
+		config[{"capability": "copy", "decision": decision}] {
 			policy := {"policySetID": "1", "ID": "test-1"}
 			input.request.usage.read == true
 			input.request.usage.copy == false
@@ -68,7 +68,7 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 		}
 
 		# read scenario, different locations
-		config[{"test": decision}] {
+		config[{"capability": "copy", "decision": decision}] {
 			input.request.usage.read == true
 			input.request.dataset.geography != input.workload.cluster.metadata.region
 			clusters :=  { "name": [ "clusterB", "clusterD", "clusterC" ] }
@@ -78,7 +78,7 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 		}
 		
 		# copy scenario
-		config[{"test": decision}] {
+		config[{"capability": "copy", "decision": decision}] {
 			input.request.usage.copy == true
 			clusters :=  { "name": [ "clusterA", "clusterB", "clusterC" ] }
 			modules := {"type": ["service","plugin","config"]}
@@ -87,14 +87,14 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 		}
 
 		# write scenario
-		config[{"test": decision}] {
+		config[{"capability": "copy", "decision": decision}] {
 			input.request.usage.write == true
 			policy := {"policySetID": "2", "ID": "test-4"}
 			decision := {"policy": policy, "deploy": "False"}
 		}
 
 		# default scenario
-		config[{"test": decision}] {
+		config[{"capability": "copy", "decision": decision}] {
 			policy := {"ID": "default", "policySetID": "1"}
 			decision := {"policy": policy}
 		}
@@ -106,7 +106,7 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 	Expect(err).ToNot(HaveOccurred())
 
 	rego := rego.New(
-		rego.Query("data.adminconfig"),
+		rego.Query("data.test"),
 		rego.Compiler(compiler),
 	)
 	query, err := rego.PrepareForEval(context.Background())
@@ -119,7 +119,7 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 		package adminconfig
 
 		# no copy for dev workloads
-		config[{"copy": decision}] {
+		config[{"capability": "copy", "decision": decision}] {
 			input.request.usage.read == true
 			input.workload.properties.stage == "DEV"
 			policy := {"description": "do not copy in DEV workload", "ID": "copy-dev"}
@@ -127,7 +127,7 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 		}
 
 		# Production Workloads - read
-		config[{"read": decision}] {
+		config[{"capability": "read", "decision": decision}] {
 			input.request.usage.read == true
 			input.workload.properties.stage == "PROD"
 			workload_region := input.workload.cluster.metadata.region
@@ -137,7 +137,7 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 		}
 
 		# Cost Efficient Production Workloads - copy
-		config[{"copy": decision}] {
+		config[{"capability": "copy", "decision": decision}] {
 			input.request.usage.read == true
 			input.workload.properties.stage == "PROD"
 			input.workload.properties.priority != "high"
@@ -152,7 +152,7 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 		}
 
 		# High Priority Production Workloads - copy
-		config[{"copy": decision}] {
+		config[{"capability": "copy", "decision": decision}] {
 			input.request.usage.read == true
 			input.workload.properties.stage == "PROD"
 			input.workload.properties.priority == "high"
@@ -166,7 +166,7 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 		}
 
 		# Transform
-		config[{"transform": decision}] {
+		config[{"capability": "transform", "decision": decision}] {
 			policy := {"ID": "transform-geo", "description":"Governance based transformations must take place in the geography where the data is stored"}
 			clusters := { "metadata.region" : [ input.request.dataset.geography ] }
 			decision := {"policy": policy, "restrictions": {"clusters": clusters}}
@@ -281,7 +281,7 @@ var _ = Describe("Evaluate a policy", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["test"].Deploy).To(Equal(adminrules.StatusFalse))
+		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(adminrules.StatusFalse))
 	})
 
 	//nolint:dupl
@@ -293,9 +293,9 @@ var _ = Describe("Evaluate a policy", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["test"].DeploymentRestrictions.Clusters["name"]).To(ContainElements("clusterB", "clusterC"))
-		Expect(out.ConfigDecisions["test"].DeploymentRestrictions.Modules["type"]).To(ContainElements("service", "config", "plugin"))
-		Expect(out.ConfigDecisions["test"].DeploymentRestrictions.Modules["scope"]).To(ContainElements("asset"))
+		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions.Clusters["name"]).To(ContainElements("clusterB", "clusterC"))
+		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions.Modules["type"]).To(ContainElements("service", "config", "plugin"))
+		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions.Modules["scope"]).To(ContainElements("asset"))
 	})
 
 	//nolint:dupl
@@ -309,7 +309,7 @@ var _ = Describe("Evaluate a policy", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["test"].Deploy).To(Equal(adminrules.StatusFalse))
+		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(adminrules.StatusFalse))
 	})
 
 	//nolint:dupl
