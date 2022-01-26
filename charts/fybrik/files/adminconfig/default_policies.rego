@@ -5,7 +5,6 @@ package adminconfig
 # read capability deployment
 config[{"capability": "read", "decision": decision}] {
     input.request.usage.read == true
-    read_request := input.request.usage.read
     policy := {"ID": "read-default-enabled", "description":"Read capability is requested for read workloads", "version": "0.1"}
     decision := {"policy": policy, "deploy": "True"}
 }
@@ -13,7 +12,6 @@ config[{"capability": "read", "decision": decision}] {
 # read capability deployment
 config[{"capability": "read", "decision": decision}] {
     input.request.usage.read == false
-    read_request := input.request.usage.read
     policy := {"ID": "read-default-disabled", "description":"Read capability is requested for read workloads", "version": "0.1"}
     decision := {"policy": policy, "deploy": "False"}
 }
