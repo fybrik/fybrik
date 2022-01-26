@@ -54,10 +54,10 @@ jobs:
           _output-file: ${{ env.EXTERNAL_FILE }}
           Release: ${{ steps.release.outputs.version }}
       - name: Build and Deploy (dev)
-        if: ${{ ! startsWith(steps.release.outputs.version, steps.regex-match.outputs.match) && !env.ACT }}
+        if: ${{ steps.version.outputs.version == 'master' && !env.ACT }}
         working-directory: ${{ env.WORK_DIR }}
         run: mike deploy --push --remote origin --branch site dev
       - name: Build and Deploy (tag)
-        if: ${{ startsWith(steps.release.outputs.version, steps.regex-match.outputs.match) && !env.ACT }}
+        if: ${{ steps.version.outputs.version != 'master' && !env.ACT }}
         working-directory: ${{ env.WORK_DIR }}
         run: mike deploy --push --update-aliases --remote origin --branch site ${{ steps.version.outputs.version }} latest
