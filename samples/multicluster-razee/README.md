@@ -31,7 +31,7 @@ git clone https://github.com/fybrik/fybrik.git
 cd fybrik
 ```
 
-We want to have a use case that the dataset is transfered accross different clusters. So change the regin of the data plane cluster `kind-kind` from `homeoffice` to `theshire`:
+We want to have a use case that the dataset is transfered accross different clusters. So change the region of the data plane cluster `kind-kind` from `homeoffice` to `theshire`:
 
 ```bash
 sed -i 's/homeoffice/theshire/g' ./charts/fybrik/kind-kind.values.yaml
@@ -71,7 +71,7 @@ sh ./hack/setup-local-multi-cluster.sh
 
 You can also manually execute the commands in this script one by one.
 
-This scripts will setup two Kind clusters, install and configure Razee, Vault, Cert-manager, Datashim to them. After the sciprt finishes running, we will get a multicluster environment consisting of two clusters:
+This script will setup two Kind clusters, install and configure Razee, Vault, Cert-manager, Datashim to them. After the script finishes running, we will get a multicluster environment consisting of two clusters:
 
 - kind-control
 - kind-kind
@@ -161,7 +161,7 @@ Setup localstack on both clusters, `kind-control` and `kind-kind`.
     kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
     ```
 
-Upload the cvs file to localstack only on cluster `kind-kind`
+Upload the CSV file to localstack only on cluster `kind-kind`
 
 1. Create a port-forward to communicate with localstack server:
 
