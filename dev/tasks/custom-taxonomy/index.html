@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.0">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.8">
     
     
       
@@ -19,10 +19,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.82f3c0b9.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6e60f8b8.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.9204c3b2.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
         
           
           
@@ -1239,17 +1239,17 @@ If this flag is not provided, Fybrik will use the default <code>taxonomy.json</c
 <p>Follow the <a href="https://fybrik.io/latest/get-started/quickstart/"><code>quickstart guide</code></a> but stop before the command <code>helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait</code>
  (or <code>helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait</code> in development mode).</p>
 <p>The initial taxonomy to be used in this example is a base taxonomy that can be found in <a href="https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/taxonomy/taxonomy.json"><code>charts/fybrik/files/taxonomy/taxonomy.json</code></a> with the following taxonomy layer:</p>
-<p><div class="highlight"><pre><span></span><code><span class="nt">definitions</span><span class="p">:</span>
-  <span class="nt">AppInfo</span><span class="p">:</span>
-    <span class="nt">properties</span><span class="p">:</span>
-      <span class="nt">intent</span><span class="p">:</span>
-        <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
-        <span class="nt">enum</span><span class="p">:</span>
-          <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">Customer Support</span>
-          <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">Fraud Detection</span>
-          <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">Customer Behavior Analysis</span>
-    <span class="nt">required</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">intent</span>
+<p><div class="highlight"><pre><span></span><code><span class="nt">definitions</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">AppInfo</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">properties</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">intent</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
+<span class="w">        </span><span class="nt">enum</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Customer Support</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fraud Detection</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Customer Behavior Analysis</span><span class="w"></span>
+<span class="w">    </span><span class="nt">required</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">intent</span><span class="w"></span>
 </code></pre></div>
 Copy the taxonomy layer to a <code>taxonomy-layer.yaml</code> file.</p>
 <p>The working directory is the fybrik repository.
@@ -1260,27 +1260,27 @@ In order to compile and merge the two taxonomies, the Taxonomy Compile CLI tool 
 <div class="highlight"><pre><span></span><code>helm install fybrik charts/fybrik --set global.tag<span class="o">=</span>master --set global.imagePullPolicy<span class="o">=</span>Always -n fybrik-system --wait --set-file <span class="nv">taxonomyOverride</span><span class="o">=</span>custom-taxonomy.json
 </code></pre></div>
 <p>Trying to deploy a fybrikapplication.yaml that has an intent of <code>Marketing</code> should fail validation beacuse there is no <code>Marketing</code> intent in the taxonomy. The following command should fail with a description of a validation error :</p>
-<p><div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span>
-<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">FybrikApplication</span>
-<span class="nt">metadata</span><span class="p">:</span>
-  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">taxonomy-test</span>
-<span class="nt">spec</span><span class="p">:</span>
-  <span class="nt">selector</span><span class="p">:</span>
-   <span class="nt">workloadSelector</span><span class="p">:</span>
-     <span class="nt">matchLabels</span><span class="p">:</span> <span class="p p-Indicator">{</span>
-<span class="nt">       app</span><span class="p">:</span> <span class="nv">notebook</span>
-     <span class="p p-Indicator">}</span>
-  <span class="nt">appInfo</span><span class="p">:</span>
-    <span class="nt">intent</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Marketing</span>
-    <span class="nt">role</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Business Analyst</span>
-  <span class="nt">data</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="nt">dataSetID</span><span class="p">:</span> <span class="s">&quot;default/fake.csv&quot;</span>
-      <span class="nt">requirements</span><span class="p">:</span>
-        <span class="nt">interface</span><span class="p">:</span>
-          <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">s3</span>
-          <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">csv</span>
-<span class="l l-Scalar l-Scalar-Plain">EOF</span>
+<p><div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1alpha1</span><span class="w"></span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FybrikApplication</span><span class="w"></span>
+<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taxonomy-test</span><span class="w"></span>
+<span class="nt">spec</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">selector</span><span class="p">:</span><span class="w"></span>
+<span class="w">   </span><span class="nt">workloadSelector</span><span class="p">:</span><span class="w"></span>
+<span class="w">     </span><span class="nt">matchLabels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="w"></span>
+<span class="nt">       app</span><span class="p">:</span><span class="w"> </span><span class="nv">notebook</span><span class="w"></span>
+<span class="w">     </span><span class="p p-Indicator">}</span><span class="w"></span>
+<span class="w">  </span><span class="nt">appInfo</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">intent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Marketing</span><span class="w"></span>
+<span class="w">    </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Business Analyst</span><span class="w"></span>
+<span class="w">  </span><span class="nt">data</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataSetID</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;default/fake.csv&quot;</span><span class="w"></span>
+<span class="w">      </span><span class="nt">requirements</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">interface</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span><span class="w"></span>
+<span class="w">          </span><span class="nt">dataformat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">csv</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
 </code></pre></div>
 The expected error is <code>The FybrikApplication "taxonomy-test" is invalid: spec.appInfo.intent: Invalid value: "Marketing": spec.appInfo.intent must be one of the following: "Customer Behavior Analysis", "Customer Support", "Fraud Detection"</code>. Thus, no FybrikApplication CRD was created.</p>
 <p>To fix this, a new intent with <code>Marketing</code> value should be added to the taxonomy. Add a new value of "Marketing" in <code>custom-taxonomy.json</code> file in <code>intent</code> property as follows:</p>
@@ -1298,27 +1298,27 @@ The expected error is <code>The FybrikApplication "taxonomy-test" is invalid: sp
 <div class="highlight"><pre><span></span><code>helm upgrade fybrik charts/fybrik --set global.tag<span class="o">=</span>master --set global.imagePullPolicy<span class="o">=</span>Always -n fybrik-system --wait --set-file <span class="nv">taxonomyOverride</span><span class="o">=</span>custom-taxonomy.json
 </code></pre></div>
 <p>After updating fybrik to get fybrikapplications with <code>Marketing</code> intent, the deployment of a fybrikapplication.yaml that has an intent of <code>Marketing</code> will succeed:</p>
-<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span>
-<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">FybrikApplication</span>
-<span class="nt">metadata</span><span class="p">:</span>
-  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">taxonomy-test</span>
-<span class="nt">spec</span><span class="p">:</span>
-  <span class="nt">selector</span><span class="p">:</span>
-   <span class="nt">workloadSelector</span><span class="p">:</span>
-     <span class="nt">matchLabels</span><span class="p">:</span> <span class="p p-Indicator">{</span>
-<span class="nt">       app</span><span class="p">:</span> <span class="nv">notebook</span>
-     <span class="p p-Indicator">}</span>
-  <span class="nt">appInfo</span><span class="p">:</span>
-    <span class="nt">intent</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Marketing</span>
-    <span class="nt">role</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Business Analyst</span>
-  <span class="nt">data</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="nt">dataSetID</span><span class="p">:</span> <span class="s">&quot;default/fake.csv&quot;</span>
-      <span class="nt">requirements</span><span class="p">:</span>
-        <span class="nt">interface</span><span class="p">:</span>
-          <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">s3</span>
-          <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">csv</span>
-<span class="l l-Scalar l-Scalar-Plain">EOF</span>
+<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1alpha1</span><span class="w"></span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FybrikApplication</span><span class="w"></span>
+<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taxonomy-test</span><span class="w"></span>
+<span class="nt">spec</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">selector</span><span class="p">:</span><span class="w"></span>
+<span class="w">   </span><span class="nt">workloadSelector</span><span class="p">:</span><span class="w"></span>
+<span class="w">     </span><span class="nt">matchLabels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="w"></span>
+<span class="nt">       app</span><span class="p">:</span><span class="w"> </span><span class="nv">notebook</span><span class="w"></span>
+<span class="w">     </span><span class="p p-Indicator">}</span><span class="w"></span>
+<span class="w">  </span><span class="nt">appInfo</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">intent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Marketing</span><span class="w"></span>
+<span class="w">    </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Business Analyst</span><span class="w"></span>
+<span class="w">  </span><span class="nt">data</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataSetID</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;default/fake.csv&quot;</span><span class="w"></span>
+<span class="w">      </span><span class="nt">requirements</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">interface</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span><span class="w"></span>
+<span class="w">          </span><span class="nt">dataformat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">csv</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
 </code></pre></div>
 <p>The result is a FybrikApplication Custom Resource Definition instance called taxonomy-test.</p>
 <ul>
@@ -1328,14 +1328,14 @@ The expected error is <code>The FybrikApplication "taxonomy-test" is invalid: sp
 <p>Follow the <a href="https://fybrik.io/latest/get-started/quickstart/"><code>quickstart guide</code></a> but stop before the command <code>helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait</code>
  (or <code>helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait</code> in development mode).</p>
 <p>The initial taxonomy to be used in this example is a base taxonomy that can be found in <a href="https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/taxonomy/taxonomy.json"><code>charts/fybrik/files/taxonomy/taxonomy.json</code></a> with the following taxonomy layer:</p>
-<p><div class="highlight"><pre><span></span><code><span class="nt">definitions</span><span class="p">:</span>
-  <span class="nt">ActionName</span><span class="p">:</span>
-    <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
-    <span class="nt">enum</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">RedactAction</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">RemoveAction</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">Deny</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">RedactYAction</span>
+<p><div class="highlight"><pre><span></span><code><span class="nt">definitions</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">ActionName</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
+<span class="w">    </span><span class="nt">enum</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RedactAction</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RemoveAction</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deny</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RedactYAction</span><span class="w"></span>
 </code></pre></div>
 Copy the taxonomy layer to a <code>taxonomy-layer.yaml</code> file.</p>
 <p>The working directory is the fybrik repository.
@@ -1346,30 +1346,30 @@ In order to compile and merge the two taxonomies, the Taxonomy Compile CLI tool 
 <div class="highlight"><pre><span></span><code>helm install fybrik charts/fybrik --set global.tag<span class="o">=</span>master --set global.imagePullPolicy<span class="o">=</span>Always -n fybrik-system --wait --set-file <span class="nv">taxonomyOverride</span><span class="o">=</span>custom-taxonomy.json
 </code></pre></div>
 <p>Trying to deploy a fybrikmodule.yaml that has a <code>RedactYAction</code> should fail validation beacuse there is no <code>RedactYAction</code> in the taxonomy. The following command should fail with a description of a validation error :</p>
-<p><div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span>
-<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">FybrikModule</span>
-<span class="nt">metadata</span><span class="p">:</span>
-  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">taxonomy-module-test</span>
-<span class="nt">spec</span><span class="p">:</span>
-  <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">service</span>
-  <span class="nt">chart</span><span class="p">:</span>
-    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ghcr.io/fybrik/fake</span>
-    <span class="nt">values</span><span class="p">:</span>
-      <span class="nt">image.tag</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">master</span>
-  <span class="nt">capabilities</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="nt">capability</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">read</span>
-      <span class="nt">scope</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">workload</span>
-      <span class="nt">supportedInterfaces</span><span class="p">:</span>
-        <span class="p p-Indicator">-</span> <span class="nt">source</span><span class="p">:</span>
-            <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">s3</span>
-            <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">parquet</span>
-        <span class="p p-Indicator">-</span> <span class="nt">source</span><span class="p">:</span>
-            <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">s3</span>
-            <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">csv</span>
-      <span class="nt">actions</span><span class="p">:</span>
-        <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">RedactYAction</span>
-<span class="l l-Scalar l-Scalar-Plain">EOF</span>
+<p><div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1alpha1</span><span class="w"></span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FybrikModule</span><span class="w"></span>
+<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taxonomy-module-test</span><span class="w"></span>
+<span class="nt">spec</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service</span><span class="w"></span>
+<span class="w">  </span><span class="nt">chart</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/fybrik/fake</span><span class="w"></span>
+<span class="w">    </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">image.tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">master</span><span class="w"></span>
+<span class="w">  </span><span class="nt">capabilities</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">capability</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">read</span><span class="w"></span>
+<span class="w">      </span><span class="nt">scope</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">workload</span><span class="w"></span>
+<span class="w">      </span><span class="nt">supportedInterfaces</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">source</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span><span class="w"></span>
+<span class="w">            </span><span class="nt">dataformat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">parquet</span><span class="w"></span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">source</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span><span class="w"></span>
+<span class="w">            </span><span class="nt">dataformat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">csv</span><span class="w"></span>
+<span class="w">      </span><span class="nt">actions</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RedactYAction</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
 </code></pre></div>
 The expected error is <code>The FybrikModule "taxonomy-module-test" is invalid: spec.capabilities.0.actions.0.name: Invalid value: "RedactYAction": spec.capabilities.0.actions.0.name must be one of the following: "Deny", "RedactAction", "RemoveAction"</code>. Thus, no FybrikModule CRD was created.</p>
 <p>To fix this, a new action name with <code>RedactYAction</code> value should be added to the taxonomy. Add a new value of "RedactYAction" in <code>custom-taxonomy.json</code> file in <code>ActionName</code> property as follows:</p>
@@ -1387,30 +1387,30 @@ The expected error is <code>The FybrikModule "taxonomy-module-test" is invalid: 
 <div class="highlight"><pre><span></span><code>helm upgrade fybrik charts/fybrik --set global.tag<span class="o">=</span>master --set global.imagePullPolicy<span class="o">=</span>Always -n fybrik-system --wait --set-file <span class="nv">taxonomyOverride</span><span class="o">=</span>custom-taxonomy.json
 </code></pre></div>
 <p>After updating fybrik to get fybrikmodule with <code>RedactYAction</code>, the deployment of a fybrikmodule.yaml that has a <code>RedactYAction</code> will succeed:</p>
-<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span>
-<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">FybrikModule</span>
-<span class="nt">metadata</span><span class="p">:</span>
-  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">taxonomy-module-test</span>
-<span class="nt">spec</span><span class="p">:</span>
-  <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">service</span>
-  <span class="nt">chart</span><span class="p">:</span>
-    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ghcr.io/fybrik/fake</span>
-    <span class="nt">values</span><span class="p">:</span>
-      <span class="nt">image.tag</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">master</span>
-  <span class="nt">capabilities</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="nt">capability</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">read</span>
-      <span class="nt">scope</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">workload</span>
-      <span class="nt">supportedInterfaces</span><span class="p">:</span>
-        <span class="p p-Indicator">-</span> <span class="nt">source</span><span class="p">:</span>
-            <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">s3</span>
-            <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">parquet</span>
-        <span class="p p-Indicator">-</span> <span class="nt">source</span><span class="p">:</span>
-            <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">s3</span>
-            <span class="nt">dataformat</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">csv</span>
-      <span class="nt">actions</span><span class="p">:</span>
-        <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">RedactYAction</span>
-<span class="l l-Scalar l-Scalar-Plain">EOF</span>
+<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1alpha1</span><span class="w"></span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FybrikModule</span><span class="w"></span>
+<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taxonomy-module-test</span><span class="w"></span>
+<span class="nt">spec</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service</span><span class="w"></span>
+<span class="w">  </span><span class="nt">chart</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/fybrik/fake</span><span class="w"></span>
+<span class="w">    </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">image.tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">master</span><span class="w"></span>
+<span class="w">  </span><span class="nt">capabilities</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">capability</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">read</span><span class="w"></span>
+<span class="w">      </span><span class="nt">scope</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">workload</span><span class="w"></span>
+<span class="w">      </span><span class="nt">supportedInterfaces</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">source</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span><span class="w"></span>
+<span class="w">            </span><span class="nt">dataformat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">parquet</span><span class="w"></span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">source</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span><span class="w"></span>
+<span class="w">            </span><span class="nt">dataformat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">csv</span><span class="w"></span>
+<span class="w">      </span><span class="nt">actions</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RedactYAction</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
 </code></pre></div>
 <p>The result is a FybrikModule Custom Resource Definition instance called taxonomy-module-test.</p>
 
@@ -1495,10 +1495,10 @@ The expected error is <code>The FybrikModule "taxonomy-module-test" is invalid: 
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.cefbb252.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.22074ed6.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.17f42bbf.min.js"></script>
+      <script src="../../assets/javascripts/bundle.960e086b.min.js"></script>
       
     
   </body>
