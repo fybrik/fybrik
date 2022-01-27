@@ -1252,20 +1252,21 @@
 - <code>usage</code>: a set of boolean properties associated with data use: <code>usage.read</code>, <code>usage.write</code>, <code>usage.copy</code></p>
 <h2 id="syntax">Syntax</h2>
 <p>Policies are written in rego files. Each file declares a package <code>adminconfig</code>.</p>
-<p>Rules are written in the following syntax: <code>config[{capability: decision}]</code> where</p>
+<p>Rules are written in the following syntax: <code>config[{"capability": capability, "decision": decision}]</code> where</p>
 <p><code>capability</code> represents a required module capability, such as "read", "write", "transform" and "copy".</p>
 <p><code>decision</code> is a JSON structure that matches <code>Decision</code> defined above. </p>
 <div class="highlight"><pre><span></span><code>{ 
-    &quot;policy&quot;: {&quot;ID&quot;: &lt;id&gt;, &quot;policySetID&quot;: &lt;setId&gt;, &quot;description&quot;: &lt;description&gt;}, 
-    &quot;deploy&quot;: &lt;true, false&gt;,
+    &quot;policy&quot;: {&quot;ID&quot;: &lt;id&gt;, &quot;policySetID&quot;: &lt;setId&gt;, &quot;description&quot;: &lt;description&gt;, &quot;version&quot;: &lt;version&gt;}, 
+    &quot;deploy&quot;: &lt;&quot;True&quot;, &quot;False&quot;&gt;,
     &quot;restrictions&quot;: {
         &quot;modules&quot;: &lt;map {key, list-of-values}&gt;,
         &quot;clusters&quot;: &lt;map {key, list-of-values}&gt;,
+        &quot;storageaccounts&quot;: &lt;map {key, list-of-values}&gt;,
     },
 }
 </code></pre></div>
 <p>For example, the policy above restricts the choice of clusters and modules for a read capability by narrowing the choice of deployment clusters to the workload cluster, and restricting the module type to service.</p>
-<div class="highlight"><pre><span></span><code>config[{&quot;read&quot;: decision}] {
+<div class="highlight"><pre><span></span><code>config[{&quot;capability&quot;: &quot;read&quot;, &quot;decision&quot;: decision}] {
     input.request.usage.read == true
     policy := {&quot;version&quot;: &quot;0.1&quot;, &quot;ID&quot;: &quot;read-ID&quot;, &quot;description&quot;:&quot;Deploy read as a service in the workload cluster&quot;}
     clusters := { &quot;name&quot; : [ input.workload.cluster.name ] }
@@ -1282,7 +1283,7 @@ Cluster is not a custom resource. It has the following properties:
 - name: cluster name
 - metadata.region: cluster region
 - metadata.zone: cluster zone</p>
-<p><code>deploy</code> receives "true"/"false" values. These values indicate whether the capability should or should not be deployed. If not specified in the policy, it's up to Fybrik to decide on the capability deployment.</p>
+<p><code>deploy</code> receives "True"/"False" values. These values indicate whether the capability should or should not be deployed. If not specified in the policy, it's up to Fybrik to decide on the capability deployment.</p>
 <h3 id="policy-set-id">Policy Set ID</h3>
 <p>Fybrik supports evaluating different sets of policies for different FybrikApplications. It is possible to define a policy for a specific <code>policySetID</code> which will be trigered only if it matches the <code>policySetID</code> defined in FybrikApplication. 
 If a policy does not specify a policy set id, it will be considered as relevant for all FybrikApplications.
@@ -1291,16 +1292,32 @@ In a similar way, all policies are relevant for a FybrikApplication that does no
 <p>Out of the box policies come with the fybrik deployment. They define the deployment of basic capabilities, such as read and write. 
 <div class="highlight"><pre><span></span><code>package adminconfig
 
-config[{&quot;read&quot;: decision}] {
-    read_request := input.request.usage.read
-    policy := {&quot;ID&quot;: &quot;read-default&quot;, &quot;description&quot;:&quot;Read capability is requested for read workloads&quot;, &quot;version&quot;: &quot;0.1&quot;}
-    decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: read_request}
+# read capability deployment
+config[{&quot;capability&quot;: &quot;read&quot;, &quot;decision&quot;: decision}] {
+    input.request.usage.read == true
+    policy := {&quot;ID&quot;: &quot;read-default-enabled&quot;, &quot;description&quot;:&quot;Read capability is requested for read workloads&quot;, &quot;version&quot;: &quot;0.1&quot;}
+    decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: &quot;True&quot;}
 }
 
-config[{&quot;write&quot;: decision}] {
-    write_request := input.request.usage.write 
-    policy := {&quot;ID&quot;: &quot;write-default&quot;, &quot;description&quot;:&quot;Write capability is requested for workloads that write data&quot;, &quot;version&quot;: &quot;0.1&quot;}
-    decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: write_request}
+# read capability deployment
+config[{&quot;capability&quot;: &quot;read&quot;, &quot;decision&quot;: decision}] {
+    input.request.usage.read == false
+    policy := {&quot;ID&quot;: &quot;read-default-disabled&quot;, &quot;description&quot;:&quot;Read capability is requested for read workloads&quot;, &quot;version&quot;: &quot;0.1&quot;}
+    decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: &quot;False&quot;}
+}
+
+# write capability deployment
+config[{&quot;capability&quot;: &quot;write&quot;, &quot;decision&quot;: decision}] {
+    input.request.usage.write == true
+    policy := {&quot;ID&quot;: &quot;write-default-enabled&quot;, &quot;description&quot;:&quot;Write capability is requested for workloads that write data&quot;, &quot;version&quot;: &quot;0.1&quot;}
+    decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: &quot;True&quot;}
+}
+
+# write capability deployment
+config[{&quot;capability&quot;: &quot;write&quot;, &quot;decision&quot;: decision}] {
+    input.request.usage.write == false
+    policy := {&quot;ID&quot;: &quot;write-default-disabled&quot;, &quot;description&quot;:&quot;Write capability is requested for workloads that write data&quot;, &quot;version&quot;: &quot;0.1&quot;}
+    decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: &quot;False&quot;}
 }
 </code></pre></div></p>
 <h3 id="extended-policies">Extended policies</h3>
@@ -1309,21 +1326,21 @@ config[{&quot;write&quot;: decision}] {
 <div class="highlight"><pre><span></span><code>package adminconfig
 
 # configure where transformations take place
-config[{&quot;transform&quot;: decision}] {
+config[{&quot;capability&quot;: &quot;transform&quot;, &quot;decision&quot;: decision}] {
     policy := {&quot;ID&quot;: &quot;transform-geo&quot;, &quot;description&quot;:&quot;Governance based transformations must take place in the geography where the data is stored&quot;, &quot;version&quot;: &quot;0.1&quot;}
     clusters := { &quot;metadata.region&quot; : [ input.request.dataset.geography ] }
     decision := {&quot;policy&quot;: policy, &quot;restrictions&quot;: {&quot;clusters&quot;: clusters}}
 }
 
 # configure the scope of the read capability
-config[{&quot;read&quot;: decision}] {
+config[{&quot;capability&quot;: &quot;read&quot;, &quot;decision&quot;: decision}] {
     input.request.usage.read == true
     policy := {&quot;ID&quot;: &quot;read-scope&quot;, &quot;description&quot;:&quot;Deploy read at the workload scope&quot;, &quot;version&quot;: &quot;0.1&quot;}
     decision := {&quot;policy&quot;: policy, &quot;restrictions&quot;: {&quot;modules&quot;: {&quot;capabilities.scope&quot; : [&quot;workload&quot;]}}}
 }
 
 # configure where the read capability will be deployed
-config[{&quot;read&quot;: decision}] {
+config[{&quot;capability&quot;: &quot;read&quot;, &quot;decision&quot;: decision}] {
     input.request.usage.read == true
     policy := {&quot;ID&quot;: &quot;read-location&quot;, &quot;description&quot;:&quot;Deploy read in the workload cluster&quot;, &quot;version&quot;: &quot;0.1&quot;}
     clusters := { &quot;name&quot; : [ input.workload.cluster.name ] }
@@ -1331,20 +1348,20 @@ config[{&quot;read&quot;: decision}] {
 }
 
 # allow implicit copies by default
-config[{&quot;copy&quot;: decision}] {
+config[{&quot;capability&quot;: &quot;copy&quot;, &quot;decision&quot;: decision}] {
     input.request.usage.read == true
     policy := {&quot;ID&quot;: &quot;copy-default&quot;, &quot;description&quot;:&quot;Implicit copies are allowed in read scenarios&quot;, &quot;version&quot;: &quot;0.1&quot;}
     decision := {&quot;policy&quot;: policy}
 }
 
 # configure when implicit copies should be made
-config[{&quot;copy&quot;: decision}] {
+config[{&quot;capability&quot;: &quot;copy&quot;, &quot;decision&quot;: decision}] {
     input.request.usage.read == true
     input.request.dataset.geography != input.workload.cluster.metadata.region
     count(input.actions) &gt; 0
     clusters := { &quot;metadata.region&quot; : [ input.request.dataset.geography ] }
     policy := {&quot;ID&quot;: &quot;copy-remote&quot;, &quot;description&quot;:&quot;Implicit copies should be used if the data is in a different region than the compute, and transformations are required&quot;, &quot;version&quot;: &quot;0.1&quot;}
-    decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: true, &quot;restrictions&quot;: {&quot;clusters&quot;: clusters}}
+    decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: &quot;True&quot;, &quot;restrictions&quot;: {&quot;clusters&quot;: clusters}}
 }
 </code></pre></div>
 <h3 id="how-to-provide-custom-policies">How to provide custom policies</h3>
