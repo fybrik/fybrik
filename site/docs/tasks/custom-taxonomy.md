@@ -62,7 +62,7 @@ helm upgrade fybrik fybrik-charts/fybrik -n fybrik-system --wait --set-file taxo
 
 ## Examples of changing taxonomy
 
-- Example 1: Add new intent for FybrikApplication
+### Example 1: Add new intent for FybrikApplication
 
 In this example we show how to update the application taxonomy. We show that when a FybrikApplication yaml containing a `Marketing` intent is submitted, it's validation fails because initially the application's taxonomy does not include `Marketing`. We then describe how to add `Marketing` to the taxonomy, enabling the validation to pass when we re-submit the FybrikApplication yaml.
 
@@ -176,9 +176,9 @@ The result is a FybrikApplication Custom Resource Definition instance called tax
 
 
 
-- Example 2: Add new action for FybrikModule
+### Example 2: Add new action for FybrikModule
 
-In this example we show how to update the module taxonomy. We show that when a FybrikModule yaml containing a `RedactYAction` action is submitted, it's validation fails because initially the module's taxonomy does not include `RedactYAction`. We then describe how to add a new action `RedactYAction` to the taxonomy, enabling the validation to pass when we re-submit the FybrikModule yaml.
+In this example we show how to update the module taxonomy. We show that when a FybrikModule yaml containing a `FilterAction` action is submitted, it's validation fails because initially the module's taxonomy does not include `FilterAction`. We then describe how to add a new action `FilterAction` to the taxonomy, enabling the validation to pass when we re-submit the FybrikModule yaml.
 
 Follow the [`quickstart guide`](https://fybrik.io/latest/get-started/quickstart/) but stop before the command `helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait`
  (or `helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait` in development mode).
@@ -187,13 +187,33 @@ The initial taxonomy to be used in this example is a base taxonomy that can be f
 
 ```yaml
 definitions:
-  ActionName:
-    type: string
-    enum:
-      - RedactAction
-      - RemoveAction
-      - Deny
-      - RedactYAction
+  Action:
+    oneOf:
+      - $ref: "#/definitions/RedactAction"
+      - $ref: "#/definitions/RemoveAction"
+      - $ref: "#/definitions/Deny"
+  RedactAction:
+    type: object
+    properties:
+      columns:
+        items:
+          type: string
+        type: array
+    required:
+      - columns
+  RemoveAction:
+    type: object
+    properties:
+      columns:
+        items:
+          type: string
+        type: array
+    required:
+      - columns
+  Deny:
+    type: object
+    additionalProperties: false
+
 ```
 Copy the taxonomy layer to a `taxonomy-layer.yaml` file.
 
@@ -210,7 +230,7 @@ This command creates a `custom-taxonomy.json` file, which is included in the hel
 helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
 ```
 
-Trying to deploy a fybrikmodule.yaml that has a `RedactYAction` should fail validation beacuse there is no `RedactYAction` in the taxonomy. The following command should fail with a description of a validation error :
+Trying to deploy a fybrikmodule.yaml that has a `FilterAction` should fail validation beacuse there is no `FilterAction` in the taxonomy. The following command should fail with a description of a validation error :
 
 ```yaml
 cat << EOF | kubectl apply -f -
@@ -235,23 +255,33 @@ spec:
             protocol: s3
             dataformat: csv
       actions:
-        - name: RedactYAction
+        - name: RedactAction
+        - name: FilterAction
 EOF
 ```
-The expected error is `The FybrikModule "taxonomy-module-test" is invalid: spec.capabilities.0.actions.0.name: Invalid value: "RedactYAction": spec.capabilities.0.actions.0.name must be one of the following: "Deny", "RedactAction", "RemoveAction"`. Thus, no FybrikModule CRD was created.
+The expected error is `The FybrikModule "taxonomy-module-test" is invalid: spec.capabilities.0.actions.0.name: Invalid value: "FilterAction": spec.capabilities.0.actions.0.name must be one of the following: "Deny", "RedactAction", "RemoveAction"`. Thus, no FybrikModule CRD was created.
 
-To fix this, a new action name with `RedactYAction` value should be added to the taxonomy. Add a new value of "RedactYAction" in `custom-taxonomy.json` file in `ActionName` property as follows:
+To fix this, a new action `FilterAction` should be added to the taxonomy. Add a new file `taxonomy-layer2.yaml` with the new action `FilterAction` as follows:
 
+```yaml
+definitions:
+  Action:
+    oneOf:
+      - $ref: "#/definitions/FilterAction"
+  FilterAction:
+    type: object
+    properties:
+      threshold:
+        type: integer
+      operation:
+        type: string
+    required:
+      - threshold
 ```
-"ActionName": {
-  "type": "string",
-  "enum": [
-    "Deny",
-    "RedactAction",
-    "RemoveAction",
-    "RedactYAction"
-  ]
-},
+Now we create the `custom-taxonomy.json` file as before, by using the following command:
+
+```bash
+  go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json taxonomy-layer.yaml taxonomy-layer2.yaml
 ```
 
 Now we upgrade the fybrik helm chart using the following command:
@@ -260,7 +290,7 @@ Now we upgrade the fybrik helm chart using the following command:
 helm upgrade fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
 ```
 
-After updating fybrik to get fybrikmodule with `RedactYAction`, the deployment of a fybrikmodule.yaml that has a `RedactYAction` will succeed:
+After updating fybrik to get fybrikmodule with `FilterAction`, the deployment of a fybrikmodule.yaml that has a `FilterAction` will succeed:
 
 ```yaml
 cat << EOF | kubectl apply -f -
@@ -285,7 +315,8 @@ spec:
             protocol: s3
             dataformat: csv
       actions:
-        - name: RedactYAction
+        - name: RedactAction
+        - name: FilterAction
 EOF
 ```
 
