@@ -1,5 +1,7 @@
 ROOT_DIR := ../..
 include $(ROOT_DIR)/Makefile.env
+
+# To enable OCI experimental support for Helm versions prior to v3.8.0, HELM_EXPERIMENTAL_OCI is set
 export HELM_EXPERIMENTAL_OCI=1
 
 CHART_NAME=mychart

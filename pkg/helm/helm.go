@@ -15,6 +15,7 @@ import (
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/kube"
+	"helm.sh/helm/v3/pkg/registry"
 	"helm.sh/helm/v3/pkg/release"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -165,18 +166,17 @@ func (r *Impl) Uninstall(kubeNamespace string, releaseName string) (*release.Uni
 
 // Load helm chart
 func (r *Impl) Load(ref string, chartPath string) (*chart.Chart, error) {
-	// check for chart mounted in container
 	chart, err := loader.Load(chartsMountPath + ref)
 	if err == nil {
 		return chart, err
 	}
 	// Construct the packed chart path
-	chartRef, err := action.ParseReference(ref)
+	chartRef, err := registry.ParseReference(ref)
 	if err != nil {
 		return nil, err
 	}
-	_, chartName := filepath.Split(chartRef.Repo)
-	packedChartPath := chartPath + "/" + chartName + "-" + chartRef.Tag + ".tgz"
+	_, chartName := filepath.Split(chartRef.Repository)
+	packedChartPath := chartPath + "/" + chartName + "-" + chartRef.Reference + ".tgz"
 	return loader.Load(packedChartPath)
 }
 
@@ -250,11 +250,7 @@ func (r *Impl) Package(chartPath string, destinationPath string, version string)
 
 // Pull helm chart from repo
 func (r *Impl) Pull(ref string, destination string) error {
-	// if chart mounted in container, no need to pull
-	if _, err := os.Stat(chartsMountPath + ref); err == nil {
-		return nil
-	}
-	chartRef, err := action.ParseReference(ref)
+	chartRef, err := registry.ParseReference(ref)
 	if err != nil {
 		return err
 	}
@@ -263,9 +259,9 @@ func (r *Impl) Pull(ref string, destination string) error {
 		return err
 	}
 	client := action.NewPullWithOpts(action.WithConfig(cfg))
-	client.Version = chartRef.Tag
+	client.Version = chartRef.Reference
 	client.DestDir = destination
-	_, err = client.Run("oci://" + chartRef.Repo)
+	_, err = client.Run("oci://" + chartRef.Registry + "/" + chartRef.Repository)
 	return err
 }
 

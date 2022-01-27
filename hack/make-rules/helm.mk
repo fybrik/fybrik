@@ -22,6 +22,7 @@ HELM_TAG ?= 0.0.0
 
 CHART_REGISTRY_PATH := oci://${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}
 
+# To enable OCI experimental support for Helm versions prior to v3.8.0, HELM_EXPERIMENTAL_OCI is set
 export HELM_EXPERIMENTAL_OCI=1
 export GODEBUG=x509ignoreCN=0
 
