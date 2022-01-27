@@ -303,7 +303,7 @@ Notice the `metadata` field above. It specifies the dataset geography and tags. 
 
 In the yaml above, the `geography` is set to `theshire`, it is same with the region of cluster `kind-kind`, but is different with the region of cluster `kind-control`.
 
-you can get the region of cluster with the below command:
+you can get the region of cluster with the following command:
 
 ```shell
 kubectl get configmap cluster-metadata -n fybrik-system -o 'jsonpath={.data.Region}'
@@ -371,7 +371,7 @@ In this sample a Jupyter notebook is used as the user workload and its business 
 
 ## Create a `FybrikApplication` resource for the notebook
 
-Create a [`FybrikApplication`](../reference/crds.md#fybrikapplication) resource to register the notebook workload to the control plane of Fybrik: 
+Create a [`FybrikApplication`](https://fybrik.io/dev/reference/crds/#fybrikapplication) resource to register the notebook workload to the control plane of Fybrik:
 
 ```yaml
 kubectl config use-context kind-control
@@ -422,41 +422,72 @@ kubectl config use-context kind-control
 ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.scheme})
 ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.hostname})
 ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.port})
-printf "${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}"
+printf "${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}\n"
 ```
 
 The next steps use the endpoint to read the data in a python notebook
 
 1. Insert a new notebook cell to install pandas and pyarrow packages:
-  ```python
-  %pip install pandas pyarrow
-  ```
+
+    ```python
+    %pip install pandas pyarrow
+    ```
+
 2. Insert a new notebook cell to read the data using the endpoint value extracted from the `FybrikApplication` in the previous step:
-  ```bash
-  import json
-  import pyarrow.flight as fl
-  import pandas as pd
 
-  # Create a Flight client
-  client = fl.connect('<ENDPOINT>')
+    ```python
+    import json
+    import pyarrow.flight as fl
+    import pandas as pd
 
-  # Prepare the request
-  request = {
-      "asset": "fybrik-notebook-sample/paysim-csv",
-      # To request specific columns add to the request a "columns" key with a list of column names
-      # "columns": [...]
-  }
+    # Create a Flight client
+    client = fl.connect('<ENDPOINT>')
 
-  # Send request and fetch result as a pandas DataFrame
-  info = client.get_flight_info(fl.FlightDescriptor.for_command(json.dumps(request)))
-  reader: fl.FlightStreamReader = client.do_get(info.endpoints[0].ticket)
-  df: pd.DataFrame = reader.read_pandas()
-  ```
-4. Insert a new notebook cell with the following command to visualize the result:
-  ```
-  df
-  ```
-5. Execute all notebook cells and notice that the `nameOrig`, `oldbalanceOrg`and `newbalanceOrig` columns appear redacted.
+    # Prepare the request
+    request = {
+        "asset": "fybrik-notebook-sample/paysim-csv",
+        # To request specific columns add to the request a "columns" key with a list of column names
+        # "columns": [...]
+    }
+
+    # Send request and fetch result as a pandas DataFrame
+    info = client.get_flight_info(fl.FlightDescriptor.for_command(json.dumps(request)))
+    reader: fl.FlightStreamReader = client.do_get(info.endpoints[0].ticket)
+    df: pd.DataFrame = reader.read_pandas()
+    ```
+
+3. Insert a new notebook cell with the following command to visualize the result:
+
+    ```python
+    df
+    ```
+
+4. Execute all notebook cells and notice that the `nameOrig`, `oldbalanceOrg`and `newbalanceOrig` columns appear redacted.
+
+## Cleanup
+
+When you finish this sample, clean it up:
+
+1. Stop `kubectl port-forward` processes (e.g., using `pkill kubectl`)
+
+2. Delete the namespaces created for this sample:
+
+    ```bash
+    kubectl config use-context kind-control
+    kubectl delete namespace fybrik-notebook-sample
+
+    kubectl config use-context kind-kind
+    kubectl delete namespace fybrik-notebook-sample
+    ```
+
+3. Delete the resources created in fybrik-system namespace:
+
+    ```bash
+    kubectl config use-context kind-control
+    kubectl -n fybrik-system delete configmap sample-policy
+    kubectl -n fybrik-system delete FybrikStorageAccount storage-account
+    kubectl -n fybrik-system delete Secret bucket-creds
+    ```
 
 ## Under the hood
 
