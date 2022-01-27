@@ -1,0 +1,114 @@
+{
+  "title": "adminrules.json",
+  "definitions": {
+    "Decision": {
+      "description": "Decision is a result of evaluating a configuration policy which satisfies the specified predicates",
+      "type": "object",
+      "properties": {
+        "deploy": {
+          "$ref": "#/definitions/DeploymentStatus",
+          "description": "a decision regarding deployment: True = require, False = forbid, Unknown = allow"
+        },
+        "policy": {
+          "$ref": "#/definitions/DecisionPolicy",
+          "description": "Descriptions of policies that have been used for evaluation"
+        },
+        "restrictions": {
+          "$ref": "#/definitions/Restrictions",
+          "description": "Deployment restrictions on modules, clusters and additional resources"
+        }
+      }
+    },
+    "DecisionPerCapability": {
+      "type": "object",
+      "required": [
+        "capability",
+        "decision"
+      ],
+      "properties": {
+        "capability": {
+          "$ref": "taxonomy.json#/definitions/Capability"
+        },
+        "decision": {
+          "$ref": "#/definitions/Decision"
+        }
+      }
+    },
+    "DecisionPolicy": {
+      "description": "DecisionPolicy is a justification for a policy that consists of a unique id, id of a policy set and a human readable desciption",
+      "type": "object",
+      "required": [
+        "ID"
+      ],
+      "properties": {
+        "ID": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "policySetID": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "DeploymentStatus": {
+      "type": "string",
+      "enum": [
+        "True",
+        "False",
+        "Unknown"
+      ]
+    },
+    "EvaluationOutputStructure": {
+      "description": "Result of query evaluation",
+      "type": "object",
+      "required": [
+        "config"
+      ],
+      "properties": {
+        "config": {
+          "$ref": "#/definitions/RuleDecisionList"
+        }
+      }
+    },
+    "Restriction": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/StringList"
+      }
+    },
+    "Restrictions": {
+      "description": "Deployment restrictions on modules, clusters and additional resources that will be added in the future",
+      "type": "object",
+      "properties": {
+        "clusters": {
+          "$ref": "#/definitions/Restriction"
+        },
+        "modules": {
+          "$ref": "#/definitions/Restriction"
+        },
+        "storageaccounts": {
+          "$ref": "#/definitions/Restriction"
+        }
+      }
+    },
+    "RuleDecisionList": {
+      "description": "A list of decisions, e.g. [{\"capability\": \"read\", \"decision\": {\"deploy\": \"True\"}}, {\"capability\": \"write\", \"decision\": {\"deploy\": \"False\"}}]",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/DecisionPerCapability"
+      }
+    },
+    "StringList": {
+      "description": "Restriction maps a property to a list of allowed values. Semantics is a disjunction of values, i.e. a type can be either plugin or config.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
