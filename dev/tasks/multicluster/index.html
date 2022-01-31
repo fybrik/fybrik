@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.8">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.9">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.6e60f8b8.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.2b4465f4.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
@@ -1365,6 +1365,7 @@ the Fybrik instance. This step is the same for coordinator and remote clusters.<
 <li>The next dialog will offer you a <code>kubectl</code> command that can be executed on the cluster that should be attached.</li>
 <li>After executing the <code>kubectl</code> command the Razee services will be installed in the <code>razeedeploy</code> namespace and the cluster
    will show up in your cluster list (like in the picture above). This installs the watch keeper and cluster subscription components.</li>
+<li>Create clusters groups by clicking on the <strong>Cluster groups</strong> tab: for each cluster create a group named <code>fybrik-&lt;cluster-name&gt;</code> and add the cluster to that group. In addition, create a single group for all the clusters: the name of this group is used when deploying the coordinator cluster as shown below.</li>
 </ol>
 <p>The next step is to configure Fybrik to use IBM Satellite config as multicluster orchestrator. This configuration is done via a 
 Kubernetes secret that is created by the helm chart. Overwriting the <code>coordinator.razee</code> values in your deployment will make use of the
