@@ -9,7 +9,7 @@ Additional secret plugins can be developed to retrieve credentials additional lo
 
 ## Before you begin
 
-Ensure that you have the [Vault v1.9.x](https://www.vaultproject.io/docs/commands) to execute Vault CLI commands.
+Ensure that you have the [Vault v1.9.x](https://www.vaultproject.io/downloads) to execute [Vault CLI](https://www.vaultproject.io/docs/commands) commands.
 
 The following steps are for configuring a new secret plug-in for Fybrik:
 
@@ -29,7 +29,7 @@ vault policy write "allow-all-dataset-creds" - <<EOF
       }
       EOF
 ```
-4. Have the `CatalogDatasetInfo` structure from the [data catalog response](../../reference/connectors#data_catalog_responseproto) contain the Vault secret path which should be used to retrieve the credentials for a given asset. When Vault plugin is used to retrieve the credentials the parameters to the plugin should follow the plugin usage instructions. This path will later be passed on to the [modules](./modules.md).
+4. Have the `CatalogDatasetInfo` structure from the [data catalog response](../../reference/connectors#data_catalog_responseproto) contain the Vault secret path which should be used to retrieve the credentials for a given asset. When the Vault plugin is used to retrieve the credentials the parameters to the plugin should follow the plugin usage instructions. This path will later be passed on to the [modules](./modules.md).
 For example, when the credentials are stored in kubernetes secret as is done in the [Katalog](../reference/katalog.md) built-in data catalog; the [Vault-plugin-secrets-kubernetes-reader](https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader) plugin can be used to retrieve the credentials. In this case two parameters should be passed: `paysim-csv`  which is the kubernetes secret name that holds the credentials and `fybrik-notebook-sample` is the secret namespace, both are known to the katalog when constructing the path.
 <br/><br/>The following snippet shows `CatalogDatasetInfo` structure with Vault secret path in `CredentialsInfo` field.
 ```bash
