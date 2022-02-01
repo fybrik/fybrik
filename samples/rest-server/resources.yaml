@@ -53,20 +53,6 @@ subjects:
 kind: Service
 apiVersion: v1
 metadata:
-  name: datauserclient
-spec:
-  type: NodePort
-  ports:
-    - port: 3000
-      targetPort: 3000
-      protocol: TCP
-      name: http
-  selector:
-    app: gui    
----
-kind: Service
-apiVersion: v1
-metadata:
   name: datauserserver
 spec:
   type: NodePort

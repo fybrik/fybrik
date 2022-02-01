@@ -48,7 +48,7 @@ make build
 ./datauserserver
 
 ## Test locally (assuming datauserserver is not running)
-From within samples/gui/server
+From within samples/rest-server/server
 make test
 
 ## Working in a cluster
@@ -59,20 +59,9 @@ Backend image creation
 ```
 make docker-all
 ```
-Frontend image creation
-
-```
-cd <root>/samples/gui/front-end
-npm install
-Ensure that .env has a correct configuration 
-export NODE_OPTIONS=--max_old_space_size=4096
-rm -rf build
-npm run build
-make docker-all
-```
 ## Deployment
   ```
-cd <root>>/samples/gui
+cd <root>>/samples/rest-server
 ./deploy.sh
 ```
 
