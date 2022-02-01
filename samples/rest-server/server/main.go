@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 
-	datauser "fybrik.io/fybrik/samples/gui/server/datauser"
+	datauser "fybrik.io/fybrik/samples/rest-server/server/datauser"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/render"
