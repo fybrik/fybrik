@@ -68,9 +68,10 @@ type EvaluationOutputStructure struct {
 	Config RuleDecisionList `json:"config"`
 }
 
+type MetricsPerRegion map[taxonomy.ProcessingLocation]taxonomy.BandwidthMetric
 type BandwidthMatrix struct {
-	Properties []taxonomy.Property                                                                      `json:"properties,omitempty"`
-	Values     map[taxonomy.ProcessingLocation]map[taxonomy.ProcessingLocation]taxonomy.BandwidthMetric `json:"values"`
+	Properties []taxonomy.Property                              `json:"properties,omitempty"`
+	Values     map[taxonomy.ProcessingLocation]MetricsPerRegion `json:"values"`
 }
 
 type Storage struct {
@@ -82,4 +83,33 @@ type Storage struct {
 type Infrastructure struct {
 	Bandwidth       BandwidthMatrix `json:"bandwidth"`
 	StorageAccounts Storage         `json:"storageaccounts"`
+}
+
+func (in *BandwidthMatrix) DeepCopyInto(out *BandwidthMatrix) {
+	*out = *in
+	if in.Properties != nil {
+		in, out := &in.Properties, &out.Properties
+		*out = make([]taxonomy.Property, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.Values != nil {
+		in, out := &in.Values, &out.Values
+		*out = make(map[taxonomy.ProcessingLocation]MetricsPerRegion, len(*in))
+		for key, val := range *in {
+			if val != nil {
+				(*out)[key] = val.DeepCopy()
+			}
+		}
+	}
+}
+
+func (in *BandwidthMatrix) DeepCopy() *BandwidthMatrix {
+	if in == nil {
+		return nil
+	}
+	out := new(BandwidthMatrix)
+	in.DeepCopyInto(out)
+	return out
 }

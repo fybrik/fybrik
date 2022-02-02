@@ -16,10 +16,7 @@
         "values": {
           "type": "object",
           "additionalProperties": {
-            "type": "object",
-            "additionalProperties": {
-              "$ref": "taxonomy.json#/definitions/BandwidthMetric"
-            }
+            "$ref": "#/definitions/MetricsPerRegion"
           }
         }
       }
@@ -112,6 +109,12 @@
         "storageaccounts": {
           "$ref": "#/definitions/Storage"
         }
+      }
+    },
+    "MetricsPerRegion": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "taxonomy.json#/definitions/BandwidthMetric"
       }
     },
     "RangeType": {

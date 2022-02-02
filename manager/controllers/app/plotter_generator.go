@@ -46,7 +46,7 @@ type PlotterGenerator struct {
 }
 
 // GetCopyDestination creates a Dataset for bucket allocation by implicit copies or ingest.
-func (p *PlotterGenerator) GetCopyDestination(item *DataInfo, element *ResolvedEdge) (*app.DataStore, error) {
+func (p *PlotterGenerator) GetCopyDestination(item *DataInfo, element ResolvedEdge) (*app.DataStore, error) {
 	// provisioned storage for COPY
 	var genBucketName, genObjectKeyName string
 	if item.DataDetails.ResourceMetadata.Name != "" {
@@ -57,7 +57,7 @@ func (p *PlotterGenerator) GetCopyDestination(item *DataInfo, element *ResolvedE
 	genBucketName = generateBucketName(p.Owner, item.Context.DataSetID)
 	var bucket *storage.ProvisionedBucket
 	var err error
-	bucket = AllocateBucket(p.Client, p.Log, genBucketName, element.StorageAccount)
+	bucket = AllocateBucket(p.Client, p.Log, genBucketName, &element.StorageAccount)
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
 	if err = p.Provision.CreateDataset(bucketRef, bucket, &p.Owner); err != nil {
 		p.Log.Error().Err(err).Msg("Dataset creation failed")
@@ -170,7 +170,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 		var subFlow app.SubFlow
 		if !element.Sink.Virtual {
 			// allocate storage and create a temoprary asset
-			if sinkDataStore, err = p.GetCopyDestination(item, &element); err != nil {
+			if sinkDataStore, err = p.GetCopyDestination(item, element); err != nil {
 				p.Log.Error().Err(err).Str(logging.DATASETID, item.Context.DataSetID).Msg("Storage allocation for copy failed")
 				return err
 			}

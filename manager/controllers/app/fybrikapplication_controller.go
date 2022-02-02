@@ -694,10 +694,10 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 		Templates:        map[string]api.Template{},
 	}
 
-	for _, item := range requirements {
-		err := plotterGen.AddFlowInfoForAsset(&item, applicationContext.Application, plotterSpec)
+	for ind := range requirements {
+		err := plotterGen.AddFlowInfoForAsset(&requirements[ind], applicationContext.Application, plotterSpec)
 		if err != nil {
-			AnalyzeError(applicationContext, item.Context.DataSetID, err)
+			AnalyzeError(applicationContext, requirements[ind].Context.DataSetID, err)
 			continue
 		}
 	}

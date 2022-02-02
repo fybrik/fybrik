@@ -58,7 +58,7 @@ type ResolvedEdge struct {
 	Edge
 	Actions        []taxonomy.Action
 	Cluster        string
-	StorageAccount *taxonomy.StorageAccount
+	StorageAccount taxonomy.StorageAccount
 }
 
 // Solution is a final solution enabling a plotter construction.
@@ -114,9 +114,10 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
 		if !element.Edge.Sink.Virtual {
 			// storage is required, plus more actions on copy may be needed
+			foundStorageAccount := false
 			for _, account := range p.Infrastructure.StorageAccounts.Values {
 				logging.LogStructure("account", account, p.Log, false, false)
-				if !validateStorageRestrictionsPerCapability(item, moduleCapability.Capability, &account, &p.Infrastructure.Bandwidth) {
+				if !validateStorageRestrictionsPerCapability(item, moduleCapability.Capability, account, &p.Infrastructure.Bandwidth) {
 					p.Log.Info().Msg("Account does not match the requirements")
 					continue
 				}
@@ -135,10 +136,11 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 				}
 				// add WRITE actions and the selected storage account region
 				element.Actions = actions
-				element.StorageAccount = &account
+				element.StorageAccount = account
+				foundStorageAccount = true
 				break
 			}
-			if element.StorageAccount == nil {
+			if !foundStorageAccount {
 				p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find a storage account, aborting data path construction")
 				return false
 			}
@@ -373,7 +375,7 @@ func validateClusterRestrictionsPerCapability(item *DataInfo, capability taxonom
 	return validateRestrictions(item.Configuration.ConfigDecisions[capability].DeploymentRestrictions.Clusters, &cluster)
 }
 
-func validateStorageRestrictionsPerCapability(item *DataInfo, capability taxonomy.Capability, account *taxonomy.StorageAccount, bandwidth *adminrules.BandwidthMatrix) bool {
+func validateStorageRestrictionsPerCapability(item *DataInfo, capability taxonomy.Capability, account taxonomy.StorageAccount, bandwidth *adminrules.BandwidthMatrix) bool {
 	if !validateRestrictions(item.Configuration.ConfigDecisions[capability].DeploymentRestrictions.StorageAccounts, account) {
 		return false
 	}
@@ -383,7 +385,7 @@ func validateStorageRestrictionsPerCapability(item *DataInfo, capability taxonom
 	return true
 }
 
-func validateBandwidthRestrictions(restrictions []adminrules.Restriction, account *taxonomy.StorageAccount, bandwidth *adminrules.BandwidthMatrix) bool {
+func validateBandwidthRestrictions(restrictions []adminrules.Restriction, account taxonomy.StorageAccount, bandwidth *adminrules.BandwidthMatrix) bool {
 	if len(restrictions) == 0 {
 		return true
 	}
