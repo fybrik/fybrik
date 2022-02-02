@@ -413,7 +413,7 @@ func validateRestrictions(restrictions []adminrules.Restriction, obj interface{}
 	for _, restrict := range restrictions {
 		fields := strings.Split(restrict.Property, ".")
 		if restrict.Range != nil {
-			value, found, err := unstructured.NestedInt64(details, fields...)
+			value, found, err := unstructured.NestedFloat64(details, fields...)
 			if err != nil || !found {
 				return false
 			}
