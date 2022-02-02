@@ -27,7 +27,7 @@ spec:
         - containerPort: 8080
       restartPolicy: Always" > Deployment.yaml
 
-kubectl apply -f gui_configmap.yaml 
+kubectl apply -f gui_configmap.yaml
 kubectl delete service datauserserver || true
 kubectl delete deployment gui
 kubectl apply -f Deployment.yaml
