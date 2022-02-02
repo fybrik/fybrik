@@ -98,13 +98,17 @@ true
 
 {{/*
 Detect the version of cert manager crd that is installed
-Defaults to cert-manager.io/v1alpha2 
+Defaults to cert-manager.io/v1
 */}}
 {{- define "fybrik.certManagerApiVersion" -}}
-{{- if (.Capabilities.APIVersions.Has "certmanager.k8s.io/v1alpha1") -}}
-certmanager.k8s.io/v1alpha1
-{{- else  -}}
+{{- if .Capabilities.APIVersions.Has "cert-manager.io/v1beta1" -}}
+cert-manager.io/v1beta1
+{{- else if .Capabilities.APIVersions.Has "cert-manager.io/v1alpha2" -}}
 cert-manager.io/v1alpha2
+{{- else if .Capabilities.APIVersions.Has "certmanager.k8s.io/v1alpha1" -}}
+certmanager.k8s.io/v1alpha1
+{{- else -}}
+cert-manager.io/v1
 {{- end -}}
 {{- end -}}
 
