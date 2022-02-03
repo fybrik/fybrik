@@ -776,7 +776,7 @@ spec:
     - name: chart_name
       value: jetstack/cert-manager --create-namespace
     - name: release_version
-      value: v1.2.0
+      value: v1.6.2
     - name: release_name
       value: cert-manager
     - name: release_namespace
