@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -54,7 +55,7 @@ func main() {
 			}},
 		},
 		Action: policymanager.RequestAction{
-			ActionType:         policymanager.READ,
+			ActionType:         app.ReadFlow,
 			ProcessingLocation: "Netherlands",
 		},
 		Resource: policymanager.Resource{

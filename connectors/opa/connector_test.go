@@ -16,6 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
@@ -30,7 +31,7 @@ func TestGetPoliciesDecisions(t *testing.T) {
 				"env": "test",
 			}},
 		},
-		Action: policymanager.RequestAction{ActionType: policymanager.READ},
+		Action: policymanager.RequestAction{ActionType: app.ReadFlow},
 		Resource: policymanager.Resource{
 			ID: taxonomy.AssetID("assetID"),
 			Metadata: &datacatalog.ResourceMetadata{

@@ -1173,7 +1173,7 @@ FybrikApplication provides information about the application whose data is being
         <td><b><a href="#fybrikapplicationspec">spec</a></b></td>
         <td>object</td>
         <td>
-          FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog<br/>
+          FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets. Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1192,7 +1192,7 @@ FybrikApplication provides information about the application whose data is being
 
 
 
-FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog
+FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets. Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog.
 
 <table>
     <thead>
@@ -1349,7 +1349,7 @@ A label selector requirement is a selector that contains values, a key, and an o
 
 
 
-DataContext indicates data set chosen by the Data Scientist to be used by his application, and includes information about the data format and technologies used by the application to access the data.
+DataContext indicates data set being processed by the workload and includes information about the data format and technologies used to access the data.
 
 <table>
     <thead>
@@ -1361,17 +1361,17 @@ DataContext indicates data set chosen by the Data Scientist to be used by his ap
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>catalogService</b></td>
-        <td>string</td>
+        <td><b>flows</b></td>
+        <td>[]string</td>
         <td>
-          CatalogService represents the catalog service for accessing the requested dataset. If not specified, the enterprise catalog service will be used.<br/>
+          Flows indicates what is being done with the particular dataset - ex: read, write, copy, delete If more than one flow is indicated, the order is respected. This is optional for the purpose of backward compatability.  If nothing is provided, read is assumed.<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>dataSetID</b></td>
         <td>string</td>
         <td>
-          DataSetID is a unique identifier of the dataset chosen from the data catalog for processing by the data user application.<br/>
+          DataSetID is a unique identifier of the dataset chosen from the data catalog.  For data catalogs that support multiple sub-catalogs, it includes the catalog id and the dataset id. When writing a new dataset it is the name provided by the user or workload generating it, and should include the sub-catalog name where appropriate.<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -1402,10 +1402,10 @@ Requirements from the system
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#fybrikapplicationspecdataindexrequirementscopy">copy</a></b></td>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementsflowparams">flowParams</a></b></td>
         <td>object</td>
         <td>
-          CopyRequrements include the requirements for copying the data<br/>
+          CopyRequrements include the requirements for explicit requests to copy the data<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1419,12 +1419,12 @@ Requirements from the system
 </table>
 
 
-#### FybrikApplication.spec.data[index].requirements.copy
+#### FybrikApplication.spec.data[index].requirements.flowParams
 <sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirements)</sup></sup>
 
 
 
-CopyRequrements include the requirements for copying the data
+CopyRequrements include the requirements for explicit requests to copy the data
 
 <table>
     <thead>
@@ -1436,29 +1436,36 @@ CopyRequrements include the requirements for copying the data
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#fybrikapplicationspecdataindexrequirementscopycatalog">catalog</a></b></td>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementsflowparamscatalog">catalog</a></b></td>
         <td>object</td>
         <td>
-          Catalog indicates that the data asset must be cataloged.<br/>
+          Catalog indicates that the data asset must be cataloged, and in which catalog to register it.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>required</b></td>
+        <td><b>isNewDataSet</b></td>
         <td>boolean</td>
         <td>
-          Required indicates that the data must be copied.<br/>
+          IsNewDataSet if true indicates that the DataContext.DataSetID is user provided and not a true catalog ID.  Relevant when writing. A unique ID from the catalog will be provided in the FybrikApplication Status after a new catalog entry is created.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>storageEstimate</b></td>
+        <td>integer</td>
+        <td>
+          Storage estimate indicates the estimated amount of storage required when copying or writing new data.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
 </table>
 
 
-#### FybrikApplication.spec.data[index].requirements.copy.catalog
-<sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirementscopy)</sup></sup>
+#### FybrikApplication.spec.data[index].requirements.flowParams.catalog
+<sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirementsflowparams)</sup></sup>
 
 
 
-Catalog indicates that the data asset must be cataloged.
+Catalog indicates that the data asset must be cataloged, and in which catalog to register it.
 
 <table>
     <thead>
@@ -1474,13 +1481,6 @@ Catalog indicates that the data asset must be cataloged.
         <td>string</td>
         <td>
           CatalogID specifies the catalog where the data will be cataloged.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>service</b></td>
-        <td>string</td>
-        <td>
-          CatalogService specifies the datacatalog service that will be used for catalogging the data into.<br/>
         </td>
         <td>false</td>
       </tr></tbody>

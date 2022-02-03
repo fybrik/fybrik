@@ -4,22 +4,13 @@
 package policymanager
 
 import (
+	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
-// +kubebuilder:validation:Enum=read;write;delete
-type RequestActionType string
-
-// List of operationType
-const (
-	READ   RequestActionType = "read"
-	WRITE  RequestActionType = "write"
-	DELETE RequestActionType = "delete"
-)
-
 type RequestAction struct {
-	ActionType         RequestActionType           `json:"actionType"`
+	ActionType         api.DataFlow                `json:"actionType"`
 	ProcessingLocation taxonomy.ProcessingLocation `json:"processingLocation,omitempty"`
 	Destination        string                      `json:"destination,omitempty"`
 }

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"emperror.dev/errors"
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -94,10 +95,10 @@ func ConvertGrpcReqToOpenAPIReq(in *pb.ApplicationContext) (*policymanager.GetPo
 		action.Destination = destination
 		operationType := operation.GetType()
 		if operationType == pb.AccessOperation_READ {
-			action.ActionType = policymanager.READ
+			action.ActionType = app.ReadFlow
 		}
 		if operationType == pb.AccessOperation_WRITE {
-			action.ActionType = policymanager.WRITE
+			action.ActionType = app.WriteFlow
 		}
 		datasetID := datasets[i].GetDataset().GetDatasetId()
 		resource.ID = taxonomy.AssetID(datasetID)
@@ -144,9 +145,9 @@ func ConvertOpenAPIReqToGrpcReq(in *policymanager.GetPolicyDecisionsRequest, cre
 
 	var grpcActionType pb.AccessOperation_AccessType
 	switch actionType {
-	case policymanager.READ:
+	case app.ReadFlow:
 		grpcActionType = pb.AccessOperation_READ
-	case policymanager.WRITE:
+	case app.WriteFlow:
 		grpcActionType = pb.AccessOperation_WRITE
 	default: // default is read
 		grpcActionType = pb.AccessOperation_READ

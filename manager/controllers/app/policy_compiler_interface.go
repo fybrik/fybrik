@@ -97,9 +97,9 @@ func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyMana
 		if utils.IsDenied(result[i].Action.Name) {
 			var message string
 			switch openapiReq.Action.ActionType {
-			case policymanager.READ:
+			case app.ReadFlow:
 				message = app.ReadAccessDenied
-			case policymanager.WRITE:
+			case app.WriteFlow:
 				message = app.WriteNotAllowed
 			}
 			return actions, errors.New(message)

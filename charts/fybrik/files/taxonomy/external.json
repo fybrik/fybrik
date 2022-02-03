@@ -1,0 +1,630 @@
+{
+  "title": "external.json",
+  "definitions": {
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0Blueprint": {
+      "description": "Blueprint is the Schema for the blueprints API",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0TypeMeta"
+        }
+      ],
+      "properties": {
+        "metadata": {
+          "$ref": "#/definitions/k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0ObjectMeta"
+        },
+        "spec": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0BlueprintSpec"
+        },
+        "status": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0BlueprintStatus"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0BlueprintList": {
+      "description": "BlueprintList contains a list of Blueprint",
+      "type": "object",
+      "required": [
+        "items"
+      ],
+      "allOf": [
+        {
+          "$ref": "#/definitions/k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0TypeMeta"
+        }
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0Blueprint"
+          }
+        },
+        "metadata": {
+          "$ref": "#/definitions/k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0ListMeta"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0BlueprintModule": {
+      "description": "BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the information necessary to instantiate a datapath component, including the parameters relevant for the particular workload.",
+      "type": "object",
+      "required": [
+        "name",
+        "chart"
+      ],
+      "properties": {
+        "arguments": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0ModuleArguments",
+          "description": "Arguments are the input parameters for a specific instance of a module."
+        },
+        "assetIds": {
+          "description": "assetIDs indicate the assets processed by this module.  Included so we can track asset status as well as module status in the future.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "chart": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0ChartSpec",
+          "description": "Chart contains the location of the helm chart with info detailing how to deploy"
+        },
+        "name": {
+          "description": "Name of the FybrikModule on which this is based",
+          "type": "string"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0BlueprintSpec": {
+      "description": "BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path that run in a particular cluster. In a single cluster environment there is one blueprint per workload (FybrikApplication). In a multi-cluster environment there is one Blueprint per cluster per workload (FybrikApplication).",
+      "type": "object",
+      "required": [
+        "cluster",
+        "modulesNamespace",
+        "modules"
+      ],
+      "properties": {
+        "cluster": {
+          "description": "Cluster indicates the cluster on which the Blueprint runs",
+          "type": "string"
+        },
+        "modules": {
+          "description": "Modules is a map which contains modules that indicate the data path components that run in this cluster The map key is moduleInstanceName which is the unique name for the deployed instance related to this workload",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0BlueprintModule"
+          }
+        },
+        "modulesNamespace": {
+          "description": "ModulesNamespace is the namespace where modules should be allocated",
+          "type": "string"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0BlueprintStatus": {
+      "description": "BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring",
+      "type": "object",
+      "properties": {
+        "modules": {
+          "description": "ModulesState is a map which holds the status of each module its key is the moduleInstanceName which is the unique name for the deployed instance related to this workload",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0ObservedState"
+          }
+        },
+        "observedGeneration": {
+          "description": "ObservedGeneration is taken from the Blueprint metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "observedState": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0ObservedState",
+          "description": "ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions"
+        },
+        "releases": {
+          "description": "Releases map each release to the observed generation of the blueprint containing this release. At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0ChartSpec": {
+      "description": "ChartSpec specifies chart name and values",
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "chartPullSecret": {
+          "description": "Name of secret containing helm registry credentials",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name of helm chart",
+          "type": "string"
+        },
+        "values": {
+          "description": "Values to pass to helm chart installation",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0Condition": {
+      "description": "Condition describes the state of a FybrikApplication at a certain point.",
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "message": {
+          "description": "Message contains the details of the current condition",
+          "type": "string"
+        },
+        "observedGeneration": {
+          "description": "ObservedGeneration is the version of the resource for which the condition has been evaluated",
+          "type": "integer",
+          "format": "int64"
+        },
+        "status": {
+          "$ref": "#/definitions/k8s.io~1api~1core~1v1~0ConditionStatus",
+          "description": "Status of the condition, one of (`True`, `False`, `Unknown`).",
+          "default": "Unknown",
+          "enum": [
+            "True",
+            "False",
+            "Unknown"
+          ]
+        },
+        "type": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0ConditionType",
+          "description": "Type of the condition"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0ConditionType": {
+      "description": "ConditionType represents a condition type",
+      "type": "string"
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0CopyModuleArgs": {
+      "description": "CopyModuleArgs define the input parameters for modules that copy data from location A to location B Credentials are stored in a credential management system such as vault",
+      "type": "object",
+      "required": [
+        "source",
+        "destination",
+        "assetID"
+      ],
+      "properties": {
+        "assetID": {
+          "description": "AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the FybrikApplication resource",
+          "type": "string"
+        },
+        "destination": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0DataStore",
+          "description": "Destination is the data store to which the data will be copied"
+        },
+        "source": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0DataStore",
+          "description": "Source is the where the data currently resides"
+        },
+        "transformations": {
+          "description": "Transformations are different types of processing that may be done to the data as it is copied.",
+          "type": "array",
+          "items": {
+            "$ref": "taxonomy.json#/definitions/Action"
+          }
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0DataContext": {
+      "description": "DataContext indicates data set being processed by the workload and includes information about the data format and technologies used to access the data.",
+      "type": "object",
+      "required": [
+        "dataSetID",
+        "requirements"
+      ],
+      "properties": {
+        "dataSetID": {
+          "description": "DataSetID is a unique identifier of the dataset chosen from the data catalog.  For data catalogs that support multiple sub-catalogs, it includes the catalog id and the dataset id. When writing a new dataset it is the name provided by the user or workload generating it, and should include the sub-catalog name where appropriate.",
+          "type": "string",
+          "minLength": 1
+        },
+        "flows": {
+          "description": "Flows indicates what is being done with the particular dataset - ex: read, write, copy, delete If more than one flow is indicated, the order is respected. This is optional for the purpose of backward compatability.  If nothing is provided, read is assumed.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0DataFlow"
+          }
+        },
+        "requirements": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0DataRequirements",
+          "description": "Requirements from the system"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0DataFlow": {
+      "type": "string"
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0DataRequirements": {
+      "description": "DataRequirements structure contains a list of requirements (interface, need to catalog the dataset, etc.)",
+      "type": "object",
+      "required": [
+        "interface"
+      ],
+      "properties": {
+        "flowParams": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0FlowRequirements",
+          "description": "CopyRequrements include the requirements for explicit requests to copy the data"
+        },
+        "interface": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0InterfaceDetails",
+          "description": "Interface indicates the protocol and format expected by the data user"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0DataStore": {
+      "description": "DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.",
+      "type": "object",
+      "required": [
+        "vault",
+        "connection"
+      ],
+      "properties": {
+        "connection": {
+          "$ref": "taxonomy.json#/definitions/Connection",
+          "description": "Connection has the relevant details for accesing the data (url, table, ssl, etc.)"
+        },
+        "format": {
+          "$ref": "taxonomy.json#/definitions/DataFormat",
+          "description": "Format represents data format (e.g. parquet) as received from catalog connectors"
+        },
+        "vault": {
+          "description": "Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0Vault"
+          }
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0FlowRequirements": {
+      "description": "FlowRequirements include the requirements for the data copy operation when there is an explicit copy request Note: Implicit copies done for data plane optimization by Fybrik do not use these parameters",
+      "type": "object",
+      "properties": {
+        "catalog": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0TargetCatalog",
+          "description": "Catalog indicates that the data asset must be cataloged, and in which catalog to register it."
+        },
+        "isNewDataSet": {
+          "description": "IsNewDataSet if true indicates that the DataContext.DataSetID is user provided and not a true catalog ID.  Relevant when writing. A unique ID from the catalog will be provided in the FybrikApplication Status after a new catalog entry is created.",
+          "type": "boolean"
+        },
+        "storageEstimate": {
+          "description": "Storage estimate indicates the estimated amount of storage required when copying or writing new data.",
+          "type": "integer"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0FybrikApplicationSpec": {
+      "description": "FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets. Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog.",
+      "type": "object",
+      "required": [
+        "appInfo",
+        "data"
+      ],
+      "properties": {
+        "appInfo": {
+          "$ref": "taxonomy.json#/definitions/AppInfo",
+          "description": "AppInfo contains information describing the reasons for the processing that will be done by the application."
+        },
+        "data": {
+          "description": "Data contains the identifiers of the data to be used by the Data Scientist's application, and the protocol used to access it and the format expected.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0DataContext"
+          }
+        },
+        "secretRef": {
+          "description": "SecretRef points to the secret that holds credentials for each system the user has been authenticated with. The secret is deployed in FybrikApplication namespace.",
+          "type": "string"
+        },
+        "selector": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0Selector",
+          "description": "Selector enables to connect the resource to the application Application labels should match the labels in the selector."
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0InterfaceDetails": {
+      "$ref": "taxonomy.json#/definitions/Interface",
+      "description": "InterfaceDetails indicate how the application or module receive or write the data TODO(roee88): remove redundant definition"
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0MetaBlueprint": {
+      "description": "MetaBlueprint defines blueprint metadata (name, namespace) and status",
+      "type": "object",
+      "required": [
+        "name",
+        "namespace",
+        "status"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0BlueprintStatus"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0ModuleArguments": {
+      "description": "ModuleArguments are the parameters passed to a component that runs in the data path In the future might support output args as well The arguments passed depend on the type of module",
+      "type": "object",
+      "properties": {
+        "appSelector": {
+          "$ref": "#/definitions/k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0LabelSelector",
+          "description": "Application selector is used to identify the user workload. It is obtained from FybrikApplication spec."
+        },
+        "copy": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0CopyModuleArgs",
+          "description": "CopyArgs are parameters specific to modules that copy data from one data store to another."
+        },
+        "labels": {
+          "description": "Labels of FybrikApplication",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "read": {
+          "description": "ReadArgs are parameters that are specific to modules that enable an application to read data",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0ReadModuleArgs"
+          }
+        },
+        "write": {
+          "description": "WriteArgs are parameters that are specific to modules that enable an application to write data",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0WriteModuleArgs"
+          }
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0ObservedState": {
+      "description": "ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status",
+      "type": "object",
+      "properties": {
+        "error": {
+          "description": "Error indicates that there has been an error to orchestrate the modules and provides the error message",
+          "type": "string"
+        },
+        "ready": {
+          "description": "Ready represents that the modules have been orchestrated successfully and the data is ready for usage",
+          "type": "boolean"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0ReadModuleArgs": {
+      "description": "ReadModuleArgs define the input parameters for modules that read data from location A",
+      "type": "object",
+      "required": [
+        "source",
+        "assetID"
+      ],
+      "properties": {
+        "assetID": {
+          "description": "AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the FybrikApplication resource",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0DataStore",
+          "description": "Source of the read path module"
+        },
+        "transformations": {
+          "description": "Transformations are different types of processing that may be done to the data",
+          "type": "array",
+          "items": {
+            "$ref": "taxonomy.json#/definitions/Action"
+          }
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0Selector": {
+      "description": "Selector is a label query over a set of resources in the specified cluster.",
+      "type": "object",
+      "required": [
+        "workloadSelector"
+      ],
+      "properties": {
+        "clusterName": {
+          "description": "Cluster name",
+          "type": "string"
+        },
+        "workloadSelector": {
+          "$ref": "#/definitions/k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0LabelSelector",
+          "description": "WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector."
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0TargetCatalog": {
+      "description": "TargetCatalog contain the specifics for the catalog which needs to be updated. Updates may be adding a new dataset to the catalog (currently supported) or deleting an existing dataset (future)",
+      "type": "object",
+      "properties": {
+        "catalogID": {
+          "description": "CatalogID specifies the catalog where the data will be cataloged.",
+          "type": "string"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0Vault": {
+      "description": "Holds details for retrieving credentials from Vault store.",
+      "type": "object",
+      "required": [
+        "role",
+        "secretPath",
+        "address",
+        "authPath"
+      ],
+      "properties": {
+        "address": {
+          "description": "Address is Vault address",
+          "type": "string"
+        },
+        "authPath": {
+          "description": "AuthPath is the path to auth method i.e. kubernetes",
+          "type": "string"
+        },
+        "role": {
+          "description": "Role is the Vault role used for retrieving the credentials",
+          "type": "string"
+        },
+        "secretPath": {
+          "description": "SecretPath is the path of the secret holding the Credentials in Vault",
+          "type": "string"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0WriteModuleArgs": {
+      "description": "WriteModuleArgs define the input parameters for modules that write data to location B",
+      "type": "object",
+      "required": [
+        "destination",
+        "assetID"
+      ],
+      "properties": {
+        "assetID": {
+          "description": "AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the FybrikApplication resource",
+          "type": "string"
+        },
+        "destination": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0DataStore",
+          "description": "Destination is the data store to which the data will be written"
+        },
+        "transformations": {
+          "description": "Transformations are different types of processing that may be done to the data as it is written.",
+          "type": "array",
+          "items": {
+            "$ref": "taxonomy.json#/definitions/Action"
+          }
+        }
+      }
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0Duration": {
+      "type": "string"
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0Fields": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0LabelSelector": {
+      "description": "A label selector is a label query over a set of resources. The result of matchLabels and matchExpressions are ANDed. An empty label selector matches all objects. A null label selector matches no objects.",
+      "type": "object",
+      "properties": {
+        "matchExpressions": {
+          "description": "matchExpressions is a list of label selector requirements. The requirements are ANDed.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0LabelSelectorRequirement"
+          }
+        },
+        "matchLabels": {
+          "description": "matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is \"key\", the operator is \"In\", and the values array contains only \"value\". The requirements are ANDed.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0LabelSelectorOperator": {
+      "description": "A label selector operator is the set of operators that can be used in a selector requirement.",
+      "type": "string"
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0LabelSelectorRequirement": {
+      "description": "A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.",
+      "type": "object",
+      "required": [
+        "key",
+        "operator"
+      ],
+      "properties": {
+        "key": {
+          "description": "key is the label key that the selector applies to.",
+          "type": "string"
+        },
+        "operator": {
+          "$ref": "#/definitions/k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0LabelSelectorOperator",
+          "description": "operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist."
+        },
+        "values": {
+          "description": "values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0ListMeta": {
+      "description": "ListMeta describes metadata that synthetic resources must have, including lists and various status objects. A resource may have only one of {ObjectMeta, ListMeta}.",
+      "type": "object",
+      "properties": {
+        "continue": {
+          "description": "continue may be set if the user set a limit on the number of items returned, and indicates that the server has more data available. The value is opaque and may be used to issue another request to the endpoint that served this list to retrieve the next set of available objects. Continuing a consistent list may not be possible if the server configuration has changed or more than a few minutes have passed. The resourceVersion field returned when using this continue value will be identical to the value in the first response, unless you have received this token from an error message.",
+          "type": "string"
+        },
+        "remainingItemCount": {
+          "description": "remainingItemCount is the number of subsequent items in the list which are not included in this list response. If the list request contained label or field selectors, then the number of remaining items is unknown and the field will be left unset and omitted during serialization. If the list is complete (either because it is not chunking or because this is the last chunk), then there are no more remaining items and this field will be left unset and omitted during serialization. Servers older than v1.15 do not set this field. The intended use of the remainingItemCount is *estimating* the size of a collection. Clients should not rely on the remainingItemCount to be set or to be exact.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "resourceVersion": {
+          "description": "String that identifies the server's internal version of this object that can be used by clients to determine when objects have changed. Value must be treated as opaque by clients and passed unmodified back to the server. Populated by the system. Read-only. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency",
+          "type": "string"
+        },
+        "selfLink": {
+          "description": "selfLink is a URL representing this object. Populated by the system. Read-only. \n DEPRECATED Kubernetes will stop propagating this field in 1.20 release and the field is planned to be removed in 1.21 release.",
+          "type": "string"
+        }
+      }
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0MicroTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0ObjectMeta": {
+      "type": "object"
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0Time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0TypeMeta": {
+      "description": "TypeMeta describes an individual object in an API response or request with strings representing the type of the object and its API schema version. Structures that are versioned or persisted should inline TypeMeta.",
+      "type": "object",
+      "properties": {
+        "apiVersion": {
+          "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+          "type": "string"
+        },
+        "kind": {
+          "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+          "type": "string"
+        }
+      }
+    },
+    "k8s.io~1api~1core~1v1~0ConditionStatus": {
+      "type": "string"
+    },
+    "k8s.io~1api~1core~1v1~0Protocol": {
+      "type": "string",
+      "default": "TCP"
+    }
+  }
+}

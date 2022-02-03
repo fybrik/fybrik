@@ -61,15 +61,15 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 		# read scenario, same location
 		config[{"capability": "copy", "decision": decision}] {
 			policy := {"policySetID": "1", "ID": "test-1"}
-			input.request.usage.read == true
-			input.request.usage.copy == false
+			input.request.usage[_] == "read"
+			input.request.usage[_] != "copy"
 			input.request.dataset.geography == input.workload.cluster.metadata.region
 			decision := {"policy": policy, "deploy": "False"}
 		}
 
 		# read scenario, different locations
 		config[{"capability": "copy", "decision": decision}] {
-			input.request.usage.read == true
+			input.request.usage[_] == "read"
 			input.request.dataset.geography != input.workload.cluster.metadata.region
 			clusters :=  { "name": [ "clusterB", "clusterD", "clusterC" ] }
 			modules := {"scope": ["asset"]}
@@ -79,7 +79,7 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 		
 		# copy scenario
 		config[{"capability": "copy", "decision": decision}] {
-			input.request.usage.copy == true
+			input.request.usage[_] == "copy"
 			clusters :=  { "name": [ "clusterA", "clusterB", "clusterC" ] }
 			modules := {"type": ["service","plugin","config"]}
 			policy := {"policySetID": "1", "ID": "test-3"}
@@ -88,7 +88,7 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 
 		# write scenario
 		config[{"capability": "copy", "decision": decision}] {
-			input.request.usage.write == true
+			input.request.usage[_] == "write"
 			policy := {"policySetID": "2", "ID": "test-4"}
 			decision := {"policy": policy, "deploy": "False"}
 		}
@@ -120,7 +120,7 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 
 		# no copy for dev workloads
 		config[{"capability": "copy", "decision": decision}] {
-			input.request.usage.read == true
+			input.request.usage[_] == "read"
 			input.workload.properties.stage == "DEV"
 			policy := {"description": "do not copy in DEV workload", "ID": "copy-dev"}
 			decision := {"policy": policy, "deploy": "False"}
@@ -128,7 +128,7 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 
 		# Production Workloads - read
 		config[{"capability": "read", "decision": decision}] {
-			input.request.usage.read == true
+			input.request.usage[_] == "read"
 			input.workload.properties.stage == "PROD"
 			workload_region := input.workload.cluster.metadata.region
 			policy := {"description": "read in production workload", "ID": "read-prod"}
@@ -138,7 +138,7 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 
 		# Cost Efficient Production Workloads - copy
 		config[{"capability": "copy", "decision": decision}] {
-			input.request.usage.read == true
+			input.request.usage[_] == "read"
 			input.workload.properties.stage == "PROD"
 			input.workload.properties.priority != "high"
 			dataset_region := input.request.dataset.geography
@@ -153,7 +153,7 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 
 		# High Priority Production Workloads - copy
 		config[{"capability": "copy", "decision": decision}] {
-			input.request.usage.read == true
+			input.request.usage[_] == "read"
 			input.workload.properties.stage == "PROD"
 			input.workload.properties.priority == "high"
 			dataset_region := input.request.dataset.geography
@@ -264,7 +264,7 @@ var _ = Describe("Evaluate a policy", func() {
 	//nolint:dupl
 	It("Conflict", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: true, v1alpha1.CopyFlow: true},
+			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow, v1alpha1.WriteFlow, v1alpha1.CopyFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "neverland-cluster", Metadata: multicluster.ClusterMetadata{Region: "neverland"}}}}
 		out, err := evaluator.Evaluate(&in)
@@ -275,7 +275,7 @@ var _ = Describe("Evaluate a policy", func() {
 	//nolint:dupl
 	It("ValidSolution", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
+			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "thegreendragon", Metadata: multicluster.ClusterMetadata{Region: "theshire"}}}}
 		out, err := evaluator.Evaluate(&in)
@@ -287,7 +287,7 @@ var _ = Describe("Evaluate a policy", func() {
 	//nolint:dupl
 	It("Merge", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: true},
+			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow, v1alpha1.CopyFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "neverland-cluster", Metadata: multicluster.ClusterMetadata{Region: "neverland"}}}}
 		out, err := evaluator.Evaluate(&in)
@@ -301,7 +301,7 @@ var _ = Describe("Evaluate a policy", func() {
 	//nolint:dupl
 	It("No conflict for policy set 2", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: true, v1alpha1.CopyFlow: true},
+			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow, v1alpha1.WriteFlow, v1alpha1.CopyFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{
 				PolicySetID: "2",
@@ -315,7 +315,7 @@ var _ = Describe("Evaluate a policy", func() {
 	//nolint:dupl
 	It("No decisions for policy set 99", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: true, v1alpha1.CopyFlow: true},
+			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow, v1alpha1.WriteFlow, v1alpha1.CopyFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{
 				PolicySetID: "99",
@@ -333,7 +333,7 @@ var _ = Describe("Hard policy enforcement", func() {
 	//nolint:dupl
 	It("No Copy for DEV Workloads", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
+			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "region1-cluster", Metadata: multicluster.ClusterMetadata{Region: "region1"}},
 				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "DEV", "priority": "low"}}}}}
@@ -346,7 +346,7 @@ var _ = Describe("Hard policy enforcement", func() {
 	//nolint:dupl
 	It("Production Workloads - read", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
+			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "region1-cluster", Metadata: multicluster.ClusterMetadata{Region: "region1"}},
 				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "low"}}}}}
@@ -359,7 +359,7 @@ var _ = Describe("Hard policy enforcement", func() {
 	//nolint:dupl
 	It("Cost Efficient Production Workloads - copy", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
+			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "region1-cluster", Metadata: multicluster.ClusterMetadata{Region: "region1"}},
 				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "low"}}}}}
@@ -372,7 +372,7 @@ var _ = Describe("Hard policy enforcement", func() {
 	//nolint:dupl
 	It("High Priority Production Workloads - copy", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
+			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "region1-cluster", Metadata: multicluster.ClusterMetadata{Region: "region1"}},
 				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "high"}}}}}

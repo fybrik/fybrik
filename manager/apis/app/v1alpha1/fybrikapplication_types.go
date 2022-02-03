@@ -9,26 +9,29 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// CatalogRequirements contain the specifics for catalogging the data asset
-type CatalogRequirements struct {
-	// CatalogService specifies the datacatalog service that will be used for catalogging the data into.
-	// +optional
-	CatalogService string `json:"service,omitempty"`
-
+// TargetCatalog contain the specifics for the catalog which needs to be updated.
+// Updates may be adding a new dataset to the catalog (currently supported) or deleting an existing dataset (future)
+type TargetCatalog struct {
 	// CatalogID specifies the catalog where the data will be cataloged.
 	// +optional
 	CatalogID string `json:"catalogID,omitempty"`
 }
 
-// CopyRequirements include the requirements for the data copy operation
-type CopyRequirements struct {
-	// Required indicates that the data must be copied.
+// FlowRequirements include the requirements for the data copy operation when there is an explicit copy request
+// Note: Implicit copies done for data plane optimization by Fybrik do not use these parameters
+type FlowRequirements struct {
+	// Catalog indicates that the data asset must be cataloged, and in which catalog to register it.
 	// +optional
-	Required bool `json:"required,omitempty"`
+	Catalog TargetCatalog `json:"catalog,omitempty"`
 
-	// Catalog indicates that the data asset must be cataloged.
+	// Storage estimate indicates the estimated amount of storage required when copying or writing new data.
 	// +optional
-	Catalog CatalogRequirements `json:"catalog,omitempty"`
+	StorageEstimate int `json:"storageEstimate"`
+
+	// IsNewDataSet if true indicates that the DataContext.DataSetID is user provided and not a true catalog ID.  Relevant when writing.
+	// A unique ID from the catalog will be provided in the FybrikApplication Status after a new catalog entry is created.
+	// +optional
+	IsNewDataSet bool `json:"isNewDataSet"`
 }
 
 // DataRequirements structure contains a list of requirements (interface, need to catalog the dataset, etc.)
@@ -37,32 +40,34 @@ type DataRequirements struct {
 	// +required
 	Interface InterfaceDetails `json:"interface"`
 
-	// CopyRequrements include the requirements for copying the data
+	// CopyRequrements include the requirements for explicit requests to copy the data
 	// +optional
-	Copy CopyRequirements `json:"copy,omitempty"`
+	FlowParams FlowRequirements `json:"flowParams,omitempty"`
 }
 
-// DataContext indicates data set chosen by the Data Scientist to be used by his application,
-// and includes information about the data format and technologies used by the application
-// to access the data.
+// DataContext indicates data set being processed by the workload
+// and includes information about the data format and technologies used to access the data.
 type DataContext struct {
-	// DataSetID is a unique identifier of the dataset chosen from the data catalog for processing by the data user application.
+	// DataSetID is a unique identifier of the dataset chosen from the data catalog.  For data catalogs that support multiple sub-catalogs, it includes the catalog id and the dataset id.
+	// When writing a new dataset it is the name provided by the user or workload generating it, and should include the sub-catalog name where appropriate.
 	// +required
 	// +kubebuilder:validation:MinLength=1
 	DataSetID string `json:"dataSetID"`
 
-	// CatalogService represents the catalog service for accessing the requested dataset.
-	// If not specified, the enterprise catalog service will be used.
+	// Flows indicates what is being done with the particular dataset - ex: read, write, copy, delete
+	// If more than one flow is indicated, the order is respected.
+	// This is optional for the purpose of backward compatability.  If nothing is provided, read is assumed.
 	// +optional
-	CatalogService string `json:"catalogService,omitempty"`
+	Flows []DataFlow `json:"flows,omitempty"`
+
 	// Requirements from the system
 	// +required
 	Requirements DataRequirements `json:"requirements"`
 }
 
 // FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.
-// Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets
-// Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog
+// Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets.
+// Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog.
 type FybrikApplicationSpec struct {
 
 	// Selector enables to connect the resource to the application

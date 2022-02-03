@@ -42,6 +42,16 @@ func HasString(value string, values []string) bool {
 	return false
 }
 
+// HasFlow indicates if the flow item is in the flow list
+func HasFlow(flows []app.DataFlow, flow app.DataFlow) bool {
+	for _, f := range flows {
+		if f == flow {
+			return true
+		}
+	}
+	return false
+}
+
 // Hash generates a name based on the unique identifier
 func Hash(value string, hashLength int) string {
 	data := sha512.Sum512([]byte(value))

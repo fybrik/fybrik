@@ -201,7 +201,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 		}
 
 		// register assets if necessary if the ready state has been received
-		if dataCtx.Requirements.Copy.Catalog.CatalogID != "" {
+		if dataCtx.Requirements.FlowParams.Catalog.CatalogID != "" {
 			if applicationContext.Application.Status.AssetStates[assetID].CatalogedAsset != "" {
 				// the asset has been already cataloged
 				continue
@@ -218,7 +218,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 				continue
 			}
 			// register the asset: experimental feature
-			if newAssetID, err := r.RegisterAsset(dataCtx.Requirements.Copy.Catalog.CatalogID, &provisionedBucketRef, applicationContext.Application); err == nil {
+			if newAssetID, err := r.RegisterAsset(dataCtx.Requirements.FlowParams.Catalog.CatalogID, &provisionedBucketRef, applicationContext.Application); err == nil {
 				state := applicationContext.Application.Status.AssetStates[assetID]
 				state.CatalogedAsset = newAssetID
 				applicationContext.Application.Status.AssetStates[assetID] = state
@@ -405,15 +405,18 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 
 // CreateDataRequest generates a new DataRequest object for a specific asset based on FybrikApplication and asset metadata
 func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataContext, assetMetadata *datacatalog.ResourceMetadata) adminconfig.DataRequest {
-	usage := make(map[api.DataFlow]bool)
-	// request to read is determined by the workload selector presence
-	usage[api.ReadFlow] = (application.Spec.Selector.WorkloadSelector.Size() > 0)
-	// explicit request to copy
-	usage[api.CopyFlow] = dataCtx.Requirements.Copy.Required
+	var flows []api.DataFlow
+
+	// If a workload selector is provided but no flow, assume read - for backward compatability
+	if (application.Spec.Selector.WorkloadSelector.Size() > 0) && (len(dataCtx.Flows) == 0) {
+		flows = append(flows, api.ReadFlow)
+	} else {
+		flows = dataCtx.Flows
+	}
 	return adminconfig.DataRequest{
 		DatasetID: dataCtx.DataSetID,
 		Interface: dataCtx.Requirements.Interface,
-		Usage:     usage,
+		Usage:     flows,
 		Metadata:  assetMetadata,
 	}
 }
@@ -476,11 +479,11 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 	input.Spec.AppInfo.DeepCopyInto(&configEvaluatorInput.Workload.Properties)
 	configEvaluatorInput.Workload.Cluster = workloadCluster
 	configEvaluatorInput.Request = CreateDataRequest(input, *req.Context, &req.DataDetails.ResourceMetadata)
+
 	// Read policies for data that is processed in the workload geography
-	if configEvaluatorInput.Request.Usage[api.ReadFlow] {
-		actionType := policymanager.READ
+	if utils.HasFlow(configEvaluatorInput.Request.Usage, api.ReadFlow) {
 		reqAction := policymanager.RequestAction{
-			ActionType:         actionType,
+			ActionType:         api.ReadFlow,
 			Destination:        workloadCluster.Metadata.Region,
 			ProcessingLocation: taxonomy.ProcessingLocation(workloadCluster.Metadata.Region),
 		}

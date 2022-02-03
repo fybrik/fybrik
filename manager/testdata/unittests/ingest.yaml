@@ -13,9 +13,10 @@ spec:
     intent: Fraud Detection
   data:
     - dataSetID: s3-external/xxx
+      flows:
+      - copy
       requirements:
         copy:
-          required: true
           catalog:
             catalogID: "ingest_test"
         interface: 
