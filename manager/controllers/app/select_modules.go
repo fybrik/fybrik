@@ -413,14 +413,15 @@ func validateRestrictions(restrictions []adminrules.Restriction, obj interface{}
 	for _, restrict := range restrictions {
 		fields := strings.Split(restrict.Property, ".")
 		if restrict.Range != nil {
-			value, found, err := unstructured.NestedFieldNoCopy(details, fields...)
+			// float64 is the supported numeric value type in JSON
+			value, found, err := unstructured.NestedFloat64(details, fields...)
 			if err != nil || !found {
 				return false
 			}
-			if restrict.Range.Max > 0 && value.(int) > restrict.Range.Max {
+			if restrict.Range.Max > 0 && int(value) > restrict.Range.Max {
 				return false
 			}
-			if restrict.Range.Min > 0 && value.(int) < restrict.Range.Min {
+			if restrict.Range.Min > 0 && int(value) < restrict.Range.Min {
 				return false
 			}
 		} else if len(restrict.Values) != 0 {
