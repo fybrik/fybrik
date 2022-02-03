@@ -121,12 +121,10 @@
       "type": "object",
       "properties": {
         "max": {
-          "type": "integer",
-          "format": "int64"
+          "type": "integer"
         },
         "min": {
-          "type": "integer",
-          "format": "int64"
+          "type": "integer"
         }
       }
     },

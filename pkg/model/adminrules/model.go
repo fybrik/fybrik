@@ -19,8 +19,8 @@ const (
 // Semantics of a list is a disjunction of values, i.e. a type can be either plugin or config.
 type StringList []string
 type RangeType struct {
-	Min float64 `json:"min,omitempty"`
-	Max float64 `json:"max,omitempty"`
+	Min int `json:"min,omitempty"`
+	Max int `json:"max,omitempty"`
 }
 
 type Restriction struct {
