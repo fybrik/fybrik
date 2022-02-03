@@ -26,12 +26,12 @@ type FlowRequirements struct {
 
 	// Storage estimate indicates the estimated amount of storage required when copying or writing new data.
 	// +optional
-	StorageEstimate int `json:"storageEstimate"`
+	StorageEstimate int `json:"storageEstimate,omitempty"`
 
 	// IsNewDataSet if true indicates that the DataContext.DataSetID is user provided and not a true catalog ID.  Relevant when writing.
 	// A unique ID from the catalog will be provided in the FybrikApplication Status after a new catalog entry is created.
 	// +optional
-	IsNewDataSet bool `json:"isNewDataSet"`
+	IsNewDataSet bool `json:"isNewDataSet,omitempty"`
 }
 
 // DataRequirements structure contains a list of requirements (interface, need to catalog the dataset, etc.)
