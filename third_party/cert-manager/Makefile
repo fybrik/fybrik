@@ -10,7 +10,7 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 	$(TOOLBIN)/kubectl create namespace cert-manager
 	$(TOOLBIN)/helm repo add jetstack https://charts.jetstack.io
 	$(TOOLBIN)/helm repo update
-	$(TOOLBIN)/helm install cert-manager jetstack/cert-manager --version v1.2.0 \
+	$(TOOLBIN)/helm install cert-manager jetstack/cert-manager --version v1.6.2 \
 		--set installCRDs=true \
 		--namespace cert-manager \
 		--wait --timeout 120s
