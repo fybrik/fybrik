@@ -38,13 +38,13 @@ helm repo update
 
 ## Install cert-manager
 
-Fybrik requires [cert-manager](https://cert-manager.io) to be installed to your cluster. 
+Fybrik requires [cert-manager](https://cert-manager.io) to be installed to your cluster[^1]. 
 Many clusters already include cert-manager. Check if `cert-manager` namespace exists in your cluster and only run the following if it doesn't exist:
 
 ```bash
 helm install cert-manager jetstack/cert-manager \
     --namespace cert-manager \
-    --version v1.2.0 \
+    --version v1.6.2 \
     --create-namespace \
     --set installCRDs=true \
     --wait --timeout 120s
@@ -142,7 +142,7 @@ helm install fybrik fybrik-charts/fybrik -n fybrik-system {{ fybrikVersionFlag }
 
 [Modules](../concepts/modules.md) are plugins that the control plane deploys whenever required. The [arrow flight module](https://github.com/fybrik/arrow-flight-module) enables reading data through Apache Arrow Flight API. 
 
-Install the {{ arrowFlightRelease }}[^1] release of arrow-flight-module:
+Install the {{ arrowFlightRelease }}[^2] release of arrow-flight-module:
 
 ```bash
 {% if arrowFlightRelease != 'latest' %}
@@ -152,4 +152,5 @@ Install the {{ arrowFlightRelease }}[^1] release of arrow-flight-module:
 {% endif %}
 ```
 
-[^1]: Refer to the [documentation](https://github.com/fybrik/arrow-flight-module/blob/master/README.md#register-as-a-fybrik-module) of arrow-flight-module for other versions
+[^1]:Fybrik version 0.6.0 and lower should use cert-manager 1.2.0
+[^2]: Refer to the [documentation](https://github.com/fybrik/arrow-flight-module/blob/master/README.md#register-as-a-fybrik-module) of arrow-flight-module for other versions
