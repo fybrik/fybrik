@@ -1,4 +1,4 @@
-ROOT_DIR := ../../..
+ROOT_DIR := ../..
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 DOCKER_NAME ?= datauserserver
@@ -33,4 +33,11 @@ docker-build:
 	docker build . -t ${IMG} -f Dockerfile
 	rm datauserserver
 
-
+.PHONY: docker-push
+docker-push:
+ifneq (${DOCKER_PASSWORD},)
+	@docker login \
+		--username ${DOCKER_USERNAME} \
+		--password ${DOCKER_PASSWORD} ${DOCKER_HOSTNAME}
+endif
+	docker push ${IMG}
