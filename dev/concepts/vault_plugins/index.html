@@ -528,9 +528,40 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          HashiCorp Vault plugins
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         HashiCorp Vault plugins
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#before-you-begin" class="md-nav__link">
+    Before you begin
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1084,6 +1115,21 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#before-you-begin" class="md-nav__link">
+    Before you begin
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1105,12 +1151,19 @@ After their enablement during Vault server initialization, the plugins can be us
 This project uses secrets plugins to retrieve dataset credentials by the running <a href="../modules/">modules</a>. The plugins retrieve the credentials from where they are stored, for example, data catalog or in kubernetes secret.
 <a href="https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader">Vault-plugin-secrets-kubernetes-reader</a> plugin is an example of Vault custom secret plugin which retrieves dataset credentials stored in a kubernetes secret.</p>
 <p>Additional secret plugins can be developed to retrieve credentials additional location. This <a href="https://learn.hashicorp.com/tutorials/vault/plugin-backends?in=vault/app-integration">tutorial</a> can serve as a good starting point to learn about Vault plugin development.</p>
-<p>The following steps are for configuring a secret plug-in for Fybrik:</p>
+<h2 id="before-you-begin">Before you begin</h2>
+<p>Ensure that you have the <a href="https://www.vaultproject.io/downloads">Vault v1.9.x</a> to execute <a href="https://www.vaultproject.io/docs/commands">Vault CLI</a> commands.</p>
+<p>The following steps are for configuring a new secret plug-in for Fybrik:</p>
 <ol>
-<li>Enable the plugin during Vault server initialization in a specific path. 
-<br/>An example of that can be found in helm chart <a href="https://github.com/fybrik/fybrik/blob/master/third_party/vault/vault-single-cluster/values.yaml">values.yaml</a> file in the project where <a href="https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader">Vault-plugin-secrets-kubernetes-reader</a> plugin is enabled in <code>kubernetes-secrets</code> path:
+<li>
+<p><a href="https://www.vaultproject.io/docs/commands/login">Login into Vault</a></p>
+</li>
+<li>
+<p>Enable the plugin during Vault server initialization in a specific path. 
+<br/>An example of that can be found in helm chart <a href="https://raw.githubusercontent.com/fybrik/fybrik/master/charts/vault/env/dev/plugin-secrets-kubernetes-reader-values.yaml">values.yaml</a> file in the project where <a href="https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader">Vault-plugin-secrets-kubernetes-reader</a> plugin is enabled in <code>kubernetes-secrets</code> path:
 <div class="highlight"><pre><span></span><code>      vault secrets <span class="nb">enable</span> -path<span class="o">=</span>kubernetes-secrets vault-plugin-secrets-kubernetes-reader
-</code></pre></div></li>
+</code></pre></div></p>
+</li>
 <li>Add <a href="https://www.vaultproject.io/docs/concepts/policies">Vault policy </a> to allow the <a href="../modules/">modules</a> to access secrets using the plugin.
 <br/>Following is an example of a policy which gives permission to read secrets in Vault path <code>kubernetes-secrets</code>:
 <div class="highlight"><pre><span></span><code>vault policy write <span class="s2">&quot;allow-all-dataset-creds&quot;</span> - <span class="s">&lt;&lt;EOF</span>
@@ -1119,7 +1172,7 @@ This project uses secrets plugins to retrieve dataset credentials by the running
 <span class="s">      }</span>
 <span class="s">      EOF</span>
 </code></pre></div></li>
-<li>Have the <code>CatalogDatasetInfo</code> structure from the <a href="../../reference/connectors#data_catalog_responseproto">data catalog response</a> contain the Vault secret path which should be used to retrieve the credentials for a given asset. When Vault plugin is used to retrieve the credentials the parameters to the plugin should follow the plugin usage instructions. This path will later be passed on to the <a href="../modules/">modules</a>.
+<li>Have the <code>CatalogDatasetInfo</code> structure from the <a href="../../reference/connectors#data_catalog_responseproto">data catalog response</a> contain the Vault secret path which should be used to retrieve the credentials for a given asset. When the Vault plugin is used to retrieve the credentials the parameters to the plugin should follow the plugin usage instructions. This path will later be passed on to the <a href="../modules/">modules</a>.
 For example, when the credentials are stored in kubernetes secret as is done in the <a href="../../reference/katalog/">Katalog</a> built-in data catalog; the <a href="https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader">Vault-plugin-secrets-kubernetes-reader</a> plugin can be used to retrieve the credentials. In this case two parameters should be passed: <code>paysim-csv</code>  which is the kubernetes secret name that holds the credentials and <code>fybrik-notebook-sample</code> is the secret namespace, both are known to the katalog when constructing the path.
 <br/><br/>The following snippet shows <code>CatalogDatasetInfo</code> structure with Vault secret path in <code>CredentialsInfo</code> field.
 <div class="highlight"><pre><span></span><code>    connectors.CatalogDatasetInfo<span class="o">{</span>
