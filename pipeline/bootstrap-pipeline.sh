@@ -230,13 +230,16 @@ EOH
     oc apply -f ${repo_root}/pipeline/knative-eventing.yaml
 else
     kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.26.0/release.yaml
-    kubectl apply -f https://github.com/knative/operator/releases/download/v0.15.4/operator.yaml
-    kubectl apply -f https://github.com/knative/eventing/releases/download/v0.21.0/eventing-crds.yaml
-    kubectl apply -f https://github.com/knative/eventing/releases/download/v0.21.0/eventing-core.yaml
+    wget -O ${TMP}/operator.yaml https://github.com/knative/operator/releases/download/v0.15.4/operator.yaml
+    sed -i.bak 's|apiextensions.k8s.io/v1beta1|apiextensions.k8s.io/v1|g' ${TMP}/operator.yaml
+    set +e
+    kubectl apply -f ${TMP}/operator.yaml --validate=false
+    kubectl apply -f https://github.com/knative/eventing/releases/download/v0.23.0/eventing-crds.yaml
+    kubectl apply -f https://github.com/knative/eventing/releases/download/v0.23.0/eventing-core.yaml
+    set -e
     try_command "kubectl wait pod -n tekton-pipelines --all --for=condition=Ready --timeout=3m" 2 true 1
     set +e
     kubectl create ns knative-eventing
-    set -e
     cat > ${TMP}/knative-eventing.yaml <<EOH
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeEventing
@@ -246,6 +249,7 @@ metadata:
 EOH
     ls -alrt ${TMP}/
     kubectl apply -f ${TMP}/knative-eventing.yaml
+    set -e
 fi
 
 if [[ ${is_openshift} == "true" ]]; then
@@ -273,13 +277,13 @@ helper_text="If this step fails, tekton related pods may be restarting or initia
 "
 set -x
 try_command "kubectl apply -f ${repo_root}/pipeline/tasks/shell.yaml" 3 true 60
-kubectl apply -f ${repo_root}/pipeline/tasks/make.yaml
-kubectl apply -f ${repo_root}/pipeline/tasks/git-clone.yaml
-kubectl apply -f ${repo_root}/pipeline/tasks/buildah.yaml
-kubectl apply -f ${repo_root}/pipeline/tasks/skopeo-copy.yaml
-kubectl apply -f ${repo_root}/pipeline/tasks/openshift-client.yaml
-kubectl apply -f ${repo_root}/pipeline/tasks/helm-upgrade-from-source.yaml 
-kubectl apply -f ${repo_root}/pipeline/tasks/helm-upgrade-from-repo.yaml 
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/make.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/git-clone.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/buildah.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/skopeo-copy.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/openshift-client.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/helm-upgrade-from-source.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/helm-upgrade-from-repo.yaml" 3 true 60
 helper_text=""
 
 # Wipe old pipeline definitions in case of merge conflicts
@@ -291,7 +295,7 @@ fi
 
 set -e
 if [[ "${is_public_repo}" == "true" ]]; then
-    kubectl apply -f ${repo_root}/pipeline/pipeline.yaml
+    try_command "kubectl apply -f ${repo_root}/pipeline/pipeline.yaml" 3 true 60
 else 
      if [[ -f ${repo_root}/pipeline/custom_pipeline_create.sh ]]; then
          source ${repo_root}/pipeline/custom_pipeline_create.sh
@@ -427,9 +431,9 @@ kubectl delete apiserversource generic-watcher
 set -e
 
 # Install triggers for rebuilds of specific tasks
-kubectl apply -f ${repo_root}/pipeline/eventlistener/triggerbinding.yaml
-kubectl apply -f ${repo_root}/pipeline/eventlistener/triggertemplate.yaml
-kubectl apply -f ${repo_root}/pipeline/eventlistener/apiserversource.yaml
+try_command "kubectl apply -f ${repo_root}/pipeline/eventlistener/triggerbinding.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/eventlistener/triggertemplate.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/eventlistener/apiserversource.yaml" 3 true 60
 kubectl apply -f ${repo_root}/pipeline/eventlistener/role.yaml
 kubectl apply -f ${repo_root}/pipeline/eventlistener/serviceaccount.yaml
 
@@ -438,7 +442,7 @@ helper_text="If this step fails, run again - knative related pods may be restart
 "
 set -x
 if [[ ${is_openshift} == "true" ]]; then
-    kubectl apply -f ${repo_root}/pipeline/eventlistener/eventlistener.yaml
+    try_command "kubectl apply -f ${repo_root}/pipeline/eventlistener/eventlistener.yaml" 3 true 60
 else
     sed -i.bak "s|serviceAccountName: pipeline|serviceAccountName: default|g" ${repo_root}/pipeline/eventlistener/eventlistener.yaml
     kubectl apply -f ${repo_root}/pipeline/eventlistener/eventlistener.yaml
