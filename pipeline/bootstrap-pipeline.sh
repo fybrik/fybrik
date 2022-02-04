@@ -230,13 +230,16 @@ EOH
     oc apply -f ${repo_root}/pipeline/knative-eventing.yaml
 else
     kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.26.0/release.yaml
-    kubectl apply -f https://github.com/knative/operator/releases/download/v0.15.4/operator.yaml
-    kubectl apply -f https://github.com/knative/eventing/releases/download/v0.21.0/eventing-crds.yaml
-    kubectl apply -f https://github.com/knative/eventing/releases/download/v0.21.0/eventing-core.yaml
+    wget -O ${TMP}/operator.yaml https://github.com/knative/operator/releases/download/v0.15.4/operator.yaml
+    sed -i.bak 's|apiextensions.k8s.io/v1beta1|apiextensions.k8s.io/v1|g' ${TMP}/operator.yaml
+    set +e
+    kubectl apply -f ${TMP}/operator.yaml --validate=false
+    kubectl apply -f https://github.com/knative/eventing/releases/download/v0.23.0/eventing-crds.yaml
+    kubectl apply -f https://github.com/knative/eventing/releases/download/v0.23.0/eventing-core.yaml
+    set -e
     try_command "kubectl wait pod -n tekton-pipelines --all --for=condition=Ready --timeout=3m" 2 true 1
     set +e
     kubectl create ns knative-eventing
-    set -e
     cat > ${TMP}/knative-eventing.yaml <<EOH
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeEventing
@@ -246,6 +249,7 @@ metadata:
 EOH
     ls -alrt ${TMP}/
     kubectl apply -f ${TMP}/knative-eventing.yaml
+    set -e
 fi
 
 if [[ ${is_openshift} == "true" ]]; then
