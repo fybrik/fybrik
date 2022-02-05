@@ -641,7 +641,7 @@ kubectl get pipelinerun --no-headers
 kubectl get pipelinerun --no-headers | grep -e "Failed" -e "Completed"
 EOH
     chmod u+x ${TMP}/streams_csv_check_script.sh
-    try_command "${TMP}/streams_csv_check_script.sh"  60 false 31
+    try_command "${TMP}/streams_csv_check_script.sh"  60 false 40
     echo "debug: pods"
     kubectl describe pods
     echo "debug: events"
