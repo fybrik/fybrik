@@ -647,6 +647,9 @@ EOH
     kubectl describe pods
     echo "debug: events"
     kubectl get events
+    echo "debug: volumes"
+    kubectl describe pvc
+    for i in $(kubectl get po -n nfs-provisioner | cut -d' ' -f1); do kubectl logs -n nfs-provisioner $i --all-containers; done
     echo "debug: taskruns"
     for i in $(kubectl get taskrun --no-headers | grep -v "True" | cut -d' ' -f1); do kubectl logs $(kubectl get po -l tekton.dev/taskRun=$i --no-headers | cut -d' ' -f1) --all-containers --since=0s; done
     set +e
