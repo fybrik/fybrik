@@ -11,7 +11,7 @@ on:
       - master
 
 env:
-  GO_VERSION: 1.16
+  GO_VERSION: 1.17
 
 jobs:
   verify:
@@ -192,8 +192,7 @@ jobs:
             branch="${GITHUB_REF#refs/heads/}"
             version=$branch
             echo "HELM_TAG=0.0.0-${version}" >> $GITHUB_ENV
-        fi
-        if [[ $version == releases/* ]] ;
+        elif [[ $version == releases/* ]] ;
         then
            releaseVersion="${GITHUB_REF#refs/heads/releases/}"
            version="$releaseVersion-rc"
@@ -205,10 +204,4 @@ jobs:
       if: ${{ github.event_name != 'pull_request' }}
       env:
         DOCKER_PUBLIC_TAGNAME:  ${{ steps.version.outputs.version }}
-      run: make docker-retag-and-push-public && make helm-push-public
-    - name: Publish latest image tag on push tag event
-      if: github.event_name != 'pull_request' && steps.version.outputs.push_tag_event == 'true'
-      env:
-        DOCKER_PUBLIC_TAGNAME: 'latest'
-        HELM_TAG: '0.0.0-latest'
       run: make docker-retag-and-push-public && make helm-push-public

@@ -11,7 +11,7 @@ define license_java
 	($(ABSTOOLBIN)/license_finder || true)
 endef
 
-GO_VERSION:=1.16
+GO_VERSION:=1.17
 CODE_MAINT += go-version
 .PHONY: go-version
 go-version:

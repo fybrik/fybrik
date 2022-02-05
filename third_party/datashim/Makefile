@@ -4,7 +4,7 @@ include $(ROOT_DIR)/hack/make-rules/tools.mk
 
 .PHONY: deploy
 deploy: $(TOOLBIN)/kubectl
-	$(TOOLBIN)/kubectl apply --validate=false -f https://raw.githubusercontent.com/datashim-io/datashim/master/release-tools/manifests/dlf.yaml
+	$(TOOLBIN)/kubectl apply --validate=false -f dlf.yaml
 
 .PHONY: deploy-wait
 deploy-wait: $(TOOLBIN)/kubectl
@@ -12,4 +12,4 @@ deploy-wait: $(TOOLBIN)/kubectl
 
 .PHONY: undeploy
 undeploy: $(TOOLBIN)/kubectl
-	$(TOOLBIN)/kubectl delete -f https://raw.githubusercontent.com/datashim-io/datashim/master/release-tools/manifests/dlf.yaml
+	$(TOOLBIN)/kubectl delete -f dlf.yaml

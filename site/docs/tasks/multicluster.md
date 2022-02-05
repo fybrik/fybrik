@@ -88,6 +88,7 @@ the Fybrik instance. This step is the same for coordinator and remote clusters.
 3. The next dialog will offer you a `kubectl` command that can be executed on the cluster that should be attached.
 4. After executing the `kubectl` command the Razee services will be installed in the `razeedeploy` namespace and the cluster
    will show up in your cluster list (like in the picture above). This installs the watch keeper and cluster subscription components.
+5. Create clusters groups by clicking on the **Cluster groups** tab: for each cluster create a group named `fybrik-<cluster-name>` and add the cluster to that group. In addition, create a single group for all the clusters: the name of this group is used when deploying the coordinator cluster as shown below.
 
 The next step is to configure Fybrik to use IBM Satellite config as multicluster orchestrator. This configuration is done via a 
 Kubernetes secret that is created by the helm chart. Overwriting the `coordinator.razee` values in your deployment will make use of the

@@ -5,86 +5,39 @@ package adminconfig
 
 import (
 	"context"
-	"io/ioutil"
-	"path/filepath"
-	"strings"
+	"encoding/json"
 
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/logging"
-	"github.com/open-policy-agent/opa/ast"
+	"fybrik.io/fybrik/pkg/model/adminrules"
+	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
-	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/yaml"
 )
 
-// Type definitions for parsing OPA response
-// A list of decisions per capability, e.g. {"read": {"deploy": true}, "write": {"deploy": false}}
-type RuleDecisionList []DecisionPerCapabilityMap
-
-// A directory containing rego files that define admin config policies
-const RegoPolicyDirectory = "/tmp/adminconfig/"
+const ValidationPath string = "/tmp/taxonomy/adminrules.json#/definitions/EvaluationOutputStructure"
 
 // RegoPolicyEvaluator implements EvaluatorInterface
 type RegoPolicyEvaluator struct {
-	Log          zerolog.Logger
-	Query        rego.PreparedEvalQuery
-	ReadyForEval bool
+	Log   zerolog.Logger
+	Query rego.PreparedEvalQuery
 }
 
 // NewRegoPolicyEvaluator constructs a new RegoPolicyEvaluator object
-func NewRegoPolicyEvaluator(log zerolog.Logger) *RegoPolicyEvaluator {
+func NewRegoPolicyEvaluator(log zerolog.Logger, query rego.PreparedEvalQuery) *RegoPolicyEvaluator {
 	return &RegoPolicyEvaluator{
-		Log:          log,
-		Query:        rego.PreparedEvalQuery{},
-		ReadyForEval: false,
+		Log:   log,
+		Query: query,
 	}
-}
-
-// prepareQuery prepares a query for OPA evaluation - data object and compiled modules.
-// This function is called upon the change in rego files.
-// Monitoring changes in rego files will be implemented in the future version.
-func (r *RegoPolicyEvaluator) prepareQuery() (rego.PreparedEvalQuery, error) {
-	// read and compile rego files
-	files, err := ioutil.ReadDir(RegoPolicyDirectory)
-	if err != nil {
-		return rego.PreparedEvalQuery{}, err
-	}
-	modules := map[string]string{}
-	for _, info := range files {
-		name := info.Name()
-		if !strings.HasSuffix(name, ".rego") {
-			continue
-		}
-		fileName := filepath.Join(RegoPolicyDirectory, name)
-		module, err := ioutil.ReadFile(filepath.Clean(fileName))
-		if err != nil {
-			return rego.PreparedEvalQuery{}, err
-		}
-		modules[name] = string(module)
-	}
-	compiler, err := ast.CompileModules(modules)
-
-	if err != nil {
-		return rego.PreparedEvalQuery{}, errors.Wrap(err, "couldn't compile modules")
-	}
-	rego := rego.New(
-		rego.Query("data.adminconfig.config"),
-		rego.Compiler(compiler),
-	)
-	return rego.PrepareForEval(context.Background())
 }
 
 // Evaluate method evaluates the rego files based on the dynamic input object
 func (r *RegoPolicyEvaluator) Evaluate(in *EvaluatorInput) (EvaluatorOutput, error) {
-	if !r.ReadyForEval {
-		var err error
-		if r.Query, err = r.prepareQuery(); err != nil {
-			return EvaluatorOutput{Valid: false}, errors.Wrap(err, "failed to prepare a query")
-		}
-		r.ReadyForEval = true
-	}
+	log := r.Log.With().Str(utils.FybrikAppUUID, in.Workload.UUID).Logger()
 	input, err := r.prepareInputForOPA(in)
 
 	if err != nil {
@@ -95,20 +48,17 @@ func (r *RegoPolicyEvaluator) Evaluate(in *EvaluatorInput) (EvaluatorOutput, err
 	if err != nil {
 		return EvaluatorOutput{Valid: false}, errors.Wrap(err, "failed to evaluate a query")
 	}
-	log := r.Log.With().Str(utils.FybrikAppUUID, in.Workload.UUID).Logger()
 	logging.LogStructure("Admin policy evaluation", &rs, log, false, true)
 	// merge decisions and build an output object for the manager
-	decisions, valid, err := r.getOPADecisions(in, rs)
-	if err != nil {
-		return EvaluatorOutput{Valid: valid, DatasetID: in.Request.DatasetID, ConfigDecisions: decisions}, err
-	}
-	return EvaluatorOutput{
-		Valid:           valid,
+	out := EvaluatorOutput{
 		DatasetID:       in.Request.DatasetID,
 		PolicySetID:     in.Workload.PolicySetID,
 		UUID:            in.Workload.UUID,
-		ConfigDecisions: decisions,
-	}, nil
+		ConfigDecisions: DecisionPerCapabilityMap{},
+		Policies:        []adminrules.DecisionPolicy{},
+	}
+	err = r.getOPADecisions(in, rs, &out)
+	return out, err
 }
 
 // prepares an input in OPA format
@@ -125,71 +75,68 @@ func (r *RegoPolicyEvaluator) prepareInputForOPA(in *EvaluatorInput) (map[string
 }
 
 // getOPADecisions parses the OPA decisions and merges decisions for the same capability
-func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.ResultSet) (DecisionPerCapabilityMap, bool, error) {
+func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.ResultSet, out *EvaluatorOutput) error {
 	log := r.Log.With().Str(utils.FybrikAppUUID, in.Workload.UUID).Logger()
-	decisions := DecisionPerCapabilityMap{}
+	out.Valid = false
 	if len(rs) == 0 {
-		return decisions, false, errors.New("invalid opa evaluation - an empty result set has been received")
+		return errors.New("invalid opa evaluation - an empty result set has been received")
 	}
 	for _, result := range rs {
 		for _, expr := range result.Expressions {
+			if err := validateStructure(expr.Value, ValidationPath, in.Workload.UUID); err != nil {
+				return err
+			}
 			bytes, err := yaml.Marshal(expr.Value)
 			if err != nil {
-				return nil, false, err
+				return err
 			}
-			ruleDecisions := RuleDecisionList{}
-			if err = yaml.Unmarshal(bytes, &ruleDecisions); err != nil {
-				return nil, false, errors.Wrap(err, "Unexpected OPA response structure")
+			evalStruct := adminrules.EvaluationOutputStructure{}
+			if err = yaml.Unmarshal(bytes, &evalStruct); err != nil {
+				return errors.Wrap(err, "Unexpected OPA response structure")
 			}
-			for _, rule := range ruleDecisions {
-				for capability, newDecision := range rule {
-					// filter by policySetID
-					if newDecision.Policy.PolicySetID != "" && in.Workload.PolicySetID != "" && newDecision.Policy.PolicySetID != in.Workload.PolicySetID {
-						continue
+			for _, rule := range evalStruct.Config {
+				capability := rule.Capability
+				newDecision := rule.Decision
+				// filter by policySetID
+				if newDecision.Policy.PolicySetID != "" && in.Workload.PolicySetID != "" && newDecision.Policy.PolicySetID != in.Workload.PolicySetID {
+					continue
+				}
+				// apply defaults for undefined fields
+				if newDecision.Deploy == "" {
+					newDecision.Deploy = adminrules.StatusUnknown
+				}
+				// a single decision should be made for a capability
+				decision, exists := out.ConfigDecisions[capability]
+				out.Policies = append(out.Policies, newDecision.Policy)
+				if !exists {
+					out.ConfigDecisions[capability] = newDecision
+				} else {
+					valid, mergedDecision := r.merge(newDecision, decision)
+					if !valid {
+						log.Error().Msg("Conflict while merging OPA decisions")
+						logging.LogStructure("Conflicting decisions", out, log, true, true)
+						return nil
 					}
-					// apply defaults for undefined fields
-					// string -> ConditionStatus conversion
-					switch newDecision.Deploy {
-					case "true":
-						newDecision.Deploy = corev1.ConditionTrue
-					case "false":
-						newDecision.Deploy = corev1.ConditionFalse
-					case "":
-						newDecision.Deploy = corev1.ConditionUnknown
-					default:
-						return nil, false, errors.New("Illegal value for Deploy: " + string(newDecision.Deploy))
-					}
-					// a single decision should be made for a capability
-					decision, exists := decisions[capability]
-					if !exists {
-						decisions[capability] = newDecision
-					} else {
-						valid, mergedDecision := r.merge(newDecision, decision)
-						if !valid {
-							joinedStr := strings.Join([]string{decision.Policy.Description, newDecision.Policy.Description}, ";")
-							log.Error().Str("decisions", joinedStr).Msg("Conflict while merging OPA decisions")
-							return decisions, false, nil
-						}
-						decisions[capability] = mergedDecision
-					}
+					out.ConfigDecisions[capability] = mergedDecision
 				}
 			}
 		}
 	}
-	return decisions, true, nil
+	out.Valid = true
+	return nil
 }
 
 // This function merges two decisions for the same capability using the following logic:
 // deploy: true/false take precedence over undefined, true and false result in a conflict.
 // restrictions: new pairs <key, value> are added, if both exist - compatibility is checked.
 // policy: concatenation of IDs and descriptions.
-func (r *RegoPolicyEvaluator) merge(newDecision Decision, oldDecision Decision) (bool, Decision) {
-	mergedDecision := Decision{}
+func (r *RegoPolicyEvaluator) merge(newDecision adminrules.Decision, oldDecision adminrules.Decision) (bool, adminrules.Decision) {
+	mergedDecision := adminrules.Decision{}
 	// merge deployment decisions
 	deploy := oldDecision.Deploy
-	if deploy == corev1.ConditionUnknown {
+	if deploy == adminrules.StatusUnknown {
 		deploy = newDecision.Deploy
-	} else if newDecision.Deploy != corev1.ConditionUnknown {
+	} else if newDecision.Deploy != adminrules.StatusUnknown {
 		if newDecision.Deploy != deploy {
 			return false, mergedDecision
 		}
@@ -197,35 +144,61 @@ func (r *RegoPolicyEvaluator) merge(newDecision Decision, oldDecision Decision) 
 	mergedDecision.Deploy = deploy
 	// merge restrictions
 	mergedDecision.DeploymentRestrictions = oldDecision.DeploymentRestrictions
-	if mergedDecision.DeploymentRestrictions == nil {
-		mergedDecision.DeploymentRestrictions = make(Restrictions)
+	if mergedDecision.DeploymentRestrictions.Clusters == nil {
+		mergedDecision.DeploymentRestrictions.Clusters = make(adminrules.Restriction)
 	}
-	for entity, restrictions := range newDecision.DeploymentRestrictions {
-		if mergedRestriction, found := mergedDecision.DeploymentRestrictions[entity]; !found {
-			mergedDecision.DeploymentRestrictions[entity] = restrictions
+	if err := mergeRestrictions(&mergedDecision.DeploymentRestrictions.Clusters, &newDecision.DeploymentRestrictions.Clusters); err != nil {
+		return false, adminrules.Decision{}
+	}
+	if mergedDecision.DeploymentRestrictions.Modules == nil {
+		mergedDecision.DeploymentRestrictions.Modules = make(adminrules.Restriction)
+	}
+	if err := mergeRestrictions(&mergedDecision.DeploymentRestrictions.Modules, &newDecision.DeploymentRestrictions.Modules); err != nil {
+		return false, adminrules.Decision{}
+	}
+	if mergedDecision.DeploymentRestrictions.StorageAccounts == nil {
+		mergedDecision.DeploymentRestrictions.StorageAccounts = make(adminrules.Restriction)
+	}
+
+	if err := mergeRestrictions(&mergedDecision.DeploymentRestrictions.StorageAccounts, &newDecision.DeploymentRestrictions.StorageAccounts); err != nil {
+		return false, adminrules.Decision{}
+	}
+	// policies are appended to the output, no need to merge
+	mergedDecision.Policy = adminrules.DecisionPolicy{}
+	return true, mergedDecision
+}
+
+func mergeRestrictions(r1 *adminrules.Restriction, r2 *adminrules.Restriction) error {
+	if r2 == nil {
+		return nil
+	}
+	for key, values := range *r2 {
+		if len((*r1)[key]) == 0 {
+			(*r1)[key] = values
 		} else {
-			for key, values := range restrictions {
-				if len(mergedRestriction[key]) == 0 {
-					mergedRestriction[key] = values
-				} else {
-					mergedRestriction[key] = utils.Intersection(mergedRestriction[key], values)
-					if len(mergedRestriction[key]) == 0 {
-						return false, mergedDecision
-					}
-				}
+			(*r1)[key] = utils.Intersection((*r1)[key], values)
+			if len((*r1)[key]) == 0 {
+				return errors.New("unable to merge restrictions")
 			}
-			mergedDecision.DeploymentRestrictions[entity] = mergedRestriction
 		}
 	}
-	// merge policies descriptions/ids
-	mergedDecision.Policy = oldDecision.Policy
-	if mergedDecision.Policy.ID != "" {
-		mergedDecision.Policy.ID += ";"
+	return nil
+}
+
+func validateStructure(obj interface{}, taxonomySchema string, uuid string) error {
+	// validate against taxonomy
+	bytes, err := json.Marshal(obj)
+	if err != nil {
+		return err
 	}
-	mergedDecision.Policy.ID += newDecision.Policy.ID
-	if mergedDecision.Policy.Description != "" {
-		mergedDecision.Policy.Description += ";"
+	allErrs, err := validate.TaxonomyCheck(bytes, ValidationPath)
+	if err != nil {
+		return err
 	}
-	mergedDecision.Policy.Description += newDecision.Policy.Description
-	return true, mergedDecision
+	if len(allErrs) != 0 {
+		return apierrors.NewInvalid(
+			schema.GroupKind{Group: "app.fybrik.io", Kind: "ConfigurationPolicies-ExpressionValue"},
+			uuid, allErrs)
+	}
+	return nil
 }

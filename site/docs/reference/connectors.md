@@ -326,7 +326,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| endpoint | [string](#string) |  | endpoint should contain only the host name without the scheme i.e., "s3.eu-gb.cloud-object-storage.appdomain.cloud" |
+| endpoint | [string](#string) |  |  |
 | bucket | [string](#string) |  |  |
 | object_key | [string](#string) |  | can be object name or the prefix for dataset |
 | region | [string](#string) |  | WKC does not return it, it will stay empty in our case!!! |

@@ -19,7 +19,7 @@ Available properties:
 
 Policies are written in rego files. Each file declares a package `adminconfig`.
 
-Rules are written in the following syntax: `config[{capability: decision}]` where
+Rules are written in the following syntax: `config[{"capability": capability, "decision": decision}]` where
 
 `capability` represents a required module capability, such as "read", "write", "transform" and "copy".
 
@@ -27,11 +27,12 @@ Rules are written in the following syntax: `config[{capability: decision}]` wher
 
 ```
 { 
-	"policy": {"ID": <id>, "policySetID": <setId>, "description": <description>}, 
-	"deploy": <true, false>,
+	"policy": {"ID": <id>, "policySetID": <setId>, "description": <description>, "version": <version>}, 
+	"deploy": <"True", "False">,
 	"restrictions": {
 		"modules": <map {key, list-of-values}>,
 		"clusters": <map {key, list-of-values}>,
+        "storageaccounts": <map {key, list-of-values}>,
 	},
 }
 ```
@@ -39,16 +40,17 @@ Rules are written in the following syntax: `config[{capability: decision}]` wher
 For example, the policy above restricts the choice of clusters and modules for a read capability by narrowing the choice of deployment clusters to the workload cluster, and restricting the module type to service.
 
 ```
-config[{"read": decision}] {
+config[{"capability": "read", "decision": decision}] {
     input.request.usage.read == true
-    policy := {"ID": "read-ID", "description":"Deploy read as a service in the workload cluster"}
+    policy := {"version": "0.1", "ID": "read-ID", "description":"Deploy read as a service in the workload cluster"}
     clusters := { "name" : [ input.workload.cluster.name ] }
     modules := { "type": ["service"]}
     decision := {"policy": policy, "restrictions": {"clusters": clusters, "modules": modules}}
 }
 ```
 
-`policy` provides policy metadata: unique ID, human-readable description and `policySetID` (see ### Policy Set ID)
+
+`policy` provides policy metadata: unique ID, human-readable description, version and `policySetID` (see ### Policy Set ID)
 
 `restrictions` provides restrictions for `modules`, `clusters` and `storageaccounts`.
 Each restriction provides a list of allowed values for a property of module/cluster/storageaccount object. For example, to restrict a module type to either "service" or "plugin", we'll use "type" as a key, and [ "service","plugin ] as a list of allowed values.
@@ -59,7 +61,7 @@ Cluster is not a custom resource. It has the following properties:
 - metadata.region: cluster region
 - metadata.zone: cluster zone
 
-`deploy` receives "true"/"false" values. These values indicate whether the capability should or should not be deployed. If not specified in the policy, it's up to Fybrik to decide on the capability deployment.
+`deploy` receives "True"/"False" values. These values indicate whether the capability should or should not be deployed. If not specified in the policy, it's up to Fybrik to decide on the capability deployment.
 
 ### Policy Set ID
 
@@ -73,17 +75,34 @@ Out of the box policies come with the fybrik deployment. They define the deploym
 ```
 package adminconfig
 
-config[{"read": decision}] {
-    read_request := input.request.usage.read
-    policy := {"ID": "read-default", "description":"Read capability is requested for read workloads"}
-    decision := {"policy": policy, "deploy": read_request}
+# read capability deployment
+config[{"capability": "read", "decision": decision}] {
+    input.request.usage.read == true
+    policy := {"ID": "read-default-enabled", "description":"Read capability is requested for read workloads", "version": "0.1"}
+    decision := {"policy": policy, "deploy": "True"}
 }
 
-config[{"write": decision}] {
-    write_request := input.request.usage.write 
-    policy := {"ID": "write-default", "description":"Write capability is requested for workloads that write data"}
-    decision := {"policy": policy, "deploy": write_request}
+# read capability deployment
+config[{"capability": "read", "decision": decision}] {
+    input.request.usage.read == false
+    policy := {"ID": "read-default-disabled", "description":"Read capability is requested for read workloads", "version": "0.1"}
+    decision := {"policy": policy, "deploy": "False"}
 }
+
+# write capability deployment
+config[{"capability": "write", "decision": decision}] {
+    input.request.usage.write == true
+    policy := {"ID": "write-default-enabled", "description":"Write capability is requested for workloads that write data", "version": "0.1"}
+    decision := {"policy": policy, "deploy": "True"}
+}
+
+# write capability deployment
+config[{"capability": "write", "decision": decision}] {
+    input.request.usage.write == false
+    policy := {"ID": "write-default-disabled", "description":"Write capability is requested for workloads that write data", "version": "0.1"}
+    decision := {"policy": policy, "deploy": "False"}
+}
+
 ```
 
 ### Extended policies
@@ -96,42 +115,55 @@ The policies below are provided as a sample and can be updated for the productio
 package adminconfig
 
 # configure where transformations take place
-config[{"transform": decision}] {
-    policy := {"ID": "transform-geo", "description":"Governance based transformations must take place in the geography where the data is stored"}
+config[{"capability": "transform", "decision": decision}] {
+    policy := {"ID": "transform-geo", "description":"Governance based transformations must take place in the geography where the data is stored", "version": "0.1"}
     clusters := { "metadata.region" : [ input.request.dataset.geography ] }
     decision := {"policy": policy, "restrictions": {"clusters": clusters}}
 }
 
 # configure the scope of the read capability
-config[{"read": decision}] {
+config[{"capability": "read", "decision": decision}] {
     input.request.usage.read == true
-    policy := {"ID": "read-scope", "description":"Deploy read at the workload scope"}
+    policy := {"ID": "read-scope", "description":"Deploy read at the workload scope", "version": "0.1"}
     decision := {"policy": policy, "restrictions": {"modules": {"capabilities.scope" : ["workload"]}}}
 }
 
 # configure where the read capability will be deployed
-config[{"read": decision}] {
+config[{"capability": "read", "decision": decision}] {
     input.request.usage.read == true
-    policy := {"ID": "read-location", "description":"Deploy read in the workload cluster"}
+    policy := {"ID": "read-location", "description":"Deploy read in the workload cluster", "version": "0.1"}
     clusters := { "name" : [ input.workload.cluster.name ] }
     decision := {"policy": policy, "restrictions": {"clusters": clusters}}
 }
 
 # allow implicit copies by default
-config[{"copy": decision}] {
+config[{"capability": "copy", "decision": decision}] {
     input.request.usage.read == true
-    policy := {"ID": "copy-default", "description":"Implicit copies are allowed in read scenarios"}
+    policy := {"ID": "copy-default", "description":"Implicit copies are allowed in read scenarios", "version": "0.1"}
     decision := {"policy": policy}
 }
 
 # configure when implicit copies should be made
-config[{"copy": decision}] {
+config[{"capability": "copy", "decision": decision}] {
     input.request.usage.read == true
     input.request.dataset.geography != input.workload.cluster.metadata.region
     count(input.actions) > 0
     clusters := { "metadata.region" : [ input.request.dataset.geography ] }
-    policy := {"ID": "copy-remote", "description":"Implicit copies should be used if the data is in a different region than the compute, and transformations are required"}
-    decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters}}
+    policy := {"ID": "copy-remote", "description":"Implicit copies should be used if the data is in a different region than the compute, and transformations are required", "version": "0.1"}
+    decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": clusters}}
 }
 
+```
+
+### How to provide custom policies
+
+In order to deploy Fybrik with customized policies, perform the following steps 
+
+1. Clone the github repository of Fybrik for the required release: `git clone -b releases/<version> https://github.com/fybrik/fybrik.git`
+2. Copy the rego files containing customized policies to fybrik/charts/fybrik/files/adminconfig/ folder 
+3. Install Fybrik:
+```
+cd fybrik
+helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
+helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait
 ```

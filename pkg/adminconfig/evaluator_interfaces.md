@@ -79,6 +79,8 @@ type EvaluatorOutput struct {
 	PolicySetID string 
 	// Decisions per capability (after being merged)
 	ConfigDecisions DecisionPerCapabilityMap
+	// List of relevant policies
+	Policies []DecisionPolicy
 }
 ```
 
@@ -124,7 +126,6 @@ Any implementation of the config policy evaluator should implement this interfac
 ```
 // EvaluatorInterface is an interface for config policies' evaluator
 type EvaluatorInterface interface {
-	SetupWithInfrastructureManager(mgr *InfrastructureManager)
 	Evaluate(in *EvaluatorInput) (EvaluatorOutput, error)
 }
 ```
@@ -159,7 +160,7 @@ If the merge process does not succeed to provide a consistent solution, `Valid` 
 
 Policies are written in rego files. Each file declares a package `adminconfig`.
 
-Rules are written in the following syntax: `config[{capability: decision}]` where
+Rules are written in the following syntax: `config[{"capability": capability, "decision": decision}]` where
 
 `capability` represents a required module capability, such as "read", "write", "transform" and "copy".
 
@@ -168,7 +169,7 @@ Rules are written in the following syntax: `config[{capability: decision}]` wher
 ```
 { 
 	"policy": {"ID": <id>, "policySetID": <setId>, "description": <description>}, 
-	"deploy": <true, false>,
+	"deploy": <"True", "False">,
 	"restrictions": {
 		"modules": <map {key, list-of-values}>,
 		"clusters": <map {key, list-of-values}>,
@@ -189,16 +190,16 @@ Out of the box policies come with the fybrik deployment. They define the deploym
 ```
 package adminconfig
 
-config[{"read": decision}] {
-    read_request := input.request.usage.read
+config[{"capability": "read", "decision": decision}] {
+    input.request.usage.read
     policy := {"ID": "read-default", "description":"Read capability is requested for read workloads"}
-    decision := {"policy": policy, "deploy": read_request}
+    decision := {"policy": policy, "deploy": "True"}
 }
 
-config[{"write": decision}] {
-    write_request := input.request.usage.write 
+config[{"capability": "write", "decision": decision}] {
+    input.request.usage.write 
     policy := {"ID": "write-default", "description":"Write capability is requested for workloads that write data"}
-    decision := {"policy": policy, "deploy": write_request}
+    decision := {"policy": policy, "deploy": "True"}
 }
 ```
 
@@ -212,21 +213,21 @@ The policies below are provided as a sample and should be replaced for the produ
 package adminconfig
 
 # configure where transformations take place
-config[{"transform": decision}] {
+config[{"capability": "transform", "decision": decision}] {
     policy := {"ID": "transform-geo", "description":"Governance based transformations must take place in the geography where the data is stored"}
     clusters := { "metadata.region" : [ input.request.dataset.geography ] }
     decision := {"policy": policy, "restrictions": {"clusters": clusters}}
 }
 
 # configure the scope of the read capability
-config[{"read": decision}] {
+config[{{"capability": "read", "decision": decision}}] {
     input.request.usage.read == true
     policy := {"ID": "read-scope", "description":"Deploy read at the workload scope"}
     decision := {"policy": policy, "restrictions": {"modules": {"capabilities.scope" : ["workload"]}}}
 }
 
 # configure where the read capability will be deployed
-config[{"read": decision}] {
+config[{"capability": "read", "decision": decision}] {
     input.request.usage.read == true
     policy := {"ID": "read-location", "description":"Deploy read in the workload cluster"}
     clusters := { "name" : [ input.workload.cluster.name ] }
@@ -234,20 +235,20 @@ config[{"read": decision}] {
 }
 
 # allow implicit copies by default
-config[{"copy": decision}] {
+config[{"capability": "copy", "decision": decision}] {
     input.request.usage.read == true
     policy := {"ID": "copy-default", "description":"Implicit copies are allowed in read scenarios"}
     decision := {"policy": policy}
 }
 
 # configure when implicit copies should be made
-config[{"copy": decision}] {
+config[{"capability": "copy", "decision": decision}] {
     input.request.usage.read == true
     input.request.dataset.geography != input.workload.cluster.metadata.region
     count(input.actions) > 0
     clusters := { "metadata.region" : [ input.request.dataset.geography ] }
     policy := {"ID": "copy-remote", "description":"Implicit copies should be used if the data is in a different region than the compute, and transformations are required"}
-    decision := {"policy": policy, "deploy": true, "restrictions": {"clusters": clusters}}
+    decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": clusters}}
 }
 
 ```

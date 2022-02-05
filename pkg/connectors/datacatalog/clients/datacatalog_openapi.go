@@ -6,9 +6,9 @@ package clients
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
+	"emperror.dev/errors"
 	openapiclient "fybrik.io/fybrik/pkg/connectors/datacatalog/openapiclient"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 )
@@ -43,13 +43,10 @@ func NewOpenAPIDataCatalog(name string, connectionURL string, connectionTimeout 
 }
 
 func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds string) (*datacatalog.GetAssetResponse, error) {
-	resp, r, err := m.client.DefaultApi.GetAssetInfoPost(context.Background()).XRequestDataCatalogCred(creds).DataCatalogRequest(*in).Execute()
+	resp, _, err := m.client.DefaultApi.GetAssetInfoPost(context.Background()).XRequestDataCatalogCred(creds).DataCatalogRequest(*in).Execute()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error when calling `DefaultApi.GetAssetInfoPost``: %v\n", err)
-		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+		return nil, errors.Wrap(err, fmt.Sprintf("get asset info from %s failed", m.name))
 	}
-	// response from `GetAssetInfoPost`: DataCatalogResponse
-	fmt.Fprintf(os.Stdout, "Response from `DefaultApi.GetAssetInfoPost` in GetAssetInfo of datacatalog_openapi.go: %v\n", resp)
 	return &resp, nil
 }
 

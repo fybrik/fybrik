@@ -1,3 +1,17 @@
+{% if FybrikRelease is ne('__Release__') %}
+    {% set currentRelease = FybrikRelease %}
+    {% set fybrikVersionFlag = '--version ' + currentRelease|replace("v","") %}
+    {% if arrowFlight[currentRelease]  is defined %}
+         {% set arrowFlightRelease = arrowFlight[currentRelease] %}
+    {% elif arrowFlight[currentRelease|truncate(4, True, '', 0)] is defined %}
+        {% set arrowFlightRelease = arrowFlight[currentRelease|truncate(4, True, '', 0)] %}
+    {% endif %}
+{% endif %}
+
+{% if arrowFlightRelease  is not defined %}
+    {% set arrowFlightRelease = 'latest' %}
+{% endif %}
+
 # Quick Start Guide
 
 Follow this guide to install Fybrik using default parameters that are suitable for experimentation on a single cluster.
@@ -24,13 +38,13 @@ helm repo update
 
 ## Install cert-manager
 
-Fybrik requires [cert-manager](https://cert-manager.io) to be installed to your cluster. 
+Fybrik requires [cert-manager](https://cert-manager.io) to be installed to your cluster[^1]. 
 Many clusters already include cert-manager. Check if `cert-manager` namespace exists in your cluster and only run the following if it doesn't exist:
 
 ```bash
 helm install cert-manager jetstack/cert-manager \
     --namespace cert-manager \
-    --version v1.2.0 \
+    --version v1.6.2 \
     --create-namespace \
     --set installCRDs=true \
     --wait --timeout 120s
@@ -79,7 +93,7 @@ Run the following to install vault and the plugin in development mode:
     helm install vault fybrik-charts/vault --create-namespace -n fybrik-system \
         --set "vault.injector.enabled=false" \
         --set "vault.server.dev.enabled=true" \
-        --values https://raw.githubusercontent.com/fybrik/fybrik/v0.5.3/charts/vault/env/dev/vault-single-cluster-values.yaml
+        --values https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/charts/vault/env/dev/vault-single-cluster-values.yaml
     kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
     ```
 
@@ -90,7 +104,7 @@ Run the following to install vault and the plugin in development mode:
         --set "vault.global.openshift=true" \
         --set "vault.injector.enabled=false" \
         --set "vault.server.dev.enabled=true" \
-        --values https://raw.githubusercontent.com/fybrik/fybrik/v0.5.3/charts/vault/env/dev/vault-single-cluster-values.yaml
+        --values https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/charts/vault/env/dev/vault-single-cluster-values.yaml
     kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
     ```
 
@@ -109,11 +123,11 @@ Run the following to install vault and the plugin in development mode:
     ```
 
 The control plane includes a `manager` service that connects to a data catalog and to a policy manager. 
-Install the latest release of Fybrik with a built-in data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
+Install the Fybrik release with a built-in data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
 
 ```bash
-helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system --wait
-helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait
+helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system {{ fybrikVersionFlag }} --wait
+helm install fybrik fybrik-charts/fybrik -n fybrik-system {{ fybrikVersionFlag }}  --wait
 ```
 
 
@@ -128,10 +142,15 @@ helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait
 
 [Modules](../concepts/modules.md) are plugins that the control plane deploys whenever required. The [arrow flight module](https://github.com/fybrik/arrow-flight-module) enables reading data through Apache Arrow Flight API. 
 
-Install the latest[^1] release of arrow-flight-module:
+Install the {{ arrowFlightRelease }}[^2] release of arrow-flight-module:
 
 ```bash
-kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml -n fybrik-system
+{% if arrowFlightRelease != 'latest' %}
+  kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/download/{{ arrowFlightRelease }}/module.yaml -n fybrik-system
+{% else %}
+  kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/{{ arrowFlightRelease }}/download/module.yaml -n fybrik-system
+{% endif %}
 ```
 
-[^1]: Refer to the [documentation](https://github.com/fybrik/arrow-flight-module/blob/master/README.md#register-as-a-fybrik-module) of arrow-flight-module for other versions
+[^1]:Fybrik version 0.6.0 and lower should use cert-manager 1.2.0
+[^2]: Refer to the [documentation](https://github.com/fybrik/arrow-flight-module/blob/master/README.md#register-as-a-fybrik-module) of arrow-flight-module for other versions

@@ -22,7 +22,7 @@ cd hack/tools
 ```
 2. Go back to the `integration/operate-first` folder and set up the Python environment there
 ```bash
-cd samples/operate-first
+cd integration/operate-first
 pipenv install
 pipenv shell
 ```
