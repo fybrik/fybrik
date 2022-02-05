@@ -33,11 +33,3 @@ docker-build:
 	docker build . -t ${IMG} -f Dockerfile
 	rm datauserserver
 
-.PHONY: docker-push
-docker-push:
-ifneq (${DOCKER_PASSWORD},)
-	@docker login \
-		--username ${DOCKER_USERNAME} \
-		--password ${DOCKER_PASSWORD} ${DOCKER_HOSTNAME}
-endif
-	docker push ${IMG}

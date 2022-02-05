@@ -56,7 +56,7 @@ From within samples/rest-server
 make test
 
 ## Working in a cluster
-GUI is deployed in the namespace the workload is running in. This should also be your current namespace.
+Rest-server is deployed in the namespace the workload is running in. This should also be your current namespace.
 
 ## Creating docker images
 Backend image creation
@@ -77,8 +77,6 @@ make docker-push
 cd <root>>/samples/rest-server
 ./deploy.sh
 ```
-
-Before running the GUI, we have to deploy the [front-end](https://github.com/fybrik/fybrik-front-end).
 
 ## Run 
 
