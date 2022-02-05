@@ -232,13 +232,13 @@ EOH
 else
     kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.32.1/release.yaml
     set +e
-    #kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.2.0/operator.yaml
-    #kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.2.0/eventing-crds.yaml
-    #kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.2.0/eventing-core.yaml
+    kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.2.0/operator.yaml
+    kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.2.0/eventing-crds.yaml
+    kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.2.0/eventing-core.yaml
     set -e
     try_command "kubectl wait pod -n tekton-pipelines --all --for=condition=Ready --timeout=3m" 2 true 1
     set +e
-    #kubectl create ns knative-eventing
+    kubectl create ns knative-eventing
     cat > ${TMP}/knative-eventing.yaml <<EOH
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeEventing
@@ -247,7 +247,7 @@ metadata:
   namespace: knative-eventing
 EOH
     ls -alrt ${TMP}/
-    #kubectl apply -f ${TMP}/knative-eventing.yaml
+    kubectl apply -f ${TMP}/knative-eventing.yaml
     set -e
 fi
 
@@ -432,9 +432,9 @@ set -e
 # Install triggers for rebuilds of specific tasks
 try_command "kubectl apply -f ${repo_root}/pipeline/eventlistener/triggerbinding.yaml" 3 true 60
 try_command "kubectl apply -f ${repo_root}/pipeline/eventlistener/triggertemplate.yaml" 3 true 60
-#try_command "kubectl apply -f ${repo_root}/pipeline/eventlistener/apiserversource.yaml" 3 true 60
-#kubectl apply -f ${repo_root}/pipeline/eventlistener/role.yaml
-#kubectl apply -f ${repo_root}/pipeline/eventlistener/serviceaccount.yaml
+try_command "kubectl apply -f ${repo_root}/pipeline/eventlistener/apiserversource.yaml" 3 true 60
+kubectl apply -f ${repo_root}/pipeline/eventlistener/role.yaml
+kubectl apply -f ${repo_root}/pipeline/eventlistener/serviceaccount.yaml
 
 set +x
 helper_text="If this step fails, run again - knative related pods may be restarting and unable to process the webhook
@@ -444,7 +444,7 @@ if [[ ${is_openshift} == "true" ]]; then
     try_command "kubectl apply -f ${repo_root}/pipeline/eventlistener/eventlistener.yaml" 3 true 60
 else
     sed -i.bak "s|serviceAccountName: pipeline|serviceAccountName: default|g" ${repo_root}/pipeline/eventlistener/eventlistener.yaml
-#    kubectl apply -f ${repo_root}/pipeline/eventlistener/eventlistener.yaml
+    kubectl apply -f ${repo_root}/pipeline/eventlistener/eventlistener.yaml
     mv ${repo_root}/pipeline/eventlistener/eventlistener.yaml.bak ${repo_root}/pipeline/eventlistener/eventlistener.yaml
 fi
 
