@@ -105,7 +105,7 @@ if [[ ${is_kubernetes} == "true" && ${is_kind} == "true" ]]; then
         helm repo add stable https://charts.helm.sh/stable
         ip=$(kubectl get svc -n default nfs-service -o jsonpath='{.spec.clusterIP}')
         helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
-        helm upgrade --install nfs-subdir-external-provisioner/nfs-subdir-external-provisioner --values ${repo_root}/pipeline/nfs-values.yaml --set nfs.server=${ip} --namespace nfs-provisioner --create-namespace
+        helm upgrade --install nfs-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner --values ${repo_root}/pipeline/nfs-values.yaml --set nfs.server=${ip} --namespace nfs-provisioner --create-namespace
     fi
 fi
 
