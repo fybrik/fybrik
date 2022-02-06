@@ -57,6 +57,7 @@ rules:
 - apiGroups:
   - app.fybrik.io
   resources:
+  - fybrikstorageaccounts
   - fybrikmodules
   verbs:
   - create

@@ -1,32 +1,22 @@
 {
     "infrastructure": {
         "bandwidth": {
-            "properties": [
-                {
-            	    "units": "GB/sec",
-            	    "scale": {}
-            	}
-            ],
+            "units": "GB/sec",
+            "scale": {},
             "values": {
-                "theshire": {"neverland": "S", "theshire": "L"},
-                "neverland": {"neverland": "L", "theshire": "S"}
-
+                "theshire": {"theshire": 1000, "neverland": 250},
+				"neverland": {"neverland": 1000, "theshire": 250}
             }
         },
         "storageaccounts": {
-            "properties": [
-                {
-                    "name": "cost", 
-            	    "units": "dollar",
-            	    "scale": {}
-            	}
-            ],
+            "units": "dollar",
+            "scale": {},
             "values": [
-                {"id": "neverland-object-store", "secretRef": "credentials-neverland", "endpoint":  "http://s3.neverland.cloud-object-storage.appdomain.cloud", "region": "neverland", "cost": 100},
-                {"id": "theshire-object-store", "secretRef": "credentials-theshire", "endpoint": "http://s3.theshire.cloud-object-storage.appdomain.cloud", "region": "theshire", "cost": 80},
-                {"id": "theshire-object-store2", "secretRef": "credentials-theshire2", "endpoint": "http://s3.theshire.cloud-object-storage.appdomain.cloud", "region": "theshire", "cost": 90}
+                {"id": "theshire-DB-storage", "region": "theshire", "type": "relational-database", "cost": 100},
+                {"id": "neverland-DB-storage", "region": "neverland", "type": "relational-database", "cost": 120},
+                {"id": "theshire-object-storage", "region": "theshire", "type": "object-storage", "cost": 90},
+                {"id": "neverland-object-storage", "region": "neverland", "type": "object-storage", "cost": 120}
             ]
         }
     }
 }
-

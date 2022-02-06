@@ -3,23 +3,23 @@ package adminconfig
 # configure where transformations take place
 config[{"capability": "transform", "decision": decision}] {
     policy := {"ID": "transform-geo", "description":"Governance based transformations must take place in the geography where the data is stored", "version": "0.1"}
-    cluster_restrict := {"property": "metadata.region", "values": [input.request.dataset.geography]}
-    decision := {"policy": policy, "restrictions": {"clusters": [cluster_restrict]}}
+    clusters := { "metadata.region" : [ input.request.dataset.geography ] }
+    decision := {"policy": policy, "restrictions": {"clusters": clusters}}
 }
 
 # configure the scope of the read capability
 config[{"capability": "read", "decision": decision}] {
     input.request.usage.read == true
     policy := {"ID": "read-scope", "description":"Deploy read at the workload scope", "version": "0.1"}
-    decision := {"policy": policy, "restrictions": {"modules": [{"property": "capabilities.scope", "values" : ["workload"]}]}}
+    decision := {"policy": policy, "restrictions": {"modules": {"capabilities.scope" : ["workload"]}}}
 }
 
 # configure where the read capability will be deployed
 config[{"capability": "read", "decision": decision}] {
     input.request.usage.read == true
     policy := {"ID": "read-location", "description":"Deploy read in the workload cluster", "version": "0.1"}
-    cluster_restrict := {"property": "name", "values": [ input.workload.cluster.name ] }
-    decision := {"policy": policy, "restrictions": {"clusters": [cluster_restrict]}}
+    clusters := { "name" : [ input.workload.cluster.name ] }
+    decision := {"policy": policy, "restrictions": {"clusters": clusters}}
 }
 
 # allow implicit copies by default
@@ -34,8 +34,7 @@ config[{"capability": "copy", "decision": decision}] {
     input.request.usage.read == true
     input.request.dataset.geography != input.workload.cluster.metadata.region
     count(input.actions) > 0
-    cluster_restrict := {"property": "metadata.region", "values": [input.request.dataset.geography]}
-    account_restrict := {"property": "region", "values": [input.workload.cluster.metadata.region]}
+    clusters := { "metadata.region" : [ input.request.dataset.geography ] }
     policy := {"ID": "copy-remote", "description":"Implicit copies should be used if the data is in a different region than the compute, and transformations are required", "version": "0.1"}
-    decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": [cluster_restrict], "storageaccounts": [account_restrict]}}
+    decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": clusters}}
 }

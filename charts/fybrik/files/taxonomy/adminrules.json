@@ -1,26 +1,6 @@
 {
   "title": "adminrules.json",
   "definitions": {
-    "BandwidthMatrix": {
-      "type": "object",
-      "required": [
-        "values"
-      ],
-      "properties": {
-        "properties": {
-          "type": "array",
-          "items": {
-            "$ref": "taxonomy.json#/definitions/Property"
-          }
-        },
-        "values": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/MetricsPerRegion"
-          }
-        }
-      }
-    },
     "Decision": {
       "description": "Decision is a result of evaluating a configuration policy which satisfies the specified predicates",
       "type": "object",
@@ -95,83 +75,24 @@
         }
       }
     },
-    "Infrastructure": {
-      "description": "Infrastructure object",
-      "type": "object",
-      "required": [
-        "bandwidth",
-        "storageaccounts"
-      ],
-      "properties": {
-        "bandwidth": {
-          "$ref": "#/definitions/BandwidthMatrix"
-        },
-        "storageaccounts": {
-          "$ref": "#/definitions/Storage"
-        }
-      }
-    },
-    "MetricsPerRegion": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "taxonomy.json#/definitions/BandwidthMetric"
-      }
-    },
-    "RangeType": {
-      "type": "object",
-      "properties": {
-        "max": {
-          "type": "integer"
-        },
-        "min": {
-          "type": "integer"
-        }
-      }
-    },
     "Restriction": {
       "type": "object",
-      "required": [
-        "property"
-      ],
-      "properties": {
-        "property": {
-          "type": "string"
-        },
-        "range": {
-          "$ref": "#/definitions/RangeType"
-        },
-        "values": {
-          "$ref": "#/definitions/StringList"
-        }
+      "additionalProperties": {
+        "$ref": "#/definitions/StringList"
       }
     },
     "Restrictions": {
       "description": "Deployment restrictions on modules, clusters and additional resources that will be added in the future",
       "type": "object",
       "properties": {
-        "bandwidth": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Restriction"
-          }
-        },
         "clusters": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Restriction"
-          }
+          "$ref": "#/definitions/Restriction"
         },
         "modules": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Restriction"
-          }
+          "$ref": "#/definitions/Restriction"
         },
         "storageaccounts": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Restriction"
-          }
+          "$ref": "#/definitions/Restriction"
         }
       }
     },
@@ -182,25 +103,8 @@
         "$ref": "#/definitions/DecisionPerCapability"
       }
     },
-    "Storage": {
-      "type": "object",
-      "properties": {
-        "properties": {
-          "type": "array",
-          "items": {
-            "$ref": "taxonomy.json#/definitions/Property"
-          }
-        },
-        "values": {
-          "type": "array",
-          "items": {
-            "$ref": "taxonomy.json#/definitions/StorageAccount"
-          }
-        }
-      }
-    },
     "StringList": {
-      "description": "Restriction connects a property to a list of allowed values. Semantics of a list is a disjunction of values, i.e. a type can be either plugin or config.",
+      "description": "Restriction maps a property to a list of allowed values. Semantics is a disjunction of values, i.e. a type can be either plugin or config.",
       "type": "array",
       "items": {
         "type": "string"

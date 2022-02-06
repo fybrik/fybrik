@@ -1,5 +1,6 @@
 definitions:
   ProcessingLocation:
     enum:
+      - Netherlands
+      - Turkey
       - theshire
-      - neverland
