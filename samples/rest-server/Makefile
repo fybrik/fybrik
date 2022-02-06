@@ -1,4 +1,4 @@
-ROOT_DIR := ../../..
+ROOT_DIR := ../..
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 DOCKER_NAME ?= datauserserver
@@ -32,5 +32,4 @@ docker-build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o datauserserver main.go
 	docker build . -t ${IMG} -f Dockerfile
 	rm datauserserver
-
 

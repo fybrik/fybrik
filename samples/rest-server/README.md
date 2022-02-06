@@ -43,46 +43,47 @@ curl -X POST -i http://localhost:8080/v1/dma/fybrikapplication --data '{"apiVers
 ## Run server locally - run vault as well as REST API server
 
 export KUBECONFIG=$HOME/.kube/config
+
 export GEOGRAPHY=theshire
+
 make build
+
 ./datauserserver
 
 ## Test locally (assuming datauserserver is not running)
-From within samples/gui/server
+From within samples/rest-server
+
 make test
 
 ## Working in a cluster
-GUI is deployed in the namespace the workload is running in. This should also be your current namespace.
+Rest-server is deployed in the namespace the workload is running in. This should also be your current namespace.
 
 ## Creating docker images
-Backend image creation
-```
-make docker-all
-```
-Frontend image creation
+
+Provide your docker variables
 
 ```
-cd <root>/samples/gui/front-end
-npm install
-Ensure that .env has a correct configuration 
-export NODE_OPTIONS=--max_old_space_size=4096
-rm -rf build
-npm run build
-make docker-all
+export DOCKER_USERNAME=<USERNAME>
+export DOCKER_TAGNAME=latest
+export DOCKER_HOSTNAME=ghcr.io
+export DOCKER_NAMESPACE=<NAMESPACE>
+# A docker password or a GitHub PAT
+export DOCKER_PASSWORD=<PASSWORD>
 ```
+
+Build and push the docker image
+```
+make docker-build
+make docker-push
+```
+
+Before the deployment, the pushed docker image should be publicly available.
+
+
 ## Deployment
-  ```
-cd <root>>/samples/gui
+
+```
 ./deploy.sh
-```
-
-## Run 
-
-```
 kubectl port-forward service/datauserserver 8080:8080&
-kubectl port-forward service/datauserclient 3000:3000&
-
-Open a browser
-
-Connect to localhost:3000
+```
 
