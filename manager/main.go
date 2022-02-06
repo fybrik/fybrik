@@ -69,12 +69,13 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 
 	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
 	selectorsByObject := cache.SelectorsByObject{
-		&appv1.FybrikApplication{}: {Field: applicationNamespaceSelector},
-		&appv1.Plotter{}:           {Field: systemNamespaceSelector},
-		&appv1.FybrikModule{}:      {Field: systemNamespaceSelector},
-		&corev1.ConfigMap{}:        {Field: systemNamespaceSelector},
-		&appv1.Blueprint{}:         {Field: systemNamespaceSelector},
-		&corev1.Secret{}:           {Field: systemNamespaceSelector},
+		&appv1.FybrikApplication{}:    {Field: applicationNamespaceSelector},
+		&appv1.Plotter{}:              {Field: systemNamespaceSelector},
+		&appv1.FybrikModule{}:         {Field: systemNamespaceSelector},
+		&appv1.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
+		&corev1.ConfigMap{}:           {Field: systemNamespaceSelector},
+		&appv1.Blueprint{}:            {Field: systemNamespaceSelector},
+		&corev1.Secret{}:              {Field: systemNamespaceSelector},
 	}
 
 	client := ctrl.GetConfigOrDie()
@@ -136,7 +137,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		}()
 
 		// pre-compiling config policy files
-		query, infrastructure, err := adminconfig.PrepareQuery()
+		query, err := adminconfig.PrepareQuery()
 		if err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to compile configuration policies")
 			return 1
@@ -151,7 +152,6 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			clusterManager,
 			storage.NewProvisionImpl(mgr.GetClient()),
 			evaluator,
-			&infrastructure,
 		)
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create controller")

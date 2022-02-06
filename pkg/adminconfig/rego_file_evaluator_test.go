@@ -71,19 +71,19 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 		config[{"capability": "copy", "decision": decision}] {
 			input.request.usage.read == true
 			input.request.dataset.geography != input.workload.cluster.metadata.region
-			clusters :=  { "property": "name", "values": [ "clusterB", "clusterD", "clusterC" ] }
-			modules := {"property": "scope", "values": ["asset"]}
+			clusters :=  { "name": [ "clusterB", "clusterD", "clusterC" ] }
+			modules := {"scope": ["asset"]}
 			policy := {"policySetID": "1", "ID": "test-2"}
-			decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": [clusters], "modules": [modules]}}
+			decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": clusters, "modules": modules}}
 		}
 		
 		# copy scenario
 		config[{"capability": "copy", "decision": decision}] {
 			input.request.usage.copy == true
-			clusters :=  { "property": "name", "values": [ "clusterB", "clusterA", "clusterC" ] }
-			modules := {"property": "type", "values": ["service","plugin","config"]}
+			clusters :=  { "name": [ "clusterA", "clusterB", "clusterC" ] }
+			modules := {"type": ["service","plugin","config"]}
 			policy := {"policySetID": "1", "ID": "test-3"}
-			decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": [clusters], "modules": [modules]}}
+			decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": clusters, "modules": modules}}
 		}
 
 		# write scenario
@@ -116,7 +116,7 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 
 func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 	module := `
-		package test_infrastructure
+		package adminconfig
 
 		# no copy for dev workloads
 		config[{"capability": "copy", "decision": decision}] {
@@ -132,7 +132,7 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 			input.workload.properties.stage == "PROD"
 			workload_region := input.workload.cluster.metadata.region
 			policy := {"description": "read in production workload", "ID": "read-prod"}
-			clusters := [{"property": "metadata.region", "values" : [ workload_region ] }]
+			clusters := { "metadata.region" : [ workload_region ] }
 			decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": clusters}}
 		}
 
@@ -145,9 +145,10 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 			workload_region := input.workload.cluster.metadata.region			
 			data.infrastructure.bandwidth.values[dataset_region][workload_region] == "S"
 			policy := {"description": "use cheaper storage", "ID": "copy-prod-med"}
-			accounts := [ { "property": "cost", "range": { "max": 80 } } ]
-			bandwidth := [ {"property": workload_region, "values": ["L","M"] }]
-			decision := {"policy": policy, "deploy": "True", "restrictions": {"storageaccounts": accounts, "bandwidth": bandwidth}}
+			accounts := [ data.infrastructure.storageaccounts.values[i].id | data.infrastructure.storageaccounts.values[i].cost <= "80"; 
+																	  		 data.infrastructure.storageaccounts.values[i].type == "object-storage";
+																			 data.infrastructure.bandwidth.values[data.infrastructure.storageaccounts.values[i].region][workload_region] != "S" ]
+			decision := {"policy": policy, "deploy": "True", "restrictions": {"storageaccounts": {"id": accounts}}}
 		}
 
 		# High Priority Production Workloads - copy
@@ -159,51 +160,56 @@ func EvaluatorWithInfrastructure() *adminconfig.RegoPolicyEvaluator {
 			workload_region := input.workload.cluster.metadata.region	
 			dataset_region != workload_region		
 			policy := {"description": "focus on high performance", "ID": "copy-prod-high"}
-			bandwidth := [ {"property": workload_region, "values": ["L"]}]
-			decision := {"policy": policy, "deploy": "True", "restrictions": {"bandwidth": bandwidth}}
+		    accounts := [data.infrastructure.storageaccounts.values[i].id | data.infrastructure.storageaccounts.values[i].region == workload_region; 
+																	 		data.infrastructure.storageaccounts.values[i].type == "object-storage" ]
+			decision := {"policy": policy, "deploy": "True", "restrictions": {"storageaccounts": {"id": accounts}}}
 		}
 
 		# Transform
 		config[{"capability": "transform", "decision": decision}] {
 			policy := {"ID": "transform-geo", "description":"Governance based transformations must take place in the geography where the data is stored"}
-			clusters := [{ "property": "metadata.region", "values" : [ input.request.dataset.geography ] }]
+			clusters := { "metadata.region" : [ input.request.dataset.geography ] }
 			decision := {"policy": policy, "restrictions": {"clusters": clusters}}
 		}
 
 	`
 	// Compile the module. The keys are used as identifiers in error messages.
 	compiler, err := ast.CompileModules(map[string]string{
-		"test.rego": module,
+		"example.rego": module,
 	})
 	Expect(err).ToNot(HaveOccurred())
 
-	data := `
-	{
+	data := `{
 		"infrastructure": {
 			"bandwidth": {
+				"units": "GB/sec",
+				"scale": {},
 				"values": {
 					"region3": {"region3": "L", "region1": "S"},
 					"region2": {"region2": "L", "region1": "M"}
 				}
 			},
 			"storageaccounts": {
+				"units": "dollar",
+				"scale": {},
 				"values": [
-					{"id": "region1-object-store", "region": "region1", "cost": 100},
-					{"id": "region2-object-store", "region": "region2", "cost": 80},
-					{"id": "region3-object-store", "region": "region3", "cost": 90}
+					{"id": "region1-DB-storage", "region": "region1", "type": "relational-database", "cost": "100"},
+					{"id": "region1-object-store", "region": "region1", "type": "object-storage", "cost": "100"},
+					{"id": "region2-object-store", "region": "region2", "type": "object-storage", "cost": "80"},
+					{"id": "region2-DB-storage", "region": "region2", "type": "relational-database", "cost": "80"},
+					{"id": "region3-DB-storage", "region": "region3", "type": "relational-database", "cost": "20"},
+					{"id": "region3-object-store", "region": "region3", "type": "object-storage", "cost": "90"}
 				]
 			}
 		}
-    }
-	`
-
-	json := make(map[string]interface{})
+    }`
+	var json map[string]interface{}
 	err = util.UnmarshalJSON([]byte(data), &json)
 	Expect(err).ToNot(HaveOccurred())
 	store := inmem.NewFromObject(json)
 
 	rego := rego.New(
-		rego.Query("data.test_infrastructure"),
+		rego.Query("data.adminconfig"),
 		rego.Compiler(compiler),
 		rego.Store(store),
 	)
@@ -287,17 +293,9 @@ var _ = Describe("Evaluate a policy", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		for _, restrict := range out.ConfigDecisions["copy"].DeploymentRestrictions.Clusters {
-			Expect(restrict.Property).To(Equal("name"))
-			Expect(restrict.Values).To(ContainElements("clusterB", "clusterC"))
-		}
-		for _, restrict := range out.ConfigDecisions["copy"].DeploymentRestrictions.Modules {
-			if restrict.Property == "type" {
-				Expect(restrict.Values).To(ContainElements("service", "config", "plugin"))
-			} else {
-				Expect(restrict.Values).To(ContainElement("asset"))
-			}
-		}
+		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions.Clusters["name"]).To(ContainElements("clusterB", "clusterC"))
+		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions.Modules["type"]).To(ContainElements("service", "config", "plugin"))
+		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions.Modules["scope"]).To(ContainElements("asset"))
 	})
 
 	//nolint:dupl
@@ -355,11 +353,9 @@ var _ = Describe("Hard policy enforcement", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["read"].DeploymentRestrictions.Clusters[0]).To(BeEquivalentTo(adminrules.Restriction{
-			Property: "metadata.region",
-			Values:   []string{"region1"},
-		}))
+		Expect(out.ConfigDecisions["read"].DeploymentRestrictions.Clusters["metadata.region"]).To(ContainElements("region1"))
 	})
+
 	//nolint:dupl
 	It("Cost Efficient Production Workloads - copy", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
@@ -370,11 +366,7 @@ var _ = Describe("Hard policy enforcement", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-
-		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions.StorageAccounts[0]).To(BeEquivalentTo(adminrules.Restriction{
-			Property: "cost", Range: &adminrules.RangeType{Max: 80}}))
-		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions.Bandwidth[0]).To(BeEquivalentTo(adminrules.Restriction{
-			Property: "region1", Values: []string{"L", "M"}}))
+		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions.StorageAccounts["id"]).To(ContainElements("region2-object-store"))
 	})
 
 	//nolint:dupl
@@ -387,7 +379,6 @@ var _ = Describe("Hard policy enforcement", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions.Bandwidth[0]).To(BeEquivalentTo(adminrules.Restriction{
-			Property: "region1", Values: []string{"L"}}))
+		Expect(out.ConfigDecisions["copy"].DeploymentRestrictions.StorageAccounts["id"]).To(ContainElements("region1-object-store"))
 	})
 })
