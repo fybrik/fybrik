@@ -67,6 +67,7 @@ export DOCKER_USERNAME=<USERNAME>
 export DOCKER_TAGNAME=latest
 export DOCKER_HOSTNAME=ghcr.io
 export DOCKER_NAMESPACE=<NAMESPACE>
+# A docker password or a GitHub PAT
 export DOCKER_PASSWORD=<PASSWORD>
 ```
 
