@@ -23,6 +23,9 @@
     "AssetID": {
       "type": "string"
     },
+    "BandwidthMetric": {
+      "type": "string"
+    },
     "Capability": {
       "type": "string"
     },
@@ -69,6 +72,43 @@
     },
     "ProcessingLocation": {
       "type": "string"
+    },
+    "Property": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "StorageAccount": {
+      "type": "object",
+      "required": [
+        "id",
+        "secretRef",
+        "endpoint",
+        "region"
+      ],
+      "properties": {
+        "endpoint": {
+          "description": "Endpoint",
+          "type": "string"
+        },
+        "id": {
+          "description": "Identification of a storage account",
+          "type": "string"
+        },
+        "region": {
+          "$ref": "#/definitions/ProcessingLocation",
+          "description": "Region"
+        },
+        "secretRef": {
+          "description": "A name of k8s secret deployed in the control plane. This secret includes secretKey and accessKey credentials for S3 bucket",
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
     },
     "Tags": {
       "type": "object",

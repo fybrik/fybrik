@@ -1,0 +1,13 @@
+{
+    "infrastructure": {
+        "bandwidth": {
+            "properties": [],
+            "values": {}
+        },
+        "storageaccounts": {
+            "properties": [],
+            "values": []
+        }
+    }
+}
+

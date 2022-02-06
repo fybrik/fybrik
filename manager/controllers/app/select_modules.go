@@ -56,9 +56,9 @@ type Edge struct {
 // TODO(shlomitk1): add plugins/transformation capabilities to this structure
 type ResolvedEdge struct {
 	Edge
-	Actions              []taxonomy.Action
-	Cluster              string
-	StorageAccountRegion string
+	Actions        []taxonomy.Action
+	Cluster        string
+	StorageAccount taxonomy.StorageAccount
 }
 
 // Solution is a final solution enabling a plotter construction.
@@ -114,12 +114,18 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
 		if !element.Edge.Sink.Virtual {
 			// storage is required, plus more actions on copy may be needed
-			for _, region := range p.StorageAccountRegions {
+			foundStorageAccount := false
+			for _, account := range p.Infrastructure.StorageAccounts.Values {
+				logging.LogStructure("account", account, p.Log, false, false)
+				if !validateStorageRestrictionsPerCapability(item, moduleCapability.Capability, account, &p.Infrastructure.Bandwidth) {
+					p.Log.Info().Msg("Account does not match the requirements")
+					continue
+				}
 				// query the policy manager whether WRITE operation is allowed
 				operation := new(policymanager.RequestAction)
 				operation.ActionType = policymanager.WRITE
-				operation.Destination = region
-				operation.ProcessingLocation = taxonomy.ProcessingLocation(region)
+				operation.Destination = string(account.Region)
+				operation.ProcessingLocation = account.Region
 				actions, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
 				if err != nil && err.Error() == app.WriteNotAllowed {
 					continue
@@ -130,9 +136,11 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 				}
 				// add WRITE actions and the selected storage account region
 				element.Actions = actions
-				element.StorageAccountRegion = region
+				element.StorageAccount = account
+				foundStorageAccount = true
+				break
 			}
-			if element.StorageAccountRegion == "" {
+			if !foundStorageAccount {
 				p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find a storage account, aborting data path construction")
 				return false
 			}
@@ -364,22 +372,66 @@ func validateClusterRestrictions(item *DataInfo, edge *ResolvedEdge, cluster mul
 }
 
 func validateClusterRestrictionsPerCapability(item *DataInfo, capability taxonomy.Capability, cluster multicluster.Cluster) bool {
-	restrictions := item.Configuration.ConfigDecisions[capability].DeploymentRestrictions.Clusters
+	return validateRestrictions(item.Configuration.ConfigDecisions[capability].DeploymentRestrictions.Clusters, &cluster)
+}
+
+func validateStorageRestrictionsPerCapability(item *DataInfo, capability taxonomy.Capability, account taxonomy.StorageAccount, bandwidth *adminrules.BandwidthMatrix) bool {
+	if !validateRestrictions(item.Configuration.ConfigDecisions[capability].DeploymentRestrictions.StorageAccounts, account) {
+		return false
+	}
+	if !validateBandwidthRestrictions(item.Configuration.ConfigDecisions[capability].DeploymentRestrictions.Bandwidth, account, bandwidth) {
+		return false
+	}
+	return true
+}
+
+func validateBandwidthRestrictions(restrictions []adminrules.Restriction, account taxonomy.StorageAccount, bandwidth *adminrules.BandwidthMatrix) bool {
 	if len(restrictions) == 0 {
 		return true
 	}
-	clusterDetails, err := utils.StructToMap(&cluster)
+	// check bandwidth restrictions (matrix indices: property, account region)
+	if bandwidth.Values == nil || bandwidth.Values[account.Region] == nil {
+		return false
+	}
+	for _, restrict := range restrictions {
+		value := bandwidth.Values[account.Region][taxonomy.ProcessingLocation(restrict.Property)]
+		if !utils.HasString(string(value), restrict.Values) {
+			return false
+		}
+	}
+	return true
+}
+
+func validateRestrictions(restrictions []adminrules.Restriction, obj interface{}) bool {
+	if len(restrictions) == 0 {
+		return true
+	}
+	details, err := utils.StructToMap(obj)
 	if err != nil {
 		return false
 	}
-	for key, values := range restrictions {
-		fields := strings.Split(key, ".")
-		value, found, err := unstructured.NestedString(clusterDetails, fields...)
-		if err != nil || !found {
-			return false
-		}
-		if !utils.HasString(value, values) {
-			return false
+	for _, restrict := range restrictions {
+		fields := strings.Split(restrict.Property, ".")
+		if restrict.Range != nil {
+			// float64 is the supported numeric value type in JSON
+			value, found, err := unstructured.NestedFloat64(details, fields...)
+			if err != nil || !found {
+				return false
+			}
+			if restrict.Range.Max > 0 && int(value) > restrict.Range.Max {
+				return false
+			}
+			if restrict.Range.Min > 0 && int(value) < restrict.Range.Min {
+				return false
+			}
+		} else if len(restrict.Values) != 0 {
+			value, found, err := unstructured.NestedString(details, fields...)
+			if err != nil || !found {
+				return false
+			}
+			if !utils.HasString(value, restrict.Values) {
+				return false
+			}
 		}
 	}
 	return true

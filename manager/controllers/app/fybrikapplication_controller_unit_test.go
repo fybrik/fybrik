@@ -62,7 +62,7 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 	log := logging.LogInit("test", "ConfigPolicyEvaluator")
 	// environment: cluster-metadata configmap
 	_ = cl.Create(context.Background(), createClusterMetadata())
-	query, err := adminconfig.PrepareQuery()
+	query, infrastructure, err := adminconfig.PrepareQuery()
 	if err != nil {
 		log.Error().Err(err).Msg("could not compile a query")
 		return nil
@@ -81,6 +81,7 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 		ClusterManager:  &mockup.ClusterLister{},
 		Provision:       &storage.ProvisionTest{},
 		ConfigEvaluator: adminconfig.NewRegoPolicyEvaluator(log, query),
+		Infrastructure:  &infrastructure,
 	}
 }
 
@@ -123,16 +124,6 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	// Create modules in fake K8s agent
 	g.Expect(cl.Create(context.Background(), copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(cl.Create(context.Background(), readModule)).NotTo(gomega.HaveOccurred())
-
-	// Create storage account
-	dummySecret := &corev1.Secret{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
-	dummySecret.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &app.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
-	account.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
 	r := createTestFybrikApplicationController(cl, s)
 	g.Expect(r).NotTo(gomega.BeNil())
@@ -530,15 +521,6 @@ func TestMultipleDatasets(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	copyModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
-	// Create storage account
-	dummySecret := &corev1.Secret{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
-	dummySecret.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &app.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
-	account.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
@@ -683,15 +665,6 @@ func TestMultipleRegions(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-csv-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	copyModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
-	// Create storage account
-	dummySecret := &corev1.Secret{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
-	dummySecret.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &app.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
-	account.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
@@ -708,6 +681,7 @@ func TestMultipleRegions(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage["s3-external/redact-dataset"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
+	g.Expect(application.Status.ProvisionedStorage["s3-external/redact-dataset"].SecretRef).To(gomega.Equal("credentials-theshire"), "Incorrect storage was selected")
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 	plotterObjectKey := types.NamespacedName{
@@ -760,23 +734,6 @@ func TestCopyData(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	copyModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
-	// Create storage accounts
-	secret1 := &corev1.Secret{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-neverland.yaml", secret1)).NotTo(gomega.HaveOccurred())
-	secret1.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.Background(), secret1)).NotTo(gomega.HaveOccurred())
-	account1 := &app.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
-	account1.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.Background(), account1)).NotTo(gomega.HaveOccurred())
-	secret2 := &corev1.Secret{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", secret2)).NotTo(gomega.HaveOccurred())
-	secret2.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.Background(), secret2)).NotTo(gomega.HaveOccurred())
-	account2 := &app.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
-	account2.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.Background(), account2)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
@@ -827,7 +784,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	// Set the logger to development mode for verbose logs.
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
-	assetName := "s3-external/deny-theshire"
+	assetName := "s3-external/deny-write"
 	namespaced := types.NamespacedName{
 		Name:      "ingest",
 		Namespace: "default",
@@ -851,16 +808,6 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	copyModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
-
-	// Create storage account
-	dummySecret := &corev1.Secret{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
-	dummySecret.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.TODO(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &app.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
-	account.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.TODO(), account)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
@@ -1203,16 +1150,6 @@ func TestCopyModule(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	copyModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
-
-	// Create storage account
-	secret := &corev1.Secret{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", secret)).NotTo(gomega.HaveOccurred())
-	secret.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.Background(), secret)).NotTo(gomega.HaveOccurred())
-	account := &app.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
-	account.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)

@@ -15,6 +15,7 @@ import (
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/environment"
+	"fybrik.io/fybrik/pkg/model/adminrules"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -60,6 +61,7 @@ type FybrikApplicationReconciler struct {
 	ClusterManager    multicluster.ClusterLister
 	Provision         storage.ProvisionInterface
 	ConfigEvaluator   adminconfig.EvaluatorInterface
+	Infrastructure    *adminrules.Infrastructure
 }
 
 type ApplicationContext struct {
@@ -538,7 +540,8 @@ func (r *FybrikApplicationReconciler) GetWorkloadCluster(appContext ApplicationC
 // NewFybrikApplicationReconciler creates a new reconciler for FybrikApplications
 func NewFybrikApplicationReconciler(mgr ctrl.Manager, name string,
 	policyManager pmclient.PolicyManager, catalog dcclient.DataCatalog, cm multicluster.ClusterLister,
-	provision storage.ProvisionInterface, evaluator adminconfig.EvaluatorInterface) *FybrikApplicationReconciler {
+	provision storage.ProvisionInterface,
+	evaluator adminconfig.EvaluatorInterface, infrastructure *adminrules.Infrastructure) *FybrikApplicationReconciler {
 	log := logging.LogInit(logging.CONTROLLER, name)
 	return &FybrikApplicationReconciler{
 		Client:            mgr.GetClient(),
@@ -551,6 +554,7 @@ func NewFybrikApplicationReconciler(mgr ctrl.Manager, name string,
 		Provision:         provision,
 		DataCatalog:       catalog,
 		ConfigEvaluator:   evaluator,
+		Infrastructure:    infrastructure,
 	}
 }
 
@@ -620,22 +624,6 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*api.FybrikMod
 	return moduleMap, nil
 }
 
-// get all available regions for allocating storage
-// TODO(shlomitk1): avoid duplications
-func (r *FybrikApplicationReconciler) getStorageAccountRegions() ([]string, error) {
-	regions := []string{}
-	var accountList api.FybrikStorageAccountList
-	if err := r.List(context.Background(), &accountList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
-		return regions, err
-	}
-	for _, account := range accountList.Items {
-		for key := range account.Spec.Endpoints {
-			regions = append(regions, key)
-		}
-	}
-	return regions, nil
-}
-
 func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(applicationContext ApplicationContext, provisionedStorage map[string]NewAssetInfo) (bool, error) {
 	// update allocated storage in the status
 	// clean irrelevant buckets
@@ -680,11 +668,6 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 	for m := range moduleMap {
 		applicationContext.Log.Info().Msgf("Module: %s", m)
 	}
-	regions, err := r.getStorageAccountRegions()
-	if err != nil {
-		applicationContext.Log.Error().Err(err).Msg("Error while listing storage account regions")
-		return nil, nil, err
-	}
 	// create a plotter generator that will select modules to be orchestrated based on user requirements and module capabilities
 	clusters, err := r.ClusterManager.GetClusters()
 	if err != nil {
@@ -692,15 +675,15 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 	}
 
 	plotterGen := &PlotterGenerator{
-		Client:                r.Client,
-		Log:                   applicationContext.Log,
-		Modules:               moduleMap,
-		Clusters:              clusters,
-		Owner:                 client.ObjectKeyFromObject(applicationContext.Application),
-		PolicyManager:         r.PolicyManager,
-		Provision:             r.Provision,
-		ProvisionedStorage:    make(map[string]NewAssetInfo),
-		StorageAccountRegions: regions,
+		Client:             r.Client,
+		Log:                applicationContext.Log,
+		Modules:            moduleMap,
+		Clusters:           clusters,
+		Owner:              client.ObjectKeyFromObject(applicationContext.Application),
+		PolicyManager:      r.PolicyManager,
+		Provision:          r.Provision,
+		ProvisionedStorage: make(map[string]NewAssetInfo),
+		Infrastructure:     r.Infrastructure,
 	}
 
 	plotterSpec := &api.PlotterSpec{
@@ -711,10 +694,10 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 		Templates:        map[string]api.Template{},
 	}
 
-	for _, item := range requirements {
-		err := plotterGen.AddFlowInfoForAsset(item, applicationContext.Application, plotterSpec)
+	for ind := range requirements {
+		err := plotterGen.AddFlowInfoForAsset(&requirements[ind], applicationContext.Application, plotterSpec)
 		if err != nil {
-			AnalyzeError(applicationContext, item.Context.DataSetID, err)
+			AnalyzeError(applicationContext, requirements[ind].Context.DataSetID, err)
 			continue
 		}
 	}

@@ -13,6 +13,7 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/model/adminrules"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
@@ -32,20 +33,20 @@ type NewAssetInfo struct {
 
 // PlotterGenerator constructs a plotter based on the requirements (governance actions, data location) and the existing set of FybrikModules
 type PlotterGenerator struct {
-	Client                client.Client
-	Log                   zerolog.Logger
-	Modules               map[string]*app.FybrikModule
-	Clusters              []multicluster.Cluster
-	Owner                 types.NamespacedName
-	PolicyManager         pmclient.PolicyManager
-	Provision             storage.ProvisionInterface
-	VaultConnection       vault.Interface
-	ProvisionedStorage    map[string]NewAssetInfo
-	StorageAccountRegions []string
+	Client             client.Client
+	Log                zerolog.Logger
+	Modules            map[string]*app.FybrikModule
+	Clusters           []multicluster.Cluster
+	Owner              types.NamespacedName
+	PolicyManager      pmclient.PolicyManager
+	Provision          storage.ProvisionInterface
+	VaultConnection    vault.Interface
+	ProvisionedStorage map[string]NewAssetInfo
+	Infrastructure     *adminrules.Infrastructure
 }
 
 // GetCopyDestination creates a Dataset for bucket allocation by implicit copies or ingest.
-func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterface *app.InterfaceDetails, geo string) (*app.DataStore, error) {
+func (p *PlotterGenerator) GetCopyDestination(item *DataInfo, element ResolvedEdge) (*app.DataStore, error) {
 	// provisioned storage for COPY
 	var genBucketName, genObjectKeyName string
 	if item.DataDetails.ResourceMetadata.Name != "" {
@@ -56,10 +57,7 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 	genBucketName = generateBucketName(p.Owner, item.Context.DataSetID)
 	var bucket *storage.ProvisionedBucket
 	var err error
-	if bucket, err = AllocateBucket(p.Client, p.Log, genBucketName, geo); err != nil {
-		p.Log.Error().Err(err).Msg("Bucket allocation failed")
-		return nil, err
-	}
+	bucket = AllocateBucket(p.Client, p.Log, genBucketName, &element.StorageAccount)
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
 	if err = p.Provision.CreateDataset(bucketRef, bucket, &p.Owner); err != nil {
 		p.Log.Error().Err(err).Msg("Dataset creation failed")
@@ -101,12 +99,12 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 	return &app.DataStore{
 		Vault:      vaultMap,
 		Connection: connection,
-		Format:     destinationInterface.DataFormat,
+		Format:     element.Sink.Connection.DataFormat,
 	}, nil
 }
 
 // Adds the asset details, flows and templates to the given plotter spec.
-func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.FybrikApplication, plotterSpec *app.PlotterSpec) error {
+func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.FybrikApplication, plotterSpec *app.PlotterSpec) error {
 	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Choose modules for dataset")
 	var err error
 	subflows := make([]app.SubFlow, 0)
@@ -135,7 +133,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 	// DataStore for destination will be determined if an implicit copy is required
 	var sinkDataStore *app.DataStore
 
-	solutions := p.FindPaths(&item, application)
+	solutions := p.FindPaths(item, application)
 	// No data path found for the asset
 	if len(solutions) == 0 {
 		msg := "Deployed modules do not provide the functionality required to construct a data path"
@@ -172,7 +170,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 		var subFlow app.SubFlow
 		if !element.Sink.Virtual {
 			// allocate storage and create a temoprary asset
-			if sinkDataStore, err = p.GetCopyDestination(item, element.Sink.Connection, element.StorageAccountRegion); err != nil {
+			if sinkDataStore, err = p.GetCopyDestination(item, element); err != nil {
 				p.Log.Error().Err(err).Str(logging.DATASETID, item.Context.DataSetID).Msg("Storage allocation for copy failed")
 				return err
 			}

@@ -86,8 +86,8 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 			respResult = append(respResult, policyManagerResult)
 		}
 
-	case "deny-theshire":
-		if input.Action.Destination == "theshire" {
+	case "deny-write":
+		if input.Action.ActionType == policymanager.WRITE {
 			actionOnDataset := taxonomy.Action{}
 			action := make(map[string]interface{})
 			action["name"] = "Deny"
@@ -96,7 +96,7 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 
 			err := deserializeToTaxonomyAction(action, &actionOnDataset)
 			if err != nil {
-				log.Print("error in deserializeToTaxonomyAction for scenario deny-theshire:", err)
+				log.Print("error in deserializeToTaxonomyAction for scenario deny-write:", err)
 				return nil, err
 			}
 			policyManagerResult.Action = actionOnDataset
