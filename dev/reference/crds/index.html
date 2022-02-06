@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.9">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.10">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.2b4465f4.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.d6be258b.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
@@ -1155,26 +1155,6 @@
           <li class="md-nav__item">
   <a href="#fybrikmodulespecchart" class="md-nav__link">
     FybrikModule.spec.chart
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fybrikstorageaccount" class="md-nav__link">
-    FybrikStorageAccount
-  </a>
-  
-    <nav class="md-nav" aria-label="FybrikStorageAccount">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#fybrikstorageaccountspec" class="md-nav__link">
-    FybrikStorageAccount.spec
   </a>
   
 </li>
@@ -2332,26 +2312,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fybrikstorageaccount" class="md-nav__link">
-    FybrikStorageAccount
-  </a>
-  
-    <nav class="md-nav" aria-label="FybrikStorageAccount">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#fybrikstorageaccountspec" class="md-nav__link">
-    FybrikStorageAccount.spec
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#plotter" class="md-nav__link">
     Plotter
   </a>
@@ -2702,9 +2662,6 @@
 </li>
 <li>
 <p><a href="#fybrikmodule">FybrikModule</a></p>
-</li>
-<li>
-<p><a href="#fybrikstorageaccount">FybrikStorageAccount</a></p>
 </li>
 <li>
 <p><a href="#plotter">Plotter</a></p>
@@ -4797,88 +4754,6 @@
       </tr></tbody>
 </table>
 
-<h3 id="fybrikstorageaccount">FybrikStorageAccount</h3>
-<p><sup><sup><a href="#appfybrikiov1alpha1">↩ Parent</a></sup></sup></p>
-<p>FybrikStorageAccount defines a storage account used for copying data. Only S3 based storage is supported. It contains endpoint, region and a reference to the credentials a Owner of the asset is responsible to store the credentials</p>
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-      <td><b>apiVersion</b></td>
-      <td>string</td>
-      <td>app.fybrik.io/v1alpha1</td>
-      <td>true</td>
-      </tr>
-      <tr>
-      <td><b>kind</b></td>
-      <td>string</td>
-      <td>FybrikStorageAccount</td>
-      <td>true</td>
-      </tr>
-      <tr>
-      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
-      <td>object</td>
-      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
-      <td>true</td>
-      </tr><tr>
-        <td><b><a href="#fybrikstorageaccountspec">spec</a></b></td>
-        <td>object</td>
-        <td>
-          FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>status</b></td>
-        <td>object</td>
-        <td>
-          FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-<h4 id="fybrikstorageaccountspec">FybrikStorageAccount.spec</h4>
-<p><sup><sup><a href="#fybrikstorageaccount">↩ Parent</a></sup></sup></p>
-<p>FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount</p>
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>endpoints</b></td>
-        <td>map[string]string</td>
-        <td>
-          Endpoints based on regions<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>id</b></td>
-        <td>string</td>
-        <td>
-          Identification of a storage account<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>secretRef</b></td>
-        <td>string</td>
-        <td>
-          A name of k8s secret deployed in the control plane. This secret includes secretKey and accessKey credentials for S3 bucket<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
 <h3 id="plotter">Plotter</h3>
 <p><sup><sup><a href="#appfybrikiov1alpha1">↩ Parent</a></sup></sup></p>
 <p>Plotter is the Schema for the plotters API</p>
@@ -6367,10 +6242,10 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.22074ed6.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.092fa1f6.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.960e086b.min.js"></script>
+      <script src="../../assets/javascripts/bundle.e3b2bf44.min.js"></script>
       
     
   </body>
