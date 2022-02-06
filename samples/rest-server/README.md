@@ -76,6 +76,10 @@ Build and push the docker image
 make docker-build
 make docker-push
 ```
+
+Before the deployment, the pushed docker image should be publicly available.
+
+
 ## Deployment
 
 ```
