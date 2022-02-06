@@ -59,7 +59,6 @@ make test
 Rest-server is deployed in the namespace the workload is running in. This should also be your current namespace.
 
 ## Creating docker images
-Backend image creation
 
 Provide your docker variables
 
@@ -67,20 +66,19 @@ Provide your docker variables
 export DOCKER_USERNAME=<USERNAME>
 export DOCKER_TAGNAME=latest
 export DOCKER_HOSTNAME=ghcr.io
-export DOCKER_NAMESPACE=<NAMESPACE> 
-export DOCKER_PASSWORD=<PASSWORD> 
+export DOCKER_NAMESPACE=<NAMESPACE>
+export DOCKER_PASSWORD=<PASSWORD>
+```
+
+Build and push the docker image
+```
 make docker-build
 make docker-push
 ```
 ## Deployment
-  ```
-cd <root>>/samples/rest-server
+
+```
 ./deploy.sh
-```
-
-## Run 
-
-```
 kubectl port-forward service/datauserserver 8080:8080&
-
+```
 
