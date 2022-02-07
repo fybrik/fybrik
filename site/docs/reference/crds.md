@@ -1362,7 +1362,7 @@ DataContext indicates data set being processed by the workload and includes info
     </thead>
     <tbody><tr>
         <td><b>flows</b></td>
-        <td>[]string</td>
+        <td>[]enum</td>
         <td>
           Flows indicates what is being done with the particular dataset - ex: read, write, copy, delete If more than one flow is indicated, the order is respected. This is optional for the purpose of backward compatability.  If nothing is provided, read is assumed.<br/>
         </td>
@@ -2907,9 +2907,11 @@ Flows is the list of data flows driven from fybrikapplication: Each element in t
         <td>true</td>
       </tr><tr>
         <td><b>flowType</b></td>
-        <td>string</td>
+        <td>enum</td>
         <td>
           Type of the flow (e.g. read)<br/>
+          <br/>
+            <i>Enum</i>: read, write, delete, copy<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -2948,9 +2950,11 @@ Subflows is a list of data flows which are originated from the same data asset b
     </thead>
     <tbody><tr>
         <td><b>flowType</b></td>
-        <td>string</td>
+        <td>enum</td>
         <td>
           Type of the flow (e.g. read)<br/>
+          <br/>
+            <i>Enum</i>: read, write, delete, copy<br/>
         </td>
         <td>true</td>
       </tr><tr>

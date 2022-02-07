@@ -43,7 +43,7 @@ func HasString(value string, values []string) bool {
 }
 
 // HasFlow indicates if the flow item is in the flow list
-func HasFlow(flows []app.DataFlow, flow app.DataFlow) bool {
+func HasFlow(flows []taxonomy.DataFlow, flow taxonomy.DataFlow) bool {
 	for _, f := range flows {
 		if f == flow {
 			return true

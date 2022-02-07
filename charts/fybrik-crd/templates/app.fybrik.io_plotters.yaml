@@ -190,6 +190,11 @@ spec:
                       type: string
                     flowType:
                       description: Type of the flow (e.g. read)
+                      enum:
+                      - read
+                      - write
+                      - delete
+                      - copy
                       type: string
                     name:
                       description: Name of the flow
@@ -202,6 +207,11 @@ spec:
                         properties:
                           flowType:
                             description: Type of the flow (e.g. read)
+                            enum:
+                            - read
+                            - write
+                            - delete
+                            - copy
                             type: string
                           name:
                             description: Name of the SubFlow

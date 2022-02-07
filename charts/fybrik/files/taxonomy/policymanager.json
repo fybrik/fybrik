@@ -43,7 +43,7 @@
       ],
       "properties": {
         "actionType": {
-          "$ref": "external.json#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0DataFlow"
+          "$ref": "taxonomy.json#/definitions/DataFlow"
         },
         "destination": {
           "type": "string"

@@ -13,6 +13,7 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -183,13 +184,13 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(1))
 	flow := plotter.Spec.Flows[0]
 	g.Expect(flow.AssetID).To(gomega.Equal("s3-csv/redact-dataset"))
-	g.Expect(flow.FlowType).To(gomega.Equal(app.ReadFlow))
+	g.Expect(flow.FlowType).To(gomega.Equal(taxonomy.ReadFlow))
 	g.Expect(flow.SubFlows).To(gomega.HaveLen(2)) // Should have two subflows
 	copyFlow := flow.SubFlows[0]                  // Assume flow 0 is copy
-	g.Expect(copyFlow.FlowType).To(gomega.Equal(app.CopyFlow))
+	g.Expect(copyFlow.FlowType).To(gomega.Equal(taxonomy.CopyFlow))
 	g.Expect(copyFlow.Triggers).To(gomega.ContainElements(app.InitTrigger))
 	readFlow := flow.SubFlows[1]
-	g.Expect(readFlow.FlowType).To(gomega.Equal(app.ReadFlow))
+	g.Expect(readFlow.FlowType).To(gomega.Equal(taxonomy.ReadFlow))
 	g.Expect(readFlow.Triggers).To(gomega.ContainElements(app.WorkloadTrigger))
 	g.Expect(readFlow.Steps[0][0].Cluster).To(gomega.Equal("thegreendragon"))
 	// Check statuses
@@ -811,7 +812,7 @@ func TestCopyData(t *testing.T) {
 	g.Expect(plotter.Spec.Flows[0].SubFlows).To(gomega.HaveLen(1))
 	subflow := plotter.Spec.Flows[0].SubFlows[0]
 	g.Expect(subflow.Triggers).To(gomega.ContainElements(app.InitTrigger))
-	g.Expect(subflow.FlowType).To(gomega.Equal(app.CopyFlow))
+	g.Expect(subflow.FlowType).To(gomega.Equal(taxonomy.CopyFlow))
 	g.Expect(subflow.Steps).To(gomega.HaveLen(1))
 	g.Expect(subflow.Steps[0]).To(gomega.HaveLen(1))
 	g.Expect(subflow.Steps[0][0].Parameters.Source.AssetID).To(gomega.Equal("s3-external/allow-theshire"))

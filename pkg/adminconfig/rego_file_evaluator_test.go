@@ -7,7 +7,6 @@ import (
 	"context"
 	"testing"
 
-	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	adminconfig "fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/adminrules"
@@ -264,7 +263,7 @@ var _ = Describe("Evaluate a policy", func() {
 	//nolint:dupl
 	It("Conflict", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow, v1alpha1.WriteFlow, v1alpha1.CopyFlow},
+			Usage:    []taxonomy.DataFlow{taxonomy.ReadFlow, taxonomy.WriteFlow, taxonomy.CopyFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "neverland-cluster", Metadata: multicluster.ClusterMetadata{Region: "neverland"}}}}
 		out, err := evaluator.Evaluate(&in)
@@ -275,7 +274,7 @@ var _ = Describe("Evaluate a policy", func() {
 	//nolint:dupl
 	It("ValidSolution", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow},
+			Usage:    []taxonomy.DataFlow{taxonomy.ReadFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "thegreendragon", Metadata: multicluster.ClusterMetadata{Region: "theshire"}}}}
 		out, err := evaluator.Evaluate(&in)
@@ -287,7 +286,7 @@ var _ = Describe("Evaluate a policy", func() {
 	//nolint:dupl
 	It("Merge", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow, v1alpha1.CopyFlow},
+			Usage:    []taxonomy.DataFlow{taxonomy.ReadFlow, taxonomy.CopyFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "neverland-cluster", Metadata: multicluster.ClusterMetadata{Region: "neverland"}}}}
 		out, err := evaluator.Evaluate(&in)
@@ -301,7 +300,7 @@ var _ = Describe("Evaluate a policy", func() {
 	//nolint:dupl
 	It("No conflict for policy set 2", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow, v1alpha1.WriteFlow, v1alpha1.CopyFlow},
+			Usage:    []taxonomy.DataFlow{taxonomy.ReadFlow, taxonomy.WriteFlow, taxonomy.CopyFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{
 				PolicySetID: "2",
@@ -315,7 +314,7 @@ var _ = Describe("Evaluate a policy", func() {
 	//nolint:dupl
 	It("No decisions for policy set 99", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow, v1alpha1.WriteFlow, v1alpha1.CopyFlow},
+			Usage:    []taxonomy.DataFlow{taxonomy.ReadFlow, taxonomy.WriteFlow, taxonomy.CopyFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{
 				PolicySetID: "99",
@@ -333,7 +332,7 @@ var _ = Describe("Hard policy enforcement", func() {
 	//nolint:dupl
 	It("No Copy for DEV Workloads", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow},
+			Usage:    []taxonomy.DataFlow{taxonomy.ReadFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "region1-cluster", Metadata: multicluster.ClusterMetadata{Region: "region1"}},
 				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "DEV", "priority": "low"}}}}}
@@ -346,7 +345,7 @@ var _ = Describe("Hard policy enforcement", func() {
 	//nolint:dupl
 	It("Production Workloads - read", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow},
+			Usage:    []taxonomy.DataFlow{taxonomy.ReadFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "region1-cluster", Metadata: multicluster.ClusterMetadata{Region: "region1"}},
 				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "low"}}}}}
@@ -359,7 +358,7 @@ var _ = Describe("Hard policy enforcement", func() {
 	//nolint:dupl
 	It("Cost Efficient Production Workloads - copy", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow},
+			Usage:    []taxonomy.DataFlow{taxonomy.ReadFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "region1-cluster", Metadata: multicluster.ClusterMetadata{Region: "region1"}},
 				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "low"}}}}}
@@ -372,7 +371,7 @@ var _ = Describe("Hard policy enforcement", func() {
 	//nolint:dupl
 	It("High Priority Production Workloads - copy", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    []v1alpha1.DataFlow{v1alpha1.ReadFlow},
+			Usage:    []taxonomy.DataFlow{taxonomy.ReadFlow},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "region1-cluster", Metadata: multicluster.ClusterMetadata{Region: "region1"}},
 				Properties: taxonomy.AppInfo{Properties: serde.Properties{Items: map[string]interface{}{"intent": "Fraud Detection", "stage": "PROD", "priority": "high"}}}}}

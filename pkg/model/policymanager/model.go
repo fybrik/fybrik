@@ -4,13 +4,12 @@
 package policymanager
 
 import (
-	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
 type RequestAction struct {
-	ActionType         api.DataFlow                `json:"actionType"`
+	ActionType         taxonomy.DataFlow           `json:"actionType"`
 	ProcessingLocation taxonomy.ProcessingLocation `json:"processingLocation,omitempty"`
 	Destination        string                      `json:"destination,omitempty"`
 }

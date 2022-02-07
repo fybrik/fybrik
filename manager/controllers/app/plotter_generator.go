@@ -87,13 +87,13 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 
 	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
 	vaultMap := make(map[string]app.Vault)
-	vaultMap[string(app.WriteFlow)] = app.Vault{
+	vaultMap[string(taxonomy.WriteFlow)] = app.Vault{
 		SecretPath: vaultSecretPath,
 		Role:       utils.GetModulesRole(),
 		Address:    utils.GetVaultAddress(),
 	}
 	// The copied asset needs creds for later to be read
-	vaultMap[string(app.ReadFlow)] = app.Vault{
+	vaultMap[string(taxonomy.ReadFlow)] = app.Vault{
 		SecretPath: vaultSecretPath,
 		Role:       utils.GetModulesRole(),
 		Address:    utils.GetVaultAddress(),
@@ -116,7 +116,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 	// Set the value received from the catalog connector.
 	vaultSecretPath := item.DataDetails.Credentials
 	vaultMap := make(map[string]app.Vault)
-	vaultMap[string(app.ReadFlow)] = app.Vault{
+	vaultMap[string(taxonomy.ReadFlow)] = app.Vault{
 		SecretPath: vaultSecretPath,
 		Role:       utils.GetModulesRole(),
 		Address:    utils.GetVaultAddress(),
@@ -203,7 +203,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 			datasetID = copyAssetID
 			subFlow = app.SubFlow{
 				Name:     "",
-				FlowType: app.CopyFlow,
+				FlowType: taxonomy.CopyFlow,
 				Triggers: []app.SubFlowTrigger{app.InitTrigger},
 				Steps:    [][]app.DataFlowStep{steps},
 			}
@@ -225,7 +225,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 			}
 			subFlow = app.SubFlow{
 				Name:     "",
-				FlowType: app.ReadFlow,
+				FlowType: taxonomy.ReadFlow,
 				Triggers: []app.SubFlowTrigger{app.WorkloadTrigger},
 				Steps:    [][]app.DataFlowStep{steps},
 			}

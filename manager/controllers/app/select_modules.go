@@ -117,7 +117,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 			for _, region := range p.StorageAccountRegions {
 				// query the policy manager whether WRITE operation is allowed
 				operation := new(policymanager.RequestAction)
-				operation.ActionType = app.WriteFlow
+				operation.ActionType = taxonomy.WriteFlow
 				operation.Destination = region
 				operation.ProcessingLocation = taxonomy.ProcessingLocation(region)
 				actions, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)

@@ -302,9 +302,9 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 func setReadModulesEndpoints(application *api.FybrikApplication, flows []api.Flow) {
 	readEndpointMap := make(map[string]taxonomy.Connection)
 	for _, flow := range flows {
-		if flow.FlowType == api.ReadFlow {
+		if flow.FlowType == taxonomy.ReadFlow {
 			for _, subflow := range flow.SubFlows {
-				if subflow.FlowType == api.ReadFlow {
+				if subflow.FlowType == taxonomy.ReadFlow {
 					for _, sequentialSteps := range subflow.Steps {
 						// Check the last step in the sequential flow that is for read (this will expose the reading api)
 						lastStep := sequentialSteps[len(sequentialSteps)-1]
@@ -405,11 +405,11 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 
 // CreateDataRequest generates a new DataRequest object for a specific asset based on FybrikApplication and asset metadata
 func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataContext, assetMetadata *datacatalog.ResourceMetadata) adminconfig.DataRequest {
-	var flows []api.DataFlow
+	var flows []taxonomy.DataFlow
 
 	// If a workload selector is provided but no flow, assume read - for backward compatability
 	if (application.Spec.Selector.WorkloadSelector.Size() > 0) && (len(dataCtx.Flows) == 0) {
-		flows = append(flows, api.ReadFlow)
+		flows = append(flows, taxonomy.ReadFlow)
 	} else {
 		flows = dataCtx.Flows
 	}
@@ -481,9 +481,9 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 	configEvaluatorInput.Request = CreateDataRequest(input, *req.Context, &req.DataDetails.ResourceMetadata)
 
 	// Read policies for data that is processed in the workload geography
-	if utils.HasFlow(configEvaluatorInput.Request.Usage, api.ReadFlow) {
+	if utils.HasFlow(configEvaluatorInput.Request.Usage, taxonomy.ReadFlow) {
 		reqAction := policymanager.RequestAction{
-			ActionType:         api.ReadFlow,
+			ActionType:         taxonomy.ReadFlow,
 			Destination:        workloadCluster.Metadata.Region,
 			ProcessingLocation: taxonomy.ProcessingLocation(workloadCluster.Metadata.Region),
 		}

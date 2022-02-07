@@ -250,7 +250,7 @@ func (in *DataContext) DeepCopyInto(out *DataContext) {
 	*out = *in
 	if in.Flows != nil {
 		in, out := &in.Flows, &out.Flows
-		*out = make([]DataFlow, len(*in))
+		*out = make([]taxonomy.DataFlow, len(*in))
 		copy(*out, *in)
 	}
 	out.Requirements = in.Requirements

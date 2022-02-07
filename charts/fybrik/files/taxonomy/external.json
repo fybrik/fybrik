@@ -21,29 +21,6 @@
         }
       }
     },
-    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0BlueprintList": {
-      "description": "BlueprintList contains a list of Blueprint",
-      "type": "object",
-      "required": [
-        "items"
-      ],
-      "allOf": [
-        {
-          "$ref": "#/definitions/k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0TypeMeta"
-        }
-      ],
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0Blueprint"
-          }
-        },
-        "metadata": {
-          "$ref": "#/definitions/k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0ListMeta"
-        }
-      }
-    },
     "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0BlueprintModule": {
       "description": "BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the information necessary to instantiate a datapath component, including the parameters relevant for the particular workload.",
       "type": "object",
@@ -153,6 +130,42 @@
         }
       }
     },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0Condition": {
+      "description": "Condition describes the state of a FybrikApplication at a certain point.",
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "message": {
+          "description": "Message contains the details of the current condition",
+          "type": "string"
+        },
+        "observedGeneration": {
+          "description": "ObservedGeneration is the version of the resource for which the condition has been evaluated",
+          "type": "integer",
+          "format": "int64"
+        },
+        "status": {
+          "$ref": "#/definitions/k8s.io~1api~1core~1v1~0ConditionStatus",
+          "description": "Status of the condition, one of (`True`, `False`, `Unknown`).",
+          "default": "Unknown",
+          "enum": [
+            "True",
+            "False",
+            "Unknown"
+          ]
+        },
+        "type": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0ConditionType",
+          "description": "Type of the condition"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0ConditionType": {
+      "description": "ConditionType represents a condition type",
+      "type": "string"
+    },
     "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0CopyModuleArgs": {
       "description": "CopyModuleArgs define the input parameters for modules that copy data from location A to location B Credentials are stored in a credential management system such as vault",
       "type": "object",
@@ -180,6 +193,32 @@
           "items": {
             "$ref": "taxonomy.json#/definitions/Action"
           }
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0DataContext": {
+      "description": "DataContext indicates data set being processed by the workload and includes information about the data format and technologies used to access the data.",
+      "type": "object",
+      "required": [
+        "dataSetID",
+        "requirements"
+      ],
+      "properties": {
+        "dataSetID": {
+          "description": "DataSetID is a unique identifier of the dataset chosen from the data catalog.  For data catalogs that support multiple sub-catalogs, it includes the catalog id and the dataset id. When writing a new dataset it is the name provided by the user or workload generating it, and should include the sub-catalog name where appropriate.",
+          "type": "string",
+          "minLength": 1
+        },
+        "flows": {
+          "description": "Flows indicates what is being done with the particular dataset - ex: read, write, copy, delete If more than one flow is indicated, the order is respected. This is optional for the purpose of backward compatability.  If nothing is provided, read is assumed.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0DataFlow"
+          }
+        },
+        "requirements": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0DataRequirements",
+          "description": "Requirements from the system"
         }
       }
     },
@@ -243,6 +282,35 @@
         "storageEstimate": {
           "description": "Storage estimate indicates the estimated amount of storage required when copying or writing new data.",
           "type": "integer"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0FybrikApplicationSpec": {
+      "description": "FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets. Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog.",
+      "type": "object",
+      "required": [
+        "appInfo",
+        "data"
+      ],
+      "properties": {
+        "appInfo": {
+          "$ref": "taxonomy.json#/definitions/AppInfo",
+          "description": "AppInfo contains information describing the reasons for the processing that will be done by the application."
+        },
+        "data": {
+          "description": "Data contains the identifiers of the data to be used by the Data Scientist's application, and the protocol used to access it and the format expected.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0DataContext"
+          }
+        },
+        "secretRef": {
+          "description": "SecretRef points to the secret that holds credentials for each system the user has been authenticated with. The secret is deployed in FybrikApplication namespace.",
+          "type": "string"
+        },
+        "selector": {
+          "$ref": "#/definitions/fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0Selector",
+          "description": "Selector enables to connect the resource to the application Application labels should match the labels in the selector."
         }
       }
     },
@@ -341,6 +409,23 @@
           "items": {
             "$ref": "taxonomy.json#/definitions/Action"
           }
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1alpha1~0Selector": {
+      "description": "Selector is a label query over a set of resources in the specified cluster.",
+      "type": "object",
+      "required": [
+        "workloadSelector"
+      ],
+      "properties": {
+        "clusterName": {
+          "description": "Cluster name",
+          "type": "string"
+        },
+        "workloadSelector": {
+          "$ref": "#/definitions/k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0LabelSelector",
+          "description": "WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector."
         }
       }
     },
@@ -463,29 +548,6 @@
         }
       }
     },
-    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0ListMeta": {
-      "description": "ListMeta describes metadata that synthetic resources must have, including lists and various status objects. A resource may have only one of {ObjectMeta, ListMeta}.",
-      "type": "object",
-      "properties": {
-        "continue": {
-          "description": "continue may be set if the user set a limit on the number of items returned, and indicates that the server has more data available. The value is opaque and may be used to issue another request to the endpoint that served this list to retrieve the next set of available objects. Continuing a consistent list may not be possible if the server configuration has changed or more than a few minutes have passed. The resourceVersion field returned when using this continue value will be identical to the value in the first response, unless you have received this token from an error message.",
-          "type": "string"
-        },
-        "remainingItemCount": {
-          "description": "remainingItemCount is the number of subsequent items in the list which are not included in this list response. If the list request contained label or field selectors, then the number of remaining items is unknown and the field will be left unset and omitted during serialization. If the list is complete (either because it is not chunking or because this is the last chunk), then there are no more remaining items and this field will be left unset and omitted during serialization. Servers older than v1.15 do not set this field. The intended use of the remainingItemCount is *estimating* the size of a collection. Clients should not rely on the remainingItemCount to be set or to be exact.",
-          "type": "integer",
-          "format": "int64"
-        },
-        "resourceVersion": {
-          "description": "String that identifies the server's internal version of this object that can be used by clients to determine when objects have changed. Value must be treated as opaque by clients and passed unmodified back to the server. Populated by the system. Read-only. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency",
-          "type": "string"
-        },
-        "selfLink": {
-          "description": "selfLink is a URL representing this object. Populated by the system. Read-only. \n DEPRECATED Kubernetes will stop propagating this field in 1.20 release and the field is planned to be removed in 1.21 release.",
-          "type": "string"
-        }
-      }
-    },
     "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0MicroTime": {
       "type": "string",
       "format": "date-time"
@@ -510,6 +572,13 @@
           "type": "string"
         }
       }
+    },
+    "k8s.io~1api~1core~1v1~0ConditionStatus": {
+      "type": "string"
+    },
+    "k8s.io~1api~1core~1v1~0Protocol": {
+      "type": "string",
+      "default": "TCP"
     }
   }
 }

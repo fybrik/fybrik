@@ -15,6 +15,7 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"github.com/rs/zerolog"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
@@ -132,13 +133,13 @@ type PlotterModulesSpec struct {
 	AssetID         string
 	ModuleName      string
 	ModuleArguments *app.StepParameters
-	FlowType        app.DataFlow
+	FlowType        taxonomy.DataFlow
 	Chart           app.ChartSpec
 	Scope           app.CapabilityScope
 }
 
 // addCredentials updates Vault credentials field to hold only credentials related to the flow type
-func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType app.DataFlow) {
+func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType taxonomy.DataFlow) {
 	vaultMap := make(map[string]app.Vault)
 
 	// Update vaultAuthPath from the cluster metadata
@@ -176,14 +177,14 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 	}
 
 	switch plotterModule.FlowType {
-	case app.ReadFlow:
+	case taxonomy.ReadFlow:
 		var dataStore *app.DataStore
 		if plotterModule.ModuleArguments.Source.AssetID != "" {
 			assetID := plotterModule.ModuleArguments.Source.AssetID
 			// Get source from plotter assetID list
 			assetInfo := plotter.Spec.Assets[assetID]
 			dataStore = &assetInfo.DataStore
-			addCredentials(dataStore, plotterModule.VaultAuthPath, app.ReadFlow)
+			addCredentials(dataStore, plotterModule.VaultAuthPath, taxonomy.ReadFlow)
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
@@ -198,11 +199,11 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 				Transformations: plotterModule.ModuleArguments.Actions,
 			},
 		}
-	case app.WriteFlow:
+	case taxonomy.WriteFlow:
 		// Get only the writeFlow related creds
 		// Update vaultAuthPath from the cluster metadata
 		destDataStore := plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore
-		addCredentials(&destDataStore, plotterModule.VaultAuthPath, app.WriteFlow)
+		addCredentials(&destDataStore, plotterModule.VaultAuthPath, taxonomy.WriteFlow)
 
 		blueprintModule.Args.Write = []app.WriteModuleArgs{
 			{
@@ -211,7 +212,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 				Transformations: plotterModule.ModuleArguments.Actions,
 			},
 		}
-	case app.CopyFlow:
+	case taxonomy.CopyFlow:
 		var dataStore *app.DataStore
 		if plotterModule.ModuleArguments.Source.AssetID != "" {
 			assetID := plotterModule.ModuleArguments.Source.AssetID
@@ -219,7 +220,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			assetInfo := plotter.Spec.Assets[assetID]
 
 			dataStore = &assetInfo.DataStore
-			addCredentials(dataStore, plotterModule.VaultAuthPath, app.ReadFlow)
+			addCredentials(dataStore, plotterModule.VaultAuthPath, taxonomy.ReadFlow)
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
@@ -230,7 +231,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		// Get only the writeFlow related creds
 		// Update vaultAuthPath from the cluster metadata
 		destDataStore := plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore
-		addCredentials(&destDataStore, plotterModule.VaultAuthPath, app.WriteFlow)
+		addCredentials(&destDataStore, plotterModule.VaultAuthPath, taxonomy.WriteFlow)
 		blueprintModule.Args.Copy =
 			&app.CopyModuleArgs{
 				Source:          *dataStore,

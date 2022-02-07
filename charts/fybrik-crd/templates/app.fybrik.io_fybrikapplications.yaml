@@ -81,6 +81,11 @@ spec:
                         the purpose of backward compatability.  If nothing is provided,
                         read is assumed.'
                       items:
+                        enum:
+                        - read
+                        - write
+                        - delete
+                        - copy
                         type: string
                       type: array
                     requirements:

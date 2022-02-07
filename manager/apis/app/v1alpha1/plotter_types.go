@@ -107,7 +107,7 @@ type SubFlow struct {
 
 	// Type of the flow (e.g. read)
 	// +required
-	FlowType DataFlow `json:"flowType"`
+	FlowType taxonomy.DataFlow `json:"flowType"`
 
 	// Triggers
 	// +required
@@ -129,7 +129,7 @@ type Flow struct {
 
 	// Type of the flow (e.g. read)
 	// +required
-	FlowType DataFlow `json:"flowType"`
+	FlowType taxonomy.DataFlow `json:"flowType"`
 
 	// AssetID indicates the data set being used in this data flow
 	// +required

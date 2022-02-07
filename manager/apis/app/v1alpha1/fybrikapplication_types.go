@@ -58,7 +58,7 @@ type DataContext struct {
 	// If more than one flow is indicated, the order is respected.
 	// This is optional for the purpose of backward compatability.  If nothing is provided, read is assumed.
 	// +optional
-	Flows []DataFlow `json:"flows,omitempty"`
+	Flows []taxonomy.DataFlow `json:"flows,omitempty"`
 
 	// Requirements from the system
 	// +required

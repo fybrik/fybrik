@@ -41,6 +41,15 @@
     "ConnectionType": {
       "type": "string"
     },
+    "DataFlow": {
+      "type": "string",
+      "enum": [
+        "read",
+        "write",
+        "delete",
+        "copy"
+      ]
+    },
     "DataFormat": {
       "type": "string"
     },
