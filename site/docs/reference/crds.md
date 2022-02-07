@@ -1173,7 +1173,7 @@ FybrikApplication provides information about the application whose data is being
         <td><b><a href="#fybrikapplicationspec">spec</a></b></td>
         <td>object</td>
         <td>
-          FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets. Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog.<br/>
+          FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1192,7 +1192,7 @@ FybrikApplication provides information about the application whose data is being
 
 
 
-FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets. Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog.
+FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.
 
 <table>
     <thead>
@@ -1364,14 +1364,14 @@ DataContext indicates data set being processed by the workload and includes info
         <td><b>flows</b></td>
         <td>[]enum</td>
         <td>
-          Flows indicates what is being done with the particular dataset - ex: read, write, copy, delete If more than one flow is indicated, the order is respected. This is optional for the purpose of backward compatability.  If nothing is provided, read is assumed.<br/>
+          Flows indicates what is being done with the particular dataset - ex: read, write, copy, delete If more than one flow is indicated, the order is respected. This is optional for the purpose of backward compatability. If nothing is provided, read is assumed.<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>dataSetID</b></td>
         <td>string</td>
         <td>
-          DataSetID is a unique identifier of the dataset chosen from the data catalog.  For data catalogs that support multiple sub-catalogs, it includes the catalog id and the dataset id. When writing a new dataset it is the name provided by the user or workload generating it, and should include the sub-catalog name where appropriate.<br/>
+          DataSetID is a unique identifier of the dataset chosen from the data catalog. For data catalogs that support multiple sub-catalogs, it includes the catalog id and the dataset id. When writing a new dataset it is the name provided by the user or workload generating it, and should include the sub-catalog name where appropriate.<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -1405,7 +1405,7 @@ Requirements from the system
         <td><b><a href="#fybrikapplicationspecdataindexrequirementsflowparams">flowParams</a></b></td>
         <td>object</td>
         <td>
-          CopyRequrements include the requirements for explicit requests to copy the data<br/>
+          FlowParams include the requirements for explicit requests to copy the data<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1424,7 +1424,7 @@ Requirements from the system
 
 
 
-CopyRequrements include the requirements for explicit requests to copy the data
+FlowParams include the requirements for explicit requests to copy the data
 
 <table>
     <thead>

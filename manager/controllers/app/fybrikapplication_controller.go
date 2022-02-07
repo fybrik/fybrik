@@ -407,7 +407,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataContext, assetMetadata *datacatalog.ResourceMetadata) adminconfig.DataRequest {
 	var flows []taxonomy.DataFlow
 
-	// If a workload selector is provided but no flow, assume read - for backward compatability
+	// If a workload selector is provided but no flow, assume read - for backward compatibility
 	if (application.Spec.Selector.WorkloadSelector.Size() > 0) && (len(dataCtx.Flows) == 0) {
 		flows = append(flows, taxonomy.ReadFlow)
 	} else {
