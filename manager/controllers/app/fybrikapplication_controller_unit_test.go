@@ -745,6 +745,7 @@ func TestCopyData(t *testing.T) {
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
+	application.Spec.Data[0].Flows = []taxonomy.DataFlow{taxonomy.CopyFlow}
 	application.SetGeneration(1)
 	application.SetUID("9")
 	// Objects to track in the fake client.
@@ -836,6 +837,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
+	application.Spec.Data[0].Flows = []taxonomy.DataFlow{taxonomy.CopyFlow}
 	application.SetGeneration(1)
 	application.SetUID("10")
 	// Objects to track in the fake client.
@@ -1177,6 +1179,7 @@ func TestCopyModule(t *testing.T) {
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
+	application.Spec.Data[0].Flows = []taxonomy.DataFlow{taxonomy.CopyFlow}
 	application.SetGeneration(1)
 	application.SetUID("16")
 	// Objects to track in the fake client.

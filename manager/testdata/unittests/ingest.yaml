@@ -16,7 +16,7 @@ spec:
       flows:
       - copy
       requirements:
-        copy:
+        flowParams:
           catalog:
             catalogID: "ingest_test"
         interface: 
