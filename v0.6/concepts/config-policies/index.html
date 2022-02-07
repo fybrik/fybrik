@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.6">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.10">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.cd566b2a.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.d6be258b.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
@@ -358,7 +358,7 @@
   
     <li class="md-nav__item">
       <a href="../../get-started/quickstart/" class="md-nav__link">
-        Quick Start Guide
+        Quickstart
       </a>
     </li>
   
@@ -448,22 +448,36 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../taxonomy/" class="md-nav__link">
+        Taxonomy
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
     
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_3" type="checkbox" id="__nav_3_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_4" type="checkbox" id="__nav_3_4" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_3_3">
+        <label class="md-nav__link" for="__nav_3_4">
           Plugins
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Plugins" data-md-level="2">
-        <label class="md-nav__title" for="__nav_3_3">
+        <label class="md-nav__title" for="__nav_3_4">
           <span class="md-nav__icon md-icon"></span>
           Plugins
         </label>
@@ -596,6 +610,13 @@
           <li class="md-nav__item">
   <a href="#extended-policies" class="md-nav__link">
     Extended policies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-provide-custom-policies" class="md-nav__link">
+    How to provide custom policies
   </a>
   
 </li>
@@ -983,22 +1004,36 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../contribute/logging/" class="md-nav__link">
+        Logging
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
     
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_5" type="checkbox" id="__nav_6_5" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_6" type="checkbox" id="__nav_6_6" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_6_5">
+        <label class="md-nav__link" for="__nav_6_6">
           Documentation
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Documentation" data-md-level="2">
-        <label class="md-nav__title" for="__nav_6_5">
+        <label class="md-nav__title" for="__nav_6_6">
           <span class="md-nav__icon md-icon"></span>
           Documentation
         </label>
@@ -1062,18 +1097,18 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_6" type="checkbox" id="__nav_6_6" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_7" type="checkbox" id="__nav_6_7" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_6_6">
+        <label class="md-nav__link" for="__nav_6_7">
           Plugins
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Plugins" data-md-level="2">
-        <label class="md-nav__title" for="__nav_6_6">
+        <label class="md-nav__title" for="__nav_6_7">
           <span class="md-nav__icon md-icon"></span>
           Plugins
         </label>
@@ -1175,6 +1210,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#how-to-provide-custom-policies" class="md-nav__link">
+    How to provide custom policies
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1210,28 +1252,29 @@
 - <code>usage</code>: a set of boolean properties associated with data use: <code>usage.read</code>, <code>usage.write</code>, <code>usage.copy</code></p>
 <h2 id="syntax">Syntax</h2>
 <p>Policies are written in rego files. Each file declares a package <code>adminconfig</code>.</p>
-<p>Rules are written in the following syntax: <code>config[{capability: decision}]</code> where</p>
+<p>Rules are written in the following syntax: <code>config[{"capability": capability, "decision": decision}]</code> where</p>
 <p><code>capability</code> represents a required module capability, such as "read", "write", "transform" and "copy".</p>
 <p><code>decision</code> is a JSON structure that matches <code>Decision</code> defined above. </p>
 <div class="highlight"><pre><span></span><code>{ 
-    &quot;policy&quot;: {&quot;ID&quot;: &lt;id&gt;, &quot;policySetID&quot;: &lt;setId&gt;, &quot;description&quot;: &lt;description&gt;}, 
-    &quot;deploy&quot;: &lt;true, false&gt;,
+    &quot;policy&quot;: {&quot;ID&quot;: &lt;id&gt;, &quot;policySetID&quot;: &lt;setId&gt;, &quot;description&quot;: &lt;description&gt;, &quot;version&quot;: &lt;version&gt;}, 
+    &quot;deploy&quot;: &lt;&quot;True&quot;, &quot;False&quot;&gt;,
     &quot;restrictions&quot;: {
         &quot;modules&quot;: &lt;map {key, list-of-values}&gt;,
         &quot;clusters&quot;: &lt;map {key, list-of-values}&gt;,
+        &quot;storageaccounts&quot;: &lt;map {key, list-of-values}&gt;,
     },
 }
 </code></pre></div>
 <p>For example, the policy above restricts the choice of clusters and modules for a read capability by narrowing the choice of deployment clusters to the workload cluster, and restricting the module type to service.</p>
-<div class="highlight"><pre><span></span><code>config[{&quot;read&quot;: decision}] {
+<div class="highlight"><pre><span></span><code>config[{&quot;capability&quot;: &quot;read&quot;, &quot;decision&quot;: decision}] {
     input.request.usage.read == true
-    policy := {&quot;ID&quot;: &quot;read-ID&quot;, &quot;description&quot;:&quot;Deploy read as a service in the workload cluster&quot;}
+    policy := {&quot;version&quot;: &quot;0.1&quot;, &quot;ID&quot;: &quot;read-ID&quot;, &quot;description&quot;:&quot;Deploy read as a service in the workload cluster&quot;}
     clusters := { &quot;name&quot; : [ input.workload.cluster.name ] }
     modules := { &quot;type&quot;: [&quot;service&quot;]}
     decision := {&quot;policy&quot;: policy, &quot;restrictions&quot;: {&quot;clusters&quot;: clusters, &quot;modules&quot;: modules}}
 }
 </code></pre></div>
-<p><code>policy</code> provides policy metadata: unique ID, human-readable description and <code>policySetID</code> (see ### Policy Set ID)</p>
+<p><code>policy</code> provides policy metadata: unique ID, human-readable description, version and <code>policySetID</code> (see ### Policy Set ID)</p>
 <p><code>restrictions</code> provides restrictions for <code>modules</code>, <code>clusters</code> and <code>storageaccounts</code>.
 Each restriction provides a list of allowed values for a property of module/cluster/storageaccount object. For example, to restrict a module type to either "service" or "plugin", we'll use "type" as a key, and [ "service","plugin ] as a list of allowed values.
 Properties of a module can be found inside <a href="../../reference/crds/#fybrikmodule"><code>FybrikModule</code></a> Spec.
@@ -1240,7 +1283,7 @@ Cluster is not a custom resource. It has the following properties:
 - name: cluster name
 - metadata.region: cluster region
 - metadata.zone: cluster zone</p>
-<p><code>deploy</code> receives "true"/"false" values. These values indicate whether the capability should or should not be deployed. If not specified in the policy, it's up to Fybrik to decide on the capability deployment.</p>
+<p><code>deploy</code> receives "True"/"False" values. These values indicate whether the capability should or should not be deployed. If not specified in the policy, it's up to Fybrik to decide on the capability deployment.</p>
 <h3 id="policy-set-id">Policy Set ID</h3>
 <p>Fybrik supports evaluating different sets of policies for different FybrikApplications. It is possible to define a policy for a specific <code>policySetID</code> which will be trigered only if it matches the <code>policySetID</code> defined in FybrikApplication. 
 If a policy does not specify a policy set id, it will be considered as relevant for all FybrikApplications.
@@ -1249,16 +1292,32 @@ In a similar way, all policies are relevant for a FybrikApplication that does no
 <p>Out of the box policies come with the fybrik deployment. They define the deployment of basic capabilities, such as read and write. 
 <div class="highlight"><pre><span></span><code>package adminconfig
 
-config[{&quot;read&quot;: decision}] {
-    read_request := input.request.usage.read
-    policy := {&quot;ID&quot;: &quot;read-default&quot;, &quot;description&quot;:&quot;Read capability is requested for read workloads&quot;}
-    decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: read_request}
+# read capability deployment
+config[{&quot;capability&quot;: &quot;read&quot;, &quot;decision&quot;: decision}] {
+    input.request.usage.read == true
+    policy := {&quot;ID&quot;: &quot;read-default-enabled&quot;, &quot;description&quot;:&quot;Read capability is requested for read workloads&quot;, &quot;version&quot;: &quot;0.1&quot;}
+    decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: &quot;True&quot;}
 }
 
-config[{&quot;write&quot;: decision}] {
-    write_request := input.request.usage.write 
-    policy := {&quot;ID&quot;: &quot;write-default&quot;, &quot;description&quot;:&quot;Write capability is requested for workloads that write data&quot;}
-    decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: write_request}
+# read capability deployment
+config[{&quot;capability&quot;: &quot;read&quot;, &quot;decision&quot;: decision}] {
+    input.request.usage.read == false
+    policy := {&quot;ID&quot;: &quot;read-default-disabled&quot;, &quot;description&quot;:&quot;Read capability is requested for read workloads&quot;, &quot;version&quot;: &quot;0.1&quot;}
+    decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: &quot;False&quot;}
+}
+
+# write capability deployment
+config[{&quot;capability&quot;: &quot;write&quot;, &quot;decision&quot;: decision}] {
+    input.request.usage.write == true
+    policy := {&quot;ID&quot;: &quot;write-default-enabled&quot;, &quot;description&quot;:&quot;Write capability is requested for workloads that write data&quot;, &quot;version&quot;: &quot;0.1&quot;}
+    decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: &quot;True&quot;}
+}
+
+# write capability deployment
+config[{&quot;capability&quot;: &quot;write&quot;, &quot;decision&quot;: decision}] {
+    input.request.usage.write == false
+    policy := {&quot;ID&quot;: &quot;write-default-disabled&quot;, &quot;description&quot;:&quot;Write capability is requested for workloads that write data&quot;, &quot;version&quot;: &quot;0.1&quot;}
+    decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: &quot;False&quot;}
 }
 </code></pre></div></p>
 <h3 id="extended-policies">Extended policies</h3>
@@ -1267,44 +1326,55 @@ config[{&quot;write&quot;: decision}] {
 <div class="highlight"><pre><span></span><code>package adminconfig
 
 # configure where transformations take place
-config[{&quot;transform&quot;: decision}] {
-    policy := {&quot;ID&quot;: &quot;transform-geo&quot;, &quot;description&quot;:&quot;Governance based transformations must take place in the geography where the data is stored&quot;}
+config[{&quot;capability&quot;: &quot;transform&quot;, &quot;decision&quot;: decision}] {
+    policy := {&quot;ID&quot;: &quot;transform-geo&quot;, &quot;description&quot;:&quot;Governance based transformations must take place in the geography where the data is stored&quot;, &quot;version&quot;: &quot;0.1&quot;}
     clusters := { &quot;metadata.region&quot; : [ input.request.dataset.geography ] }
     decision := {&quot;policy&quot;: policy, &quot;restrictions&quot;: {&quot;clusters&quot;: clusters}}
 }
 
 # configure the scope of the read capability
-config[{&quot;read&quot;: decision}] {
+config[{&quot;capability&quot;: &quot;read&quot;, &quot;decision&quot;: decision}] {
     input.request.usage.read == true
-    policy := {&quot;ID&quot;: &quot;read-scope&quot;, &quot;description&quot;:&quot;Deploy read at the workload scope&quot;}
+    policy := {&quot;ID&quot;: &quot;read-scope&quot;, &quot;description&quot;:&quot;Deploy read at the workload scope&quot;, &quot;version&quot;: &quot;0.1&quot;}
     decision := {&quot;policy&quot;: policy, &quot;restrictions&quot;: {&quot;modules&quot;: {&quot;capabilities.scope&quot; : [&quot;workload&quot;]}}}
 }
 
 # configure where the read capability will be deployed
-config[{&quot;read&quot;: decision}] {
+config[{&quot;capability&quot;: &quot;read&quot;, &quot;decision&quot;: decision}] {
     input.request.usage.read == true
-    policy := {&quot;ID&quot;: &quot;read-location&quot;, &quot;description&quot;:&quot;Deploy read in the workload cluster&quot;}
+    policy := {&quot;ID&quot;: &quot;read-location&quot;, &quot;description&quot;:&quot;Deploy read in the workload cluster&quot;, &quot;version&quot;: &quot;0.1&quot;}
     clusters := { &quot;name&quot; : [ input.workload.cluster.name ] }
     decision := {&quot;policy&quot;: policy, &quot;restrictions&quot;: {&quot;clusters&quot;: clusters}}
 }
 
 # allow implicit copies by default
-config[{&quot;copy&quot;: decision}] {
+config[{&quot;capability&quot;: &quot;copy&quot;, &quot;decision&quot;: decision}] {
     input.request.usage.read == true
-    policy := {&quot;ID&quot;: &quot;copy-default&quot;, &quot;description&quot;:&quot;Implicit copies are allowed in read scenarios&quot;}
+    policy := {&quot;ID&quot;: &quot;copy-default&quot;, &quot;description&quot;:&quot;Implicit copies are allowed in read scenarios&quot;, &quot;version&quot;: &quot;0.1&quot;}
     decision := {&quot;policy&quot;: policy}
 }
 
 # configure when implicit copies should be made
-config[{&quot;copy&quot;: decision}] {
+config[{&quot;capability&quot;: &quot;copy&quot;, &quot;decision&quot;: decision}] {
     input.request.usage.read == true
     input.request.dataset.geography != input.workload.cluster.metadata.region
     count(input.actions) &gt; 0
     clusters := { &quot;metadata.region&quot; : [ input.request.dataset.geography ] }
-    policy := {&quot;ID&quot;: &quot;copy-remote&quot;, &quot;description&quot;:&quot;Implicit copies should be used if the data is in a different region than the compute, and transformations are required&quot;}
-    decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: true, &quot;restrictions&quot;: {&quot;clusters&quot;: clusters}}
+    policy := {&quot;ID&quot;: &quot;copy-remote&quot;, &quot;description&quot;:&quot;Implicit copies should be used if the data is in a different region than the compute, and transformations are required&quot;, &quot;version&quot;: &quot;0.1&quot;}
+    decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: &quot;True&quot;, &quot;restrictions&quot;: {&quot;clusters&quot;: clusters}}
 }
 </code></pre></div>
+<h3 id="how-to-provide-custom-policies">How to provide custom policies</h3>
+<p>In order to deploy Fybrik with customized policies, perform the following steps </p>
+<ol>
+<li>Clone the github repository of Fybrik for the required release: <code>git clone -b releases/&lt;version&gt; https://github.com/fybrik/fybrik.git</code></li>
+<li>Copy the rego files containing customized policies to fybrik/charts/fybrik/files/adminconfig/ folder </li>
+<li>Install Fybrik:
+<div class="highlight"><pre><span></span><code>cd fybrik
+helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
+helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait
+</code></pre></div></li>
+</ol>
 
               
             </article>
@@ -1387,10 +1457,10 @@ config[{&quot;copy&quot;: decision}] {
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.22074ed6.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.092fa1f6.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.1514a9a0.min.js"></script>
+      <script src="../../assets/javascripts/bundle.e3b2bf44.min.js"></script>
       
     
   </body>

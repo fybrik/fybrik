@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.6">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.10">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.cd566b2a.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.d6be258b.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
@@ -358,7 +358,7 @@
   
     <li class="md-nav__item">
       <a href="../../get-started/quickstart/" class="md-nav__link">
-        Quick Start Guide
+        Quickstart
       </a>
     </li>
   
@@ -446,22 +446,36 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../concepts/taxonomy/" class="md-nav__link">
+        Taxonomy
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
     
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_3" type="checkbox" id="__nav_3_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_4" type="checkbox" id="__nav_3_4" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_3_3">
+        <label class="md-nav__link" for="__nav_3_4">
           Plugins
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Plugins" data-md-level="2">
-        <label class="md-nav__title" for="__nav_3_3">
+        <label class="md-nav__title" for="__nav_3_4">
           <span class="md-nav__icon md-icon"></span>
           Plugins
         </label>
@@ -672,6 +686,26 @@
   <a href="#examples-of-changing-taxonomy" class="md-nav__link">
     Examples of changing taxonomy
   </a>
+  
+    <nav class="md-nav" aria-label="Examples of changing taxonomy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1-add-new-intent-for-fybrikapplication" class="md-nav__link">
+    Example 1: Add new intent for FybrikApplication
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2-add-new-action-for-fybrikmodule" class="md-nav__link">
+    Example 2: Add new action for FybrikModule
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -963,22 +997,36 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../contribute/logging/" class="md-nav__link">
+        Logging
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
     
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_5" type="checkbox" id="__nav_6_5" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_6" type="checkbox" id="__nav_6_6" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_6_5">
+        <label class="md-nav__link" for="__nav_6_6">
           Documentation
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Documentation" data-md-level="2">
-        <label class="md-nav__title" for="__nav_6_5">
+        <label class="md-nav__title" for="__nav_6_6">
           <span class="md-nav__icon md-icon"></span>
           Documentation
         </label>
@@ -1042,18 +1090,18 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_6" type="checkbox" id="__nav_6_6" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_7" type="checkbox" id="__nav_6_7" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_6_6">
+        <label class="md-nav__link" for="__nav_6_7">
           Plugins
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Plugins" data-md-level="2">
-        <label class="md-nav__title" for="__nav_6_6">
+        <label class="md-nav__title" for="__nav_6_7">
           <span class="md-nav__icon md-icon"></span>
           Plugins
         </label>
@@ -1138,6 +1186,26 @@
     Examples of changing taxonomy
   </a>
   
+    <nav class="md-nav" aria-label="Examples of changing taxonomy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1-add-new-intent-for-fybrikapplication" class="md-nav__link">
+    Example 1: Add new intent for FybrikApplication
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2-add-new-action-for-fybrikmodule" class="md-nav__link">
+    Example 2: Add new action for FybrikModule
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1204,9 +1272,7 @@ If this flag is not provided, Fybrik will use the default <code>taxonomy.json</c
 <div class="highlight"><pre><span></span><code>helm upgrade fybrik fybrik-charts/fybrik -n fybrik-system --wait --set-file <span class="nv">taxonomyOverride</span><span class="o">=</span>taxonomy.json
 </code></pre></div>
 <h2 id="examples-of-changing-taxonomy">Examples of changing taxonomy</h2>
-<ul>
-<li>Example 1: Add new intent for FybrikApplication</li>
-</ul>
+<h3 id="example-1-add-new-intent-for-fybrikapplication">Example 1: Add new intent for FybrikApplication</h3>
 <p>In this example we show how to update the application taxonomy. We show that when a FybrikApplication yaml containing a <code>Marketing</code> intent is submitted, it's validation fails because initially the application's taxonomy does not include <code>Marketing</code>. We then describe how to add <code>Marketing</code> to the taxonomy, enabling the validation to pass when we re-submit the FybrikApplication yaml.</p>
 <p>Follow the <a href="https://fybrik.io/latest/get-started/quickstart/"><code>quickstart guide</code></a> but stop before the command <code>helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait</code>
  (or <code>helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait</code> in development mode).</p>
@@ -1293,21 +1359,38 @@ The expected error is <code>The FybrikApplication "taxonomy-test" is invalid: sp
 <span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
 </code></pre></div>
 <p>The result is a FybrikApplication Custom Resource Definition instance called taxonomy-test.</p>
-<ul>
-<li>Example 2: Add new action for FybrikModule</li>
-</ul>
-<p>In this example we show how to update the module taxonomy. We show that when a FybrikModule yaml containing a <code>RedactYAction</code> action is submitted, it's validation fails because initially the module's taxonomy does not include <code>RedactYAction</code>. We then describe how to add a new action <code>RedactYAction</code> to the taxonomy, enabling the validation to pass when we re-submit the FybrikModule yaml.</p>
+<h3 id="example-2-add-new-action-for-fybrikmodule">Example 2: Add new action for FybrikModule</h3>
+<p>In this example we show how to update the module taxonomy. We show that when a FybrikModule yaml containing a <code>FilterAction</code> action is submitted, it's validation fails because initially the module's taxonomy does not include <code>FilterAction</code>. We then describe how to add a new action <code>FilterAction</code> to the taxonomy, enabling the validation to pass when we re-submit the FybrikModule yaml.</p>
 <p>Follow the <a href="https://fybrik.io/latest/get-started/quickstart/"><code>quickstart guide</code></a> but stop before the command <code>helm install fybrik fybrik-charts/fybrik -n fybrik-system --wait</code>
  (or <code>helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait</code> in development mode).</p>
 <p>The initial taxonomy to be used in this example is a base taxonomy that can be found in <a href="https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/taxonomy/taxonomy.json"><code>charts/fybrik/files/taxonomy/taxonomy.json</code></a> with the following taxonomy layer:</p>
 <p><div class="highlight"><pre><span></span><code><span class="nt">definitions</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">ActionName</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
-<span class="w">    </span><span class="nt">enum</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RedactAction</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RemoveAction</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deny</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RedactYAction</span><span class="w"></span>
+<span class="w">  </span><span class="nt">Action</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">oneOf</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">$ref</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#/definitions/RedactAction&quot;</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">$ref</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#/definitions/RemoveAction&quot;</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">$ref</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#/definitions/Deny&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">RedactAction</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">object</span><span class="w"></span>
+<span class="w">    </span><span class="nt">properties</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">columns</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">items</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">array</span><span class="w"></span>
+<span class="w">    </span><span class="nt">required</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">columns</span><span class="w"></span>
+<span class="w">  </span><span class="nt">RemoveAction</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">object</span><span class="w"></span>
+<span class="w">    </span><span class="nt">properties</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">columns</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">items</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">array</span><span class="w"></span>
+<span class="w">    </span><span class="nt">required</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">columns</span><span class="w"></span>
+<span class="w">  </span><span class="nt">Deny</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">object</span><span class="w"></span>
+<span class="w">    </span><span class="nt">additionalProperties</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
 </code></pre></div>
 Copy the taxonomy layer to a <code>taxonomy-layer.yaml</code> file.</p>
 <p>The working directory is the fybrik repository.
@@ -1317,7 +1400,7 @@ In order to compile and merge the two taxonomies, the Taxonomy Compile CLI tool 
 <p>This command creates a <code>custom-taxonomy.json</code> file, which is included in the helm installation of fybrik using the following command:</p>
 <div class="highlight"><pre><span></span><code>helm install fybrik charts/fybrik --set global.tag<span class="o">=</span>master --set global.imagePullPolicy<span class="o">=</span>Always -n fybrik-system --wait --set-file <span class="nv">taxonomyOverride</span><span class="o">=</span>custom-taxonomy.json
 </code></pre></div>
-<p>Trying to deploy a fybrikmodule.yaml that has a <code>RedactYAction</code> should fail validation beacuse there is no <code>RedactYAction</code> in the taxonomy. The following command should fail with a description of a validation error :</p>
+<p>Trying to deploy a fybrikmodule.yaml that has a <code>FilterAction</code> should fail validation beacuse there is no <code>FilterAction</code> in the taxonomy. The following command should fail with a description of a validation error :</p>
 <p><div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span><span class="w"></span>
 <span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1alpha1</span><span class="w"></span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FybrikModule</span><span class="w"></span>
@@ -1340,25 +1423,33 @@ In order to compile and merge the two taxonomies, the Taxonomy Compile CLI tool 
 <span class="w">            </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span><span class="w"></span>
 <span class="w">            </span><span class="nt">dataformat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">csv</span><span class="w"></span>
 <span class="w">      </span><span class="nt">actions</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RedactYAction</span><span class="w"></span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RedactAction</span><span class="w"></span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FilterAction</span><span class="w"></span>
 <span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
 </code></pre></div>
-The expected error is <code>The FybrikModule "taxonomy-module-test" is invalid: spec.capabilities.0.actions.0.name: Invalid value: "RedactYAction": spec.capabilities.0.actions.0.name must be one of the following: "Deny", "RedactAction", "RemoveAction"</code>. Thus, no FybrikModule CRD was created.</p>
-<p>To fix this, a new action name with <code>RedactYAction</code> value should be added to the taxonomy. Add a new value of "RedactYAction" in <code>custom-taxonomy.json</code> file in <code>ActionName</code> property as follows:</p>
-<div class="highlight"><pre><span></span><code>&quot;ActionName&quot;: {
-  &quot;type&quot;: &quot;string&quot;,
-  &quot;enum&quot;: [
-    &quot;Deny&quot;,
-    &quot;RedactAction&quot;,
-    &quot;RemoveAction&quot;,
-    &quot;RedactYAction&quot;
-  ]
-},
+The expected error is <code>The FybrikModule "taxonomy-module-test" is invalid: spec.capabilities.0.actions.0.name: Invalid value: "FilterAction": spec.capabilities.0.actions.0.name must be one of the following: "Deny", "RedactAction", "RemoveAction"</code>. Thus, no FybrikModule CRD was created.</p>
+<p>To fix this, a new action <code>FilterAction</code> should be added to the taxonomy. Add a new file <code>taxonomy-layer2.yaml</code> with the new action <code>FilterAction</code> as follows:</p>
+<p><div class="highlight"><pre><span></span><code><span class="nt">definitions</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">Action</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">oneOf</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">$ref</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#/definitions/FilterAction&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">FilterAction</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">object</span><span class="w"></span>
+<span class="w">    </span><span class="nt">properties</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">threshold</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">integer</span><span class="w"></span>
+<span class="w">      </span><span class="nt">operation</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
+<span class="w">    </span><span class="nt">required</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">threshold</span><span class="w"></span>
+</code></pre></div>
+Now we create the <code>custom-taxonomy.json</code> file as before, by using the following command:</p>
+<div class="highlight"><pre><span></span><code>  go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json taxonomy-layer.yaml taxonomy-layer2.yaml
 </code></pre></div>
 <p>Now we upgrade the fybrik helm chart using the following command:</p>
 <div class="highlight"><pre><span></span><code>helm upgrade fybrik charts/fybrik --set global.tag<span class="o">=</span>master --set global.imagePullPolicy<span class="o">=</span>Always -n fybrik-system --wait --set-file <span class="nv">taxonomyOverride</span><span class="o">=</span>custom-taxonomy.json
 </code></pre></div>
-<p>After updating fybrik to get fybrikmodule with <code>RedactYAction</code>, the deployment of a fybrikmodule.yaml that has a <code>RedactYAction</code> will succeed:</p>
+<p>After updating fybrik to get fybrikmodule with <code>FilterAction</code>, the deployment of a fybrikmodule.yaml that has a <code>FilterAction</code> will succeed:</p>
 <div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span><span class="w"></span>
 <span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1alpha1</span><span class="w"></span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FybrikModule</span><span class="w"></span>
@@ -1381,7 +1472,8 @@ The expected error is <code>The FybrikModule "taxonomy-module-test" is invalid: 
 <span class="w">            </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span><span class="w"></span>
 <span class="w">            </span><span class="nt">dataformat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">csv</span><span class="w"></span>
 <span class="w">      </span><span class="nt">actions</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RedactYAction</span><span class="w"></span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RedactAction</span><span class="w"></span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FilterAction</span><span class="w"></span>
 <span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
 </code></pre></div>
 <p>The result is a FybrikModule Custom Resource Definition instance called taxonomy-module-test.</p>
@@ -1467,10 +1559,10 @@ The expected error is <code>The FybrikModule "taxonomy-module-test" is invalid: 
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.22074ed6.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.092fa1f6.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.1514a9a0.min.js"></script>
+      <script src="../../assets/javascripts/bundle.e3b2bf44.min.js"></script>
       
     
   </body>
