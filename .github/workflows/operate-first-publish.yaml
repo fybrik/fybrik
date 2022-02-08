@@ -36,9 +36,8 @@ jobs:
         with:
           path: operate-first-repo
           signoff: true
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.TAG_PSAT }}
           push-to-fork: fybrik/operate-first-apps
           title: 'Update Fybrik manifests to new release'
           commit-message: Update Fybrik cluster-scoped resources for Operate First
           committer: GitHub <noreply@github.com>
-          delete-branch: true
