@@ -5,11 +5,6 @@ on:
       - '^v[0-9]+\.[0-9]+(\.[0-9]+)*'
     branches:
       - master
-    paths:
-      - site/**
-      - .github/workflows/website-*
-      - pkg/connectors/protos/**
-      - charts/fybrik-crd/templates/**
   workflow_dispatch:
 jobs:
   website-deploy:
@@ -30,6 +25,7 @@ jobs:
           pip install mkdocs-material=="8.*"
           pip install mike
           pip install mkdocs-macros-plugin
+          pip install lunr
       - name: setup git config
         run: |
           git config user.name "GitHub Actions Bot"
@@ -53,6 +49,7 @@ jobs:
           _format-key: '__key__'
           _output-file: ${{ env.EXTERNAL_FILE }}
           Release: ${{ steps.release.outputs.version }}
+      - run: cat ${{ env.EXTERNAL_FILE }}
       - name: Build and Deploy (dev)
         if: ${{ steps.version.outputs.version == 'master' && !env.ACT }}
         working-directory: ${{ env.WORK_DIR }}
