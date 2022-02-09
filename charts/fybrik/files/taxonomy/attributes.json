@@ -1,0 +1,58 @@
+{
+  "title": "attributes.json",
+  "definitions": {
+    "AttributeType": {
+      "type": "string",
+      "enum": [
+        "numeric",
+        "string",
+        "bool"
+      ]
+    },
+    "Infrastructure": {
+      "type": "object",
+      "required": [
+        "infrastructure"
+      ],
+      "properties": {
+        "infrastructure": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InfrastructureElement"
+          }
+        }
+      }
+    },
+    "InfrastructureElement": {
+      "type": "object",
+      "required": [
+        "attribute",
+        "type",
+        "value"
+      ],
+      "properties": {
+        "attribute": {
+          "$ref": "taxonomy.json#/definitions/Attribute"
+        },
+        "description": {
+          "type": "string"
+        },
+        "instance": {
+          "type": "string"
+        },
+        "scale": {
+          "$ref": "adminrules.json#/definitions/RangeType"
+        },
+        "type": {
+          "$ref": "#/definitions/AttributeType"
+        },
+        "units": {
+          "$ref": "taxonomy.json#/definitions/Units"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

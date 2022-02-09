@@ -12,6 +12,7 @@ import (
 
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
+	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/logging"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -67,6 +68,12 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 		log.Error().Err(err).Msg("could not compile a query")
 		return nil
 	}
+	infrastructureManager, err := infrastructure.NewAttributeManager()
+	if err != nil {
+		log.Error().Err(err).Msg("unable to get infrastructure attributes")
+		return nil
+	}
+
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	return &FybrikApplicationReconciler{
 		Client:        cl,
@@ -81,6 +88,7 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 		ClusterManager:  &mockup.ClusterLister{},
 		Provision:       &storage.ProvisionTest{},
 		ConfigEvaluator: adminconfig.NewRegoPolicyEvaluator(log, query),
+		Infrastructure:  infrastructureManager,
 	}
 }
 
@@ -821,6 +829,7 @@ func TestCopyData(t *testing.T) {
 // This test checks the ingest scenario
 // A storage account has been defined for the region where the dataset can not be written to according to governance policies.
 // An error is received.
+//nolint:dupl
 func TestCopyDataNotAllowed(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -859,6 +868,70 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	g.Expect(cl.Create(context.TODO(), dummySecret)).NotTo(gomega.HaveOccurred())
 	account := &app.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	account.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.TODO(), account)).NotTo(gomega.HaveOccurred())
+
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+	// check provisioned storage
+	g.Expect(application.Status.ProvisionedStorage).To(gomega.BeEmpty())
+	// check errors
+	g.Expect(getErrorMessages(application)).NotTo(gomega.BeEmpty())
+}
+
+// This test checks the ingest scenario
+// A storage account has been defined for the region where the dataset can not be written to according to restrictions on cost
+// An error is received.
+//nolint:dupl
+func TestStorageCost(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	assetName := "s3-external/allow-dataset"
+	namespaced := types.NamespacedName{
+		Name:      "ingest",
+		Namespace: "default",
+	}
+	application := &app.FybrikApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.Spec.Data[0].DataSetID = assetName
+	application.SetGeneration(1)
+	application.SetUID("storage-cost")
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+	copyModule := &app.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	copyModule.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
+
+	// Create storage account
+	dummySecret := &corev1.Secret{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-neverland.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
+	dummySecret.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.TODO(), dummySecret)).NotTo(gomega.HaveOccurred())
+	account := &app.FybrikStorageAccount{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account)).NotTo(gomega.HaveOccurred())
 	account.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), account)).NotTo(gomega.HaveOccurred())
 
