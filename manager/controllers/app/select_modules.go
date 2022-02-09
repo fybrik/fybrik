@@ -346,7 +346,30 @@ func allowCapability(item *DataInfo, capability taxonomy.Capability) bool {
 }
 
 func validateModuleRestrictions(item *DataInfo, edge *Edge) bool {
-	// TODO(shlomitk1): validate module restrictions
+	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
+	return validateModuleRestrictionsPerCapability(item, edge, capability.Capability)
+}
+
+func validateModuleRestrictionsPerCapability(item *DataInfo, edge *Edge, capability taxonomy.Capability) bool {
+	restrictions := item.Configuration.ConfigDecisions[capability].DeploymentRestrictions.Modules
+	if len(restrictions) == 0 {
+		return true
+	}
+	moduleCapability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
+	capabilityDetails, err := utils.StructToMap(&moduleCapability)
+	if err != nil {
+		return false
+	}
+	for key, values := range restrictions {
+		fields := strings.Split(key, ".")
+		value, found, err := unstructured.NestedString(capabilityDetails, fields...)
+		if err != nil || !found {
+			return false
+		}
+		if !utils.HasString(value, values) {
+			return false
+		}
+	}
 	return true
 }
 
