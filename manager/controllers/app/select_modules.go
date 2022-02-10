@@ -361,11 +361,12 @@ func validateModuleRestrictionsPerCapability(item *DataInfo, edge *Edge, capabil
 		return false
 	}
 	for key, values := range restrictions {
-		fields := strings.Split(key, ".")
-		value, found, err := unstructured.NestedString(capabilityDetails, fields...)
-		if err != nil || !found {
+		fields := strings.Split(key, ".")[1]
+		val, ok := capabilityDetails[fields]
+		if !ok {
 			return false
 		}
+		value := val.(string)
 		if !utils.HasString(value, values) {
 			return false
 		}
