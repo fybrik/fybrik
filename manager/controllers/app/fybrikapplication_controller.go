@@ -42,7 +42,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/multicluster"
@@ -625,7 +624,7 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*api.FybrikMod
 }
 
 // get all available storage accounts
-func (r *FybrikApplicationReconciler) getStorageAccounts() ([]app.FybrikStorageAccount, error) {
+func (r *FybrikApplicationReconciler) getStorageAccounts() ([]api.FybrikStorageAccount, error) {
 	var accountList api.FybrikStorageAccountList
 	if err := r.List(context.Background(), &accountList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
 		return nil, err

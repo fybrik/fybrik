@@ -1,7 +1,7 @@
 // Copyright 2022 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package attributes
+package infraattributes
 
 import (
 	"fybrik.io/fybrik/pkg/model/adminrules"

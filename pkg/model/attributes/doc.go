@@ -3,4 +3,4 @@
 
 // +kubebuilder:object:generate=true
 // +fybrik:validation:schema
-package attributes
+package infraattributes
