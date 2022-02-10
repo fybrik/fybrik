@@ -111,6 +111,7 @@ spec:
                               description: Storage estimate indicates the estimated
                                 amount of storage required when copying or writing
                                 new data.
+                              format: int64
                               type: integer
                           type: object
                         interface:

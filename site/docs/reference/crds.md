@@ -1364,7 +1364,7 @@ DataContext indicates data set being processed by the workload and includes info
         <td><b>flows</b></td>
         <td>[]enum</td>
         <td>
-          Flows indicates what is being done with the particular dataset - ex: read, write, copy, delete If more than one flow is indicated, the order is respected. This is optional for the purpose of backward compatability. If nothing is provided, read is assumed.<br/>
+          Flows indicates what is being done with the particular dataset - ex: read, write, copy, delete If more than one flow is indicated, the order is respected. This is optional for the purpose of backward compatibility. If nothing is provided, read is assumed.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1454,6 +1454,8 @@ FlowParams include the requirements for explicit requests to copy the data
         <td>integer</td>
         <td>
           Storage estimate indicates the estimated amount of storage required when copying or writing new data.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -3071,7 +3073,7 @@ Step parameters TODO why not flatten the parameters into this data flow step
         <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssource">source</a></b></td>
         <td>object</td>
         <td>
-          StepSource is the source of this step: it could be assetID or an enpoint of another step<br/>
+          StepSource is the source of this step: it could be assetID or an endpoint of another step<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -3198,7 +3200,7 @@ StepSink holds information to where the target data will be written: it could be
 
 
 
-StepSource is the source of this step: it could be assetID or an enpoint of another step
+StepSource is the source of this step: it could be assetID or an endpoint of another step
 
 <table>
     <thead>

@@ -22,7 +22,7 @@ type AssetDetails struct {
 }
 
 // StepSource is the source of this step: it could be assetID
-// or an enpoint of another step
+// or an endpoint of another step
 type StepSource struct {
 	// AssetID identifies the source asset of this step
 	// +optional

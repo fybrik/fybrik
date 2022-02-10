@@ -5,6 +5,7 @@ package v1alpha1
 
 import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
+	"github.com/c2h5oh/datasize"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -26,7 +27,7 @@ type FlowRequirements struct {
 
 	// Storage estimate indicates the estimated amount of storage required when copying or writing new data.
 	// +optional
-	StorageEstimate int `json:"storageEstimate,omitempty"`
+	StorageEstimate datasize.ByteSize `json:"storageEstimate,omitempty"`
 
 	// IsNewDataSet if true indicates that the DataContext.DataSetID is user provided and not a true catalog ID.  Relevant when writing.
 	// A unique ID from the catalog will be provided in the FybrikApplication Status after a new catalog entry is created.
