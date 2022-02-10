@@ -23,7 +23,7 @@ func TaxonomyCheck(resourceJSON []byte, schemaPath string) ([]*field.Error, erro
 	documentLoader := gojsonschema.NewBytesLoader(resourceJSON)
 	result, err := gojsonschema.Validate(taxonomyLoader, documentLoader)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not validate resource against the provided schema")
+		return nil, errors.Wrap(err, "could not validate resource against the provided schema, check files at "+filepath.Dir(schemaPath))
 	}
 
 	// Return validation errors
