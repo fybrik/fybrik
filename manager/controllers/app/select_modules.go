@@ -4,6 +4,7 @@
 package app
 
 import (
+	"strconv"
 	"strings"
 
 	"emperror.dev/errors"
@@ -56,9 +57,9 @@ type Edge struct {
 // TODO(shlomitk1): add plugins/transformation capabilities to this structure
 type ResolvedEdge struct {
 	Edge
-	Actions              []taxonomy.Action
-	Cluster              string
-	StorageAccountRegion string
+	Actions        []taxonomy.Action
+	Cluster        string
+	StorageAccount *app.FybrikStorageAccountSpec
 }
 
 // Solution is a final solution enabling a plotter construction.
@@ -114,12 +115,17 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
 		if !element.Edge.Sink.Virtual {
 			// storage is required, plus more actions on copy may be needed
-			for _, region := range p.StorageAccountRegions {
+			for _, account := range p.StorageAccounts {
+				// validate restrictions
+				if !p.validateRestrictions(item.Configuration.ConfigDecisions[moduleCapability.Capability].DeploymentRestrictions.StorageAccounts, &account.Spec, account.Name) {
+					p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msgf("storage account %s does not match the requirements", account.Name)
+					continue
+				}
 				// query the policy manager whether WRITE operation is allowed
 				operation := new(policymanager.RequestAction)
 				operation.ActionType = policymanager.WRITE
-				operation.Destination = region
-				operation.ProcessingLocation = taxonomy.ProcessingLocation(region)
+				operation.Destination = string(account.Spec.Region)
+				operation.ProcessingLocation = account.Spec.Region
 				actions, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
 				if err != nil && err.Error() == app.WriteNotAllowed {
 					continue
@@ -130,9 +136,9 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 				}
 				// add WRITE actions and the selected storage account region
 				element.Actions = actions
-				element.StorageAccountRegion = region
+				element.StorageAccount = &account.Spec
 			}
-			if element.StorageAccountRegion == "" {
+			if element.StorageAccount == nil {
 				p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find a storage account, aborting data path construction")
 				return false
 			}
@@ -178,7 +184,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 // find a cluster that satisfies the requirements
 func (p *PlotterGenerator) findCluster(item *DataInfo, element *ResolvedEdge) bool {
 	for _, cluster := range p.Clusters {
-		if validateClusterRestrictions(item, element, cluster) {
+		if p.validateClusterRestrictions(item, element, cluster) {
 			element.Cluster = cluster.Name
 			return true
 		}
@@ -350,36 +356,73 @@ func validateModuleRestrictions(item *DataInfo, edge *Edge) bool {
 	return true
 }
 
-func validateClusterRestrictions(item *DataInfo, edge *ResolvedEdge, cluster multicluster.Cluster) bool {
+func (p *PlotterGenerator) validateClusterRestrictions(item *DataInfo, edge *ResolvedEdge, cluster multicluster.Cluster) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
-	if !validateClusterRestrictionsPerCapability(item, capability.Capability, cluster) {
+	if !p.validateClusterRestrictionsPerCapability(item, capability.Capability, cluster) {
 		return false
 	}
 	if len(edge.Actions) > 0 {
-		if !validateClusterRestrictionsPerCapability(item, Transform, cluster) {
+		if !p.validateClusterRestrictionsPerCapability(item, Transform, cluster) {
 			return false
 		}
 	}
 	return true
 }
 
-func validateClusterRestrictionsPerCapability(item *DataInfo, capability taxonomy.Capability, cluster multicluster.Cluster) bool {
+func (p *PlotterGenerator) validateClusterRestrictionsPerCapability(item *DataInfo, capability taxonomy.Capability, cluster multicluster.Cluster) bool {
 	restrictions := item.Configuration.ConfigDecisions[capability].DeploymentRestrictions.Clusters
+	return p.validateRestrictions(restrictions, &cluster, "")
+}
+
+// Validation of an object with respect to the admin config restrictions
+func (p *PlotterGenerator) validateRestrictions(restrictions []adminrules.Restriction, spec interface{}, instanceName string) bool {
 	if len(restrictions) == 0 {
 		return true
 	}
-	clusterDetails, err := utils.StructToMap(&cluster)
+	details, err := utils.StructToMap(spec)
 	if err != nil {
 		return false
 	}
-	for key, values := range restrictions {
-		fields := strings.Split(key, ".")
-		value, found, err := unstructured.NestedString(clusterDetails, fields...)
+	for _, restrict := range restrictions {
+		var value interface{}
+		var err error
+		var found bool
+		// infrastructure attribute or a property in the spec?
+		attributeObj := p.AttributeManager.GetAttribute(taxonomy.Attribute(restrict.Property), instanceName)
+		if attributeObj != nil {
+			value = attributeObj.Value
+			found = true
+		} else {
+			fields := strings.Split(restrict.Property, ".")
+			value, found, err = unstructured.NestedFieldNoCopy(details, fields...)
+		}
 		if err != nil || !found {
 			return false
 		}
-		if !utils.HasString(value, values) {
-			return false
+		if restrict.Range != nil {
+			var numericVal int
+			switch value := value.(type) {
+			case int64:
+				numericVal = int(value)
+			case float64:
+				numericVal = int(value)
+			case int:
+				numericVal = value
+			case string:
+				if numericVal, err = strconv.Atoi(value); err != nil {
+					return false
+				}
+			}
+			if restrict.Range.Max > 0 && numericVal > restrict.Range.Max {
+				return false
+			}
+			if restrict.Range.Min > 0 && numericVal < restrict.Range.Min {
+				return false
+			}
+		} else if len(restrict.Values) != 0 {
+			if !utils.HasString(value.(string), restrict.Values) {
+				return false
+			}
 		}
 	}
 	return true

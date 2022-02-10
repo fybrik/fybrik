@@ -23,6 +23,9 @@
     "AssetID": {
       "type": "string"
     },
+    "Attribute": {
+      "type": "string"
+    },
     "Capability": {
       "type": "string"
     },
@@ -73,6 +76,9 @@
     "Tags": {
       "type": "object",
       "additionalProperties": true
+    },
+    "Units": {
+      "type": "string"
     }
   }
 }

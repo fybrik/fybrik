@@ -14,6 +14,7 @@ import (
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/environment"
+	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/logging"
 
 	"emperror.dev/errors"
@@ -143,6 +144,12 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			return 1
 		}
 		evaluator := adminconfig.NewRegoPolicyEvaluator(logging.LogInit(logging.CONTROLLER, "FybrikApplication"), query)
+		infrastructureManager, err := infrastructure.NewAttributeManager()
+		if err != nil {
+			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to get infrastructure attributes")
+			return 1
+		}
+
 		// Initiate the FybrikApplication Controller
 		applicationController := app.NewFybrikApplicationReconciler(
 			mgr,
@@ -152,6 +159,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			clusterManager,
 			storage.NewProvisionImpl(mgr.GetClient()),
 			evaluator,
+			infrastructureManager,
 		)
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create controller")
