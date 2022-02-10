@@ -59,7 +59,7 @@ type ResolvedEdge struct {
 	Edge
 	Actions        []taxonomy.Action
 	Cluster        string
-	StorageAccount *app.FybrikStorageAccountSpec
+	StorageAccount app.FybrikStorageAccountSpec
 }
 
 // Solution is a final solution enabling a plotter construction.
@@ -115,6 +115,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
 		if !element.Edge.Sink.Virtual {
 			// storage is required, plus more actions on copy may be needed
+			isAccountFound := false
 			for _, account := range p.StorageAccounts {
 				// validate restrictions
 				if !p.validateRestrictions(item.Configuration.ConfigDecisions[moduleCapability.Capability].DeploymentRestrictions.StorageAccounts, &account.Spec, account.Name) {
@@ -136,9 +137,10 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 				}
 				// add WRITE actions and the selected storage account region
 				element.Actions = actions
-				element.StorageAccount = &account.Spec
+				element.StorageAccount = account.Spec
+				isAccountFound = true
 			}
-			if element.StorageAccount == nil {
+			if !isAccountFound {
 				p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find a storage account, aborting data path construction")
 				return false
 			}
