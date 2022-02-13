@@ -173,7 +173,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 		var subFlow app.SubFlow
 		if !element.Sink.Virtual {
 			// allocate storage and create a temoprary asset
-			if sinkDataStore, err = p.GetCopyDestination(item, element.Sink.Connection, element.StorageAccount); err != nil {
+			if sinkDataStore, err = p.GetCopyDestination(item, element.Sink.Connection, &element.StorageAccount); err != nil {
 				p.Log.Error().Err(err).Str(logging.DATASETID, item.Context.DataSetID).Msg("Storage allocation for copy failed")
 				return err
 			}
