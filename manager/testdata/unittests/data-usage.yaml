@@ -13,7 +13,6 @@ spec:
     role: Security
   data:
     - dataSetID: s3/redact-dataset
-      flows:
       requirements:
         interface: 
           protocol: fybrik-arrow-flight

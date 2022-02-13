@@ -13,12 +13,10 @@ spec:
     intent: Fraud Detection
   data:
     - dataSetID: s3-external/xxx
-      flows:
-      - copy
+      flow: copy
       requirements:
         flowParams:
-          catalog:
-            catalogID: "ingest_test"
+          catalog: "ingest_test"
         interface: 
           protocol: s3
           dataformat: csv

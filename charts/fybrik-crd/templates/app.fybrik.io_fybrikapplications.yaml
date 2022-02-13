@@ -66,24 +66,21 @@ spec:
                         chosen from the data catalog. For data catalogs that support
                         multiple sub-catalogs, it includes the catalog id and the
                         dataset id. When writing a new dataset it is the name provided
-                        by the user or workload generating it, and should include
-                        the sub-catalog name where appropriate.
+                        by the user or workload generating it.
                       minLength: 1
                       type: string
-                    flows:
+                    flow:
                       description: 'Flows indicates what is being done with the particular
                         dataset - ex: read, write, copy, delete If more than one flow
                         is indicated, the order is respected. This is optional for
                         the purpose of backward compatibility. If nothing is provided,
                         read is assumed.'
-                      items:
-                        enum:
-                        - read
-                        - write
-                        - delete
-                        - copy
-                        type: string
-                      type: array
+                      enum:
+                      - read
+                      - write
+                      - delete
+                      - copy
+                      type: string
                     requirements:
                       description: Requirements from the system
                       properties:
@@ -93,24 +90,18 @@ spec:
                           properties:
                             catalog:
                               description: Catalog indicates that the data asset must
-                                be cataloged, and in which catalog to register it.
-                              properties:
-                                catalogID:
-                                  description: CatalogID specifies the catalog where
-                                    the data will be cataloged.
-                                  type: string
-                              type: object
+                                be cataloged, and in which catalog to register it
+                              type: string
                             isNewDataSet:
                               description: IsNewDataSet if true indicates that the
-                                DataContext.DataSetID is user provided and not a true
-                                catalog ID.  Relevant when writing. A unique ID from
-                                the catalog will be provided in the FybrikApplication
+                                DataContext.DataSetID is user provided and not a full
+                                catalog / dataset ID. Relevant when writing. A unique
+                                ID from the catalog will be provided in the FybrikApplication
                                 Status after a new catalog entry is created.
                               type: boolean
                             storageEstimate:
                               description: Storage estimate indicates the estimated
-                                amount of storage required when copying or writing
-                                new data.
+                                amount of storage required when writing new data.
                               format: int64
                               type: integer
                           type: object

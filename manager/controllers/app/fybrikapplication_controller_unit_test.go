@@ -644,7 +644,7 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 }
 
-// This test checks the case where data comes from another regions, and should be redacted.
+// This test checks the case where data comes from another region, and should be redacted.
 // In this case a read module will be deployed close to the compute, while a copy module - close to the data.
 func TestMultipleRegions(t *testing.T) {
 	t.Parallel()
@@ -745,7 +745,7 @@ func TestCopyData(t *testing.T) {
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
-	application.Spec.Data[0].Flows = []taxonomy.DataFlow{taxonomy.CopyFlow}
+	application.Spec.Data[0].Flow = taxonomy.CopyFlow
 	application.SetGeneration(1)
 	application.SetUID("9")
 	// Objects to track in the fake client.
@@ -837,7 +837,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
-	application.Spec.Data[0].Flows = []taxonomy.DataFlow{taxonomy.CopyFlow}
+	application.Spec.Data[0].Flow = taxonomy.CopyFlow
 	application.SetGeneration(1)
 	application.SetUID("10")
 	// Objects to track in the fake client.
@@ -1179,7 +1179,7 @@ func TestCopyModule(t *testing.T) {
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
-	application.Spec.Data[0].Flows = []taxonomy.DataFlow{taxonomy.CopyFlow}
+	application.Spec.Data[0].Flow = taxonomy.CopyFlow
 	application.SetGeneration(1)
 	application.SetUID("16")
 	// Objects to track in the fake client.

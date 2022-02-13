@@ -10,26 +10,19 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// TargetCatalog contain the specifics for the catalog which needs to be updated.
-// Updates may be adding a new dataset to the catalog (currently supported) or deleting an existing dataset (future)
-type TargetCatalog struct {
-	// CatalogID specifies the catalog where the data will be cataloged.
-	// +optional
-	CatalogID string `json:"catalogID,omitempty"`
-}
-
-// FlowRequirements include the requirements for the data copy operation when there is an explicit copy request
+// FlowRequirements include the requirements specific to the flow
 // Note: Implicit copies done for data plane optimization by Fybrik do not use these parameters
 type FlowRequirements struct {
-	// Catalog indicates that the data asset must be cataloged, and in which catalog to register it.
+	// Catalog indicates that the data asset must be cataloged, and in which catalog to register it
 	// +optional
-	Catalog TargetCatalog `json:"catalog,omitempty"`
+	Catalog string `json:"catalog,omitempty"`
 
-	// Storage estimate indicates the estimated amount of storage required when copying or writing new data.
+	// Storage estimate indicates the estimated amount of storage required when writing new data.
 	// +optional
 	StorageEstimate datasize.ByteSize `json:"storageEstimate,omitempty"`
 
-	// IsNewDataSet if true indicates that the DataContext.DataSetID is user provided and not a true catalog ID.  Relevant when writing.
+	// IsNewDataSet if true indicates that the DataContext.DataSetID is user provided and not a full catalog / dataset ID.
+	// Relevant when writing.
 	// A unique ID from the catalog will be provided in the FybrikApplication Status after a new catalog entry is created.
 	// +optional
 	IsNewDataSet bool `json:"isNewDataSet,omitempty"`
@@ -51,8 +44,7 @@ type DataRequirements struct {
 type DataContext struct {
 	// DataSetID is a unique identifier of the dataset chosen from the data catalog.
 	// For data catalogs that support multiple sub-catalogs, it includes the catalog id and the dataset id.
-	// When writing a new dataset it is the name provided by the user or workload generating it,
-	// and should include the sub-catalog name where appropriate.
+	// When writing a new dataset it is the name provided by the user or workload generating it.
 	// +required
 	// +kubebuilder:validation:MinLength=1
 	DataSetID string `json:"dataSetID"`
@@ -62,7 +54,7 @@ type DataContext struct {
 	// This is optional for the purpose of backward compatibility.
 	// If nothing is provided, read is assumed.
 	// +optional
-	Flows []taxonomy.DataFlow `json:"flows,omitempty"`
+	Flow taxonomy.DataFlow `json:"flow,omitempty"`
 
 	// Requirements from the system
 	// +required

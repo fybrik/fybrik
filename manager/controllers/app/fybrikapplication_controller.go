@@ -201,7 +201,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 		}
 
 		// register assets if necessary if the ready state has been received
-		if dataCtx.Requirements.FlowParams.Catalog.CatalogID != "" {
+		if dataCtx.Requirements.FlowParams.Catalog != "" {
 			if applicationContext.Application.Status.AssetStates[assetID].CatalogedAsset != "" {
 				// the asset has been already cataloged
 				continue
@@ -218,7 +218,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 				continue
 			}
 			// register the asset: experimental feature
-			if newAssetID, err := r.RegisterAsset(dataCtx.Requirements.FlowParams.Catalog.CatalogID, &provisionedBucketRef, applicationContext.Application); err == nil {
+			if newAssetID, err := r.RegisterAsset(dataCtx.Requirements.FlowParams.Catalog, &provisionedBucketRef, applicationContext.Application); err == nil {
 				state := applicationContext.Application.Status.AssetStates[assetID]
 				state.CatalogedAsset = newAssetID
 				applicationContext.Application.Status.AssetStates[assetID] = state
@@ -408,10 +408,10 @@ func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataConte
 	var flows []taxonomy.DataFlow
 
 	// If a workload selector is provided but no flow, assume read - for backward compatibility
-	if (application.Spec.Selector.WorkloadSelector.Size() > 0) && (len(dataCtx.Flows) == 0) {
+	if (application.Spec.Selector.WorkloadSelector.Size() > 0) && (dataCtx.Flow == "") {
 		flows = append(flows, taxonomy.ReadFlow)
 	} else {
-		flows = dataCtx.Flows
+		flows = append(flows, dataCtx.Flow)
 	}
 	return adminconfig.DataRequest{
 		DatasetID: dataCtx.DataSetID,
