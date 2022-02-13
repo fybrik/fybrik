@@ -46,3 +46,36 @@ a docker registry as a proxy for all public images. This registry runs in a dock
 export DOCKERHUB_USERNAME='your docker hub username'
 export DOCKERHUB_PASSWORD='your password'
 ```
+
+## Optional Code Improvement Tools 
+## pre-commit
+
+A framework for managing and maintaining multi-language pre-commit hooks.
+Inspect the snapshot that's about to be committed according to the configured hooks.
+Suitable only for repos with .pre-commit-config file in the main repo dir.
+
+How to use:
+
+1. Install pre-commit: [https://pre-commit.com/](https://pre-commit.com/)
+2. Install pre-commit hook script:  
+run `pre-commit install`
+
+Now `pre-commit` will run automatically on `git commit`
+
+## Integrating golangci-lint with VS Code
+Change the default lint to golanci-lint in VS Code:
+
+1. Install golangci-lint: [https://golangci-lint.run/usage/install/](https://golangci-lint.run/usage/install/)
+2. Open VS Code `setting.json`:
+    1. Open quick file navigation: `Ctrl+P` 
+    2. Search for "Open Settings (JSON)"
+    3. Open `setting.json`
+3. Add to `setting.json` the following:
+```
+"go.lintTool":"golangci-lint",
+"go.lintFlags": [
+  "--fast"
+]
+```
+
+Golangci-lint automatically discovers `.golangci.yml` config for edited file: you don't need to configure it in VS Code settings.
