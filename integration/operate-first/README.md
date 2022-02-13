@@ -36,7 +36,70 @@ After the cluster-scoped YAML files are generated, create a PR to the [operate-f
 ## Deploying Namespace-Scoped resources
 Operate First has an [ArgoCD](https://argo-cd.readthedocs.io/en/stable/) instance deployed on MOC that can be used to deploy OpenShift resources located on a Git Repository. Only namespace-scoped resources can be deployed with ArgoCD. Any cluster-scoped resource, such as CRDs or cluster roles, will be blocked by ArgoCD. The namespace-scoped resources required for Fybrik have been onboarded to ArgoCD by following [these instructions](https://github.com/operate-first/apps/blob/master/docs/content/argocd-gitops/onboarding_to_argocd.md) and an ArgoCD project has been created for Fybrik. You can login to [the ArgoCD instance](https://argocd.operate-first.cloud/applications?proj=&sync=&health=&namespace=&cluster=&labels=) with the same login method as above. We have deployed 2 [ArgoCD applications](https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#applications) which are automatically synced with the latest release of Fybrik. The `fybrik` and `vault` ArgoCD applications deployed on the Smaug cluster are in sync with the [`fybrik/charts`](https://github.com/fybrik/charts) repository.
 
-The complete ArgoCD application manifests have been added to the `operate-first/apps` repository [here](https://github.com/operate-first/apps/tree/master/argocd/overlays/moc-infra/applications/envs/moc/smaug/fybrik).
+The following are the [ArgoCD application manifests](https://github.com/operate-first/apps/tree/master/argocd/overlays/moc-infra/applications/envs/moc/smaug/fybrik) which have been added to the `operate-first/apps` repository:
+
+```bash
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: fybrik
+spec:
+  destination:
+    name: smaug
+    namespace: fybrik-system
+  source:
+    path: charts/fybrik
+    repoURL: 'https://github.com/fybrik/charts'
+    targetRevision: HEAD
+    helm:
+      parameters:
+        # Disable deploying Fbrik cluster scoped resources
+        - name: clusterScoped
+          value: "false"
+        # Only watch for FybrikApplication from fybrik-applications
+        - name: applicationNamespace
+          value: fybrik-applications
+  project: fybrik
+```
+
+```bash
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault
+spec:
+  project: fybrik
+  source:
+    repoURL: 'https://github.com/fybrik/charts'
+    path: charts/vault
+    targetRevision: HEAD
+    helm:
+      valueFiles:
+        - env/dev/vault-single-cluster-values.yaml
+      parameters:
+        # authDelegator enables a cluster role binding to be attached to the service account.
+        # The cluster role binding is already deployed in the smaug cluster and thus authDelegator can be disabled.
+        - name: vault.server.authDelegator.enabled
+          value: 'false'
+        - name: vault.global.openshift
+          value: 'true'
+        - name: vault.injector.enabled
+          value: 'false'
+        - name: vault.server.dev.enabled
+          value: 'true'
+      values: |
+        plugins:
+          vaultPluginSecretsKubernetesReader:
+            enabled: true
+            clusterScope: false
+            namespaces:
+              - fybrik-applications
+              - fybrik-system
+        modulesNamespace: "fybrik-blueprints"
+  destination:
+    namespace: fybrik-system
+    name: smaug
+```
 
 ## Running the Fybrik notebook sample on Operate First
 1) Follow the steps in [Fybrik notebook sample](https://fybrik.io/v0.5/samples/notebook/) to [prepare a dataset to be accessed by the notebook](https://fybrik.io/v0.5/samples/notebook/#prepare-a-dataset-to-be-accessed-by-the-notebook), [register the dataset in a data catalog](https://fybrik.io/v0.5/samples/notebook/#register-the-dataset-in-a-data-catalog), and [define data access policies](https://fybrik.io/v0.5/samples/notebook/#define-data-access-policies). Make sure to use the `fybrik-applications` namespace instead of the `fybrik-notebook-sample` namespace since `fybrik-applications` has already been created on the Smaug cluster. 
