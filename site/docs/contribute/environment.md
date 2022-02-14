@@ -47,20 +47,12 @@ export DOCKERHUB_USERNAME='your docker hub username'
 export DOCKERHUB_PASSWORD='your password'
 ```
 
-## Optional Code Improvement Tools 
-## pre-commit
+## Optional Code Improvement and Verification Tools
 
-A framework for managing and maintaining multi-language pre-commit hooks.
-Inspect the snapshot that's about to be committed according to the configured hooks.
-Suitable only for repos with .pre-commit-config file in the main repo dir.
+Fybrik repositories use different linters to validate and improve code.  
+*golangci-lint* works as a Go linters aggregator, which includes a lot of linter such as `staticcheck`, `revive`, `goimports` and more.  
+You can check the configuration to each repository in `.golangci.yml`.
 
-How to use:
-
-1. Install pre-commit: [https://pre-commit.com/](https://pre-commit.com/)
-2. Install pre-commit hook script:  
-run `pre-commit install`
-
-Now `pre-commit` will run automatically on `git commit`
 
 ## Integrating golangci-lint with VS Code
 Change the default lint to golanci-lint in VS Code:
@@ -79,3 +71,27 @@ Change the default lint to golanci-lint in VS Code:
 ```
 
 Golangci-lint automatically discovers `.golangci.yml` config for edited file: you don't need to configure it in VS Code settings.
+
+To integrate with other IDEs: [https://golangci-lint.run/usage/integrations/](https://golangci-lint.run/usage/integrations/)  
+If you wish to run golangci-lint on cmd, run on the desired directory:  
+```
+golangci-lint run --fast
+```
+
+
+## Pre-commit
+
+A framework for managing and maintaining multi-language pre-commit hooks.  
+Inspect the snapshot that's about to be committed according to the configured hooks.  
+You can add a pre-commit hooks configured with golanci-lint to pre-validate the linters before commiting.  
+Pre-commit configuration is in `.pre-commit-config.yaml`
+
+How to use:
+
+1. Install pre-commit: [https://pre-commit.com/](https://pre-commit.com/)
+2. Install pre-commit hook script:  
+run `pre-commit install`
+
+Now `pre-commit` will run automatically on `git commit`
+
+
