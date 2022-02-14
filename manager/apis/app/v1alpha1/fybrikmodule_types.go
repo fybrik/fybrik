@@ -137,6 +137,7 @@ type ResourceStatusIndicator struct {
 // FybrikModuleSpec contains the info common to all modules,
 // which are one of the components that process, load, write, audit, monitor the data used by
 // the data scientist's application.
+// +fybrik:validation:crd
 type FybrikModuleSpec struct {
 	// An explanation of what this module does
 	// +optional
