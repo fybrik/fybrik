@@ -3,9 +3,10 @@
 package cmd
 
 import (
+	"github.com/spf13/cobra"
+
 	"fybrik.io/fybrik/pkg/taxonomy/compile"
 	taxonomyio "fybrik.io/fybrik/pkg/taxonomy/io"
-	"github.com/spf13/cobra"
 )
 
 var (

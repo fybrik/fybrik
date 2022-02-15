@@ -8,11 +8,12 @@ import (
 	"io/fs"
 	"os"
 
+	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
+
 	"fybrik.io/fybrik/pkg/logging"
 	infraattributes "fybrik.io/fybrik/pkg/model/attributes"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
-	"github.com/pkg/errors"
-	"github.com/rs/zerolog"
 )
 
 // A directory containing rego files that define admin config policies

@@ -5,14 +5,14 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 
-	"encoding/json"
-
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 )
 
 // RegisterAsset registers a new asset in the specified catalog

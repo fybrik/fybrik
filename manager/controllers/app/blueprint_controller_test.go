@@ -7,12 +7,13 @@ import (
 	"fmt"
 	"time"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 )
 
 func deployBlueprint(namespace string, shouldSucceed bool) {

@@ -4,9 +4,10 @@
 package v1alpha1
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // CapabilityScope indicates the level at which a capability is implemented

@@ -8,11 +8,12 @@ import (
 	"strings"
 
 	"emperror.dev/errors"
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
+
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 )
 
 // K8sClient contains the contextual info about the REST client for k8s

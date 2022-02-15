@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"emperror.dev/errors"
+
 	openapiclient "fybrik.io/fybrik/pkg/connectors/datacatalog/openapiclient"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 )
