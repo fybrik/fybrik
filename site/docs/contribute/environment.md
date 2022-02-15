@@ -59,7 +59,7 @@ Change the default lint to golanci-lint in VS Code:
 
 1. Install golangci-lint: [https://golangci-lint.run/usage/install/](https://golangci-lint.run/usage/install/)
 2. Open VS Code `setting.json`:
-    1. Open quick file navigation: `Ctrl+P` 
+    1. Open the Command Palette: `Ctrl+Shift+P` 
     2. Search for "Open Settings (JSON)"
     3. Open `setting.json`
 3. Add to `setting.json` the following:
@@ -67,6 +67,7 @@ Change the default lint to golanci-lint in VS Code:
 "go.lintTool":"golangci-lint",
 "go.lintFlags": [
   "--fast"
+  "--allow-parallel-runners"
 ]
 ```
 
