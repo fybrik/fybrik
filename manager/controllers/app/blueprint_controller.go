@@ -311,12 +311,12 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger,
 	numReleases, numReady := 0, 0
 	for instanceName, module := range blueprint.Spec.Modules {
 		// Add debug information to module labels
-		if module.Arguments.Labels == nil {
-			module.Arguments.Labels = map[string]string{}
+		if module.Arguments.Application.Labels == nil {
+			module.Arguments.Application.Labels = map[string]string{}
 		}
-		module.Arguments.Labels[fapp.BlueprintNameLabel] = blueprint.Name
-		module.Arguments.Labels[fapp.BlueprintNamespaceLabel] = blueprint.Namespace
-		module.Arguments.Labels[utils.FybrikAppUUID] = uuid // used for log correlation
+		module.Arguments.Application.Labels[fapp.BlueprintNameLabel] = blueprint.Name
+		module.Arguments.Application.Labels[fapp.BlueprintNamespaceLabel] = blueprint.Namespace
+		module.Arguments.Application.Labels[utils.FybrikAppUUID] = uuid // used for log correlation
 
 		// Get arguments by type
 		var args map[string]interface{}

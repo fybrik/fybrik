@@ -702,6 +702,7 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 
 	plotterSpec := &api.PlotterSpec{
 		Selector:         applicationContext.Application.Spec.Selector,
+		AppInfo:          applicationContext.Application.Spec.AppInfo,
 		Assets:           map[string]api.AssetDetails{},
 		Flows:            []api.Flow{},
 		ModulesNamespace: utils.GetDefaultModulesNamespace(),

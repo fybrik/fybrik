@@ -155,10 +155,11 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 		template := app.Template{
 			Name: string(moduleCapability.Capability),
 			Modules: []app.ModuleInfo{{
-				Name:  element.Module.Name,
-				Type:  element.Module.Spec.Type,
-				Chart: element.Module.Spec.Chart,
-				Scope: moduleCapability.Scope,
+				Name:       element.Module.Name,
+				Type:       element.Module.Spec.Type,
+				Chart:      element.Module.Spec.Chart,
+				Scope:      moduleCapability.Scope,
+				Capability: moduleCapability.Capability,
 			}},
 		}
 		templates = append(templates, template)

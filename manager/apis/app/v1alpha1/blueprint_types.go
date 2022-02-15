@@ -5,20 +5,19 @@ package v1alpha1
 
 import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
+	"github.com/rs/zerolog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// CopyModuleArgs define the input parameters for modules that copy data from location A to location B
-// Credentials are stored in a credential management system such as vault
-type CopyModuleArgs struct {
-
+// AssetContext defines the input parameters for modules that access an asset
+type AssetContext struct {
 	// Source is the where the data currently resides
-	// +required
-	Source DataStore `json:"source"`
+	// +optional
+	Source *DataStore `json:"source,omitempty"`
 
-	// Destination is the data store to which the data will be copied
-	// +required
-	Destination DataStore `json:"destination"`
+	// Destination is the data store to which the data will be written
+	// +optional
+	Destination *DataStore `json:"destination,omitempty"`
 
 	// AssetID identifies the asset to be used for accessing the data when it is ready
 	// It is copied from the FybrikApplication resource
@@ -30,42 +29,11 @@ type CopyModuleArgs struct {
 	Transformations []taxonomy.Action `json:"transformations,omitempty"`
 }
 
-// ReadModuleArgs define the input parameters for modules that read data from location A
-type ReadModuleArgs struct {
-	// Source of the read path module
+type ApplicationDetails struct {
+	// UUID of FybrikApplication
 	// +required
-	Source DataStore `json:"source"`
+	UUID string `json:"uuid"`
 
-	// AssetID identifies the asset to be used for accessing the data when it is ready
-	// It is copied from the FybrikApplication resource
-	// +required
-	AssetID string `json:"assetID"`
-
-	// Transformations are different types of processing that may be done to the data
-	// +optional
-	Transformations []taxonomy.Action `json:"transformations,omitempty"`
-}
-
-// WriteModuleArgs define the input parameters for modules that write data to location B
-type WriteModuleArgs struct {
-	// Destination is the data store to which the data will be written
-	// +required
-	Destination DataStore `json:"destination"`
-
-	// AssetID identifies the asset to be used for accessing the data when it is ready
-	// It is copied from the FybrikApplication resource
-	// +required
-	AssetID string `json:"assetID"`
-
-	// Transformations are different types of processing that may be done to the data as it is written.
-	// +optional
-	Transformations []taxonomy.Action `json:"transformations,omitempty"`
-}
-
-// ModuleArguments are the parameters passed to a component that runs in the data path
-// In the future might support output args as well
-// The arguments passed depend on the type of module
-type ModuleArguments struct {
 	// Labels of FybrikApplication
 	// +optional
 	Labels map[string]string `json:"labels,omitempty"`
@@ -75,17 +43,25 @@ type ModuleArguments struct {
 	// +optional
 	AppSelector metav1.LabelSelector `json:"appSelector,omitempty"`
 
-	// CopyArgs are parameters specific to modules that copy data from one data store to another.
-	// +optional
-	Copy *CopyModuleArgs `json:"copy,omitempty"`
+	// AppInfo such as intent, role, etc.
+	// +required
+	AppInfo taxonomy.AppInfo `json:"appInfo"`
+}
 
-	// ReadArgs are parameters that are specific to modules that enable an application to read data
+// ModuleArguments are the parameters passed to a component that runs in the data path
+type ModuleArguments struct {
+	// Assets define asset related arguments, such as data source, transformations, etc.
+	// +required
+	Assets []AssetContext `json:"assets"`
+	// ApplicationContext if a module has been orchestrated for a single FybrikApplication
 	// +optional
-	Read []ReadModuleArgs `json:"read,omitempty"`
-
-	// WriteArgs are parameters that are specific to modules that enable an application to write data
-	// +optional
-	Write []WriteModuleArgs `json:"write,omitempty"`
+	Application ApplicationDetails `json:"application,omitempty"`
+	// Logging verbosity
+	// +required
+	Verbosity zerolog.Level `json:"verbosity"`
+	// Capability of the module
+	// +required
+	Capability taxonomy.Capability `json:"capability"`
 }
 
 // BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the information necessary

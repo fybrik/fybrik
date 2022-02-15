@@ -50,6 +50,10 @@ spec:
               which provides the Data Scientist's application with secure and governed
               access to the data requested in the FybrikApplication.
             properties:
+              appInfo:
+                description: Application context to be transferred to the modules
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
               appSelector:
                 description: Selector enables to connect the resource to the application
                   Application labels should match the labels in the selector. For
@@ -361,6 +365,9 @@ spec:
                         description: ModuleInfo is a copy of FybrikModule Custom Resource.  It
                           contains information to instantiate resource of type FybrikModule.
                         properties:
+                          capability:
+                            description: Module capability
+                            type: string
                           chart:
                             description: Chart contains the information needed to
                               use helm to install the capability
@@ -403,6 +410,7 @@ spec:
                               a stand-alone module'
                             type: string
                         required:
+                        - capability
                         - chart
                         - name
                         - type

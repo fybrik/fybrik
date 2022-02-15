@@ -37,8 +37,7 @@ func (r *PlotterReconciler) RefineInstances(instances []ModuleInstanceSpec) []Mo
 		if instance, ok := instanceMap[key]; !ok {
 			instanceMap[key] = moduleInstance
 		} else {
-			instance.Args.Read = append(instance.Args.Read, moduleInstance.Args.Read...)
-			instance.Args.Write = append(instance.Args.Write, moduleInstance.Args.Write...)
+			instance.Args.Assets = append(instance.Args.Assets, moduleInstance.Args.Assets...)
 			// AssetID is used for step name generation
 			instance.AssetIDs = append(instance.AssetIDs, moduleInstance.AssetIDs...)
 			instanceMap[key] = instance

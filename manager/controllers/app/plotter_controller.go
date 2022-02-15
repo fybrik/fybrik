@@ -15,6 +15,7 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"github.com/rs/zerolog"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
@@ -135,6 +136,7 @@ type PlotterModulesSpec struct {
 	FlowType        app.DataFlow
 	Chart           app.ChartSpec
 	Scope           app.CapabilityScope
+	Capability      taxonomy.Capability
 }
 
 // addCredentials updates Vault credentials field to hold only credentials related to the flow type
@@ -160,11 +162,15 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		Chart:    &plotterModule.Chart,
 		AssetIDs: assetIDs,
 		Args: &app.ModuleArguments{
-			Labels:      plotter.Labels,
-			AppSelector: plotter.Spec.Selector.WorkloadSelector,
-			Copy:        nil,
-			Read:        nil,
-			Write:       nil,
+			Assets: []app.AssetContext{},
+			Application: app.ApplicationDetails{
+				UUID:        utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations()),
+				Labels:      plotter.Labels,
+				AppSelector: plotter.Spec.Selector.WorkloadSelector,
+				AppInfo:     plotter.Spec.AppInfo,
+			},
+			Verbosity:  logging.GetLoggingVerbosity(),
+			Capability: plotterModule.Capability,
 		},
 		ClusterName: plotterModule.ClusterName,
 		ModuleName:  plotterModule.ModuleName,
@@ -175,9 +181,9 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		return blueprintModule
 	}
 
-	switch plotterModule.FlowType {
-	case app.ReadFlow:
-		var dataStore *app.DataStore
+	var dataStore *app.DataStore
+	var destDataStore *app.DataStore
+	if plotterModule.ModuleArguments.Source != nil {
 		if plotterModule.ModuleArguments.Source.AssetID != "" {
 			assetID := plotterModule.ModuleArguments.Source.AssetID
 			// Get source from plotter assetID list
@@ -191,53 +197,22 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 				Format:     plotterModule.ModuleArguments.Source.API.DataFormat,
 			}
 		}
-		blueprintModule.Args.Read = []app.ReadModuleArgs{
-			{
-				Source:          *dataStore,
-				AssetID:         plotterModule.AssetID,
-				Transformations: plotterModule.ModuleArguments.Actions,
-			},
-		}
-	case app.WriteFlow:
+	}
+	if plotterModule.ModuleArguments.Sink != nil {
 		// Get only the writeFlow related creds
 		// Update vaultAuthPath from the cluster metadata
-		destDataStore := plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore
-		addCredentials(&destDataStore, plotterModule.VaultAuthPath, app.WriteFlow)
-
-		blueprintModule.Args.Write = []app.WriteModuleArgs{
-			{
-				Destination:     destDataStore,
-				AssetID:         plotterModule.AssetID,
-				Transformations: plotterModule.ModuleArguments.Actions,
-			},
-		}
-	case app.CopyFlow:
-		var dataStore *app.DataStore
-		if plotterModule.ModuleArguments.Source.AssetID != "" {
-			assetID := plotterModule.ModuleArguments.Source.AssetID
-			// Get source from plotter assetID list
-			assetInfo := plotter.Spec.Assets[assetID]
-
-			dataStore = &assetInfo.DataStore
-			addCredentials(dataStore, plotterModule.VaultAuthPath, app.ReadFlow)
-		} else {
-			// Fill in the DataSource from the step arguments
-			dataStore = &app.DataStore{
-				Connection: plotterModule.ModuleArguments.Source.API.Connection,
-				Format:     plotterModule.ModuleArguments.Source.API.DataFormat,
-			}
-		}
-		// Get only the writeFlow related creds
-		// Update vaultAuthPath from the cluster metadata
-		destDataStore := plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore
-		addCredentials(&destDataStore, plotterModule.VaultAuthPath, app.WriteFlow)
-		blueprintModule.Args.Copy =
-			&app.CopyModuleArgs{
-				Source:          *dataStore,
-				Destination:     destDataStore,
-				AssetID:         plotterModule.AssetID,
-				Transformations: plotterModule.ModuleArguments.Actions,
-			}
+		assetID := plotterModule.ModuleArguments.Sink.AssetID
+		assetInfo := plotter.Spec.Assets[assetID]
+		destDataStore = &assetInfo.DataStore
+		addCredentials(destDataStore, plotterModule.VaultAuthPath, app.WriteFlow)
+	}
+	blueprintModule.Args.Assets = []app.AssetContext{
+		{
+			Source:          dataStore,
+			Destination:     destDataStore,
+			AssetID:         plotterModule.AssetID,
+			Transformations: plotterModule.ModuleArguments.Actions,
+		},
 	}
 	return blueprintModule
 }

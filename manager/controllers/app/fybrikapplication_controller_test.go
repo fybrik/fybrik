@@ -142,11 +142,12 @@ var _ = Describe("FybrikApplication Controller", func() {
 			Expect(blueprint.Spec.ModulesNamespace).To(Equal(utils.GetDefaultModulesNamespace()))
 
 			for _, module := range blueprint.Spec.Modules {
-				Expect(module.Arguments.Labels["label1"]).To(Equal("foo"))
-				Expect(module.Arguments.Labels["label2"]).To(Equal("bar"))
-				Expect(module.Arguments.Labels[apiv1alpha1.ApplicationNameLabel]).To(Equal(applicationKey.Name))
-				Expect(module.Arguments.Labels[apiv1alpha1.ApplicationNamespaceLabel]).To(Equal(applicationKey.Namespace))
-				Expect(module.Arguments.AppSelector.MatchLabels["app"]).To(Equal("notebook"))
+				Expect(module.Arguments.Application.Labels["label1"]).To(Equal("foo"))
+				Expect(module.Arguments.Application.Labels["label2"]).To(Equal("bar"))
+				Expect(module.Arguments.Application.Labels[apiv1alpha1.ApplicationNameLabel]).To(Equal(applicationKey.Name))
+				Expect(module.Arguments.Application.Labels[apiv1alpha1.ApplicationNamespaceLabel]).To(Equal(applicationKey.Namespace))
+				Expect(module.Arguments.Application.AppSelector.MatchLabels["app"]).To(Equal("notebook"))
+				Expect(module.Arguments.Application.AppInfo.Items["intent"].(string)).To(Equal("Fraud Detection"))
 			}
 			By("Expecting FybrikApplication to eventually be ready")
 			Eventually(func() bool {
