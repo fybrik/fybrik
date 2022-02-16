@@ -34,7 +34,7 @@ Log levels should be used as follows:
 - trace (zerolog.TraceLevel, -1) - For tracing step by step flow of control (typically used during development)
 
 ## JSON Logging Standard Format
-All Fybrik components should generate logging information in a standard. This information will be used by different actors for different purposes, so as much relevant information as possible needs to be captured in a consistent format.
+All Fybrik components should generate logging information in a standard format. This information will be used by different actors for different purposes, so as much relevant information as possible needs to be captured in a consistent format.
 
 We list all mandatory and optional fields to be used by all Fybrik components. In addition to the fields we list, Fybrik components may include extra fields as needed.
 
