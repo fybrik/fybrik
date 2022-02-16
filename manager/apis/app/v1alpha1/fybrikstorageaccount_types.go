@@ -4,6 +4,7 @@
 package v1alpha1
 
 import (
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -17,8 +18,11 @@ type FybrikStorageAccountSpec struct {
 	// This secret includes secretKey and accessKey credentials for S3 bucket
 	SecretRef string `json:"secretRef"`
 	// +required
-	// Endpoints based on regions
-	Endpoints map[string]string `json:"endpoints"`
+	// Storage region
+	Region taxonomy.ProcessingLocation `json:"region"`
+	// +required
+	// Endpoint for accessing the data
+	Endpoint string `json:"endpoint"`
 }
 
 // FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount

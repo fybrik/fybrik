@@ -1,4 +1,4 @@
-name: Update Operate First directory
+name: Create PR in operate-first/apps repo with updated manifests
 
 on:
   push:
@@ -8,42 +8,37 @@ on:
 
 jobs:
   build:
-    name: Update Operate First directory
+    name: Create PR in operate-first/apps repo with updated manifests
     runs-on: ubuntu-latest
     steps:
-    
-      - name: Checkout Operate First repository
-        uses: actions/checkout@v2
-        with:
-          repository: fybrik/operate-first-apps
-          path: operate-first-repo
       - name: Checkout Fybrik repository
         uses: actions/checkout@v2
         with:
           repository: fybrik/fybrik
           path: fybrik-repo
+      - name: Checkout original Operate First repository
+        uses: actions/checkout@v2
+        with:
+          repository: operate-first/apps
+          path: operate-first-repo
       - run: |
-          rm -r fybrik-repo/samples/operate-first/*/
-          rm fybrik-repo/samples/operate-first/*.yaml
           pushd fybrik-repo/hack/tools && ./install_yq.sh && ./install_helm.sh && popd
-          pushd fybrik-repo/samples/operate-first
+          pushd fybrik-repo/integration/operate-first
           make helm-template
           pip install pipenv
           pipenv install
           pipenv run python filterClusterScoped.py
-      - uses: tibdex/github-app-token@v1
-        id: generate-token
-        with:
-          app_id: ${{ secrets.CHARTS_APP_ID }}
-          private_key: ${{ secrets.CHARTS_APP_PRIVATE_KEY  }}
-          repository: fybrik/fybrik
+          rm ./*.yaml
+          popd
+          rsync -a --include='*/' --include='*.yaml' --exclude='*' fybrik-repo/integration/operate-first/ operate-first-repo/cluster-scope/base
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
           path: operate-first-repo
           signoff: true
-          token: ${{ steps.generate-token.outputs.token }}
-          title: 'Update Operate First files to new release'
+          token: ${{ secrets.PAT }}
+          push-to-fork: fybrik/operate-first-apps
+          title: 'Update Fybrik manifests to new release'
           commit-message: Update Fybrik cluster-scoped resources for Operate First
           committer: GitHub <noreply@github.com>
           delete-branch: true

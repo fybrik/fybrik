@@ -12,6 +12,13 @@ The `manager` binary includes all of the controllers that this project defines b
 
 Beyond testing, you may run and debug the manager outside the cluster using the following instructions.
 
+### Prepare the fybrik environment
+Use one of below methods to prepare the fybrik environment.
+
+1. Install Fybrik using the [Quick Start](https://fybrik.io/dev/get-started/quickstart/) guide.
+
+2. Follow [the instructions](../pipeline/README.md) to use tekton pipeline to deploy the fybrik components to your existing cluster.
+
 ### Run required components
 
 Components such as connectors need to be running before you run the manager.
@@ -20,10 +27,16 @@ This can be done by one of these options:
 2. Running components in a cluster 
 
 For option 2, the Helm installation allows you to pick which compoenents to install. 
-Follow the installation guide as usual but in the Helm installation for the control plane add `--set manager.enabled=false` to skip the deployment of the manager. For example:
+Follow the [installation guide](https://fybrik.io/dev/get-started/quickstart/) as usual,the fybrik crd needs to be installed before installing fybrik as is, but in the Helm installation for the control plane add `--set manager.enabled=false` to skip the deployment of the manager. For example:
 
 ```bash
 helm install fybrik charts/fybrik --set global.tag=master --set manager.enabled=false -n fybrik-system --wait
+```
+
+If your are using the local development images please use the `0.0.0` tag:
+
+```bash
+helm install fybrik charts/fybrik --set global.tag=0.0.0 --set manager.enabled=false -n fybrik-system --wait
 ```
 
 ### Expose running components

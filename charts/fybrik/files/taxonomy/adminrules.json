@@ -75,10 +75,32 @@
         }
       }
     },
+    "RangeType": {
+      "type": "object",
+      "properties": {
+        "max": {
+          "type": "integer"
+        },
+        "min": {
+          "type": "integer"
+        }
+      }
+    },
     "Restriction": {
       "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/StringList"
+      "required": [
+        "property"
+      ],
+      "properties": {
+        "property": {
+          "type": "string"
+        },
+        "range": {
+          "$ref": "#/definitions/RangeType"
+        },
+        "values": {
+          "$ref": "#/definitions/StringList"
+        }
       }
     },
     "Restrictions": {
@@ -86,13 +108,22 @@
       "type": "object",
       "properties": {
         "clusters": {
-          "$ref": "#/definitions/Restriction"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Restriction"
+          }
         },
         "modules": {
-          "$ref": "#/definitions/Restriction"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Restriction"
+          }
         },
         "storageaccounts": {
-          "$ref": "#/definitions/Restriction"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Restriction"
+          }
         }
       }
     },

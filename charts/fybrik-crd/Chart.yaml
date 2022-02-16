@@ -15,4 +15,5 @@ appVersion: 0.0.0
 
 dependencies:
   - name: asset-crd
+    version: 0.0.0
     condition: asset-crd.enabled

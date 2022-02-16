@@ -4,8 +4,8 @@ metadata:
   generateName: account-neverland
   namespace: fybrik-system
 spec:
-  endpoint: http://s3.eu.cloud-object-storage.appdomain.cloud
+  id: neverland-object-store
   secretRef: credentials-neverland
-  regions:
-    - neverland
+  endpoint: http://s3.eu.cloud-object-storage.appdomain.cloud
+  region: neverland
 
