@@ -50,8 +50,10 @@ type BlueprintReconciler struct {
 }
 
 type ExtendedArguments struct {
-	fapp.ModuleArguments    `json:",inline"`
-	fapp.ApplicationDetails `json:",inline"`
+	fapp.ModuleArguments     `json:",inline"`
+	*fapp.ApplicationDetails `json:",inline"`
+	Labels                   map[string]string `json:"labels"`
+	UUID                     string            `json:"uuid"`
 }
 
 // Reconcile receives a Blueprint CRD
@@ -315,18 +317,19 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger,
 	// count the overall number of Helm releases and how many of them are ready
 	numReleases, numReady := 0, 0
 	// Add debug information to module labels
-	if blueprint.Spec.Application.Labels == nil {
-		blueprint.Spec.Application.Labels = map[string]string{}
+	if blueprint.Labels == nil {
+		blueprint.Labels = map[string]string{}
 	}
-	blueprint.Spec.Application.Labels[fapp.BlueprintNameLabel] = blueprint.Name
-	blueprint.Spec.Application.Labels[fapp.BlueprintNamespaceLabel] = blueprint.Namespace
-	blueprint.Spec.Application.Labels[utils.FybrikAppUUID] = uuid // used for log correlation
+	blueprint.Labels[fapp.BlueprintNameLabel] = blueprint.Name
+	blueprint.Labels[fapp.BlueprintNamespaceLabel] = blueprint.Namespace
 
 	for instanceName, module := range blueprint.Spec.Modules {
 		// Get arguments by type
 		extendedArguments := ExtendedArguments{
 			ModuleArguments:    module.Arguments,
 			ApplicationDetails: blueprint.Spec.Application,
+			Labels:             blueprint.Labels,
+			UUID:               uuid,
 		}
 		var args map[string]interface{}
 		args, err := utils.StructToMap(&extendedArguments)

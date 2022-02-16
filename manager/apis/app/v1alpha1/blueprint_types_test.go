@@ -8,8 +8,6 @@ import (
 
 	"context"
 
-	"fybrik.io/fybrik/pkg/model/taxonomy"
-	"fybrik.io/fybrik/pkg/serde"
 	"github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -26,16 +24,12 @@ func TestBlueprint(t *testing.T) {
 			Namespace: "default",
 		},
 		Spec: BlueprintSpec{
-			Application: ApplicationDetails{
-				UUID:    "123",
-				Context: taxonomy.AppInfo{Properties: serde.Properties{Items: make(map[string]interface{})}},
-			},
 			Cluster: "cluster1",
 			Modules: map[string]BlueprintModule{"start-instance1": {
 				Name: "start",
 				Arguments: ModuleArguments{
 					Verbosity:  2,
-					Capability: "start",
+					Capability: "read",
 					Assets: []AssetContext{
 						{
 							AssetID: "test-asset",

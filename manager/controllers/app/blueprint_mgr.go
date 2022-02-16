@@ -72,9 +72,7 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec, cl
 		Cluster:          clusterName,
 		ModulesNamespace: plotter.Spec.ModulesNamespace,
 		Modules:          map[string]app.BlueprintModule{},
-		Application: app.ApplicationDetails{
-			UUID:             utils.GetFybrikApplicationUUIDfromAnnotations(plotter.Annotations),
-			Labels:           plotter.Labels,
+		Application: &app.ApplicationDetails{
 			WorkloadSelector: plotter.Spec.Selector.WorkloadSelector,
 			Context:          plotter.Spec.AppInfo,
 		},

@@ -103,7 +103,7 @@ BlueprintSpec defines the desired state of Blueprint, which defines the componen
         <td>
           ApplicationContext is a context of the origin FybrikApplication (labels, properties, etc.)<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr><tr>
         <td><b>cluster</b></td>
         <td>string</td>
@@ -153,26 +153,12 @@ ApplicationContext is a context of the origin FybrikApplication (labels, propert
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>labels</b></td>
-        <td>map[string]string</td>
-        <td>
-          Labels of FybrikApplication<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
         <td><b><a href="#blueprintspecapplicationselector">selector</a></b></td>
         <td>object</td>
         <td>
           Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.<br/>
         </td>
         <td>false</td>
-      </tr><tr>
-        <td><b>uuid</b></td>
-        <td>string</td>
-        <td>
-          UUID of FybrikApplication<br/>
-        </td>
-        <td>true</td>
       </tr></tbody>
 </table>
 

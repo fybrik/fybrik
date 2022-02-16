@@ -408,9 +408,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 					Namespace:   plotter.Namespace,
 					ClusterName: cluster,
 					Labels: map[string]string{
-						"razee/watch-resource":        "debug",
-						app.ApplicationNameLabel:      plotter.Labels[app.ApplicationNameLabel],
-						app.ApplicationNamespaceLabel: plotter.Labels[app.ApplicationNamespaceLabel],
+						"razee/watch-resource": "debug",
 					},
 					Annotations: map[string]string{
 						utils.FybrikAppUUID: uuid, // Pass on the globally unique id of the fybrikapplication instance for logging purposes
@@ -418,7 +416,9 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 				},
 				Spec: blueprintSpec,
 			}
-
+			for key, val := range plotter.Labels {
+				blueprint.Labels[key] = val
+			}
 			err := r.ClusterManager.CreateBlueprint(cluster, blueprint)
 			if err != nil {
 				errorCollection = append(errorCollection, err)

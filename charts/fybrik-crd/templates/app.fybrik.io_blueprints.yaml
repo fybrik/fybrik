@@ -55,11 +55,6 @@ spec:
                     description: Application context such as intent, role, etc.
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
-                  labels:
-                    additionalProperties:
-                      type: string
-                    description: Labels of FybrikApplication
-                    type: object
                   selector:
                     description: Application selector is used to identify the user
                       workload. It is obtained from FybrikApplication spec.
@@ -105,11 +100,6 @@ spec:
                           "value". The requirements are ANDed.
                         type: object
                     type: object
-                  uuid:
-                    description: UUID of FybrikApplication
-                    type: string
-                required:
-                - uuid
                 type: object
               cluster:
                 description: Cluster indicates the cluster on which the Blueprint
@@ -313,7 +303,6 @@ spec:
                   be allocated
                 type: string
             required:
-            - application
             - cluster
             - modules
             - modulesNamespace

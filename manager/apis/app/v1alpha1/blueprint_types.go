@@ -30,14 +30,6 @@ type AssetContext struct {
 }
 
 type ApplicationDetails struct {
-	// UUID of FybrikApplication
-	// +required
-	UUID string `json:"uuid"`
-
-	// Labels of FybrikApplication
-	// +optional
-	Labels map[string]string `json:"labels,omitempty"`
-
 	// Application selector is used to identify the user workload.
 	// It is obtained from FybrikApplication spec.
 	// +optional
@@ -101,8 +93,8 @@ type BlueprintSpec struct {
 	Modules map[string]BlueprintModule `json:"modules"`
 
 	// ApplicationContext is a context of the origin FybrikApplication (labels, properties, etc.)
-	// +required
-	Application ApplicationDetails `json:"application"`
+	// +optional
+	Application *ApplicationDetails `json:"application,omitempty"`
 }
 
 // BlueprintStatus defines the observed state of Blueprint
