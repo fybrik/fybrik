@@ -47,6 +47,70 @@ spec:
               workload (FybrikApplication). In a multi-cluster environment there is
               one Blueprint per cluster per workload (FybrikApplication).
             properties:
+              application:
+                description: ApplicationContext is a context of the origin FybrikApplication
+                  (labels, properties, etc.)
+                properties:
+                  context:
+                    description: Application context such as intent, role, etc.
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                  labels:
+                    additionalProperties:
+                      type: string
+                    description: Labels of FybrikApplication
+                    type: object
+                  selector:
+                    description: Application selector is used to identify the user
+                      workload. It is obtained from FybrikApplication spec.
+                    properties:
+                      matchExpressions:
+                        description: matchExpressions is a list of label selector
+                          requirements. The requirements are ANDed.
+                        items:
+                          description: A label selector requirement is a selector
+                            that contains values, a key, and an operator that relates
+                            the key and values.
+                          properties:
+                            key:
+                              description: key is the label key that the selector
+                                applies to.
+                              type: string
+                            operator:
+                              description: operator represents a key's relationship
+                                to a set of values. Valid operators are In, NotIn,
+                                Exists and DoesNotExist.
+                              type: string
+                            values:
+                              description: values is an array of string values. If
+                                the operator is In or NotIn, the values array must
+                                be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced
+                                during a strategic merge patch.
+                              items:
+                                type: string
+                              type: array
+                          required:
+                          - key
+                          - operator
+                          type: object
+                        type: array
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: matchLabels is a map of {key,value} pairs. A
+                          single {key,value} in the matchLabels map is equivalent
+                          to an element of matchExpressions, whose key field is "key",
+                          the operator is "In", and the values array contains only
+                          "value". The requirements are ANDed.
+                        type: object
+                    type: object
+                  uuid:
+                    description: UUID of FybrikApplication
+                    type: string
+                required:
+                - uuid
+                type: object
               cluster:
                 description: Cluster indicates the cluster on which the Blueprint
                   runs
@@ -62,74 +126,6 @@ spec:
                       description: Arguments are the input parameters for a specific
                         instance of a module.
                       properties:
-                        application:
-                          description: ApplicationContext if a module has been orchestrated
-                            for a single FybrikApplication
-                          properties:
-                            appInfo:
-                              description: AppInfo such as intent, role, etc.
-                              type: object
-                              x-kubernetes-preserve-unknown-fields: true
-                            appSelector:
-                              description: Application selector is used to identify
-                                the user workload. It is obtained from FybrikApplication
-                                spec.
-                              properties:
-                                matchExpressions:
-                                  description: matchExpressions is a list of label
-                                    selector requirements. The requirements are ANDed.
-                                  items:
-                                    description: A label selector requirement is a
-                                      selector that contains values, a key, and an
-                                      operator that relates the key and values.
-                                    properties:
-                                      key:
-                                        description: key is the label key that the
-                                          selector applies to.
-                                        type: string
-                                      operator:
-                                        description: operator represents a key's relationship
-                                          to a set of values. Valid operators are
-                                          In, NotIn, Exists and DoesNotExist.
-                                        type: string
-                                      values:
-                                        description: values is an array of string
-                                          values. If the operator is In or NotIn,
-                                          the values array must be non-empty. If the
-                                          operator is Exists or DoesNotExist, the
-                                          values array must be empty. This array is
-                                          replaced during a strategic merge patch.
-                                        items:
-                                          type: string
-                                        type: array
-                                    required:
-                                    - key
-                                    - operator
-                                    type: object
-                                  type: array
-                                matchLabels:
-                                  additionalProperties:
-                                    type: string
-                                  description: matchLabels is a map of {key,value}
-                                    pairs. A single {key,value} in the matchLabels
-                                    map is equivalent to an element of matchExpressions,
-                                    whose key field is "key", the operator is "In",
-                                    and the values array contains only "value". The
-                                    requirements are ANDed.
-                                  type: object
-                              type: object
-                            labels:
-                              additionalProperties:
-                                type: string
-                              description: Labels of FybrikApplication
-                              type: object
-                            uuid:
-                              description: UUID of FybrikApplication
-                              type: string
-                          required:
-                          - appInfo
-                          - uuid
-                          type: object
                         assets:
                           description: Assets define asset related arguments, such
                             as data source, transformations, etc.
@@ -272,7 +268,6 @@ spec:
                           description: Logging verbosity
                           type: integer
                       required:
-                      - assets
                       - capability
                       - verbosity
                       type: object
@@ -318,6 +313,7 @@ spec:
                   be allocated
                 type: string
             required:
+            - application
             - cluster
             - modules
             - modulesNamespace

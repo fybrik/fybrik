@@ -27,7 +27,7 @@ spec:
           interfaceDetails:
             protocol: fybrik-arrow-flight
       arguments:
-        read:
+        assets:
         - assetID: xyz
           source:
             connection:

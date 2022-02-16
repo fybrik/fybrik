@@ -41,21 +41,18 @@ type ApplicationDetails struct {
 	// Application selector is used to identify the user workload.
 	// It is obtained from FybrikApplication spec.
 	// +optional
-	AppSelector metav1.LabelSelector `json:"appSelector,omitempty"`
+	WorkloadSelector metav1.LabelSelector `json:"selector,omitempty"`
 
-	// AppInfo such as intent, role, etc.
-	// +required
-	AppInfo taxonomy.AppInfo `json:"appInfo"`
+	// Application context such as intent, role, etc.
+	// +optional
+	Context taxonomy.AppInfo `json:"context,omitempty"`
 }
 
 // ModuleArguments are the parameters passed to a component that runs in the data path
 type ModuleArguments struct {
 	// Assets define asset related arguments, such as data source, transformations, etc.
-	// +required
-	Assets []AssetContext `json:"assets"`
-	// ApplicationContext if a module has been orchestrated for a single FybrikApplication
 	// +optional
-	Application ApplicationDetails `json:"application,omitempty"`
+	Assets []AssetContext `json:"assets,omitempty"`
 	// Logging verbosity
 	// +required
 	Verbosity zerolog.Level `json:"verbosity"`
@@ -102,6 +99,10 @@ type BlueprintSpec struct {
 	// The map key is moduleInstanceName which is the unique name for the deployed instance related to this workload
 	// +required
 	Modules map[string]BlueprintModule `json:"modules"`
+
+	// ApplicationContext is a context of the origin FybrikApplication (labels, properties, etc.)
+	// +required
+	Application ApplicationDetails `json:"application"`
 }
 
 // BlueprintStatus defines the observed state of Blueprint

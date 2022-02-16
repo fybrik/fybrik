@@ -98,6 +98,13 @@ BlueprintSpec defines the desired state of Blueprint, which defines the componen
         </tr>
     </thead>
     <tbody><tr>
+        <td><b><a href="#blueprintspecapplication">application</a></b></td>
+        <td>object</td>
+        <td>
+          ApplicationContext is a context of the origin FybrikApplication (labels, properties, etc.)<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
         <td><b>cluster</b></td>
         <td>string</td>
         <td>
@@ -116,6 +123,129 @@ BlueprintSpec defines the desired state of Blueprint, which defines the componen
         <td>string</td>
         <td>
           ModulesNamespace is the namespace where modules should be allocated<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.application
+<sup><sup>[↩ Parent](#blueprintspec)</sup></sup>
+
+
+
+ApplicationContext is a context of the origin FybrikApplication (labels, properties, etc.)
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>labels</b></td>
+        <td>map[string]string</td>
+        <td>
+          Labels of FybrikApplication<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecapplicationselector">selector</a></b></td>
+        <td>object</td>
+        <td>
+          Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>context</b></td>
+        <td>object</td>
+        <td>
+          Application context such as intent, role, etc.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>uuid</b></td>
+        <td>string</td>
+        <td>
+          UUID of FybrikApplication<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.application.selector
+<sup><sup>[↩ Parent](#blueprintspecapplication)</sup></sup>
+
+
+
+Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#blueprintspecapplicationselectormatchexpressionsindex">matchExpressions</a></b></td>
+        <td>[]object</td>
+        <td>
+          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>matchLabels</b></td>
+        <td>map[string]string</td>
+        <td>
+          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.application.selector.matchExpressions[index]
+<sup><sup>[↩ Parent](#blueprintspecapplicationselector)</sup></sup>
+
+
+
+A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>values</b></td>
+        <td>[]string</td>
+        <td>
+          values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          key is the label key that the selector applies to.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>operator</b></td>
+        <td>string</td>
+        <td>
+          operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -187,19 +317,12 @@ Arguments are the input parameters for a specific instance of a module.
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsapplication">application</a></b></td>
-        <td>object</td>
-        <td>
-          ApplicationContext if a module has been orchestrated for a single FybrikApplication<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
         <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindex">assets</a></b></td>
         <td>[]object</td>
         <td>
           Assets define asset related arguments, such as data source, transformations, etc.<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr><tr>
         <td><b>capability</b></td>
         <td>string</td>
@@ -212,129 +335,6 @@ Arguments are the input parameters for a specific instance of a module.
         <td>integer</td>
         <td>
           Logging verbosity<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.application
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyarguments)</sup></sup>
-
-
-
-ApplicationContext if a module has been orchestrated for a single FybrikApplication
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsapplicationappselector">appSelector</a></b></td>
-        <td>object</td>
-        <td>
-          Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>labels</b></td>
-        <td>map[string]string</td>
-        <td>
-          Labels of FybrikApplication<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>appInfo</b></td>
-        <td>object</td>
-        <td>
-          AppInfo such as intent, role, etc.<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>uuid</b></td>
-        <td>string</td>
-        <td>
-          UUID of FybrikApplication<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.application.appSelector
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsapplication)</sup></sup>
-
-
-
-Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsapplicationappselectormatchexpressionsindex">matchExpressions</a></b></td>
-        <td>[]object</td>
-        <td>
-          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>matchLabels</b></td>
-        <td>map[string]string</td>
-        <td>
-          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.application.appSelector.matchExpressions[index]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsapplicationappselector)</sup></sup>
-
-
-
-A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>values</b></td>
-        <td>[]string</td>
-        <td>
-          values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>key</b></td>
-        <td>string</td>
-        <td>
-          key is the label key that the selector applies to.<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>operator</b></td>
-        <td>string</td>
-        <td>
-          operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3030,6 +3030,13 @@ ModuleInfo is a copy of FybrikModule Custom Resource.  It contains information t
             <i>Enum</i>: asset, workload, cluster<br/>
         </td>
         <td>false</td>
+      </tr><tr>
+        <td><b>capability</b></td>
+        <td>string</td>
+        <td>
+          Module capability<br/>
+        </td>
+        <td>true</td>
       </tr><tr>
         <td><b><a href="#plotterspectemplateskeymodulesindexchart">chart</a></b></td>
         <td>object</td>

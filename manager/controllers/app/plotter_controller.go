@@ -157,23 +157,18 @@ func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType app
 
 // convertPlotterModuleToBlueprintModule converts an object of type PlotterModulesSpec to type ModuleInstanceSpec
 func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.Plotter, plotterModule PlotterModulesSpec) *ModuleInstanceSpec {
-	assetIDs := []string{plotterModule.AssetID}
 	blueprintModule := &ModuleInstanceSpec{
-		Chart:    &plotterModule.Chart,
-		AssetIDs: assetIDs,
-		Args: &app.ModuleArguments{
-			Assets: []app.AssetContext{},
-			Application: app.ApplicationDetails{
-				UUID:        utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations()),
-				Labels:      plotter.Labels,
-				AppSelector: plotter.Spec.Selector.WorkloadSelector,
-				AppInfo:     plotter.Spec.AppInfo,
+		Module: app.BlueprintModule{
+			Name:  plotterModule.ModuleName,
+			Chart: plotterModule.Chart,
+			Arguments: app.ModuleArguments{
+				Assets:     []app.AssetContext{},
+				Verbosity:  logging.GetLoggingVerbosity(),
+				Capability: plotterModule.Capability,
 			},
-			Verbosity:  logging.GetLoggingVerbosity(),
-			Capability: plotterModule.Capability,
+			AssetIDs: []string{plotterModule.AssetID},
 		},
 		ClusterName: plotterModule.ClusterName,
-		ModuleName:  plotterModule.ModuleName,
 		Scope:       plotterModule.Scope,
 	}
 
@@ -206,7 +201,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		destDataStore = &assetInfo.DataStore
 		addCredentials(destDataStore, plotterModule.VaultAuthPath, app.WriteFlow)
 	}
-	blueprintModule.Args.Assets = []app.AssetContext{
+	blueprintModule.Module.Arguments.Assets = []app.AssetContext{
 		{
 			Source:          dataStore,
 			Destination:     destDataStore,
@@ -261,6 +256,7 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]ap
 							Chart:           module.Chart,
 							ModuleName:      module.Name,
 							Scope:           scope,
+							Capability:      module.Capability,
 							VaultAuthPath:   authPath,
 						}
 
@@ -359,7 +355,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 
 			logging.LogStructure("Remote blueprint", remoteBlueprint, log, false, true)
 
-			if !reflect.DeepEqual(blueprintSpec, remoteBlueprint.Spec) {
+			if !reflect.DeepEqual(&blueprintSpec, &remoteBlueprint.Spec) {
 				r.Log.Warn().Msg("Blueprint specs differ.  plotter.generation " + fmt.Sprint(plotter.Generation) + " plotter.observedGeneration " + fmt.Sprint(plotter.Status.ObservedGeneration))
 				if plotter.Generation != plotter.Status.ObservedGeneration {
 					log.Trace().Str(logging.ACTION, logging.UPDATE).Msg("Updating blueprint...")

@@ -7,16 +7,12 @@ import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/logging"
-	// Temporary - shouldn't have something specific to implicit copies
 )
 
 // ModuleInstanceSpec consists of the module spec and arguments
 type ModuleInstanceSpec struct {
-	Chart       *app.ChartSpec
-	Args        *app.ModuleArguments
-	AssetIDs    []string
+	Module      app.BlueprintModule
 	ClusterName string
-	ModuleName  string
 	Scope       app.CapabilityScope
 }
 
@@ -33,13 +29,13 @@ func (r *PlotterReconciler) RefineInstances(instances []ModuleInstanceSpec) []Mo
 			newInstances = append(newInstances, moduleInstance)
 			continue
 		}
-		key := moduleInstance.ModuleName + "," + moduleInstance.ClusterName
+		key := moduleInstance.Module.Name + "," + moduleInstance.ClusterName
 		if instance, ok := instanceMap[key]; !ok {
 			instanceMap[key] = moduleInstance
 		} else {
-			instance.Args.Assets = append(instance.Args.Assets, moduleInstance.Args.Assets...)
+			instance.Module.Arguments.Assets = append(instance.Module.Arguments.Assets, moduleInstance.Module.Arguments.Assets...)
 			// AssetID is used for step name generation
-			instance.AssetIDs = append(instance.AssetIDs, moduleInstance.AssetIDs...)
+			instance.Module.AssetIDs = append(instance.Module.AssetIDs, moduleInstance.Module.AssetIDs...)
 			instanceMap[key] = instance
 		}
 	}
@@ -72,33 +68,27 @@ func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, p
 // Credentials for accessing data set are stored in a credential management system (such as vault) and the paths for accessing them are included in the blueprint.
 // The credentials themselves are not included in the blueprint.
 func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec, clusterName string, plotter *app.Plotter) app.BlueprintSpec {
-	var spec app.BlueprintSpec
-
-	spec.Cluster = clusterName
-
-	spec.ModulesNamespace = plotter.Spec.ModulesNamespace
-
+	spec := app.BlueprintSpec{
+		Cluster:          clusterName,
+		ModulesNamespace: plotter.Spec.ModulesNamespace,
+		Modules:          map[string]app.BlueprintModule{},
+		Application: app.ApplicationDetails{
+			UUID:             utils.GetFybrikApplicationUUIDfromAnnotations(plotter.Annotations),
+			Labels:           plotter.Labels,
+			WorkloadSelector: plotter.Spec.Selector.WorkloadSelector,
+			Context:          plotter.Spec.AppInfo,
+		},
+	}
 	// Create the map that contains BlueprintModules
-
-	var blueprintModules = make(map[string]app.BlueprintModule)
 	for _, moduleInstance := range instances {
-		modulename := moduleInstance.ModuleName
-
-		var blueprintModule app.BlueprintModule
+		modulename := moduleInstance.Module.Name
 		instanceName := modulename
 		if moduleInstance.Scope == app.Asset {
 			// Need unique name for each module
 			// if the module scope is one per asset then concat the id of the asset to it
-			instanceName = utils.CreateStepName(modulename, moduleInstance.AssetIDs[0])
+			instanceName = utils.CreateStepName(modulename, moduleInstance.Module.AssetIDs[0])
 		}
-		blueprintModule.Name = modulename
-		blueprintModule.Arguments = *moduleInstance.Args
-		blueprintModule.Chart = *moduleInstance.Chart
-		blueprintModule.AssetIDs = make([]string, len(moduleInstance.AssetIDs))
-		copy(blueprintModule.AssetIDs, moduleInstance.AssetIDs)
-		blueprintModules[instanceName] = blueprintModule
+		spec.Modules[instanceName] = moduleInstance.Module
 	}
-	spec.Modules = blueprintModules
-
 	return spec
 }
