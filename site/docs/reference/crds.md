@@ -146,6 +146,13 @@ ApplicationContext is a context of the origin FybrikApplication (labels, propert
         </tr>
     </thead>
     <tbody><tr>
+        <td><b>context</b></td>
+        <td>object</td>
+        <td>
+          Application context such as intent, role, etc.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>labels</b></td>
         <td>map[string]string</td>
         <td>
@@ -159,13 +166,6 @@ ApplicationContext is a context of the origin FybrikApplication (labels, propert
           Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.<br/>
         </td>
         <td>false</td>
-      </tr><tr>
-        <td><b>context</b></td>
-        <td>object</td>
-        <td>
-          Application context such as intent, role, etc.<br/>
-        </td>
-        <td>true</td>
       </tr><tr>
         <td><b>uuid</b></td>
         <td>string</td>
