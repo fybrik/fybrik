@@ -8,6 +8,7 @@ import (
 
 	"context"
 
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -25,7 +26,8 @@ func TestBlueprint(t *testing.T) {
 		},
 		Spec: BlueprintSpec{
 			Application: ApplicationDetails{
-				UUID: "123",
+				UUID:    "123",
+				Context: taxonomy.AppInfo{},
 			},
 			Cluster: "cluster1",
 			Modules: map[string]BlueprintModule{"start-instance1": {

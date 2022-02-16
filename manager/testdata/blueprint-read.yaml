@@ -9,9 +9,11 @@ metadata:
     app.fybrik.io/app-namespace: default
     app.fybrik.io/app-name: notebook
 spec:
-  selector:
-    matchLabels:
-      app: notebook
+  application:
+    selector:
+      matchLabels:
+        app: notebook
+    context: {}
   cluster: cluster1
   modulesNamespace: fybrik-blueprints
   modules:
