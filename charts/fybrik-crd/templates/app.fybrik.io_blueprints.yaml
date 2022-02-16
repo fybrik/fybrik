@@ -254,12 +254,8 @@ spec:
                         capability:
                           description: Capability of the module
                           type: string
-                        verbosity:
-                          description: Logging verbosity
-                          type: integer
                       required:
                       - capability
-                      - verbosity
                       type: object
                     assetIds:
                       description: assetIDs indicate the assets processed by this

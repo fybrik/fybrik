@@ -28,7 +28,6 @@ func TestBlueprint(t *testing.T) {
 			Modules: map[string]BlueprintModule{"start-instance1": {
 				Name: "start",
 				Arguments: ModuleArguments{
-					Verbosity:  2,
 					Capability: "read",
 					Assets: []AssetContext{
 						{

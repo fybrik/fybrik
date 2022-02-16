@@ -316,13 +316,6 @@ Arguments are the input parameters for a specific instance of a module.
           Capability of the module<br/>
         </td>
         <td>true</td>
-      </tr><tr>
-        <td><b>verbosity</b></td>
-        <td>integer</td>
-        <td>
-          Logging verbosity<br/>
-        </td>
-        <td>true</td>
       </tr></tbody>
 </table>
 

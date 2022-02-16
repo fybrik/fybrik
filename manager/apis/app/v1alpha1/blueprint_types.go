@@ -5,7 +5,6 @@ package v1alpha1
 
 import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
-	"github.com/rs/zerolog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -45,9 +44,6 @@ type ModuleArguments struct {
 	// Assets define asset related arguments, such as data source, transformations, etc.
 	// +optional
 	Assets []AssetContext `json:"assets,omitempty"`
-	// Logging verbosity
-	// +required
-	Verbosity zerolog.Level `json:"verbosity"`
 	// Capability of the module
 	// +required
 	Capability taxonomy.Capability `json:"capability"`

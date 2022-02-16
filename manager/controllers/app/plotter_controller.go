@@ -163,7 +163,6 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			Chart: plotterModule.Chart,
 			Arguments: app.ModuleArguments{
 				Assets:     []app.AssetContext{},
-				Verbosity:  logging.GetLoggingVerbosity(),
 				Capability: plotterModule.Capability,
 			},
 			AssetIDs: []string{plotterModule.AssetID},
