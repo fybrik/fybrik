@@ -51,16 +51,16 @@ export DOCKERHUB_PASSWORD='your password'
 
 Fybrik repositories use different linters to validate and improve code.  
 *golangci-lint* works as a Go linters aggregator, which includes a lot of linter such as `staticcheck`, `revive`, `goimports` and more.  
-You can check the configuration to each repository in `.golangci.yml`.
+You can check its configuration in the `.golangci.yml` files.
 
 
-## Integrating golangci-lint with VS Code
-Change the default lint to golanci-lint in VS Code:
+### Integrating golangci-lint with VS Code
+Change the default lint to `golanci-lint` in VS Code:
 
 1. Install golangci-lint: [https://golangci-lint.run/usage/install/](https://golangci-lint.run/usage/install/)
 2. Open VS Code `setting.json`:
     1. Open the Command Palette: `Ctrl+Shift+P` 
-    2. Search for "Open Settings (JSON)"
+    2. In the dropdown search box, search for "Open Settings (JSON)"
     3. Open `setting.json`
 3. Add to `setting.json` the following:
 ```
@@ -71,28 +71,28 @@ Change the default lint to golanci-lint in VS Code:
 ]
 ```
 
-Golangci-lint automatically discovers `.golangci.yml` config for edited file: you don't need to configure it in VS Code settings.
+Golangci-lint automatically discovers `.golangci.yml` in the working project, you don't need to configure it in VS Code settings.
 
 To integrate with other IDEs: [https://golangci-lint.run/usage/integrations/](https://golangci-lint.run/usage/integrations/)  
-If you wish to run golangci-lint on cmd, run on the desired directory:  
+If you wish to run golangci-lint on cmd, run in the desired directory:  
 ```
 golangci-lint run --fast
 ```
 
 
-## Pre-commit
+### Pre-commit
 
-A framework for managing and maintaining multi-language pre-commit hooks.  
-Inspect the snapshot that's about to be committed according to the configured hooks.  
-You can add a pre-commit hooks configured with golanci-lint to pre-validate the linters before commiting.  
+`pre-commit` is an optional tool that inspect the snapshot that's about to be committed according to the configured hooks, in our case, `golangci-lint`.  
 Pre-commit configuration is in `.pre-commit-config.yaml`
 
 How to use:
 
 1. Install pre-commit: [https://pre-commit.com/](https://pre-commit.com/)
-2. Install pre-commit hook script:  
-run `pre-commit install`
+2. In the repository, run:  
+```
+pre-commit install
+```
 
-Now `pre-commit` will run automatically on `git commit`
+Now, `pre-commit` will automatically validate all your commits.
 
-
+To run commits without `pre-commit` validation add the `--no-verify` flag to `git commit`.
