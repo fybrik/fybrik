@@ -1,0 +1,6 @@
+definitions:
+  Units:
+    enum:
+      - US-dollar
+      - GB
+      - GB/sec
