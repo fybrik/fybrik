@@ -33,6 +33,30 @@ Log levels should be used as follows:
 - debug (zerolog.DebugLevel, 0) - Additional information needed to help identify problems (typically used during testing)
 - trace (zerolog.TraceLevel, -1) - For tracing step by step flow of control (typically used during development)
 
+## JSON Logging Standard Format
+All Fybrik components should generate logging information in a standard. This information will be used by different actors for different purposes, so as much relevant information as possible needs to be captured in a consistent format.
+
+We list all mandatory and optional fields to be used by all Fybrik components. In addition to the fields we list, Fybrik components may include extra fields as needed.
+
+### Mandatory Fields
+- level - log level (‘panic’, ‘fatal’, ‘error’, ‘warn’, ‘info’, ‘debug’, or ‘trace’)
+- time - timestamp  of the log event.  Timestamps  should  be in ISO8601  format with  time offset from  UTC or timezone. Example: ‘2022-02-16T10:46:21+02:00’
+- caller - the code line which generated the error (file name + line number). Example: manager/main.go:319
+
+### Optional Fields
+- app.fybrik.io/app-uuid - unique identifier for kubernetes FybrikApplication, used to correlate log messages across components
+- message - string message for the log entry. Either this field or message_id must be included
+- message_id - unique identifier indicating the message string that should be used. This is used instead of a message string for messages that need to support internationalization, such as those that go to users
+- funcName - method or function in which the error occurred
+- DataSetID - unique identifier for the data set
+- ForUser - True if this should be shared with the end user in fybrikapplication status or events. False otherwise
+- ForArchive - True if this should be archived long term. For example, if it contains full contents of FybrikApplication and its status and should be stored for auditing purposes
+- cluster - cluster name on which the process generating the entry ran
+- component - name of the component generating the log entry
+- action - current operation being called. For example, “create_catalog” or “update_asset”
+- response_time - response time of the current operation in milliseconds. Can be used in monitoring dashboards such as Kibana
+- error – the error message returned to the fybrik component upon an unsuccessful action
+
 ## Environment Variables
 - LOGGING_VERBOSITY - should be set to one of the levels described in the previous section.  
 - PRETTY_LOGGING - If true log entries are in human readable format.  If false, they are in json. Should only be true during individual development, since json is preferred to enable easy parsing by aggregator tools.
