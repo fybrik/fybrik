@@ -405,18 +405,18 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 
 // CreateDataRequest generates a new DataRequest object for a specific asset based on FybrikApplication and asset metadata
 func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataContext, assetMetadata *datacatalog.ResourceMetadata) adminconfig.DataRequest {
-	var flows []taxonomy.DataFlow
+	var flow taxonomy.DataFlow
 
 	// If a workload selector is provided but no flow, assume read - for backward compatibility
 	if (application.Spec.Selector.WorkloadSelector.Size() > 0) && (dataCtx.Flow == "") {
-		flows = append(flows, taxonomy.ReadFlow)
+		flow = taxonomy.ReadFlow
 	} else {
-		flows = append(flows, dataCtx.Flow)
+		flow = dataCtx.Flow
 	}
 	return adminconfig.DataRequest{
 		DatasetID: dataCtx.DataSetID,
 		Interface: dataCtx.Requirements.Interface,
-		Usage:     flows,
+		Usage:     flow,
 		Metadata:  assetMetadata,
 	}
 }
@@ -481,7 +481,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 	configEvaluatorInput.Request = CreateDataRequest(input, *req.Context, &req.DataDetails.ResourceMetadata)
 
 	// Read policies for data that is processed in the workload geography
-	if utils.HasFlow(configEvaluatorInput.Request.Usage, taxonomy.ReadFlow) {
+	if configEvaluatorInput.Request.Usage == taxonomy.ReadFlow {
 		reqAction := policymanager.RequestAction{
 			ActionType:         taxonomy.ReadFlow,
 			Destination:        workloadCluster.Metadata.Region,
