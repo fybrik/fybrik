@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"emperror.dev/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
@@ -17,7 +19,6 @@ import (
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 // DataInfo defines all the information about the given data set that comes from the fybrikapplication spec and from the connectors.

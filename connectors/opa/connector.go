@@ -11,11 +11,12 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gin-gonic/gin"
+	"github.com/hashicorp/go-retryablehttp"
+
 	"fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
-	"github.com/gin-gonic/gin"
-	"github.com/hashicorp/go-retryablehttp"
 )
 
 const (

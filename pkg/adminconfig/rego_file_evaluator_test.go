@@ -7,7 +7,11 @@ import (
 	"context"
 	"testing"
 
-	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/open-policy-agent/opa/ast"
+	"github.com/open-policy-agent/opa/rego"
+
 	adminconfig "fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/adminrules"
@@ -15,10 +19,6 @@ import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.com/open-policy-agent/opa/ast"
-	"github.com/open-policy-agent/opa/rego"
 )
 
 func EvaluatorWithInvalidRules() *adminconfig.RegoPolicyEvaluator {
@@ -58,14 +58,14 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 		# read scenario, same location
 		config[{"capability": "copy", "decision": decision}] {
 			policy := {"policySetID": "1", "ID": "test-1"}
-			input.request.usage.read == true
-			input.request.usage.copy == false
+			input.workload.properties.stage == "PROD"
+			input.workload.properties.severity != "critical"
 			input.request.dataset.geography == input.workload.cluster.metadata.region
 			decision := {"policy": policy, "deploy": "False"}
 		}
 		# read scenario, different locations
 		config[{"capability": "copy", "decision": decision}] {
-			input.request.usage.read == true
+			input.workload.properties.stage == "PROD"
 			input.request.dataset.geography != input.workload.cluster.metadata.region
 			clusters :=  { "property": "name", "values": [ "clusterB", "clusterD", "clusterC" ] }
 			modules := {"property": "scope", "values": ["asset"]}
@@ -75,7 +75,7 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 		
 		# copy scenario
 		config[{"capability": "copy", "decision": decision}] {
-			input.request.usage.copy == true
+			input.workload.properties.severity == "critical"
 			clusters :=  { "property": "name", "values": [ "clusterB", "clusterA", "clusterC" ] }
 			modules := {"property": "type", "values": ["service","plugin","config"]}
 			policy := {"policySetID": "1", "ID": "test-3"}
@@ -83,7 +83,7 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 		}
 		# write scenario
 		config[{"capability": "copy", "decision": decision}] {
-			input.request.usage.write == true
+			input.workload.properties.priority == "high"
 			policy := {"policySetID": "2", "ID": "test-4"}
 			decision := {"policy": policy, "deploy": "False"}
 		}
@@ -154,9 +154,23 @@ var _ = Describe("Evaluate a policy", func() {
 	//nolint:dupl
 	It("Conflict", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: true, v1alpha1.CopyFlow: true},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
-			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "neverland-cluster", Metadata: multicluster.ClusterMetadata{Region: "neverland"}}}}
+			Workload: adminconfig.WorkloadInfo{
+				Cluster: multicluster.Cluster{
+					Name:     "neverland-cluster",
+					Metadata: multicluster.ClusterMetadata{Region: "neverland"},
+				},
+				Properties: taxonomy.AppInfo{
+					Properties: serde.Properties{
+						Items: map[string]interface{}{
+							"stage":    "PROD",
+							"priority": "high",
+							"severity": "critical",
+						},
+					},
+				},
+			},
+		}
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(false))
@@ -165,9 +179,23 @@ var _ = Describe("Evaluate a policy", func() {
 	//nolint:dupl
 	It("ValidSolution", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: false},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
-			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "thegreendragon", Metadata: multicluster.ClusterMetadata{Region: "theshire"}}}}
+			Workload: adminconfig.WorkloadInfo{
+				Cluster: multicluster.Cluster{
+					Name:     "thegreendragon",
+					Metadata: multicluster.ClusterMetadata{Region: "theshire"},
+				},
+				Properties: taxonomy.AppInfo{
+					Properties: serde.Properties{
+						Items: map[string]interface{}{
+							"stage":    "PROD",
+							"priority": "medium",
+							"severity": "low",
+						},
+					},
+				},
+			},
+		}
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
@@ -177,9 +205,23 @@ var _ = Describe("Evaluate a policy", func() {
 	//nolint:dupl
 	It("Merge", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: false, v1alpha1.CopyFlow: true},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
-			Workload: adminconfig.WorkloadInfo{Cluster: multicluster.Cluster{Name: "neverland-cluster", Metadata: multicluster.ClusterMetadata{Region: "neverland"}}}}
+			Workload: adminconfig.WorkloadInfo{
+				Cluster: multicluster.Cluster{
+					Name:     "neverland-cluster",
+					Metadata: multicluster.ClusterMetadata{Region: "neverland"},
+				},
+				Properties: taxonomy.AppInfo{
+					Properties: serde.Properties{
+						Items: map[string]interface{}{
+							"stage":    "PROD",
+							"priority": "normal",
+							"severity": "critical",
+						},
+					},
+				},
+			},
+		}
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
@@ -199,11 +241,24 @@ var _ = Describe("Evaluate a policy", func() {
 	//nolint:dupl
 	It("No conflict for policy set 2", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: true, v1alpha1.CopyFlow: true},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{
 				PolicySetID: "2",
-				Cluster:     multicluster.Cluster{Name: "neverland-cluster", Metadata: multicluster.ClusterMetadata{Region: "neverland"}}}}
+				Properties: taxonomy.AppInfo{
+					Properties: serde.Properties{
+						Items: map[string]interface{}{
+							"stage":    "PROD",
+							"priority": "high",
+							"severity": "critical",
+						},
+					},
+				},
+				Cluster: multicluster.Cluster{
+					Name:     "neverland-cluster",
+					Metadata: multicluster.ClusterMetadata{Region: "neverland"},
+				},
+			},
+		}
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
@@ -213,11 +268,24 @@ var _ = Describe("Evaluate a policy", func() {
 	//nolint:dupl
 	It("No decisions for policy set 99", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
-			Usage:    map[v1alpha1.DataFlow]bool{v1alpha1.ReadFlow: true, v1alpha1.WriteFlow: true, v1alpha1.CopyFlow: true},
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
 			Workload: adminconfig.WorkloadInfo{
 				PolicySetID: "99",
-				Cluster:     multicluster.Cluster{Name: "neverland-cluster", Metadata: multicluster.ClusterMetadata{Region: "neverland"}}}}
+				Properties: taxonomy.AppInfo{
+					Properties: serde.Properties{
+						Items: map[string]interface{}{
+							"stage":    "PROD",
+							"priority": "high",
+							"severity": "critical",
+						},
+					},
+				},
+				Cluster: multicluster.Cluster{
+					Name:     "neverland-cluster",
+					Metadata: multicluster.ClusterMetadata{Region: "neverland"},
+				},
+			},
+		}
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
