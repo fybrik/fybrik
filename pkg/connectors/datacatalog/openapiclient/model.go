@@ -5,5 +5,7 @@ package openapiclient
 
 import "fybrik.io/fybrik/pkg/model/datacatalog"
 
-type DataCatalogRequest = datacatalog.GetAssetRequest
-type DataCatalogResponse = datacatalog.GetAssetResponse
+type GetAssetRequest = datacatalog.GetAssetRequest
+type GetAssetResponse = datacatalog.GetAssetResponse
+type CreateAssetRequest = datacatalog.CreateAssetRequest
+type CreateAssetResponse = datacatalog.CreateAssetResponse
