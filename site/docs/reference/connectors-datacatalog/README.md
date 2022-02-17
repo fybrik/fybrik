@@ -7,6 +7,7 @@ All URIs are relative to *https://localhost:8080*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*DefaultApi* | [**createAssetInfo**](Apis/DefaultApi.md#createassetinfo) | **POST** /createAssetInfo | This REST API writes data asset information to the data catalog configured in fybrik
 *DefaultApi* | [**getAssetInfo**](Apis/DefaultApi.md#getassetinfo) | **POST** /getAssetInfo | This REST API gets data asset information from the data catalog configured in fybrik for the data sets indicated in FybrikApplication yaml
 
 
@@ -14,6 +15,8 @@ Class | Method | HTTP request | Description
 ## Documentation for Models
 
  - [Connection](Models/Connection.md)
+ - [CreateAssetRequest](Models/CreateAssetRequest.md)
+ - [CreateAssetResponse](Models/CreateAssetResponse.md)
  - [GetAssetRequest](Models/GetAssetRequest.md)
  - [GetAssetResponse](Models/GetAssetResponse.md)
  - [OperationType](Models/OperationType.md)

@@ -37,8 +37,8 @@ paths:
 
   /createAssetInfo:
       post:
-        summary: This REST API write data asset information to the data catalog configured in fybrik
-        operationId: writeAssetInfo
+        summary: This REST API writes data asset information to the data catalog configured in fybrik
+        operationId: createAssetInfo
         parameters:
           - in: header
             name: X-Request-Datacatalog-Write-Cred
