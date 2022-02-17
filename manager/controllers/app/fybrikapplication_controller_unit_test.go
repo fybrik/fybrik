@@ -10,18 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"fybrik.io/fybrik/manager/controllers/utils"
-	"fybrik.io/fybrik/pkg/adminconfig"
-	"fybrik.io/fybrik/pkg/infrastructure"
-	"fybrik.io/fybrik/pkg/logging"
+	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"fybrik.io/fybrik/manager/controllers/mockup"
-	"fybrik.io/fybrik/pkg/storage"
-
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -31,6 +22,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/yaml"
+
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/mockup"
+	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/adminconfig"
+	"fybrik.io/fybrik/pkg/infrastructure"
+	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/storage"
 )
 
 // Read utility

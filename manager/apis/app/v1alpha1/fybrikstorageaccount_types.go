@@ -4,8 +4,9 @@
 package v1alpha1
 
 import (
-	"fybrik.io/fybrik/pkg/model/taxonomy"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
 // FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount

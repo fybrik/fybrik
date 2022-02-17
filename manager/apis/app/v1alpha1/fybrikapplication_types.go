@@ -4,9 +4,10 @@
 package v1alpha1
 
 import (
-	"fybrik.io/fybrik/pkg/model/taxonomy"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
 // CatalogRequirements contain the specifics for catalogging the data asset

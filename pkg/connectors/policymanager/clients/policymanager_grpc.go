@@ -13,12 +13,13 @@ import (
 	"time"
 
 	"emperror.dev/errors"
+	"google.golang.org/grpc"
+
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	random "fybrik.io/fybrik/pkg/random"
 	"fybrik.io/fybrik/pkg/serde"
-	"google.golang.org/grpc"
 )
 
 var _ PolicyManager = (*grpcPolicyManager)(nil)

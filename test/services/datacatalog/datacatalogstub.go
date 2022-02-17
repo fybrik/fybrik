@@ -10,9 +10,10 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gin-gonic/gin"
+
 	"fybrik.io/fybrik/manager/controllers/mockup"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
-	"github.com/gin-gonic/gin"
 )
 
 const (

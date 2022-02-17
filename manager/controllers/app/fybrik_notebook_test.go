@@ -14,8 +14,6 @@ import (
 	"strings"
 	"testing"
 
-	apiv1alpha1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/pkg/test"
 	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/flight"
@@ -31,6 +29,9 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	apiv1alpha1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/pkg/test"
 )
 
 type ArrowRequest struct {

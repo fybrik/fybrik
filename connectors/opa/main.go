@@ -10,10 +10,11 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
-	"fybrik.io/fybrik/pkg/environment"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
+
+	"fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
+	"fybrik.io/fybrik/pkg/environment"
 )
 
 const (
