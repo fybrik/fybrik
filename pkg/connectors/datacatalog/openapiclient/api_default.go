@@ -27,17 +27,16 @@ var (
 type DefaultApiService service
 
 type ApiCreateAssetInfoRequest struct {
-	ctx                          context.Context
-	ApiService                   *DefaultApiService
+	ctx context.Context
+	ApiService *DefaultApiService
 	xRequestDatacatalogWriteCred *string
-	createAssetRequest           *CreateAssetRequest
+	createAssetRequest *CreateAssetRequest
 }
 
 func (r ApiCreateAssetInfoRequest) XRequestDatacatalogWriteCred(xRequestDatacatalogWriteCred string) ApiCreateAssetInfoRequest {
 	r.xRequestDatacatalogWriteCred = &xRequestDatacatalogWriteCred
 	return r
 }
-
 // Write Asset Request
 func (r ApiCreateAssetInfoRequest) CreateAssetRequest(createAssetRequest CreateAssetRequest) ApiCreateAssetInfoRequest {
 	r.createAssetRequest = &createAssetRequest
@@ -57,7 +56,7 @@ CreateAssetInfo This REST API writes data asset information to the data catalog 
 func (a *DefaultApiService) CreateAssetInfo(ctx context.Context) ApiCreateAssetInfoRequest {
 	return ApiCreateAssetInfoRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
@@ -65,10 +64,10 @@ func (a *DefaultApiService) CreateAssetInfo(ctx context.Context) ApiCreateAssetI
 //  @return CreateAssetResponse
 func (a *DefaultApiService) CreateAssetInfoExecute(r ApiCreateAssetInfoRequest) (*CreateAssetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod  = http.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *CreateAssetResponse
+		localVarHTTPMethod   = http.MethodPost
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  *CreateAssetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.CreateAssetInfo")
@@ -146,17 +145,16 @@ func (a *DefaultApiService) CreateAssetInfoExecute(r ApiCreateAssetInfoRequest) 
 }
 
 type ApiGetAssetInfoRequest struct {
-	ctx                     context.Context
-	ApiService              *DefaultApiService
+	ctx context.Context
+	ApiService *DefaultApiService
 	xRequestDatacatalogCred *string
-	getAssetRequest         *GetAssetRequest
+	getAssetRequest *GetAssetRequest
 }
 
 func (r ApiGetAssetInfoRequest) XRequestDatacatalogCred(xRequestDatacatalogCred string) ApiGetAssetInfoRequest {
 	r.xRequestDatacatalogCred = &xRequestDatacatalogCred
 	return r
 }
-
 // Data Catalog Request Object.
 func (r ApiGetAssetInfoRequest) GetAssetRequest(getAssetRequest GetAssetRequest) ApiGetAssetInfoRequest {
 	r.getAssetRequest = &getAssetRequest
@@ -176,7 +174,7 @@ GetAssetInfo This REST API gets data asset information from the data catalog con
 func (a *DefaultApiService) GetAssetInfo(ctx context.Context) ApiGetAssetInfoRequest {
 	return ApiGetAssetInfoRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
@@ -184,10 +182,10 @@ func (a *DefaultApiService) GetAssetInfo(ctx context.Context) ApiGetAssetInfoReq
 //  @return GetAssetResponse
 func (a *DefaultApiService) GetAssetInfoExecute(r ApiGetAssetInfoRequest) (*GetAssetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod  = http.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *GetAssetResponse
+		localVarHTTPMethod   = http.MethodPost
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  *GetAssetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.GetAssetInfo")
