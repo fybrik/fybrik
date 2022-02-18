@@ -26,6 +26,125 @@ var (
 // DefaultApiService DefaultApi service
 type DefaultApiService service
 
+type ApiCreateAssetInfoRequest struct {
+	ctx                          context.Context
+	ApiService                   *DefaultApiService
+	xRequestDatacatalogWriteCred *string
+	createAssetRequest           *CreateAssetRequest
+}
+
+func (r ApiCreateAssetInfoRequest) XRequestDatacatalogWriteCred(xRequestDatacatalogWriteCred string) ApiCreateAssetInfoRequest {
+	r.xRequestDatacatalogWriteCred = &xRequestDatacatalogWriteCred
+	return r
+}
+
+// Write Asset Request
+func (r ApiCreateAssetInfoRequest) CreateAssetRequest(createAssetRequest CreateAssetRequest) ApiCreateAssetInfoRequest {
+	r.createAssetRequest = &createAssetRequest
+	return r
+}
+
+func (r ApiCreateAssetInfoRequest) Execute() (*CreateAssetResponse, *http.Response, error) {
+	return r.ApiService.CreateAssetInfoExecute(r)
+}
+
+/*
+CreateAssetInfo This REST API writes data asset information to the data catalog configured in fybrik
+
+ @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiCreateAssetInfoRequest
+*/
+func (a *DefaultApiService) CreateAssetInfo(ctx context.Context) ApiCreateAssetInfoRequest {
+	return ApiCreateAssetInfoRequest{
+		ApiService: a,
+		ctx:        ctx,
+	}
+}
+
+// Execute executes the request
+//  @return CreateAssetResponse
+func (a *DefaultApiService) CreateAssetInfoExecute(r ApiCreateAssetInfoRequest) (*CreateAssetResponse, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *CreateAssetResponse
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.CreateAssetInfo")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/createAssetInfo"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+	if r.xRequestDatacatalogWriteCred == nil {
+		return localVarReturnValue, nil, reportError("xRequestDatacatalogWriteCred is required and must be specified")
+	}
+	if r.createAssetRequest == nil {
+		return localVarReturnValue, nil, reportError("createAssetRequest is required and must be specified")
+	}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	localVarHeaderParams["X-Request-Datacatalog-Write-Cred"] = parameterToString(*r.xRequestDatacatalogWriteCred, "")
+	// body params
+	localVarPostBody = r.createAssetRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = ioutil.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
 type ApiGetAssetInfoRequest struct {
 	ctx                     context.Context
 	ApiService              *DefaultApiService
@@ -108,125 +227,6 @@ func (a *DefaultApiService) GetAssetInfoExecute(r ApiGetAssetInfoRequest) (*GetA
 	localVarHeaderParams["X-Request-Datacatalog-Cred"] = parameterToString(*r.xRequestDatacatalogCred, "")
 	// body params
 	localVarPostBody = r.getAssetRequest
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := ioutil.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = ioutil.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body:  localVarBody,
-			error: localVarHTTPResponse.Status,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body:  localVarBody,
-			error: err.Error(),
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiWriteAssetInfoRequest struct {
-	ctx                          context.Context
-	ApiService                   *DefaultApiService
-	xRequestDatacatalogWriteCred *string
-	createAssetRequest           *CreateAssetRequest
-}
-
-func (r ApiWriteAssetInfoRequest) XRequestDatacatalogWriteCred(xRequestDatacatalogWriteCred string) ApiWriteAssetInfoRequest {
-	r.xRequestDatacatalogWriteCred = &xRequestDatacatalogWriteCred
-	return r
-}
-
-// Write Asset Request
-func (r ApiWriteAssetInfoRequest) CreateAssetRequest(createAssetRequest CreateAssetRequest) ApiWriteAssetInfoRequest {
-	r.createAssetRequest = &createAssetRequest
-	return r
-}
-
-func (r ApiWriteAssetInfoRequest) Execute() (*CreateAssetResponse, *http.Response, error) {
-	return r.ApiService.WriteAssetInfoExecute(r)
-}
-
-/*
-WriteAssetInfo This REST API write data asset information to the data catalog configured in fybrik
-
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiWriteAssetInfoRequest
-*/
-func (a *DefaultApiService) WriteAssetInfo(ctx context.Context) ApiWriteAssetInfoRequest {
-	return ApiWriteAssetInfoRequest{
-		ApiService: a,
-		ctx:        ctx,
-	}
-}
-
-// Execute executes the request
-//  @return CreateAssetResponse
-func (a *DefaultApiService) WriteAssetInfoExecute(r ApiWriteAssetInfoRequest) (*CreateAssetResponse, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *CreateAssetResponse
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.WriteAssetInfo")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
-	}
-
-	localVarPath := localBasePath + "/createAssetInfo"
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-	if r.xRequestDatacatalogWriteCred == nil {
-		return localVarReturnValue, nil, reportError("xRequestDatacatalogWriteCred is required and must be specified")
-	}
-	if r.createAssetRequest == nil {
-		return localVarReturnValue, nil, reportError("createAssetRequest is required and must be specified")
-	}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	localVarHeaderParams["X-Request-Datacatalog-Write-Cred"] = parameterToString(*r.xRequestDatacatalogWriteCred, "")
-	// body params
-	localVarPostBody = r.createAssetRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err

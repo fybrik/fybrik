@@ -53,7 +53,7 @@ paths:
               schema:
                 $ref: "../../charts/fybrik/files/taxonomy/datacatalog.json#/definitions/CreateAssetRequest"
         responses:
-          '200':
+          '201':
             description: successful operation
             content:
               application/json:
