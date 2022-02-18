@@ -55,21 +55,15 @@ VAULT_MODULES_ROLE="module"
 ENABLE_WEBHOOKS="false"
 ```
 
-If the manager runs in a Razee environment, you also need to add the following environment variables:
+If the manager works with a Razee service, you also need to add the following environment variables:
 
 ```bash
-RAZEE_USER="razee-dev@example.com"
-RAZEE_PASSWORD="password123"
-RAZEE_URL="http://localhost:3333/graphql"
+RAZEE_URL=<Razee access point> # e.g. "http://localhost:3333/graphql"
+# you should define either RAZEE_USER/RAZEE_PASSWORD or API_KEY, if both are defined, RAZEE_USER/RAZEE_PASSWORD will be used.
+RAZEE_USER=<Razee user>
+RAZEE_PASSWORD=<Razee password> 
+API_KEY=<Razee api key>
 ```
-
-You can know that the manager runs in a Razee environment by:
-
-1. There are "razeedash" and "razeedash-api" pods running at fybrik control plane:
-`kubectl get po -A | grep razeedash`
-
-2. You can get a HTTP response from the service "razeedash-api-np":
-`curl http://localhost:3333/graphql`
 
 If you plan to run manager from the command line,
 then run the following to export all of the variables:
