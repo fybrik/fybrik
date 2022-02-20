@@ -79,7 +79,9 @@ coordinator:
 
   # Configure the vault instance to be used by the coordinator manager
   vault:
-    # Set to the Vault address. 
+    # if you don't plan to use Vault, set it to false. If it is false, you can remove all other entries below
+    enabled: true
+    # Set to the Vault address.
     address: "http://vault.{{ .Release.Namespace }}:8200"
     # Login method to Vault
     login:
