@@ -6,7 +6,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -123,7 +123,7 @@ func createMockServer(t *testing.T, name string, expectedRequest, mockedResponse
 	expectedRequestBytes := mustAsJSON(t, expectedRequest)
 	responseBytes := mustAsJSON(t, mockedResponse)
 	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requestBytes, err := ioutil.ReadAll(r.Body)
+		requestBytes, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Error(err)
 			return
