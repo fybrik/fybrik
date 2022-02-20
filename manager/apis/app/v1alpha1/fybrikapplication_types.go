@@ -17,7 +17,7 @@ type FlowRequirements struct {
 	// +optional
 	Catalog string `json:"catalog,omitempty"`
 
-	// Storage estimate indicates the estimated amount of storage required when writing new data.
+	// Storage estimate indicates the estimated amount of storage required when writing new data in for example MB, GB, TB.
 	// +optional
 	StorageEstimate datasize.ByteSize `json:"storageEstimate,omitempty"`
 
@@ -34,7 +34,7 @@ type DataRequirements struct {
 	// +required
 	Interface InterfaceDetails `json:"interface"`
 
-	// FlowParams include the requirements for explicit requests to copy the data
+	// FlowParams include the requirements for particular data flows
 	// +optional
 	FlowParams FlowRequirements `json:"flowParams,omitempty"`
 }
@@ -49,8 +49,7 @@ type DataContext struct {
 	// +kubebuilder:validation:MinLength=1
 	DataSetID string `json:"dataSetID"`
 
-	// Flows indicates what is being done with the particular dataset - ex: read, write, copy, delete
-	// If more than one flow is indicated, the order is respected.
+	// Flows indicates what is being done with the particular dataset - ex: read, write, copy (ingest), delete
 	// This is optional for the purpose of backward compatibility.
 	// If nothing is provided, read is assumed.
 	// +optional

@@ -71,9 +71,8 @@ spec:
                       type: string
                     flow:
                       description: 'Flows indicates what is being done with the particular
-                        dataset - ex: read, write, copy, delete If more than one flow
-                        is indicated, the order is respected. This is optional for
-                        the purpose of backward compatibility. If nothing is provided,
+                        dataset - ex: read, write, copy (ingest), delete This is optional
+                        for the purpose of backward compatibility. If nothing is provided,
                         read is assumed.'
                       enum:
                       - read
@@ -85,8 +84,8 @@ spec:
                       description: Requirements from the system
                       properties:
                         flowParams:
-                          description: FlowParams include the requirements for explicit
-                            requests to copy the data
+                          description: FlowParams include the requirements for particular
+                            data flows
                           properties:
                             catalog:
                               description: Catalog indicates that the data asset must
@@ -101,7 +100,8 @@ spec:
                               type: boolean
                             storageEstimate:
                               description: Storage estimate indicates the estimated
-                                amount of storage required when writing new data.
+                                amount of storage required when writing new data in
+                                for example MB, GB, TB.
                               format: int64
                               type: integer
                           type: object
