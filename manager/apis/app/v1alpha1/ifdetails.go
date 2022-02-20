@@ -7,6 +7,7 @@ import "fybrik.io/fybrik/pkg/model/taxonomy"
 
 // Values used in tests and for grpc connection with connectors.
 // TODO(roee88): used only in tests so should be moved
+//nolint:stylecheck
 const (
 	S3          taxonomy.ConnectionType = "s3"
 	Kafka       taxonomy.ConnectionType = "kafka"
