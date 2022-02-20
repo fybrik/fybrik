@@ -1,3 +1,6 @@
+// Copyright 2020 IBM Corp.
+// SPDX-License-Identifier: Apache-2.0
+
 package main
 
 import (
@@ -21,11 +24,10 @@ func main() {
 		DestinationCatalogID: "test",
 	}
 
-	//Encode the data
 	postBody, _ := json.Marshal(request)
 	responseBody := bytes.NewBuffer(postBody)
 
-	fmt.Println("Calling API...")
+	fmt.Println("Making a HTTP Request")
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", "http://katalog-connector:80/createAssetInfo", responseBody)
 	if err != nil {
@@ -44,5 +46,5 @@ func main() {
 	}
 	var responseObject datacatalog.CreateAssetResponse
 	json.Unmarshal(bodyBytes, &responseObject)
-	fmt.Printf("API Response as struct %+v\n", responseObject)
+	fmt.Printf("CreateAssetResponse received: %+v\n", responseObject)
 }
