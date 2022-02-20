@@ -1,0 +1,11 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+resources:
+- create_asset_client.yaml
+namespace: fybrik-system
+
+images:
+- name: create-asset-clt
+  newName: ghcr.io/rohithdv/create-asset-client
+  newTag: 0.0.0

@@ -1,0 +1,27 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-asset-clt
+  labels:
+    app: create-asset-clt
+spec:
+  template:
+    metadata:
+      labels:
+        app: create-asset-clt
+    spec:
+      containers:
+      - name: create-asset-clt
+        image: create-asset-clt:latest
+        imagePullPolicy: Always
+        ports:
+        - name: create-asset-clt
+          containerPort: 50040
+        # envFrom:
+        # - configMapRef:
+        #     name: fybrik-config
+      restartPolicy: Never
+  backoffLimit: 0
