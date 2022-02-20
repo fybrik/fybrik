@@ -24,7 +24,17 @@ func TestBlueprint(t *testing.T) {
 		},
 		Spec: BlueprintSpec{
 			Cluster: "cluster1",
-			Modules: map[string]BlueprintModule{"start-instance1": {Name: "start", Chart: ChartSpec{Name: "start-image"}}},
+			Modules: map[string]BlueprintModule{"start-instance1": {
+				Name: "start",
+				Arguments: ModuleArguments{
+					Capability: "read",
+					Assets: []AssetContext{
+						{
+							AssetID: "test-asset",
+						},
+					},
+				},
+				Chart: ChartSpec{Name: "start-image"}}},
 		},
 	}
 	g := gomega.NewGomegaWithT(t)
