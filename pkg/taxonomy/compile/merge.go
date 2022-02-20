@@ -4,9 +4,10 @@
 package compile
 
 import (
+	"github.com/mpvl/unique"
+
 	"fybrik.io/fybrik/pkg/slices"
 	"fybrik.io/fybrik/pkg/taxonomy/model"
-	"github.com/mpvl/unique"
 )
 
 // mergeDefinitions merges the definitions section of multiple documents.

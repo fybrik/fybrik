@@ -10,11 +10,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/pkg/errors"
+
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
-	"github.com/pkg/errors"
 )
 
 func getEnv(key string) string {

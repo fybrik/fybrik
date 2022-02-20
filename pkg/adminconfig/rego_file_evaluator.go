@@ -7,16 +7,17 @@ import (
 	"context"
 	"encoding/json"
 
-	"fybrik.io/fybrik/manager/controllers/utils"
-	"fybrik.io/fybrik/pkg/logging"
-	"fybrik.io/fybrik/pkg/model/adminrules"
-	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/yaml"
+
+	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/model/adminrules"
+	"fybrik.io/fybrik/pkg/taxonomy/validate"
 )
 
 const ValidationPath string = "/tmp/taxonomy/adminrules.json#/definitions/EvaluationOutputStructure"

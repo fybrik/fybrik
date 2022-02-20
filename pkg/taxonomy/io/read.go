@@ -7,8 +7,9 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"fybrik.io/fybrik/pkg/taxonomy/model"
 	"sigs.k8s.io/yaml"
+
+	"fybrik.io/fybrik/pkg/taxonomy/model"
 )
 
 // ReadDocumentFromFile loads a document model from a JSON or YAML file

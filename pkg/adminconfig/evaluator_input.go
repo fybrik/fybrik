@@ -5,7 +5,6 @@ package adminconfig
 
 import (
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"

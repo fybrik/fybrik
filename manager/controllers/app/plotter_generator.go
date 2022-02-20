@@ -9,6 +9,11 @@ import (
 	"text/template"
 
 	"emperror.dev/errors"
+	"github.com/Masterminds/sprig/v3"
+	"github.com/rs/zerolog"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
@@ -20,10 +25,6 @@ import (
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
 	vault "fybrik.io/fybrik/pkg/vault"
-	"github.com/Masterminds/sprig/v3"
-	"github.com/rs/zerolog"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // NewAssetInfo points to the provisoned storage and hold information about the new asset

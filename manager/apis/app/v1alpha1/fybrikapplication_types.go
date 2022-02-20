@@ -4,10 +4,11 @@
 package v1alpha1
 
 import (
-	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"github.com/c2h5oh/datasize"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
 // FlowRequirements include the requirements specific to the flow
