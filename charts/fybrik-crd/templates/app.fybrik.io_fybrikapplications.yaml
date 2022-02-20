@@ -100,8 +100,8 @@ spec:
                               type: boolean
                             storageEstimate:
                               description: Storage estimate indicates the estimated
-                                amount of storage required when writing new data in
-                                for example MB, GB, TB.
+                                amount of storage in MB, GB, TB required when writing
+                                new data.
                               format: int64
                               type: integer
                           type: object

@@ -18,7 +18,7 @@ type FlowRequirements struct {
 	// +optional
 	Catalog string `json:"catalog,omitempty"`
 
-	// Storage estimate indicates the estimated amount of storage required when writing new data in for example MB, GB, TB.
+	// Storage estimate indicates the estimated amount of storage in MB, GB, TB required when writing new data.
 	// +optional
 	StorageEstimate datasize.ByteSize `json:"storageEstimate,omitempty"`
 
