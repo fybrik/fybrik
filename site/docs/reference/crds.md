@@ -1364,7 +1364,7 @@ DataContext indicates data set being processed by the workload and includes info
         <td><b>flow</b></td>
         <td>enum</td>
         <td>
-          Flows indicates what is being done with the particular dataset - ex: read, write, copy, delete If more than one flow is indicated, the order is respected. This is optional for the purpose of backward compatibility. If nothing is provided, read is assumed.<br/>
+          Flows indicates what is being done with the particular dataset - ex: read, write, copy (ingest), delete This is optional for the purpose of backward compatibility. If nothing is provided, read is assumed.<br/>
           <br/>
             <i>Enum</i>: read, write, delete, copy<br/>
         </td>
@@ -1407,7 +1407,7 @@ Requirements from the system
         <td><b><a href="#fybrikapplicationspecdataindexrequirementsflowparams">flowParams</a></b></td>
         <td>object</td>
         <td>
-          FlowParams include the requirements for explicit requests to copy the data<br/>
+          FlowParams include the requirements for particular data flows<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1426,7 +1426,7 @@ Requirements from the system
 
 
 
-FlowParams include the requirements for explicit requests to copy the data
+FlowParams include the requirements for particular data flows
 
 <table>
     <thead>
@@ -1455,7 +1455,7 @@ FlowParams include the requirements for explicit requests to copy the data
         <td><b>storageEstimate</b></td>
         <td>integer</td>
         <td>
-          Storage estimate indicates the estimated amount of storage required when writing new data.<br/>
+          Storage estimate indicates the estimated amount of storage in MB, GB, TB required when writing new data.<br/>
           <br/>
             <i>Format</i>: int64<br/>
         </td>
