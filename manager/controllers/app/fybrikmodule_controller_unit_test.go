@@ -7,10 +7,6 @@ import (
 	"context"
 	"testing"
 
-	"fybrik.io/fybrik/manager/controllers/utils"
-	"fybrik.io/fybrik/pkg/logging"
-
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -20,6 +16,10 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/logging"
 )
 
 // create FybrikModule controller with mockup interfaces

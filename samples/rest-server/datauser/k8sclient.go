@@ -6,11 +6,12 @@ package datauser
 import (
 	"context"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
+
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 )
 
 // CreateApplication makes a new FybrikApplication CRD

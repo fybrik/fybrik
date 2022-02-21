@@ -5,7 +5,6 @@ package adminconfig
 
 import (
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
@@ -31,7 +30,7 @@ type DataRequest struct {
 	// requested interface
 	Interface api.InterfaceDetails `json:"interface"`
 	// requested usage, e.g. "read": true, "write": false
-	Usage map[api.DataFlow]bool `json:"usage"`
+	Usage taxonomy.DataFlow `json:"usage"`
 	// Asset metadata
 	Metadata *datacatalog.ResourceMetadata `json:"dataset"`
 }

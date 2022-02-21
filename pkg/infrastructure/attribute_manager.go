@@ -8,12 +8,13 @@ import (
 	"io/fs"
 	"os"
 
+	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
+
 	"fybrik.io/fybrik/pkg/logging"
 	infraattributes "fybrik.io/fybrik/pkg/model/attributes"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
-	"github.com/pkg/errors"
-	"github.com/rs/zerolog"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )

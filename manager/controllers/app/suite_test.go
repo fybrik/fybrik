@@ -11,18 +11,14 @@ import (
 	"testing"
 	"time"
 
-	"fybrik.io/fybrik/manager/controllers/utils"
-	"helm.sh/helm/v3/pkg/release"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/fields"
-
-	appapi "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
+	"helm.sh/helm/v3/pkg/release"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -33,6 +29,8 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	appapi "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/helm"
 	local "fybrik.io/fybrik/pkg/multicluster/local"
 	// +kubebuilder:scaffold:imports

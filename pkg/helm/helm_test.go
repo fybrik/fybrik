@@ -6,9 +6,8 @@ package helm
 import (
 	"fmt"
 	"io/ioutil"
-	"path"
-
 	"os"
+	"path"
 	"strconv"
 	"testing"
 	"time"

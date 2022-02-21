@@ -98,6 +98,13 @@ BlueprintSpec defines the desired state of Blueprint, which defines the componen
         </tr>
     </thead>
     <tbody><tr>
+        <td><b><a href="#blueprintspecapplication">application</a></b></td>
+        <td>object</td>
+        <td>
+          ApplicationContext is a context of the origin FybrikApplication (labels, properties, etc.)<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>cluster</b></td>
         <td>string</td>
         <td>
@@ -116,6 +123,115 @@ BlueprintSpec defines the desired state of Blueprint, which defines the componen
         <td>string</td>
         <td>
           ModulesNamespace is the namespace where modules should be allocated<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.application
+<sup><sup>[↩ Parent](#blueprintspec)</sup></sup>
+
+
+
+ApplicationContext is a context of the origin FybrikApplication (labels, properties, etc.)
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>context</b></td>
+        <td>object</td>
+        <td>
+          Application context such as intent, role, etc.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecapplicationselector">selector</a></b></td>
+        <td>object</td>
+        <td>
+          Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.application.selector
+<sup><sup>[↩ Parent](#blueprintspecapplication)</sup></sup>
+
+
+
+Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#blueprintspecapplicationselectormatchexpressionsindex">matchExpressions</a></b></td>
+        <td>[]object</td>
+        <td>
+          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>matchLabels</b></td>
+        <td>map[string]string</td>
+        <td>
+          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.application.selector.matchExpressions[index]
+<sup><sup>[↩ Parent](#blueprintspecapplicationselector)</sup></sup>
+
+
+
+A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>values</b></td>
+        <td>[]string</td>
+        <td>
+          values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          key is the label key that the selector applies to.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>operator</b></td>
+        <td>string</td>
+        <td>
+          operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -187,125 +303,29 @@ Arguments are the input parameters for a specific instance of a module.
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsappselector">appSelector</a></b></td>
-        <td>object</td>
-        <td>
-          Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopy">copy</a></b></td>
-        <td>object</td>
-        <td>
-          CopyArgs are parameters specific to modules that copy data from one data store to another.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>labels</b></td>
-        <td>map[string]string</td>
-        <td>
-          Labels of FybrikApplication<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsreadindex">read</a></b></td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindex">assets</a></b></td>
         <td>[]object</td>
         <td>
-          ReadArgs are parameters that are specific to modules that enable an application to read data<br/>
+          Assets define asset related arguments, such as data source, transformations, etc.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentswriteindex">write</a></b></td>
-        <td>[]object</td>
-        <td>
-          WriteArgs are parameters that are specific to modules that enable an application to write data<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.appSelector
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyarguments)</sup></sup>
-
-
-
-Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsappselectormatchexpressionsindex">matchExpressions</a></b></td>
-        <td>[]object</td>
-        <td>
-          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>matchLabels</b></td>
-        <td>map[string]string</td>
-        <td>
-          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.appSelector.matchExpressions[index]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsappselector)</sup></sup>
-
-
-
-A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>values</b></td>
-        <td>[]string</td>
-        <td>
-          values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>key</b></td>
+        <td><b>capability</b></td>
         <td>string</td>
         <td>
-          key is the label key that the selector applies to.<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>operator</b></td>
-        <td>string</td>
-        <td>
-          operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
+          Capability of the module<br/>
         </td>
         <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### Blueprint.spec.modules[key].arguments.copy
+#### Blueprint.spec.modules[key].arguments.assets[index]
 <sup><sup>[↩ Parent](#blueprintspecmoduleskeyarguments)</sup></sup>
 
 
 
-CopyArgs are parameters specific to modules that copy data from one data store to another.
+AssetContext defines the input parameters for modules that access an asset
 
 <table>
     <thead>
@@ -317,7 +337,21 @@ CopyArgs are parameters specific to modules that copy data from one data store t
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopytransformationsindex">transformations</a></b></td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexdestination">destination</a></b></td>
+        <td>object</td>
+        <td>
+          Destination is the data store to which the data will be written<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexsource">source</a></b></td>
+        <td>object</td>
+        <td>
+          Source is the where the data currently resides<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindextransformationsindex">transformations</a></b></td>
         <td>[]object</td>
         <td>
           Transformations are different types of processing that may be done to the data as it is copied.<br/>
@@ -330,537 +364,12 @@ CopyArgs are parameters specific to modules that copy data from one data store t
           AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the FybrikApplication resource<br/>
         </td>
         <td>true</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopydestination">destination</a></b></td>
-        <td>object</td>
-        <td>
-          Destination is the data store to which the data will be copied<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopysource">source</a></b></td>
-        <td>object</td>
-        <td>
-          Source is the where the data currently resides<br/>
-        </td>
-        <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### Blueprint.spec.modules[key].arguments.copy.transformations[index]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopy)</sup></sup>
-
-
-
-
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.copy.destination
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopy)</sup></sup>
-
-
-
-Destination is the data store to which the data will be copied
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>format</b></td>
-        <td>string</td>
-        <td>
-          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopydestinationconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopydestinationvaultkey">vault</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.copy.destination.connection
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopydestination)</sup></sup>
-
-
-
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.copy.destination.vault[key]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopydestination)</sup></sup>
-
-
-
-Holds details for retrieving credentials from Vault store.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>address</b></td>
-        <td>string</td>
-        <td>
-          Address is Vault address<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>authPath</b></td>
-        <td>string</td>
-        <td>
-          AuthPath is the path to auth method i.e. kubernetes<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>role</b></td>
-        <td>string</td>
-        <td>
-          Role is the Vault role used for retrieving the credentials<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>secretPath</b></td>
-        <td>string</td>
-        <td>
-          SecretPath is the path of the secret holding the Credentials in Vault<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.copy.source
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopy)</sup></sup>
-
-
-
-Source is the where the data currently resides
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>format</b></td>
-        <td>string</td>
-        <td>
-          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopysourceconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopysourcevaultkey">vault</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.copy.source.connection
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopysource)</sup></sup>
-
-
-
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.copy.source.vault[key]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopysource)</sup></sup>
-
-
-
-Holds details for retrieving credentials from Vault store.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>address</b></td>
-        <td>string</td>
-        <td>
-          Address is Vault address<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>authPath</b></td>
-        <td>string</td>
-        <td>
-          AuthPath is the path to auth method i.e. kubernetes<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>role</b></td>
-        <td>string</td>
-        <td>
-          Role is the Vault role used for retrieving the credentials<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>secretPath</b></td>
-        <td>string</td>
-        <td>
-          SecretPath is the path of the secret holding the Credentials in Vault<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.read[index]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyarguments)</sup></sup>
-
-
-
-ReadModuleArgs define the input parameters for modules that read data from location A
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsreadindextransformationsindex">transformations</a></b></td>
-        <td>[]object</td>
-        <td>
-          Transformations are different types of processing that may be done to the data<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>assetID</b></td>
-        <td>string</td>
-        <td>
-          AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the FybrikApplication resource<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsreadindexsource">source</a></b></td>
-        <td>object</td>
-        <td>
-          Source of the read path module<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.read[index].transformations[index]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsreadindex)</sup></sup>
-
-
-
-
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.read[index].source
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsreadindex)</sup></sup>
-
-
-
-Source of the read path module
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>format</b></td>
-        <td>string</td>
-        <td>
-          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsreadindexsourceconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsreadindexsourcevaultkey">vault</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.read[index].source.connection
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsreadindexsource)</sup></sup>
-
-
-
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.read[index].source.vault[key]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsreadindexsource)</sup></sup>
-
-
-
-Holds details for retrieving credentials from Vault store.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>address</b></td>
-        <td>string</td>
-        <td>
-          Address is Vault address<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>authPath</b></td>
-        <td>string</td>
-        <td>
-          AuthPath is the path to auth method i.e. kubernetes<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>role</b></td>
-        <td>string</td>
-        <td>
-          Role is the Vault role used for retrieving the credentials<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>secretPath</b></td>
-        <td>string</td>
-        <td>
-          SecretPath is the path of the secret holding the Credentials in Vault<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.write[index]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyarguments)</sup></sup>
-
-
-
-WriteModuleArgs define the input parameters for modules that write data to location B
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentswriteindextransformationsindex">transformations</a></b></td>
-        <td>[]object</td>
-        <td>
-          Transformations are different types of processing that may be done to the data as it is written.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>assetID</b></td>
-        <td>string</td>
-        <td>
-          AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the FybrikApplication resource<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentswriteindexdestination">destination</a></b></td>
-        <td>object</td>
-        <td>
-          Destination is the data store to which the data will be written<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.write[index].transformations[index]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentswriteindex)</sup></sup>
-
-
-
-
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.write[index].destination
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentswriteindex)</sup></sup>
+#### Blueprint.spec.modules[key].arguments.assets[index].destination
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindex)</sup></sup>
 
 
 
@@ -883,14 +392,14 @@ Destination is the data store to which the data will be written
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentswriteindexdestinationconnection">connection</a></b></td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationconnection">connection</a></b></td>
         <td>object</td>
         <td>
           Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentswriteindexdestinationvaultkey">vault</a></b></td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationvaultkey">vault</a></b></td>
         <td>map[string]object</td>
         <td>
           Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
@@ -900,8 +409,8 @@ Destination is the data store to which the data will be written
 </table>
 
 
-#### Blueprint.spec.modules[key].arguments.write[index].destination.connection
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentswriteindexdestination)</sup></sup>
+#### Blueprint.spec.modules[key].arguments.assets[index].destination.connection
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexdestination)</sup></sup>
 
 
 
@@ -927,8 +436,8 @@ Connection has the relevant details for accesing the data (url, table, ssl, etc.
 </table>
 
 
-#### Blueprint.spec.modules[key].arguments.write[index].destination.vault[key]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentswriteindexdestination)</sup></sup>
+#### Blueprint.spec.modules[key].arguments.assets[index].destination.vault[key]
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexdestination)</sup></sup>
 
 
 
@@ -969,6 +478,149 @@ Holds details for retrieving credentials from Vault store.
         <td>string</td>
         <td>
           SecretPath is the path of the secret holding the Credentials in Vault<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].arguments.assets[index].source
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindex)</sup></sup>
+
+
+
+Source is the where the data currently resides
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>format</b></td>
+        <td>string</td>
+        <td>
+          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexsourceconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexsourcevaultkey">vault</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].arguments.assets[index].source.connection
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexsource)</sup></sup>
+
+
+
+Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].arguments.assets[index].source.vault[key]
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexsource)</sup></sup>
+
+
+
+Holds details for retrieving credentials from Vault store.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>address</b></td>
+        <td>string</td>
+        <td>
+          Address is Vault address<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>authPath</b></td>
+        <td>string</td>
+        <td>
+          AuthPath is the path to auth method i.e. kubernetes<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>role</b></td>
+        <td>string</td>
+        <td>
+          Role is the Vault role used for retrieving the credentials<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>secretPath</b></td>
+        <td>string</td>
+        <td>
+          SecretPath is the path of the secret holding the Credentials in Vault<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].arguments.assets[index].transformations[index]
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindex)</sup></sup>
+
+
+
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -1173,7 +825,7 @@ FybrikApplication provides information about the application whose data is being
         <td><b><a href="#fybrikapplicationspec">spec</a></b></td>
         <td>object</td>
         <td>
-          FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog<br/>
+          FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1192,7 +844,7 @@ FybrikApplication provides information about the application whose data is being
 
 
 
-FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog
+FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.
 
 <table>
     <thead>
@@ -1349,7 +1001,7 @@ A label selector requirement is a selector that contains values, a key, and an o
 
 
 
-DataContext indicates data set chosen by the Data Scientist to be used by his application, and includes information about the data format and technologies used by the application to access the data.
+DataContext indicates data set being processed by the workload and includes information about the data format and technologies used to access the data.
 
 <table>
     <thead>
@@ -1361,17 +1013,19 @@ DataContext indicates data set chosen by the Data Scientist to be used by his ap
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>catalogService</b></td>
-        <td>string</td>
+        <td><b>flow</b></td>
+        <td>enum</td>
         <td>
-          CatalogService represents the catalog service for accessing the requested dataset. If not specified, the enterprise catalog service will be used.<br/>
+          Flows indicates what is being done with the particular dataset - ex: read, write, copy (ingest), delete This is optional for the purpose of backward compatibility. If nothing is provided, read is assumed.<br/>
+          <br/>
+            <i>Enum</i>: read, write, delete, copy<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>dataSetID</b></td>
         <td>string</td>
         <td>
-          DataSetID is a unique identifier of the dataset chosen from the data catalog for processing by the data user application.<br/>
+          DataSetID is a unique identifier of the dataset chosen from the data catalog. For data catalogs that support multiple sub-catalogs, it includes the catalog id and the dataset id. When writing a new dataset it is the name provided by the user or workload generating it.<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -1402,10 +1056,10 @@ Requirements from the system
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#fybrikapplicationspecdataindexrequirementscopy">copy</a></b></td>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementsflowparams">flowParams</a></b></td>
         <td>object</td>
         <td>
-          CopyRequrements include the requirements for copying the data<br/>
+          FlowParams include the requirements for particular data flows<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1419,12 +1073,12 @@ Requirements from the system
 </table>
 
 
-#### FybrikApplication.spec.data[index].requirements.copy
+#### FybrikApplication.spec.data[index].requirements.flowParams
 <sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirements)</sup></sup>
 
 
 
-CopyRequrements include the requirements for copying the data
+FlowParams include the requirements for particular data flows
 
 <table>
     <thead>
@@ -1436,51 +1090,26 @@ CopyRequrements include the requirements for copying the data
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#fybrikapplicationspecdataindexrequirementscopycatalog">catalog</a></b></td>
-        <td>object</td>
+        <td><b>catalog</b></td>
+        <td>string</td>
         <td>
-          Catalog indicates that the data asset must be cataloged.<br/>
+          Catalog indicates that the data asset must be cataloged, and in which catalog to register it<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>required</b></td>
+        <td><b>isNewDataSet</b></td>
         <td>boolean</td>
         <td>
-          Required indicates that the data must be copied.<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### FybrikApplication.spec.data[index].requirements.copy.catalog
-<sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirementscopy)</sup></sup>
-
-
-
-Catalog indicates that the data asset must be cataloged.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>catalogID</b></td>
-        <td>string</td>
-        <td>
-          CatalogID specifies the catalog where the data will be cataloged.<br/>
+          IsNewDataSet if true indicates that the DataContext.DataSetID is user provided and not a full catalog / dataset ID. Relevant when writing. A unique ID from the catalog will be provided in the FybrikApplication Status after a new catalog entry is created.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>service</b></td>
-        <td>string</td>
+        <td><b>storageEstimate</b></td>
+        <td>integer</td>
         <td>
-          CatalogService specifies the datacatalog service that will be used for catalogging the data into.<br/>
+          Storage estimate indicates the estimated amount of storage in MB, GB, TB required when writing new data.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -2592,6 +2221,13 @@ PlotterSpec defines the desired state of Plotter, which is applied in a multi-cl
         </tr>
     </thead>
     <tbody><tr>
+        <td><b>appInfo</b></td>
+        <td>object</td>
+        <td>
+          Application context to be transferred to the modules<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b><a href="#plotterspecappselector">appSelector</a></b></td>
         <td>object</td>
         <td>
@@ -2914,9 +2550,11 @@ Flows is the list of data flows driven from fybrikapplication: Each element in t
         <td>true</td>
       </tr><tr>
         <td><b>flowType</b></td>
-        <td>string</td>
+        <td>enum</td>
         <td>
           Type of the flow (e.g. read)<br/>
+          <br/>
+            <i>Enum</i>: read, write, delete, copy<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -2955,9 +2593,11 @@ Subflows is a list of data flows which are originated from the same data asset b
     </thead>
     <tbody><tr>
         <td><b>flowType</b></td>
-        <td>string</td>
+        <td>enum</td>
         <td>
           Type of the flow (e.g. read)<br/>
+          <br/>
+            <i>Enum</i>: read, write, delete, copy<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -3074,7 +2714,7 @@ Step parameters TODO why not flatten the parameters into this data flow step
         <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssource">source</a></b></td>
         <td>object</td>
         <td>
-          StepSource is the source of this step: it could be assetID or an enpoint of another step<br/>
+          StepSource is the source of this step: it could be assetID or an endpoint of another step<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -3201,7 +2841,7 @@ StepSink holds information to where the target data will be written: it could be
 
 
 
-StepSource is the source of this step: it could be assetID or an enpoint of another step
+StepSource is the source of this step: it could be assetID or an endpoint of another step
 
 <table>
     <thead>
@@ -3350,6 +2990,13 @@ ModuleInfo is a copy of FybrikModule Custom Resource.  It contains information t
             <i>Enum</i>: asset, workload, cluster<br/>
         </td>
         <td>false</td>
+      </tr><tr>
+        <td><b>capability</b></td>
+        <td>string</td>
+        <td>
+          Module capability<br/>
+        </td>
+        <td>true</td>
       </tr><tr>
         <td><b><a href="#plotterspectemplateskeymodulesindexchart">chart</a></b></td>
         <td>object</td>

@@ -6,13 +6,14 @@ package v1alpha1
 import (
 	"encoding/json"
 
-	validate "fybrik.io/fybrik/pkg/taxonomy/validate"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+
+	validate "fybrik.io/fybrik/pkg/taxonomy/validate"
 )
 
 func (r *FybrikModule) SetupWebhookWithManager(mgr ctrl.Manager) error {

@@ -9,8 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"fybrik.io/fybrik/pkg/taxonomy/model"
 	"sigs.k8s.io/yaml"
+
+	"fybrik.io/fybrik/pkg/taxonomy/model"
 )
 
 // WriteDocumentToFile writes a document model to a JSON or YAML file.

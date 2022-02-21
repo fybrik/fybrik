@@ -6,9 +6,10 @@ package compile
 import (
 	"fmt"
 
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
+
 	"fybrik.io/fybrik/pkg/slices"
 	"fybrik.io/fybrik/pkg/taxonomy/model"
-	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
 )
 
 // transform applies transformations over an input document to make it structural.

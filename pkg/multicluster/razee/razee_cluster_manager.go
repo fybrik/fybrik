@@ -8,8 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	corev1 "k8s.io/api/core/v1"
-
 	"emperror.dev/errors"
 	"github.com/IBM/satcon-client-go/client"
 	"github.com/IBM/satcon-client-go/client/auth/apikey"
@@ -18,6 +16,7 @@ import (
 	"github.com/IBM/satcon-client-go/client/types"
 	"github.com/ghodss/yaml"
 	"github.com/rs/zerolog"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"emperror.dev/errors"
+
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 )
 

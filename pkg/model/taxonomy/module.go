@@ -15,6 +15,23 @@ type PluginType string
 
 type ActionName string
 
+// +kubebuilder:validation:Enum=read;write;delete;copy
+type DataFlow string
+
+const (
+	// ReadFlow indicates a data set is being read
+	ReadFlow DataFlow = "read"
+
+	// WriteFlow indicates a data set is being written
+	WriteFlow DataFlow = "write"
+
+	// DeleteFlow indicates a data set is being deleted
+	DeleteFlow DataFlow = "delete"
+
+	// CopyFlow indicates a data set is being copied
+	CopyFlow DataFlow = "copy"
+)
+
 // +kubebuilder:pruning:PreserveUnknownFields
 type Action struct {
 	Name                 ActionName       `json:"name"`

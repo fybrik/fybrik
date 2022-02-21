@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"emperror.dev/errors"
+
 	openapiclient "fybrik.io/fybrik/pkg/connectors/policymanager/openapiclient"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 )

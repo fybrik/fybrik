@@ -9,13 +9,8 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"fybrik.io/fybrik/manager/controllers/utils"
-	"fybrik.io/fybrik/pkg/helm"
-	"fybrik.io/fybrik/pkg/logging"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"github.com/onsi/gomega"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -23,6 +18,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/yaml"
+
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/helm"
+	"fybrik.io/fybrik/pkg/logging"
 )
 
 func readBlueprint(f string) (*app.Blueprint, error) {
@@ -93,9 +93,11 @@ func TestShortReleaseName(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	modules := map[string]app.BlueprintModule{"dataFlowInstance1": {
-		Name:      "dataFlow",
-		Chart:     app.ChartSpec{Name: "thechart"},
-		Arguments: app.ModuleArguments{},
+		Name:  "dataFlow",
+		Chart: app.ChartSpec{Name: "thechart"},
+		Arguments: app.ModuleArguments{
+			Assets: []app.AssetContext{},
+		},
 	}}
 
 	blueprint := app.Blueprint{
@@ -129,7 +131,10 @@ func TestLongReleaseName(t *testing.T) {
 		},
 		Spec: app.BlueprintSpec{
 			Cluster: "cluster1",
-			Modules: map[string]app.BlueprintModule{"ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff": {Name: "longname", Chart: app.ChartSpec{Name: "start-image"}}},
+			Modules: map[string]app.BlueprintModule{"ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff": {
+				Name:      "longname",
+				Arguments: app.ModuleArguments{Assets: []app.AssetContext{}},
+				Chart:     app.ChartSpec{Name: "start-image"}}},
 		},
 	}
 

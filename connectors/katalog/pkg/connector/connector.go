@@ -9,12 +9,13 @@ import (
 	"net/http"
 	"strings"
 
-	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
-	"fybrik.io/fybrik/pkg/model/datacatalog"
-	"fybrik.io/fybrik/pkg/vault"
 	"github.com/gin-gonic/gin"
 	"k8s.io/apimachinery/pkg/types"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
+
+	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
+	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/vault"
 )
 
 type Handler struct {

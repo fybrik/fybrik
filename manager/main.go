@@ -35,12 +35,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
+	kapps "k8s.io/api/apps/v1"
+	kbatch "k8s.io/api/batch/v1"
+
 	appv1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/app"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/helm"
-	kapps "k8s.io/api/apps/v1"
-	kbatch "k8s.io/api/batch/v1"
 )
 
 var (

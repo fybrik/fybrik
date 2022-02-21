@@ -9,11 +9,11 @@ import (
 	"log"
 	"net/http"
 
-	dm "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	dm "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 )
 
 var dmaClient *K8sClient

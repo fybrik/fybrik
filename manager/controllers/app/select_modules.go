@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"emperror.dev/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
@@ -17,7 +19,6 @@ import (
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 // DataInfo defines all the information about the given data set that comes from the fybrikapplication spec and from the connectors.
@@ -124,7 +125,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 				}
 				// query the policy manager whether WRITE operation is allowed
 				operation := new(policymanager.RequestAction)
-				operation.ActionType = policymanager.WRITE
+				operation.ActionType = taxonomy.WriteFlow
 				operation.Destination = string(account.Spec.Region)
 				operation.ProcessingLocation = account.Spec.Region
 				actions, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
