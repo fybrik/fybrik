@@ -12,11 +12,12 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	ctrl "sigs.k8s.io/controller-runtime"
+
+	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
+	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 )
 
 var (

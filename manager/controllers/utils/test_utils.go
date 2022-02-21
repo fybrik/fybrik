@@ -4,11 +4,12 @@
 package utils
 
 import (
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"github.com/onsi/gomega"
 	kbatch "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 )
 
 // Creates a scheme that can be used in unit tests

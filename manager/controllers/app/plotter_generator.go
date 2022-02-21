@@ -9,9 +9,15 @@ import (
 	"text/template"
 
 	"emperror.dev/errors"
+	"github.com/Masterminds/sprig/v3"
+	"github.com/rs/zerolog"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
+	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -19,10 +25,6 @@ import (
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
 	vault "fybrik.io/fybrik/pkg/vault"
-	"github.com/Masterminds/sprig/v3"
-	"github.com/rs/zerolog"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // NewAssetInfo points to the provisoned storage and hold information about the new asset
@@ -32,20 +34,21 @@ type NewAssetInfo struct {
 
 // PlotterGenerator constructs a plotter based on the requirements (governance actions, data location) and the existing set of FybrikModules
 type PlotterGenerator struct {
-	Client                client.Client
-	Log                   zerolog.Logger
-	Modules               map[string]*app.FybrikModule
-	Clusters              []multicluster.Cluster
-	Owner                 types.NamespacedName
-	PolicyManager         pmclient.PolicyManager
-	Provision             storage.ProvisionInterface
-	VaultConnection       vault.Interface
-	ProvisionedStorage    map[string]NewAssetInfo
-	StorageAccountRegions []string
+	Client             client.Client
+	Log                zerolog.Logger
+	Modules            map[string]*app.FybrikModule
+	Clusters           []multicluster.Cluster
+	Owner              types.NamespacedName
+	PolicyManager      pmclient.PolicyManager
+	Provision          storage.ProvisionInterface
+	VaultConnection    vault.Interface
+	ProvisionedStorage map[string]NewAssetInfo
+	StorageAccounts    []app.FybrikStorageAccount
+	AttributeManager   *infrastructure.AttributeManager
 }
 
 // GetCopyDestination creates a Dataset for bucket allocation by implicit copies or ingest.
-func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterface *app.InterfaceDetails, geo string) (*app.DataStore, error) {
+func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterface *app.InterfaceDetails, account *app.FybrikStorageAccountSpec) (*app.DataStore, error) {
 	// provisioned storage for COPY
 	var genBucketName, genObjectKeyName string
 	if item.DataDetails.ResourceMetadata.Name != "" {
@@ -54,14 +57,13 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 		genObjectKeyName = p.Owner.Name + utils.Hash(item.Context.DataSetID, 10)
 	}
 	genBucketName = generateBucketName(p.Owner, item.Context.DataSetID)
-	var bucket *storage.ProvisionedBucket
-	var err error
-	if bucket, err = AllocateBucket(p.Client, p.Log, genBucketName, geo); err != nil {
-		p.Log.Error().Err(err).Msg("Bucket allocation failed")
-		return nil, err
+	bucket := &storage.ProvisionedBucket{
+		Name:      genBucketName,
+		Endpoint:  account.Endpoint,
+		SecretRef: types.NamespacedName{Name: account.SecretRef, Namespace: utils.GetSystemNamespace()},
 	}
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
-	if err = p.Provision.CreateDataset(bucketRef, bucket, &p.Owner); err != nil {
+	if err := p.Provision.CreateDataset(bucketRef, bucket, &p.Owner); err != nil {
 		p.Log.Error().Err(err).Msg("Dataset creation failed")
 		return nil, err
 	}
@@ -87,13 +89,13 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 
 	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
 	vaultMap := make(map[string]app.Vault)
-	vaultMap[string(app.WriteFlow)] = app.Vault{
+	vaultMap[string(taxonomy.WriteFlow)] = app.Vault{
 		SecretPath: vaultSecretPath,
 		Role:       utils.GetModulesRole(),
 		Address:    utils.GetVaultAddress(),
 	}
 	// The copied asset needs creds for later to be read
-	vaultMap[string(app.ReadFlow)] = app.Vault{
+	vaultMap[string(taxonomy.ReadFlow)] = app.Vault{
 		SecretPath: vaultSecretPath,
 		Role:       utils.GetModulesRole(),
 		Address:    utils.GetVaultAddress(),
@@ -116,7 +118,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 	// Set the value received from the catalog connector.
 	vaultSecretPath := item.DataDetails.Credentials
 	vaultMap := make(map[string]app.Vault)
-	vaultMap[string(app.ReadFlow)] = app.Vault{
+	vaultMap[string(taxonomy.ReadFlow)] = app.Vault{
 		SecretPath: vaultSecretPath,
 		Role:       utils.GetModulesRole(),
 		Address:    utils.GetVaultAddress(),
@@ -154,10 +156,11 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 		template := app.Template{
 			Name: string(moduleCapability.Capability),
 			Modules: []app.ModuleInfo{{
-				Name:  element.Module.Name,
-				Type:  element.Module.Spec.Type,
-				Chart: element.Module.Spec.Chart,
-				Scope: moduleCapability.Scope,
+				Name:       element.Module.Name,
+				Type:       element.Module.Spec.Type,
+				Chart:      element.Module.Spec.Chart,
+				Scope:      moduleCapability.Scope,
+				Capability: moduleCapability.Capability,
 			}},
 		}
 		templates = append(templates, template)
@@ -172,7 +175,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 		var subFlow app.SubFlow
 		if !element.Sink.Virtual {
 			// allocate storage and create a temoprary asset
-			if sinkDataStore, err = p.GetCopyDestination(item, element.Sink.Connection, element.StorageAccountRegion); err != nil {
+			if sinkDataStore, err = p.GetCopyDestination(item, element.Sink.Connection, &element.StorageAccount); err != nil {
 				p.Log.Error().Err(err).Str(logging.DATASETID, item.Context.DataSetID).Msg("Storage allocation for copy failed")
 				return err
 			}
@@ -203,7 +206,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 			datasetID = copyAssetID
 			subFlow = app.SubFlow{
 				Name:     "",
-				FlowType: app.CopyFlow,
+				FlowType: taxonomy.CopyFlow,
 				Triggers: []app.SubFlowTrigger{app.InitTrigger},
 				Steps:    [][]app.DataFlowStep{steps},
 			}
@@ -225,7 +228,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 			}
 			subFlow = app.SubFlow{
 				Name:     "",
-				FlowType: app.ReadFlow,
+				FlowType: taxonomy.ReadFlow,
 				Triggers: []app.SubFlowTrigger{app.WorkloadTrigger},
 				Steps:    [][]app.DataFlowStep{steps},
 			}

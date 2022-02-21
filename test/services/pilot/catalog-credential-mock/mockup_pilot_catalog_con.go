@@ -12,11 +12,11 @@ import (
 	"strconv"
 	"time"
 
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
-
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
+
+	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 )
 
 func getEnv(key string) string {

@@ -6,9 +6,10 @@ package app
 import (
 	"strings"
 
+	corev1 "k8s.io/api/core/v1"
+
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/pkg/logging"
-	corev1 "k8s.io/api/core/v1"
 )
 
 // Condition indices are static. Conditions always present in the status.

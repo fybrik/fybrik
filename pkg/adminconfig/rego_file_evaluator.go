@@ -7,16 +7,17 @@ import (
 	"context"
 	"encoding/json"
 
-	"fybrik.io/fybrik/manager/controllers/utils"
-	"fybrik.io/fybrik/pkg/logging"
-	"fybrik.io/fybrik/pkg/model/adminrules"
-	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/yaml"
+
+	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/model/adminrules"
+	"fybrik.io/fybrik/pkg/taxonomy/validate"
 )
 
 const ValidationPath string = "/tmp/taxonomy/adminrules.json#/definitions/EvaluationOutputStructure"
@@ -144,45 +145,12 @@ func (r *RegoPolicyEvaluator) merge(newDecision adminrules.Decision, oldDecision
 	mergedDecision.Deploy = deploy
 	// merge restrictions
 	mergedDecision.DeploymentRestrictions = oldDecision.DeploymentRestrictions
-	if mergedDecision.DeploymentRestrictions.Clusters == nil {
-		mergedDecision.DeploymentRestrictions.Clusters = make(adminrules.Restriction)
-	}
-	if err := mergeRestrictions(&mergedDecision.DeploymentRestrictions.Clusters, &newDecision.DeploymentRestrictions.Clusters); err != nil {
-		return false, adminrules.Decision{}
-	}
-	if mergedDecision.DeploymentRestrictions.Modules == nil {
-		mergedDecision.DeploymentRestrictions.Modules = make(adminrules.Restriction)
-	}
-	if err := mergeRestrictions(&mergedDecision.DeploymentRestrictions.Modules, &newDecision.DeploymentRestrictions.Modules); err != nil {
-		return false, adminrules.Decision{}
-	}
-	if mergedDecision.DeploymentRestrictions.StorageAccounts == nil {
-		mergedDecision.DeploymentRestrictions.StorageAccounts = make(adminrules.Restriction)
-	}
-
-	if err := mergeRestrictions(&mergedDecision.DeploymentRestrictions.StorageAccounts, &newDecision.DeploymentRestrictions.StorageAccounts); err != nil {
-		return false, adminrules.Decision{}
-	}
+	mergedDecision.DeploymentRestrictions.Clusters = append(mergedDecision.DeploymentRestrictions.Clusters, newDecision.DeploymentRestrictions.Clusters...)
+	mergedDecision.DeploymentRestrictions.Modules = append(mergedDecision.DeploymentRestrictions.Modules, newDecision.DeploymentRestrictions.Modules...)
+	mergedDecision.DeploymentRestrictions.StorageAccounts = append(mergedDecision.DeploymentRestrictions.StorageAccounts, newDecision.DeploymentRestrictions.StorageAccounts...)
 	// policies are appended to the output, no need to merge
 	mergedDecision.Policy = adminrules.DecisionPolicy{}
 	return true, mergedDecision
-}
-
-func mergeRestrictions(r1 *adminrules.Restriction, r2 *adminrules.Restriction) error {
-	if r2 == nil {
-		return nil
-	}
-	for key, values := range *r2 {
-		if len((*r1)[key]) == 0 {
-			(*r1)[key] = values
-		} else {
-			(*r1)[key] = utils.Intersection((*r1)[key], values)
-			if len((*r1)[key]) == 0 {
-				return errors.New("unable to merge restrictions")
-			}
-		}
-	}
-	return nil
 }
 
 func validateStructure(obj interface{}, taxonomySchema string, uuid string) error {

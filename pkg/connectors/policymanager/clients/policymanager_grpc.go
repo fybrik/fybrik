@@ -13,12 +13,13 @@ import (
 	"time"
 
 	"emperror.dev/errors"
+	"google.golang.org/grpc"
+
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	random "fybrik.io/fybrik/pkg/random"
 	"fybrik.io/fybrik/pkg/serde"
-	"google.golang.org/grpc"
 )
 
 var _ PolicyManager = (*grpcPolicyManager)(nil)
@@ -94,10 +95,10 @@ func ConvertGrpcReqToOpenAPIReq(in *pb.ApplicationContext) (*policymanager.GetPo
 		action.Destination = destination
 		operationType := operation.GetType()
 		if operationType == pb.AccessOperation_READ {
-			action.ActionType = policymanager.READ
+			action.ActionType = taxonomy.ReadFlow
 		}
 		if operationType == pb.AccessOperation_WRITE {
-			action.ActionType = policymanager.WRITE
+			action.ActionType = taxonomy.WriteFlow
 		}
 		datasetID := datasets[i].GetDataset().GetDatasetId()
 		resource.ID = taxonomy.AssetID(datasetID)
@@ -144,9 +145,9 @@ func ConvertOpenAPIReqToGrpcReq(in *policymanager.GetPolicyDecisionsRequest, cre
 
 	var grpcActionType pb.AccessOperation_AccessType
 	switch actionType {
-	case policymanager.READ:
+	case taxonomy.ReadFlow:
 		grpcActionType = pb.AccessOperation_READ
-	case policymanager.WRITE:
+	case taxonomy.WriteFlow:
 		grpcActionType = pb.AccessOperation_WRITE
 	default: // default is read
 		grpcActionType = pb.AccessOperation_READ

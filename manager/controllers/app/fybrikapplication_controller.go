@@ -7,24 +7,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
 	"os"
 	"strings"
 	"time"
 
-	"fybrik.io/fybrik/manager/controllers"
-	"fybrik.io/fybrik/pkg/adminconfig"
-	"fybrik.io/fybrik/pkg/environment"
-	"fybrik.io/fybrik/pkg/model/datacatalog"
-	"fybrik.io/fybrik/pkg/model/policymanager"
-	"fybrik.io/fybrik/pkg/model/taxonomy"
-	local "fybrik.io/fybrik/pkg/multicluster/local"
-	"fybrik.io/fybrik/pkg/taxonomy/validate"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-
 	"emperror.dev/errors"
-	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
-	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"github.com/rs/zerolog"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -35,16 +22,28 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/adminconfig"
+	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
+	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
+	"fybrik.io/fybrik/pkg/environment"
+	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/model/policymanager"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
+	local "fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/storage"
+	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"fybrik.io/fybrik/pkg/vault"
 )
 
@@ -60,6 +59,7 @@ type FybrikApplicationReconciler struct {
 	ClusterManager    multicluster.ClusterLister
 	Provision         storage.ProvisionInterface
 	ConfigEvaluator   adminconfig.EvaluatorInterface
+	Infrastructure    *infrastructure.AttributeManager
 }
 
 type ApplicationContext struct {
@@ -201,7 +201,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 		}
 
 		// register assets if necessary if the ready state has been received
-		if dataCtx.Requirements.Copy.Catalog.CatalogID != "" {
+		if dataCtx.Requirements.FlowParams.Catalog != "" {
 			if applicationContext.Application.Status.AssetStates[assetID].CatalogedAsset != "" {
 				// the asset has been already cataloged
 				continue
@@ -218,7 +218,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 				continue
 			}
 			// register the asset: experimental feature
-			if newAssetID, err := r.RegisterAsset(dataCtx.Requirements.Copy.Catalog.CatalogID, &provisionedBucketRef, applicationContext.Application); err == nil {
+			if newAssetID, err := r.RegisterAsset(dataCtx.Requirements.FlowParams.Catalog, &provisionedBucketRef, applicationContext.Application); err == nil {
 				state := applicationContext.Application.Status.AssetStates[assetID]
 				state.CatalogedAsset = newAssetID
 				applicationContext.Application.Status.AssetStates[assetID] = state
@@ -302,9 +302,9 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 func setReadModulesEndpoints(application *api.FybrikApplication, flows []api.Flow) {
 	readEndpointMap := make(map[string]taxonomy.Connection)
 	for _, flow := range flows {
-		if flow.FlowType == api.ReadFlow {
+		if flow.FlowType == taxonomy.ReadFlow {
 			for _, subflow := range flow.SubFlows {
-				if subflow.FlowType == api.ReadFlow {
+				if subflow.FlowType == taxonomy.ReadFlow {
 					for _, sequentialSteps := range subflow.Steps {
 						// Check the last step in the sequential flow that is for read (this will expose the reading api)
 						lastStep := sequentialSteps[len(sequentialSteps)-1]
@@ -405,15 +405,18 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 
 // CreateDataRequest generates a new DataRequest object for a specific asset based on FybrikApplication and asset metadata
 func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataContext, assetMetadata *datacatalog.ResourceMetadata) adminconfig.DataRequest {
-	usage := make(map[api.DataFlow]bool)
-	// request to read is determined by the workload selector presence
-	usage[api.ReadFlow] = (application.Spec.Selector.WorkloadSelector.Size() > 0)
-	// explicit request to copy
-	usage[api.CopyFlow] = dataCtx.Requirements.Copy.Required
+	var flow taxonomy.DataFlow
+
+	// If a workload selector is provided but no flow, assume read - for backward compatibility
+	if (application.Spec.Selector.WorkloadSelector.Size() > 0) && (dataCtx.Flow == "") {
+		flow = taxonomy.ReadFlow
+	} else {
+		flow = dataCtx.Flow
+	}
 	return adminconfig.DataRequest{
 		DatasetID: dataCtx.DataSetID,
 		Interface: dataCtx.Requirements.Interface,
-		Usage:     usage,
+		Usage:     flow,
 		Metadata:  assetMetadata,
 	}
 }
@@ -476,11 +479,11 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 	input.Spec.AppInfo.DeepCopyInto(&configEvaluatorInput.Workload.Properties)
 	configEvaluatorInput.Workload.Cluster = workloadCluster
 	configEvaluatorInput.Request = CreateDataRequest(input, *req.Context, &req.DataDetails.ResourceMetadata)
+
 	// Read policies for data that is processed in the workload geography
-	if configEvaluatorInput.Request.Usage[api.ReadFlow] {
-		actionType := policymanager.READ
+	if configEvaluatorInput.Request.Usage == taxonomy.ReadFlow {
 		reqAction := policymanager.RequestAction{
-			ActionType:         actionType,
+			ActionType:         taxonomy.ReadFlow,
 			Destination:        workloadCluster.Metadata.Region,
 			ProcessingLocation: taxonomy.ProcessingLocation(workloadCluster.Metadata.Region),
 		}
@@ -538,7 +541,7 @@ func (r *FybrikApplicationReconciler) GetWorkloadCluster(appContext ApplicationC
 // NewFybrikApplicationReconciler creates a new reconciler for FybrikApplications
 func NewFybrikApplicationReconciler(mgr ctrl.Manager, name string,
 	policyManager pmclient.PolicyManager, catalog dcclient.DataCatalog, cm multicluster.ClusterLister,
-	provision storage.ProvisionInterface, evaluator adminconfig.EvaluatorInterface) *FybrikApplicationReconciler {
+	provision storage.ProvisionInterface, evaluator adminconfig.EvaluatorInterface, attributeManager *infrastructure.AttributeManager) *FybrikApplicationReconciler {
 	log := logging.LogInit(logging.CONTROLLER, name)
 	return &FybrikApplicationReconciler{
 		Client:            mgr.GetClient(),
@@ -551,6 +554,7 @@ func NewFybrikApplicationReconciler(mgr ctrl.Manager, name string,
 		Provision:         provision,
 		DataCatalog:       catalog,
 		ConfigEvaluator:   evaluator,
+		Infrastructure:    attributeManager,
 	}
 }
 
@@ -620,20 +624,13 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*api.FybrikMod
 	return moduleMap, nil
 }
 
-// get all available regions for allocating storage
-// TODO(shlomitk1): avoid duplications
-func (r *FybrikApplicationReconciler) getStorageAccountRegions() ([]string, error) {
-	regions := []string{}
+// get all available storage accounts
+func (r *FybrikApplicationReconciler) getStorageAccounts() ([]api.FybrikStorageAccount, error) {
 	var accountList api.FybrikStorageAccountList
 	if err := r.List(context.Background(), &accountList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
-		return regions, err
+		return nil, err
 	}
-	for _, account := range accountList.Items {
-		for key := range account.Spec.Endpoints {
-			regions = append(regions, key)
-		}
-	}
-	return regions, nil
+	return accountList.Items, nil
 }
 
 func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(applicationContext ApplicationContext, provisionedStorage map[string]NewAssetInfo) (bool, error) {
@@ -680,9 +677,9 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 	for m := range moduleMap {
 		applicationContext.Log.Info().Msgf("Module: %s", m)
 	}
-	regions, err := r.getStorageAccountRegions()
+	accounts, err := r.getStorageAccounts()
 	if err != nil {
-		applicationContext.Log.Error().Err(err).Msg("Error while listing storage account regions")
+		applicationContext.Log.Error().Err(err).Msg("Error while listing storage accounts")
 		return nil, nil, err
 	}
 	// create a plotter generator that will select modules to be orchestrated based on user requirements and module capabilities
@@ -692,19 +689,21 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 	}
 
 	plotterGen := &PlotterGenerator{
-		Client:                r.Client,
-		Log:                   applicationContext.Log,
-		Modules:               moduleMap,
-		Clusters:              clusters,
-		Owner:                 client.ObjectKeyFromObject(applicationContext.Application),
-		PolicyManager:         r.PolicyManager,
-		Provision:             r.Provision,
-		ProvisionedStorage:    make(map[string]NewAssetInfo),
-		StorageAccountRegions: regions,
+		Client:             r.Client,
+		Log:                applicationContext.Log,
+		Modules:            moduleMap,
+		Clusters:           clusters,
+		Owner:              client.ObjectKeyFromObject(applicationContext.Application),
+		PolicyManager:      r.PolicyManager,
+		Provision:          r.Provision,
+		ProvisionedStorage: make(map[string]NewAssetInfo),
+		StorageAccounts:    accounts,
+		AttributeManager:   r.Infrastructure,
 	}
 
 	plotterSpec := &api.PlotterSpec{
 		Selector:         applicationContext.Application.Spec.Selector,
+		AppInfo:          applicationContext.Application.Spec.AppInfo,
 		Assets:           map[string]api.AssetDetails{},
 		Flows:            []api.Flow{},
 		ModulesNamespace: utils.GetDefaultModulesNamespace(),

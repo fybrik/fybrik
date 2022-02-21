@@ -6,6 +6,7 @@ package app
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -14,7 +15,6 @@ import (
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
-	"k8s.io/apimachinery/pkg/api/equality"
 )
 
 // ContextInterface is an interface for communication with a generated resource (e.g. Blueprint)

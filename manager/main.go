@@ -14,6 +14,7 @@ import (
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/environment"
+	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/logging"
 
 	"emperror.dev/errors"
@@ -34,12 +35,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
+	kapps "k8s.io/api/apps/v1"
+	kbatch "k8s.io/api/batch/v1"
+
 	appv1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/app"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/helm"
-	kapps "k8s.io/api/apps/v1"
-	kbatch "k8s.io/api/batch/v1"
 )
 
 var (
@@ -143,6 +145,12 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			return 1
 		}
 		evaluator := adminconfig.NewRegoPolicyEvaluator(logging.LogInit(logging.CONTROLLER, "FybrikApplication"), query)
+		infrastructureManager, err := infrastructure.NewAttributeManager()
+		if err != nil {
+			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to get infrastructure attributes")
+			return 1
+		}
+
 		// Initiate the FybrikApplication Controller
 		applicationController := app.NewFybrikApplicationReconciler(
 			mgr,
@@ -152,6 +160,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			clusterManager,
 			storage.NewProvisionImpl(mgr.GetClient()),
 			evaluator,
+			infrastructureManager,
 		)
 		if err := applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create controller")

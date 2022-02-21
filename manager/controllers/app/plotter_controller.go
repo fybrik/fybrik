@@ -11,22 +11,23 @@ import (
 	"strings"
 	"time"
 
-	"fybrik.io/fybrik/manager/controllers"
-	"fybrik.io/fybrik/manager/controllers/utils"
-	"fybrik.io/fybrik/pkg/environment"
-	"fybrik.io/fybrik/pkg/logging"
-	"github.com/rs/zerolog"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-
 	"emperror.dev/errors"
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/pkg/multicluster"
+	"github.com/rs/zerolog"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers"
+	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/environment"
+	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
+	"fybrik.io/fybrik/pkg/multicluster"
 )
 
 // PlotterReconciler reconciles a Plotter object
@@ -132,13 +133,14 @@ type PlotterModulesSpec struct {
 	AssetID         string
 	ModuleName      string
 	ModuleArguments *app.StepParameters
-	FlowType        app.DataFlow
+	FlowType        taxonomy.DataFlow
 	Chart           app.ChartSpec
 	Scope           app.CapabilityScope
+	Capability      taxonomy.Capability
 }
 
 // addCredentials updates Vault credentials field to hold only credentials related to the flow type
-func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType app.DataFlow) {
+func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType taxonomy.DataFlow) {
 	vaultMap := make(map[string]app.Vault)
 
 	// Update vaultAuthPath from the cluster metadata
@@ -155,19 +157,17 @@ func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType app
 
 // convertPlotterModuleToBlueprintModule converts an object of type PlotterModulesSpec to type ModuleInstanceSpec
 func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.Plotter, plotterModule PlotterModulesSpec) *ModuleInstanceSpec {
-	assetIDs := []string{plotterModule.AssetID}
 	blueprintModule := &ModuleInstanceSpec{
-		Chart:    &plotterModule.Chart,
-		AssetIDs: assetIDs,
-		Args: &app.ModuleArguments{
-			Labels:      plotter.Labels,
-			AppSelector: plotter.Spec.Selector.WorkloadSelector,
-			Copy:        nil,
-			Read:        nil,
-			Write:       nil,
+		Module: app.BlueprintModule{
+			Name:  plotterModule.ModuleName,
+			Chart: plotterModule.Chart,
+			Arguments: app.ModuleArguments{
+				Assets:     []app.AssetContext{},
+				Capability: plotterModule.Capability,
+			},
+			AssetIDs: []string{plotterModule.AssetID},
 		},
 		ClusterName: plotterModule.ClusterName,
-		ModuleName:  plotterModule.ModuleName,
 		Scope:       plotterModule.Scope,
 	}
 
@@ -175,15 +175,15 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		return blueprintModule
 	}
 
-	switch plotterModule.FlowType {
-	case app.ReadFlow:
-		var dataStore *app.DataStore
+	var dataStore *app.DataStore
+	var destDataStore *app.DataStore
+	if plotterModule.ModuleArguments.Source != nil {
 		if plotterModule.ModuleArguments.Source.AssetID != "" {
 			assetID := plotterModule.ModuleArguments.Source.AssetID
 			// Get source from plotter assetID list
 			assetInfo := plotter.Spec.Assets[assetID]
 			dataStore = &assetInfo.DataStore
-			addCredentials(dataStore, plotterModule.VaultAuthPath, app.ReadFlow)
+			addCredentials(dataStore, plotterModule.VaultAuthPath, taxonomy.ReadFlow)
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
@@ -191,53 +191,22 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 				Format:     plotterModule.ModuleArguments.Source.API.DataFormat,
 			}
 		}
-		blueprintModule.Args.Read = []app.ReadModuleArgs{
-			{
-				Source:          *dataStore,
-				AssetID:         plotterModule.AssetID,
-				Transformations: plotterModule.ModuleArguments.Actions,
-			},
-		}
-	case app.WriteFlow:
+	}
+	if plotterModule.ModuleArguments.Sink != nil {
 		// Get only the writeFlow related creds
 		// Update vaultAuthPath from the cluster metadata
-		destDataStore := plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore
-		addCredentials(&destDataStore, plotterModule.VaultAuthPath, app.WriteFlow)
-
-		blueprintModule.Args.Write = []app.WriteModuleArgs{
-			{
-				Destination:     destDataStore,
-				AssetID:         plotterModule.AssetID,
-				Transformations: plotterModule.ModuleArguments.Actions,
-			},
-		}
-	case app.CopyFlow:
-		var dataStore *app.DataStore
-		if plotterModule.ModuleArguments.Source.AssetID != "" {
-			assetID := plotterModule.ModuleArguments.Source.AssetID
-			// Get source from plotter assetID list
-			assetInfo := plotter.Spec.Assets[assetID]
-
-			dataStore = &assetInfo.DataStore
-			addCredentials(dataStore, plotterModule.VaultAuthPath, app.ReadFlow)
-		} else {
-			// Fill in the DataSource from the step arguments
-			dataStore = &app.DataStore{
-				Connection: plotterModule.ModuleArguments.Source.API.Connection,
-				Format:     plotterModule.ModuleArguments.Source.API.DataFormat,
-			}
-		}
-		// Get only the writeFlow related creds
-		// Update vaultAuthPath from the cluster metadata
-		destDataStore := plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore
-		addCredentials(&destDataStore, plotterModule.VaultAuthPath, app.WriteFlow)
-		blueprintModule.Args.Copy =
-			&app.CopyModuleArgs{
-				Source:          *dataStore,
-				Destination:     destDataStore,
-				AssetID:         plotterModule.AssetID,
-				Transformations: plotterModule.ModuleArguments.Actions,
-			}
+		assetID := plotterModule.ModuleArguments.Sink.AssetID
+		assetInfo := plotter.Spec.Assets[assetID]
+		destDataStore = &assetInfo.DataStore
+		addCredentials(destDataStore, plotterModule.VaultAuthPath, taxonomy.WriteFlow)
+	}
+	blueprintModule.Module.Arguments.Assets = []app.AssetContext{
+		{
+			Source:          dataStore,
+			Destination:     destDataStore,
+			AssetID:         plotterModule.AssetID,
+			Transformations: plotterModule.ModuleArguments.Actions,
+		},
 	}
 	return blueprintModule
 }
@@ -286,6 +255,7 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]ap
 							Chart:           module.Chart,
 							ModuleName:      module.Name,
 							Scope:           scope,
+							Capability:      module.Capability,
 							VaultAuthPath:   authPath,
 						}
 
@@ -384,7 +354,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 
 			logging.LogStructure("Remote blueprint", remoteBlueprint, log, false, true)
 
-			if !reflect.DeepEqual(blueprintSpec, remoteBlueprint.Spec) {
+			if !reflect.DeepEqual(&blueprintSpec, &remoteBlueprint.Spec) {
 				r.Log.Warn().Msg("Blueprint specs differ.  plotter.generation " + fmt.Sprint(plotter.Generation) + " plotter.observedGeneration " + fmt.Sprint(plotter.Status.ObservedGeneration))
 				if plotter.Generation != plotter.Status.ObservedGeneration {
 					log.Trace().Str(logging.ACTION, logging.UPDATE).Msg("Updating blueprint...")
@@ -437,9 +407,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 					Namespace:   plotter.Namespace,
 					ClusterName: cluster,
 					Labels: map[string]string{
-						"razee/watch-resource":        "debug",
-						app.ApplicationNameLabel:      plotter.Labels[app.ApplicationNameLabel],
-						app.ApplicationNamespaceLabel: plotter.Labels[app.ApplicationNamespaceLabel],
+						"razee/watch-resource": "debug",
 					},
 					Annotations: map[string]string{
 						utils.FybrikAppUUID: uuid, // Pass on the globally unique id of the fybrikapplication instance for logging purposes
@@ -447,7 +415,9 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 				},
 				Spec: blueprintSpec,
 			}
-
+			for key, val := range plotter.Labels {
+				blueprint.Labels[key] = val
+			}
 			err := r.ClusterManager.CreateBlueprint(cluster, blueprint)
 			if err != nil {
 				errorCollection = append(errorCollection, err)

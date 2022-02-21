@@ -50,6 +50,10 @@ spec:
               which provides the Data Scientist's application with secure and governed
               access to the data requested in the FybrikApplication.
             properties:
+              appInfo:
+                description: Application context to be transferred to the modules
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
               appSelector:
                 description: Selector enables to connect the resource to the application
                   Application labels should match the labels in the selector. For
@@ -190,6 +194,11 @@ spec:
                       type: string
                     flowType:
                       description: Type of the flow (e.g. read)
+                      enum:
+                      - read
+                      - write
+                      - delete
+                      - copy
                       type: string
                     name:
                       description: Name of the flow
@@ -202,6 +211,11 @@ spec:
                         properties:
                           flowType:
                             description: Type of the flow (e.g. read)
+                            enum:
+                            - read
+                            - write
+                            - delete
+                            - copy
                             type: string
                           name:
                             description: Name of the SubFlow
@@ -274,7 +288,7 @@ spec:
                                         type: object
                                       source:
                                         description: 'StepSource is the source of
-                                          this step: it could be assetID or an enpoint
+                                          this step: it could be assetID or an endpoint
                                           of another step'
                                         properties:
                                           api:
@@ -361,6 +375,9 @@ spec:
                         description: ModuleInfo is a copy of FybrikModule Custom Resource.  It
                           contains information to instantiate resource of type FybrikModule.
                         properties:
+                          capability:
+                            description: Module capability
+                            type: string
                           chart:
                             description: Chart contains the information needed to
                               use helm to install the capability
@@ -403,6 +420,7 @@ spec:
                               a stand-alone module'
                             type: string
                         required:
+                        - capability
                         - chart
                         - name
                         - type

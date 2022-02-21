@@ -7,9 +7,10 @@ import (
 	"fmt"
 
 	"emperror.dev/errors"
-	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"github.com/spf13/cobra"
 	"helm.sh/helm/v3/cmd/helm/require"
+
+	"fybrik.io/fybrik/pkg/taxonomy/validate"
 )
 
 // define the "validate" command" to run taxonomy.ValidateSchema

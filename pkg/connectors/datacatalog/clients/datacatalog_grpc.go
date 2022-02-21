@@ -10,16 +10,16 @@ import (
 	"log"
 	"time"
 
+	"emperror.dev/errors"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
-
-	"emperror.dev/errors"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // Ensure that grpcDataCatalog implements the DataCatalog interface
