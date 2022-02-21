@@ -33,7 +33,7 @@ type InfrastructureElement struct {
 }
 ```
 
-Examples of attributes:
+Attribute examples:
 
 ```
 {
@@ -42,7 +42,7 @@ Examples of attributes:
     "value": "90",
     "type": "numeric",
     "units": "US Dollar",
-	"object": "storageaccount",
+    "object": "storageaccount",
     "instance": "account-theshire"
 }
 
@@ -87,10 +87,10 @@ optimize[{"decision": decision}] {
 
 config[{"decision": decision}] {
     input.workload.properties.priority == "medium"
-	input.workload.properties.stage == "PROD"
+    input.workload.properties.stage == "PROD"
     policy := {"ID": "002", "description":"Save storage costs and minimize latency"}
-	optimize_storage := {"attribute": "storage-cost", "directive": "min", "weight": 0.6}
-	optimize_latency := {"attribute": "bandwidth", "directive": "max", "weight": 0.4}
+    optimize_storage := {"attribute": "storage-cost", "directive": "min", "weight": 0.6}
+    optimize_latency := {"attribute": "bandwidth", "directive": "max", "weight": 0.4}
     decision := {"policy": policy, [{optimize_storage, optimize_latency}]}
 }
 ```
