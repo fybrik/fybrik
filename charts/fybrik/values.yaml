@@ -166,14 +166,13 @@ manager:
     runAsGroup: 3000
     fsGroup: 2000
 
-
   securityContext:
+     readOnlyRootFilesystem: true
      privileged: false
      allowPrivilegeEscalation: false
      capabilities:
       drop:
       - ALL
-     # readOnlyRootFilesystem: true
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -242,15 +241,13 @@ opaServer:
     runAsGroup: 3000
     fsGroup: 2000
 
-
   securityContext:
+    readOnlyRootFilesystem: true
     privileged: false
     allowPrivilegeEscalation: false
     capabilities:
       drop:
       - ALL
-    # readOnlyRootFilesystem: true
-
 
   service:
     type: ClusterIP
@@ -327,12 +324,12 @@ katalogConnector:
     fsGroup: 2000
 
   securityContext:
+    readOnlyRootFilesystem: true
     privileged: false
     allowPrivilegeEscalation: false
     capabilities:
       drop:
       - ALL
-    # readOnlyRootFilesystem: true
 
   service:
     type: ClusterIP
@@ -400,12 +397,12 @@ opaConnector:
     fsGroup: 2000
 
   securityContext:
+    readOnlyRootFilesystem: true
     privileged: false
     allowPrivilegeEscalation: false
     capabilities:
       drop:
       - ALL
-    # readOnlyRootFilesystem: true
 
   service:
     type: ClusterIP
