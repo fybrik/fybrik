@@ -6,11 +6,10 @@ package app
 import (
 	"context"
 	"fmt"
-	"os"
+	"io/ioutil"
 	"testing"
 	"time"
 
-	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,7 +34,7 @@ import (
 
 // Read utility
 func readObjectFromFile(f string, obj interface{}) error {
-	bytes, err := os.ReadFile(f)
+	bytes, err := ioutil.ReadFile(f)
 	if err != nil {
 		return err
 	}
@@ -107,8 +106,7 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 		namespace = "default"
 	)
 	application := &app.FybrikApplication{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).
-		To(gomega.BeNil(), "Cannot read fybrikapplication file for test")
+	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).To(gomega.BeNil(), "Cannot read fybrikapplication file for test")
 	application.SetGeneration(1)
 	application.SetUID("1")
 	// Objects to track in the fake client.
@@ -192,13 +190,13 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(1))
 	flow := plotter.Spec.Flows[0]
 	g.Expect(flow.AssetID).To(gomega.Equal("s3-csv/redact-dataset"))
-	g.Expect(flow.FlowType).To(gomega.Equal(taxonomy.ReadFlow))
+	g.Expect(flow.FlowType).To(gomega.Equal(app.ReadFlow))
 	g.Expect(flow.SubFlows).To(gomega.HaveLen(2)) // Should have two subflows
 	copyFlow := flow.SubFlows[0]                  // Assume flow 0 is copy
-	g.Expect(copyFlow.FlowType).To(gomega.Equal(taxonomy.CopyFlow))
+	g.Expect(copyFlow.FlowType).To(gomega.Equal(app.CopyFlow))
 	g.Expect(copyFlow.Triggers).To(gomega.ContainElements(app.InitTrigger))
 	readFlow := flow.SubFlows[1]
-	g.Expect(readFlow.FlowType).To(gomega.Equal(taxonomy.ReadFlow))
+	g.Expect(readFlow.FlowType).To(gomega.Equal(app.ReadFlow))
 	g.Expect(readFlow.Triggers).To(gomega.ContainElements(app.WorkloadTrigger))
 	g.Expect(readFlow.Steps[0][0].Cluster).To(gomega.Equal("thegreendragon"))
 	// Check statuses
@@ -563,8 +561,7 @@ func TestMultipleDatasets(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// check Deny for the first dataset
-	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).
-		To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage["db2/redact-dataset"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
 	// check plotter creation
@@ -647,15 +644,13 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 
 	// check Deny states
-	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).
-		To(gomega.BeIdenticalTo(corev1.ConditionTrue))
-	g.Expect(application.Status.AssetStates["local/redact-dataset"].Conditions[DenyConditionIndex].Status).
-		To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["local/redact-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 }
 
-// This test checks the case where data comes from another region, and should be redacted.
+// This test checks the case where data comes from another regions, and should be redacted.
 // In this case a read module will be deployed close to the compute, while a copy module - close to the data.
 func TestMultipleRegions(t *testing.T) {
 	t.Parallel()
@@ -756,7 +751,6 @@ func TestCopyData(t *testing.T) {
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
-	application.Spec.Data[0].Flow = taxonomy.CopyFlow
 	application.SetGeneration(1)
 	application.SetUID("9")
 	// Objects to track in the fake client.
@@ -807,8 +801,7 @@ func TestCopyData(t *testing.T) {
 
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage[assetName].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
-	g.Expect(application.Status.ProvisionedStorage[assetName].SecretRef).
-		To(gomega.Equal("credentials-theshire"), "Incorrect storage was selected")
+	g.Expect(application.Status.ProvisionedStorage[assetName].SecretRef).To(gomega.Equal("credentials-theshire"), "Incorrect storage was selected")
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 	plotterObjectKey := types.NamespacedName{
@@ -825,7 +818,7 @@ func TestCopyData(t *testing.T) {
 	g.Expect(plotter.Spec.Flows[0].SubFlows).To(gomega.HaveLen(1))
 	subflow := plotter.Spec.Flows[0].SubFlows[0]
 	g.Expect(subflow.Triggers).To(gomega.ContainElements(app.InitTrigger))
-	g.Expect(subflow.FlowType).To(gomega.Equal(taxonomy.CopyFlow))
+	g.Expect(subflow.FlowType).To(gomega.Equal(app.CopyFlow))
 	g.Expect(subflow.Steps).To(gomega.HaveLen(1))
 	g.Expect(subflow.Steps[0]).To(gomega.HaveLen(1))
 	g.Expect(subflow.Steps[0][0].Parameters.Source.AssetID).To(gomega.Equal("s3-external/allow-theshire"))
@@ -835,6 +828,7 @@ func TestCopyData(t *testing.T) {
 // This test checks the ingest scenario
 // A storage account has been defined for the region where the dataset can not be written to according to governance policies.
 // An error is received.
+//nolint:dupl
 func TestCopyDataNotAllowed(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -849,7 +843,6 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
-	application.Spec.Data[0].Flow = taxonomy.CopyFlow
 	application.SetGeneration(1)
 	application.SetUID("10")
 	// Objects to track in the fake client.
@@ -899,6 +892,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 // This test checks the ingest scenario
 // A storage account has been defined for the region where the dataset can not be written to according to restrictions on cost
 // An error is received.
+//nolint:dupl
 func TestStorageCost(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -1147,6 +1141,7 @@ func TestFybrikApplicationWithNoDatasets(t *testing.T) {
 	g.Expect(newApp.Status.Ready).To(gomega.BeTrue())
 }
 
+//nolint:dupl
 func TestFybrikApplicationWithInvalidAppInfo(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -1193,6 +1188,7 @@ func TestFybrikApplicationWithInvalidAppInfo(t *testing.T) {
 	g.Expect(newApp.Status.Ready).NotTo(gomega.BeTrue())
 }
 
+//nolint:dupl
 func TestFybrikApplicationWithInvalidInterface(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
