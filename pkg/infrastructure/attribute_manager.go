@@ -51,7 +51,7 @@ func readInfrastructure() (infraattributes.Infrastructure, error) {
 	if err != nil {
 		return attributes, err
 	}
-	if err := validateStructure(content, ValidationPath); err != nil {
+	if err = validateStructure(content, ValidationPath); err != nil {
 		return attributes, err
 	}
 	if err = json.Unmarshal(content, &attributes); err != nil {
