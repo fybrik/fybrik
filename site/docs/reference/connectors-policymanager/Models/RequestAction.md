@@ -3,7 +3,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**actionType** | RequestActionType |  | [default: null]
+**actionType** | DataFlow |  | [default: null]
 **destination** | String |  | [optional] [default: null]
 **processingLocation** | String |  | [optional] [default: null]
 

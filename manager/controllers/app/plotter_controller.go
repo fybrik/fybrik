@@ -133,14 +133,14 @@ type PlotterModulesSpec struct {
 	AssetID         string
 	ModuleName      string
 	ModuleArguments *app.StepParameters
-	FlowType        app.DataFlow
+	FlowType        taxonomy.DataFlow
 	Chart           app.ChartSpec
 	Scope           app.CapabilityScope
 	Capability      taxonomy.Capability
 }
 
 // addCredentials updates Vault credentials field to hold only credentials related to the flow type
-func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType app.DataFlow) {
+func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType taxonomy.DataFlow) {
 	vaultMap := make(map[string]app.Vault)
 
 	// Update vaultAuthPath from the cluster metadata
@@ -183,7 +183,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			// Get source from plotter assetID list
 			assetInfo := plotter.Spec.Assets[assetID]
 			dataStore = &assetInfo.DataStore
-			addCredentials(dataStore, plotterModule.VaultAuthPath, app.ReadFlow)
+			addCredentials(dataStore, plotterModule.VaultAuthPath, taxonomy.ReadFlow)
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
@@ -198,7 +198,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		assetID := plotterModule.ModuleArguments.Sink.AssetID
 		assetInfo := plotter.Spec.Assets[assetID]
 		destDataStore = &assetInfo.DataStore
-		addCredentials(destDataStore, plotterModule.VaultAuthPath, app.WriteFlow)
+		addCredentials(destDataStore, plotterModule.VaultAuthPath, taxonomy.WriteFlow)
 	}
 	blueprintModule.Module.Arguments.Assets = []app.AssetContext{
 		{

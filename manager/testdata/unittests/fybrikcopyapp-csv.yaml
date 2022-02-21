@@ -19,9 +19,9 @@ spec:
     role: Security
   data:
   - dataSetID: "s3-csv/redact-dataset"
+    flow: read
     requirements:
       interface:
         protocol: fybrik-arrow-flight
-      copy:
-        required: true
+      
 

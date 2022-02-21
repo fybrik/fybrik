@@ -825,7 +825,7 @@ FybrikApplication provides information about the application whose data is being
         <td><b><a href="#fybrikapplicationspec">spec</a></b></td>
         <td>object</td>
         <td>
-          FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog<br/>
+          FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -844,7 +844,7 @@ FybrikApplication provides information about the application whose data is being
 
 
 
-FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog
+FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.
 
 <table>
     <thead>
@@ -1001,7 +1001,7 @@ A label selector requirement is a selector that contains values, a key, and an o
 
 
 
-DataContext indicates data set chosen by the Data Scientist to be used by his application, and includes information about the data format and technologies used by the application to access the data.
+DataContext indicates data set being processed by the workload and includes information about the data format and technologies used to access the data.
 
 <table>
     <thead>
@@ -1013,17 +1013,19 @@ DataContext indicates data set chosen by the Data Scientist to be used by his ap
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>catalogService</b></td>
-        <td>string</td>
+        <td><b>flow</b></td>
+        <td>enum</td>
         <td>
-          CatalogService represents the catalog service for accessing the requested dataset. If not specified, the enterprise catalog service will be used.<br/>
+          Flows indicates what is being done with the particular dataset - ex: read, write, copy (ingest), delete This is optional for the purpose of backward compatibility. If nothing is provided, read is assumed.<br/>
+          <br/>
+            <i>Enum</i>: read, write, delete, copy<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>dataSetID</b></td>
         <td>string</td>
         <td>
-          DataSetID is a unique identifier of the dataset chosen from the data catalog for processing by the data user application.<br/>
+          DataSetID is a unique identifier of the dataset chosen from the data catalog. For data catalogs that support multiple sub-catalogs, it includes the catalog id and the dataset id. When writing a new dataset it is the name provided by the user or workload generating it.<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -1054,10 +1056,10 @@ Requirements from the system
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#fybrikapplicationspecdataindexrequirementscopy">copy</a></b></td>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementsflowparams">flowParams</a></b></td>
         <td>object</td>
         <td>
-          CopyRequrements include the requirements for copying the data<br/>
+          FlowParams include the requirements for particular data flows<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1071,12 +1073,12 @@ Requirements from the system
 </table>
 
 
-#### FybrikApplication.spec.data[index].requirements.copy
+#### FybrikApplication.spec.data[index].requirements.flowParams
 <sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirements)</sup></sup>
 
 
 
-CopyRequrements include the requirements for copying the data
+FlowParams include the requirements for particular data flows
 
 <table>
     <thead>
@@ -1088,51 +1090,26 @@ CopyRequrements include the requirements for copying the data
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#fybrikapplicationspecdataindexrequirementscopycatalog">catalog</a></b></td>
-        <td>object</td>
+        <td><b>catalog</b></td>
+        <td>string</td>
         <td>
-          Catalog indicates that the data asset must be cataloged.<br/>
+          Catalog indicates that the data asset must be cataloged, and in which catalog to register it<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>required</b></td>
+        <td><b>isNewDataSet</b></td>
         <td>boolean</td>
         <td>
-          Required indicates that the data must be copied.<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### FybrikApplication.spec.data[index].requirements.copy.catalog
-<sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirementscopy)</sup></sup>
-
-
-
-Catalog indicates that the data asset must be cataloged.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>catalogID</b></td>
-        <td>string</td>
-        <td>
-          CatalogID specifies the catalog where the data will be cataloged.<br/>
+          IsNewDataSet if true indicates that the DataContext.DataSetID is user provided and not a full catalog / dataset ID. Relevant when writing. A unique ID from the catalog will be provided in the FybrikApplication Status after a new catalog entry is created.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>service</b></td>
-        <td>string</td>
+        <td><b>storageEstimate</b></td>
+        <td>integer</td>
         <td>
-          CatalogService specifies the datacatalog service that will be used for catalogging the data into.<br/>
+          Storage estimate indicates the estimated amount of storage in MB, GB, TB required when writing new data.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -2573,9 +2550,11 @@ Flows is the list of data flows driven from fybrikapplication: Each element in t
         <td>true</td>
       </tr><tr>
         <td><b>flowType</b></td>
-        <td>string</td>
+        <td>enum</td>
         <td>
           Type of the flow (e.g. read)<br/>
+          <br/>
+            <i>Enum</i>: read, write, delete, copy<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -2614,9 +2593,11 @@ Subflows is a list of data flows which are originated from the same data asset b
     </thead>
     <tbody><tr>
         <td><b>flowType</b></td>
-        <td>string</td>
+        <td>enum</td>
         <td>
           Type of the flow (e.g. read)<br/>
+          <br/>
+            <i>Enum</i>: read, write, delete, copy<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -2733,7 +2714,7 @@ Step parameters TODO why not flatten the parameters into this data flow step
         <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssource">source</a></b></td>
         <td>object</td>
         <td>
-          StepSource is the source of this step: it could be assetID or an enpoint of another step<br/>
+          StepSource is the source of this step: it could be assetID or an endpoint of another step<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -2860,7 +2841,7 @@ StepSink holds information to where the target data will be written: it could be
 
 
 
-StepSource is the source of this step: it could be assetID or an enpoint of another step
+StepSource is the source of this step: it could be assetID or an endpoint of another step
 
 <table>
     <thead>

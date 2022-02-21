@@ -14,10 +14,10 @@ Class | Method | HTTP request | Description
 ## Documentation for Models
 
  - [Action](Models/Action.md)
+ - [DataFlow](Models/DataFlow.md)
  - [GetPolicyDecisionsRequest](Models/GetPolicyDecisionsRequest.md)
  - [GetPolicyDecisionsResponse](Models/GetPolicyDecisionsResponse.md)
  - [RequestAction](Models/RequestAction.md)
- - [RequestActionType](Models/RequestActionType.md)
  - [Resource](Models/Resource.md)
  - [ResourceColumn](Models/ResourceColumn.md)
  - [ResourceMetadata](Models/ResourceMetadata.md)

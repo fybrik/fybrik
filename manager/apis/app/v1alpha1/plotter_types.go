@@ -23,7 +23,7 @@ type AssetDetails struct {
 }
 
 // StepSource is the source of this step: it could be assetID
-// or an enpoint of another step
+// or an endpoint of another step
 type StepSource struct {
 	// AssetID identifies the source asset of this step
 	// +optional
@@ -108,7 +108,7 @@ type SubFlow struct {
 
 	// Type of the flow (e.g. read)
 	// +required
-	FlowType DataFlow `json:"flowType"`
+	FlowType taxonomy.DataFlow `json:"flowType"`
 
 	// Triggers
 	// +required
@@ -130,7 +130,7 @@ type Flow struct {
 
 	// Type of the flow (e.g. read)
 	// +required
-	FlowType DataFlow `json:"flowType"`
+	FlowType taxonomy.DataFlow `json:"flowType"`
 
 	// AssetID indicates the data set being used in this data flow
 	// +required
