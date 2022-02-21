@@ -24,7 +24,7 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
-	vault "fybrik.io/fybrik/pkg/vault"
+	"fybrik.io/fybrik/pkg/vault"
 )
 
 const (
@@ -95,16 +95,21 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 
 	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
 	vaultMap := make(map[string]app.Vault)
-	vaultMap[string(taxonomy.WriteFlow)] = app.Vault{
-		SecretPath: vaultSecretPath,
-		Role:       utils.GetModulesRole(),
-		Address:    utils.GetVaultAddress(),
-	}
-	// The copied asset needs creds for later to be read
-	vaultMap[string(taxonomy.ReadFlow)] = app.Vault{
-		SecretPath: vaultSecretPath,
-		Role:       utils.GetModulesRole(),
-		Address:    utils.GetVaultAddress(),
+	if utils.IsVaultEnabled() {
+		vaultMap[string(taxonomy.WriteFlow)] = app.Vault{
+			SecretPath: vaultSecretPath,
+			Role:       utils.GetModulesRole(),
+			Address:    utils.GetVaultAddress(),
+		}
+		// The copied asset needs creds for later to be read
+		vaultMap[string(taxonomy.ReadFlow)] = app.Vault{
+			SecretPath: vaultSecretPath,
+			Role:       utils.GetModulesRole(),
+			Address:    utils.GetVaultAddress(),
+		}
+	} else {
+		vaultMap[string(taxonomy.WriteFlow)] = app.Vault{}
+		vaultMap[string(taxonomy.ReadFlow)] = app.Vault{}
 	}
 	return &app.DataStore{
 		Vault:      vaultMap,
@@ -122,13 +127,17 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 	assets := map[string]app.AssetDetails{}
 	templates := []app.Template{}
 
-	// Set the value received from the catalog connector.
-	vaultSecretPath := item.DataDetails.Credentials
 	vaultMap := make(map[string]app.Vault)
-	vaultMap[string(taxonomy.ReadFlow)] = app.Vault{
-		SecretPath: vaultSecretPath,
-		Role:       utils.GetModulesRole(),
-		Address:    utils.GetVaultAddress(),
+	if utils.IsVaultEnabled() {
+		// Set the value received from the catalog connector.
+		vaultSecretPath := item.DataDetails.Credentials
+		vaultMap[string(taxonomy.ReadFlow)] = app.Vault{
+			SecretPath: vaultSecretPath,
+			Role:       utils.GetModulesRole(),
+			Address:    utils.GetVaultAddress(),
+		}
+	} else {
+		vaultMap[string(taxonomy.ReadFlow)] = app.Vault{}
 	}
 	sourceDataStore := &app.DataStore{
 		Connection: item.DataDetails.Details.Connection,

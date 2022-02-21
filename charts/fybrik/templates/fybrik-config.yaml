@@ -15,6 +15,7 @@ data:
   MAIN_POLICY_MANAGER_NAME: {{ .Values.coordinator.policyManager | quote }}
   MAIN_POLICY_MANAGER_CONNECTOR_URL: {{ .Values.coordinator.policyManagerConnectorURL | default (printf "http://%s-connector:80" .Values.coordinator.policyManager) | quote }}
   {{- if .Values.coordinator.vault.enabled }}
+  VAULT_ENABLED: "true"
   VAULT_ADDRESS: {{ tpl .Values.coordinator.vault.address . | quote }}
   VAULT_MODULES_ROLE: "module" # temporary
   {{- end }}
