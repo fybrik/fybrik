@@ -15,7 +15,7 @@ import (
 // Attributes that are defined in a config map or the runtime environment
 const (
 	CatalogConnectorServiceAddressKey string = "CATALOG_CONNECTOR_URL"
-	VaultEnabled                      string = "VAULT_ENABLED"
+	VaultEnabledKey                   string = "VAULT_ENABLED"
 	VaultAddressKey                   string = "VAULT_ADDRESS"
 	VaultModulesRoleKey               string = "VAULT_MODULES_ROLE"
 	EnableWebhooksKey                 string = "ENABLE_WEBHOOKS"
@@ -39,7 +39,7 @@ func GetSystemNamespace() string {
 }
 
 func IsVaultEnabled() bool {
-	v := os.Getenv(VaultEnabled)
+	v := os.Getenv(VaultEnabledKey)
 	return v == "true"
 }
 
