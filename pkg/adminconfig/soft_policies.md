@@ -85,7 +85,7 @@ optimize[{"decision": decision}] {
     decision := {"policy": policy, [{"attribute": "bandwidth", "directive": "max"}]}
 }
 
-config[{"decision": decision}] {
+optimize[{"decision": decision}] {
     input.workload.properties.priority == "medium"
     input.workload.properties.stage == "PROD"
     policy := {"ID": "002", "description":"Save storage costs and minimize latency"}
@@ -102,4 +102,4 @@ config[{"decision": decision}] {
 
 ### Conflict resolution
 
-In case of more than one decision including the same attribute, the first one takes precedence, and the others are ignored.
+In case of more than one optimization strategy, the first one takes precedence, and the others are ignored.
