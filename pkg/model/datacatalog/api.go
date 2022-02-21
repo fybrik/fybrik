@@ -22,9 +22,11 @@ type GetAssetResponse struct {
 
 // +fybrik:validation:object
 type CreateAssetRequest struct {
-	DestinationCatalogID string           `json:"destinationCatalogID"`
-	ResourceMetadata     ResourceMetadata `json:"resourceMetadata"`
-	Details              ResourceDetails  `json:"details"`
+	DestinationCatalogID string `json:"destinationCatalogID"`
+	// +kubebuilder:validation:Optional
+	DestinationAssetID string           `json:"destinationAssetID,omitempty"`
+	ResourceMetadata   ResourceMetadata `json:"resourceMetadata"`
+	Details            ResourceDetails  `json:"details"`
 	// This has the vault plugin path where the data credentials will be stored as kubernetes secrets
 	// This value is assumed to be known to the catalog connector.
 	Credentials string `json:"credentials"`

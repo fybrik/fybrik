@@ -13,12 +13,6 @@ import (
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 )
 
-type Response struct {
-	ID     string `json:"id"`
-	Joke   string `json:"joke"`
-	Status int    `json:"status"`
-}
-
 func main() {
 	request := datacatalog.CreateAssetRequest{
 		DestinationCatalogID: "test",
@@ -45,6 +39,10 @@ func main() {
 		fmt.Print(err.Error())
 	}
 	var responseObject datacatalog.CreateAssetResponse
-	json.Unmarshal(bodyBytes, &responseObject)
-	fmt.Printf("CreateAssetResponse received: %+v\n", responseObject)
+	err = json.Unmarshal(bodyBytes, &responseObject)
+	if err != nil {
+		fmt.Print(err.Error())
+	} else {
+		fmt.Printf("CreateAssetResponse received: %+v\n", responseObject)
+	}
 }

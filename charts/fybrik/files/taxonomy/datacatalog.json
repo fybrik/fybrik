@@ -14,6 +14,9 @@
           "description": "This has the vault plugin path where the data credentials will be stored as kubernetes secrets This value is assumed to be known to the catalog connector.",
           "type": "string"
         },
+        "destinationAssetID": {
+          "type": "string"
+        },
         "destinationCatalogID": {
           "type": "string"
         },
