@@ -4,6 +4,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **credentials** | String | This has the vault plugin path where the data credentials will be stored as kubernetes secrets This value is assumed to be known to the catalog connector. | [default: null]
+**destinationAssetID** | String |  | [optional] [default: null]
 **destinationCatalogID** | String |  | [default: null]
 **details** | [Details](../Details) |  | [default: null]
 **resourceMetadata** | [ResourceMetadata](../ResourceMetadata) |  | [default: null]
