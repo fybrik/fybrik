@@ -68,8 +68,8 @@ Rules are written in the following syntax: `optimize[{"decision": decision}]` wh
 
 ```
 { 
-	"attribute": <infrastructure attribute name>,
-	"directive": <"min", "max">,
+    "attribute": <infrastructure attribute name>,
+    "directive": <"min", "max">,
     "weight": <a number between 0 and 1> 
 }
 ```
