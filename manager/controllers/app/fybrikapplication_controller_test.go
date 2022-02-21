@@ -100,10 +100,12 @@ var _ = Describe("FybrikApplication Controller", func() {
 			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
 
 			// Ensure getting cleaned up after tests finish
+
 			defer func() {
-				application := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace, Name: applicationKey.Name}}
-				_ = k8sClient.Get(context.Background(), applicationKey, application)
-				// _ = k8sClient.Delete(context.Background(), application)
+				app := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
+					Name: applicationKey.Name}}
+				_ = k8sClient.Get(context.Background(), applicationKey, app)
+				// _ = k8sClient.Delete(context.Background(), app)
 				module := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: moduleKey.Namespace, Name: moduleKey.Name}}
 				_ = k8sClient.Get(context.Background(), moduleKey, module)
 				// _ = k8sClient.Delete(context.Background(), module)

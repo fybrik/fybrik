@@ -6,7 +6,7 @@ package app
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"testing"
 	"time"
 
@@ -34,7 +34,7 @@ import (
 
 // Read utility
 func readObjectFromFile(f string, obj interface{}) error {
-	bytes, err := ioutil.ReadFile(f)
+	bytes, err := os.ReadFile(f)
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,8 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 		namespace = "default"
 	)
 	application := &app.FybrikApplication{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).To(gomega.BeNil(), "Cannot read fybrikapplication file for test")
+	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).
+		To(gomega.BeNil(), "Cannot read fybrikapplication file for test")
 	application.SetGeneration(1)
 	application.SetUID("1")
 	// Objects to track in the fake client.
@@ -561,7 +562,8 @@ func TestMultipleDatasets(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// check Deny for the first dataset
-	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).
+		To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage["db2/redact-dataset"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
 	// check plotter creation
@@ -644,8 +646,10 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 
 	// check Deny states
-	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
-	g.Expect(application.Status.AssetStates["local/redact-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).
+		To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["local/redact-dataset"].Conditions[DenyConditionIndex].Status).
+		To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 }
@@ -801,7 +805,8 @@ func TestCopyData(t *testing.T) {
 
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage[assetName].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
-	g.Expect(application.Status.ProvisionedStorage[assetName].SecretRef).To(gomega.Equal("credentials-theshire"), "Incorrect storage was selected")
+	g.Expect(application.Status.ProvisionedStorage[assetName].SecretRef).
+		To(gomega.Equal("credentials-theshire"), "Incorrect storage was selected")
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 	plotterObjectKey := types.NamespacedName{
@@ -828,7 +833,6 @@ func TestCopyData(t *testing.T) {
 // This test checks the ingest scenario
 // A storage account has been defined for the region where the dataset can not be written to according to governance policies.
 // An error is received.
-//nolint:dupl
 func TestCopyDataNotAllowed(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -892,7 +896,6 @@ func TestCopyDataNotAllowed(t *testing.T) {
 // This test checks the ingest scenario
 // A storage account has been defined for the region where the dataset can not be written to according to restrictions on cost
 // An error is received.
-//nolint:dupl
 func TestStorageCost(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -1141,7 +1144,6 @@ func TestFybrikApplicationWithNoDatasets(t *testing.T) {
 	g.Expect(newApp.Status.Ready).To(gomega.BeTrue())
 }
 
-//nolint:dupl
 func TestFybrikApplicationWithInvalidAppInfo(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -1188,7 +1190,6 @@ func TestFybrikApplicationWithInvalidAppInfo(t *testing.T) {
 	g.Expect(newApp.Status.Ready).NotTo(gomega.BeTrue())
 }
 
-//nolint:dupl
 func TestFybrikApplicationWithInvalidInterface(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)

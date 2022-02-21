@@ -39,7 +39,6 @@ type PlotterReconciler struct {
 }
 
 // Reconcile receives a Plotter CRD
-//nolint:dupl
 func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	sublog := r.Log.With().Str(logging.CONTROLLER, "Plotter").Str("plotter", req.NamespacedName.String()).Logger()
 
@@ -74,8 +73,7 @@ func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	if reconcileErrors != nil {
-		log.Error().Msg("Returning with errors") // TODO - return result?
-		//		log.Info("returning with errors", "result", result)
+		log.Error().Msg("Returning with errors") // TODO - return result?	log.Info("returning with errors", "result", result)
 		for _, s := range reconcileErrors {
 			log.Error().Err(s).Msg("Error:")
 		}
@@ -154,7 +152,8 @@ func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType app
 }
 
 // convertPlotterModuleToBlueprintModule converts an object of type PlotterModulesSpec to type ModuleInstanceSpec
-func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.Plotter, plotterModule PlotterModulesSpec) *ModuleInstanceSpec {
+func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.Plotter,
+	plotterModule PlotterModulesSpec) *ModuleInstanceSpec {
 	assetIDs := []string{plotterModule.AssetID}
 	blueprintModule := &ModuleInstanceSpec{
 		Chart:    &plotterModule.Chart,
@@ -326,7 +325,8 @@ func (r *PlotterReconciler) updatePlotterAssetsState(assetToStatusMap map[string
 }
 
 // setPlotterAssetsReadyStateToFalse sets to false the status of the assets processed by the blueprint modules.
-func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap map[string]app.ObservedState, blueprintSpec *app.BlueprintSpec, errMsg string) {
+func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap map[string]app.ObservedState,
+	blueprintSpec *app.BlueprintSpec, errMsg string) {
 	for _, module := range blueprintSpec.Modules {
 		for _, assetID := range module.AssetIDs {
 			var err = errMsg
@@ -338,6 +338,7 @@ func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap m
 	}
 }
 
+//nolint:funlen,gocyclo
 func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []error) {
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
 	log := r.Log.With().Str(logging.CONTROLLER, "Plotter").Str(utils.FybrikAppUUID, uuid).Logger()
@@ -370,8 +371,8 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 				// and a maximum of 60 seconds until the next reconcile
 				now := metav1.NewTime(time.Now())
 				elapsedTime := time.Since(now.Time)
-				backoffFactor := int(math.Min(math.Exp2(elapsedTime.Minutes()), 60.0))
-				requeueAfter := time.Duration(4+backoffFactor) * time.Second
+				backoffFactor := int(math.Min(math.Exp2(elapsedTime.Minutes()), controllers.MaximumSecondsUntillReconcile))
+				requeueAfter := time.Duration(4+backoffFactor) * time.Second //nolint:revive,gomnd
 				return ctrl.Result{RequeueAfter: requeueAfter}, errorCollection
 			}
 
@@ -385,7 +386,8 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			logging.LogStructure("Remote blueprint", remoteBlueprint, log, false, true)
 
 			if !reflect.DeepEqual(blueprintSpec, remoteBlueprint.Spec) {
-				r.Log.Warn().Msg("Blueprint specs differ.  plotter.generation " + fmt.Sprint(plotter.Generation) + " plotter.observedGeneration " + fmt.Sprint(plotter.Status.ObservedGeneration))
+				r.Log.Warn().Msg("Blueprint specs differ.  plotter.generation " + fmt.Sprint(plotter.Generation) +
+					" plotter.observedGeneration " + fmt.Sprint(plotter.Status.ObservedGeneration))
 				if plotter.Generation != plotter.Status.ObservedGeneration {
 					log.Trace().Str(logging.ACTION, logging.UPDATE).Msg("Updating blueprint...")
 					remoteBlueprint.Spec = blueprintSpec
@@ -470,12 +472,14 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			if err != nil {
 				if !strings.HasPrefix(err.Error(), "Query channelByName error. Could not find the channel with name") {
 					errorCollection = append(errorCollection, err)
-					log.Error().Err(err).Str(logging.CLUSTER, cluster).Str(logging.BLUEPRINT, remoteBlueprint.Name).Str(logging.ACTION, logging.DELETE).Msg("Could not delete remote blueprint after spec changed!")
+					log.Error().Err(err).Str(logging.CLUSTER, cluster).Str(logging.BLUEPRINT, remoteBlueprint.Name).
+						Str(logging.ACTION, logging.DELETE).Msg("Could not delete remote blueprint after spec changed!")
 					continue
 				}
 			}
 			delete(plotter.Status.Blueprints, cluster)
-			log.Trace().Str(logging.PLOTTER, plotter.Name).Str(logging.CLUSTER, cluster).Str(logging.NAMESPACE, remoteBlueprint.Namespace).Str(logging.BLUEPRINT, remoteBlueprint.Name).Msg("Successfully removed blueprint from plotter")
+			log.Trace().Str(logging.PLOTTER, plotter.Name).Str(logging.CLUSTER, cluster).Str(logging.NAMESPACE, remoteBlueprint.Namespace).
+				Str(logging.BLUEPRINT, remoteBlueprint.Name).Msg("Successfully removed blueprint from plotter")
 		}
 	}
 
@@ -499,10 +503,11 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 		// and a maximum of 60 seconds until the next reconcile
 		ready := *plotter.Status.ReadyTimestamp
 		elapsedTime := time.Since(ready.Time)
-		backoffFactor := int(math.Min(math.Exp2(elapsedTime.Minutes()), 60.0))
-		requeueAfter := time.Duration(4+backoffFactor) * time.Second
+		backoffFactor := int(math.Min(math.Exp2(elapsedTime.Minutes()), controllers.MaximumSecondsUntillReconcile))
+		requeueAfter := time.Duration(4+backoffFactor) * time.Second //nolint:revive,gomnd
 
-		log.Trace().Str(logging.PLOTTER, plotter.Name).Str("BackoffFactor", fmt.Sprint(backoffFactor)).Str(logging.RESPONSETIME, elapsedTime.String()).Msg("Plotter is ready!")
+		log.Trace().Str(logging.PLOTTER, plotter.Name).Str("BackoffFactor", fmt.Sprint(backoffFactor)).
+			Str(logging.RESPONSETIME, elapsedTime.String()).Msg("Plotter is ready!")
 
 		return ctrl.Result{RequeueAfter: requeueAfter}, errorCollection
 	}
@@ -535,7 +540,8 @@ func NewPlotterReconciler(mgr ctrl.Manager, name string, manager multicluster.Cl
 
 // SetupWithManager registers Plotter controller
 func (r *PlotterReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	numReconciles := environment.GetEnvAsInt(controllers.PlotterConcurrentReconcilesConfiguration, controllers.DefaultPlotterConcurrentReconciles)
+	numReconciles := environment.GetEnvAsInt(controllers.PlotterConcurrentReconcilesConfiguration,
+		controllers.DefaultPlotterConcurrentReconciles)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
