@@ -51,7 +51,7 @@ Attribute examples:
     "description": "bandwidth between neverland and theshire",
     "value": "5",
     "type": "numeric",
-    "units": "Megabit/sec",
+    "units": "Mbp/s",
     "arguments": ["theshire","neverland"]
 }
 ```
@@ -102,4 +102,5 @@ optimize[{"decision": decision}] {
 
 ### Conflict resolution
 
-In case of more than one optimization strategy, the first one takes precedence, and the others are ignored.
+In case of more than one optimization strategy, the first one takes precedence, and the others are ignored. 
+In the future version there will be a priority assigned to a rule, and the strategy with the highest priority will be chosen.
