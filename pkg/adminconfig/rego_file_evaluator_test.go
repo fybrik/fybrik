@@ -151,6 +151,7 @@ var _ = Describe("Invalid structure", func() {
 var _ = Describe("Evaluate a policy", func() {
 	evaluator := BaseEvaluator()
 	geo := "theshire"
+
 	//nolint:dupl
 	It("Conflict", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{

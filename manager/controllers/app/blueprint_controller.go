@@ -49,6 +49,13 @@ type BlueprintReconciler struct {
 	Helmer helm.Interface
 }
 
+type ExtendedArguments struct {
+	fapp.ModuleArguments     `json:",inline"`
+	*fapp.ApplicationDetails `json:",inline"`
+	Labels                   map[string]string `json:"labels"`
+	UUID                     string            `json:"uuid"`
+}
+
 // Reconcile receives a Blueprint CRD
 func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	blueprint := fapp.Blueprint{}
@@ -310,23 +317,29 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger,
 	}
 	// count the overall number of Helm releases and how many of them are ready
 	numReleases, numReady := 0, 0
-	for instanceName, module := range blueprint.Spec.Modules {
-		// Add debug information to module labels
-		if module.Arguments.Labels == nil {
-			module.Arguments.Labels = map[string]string{}
-		}
-		module.Arguments.Labels[fapp.BlueprintNameLabel] = blueprint.Name
-		module.Arguments.Labels[fapp.BlueprintNamespaceLabel] = blueprint.Namespace
-		module.Arguments.Labels[utils.FybrikAppUUID] = uuid // used for log correlation
+	// Add debug information to module labels
+	if blueprint.Labels == nil {
+		blueprint.Labels = map[string]string{}
+	}
+	blueprint.Labels[fapp.BlueprintNameLabel] = blueprint.Name
+	blueprint.Labels[fapp.BlueprintNamespaceLabel] = blueprint.Namespace
 
+	for instanceName, module := range blueprint.Spec.Modules {
 		// Get arguments by type
+		extendedArguments := ExtendedArguments{
+			ModuleArguments:    module.Arguments,
+			ApplicationDetails: blueprint.Spec.Application,
+			Labels:             blueprint.Labels,
+			UUID:               uuid,
+		}
 		var args map[string]interface{}
-		args, err := utils.StructToMap(module.Arguments)
+		args, err := utils.StructToMap(&extendedArguments)
 		if err != nil {
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
 
-		releaseName := utils.GetReleaseName(blueprint.Labels[fapp.ApplicationNameLabel],
+		logging.LogStructure("Arguments", args, log, false, false)
+    releaseName := utils.GetReleaseName(blueprint.Labels[fapp.ApplicationNameLabel],
 			blueprint.Labels[fapp.ApplicationNamespaceLabel], instanceName)
 		log.Trace().Msg("Release name: " + releaseName)
 		numReleases++

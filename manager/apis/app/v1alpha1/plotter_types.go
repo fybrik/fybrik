@@ -23,7 +23,7 @@ type AssetDetails struct {
 }
 
 // StepSource is the source of this step: it could be assetID
-// or an enpoint of another step
+// or an endpoint of another step
 type StepSource struct {
 	// AssetID identifies the source asset of this step
 	// +optional
@@ -108,7 +108,7 @@ type SubFlow struct {
 
 	// Type of the flow (e.g. read)
 	// +required
-	FlowType DataFlow `json:"flowType"`
+	FlowType taxonomy.DataFlow `json:"flowType"`
 
 	// Triggers
 	// +required
@@ -130,7 +130,7 @@ type Flow struct {
 
 	// Type of the flow (e.g. read)
 	// +required
-	FlowType DataFlow `json:"flowType"`
+	FlowType taxonomy.DataFlow `json:"flowType"`
 
 	// AssetID indicates the data set being used in this data flow
 	// +required
@@ -163,6 +163,10 @@ type ModuleInfo struct {
 	// If not indicated it is assumed to be asset
 	// +optional
 	Scope CapabilityScope `json:"scope,omitempty"`
+
+	// Module capability
+	// +required
+	Capability taxonomy.Capability `json:"capability"`
 }
 
 // Template contains basic information about the required modules to serve the fybrikapplication
@@ -203,6 +207,9 @@ type PlotterSpec struct {
 	// For some flows the selector may not be used.
 	// +optional
 	Selector Selector `json:"appSelector,omitempty"`
+
+	// Application context to be transferred to the modules
+	AppInfo taxonomy.AppInfo `json:"appInfo,omitempty"`
 
 	// Assets is a map holding information about the assets
 	// The key is the assetID
