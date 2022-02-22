@@ -26,9 +26,12 @@ func getTemplate(datasetID string, operation *pb.AccessOperation, actions ...*pb
 var _ = Describe("PolicyManager", func() {
 	Describe("merge policy decisions", func() {
 
-		removeColumn1 := &pb.EnforcementAction{Name: "remove column", Id: "remove-ID", Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": "col1"}}
-		removeColumn2 := &pb.EnforcementAction{Name: "remove column", Id: "remove-ID", Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": "col2"}}
-		redactColumn1 := &pb.EnforcementAction{Name: "redact column", Id: "redact-ID", Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": "col1"}}
+		removeColumn1 := &pb.EnforcementAction{Name: "remove column", Id: "remove-ID", Level: pb.EnforcementAction_COLUMN,
+			Args: map[string]string{"column_name": "col1"}}
+		removeColumn2 := &pb.EnforcementAction{Name: "remove column", Id: "remove-ID", Level: pb.EnforcementAction_COLUMN,
+			Args: map[string]string{"column_name": "col2"}}
+		redactColumn1 := &pb.EnforcementAction{Name: "redact column", Id: "redact-ID", Level: pb.EnforcementAction_COLUMN,
+			Args: map[string]string{"column_name": "col1"}}
 
 		Context("on same dataset", func() {
 

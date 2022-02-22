@@ -682,7 +682,6 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 	return true, nil
 }
 
-//nolint:
 func (r *FybrikApplicationReconciler) buildSolution(applicationContext ApplicationContext,
 	requirements []DataInfo) (map[string]NewAssetInfo, *api.PlotterSpec, error) {
 	// get deployed modules

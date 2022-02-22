@@ -22,7 +22,7 @@ type openAPIDataCatalog struct {
 }
 
 // NewopenApiDataCatalog creates a DataCatalog facade that connects to a openApi service
-func NewOpenAPIDataCatalog(name string, connectionURL string, connectionTimeout time.Duration) DataCatalog {
+func NewOpenAPIDataCatalog(name, connectionURL string, connectionTimeout time.Duration) DataCatalog {
 	configuration := &openapiclient.Configuration{
 		DefaultHeader: make(map[string]string),
 		UserAgent:     "OpenAPI-Generator/1.0.0/go",

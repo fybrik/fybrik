@@ -43,11 +43,11 @@ func EvaluatorWithInvalidRules() *adminconfig.RegoPolicyEvaluator {
 	})
 	Expect(err).ToNot(HaveOccurred())
 
-	rego := rego.New(
+	rg := rego.New(
 		rego.Query("data.adminconfig"),
 		rego.Compiler(compiler),
 	)
-	query, err := rego.PrepareForEval(context.Background())
+	query, err := rg.PrepareForEval(context.Background())
 	Expect(err).ToNot(HaveOccurred())
 	return &adminconfig.RegoPolicyEvaluator{Log: logging.LogInit("test", "ConfigPolicyEvaluator"), Query: query}
 }
@@ -99,11 +99,11 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 	})
 	Expect(err).ToNot(HaveOccurred())
 
-	rego := rego.New(
+	rg := rego.New(
 		rego.Query("data.test"),
 		rego.Compiler(compiler),
 	)
-	query, err := rego.PrepareForEval(context.Background())
+	query, err := rg.PrepareForEval(context.Background())
 	Expect(err).ToNot(HaveOccurred())
 	return &adminconfig.RegoPolicyEvaluator{Log: logging.LogInit("test", "ConfigPolicyEvaluator"), Query: query}
 }
@@ -115,7 +115,6 @@ func TestRegoFileEvaluator(t *testing.T) {
 
 var _ = Describe("Invalid structure", func() {
 	evaluator := EvaluatorWithInvalidRules()
-	//nolint:dupl
 	It("Invalid deployment status", func() {
 		in := adminconfig.EvaluatorInput{
 			Workload: adminconfig.WorkloadInfo{
@@ -131,7 +130,6 @@ var _ = Describe("Invalid structure", func() {
 		Expect(out.Valid).To(Equal(false))
 	})
 
-	//nolint:dupl
 	It("Missing policy id", func() {
 		in := adminconfig.EvaluatorInput{
 			Workload: adminconfig.WorkloadInfo{
@@ -152,7 +150,6 @@ var _ = Describe("Evaluate a policy", func() {
 	evaluator := BaseEvaluator()
 	geo := "theshire"
 
-	//nolint:dupl
 	It("Conflict", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
@@ -177,7 +174,6 @@ var _ = Describe("Evaluate a policy", func() {
 		Expect(out.Valid).To(Equal(false))
 	})
 
-	//nolint:dupl
 	It("ValidSolution", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
@@ -203,7 +199,6 @@ var _ = Describe("Evaluate a policy", func() {
 		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(adminrules.StatusFalse))
 	})
 
-	//nolint:dupl
 	It("Merge", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
@@ -239,7 +234,6 @@ var _ = Describe("Evaluate a policy", func() {
 		}
 	})
 
-	//nolint:dupl
 	It("No conflict for policy set 2", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
@@ -266,7 +260,6 @@ var _ = Describe("Evaluate a policy", func() {
 		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(adminrules.StatusFalse))
 	})
 
-	//nolint:dupl
 	It("No decisions for policy set 99", func() {
 		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
 			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
