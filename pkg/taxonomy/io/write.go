@@ -5,7 +5,7 @@ package taxonomyio
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -29,5 +29,5 @@ func WriteDocumentToFile(doc *model.Document, outPath string) error {
 	}
 
 	// #nosec G306 -- Avoid nosec "Expect WriteFile permissions to be 0600 or less" error
-	return ioutil.WriteFile(filepath.Clean(outPath), encoded, 0644)
+	return os.WriteFile(filepath.Clean(outPath), encoded, 0644) //nolint:revive,gomnd // Ignore 0644 not being const
 }

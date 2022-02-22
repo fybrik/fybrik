@@ -21,7 +21,7 @@ const vaultPluginPath = "kubernetes-secrets"
 // - secret namespace
 // for example, for secret name my-secret and namespace default it will be of the form:
 // "/v1/kubernetes-secrets/my-secret?namespace=default"
-func PathForReadingKubeSecret(secretNamespace string, secretName string) string {
+func PathForReadingKubeSecret(secretNamespace, secretName string) string {
 	pluginPath := "/v1/" + vaultPluginPath + "/"
 	// Construct the path to the secret in Vault that holds the dataset credentials
 	secretPath := fmt.Sprintf("%s%s?namespace=%s", pluginPath, secretName, secretNamespace)
