@@ -24,6 +24,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	specLiteral  = "spec"
+	localLiteral = "local"
+)
+
 var (
 	// GroupVersion is group version used to register these objects
 	GroupVersion = schema.GroupVersion{Group: "com.ie.ibm.hpsys", Version: "v1alpha1"}
@@ -66,7 +71,7 @@ func NewProvisionImpl(c client.Client) *ProvisionImpl {
 	}
 }
 
-func newDatasetAsUnstructured(name string, namespace string) *unstructured.Unstructured {
+func newDatasetAsUnstructured(name, namespace string) *unstructured.Unstructured {
 	object := &unstructured.Unstructured{}
 	object.SetGroupVersionKind(schema.GroupVersionKind{Group: GroupVersion.Group, Version: GroupVersion.Version, Kind: "Dataset"})
 	object.SetNamespace(namespace)
@@ -74,7 +79,7 @@ func newDatasetAsUnstructured(name string, namespace string) *unstructured.Unstr
 	return object
 }
 
-func (r *ProvisionImpl) getDatasetAsUnstructured(name string, namespace string) (*unstructured.Unstructured, error) {
+func (r *ProvisionImpl) getDatasetAsUnstructured(name, namespace string) (*unstructured.Unstructured, error) {
 	object := &unstructured.Unstructured{}
 	object.SetGroupVersionKind(schema.GroupVersionKind{Group: GroupVersion.Group, Version: GroupVersion.Version, Kind: "Dataset"})
 	object.SetNamespace(namespace)
@@ -97,16 +102,16 @@ func getValue(obj map[string]interface{}, path ...string) string {
 
 func equal(required *ProvisionedBucket, existing *unstructured.Unstructured) bool {
 	obj := existing.UnstructuredContent()
-	if required.Name != getValue(obj, "spec", "local", "bucket") {
+	if required.Name != getValue(obj, specLiteral, localLiteral, "bucket") {
 		return false
 	}
-	if required.Endpoint != getValue(obj, "spec", "local", "endpoint") {
+	if required.Endpoint != getValue(obj, specLiteral, localLiteral, "endpoint") {
 		return false
 	}
-	if required.SecretRef.Name != getValue(obj, "spec", "local", "secret-name") {
+	if required.SecretRef.Name != getValue(obj, specLiteral, localLiteral, "secret-name") {
 		return false
 	}
-	if required.SecretRef.Namespace != getValue(obj, "spec", "local", "secret-namespace") {
+	if required.SecretRef.Namespace != getValue(obj, specLiteral, localLiteral, "secret-namespace") {
 		return false
 	}
 	return true
@@ -121,7 +126,7 @@ func (r *ProvisionImpl) CreateDataset(ref *types.NamespacedName, bucket *Provisi
 			return nil
 		}
 		// re-create the dataset
-		if err = r.DeleteDataset(ref); err != nil {
+		if err = r.DeleteDataset(ref); err != nil { //nolint:gocritic // Two lints conflicting on err assginment
 			return err
 		}
 	}
@@ -138,7 +143,7 @@ func (r *ProvisionImpl) CreateDataset(ref *types.NamespacedName, bucket *Provisi
 		"fybrik.io/owner":  owner.Namespace + "." + owner.Name,
 		"remove-on-delete": "true"})
 
-	if err = unstructured.SetNestedStringMap(dataset.Object, values, "spec", "local"); err != nil {
+	if err := unstructured.SetNestedStringMap(dataset.Object, values, specLiteral, localLiteral); err != nil {
 		return err
 	}
 	return r.Client.Create(context.Background(), dataset)

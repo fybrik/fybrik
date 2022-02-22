@@ -55,7 +55,7 @@ func (cm *localClusterManager) GetLocalClusterName() (string, error) {
 }
 
 // GetBlueprint returns a blueprint matching the given name, namespace and cluster details
-func (cm *localClusterManager) GetBlueprint(cluster string, namespace string, name string) (*v1alpha1.Blueprint, error) {
+func (cm *localClusterManager) GetBlueprint(cluster, namespace, name string) (*v1alpha1.Blueprint, error) {
 	if localCluster, err := cm.GetLocalClusterName(); err != nil || localCluster != cluster {
 		return nil, fmt.Errorf("unregistered cluster: %s", cluster)
 	}
@@ -97,7 +97,7 @@ func (cm *localClusterManager) UpdateBlueprint(cluster string, blueprint *v1alph
 }
 
 // DeleteBlueprint deletes the blueprint resource
-func (cm *localClusterManager) DeleteBlueprint(cluster string, namespace string, name string) error {
+func (cm *localClusterManager) DeleteBlueprint(cluster, namespace, name string) error {
 	blueprint, err := cm.GetBlueprint(cluster, namespace, name)
 	if err != nil {
 		return err
@@ -106,9 +106,9 @@ func (cm *localClusterManager) DeleteBlueprint(cluster string, namespace string,
 }
 
 // NewClusterManager creates an instance of ClusterManager for a local cluster configuration
-func NewClusterManager(client client.Client, namespace string) (multicluster.ClusterManager, error) {
+func NewClusterManager(clnt client.Client, namespace string) (multicluster.ClusterManager, error) {
 	return &localClusterManager{
-		Client:    client,
+		Client:    clnt,
 		Namespace: namespace,
 	}, nil
 }

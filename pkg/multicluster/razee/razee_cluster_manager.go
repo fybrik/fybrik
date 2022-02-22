@@ -31,6 +31,8 @@ const (
 	bluePrintSelfLink          = "/apis/app.fybrik.io/v1alpha1/namespaces/%s/blueprints/%s"
 	channelNameTemplate        = "fybrik.io-%s-%s"
 	groupNameTemplate          = "fybrik-%s"
+	clusterGroupKey            = "clusterGroup"
+	clusterKey                 = "cluster"
 )
 
 var (
@@ -53,8 +55,9 @@ func (r *razeeClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	var razeeClusters []types.Cluster
 	var err error
 	if r.clusterGroup != "" {
-		r.log.Info().Str("clusterGroup", r.clusterGroup).Msg("Using clusterGroup to fetch cluster info")
-		group, err := r.con.Groups.GroupByName(r.orgID, r.clusterGroup)
+		var group *types.Group
+		r.log.Info().Str(clusterGroupKey, r.clusterGroup).Msg("Using clusterGroup to fetch cluster info")
+		group, err = r.con.Groups.GroupByName(r.orgID, r.clusterGroup)
 		if err != nil {
 			return nil, err
 		}
@@ -70,16 +73,16 @@ func (r *razeeClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	for _, c := range razeeClusters {
 		resourceContent, err := r.con.Resources.ResourceContent(r.orgID, c.ClusterID, clusterMetadataConfigMapSL)
 		if err != nil {
-			r.log.Error().Err(err).Str("cluster", c.Name).Msg("Could not fetch cluster information")
+			r.log.Error().Err(err).Str(clusterKey, c.Name).Msg("Could not fetch cluster information")
 			return nil, err
 		}
 		// If no content for the resource was found the cluster is not part of Fybrik or not installed
 		// correctly. Fybrik should ignore those clusters and continue.
 		if resourceContent == nil {
-			r.log.Error().Err(err).Str("cluster", c.Name).Msg("Resource content returned is nil! Skipping cluster")
+			r.log.Error().Err(err).Str(clusterKey, c.Name).Msg("Resource content returned is nil! Skipping cluster")
 			continue
 		}
-		scheme := runtime.NewScheme()
+		scheme = runtime.NewScheme()
 		cmcm := corev1.ConfigMap{}
 		err = multicluster.Decode(resourceContent.Content, scheme, &cmcm)
 		if err != nil {
@@ -91,18 +94,18 @@ func (r *razeeClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	return clusters, nil
 }
 
-func createBluePrintSelfLink(namespace string, name string) string {
+func createBluePrintSelfLink(namespace, name string) string {
 	return fmt.Sprintf(bluePrintSelfLink, namespace, name)
 }
 
-func (r *razeeClusterManager) GetBlueprint(clusterName string, namespace string, name string) (*v1alpha1.Blueprint, error) {
+func (r *razeeClusterManager) GetBlueprint(clusterName, namespace, name string) (*v1alpha1.Blueprint, error) {
 	selfLink := createBluePrintSelfLink(namespace, name)
 	cluster, err := r.con.Clusters.ClusterByName(r.orgID, clusterName)
 	if err != nil {
 		return nil, err
 	}
 	jsonData, err := r.con.Resources.ResourceContent(r.orgID, cluster.ClusterID, selfLink)
-	log := r.log.With().Str("cluster", clusterName).Str("name", name).Str("namespace", namespace).Logger()
+	log := r.log.With().Str(clusterKey, clusterName).Str("name", name).Str("namespace", namespace).Logger()
 	if err != nil {
 		log.Error().Err(err).Msg("Error while fetching resource content of blueprint")
 		return nil, err
@@ -138,6 +141,7 @@ type Collection struct {
 	Items           []metav1.Object `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
+//nolint:funlen,gocyclo
 func (r *razeeClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	groupName := getGroupName(cluster)
 	channelName := channelName(cluster, blueprint.Name)
@@ -179,7 +183,8 @@ func (r *razeeClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha
 
 	_, err = r.con.Groups.GroupClusters(r.orgID, groupUUID, []string{rCluster.ClusterID})
 	if err != nil {
-		r.log.Error().Err(err).Str("group", groupName).Str("cluster", rCluster.Name).Str("groupUUID", groupUUID).Msg("Error while creating group")
+		r.log.Error().Err(err).Str("group", groupName).
+			Str(clusterKey, rCluster.Name).Str("groupUUID", groupUUID).Msg("Error while creating group")
 		return err
 	}
 
@@ -254,7 +259,8 @@ func (r *razeeClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha
 		return fmt.Errorf("cannot fetch channel info for channel '%s'", channelName)
 	}
 	for _, version := range channelInfo.Versions {
-		v, err := strconv.Atoi(version.Name)
+		var v int
+		v, err = strconv.Atoi(version.Name)
 		if err != nil {
 			return fmt.Errorf("cannot parse version name %s", version.Name)
 		} else if max < v {
@@ -270,7 +276,8 @@ func (r *razeeClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha
 	}
 	subscriptionUUID := channelInfo.Subscriptions[0].UUID
 
-	r.log.Trace().Str("nextVersion", nextVersion).Str("subscriptionUUID", subscriptionUUID).Str("channelUUID", channelInfo.UUID).Msg("Creating new channel version")
+	r.log.Trace().Str("nextVersion", nextVersion).Str("subscriptionUUID", subscriptionUUID).
+		Str("channelUUID", channelInfo.UUID).Msg("Creating new channel version")
 
 	// create channel version
 	channelVersion, err := r.con.Versions.AddChannelVersion(r.orgID, channelInfo.UUID, nextVersion, content, "")
@@ -292,7 +299,7 @@ func (r *razeeClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha
 	return nil
 }
 
-func (r *razeeClusterManager) DeleteBlueprint(cluster string, namespace string, name string) error {
+func (r *razeeClusterManager) DeleteBlueprint(cluster, namespace, name string) error {
 	channelName := channelName(cluster, name)
 	channel, err := r.con.Channels.ChannelByName(r.orgID, channelName)
 	if err != nil {
@@ -329,12 +336,12 @@ func (r *razeeClusterManager) DeleteBlueprint(cluster string, namespace string, 
 
 // The channel name should be per cluster and plotter, so it cannot be based on
 // the namespace that is random for every blueprint
-func channelName(cluster string, name string) string {
+func channelName(cluster, name string) string {
 	return fmt.Sprintf(channelNameTemplate, cluster, name)
 }
 
 // NewRazeeLocalClusterManager creates an instance of Razee based ClusterManager with userName/password authentication
-func NewRazeeLocalClusterManager(url string, login string, password string, clusterGroup string) (multicluster.ClusterManager, error) {
+func NewRazeeLocalClusterManager(url, login, password, clusterGroup string) (multicluster.ClusterManager, error) {
 	localAuth, err := local.NewClient(url, login, password)
 	if err != nil {
 		return nil, err
@@ -350,7 +357,7 @@ func NewRazeeLocalClusterManager(url string, login string, password string, clus
 		return nil, errors.New("could not retrieve login information of Razee")
 	}
 
-	logger.Info().Str("clusterGroup", clusterGroup).Str("orgID", me.OrgId).Msg("Initializing Razee local")
+	logger.Info().Str(clusterGroupKey, clusterGroup).Str("orgID", me.OrgId).Msg("Initializing Razee local")
 
 	return &razeeClusterManager{
 		orgID:        me.OrgId,
@@ -361,7 +368,7 @@ func NewRazeeLocalClusterManager(url string, login string, password string, clus
 }
 
 // NewRazeeOAuthClusterManager creates an instance of Razee based ClusterManager with OAuth authentication
-func NewRazeeOAuthClusterManager(url string, apiKey string, clusterGroup string) (multicluster.ClusterManager, error) {
+func NewRazeeOAuthClusterManager(url, apiKey, clusterGroup string) (multicluster.ClusterManager, error) {
 	auth, err := apikey.NewClient(apiKey)
 	if err != nil {
 		return nil, err
@@ -377,7 +384,7 @@ func NewRazeeOAuthClusterManager(url string, apiKey string, clusterGroup string)
 		return nil, errors.New("could not retrieve login information of Razee")
 	}
 
-	logger.Info().Str("orgID", me.OrgId).Str("clusterGroup", clusterGroup).Msg("Initializing Razee using oauth")
+	logger.Info().Str("orgID", me.OrgId).Str(clusterGroupKey, clusterGroup).Msg("Initializing Razee using oauth")
 
 	return &razeeClusterManager{
 		orgID:        me.OrgId,
@@ -388,8 +395,8 @@ func NewRazeeOAuthClusterManager(url string, apiKey string, clusterGroup string)
 }
 
 // NewSatConfClusterManager creates an instance of Razee based ClusterManager with Satellite authentication
-func NewSatConfClusterManager(apikey string, clusterGroup string) (multicluster.ClusterManager, error) {
-	iamClient, err := iam.NewIAMClient(apikey, "")
+func NewSatConfClusterManager(apiKey, clusterGroup string) (multicluster.ClusterManager, error) {
+	iamClient, err := iam.NewIAMClient(apiKey, "")
 	if err != nil {
 		return nil, err
 	}
@@ -412,7 +419,7 @@ func NewSatConfClusterManager(apikey string, clusterGroup string) (multicluster.
 
 	logger := logging.LogInit(logging.CONTROLLER, "RazeeManager")
 
-	logger.Info().Str("clusterGroup", clusterGroup).Str("orgID", me.OrgId).Msg("Initializing Razee with IBM Satellite Config")
+	logger.Info().Str(clusterGroupKey, clusterGroup).Str("orgID", me.OrgId).Msg("Initializing Razee with IBM Satellite Config")
 
 	return &razeeClusterManager{
 		orgID:        me.OrgId,
