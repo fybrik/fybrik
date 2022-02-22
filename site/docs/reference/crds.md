@@ -64,17 +64,135 @@ Blueprint is the Schema for the blueprints API
       <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
       <td>true</td>
       </tr><tr>
+        <td><b><a href="#blueprintstatus">status</a></b></td>
+        <td>object</td>
+        <td>
+          BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b><a href="#blueprintspec">spec</a></b></td>
         <td>object</td>
         <td>
           BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path that run in a particular cluster. In a single cluster environment there is one blueprint per workload (FybrikApplication). In a multi-cluster environment there is one Blueprint per cluster per workload (FybrikApplication).<br/>
         </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.status
+<sup><sup>[↩ Parent](#blueprint)</sup></sup>
+
+
+
+BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#blueprintstatusmoduleskey">modules</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          ModulesState is a map which holds the status of each module its key is the moduleInstanceName which is the unique name for the deployed instance related to this workload<br/>
+        </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#blueprintstatus">status</a></b></td>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ObservedGeneration is taken from the Blueprint metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintstatusobservedstate">observedState</a></b></td>
         <td>object</td>
         <td>
-          BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring<br/>
+          ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>releases</b></td>
+        <td>map[string]integer</td>
+        <td>
+          Releases map each release to the observed generation of the blueprint containing this release. At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.status.modules[key]
+<sup><sup>[↩ Parent](#blueprintstatus)</sup></sup>
+
+
+
+ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>error</b></td>
+        <td>string</td>
+        <td>
+          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.status.observedState
+<sup><sup>[↩ Parent](#blueprintstatus)</sup></sup>
+
+
+
+ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>error</b></td>
+        <td>string</td>
+        <td>
+          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -667,124 +785,6 @@ Chart contains the location of the helm chart with info detailing how to deploy
       </tr></tbody>
 </table>
 
-
-#### Blueprint.status
-<sup><sup>[↩ Parent](#blueprint)</sup></sup>
-
-
-
-BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#blueprintstatusmoduleskey">modules</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          ModulesState is a map which holds the status of each module its key is the moduleInstanceName which is the unique name for the deployed instance related to this workload<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>observedGeneration</b></td>
-        <td>integer</td>
-        <td>
-          ObservedGeneration is taken from the Blueprint metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.<br/>
-          <br/>
-            <i>Format</i>: int64<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintstatusobservedstate">observedState</a></b></td>
-        <td>object</td>
-        <td>
-          ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>releases</b></td>
-        <td>map[string]integer</td>
-        <td>
-          Releases map each release to the observed generation of the blueprint containing this release. At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.status.modules[key]
-<sup><sup>[↩ Parent](#blueprintstatus)</sup></sup>
-
-
-
-ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>error</b></td>
-        <td>string</td>
-        <td>
-          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>ready</b></td>
-        <td>boolean</td>
-        <td>
-          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.status.observedState
-<sup><sup>[↩ Parent](#blueprintstatus)</sup></sup>
-
-
-
-ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>error</b></td>
-        <td>string</td>
-        <td>
-          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>ready</b></td>
-        <td>boolean</td>
-        <td>
-          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
 ### FybrikApplication
 <sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
 
@@ -822,17 +822,302 @@ FybrikApplication provides information about the application whose data is being
       <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
       <td>true</td>
       </tr><tr>
+        <td><b><a href="#fybrikapplicationstatus">status</a></b></td>
+        <td>object</td>
+        <td>
+          FybrikApplicationStatus defines the observed state of FybrikApplication.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b><a href="#fybrikapplicationspec">spec</a></b></td>
         <td>object</td>
         <td>
           FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.<br/>
         </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status
+<sup><sup>[↩ Parent](#fybrikapplication)</sup></sup>
+
+
+
+FybrikApplicationStatus defines the observed state of FybrikApplication.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikapplicationstatusassetstateskey">assetStates</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          AssetStates provides a status per asset<br/>
+        </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#fybrikapplicationstatus">status</a></b></td>
+        <td><b>errorMessage</b></td>
+        <td>string</td>
+        <td>
+          ErrorMessage indicates that an error has happened during the reconcile, unrelated to a specific asset<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatusgenerated">generated</a></b></td>
         <td>object</td>
         <td>
-          FybrikApplicationStatus defines the observed state of FybrikApplication.<br/>
+          Generated resource identifier<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ObservedGeneration is taken from the FybrikApplication metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether the Blueprint status changed.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekey">provisionedStorage</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          ProvisionedStorage maps a dataset (identified by AssetID) to the new provisioned bucket. It allows FybrikApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received. ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready is true if all specified assets are either ready to be used or are denied access.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>validApplication</b></td>
+        <td>string</td>
+        <td>
+          ValidApplication indicates whether the FybrikApplication is valid given the defined taxonomy<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>validatedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ValidatedGeneration is the version of the FyrbikApplication that has been validated with the taxonomy defined.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status.assetStates[key]
+<sup><sup>[↩ Parent](#fybrikapplicationstatus)</sup></sup>
+
+
+
+AssetState defines the observed state of an asset
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>catalogedAsset</b></td>
+        <td>string</td>
+        <td>
+          CatalogedAsset provides a new asset identifier after being registered in the enterprise catalog<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatusassetstateskeyconditionsindex">conditions</a></b></td>
+        <td>[]object</td>
+        <td>
+          Conditions indicate the asset state (Ready, Deny, Error)<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatusassetstateskeyendpoint">endpoint</a></b></td>
+        <td>object</td>
+        <td>
+          Endpoint provides the endpoint spec from which the asset will be served to the application<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status.assetStates[key].conditions[index]
+<sup><sup>[↩ Parent](#fybrikapplicationstatusassetstateskey)</sup></sup>
+
+
+
+Condition describes the state of a FybrikApplication at a certain point.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>message</b></td>
+        <td>string</td>
+        <td>
+          Message contains the details of the current condition<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ObservedGeneration is the version of the resource for which the condition has been evaluated<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>enum</td>
+        <td>
+          Status of the condition, one of (`True`, `False`, `Unknown`).<br/>
+          <br/>
+            <i>Enum</i>: True, False, Unknown<br/>
+            <i>Default</i>: Unknown<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>type</b></td>
+        <td>string</td>
+        <td>
+          Type of the condition<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status.assetStates[key].endpoint
+<sup><sup>[↩ Parent](#fybrikapplicationstatusassetstateskey)</sup></sup>
+
+
+
+Endpoint provides the endpoint spec from which the asset will be served to the application
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status.generated
+<sup><sup>[↩ Parent](#fybrikapplicationstatus)</sup></sup>
+
+
+
+Generated resource identifier
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>appVersion</b></td>
+        <td>integer</td>
+        <td>
+          Version of FybrikApplication that has generated this resource<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>kind</b></td>
+        <td>string</td>
+        <td>
+          Kind of the resource (Blueprint, Plotter)<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the resource<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>namespace</b></td>
+        <td>string</td>
+        <td>
+          Namespace of the resource<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status.provisionedStorage[key]
+<sup><sup>[↩ Parent](#fybrikapplicationstatus)</sup></sup>
+
+
+
+DatasetDetails holds details of the provisioned storage
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>datasetRef</b></td>
+        <td>string</td>
+        <td>
+          Reference to a Dataset resource containing the request to provision storage<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>secretRef</b></td>
+        <td>string</td>
+        <td>
+          Reference to a secret where the credentials are stored<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -1146,291 +1431,6 @@ Interface indicates the protocol and format expected by the data user
           Protocol defines the interface protocol used for data transactions<br/>
         </td>
         <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### FybrikApplication.status
-<sup><sup>[↩ Parent](#fybrikapplication)</sup></sup>
-
-
-
-FybrikApplicationStatus defines the observed state of FybrikApplication.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#fybrikapplicationstatusassetstateskey">assetStates</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          AssetStates provides a status per asset<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>errorMessage</b></td>
-        <td>string</td>
-        <td>
-          ErrorMessage indicates that an error has happened during the reconcile, unrelated to a specific asset<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#fybrikapplicationstatusgenerated">generated</a></b></td>
-        <td>object</td>
-        <td>
-          Generated resource identifier<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>observedGeneration</b></td>
-        <td>integer</td>
-        <td>
-          ObservedGeneration is taken from the FybrikApplication metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether the Blueprint status changed.<br/>
-          <br/>
-            <i>Format</i>: int64<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekey">provisionedStorage</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          ProvisionedStorage maps a dataset (identified by AssetID) to the new provisioned bucket. It allows FybrikApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received. ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>ready</b></td>
-        <td>boolean</td>
-        <td>
-          Ready is true if all specified assets are either ready to be used or are denied access.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>validApplication</b></td>
-        <td>string</td>
-        <td>
-          ValidApplication indicates whether the FybrikApplication is valid given the defined taxonomy<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>validatedGeneration</b></td>
-        <td>integer</td>
-        <td>
-          ValidatedGeneration is the version of the FyrbikApplication that has been validated with the taxonomy defined.<br/>
-          <br/>
-            <i>Format</i>: int64<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### FybrikApplication.status.assetStates[key]
-<sup><sup>[↩ Parent](#fybrikapplicationstatus)</sup></sup>
-
-
-
-AssetState defines the observed state of an asset
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>catalogedAsset</b></td>
-        <td>string</td>
-        <td>
-          CatalogedAsset provides a new asset identifier after being registered in the enterprise catalog<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#fybrikapplicationstatusassetstateskeyconditionsindex">conditions</a></b></td>
-        <td>[]object</td>
-        <td>
-          Conditions indicate the asset state (Ready, Deny, Error)<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#fybrikapplicationstatusassetstateskeyendpoint">endpoint</a></b></td>
-        <td>object</td>
-        <td>
-          Endpoint provides the endpoint spec from which the asset will be served to the application<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### FybrikApplication.status.assetStates[key].conditions[index]
-<sup><sup>[↩ Parent](#fybrikapplicationstatusassetstateskey)</sup></sup>
-
-
-
-Condition describes the state of a FybrikApplication at a certain point.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>message</b></td>
-        <td>string</td>
-        <td>
-          Message contains the details of the current condition<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>observedGeneration</b></td>
-        <td>integer</td>
-        <td>
-          ObservedGeneration is the version of the resource for which the condition has been evaluated<br/>
-          <br/>
-            <i>Format</i>: int64<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>status</b></td>
-        <td>enum</td>
-        <td>
-          Status of the condition, one of (`True`, `False`, `Unknown`).<br/>
-          <br/>
-            <i>Enum</i>: True, False, Unknown<br/>
-            <i>Default</i>: Unknown<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>type</b></td>
-        <td>string</td>
-        <td>
-          Type of the condition<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### FybrikApplication.status.assetStates[key].endpoint
-<sup><sup>[↩ Parent](#fybrikapplicationstatusassetstateskey)</sup></sup>
-
-
-
-Endpoint provides the endpoint spec from which the asset will be served to the application
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### FybrikApplication.status.generated
-<sup><sup>[↩ Parent](#fybrikapplicationstatus)</sup></sup>
-
-
-
-Generated resource identifier
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>appVersion</b></td>
-        <td>integer</td>
-        <td>
-          Version of FybrikApplication that has generated this resource<br/>
-          <br/>
-            <i>Format</i>: int64<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>kind</b></td>
-        <td>string</td>
-        <td>
-          Kind of the resource (Blueprint, Plotter)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          Name of the resource<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>namespace</b></td>
-        <td>string</td>
-        <td>
-          Namespace of the resource<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### FybrikApplication.status.provisionedStorage[key]
-<sup><sup>[↩ Parent](#fybrikapplicationstatus)</sup></sup>
-
-
-
-DatasetDetails holds details of the provisioned storage
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>datasetRef</b></td>
-        <td>string</td>
-        <td>
-          Reference to a Dataset resource containing the request to provision storage<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>secretRef</b></td>
-        <td>string</td>
-        <td>
-          Reference to a secret where the credentials are stored<br/>
-        </td>
-        <td>false</td>
       </tr></tbody>
 </table>
 
@@ -2086,19 +2086,19 @@ FybrikStorageAccount defines a storage account used for copying data. Only S3 ba
       <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
       <td>true</td>
       </tr><tr>
-        <td><b><a href="#fybrikstorageaccountspec">spec</a></b></td>
-        <td>object</td>
-        <td>
-          FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
         <td><b>status</b></td>
         <td>object</td>
         <td>
           FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount<br/>
         </td>
         <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikstorageaccountspec">spec</a></b></td>
+        <td>object</td>
+        <td>
+          FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 
@@ -2187,17 +2187,472 @@ Plotter is the Schema for the plotters API
       <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
       <td>true</td>
       </tr><tr>
+        <td><b><a href="#plotterstatus">status</a></b></td>
+        <td>object</td>
+        <td>
+          PlotterStatus defines the observed state of Plotter This includes readiness, error message, and indicators received from blueprint resources owned by the Plotter for cleanup and status monitoring<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b><a href="#plotterspec">spec</a></b></td>
         <td>object</td>
         <td>
           PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter declares what needs to be installed and where (as blueprints running on remote clusters) which provides the Data Scientist's application with secure and governed access to the data requested in the FybrikApplication.<br/>
         </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.status
+<sup><sup>[↩ Parent](#plotter)</sup></sup>
+
+
+
+PlotterStatus defines the observed state of Plotter This includes readiness, error message, and indicators received from blueprint resources owned by the Plotter for cleanup and status monitoring
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterstatusassetskey">assets</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Assets is a map containing the status per asset. The key of this map is assetId<br/>
+        </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#plotterstatus">status</a></b></td>
+        <td><b><a href="#plotterstatusblueprintskey">blueprints</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          <br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterstatusconditionsindex">conditions</a></b></td>
+        <td>[]object</td>
+        <td>
+          Conditions represent the possible error and failure conditions<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterstatusflowskey">flows</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Flows is a map containing the status for each flow the key is the flow name<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ObservedGeneration is taken from the Plotter metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated blueprints should be checked.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterstatusobservedstate">observedState</a></b></td>
         <td>object</td>
         <td>
-          PlotterStatus defines the observed state of Plotter This includes readiness, error message, and indicators received from blueprint resources owned by the Plotter for cleanup and status monitoring<br/>
+          ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>readyTimestamp</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+          <br/>
+            <i>Format</i>: date-time<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.status.assets[key]
+<sup><sup>[↩ Parent](#plotterstatus)</sup></sup>
+
+
+
+ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>error</b></td>
+        <td>string</td>
+        <td>
+          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.status.blueprints[key]
+<sup><sup>[↩ Parent](#plotterstatus)</sup></sup>
+
+
+
+MetaBlueprint defines blueprint metadata (name, namespace) and status
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>namespace</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterstatusblueprintskeystatus">status</a></b></td>
+        <td>object</td>
+        <td>
+          BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.status.blueprints[key].status
+<sup><sup>[↩ Parent](#plotterstatusblueprintskey)</sup></sup>
+
+
+
+BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterstatusblueprintskeystatusmoduleskey">modules</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          ModulesState is a map which holds the status of each module its key is the moduleInstanceName which is the unique name for the deployed instance related to this workload<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ObservedGeneration is taken from the Blueprint metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterstatusblueprintskeystatusobservedstate">observedState</a></b></td>
+        <td>object</td>
+        <td>
+          ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>releases</b></td>
+        <td>map[string]integer</td>
+        <td>
+          Releases map each release to the observed generation of the blueprint containing this release. At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.status.blueprints[key].status.modules[key]
+<sup><sup>[↩ Parent](#plotterstatusblueprintskeystatus)</sup></sup>
+
+
+
+ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>error</b></td>
+        <td>string</td>
+        <td>
+          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.status.blueprints[key].status.observedState
+<sup><sup>[↩ Parent](#plotterstatusblueprintskeystatus)</sup></sup>
+
+
+
+ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>error</b></td>
+        <td>string</td>
+        <td>
+          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.status.conditions[index]
+<sup><sup>[↩ Parent](#plotterstatus)</sup></sup>
+
+
+
+Condition describes the state of a FybrikApplication at a certain point.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>message</b></td>
+        <td>string</td>
+        <td>
+          Message contains the details of the current condition<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ObservedGeneration is the version of the resource for which the condition has been evaluated<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>enum</td>
+        <td>
+          Status of the condition, one of (`True`, `False`, `Unknown`).<br/>
+          <br/>
+            <i>Enum</i>: True, False, Unknown<br/>
+            <i>Default</i>: Unknown<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>type</b></td>
+        <td>string</td>
+        <td>
+          Type of the condition<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.status.flows[key]
+<sup><sup>[↩ Parent](#plotterstatus)</sup></sup>
+
+
+
+FlowStatus includes information to be reported back to the FybrikApplication resource It holds the status per data flow
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterstatusflowskeystatus">status</a></b></td>
+        <td>object</td>
+        <td>
+          ObservedState includes information about the current flow It includes readiness and error indications, as well as user instructions<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterstatusflowskeysubflowskey">subFlows</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.status.flows[key].status
+<sup><sup>[↩ Parent](#plotterstatusflowskey)</sup></sup>
+
+
+
+ObservedState includes information about the current flow It includes readiness and error indications, as well as user instructions
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>error</b></td>
+        <td>string</td>
+        <td>
+          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.status.flows[key].subFlows[key]
+<sup><sup>[↩ Parent](#plotterstatusflowskey)</sup></sup>
+
+
+
+ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>error</b></td>
+        <td>string</td>
+        <td>
+          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.status.observedState
+<sup><sup>[↩ Parent](#plotterstatus)</sup></sup>
+
+
+
+ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>error</b></td>
+        <td>string</td>
+        <td>
+          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -3059,461 +3514,6 @@ Chart contains the information needed to use helm to install the capability
           Name of helm chart<br/>
         </td>
         <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.status
-<sup><sup>[↩ Parent](#plotter)</sup></sup>
-
-
-
-PlotterStatus defines the observed state of Plotter This includes readiness, error message, and indicators received from blueprint resources owned by the Plotter for cleanup and status monitoring
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#plotterstatusassetskey">assets</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          Assets is a map containing the status per asset. The key of this map is assetId<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterstatusblueprintskey">blueprints</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterstatusconditionsindex">conditions</a></b></td>
-        <td>[]object</td>
-        <td>
-          Conditions represent the possible error and failure conditions<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterstatusflowskey">flows</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          Flows is a map containing the status for each flow the key is the flow name<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>observedGeneration</b></td>
-        <td>integer</td>
-        <td>
-          ObservedGeneration is taken from the Plotter metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated blueprints should be checked.<br/>
-          <br/>
-            <i>Format</i>: int64<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterstatusobservedstate">observedState</a></b></td>
-        <td>object</td>
-        <td>
-          ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>readyTimestamp</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-          <br/>
-            <i>Format</i>: date-time<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.status.assets[key]
-<sup><sup>[↩ Parent](#plotterstatus)</sup></sup>
-
-
-
-ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>error</b></td>
-        <td>string</td>
-        <td>
-          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>ready</b></td>
-        <td>boolean</td>
-        <td>
-          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.status.blueprints[key]
-<sup><sup>[↩ Parent](#plotterstatus)</sup></sup>
-
-
-
-MetaBlueprint defines blueprint metadata (name, namespace) and status
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>namespace</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#plotterstatusblueprintskeystatus">status</a></b></td>
-        <td>object</td>
-        <td>
-          BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.status.blueprints[key].status
-<sup><sup>[↩ Parent](#plotterstatusblueprintskey)</sup></sup>
-
-
-
-BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#plotterstatusblueprintskeystatusmoduleskey">modules</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          ModulesState is a map which holds the status of each module its key is the moduleInstanceName which is the unique name for the deployed instance related to this workload<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>observedGeneration</b></td>
-        <td>integer</td>
-        <td>
-          ObservedGeneration is taken from the Blueprint metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.<br/>
-          <br/>
-            <i>Format</i>: int64<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterstatusblueprintskeystatusobservedstate">observedState</a></b></td>
-        <td>object</td>
-        <td>
-          ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>releases</b></td>
-        <td>map[string]integer</td>
-        <td>
-          Releases map each release to the observed generation of the blueprint containing this release. At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.status.blueprints[key].status.modules[key]
-<sup><sup>[↩ Parent](#plotterstatusblueprintskeystatus)</sup></sup>
-
-
-
-ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>error</b></td>
-        <td>string</td>
-        <td>
-          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>ready</b></td>
-        <td>boolean</td>
-        <td>
-          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.status.blueprints[key].status.observedState
-<sup><sup>[↩ Parent](#plotterstatusblueprintskeystatus)</sup></sup>
-
-
-
-ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>error</b></td>
-        <td>string</td>
-        <td>
-          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>ready</b></td>
-        <td>boolean</td>
-        <td>
-          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.status.conditions[index]
-<sup><sup>[↩ Parent](#plotterstatus)</sup></sup>
-
-
-
-Condition describes the state of a FybrikApplication at a certain point.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>message</b></td>
-        <td>string</td>
-        <td>
-          Message contains the details of the current condition<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>observedGeneration</b></td>
-        <td>integer</td>
-        <td>
-          ObservedGeneration is the version of the resource for which the condition has been evaluated<br/>
-          <br/>
-            <i>Format</i>: int64<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>status</b></td>
-        <td>enum</td>
-        <td>
-          Status of the condition, one of (`True`, `False`, `Unknown`).<br/>
-          <br/>
-            <i>Enum</i>: True, False, Unknown<br/>
-            <i>Default</i>: Unknown<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>type</b></td>
-        <td>string</td>
-        <td>
-          Type of the condition<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.status.flows[key]
-<sup><sup>[↩ Parent](#plotterstatus)</sup></sup>
-
-
-
-FlowStatus includes information to be reported back to the FybrikApplication resource It holds the status per data flow
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#plotterstatusflowskeystatus">status</a></b></td>
-        <td>object</td>
-        <td>
-          ObservedState includes information about the current flow It includes readiness and error indications, as well as user instructions<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterstatusflowskeysubflowskey">subFlows</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.status.flows[key].status
-<sup><sup>[↩ Parent](#plotterstatusflowskey)</sup></sup>
-
-
-
-ObservedState includes information about the current flow It includes readiness and error indications, as well as user instructions
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>error</b></td>
-        <td>string</td>
-        <td>
-          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>ready</b></td>
-        <td>boolean</td>
-        <td>
-          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.status.flows[key].subFlows[key]
-<sup><sup>[↩ Parent](#plotterstatusflowskey)</sup></sup>
-
-
-
-ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>error</b></td>
-        <td>string</td>
-        <td>
-          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>ready</b></td>
-        <td>boolean</td>
-        <td>
-          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.status.observedState
-<sup><sup>[↩ Parent](#plotterstatus)</sup></sup>
-
-
-
-ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>error</b></td>
-        <td>string</td>
-        <td>
-          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>ready</b></td>
-        <td>boolean</td>
-        <td>
-          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
-        </td>
-        <td>false</td>
       </tr></tbody>
 </table>
 
