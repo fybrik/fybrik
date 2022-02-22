@@ -85,7 +85,8 @@ func compactOperationDecisions(in []*pb.OperationDecision) []*pb.OperationDecisi
 				Operation: operationDecision.Operation,
 			}
 		}
-		decisionsByOperation[key].EnforcementActions = append(decisionsByOperation[key].EnforcementActions, operationDecision.EnforcementActions...)
+		decisionsByOperation[key].EnforcementActions = append(decisionsByOperation[key].EnforcementActions,
+			operationDecision.EnforcementActions...)
 		decisionsByOperation[key].UsedPolicies = append(decisionsByOperation[key].UsedPolicies, operationDecision.UsedPolicies...)
 	}
 

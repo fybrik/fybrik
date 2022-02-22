@@ -22,7 +22,7 @@ type openAPIPolicyManager struct {
 }
 
 // NewopenApiPolicyManager creates a PolicyManager facade that connects to a openApi service
-func NewOpenAPIPolicyManager(name string, connectionURL string, connectionTimeout time.Duration) (PolicyManager, error) {
+func NewOpenAPIPolicyManager(name, connectionURL string, connectionTimeout time.Duration) (PolicyManager, error) {
 	configuration := &openapiclient.Configuration{
 		DefaultHeader: make(map[string]string),
 		UserAgent:     "OpenAPI-Generator/1.0.0/go",
@@ -43,7 +43,8 @@ func NewOpenAPIPolicyManager(name string, connectionURL string, connectionTimeou
 	}, nil
 }
 
-func (m *openAPIPolicyManager) GetPoliciesDecisions(in *policymanager.GetPolicyDecisionsRequest, creds string) (*policymanager.GetPolicyDecisionsResponse, error) {
+func (m *openAPIPolicyManager) GetPoliciesDecisions(in *policymanager.GetPolicyDecisionsRequest,
+	creds string) (*policymanager.GetPolicyDecisionsResponse, error) {
 	resp, _, err := m.client.DefaultApi.GetPoliciesDecisionsPost(context.Background()).XRequestCred(creds).PolicyManagerRequest(*in).Execute()
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("get policies decisions from %s failed", m.name))

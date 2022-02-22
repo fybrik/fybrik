@@ -131,7 +131,7 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 // deploy: true/false take precedence over undefined, true and false result in a conflict.
 // restrictions: new pairs <key, value> are added, if both exist - compatibility is checked.
 // policy: concatenation of IDs and descriptions.
-func (r *RegoPolicyEvaluator) merge(newDecision adminrules.Decision, oldDecision adminrules.Decision) (bool, adminrules.Decision) {
+func (r *RegoPolicyEvaluator) merge(newDecision, oldDecision adminrules.Decision) (bool, adminrules.Decision) {
 	mergedDecision := adminrules.Decision{}
 	// merge deployment decisions
 	deploy := oldDecision.Deploy
@@ -145,21 +145,24 @@ func (r *RegoPolicyEvaluator) merge(newDecision adminrules.Decision, oldDecision
 	mergedDecision.Deploy = deploy
 	// merge restrictions
 	mergedDecision.DeploymentRestrictions = oldDecision.DeploymentRestrictions
-	mergedDecision.DeploymentRestrictions.Clusters = append(mergedDecision.DeploymentRestrictions.Clusters, newDecision.DeploymentRestrictions.Clusters...)
-	mergedDecision.DeploymentRestrictions.Modules = append(mergedDecision.DeploymentRestrictions.Modules, newDecision.DeploymentRestrictions.Modules...)
-	mergedDecision.DeploymentRestrictions.StorageAccounts = append(mergedDecision.DeploymentRestrictions.StorageAccounts, newDecision.DeploymentRestrictions.StorageAccounts...)
+	mergedDecision.DeploymentRestrictions.Clusters = append(mergedDecision.DeploymentRestrictions.Clusters,
+		newDecision.DeploymentRestrictions.Clusters...)
+	mergedDecision.DeploymentRestrictions.Modules = append(mergedDecision.DeploymentRestrictions.Modules,
+		newDecision.DeploymentRestrictions.Modules...)
+	mergedDecision.DeploymentRestrictions.StorageAccounts = append(mergedDecision.DeploymentRestrictions.StorageAccounts,
+		newDecision.DeploymentRestrictions.StorageAccounts...)
 	// policies are appended to the output, no need to merge
 	mergedDecision.Policy = adminrules.DecisionPolicy{}
 	return true, mergedDecision
 }
 
-func validateStructure(obj interface{}, taxonomySchema string, uuid string) error {
+func validateStructure(obj interface{}, taxonomySchema, uuid string) error {
 	// validate against taxonomy
 	bytes, err := json.Marshal(obj)
 	if err != nil {
 		return err
 	}
-	allErrs, err := validate.TaxonomyCheck(bytes, ValidationPath)
+	allErrs, err := validate.TaxonomyCheck(bytes, taxonomySchema)
 	if err != nil {
 		return err
 	}
