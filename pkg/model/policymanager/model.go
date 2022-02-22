@@ -8,18 +8,8 @@ import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
-// +kubebuilder:validation:Enum=read;write;delete
-type RequestActionType string
-
-// List of operationType
-const (
-	READ   RequestActionType = "read"
-	WRITE  RequestActionType = "write"
-	DELETE RequestActionType = "delete"
-)
-
 type RequestAction struct {
-	ActionType         RequestActionType           `json:"actionType"`
+	ActionType         taxonomy.DataFlow           `json:"actionType"`
 	ProcessingLocation taxonomy.ProcessingLocation `json:"processingLocation,omitempty"`
 	Destination        string                      `json:"destination,omitempty"`
 }

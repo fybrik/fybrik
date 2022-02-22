@@ -30,7 +30,7 @@ type DataRequest struct {
 	// requested interface
 	Interface api.InterfaceDetails `json:"interface"`
 	// requested usage, e.g. "read": true, "write": false
-	Usage map[api.DataFlow]bool `json:"usage"`
+	Usage taxonomy.DataFlow `json:"usage"`
 	// Asset metadata
 	Metadata *datacatalog.ResourceMetadata `json:"dataset"`
 }

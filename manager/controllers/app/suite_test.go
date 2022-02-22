@@ -25,7 +25,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
-	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
@@ -47,129 +46,132 @@ var testEnv *envtest.Environment
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	RunSpecsWithDefaultAndCustomReporters(t,
-		"Controller Suite",
-		[]Reporter{printer.NewlineReporter{}})
+	RunSpecs(t,
+		"Controller Suite")
 }
 
-var _ = BeforeSuite(func(done Done) {
-	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
+var _ = BeforeSuite(func() {
+	done := make(chan interface{})
+	go func() {
+		logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 
-	path, pathErr := os.Getwd()
-	if pathErr != nil {
-		logf.Log.Info(pathErr.Error())
-	}
-	By("bootstrapping test environment")
-	if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
-		fmt.Printf("Using existing environment; don't load CRDs. \n")
-		useexistingcluster := true
-		testEnv = &envtest.Environment{
-			UseExistingCluster: &useexistingcluster,
+		path, pathErr := os.Getwd()
+		if pathErr != nil {
+			logf.Log.Info(pathErr.Error())
 		}
-	} else {
-		fmt.Printf("Using fake environment; so set path to CRDs so they are installed. \n")
-		testEnv = &envtest.Environment{
-			CRDDirectoryPaths: []string{
-				filepath.Join(path, "..", "..", "..", "charts", "fybrik-crd", "templates"),
-			},
-			ErrorIfCRDPathMissing: true,
+		By("bootstrapping test environment")
+		if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
+			fmt.Printf("Using existing environment; don't load CRDs. \n")
+			useexistingcluster := true
+			testEnv = &envtest.Environment{
+				UseExistingCluster: &useexistingcluster,
+			}
+		} else {
+			fmt.Printf("Using fake environment; so set path to CRDs so they are installed. \n")
+			testEnv = &envtest.Environment{
+				CRDDirectoryPaths: []string{
+					filepath.Join(path, "..", "..", "..", "charts", "fybrik-crd", "templates"),
+				},
+				ErrorIfCRDPathMissing: true,
+			}
 		}
-	}
 
-	utils.DefaultTestConfiguration(GinkgoT())
+		utils.DefaultTestConfiguration(GinkgoT())
 
-	var err error
-	cfg, err = testEnv.Start()
-	Expect(err).ToNot(HaveOccurred())
-	Expect(cfg).ToNot(BeNil())
-
-	err = appapi.AddToScheme(scheme.Scheme)
-	Expect(err).NotTo(HaveOccurred())
-
-	// +kubebuilder:scaffold:scheme
-
-	if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
-		logf.Log.Info("Using existing controller in existing cluster...")
-		fmt.Printf("Using existing controller in existing cluster... \n")
-		k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
+		var err error
+		cfg, err = testEnv.Start()
 		Expect(err).ToNot(HaveOccurred())
-	} else {
-		fmt.Printf("Setup fake environment... \n")
-		controllerNamespace := utils.GetControllerNamespace()
-		modulesNamespace := utils.GetDefaultModulesNamespace()
-		fmt.Printf("Suite test: Using controller namespace: %s; using data access module namespace %s\n: ", controllerNamespace, modulesNamespace)
+		Expect(cfg).ToNot(BeNil())
 
-		systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
-		workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetDefaultModulesNamespace()})
-		// the testing environment will restrict access to secrets, modules and storage accounts
-		mgr, err = ctrl.NewManager(cfg, ctrl.Options{
-			Scheme:             scheme.Scheme,
-			MetricsBindAddress: "localhost:8086",
-			NewCache: cache.BuilderWithOptions(cache.Options{SelectorsByObject: cache.SelectorsByObject{
-				&appapi.FybrikModule{}:         {Field: systemNamespaceSelector},
-				&appapi.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
-				&corev1.Secret{}:               {Field: workerNamespaceSelector},
-			}}),
-		})
-		Expect(err).ToNot(HaveOccurred())
-
-		// Setup application controller
-		reconciler := createTestFybrikApplicationController(mgr.GetClient(), mgr.GetScheme())
-		Expect(reconciler).NotTo(BeNil())
-
-		err = reconciler.SetupWithManager(mgr)
-		Expect(err).ToNot(HaveOccurred())
-
-		// Setup blueprint controller
-		fakeHelm := helm.NewFake(
-			&release.Release{
-				Name: "ra8afad067a6a96084dcb", // Release name is from arrow-flight module
-				Info: &release.Info{Status: release.StatusDeployed},
-			}, []*unstructured.Unstructured{},
-		)
-		err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)
-		Expect(err).ToNot(HaveOccurred())
-
-		// Setup plotter controller
-		clusterMgr, err := local.NewClusterManager(mgr.GetClient(), controllerNamespace)
+		err = appapi.AddToScheme(scheme.Scheme)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(clusterMgr).NotTo(BeNil())
-		err = NewPlotterReconciler(mgr, "Plotter", clusterMgr).SetupWithManager(mgr)
-		Expect(err).ToNot(HaveOccurred())
 
-		go func() {
-			err = mgr.Start(ctrl.SetupSignalHandler())
+		// +kubebuilder:scaffold:scheme
+
+		if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
+			logf.Log.Info("Using existing controller in existing cluster...")
+			fmt.Printf("Using existing controller in existing cluster... \n")
+			k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 			Expect(err).ToNot(HaveOccurred())
-		}()
+		} else {
+			fmt.Printf("Setup fake environment... \n")
+			controllerNamespace := utils.GetControllerNamespace()
+			modulesNamespace := utils.GetDefaultModulesNamespace()
+			fmt.Printf("Suite test: Using controller namespace: %s; using data access module namespace %s\n: ", controllerNamespace, modulesNamespace)
 
-		k8sClient = mgr.GetClient()
-		Expect(k8sClient.Create(context.Background(), &corev1.Namespace{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: utils.GetSystemNamespace(),
-			},
-		}))
+			systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
+			workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetDefaultModulesNamespace()})
+			// the testing environment will restrict access to secrets, modules and storage accounts
+			mgr, err = ctrl.NewManager(cfg, ctrl.Options{
+				Scheme:             scheme.Scheme,
+				MetricsBindAddress: "localhost:8086",
+				NewCache: cache.BuilderWithOptions(cache.Options{SelectorsByObject: cache.SelectorsByObject{
+					&appapi.FybrikModule{}:         {Field: systemNamespaceSelector},
+					&appapi.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
+					&corev1.Secret{}:               {Field: workerNamespaceSelector},
+				}}),
+			})
+			Expect(err).ToNot(HaveOccurred())
 
-		Expect(k8sClient.Create(context.Background(), &corev1.Namespace{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: modulesNamespace,
-			},
-		}))
-		Expect(k8sClient.Create(context.Background(), &corev1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "cluster-metadata",
-				Namespace: controllerNamespace,
-			},
-			Data: map[string]string{
-				"ClusterName":   "thegreendragon",
-				"Zone":          "hobbiton",
-				"Region":        "theshire",
-				"VaultAuthPath": "kind",
-			},
-		}))
-	}
-	Expect(k8sClient).ToNot(BeNil())
-	close(done)
-}, 60)
+			// Setup application controller
+			reconciler := createTestFybrikApplicationController(mgr.GetClient(), mgr.GetScheme())
+			Expect(reconciler).NotTo(BeNil())
+
+			err = reconciler.SetupWithManager(mgr)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Setup blueprint controller
+			fakeHelm := helm.NewFake(
+				&release.Release{
+					Name: "ra8afad067a6a96084dcb", // Release name is from arrow-flight module
+					Info: &release.Info{Status: release.StatusDeployed},
+				}, []*unstructured.Unstructured{},
+			)
+			err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Setup plotter controller
+			clusterMgr, err := local.NewClusterManager(mgr.GetClient(), controllerNamespace)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(clusterMgr).NotTo(BeNil())
+			err = NewPlotterReconciler(mgr, "Plotter", clusterMgr).SetupWithManager(mgr)
+			Expect(err).ToNot(HaveOccurred())
+
+			go func() {
+				err = mgr.Start(ctrl.SetupSignalHandler())
+				Expect(err).ToNot(HaveOccurred())
+			}()
+
+			k8sClient = mgr.GetClient()
+			Expect(k8sClient.Create(context.Background(), &corev1.Namespace{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: utils.GetSystemNamespace(),
+				},
+			}))
+
+			Expect(k8sClient.Create(context.Background(), &corev1.Namespace{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: modulesNamespace,
+				},
+			}))
+			Expect(k8sClient.Create(context.Background(), &corev1.ConfigMap{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cluster-metadata",
+					Namespace: controllerNamespace,
+				},
+				Data: map[string]string{
+					"ClusterName":   "thegreendragon",
+					"Zone":          "hobbiton",
+					"Region":        "theshire",
+					"VaultAuthPath": "kind",
+				},
+			}))
+		}
+		Expect(k8sClient).ToNot(BeNil())
+		close(done)
+	}()
+	Eventually(done, 60).Should(BeClosed())
+})
 
 var _ = AfterSuite(func() {
 	By("tearing down the test environment")

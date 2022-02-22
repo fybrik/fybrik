@@ -133,14 +133,14 @@ type PlotterModulesSpec struct {
 	AssetID         string
 	ModuleName      string
 	ModuleArguments *app.StepParameters
-	FlowType        app.DataFlow
+	FlowType        taxonomy.DataFlow
 	Chart           app.ChartSpec
 	Scope           app.CapabilityScope
 	Capability      taxonomy.Capability
 }
 
 // addCredentials updates Vault credentials field to hold only credentials related to the flow type
-func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType app.DataFlow) {
+func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType taxonomy.DataFlow) {
 	vaultMap := make(map[string]app.Vault)
 
 	// Update vaultAuthPath from the cluster metadata
@@ -183,7 +183,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			// Get source from plotter assetID list
 			assetInfo := plotter.Spec.Assets[assetID]
 			dataStore = &assetInfo.DataStore
-			addCredentials(dataStore, plotterModule.VaultAuthPath, app.ReadFlow)
+			addCredentials(dataStore, plotterModule.VaultAuthPath, taxonomy.ReadFlow)
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
@@ -198,7 +198,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		assetID := plotterModule.ModuleArguments.Sink.AssetID
 		assetInfo := plotter.Spec.Assets[assetID]
 		destDataStore = &assetInfo.DataStore
-		addCredentials(destDataStore, plotterModule.VaultAuthPath, app.WriteFlow)
+		addCredentials(destDataStore, plotterModule.VaultAuthPath, taxonomy.WriteFlow)
 	}
 	blueprintModule.Module.Arguments.Assets = []app.AssetContext{
 		{
@@ -419,6 +419,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 				blueprint.Labels[key] = val
 			}
 			err := r.ClusterManager.CreateBlueprint(cluster, blueprint)
+			isReady = false
 			if err != nil {
 				errorCollection = append(errorCollection, err)
 				log.Error().Err(err).Str(logging.CLUSTER, cluster).Str(logging.ACTION, logging.CREATE).Msg("Could not create blueprint for cluster")
@@ -427,7 +428,6 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			}
 
 			plotter.Status.Blueprints[cluster] = app.CreateMetaBlueprintWithoutState(blueprint)
-			isReady = false
 			r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, "Blueprint just created")
 		}
 	}

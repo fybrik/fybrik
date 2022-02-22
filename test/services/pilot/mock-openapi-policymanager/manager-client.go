@@ -55,7 +55,7 @@ func main() {
 			}},
 		},
 		Action: policymanager.RequestAction{
-			ActionType:         policymanager.READ,
+			ActionType:         taxonomy.ReadFlow,
 			ProcessingLocation: "Netherlands",
 		},
 		Resource: policymanager.Resource{

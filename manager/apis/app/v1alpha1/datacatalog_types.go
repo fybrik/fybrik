@@ -5,22 +5,6 @@ package v1alpha1
 
 import "fybrik.io/fybrik/pkg/model/taxonomy"
 
-type DataFlow string
-
-const (
-	// ReadFlow indicates a data set is being read
-	ReadFlow DataFlow = "read"
-
-	// WriteFlow indicates a data set is being written
-	WriteFlow DataFlow = "write"
-
-	// DeleteFlow indicates a data set is being deleted
-	DeleteFlow DataFlow = "delete"
-
-	// CopyFlow indicates a data set is being copied
-	CopyFlow DataFlow = "copy"
-)
-
 // DataStore contains the details for accesing the data that are sent by catalog connectors
 // Credentials for accesing the data are stored in Vault, in the location represented by Vault property.
 type DataStore struct {

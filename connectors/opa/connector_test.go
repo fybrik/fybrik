@@ -30,7 +30,7 @@ func TestGetPoliciesDecisions(t *testing.T) {
 				"env": "test",
 			}},
 		},
-		Action: policymanager.RequestAction{ActionType: policymanager.READ},
+		Action: policymanager.RequestAction{ActionType: taxonomy.ReadFlow},
 		Resource: policymanager.Resource{
 			ID: taxonomy.AssetID("assetID"),
 			Metadata: &datacatalog.ResourceMetadata{
