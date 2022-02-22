@@ -34,7 +34,7 @@ type grpcPolicyManager struct {
 
 // NewGrpcPolicyManager creates a PolicyManager facade that connects to a GRPC service
 // You must call .Close() when you are done using the created instance
-func NewGrpcPolicyManager(name string, connectionURL string, connectionTimeout time.Duration) (PolicyManager, error) {
+func NewGrpcPolicyManager(name, connectionURL string, connectionTimeout time.Duration) (PolicyManager, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), connectionTimeout)
 	defer cancel()
 	connection, err := grpc.DialContext(ctx, connectionURL, grpc.WithInsecure(), grpc.WithBlock())
@@ -125,11 +125,11 @@ func ConvertOpenAPIReqToGrpcReq(in *policymanager.GetPolicyDecisionsRequest, cre
 	log.Println("processingGeo: ", processingGeo)
 
 	properties := make(map[string]string)
-	context := in.Context.Items
-	if intent, ok := context["intent"].(string); ok {
+	reqContext := in.Context.Items
+	if intent, ok := reqContext["intent"].(string); ok {
 		properties["intent"] = intent
 	}
-	if role, ok := context["role"].(string); ok {
+	if role, ok := reqContext["role"].(string); ok {
 		properties["role"] = role
 	}
 
@@ -164,6 +164,7 @@ func ConvertOpenAPIReqToGrpcReq(in *policymanager.GetPolicyDecisionsRequest, cre
 	return appContext, nil
 }
 
+//nolint:funlen,gocyclo
 func ConvertOpenAPIRespToGrpcResp(
 	out *policymanager.GetPolicyDecisionsResponse,
 	datasetID string, op *pb.AccessOperation) (*pb.PoliciesDecisions, error) {
@@ -203,6 +204,7 @@ func ConvertOpenAPIRespToGrpcResp(
 			}
 		}
 
+		//nolint:dupl
 		if strings.EqualFold("remove", name) {
 			if additionalProperties != nil {
 				fmt.Printf("type of additionalProperties\\[\"columns\"\\]: %s\n", reflect.TypeOf(additionalProperties["columns"]))
@@ -221,6 +223,7 @@ func ConvertOpenAPIRespToGrpcResp(
 			}
 		}
 
+		//nolint:dupl
 		if strings.EqualFold("encrypt", name) {
 			if additionalProperties != nil {
 				fmt.Printf("type of additionalProperties\\[\"columns\"\\]: %s\n", reflect.TypeOf(additionalProperties["columns"]))
@@ -240,7 +243,8 @@ func ConvertOpenAPIRespToGrpcResp(
 		}
 
 		if strings.EqualFold("deny", name) {
-			newEnforcementAction := &pb.EnforcementAction{Name: "Deny", Id: "Deny-ID", Level: pb.EnforcementAction_DATASET, Args: map[string]string{}}
+			newEnforcementAction := &pb.EnforcementAction{Name: "Deny", Id: "Deny-ID", Level: pb.EnforcementAction_DATASET,
+				Args: map[string]string{}}
 			enforcementActions = append(enforcementActions, newEnforcementAction)
 
 			policy := resultItems[i].Policy
@@ -253,7 +257,8 @@ func ConvertOpenAPIRespToGrpcResp(
 		}
 
 		if strings.EqualFold("allow", name) {
-			newEnforcementAction := &pb.EnforcementAction{Name: "Allow", Id: "Allow-ID", Level: pb.EnforcementAction_DATASET, Args: map[string]string{}}
+			newEnforcementAction := &pb.EnforcementAction{Name: "Allow", Id: "Allow-ID", Level: pb.EnforcementAction_DATASET,
+				Args: map[string]string{}}
 			enforcementActions = append(enforcementActions, newEnforcementAction)
 		}
 	}
@@ -273,6 +278,7 @@ func ConvertOpenAPIRespToGrpcResp(
 	return policiesDecision, nil
 }
 
+//nolint:funlen,gocyclo
 func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*policymanager.GetPolicyDecisionsResponse, error) {
 	// convert GRPC response to Open Api Response - start
 	// we dont get decision id returned from OPA from GRPC response. So we generate random hex string
