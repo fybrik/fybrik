@@ -3568,7 +3568,7 @@ Asset defines an asset in the catalog
         <td>
           <br/>
         </td>
-        <td>false</td>
+        <td>true</td>
       </tr></tbody>
 </table>
 
