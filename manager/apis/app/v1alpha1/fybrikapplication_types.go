@@ -185,7 +185,8 @@ type FybrikApplication struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   FybrikApplicationSpec   `json:"spec,omitempty"`
+	// +required
+	Spec   FybrikApplicationSpec   `json:"spec"`
 	Status FybrikApplicationStatus `json:"status,omitempty"`
 }
 

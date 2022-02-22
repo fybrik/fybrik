@@ -130,7 +130,8 @@ type Blueprint struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   BlueprintSpec   `json:"spec,omitempty"`
+	// +required
+	Spec   BlueprintSpec   `json:"spec"`
 	Status BlueprintStatus `json:"status,omitempty"`
 }
 

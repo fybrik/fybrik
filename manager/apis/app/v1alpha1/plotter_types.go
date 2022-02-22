@@ -276,7 +276,8 @@ type Plotter struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   PlotterSpec   `json:"spec,omitempty"`
+	// +required
+	Spec   PlotterSpec   `json:"spec"`
 	Status PlotterStatus `json:"status,omitempty"`
 }
 
