@@ -419,6 +419,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 				blueprint.Labels[key] = val
 			}
 			err := r.ClusterManager.CreateBlueprint(cluster, blueprint)
+			isReady = false
 			if err != nil {
 				errorCollection = append(errorCollection, err)
 				log.Error().Err(err).Str(logging.CLUSTER, cluster).Str(logging.ACTION, logging.CREATE).Msg("Could not create blueprint for cluster")
@@ -427,7 +428,6 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			}
 
 			plotter.Status.Blueprints[cluster] = app.CreateMetaBlueprintWithoutState(blueprint)
-			isReady = false
 			r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, "Blueprint just created")
 		}
 	}
