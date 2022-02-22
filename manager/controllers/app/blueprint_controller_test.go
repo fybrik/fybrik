@@ -34,9 +34,9 @@ func deployBlueprint(namespace string, shouldSucceed bool) {
 
 	// Ensure getting cleaned up after tests finish
 	defer func() {
-		blueprint := &app.Blueprint{ObjectMeta: metav1.ObjectMeta{Namespace: blueprintKey.Namespace, Name: blueprintKey.Name}}
-		_ = k8sClient.Get(context.Background(), blueprintKey, blueprint)
-		_ = k8sClient.Delete(context.Background(), blueprint)
+		bp := &app.Blueprint{ObjectMeta: metav1.ObjectMeta{Namespace: blueprintKey.Namespace, Name: blueprintKey.Name}}
+		_ = k8sClient.Get(context.Background(), blueprintKey, bp)
+		_ = k8sClient.Delete(context.Background(), bp)
 	}()
 
 	By("Expecting blueprint to be created")

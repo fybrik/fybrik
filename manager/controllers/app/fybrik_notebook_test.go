@@ -75,7 +75,8 @@ func TestS3Notebook(t *testing.T) {
 		g.Expect(ferr).To(gomega.BeNil(), "Opening local test data file")
 
 		// Upload the file to S3.
-		result, err := uploader.Upload(&s3manager.UploadInput{
+		var result *s3manager.UploadOutput
+		result, err = uploader.Upload(&s3manager.UploadInput{
 			Bucket: aws.String(bucket),
 			Key:    aws.String(key1),
 			Body:   f,
@@ -115,8 +116,10 @@ func TestS3Notebook(t *testing.T) {
 	g.Expect(k8sClient.Create(context.Background(), application)).Should(gomega.Succeed())
 
 	// Ensure getting cleaned up after tests finish
+	//nolint:govet
 	defer func() {
-		application := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace, Name: applicationKey.Name}}
+		application := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
+			Name: applicationKey.Name}}
 		_ = k8sClient.Get(context.Background(), applicationKey, application)
 		_ = k8sClient.Delete(context.Background(), application)
 	}()
@@ -141,7 +144,7 @@ func TestS3Notebook(t *testing.T) {
 
 	By("Expecting application to be ready")
 	g.Eventually(func() bool {
-		err := k8sClient.Get(context.Background(), applicationKey, application)
+		err = k8sClient.Get(context.Background(), applicationKey, application)
 		if err != nil {
 			return false
 		}
@@ -152,7 +155,8 @@ func TestS3Notebook(t *testing.T) {
 	fmt.Printf("data access module namespace notebook test: %s\n", modulesNamespace)
 
 	// Forward port of arrow flight service to local port
-	connection := application.Status.AssetStates["fybrik-notebook-sample/data-csv"].Endpoint.AdditionalProperties.Items["fybrik-arrow-flight"].(map[string]interface{})
+	connection := application.Status.AssetStates["fybrik-notebook-sample/data-csv"].
+		Endpoint.AdditionalProperties.Items["fybrik-arrow-flight"].(map[string]interface{})
 	hostname := fmt.Sprintf("%v", connection["hostname"])
 	port := fmt.Sprintf("%v", connection["port"])
 	svcName := strings.Replace(hostname, "."+modulesNamespace, "", 1)

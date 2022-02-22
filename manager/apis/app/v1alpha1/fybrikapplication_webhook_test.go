@@ -5,7 +5,7 @@ package v1alpha1
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,7 +16,7 @@ func TestValidApplicationWithBaseTaxonomy(t *testing.T) {
 	t.Parallel()
 
 	filename := "../../../testdata/unittests/fybrikapplication-validForBase.yaml"
-	applicationYaml, err := ioutil.ReadFile(filename)
+	applicationYaml, err := os.ReadFile(filename)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return
@@ -37,7 +37,7 @@ func TestValidApplicationWithEnhancedTaxonomy(t *testing.T) {
 	t.Parallel()
 
 	filename := "../../../../samples/kubeflow/fybrikapplication.yaml"
-	applicationYaml, err := ioutil.ReadFile(filename)
+	applicationYaml, err := os.ReadFile(filename)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return
@@ -58,7 +58,7 @@ func TestInvalidAppInfoWithEnhancedTaxonomy(t *testing.T) {
 	t.Parallel()
 
 	filename := "../../../testdata/unittests/fybrikapplication-appInfoErrors.yaml"
-	buf, err := ioutil.ReadFile(filename)
+	buf, err := os.ReadFile(filename)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return
@@ -80,7 +80,7 @@ func TestInvalidInterfaceWithEnhancedTaxonomy(t *testing.T) {
 	t.Parallel()
 
 	filename := "../../../testdata/unittests/fybrikapplication-interfaceErrors.yaml"
-	buf, err := ioutil.ReadFile(filename)
+	buf, err := os.ReadFile(filename)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return

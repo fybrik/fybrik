@@ -164,7 +164,8 @@ type FybrikApplicationStatus struct {
 	Generated *ResourceReference `json:"generated,omitempty"`
 
 	// ProvisionedStorage maps a dataset (identified by AssetID) to the new provisioned bucket.
-	// It allows FybrikApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received.
+	// It allows FybrikApplication controller to manage buckets in case the spec has been modified, an error has occurred,
+	// or a delete event has been received.
 	// ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready
 	// +optional
 	ProvisionedStorage map[string]DatasetDetails `json:"provisionedStorage,omitempty"`

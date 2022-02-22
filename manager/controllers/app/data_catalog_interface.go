@@ -16,6 +16,7 @@ import (
 // Returns:
 // - an error if happened
 // - the new asset identifier
-func (r *FybrikApplicationReconciler) RegisterAsset(catalogID string, info *app.DatasetDetails, input *app.FybrikApplication) (string, error) {
-	return "", errors.New("Unsupported feature")
+func (r *FybrikApplicationReconciler) RegisterAsset(catalogID string, info *app.DatasetDetails,
+	input *app.FybrikApplication) (string, error) {
+	return "", errors.New("unsupported feature")
 }
