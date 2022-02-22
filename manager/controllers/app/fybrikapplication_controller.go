@@ -413,7 +413,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 
 // CreateDataRequest generates a new DataRequest object for a specific asset based on FybrikApplication and asset metadata
 func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataContext,
-  assetMetadata *datacatalog.ResourceMetadata) adminconfig.DataRequest {
+	assetMetadata *datacatalog.ResourceMetadata) adminconfig.DataRequest {
 	var flow taxonomy.DataFlow
 
 	// If a workload selector is provided but no flow, assume read - for backward compatibility

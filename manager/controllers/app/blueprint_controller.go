@@ -339,7 +339,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger,
 		}
 
 		logging.LogStructure("Arguments", args, log, false, false)
-    releaseName := utils.GetReleaseName(blueprint.Labels[fapp.ApplicationNameLabel],
+		releaseName := utils.GetReleaseName(blueprint.Labels[fapp.ApplicationNameLabel],
 			blueprint.Labels[fapp.ApplicationNamespaceLabel], instanceName)
 		log.Trace().Msg("Release name: " + releaseName)
 		numReleases++
