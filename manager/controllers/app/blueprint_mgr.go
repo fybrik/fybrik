@@ -64,8 +64,10 @@ func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, p
 	return blueprintMap
 }
 
-// GenerateBlueprint creates the Blueprint spec based on the datasets and the governance actions required, which dictate the modules that must run in the fybrik
-// Credentials for accessing data set are stored in a credential management system (such as vault) and the paths for accessing them are included in the blueprint.
+// GenerateBlueprint creates the Blueprint spec based on the datasets and the governance actions required,
+// which dictate the modules that must run in the fybrik
+// Credentials for accessing data set are stored in a credential management system (such as vault) and
+// the paths for accessing them are included in the blueprint.
 // The credentials themselves are not included in the blueprint.
 func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec, clusterName string, plotter *app.Plotter) app.BlueprintSpec {
 	spec := app.BlueprintSpec{

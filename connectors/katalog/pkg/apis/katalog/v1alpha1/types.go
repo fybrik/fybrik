@@ -15,7 +15,9 @@ import (
 type Asset struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              AssetSpec `json:"spec,omitempty"`
+
+	// +required
+	Spec AssetSpec `json:"spec"`
 }
 
 type AssetSpec struct {

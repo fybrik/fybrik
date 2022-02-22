@@ -6,7 +6,7 @@ package app
 import (
 	"bytes"
 	"strings"
-	"text/template"
+	tmpl "text/template"
 
 	"emperror.dev/errors"
 	"github.com/Masterminds/sprig/v3"
@@ -25,6 +25,11 @@ import (
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
 	vault "fybrik.io/fybrik/pkg/vault"
+)
+
+const (
+	objectKeyHashLength  = 10
+	bucketNameHashLength = 10
 )
 
 // NewAssetInfo points to the provisoned storage and hold information about the new asset
@@ -48,13 +53,14 @@ type PlotterGenerator struct {
 }
 
 // GetCopyDestination creates a Dataset for bucket allocation by implicit copies or ingest.
-func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterface *app.InterfaceDetails, account *app.FybrikStorageAccountSpec) (*app.DataStore, error) {
+func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterface *app.InterfaceDetails,
+	account *app.FybrikStorageAccountSpec) (*app.DataStore, error) {
 	// provisioned storage for COPY
 	var genBucketName, genObjectKeyName string
 	if item.DataDetails.ResourceMetadata.Name != "" {
-		genObjectKeyName = item.DataDetails.ResourceMetadata.Name + utils.Hash(p.Owner.Name+p.Owner.Namespace, 10)
+		genObjectKeyName = item.DataDetails.ResourceMetadata.Name + utils.Hash(p.Owner.Name+p.Owner.Namespace, objectKeyHashLength)
 	} else {
-		genObjectKeyName = p.Owner.Name + utils.Hash(item.Context.DataSetID, 10)
+		genObjectKeyName = p.Owner.Name + utils.Hash(item.Context.DataSetID, objectKeyHashLength)
 	}
 	genBucketName = generateBucketName(p.Owner, item.Context.DataSetID)
 	bucket := &storage.ProvisionedBucket{
@@ -108,6 +114,7 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 }
 
 // Adds the asset details, flows and templates to the given plotter spec.
+//nolint:funlen,gocritic
 func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.FybrikApplication, plotterSpec *app.PlotterSpec) error {
 	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Choose modules for dataset")
 	var err error
@@ -257,7 +264,8 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 	return nil
 }
 
-func moduleAPIToService(api *datacatalog.ResourceDetails, scope app.CapabilityScope, appContext *app.FybrikApplication, moduleName string, assetID string) (*datacatalog.ResourceDetails, error) {
+func moduleAPIToService(api *datacatalog.ResourceDetails, scope app.CapabilityScope, appContext *app.FybrikApplication,
+	moduleName, assetID string) (*datacatalog.ResourceDetails, error) {
 	instanceName := moduleName
 	if scope == app.Asset {
 		// if the scope of the module is asset then concat its id to the module name
@@ -296,12 +304,13 @@ func moduleAPIToService(api *datacatalog.ResourceDetails, scope app.CapabilitySc
 	if err != nil {
 		return nil, errors.Wrap(err, "could not serialize values")
 	}
-	newConnection := taxonomy.Connection{Name: api.Connection.Name, AdditionalProperties: serde.Properties{Items: make(map[string]interface{})}}
+	newConnection := taxonomy.Connection{Name: api.Connection.Name,
+		AdditionalProperties: serde.Properties{Items: make(map[string]interface{})}}
 	newProps := make(map[string]interface{})
 	props := api.Connection.AdditionalProperties.Items[string(api.Connection.Name)].(map[string]interface{})
 	for key, val := range props {
 		if templateStr, ok := val.(string); ok {
-			fieldTemplate, err := template.New(key).Funcs(sprig.TxtFuncMap()).Parse(templateStr)
+			fieldTemplate, err := tmpl.New(key).Funcs(sprig.TxtFuncMap()).Parse(templateStr)
 			if err != nil {
 				return nil, errors.Wrapf(err, "could not parse %s as a template", templateStr)
 			}
@@ -323,7 +332,7 @@ func moduleAPIToService(api *datacatalog.ResourceDetails, scope app.CapabilitySc
 }
 
 func generateBucketName(owner types.NamespacedName, id string) string {
-	name := owner.Name + "-" + owner.Namespace + utils.Hash(id, 10)
+	name := owner.Name + "-" + owner.Namespace + utils.Hash(id, bucketNameHashLength)
 	name = strings.ReplaceAll(name, ".", "-")
 	return utils.K8sConformName(name)
 }

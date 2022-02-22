@@ -14,6 +14,13 @@ import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
+const (
+	stepNameHashLength       = 10
+	hashPostfixLength        = 5
+	k8sMaxConformNameLength  = 63
+	helmMaxConformNameLength = 53
+)
+
 // IsDenied returns true if the data access is denied
 func IsDenied(actionName taxonomy.ActionName) bool {
 	return actionName == "Deny" // TODO FIX THIS
@@ -53,12 +60,12 @@ func Hash(value string, hashLength int) string {
 }
 
 // Generating release name based on blueprint module
-func GetReleaseName(applicationName string, namespace string, instanceName string) string {
+func GetReleaseName(applicationName, namespace, instanceName string) string {
 	return GetReleaseNameByStepName(applicationName, namespace, instanceName)
 }
 
 // Generate release name from blueprint module name
-func GetReleaseNameByStepName(applicationName string, namespace string, moduleInstanceName string) string {
+func GetReleaseNameByStepName(applicationName, namespace, moduleInstanceName string) string {
 	fullName := applicationName + "-" + namespace + "-" + moduleInstanceName
 	return HelmConformName(fullName)
 }
@@ -67,23 +74,23 @@ func GetReleaseNameByStepName(applicationName string, namespace string, moduleIn
 // This method shortens the name keeping a prefix and using the last 5 characters of the
 // new name for the hash of the postfix.
 func K8sConformName(name string) string {
-	return ShortenedName(name, 63, 5)
+	return ShortenedName(name, k8sMaxConformNameLength, hashPostfixLength)
 }
 
 // Helm has stricter restrictions than K8s and restricts release names to 53 characters
 func HelmConformName(name string) string {
-	return ShortenedName(name, 53, 5)
+	return ShortenedName(name, helmMaxConformNameLength, hashPostfixLength)
 }
 
 // Create a name for a step in a blueprint.
 // Since this is part of the name of a release, this should be done in a central location to make testing easier
-func CreateStepName(moduleName string, assetID string) string {
-	return moduleName + "-" + Hash(assetID, 10)
+func CreateStepName(moduleName, assetID string) string {
+	return moduleName + "-" + Hash(assetID, stepNameHashLength)
 }
 
 // This function shortens a name to the maximum length given and uses rest of the string that is too long
 // as hash that gets added to the valid name.
-func ShortenedName(name string, maxLength int, hashLength int) string {
+func ShortenedName(name string, maxLength, hashLength int) string {
 	if len(name) > maxLength {
 		// The new name is in the form prefix-suffix
 		// The prefix is the prefix of the original name (so it's human readable)
@@ -106,7 +113,7 @@ func ListeningAddress(port int) string {
 }
 
 // Intersection finds a common subset of two given sets of strings
-func Intersection(set1 []string, set2 []string) []string {
+func Intersection(set1, set2 []string) []string {
 	res := []string{}
 	for _, elem1 := range set1 {
 		for _, elem2 := range set2 {
@@ -122,7 +129,8 @@ func Intersection(set1 []string, set2 []string) []string {
 const FybrikAppUUID = "app.fybrik.io/app-uuid"
 
 // GetFybrikApplicationUUID returns a globally unique ID for the FybrikApplication instance.
-// It must be unique over time and across clusters, even after the instance has been deleted, because this ID will be used for logging purposes.
+// It must be unique over time and across clusters, even after the instance has been deleted,
+// because this ID will be used for logging purposes.
 func GetFybrikApplicationUUID(fapp *app.FybrikApplication) string {
 	// Use the clusterwise unique kubernetes id.
 	// No need to add cluster because FybrikApplication instances can only be created on the coordinator cluster.

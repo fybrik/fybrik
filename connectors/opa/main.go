@@ -18,10 +18,12 @@ import (
 )
 
 const (
-	envOPAServerURL        = "OPA_SERVER_URL"
-	envCatalogConnectorURL = "CATALOG_CONNECTOR_URL"
-	envCatalogProviderName = "CATALOG_PROVIDER_NAME"
-	envConnectionTimeout   = "CONNECTION_TIMEOUT"
+	envOPAServerURL             = "OPA_SERVER_URL"
+	envCatalogConnectorURL      = "CATALOG_CONNECTOR_URL"
+	envCatalogProviderName      = "CATALOG_PROVIDER_NAME"
+	envConnectionTimeout        = "CONNECTION_TIMEOUT"
+	envDefaultConnectionTimeout = 10
+	commandPort                 = 8080
 )
 
 // NewRouter returns a new router.
@@ -44,7 +46,7 @@ func RootCmd() *cobra.Command {
 // RunCmd defines the command for running the connector
 func RunCmd() *cobra.Command {
 	ip := ""
-	port := 8080
+	port := commandPort
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run opa connector",
@@ -70,7 +72,7 @@ func RunCmd() *cobra.Command {
 				return errors.Wrap(err, "failed to get catalog provider name from the environment")
 			}
 
-			timeout := environment.GetEnvAsInt(envConnectionTimeout, 10)
+			timeout := environment.GetEnvAsInt(envConnectionTimeout, envDefaultConnectionTimeout)
 			connectionTimeout := time.Duration(timeout) * time.Second
 
 			// Create data catalog client

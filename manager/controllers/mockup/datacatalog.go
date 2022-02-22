@@ -16,6 +16,11 @@ import (
 	"fybrik.io/fybrik/pkg/serde"
 )
 
+const (
+	dummyResourceName = "xxx"
+	dummyCredentials  = "dummy"
+)
+
 type DataCatalogDummy struct {
 	dataDetails map[string]datacatalog.GetAssetResponse
 }
@@ -49,6 +54,7 @@ func (d *DataCatalogDummy) Close() error {
 	return nil
 }
 
+//nolint:funlen
 func NewTestCatalog() *DataCatalogDummy {
 	dummyCatalog := DataCatalogDummy{
 		dataDetails: make(map[string]datacatalog.GetAssetResponse),
@@ -57,7 +63,7 @@ func NewTestCatalog() *DataCatalogDummy {
 	tags := taxonomy.Tags{}
 	tags.Items = map[string]interface{}{"PI": true}
 
-	geo := "theshire"
+	geo := "theshire" //nolint:goconst
 	geoExternal := "neverland"
 
 	// TODO(roee88): some of these are also defined in ifdetails.go
@@ -115,11 +121,11 @@ func NewTestCatalog() *DataCatalogDummy {
 
 	dummyCatalog.dataDetails["s3-external"] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
-			Name:      "xxx",
+			Name:      dummyResourceName,
 			Geography: geoExternal,
 			Tags:      &tags,
 		},
-		Credentials: "dummy",
+		Credentials: dummyCredentials,
 		Details: datacatalog.ResourceDetails{
 			Connection: s3Connection,
 			DataFormat: csvFormat,
@@ -128,11 +134,11 @@ func NewTestCatalog() *DataCatalogDummy {
 
 	dummyCatalog.dataDetails["s3"] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
-			Name:      "xxx",
+			Name:      dummyResourceName,
 			Geography: geo,
 			Tags:      &tags,
 		},
-		Credentials: "dummy",
+		Credentials: dummyCredentials,
 		Details: datacatalog.ResourceDetails{
 			Connection: s3Connection,
 			DataFormat: parquetFormat,
@@ -141,11 +147,11 @@ func NewTestCatalog() *DataCatalogDummy {
 
 	dummyCatalog.dataDetails["s3-csv"] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
-			Name:      "xxx",
+			Name:      dummyResourceName,
 			Geography: geo,
 			Tags:      &tags,
 		},
-		Credentials: "dummy",
+		Credentials: dummyCredentials,
 		Details: datacatalog.ResourceDetails{
 			Connection: s3Connection,
 			DataFormat: csvFormat,
@@ -154,11 +160,11 @@ func NewTestCatalog() *DataCatalogDummy {
 
 	dummyCatalog.dataDetails["db2"] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
-			Name:      "xxx",
+			Name:      dummyResourceName,
 			Geography: geo,
 			Tags:      &tags,
 		},
-		Credentials: "dummy",
+		Credentials: dummyCredentials,
 		Details: datacatalog.ResourceDetails{
 			Connection: db2Connection,
 		},
@@ -166,11 +172,11 @@ func NewTestCatalog() *DataCatalogDummy {
 
 	dummyCatalog.dataDetails["kafka"] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
-			Name:      "xxx",
+			Name:      dummyResourceName,
 			Geography: geo,
 			Tags:      &tags,
 		},
-		Credentials: "dummy",
+		Credentials: dummyCredentials,
 		Details: datacatalog.ResourceDetails{
 			Connection: kafkaConnection,
 			DataFormat: jsonFormat,

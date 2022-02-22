@@ -7,7 +7,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -78,7 +78,7 @@ func (r *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 
 	// Read response from OPA
 	defer responseFromOPA.Body.Close()
-	responseFromOPABody, err := ioutil.ReadAll(responseFromOPA.Body)
+	responseFromOPABody, err := io.ReadAll(responseFromOPA.Body)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

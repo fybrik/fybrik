@@ -149,7 +149,8 @@ type ModuleInfo struct {
 
 	// May be one of service, config or plugin
 	// Service: Means that the control plane deploys the component that performs the capability
-	// Config: Another pre-installed service performs the capability and the module deployed configures it for the particular workload or dataset
+	// Config: Another pre-installed service performs the capability and the module deployed configures
+	// it for the particular workload or dataset
 	// Plugin: Indicates that this module performs a capability as part of another service or module rather than as a stand-alone module
 	// +required
 	Type string `json:"type"`
@@ -275,7 +276,8 @@ type Plotter struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   PlotterSpec   `json:"spec,omitempty"`
+	// +required
+	Spec   PlotterSpec   `json:"spec"`
 	Status PlotterStatus `json:"status,omitempty"`
 }
 
