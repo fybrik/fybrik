@@ -106,9 +106,9 @@ func (cm *localClusterManager) DeleteBlueprint(cluster, namespace, name string) 
 }
 
 // NewClusterManager creates an instance of ClusterManager for a local cluster configuration
-func NewClusterManager(clnt client.Client, namespace string) (multicluster.ClusterManager, error) {
+func NewClusterManager(cl client.Client, namespace string) (multicluster.ClusterManager, error) {
 	return &localClusterManager{
-		Client:    clnt,
+		Client:    cl,
 		Namespace: namespace,
 	}, nil
 }
