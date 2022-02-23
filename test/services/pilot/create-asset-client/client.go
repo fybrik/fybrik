@@ -7,7 +7,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"fybrik.io/fybrik/pkg/model/datacatalog"
@@ -86,7 +86,8 @@ func main() {
 		fmt.Print(err.Error())
 	}
 	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
+
 	if err != nil {
 		fmt.Print("here2")
 		fmt.Print(err.Error())
