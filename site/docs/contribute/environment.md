@@ -66,7 +66,7 @@ Change the default lint to `golanci-lint` in VS Code:
 ```
 "go.lintTool":"golangci-lint",
 "go.lintFlags": [
-  "--fast"
+  "--fast",
   "--allow-parallel-runners"
 ]
 ```
