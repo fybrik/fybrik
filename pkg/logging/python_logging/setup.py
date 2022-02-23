@@ -1,12 +1,11 @@
 from setuptools import setup
-import os
 
 setup(name='fybrik_python_logging',
-      #version=os.environ.get('RELEASE', '0.1'),
-      version='0.0.1',
-      description='Python Logging Package for Fybrik Components',
-      license='Apache License, Version 2.0',
-      packages=['.'],
+      version='0.2',
+      description='simples example in the python world',
+      url='https://github.com/gdamjan/hello-world-python-package',
+      license='MIT',
+      packages=['fybrik_python_logging'],
       install_requires=[
           'JSON-log-formatter==0.5.0',
       ],
