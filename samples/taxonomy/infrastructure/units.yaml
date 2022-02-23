@@ -2,5 +2,13 @@ definitions:
   Units:
     enum:
       - US Dollar
+      - TB
       - GB
-      - GB/sec
+      - MB
+      - KB
+      - TB/s
+      - GB/s
+      - MB/s
+      - Tbp/s
+      - Gbp/s
+      - Mbp/s
