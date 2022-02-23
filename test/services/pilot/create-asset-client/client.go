@@ -16,20 +16,12 @@ import (
 )
 
 func main() {
-	// the below logic is inspired from https://levelup.gitconnected.com/consuming-a-rest-api-using-golang-b323602ba9d8
-
-	// ResourceMetadata   ResourceMetadata `json:"resourceMetadata"`
-	// Details            ResourceDetails  `json:"details"`
-	// // This has the vault plugin path where the data credentials will be stored as kubernetes secrets
-	// // This value is assumed to be known to the catalog connector.
-	// Credentials string `json:"credentials"`
-
 	request := datacatalog.CreateAssetRequest{
 		DestinationCatalogID: "testcatalogid",
 		Credentials:          "http://fybrik-system:8200/v1/kubernetes-secrets/wkc-creds?namespace=cp4d",
 		Details: datacatalog.ResourceDetails{
 			Connection: taxonomy.Connection{
-				Name: "db2",
+				Name: "s3",
 			},
 		},
 		ResourceMetadata: datacatalog.ResourceMetadata{
@@ -48,25 +40,9 @@ func main() {
 				},
 			},
 		},
-		// ResourceMetadata: datacatalog.ResourceMetadata{
-		// 	Name: "assetName",
-		// 	Columns: []datacatalog.ResourceColumn{
-		// 		{
-		// 			Name: "nameDest",
-		// 			Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
-		// 				"PII": true,
-		// 			}}},
-		// 		},
-		// 		{
-		// 			Name: "nameOrig",
-		// 			Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
-		// 				"SPI": true,
-		// 			}}},
-		// 		},
-		// 	},
-		// },
 	}
 
+	// the below logic is inspired from https://levelup.gitconnected.com/consuming-a-rest-api-using-golang-b323602ba9d8
 	postBody, _ := json.Marshal(request)
 	responseBody := bytes.NewBuffer(postBody)
 
@@ -82,23 +58,19 @@ func main() {
 	req.Header.Add("X-Request-Datacatalog-Write-Cred", "http://fybrik-system:8200/v1/kubernetes-secrets/wkc-creds?namespace=cp4d")
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Print("here1")
 		fmt.Print(err.Error())
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := io.ReadAll(resp.Body)
 
 	if err != nil {
-		fmt.Print("here2")
 		fmt.Print(err.Error())
 	}
 	var responseObject datacatalog.CreateAssetResponse
 	err = json.Unmarshal(bodyBytes, &responseObject)
 	if err != nil {
-		fmt.Print("here3")
 		fmt.Print(err.Error())
 	} else {
-		fmt.Print("here4")
 		fmt.Printf("CreateAssetResponse received: %+v\n", responseObject)
 	}
 }
