@@ -62,9 +62,9 @@ Attribute examples:
 
 Policies are written in rego files. Each file declares a package `adminconfig`.
 
-Rules are written in the following syntax: `optimize[{"decision": decision}]` where
+Rules are written in the following syntax: `optimize[decision}]` where
 
-`decision` is a JSON object that includes a `DecisionPolicy` and a list of `OptimizeDecision` objects defined above. 
+`decision` is a JSON object that includes a `DecisionPolicy` and a list of `AttributeOptimization` objects defined above. 
 
 ```
 { 
@@ -79,19 +79,19 @@ Rules are written in the following syntax: `optimize[{"decision": decision}]` wh
 ```
 package adminconfig
 
-optimize[{"decision": decision}] {
+optimize[decision] {
     input.workload.properties.priority == "high"
     policy := {"ID": "001", "description":"Focus on high performance"}
-    decision := {"policy": policy, [{"attribute": "bandwidth", "directive": "max"}]}
+    decision := {"policy": policy, "strategy": [{"attribute": "bandwidth", "directive": "max"}]}
 }
 
-optimize[{"decision": decision}] {
+optimize[decision] {
     input.workload.properties.priority == "medium"
     input.workload.properties.stage == "PROD"
     policy := {"ID": "002", "description":"Save storage costs and minimize latency"}
-    optimize_storage := {"attribute": "storage-cost", "directive": "min", "weight": 0.6}
-    optimize_latency := {"attribute": "bandwidth", "directive": "max", "weight": 0.4}
-    decision := {"policy": policy, [{optimize_storage, optimize_latency}]}
+    optimize_storage := {"attribute": "storage-cost", "directive": "min", "weight": "0.6"}
+    optimize_latency := {"attribute": "bandwidth", "directive": "max", "weight": "0.4"}
+    decision := {"policy": policy, "strategy": [{optimize_storage, optimize_latency}]}
 }
 ```
 

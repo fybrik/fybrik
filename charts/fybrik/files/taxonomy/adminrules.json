@@ -1,6 +1,27 @@
 {
   "title": "adminrules.json",
   "definitions": {
+    "AttributeOptimization": {
+      "type": "object",
+      "required": [
+        "attribute",
+        "directive"
+      ],
+      "properties": {
+        "attribute": {
+          "$ref": "taxonomy.json#/definitions/Attribute",
+          "description": "Attribute name"
+        },
+        "directive": {
+          "$ref": "#/definitions/OptimizationDirective",
+          "description": "Optimization directive: minimize or maximize"
+        },
+        "weight": {
+          "description": "Weight, a positive number not exceeding 1.0 Serialized as a string",
+          "type": "string"
+        }
+      }
+    },
     "Decision": {
       "description": "Decision is a result of evaluating a configuration policy which satisfies the specified predicates",
       "type": "object",
@@ -72,6 +93,38 @@
       "properties": {
         "config": {
           "$ref": "#/definitions/RuleDecisionList"
+        },
+        "optimize": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OptimizationStrategy"
+          }
+        }
+      }
+    },
+    "OptimizationDirective": {
+      "type": "string",
+      "enum": [
+        "min",
+        "max"
+      ]
+    },
+    "OptimizationStrategy": {
+      "description": "A list of attribute optimizations",
+      "type": "object",
+      "required": [
+        "strategy",
+        "policy"
+      ],
+      "properties": {
+        "policy": {
+          "$ref": "#/definitions/DecisionPolicy"
+        },
+        "strategy": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AttributeOptimization"
+          }
         }
       }
     },
