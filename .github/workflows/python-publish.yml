@@ -7,18 +7,16 @@
 # documentation.
 
 name: Upload Python Package
-
 on:
   push:
     branches:
       - python-logging
   pull_request:
-
 jobs:
   deploy:
-
     runs-on: ubuntu-latest
-
+    env:
+      WORK_DIR: './pkg/logging/python_logging'
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python
@@ -30,11 +28,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install build
     - name: Build package
-      working-directory: pkg/logging/python_logging/
+      working-directory: ${{ env.WORK_DIR }}
       run: RELEASE=${{ steps.version.outputs.version }} python -m build
     - name: Publish package
-      working-directory: pkg/logging/python_logging/
-      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+      working-directory: ${{ env.WORK_DIR }}
+      uses: pypa/gh-action-pypi-publish
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
