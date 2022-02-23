@@ -127,24 +127,23 @@ func (fzw *FlatZincModel) Dump(fileName string) error {
 	}
 	defer file.Close()
 
+	fileContent := ""
 	for _, fzparam := range fzw.ParamMap {
-		if _, err := file.WriteString(fzparam.ParamDeclaration()); err != nil {
-			return err
-		}
+		fileContent += fzparam.ParamDeclaration()
 	}
-	file.WriteString("\n")
+
+	fileContent += "\n"
 	for _, fzvar := range fzw.VarMap {
-		if _, err := file.WriteString(fzvar.VarDeclaration()); err != nil {
-			return err
-		}
+		fileContent += fzvar.VarDeclaration()
 	}
-	file.WriteString("\n")
+
+	fileContent += "\n"
 	for _, cnstr := range fzw.Constraints {
-		if _, err := file.WriteString(cnstr.ConstraintStatement()); err != nil {
-			return err
-		}
+		fileContent += cnstr.ConstraintStatement()
 	}
-	if _, err := file.WriteString("\n" + fzw.SolveTarget.SolveItemStatement()); err != nil {
+
+	fileContent += "\n" + fzw.SolveTarget.SolveItemStatement()
+	if _, err := file.WriteString(fileContent); err != nil {
 		return err
 	}
 	return nil
