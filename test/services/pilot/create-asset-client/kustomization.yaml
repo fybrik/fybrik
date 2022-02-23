@@ -7,5 +7,5 @@ namespace: fybrik-system
 
 images:
 - name: crt-asset-clt
-  newName: ghcr.io/rohithdv/create-asset-client
+  newName: ghcr.io/<DOCKERID>/create-asset-client
   newTag: 0.0.0
