@@ -26,9 +26,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install build ${{ env.PYTHON_LOGGING_DIR }} --outdir ./dist
+        pip install build
     - name: Build package
-      run: RELEASE=${{ steps.version.outputs.version }} python -m build
+      run: RELEASE=${{ steps.version.outputs.version }} python -m build ${{ env.PYTHON_LOGGING_DIR }} --outdir ./dist
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
