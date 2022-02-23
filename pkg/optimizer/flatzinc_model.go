@@ -5,7 +5,9 @@ package optimizer
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -121,11 +123,15 @@ func (fzw *FlatZincModel) SetSolveTarget(goal SolveGoal, expr string, annotation
 }
 
 func (fzw *FlatZincModel) Dump(fileName string) error {
-	file, err := os.Create(fileName)
+	file, err := os.Create(path.Clean(fileName))
 	if err != nil {
 		return fmt.Errorf("failed opening file %s for writing", fileName)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Printf("Error closing file: %s\n", err)
+		}
+	}()
 
 	fileContent := ""
 	for _, fzparam := range fzw.ParamMap {
@@ -170,7 +176,7 @@ func parseSolutionLine(line string, lineNum uint) (string, []string, error) {
 }
 
 func (fzw *FlatZincModel) ReadSolutions(fileName string) (map[string][]string, error) {
-	data, err := os.ReadFile(fileName)
+	data, err := os.ReadFile(path.Clean(fileName))
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +185,7 @@ func (fzw *FlatZincModel) ReadSolutions(fileName string) (map[string][]string, e
 	newSolution := false
 	res := make(map[string][]string)
 	for lineNum, line := range lines {
-		line = strings.ReplaceAll(line, " ", "") // remove all spaces
+		line = strings.Join(strings.Fields(line), "") // remove all whitespaces
 		switch {
 		case len(line) == 0:
 			continue // empty line
