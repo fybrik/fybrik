@@ -79,8 +79,8 @@ coordinator:
 
   # Configure the vault instance to be used by the coordinator manager
   vault:
-    # WARNING: it's an advance feature, set it to "false", if you all your modules and connectors do not require getting
-    # credentials to from Fybrik.
+    # WARNING: it's an advanced feature, set it to "false" if all your modules and connectors do not require getting
+    # credentials from Fybrik.
     # If it is "false", you can remove all other entries below.
     enabled: true
     # Set to the Vault address.
