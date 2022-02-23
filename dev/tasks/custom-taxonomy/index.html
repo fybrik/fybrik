@@ -1244,8 +1244,7 @@ However, since the taxonomy is meant to be configurable, a <code>taxonomy.json</
 <p>This task describes how to deploy Fybrik with a custom <code>taxonomy.json</code> file that is generated with the Taxonomy Compile CLI tool. </p>
 <h2 id="taxonomy-compile-cli-tool">Taxonomy Compile CLI tool</h2>
 <p>A CLI tool for compiling a base taxonomy and zero or more taxonomy layers is provided in our repo.</p>
-<p>The base taxonomy can be found in 
-<code>base.yaml</code> can be found in <a href="https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/taxonomy/taxonomy.json"><code>charts/fybrik/files/taxonomy/taxonomy.json</code></a> and example layers can be found in <a href="https://github.com/fybrik/fybrik/tree/master/samples/taxonomy/example"><code>samples/taxonomy/example</code></a>.</p>
+<p>The base taxonomy can be found in <a href="https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/taxonomy/taxonomy.json"><code>charts/fybrik/files/taxonomy/taxonomy.json</code></a> and example layers can be found in <a href="https://github.com/fybrik/fybrik/tree/master/samples/taxonomy/example"><code>samples/taxonomy/example</code></a>.</p>
 <p>The following command can be used from the root directory of our repo to run the Taxonomy Compile CLI tool. </p>
 <p>Usage:
 <div class="highlight"><pre><span></span><code>  go run main.go taxonomy compile --out &lt;outputFile&gt; --base &lt;baseFile&gt; <span class="o">[</span>&lt;layerFile&gt; ...<span class="o">]</span> <span class="o">[</span>--codegen<span class="o">]</span>
