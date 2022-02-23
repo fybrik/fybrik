@@ -24,6 +24,7 @@ jobs:
       with:
         python-version: '3.x'
     - name: Install dependencies
+      working-directory: ${{ env.WORK_DIR }}
       run: |
         python -m pip install --upgrade pip
         pip install build
@@ -32,7 +33,7 @@ jobs:
       run: RELEASE=${{ steps.version.outputs.version }} python -m build
     - name: Publish package
       working-directory: ${{ env.WORK_DIR }}
-      uses: pypa/gh-action-pypi-publish
+      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
