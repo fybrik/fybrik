@@ -11,7 +11,7 @@ name: Upload Python Package
 on:
   push:
     branches:
-      - main
+      - python-logging
   pull_request:
 
 jobs:
