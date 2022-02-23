@@ -100,10 +100,12 @@ var _ = Describe("FybrikApplication Controller", func() {
 			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
 
 			// Ensure getting cleaned up after tests finish
+
 			defer func() {
-				application := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace, Name: applicationKey.Name}}
-				_ = k8sClient.Get(context.Background(), applicationKey, application)
-				// _ = k8sClient.Delete(context.Background(), application)
+				app := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
+					Name: applicationKey.Name}}
+				_ = k8sClient.Get(context.Background(), applicationKey, app)
+				// _ = k8sClient.Delete(context.Background(), app)
 				module := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: moduleKey.Namespace, Name: moduleKey.Name}}
 				_ = k8sClient.Get(context.Background(), moduleKey, module)
 				// _ = k8sClient.Delete(context.Background(), module)
@@ -141,13 +143,12 @@ var _ = Describe("FybrikApplication Controller", func() {
 			}, timeout, interval).Should(Succeed(), "Blueprint has not been created")
 			Expect(blueprint.Spec.ModulesNamespace).To(Equal(utils.GetDefaultModulesNamespace()))
 
-			for _, module := range blueprint.Spec.Modules {
-				Expect(module.Arguments.Labels["label1"]).To(Equal("foo"))
-				Expect(module.Arguments.Labels["label2"]).To(Equal("bar"))
-				Expect(module.Arguments.Labels[apiv1alpha1.ApplicationNameLabel]).To(Equal(applicationKey.Name))
-				Expect(module.Arguments.Labels[apiv1alpha1.ApplicationNamespaceLabel]).To(Equal(applicationKey.Namespace))
-				Expect(module.Arguments.AppSelector.MatchLabels["app"]).To(Equal("notebook"))
-			}
+			Expect(blueprint.Labels["label1"]).To(Equal("foo"))
+			Expect(blueprint.Labels["label2"]).To(Equal("bar"))
+			Expect(blueprint.Labels[apiv1alpha1.ApplicationNameLabel]).To(Equal(applicationKey.Name))
+			Expect(blueprint.Labels[apiv1alpha1.ApplicationNamespaceLabel]).To(Equal(applicationKey.Namespace))
+			Expect(blueprint.Spec.Application.WorkloadSelector.MatchLabels["app"]).To(Equal("notebook"))
+			Expect(blueprint.Spec.Application.Context.Items["intent"].(string)).To(Equal("Fraud Detection"))
 			By("Expecting FybrikApplication to eventually be ready")
 			Eventually(func() bool {
 				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())

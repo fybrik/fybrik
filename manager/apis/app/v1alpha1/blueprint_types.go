@@ -9,17 +9,15 @@ import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
-// CopyModuleArgs define the input parameters for modules that copy data from location A to location B
-// Credentials are stored in a credential management system such as vault
-type CopyModuleArgs struct {
-
+// AssetContext defines the input parameters for modules that access an asset
+type AssetContext struct {
 	// Source is the where the data currently resides
-	// +required
-	Source DataStore `json:"source"`
+	// +optional
+	Source *DataStore `json:"source,omitempty"`
 
-	// Destination is the data store to which the data will be copied
-	// +required
-	Destination DataStore `json:"destination"`
+	// Destination is the data store to which the data will be written
+	// +optional
+	Destination *DataStore `json:"destination,omitempty"`
 
 	// AssetID identifies the asset to be used for accessing the data when it is ready
 	// It is copied from the FybrikApplication resource
@@ -31,62 +29,25 @@ type CopyModuleArgs struct {
 	Transformations []taxonomy.Action `json:"transformations,omitempty"`
 }
 
-// ReadModuleArgs define the input parameters for modules that read data from location A
-type ReadModuleArgs struct {
-	// Source of the read path module
-	// +required
-	Source DataStore `json:"source"`
-
-	// AssetID identifies the asset to be used for accessing the data when it is ready
-	// It is copied from the FybrikApplication resource
-	// +required
-	AssetID string `json:"assetID"`
-
-	// Transformations are different types of processing that may be done to the data
-	// +optional
-	Transformations []taxonomy.Action `json:"transformations,omitempty"`
-}
-
-// WriteModuleArgs define the input parameters for modules that write data to location B
-type WriteModuleArgs struct {
-	// Destination is the data store to which the data will be written
-	// +required
-	Destination DataStore `json:"destination"`
-
-	// AssetID identifies the asset to be used for accessing the data when it is ready
-	// It is copied from the FybrikApplication resource
-	// +required
-	AssetID string `json:"assetID"`
-
-	// Transformations are different types of processing that may be done to the data as it is written.
-	// +optional
-	Transformations []taxonomy.Action `json:"transformations,omitempty"`
-}
-
-// ModuleArguments are the parameters passed to a component that runs in the data path
-// In the future might support output args as well
-// The arguments passed depend on the type of module
-type ModuleArguments struct {
-	// Labels of FybrikApplication
-	// +optional
-	Labels map[string]string `json:"labels,omitempty"`
-
+type ApplicationDetails struct {
 	// Application selector is used to identify the user workload.
 	// It is obtained from FybrikApplication spec.
 	// +optional
-	AppSelector metav1.LabelSelector `json:"appSelector,omitempty"`
+	WorkloadSelector metav1.LabelSelector `json:"selector,omitempty"`
 
-	// CopyArgs are parameters specific to modules that copy data from one data store to another.
+	// Application context such as intent, role, etc.
 	// +optional
-	Copy *CopyModuleArgs `json:"copy,omitempty"`
+	Context taxonomy.AppInfo `json:"context,omitempty"`
+}
 
-	// ReadArgs are parameters that are specific to modules that enable an application to read data
+// ModuleArguments are the parameters passed to a component that runs in the data path
+type ModuleArguments struct {
+	// Assets define asset related arguments, such as data source, transformations, etc.
 	// +optional
-	Read []ReadModuleArgs `json:"read,omitempty"`
-
-	// WriteArgs are parameters that are specific to modules that enable an application to write data
-	// +optional
-	Write []WriteModuleArgs `json:"write,omitempty"`
+	Assets []AssetContext `json:"assets,omitempty"`
+	// Capability of the module
+	// +required
+	Capability taxonomy.Capability `json:"capability"`
 }
 
 // BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the information necessary
@@ -127,6 +88,10 @@ type BlueprintSpec struct {
 	// The map key is moduleInstanceName which is the unique name for the deployed instance related to this workload
 	// +required
 	Modules map[string]BlueprintModule `json:"modules"`
+
+	// ApplicationContext is a context of the origin FybrikApplication (labels, properties, etc.)
+	// +optional
+	Application *ApplicationDetails `json:"application,omitempty"`
 }
 
 // BlueprintStatus defines the observed state of Blueprint
@@ -165,7 +130,8 @@ type Blueprint struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   BlueprintSpec   `json:"spec,omitempty"`
+	// +required
+	Spec   BlueprintSpec   `json:"spec"`
 	Status BlueprintStatus `json:"status,omitempty"`
 }
 

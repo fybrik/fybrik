@@ -11,22 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"fybrik.io/fybrik/manager/controllers"
-	"fybrik.io/fybrik/pkg/adminconfig"
-	"fybrik.io/fybrik/pkg/environment"
-	"fybrik.io/fybrik/pkg/infrastructure"
-	"fybrik.io/fybrik/pkg/logging"
-
 	"emperror.dev/errors"
+	kapps "k8s.io/api/apps/v1"
+	kbatch "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-
-	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
-	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
-	"fybrik.io/fybrik/pkg/multicluster"
-	"fybrik.io/fybrik/pkg/multicluster/local"
-	"fybrik.io/fybrik/pkg/multicluster/razee"
-	"fybrik.io/fybrik/pkg/storage"
-
 	"k8s.io/apimachinery/pkg/fields"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -35,13 +23,21 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	kapps "k8s.io/api/apps/v1"
-	kbatch "k8s.io/api/batch/v1"
-
 	appv1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/app"
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/adminconfig"
+	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
+	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/helm"
+	"fybrik.io/fybrik/pkg/infrastructure"
+	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/multicluster"
+	"fybrik.io/fybrik/pkg/multicluster/local"
+	"fybrik.io/fybrik/pkg/multicluster/razee"
+	"fybrik.io/fybrik/pkg/storage"
 )
 
 var (
@@ -57,6 +53,7 @@ func init() {
 	_ = kapps.AddToScheme(scheme)
 }
 
+//nolint:funlen,gocyclo
 func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	enableApplicationController, enableBlueprintController, enablePlotterController bool) int {
 	setupLog.Info().Msg("creating manager. based on git commit: " + gitCommit)
@@ -92,7 +89,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		MetricsBindAddress: metricsAddr,
 		LeaderElection:     enableLeaderElection,
 		LeaderElectionID:   "fybrik-operator-leader-election",
-		Port:               9443,
+		Port:               controllers.ManagerPort,
 		NewCache:           cache.BuilderWithOptions(cache.Options{SelectorsByObject: selectorsByObject}),
 	})
 	if err != nil {
@@ -121,7 +118,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			return 1
 		}
 		defer func() {
-			if err := policyManager.Close(); err != nil {
+			if err = policyManager.Close(); err != nil {
 				setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to close policy manager facade")
 			}
 		}()
@@ -133,7 +130,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			return 1
 		}
 		defer func() {
-			if err := catalog.Close(); err != nil {
+			if err = catalog.Close(); err != nil {
 				setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to close data catalog facade")
 			}
 		}()
@@ -226,7 +223,7 @@ func main() {
 	var enableBlueprintController bool
 	var enablePlotterController bool
 	var enableAllControllers bool
-	address := utils.ListeningAddress(8085)
+	address := utils.ListeningAddress(controllers.ListeningPortAddress)
 
 	flag.StringVar(&metricsAddr, "metrics-bind-addr", address, "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
@@ -266,7 +263,8 @@ func newDataCatalog() (dcclient.DataCatalog, error) {
 	}
 	providerName := os.Getenv("CATALOG_PROVIDER_NAME")
 	connectorURL := os.Getenv("CATALOG_CONNECTOR_URL")
-	setupLog.Info().Str("Name", providerName).Str("URL", connectorURL).Str("Timeout", connectionTimeout.String()).Msg("setting data catalog client")
+	setupLog.Info().Str("Name", providerName).Str("URL", connectorURL).
+		Str("Timeout", connectionTimeout.String()).Msg("setting data catalog client")
 	return dcclient.NewDataCatalog(
 		providerName,
 		connectorURL,
@@ -282,7 +280,8 @@ func newPolicyManager() (pmclient.PolicyManager, error) {
 
 	mainPolicyManagerName := os.Getenv("MAIN_POLICY_MANAGER_NAME")
 	mainPolicyManagerURL := os.Getenv("MAIN_POLICY_MANAGER_CONNECTOR_URL")
-	setupLog.Info().Str("Name", mainPolicyManagerName).Str("URL", mainPolicyManagerURL).Str("Timeout", connectionTimeout.String()).Msg("setting main policy manager client")
+	setupLog.Info().Str("Name", mainPolicyManagerName).Str("URL", mainPolicyManagerURL).
+		Str("Timeout", connectionTimeout.String()).Msg("setting main policy manager client")
 
 	var policyManager pmclient.PolicyManager
 	if strings.HasPrefix(mainPolicyManagerURL, "http") {

@@ -8,6 +8,7 @@ package controllers
 const ApplicationConcurrentReconcilesConfiguration = "APPLICATION_CONCURRENT_RECONCILES"
 const PlotterConcurrentReconcilesConfiguration = "PLOTTER_CONCURRENT_RECONCILES"
 const BlueprintConcurrentReconcilesConfiguration = "BLUEPRINT_CONCURRENT_RECONCILES"
+const MaximumSecondsUntillReconcile = 60.0
 
 const KubernetesClientQPSConfiguration = "CLIENT_QPS"
 const KubernetesClientBurstConfiguration = "CLIENT_BURST"
@@ -18,3 +19,6 @@ const DefaultBlueprintConcurrentReconciles = 1
 
 const DefaultKubernetesClientQPS = 5.0  // Default from Kubernetes client: 5
 const DefaultKubernetesClientBurst = 10 // Default from Kubernetes client: 10
+
+const ManagerPort = 9443
+const ListeningPortAddress = 8085

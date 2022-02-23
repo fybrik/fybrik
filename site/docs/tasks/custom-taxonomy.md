@@ -22,8 +22,7 @@ This task describes how to deploy Fybrik with a custom `taxonomy.json` file that
 
 A CLI tool for compiling a base taxonomy and zero or more taxonomy layers is provided in our repo.
 
-The base taxonomy can be found in 
-`base.yaml` can be found in [`charts/fybrik/files/taxonomy/taxonomy.json`](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/taxonomy/taxonomy.json) and example layers can be found in [`samples/taxonomy/example`](https://github.com/fybrik/fybrik/tree/master/samples/taxonomy/example).
+The base taxonomy can be found in [`charts/fybrik/files/taxonomy/taxonomy.json`](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/taxonomy/taxonomy.json) and example layers can be found in [`samples/taxonomy/example`](https://github.com/fybrik/fybrik/tree/master/samples/taxonomy/example).
 
 The following command can be used from the root directory of our repo to run the Taxonomy Compile CLI tool. 
 

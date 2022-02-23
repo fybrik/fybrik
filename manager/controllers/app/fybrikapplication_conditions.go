@@ -20,6 +20,7 @@ const (
 	DenyConditionIndex int64 = 1
 	// ErrorCondition means that an error was encountered during blueprint construction
 	ErrorConditionIndex int64 = 2
+	numConditions       int   = 3
 )
 
 // Helper functions to manage conditions
@@ -38,14 +39,14 @@ func initStatus(application *api.FybrikApplication) {
 }
 
 func resetAssetState(application *api.FybrikApplication, assetID string) {
-	conditions := make([]api.Condition, 3)
+	conditions := make([]api.Condition, numConditions)
 	conditions[ErrorConditionIndex] = api.Condition{Type: api.ErrorCondition, Status: corev1.ConditionFalse}
 	conditions[DenyConditionIndex] = api.Condition{Type: api.DenyCondition, Status: corev1.ConditionFalse}
 	conditions[ReadyConditionIndex] = api.Condition{Type: api.ReadyCondition, Status: corev1.ConditionFalse}
 	application.Status.AssetStates[assetID] = api.AssetState{Conditions: conditions}
 }
 
-func setErrorCondition(appContext ApplicationContext, assetID string, msg string) {
+func setErrorCondition(appContext ApplicationContext, assetID, msg string) {
 	errMsg := "An error was received for asset " + assetID
 	errMsg += " . If the error persists, please contact an operator."
 	errMsg += "Error description: " + msg

@@ -14,6 +14,9 @@
                     "items": {
                         "type": "object",
                         "properties": {
+                            "flow": {
+                                "type": "string"
+                            },
                             "requirements": {
                                 "type": "object",
                                 "properties": {

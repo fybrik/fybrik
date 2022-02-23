@@ -26,6 +26,7 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 )
 
@@ -39,7 +40,6 @@ type PlotterReconciler struct {
 }
 
 // Reconcile receives a Plotter CRD
-//nolint:dupl
 func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	sublog := r.Log.With().Str(logging.CONTROLLER, "Plotter").Str("plotter", req.NamespacedName.String()).Logger()
 
@@ -74,8 +74,7 @@ func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	if reconcileErrors != nil {
-		log.Error().Msg("Returning with errors") // TODO - return result?
-		//		log.Info("returning with errors", "result", result)
+		log.Error().Msg("Returning with errors") // TODO - return result?	log.Info("returning with errors", "result", result)
 		for _, s := range reconcileErrors {
 			log.Error().Err(s).Msg("Error:")
 		}
@@ -132,13 +131,14 @@ type PlotterModulesSpec struct {
 	AssetID         string
 	ModuleName      string
 	ModuleArguments *app.StepParameters
-	FlowType        app.DataFlow
+	FlowType        taxonomy.DataFlow
 	Chart           app.ChartSpec
 	Scope           app.CapabilityScope
+	Capability      taxonomy.Capability
 }
 
 // addCredentials updates Vault credentials field to hold only credentials related to the flow type
-func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType app.DataFlow) {
+func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType taxonomy.DataFlow) {
 	vaultMap := make(map[string]app.Vault)
 
 	// Update vaultAuthPath from the cluster metadata
@@ -154,20 +154,19 @@ func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType app
 }
 
 // convertPlotterModuleToBlueprintModule converts an object of type PlotterModulesSpec to type ModuleInstanceSpec
-func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.Plotter, plotterModule PlotterModulesSpec) *ModuleInstanceSpec {
-	assetIDs := []string{plotterModule.AssetID}
+func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.Plotter,
+	plotterModule PlotterModulesSpec) *ModuleInstanceSpec {
 	blueprintModule := &ModuleInstanceSpec{
-		Chart:    &plotterModule.Chart,
-		AssetIDs: assetIDs,
-		Args: &app.ModuleArguments{
-			Labels:      plotter.Labels,
-			AppSelector: plotter.Spec.Selector.WorkloadSelector,
-			Copy:        nil,
-			Read:        nil,
-			Write:       nil,
+		Module: app.BlueprintModule{
+			Name:  plotterModule.ModuleName,
+			Chart: plotterModule.Chart,
+			Arguments: app.ModuleArguments{
+				Assets:     []app.AssetContext{},
+				Capability: plotterModule.Capability,
+			},
+			AssetIDs: []string{plotterModule.AssetID},
 		},
 		ClusterName: plotterModule.ClusterName,
-		ModuleName:  plotterModule.ModuleName,
 		Scope:       plotterModule.Scope,
 	}
 
@@ -175,15 +174,15 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		return blueprintModule
 	}
 
-	switch plotterModule.FlowType {
-	case app.ReadFlow:
-		var dataStore *app.DataStore
+	var dataStore *app.DataStore
+	var destDataStore *app.DataStore
+	if plotterModule.ModuleArguments.Source != nil {
 		if plotterModule.ModuleArguments.Source.AssetID != "" {
 			assetID := plotterModule.ModuleArguments.Source.AssetID
 			// Get source from plotter assetID list
 			assetInfo := plotter.Spec.Assets[assetID]
 			dataStore = &assetInfo.DataStore
-			addCredentials(dataStore, plotterModule.VaultAuthPath, app.ReadFlow)
+			addCredentials(dataStore, plotterModule.VaultAuthPath, taxonomy.ReadFlow)
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
@@ -191,53 +190,22 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 				Format:     plotterModule.ModuleArguments.Source.API.DataFormat,
 			}
 		}
-		blueprintModule.Args.Read = []app.ReadModuleArgs{
-			{
-				Source:          *dataStore,
-				AssetID:         plotterModule.AssetID,
-				Transformations: plotterModule.ModuleArguments.Actions,
-			},
-		}
-	case app.WriteFlow:
+	}
+	if plotterModule.ModuleArguments.Sink != nil {
 		// Get only the writeFlow related creds
 		// Update vaultAuthPath from the cluster metadata
-		destDataStore := plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore
-		addCredentials(&destDataStore, plotterModule.VaultAuthPath, app.WriteFlow)
-
-		blueprintModule.Args.Write = []app.WriteModuleArgs{
-			{
-				Destination:     destDataStore,
-				AssetID:         plotterModule.AssetID,
-				Transformations: plotterModule.ModuleArguments.Actions,
-			},
-		}
-	case app.CopyFlow:
-		var dataStore *app.DataStore
-		if plotterModule.ModuleArguments.Source.AssetID != "" {
-			assetID := plotterModule.ModuleArguments.Source.AssetID
-			// Get source from plotter assetID list
-			assetInfo := plotter.Spec.Assets[assetID]
-
-			dataStore = &assetInfo.DataStore
-			addCredentials(dataStore, plotterModule.VaultAuthPath, app.ReadFlow)
-		} else {
-			// Fill in the DataSource from the step arguments
-			dataStore = &app.DataStore{
-				Connection: plotterModule.ModuleArguments.Source.API.Connection,
-				Format:     plotterModule.ModuleArguments.Source.API.DataFormat,
-			}
-		}
-		// Get only the writeFlow related creds
-		// Update vaultAuthPath from the cluster metadata
-		destDataStore := plotter.Spec.Assets[plotterModule.ModuleArguments.Sink.AssetID].DataStore
-		addCredentials(&destDataStore, plotterModule.VaultAuthPath, app.WriteFlow)
-		blueprintModule.Args.Copy =
-			&app.CopyModuleArgs{
-				Source:          *dataStore,
-				Destination:     destDataStore,
-				AssetID:         plotterModule.AssetID,
-				Transformations: plotterModule.ModuleArguments.Actions,
-			}
+		assetID := plotterModule.ModuleArguments.Sink.AssetID
+		assetInfo := plotter.Spec.Assets[assetID]
+		destDataStore = &assetInfo.DataStore
+		addCredentials(destDataStore, plotterModule.VaultAuthPath, taxonomy.WriteFlow)
+	}
+	blueprintModule.Module.Arguments.Assets = []app.AssetContext{
+		{
+			Source:          dataStore,
+			Destination:     destDataStore,
+			AssetID:         plotterModule.AssetID,
+			Transformations: plotterModule.ModuleArguments.Actions,
+		},
 	}
 	return blueprintModule
 }
@@ -286,6 +254,7 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]ap
 							Chart:           module.Chart,
 							ModuleName:      module.Name,
 							Scope:           scope,
+							Capability:      module.Capability,
 							VaultAuthPath:   authPath,
 						}
 
@@ -326,7 +295,8 @@ func (r *PlotterReconciler) updatePlotterAssetsState(assetToStatusMap map[string
 }
 
 // setPlotterAssetsReadyStateToFalse sets to false the status of the assets processed by the blueprint modules.
-func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap map[string]app.ObservedState, blueprintSpec *app.BlueprintSpec, errMsg string) {
+func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap map[string]app.ObservedState,
+	blueprintSpec *app.BlueprintSpec, errMsg string) {
 	for _, module := range blueprintSpec.Modules {
 		for _, assetID := range module.AssetIDs {
 			var err = errMsg
@@ -338,6 +308,7 @@ func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap m
 	}
 }
 
+//nolint:funlen,gocyclo
 func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []error) {
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
 	log := r.Log.With().Str(logging.CONTROLLER, "Plotter").Str(utils.FybrikAppUUID, uuid).Logger()
@@ -370,8 +341,8 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 				// and a maximum of 60 seconds until the next reconcile
 				now := metav1.NewTime(time.Now())
 				elapsedTime := time.Since(now.Time)
-				backoffFactor := int(math.Min(math.Exp2(elapsedTime.Minutes()), 60.0))
-				requeueAfter := time.Duration(4+backoffFactor) * time.Second
+				backoffFactor := int(math.Min(math.Exp2(elapsedTime.Minutes()), controllers.MaximumSecondsUntillReconcile))
+				requeueAfter := time.Duration(4+backoffFactor) * time.Second //nolint:revive,gomnd
 				return ctrl.Result{RequeueAfter: requeueAfter}, errorCollection
 			}
 
@@ -384,8 +355,9 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 
 			logging.LogStructure("Remote blueprint", remoteBlueprint, log, false, true)
 
-			if !reflect.DeepEqual(blueprintSpec, remoteBlueprint.Spec) {
-				r.Log.Warn().Msg("Blueprint specs differ.  plotter.generation " + fmt.Sprint(plotter.Generation) + " plotter.observedGeneration " + fmt.Sprint(plotter.Status.ObservedGeneration))
+			if !reflect.DeepEqual(&blueprintSpec, &remoteBlueprint.Spec) {
+				r.Log.Warn().Msg("Blueprint specs differ.  plotter.generation " + fmt.Sprint(plotter.Generation) +
+					" plotter.observedGeneration " + fmt.Sprint(plotter.Status.ObservedGeneration))
 				if plotter.Generation != plotter.Status.ObservedGeneration {
 					log.Trace().Str(logging.ACTION, logging.UPDATE).Msg("Updating blueprint...")
 					remoteBlueprint.Spec = blueprintSpec
@@ -437,9 +409,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 					Namespace:   plotter.Namespace,
 					ClusterName: cluster,
 					Labels: map[string]string{
-						"razee/watch-resource":        "debug",
-						app.ApplicationNameLabel:      plotter.Labels[app.ApplicationNameLabel],
-						app.ApplicationNamespaceLabel: plotter.Labels[app.ApplicationNamespaceLabel],
+						"razee/watch-resource": "debug",
 					},
 					Annotations: map[string]string{
 						utils.FybrikAppUUID: uuid, // Pass on the globally unique id of the fybrikapplication instance for logging purposes
@@ -447,8 +417,11 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 				},
 				Spec: blueprintSpec,
 			}
-
+			for key, val := range plotter.Labels {
+				blueprint.Labels[key] = val
+			}
 			err := r.ClusterManager.CreateBlueprint(cluster, blueprint)
+			isReady = false
 			if err != nil {
 				errorCollection = append(errorCollection, err)
 				log.Error().Err(err).Str(logging.CLUSTER, cluster).Str(logging.ACTION, logging.CREATE).Msg("Could not create blueprint for cluster")
@@ -457,7 +430,6 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			}
 
 			plotter.Status.Blueprints[cluster] = app.CreateMetaBlueprintWithoutState(blueprint)
-			isReady = false
 			r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, "Blueprint just created")
 		}
 	}
@@ -470,12 +442,14 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			if err != nil {
 				if !strings.HasPrefix(err.Error(), "Query channelByName error. Could not find the channel with name") {
 					errorCollection = append(errorCollection, err)
-					log.Error().Err(err).Str(logging.CLUSTER, cluster).Str(logging.BLUEPRINT, remoteBlueprint.Name).Str(logging.ACTION, logging.DELETE).Msg("Could not delete remote blueprint after spec changed!")
+					log.Error().Err(err).Str(logging.CLUSTER, cluster).Str(logging.BLUEPRINT, remoteBlueprint.Name).
+						Str(logging.ACTION, logging.DELETE).Msg("Could not delete remote blueprint after spec changed!")
 					continue
 				}
 			}
 			delete(plotter.Status.Blueprints, cluster)
-			log.Trace().Str(logging.PLOTTER, plotter.Name).Str(logging.CLUSTER, cluster).Str(logging.NAMESPACE, remoteBlueprint.Namespace).Str(logging.BLUEPRINT, remoteBlueprint.Name).Msg("Successfully removed blueprint from plotter")
+			log.Trace().Str(logging.PLOTTER, plotter.Name).Str(logging.CLUSTER, cluster).Str(logging.NAMESPACE, remoteBlueprint.Namespace).
+				Str(logging.BLUEPRINT, remoteBlueprint.Name).Msg("Successfully removed blueprint from plotter")
 		}
 	}
 
@@ -499,10 +473,11 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 		// and a maximum of 60 seconds until the next reconcile
 		ready := *plotter.Status.ReadyTimestamp
 		elapsedTime := time.Since(ready.Time)
-		backoffFactor := int(math.Min(math.Exp2(elapsedTime.Minutes()), 60.0))
-		requeueAfter := time.Duration(4+backoffFactor) * time.Second
+		backoffFactor := int(math.Min(math.Exp2(elapsedTime.Minutes()), controllers.MaximumSecondsUntillReconcile))
+		requeueAfter := time.Duration(4+backoffFactor) * time.Second //nolint:revive,gomnd
 
-		log.Trace().Str(logging.PLOTTER, plotter.Name).Str("BackoffFactor", fmt.Sprint(backoffFactor)).Str(logging.RESPONSETIME, elapsedTime.String()).Msg("Plotter is ready!")
+		log.Trace().Str(logging.PLOTTER, plotter.Name).Str("BackoffFactor", fmt.Sprint(backoffFactor)).
+			Str(logging.RESPONSETIME, elapsedTime.String()).Msg("Plotter is ready!")
 
 		return ctrl.Result{RequeueAfter: requeueAfter}, errorCollection
 	}
@@ -535,7 +510,8 @@ func NewPlotterReconciler(mgr ctrl.Manager, name string, manager multicluster.Cl
 
 // SetupWithManager registers Plotter controller
 func (r *PlotterReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	numReconciles := environment.GetEnvAsInt(controllers.PlotterConcurrentReconcilesConfiguration, controllers.DefaultPlotterConcurrentReconciles)
+	numReconciles := environment.GetEnvAsInt(controllers.PlotterConcurrentReconcilesConfiguration,
+		controllers.DefaultPlotterConcurrentReconciles)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).

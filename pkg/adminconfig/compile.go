@@ -33,7 +33,8 @@ func PrepareQuery() (rego.PreparedEvalQuery, error) {
 			continue
 		}
 		fileName := filepath.Join(RegoPolicyDirectory, name)
-		module, err := os.ReadFile(filepath.Clean(fileName))
+		var module []byte
+		module, err = os.ReadFile(filepath.Clean(fileName))
 		if err != nil {
 			return rego.PreparedEvalQuery{}, err
 		}
@@ -45,9 +46,9 @@ func PrepareQuery() (rego.PreparedEvalQuery, error) {
 		return rego.PreparedEvalQuery{}, errors.Wrap(err, "couldn't compile modules")
 	}
 
-	rego := rego.New(
+	rg := rego.New(
 		rego.Query("data.adminconfig"),
 		rego.Compiler(compiler),
 	)
-	return rego.PrepareForEval(context.Background())
+	return rg.PrepareForEval(context.Background())
 }

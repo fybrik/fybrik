@@ -106,6 +106,7 @@ func (p *PlotterGenerator) validSolutions(item *DataInfo, solutions []Solution, 
 	return validPaths
 }
 
+//nolint:gocyclo
 func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, application *app.FybrikApplication) bool {
 	// start from data source, check supported actions and cluster restrictions
 	appContext := ApplicationContext{Application: application, Log: p.Log}
@@ -119,13 +120,14 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 			isAccountFound := false
 			for _, account := range p.StorageAccounts {
 				// validate restrictions
-				if !p.validateRestrictions(item.Configuration.ConfigDecisions[moduleCapability.Capability].DeploymentRestrictions.StorageAccounts, &account.Spec, account.Name) {
+				if !p.validateRestrictions(item.Configuration.ConfigDecisions[moduleCapability.Capability].
+					DeploymentRestrictions.StorageAccounts, &account.Spec, account.Name) {
 					p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msgf("storage account %s does not match the requirements", account.Name)
 					continue
 				}
 				// query the policy manager whether WRITE operation is allowed
 				operation := new(policymanager.RequestAction)
-				operation.ActionType = policymanager.WRITE
+				operation.ActionType = taxonomy.WriteFlow
 				operation.Destination = string(account.Spec.Region)
 				operation.ProcessingLocation = account.Spec.Region
 				actions, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
@@ -159,13 +161,15 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 		requiredActions = unsupported
 		// select a cluster for the capability that satisfy cluster restrictions specified in admin config policies
 		if !p.findCluster(item, element) {
-			p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find an available cluster for " + string(moduleCapability.Capability))
+			p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find an available cluster for " +
+				string(moduleCapability.Capability))
 			return false
 		}
 	}
 	// Are all actions supported by the capabilities in this data path?
 	if len(requiredActions) > 0 {
-		p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Not all governance actions are supported, aborting data path construction")
+		p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).
+			Msg("Not all governance actions are supported, aborting data path construction")
 		return false
 	}
 	// Are all capabilities that need to be deployed supported in this data path?
@@ -199,7 +203,7 @@ func (p *PlotterGenerator) findCluster(item *DataInfo, element *ResolvedEdge) bo
 // Only data movements between data stores/endpoints are considered.
 // Transformations are added in the later stage.
 // Capabilities outside the data path are not handled yet.
-func (p *PlotterGenerator) findPathsWithinLimit(item *DataInfo, source *Node, sink *Node, n int) []Solution {
+func (p *PlotterGenerator) findPathsWithinLimit(item *DataInfo, source, sink *Node, n int) []Solution {
 	solutions := []Solution{}
 	for _, module := range p.Modules {
 		for capabilityInd, capability := range module.Spec.Capabilities {
@@ -308,7 +312,7 @@ func supportsGovernanceAction(edge *Edge, action taxonomy.Action) bool {
 	return false // Action not supported by module
 }
 
-func match(source *app.InterfaceDetails, sink *app.InterfaceDetails) bool {
+func match(source, sink *app.InterfaceDetails) bool {
 	if source == nil || sink == nil {
 		return false
 	}
@@ -316,6 +320,7 @@ func match(source *app.InterfaceDetails, sink *app.InterfaceDetails) bool {
 }
 
 // supportsSourceInterface indicates whether the source interface requirements are met.
+//nolint:dupl
 func supportsSourceInterface(edge *Edge, source *Node) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
 	if capability.API != nil && source.Virtual {
@@ -334,6 +339,7 @@ func supportsSourceInterface(edge *Edge, source *Node) bool {
 }
 
 // supportsSinkInterface indicates whether the sink interface requirements are met.
+//nolint:dupl
 func supportsSinkInterface(edge *Edge, sink *Node) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
 	if capability.API != nil && sink.Virtual {
@@ -372,12 +378,14 @@ func (p *PlotterGenerator) validateClusterRestrictions(item *DataInfo, edge *Res
 	return true
 }
 
-func (p *PlotterGenerator) validateClusterRestrictionsPerCapability(item *DataInfo, capability taxonomy.Capability, cluster multicluster.Cluster) bool {
+func (p *PlotterGenerator) validateClusterRestrictionsPerCapability(item *DataInfo, capability taxonomy.Capability,
+	cluster multicluster.Cluster) bool {
 	restrictions := item.Configuration.ConfigDecisions[capability].DeploymentRestrictions.Clusters
 	return p.validateRestrictions(restrictions, &cluster, "")
 }
 
 // Validation of an object with respect to the admin config restrictions
+//nolint:gocyclo
 func (p *PlotterGenerator) validateRestrictions(restrictions []adminrules.Restriction, spec interface{}, instanceName string) bool {
 	if len(restrictions) == 0 {
 		return true

@@ -39,7 +39,8 @@ type FybrikStorageAccount struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   FybrikStorageAccountSpec   `json:"spec,omitempty"`
+	// +required
+	Spec   FybrikStorageAccountSpec   `json:"spec"`
 	Status FybrikStorageAccountStatus `json:"status,omitempty"`
 }
 

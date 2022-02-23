@@ -17,6 +17,8 @@ import (
 	"fybrik.io/fybrik/connectors/katalog/pkg/connector"
 )
 
+const CommandPort = 8080
+
 // RootCmd defines the root cli command
 func RootCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -30,7 +32,7 @@ func RootCmd() *cobra.Command {
 // RunCmd defines the command for running the connector
 func RunCmd() *cobra.Command {
 	ip := ""
-	port := 8080
+	port := CommandPort
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run the connector",

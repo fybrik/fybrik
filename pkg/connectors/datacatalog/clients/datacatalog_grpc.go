@@ -35,7 +35,7 @@ type grpcDataCatalog struct {
 
 // NewGrpcDataCatalog creates a DataCatalog facade that connects to a GRPC service
 // You must call .Close() when you are done using the created instance
-func NewGrpcDataCatalog(name string, connectionURL string, connectionTimeout time.Duration) (DataCatalog, error) {
+func NewGrpcDataCatalog(name, connectionURL string, connectionTimeout time.Duration) (DataCatalog, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), connectionTimeout)
 	defer cancel()
 	connection, err := grpc.DialContext(ctx, connectionURL, grpc.WithInsecure(), grpc.WithBlock())
@@ -99,6 +99,7 @@ func ConvertDataCatalogOpenAPIReqToGrpcReq(in *datacatalog.GetAssetRequest, cred
 	return dataCatalogReq, nil
 }
 
+//nolint:funlen
 func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*datacatalog.GetAssetResponse, error) {
 	// convert GRPC response to Open Api Response - start
 	resourceCols := make([]datacatalog.ResourceColumn, 0)

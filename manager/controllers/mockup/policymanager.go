@@ -34,7 +34,9 @@ func deserializeToTaxonomyAction(action map[string]interface{}, taxAction *taxon
 }
 
 // GetPoliciesDecisions implements the PolicyCompiler interface
-func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyDecisionsRequest, creds string) (*policymanager.GetPolicyDecisionsResponse, error) {
+//nolint:funlen
+func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyDecisionsRequest,
+	creds string) (*policymanager.GetPolicyDecisionsResponse, error) {
 	log.Printf("Received OpenAPI request in mockup GetPoliciesDecisions: ")
 	log.Printf("ProcessingGeography: %s", input.Action.ProcessingLocation)
 	log.Printf("Destination: " + input.Action.Destination)

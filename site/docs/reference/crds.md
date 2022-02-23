@@ -64,952 +64,17 @@ Blueprint is the Schema for the blueprints API
       <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
       <td>true</td>
       </tr><tr>
-        <td><b><a href="#blueprintspec">spec</a></b></td>
-        <td>object</td>
-        <td>
-          BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path that run in a particular cluster. In a single cluster environment there is one blueprint per workload (FybrikApplication). In a multi-cluster environment there is one Blueprint per cluster per workload (FybrikApplication).<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
         <td><b><a href="#blueprintstatus">status</a></b></td>
         <td>object</td>
         <td>
           BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring<br/>
         </td>
         <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec
-<sup><sup>[↩ Parent](#blueprint)</sup></sup>
-
-
-
-BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path that run in a particular cluster. In a single cluster environment there is one blueprint per workload (FybrikApplication). In a multi-cluster environment there is one Blueprint per cluster per workload (FybrikApplication).
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>cluster</b></td>
-        <td>string</td>
-        <td>
-          Cluster indicates the cluster on which the Blueprint runs<br/>
-        </td>
-        <td>true</td>
       </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskey">modules</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          Modules is a map which contains modules that indicate the data path components that run in this cluster The map key is moduleInstanceName which is the unique name for the deployed instance related to this workload<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>modulesNamespace</b></td>
-        <td>string</td>
-        <td>
-          ModulesNamespace is the namespace where modules should be allocated<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key]
-<sup><sup>[↩ Parent](#blueprintspec)</sup></sup>
-
-
-
-BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the information necessary to instantiate a datapath component, including the parameters relevant for the particular workload.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyarguments">arguments</a></b></td>
+        <td><b><a href="#blueprintspec">spec</a></b></td>
         <td>object</td>
         <td>
-          Arguments are the input parameters for a specific instance of a module.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>assetIds</b></td>
-        <td>[]string</td>
-        <td>
-          assetIDs indicate the assets processed by this module.  Included so we can track asset status as well as module status in the future.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeychart">chart</a></b></td>
-        <td>object</td>
-        <td>
-          Chart contains the location of the helm chart with info detailing how to deploy<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          Name of the FybrikModule on which this is based<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments
-<sup><sup>[↩ Parent](#blueprintspecmoduleskey)</sup></sup>
-
-
-
-Arguments are the input parameters for a specific instance of a module.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsappselector">appSelector</a></b></td>
-        <td>object</td>
-        <td>
-          Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopy">copy</a></b></td>
-        <td>object</td>
-        <td>
-          CopyArgs are parameters specific to modules that copy data from one data store to another.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>labels</b></td>
-        <td>map[string]string</td>
-        <td>
-          Labels of FybrikApplication<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsreadindex">read</a></b></td>
-        <td>[]object</td>
-        <td>
-          ReadArgs are parameters that are specific to modules that enable an application to read data<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentswriteindex">write</a></b></td>
-        <td>[]object</td>
-        <td>
-          WriteArgs are parameters that are specific to modules that enable an application to write data<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.appSelector
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyarguments)</sup></sup>
-
-
-
-Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsappselectormatchexpressionsindex">matchExpressions</a></b></td>
-        <td>[]object</td>
-        <td>
-          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>matchLabels</b></td>
-        <td>map[string]string</td>
-        <td>
-          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.appSelector.matchExpressions[index]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsappselector)</sup></sup>
-
-
-
-A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>values</b></td>
-        <td>[]string</td>
-        <td>
-          values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>key</b></td>
-        <td>string</td>
-        <td>
-          key is the label key that the selector applies to.<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>operator</b></td>
-        <td>string</td>
-        <td>
-          operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.copy
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyarguments)</sup></sup>
-
-
-
-CopyArgs are parameters specific to modules that copy data from one data store to another.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopytransformationsindex">transformations</a></b></td>
-        <td>[]object</td>
-        <td>
-          Transformations are different types of processing that may be done to the data as it is copied.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>assetID</b></td>
-        <td>string</td>
-        <td>
-          AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the FybrikApplication resource<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopydestination">destination</a></b></td>
-        <td>object</td>
-        <td>
-          Destination is the data store to which the data will be copied<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopysource">source</a></b></td>
-        <td>object</td>
-        <td>
-          Source is the where the data currently resides<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.copy.transformations[index]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopy)</sup></sup>
-
-
-
-
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.copy.destination
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopy)</sup></sup>
-
-
-
-Destination is the data store to which the data will be copied
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>format</b></td>
-        <td>string</td>
-        <td>
-          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopydestinationconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopydestinationvaultkey">vault</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.copy.destination.connection
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopydestination)</sup></sup>
-
-
-
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.copy.destination.vault[key]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopydestination)</sup></sup>
-
-
-
-Holds details for retrieving credentials from Vault store.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>address</b></td>
-        <td>string</td>
-        <td>
-          Address is Vault address<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>authPath</b></td>
-        <td>string</td>
-        <td>
-          AuthPath is the path to auth method i.e. kubernetes<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>role</b></td>
-        <td>string</td>
-        <td>
-          Role is the Vault role used for retrieving the credentials<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>secretPath</b></td>
-        <td>string</td>
-        <td>
-          SecretPath is the path of the secret holding the Credentials in Vault<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.copy.source
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopy)</sup></sup>
-
-
-
-Source is the where the data currently resides
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>format</b></td>
-        <td>string</td>
-        <td>
-          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopysourceconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentscopysourcevaultkey">vault</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.copy.source.connection
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopysource)</sup></sup>
-
-
-
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.copy.source.vault[key]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentscopysource)</sup></sup>
-
-
-
-Holds details for retrieving credentials from Vault store.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>address</b></td>
-        <td>string</td>
-        <td>
-          Address is Vault address<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>authPath</b></td>
-        <td>string</td>
-        <td>
-          AuthPath is the path to auth method i.e. kubernetes<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>role</b></td>
-        <td>string</td>
-        <td>
-          Role is the Vault role used for retrieving the credentials<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>secretPath</b></td>
-        <td>string</td>
-        <td>
-          SecretPath is the path of the secret holding the Credentials in Vault<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.read[index]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyarguments)</sup></sup>
-
-
-
-ReadModuleArgs define the input parameters for modules that read data from location A
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsreadindextransformationsindex">transformations</a></b></td>
-        <td>[]object</td>
-        <td>
-          Transformations are different types of processing that may be done to the data<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>assetID</b></td>
-        <td>string</td>
-        <td>
-          AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the FybrikApplication resource<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsreadindexsource">source</a></b></td>
-        <td>object</td>
-        <td>
-          Source of the read path module<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.read[index].transformations[index]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsreadindex)</sup></sup>
-
-
-
-
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.read[index].source
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsreadindex)</sup></sup>
-
-
-
-Source of the read path module
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>format</b></td>
-        <td>string</td>
-        <td>
-          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsreadindexsourceconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsreadindexsourcevaultkey">vault</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.read[index].source.connection
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsreadindexsource)</sup></sup>
-
-
-
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.read[index].source.vault[key]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsreadindexsource)</sup></sup>
-
-
-
-Holds details for retrieving credentials from Vault store.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>address</b></td>
-        <td>string</td>
-        <td>
-          Address is Vault address<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>authPath</b></td>
-        <td>string</td>
-        <td>
-          AuthPath is the path to auth method i.e. kubernetes<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>role</b></td>
-        <td>string</td>
-        <td>
-          Role is the Vault role used for retrieving the credentials<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>secretPath</b></td>
-        <td>string</td>
-        <td>
-          SecretPath is the path of the secret holding the Credentials in Vault<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.write[index]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyarguments)</sup></sup>
-
-
-
-WriteModuleArgs define the input parameters for modules that write data to location B
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentswriteindextransformationsindex">transformations</a></b></td>
-        <td>[]object</td>
-        <td>
-          Transformations are different types of processing that may be done to the data as it is written.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>assetID</b></td>
-        <td>string</td>
-        <td>
-          AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the FybrikApplication resource<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentswriteindexdestination">destination</a></b></td>
-        <td>object</td>
-        <td>
-          Destination is the data store to which the data will be written<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.write[index].transformations[index]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentswriteindex)</sup></sup>
-
-
-
-
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.write[index].destination
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentswriteindex)</sup></sup>
-
-
-
-Destination is the data store to which the data will be written
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>format</b></td>
-        <td>string</td>
-        <td>
-          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentswriteindexdestinationconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentswriteindexdestinationvaultkey">vault</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.write[index].destination.connection
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentswriteindexdestination)</sup></sup>
-
-
-
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.write[index].destination.vault[key]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentswriteindexdestination)</sup></sup>
-
-
-
-Holds details for retrieving credentials from Vault store.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>address</b></td>
-        <td>string</td>
-        <td>
-          Address is Vault address<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>authPath</b></td>
-        <td>string</td>
-        <td>
-          AuthPath is the path to auth method i.e. kubernetes<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>role</b></td>
-        <td>string</td>
-        <td>
-          Role is the Vault role used for retrieving the credentials<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>secretPath</b></td>
-        <td>string</td>
-        <td>
-          SecretPath is the path of the secret holding the Credentials in Vault<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].chart
-<sup><sup>[↩ Parent](#blueprintspecmoduleskey)</sup></sup>
-
-
-
-Chart contains the location of the helm chart with info detailing how to deploy
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>chartPullSecret</b></td>
-        <td>string</td>
-        <td>
-          Name of secret containing helm registry credentials<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>values</b></td>
-        <td>map[string]string</td>
-        <td>
-          Values to pass to helm chart installation<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          Name of helm chart<br/>
+          BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path that run in a particular cluster. In a single cluster environment there is one blueprint per workload (FybrikApplication). In a multi-cluster environment there is one Blueprint per cluster per workload (FybrikApplication).<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -1133,15 +198,13 @@ ObservedState includes information to be reported back to the FybrikApplication 
       </tr></tbody>
 </table>
 
-### FybrikApplication
-<sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
+
+#### Blueprint.spec
+<sup><sup>[↩ Parent](#blueprint)</sup></sup>
 
 
 
-
-
-
-FybrikApplication provides information about the application whose data is being operated on, the nature of the processing, and the data sets chosen for processing by the application. The FybrikApplication controller obtains instructions regarding any governance related changes that must be performed on the data, identifies the modules capable of performing such changes, and finally generates the Plotter which defines the secure runtime environment and all the components in it.  This runtime environment provides the application with access to the data requested in a secure manner and without having to provide any credentials for the data sets.  The credentials are obtained automatically by the manager from the credential management system.
+BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path that run in a particular cluster. In a single cluster environment there is one blueprint per workload (FybrikApplication). In a multi-cluster environment there is one Blueprint per cluster per workload (FybrikApplication).
 
 <table>
     <thead>
@@ -1153,128 +216,43 @@ FybrikApplication provides information about the application whose data is being
         </tr>
     </thead>
     <tbody><tr>
-      <td><b>apiVersion</b></td>
-      <td>string</td>
-      <td>app.fybrik.io/v1alpha1</td>
-      <td>true</td>
-      </tr>
-      <tr>
-      <td><b>kind</b></td>
-      <td>string</td>
-      <td>FybrikApplication</td>
-      <td>true</td>
-      </tr>
-      <tr>
-      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
-      <td>object</td>
-      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
-      <td>true</td>
-      </tr><tr>
-        <td><b><a href="#fybrikapplicationspec">spec</a></b></td>
+        <td><b><a href="#blueprintspecapplication">application</a></b></td>
         <td>object</td>
         <td>
-          FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog<br/>
+          ApplicationContext is a context of the origin FybrikApplication (labels, properties, etc.)<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#fybrikapplicationstatus">status</a></b></td>
-        <td>object</td>
-        <td>
-          FybrikApplicationStatus defines the observed state of FybrikApplication.<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### FybrikApplication.spec
-<sup><sup>[↩ Parent](#fybrikapplication)</sup></sup>
-
-
-
-FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>secretRef</b></td>
+        <td><b>cluster</b></td>
         <td>string</td>
         <td>
-          SecretRef points to the secret that holds credentials for each system the user has been authenticated with. The secret is deployed in FybrikApplication namespace.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#fybrikapplicationspecselector">selector</a></b></td>
-        <td>object</td>
-        <td>
-          Selector enables to connect the resource to the application Application labels should match the labels in the selector.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>appInfo</b></td>
-        <td>object</td>
-        <td>
-          AppInfo contains information describing the reasons for the processing that will be done by the application.<br/>
+          Cluster indicates the cluster on which the Blueprint runs<br/>
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b><a href="#fybrikapplicationspecdataindex">data</a></b></td>
-        <td>[]object</td>
+        <td><b><a href="#blueprintspecmoduleskey">modules</a></b></td>
+        <td>map[string]object</td>
         <td>
-          Data contains the identifiers of the data to be used by the Data Scientist's application, and the protocol used to access it and the format expected.<br/>
+          Modules is a map which contains modules that indicate the data path components that run in this cluster The map key is moduleInstanceName which is the unique name for the deployed instance related to this workload<br/>
         </td>
         <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### FybrikApplication.spec.selector
-<sup><sup>[↩ Parent](#fybrikapplicationspec)</sup></sup>
-
-
-
-Selector enables to connect the resource to the application Application labels should match the labels in the selector.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>clusterName</b></td>
+      </tr><tr>
+        <td><b>modulesNamespace</b></td>
         <td>string</td>
         <td>
-          Cluster name<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#fybrikapplicationspecselectorworkloadselector">workloadSelector</a></b></td>
-        <td>object</td>
-        <td>
-          WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.<br/>
+          ModulesNamespace is the namespace where modules should be allocated<br/>
         </td>
         <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### FybrikApplication.spec.selector.workloadSelector
-<sup><sup>[↩ Parent](#fybrikapplicationspecselector)</sup></sup>
+#### Blueprint.spec.application
+<sup><sup>[↩ Parent](#blueprintspec)</sup></sup>
 
 
 
-WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.
+ApplicationContext is a context of the origin FybrikApplication (labels, properties, etc.)
 
 <table>
     <thead>
@@ -1286,7 +264,41 @@ WorkloadSelector enables to connect the resource to the application Application 
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#fybrikapplicationspecselectorworkloadselectormatchexpressionsindex">matchExpressions</a></b></td>
+        <td><b>context</b></td>
+        <td>object</td>
+        <td>
+          Application context such as intent, role, etc.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecapplicationselector">selector</a></b></td>
+        <td>object</td>
+        <td>
+          Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.application.selector
+<sup><sup>[↩ Parent](#blueprintspecapplication)</sup></sup>
+
+
+
+Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#blueprintspecapplicationselectormatchexpressionsindex">matchExpressions</a></b></td>
         <td>[]object</td>
         <td>
           matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
@@ -1303,8 +315,8 @@ WorkloadSelector enables to connect the resource to the application Application 
 </table>
 
 
-#### FybrikApplication.spec.selector.workloadSelector.matchExpressions[index]
-<sup><sup>[↩ Parent](#fybrikapplicationspecselectorworkloadselector)</sup></sup>
+#### Blueprint.spec.application.selector.matchExpressions[index]
+<sup><sup>[↩ Parent](#blueprintspecapplicationselector)</sup></sup>
 
 
 
@@ -1344,53 +356,12 @@ A label selector requirement is a selector that contains values, a key, and an o
 </table>
 
 
-#### FybrikApplication.spec.data[index]
-<sup><sup>[↩ Parent](#fybrikapplicationspec)</sup></sup>
+#### Blueprint.spec.modules[key]
+<sup><sup>[↩ Parent](#blueprintspec)</sup></sup>
 
 
 
-DataContext indicates data set chosen by the Data Scientist to be used by his application, and includes information about the data format and technologies used by the application to access the data.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>catalogService</b></td>
-        <td>string</td>
-        <td>
-          CatalogService represents the catalog service for accessing the requested dataset. If not specified, the enterprise catalog service will be used.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>dataSetID</b></td>
-        <td>string</td>
-        <td>
-          DataSetID is a unique identifier of the dataset chosen from the data catalog for processing by the data user application.<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#fybrikapplicationspecdataindexrequirements">requirements</a></b></td>
-        <td>object</td>
-        <td>
-          Requirements from the system<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### FybrikApplication.spec.data[index].requirements
-<sup><sup>[↩ Parent](#fybrikapplicationspecdataindex)</sup></sup>
-
-
-
-Requirements from the system
+BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the information necessary to instantiate a datapath component, including the parameters relevant for the particular workload.
 
 <table>
     <thead>
@@ -1402,29 +373,43 @@ Requirements from the system
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#fybrikapplicationspecdataindexrequirementscopy">copy</a></b></td>
+        <td><b><a href="#blueprintspecmoduleskeyarguments">arguments</a></b></td>
         <td>object</td>
         <td>
-          CopyRequrements include the requirements for copying the data<br/>
+          Arguments are the input parameters for a specific instance of a module.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#fybrikapplicationspecdataindexrequirementsinterface">interface</a></b></td>
+        <td><b>assetIds</b></td>
+        <td>[]string</td>
+        <td>
+          assetIDs indicate the assets processed by this module.  Included so we can track asset status as well as module status in the future.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeychart">chart</a></b></td>
         <td>object</td>
         <td>
-          Interface indicates the protocol and format expected by the data user<br/>
+          Chart contains the location of the helm chart with info detailing how to deploy<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the FybrikModule on which this is based<br/>
         </td>
         <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### FybrikApplication.spec.data[index].requirements.copy
-<sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirements)</sup></sup>
+#### Blueprint.spec.modules[key].arguments
+<sup><sup>[↩ Parent](#blueprintspecmoduleskey)</sup></sup>
 
 
 
-CopyRequrements include the requirements for copying the data
+Arguments are the input parameters for a specific instance of a module.
 
 <table>
     <thead>
@@ -1436,29 +421,77 @@ CopyRequrements include the requirements for copying the data
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#fybrikapplicationspecdataindexrequirementscopycatalog">catalog</a></b></td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindex">assets</a></b></td>
+        <td>[]object</td>
+        <td>
+          Assets define asset related arguments, such as data source, transformations, etc.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>capability</b></td>
+        <td>string</td>
+        <td>
+          Capability of the module<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].arguments.assets[index]
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyarguments)</sup></sup>
+
+
+
+AssetContext defines the input parameters for modules that access an asset
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexdestination">destination</a></b></td>
         <td>object</td>
         <td>
-          Catalog indicates that the data asset must be cataloged.<br/>
+          Destination is the data store to which the data will be written<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>required</b></td>
-        <td>boolean</td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexsource">source</a></b></td>
+        <td>object</td>
         <td>
-          Required indicates that the data must be copied.<br/>
+          Source is the where the data currently resides<br/>
         </td>
         <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindextransformationsindex">transformations</a></b></td>
+        <td>[]object</td>
+        <td>
+          Transformations are different types of processing that may be done to the data as it is copied.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>assetID</b></td>
+        <td>string</td>
+        <td>
+          AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the FybrikApplication resource<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### FybrikApplication.spec.data[index].requirements.copy.catalog
-<sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirementscopy)</sup></sup>
+#### Blueprint.spec.modules[key].arguments.assets[index].destination
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindex)</sup></sup>
 
 
 
-Catalog indicates that the data asset must be cataloged.
+Destination is the data store to which the data will be written
 
 <table>
     <thead>
@@ -1470,29 +503,36 @@ Catalog indicates that the data asset must be cataloged.
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>catalogID</b></td>
+        <td><b>format</b></td>
         <td>string</td>
         <td>
-          CatalogID specifies the catalog where the data will be cataloged.<br/>
+          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>service</b></td>
-        <td>string</td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationconnection">connection</a></b></td>
+        <td>object</td>
         <td>
-          CatalogService specifies the datacatalog service that will be used for catalogging the data into.<br/>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
-        <td>false</td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationvaultkey">vault</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 
 
-#### FybrikApplication.spec.data[index].requirements.interface
-<sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirements)</sup></sup>
+#### Blueprint.spec.modules[key].arguments.assets[index].destination.connection
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexdestination)</sup></sup>
 
 
 
-Interface indicates the protocol and format expected by the data user
+Connection has the relevant details for accesing the data (url, table, ssl, etc.)
 
 <table>
     <thead>
@@ -1504,17 +544,295 @@ Interface indicates the protocol and format expected by the data user
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>dataformat</b></td>
+        <td><b>name</b></td>
         <td>string</td>
         <td>
-          DataFormat defines the data format type<br/>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].arguments.assets[index].destination.vault[key]
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexdestination)</sup></sup>
+
+
+
+Holds details for retrieving credentials from Vault store.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>address</b></td>
+        <td>string</td>
+        <td>
+          Address is Vault address<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>authPath</b></td>
+        <td>string</td>
+        <td>
+          AuthPath is the path to auth method i.e. kubernetes<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>role</b></td>
+        <td>string</td>
+        <td>
+          Role is the Vault role used for retrieving the credentials<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>secretPath</b></td>
+        <td>string</td>
+        <td>
+          SecretPath is the path of the secret holding the Credentials in Vault<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].arguments.assets[index].source
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindex)</sup></sup>
+
+
+
+Source is the where the data currently resides
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>format</b></td>
+        <td>string</td>
+        <td>
+          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>protocol</b></td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexsourceconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexsourcevaultkey">vault</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].arguments.assets[index].source.connection
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexsource)</sup></sup>
+
+
+
+Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
         <td>string</td>
         <td>
-          Protocol defines the interface protocol used for data transactions<br/>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].arguments.assets[index].source.vault[key]
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexsource)</sup></sup>
+
+
+
+Holds details for retrieving credentials from Vault store.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>address</b></td>
+        <td>string</td>
+        <td>
+          Address is Vault address<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>authPath</b></td>
+        <td>string</td>
+        <td>
+          AuthPath is the path to auth method i.e. kubernetes<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>role</b></td>
+        <td>string</td>
+        <td>
+          Role is the Vault role used for retrieving the credentials<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>secretPath</b></td>
+        <td>string</td>
+        <td>
+          SecretPath is the path of the secret holding the Credentials in Vault<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].arguments.assets[index].transformations[index]
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindex)</sup></sup>
+
+
+
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].chart
+<sup><sup>[↩ Parent](#blueprintspecmoduleskey)</sup></sup>
+
+
+
+Chart contains the location of the helm chart with info detailing how to deploy
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>chartPullSecret</b></td>
+        <td>string</td>
+        <td>
+          Name of secret containing helm registry credentials<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>values</b></td>
+        <td>map[string]string</td>
+        <td>
+          Values to pass to helm chart installation<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of helm chart<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+### FybrikApplication
+<sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
+
+
+
+
+
+
+FybrikApplication provides information about the application whose data is being operated on, the nature of the processing, and the data sets chosen for processing by the application. The FybrikApplication controller obtains instructions regarding any governance related changes that must be performed on the data, identifies the modules capable of performing such changes, and finally generates the Plotter which defines the secure runtime environment and all the components in it.  This runtime environment provides the application with access to the data requested in a secure manner and without having to provide any credentials for the data sets.  The credentials are obtained automatically by the manager from the credential management system.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+      <td><b>apiVersion</b></td>
+      <td>string</td>
+      <td>app.fybrik.io/v1alpha1</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b>kind</b></td>
+      <td>string</td>
+      <td>FybrikApplication</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
+      <td>object</td>
+      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
+      <td>true</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatus">status</a></b></td>
+        <td>object</td>
+        <td>
+          FybrikApplicationStatus defines the observed state of FybrikApplication.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationspec">spec</a></b></td>
+        <td>object</td>
+        <td>
+          FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -1802,6 +1120,317 @@ DatasetDetails holds details of the provisioned storage
           Reference to a secret where the credentials are stored<br/>
         </td>
         <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.spec
+<sup><sup>[↩ Parent](#fybrikapplication)</sup></sup>
+
+
+
+FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>secretRef</b></td>
+        <td>string</td>
+        <td>
+          SecretRef points to the secret that holds credentials for each system the user has been authenticated with. The secret is deployed in FybrikApplication namespace.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationspecselector">selector</a></b></td>
+        <td>object</td>
+        <td>
+          Selector enables to connect the resource to the application Application labels should match the labels in the selector.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>appInfo</b></td>
+        <td>object</td>
+        <td>
+          AppInfo contains information describing the reasons for the processing that will be done by the application.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationspecdataindex">data</a></b></td>
+        <td>[]object</td>
+        <td>
+          Data contains the identifiers of the data to be used by the Data Scientist's application, and the protocol used to access it and the format expected.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.spec.selector
+<sup><sup>[↩ Parent](#fybrikapplicationspec)</sup></sup>
+
+
+
+Selector enables to connect the resource to the application Application labels should match the labels in the selector.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>clusterName</b></td>
+        <td>string</td>
+        <td>
+          Cluster name<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationspecselectorworkloadselector">workloadSelector</a></b></td>
+        <td>object</td>
+        <td>
+          WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.spec.selector.workloadSelector
+<sup><sup>[↩ Parent](#fybrikapplicationspecselector)</sup></sup>
+
+
+
+WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikapplicationspecselectorworkloadselectormatchexpressionsindex">matchExpressions</a></b></td>
+        <td>[]object</td>
+        <td>
+          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>matchLabels</b></td>
+        <td>map[string]string</td>
+        <td>
+          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.spec.selector.workloadSelector.matchExpressions[index]
+<sup><sup>[↩ Parent](#fybrikapplicationspecselectorworkloadselector)</sup></sup>
+
+
+
+A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>values</b></td>
+        <td>[]string</td>
+        <td>
+          values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          key is the label key that the selector applies to.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>operator</b></td>
+        <td>string</td>
+        <td>
+          operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.spec.data[index]
+<sup><sup>[↩ Parent](#fybrikapplicationspec)</sup></sup>
+
+
+
+DataContext indicates data set being processed by the workload and includes information about the data format and technologies used to access the data.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>flow</b></td>
+        <td>enum</td>
+        <td>
+          Flows indicates what is being done with the particular dataset - ex: read, write, copy (ingest), delete This is optional for the purpose of backward compatibility. If nothing is provided, read is assumed.<br/>
+          <br/>
+            <i>Enum</i>: read, write, delete, copy<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>dataSetID</b></td>
+        <td>string</td>
+        <td>
+          DataSetID is a unique identifier of the dataset chosen from the data catalog. For data catalogs that support multiple sub-catalogs, it includes the catalog id and the dataset id. When writing a new dataset it is the name provided by the user or workload generating it.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirements">requirements</a></b></td>
+        <td>object</td>
+        <td>
+          Requirements from the system<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.spec.data[index].requirements
+<sup><sup>[↩ Parent](#fybrikapplicationspecdataindex)</sup></sup>
+
+
+
+Requirements from the system
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementsflowparams">flowParams</a></b></td>
+        <td>object</td>
+        <td>
+          FlowParams include the requirements for particular data flows<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementsinterface">interface</a></b></td>
+        <td>object</td>
+        <td>
+          Interface indicates the protocol and format expected by the data user<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.spec.data[index].requirements.flowParams
+<sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirements)</sup></sup>
+
+
+
+FlowParams include the requirements for particular data flows
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>catalog</b></td>
+        <td>string</td>
+        <td>
+          Catalog indicates that the data asset must be cataloged, and in which catalog to register it<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>isNewDataSet</b></td>
+        <td>boolean</td>
+        <td>
+          IsNewDataSet if true indicates that the DataContext.DataSetID is user provided and not a full catalog / dataset ID. Relevant when writing. A unique ID from the catalog will be provided in the FybrikApplication Status after a new catalog entry is created.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>storageEstimate</b></td>
+        <td>integer</td>
+        <td>
+          Storage estimate indicates the estimated amount of storage in MB, GB, TB required when writing new data.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.spec.data[index].requirements.interface
+<sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirements)</sup></sup>
+
+
+
+Interface indicates the protocol and format expected by the data user
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>dataformat</b></td>
+        <td>string</td>
+        <td>
+          DataFormat defines the data format type<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>protocol</b></td>
+        <td>string</td>
+        <td>
+          Protocol defines the interface protocol used for data transactions<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 
@@ -2457,19 +2086,19 @@ FybrikStorageAccount defines a storage account used for copying data. Only S3 ba
       <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
       <td>true</td>
       </tr><tr>
-        <td><b><a href="#fybrikstorageaccountspec">spec</a></b></td>
-        <td>object</td>
-        <td>
-          FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
         <td><b>status</b></td>
         <td>object</td>
         <td>
           FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount<br/>
         </td>
         <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikstorageaccountspec">spec</a></b></td>
+        <td>object</td>
+        <td>
+          FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 
@@ -2558,858 +2187,17 @@ Plotter is the Schema for the plotters API
       <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
       <td>true</td>
       </tr><tr>
-        <td><b><a href="#plotterspec">spec</a></b></td>
-        <td>object</td>
-        <td>
-          PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter declares what needs to be installed and where (as blueprints running on remote clusters) which provides the Data Scientist's application with secure and governed access to the data requested in the FybrikApplication.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
         <td><b><a href="#plotterstatus">status</a></b></td>
         <td>object</td>
         <td>
           PlotterStatus defines the observed state of Plotter This includes readiness, error message, and indicators received from blueprint resources owned by the Plotter for cleanup and status monitoring<br/>
         </td>
         <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec
-<sup><sup>[↩ Parent](#plotter)</sup></sup>
-
-
-
-PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter declares what needs to be installed and where (as blueprints running on remote clusters) which provides the Data Scientist's application with secure and governed access to the data requested in the FybrikApplication.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#plotterspecappselector">appSelector</a></b></td>
+      </tr><tr>
+        <td><b><a href="#plotterspec">spec</a></b></td>
         <td>object</td>
         <td>
-          Selector enables to connect the resource to the application Application labels should match the labels in the selector. For some flows the selector may not be used.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecassetskey">assets</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          Assets is a map holding information about the assets The key is the assetID<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecflowsindex">flows</a></b></td>
-        <td>[]object</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>modulesNamespace</b></td>
-        <td>string</td>
-        <td>
-          ModulesNamespace is the namespace where modules should be allocated<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#plotterspectemplateskey">templates</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          Templates is a map holding the templates used in this plotter steps The key is the template name<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.appSelector
-<sup><sup>[↩ Parent](#plotterspec)</sup></sup>
-
-
-
-Selector enables to connect the resource to the application Application labels should match the labels in the selector. For some flows the selector may not be used.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>clusterName</b></td>
-        <td>string</td>
-        <td>
-          Cluster name<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecappselectorworkloadselector">workloadSelector</a></b></td>
-        <td>object</td>
-        <td>
-          WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.appSelector.workloadSelector
-<sup><sup>[↩ Parent](#plotterspecappselector)</sup></sup>
-
-
-
-WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#plotterspecappselectorworkloadselectormatchexpressionsindex">matchExpressions</a></b></td>
-        <td>[]object</td>
-        <td>
-          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>matchLabels</b></td>
-        <td>map[string]string</td>
-        <td>
-          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.appSelector.workloadSelector.matchExpressions[index]
-<sup><sup>[↩ Parent](#plotterspecappselectorworkloadselector)</sup></sup>
-
-
-
-A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>values</b></td>
-        <td>[]string</td>
-        <td>
-          values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>key</b></td>
-        <td>string</td>
-        <td>
-          key is the label key that the selector applies to.<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>operator</b></td>
-        <td>string</td>
-        <td>
-          operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.assets[key]
-<sup><sup>[↩ Parent](#plotterspec)</sup></sup>
-
-
-
-AssetDetails is a list of assets used in the fybrikapplication. In addition to assets declared in fybrikapplication, AssetDetails list also contains assets that are allocated by the control-plane in order to serve fybrikapplication
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>advertisedAssetId</b></td>
-        <td>string</td>
-        <td>
-          AdvertisedAssetID links this asset to asset from fybrikapplication and is used by user facing services<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecassetskeyassetdetails">assetDetails</a></b></td>
-        <td>object</td>
-        <td>
-          DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.assets[key].assetDetails
-<sup><sup>[↩ Parent](#plotterspecassetskey)</sup></sup>
-
-
-
-DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>format</b></td>
-        <td>string</td>
-        <td>
-          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecassetskeyassetdetailsconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecassetskeyassetdetailsvaultkey">vault</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.assets[key].assetDetails.connection
-<sup><sup>[↩ Parent](#plotterspecassetskeyassetdetails)</sup></sup>
-
-
-
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.assets[key].assetDetails.vault[key]
-<sup><sup>[↩ Parent](#plotterspecassetskeyassetdetails)</sup></sup>
-
-
-
-Holds details for retrieving credentials from Vault store.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>address</b></td>
-        <td>string</td>
-        <td>
-          Address is Vault address<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>authPath</b></td>
-        <td>string</td>
-        <td>
-          AuthPath is the path to auth method i.e. kubernetes<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>role</b></td>
-        <td>string</td>
-        <td>
-          Role is the Vault role used for retrieving the credentials<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>secretPath</b></td>
-        <td>string</td>
-        <td>
-          SecretPath is the path of the secret holding the Credentials in Vault<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.flows[index]
-<sup><sup>[↩ Parent](#plotterspec)</sup></sup>
-
-
-
-Flows is the list of data flows driven from fybrikapplication: Each element in the list holds the flow of the data requested in fybrikapplication.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>assetId</b></td>
-        <td>string</td>
-        <td>
-          AssetID indicates the data set being used in this data flow<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>flowType</b></td>
-        <td>string</td>
-        <td>
-          Type of the flow (e.g. read)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          Name of the flow<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindex">subFlows</a></b></td>
-        <td>[]object</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.flows[index].subFlows[index]
-<sup><sup>[↩ Parent](#plotterspecflowsindex)</sup></sup>
-
-
-
-Subflows is a list of data flows which are originated from the same data asset but are triggered differently (e.g., one upon init trigger and one upon workload trigger)
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>flowType</b></td>
-        <td>string</td>
-        <td>
-          Type of the flow (e.g. read)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          Name of the SubFlow<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindex">steps</a></b></td>
-        <td>[][]object</td>
-        <td>
-          Steps defines a series of sequential/parallel data flow steps The first dimension represents parallel data flows. The second sequential components within the same parallel data flow.<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>triggers</b></td>
-        <td>[]enum</td>
-        <td>
-          Triggers<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.flows[index].subFlows[index].steps[index][index]
-<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindex)</sup></sup>
-
-
-
-DataFlowStep contains details on a single data flow step
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameters">parameters</a></b></td>
-        <td>object</td>
-        <td>
-          Step parameters TODO why not flatten the parameters into this data flow step<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>cluster</b></td>
-        <td>string</td>
-        <td>
-          Name of the cluster this step is executed on<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          Name of the step<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>template</b></td>
-        <td>string</td>
-        <td>
-          Template is the name of the template to execute the step The full details of the template can be extracted from Plotter.spec.templates list field.<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters
-<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindex)</sup></sup>
-
-
-
-Step parameters TODO why not flatten the parameters into this data flow step
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersactionindex">action</a></b></td>
-        <td>[]object</td>
-        <td>
-          Actions are the data transformations that the module supports<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapi">api</a></b></td>
-        <td>object</td>
-        <td>
-          ResourceDetails includes asset connection details<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssink">sink</a></b></td>
-        <td>object</td>
-        <td>
-          StepSink holds information to where the target data will be written: it could be assetID of an asset specified in fybrikapplication or of an asset created by fybrik control-plane<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssource">source</a></b></td>
-        <td>object</td>
-        <td>
-          StepSource is the source of this step: it could be assetID or an enpoint of another step<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.action[index]
-<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameters)</sup></sup>
-
-
-
-
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.api
-<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameters)</sup></sup>
-
-
-
-ResourceDetails includes asset connection details
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>dataFormat</b></td>
-        <td>string</td>
-        <td>
-          Data format<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapiconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection information<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.api.connection
-<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparametersapi)</sup></sup>
-
-
-
-Connection information
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.sink
-<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameters)</sup></sup>
-
-
-
-StepSink holds information to where the target data will be written: it could be assetID of an asset specified in fybrikapplication or of an asset created by fybrik control-plane
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>assetId</b></td>
-        <td>string</td>
-        <td>
-          AssetID identifies the target asset of this step<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.source
-<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameters)</sup></sup>
-
-
-
-StepSource is the source of this step: it could be assetID or an enpoint of another step
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapi">api</a></b></td>
-        <td>object</td>
-        <td>
-          API holds information for accessing a module instance<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>assetId</b></td>
-        <td>string</td>
-        <td>
-          AssetID identifies the source asset of this step<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.source.api
-<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameterssource)</sup></sup>
-
-
-
-API holds information for accessing a module instance
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>dataFormat</b></td>
-        <td>string</td>
-        <td>
-          Data format<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapiconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection information<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.source.api.connection
-<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapi)</sup></sup>
-
-
-
-Connection information
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.templates[key]
-<sup><sup>[↩ Parent](#plotterspec)</sup></sup>
-
-
-
-Template contains basic information about the required modules to serve the fybrikapplication e.g., the module helm chart name.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          Name of the template<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterspectemplateskeymodulesindex">modules</a></b></td>
-        <td>[]object</td>
-        <td>
-          Modules is a list of dependent modules. e.g., if a plugin module is used then the service module is used in should appear first in the modules list of the same template. If the modules list contains more than one module, the first module in the list is referred to as the "primary module" of which all the parameters to this template are sent to.<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.templates[key].modules[index]
-<sup><sup>[↩ Parent](#plotterspectemplateskey)</sup></sup>
-
-
-
-ModuleInfo is a copy of FybrikModule Custom Resource.  It contains information to instantiate resource of type FybrikModule.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>scope</b></td>
-        <td>enum</td>
-        <td>
-          Scope indicates at what level the capability is used: workload, asset, cluster If not indicated it is assumed to be asset<br/>
-          <br/>
-            <i>Enum</i>: asset, workload, cluster<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterspectemplateskeymodulesindexchart">chart</a></b></td>
-        <td>object</td>
-        <td>
-          Chart contains the information needed to use helm to install the capability<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          Name of the module<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>type</b></td>
-        <td>string</td>
-        <td>
-          May be one of service, config or plugin Service: Means that the control plane deploys the component that performs the capability Config: Another pre-installed service performs the capability and the module deployed configures it for the particular workload or dataset Plugin: Indicates that this module performs a capability as part of another service or module rather than as a stand-alone module<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.templates[key].modules[index].chart
-<sup><sup>[↩ Parent](#plotterspectemplateskeymodulesindex)</sup></sup>
-
-
-
-Chart contains the information needed to use helm to install the capability
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>chartPullSecret</b></td>
-        <td>string</td>
-        <td>
-          Name of secret containing helm registry credentials<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>values</b></td>
-        <td>map[string]string</td>
-        <td>
-          Values to pass to helm chart installation<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          Name of helm chart<br/>
+          PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter declares what needs to be installed and where (as blueprints running on remote clusters) which provides the Data Scientist's application with secure and governed access to the data requested in the FybrikApplication.<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3870,6 +2658,865 @@ ObservedState includes information to be reported back to the FybrikApplication 
       </tr></tbody>
 </table>
 
+
+#### Plotter.spec
+<sup><sup>[↩ Parent](#plotter)</sup></sup>
+
+
+
+PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter declares what needs to be installed and where (as blueprints running on remote clusters) which provides the Data Scientist's application with secure and governed access to the data requested in the FybrikApplication.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>appInfo</b></td>
+        <td>object</td>
+        <td>
+          Application context to be transferred to the modules<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecappselector">appSelector</a></b></td>
+        <td>object</td>
+        <td>
+          Selector enables to connect the resource to the application Application labels should match the labels in the selector. For some flows the selector may not be used.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecassetskey">assets</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Assets is a map holding information about the assets The key is the assetID<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindex">flows</a></b></td>
+        <td>[]object</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>modulesNamespace</b></td>
+        <td>string</td>
+        <td>
+          ModulesNamespace is the namespace where modules should be allocated<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterspectemplateskey">templates</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Templates is a map holding the templates used in this plotter steps The key is the template name<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.appSelector
+<sup><sup>[↩ Parent](#plotterspec)</sup></sup>
+
+
+
+Selector enables to connect the resource to the application Application labels should match the labels in the selector. For some flows the selector may not be used.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>clusterName</b></td>
+        <td>string</td>
+        <td>
+          Cluster name<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecappselectorworkloadselector">workloadSelector</a></b></td>
+        <td>object</td>
+        <td>
+          WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.appSelector.workloadSelector
+<sup><sup>[↩ Parent](#plotterspecappselector)</sup></sup>
+
+
+
+WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterspecappselectorworkloadselectormatchexpressionsindex">matchExpressions</a></b></td>
+        <td>[]object</td>
+        <td>
+          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>matchLabels</b></td>
+        <td>map[string]string</td>
+        <td>
+          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.appSelector.workloadSelector.matchExpressions[index]
+<sup><sup>[↩ Parent](#plotterspecappselectorworkloadselector)</sup></sup>
+
+
+
+A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>values</b></td>
+        <td>[]string</td>
+        <td>
+          values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          key is the label key that the selector applies to.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>operator</b></td>
+        <td>string</td>
+        <td>
+          operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.assets[key]
+<sup><sup>[↩ Parent](#plotterspec)</sup></sup>
+
+
+
+AssetDetails is a list of assets used in the fybrikapplication. In addition to assets declared in fybrikapplication, AssetDetails list also contains assets that are allocated by the control-plane in order to serve fybrikapplication
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>advertisedAssetId</b></td>
+        <td>string</td>
+        <td>
+          AdvertisedAssetID links this asset to asset from fybrikapplication and is used by user facing services<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecassetskeyassetdetails">assetDetails</a></b></td>
+        <td>object</td>
+        <td>
+          DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.assets[key].assetDetails
+<sup><sup>[↩ Parent](#plotterspecassetskey)</sup></sup>
+
+
+
+DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>format</b></td>
+        <td>string</td>
+        <td>
+          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecassetskeyassetdetailsconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecassetskeyassetdetailsvaultkey">vault</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.assets[key].assetDetails.connection
+<sup><sup>[↩ Parent](#plotterspecassetskeyassetdetails)</sup></sup>
+
+
+
+Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.assets[key].assetDetails.vault[key]
+<sup><sup>[↩ Parent](#plotterspecassetskeyassetdetails)</sup></sup>
+
+
+
+Holds details for retrieving credentials from Vault store.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>address</b></td>
+        <td>string</td>
+        <td>
+          Address is Vault address<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>authPath</b></td>
+        <td>string</td>
+        <td>
+          AuthPath is the path to auth method i.e. kubernetes<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>role</b></td>
+        <td>string</td>
+        <td>
+          Role is the Vault role used for retrieving the credentials<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>secretPath</b></td>
+        <td>string</td>
+        <td>
+          SecretPath is the path of the secret holding the Credentials in Vault<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.flows[index]
+<sup><sup>[↩ Parent](#plotterspec)</sup></sup>
+
+
+
+Flows is the list of data flows driven from fybrikapplication: Each element in the list holds the flow of the data requested in fybrikapplication.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>assetId</b></td>
+        <td>string</td>
+        <td>
+          AssetID indicates the data set being used in this data flow<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>flowType</b></td>
+        <td>enum</td>
+        <td>
+          Type of the flow (e.g. read)<br/>
+          <br/>
+            <i>Enum</i>: read, write, delete, copy<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the flow<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindex">subFlows</a></b></td>
+        <td>[]object</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.flows[index].subFlows[index]
+<sup><sup>[↩ Parent](#plotterspecflowsindex)</sup></sup>
+
+
+
+Subflows is a list of data flows which are originated from the same data asset but are triggered differently (e.g., one upon init trigger and one upon workload trigger)
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>flowType</b></td>
+        <td>enum</td>
+        <td>
+          Type of the flow (e.g. read)<br/>
+          <br/>
+            <i>Enum</i>: read, write, delete, copy<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the SubFlow<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindex">steps</a></b></td>
+        <td>[][]object</td>
+        <td>
+          Steps defines a series of sequential/parallel data flow steps The first dimension represents parallel data flows. The second sequential components within the same parallel data flow.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>triggers</b></td>
+        <td>[]enum</td>
+        <td>
+          Triggers<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.flows[index].subFlows[index].steps[index][index]
+<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindex)</sup></sup>
+
+
+
+DataFlowStep contains details on a single data flow step
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameters">parameters</a></b></td>
+        <td>object</td>
+        <td>
+          Step parameters TODO why not flatten the parameters into this data flow step<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>cluster</b></td>
+        <td>string</td>
+        <td>
+          Name of the cluster this step is executed on<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the step<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>template</b></td>
+        <td>string</td>
+        <td>
+          Template is the name of the template to execute the step The full details of the template can be extracted from Plotter.spec.templates list field.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters
+<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindex)</sup></sup>
+
+
+
+Step parameters TODO why not flatten the parameters into this data flow step
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersactionindex">action</a></b></td>
+        <td>[]object</td>
+        <td>
+          Actions are the data transformations that the module supports<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapi">api</a></b></td>
+        <td>object</td>
+        <td>
+          ResourceDetails includes asset connection details<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssink">sink</a></b></td>
+        <td>object</td>
+        <td>
+          StepSink holds information to where the target data will be written: it could be assetID of an asset specified in fybrikapplication or of an asset created by fybrik control-plane<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssource">source</a></b></td>
+        <td>object</td>
+        <td>
+          StepSource is the source of this step: it could be assetID or an endpoint of another step<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.action[index]
+<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameters)</sup></sup>
+
+
+
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.api
+<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameters)</sup></sup>
+
+
+
+ResourceDetails includes asset connection details
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>dataFormat</b></td>
+        <td>string</td>
+        <td>
+          Data format<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapiconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection information<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.api.connection
+<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparametersapi)</sup></sup>
+
+
+
+Connection information
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.sink
+<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameters)</sup></sup>
+
+
+
+StepSink holds information to where the target data will be written: it could be assetID of an asset specified in fybrikapplication or of an asset created by fybrik control-plane
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>assetId</b></td>
+        <td>string</td>
+        <td>
+          AssetID identifies the target asset of this step<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.source
+<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameters)</sup></sup>
+
+
+
+StepSource is the source of this step: it could be assetID or an endpoint of another step
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapi">api</a></b></td>
+        <td>object</td>
+        <td>
+          API holds information for accessing a module instance<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>assetId</b></td>
+        <td>string</td>
+        <td>
+          AssetID identifies the source asset of this step<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.source.api
+<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameterssource)</sup></sup>
+
+
+
+API holds information for accessing a module instance
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>dataFormat</b></td>
+        <td>string</td>
+        <td>
+          Data format<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapiconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection information<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.source.api.connection
+<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapi)</sup></sup>
+
+
+
+Connection information
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.templates[key]
+<sup><sup>[↩ Parent](#plotterspec)</sup></sup>
+
+
+
+Template contains basic information about the required modules to serve the fybrikapplication e.g., the module helm chart name.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the template<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspectemplateskeymodulesindex">modules</a></b></td>
+        <td>[]object</td>
+        <td>
+          Modules is a list of dependent modules. e.g., if a plugin module is used then the service module is used in should appear first in the modules list of the same template. If the modules list contains more than one module, the first module in the list is referred to as the "primary module" of which all the parameters to this template are sent to.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.templates[key].modules[index]
+<sup><sup>[↩ Parent](#plotterspectemplateskey)</sup></sup>
+
+
+
+ModuleInfo is a copy of FybrikModule Custom Resource.  It contains information to instantiate resource of type FybrikModule.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>scope</b></td>
+        <td>enum</td>
+        <td>
+          Scope indicates at what level the capability is used: workload, asset, cluster If not indicated it is assumed to be asset<br/>
+          <br/>
+            <i>Enum</i>: asset, workload, cluster<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>capability</b></td>
+        <td>string</td>
+        <td>
+          Module capability<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterspectemplateskeymodulesindexchart">chart</a></b></td>
+        <td>object</td>
+        <td>
+          Chart contains the information needed to use helm to install the capability<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the module<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>type</b></td>
+        <td>string</td>
+        <td>
+          May be one of service, config or plugin Service: Means that the control plane deploys the component that performs the capability Config: Another pre-installed service performs the capability and the module deployed configures it for the particular workload or dataset Plugin: Indicates that this module performs a capability as part of another service or module rather than as a stand-alone module<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.templates[key].modules[index].chart
+<sup><sup>[↩ Parent](#plotterspectemplateskeymodulesindex)</sup></sup>
+
+
+
+Chart contains the information needed to use helm to install the capability
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>chartPullSecret</b></td>
+        <td>string</td>
+        <td>
+          Name of secret containing helm registry credentials<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>values</b></td>
+        <td>map[string]string</td>
+        <td>
+          Values to pass to helm chart installation<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of helm chart<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
 ## katalog.fybrik.io/v1alpha1
 
 Resource Types:
@@ -3921,7 +3568,7 @@ Asset defines an asset in the catalog
         <td>
           <br/>
         </td>
-        <td>false</td>
+        <td>true</td>
       </tr></tbody>
 </table>
 

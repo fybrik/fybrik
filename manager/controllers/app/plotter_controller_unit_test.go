@@ -5,9 +5,10 @@ package app
 
 import (
 	"context"
-	"io/ioutil"
+	"os"
 	"testing"
 
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -40,7 +41,7 @@ func TestPlotterController(t *testing.T) {
 	)
 
 	var err error
-	plotterYAML, err := ioutil.ReadFile("../../testdata/plotter.yaml")
+	plotterYAML, err := os.ReadFile("../../testdata/plotter.yaml")
 	g.Expect(err).To(gomega.BeNil(), "Cannot read plotter file for test")
 	plotter := &app.Plotter{}
 	err = yaml.Unmarshal(plotterYAML, plotter)
@@ -115,11 +116,15 @@ func TestPlotterController(t *testing.T) {
 	g.Expect(deployedBp.Labels[app.ApplicationNameLabel]).To(gomega.Equal("notebook"))
 	res, err = r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
-	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-6575548090"].Chart.Name).To(gomega.Equal("ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0"))
+	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-6575548090"].Chart.Name).
+		To(gomega.Equal("ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0"))
 	// Check that the auth path of the credentials is set
-	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-6575548090"].Arguments.Copy.Source.Vault[string(app.ReadFlow)].AuthPath).To(gomega.Equal("/v1/auth/kubernetes/login"))
-	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-6575548090"].Arguments.Copy.Destination.Vault[string(app.WriteFlow)].AuthPath).To(gomega.Equal("/v1/auth/kubernetes/login"))
-	g.Expect(deployedBp.Spec.Modules["arrow-flight-read"].Arguments.Read[0].Source.Vault[string(app.ReadFlow)].AuthPath).To(gomega.Equal("/v1/auth/kubernetes/login"))
+	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-6575548090"].Arguments.Assets[0].Source.
+		Vault[string(taxonomy.ReadFlow)].AuthPath).To(gomega.Equal("/v1/auth/kubernetes/login"))
+	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-6575548090"].Arguments.Assets[0].Destination.
+		Vault[string(taxonomy.WriteFlow)].AuthPath).To(gomega.Equal("/v1/auth/kubernetes/login"))
+	g.Expect(deployedBp.Spec.Modules["arrow-flight-read"].Arguments.Assets[0].Source.
+		Vault[string(taxonomy.ReadFlow)].AuthPath).To(gomega.Equal("/v1/auth/kubernetes/login"))
 
 	// Check the result of reconciliation to make sure it has the desired state.
 	g.Expect(res.Requeue).To(gomega.BeFalse(), "reconcile did not requeue request as expected")

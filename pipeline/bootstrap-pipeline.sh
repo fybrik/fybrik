@@ -104,7 +104,8 @@ if [[ ${is_kubernetes} == "true" && ${is_kind} == "true" ]]; then
         kubectl apply -f ${repo_root}/pipeline/nfs.yaml -n default
         helm repo add stable https://charts.helm.sh/stable
         ip=$(kubectl get svc -n default nfs-service -o jsonpath='{.spec.clusterIP}')
-        helm upgrade --install nfs-provisioner stable/nfs-client-provisioner --values ${repo_root}/pipeline/nfs-values.yaml --set nfs.server=${ip} --namespace nfs-provisioner --create-namespace
+        helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
+        helm upgrade --install nfs-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner --values ${repo_root}/pipeline/nfs-values.yaml --set nfs.server=${ip} --namespace nfs-provisioner --create-namespace
     fi
 fi
 
@@ -229,14 +230,15 @@ EOH
     try_command "${TMP}/streams_csv_check_script.sh"  40 false 5
     oc apply -f ${repo_root}/pipeline/knative-eventing.yaml
 else
-    kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.26.0/release.yaml
-    kubectl apply -f https://github.com/knative/operator/releases/download/v0.15.4/operator.yaml
-    kubectl apply -f https://github.com/knative/eventing/releases/download/v0.21.0/eventing-crds.yaml
-    kubectl apply -f https://github.com/knative/eventing/releases/download/v0.21.0/eventing-core.yaml
+    kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.32.1/release.yaml
+    set +e
+    kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.2.0/operator.yaml
+    kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.2.0/eventing-crds.yaml
+    kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.2.0/eventing-core.yaml
+    set -e
     try_command "kubectl wait pod -n tekton-pipelines --all --for=condition=Ready --timeout=3m" 2 true 1
     set +e
     kubectl create ns knative-eventing
-    set -e
     cat > ${TMP}/knative-eventing.yaml <<EOH
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeEventing
@@ -246,6 +248,7 @@ metadata:
 EOH
     ls -alrt ${TMP}/
     kubectl apply -f ${TMP}/knative-eventing.yaml
+    set -e
 fi
 
 if [[ ${is_openshift} == "true" ]]; then
@@ -638,11 +641,14 @@ kubectl get pipelinerun --no-headers
 kubectl get pipelinerun --no-headers | grep -e "Failed" -e "Completed"
 EOH
     chmod u+x ${TMP}/streams_csv_check_script.sh
-    try_command "${TMP}/streams_csv_check_script.sh"  60 false 31
+    try_command "${TMP}/streams_csv_check_script.sh"  60 false 40
     echo "debug: pods"
     kubectl describe pods
     echo "debug: events"
     kubectl get events
+    echo "debug: volumes"
+    kubectl describe pvc
+    for i in $(kubectl get po -n nfs-provisioner | cut -d' ' -f1); do kubectl logs -n nfs-provisioner $i --all-containers; done
     echo "debug: taskruns"
     for i in $(kubectl get taskrun --no-headers | grep -v "True" | cut -d' ' -f1); do kubectl logs $(kubectl get po -l tekton.dev/taskRun=$i --no-headers | cut -d' ' -f1) --all-containers --since=0s; done
     set +e

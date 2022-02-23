@@ -49,18 +49,23 @@ type BlueprintReconciler struct {
 	Helmer helm.Interface
 }
 
-// Reconcile receives a Blueprint CRD
-//nolint:dupl
-func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	var err error
+type ExtendedArguments struct {
+	fapp.ModuleArguments     `json:",inline"`
+	*fapp.ApplicationDetails `json:",inline"`
+	Labels                   map[string]string `json:"labels"`
+	UUID                     string            `json:"uuid"`
+}
 
+// Reconcile receives a Blueprint CRD
+func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	blueprint := fapp.Blueprint{}
 	if err := r.Get(ctx, req.NamespacedName, &blueprint); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
-	log := r.Log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Str("blueprint", req.NamespacedName.String()).Logger()
+	log := r.Log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).
+		Str("blueprint", req.NamespacedName.String()).Logger()
 
 	if res, err := r.reconcileFinalizers(&blueprint); err != nil {
 		log.Error().Err(err).Msg("Could not reconcile blueprint " + blueprint.GetName() + " finalizers")
@@ -147,7 +152,9 @@ func getDomainFromImageName(image string) (string, error) {
 	return distributionref.Domain(named), nil
 }
 
-func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolog.Logger, chartSpec fapp.ChartSpec, args map[string]interface{}, blueprint *fapp.Blueprint, releaseName string) (ctrl.Result, error) {
+//nolint:funlen,gocritic,gocyclo
+func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolog.Logger, chartSpec fapp.ChartSpec,
+	args map[string]interface{}, blueprint *fapp.Blueprint, releaseName string) (ctrl.Result, error) {
 	// Get the unique id for the specific fybrikapplication instance.  Used for logging.
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
 	log = log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Str("blueprint", blueprint.GetName()).Logger()
@@ -289,6 +296,7 @@ func (r *BlueprintReconciler) updateModuleState(blueprint *fapp.Blueprint, insta
 	blueprint.Status.ModulesState[instanceName] = state
 }
 
+//nolint:gocyclo
 func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger, blueprint *fapp.Blueprint) (ctrl.Result, error) {
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
 	log = log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Str("blueprint", blueprint.GetName()).Logger()
@@ -309,23 +317,30 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger,
 	}
 	// count the overall number of Helm releases and how many of them are ready
 	numReleases, numReady := 0, 0
-	for instanceName, module := range blueprint.Spec.Modules {
-		// Add debug information to module labels
-		if module.Arguments.Labels == nil {
-			module.Arguments.Labels = map[string]string{}
-		}
-		module.Arguments.Labels[fapp.BlueprintNameLabel] = blueprint.Name
-		module.Arguments.Labels[fapp.BlueprintNamespaceLabel] = blueprint.Namespace
-		module.Arguments.Labels[utils.FybrikAppUUID] = uuid // used for log correlation
+	// Add debug information to module labels
+	if blueprint.Labels == nil {
+		blueprint.Labels = map[string]string{}
+	}
+	blueprint.Labels[fapp.BlueprintNameLabel] = blueprint.Name
+	blueprint.Labels[fapp.BlueprintNamespaceLabel] = blueprint.Namespace
 
+	for instanceName, module := range blueprint.Spec.Modules {
 		// Get arguments by type
+		extendedArguments := ExtendedArguments{
+			ModuleArguments:    module.Arguments,
+			ApplicationDetails: blueprint.Spec.Application,
+			Labels:             blueprint.Labels,
+			UUID:               uuid,
+		}
 		var args map[string]interface{}
-		args, err := utils.StructToMap(module.Arguments)
+		args, err := utils.StructToMap(&extendedArguments)
 		if err != nil {
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
 
-		releaseName := utils.GetReleaseName(blueprint.Labels[fapp.ApplicationNameLabel], blueprint.Labels[fapp.ApplicationNamespaceLabel], instanceName)
+		logging.LogStructure("Arguments", args, log, false, false)
+		releaseName := utils.GetReleaseName(blueprint.Labels[fapp.ApplicationNameLabel],
+			blueprint.Labels[fapp.ApplicationNamespaceLabel], instanceName)
 		log.Trace().Msg("Release name: " + releaseName)
 		numReleases++
 		// check the release status
@@ -403,7 +418,8 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			return e.ObjectOld.GetNamespace() == blueprintNamespace
 		},
 	}
-	numReconciles := environment.GetEnvAsInt(controllers.BlueprintConcurrentReconcilesConfiguration, controllers.DefaultBlueprintConcurrentReconciles)
+	numReconciles := environment.GetEnvAsInt(controllers.BlueprintConcurrentReconcilesConfiguration,
+		controllers.DefaultBlueprintConcurrentReconciles)
 	r.Log.Trace().Str(logging.CONTROLLER, "Blueprint").Msg("Concurrent blueprint reconciles: " + fmt.Sprint(numReconciles))
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -478,10 +494,11 @@ func getErrorMessage(res *unstructured.Unstructured, fieldPath string) string {
 	return labelsImpl.Get(fieldPath)
 }
 
-func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, condition string, uuid string) bool {
+func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, condition, uuid string) bool {
 	selector, err := labels.Parse(condition)
 	if err != nil {
-		r.Log.Error().Err(err).Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Msg("condition " + condition + "failed to parse")
+		r.Log.Error().Err(err).Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).
+			Msg("condition " + condition + "failed to parse")
 		return false
 	}
 	// get selector requirements, 'selectable' property is ignored
@@ -496,7 +513,7 @@ func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, c
 	return true
 }
 
-func (r *BlueprintReconciler) checkReleaseStatus(releaseName string, namespace string, uuid string) (corev1.ConditionStatus, string) {
+func (r *BlueprintReconciler) checkReleaseStatus(releaseName, namespace, uuid string) (corev1.ConditionStatus, string) {
 	log := r.Log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Logger()
 
 	// get all resources for the given helm release in their current state

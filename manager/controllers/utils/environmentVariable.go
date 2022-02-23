@@ -15,7 +15,7 @@ const DefaultControllerNamespace = "fybrik-system"
 
 func GetDefaultModulesNamespace() string {
 	ns := os.Getenv("MODULES_NAMESPACE")
-	if len(ns) == 0 {
+	if ns == "" {
 		ns = DefaultModulesNamespace
 	}
 	return ns
@@ -23,7 +23,7 @@ func GetDefaultModulesNamespace() string {
 
 func GetControllerNamespace() string {
 	controllerNamespace := os.Getenv("CONTROLLER_NAMESPACE")
-	if len(controllerNamespace) == 0 {
+	if controllerNamespace == "" {
 		controllerNamespace = DefaultControllerNamespace
 	}
 	return controllerNamespace
