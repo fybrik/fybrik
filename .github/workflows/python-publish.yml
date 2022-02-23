@@ -11,9 +11,8 @@ name: Upload Python Package
 on:
   push:
     branches:
-      - '*'
-    tags:
-      - '*'
+      - main
+  pull_request:
 
 jobs:
   deploy:
@@ -32,7 +31,7 @@ jobs:
         pip install build
     - name: Build package
       working-directory: pkg/logging/python_logging/
-      run: python -m build
+      run: RELEASE=${{ steps.version.outputs.version }} python -m build
     - name: Publish package
       working-directory: pkg/logging/python_logging/
       uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
