@@ -4,7 +4,7 @@
 package datauser
 
 import (
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"emperror.dev/errors"
@@ -24,7 +24,7 @@ type K8sClient struct {
 
 // GetCurrentNamespace returns the namespace in which the REST api service is deployed - which should be a user namespace
 func GetCurrentNamespace() string {
-	if data, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace"); err == nil {
+	if data, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace"); err == nil {
 		if ns := strings.TrimSpace(string(data)); len(ns) > 0 {
 			return ns
 		}

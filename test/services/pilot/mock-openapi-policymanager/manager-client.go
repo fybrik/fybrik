@@ -45,7 +45,7 @@ func main() {
 		return
 	}
 
-	creds := "http://vault.fybrik-system:8200/v1/kubernetes-secrets/<SECRET-NAME>?namespace=<NAMESPACE>" // #nosec G101 -- This is a false positive
+	creds := "http://vault.fybrik-system:8200/v1/kubernetes-secrets/<SECRET-NAME>?namespace=<NAMESPACE>" // #nosec G101 -- A false positive
 
 	request := &policymanager.GetPolicyDecisionsRequest{
 		Context: taxonomy.PolicyManagerRequestContext{
