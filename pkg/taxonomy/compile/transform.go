@@ -86,17 +86,17 @@ func (t *transformer) oneOfRefsTransform(key string, schema *model.SchemaRef) *m
 	for _, v := range schema.OneOf {
 		// Extract name
 		name := v.Title
-		key = ""
+		k := ""
 		if v.Ref != "" {
 			name = v.RefName()
-			key = name
+			k = name
 		}
 
 		// Add to name options
 		options = append(options, name)
 
 		// Add property
-		schema.Properties[name] = t.transformSchema(key, v)
+		schema.Properties[name] = t.transformSchema(k, v)
 	}
 
 	// Add name enum definition
