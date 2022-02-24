@@ -53,8 +53,7 @@ type PlotterGenerator struct {
 }
 
 // GetCopyDestination creates a Dataset for bucket allocation by implicit copies or ingest.
-func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterface *taxonomy.Interface,
-	account *app.FybrikStorageAccountSpec) (*app.DataStore, error) {
+func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterface *taxonomy.Interface, account *app.FybrikStorageAccountSpec) (*app.DataStore, error) {
 	// provisioned storage for COPY
 	var genBucketName, genObjectKeyName string
 	if item.DataDetails.ResourceMetadata.Name != "" {
