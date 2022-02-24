@@ -4,6 +4,7 @@
 package optimizer
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -13,7 +14,7 @@ import (
 
 /*
 This file implements FlatZincModel: a class to hold a constraint problem, based on the FlatZinc format.
-The class can dump the a constraint program to a file, using the FlatZinc specification.
+The class can dump the constraint program to a file, using the FlatZinc specification.
 The class can also read solver solutions, written using the FlatZinc specification.
 The FlatZinc specification: https://www.minizinc.org/doc-latest/en/fzn-spec.html
 */
@@ -198,6 +199,8 @@ func parseSolutionLine(line string, lineNum uint) (string, []string, error) {
 type CPSolution map[string][]string
 
 // Reading a FlatZinc solutions file and returning all solutions as a slice of CPSolution
+// If there can be no solution to the constraint problem (UNSAT), returns a slice with a single empty solution
+// Otherwise, must return at least one solution, or return an error
 func (fzw *FlatZincModel) ReadSolutions(fileName string) ([]CPSolution, error) {
 	data, err := os.ReadFile(path.Clean(fileName))
 	if err != nil {
@@ -215,11 +218,14 @@ func (fzw *FlatZincModel) ReadSolutions(fileName string) ([]CPSolution, error) {
 		case strings.HasPrefix(line, "%%%"):
 			continue // stat lines are ignored
 		case line == strings.Repeat("=", 10):
-			return res, nil // at least one  solution was found and the whole search space was covered
+			if len(res) == 0 {
+				return nil, errors.New("no solution was found, though solver says it did find solution(s)")
+			}
+			return res, nil // at least one solution was found and the whole search space was covered
 		case line == "=====UNSATISFIABLE=====":
-			return []CPSolution{}, nil // no solution exists; returns an empty slice of solutions
+			return []CPSolution{make(CPSolution)}, nil // no solution exists; returns a single empty solution
 		case strings.HasPrefix(line, "===="):
-			err := fmt.Errorf("no solution found: %s", line) // no solution found (but not UNSAT either)
+			err := fmt.Errorf("no solution found. Solver says %s", line) // no solution found (but not UNSAT either)
 			return nil, err
 		case line == strings.Repeat("-", 10):
 			res = append(res, currSolution) // marks the end of current solution
@@ -233,6 +239,9 @@ func (fzw *FlatZincModel) ReadSolutions(fileName string) ([]CPSolution, error) {
 		}
 	}
 
+	if len(res) == 0 {
+		return nil, errors.New("no solution was found; no solver status was found either")
+	}
 	return res, nil
 }
 
@@ -242,6 +251,9 @@ func (fzw *FlatZincModel) ReadBestSolution(fileName string) (CPSolution, error) 
 	solutions, error := fzw.ReadSolutions(fileName)
 	if error != nil {
 		return nil, error
+	}
+	if len(solutions) < 1 {
+		return nil, errors.New("no solution found")
 	}
 	return solutions[len(solutions)-1], nil
 }

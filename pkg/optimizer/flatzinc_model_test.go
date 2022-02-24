@@ -70,8 +70,19 @@ func TestReadingUNSATResults(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s", err)
 	}
+	if len(res) != 1 || len(res[0]) > 0 {
+		t.Errorf("Expecting a single empty solution")
+	}
+}
+
+func TestReadingBestUNSATResults(t *testing.T) {
+	myReader := NewFlatZincModel()
+	res, err := myReader.ReadBestSolution("testdata/unsat.fzn_solution")
+	if err != nil {
+		t.Errorf("%s", err)
+	}
 	if len(res) > 0 {
-		t.Errorf("Expecting an empty map")
+		t.Errorf("Expecting a single empty solution")
 	}
 }
 
@@ -79,7 +90,7 @@ func TestReadingUnknownResults(t *testing.T) {
 	myReader := NewFlatZincModel()
 	_, err := myReader.ReadSolutions("testdata/unknown.fzn_solution")
 	if err == nil {
-		t.Errorf("Expecting an error")
+		t.Errorf("Expecting an error when result is unknown")
 	}
 }
 
@@ -87,6 +98,6 @@ func TestReadingBadResults(t *testing.T) {
 	myReader := NewFlatZincModel()
 	_, err := myReader.ReadSolutions("testdata/bad.fzn_solution")
 	if err == nil {
-		t.Errorf("Expected an error on this test")
+		t.Errorf("Expected a parse error on an ill-formatted file")
 	}
 }
