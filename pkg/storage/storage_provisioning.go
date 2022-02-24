@@ -25,8 +25,14 @@ import (
 )
 
 const (
-	specLiteral  = "spec"
-	localLiteral = "local"
+	specLiteral         = "spec"
+	localLiteral        = "local"
+	statusLiteral       = "status"
+	bucketKey           = "bucket"
+	secretNameKey       = "secret-name"
+	scecretNamespaceKey = "secret-namespace"
+	endpointKey         = "endpoint"
+	provisionKey        = "provision"
 )
 
 var (
@@ -102,16 +108,16 @@ func getValue(obj map[string]interface{}, path ...string) string {
 
 func equal(required *ProvisionedBucket, existing *unstructured.Unstructured) bool {
 	obj := existing.UnstructuredContent()
-	if required.Name != getValue(obj, specLiteral, localLiteral, "bucket") {
+	if required.Name != getValue(obj, specLiteral, localLiteral, bucketKey) {
 		return false
 	}
-	if required.Endpoint != getValue(obj, specLiteral, localLiteral, "endpoint") {
+	if required.Endpoint != getValue(obj, specLiteral, localLiteral, endpointKey) {
 		return false
 	}
-	if required.SecretRef.Name != getValue(obj, specLiteral, localLiteral, "secret-name") {
+	if required.SecretRef.Name != getValue(obj, specLiteral, localLiteral, secretNameKey) {
 		return false
 	}
-	if required.SecretRef.Namespace != getValue(obj, specLiteral, localLiteral, "secret-namespace") {
+	if required.SecretRef.Namespace != getValue(obj, specLiteral, localLiteral, scecretNamespaceKey) {
 		return false
 	}
 	return true
@@ -131,12 +137,12 @@ func (r *ProvisionImpl) CreateDataset(ref *types.NamespacedName, bucket *Provisi
 		}
 	}
 	values := map[string]string{
-		"type":             "COS",
-		"secret-name":      bucket.SecretRef.Name,
-		"secret-namespace": bucket.SecretRef.Namespace,
-		"endpoint":         bucket.Endpoint,
-		"bucket":           bucket.Name,
-		"provision":        "true"}
+		"type":              "COS",
+		secretNameKey:       bucket.SecretRef.Name,
+		scecretNamespaceKey: bucket.SecretRef.Namespace,
+		endpointKey:         bucket.Endpoint,
+		bucketKey:           bucket.Name,
+		provisionKey:        "true"}
 
 	dataset := newDatasetAsUnstructured(ref.Name, ref.Namespace)
 	dataset.SetLabels(map[string]string{
@@ -177,8 +183,8 @@ func (r *ProvisionImpl) GetDatasetStatus(ref *types.NamespacedName) (*Provisione
 	if err != nil {
 		return nil, err
 	}
-	status := getValue(dataset.Object, "status", "provision", "status")
-	info := getValue(dataset.Object, "status", "provision", "info")
+	status := getValue(dataset.Object, statusLiteral, provisionKey, statusLiteral)
+	info := getValue(dataset.Object, statusLiteral, provisionKey, "info")
 	return &ProvisionedStorageStatus{Provisioned: status == "OK", ErrorMsg: info}, nil
 }
 

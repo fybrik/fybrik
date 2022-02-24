@@ -82,7 +82,6 @@ func (r *razeeClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 			r.log.Error().Err(err).Str(clusterKey, c.Name).Msg("Resource content returned is nil! Skipping cluster")
 			continue
 		}
-		scheme = runtime.NewScheme()
 		cmcm := corev1.ConfigMap{}
 		err = multicluster.Decode(resourceContent.Content, scheme, &cmcm)
 		if err != nil {
