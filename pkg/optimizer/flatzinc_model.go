@@ -11,6 +11,14 @@ import (
 	"strings"
 )
 
+/*
+This file implements FlatZincModel: a class to hold a constraint problem, based on the FlatZinc format.
+The class can dump the a constraint program to a file, using the FlatZinc specification.
+The class can also read solver solutions, written using the FlatZinc specification.
+The FlatZinc specification: https://www.minizinc.org/doc-latest/en/fzn-spec.html
+*/
+
+// Data for a single FlatZinc parameter
 type FlatZincParam struct {
 	NumInstances uint // NumInstances > 1 means an array of params
 	Name         string
@@ -18,7 +26,8 @@ type FlatZincParam struct {
 	Assignment   string
 }
 
-func (fzp FlatZincParam) ParamDeclaration() string {
+// formats a paramater declaraion in FlatZinc format
+func (fzp FlatZincParam) paramDeclaration() string {
 	if fzp.NumInstances == 1 {
 		return fmt.Sprintf("%s: %s = %s;\n", fzp.Type, fzp.Name, fzp.Assignment)
 	}
@@ -27,7 +36,7 @@ func (fzp FlatZincParam) ParamDeclaration() string {
 
 type Annotations []string
 
-func (annots Annotations) AnnotationString() string {
+func (annots Annotations) annotationString() string {
 	annotsStr := strings.Join(annots, " :: ")
 	if len(annotsStr) > 0 {
 		annotsStr = " :: " + annotsStr
@@ -35,6 +44,7 @@ func (annots Annotations) AnnotationString() string {
 	return annotsStr
 }
 
+// Data for a single FlatZinc variable
 type FlatZincVariable struct {
 	NumInstances uint // NumInstances > 1 means an array of vars
 	Name         string
@@ -43,24 +53,28 @@ type FlatZincVariable struct {
 	Annotations
 }
 
-func (fzv FlatZincVariable) VarDeclaration() string {
+// formats a variable declaraion in FlatZinc format
+func (fzv FlatZincVariable) varDeclaration() string {
 	if fzv.NumInstances == 1 {
-		return fmt.Sprintf("var %s: %s%s;\n", fzv.Type, fzv.Name, fzv.AnnotationString())
+		return fmt.Sprintf("var %s: %s%s;\n", fzv.Type, fzv.Name, fzv.annotationString())
 	}
-	return fmt.Sprintf("array [1..%d] of var %s: %s%s;\n", fzv.NumInstances, fzv.Type, fzv.Name, fzv.AnnotationString())
+	return fmt.Sprintf("array [1..%d] of var %s: %s%s;\n", fzv.NumInstances, fzv.Type, fzv.Name, fzv.annotationString())
 }
 
+// Data for a single FlatZinc constraint
 type FlatZincConstraint struct {
 	Identifier  string
 	Expressions []string
 	Annotations
 }
 
-func (cnstr FlatZincConstraint) ConstraintStatement() string {
+// formats a constraint statement in FlatZinc format
+func (cnstr FlatZincConstraint) constraintStatement() string {
 	exprs := strings.Join(cnstr.Expressions, ", ")
-	return fmt.Sprintf("constraint %s(%s)%s;\n", cnstr.Identifier, exprs, cnstr.AnnotationString())
+	return fmt.Sprintf("constraint %s(%s)%s;\n", cnstr.Identifier, exprs, cnstr.annotationString())
 }
 
+// FlatZinc solve goal must be one of three types: satisfy, minimize, maximize
 type SolveGoal int64
 
 const (
@@ -81,16 +95,19 @@ func (s SolveGoal) String() string {
 	return "unknown"
 }
 
+// Data for a FlatZinc-model solve item
 type FlatZincSolveItem struct {
 	goal SolveGoal
 	expr string
 	Annotations
 }
 
-func (slv FlatZincSolveItem) SolveItemStatement() string {
-	return fmt.Sprintf("solve%s %s %s;\n", slv.AnnotationString(), slv.goal, slv.expr)
+// formats a solve item in FlatZinc format
+func (slv FlatZincSolveItem) solveItemStatement() string {
+	return fmt.Sprintf("solve%s %s %s;\n", slv.annotationString(), slv.goal, slv.expr)
 }
 
+// The main class for holding a FlatZinc constraint problem
 type FlatZincModel struct {
 	ParamMap    map[string]FlatZincParam
 	VarMap      map[string]FlatZincVariable
@@ -122,6 +139,7 @@ func (fzw *FlatZincModel) SetSolveTarget(goal SolveGoal, expr string, annotation
 	fzw.SolveTarget = FlatZincSolveItem{goal, expr, annotations}
 }
 
+// dumps a FlatZinc model to a file, using the FlatZinc syntax
 func (fzw *FlatZincModel) Dump(fileName string) error {
 	file, err := os.Create(path.Clean(fileName))
 	if err != nil {
@@ -135,26 +153,27 @@ func (fzw *FlatZincModel) Dump(fileName string) error {
 
 	fileContent := ""
 	for _, fzparam := range fzw.ParamMap {
-		fileContent += fzparam.ParamDeclaration()
+		fileContent += fzparam.paramDeclaration()
 	}
 
 	fileContent += "\n"
 	for _, fzvar := range fzw.VarMap {
-		fileContent += fzvar.VarDeclaration()
+		fileContent += fzvar.varDeclaration()
 	}
 
 	fileContent += "\n"
 	for _, cnstr := range fzw.Constraints {
-		fileContent += cnstr.ConstraintStatement()
+		fileContent += cnstr.constraintStatement()
 	}
 
-	fileContent += "\n" + fzw.SolveTarget.SolveItemStatement()
+	fileContent += "\n" + fzw.SolveTarget.solveItemStatement()
 	if _, err := file.WriteString(fileContent); err != nil {
 		return err
 	}
 	return nil
 }
 
+// Parses a single variable assignment line in a FlatZinc solution file. Returns the variable name and its value(s)
 func parseSolutionLine(line string, lineNum uint) (string, []string, error) {
 	err := fmt.Errorf("parse error on line %d: %s", lineNum, line)
 	lineParts := strings.Split(line, "=")
@@ -175,15 +194,19 @@ func parseSolutionLine(line string, lineNum uint) (string, []string, error) {
 	return varName, values, nil
 }
 
-func (fzw *FlatZincModel) ReadSolutions(fileName string) (map[string][]string, error) {
+// Represents a solution to the constraints problem - a map from variable names to their value(s) in the solution
+type CPSolution map[string][]string
+
+// Reading a FlatZinc solutions file and returning all solutions as a slice of CPSolution
+func (fzw *FlatZincModel) ReadSolutions(fileName string) ([]CPSolution, error) {
 	data, err := os.ReadFile(path.Clean(fileName))
 	if err != nil {
 		return nil, err
 	}
 	strContent := string(data)
 	lines := strings.Split(strContent, "\n")
-	newSolution := false
-	res := make(map[string][]string)
+	res := []CPSolution{}
+	currSolution := make(CPSolution)
 	for lineNum, line := range lines {
 		line = strings.Join(strings.Fields(line), "") // remove all whitespaces
 		switch {
@@ -192,26 +215,33 @@ func (fzw *FlatZincModel) ReadSolutions(fileName string) (map[string][]string, e
 		case strings.HasPrefix(line, "%%%"):
 			continue // stat lines are ignored
 		case line == strings.Repeat("=", 10):
-			return res, nil // a solution was found and the whole search space was covered
+			return res, nil // at least one  solution was found and the whole search space was covered
+		case line == "=====UNSATISFIABLE=====":
+			return []CPSolution{}, nil // no solution exists; returns an empty slice of solutions
 		case strings.HasPrefix(line, "===="):
-			err := fmt.Errorf("solution not found: %s", line)
+			err := fmt.Errorf("no solution found: %s", line) // no solution found (but not UNSAT either)
 			return nil, err
 		case line == strings.Repeat("-", 10):
-			newSolution = true // marks the end of current solution (and possible the beginning of a new one)
+			res = append(res, currSolution) // marks the end of current solution
+			currSolution = make(CPSolution) // (and possible the beginning of a new one)
 		default: // this should be a variable assignment line
-			if newSolution {
-				for k := range res {
-					delete(res, k)
-				}
-				newSolution = false
-			}
 			varName, values, err := parseSolutionLine(line, uint(lineNum))
 			if err != nil {
 				return nil, err
 			}
-			res[varName] = values
+			currSolution[varName] = values
 		}
 	}
 
 	return res, nil
+}
+
+// Reading a FlatZinc solutions file and returning the best solution
+// When a minimize/maximize goal is defined, best solution should be the last solution
+func (fzw *FlatZincModel) ReadBestSolution(fileName string) (CPSolution, error) {
+	solutions, error := fzw.ReadSolutions(fileName)
+	if error != nil {
+		return nil, error
+	}
+	return solutions[len(solutions)-1], nil
 }
