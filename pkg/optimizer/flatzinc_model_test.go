@@ -4,7 +4,7 @@
 package optimizer
 
 import (
-	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -24,16 +24,26 @@ func TestWriteModel(t *testing.T) {
 
 func TestReadingResults(t *testing.T) {
 	myReader := NewFlatZincModel()
-	res, err := myReader.ReadSolutions("test1.fzn_solution")
+	res, err := myReader.ReadSolutions("testdata/test1.fzn_solution")
 	if err != nil {
 		t.Errorf("%s", err)
 	}
-	fmt.Println(res)
+	expected := map[string][]string{
+		"Beamtime":   {"21"},
+		"K":          {"7"},
+		"ladder_num": {"14", "6", "5", "13", "7", "8", "11", "9", "10", "1", "2", "3", "4", "12"},
+		"x": {"23", "15", "18", "11", "6", "15", "18", "11", "6", "15", "18", "5", "16", "15", "18", "5", "16", "1", "18", "5", "16", "1",
+			"18", "11", "16", "5", "18", "11", "16", "5", "1", "11", "16", "5", "1", "18", "6", "5", "1", "18", "6", "5", "1", "20", "6", "12", "1",
+			"20", "6", "12", "1", "25", "16", "12", "1", "25"},
+	}
+	if !reflect.DeepEqual(res, expected) {
+		t.Errorf("Unexpected result.\nExpected: %v\nActual: %v", expected, res)
+	}
 }
 
 func TestReadingUNSATResults(t *testing.T) {
 	myReader := NewFlatZincModel()
-	_, err := myReader.ReadSolutions("unsat.fzn_solution")
+	_, err := myReader.ReadSolutions("testdata/unsat.fzn_solution")
 	if err == nil {
 		t.Errorf("Expected an error on this test")
 	}
@@ -41,7 +51,7 @@ func TestReadingUNSATResults(t *testing.T) {
 
 func TestReadingBadResults(t *testing.T) {
 	myReader := NewFlatZincModel()
-	_, err := myReader.ReadSolutions("bad.fzn_solution")
+	_, err := myReader.ReadSolutions("testdata/bad.fzn_solution")
 	if err == nil {
 		t.Errorf("Expected an error on this test")
 	}
