@@ -21,11 +21,14 @@ import (
 //	   Ex: Data plane component crashed and cannot handle requests
 // fatal (zerolog.FatalLevel, 4) - Errors that prevent the component from successfully completing a particular task
 //	   Avoid using fatal in the control lane. It causes an Error condition to the pod, which restarts the pod.
-// error (zerolog.ErrorLevel, 3) - Errors that are not fatal nor panic, but that the user / request initiator is made aware of (typical production setting for stable solution)
+// error (zerolog.ErrorLevel, 3) - Errors that are not fatal nor panic, but that the user / request initiator is made
+// aware of (typical production setting for stable solution)
 //	   Ex: Dataset requested in fybrikapplication.spec is not allowed to be used
 // 	   Ex: Query to Arrow/Flight server used to read data returns an error because of incorrect dataset ID
-// warn (zerolog.WarnLevel, 2) - Errors not shared with the user / request initiator, typically from which the component recovers on its own
-// info (zerolog.InfoLevel, 1) - High level health information that makes it clear the overall status, but without much detail (highest level used in production)
+// warn (zerolog.WarnLevel, 2) - Errors not shared with the user / request initiator, typically from which the component
+// recovers on its own
+// info (zerolog.InfoLevel, 1) - High level health information that makes it clear the overall status, but without
+// much detail (highest level used in production)
 // debug (zerolog.DebugLevel, 0) - Additional information needed to help identify problems (typically used during testing)
 // trace (zerolog.TraceLevel, -1) - For tracing step by step flow of control (typically used during development)
 
@@ -33,10 +36,11 @@ import (
 const (
 	CONTROLLER string = "Controller" // A control plane controller
 	MODULE     string = "Module"     // A fybrikmodule that describes a deployable or pre-deployed service
-	CONNECTOR  string = "Connector"  // A component that connects an external system to the fybrik control plane - data governance policy manager, data catalog, credential manager
-	SERVICE    string = "Service"    // A data plane service - the service itself, not the module that describes it
-	SETUP      string = "Setup"      // Used by main function that initializes the control plane
-	WEBHOOK    string = "Webhook"
+	CONNECTOR  string = "Connector"  // A component that connects an external system to the fybrik control plane - data governance,
+	// policy manager, data catalog, credential manager
+	SERVICE string = "Service" // A data plane service - the service itself, not the module that describes it
+	SETUP   string = "Setup"   // Used by main function that initializes the control plane
+	WEBHOOK string = "Webhook"
 )
 
 // Action Types
@@ -49,7 +53,8 @@ const (
 // Log Entry Params - those listed in the constants below and
 // FybrikApplicationUUID defined in fybrik.io/manager/utils/utils.go
 // caller (file and line), error, message, timestamp - Provided by the logging mechanism
-// Cluster will not be included since not all components know how to determine on which cluster they run.  Instead it will be assumed that the logging agents will add this information as they gather the logs.
+// Cluster will not be included since not all components know how to determine on which cluster they run.
+// Instead it will be assumed that the logging agents will add this information as they gather the logs.
 const (
 	ACTION       string = "Action"       // optional
 	DATASETID    string = "DataSetID"    // optional
@@ -87,7 +92,7 @@ func PrettyLogging() bool {
 
 // LogInit insures that all log entries have a cluster, timestamp, caller type, file and line from which it was called.
 // FybrikAppUuid is mandatory as well, but is not known when the logger is initialized.
-func LogInit(callerType string, callerName string) zerolog.Logger {
+func LogInit(callerType, callerName string) zerolog.Logger {
 	// Get the logging verbosity level from the environment variable
 	// It should be one of these: https://github.com/rs/zerolog#leveled-logging
 	verbosity := GetLoggingVerbosity()

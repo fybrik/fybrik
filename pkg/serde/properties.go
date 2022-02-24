@@ -15,8 +15,8 @@ type Properties struct {
 
 func (in *Properties) DeepCopyInto(out *Properties) {
 	// TODO: missing type assertion
-	copy, _ := deepcopy.Copy(in).(*Properties)
-	*out = *copy
+	cp, _ := deepcopy.Copy(in).(*Properties)
+	*out = *cp
 }
 
 func (in *Properties) DeepCopy() *Properties {

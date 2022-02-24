@@ -60,7 +60,8 @@ type DecisionPerCapability struct {
 	Decision   Decision            `json:"decision"`
 }
 
-// A list of decisions, e.g. [{"capability": "read", "decision": {"deploy": "True"}}, {"capability": "write", "decision": {"deploy": "False"}}]
+// A list of decisions,
+// e.g. [{"capability": "read", "decision": {"deploy": "True"}}, {"capability": "write", "decision": {"deploy": "False"}}]
 type RuleDecisionList []DecisionPerCapability
 
 // Result of query evaluation
