@@ -1,5 +1,5 @@
 {
-  "description": "FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog",
+  "description": "FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.",
   "type": "object",
   "title": "fybrik_application.json",
   "required": [
@@ -21,23 +21,16 @@
   },
   "definitions": {
     "DataContext": {
-<<<<<<< HEAD
       "description": "DataContext indicates data set being processed by the workload and includes information about the data format and technologies used to access the data.",
-=======
-      "description": "DataContext indicates data set chosen by the Data Scientist to be used by his application, and includes information about the data format and technologies used by the application to access the data.",
->>>>>>> Using an updated version of json-schema-generator. Change InterfaceDetails with taxonomy.Interface. Add a test for fybrikModule schema.
       "type": "object",
       "required": [
         "requirements"
       ],
       "properties": {
-<<<<<<< HEAD
         "flow": {
           "$ref": "taxonomy.json#/definitions/DataFlow",
           "description": "Flows indicates what is being done with the particular dataset - ex: read, write, copy (ingest), delete This is optional for the purpose of backward compatibility. If nothing is provided, read is assumed."
         },
-=======
->>>>>>> Using an updated version of json-schema-generator. Change InterfaceDetails with taxonomy.Interface. Add a test for fybrikModule schema.
         "requirements": {
           "$ref": "#/definitions/DataRequirements",
           "description": "Requirements from the system"
