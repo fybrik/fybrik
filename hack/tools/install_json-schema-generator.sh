@@ -19,7 +19,7 @@ header_text "Checking for bin/json-schema-generator"
 header_text "Installing bin/json-schema-generator"
 mkdir -p ./bin
 
-TARGET_VERSION=0.1.1
+TARGET_VERSION=0.2.1
 
 
 curl -sSLo json-schema-generator.tar.gz "https://github.com/fybrik/json-schema-generator/releases/download/v${TARGET_VERSION}/json-schema-generator_${TARGET_VERSION}_${os}_${arch}.tar.gz" 

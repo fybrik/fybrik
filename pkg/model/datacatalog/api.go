@@ -5,7 +5,6 @@ package datacatalog
 
 import "fybrik.io/fybrik/pkg/model/taxonomy"
 
-// +fybrik:validation:object
 type GetAssetRequest struct {
 	// Asset ID of the asset to be queried in the catalog
 	AssetID taxonomy.AssetID `json:"assetID"`
@@ -13,7 +12,6 @@ type GetAssetRequest struct {
 	OperationType OperationType `json:"operationType"`
 }
 
-// +fybrik:validation:object
 type GetAssetResponse struct {
 	// Source asset metadata like asset name, owner, geography, etc
 	ResourceMetadata ResourceMetadata `json:"resourceMetadata"`

@@ -1,36 +1,50 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "$id": "fybrik_application.json",
-    "title": "FybrikApplication taxonomy",
-    "type": "object",
-    "description": "Values contributed to by Fybrik applications.",
-    "properties": {
-        "spec": {
-            "type": "object",
-            "properties": {
-                "appInfo": {"$ref": "taxonomy.json#/definitions/AppInfo"},
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "flow": {
-                                "type": "string"
-                            },
-                            "requirements": {
-                                "type": "object",
-                                "properties": {
-                                    "interface": { "$ref": "taxonomy.json#/definitions/Interface"}
-                                },
-                                "required": ["interface"]
-                            }
-                        },
-                        "required": ["requirements"]
-                    }
-                }
-            },
-            "required": ["appInfo", "data"]
-        }
+  "description": "FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application. Read flow - if selector is populated, fybrik builds a data plane for reading the specified data sets Ingest flow - if no selector, and data/copy/required is true then the data specified is copied into a bucket allocated by fybrik and is cataloged in the data catalog",
+  "type": "object",
+  "title": "fybrik_application.json",
+  "required": [
+    "appInfo",
+    "data"
+  ],
+  "properties": {
+    "appInfo": {
+      "$ref": "taxonomy.json#/definitions/AppInfo",
+      "description": "AppInfo contains information describing the reasons for the processing that will be done by the application."
     },
-    "required": ["spec"]
-} 
+    "data": {
+      "description": "Data contains the identifiers of the data to be used by the Data Scientist's application, and the protocol used to access it and the format expected.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/DataContext"
+      }
+    }
+  },
+  "definitions": {
+    "DataContext": {
+      "description": "DataContext indicates data set chosen by the Data Scientist to be used by his application, and includes information about the data format and technologies used by the application to access the data.",
+      "type": "object",
+      "required": [
+        "requirements"
+      ],
+      "properties": {
+        "requirements": {
+          "$ref": "#/definitions/DataRequirements",
+          "description": "Requirements from the system"
+        }
+      }
+    },
+    "DataRequirements": {
+      "description": "DataRequirements structure contains a list of requirements (interface, need to catalog the dataset, etc.)",
+      "type": "object",
+      "required": [
+        "interface"
+      ],
+      "properties": {
+        "interface": {
+          "$ref": "taxonomy.json#/definitions/Interface",
+          "description": "Interface indicates the protocol and format expected by the data user"
+        }
+      }
+    }
+  }
+}

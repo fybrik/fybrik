@@ -41,7 +41,7 @@ const Transform = "transform"
 // Node represents an access point to data (as a physical source/sink, or a virtual endpoint)
 // A virtual endpoint is activated by the workload for read/write actions.
 type Node struct {
-	Connection *app.InterfaceDetails
+	Connection *taxonomy.Interface
 	Virtual    bool
 }
 
@@ -78,7 +78,7 @@ func (p *PlotterGenerator) FindPaths(item *DataInfo, appContext *app.FybrikAppli
 	// construct two nodes of an edge:
 	// this node appears in the asset metadata
 	NodeFromAssetMetadata := Node{
-		Connection: &app.InterfaceDetails{
+		Connection: &taxonomy.Interface{
 			Protocol:   item.DataDetails.Details.Connection.Name,
 			DataFormat: item.DataDetails.Details.DataFormat,
 		},
@@ -323,7 +323,7 @@ func supportsGovernanceAction(edge *Edge, action taxonomy.Action) bool {
 	return false // Action not supported by module
 }
 
-func match(source, sink *app.InterfaceDetails) bool {
+func match(source *taxonomy.Interface, sink *taxonomy.Interface) bool {
 	if source == nil || sink == nil {
 		return false
 	}
