@@ -144,11 +144,11 @@ func (fzw *FlatZincModel) SetSolveTarget(goal SolveGoal, expr string, annotation
 func (fzw *FlatZincModel) Dump(fileName string) error {
 	file, err := os.Create(path.Clean(fileName))
 	if err != nil {
-		return fmt.Errorf("failed opening file %s for writing", fileName)
+		return fmt.Errorf("failed opening file %s for writing: %w", fileName, err)
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
-			log.Printf("Error closing file: %s\n", err)
+			log.Printf("Error closing file %s: %s\n", fileName, err)
 		}
 	}()
 
@@ -204,7 +204,7 @@ type CPSolution map[string][]string
 func (fzw *FlatZincModel) ReadSolutions(fileName string) ([]CPSolution, error) {
 	data, err := os.ReadFile(path.Clean(fileName))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed opening file %s for reading: %w", fileName, err)
 	}
 	strContent := string(data)
 	lines := strings.Split(strContent, "\n")
