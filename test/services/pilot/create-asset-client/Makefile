@@ -6,9 +6,9 @@ include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/Makefile.env
 
 docker-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o create-asset-client
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o create-asset-client-mock
 	docker build . -t $(IMG)
-	rm create-asset-client
+	rm create-asset-client-mock
 
 .PHONY: build
 build:
@@ -16,14 +16,14 @@ build:
 
 .PHONY: run
 run:
-	nohup ./create-asset-client > output-create-asset-client.log &  2>&1 && sleep 10
+	nohup ./create-asset-client-mock > output-create-asset-client-mock.log &  2>&1 && sleep 10
 
 .PHONY: terminate
 terminate:
 
 .PHONY: clean
 clean:
-	rm -f create-asset-client && rm -f output-create-asset-client.log
+	rm -f create-asset-client-mock && rm -f output-create-asset-client-mock.log
 
 .PHONY: test
 test:
