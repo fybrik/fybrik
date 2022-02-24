@@ -16,8 +16,8 @@ spec:
     - capability: copy
       supportedInterfaces:
       - source:
-          protocol: kafka
-          dataformat: csv
+          protocol: invalid
+          dataformat: csv11
       actions:
       - name: RedactAction
         columns:
