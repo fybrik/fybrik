@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"emperror.dev/errors"
+	"fybrik.io/fybrik/pkg/vault"
 	"github.com/rs/zerolog"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -44,7 +45,6 @@ import (
 	local "fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/storage"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
-	"fybrik.io/fybrik/pkg/vault"
 )
 
 // FybrikApplicationReconciler reconciles a FybrikApplication object
@@ -463,7 +463,11 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 	log := appContext.Log.With().Str(logging.DATASETID, req.Context.DataSetID).Logger()
 	var credentialPath string
 	if input.Spec.SecretRef != "" {
-		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+		if !utils.IsVaultEnabled() {
+			log.Error().Str("SecretRef", input.Spec.SecretRef).Msg("SecretRef defined [%s], but vault is disabled")
+		} else {
+			credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+		}
 	}
 	var err error
 	var response *datacatalog.GetAssetResponse

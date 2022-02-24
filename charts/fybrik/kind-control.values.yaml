@@ -27,6 +27,7 @@ cluster:
 # Configuration when deploying to a coordinator cluster.
 coordinator:
   vault:
+    enabled: true
     # vault service in local setup is exposed via nodeport
     address: http://control-control-plane:31752
 

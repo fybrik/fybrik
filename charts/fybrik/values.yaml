@@ -79,7 +79,11 @@ coordinator:
 
   # Configure the vault instance to be used by the coordinator manager
   vault:
-    # Set to the Vault address. 
+    # WARNING: it's an advanced feature, set it to "false" if all your modules and connectors do not require getting
+    # credentials from Fybrik.
+    # If it is "false", you can remove all other entries below.
+    enabled: true
+    # Set to the Vault address.
     address: "http://vault.{{ .Release.Namespace }}:8200"
     # Login method to Vault
     login:
