@@ -74,7 +74,11 @@ func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyMana
 
 	var creds string
 	if appContext.Application.Spec.SecretRef != "" {
-		creds = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(appContext.Application.Namespace, appContext.Application.Spec.SecretRef)
+		if !utils.IsVaultEnabled() {
+			appContext.Log.Error().Str("SecretRef", appContext.Application.Spec.SecretRef).Msg("SecretRef defined [%s], but vault is disabled")
+		} else {
+			creds = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(appContext.Application.Namespace, appContext.Application.Spec.SecretRef)
+		}
 	}
 
 	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)
