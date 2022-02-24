@@ -21,9 +21,16 @@ jobs:
         python -m pip install --upgrade pip
         pip install build
     - name: Build package
-      run: RELEASE=${{ steps.version.outputs.version }} python -m build ./pkg/logging/python_logging --outdir ./dist
+      run: |
+        version="${GITHUB_REF#refs/tags/v}"
+        if  [[ $version == refs/* ]] ;
+        then
+          RELEASE="0.0.0" python -m build ./pkg/logging/python_logging --outdir ./dist
+        else
+          RELEASE=$version python -m build ./pkg/logging/python_logging --outdir ./dist
+        fi
     - name: Publish package
-      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+      uses: pypa/gh-action-pypi-publish@release/v1
       with:
         user: __token__
         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
