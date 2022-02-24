@@ -27,10 +27,6 @@
         "requirements"
       ],
       "properties": {
-        "flow": {
-          "$ref": "taxonomy.json#/definitions/DataFlow",
-          "description": "Flows indicates what is being done with the particular dataset - ex: read, write, copy (ingest), delete This is optional for the purpose of backward compatibility. If nothing is provided, read is assumed."
-        },
         "requirements": {
           "$ref": "#/definitions/DataRequirements",
           "description": "Requirements from the system"
