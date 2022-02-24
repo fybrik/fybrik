@@ -58,6 +58,7 @@ jobs:
       run: make install-tools
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     - name: install json-schema-generator
       run: ./hack/tools/install_json-schema-generator.sh
 =======
@@ -66,6 +67,8 @@ jobs:
     - name: install json-schema-generator
       run: ./hack/tools/install_json-schema-generator.sh
 >>>>>>> Update build workflow.
+=======
+>>>>>>> Update schema.
     - name: Test
       run: make test
 
