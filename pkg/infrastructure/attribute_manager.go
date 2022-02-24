@@ -62,7 +62,7 @@ func readInfrastructure() (infraattributes.Infrastructure, error) {
 }
 
 func validateStructure(bytes []byte, taxonomySchema string) error {
-	allErrs, err := validate.TaxonomyCheck(bytes, ValidationPath)
+	allErrs, err := validate.TaxonomyCheck(bytes, taxonomySchema)
 	if err != nil {
 		return err
 	}
