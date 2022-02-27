@@ -19,7 +19,7 @@ This REST API writes data asset information to the data catalog configured in fy
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
-**X-Request-Datacatalog-Write-Cred**|**String**|  | [default to null]
+**X-Request-Datacatalog-Write-Cred**|**String**| This header carries credential information related to accessing the relevant destination catalog. | [default to null]
 **CreateAssetRequest**|**CreateAssetRequest**| Write Asset Request |
 
 ### Return type
@@ -51,7 +51,7 @@ This REST API gets data asset information from the data catalog configured in fy
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
-**X-Request-Datacatalog-Cred**|**String**|  | [default to null]
+**X-Request-Datacatalog-Cred**|**String**| This header carries credential information related to relevant catalog from which the asset information needs to be retrieved. | [default to null]
 **GetAssetRequest**|**GetAssetRequest**| Data Catalog Request Object. |
 
 ### Return type

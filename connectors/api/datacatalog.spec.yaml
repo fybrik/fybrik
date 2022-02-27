@@ -14,6 +14,7 @@ paths:
         parameters:
           - in: header
             name: X-Request-Datacatalog-Cred
+            description: This header carries credential information related to relevant catalog from which the asset information needs to be retrieved.
             schema:
               type: string
             required: true
@@ -42,6 +43,7 @@ paths:
         parameters:
           - in: header
             name: X-Request-Datacatalog-Write-Cred
+            description: This header carries credential information related to accessing the relevant destination catalog.
             schema:
               type: string
             required: true

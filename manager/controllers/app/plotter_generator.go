@@ -131,9 +131,9 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 		Address:    utils.GetVaultAddress(),
 	}
 	sourceDataStore := &app.DataStore{
-		Connection: item.DataDetails.Details.Connection,
+		Connection: item.DataDetails.ResourceDetails.Connection,
 		Vault:      vaultMap,
-		Format:     item.DataDetails.Details.DataFormat,
+		Format:     item.DataDetails.ResourceDetails.DataFormat,
 	}
 
 	assets[item.Context.DataSetID] = app.AssetDetails{

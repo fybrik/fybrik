@@ -40,4 +40,4 @@ generate-connectors-docs:
 .PHONY: run
 run: generate
 	@echo "\nServing on http://127.0.0.1:8000/"
-	mkdocs serve --quiet
+	python3 -m mkdocs serve --quiet
