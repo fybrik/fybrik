@@ -5,7 +5,7 @@ package datauser
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"testing"
@@ -46,7 +46,7 @@ func TestEnvironmentAPIs(t *testing.T) {
 	// Check that the results are what we expected
 	// Convert result from json to go struct
 	resultObj := EnvironmentInfo{}
-	respData, err := ioutil.ReadAll(resp.Body)
+	respData, err := io.ReadAll(resp.Body)
 	assert.Nil(t, err)
 	respString := string(respData)
 

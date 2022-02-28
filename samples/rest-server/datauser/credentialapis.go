@@ -66,6 +66,7 @@ func GetCredentials(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteCredentials deletes the secret
+//nolint:dupl
 func DeleteCredentials(w http.ResponseWriter, r *http.Request) {
 	log.Println("In DeleteCredentials")
 	if k8sClient == nil {
