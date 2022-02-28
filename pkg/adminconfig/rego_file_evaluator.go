@@ -5,22 +5,15 @@ package adminconfig
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/yaml"
 
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/logging"
-	"fybrik.io/fybrik/pkg/model/adminrules"
-	"fybrik.io/fybrik/pkg/taxonomy/validate"
 )
-
-const ValidationPath string = "/tmp/taxonomy/adminrules.json#/definitions/EvaluationOutputStructure"
 
 // RegoPolicyEvaluator implements EvaluatorInterface
 type RegoPolicyEvaluator struct {
@@ -56,7 +49,7 @@ func (r *RegoPolicyEvaluator) Evaluate(in *EvaluatorInput) (EvaluatorOutput, err
 		PolicySetID:     in.Workload.PolicySetID,
 		UUID:            in.Workload.UUID,
 		ConfigDecisions: DecisionPerCapabilityMap{},
-		Policies:        []adminrules.DecisionPolicy{},
+		Policies:        []DecisionPolicy{},
 	}
 	err = r.getOPADecisions(in, rs, &out)
 	return out, err
@@ -84,14 +77,11 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 	}
 	for _, result := range rs {
 		for _, expr := range result.Expressions {
-			if err := validateStructure(expr.Value, ValidationPath, in.Workload.UUID); err != nil {
-				return err
-			}
 			bytes, err := yaml.Marshal(expr.Value)
 			if err != nil {
 				return err
 			}
-			evalStruct := adminrules.EvaluationOutputStructure{}
+			evalStruct := EvaluationOutputStructure{}
 			if err = yaml.Unmarshal(bytes, &evalStruct); err != nil {
 				return errors.Wrap(err, "Unexpected OPA response structure")
 			}
@@ -104,7 +94,7 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 				}
 				// apply defaults for undefined fields
 				if newDecision.Deploy == "" {
-					newDecision.Deploy = adminrules.StatusUnknown
+					newDecision.Deploy = StatusUnknown
 				}
 				// a single decision should be made for a capability
 				decision, exists := out.ConfigDecisions[capability]
@@ -131,13 +121,13 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 // deploy: true/false take precedence over undefined, true and false result in a conflict.
 // restrictions: new pairs <key, value> are added, if both exist - compatibility is checked.
 // policy: concatenation of IDs and descriptions.
-func (r *RegoPolicyEvaluator) merge(newDecision, oldDecision adminrules.Decision) (bool, adminrules.Decision) {
-	mergedDecision := adminrules.Decision{}
+func (r *RegoPolicyEvaluator) merge(newDecision, oldDecision Decision) (bool, Decision) {
+	mergedDecision := Decision{}
 	// merge deployment decisions
 	deploy := oldDecision.Deploy
-	if deploy == adminrules.StatusUnknown {
+	if deploy == StatusUnknown {
 		deploy = newDecision.Deploy
-	} else if newDecision.Deploy != adminrules.StatusUnknown {
+	} else if newDecision.Deploy != StatusUnknown {
 		if newDecision.Deploy != deploy {
 			return false, mergedDecision
 		}
@@ -152,24 +142,6 @@ func (r *RegoPolicyEvaluator) merge(newDecision, oldDecision adminrules.Decision
 	mergedDecision.DeploymentRestrictions.StorageAccounts = append(mergedDecision.DeploymentRestrictions.StorageAccounts,
 		newDecision.DeploymentRestrictions.StorageAccounts...)
 	// policies are appended to the output, no need to merge
-	mergedDecision.Policy = adminrules.DecisionPolicy{}
+	mergedDecision.Policy = DecisionPolicy{}
 	return true, mergedDecision
-}
-
-func validateStructure(obj interface{}, taxonomySchema, uuid string) error {
-	// validate against taxonomy
-	bytes, err := json.Marshal(obj)
-	if err != nil {
-		return err
-	}
-	allErrs, err := validate.TaxonomyCheck(bytes, taxonomySchema)
-	if err != nil {
-		return err
-	}
-	if len(allErrs) != 0 {
-		return apierrors.NewInvalid(
-			schema.GroupKind{Group: "app.fybrik.io", Kind: "ConfigurationPolicies-ExpressionValue"},
-			uuid, allErrs)
-	}
-	return nil
 }
