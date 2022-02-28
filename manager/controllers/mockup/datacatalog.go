@@ -65,10 +65,10 @@ func NewTestCatalog() *DataCatalogDummy {
 	var csvFormat taxonomy.DataFormat = "csv"
 	var parquetFormat taxonomy.DataFormat = "parquet"
 	var jsonFormat taxonomy.DataFormat = "json"
-	var dummyResourceName = "xxx"
-	var dummyCredentials = "dummy"
-	var kafkaDeserializer = "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
-	var sslTruststore = "xyz123"
+	dummyResourceName := "xxx"
+	dummyCredentials := "dummy"
+	kafkaDeserializer := "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
+	sslTruststore := "xyz123"
 
 	s3Connection := taxonomy.Connection{
 		Name: app.S3,

@@ -87,12 +87,11 @@ func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
 }
 
 func logEnvVariable(log zerolog.Logger, key string) {
-	var envVarLiteral = "Env variable "
 	value, found := os.LookupEnv(key)
 	if found {
-		log.Info().Msg(envVarLiteral + key + " set to \"" + value + "\"")
+		log.Info().Msgf("%s set to \"%s\"", key, value)
 	} else {
-		log.Info().Msg(envVarLiteral + key + " not set")
+		log.Info().Msgf("%s is undefined", key)
 	}
 }
 

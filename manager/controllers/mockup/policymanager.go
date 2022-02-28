@@ -45,8 +45,8 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 	log.Printf("Received OpenAPI request in mockup GetPoliciesDecisions: ")
 	log.Printf("ProcessingGeography: %s", input.Action.ProcessingLocation)
 	log.Printf("Destination: " + input.Action.Destination)
-	var nameKey = "name"
-	var theshireLiteral = "theshire"
+	nameKey := "name"
+	theshireLiteral := "theshire"
 
 	datasetID := string(input.Resource.ID)
 	log.Printf("   DataSetID: " + datasetID)

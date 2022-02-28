@@ -331,7 +331,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	blueprintsMap := r.getBlueprintsMap(plotter)
 
 	var errorCollection []error
-	var noRemoteBlueprintWarnMsg = "Could not yet find remote blueprint"
+	noRemoteBlueprintWarnMsg := "Could not yet find remote blueprint"
 	for cluster := range blueprintsMap {
 		blueprintSpec := blueprintsMap[cluster]
 		log.Trace().Msg("Handling spec for cluster " + cluster)
@@ -463,7 +463,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	plotter.Status.ObservedGeneration = plotter.ObjectMeta.Generation
 	plotter.Status.ObservedState.Ready = isReady
 	plotter.Status.Assets = assetToStatusMap
-	var plotterReadyMsg = "Plotter is ready!"
+	plotterReadyMsg := "Plotter is ready!"
 	if isReady {
 		if plotter.Status.ReadyTimestamp == nil {
 			now := metav1.NewTime(time.Now())
