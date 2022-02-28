@@ -31,9 +31,7 @@ import (
 )
 
 const (
-	plotterLiteral           = "Plotter"
-	noRemoteBlueprintWarnMsg = "Could not yet find remote blueprint"
-	plotterReadyMsg          = "Plotter is ready!"
+	PlotterKind = "Plotter"
 )
 
 // PlotterReconciler reconciles a Plotter object
@@ -47,7 +45,7 @@ type PlotterReconciler struct {
 
 // Reconcile receives a Plotter CRD
 func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	sublog := r.Log.With().Str(logging.CONTROLLER, plotterLiteral).Str("plotter", req.NamespacedName.String()).Logger()
+	sublog := r.Log.With().Str(logging.CONTROLLER, PlotterKind).Str("plotter", req.NamespacedName.String()).Logger()
 
 	plotter := app.Plotter{}
 	if err := r.Get(ctx, req.NamespacedName, &plotter); err != nil {
@@ -220,7 +218,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 // The key is the cluster name.
 func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]app.BlueprintSpec {
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
-	log := r.Log.With().Str(logging.CONTROLLER, plotterLiteral).Str(utils.FybrikAppUUID, uuid).Logger()
+	log := r.Log.With().Str(logging.CONTROLLER, PlotterKind).Str(utils.FybrikAppUUID, uuid).Logger()
 
 	log.Trace().Msg("Constructing Blueprints from Plotter")
 	moduleInstances := make([]ModuleInstanceSpec, 0)
@@ -332,6 +330,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	blueprintsMap := r.getBlueprintsMap(plotter)
 
 	var errorCollection []error
+	var noRemoteBlueprintWarnMsg = "Could not yet find remote blueprint"
 	for cluster := range blueprintsMap {
 		blueprintSpec := blueprintsMap[cluster]
 		log.Trace().Msg("Handling spec for cluster " + cluster)
@@ -463,7 +462,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	plotter.Status.ObservedGeneration = plotter.ObjectMeta.Generation
 	plotter.Status.ObservedState.Ready = isReady
 	plotter.Status.Assets = assetToStatusMap
-
+	var plotterReadyMsg = "Plotter is ready!"
 	if isReady {
 		if plotter.Status.ReadyTimestamp == nil {
 			now := metav1.NewTime(time.Now())

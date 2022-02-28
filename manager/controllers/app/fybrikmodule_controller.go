@@ -35,12 +35,12 @@ type FybrikModuleReconciler struct {
 const (
 	ModuleTaxonomy                 = "/tmp/taxonomy/fybrik_module.json"
 	ModuleValidationConditionIndex = 0
-	fybrikModuleLiteral            = "FybrikModule"
+	FybrikModuleKind               = "FybrikModule"
 )
 
 // Reconcile validates FybrikModule CRD
 func (r *FybrikModuleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.With().Str(logging.CONTROLLER, fybrikModuleLiteral).Str("module", req.NamespacedName.String()).Logger()
+	log := r.Log.With().Str(logging.CONTROLLER, FybrikModuleKind).Str("module", req.NamespacedName.String()).Logger()
 
 	// obtain FybrikModule resource
 	moduleContext := &fapp.FybrikModule{}
@@ -125,7 +125,7 @@ func ValidateFybrikModule(module *fapp.FybrikModule, taxonomyFile string) error 
 	}
 
 	return apierrors.NewInvalid(
-		schema.GroupKind{Group: "app.fybrik.io", Kind: fybrikModuleLiteral},
+		schema.GroupKind{Group: "app.fybrik.io", Kind: FybrikModuleKind},
 		module.Name, allErrs)
 }
 

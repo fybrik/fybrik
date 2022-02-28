@@ -16,16 +16,6 @@ import (
 	"fybrik.io/fybrik/pkg/serde"
 )
 
-const (
-	dummyResourceName = "xxx"
-	dummyCredentials  = "dummy"
-	kafkaDeserializer = "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
-	s3Literal         = "s3"
-	db2Literal        = "db2"
-	kafkaLiteral      = "kafka"
-	sslTruststore     = "xyz123"
-)
-
 type DataCatalogDummy struct {
 	dataDetails map[string]datacatalog.GetAssetResponse
 }
@@ -75,12 +65,16 @@ func NewTestCatalog() *DataCatalogDummy {
 	var csvFormat taxonomy.DataFormat = "csv"
 	var parquetFormat taxonomy.DataFormat = "parquet"
 	var jsonFormat taxonomy.DataFormat = "json"
+	var dummyResourceName = "xxx"
+	var dummyCredentials = "dummy"
+	var kafkaDeserializer = "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
+	var sslTruststore = "xyz123"
 
 	s3Connection := taxonomy.Connection{
-		Name: s3Literal,
+		Name: app.S3,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				s3Literal: map[string]interface{}{
+				string(app.S3): map[string]interface{}{
 					// TODO(roee88): why are real endpoints used?
 					"endpoint":   "s3.eu-gb.cloud-object-storage.appdomain.cloud",
 					"bucket":     "fybrik-test-bucket",
@@ -91,10 +85,10 @@ func NewTestCatalog() *DataCatalogDummy {
 	}
 
 	db2Connection := taxonomy.Connection{
-		Name: db2Literal,
+		Name: app.JdbcDb2,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				db2Literal: map[string]interface{}{
+				string(app.JdbcDb2): map[string]interface{}{
 					"database": "test-db",
 					"table":    "test-table",
 					"url":      "dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net",
@@ -106,10 +100,10 @@ func NewTestCatalog() *DataCatalogDummy {
 	}
 
 	kafkaConnection := taxonomy.Connection{
-		Name: kafkaLiteral,
+		Name: app.Kafka,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				kafkaLiteral: map[string]interface{}{
+				string(app.Kafka): map[string]interface{}{
 					"topic_name":              "topic",
 					"security_protocol":       "SASL_SSL",
 					"sasl_mechanism":          "SCRAM-SHA-512",
@@ -137,7 +131,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 	}
 
-	dummyCatalog.dataDetails["s3"] = datacatalog.GetAssetResponse{
+	dummyCatalog.dataDetails[string(app.S3)] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      dummyResourceName,
 			Geography: geo,
@@ -163,7 +157,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 	}
 
-	dummyCatalog.dataDetails["db2"] = datacatalog.GetAssetResponse{
+	dummyCatalog.dataDetails[string(app.JdbcDb2)] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      dummyResourceName,
 			Geography: geo,
@@ -175,7 +169,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 	}
 
-	dummyCatalog.dataDetails["kafka"] = datacatalog.GetAssetResponse{
+	dummyCatalog.dataDetails[string(app.Kafka)] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      dummyResourceName,
 			Geography: geo,

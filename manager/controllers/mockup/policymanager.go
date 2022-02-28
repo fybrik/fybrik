@@ -17,10 +17,8 @@ import (
 )
 
 const (
-	denyKey         = "Deny"
-	nameKey         = "name"
-	theshireLiteral = "theshire"
-	redactActionKey = "RedactAction"
+	DenyAction   = "Deny"
+	RedactAction = "RedactAction"
 )
 
 // MockPolicyManager is a mock for PolicyManager interface used in tests
@@ -47,6 +45,8 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 	log.Printf("Received OpenAPI request in mockup GetPoliciesDecisions: ")
 	log.Printf("ProcessingGeography: %s", input.Action.ProcessingLocation)
 	log.Printf("Destination: " + input.Action.Destination)
+	var nameKey = "name"
+	var theshireLiteral = "theshire"
 
 	datasetID := string(input.Resource.ID)
 	log.Printf("   DataSetID: " + datasetID)
@@ -66,9 +66,9 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 	case "deny-dataset":
 		actionOnDataset := taxonomy.Action{}
 		action := make(map[string]interface{})
-		action[nameKey] = denyKey
+		action[nameKey] = DenyAction
 		denyAction := map[string]interface{}{}
-		action[denyKey] = denyAction
+		action[DenyAction] = denyAction
 
 		err := deserializeToTaxonomyAction(action, &actionOnDataset)
 		if err != nil {
@@ -82,9 +82,9 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 		if input.Action.Destination != theshireLiteral {
 			actionOnDataset := taxonomy.Action{}
 			action := make(map[string]interface{})
-			action[nameKey] = denyKey
+			action[nameKey] = DenyAction
 			denyAction := map[string]interface{}{}
-			action[denyKey] = denyAction
+			action[DenyAction] = denyAction
 
 			err := deserializeToTaxonomyAction(action, &actionOnDataset)
 			if err != nil {
@@ -99,9 +99,9 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 		if input.Action.Destination == theshireLiteral {
 			actionOnDataset := taxonomy.Action{}
 			action := make(map[string]interface{})
-			action[nameKey] = denyKey
+			action[nameKey] = DenyAction
 			denyAction := map[string]interface{}{}
-			action[denyKey] = denyAction
+			action[DenyAction] = denyAction
 
 			err := deserializeToTaxonomyAction(action, &actionOnDataset)
 			if err != nil {
@@ -115,10 +115,10 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 	default:
 		actionOnCols := taxonomy.Action{}
 		action := make(map[string]interface{})
-		action[nameKey] = redactActionKey
+		action[nameKey] = RedactAction
 		redactAction := make(map[string]interface{})
 		redactAction["columns"] = []string{"SSN"}
-		action[redactActionKey] = redactAction
+		action[RedactAction] = redactAction
 
 		err := deserializeToTaxonomyAction(action, &actionOnCols)
 		if err != nil {

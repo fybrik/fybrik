@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	kubernetesLiteral = "kubernetes"
+	VaultAuthPath = "kubernetes"
 )
 
 // ClusterLister is a mockup cluster manager
@@ -20,11 +20,11 @@ func (m *ClusterLister) GetClusters() ([]multicluster.Cluster, error) {
 	return []multicluster.Cluster{
 		{
 			Name:     "thegreendragon",
-			Metadata: multicluster.ClusterMetadata{Region: "theshire", VaultAuthPath: kubernetesLiteral},
+			Metadata: multicluster.ClusterMetadata{Region: "theshire", VaultAuthPath: VaultAuthPath},
 		},
 		{
 			Name:     "neverland-cluster",
-			Metadata: multicluster.ClusterMetadata{Region: "neverland", VaultAuthPath: kubernetesLiteral},
+			Metadata: multicluster.ClusterMetadata{Region: "neverland", VaultAuthPath: VaultAuthPath},
 		},
 	}, nil
 }

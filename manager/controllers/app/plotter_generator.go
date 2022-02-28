@@ -30,7 +30,6 @@ import (
 const (
 	objectKeyHashLength  = 10
 	bucketNameHashLength = 10
-	s3Literal            = "s3"
 )
 
 // NewAssetInfo points to the provisoned storage and hold information about the new asset
@@ -76,10 +75,10 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 	}
 
 	connection := taxonomy.Connection{
-		Name: s3Literal,
+		Name: app.S3,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				s3Literal: map[string]interface{}{
+				string(app.S3): map[string]interface{}{
 					"endpoint":   bucket.Endpoint,
 					"bucket":     bucket.Name,
 					"object_key": genObjectKeyName,
