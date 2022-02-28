@@ -41,7 +41,8 @@ import (
 )
 
 const (
-	BlueprintKind = "blueprint"
+	BlueprintKind          string = "blueprint"
+	BlueprintFinalizerName string = "Blueprint.finalizer"
 )
 
 // BlueprintReconciler reconciles a Blueprint object

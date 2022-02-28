@@ -31,7 +31,8 @@ import (
 )
 
 const (
-	PlotterKind = "Plotter"
+	PlotterKind          string = "Plotter"
+	PlotterFinalizerName string = "Plotter.finalizer"
 )
 
 // PlotterReconciler reconciles a Plotter object
