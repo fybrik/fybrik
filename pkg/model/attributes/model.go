@@ -4,7 +4,6 @@
 package infraattributes
 
 import (
-	"fybrik.io/fybrik/pkg/model/adminrules"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
@@ -18,14 +17,19 @@ const (
 	Bool    AttributeType = "bool"
 )
 
+type RangeType struct {
+	Min int `json:"min,omitempty"`
+	Max int `json:"max,omitempty"`
+}
+
 type InfrastructureElement struct {
-	Attribute   taxonomy.Attribute    `json:"attribute"`
-	Description string                `json:"description,omitempty"`
-	Type        AttributeType         `json:"type"`
-	Value       string                `json:"value"`
-	Units       taxonomy.Units        `json:"units,omitempty"`
-	Instance    string                `json:"instance,omitempty"`
-	Scale       *adminrules.RangeType `json:"scale,omitempty"`
+	Attribute   taxonomy.Attribute `json:"attribute"`
+	Description string             `json:"description,omitempty"`
+	Type        AttributeType      `json:"type"`
+	Value       string             `json:"value"`
+	Units       taxonomy.Units     `json:"units,omitempty"`
+	Instance    string             `json:"instance,omitempty"`
+	Scale       *RangeType         `json:"scale,omitempty"`
 }
 
 type Infrastructure struct {

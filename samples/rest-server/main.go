@@ -20,7 +20,8 @@ func Routes(k8sclient *datauser.K8sClient) *chi.Mux {
 	router.Use(
 		middleware.SetHeader("Access-Control-Allow-Origin", "*"), // Allow any client to access these APIs
 		middleware.SetHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE"),
-		middleware.SetHeader("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization"),
+		middleware.SetHeader("Access-Control-Allow-Headers",
+			"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization"),
 		render.SetContentType(render.ContentTypeJSON), // Set content-Type headers as application/json
 		middleware.Logger, // Log API request calls
 		//		middleware.Compress,        // Compress results, mostly gzipping assets and json

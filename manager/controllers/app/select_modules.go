@@ -14,7 +14,6 @@ import (
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/logging"
-	"fybrik.io/fybrik/pkg/model/adminrules"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -77,8 +76,8 @@ func (p *PlotterGenerator) FindPaths(item *DataInfo, appContext *app.FybrikAppli
 	// data source as appears in the asset metadata
 	source := Node{
 		Connection: &app.InterfaceDetails{
-			Protocol:   item.DataDetails.Details.Connection.Name,
-			DataFormat: item.DataDetails.Details.DataFormat,
+			Protocol:   item.DataDetails.ResourceDetails.Connection.Name,
+			DataFormat: item.DataDetails.ResourceDetails.DataFormat,
 		},
 	}
 	// data sink, either a virtual endpoint in read scenarios, or a datastore as in ingest scenario
@@ -177,7 +176,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 		supportedCapabilities[element.Module.Spec.Capabilities[element.CapabilityIndex].Capability] = true
 	}
 	for capability, decision := range item.Configuration.ConfigDecisions {
-		if decision.Deploy == adminrules.StatusTrue {
+		if decision.Deploy == adminconfig.StatusTrue {
 			// check that it is supported
 			if !supportedCapabilities[capability] {
 				return false
@@ -371,7 +370,7 @@ func supportsSinkInterface(edge *Edge, sink *Node) bool {
 }
 
 func allowCapability(item *DataInfo, capability taxonomy.Capability) bool {
-	return item.Configuration.ConfigDecisions[capability].Deploy != adminrules.StatusFalse
+	return item.Configuration.ConfigDecisions[capability].Deploy != adminconfig.StatusFalse
 }
 
 func validateModuleRestrictions(item *DataInfo, edge *Edge) bool {
@@ -400,7 +399,7 @@ func (p *PlotterGenerator) validateClusterRestrictionsPerCapability(item *DataIn
 
 // Validation of an object with respect to the admin config restrictions
 //nolint:gocyclo
-func (p *PlotterGenerator) validateRestrictions(restrictions []adminrules.Restriction, spec interface{}, instanceName string) bool {
+func (p *PlotterGenerator) validateRestrictions(restrictions []adminconfig.Restriction, spec interface{}, instanceName string) bool {
 	if len(restrictions) == 0 {
 		return true
 	}

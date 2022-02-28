@@ -1,6 +1,8 @@
 .openapi-generator-ignore
 Apis/DefaultApi.md
 Models/Connection.md
+Models/CreateAssetRequest.md
+Models/CreateAssetResponse.md
 Models/GetAssetRequest.md
 Models/GetAssetResponse.md
 Models/OperationType.md

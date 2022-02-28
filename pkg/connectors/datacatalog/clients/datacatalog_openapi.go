@@ -44,11 +44,19 @@ func NewOpenAPIDataCatalog(name, connectionURL string, connectionTimeout time.Du
 }
 
 func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds string) (*datacatalog.GetAssetResponse, error) {
-	resp, _, err := m.client.DefaultApi.GetAssetInfoPost(context.Background()).XRequestDataCatalogCred(creds).DataCatalogRequest(*in).Execute()
+	resp, _, err := m.client.DefaultApi.GetAssetInfo(context.Background()).XRequestDatacatalogCred(creds).GetAssetRequest(*in).Execute()
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("get asset info from %s failed", m.name))
 	}
-	return &resp, nil
+	return resp, nil
+}
+
+func (m *openAPIDataCatalog) CreateAssetInfo(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
+	resp, _, err := m.client.DefaultApi.CreateAssetInfo(context.Background()).XRequestDatacatalogWriteCred(creds).CreateAssetRequest(*in).Execute()
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("create asset info from %s failed", m.name))
+	}
+	return resp, nil
 }
 
 func (m *openAPIDataCatalog) Close() error {
