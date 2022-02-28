@@ -80,10 +80,9 @@ func (p *PlotterGenerator) FindPaths(item *DataInfo, appContext *app.FybrikAppli
 			Protocol:   item.DataDetails.Details.Connection.Name,
 			DataFormat: item.DataDetails.Details.DataFormat,
 		},
-		Virtual: false,
 	}
 	// data sink, either a virtual endpoint in read scenarios, or a datastore as in ingest scenario
-	destination := Node{Connection: &item.Context.Requirements.Interface, Virtual: (appContext.Spec.Selector.WorkloadSelector.Size() > 0)}
+	destination := Node{Connection: &item.Context.Requirements.Interface}
 	// find data paths of length up to DATAPATH_LIMIT from data source to the workload, not including transformations or branches
 	bound, err := utils.GetDataPathMaxSize()
 	if err != nil {
@@ -232,11 +231,12 @@ func (p *PlotterGenerator) findPathsWithinLimit(item *DataInfo, source, sink *No
 			// try to build data paths using the selected module capability
 			if n > 1 {
 				for _, inter := range capability.SupportedInterfaces {
+					node := Node{Connection: inter.Source}
 					// recursive call to find paths of length = n-1 using the supported source of the selected module capability
-					paths := p.findPathsWithinLimit(item, source, &Node{Connection: inter.Source}, n-1)
+					paths := p.findPathsWithinLimit(item, source, &node, n-1)
 					// add the selected module to the found paths
 					for i := range paths {
-						auxEdge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: &Node{Connection: inter.Source}, Sink: sink}
+						auxEdge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: &node, Sink: sink}
 						paths[i].DataPath = append(paths[i].DataPath, ResolvedEdge{Edge: auxEdge})
 					}
 					if len(paths) > 0 {
@@ -323,15 +323,22 @@ func match(source, sink *app.InterfaceDetails) bool {
 //nolint:dupl
 func supportsSourceInterface(edge *Edge, source *Node) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
-	if capability.API != nil && source.Virtual {
-		apiInterface := &app.InterfaceDetails{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
-		if match(apiInterface, source.Connection) {
+	hasSources := false
+	for _, inter := range capability.SupportedInterfaces {
+		if inter.Source == nil {
+			continue
+		}
+		hasSources = true
+		// connection via Source
+		if match(inter.Source, source.Connection) {
 			return true
 		}
 	}
-	for _, inter := range capability.SupportedInterfaces {
-		// connection via Source
-		if inter.Source != nil && match(inter.Source, source.Connection) {
+	if capability.API != nil && !hasSources {
+		apiInterface := &app.InterfaceDetails{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
+		if match(apiInterface, source.Connection) {
+			// consumes data via API
+			source.Virtual = true
 			return true
 		}
 	}
@@ -342,14 +349,21 @@ func supportsSourceInterface(edge *Edge, source *Node) bool {
 //nolint:dupl
 func supportsSinkInterface(edge *Edge, sink *Node) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
-	if capability.API != nil && sink.Virtual {
-		apiInterface := &app.InterfaceDetails{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
-		if match(apiInterface, sink.Connection) {
+	hasSinks := false
+	for _, inter := range capability.SupportedInterfaces {
+		if inter.Sink == nil {
+			continue
+		}
+		hasSinks = true
+		if match(inter.Sink, sink.Connection) {
 			return true
 		}
 	}
-	for _, inter := range capability.SupportedInterfaces {
-		if inter.Sink != nil && match(inter.Sink, sink.Connection) {
+	if capability.API != nil && !hasSinks {
+		apiInterface := &app.InterfaceDetails{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
+		if match(apiInterface, sink.Connection) {
+			// transfers data in-memory via API
+			sink.Virtual = true
 			return true
 		}
 	}
