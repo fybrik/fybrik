@@ -9,11 +9,6 @@ import (
 	"github.com/go-chi/render"
 )
 
-const (
-	httpStatusCodeBadRequest  = 400
-	httpStatusCodeErrorRender = 422
-)
-
 //--
 // Error response payloads & renderers
 //--
@@ -52,7 +47,7 @@ func ErrConfigProblem(err error) render.Renderer {
 func ErrInvalidRequest(err error) render.Renderer {
 	return &ErrResponse{
 		Err:            err,
-		HTTPStatusCode: httpStatusCodeBadRequest,
+		HTTPStatusCode: http.StatusBadRequest,
 		StatusText:     "Invalid request.",
 		ErrorText:      err.Error(),
 	}
@@ -72,7 +67,7 @@ func SysErrRender(err error) render.Renderer {
 func ErrRender(err error) render.Renderer {
 	return &ErrResponse{
 		Err:            err,
-		HTTPStatusCode: httpStatusCodeErrorRender,
+		HTTPStatusCode: http.StatusUnprocessableEntity,
 		StatusText:     "Error rendering response.",
 		ErrorText:      err.Error(),
 	}

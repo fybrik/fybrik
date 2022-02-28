@@ -16,6 +16,10 @@ import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 )
 
+const (
+	currentNamespacePath = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+)
+
 // K8sClient contains the contextual info about the REST client for k8s
 type K8sClient struct {
 	client    kclient.Client
@@ -24,7 +28,7 @@ type K8sClient struct {
 
 // GetCurrentNamespace returns the namespace in which the REST api service is deployed - which should be a user namespace
 func GetCurrentNamespace() string {
-	if data, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace"); err == nil {
+	if data, err := os.ReadFile(currentNamespacePath); err == nil {
 		if ns := strings.TrimSpace(string(data)); len(ns) > 0 {
 			return ns
 		}
