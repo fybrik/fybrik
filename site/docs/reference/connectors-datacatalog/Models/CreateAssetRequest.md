@@ -3,9 +3,9 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**credentials** | String | This optional field has the vault plugin path where the destination data credentials will be stored as kubernetes secrets | [optional] [default: null]
-**destinationAssetID** | String | This is an optional field provided to give information about the asset id to be used for the created asset. | [optional] [default: null]
-**destinationCatalogID** | String | This has the information about the destination catalog id that new asset that will be created with the information provided in ResourceMetadata and Details field will be stored. | [default: null]
+**credentials** | String | The vault plugin path where the destination data credentials will be stored as kubernetes secrets | [optional] [default: null]
+**destinationAssetID** | String | Asset ID to be used for the created asset | [optional] [default: null]
+**destinationCatalogID** | String | The destination catalog id in which the new asset will be created based on the information provided in ResourceMetadata and ResourceDetails field | [default: null]
 **resourceDetails** | [ResourceDetails](../ResourceDetails) |  | [default: null]
 **resourceMetadata** | [ResourceMetadata](../ResourceMetadata) |  | [default: null]
 
