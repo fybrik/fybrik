@@ -40,6 +40,10 @@ import (
 	"fybrik.io/fybrik/pkg/logging"
 )
 
+const (
+	blueprintLiteral = "blueprint"
+)
+
 // BlueprintReconciler reconciles a Blueprint object
 type BlueprintReconciler struct {
 	client.Client
@@ -65,7 +69,7 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
 	log := r.Log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).
-		Str("blueprint", req.NamespacedName.String()).Logger()
+		Str(blueprintLiteral, req.NamespacedName.String()).Logger()
 
 	if res, err := r.reconcileFinalizers(&blueprint); err != nil {
 		log.Error().Err(err).Msg("Could not reconcile blueprint " + blueprint.GetName() + " finalizers")
@@ -157,7 +161,7 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolo
 	args map[string]interface{}, blueprint *fapp.Blueprint, releaseName string) (ctrl.Result, error) {
 	// Get the unique id for the specific fybrikapplication instance.  Used for logging.
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
-	log = log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Str("blueprint", blueprint.GetName()).Logger()
+	log = log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Str(blueprintLiteral, blueprint.GetName()).Logger()
 
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Chart Ref ---\n\n" + chartSpec.Name + "\n\n")
 	kubeNamespace := blueprint.Spec.ModulesNamespace
@@ -299,7 +303,7 @@ func (r *BlueprintReconciler) updateModuleState(blueprint *fapp.Blueprint, insta
 //nolint:gocyclo
 func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger, blueprint *fapp.Blueprint) (ctrl.Result, error) {
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
-	log = log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Str("blueprint", blueprint.GetName()).Logger()
+	log = log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Str(blueprintLiteral, blueprint.GetName()).Logger()
 
 	modulesNamespace := blueprint.Spec.ModulesNamespace
 	// Gather all templates and process them into a list of resources to apply

@@ -19,6 +19,11 @@ import (
 const (
 	dummyResourceName = "xxx"
 	dummyCredentials  = "dummy"
+	kafkaDeserializer = "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
+	s3Literal         = "s3"
+	db2Literal        = "db2"
+	kafkaLiteral      = "kafka"
+	sslTruststore     = "xyz123"
 )
 
 type DataCatalogDummy struct {
@@ -63,7 +68,7 @@ func NewTestCatalog() *DataCatalogDummy {
 	tags := taxonomy.Tags{}
 	tags.Items = map[string]interface{}{"PI": true}
 
-	geo := "theshire" //nolint:goconst
+	geo := "theshire"
 	geoExternal := "neverland"
 
 	// TODO(roee88): some of these are also defined in ifdetails.go
@@ -72,10 +77,10 @@ func NewTestCatalog() *DataCatalogDummy {
 	var jsonFormat taxonomy.DataFormat = "json"
 
 	s3Connection := taxonomy.Connection{
-		Name: "s3",
+		Name: s3Literal,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				"s3": map[string]interface{}{
+				s3Literal: map[string]interface{}{
 					// TODO(roee88): why are real endpoints used?
 					"endpoint":   "s3.eu-gb.cloud-object-storage.appdomain.cloud",
 					"bucket":     "fybrik-test-bucket",
@@ -86,10 +91,10 @@ func NewTestCatalog() *DataCatalogDummy {
 	}
 
 	db2Connection := taxonomy.Connection{
-		Name: "db2",
+		Name: db2Literal,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				"db2": map[string]interface{}{
+				db2Literal: map[string]interface{}{
 					"database": "test-db",
 					"table":    "test-table",
 					"url":      "dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net",
@@ -101,19 +106,19 @@ func NewTestCatalog() *DataCatalogDummy {
 	}
 
 	kafkaConnection := taxonomy.Connection{
-		Name: "kafka",
+		Name: kafkaLiteral,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				"kafka": map[string]interface{}{
+				kafkaLiteral: map[string]interface{}{
 					"topic_name":              "topic",
 					"security_protocol":       "SASL_SSL",
 					"sasl_mechanism":          "SCRAM-SHA-512",
-					"ssl_truststore":          "xyz123",
-					"ssl_truststore_password": "xyz123",
+					"ssl_truststore":          sslTruststore,
+					"ssl_truststore_password": sslTruststore,
 					"schema_registry":         "kafka-registry",
 					"bootstrap_servers":       "http://kafka-servers",
-					"key_deserializer":        "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer",
-					"value_deserializer":      "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer",
+					"key_deserializer":        kafkaDeserializer,
+					"value_deserializer":      kafkaDeserializer,
 				},
 			},
 		},

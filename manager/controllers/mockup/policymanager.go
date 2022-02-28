@@ -16,6 +16,13 @@ import (
 	"fybrik.io/fybrik/pkg/random"
 )
 
+const (
+	denyKey         = "Deny"
+	nameKey         = "name"
+	theshireLiteral = "theshire"
+	redactActionKey = "RedactAction"
+)
+
 // MockPolicyManager is a mock for PolicyManager interface used in tests
 type MockPolicyManager struct {
 	connectors.PolicyManager
@@ -59,9 +66,9 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 	case "deny-dataset":
 		actionOnDataset := taxonomy.Action{}
 		action := make(map[string]interface{})
-		action["name"] = "Deny"
+		action[nameKey] = denyKey
 		denyAction := map[string]interface{}{}
-		action["Deny"] = denyAction
+		action[denyKey] = denyAction
 
 		err := deserializeToTaxonomyAction(action, &actionOnDataset)
 		if err != nil {
@@ -72,12 +79,12 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 		respResult = append(respResult, policyManagerResult)
 
 	case "allow-theshire":
-		if input.Action.Destination != "theshire" {
+		if input.Action.Destination != theshireLiteral {
 			actionOnDataset := taxonomy.Action{}
 			action := make(map[string]interface{})
-			action["name"] = "Deny"
+			action[nameKey] = denyKey
 			denyAction := map[string]interface{}{}
-			action["Deny"] = denyAction
+			action[denyKey] = denyAction
 
 			err := deserializeToTaxonomyAction(action, &actionOnDataset)
 			if err != nil {
@@ -89,12 +96,12 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 		}
 
 	case "deny-theshire":
-		if input.Action.Destination == "theshire" {
+		if input.Action.Destination == theshireLiteral {
 			actionOnDataset := taxonomy.Action{}
 			action := make(map[string]interface{})
-			action["name"] = "Deny"
+			action[nameKey] = denyKey
 			denyAction := map[string]interface{}{}
-			action["Deny"] = denyAction
+			action[denyKey] = denyAction
 
 			err := deserializeToTaxonomyAction(action, &actionOnDataset)
 			if err != nil {
@@ -108,10 +115,10 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 	default:
 		actionOnCols := taxonomy.Action{}
 		action := make(map[string]interface{})
-		action["name"] = "RedactAction"
+		action[nameKey] = redactActionKey
 		redactAction := make(map[string]interface{})
 		redactAction["columns"] = []string{"SSN"}
-		action["RedactAction"] = redactAction
+		action[redactActionKey] = redactAction
 
 		err := deserializeToTaxonomyAction(action, &actionOnCols)
 		if err != nil {

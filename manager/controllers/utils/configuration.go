@@ -25,6 +25,7 @@ const (
 	PrettyLoggingKey                  string = "PRETTY_LOGGING"
 	CatalogProviderNameKey            string = "CATALOG_PROVIDER_NAME"
 	DatapathLimitKey                  string = "DATAPATH_LIMIT"
+	envVarLiteral                     string = "Env variable "
 )
 
 // GetSystemNamespace returns the namespace of control plane
@@ -89,9 +90,9 @@ func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
 func logEnvVariable(log zerolog.Logger, key string) {
 	value, found := os.LookupEnv(key)
 	if found {
-		log.Info().Msg("Env variable " + key + " set to \"" + value + "\"")
+		log.Info().Msg(envVarLiteral + key + " set to \"" + value + "\"")
 	} else {
-		log.Info().Msg("Env variable " + key + " not set")
+		log.Info().Msg(envVarLiteral + key + " not set")
 	}
 }
 
