@@ -6,6 +6,7 @@ package connector
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -16,6 +17,7 @@ import (
 	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/vault"
+	"github.com/gdexlab/go-render/render"
 )
 
 type Handler struct {
@@ -53,6 +55,24 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 		ResourceMetadata: asset.Spec.Metadata,
 		ResourceDetails:  asset.Spec.Details,
 		Credentials:      vault.PathForReadingKubeSecret(namespace, asset.Spec.SecretRef.Name),
+	}
+
+	c.JSON(http.StatusOK, &response)
+}
+
+func (r *Handler) createAssetInfo(c *gin.Context) {
+	// Parse request
+	var request datacatalog.CreateAssetRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	log.Println("CreateAssetRequest: ", request)
+	output := render.AsCode(request)
+	log.Println("CreateAssetRequest - render as code output: ", output)
+
+	response := datacatalog.CreateAssetResponse{
+		AssetID: "test",
 	}
 
 	c.JSON(http.StatusOK, &response)
