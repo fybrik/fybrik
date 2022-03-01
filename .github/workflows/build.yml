@@ -56,24 +56,8 @@ jobs:
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Install tools
       run: make install-tools
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     - name: install json-schema-generator
       run: ./hack/tools/install_json-schema-generator.sh
-=======
->>>>>>> Update schema.
-=======
-    - name: install json-schema-generator
-      run: ./hack/tools/install_json-schema-generator.sh
->>>>>>> Update build workflow.
-=======
->>>>>>> Update schema.
-=======
-    - name: install json-schema-generator
-      run: ./hack/tools/install_json-schema-generator.sh
->>>>>>> Update build workflow.
     - name: Test
       run: make test
 

@@ -22,7 +22,6 @@ type GetAssetResponse struct {
 	Credentials string `json:"credentials"`
 }
 
-// +fybrik:validation:object
 type CreateAssetRequest struct {
 	// The destination catalog id in which the new asset will be created based on the information provided in ResourceMetadata and ResourceDetails field
 	DestinationCatalogID string `json:"destinationCatalogID"`
@@ -38,7 +37,6 @@ type CreateAssetRequest struct {
 	Credentials string `json:"credentials"`
 }
 
-// +fybrik:validation:object
 type CreateAssetResponse struct {
 	// The ID of the created asset based on the source asset information given in CreateAssetRequest object
 	AssetID string `json:"assetID"`
