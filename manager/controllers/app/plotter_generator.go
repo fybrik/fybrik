@@ -193,7 +193,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 	for _, element := range selection.DataPath {
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
 		p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msgf("Adding module for %s", moduleCapability.Capability)
-		p.addTemplate(&element, plotterSpec)
+		p.addTemplate(element, plotterSpec)
 
 		var api *datacatalog.ResourceDetails
 		if moduleCapability.API != nil {

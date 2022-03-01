@@ -65,7 +65,7 @@ type ResolvedEdge struct {
 // Solution is a final solution enabling a plotter construction.
 // It represents a full data flow between the data source and the workload.
 type Solution struct {
-	DataPath []ResolvedEdge
+	DataPath []*ResolvedEdge
 }
 
 // FindPaths finds all valid data paths between the data source and the workload
@@ -109,8 +109,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 	// start from data source, check supported actions and cluster restrictions
 	appContext := ApplicationContext{Application: application, Log: p.Log}
 	requiredActions := item.Actions
-	for ind := range solution.DataPath {
-		element := &solution.DataPath[ind]
+	for _, element := range solution.DataPath {
 		element.Actions = []taxonomy.Action{}
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
 		if !element.Edge.Sink.Virtual {
@@ -223,8 +222,8 @@ func (p *PlotterGenerator) findPathsWithinLimit(item *DataInfo, source, sink *No
 			if supportsSourceInterface(&edge, source) {
 				edge.Source = source
 				// found a path
-				var path []ResolvedEdge
-				path = append(path, ResolvedEdge{Edge: edge})
+				var path []*ResolvedEdge
+				path = append(path, &ResolvedEdge{Edge: edge})
 				solutions = append(solutions, Solution{DataPath: path})
 			}
 			// try to build data paths using the selected module capability
@@ -236,7 +235,7 @@ func (p *PlotterGenerator) findPathsWithinLimit(item *DataInfo, source, sink *No
 					// add the selected module to the found paths
 					for i := range paths {
 						auxEdge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: &node, Sink: sink}
-						paths[i].DataPath = append(paths[i].DataPath, ResolvedEdge{Edge: auxEdge})
+						paths[i].DataPath = append(paths[i].DataPath, &ResolvedEdge{Edge: auxEdge})
 					}
 					if len(paths) > 0 {
 						solutions = append(solutions, paths...)
