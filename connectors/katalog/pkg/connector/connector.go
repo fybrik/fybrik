@@ -8,8 +8,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"k8s.io/apimachinery/pkg/types"
@@ -79,7 +81,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	output := render.AsCode(request)
 	log.Println("CreateAssetRequest - render as code output: ", output)
 
-	// example output in JSON
+	// example CreateAssetRequest in JSON
 	// {
 	// 	"destinationCatalogID": "testcatalogid",
 	// 	"resourceMetadata": {
@@ -106,10 +108,40 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	// 	"credentials": "http://fybrik-system:8200/v1/kubernetes-secrets/wkc-creds?namespace=cp4d"
 	// }
 
+	var assetName string
+	var namespace string
+	if request.DestinationAssetID != "" {
+		splittedID := strings.SplitN(string(request.DestinationAssetID), "/", 2)
+		if len(splittedID) != 2 {
+			errorMessage := fmt.Sprintf("request has an invalid asset ID %s (must be in namespace/name format)", request.ResourceMetadata.Name)
+			c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		}
+		namespace, assetName = splittedID[0], splittedID[1]
+	} else {
+		splittedID := strings.SplitN(string(request.ResourceMetadata.Name), "/", 2)
+		if len(splittedID) != 2 {
+			errorMessage := fmt.Sprintf("request has an invalid asset ID %s (must be in namespace/name format)", request.ResourceMetadata.Name)
+			c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		}
+		namespace, assetName = splittedID[0], splittedID[1]
+		// add random string to source asset
+		var v [5]int
+		rand.Seed(time.Now().UnixNano())
+		for i := 0; i < 5; i++ {
+			v[i] = rand.Intn(100)
+		}
+		fmt.Println("random integer array:", v) // [0 28 27 62 63]
+		delim := "-"
+		randomString := strings.Trim(strings.Replace(fmt.Sprint(v), " ", delim, -1), "[]")
+		assetName = assetName + "-" + randomString
+		log.Println("generated assetName :", assetName)
+	}
+	log.Println("using assetName :", assetName)
+
 	asset := &v1alpha1.Asset{}
 	objectMeta := &v1.ObjectMeta{
-		Namespace: "fybrik-system",
-		Name:      "demo-asset1234",
+		Namespace: namespace,
+		Name:      namespace + "/" + assetName,
 	}
 	asset.ObjectMeta = *objectMeta
 
@@ -147,7 +179,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	output = render.AsCode(asset)
 	log.Println("Created AssetID - render as code output: ", output)
 
-	log.Printf("Creating Asset for first ever time %s/%s\n", asset.Namespace, asset.Name)
+	log.Printf("Creating Asset in cluster: %s/%s\n", asset.Namespace, asset.Name)
 	err = r.client.Create(context.Background(), asset)
 	if err != nil {
 		log.Printf("Error during create asset")
@@ -156,8 +188,8 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	}
 
 	response := datacatalog.CreateAssetResponse{
-		AssetID: "test",
+		AssetID: namespace + "/" + assetName,
 	}
 
-	c.JSON(http.StatusOK, &response)
+	c.JSON(http.StatusCreated, &response)
 }
