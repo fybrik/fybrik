@@ -358,7 +358,7 @@ func (p *PlotterGenerator) validateModuleRestrictions(item *DataInfo, edge *Edge
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
 	moduleSpec := edge.Module.Spec
 	restrictions := item.Configuration.ConfigDecisions[capability.Capability].DeploymentRestrictions.Modules
-	for i := 0; i < len(restrictions); i++ {
+	for i := range restrictions {
 		if strings.Contains(restrictions[i].Property, "capabilities.") {
 			restrictions[i].Property = strings.Replace(restrictions[i].Property, "capabilities", "capabilities."+strconv.Itoa(edge.CapabilityIndex), 1)
 		}
