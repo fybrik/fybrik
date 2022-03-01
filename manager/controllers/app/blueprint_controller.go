@@ -40,6 +40,8 @@ import (
 	"fybrik.io/fybrik/pkg/logging"
 )
 
+const BlueprintFinalizerName string = "Blueprint.finalizer"
+
 // BlueprintReconciler reconciles a Blueprint object
 type BlueprintReconciler struct {
 	client.Client
@@ -100,8 +102,7 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 // reconcileFinalizers reconciles finalizers for Blueprint
 func (r *BlueprintReconciler) reconcileFinalizers(blueprint *fapp.Blueprint) (ctrl.Result, error) {
 	// finalizer
-	finalizerName := r.Name + ".finalizer"
-	hasFinalizer := ctrlutil.ContainsFinalizer(blueprint, finalizerName)
+	hasFinalizer := ctrlutil.ContainsFinalizer(blueprint, BlueprintFinalizerName)
 
 	// If the object has a scheduled deletion time, delete it and its associated resources
 	if !blueprint.DeletionTimestamp.IsZero() {
@@ -112,7 +113,7 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *fapp.Blueprint) (ct
 				r.Log.Error().Err(err).Msg("Error while deleting owned resources")
 			}
 			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
-			ctrlutil.RemoveFinalizer(blueprint, finalizerName)
+			ctrlutil.RemoveFinalizer(blueprint, BlueprintFinalizerName)
 
 			if err := r.Update(context.Background(), blueprint); err != nil {
 				return ctrl.Result{}, err
@@ -122,7 +123,7 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *fapp.Blueprint) (ct
 	}
 	// Make sure this CRD instance has a finalizer
 	if !hasFinalizer {
-		ctrlutil.AddFinalizer(blueprint, finalizerName)
+		ctrlutil.AddFinalizer(blueprint, BlueprintFinalizerName)
 		if err := r.Update(context.Background(), blueprint); err != nil {
 			return ctrl.Result{}, err
 		}

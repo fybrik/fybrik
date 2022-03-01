@@ -27,7 +27,7 @@ type InfrastructureElement struct {
 	// A reference to the resource instance, e.g. storage account name
 	Instance    string                `json:"instance,omitempty"`
 	// A scale of values (minimum and maximum) when applicable
-	Scale       *adminrules.RangeType `json:"scale,omitempty"`
+	Scale       *RangeType            `json:"scale,omitempty"`
 	// A list of arguments defining a specific metric, e.g. regions for a bandwidth
 	Arguments   []string			  `json:"arguments,omitempty"`
 }

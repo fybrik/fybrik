@@ -30,6 +30,8 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster"
 )
 
+const PlotterFinalizerName string = "Plotter.finalizer"
+
 // PlotterReconciler reconciles a Plotter object
 type PlotterReconciler struct {
 	client.Client
@@ -88,8 +90,7 @@ func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 // reconcileFinalizers reconciles finalizers for Plotter
 func (r *PlotterReconciler) reconcileFinalizers(plotter *app.Plotter) error {
 	// finalizer
-	finalizerName := r.Name + ".finalizer"
-	hasFinalizer := ctrlutil.ContainsFinalizer(plotter, finalizerName)
+	hasFinalizer := ctrlutil.ContainsFinalizer(plotter, PlotterFinalizerName)
 
 	// If the object has a scheduled deletion time, delete it and its associated resources
 	if !plotter.DeletionTimestamp.IsZero() {
@@ -106,7 +107,7 @@ func (r *PlotterReconciler) reconcileFinalizers(plotter *app.Plotter) error {
 			}
 
 			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
-			ctrlutil.RemoveFinalizer(plotter, finalizerName)
+			ctrlutil.RemoveFinalizer(plotter, PlotterFinalizerName)
 
 			if err := r.Update(context.Background(), plotter); err != nil {
 				return err
@@ -116,7 +117,7 @@ func (r *PlotterReconciler) reconcileFinalizers(plotter *app.Plotter) error {
 	}
 	// Make sure this CRD instance has a finalizer
 	if !hasFinalizer {
-		ctrlutil.AddFinalizer(plotter, finalizerName)
+		ctrlutil.AddFinalizer(plotter, PlotterFinalizerName)
 		if err := r.Update(context.Background(), plotter); err != nil {
 			return err
 		}
@@ -420,6 +421,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			for key, val := range plotter.Labels {
 				blueprint.Labels[key] = val
 			}
+			ctrlutil.AddFinalizer(blueprint, BlueprintFinalizerName)
 			err := r.ClusterManager.CreateBlueprint(cluster, blueprint)
 			isReady = false
 			if err != nil {

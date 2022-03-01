@@ -14,6 +14,7 @@ paths:
         parameters:
           - in: header
             name: X-Request-Datacatalog-Cred
+            description: This header carries credential information related to relevant catalog from which the asset information needs to be retrieved.
             schema:
               type: string
             required: true
@@ -31,5 +32,34 @@ paths:
               application/json:
                 schema:
                   $ref: "../../charts/fybrik/files/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
+          '400':
+            description: Bad request - server cannot process the request due to client error
+
+
+  /createAssetInfo:
+      post:
+        summary: This REST API writes data asset information to the data catalog configured in fybrik
+        operationId: createAssetInfo
+        parameters:
+          - in: header
+            name: X-Request-Datacatalog-Write-Cred
+            description: This header carries credential information related to accessing the relevant destination catalog.
+            schema:
+              type: string
+            required: true
+        requestBody:
+          description: Write Asset Request
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: "../../charts/fybrik/files/taxonomy/datacatalog.json#/definitions/CreateAssetRequest"
+        responses:
+          '201':
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: "../../charts/fybrik/files/taxonomy/datacatalog.json#/definitions/CreateAssetResponse"
           '400':
             description: Bad request - server cannot process the request due to client error

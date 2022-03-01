@@ -4,7 +4,6 @@
 package infraattributes
 
 import (
-	"fybrik.io/fybrik/pkg/model/adminrules"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
@@ -17,6 +16,11 @@ const (
 	String  AttributeType = "string"
 	Bool    AttributeType = "bool"
 )
+
+type RangeType struct {
+	Min int `json:"min,omitempty"`
+	Max int `json:"max,omitempty"`
+}
 
 // +kubebuilder:validation:Enum=fybrikmodule;fybrikstorageaccount;cluster
 type InstanceType string
@@ -47,7 +51,7 @@ type InfrastructureElement struct {
 	// A reference to the resource instance, e.g. storage account name
 	Instance string `json:"instance,omitempty"`
 	// A scale of values (minimum and maximum) when applicable
-	Scale *adminrules.RangeType `json:"scale,omitempty"`
+	Scale *RangeType `json:"scale,omitempty"`
 	// A list of arguments defining a specific metric, e.g. regions for a bandwidth
 	Arguments []string `json:"arguments,omitempty"`
 }

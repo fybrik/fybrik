@@ -55,7 +55,7 @@
           "description": "A resource defined by the attribute (\"storageaccount\",\"module\",\"cluster\")"
         },
         "scale": {
-          "$ref": "adminrules.json#/definitions/RangeType",
+          "$ref": "#/definitions/RangeType",
           "description": "A scale of values (minimum and maximum) when applicable"
         },
         "type": {
@@ -79,6 +79,17 @@
         "fybrikstorageaccount",
         "cluster"
       ]
+    },
+    "RangeType": {
+      "type": "object",
+      "properties": {
+        "max": {
+          "type": "integer"
+        },
+        "min": {
+          "type": "integer"
+        }
+      }
     }
   }
 }

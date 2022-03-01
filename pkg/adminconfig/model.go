@@ -1,9 +1,10 @@
-// Copyright 2022 IBM Corp.
+// Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package adminrules
+package adminconfig
 
 import (
+	infraattributes "fybrik.io/fybrik/pkg/model/attributes"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
@@ -21,24 +22,10 @@ const (
 // Semantics is a disjunction of values, i.e. a type can be either plugin or config.
 type StringList []string
 
-type RangeType struct {
-	Min int `json:"min,omitempty"`
-	Max int `json:"max,omitempty"`
-}
-
-// +kubebuilder:validation:Enum=min;max
-type OptimizationDirective string
-
-// List of directives
-const (
-	Minimize OptimizationDirective = "min"
-	Maximize OptimizationDirective = "max"
-)
-
 type Restriction struct {
-	Property string     `json:"property"`
-	Values   StringList `json:"values,omitempty"`
-	Range    *RangeType `json:"range,omitempty"`
+	Property string                     `json:"property"`
+	Values   StringList                 `json:"values,omitempty"`
+	Range    *infraattributes.RangeType `json:"range,omitempty"`
 }
 
 // DecisionPolicy is a justification for a policy that consists of a unique id, id of a policy set and a human readable desciption
@@ -71,8 +58,18 @@ type DecisionPerCapability struct {
 	Decision   Decision            `json:"decision"`
 }
 
-// A list of decisions, e.g. [{"capability": "read", "decision": {"deploy": "True"}}, {"capability": "write", "decision": {"deploy": "False"}}]
+// A list of decisions,
+// e.g. [{"capability": "read", "decision": {"deploy": "True"}}, {"capability": "write", "decision": {"deploy": "False"}}]
 type RuleDecisionList []DecisionPerCapability
+
+// +kubebuilder:validation:Enum=min;max
+type OptimizationDirective string
+
+// List of directives
+const (
+	Minimize OptimizationDirective = "min"
+	Maximize OptimizationDirective = "max"
+)
 
 type AttributeOptimization struct {
 	// Attribute name

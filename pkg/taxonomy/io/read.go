@@ -4,7 +4,7 @@
 package taxonomyio
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"sigs.k8s.io/yaml"
@@ -14,7 +14,7 @@ import (
 
 // ReadDocumentFromFile loads a document model from a JSON or YAML file
 func ReadDocumentFromFile(path string) (*model.Document, error) {
-	data, err := ioutil.ReadFile(filepath.Clean(path))
+	data, err := os.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return nil, err
 	}

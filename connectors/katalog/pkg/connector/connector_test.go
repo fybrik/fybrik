@@ -90,7 +90,7 @@ func TestGetAssetInfo(t *testing.T) {
 		response := &datacatalog.GetAssetResponse{}
 		err = json.Unmarshal(w.Body.Bytes(), response)
 		g.Expect(err).To(BeNil())
-		g.Expect(&response.Details).To(BeEquivalentTo(&asset.Spec.Details))
+		g.Expect(&response.ResourceDetails).To(BeEquivalentTo(&asset.Spec.Details))
 		g.Expect(&response.ResourceMetadata).To(BeEquivalentTo(&asset.Spec.Metadata))
 		g.Expect(response.Credentials).To(BeEquivalentTo("/v1/kubernetes-secrets/creds-demo-asset?namespace=demo"))
 	})

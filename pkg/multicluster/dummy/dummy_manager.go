@@ -35,7 +35,7 @@ func (m *MockClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	}, nil
 }
 
-func (m *MockClusterManager) GetBlueprint(cluster string, namespace string, name string) (*v1alpha1.Blueprint, error) {
+func (m *MockClusterManager) GetBlueprint(cluster, namespace, name string) (*v1alpha1.Blueprint, error) {
 	blueprint, found := m.DeployedBlueprints[cluster]
 	if found {
 		return blueprint, nil
@@ -53,7 +53,7 @@ func (m *MockClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1
 	return nil
 }
 
-func (m *MockClusterManager) DeleteBlueprint(cluster string, namespace string, name string) error {
+func (m *MockClusterManager) DeleteBlueprint(cluster, namespace, name string) error {
 	delete(m.DeployedBlueprints, cluster)
 	return nil
 }

@@ -5,7 +5,7 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -44,7 +44,7 @@ func main() {
 			creds = values[0]
 		}
 		log.Println("creds extracted from POST request in mockup policy manager:", creds)
-		input, _ := ioutil.ReadAll(c.Request.Body)
+		input, _ := io.ReadAll(c.Request.Body)
 		log.Println("input extracted from POST request body in mockup policy manager:", string(input))
 
 		policyManagerReq := constructPolicyManagerRequest(string(input))
