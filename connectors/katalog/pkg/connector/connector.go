@@ -17,8 +17,6 @@ import (
 
 	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
-	"fybrik.io/fybrik/pkg/model/taxonomy"
-	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/vault"
 	"github.com/gdexlab/go-render/render"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -71,13 +69,15 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	log.Println("CreateAssetRequest: ", request)
 	b, err := json.Marshal(request)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	log.Println("CreateAssetRequest: JSON format: ", string(b))
+	log.Println("CreateAssetRequest: ", request)
+	output := render.AsCode(request)
+	log.Println("CreateAssetRequest - render as code output: ", output)
 
 	// example output in JSON
 	// {
@@ -109,36 +109,44 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	asset := &v1alpha1.Asset{}
 	objectMeta := &v1.ObjectMeta{
 		Namespace: "fybrik-system",
-		Name:      "demo-asset123",
+		Name:      "demo-asset1234",
 	}
 	asset.ObjectMeta = *objectMeta
+
 	spec := &v1alpha1.AssetSpec{
 		SecretRef: v1alpha1.SecretRef{
 			Name: request.Credentials,
 		},
-		Details: datacatalog.ResourceDetails{
-			Connection: taxonomy.Connection{
-				Name: request.ResourceDetails.Connection.Name,
-			},
-		},
-		Metadata: datacatalog.ResourceMetadata{
-			Name:      request.ResourceMetadata.Name,
-			Owner:     request.ResourceMetadata.Owner,
-			Geography: request.ResourceMetadata.Geography,
-			Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
-				"finance": true,
-			}}},
-			Columns: []datacatalog.ResourceColumn{
-				{
-					Name: "c1",
-					Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
-						"PII": true,
-					}}},
-				},
-			},
-		},
 	}
+
+	reqResourceMetadata, _ := json.Marshal(request.ResourceMetadata)
+	err = json.Unmarshal(reqResourceMetadata, &spec.Metadata)
+	if err != nil {
+		log.Printf("Error during unmarshal of reqResourceMetadata")
+		fmt.Println(err)
+		return
+	}
+
+	reqResourceDetails, _ := json.Marshal(request.ResourceDetails)
+	err = json.Unmarshal(reqResourceDetails, &spec.Details)
+	if err != nil {
+		log.Printf("Error during unmarshal of reqResourceDetails")
+		fmt.Println(err)
+		return
+	}
+
 	asset.Spec = *spec
+
+	b, err = json.Marshal(asset)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	log.Println("Created Asset: JSON format: ", string(b))
+	log.Println("Created Asset: ", asset)
+	output = render.AsCode(asset)
+	log.Println("Created AssetID - render as code output: ", output)
+
 	log.Printf("Creating Asset for first ever time %s/%s\n", asset.Namespace, asset.Name)
 	err = r.client.Create(context.Background(), asset)
 	if err != nil {
@@ -146,9 +154,6 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 		fmt.Println(err)
 		return
 	}
-	log.Println("CreateAssetRequest: ", request)
-	output := render.AsCode(request)
-	log.Println("CreateAssetRequest - render as code output: ", output)
 
 	response := datacatalog.CreateAssetResponse{
 		AssetID: "test",
