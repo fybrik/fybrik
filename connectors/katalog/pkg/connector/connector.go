@@ -125,15 +125,22 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 		}
 		namespace, assetName = splittedID[0], splittedID[1]
 		// add random string to source asset
-		var v [5]int
-		rand.Seed(time.Now().UnixNano())
-		for i := 0; i < 5; i++ {
-			v[i] = rand.Intn(100)
+		const charset = "abcdefghijklmnopqrstuvwxyz"
+		var seededRand *rand.Rand = rand.New(
+			rand.NewSource(time.Now().UnixNano()))
+		randomString := make([]byte, 3)
+		for i := range randomString {
+			randomString[i] = charset[seededRand.Intn(len(charset))]
 		}
-		fmt.Println("random integer array:", v) // [0 28 27 62 63]
-		delim := "-"
-		randomString := strings.Trim(strings.Replace(fmt.Sprint(v), " ", delim, -1), "[]")
-		assetName = assetName + "-" + randomString
+		// var v [5]int
+		// rand.Seed(time.Now().UnixNano())
+		// for i := 0; i < 2; i++ {
+		// 	v[i] = rand.Intn(100)
+		// }
+		// fmt.Println("random integer array:", v) // [0 28 27 62 63]
+		// delim := ""
+		// randomString := strings.Trim(strings.Replace(fmt.Sprint(v), " ", delim, -1), "[]")
+		assetName = assetName + "-" + string(randomString)
 		log.Println("generated assetName :", assetName)
 	}
 	log.Println("using assetName :", assetName)
@@ -141,7 +148,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	asset := &v1alpha1.Asset{}
 	objectMeta := &v1.ObjectMeta{
 		Namespace: namespace,
-		Name:      namespace + "/" + assetName,
+		Name:      assetName,
 	}
 	asset.ObjectMeta = *objectMeta
 
@@ -158,6 +165,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 		fmt.Println(err)
 		return
 	}
+	spec.Metadata.Name = namespace + "/" + assetName
 
 	reqResourceDetails, _ := json.Marshal(request.ResourceDetails)
 	err = json.Unmarshal(reqResourceDetails, &spec.Details)
