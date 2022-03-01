@@ -108,8 +108,7 @@ func ValidateFybrikModule(module *fapp.FybrikModule, taxonomyFile string) error 
 	var allErrs []*field.Error
 
 	// Convert Fybrik module Go struct to JSON
-	spec := module.Spec.DeepCopy()
-	moduleJSON, err := json.Marshal(spec)
+	moduleJSON, err := json.Marshal(&module.Spec)
 	if err != nil {
 		return err
 	}

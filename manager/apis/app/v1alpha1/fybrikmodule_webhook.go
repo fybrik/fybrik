@@ -46,8 +46,7 @@ func (r *FybrikModule) ValidateFybrikModule(taxonomyFile string) error {
 	var allErrs []*field.Error
 
 	// Convert FybrikModule Go struct to JSON
-	spec := r.Spec.DeepCopy()
-	moduleJSON, err := json.Marshal(spec)
+	moduleJSON, err := json.Marshal(&r.Spec)
 	if err != nil {
 		return err
 	}
