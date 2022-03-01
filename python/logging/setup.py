@@ -1,7 +1,8 @@
 from setuptools import setup
+import os
 
 setup(name='fybrik_python_logging',
-      version='0.1.0',
+      version=os.environ.get('VERSION', '0.1.0'),
       description='Python Logging Package for Fybrik Components',
       license='Apache License, Version 2.0',
       author='FybrikUser',
