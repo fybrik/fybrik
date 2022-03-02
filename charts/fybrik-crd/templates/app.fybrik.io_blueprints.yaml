@@ -179,7 +179,6 @@ spec:
                                     type: object
                                 required:
                                 - connection
-                                - vault
                                 type: object
                               source:
                                 description: Source is the where the data currently
@@ -232,7 +231,6 @@ spec:
                                     type: object
                                 required:
                                 - connection
-                                - vault
                                 type: object
                               transformations:
                                 description: Transformations are different types of
