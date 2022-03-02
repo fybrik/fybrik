@@ -71,7 +71,7 @@ type ApplicationContext struct {
 const (
 	ApplicationTaxonomy   = "/tmp/taxonomy/fybrik_application.json"
 	DataCatalogTaxonomy   = "/tmp/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
-	FybrikApplicationKind = "fybrikapplication"
+	FybrikApplicationKind = "fybrikApplication"
 )
 
 // Reconcile reconciles FybrikApplication CRD
