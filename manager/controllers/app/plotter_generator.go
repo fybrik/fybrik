@@ -75,10 +75,10 @@ func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterfac
 	}
 
 	connection := taxonomy.Connection{
-		Name: "s3",
+		Name: app.S3,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				"s3": map[string]interface{}{
+				string(app.S3): map[string]interface{}{
 					"endpoint":   bucket.Endpoint,
 					"bucket":     bucket.Name,
 					"object_key": genObjectKeyName,

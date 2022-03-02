@@ -97,7 +97,8 @@ var _ = BeforeSuite(func() {
 			fmt.Printf("Setup fake environment... \n")
 			controllerNamespace := utils.GetControllerNamespace()
 			modulesNamespace := utils.GetDefaultModulesNamespace()
-			fmt.Printf("Suite test: Using controller namespace: %s; using data access module namespace %s\n: ", controllerNamespace, modulesNamespace)
+			fmt.Printf("Suite test: Using controller namespace: %s; using data access module namespace %s\n: ",
+				controllerNamespace, modulesNamespace)
 
 			systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
 			workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetDefaultModulesNamespace()})

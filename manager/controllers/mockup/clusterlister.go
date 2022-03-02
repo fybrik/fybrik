@@ -7,6 +7,10 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster"
 )
 
+const (
+	VaultAuthPath = "kubernetes"
+)
+
 // ClusterLister is a mockup cluster manager
 type ClusterLister struct {
 }
@@ -16,11 +20,11 @@ func (m *ClusterLister) GetClusters() ([]multicluster.Cluster, error) {
 	return []multicluster.Cluster{
 		{
 			Name:     "thegreendragon",
-			Metadata: multicluster.ClusterMetadata{Region: "theshire", VaultAuthPath: "kubernetes"},
+			Metadata: multicluster.ClusterMetadata{Region: "theshire", VaultAuthPath: VaultAuthPath},
 		},
 		{
 			Name:     "neverland-cluster",
-			Metadata: multicluster.ClusterMetadata{Region: "neverland", VaultAuthPath: "kubernetes"},
+			Metadata: multicluster.ClusterMetadata{Region: "neverland", VaultAuthPath: VaultAuthPath},
 		},
 	}, nil
 }

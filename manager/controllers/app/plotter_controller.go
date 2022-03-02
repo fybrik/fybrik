@@ -30,7 +30,10 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster"
 )
 
-const PlotterFinalizerName string = "Plotter.finalizer"
+const (
+	PlotterKind          string = "Plotter"
+	PlotterFinalizerName string = "Plotter.finalizer"
+)
 
 // PlotterReconciler reconciles a Plotter object
 type PlotterReconciler struct {
@@ -43,7 +46,7 @@ type PlotterReconciler struct {
 
 // Reconcile receives a Plotter CRD
 func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	sublog := r.Log.With().Str(logging.CONTROLLER, "Plotter").Str("plotter", req.NamespacedName.String()).Logger()
+	sublog := r.Log.With().Str(logging.CONTROLLER, PlotterKind).Str("plotter", req.NamespacedName.String()).Logger()
 
 	plotter := app.Plotter{}
 	if err := r.Get(ctx, req.NamespacedName, &plotter); err != nil {
@@ -215,7 +218,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 // The key is the cluster name.
 func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]app.BlueprintSpec {
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
-	log := r.Log.With().Str(logging.CONTROLLER, "Plotter").Str(utils.FybrikAppUUID, uuid).Logger()
+	log := r.Log.With().Str(logging.CONTROLLER, PlotterKind).Str(utils.FybrikAppUUID, uuid).Logger()
 
 	log.Trace().Msg("Constructing Blueprints from Plotter")
 	moduleInstances := make([]ModuleInstanceSpec, 0)
@@ -327,6 +330,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	blueprintsMap := r.getBlueprintsMap(plotter)
 
 	var errorCollection []error
+	noRemoteBlueprintWarnMsg := "Could not yet find remote blueprint"
 	for cluster := range blueprintsMap {
 		blueprintSpec := blueprintsMap[cluster]
 		log.Trace().Msg("Handling spec for cluster " + cluster)
@@ -348,9 +352,9 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			}
 
 			if remoteBlueprint == nil {
-				log.Warn().Msg("Could not yet find remote blueprint")
+				log.Warn().Msg(noRemoteBlueprintWarnMsg)
 				isReady = false
-				r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, "Could not yet find remote blueprint")
+				r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, noRemoteBlueprintWarnMsg)
 				continue // Continue with next blueprint
 			}
 
@@ -459,7 +463,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	plotter.Status.ObservedGeneration = plotter.ObjectMeta.Generation
 	plotter.Status.ObservedState.Ready = isReady
 	plotter.Status.Assets = assetToStatusMap
-
+	plotterReadyMsg := "Plotter is ready!"
 	if isReady {
 		if plotter.Status.ReadyTimestamp == nil {
 			now := metav1.NewTime(time.Now())
@@ -467,7 +471,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 		}
 
 		if errorCollection == nil {
-			log.Trace().Str(logging.PLOTTER, plotter.Name).Msg("Plotter is ready!")
+			log.Trace().Str(logging.PLOTTER, plotter.Name).Msg(plotterReadyMsg)
 			return ctrl.Result{}, nil
 		}
 
@@ -479,7 +483,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 		requeueAfter := time.Duration(4+backoffFactor) * time.Second //nolint:revive,gomnd
 
 		log.Trace().Str(logging.PLOTTER, plotter.Name).Str("BackoffFactor", fmt.Sprint(backoffFactor)).
-			Str(logging.RESPONSETIME, elapsedTime.String()).Msg("Plotter is ready!")
+			Str(logging.RESPONSETIME, elapsedTime.String()).Msg(plotterReadyMsg)
 
 		return ctrl.Result{RequeueAfter: requeueAfter}, errorCollection
 	}
