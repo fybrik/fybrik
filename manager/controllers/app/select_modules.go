@@ -346,7 +346,7 @@ func supportsSourceInterface(edge *Edge, source *Node) bool {
 		}
 	}
 	if capability.API != nil && !hasSources {
-		apiInterface := &app.InterfaceDetails{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
+		apiInterface := &taxonomy.Interface{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
 		if match(apiInterface, source.Connection) {
 			// consumes data via API
 			source.Virtual = true
@@ -371,7 +371,7 @@ func supportsSinkInterface(edge *Edge, sink *Node) bool {
 		}
 	}
 	if capability.API != nil && !hasSinks {
-		apiInterface := &app.InterfaceDetails{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
+		apiInterface := &taxonomy.Interface{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
 		if match(apiInterface, sink.Connection) {
 			// transfers data in-memory via API
 			sink.Virtual = true

@@ -1328,7 +1328,7 @@ func TestReadAndTransform(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "s3/redact-dataset",
-		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
+		Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("17")
