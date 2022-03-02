@@ -251,13 +251,17 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 			if len(steps) > 0 {
 				lastStepAPI = steps[len(steps)-1].Parameters.API
 			}
+			assetID := ""
+			if lastStepAPI == nil {
+				assetID = datasetID
+			}
 			steps = append(steps, app.DataFlowStep{
 				Name:     "",
 				Cluster:  element.Cluster,
 				Template: string(moduleCapability.Capability),
 				Parameters: &app.StepParameters{
 					Source: &app.StepSource{
-						AssetID: datasetID,
+						AssetID: assetID,
 						API:     lastStepAPI,
 					},
 					API:     api,
