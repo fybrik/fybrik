@@ -51,7 +51,7 @@ func debug(format string, v ...interface{}) {
 	}
 }
 
-func ChartRef(hostname string, namespace string, name string, tagname string) string {
+func ChartRef(hostname, namespace, name, tagname string) string {
 	return fmt.Sprintf("%s/%s/%s:%s", hostname, namespace, name, tagname)
 }
 
@@ -76,14 +76,14 @@ type Fake struct {
 }
 
 // Uninstall helm release
-func (r *Fake) Uninstall(kubeNamespace string, releaseName string) (*release.UninstallReleaseResponse, error) {
+func (r *Fake) Uninstall(kubeNamespace, releaseName string) (*release.UninstallReleaseResponse, error) {
 	res := &release.UninstallReleaseResponse{}
 	r.release = nil
 	return res, nil
 }
 
 // Install helm release
-func (r *Fake) Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error) {
+func (r *Fake) Install(chrt *chart.Chart, kubeNamespace, releaseName string, vals map[string]interface{}) (*release.Release, error) {
 	r.release = &release.Release{
 		Name: releaseName,
 		Info: &release.Info{Status: release.StatusDeployed},
@@ -92,7 +92,7 @@ func (r *Fake) Install(chart *chart.Chart, kubeNamespace string, releaseName str
 }
 
 // Upgrade helm release
-func (r *Fake) Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error) {
+func (r *Fake) Upgrade(chrt *chart.Chart, kubeNamespace, releaseName string, vals map[string]interface{}) (*release.Release, error) {
 	r.release = &release.Release{
 		Name: releaseName,
 		Info: &release.Info{Status: release.StatusDeployed},
@@ -101,12 +101,12 @@ func (r *Fake) Upgrade(chart *chart.Chart, kubeNamespace string, releaseName str
 }
 
 // Status of helm release
-func (r *Fake) Status(kubeNamespace string, releaseName string) (*release.Release, error) {
+func (r *Fake) Status(kubeNamespace, releaseName string) (*release.Release, error) {
 	return r.release, nil
 }
 
 // RegistryLogin to docker registry v2
-func (r *Fake) RegistryLogin(hostname string, username string, password string, insecure bool) error {
+func (r *Fake) RegistryLogin(hostname, username, password string, insecure bool) error {
 	return nil
 }
 
@@ -116,22 +116,22 @@ func (r *Fake) RegistryLogout(hostname string) error {
 }
 
 // ChartPull helm chart from repo
-func (r *Fake) Pull(ref string, destination string) error {
+func (r *Fake) Pull(ref, destination string) error {
 	return nil
 }
 
 // Load helm chart
-func (r *Fake) Load(ref string, chartPath string) (*chart.Chart, error) {
+func (r *Fake) Load(ref, chartPath string) (*chart.Chart, error) {
 	return nil, nil
 }
 
 // GetResources returns allocated resources for the specified release (their current state)
-func (r *Fake) GetResources(kubeNamespace string, releaseName string) ([]*unstructured.Unstructured, error) {
+func (r *Fake) GetResources(kubeNamespace, releaseName string) ([]*unstructured.Unstructured, error) {
 	return r.resources, nil
 }
 
 // Package helm chart from repo
-func (r *Fake) Package(chartPath string, destinationPath string, version string) error {
+func (r *Fake) Package(chartPath, destinationPath, version string) error {
 	return nil
 }
 
@@ -142,9 +142,9 @@ func NewEmptyFake() *Fake {
 	}
 }
 
-func NewFake(release *release.Release, resources []*unstructured.Unstructured) *Fake {
+func NewFake(rls *release.Release, resources []*unstructured.Unstructured) *Fake {
 	return &Fake{
-		release:   release,
+		release:   rls,
 		resources: resources,
 	}
 }
@@ -154,7 +154,7 @@ type Impl struct {
 }
 
 // Uninstall helm release
-func (r *Impl) Uninstall(kubeNamespace string, releaseName string) (*release.UninstallReleaseResponse, error) {
+func (r *Impl) Uninstall(kubeNamespace, releaseName string) (*release.UninstallReleaseResponse, error) {
 	cfg, err := getConfig(kubeNamespace)
 	if err != nil {
 		return nil, err
@@ -164,11 +164,11 @@ func (r *Impl) Uninstall(kubeNamespace string, releaseName string) (*release.Uni
 }
 
 // Load helm chart
-func (r *Impl) Load(ref string, chartPath string) (*chart.Chart, error) {
+func (r *Impl) Load(ref, chartPath string) (*chart.Chart, error) {
 	// check for chart mounted in container
-	chart, err := loader.Load(chartsMountPath + ref)
+	chrt, err := loader.Load(chartsMountPath + ref)
 	if err == nil {
-		return chart, err
+		return chrt, nil
 	}
 	// Construct the packed chart path
 	chartRef, err := action.ParseReference(ref)
@@ -181,7 +181,7 @@ func (r *Impl) Load(ref string, chartPath string) (*chart.Chart, error) {
 }
 
 // Install helm release from packaged chart
-func (r *Impl) Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error) {
+func (r *Impl) Install(chrt *chart.Chart, kubeNamespace, releaseName string, vals map[string]interface{}) (*release.Release, error) {
 	cfg, err := getConfig(kubeNamespace)
 	if err != nil {
 		return nil, err
@@ -190,22 +190,22 @@ func (r *Impl) Install(chart *chart.Chart, kubeNamespace string, releaseName str
 	install := action.NewInstall(cfg)
 	install.ReleaseName = releaseName
 	install.Namespace = kubeNamespace
-	return install.Run(chart, vals)
+	return install.Run(chrt, vals)
 }
 
 // Upgrade helm release
-func (r *Impl) Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error) {
+func (r *Impl) Upgrade(chrt *chart.Chart, kubeNamespace, releaseName string, vals map[string]interface{}) (*release.Release, error) {
 	cfg, err := getConfig(kubeNamespace)
 	if err != nil {
 		return nil, err
 	}
 	upgrade := action.NewUpgrade(cfg)
 	upgrade.Namespace = kubeNamespace
-	return upgrade.Run(releaseName, chart, vals)
+	return upgrade.Run(releaseName, chrt, vals)
 }
 
 // Status of helm release
-func (r *Impl) Status(kubeNamespace string, releaseName string) (*release.Release, error) {
+func (r *Impl) Status(kubeNamespace, releaseName string) (*release.Release, error) {
 	cfg, err := getConfig(kubeNamespace)
 	if err != nil {
 		return nil, err
@@ -215,7 +215,7 @@ func (r *Impl) Status(kubeNamespace string, releaseName string) (*release.Releas
 }
 
 // RegistryLogin to docker registry v2
-func (r *Impl) RegistryLogin(hostname string, username string, password string, insecure bool) error {
+func (r *Impl) RegistryLogin(hostname, username, password string, insecure bool) error {
 	cfg, err := getConfig("")
 	if err != nil {
 		return err
@@ -237,7 +237,7 @@ func (r *Impl) RegistryLogout(hostname string) error {
 }
 
 // Package helm chart from repo
-func (r *Impl) Package(chartPath string, destinationPath string, version string) error {
+func (r *Impl) Package(chartPath, destinationPath, version string) error {
 	client := action.NewPackage()
 	if version != "" {
 		client.Version = version
@@ -249,7 +249,7 @@ func (r *Impl) Package(chartPath string, destinationPath string, version string)
 }
 
 // Pull helm chart from repo
-func (r *Impl) Pull(ref string, destination string) error {
+func (r *Impl) Pull(ref, destination string) error {
 	// if chart mounted in container, no need to pull
 	if _, err := os.Stat(chartsMountPath + ref); err == nil {
 		return nil
@@ -270,7 +270,7 @@ func (r *Impl) Pull(ref string, destination string) error {
 }
 
 // GetResources returns allocated resources for the specified release (their current state)
-func (r *Impl) GetResources(kubeNamespace string, releaseName string) ([]*unstructured.Unstructured, error) {
+func (r *Impl) GetResources(kubeNamespace, releaseName string) ([]*unstructured.Unstructured, error) {
 	resources := make([]*unstructured.Unstructured, 0)
 	var rel *release.Release
 	var config *action.Configuration

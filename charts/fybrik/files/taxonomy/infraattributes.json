@@ -41,7 +41,7 @@
           "type": "string"
         },
         "scale": {
-          "$ref": "adminrules.json#/definitions/RangeType"
+          "$ref": "#/definitions/RangeType"
         },
         "type": {
           "$ref": "#/definitions/AttributeType"
@@ -51,6 +51,17 @@
         },
         "value": {
           "type": "string"
+        }
+      }
+    },
+    "RangeType": {
+      "type": "object",
+      "properties": {
+        "max": {
+          "type": "integer"
+        },
+        "min": {
+          "type": "integer"
         }
       }
     }

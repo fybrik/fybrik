@@ -18,15 +18,15 @@ func NewDummyConnection() *Dummy {
 	return &Dummy{values: make(map[string]string)}
 }
 
-func (c *Dummy) LinkPolicyToIdentity(identity string, policyName string, boundedNamespace string, serviceAccount string, auth string, ttl string) error {
+func (c *Dummy) LinkPolicyToIdentity(identity, policyName, boundedNamespace, serviceAccount, auth, ttl string) error {
 	return nil
 }
 
-func (c *Dummy) RemovePolicyFromIdentity(identity string, policyName string, auth string) error {
+func (c *Dummy) RemovePolicyFromIdentity(identity, policyName, auth string) error {
 	return nil
 }
 
-func (c *Dummy) WritePolicy(policyName string, policy string) error {
+func (c *Dummy) WritePolicy(policyName, policy string) error {
 	return nil
 }
 

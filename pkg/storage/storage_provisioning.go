@@ -24,6 +24,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	specLiteral         = "spec"
+	localLiteral        = "local"
+	statusLiteral       = "status"
+	bucketKey           = "bucket"
+	secretNameKey       = "secret-name"
+	scecretNamespaceKey = "secret-namespace"
+	endpointKey         = "endpoint"
+	provisionKey        = "provision"
+)
+
 var (
 	// GroupVersion is group version used to register these objects
 	GroupVersion = schema.GroupVersion{Group: "com.ie.ibm.hpsys", Version: "v1alpha1"}
@@ -66,7 +77,7 @@ func NewProvisionImpl(c client.Client) *ProvisionImpl {
 	}
 }
 
-func newDatasetAsUnstructured(name string, namespace string) *unstructured.Unstructured {
+func newDatasetAsUnstructured(name, namespace string) *unstructured.Unstructured {
 	object := &unstructured.Unstructured{}
 	object.SetGroupVersionKind(schema.GroupVersionKind{Group: GroupVersion.Group, Version: GroupVersion.Version, Kind: "Dataset"})
 	object.SetNamespace(namespace)
@@ -74,7 +85,7 @@ func newDatasetAsUnstructured(name string, namespace string) *unstructured.Unstr
 	return object
 }
 
-func (r *ProvisionImpl) getDatasetAsUnstructured(name string, namespace string) (*unstructured.Unstructured, error) {
+func (r *ProvisionImpl) getDatasetAsUnstructured(name, namespace string) (*unstructured.Unstructured, error) {
 	object := &unstructured.Unstructured{}
 	object.SetGroupVersionKind(schema.GroupVersionKind{Group: GroupVersion.Group, Version: GroupVersion.Version, Kind: "Dataset"})
 	object.SetNamespace(namespace)
@@ -97,16 +108,16 @@ func getValue(obj map[string]interface{}, path ...string) string {
 
 func equal(required *ProvisionedBucket, existing *unstructured.Unstructured) bool {
 	obj := existing.UnstructuredContent()
-	if required.Name != getValue(obj, "spec", "local", "bucket") {
+	if required.Name != getValue(obj, specLiteral, localLiteral, bucketKey) {
 		return false
 	}
-	if required.Endpoint != getValue(obj, "spec", "local", "endpoint") {
+	if required.Endpoint != getValue(obj, specLiteral, localLiteral, endpointKey) {
 		return false
 	}
-	if required.SecretRef.Name != getValue(obj, "spec", "local", "secret-name") {
+	if required.SecretRef.Name != getValue(obj, specLiteral, localLiteral, secretNameKey) {
 		return false
 	}
-	if required.SecretRef.Namespace != getValue(obj, "spec", "local", "secret-namespace") {
+	if required.SecretRef.Namespace != getValue(obj, specLiteral, localLiteral, scecretNamespaceKey) {
 		return false
 	}
 	return true
@@ -121,24 +132,24 @@ func (r *ProvisionImpl) CreateDataset(ref *types.NamespacedName, bucket *Provisi
 			return nil
 		}
 		// re-create the dataset
-		if err = r.DeleteDataset(ref); err != nil {
+		if err = r.DeleteDataset(ref); err != nil { //nolint:gocritic // Two lints conflicting on err assginment
 			return err
 		}
 	}
 	values := map[string]string{
-		"type":             "COS",
-		"secret-name":      bucket.SecretRef.Name,
-		"secret-namespace": bucket.SecretRef.Namespace,
-		"endpoint":         bucket.Endpoint,
-		"bucket":           bucket.Name,
-		"provision":        "true"}
+		"type":              "COS",
+		secretNameKey:       bucket.SecretRef.Name,
+		scecretNamespaceKey: bucket.SecretRef.Namespace,
+		endpointKey:         bucket.Endpoint,
+		bucketKey:           bucket.Name,
+		provisionKey:        "true"}
 
 	dataset := newDatasetAsUnstructured(ref.Name, ref.Namespace)
 	dataset.SetLabels(map[string]string{
 		"fybrik.io/owner":  owner.Namespace + "." + owner.Name,
 		"remove-on-delete": "true"})
 
-	if err = unstructured.SetNestedStringMap(dataset.Object, values, "spec", "local"); err != nil {
+	if err := unstructured.SetNestedStringMap(dataset.Object, values, specLiteral, localLiteral); err != nil {
 		return err
 	}
 	return r.Client.Create(context.Background(), dataset)
@@ -172,8 +183,8 @@ func (r *ProvisionImpl) GetDatasetStatus(ref *types.NamespacedName) (*Provisione
 	if err != nil {
 		return nil, err
 	}
-	status := getValue(dataset.Object, "status", "provision", "status")
-	info := getValue(dataset.Object, "status", "provision", "info")
+	status := getValue(dataset.Object, statusLiteral, provisionKey, statusLiteral)
+	info := getValue(dataset.Object, statusLiteral, provisionKey, "info")
 	return &ProvisionedStorageStatus{Provisioned: status == "OK", ErrorMsg: info}, nil
 }
 

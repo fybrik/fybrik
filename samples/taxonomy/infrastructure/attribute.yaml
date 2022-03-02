@@ -1,0 +1,6 @@
+definitions:
+  Attribute:
+    enum:
+      - storage-cost
+      - bandwidth
+    

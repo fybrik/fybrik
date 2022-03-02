@@ -45,6 +45,12 @@ func (d *DataCatalogDummy) GetAssetInfo(in *datacatalog.GetAssetRequest, creds s
 	return nil, errors.New(app.InvalidAssetID)
 }
 
+func (d *DataCatalogDummy) CreateAssetInfo(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
+	// TODO
+	// will be provide a proper implementation once the implementation of CreateAssetInfo in katalog-connector is completed in a future PR. Till then a dummy implementation is provided.
+	return &datacatalog.CreateAssetResponse{AssetID: "testAssetID"}, nil
+}
+
 func (d *DataCatalogDummy) Close() error {
 	return nil
 }
@@ -125,7 +131,7 @@ func NewTestCatalog() *DataCatalogDummy {
 			Tags:      &tags,
 		},
 		Credentials: dummyCredentials,
-		Details: datacatalog.ResourceDetails{
+		ResourceDetails: datacatalog.ResourceDetails{
 			Connection: s3Connection,
 			DataFormat: csvFormat,
 		},
@@ -138,7 +144,7 @@ func NewTestCatalog() *DataCatalogDummy {
 			Tags:      &tags,
 		},
 		Credentials: dummyCredentials,
-		Details: datacatalog.ResourceDetails{
+		ResourceDetails: datacatalog.ResourceDetails{
 			Connection: s3Connection,
 			DataFormat: parquetFormat,
 		},
@@ -151,7 +157,7 @@ func NewTestCatalog() *DataCatalogDummy {
 			Tags:      &tags,
 		},
 		Credentials: dummyCredentials,
-		Details: datacatalog.ResourceDetails{
+		ResourceDetails: datacatalog.ResourceDetails{
 			Connection: s3Connection,
 			DataFormat: csvFormat,
 		},
@@ -164,7 +170,7 @@ func NewTestCatalog() *DataCatalogDummy {
 			Tags:      &tags,
 		},
 		Credentials: dummyCredentials,
-		Details: datacatalog.ResourceDetails{
+		ResourceDetails: datacatalog.ResourceDetails{
 			Connection: db2Connection,
 		},
 	}
@@ -176,7 +182,7 @@ func NewTestCatalog() *DataCatalogDummy {
 			Tags:      &tags,
 		},
 		Credentials: dummyCredentials,
-		Details: datacatalog.ResourceDetails{
+		ResourceDetails: datacatalog.ResourceDetails{
 			Connection: kafkaConnection,
 			DataFormat: jsonFormat,
 		},

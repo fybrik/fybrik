@@ -9,5 +9,7 @@ data:
   ClusterName: {{ required "cluster name must be set" .Values.cluster.name | quote }}
   Region: {{ required "cluster region must be set" .Values.cluster.region | quote }}
   Zone: {{ .Values.cluster.zone | quote }}
+  {{- if .Values.coordinator.vault.enabled }}
   VaultAuthPath: {{ required "vaultAuthPath must be set" .Values.cluster.vaultAuthPath | quote }}
+  {{- end }}
 {{- end }}

@@ -141,8 +141,9 @@ func TestHelmRelease(t *testing.T) {
 	assert.Nil(t, err)
 	Log(t, "upgrade", err)
 
+	var rel *release.Release
 	assert.Eventually(t, func() bool {
-		rel, err := impl.Status(kubeNamespace, releaseName)
+		rel, err = impl.Status(kubeNamespace, releaseName)
 		assert.Nil(t, err)
 		return rel.Info.Status == release.StatusDeployed
 	}, time.Minute, time.Second)

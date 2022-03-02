@@ -12,12 +12,13 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 )
 
-// ContextInterface is an interface for communication with a generated resource (e.g. Blueprint)
+// ContextInterface is an interface for communication with a generated resource
 type ContextInterface interface {
 	ResourceExists(ref *app.ResourceReference) bool
 	CreateOrUpdateResource(owner *app.ResourceReference, ref *app.ResourceReference, plotterSpec *app.PlotterSpec,
@@ -85,6 +86,7 @@ func (c *PlotterInterface) CreateOrUpdateResource(owner, ref *app.ResourceRefere
 	}
 	if _, err := ctrl.CreateOrUpdate(context.Background(), c.Client, plotter, func() error {
 		plotter.Spec = *plotterSpec
+		ctrlutil.AddFinalizer(plotter, PlotterFinalizerName)
 		plotter.Labels = labels
 		if plotter.Labels == nil {
 			plotter.Labels = make(map[string]string)

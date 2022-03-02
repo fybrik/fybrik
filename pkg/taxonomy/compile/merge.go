@@ -37,6 +37,7 @@ func maybeOverrideString(dst *string, src string) {
 	}
 }
 
+//nolint:funlen,gocyclo
 func mergeSchemaRef(dst, src *model.SchemaRef) *model.SchemaRef {
 	if dst == nil {
 		return src

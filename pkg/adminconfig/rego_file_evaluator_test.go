@@ -14,43 +14,11 @@ import (
 
 	adminconfig "fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/logging"
-	"fybrik.io/fybrik/pkg/model/adminrules"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 )
-
-func EvaluatorWithInvalidRules() *adminconfig.RegoPolicyEvaluator {
-	module := `
-		package adminconfig
-
-		config[{"capability": "read", "decision": decision}] {
-			input.workload.properties.rule == "test-deployment"
-			policy := {"ID": "invlaid-status"}
-			decision := {"policy": policy, "deploy": "anything"}
-		}
-
-		config[{"capability": "read", "decision": decision}] {
-			input.workload.properties.rule == "test-required-policy-id"
-			policy := {"name": "invalid-attribute"}
-			decision := {"policy": policy}
-		}
-	`
-	// Compile the module. The keys are used as identifiers in error messages.
-	compiler, err := ast.CompileModules(map[string]string{
-		"example.rego": module,
-	})
-	Expect(err).ToNot(HaveOccurred())
-
-	rg := rego.New(
-		rego.Query("data.adminconfig"),
-		rego.Compiler(compiler),
-	)
-	query, err := rg.PrepareForEval(context.Background())
-	Expect(err).ToNot(HaveOccurred())
-	return &adminconfig.RegoPolicyEvaluator{Log: logging.LogInit("test", "ConfigPolicyEvaluator"), Query: query}
-}
 
 func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 	module := `
@@ -113,39 +81,6 @@ func TestRegoFileEvaluator(t *testing.T) {
 	RunSpecs(t, "Config Policy Evaluator Suite")
 }
 
-var _ = Describe("Invalid structure", func() {
-	evaluator := EvaluatorWithInvalidRules()
-	It("Invalid deployment status", func() {
-		in := adminconfig.EvaluatorInput{
-			Workload: adminconfig.WorkloadInfo{
-				Properties: taxonomy.AppInfo{
-					Properties: serde.Properties{
-						Items: map[string]interface{}{"rule": "test-deployment"},
-					},
-				},
-			},
-		}
-		out, err := evaluator.Evaluate(&in)
-		Expect(err).To(HaveOccurred())
-		Expect(out.Valid).To(Equal(false))
-	})
-
-	It("Missing policy id", func() {
-		in := adminconfig.EvaluatorInput{
-			Workload: adminconfig.WorkloadInfo{
-				Properties: taxonomy.AppInfo{
-					Properties: serde.Properties{
-						Items: map[string]interface{}{"rule": "test-required-policy-id"},
-					},
-				},
-			},
-		}
-		out, err := evaluator.Evaluate(&in)
-		Expect(err).To(HaveOccurred())
-		Expect(out.Valid).To(Equal(false))
-	})
-})
-
 var _ = Describe("Evaluate a policy", func() {
 	evaluator := BaseEvaluator()
 	geo := "theshire"
@@ -196,7 +131,7 @@ var _ = Describe("Evaluate a policy", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(adminrules.StatusFalse))
+		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(adminconfig.StatusFalse))
 	})
 
 	It("Merge", func() {
@@ -257,7 +192,7 @@ var _ = Describe("Evaluate a policy", func() {
 		out, err := evaluator.Evaluate(&in)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
-		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(adminrules.StatusFalse))
+		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(adminconfig.StatusFalse))
 	})
 
 	It("No decisions for policy set 99", func() {
