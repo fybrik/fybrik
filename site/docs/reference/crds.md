@@ -510,44 +510,17 @@ Destination is the data store to which the data will be written
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationvaultkey">vault</a></b></td>
         <td>map[string]object</td>
         <td>
           Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
         </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.assets[index].destination.connection
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexdestination)</sup></sup>
-
-
-
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationconnection">connection</a></b></td>
+        <td>object</td>
         <td>
-          <br/>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -602,6 +575,33 @@ Holds details for retrieving credentials from Vault store.
 </table>
 
 
+#### Blueprint.spec.modules[key].arguments.assets[index].destination.connection
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexdestination)</sup></sup>
+
+
+
+Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
 #### Blueprint.spec.modules[key].arguments.assets[index].source
 <sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindex)</sup></sup>
 
@@ -626,44 +626,17 @@ Source is the where the data currently resides
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexsourceconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexsourcevaultkey">vault</a></b></td>
         <td>map[string]object</td>
         <td>
           Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
         </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.assets[index].source.connection
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexsource)</sup></sup>
-
-
-
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexsourceconnection">connection</a></b></td>
+        <td>object</td>
         <td>
-          <br/>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -712,6 +685,33 @@ Holds details for retrieving credentials from Vault store.
         <td>string</td>
         <td>
           SecretPath is the path of the secret holding the Credentials in Vault<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].arguments.assets[index].source.connection
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexsource)</sup></sup>
+
+
+
+Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -2888,44 +2888,17 @@ DataStore contains the details for accesing the data that are sent by catalog co
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#plotterspecassetskeyassetdetailsconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b><a href="#plotterspecassetskeyassetdetailsvaultkey">vault</a></b></td>
         <td>map[string]object</td>
         <td>
           Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
         </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.assets[key].assetDetails.connection
-<sup><sup>[↩ Parent](#plotterspecassetskeyassetdetails)</sup></sup>
-
-
-
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecassetskeyassetdetailsconnection">connection</a></b></td>
+        <td>object</td>
         <td>
-          <br/>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -2974,6 +2947,33 @@ Holds details for retrieving credentials from Vault store.
         <td>string</td>
         <td>
           SecretPath is the path of the secret holding the Credentials in Vault<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.assets[key].assetDetails.connection
+<sup><sup>[↩ Parent](#plotterspecassetskeyassetdetails)</sup></sup>
+
+
+
+Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
         </td>
         <td>true</td>
       </tr></tbody>
