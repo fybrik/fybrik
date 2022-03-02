@@ -81,33 +81,6 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	output := render.AsCode(request)
 	log.Println("CreateAssetRequest - render as code output: ", output)
 
-	// example CreateAssetRequest in JSON
-	// {
-	// 	"destinationCatalogID": "testcatalogid",
-	// 	"resourceMetadata": {
-	// 		"name": "demoAsset",
-	// 		"owner": "Alice",
-	// 		"geography": "us-south",
-	// 		"tags": {
-	// 			"finance": true
-	// 		},
-	// 		"columns": [
-	// 			{
-	// 				"name": "c1",
-	// 				"tags": {
-	// 					"PII": true
-	// 				}
-	// 			}
-	// 		]
-	// 	},
-	// 	"resourceDetails": {
-	// 		"connection": {
-	// 			"name": "s3"
-	// 		}
-	// 	},
-	// 	"credentials": "http://fybrik-system:8200/v1/kubernetes-secrets/wkc-creds?namespace=cp4d"
-	// }
-
 	var assetName string
 	var namespace string
 	if request.DestinationAssetID != "" {
@@ -132,14 +105,6 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 		for i := range randomString {
 			randomString[i] = charset[seededRand.Intn(len(charset))]
 		}
-		// var v [5]int
-		// rand.Seed(time.Now().UnixNano())
-		// for i := 0; i < 2; i++ {
-		// 	v[i] = rand.Intn(100)
-		// }
-		// fmt.Println("random integer array:", v) // [0 28 27 62 63]
-		// delim := ""
-		// randomString := strings.Trim(strings.Replace(fmt.Sprint(v), " ", delim, -1), "[]")
 		assetName = assetName + "-" + string(randomString)
 		log.Println("generated assetName :", assetName)
 	}
