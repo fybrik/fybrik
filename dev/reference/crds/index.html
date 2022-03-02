@@ -819,15 +819,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationconnection" class="md-nav__link">
-    Blueprint.spec.modules[key].arguments.assets[index].destination.connection
+  <a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationvaultkey" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index].destination.vault[key]
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationvaultkey" class="md-nav__link">
-    Blueprint.spec.modules[key].arguments.assets[index].destination.vault[key]
+  <a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationconnection" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index].destination.connection
   </a>
   
 </li>
@@ -840,15 +840,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#blueprintspecmoduleskeyargumentsassetsindexsourceconnection" class="md-nav__link">
-    Blueprint.spec.modules[key].arguments.assets[index].source.connection
+  <a href="#blueprintspecmoduleskeyargumentsassetsindexsourcevaultkey" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index].source.vault[key]
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#blueprintspecmoduleskeyargumentsassetsindexsourcevaultkey" class="md-nav__link">
-    Blueprint.spec.modules[key].arguments.assets[index].source.vault[key]
+  <a href="#blueprintspecmoduleskeyargumentsassetsindexsourceconnection" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index].source.connection
   </a>
   
 </li>
@@ -1242,15 +1242,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#plotterspecassetskeyassetdetailsconnection" class="md-nav__link">
-    Plotter.spec.assets[key].assetDetails.connection
+  <a href="#plotterspecassetskeyassetdetailsvaultkey" class="md-nav__link">
+    Plotter.spec.assets[key].assetDetails.vault[key]
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#plotterspecassetskeyassetdetailsvaultkey" class="md-nav__link">
-    Plotter.spec.assets[key].assetDetails.vault[key]
+  <a href="#plotterspecassetskeyassetdetailsconnection" class="md-nav__link">
+    Plotter.spec.assets[key].assetDetails.connection
   </a>
   
 </li>
@@ -1916,15 +1916,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationconnection" class="md-nav__link">
-    Blueprint.spec.modules[key].arguments.assets[index].destination.connection
+  <a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationvaultkey" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index].destination.vault[key]
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationvaultkey" class="md-nav__link">
-    Blueprint.spec.modules[key].arguments.assets[index].destination.vault[key]
+  <a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationconnection" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index].destination.connection
   </a>
   
 </li>
@@ -1937,15 +1937,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#blueprintspecmoduleskeyargumentsassetsindexsourceconnection" class="md-nav__link">
-    Blueprint.spec.modules[key].arguments.assets[index].source.connection
+  <a href="#blueprintspecmoduleskeyargumentsassetsindexsourcevaultkey" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index].source.vault[key]
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#blueprintspecmoduleskeyargumentsassetsindexsourcevaultkey" class="md-nav__link">
-    Blueprint.spec.modules[key].arguments.assets[index].source.vault[key]
+  <a href="#blueprintspecmoduleskeyargumentsassetsindexsourceconnection" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index].source.connection
   </a>
   
 </li>
@@ -2339,15 +2339,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#plotterspecassetskeyassetdetailsconnection" class="md-nav__link">
-    Plotter.spec.assets[key].assetDetails.connection
+  <a href="#plotterspecassetskeyassetdetailsvaultkey" class="md-nav__link">
+    Plotter.spec.assets[key].assetDetails.vault[key]
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#plotterspecassetskeyassetdetailsvaultkey" class="md-nav__link">
-    Plotter.spec.assets[key].assetDetails.vault[key]
+  <a href="#plotterspecassetskeyassetdetailsconnection" class="md-nav__link">
+    Plotter.spec.assets[key].assetDetails.connection
   </a>
   
 </li>
@@ -2992,39 +2992,17 @@
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationvaultkey">vault</a></b></td>
         <td>map[string]object</td>
         <td>
           Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
         </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-<h4 id="blueprintspecmoduleskeyargumentsassetsindexdestinationconnection">Blueprint.spec.modules[key].arguments.assets[index].destination.connection</h4>
-<p><sup><sup><a href="#blueprintspecmoduleskeyargumentsassetsindexdestination">↩ Parent</a></sup></sup></p>
-<p>Connection has the relevant details for accesing the data (url, table, ssl, etc.)</p>
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationconnection">connection</a></b></td>
+        <td>object</td>
         <td>
-          <br/>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3073,6 +3051,28 @@
       </tr></tbody>
 </table>
 
+<h4 id="blueprintspecmoduleskeyargumentsassetsindexdestinationconnection">Blueprint.spec.modules[key].arguments.assets[index].destination.connection</h4>
+<p><sup><sup><a href="#blueprintspecmoduleskeyargumentsassetsindexdestination">↩ Parent</a></sup></sup></p>
+<p>Connection has the relevant details for accesing the data (url, table, ssl, etc.)</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
 <h4 id="blueprintspecmoduleskeyargumentsassetsindexsource">Blueprint.spec.modules[key].arguments.assets[index].source</h4>
 <p><sup><sup><a href="#blueprintspecmoduleskeyargumentsassetsindex">↩ Parent</a></sup></sup></p>
 <p>Source is the where the data currently resides</p>
@@ -3093,39 +3093,17 @@
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexsourceconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexsourcevaultkey">vault</a></b></td>
         <td>map[string]object</td>
         <td>
           Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
         </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-<h4 id="blueprintspecmoduleskeyargumentsassetsindexsourceconnection">Blueprint.spec.modules[key].arguments.assets[index].source.connection</h4>
-<p><sup><sup><a href="#blueprintspecmoduleskeyargumentsassetsindexsource">↩ Parent</a></sup></sup></p>
-<p>Connection has the relevant details for accesing the data (url, table, ssl, etc.)</p>
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexsourceconnection">connection</a></b></td>
+        <td>object</td>
         <td>
-          <br/>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3169,6 +3147,28 @@
         <td>string</td>
         <td>
           SecretPath is the path of the secret holding the Credentials in Vault<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="blueprintspecmoduleskeyargumentsassetsindexsourceconnection">Blueprint.spec.modules[key].arguments.assets[index].source.connection</h4>
+<p><sup><sup><a href="#blueprintspecmoduleskeyargumentsassetsindexsource">↩ Parent</a></sup></sup></p>
+<p>Connection has the relevant details for accesing the data (url, table, ssl, etc.)</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -5074,39 +5074,17 @@
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#plotterspecassetskeyassetdetailsconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b><a href="#plotterspecassetskeyassetdetailsvaultkey">vault</a></b></td>
         <td>map[string]object</td>
         <td>
           Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
         </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-<h4 id="plotterspecassetskeyassetdetailsconnection">Plotter.spec.assets[key].assetDetails.connection</h4>
-<p><sup><sup><a href="#plotterspecassetskeyassetdetails">↩ Parent</a></sup></sup></p>
-<p>Connection has the relevant details for accesing the data (url, table, ssl, etc.)</p>
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecassetskeyassetdetailsconnection">connection</a></b></td>
+        <td>object</td>
         <td>
-          <br/>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -5150,6 +5128,28 @@
         <td>string</td>
         <td>
           SecretPath is the path of the secret holding the Credentials in Vault<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecassetskeyassetdetailsconnection">Plotter.spec.assets[key].assetDetails.connection</h4>
+<p><sup><sup><a href="#plotterspecassetskeyassetdetails">↩ Parent</a></sup></sup></p>
+<p>Connection has the relevant details for accesing the data (url, table, ssl, etc.)</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
         </td>
         <td>true</td>
       </tr></tbody>
