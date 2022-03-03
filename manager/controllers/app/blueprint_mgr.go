@@ -22,25 +22,25 @@ func (r *PlotterReconciler) RefineInstances(instances []ModuleInstanceSpec) []Mo
 	newInstances := make([]ModuleInstanceSpec, 0)
 	// map instances to be unified, according to the cluster and module
 	instanceMap := make(map[string]ModuleInstanceSpec)
-	for _, moduleInstance := range instances {
+	for ind := range instances {
 		// If the module scope is of type "asset" then avoid trying to unify it with another module.
 		// Copy module is assumed to be of "asset" scope
-		if moduleInstance.Scope == app.Asset {
-			newInstances = append(newInstances, moduleInstance)
+		if instances[ind].Scope == app.Asset {
+			newInstances = append(newInstances, instances[ind])
 			continue
 		}
-		key := moduleInstance.Module.Name + "," + moduleInstance.ClusterName
+		key := instances[ind].Module.Name + "," + instances[ind].ClusterName
 		if instance, ok := instanceMap[key]; !ok {
-			instanceMap[key] = moduleInstance
+			instanceMap[key] = instances[ind]
 		} else {
-			instance.Module.Arguments.Assets = append(instance.Module.Arguments.Assets, moduleInstance.Module.Arguments.Assets...)
+			instance.Module.Arguments.Assets = append(instance.Module.Arguments.Assets, instances[ind].Module.Arguments.Assets...)
 			// AssetID is used for step name generation
-			instance.Module.AssetIDs = append(instance.Module.AssetIDs, moduleInstance.Module.AssetIDs...)
+			instance.Module.AssetIDs = append(instance.Module.AssetIDs, instances[ind].Module.AssetIDs...)
 			instanceMap[key] = instance
 		}
 	}
-	for _, moduleInstance := range instanceMap {
-		newInstances = append(newInstances, moduleInstance)
+	for moduleName := range instanceMap {
+		newInstances = append(newInstances, instanceMap[moduleName])
 	}
 	return newInstances
 }
@@ -50,8 +50,8 @@ func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, p
 	blueprintMap := make(map[string]app.BlueprintSpec)
 	instanceMap := make(map[string][]ModuleInstanceSpec)
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
-	for _, moduleInstance := range instances {
-		instanceMap[moduleInstance.ClusterName] = append(instanceMap[moduleInstance.ClusterName], moduleInstance)
+	for ind := range instances {
+		instanceMap[instances[ind].ClusterName] = append(instanceMap[instances[ind].ClusterName], instances[ind])
 	}
 	for key, instanceList := range instanceMap {
 		// unite several instances of a read/write module
@@ -60,7 +60,7 @@ func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, p
 	}
 
 	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).Logger()
-	logging.LogStructure("BlueprintMap", blueprintMap, log, false, false)
+	logging.LogStructure("BlueprintMap", blueprintMap, &log, false, false)
 	return blueprintMap
 }
 
@@ -80,15 +80,15 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec, cl
 		},
 	}
 	// Create the map that contains BlueprintModules
-	for _, moduleInstance := range instances {
-		modulename := moduleInstance.Module.Name
+	for ind := range instances {
+		modulename := instances[ind].Module.Name
 		instanceName := modulename
-		if moduleInstance.Scope == app.Asset {
+		if instances[ind].Scope == app.Asset {
 			// Need unique name for each module
 			// if the module scope is one per asset then concat the id of the asset to it
-			instanceName = utils.CreateStepName(modulename, moduleInstance.Module.AssetIDs[0])
+			instanceName = utils.CreateStepName(modulename, instances[ind].Module.AssetIDs[0])
 		}
-		spec.Modules[instanceName] = moduleInstance.Module
+		spec.Modules[instanceName] = instances[ind].Module
 	}
 	return spec
 }

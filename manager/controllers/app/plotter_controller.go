@@ -159,7 +159,7 @@ func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType tax
 
 // convertPlotterModuleToBlueprintModule converts an object of type PlotterModulesSpec to type ModuleInstanceSpec
 func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.Plotter,
-	plotterModule PlotterModulesSpec) *ModuleInstanceSpec {
+	plotterModule *PlotterModulesSpec) *ModuleInstanceSpec {
 	blueprintModule := &ModuleInstanceSpec{
 		Module: app.BlueprintModule{
 			Name:  plotterModule.ModuleName,
@@ -230,7 +230,6 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]ap
 			for _, subFlowStep := range subFlow.Steps {
 				for _, seqStep := range subFlowStep {
 					stepTemplate := plotter.Spec.Templates[seqStep.Template]
-					// isPrimaryModule := true
 					for _, module := range stepTemplate.Modules {
 						moduleArgs := seqStep.Parameters
 
@@ -250,7 +249,7 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]ap
 								break
 							}
 						}
-						plotterModule := PlotterModulesSpec{
+						plotterModule := &PlotterModulesSpec{
 							ModuleArguments: moduleArgs,
 							AssetID:         flow.AssetID,
 							FlowType:        subFlow.FlowType,
@@ -315,7 +314,7 @@ func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap m
 //nolint:funlen,gocyclo
 func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []error) {
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
-	log := r.Log.With().Str(logging.CONTROLLER, "Plotter").Str(utils.FybrikAppUUID, uuid).Logger()
+	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).Logger()
 
 	if plotter.Status.Blueprints == nil {
 		plotter.Status.Blueprints = make(map[string]app.MetaBlueprint)
@@ -358,7 +357,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 				continue // Continue with next blueprint
 			}
 
-			logging.LogStructure("Remote blueprint", remoteBlueprint, log, false, true)
+			logging.LogStructure("Remote blueprint", remoteBlueprint, &log, false, true)
 
 			if !reflect.DeepEqual(&blueprintSpec, &remoteBlueprint.Spec) {
 				r.Log.Warn().Msg("Blueprint specs differ.  plotter.generation " + fmt.Sprint(plotter.Generation) +
@@ -370,7 +369,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 					err := r.ClusterManager.UpdateBlueprint(cluster, remoteBlueprint)
 					if err != nil {
 						log.Error().Err(err).Msg("Could not update blueprint")
-						logging.LogStructure("blueprint spec", blueprintSpec, log, false, false)
+						logging.LogStructure("blueprint spec", blueprintSpec, &log, false, false)
 						errorCollection = append(errorCollection, err)
 						isReady = false
 						r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, err.Error())
@@ -389,7 +388,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 				continue
 			}
 
-			logging.LogStructure("Remote blueprint status", remoteBlueprint.Status, log, false, false)
+			logging.LogStructure("Remote blueprint status", remoteBlueprint.Status, &log, false, false)
 
 			plotter.Status.Blueprints[cluster] = app.CreateMetaBlueprint(remoteBlueprint)
 

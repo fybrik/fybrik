@@ -25,14 +25,20 @@ import (
 )
 
 const (
-	specLiteral         = "spec"
-	localLiteral        = "local"
-	statusLiteral       = "status"
-	bucketKey           = "bucket"
-	secretNameKey       = "secret-name"
-	scecretNamespaceKey = "secret-namespace"
-	endpointKey         = "endpoint"
-	provisionKey        = "provision"
+	OwnerLabel          = "fybrik.io/owner"
+	RemoveOnDeleteLabel = "remove-on-delete"
+	RequestTrue         = "true"
+	RequestFalse        = "false"
+	SpecKey             = "spec"
+	LocalKey            = "local"
+	StatusKey           = "status"
+	BucketKey           = "bucket"
+	SecretNameKey       = "secret-name"
+	SecretNamespaceKey  = "secret-namespace"
+	EndpointKey         = "endpoint"
+	ProvisionKey        = "provision"
+	ProvisionInfoKey    = "info"
+	ProvisionStatusKey  = "status"
 )
 
 var (
@@ -86,11 +92,7 @@ func newDatasetAsUnstructured(name, namespace string) *unstructured.Unstructured
 }
 
 func (r *ProvisionImpl) getDatasetAsUnstructured(name, namespace string) (*unstructured.Unstructured, error) {
-	object := &unstructured.Unstructured{}
-	object.SetGroupVersionKind(schema.GroupVersionKind{Group: GroupVersion.Group, Version: GroupVersion.Version, Kind: "Dataset"})
-	object.SetNamespace(namespace)
-	object.SetName(name)
-
+	object := newDatasetAsUnstructured(name, namespace)
 	objectKey := client.ObjectKeyFromObject(object)
 
 	if err := r.Client.Get(context.Background(), objectKey, object); err != nil {
@@ -108,16 +110,16 @@ func getValue(obj map[string]interface{}, path ...string) string {
 
 func equal(required *ProvisionedBucket, existing *unstructured.Unstructured) bool {
 	obj := existing.UnstructuredContent()
-	if required.Name != getValue(obj, specLiteral, localLiteral, bucketKey) {
+	if required.Name != getValue(obj, SpecKey, LocalKey, BucketKey) {
 		return false
 	}
-	if required.Endpoint != getValue(obj, specLiteral, localLiteral, endpointKey) {
+	if required.Endpoint != getValue(obj, SpecKey, LocalKey, EndpointKey) {
 		return false
 	}
-	if required.SecretRef.Name != getValue(obj, specLiteral, localLiteral, secretNameKey) {
+	if required.SecretRef.Name != getValue(obj, SpecKey, LocalKey, SecretNameKey) {
 		return false
 	}
-	if required.SecretRef.Namespace != getValue(obj, specLiteral, localLiteral, scecretNamespaceKey) {
+	if required.SecretRef.Namespace != getValue(obj, SpecKey, LocalKey, SecretNamespaceKey) {
 		return false
 	}
 	return true
@@ -137,19 +139,19 @@ func (r *ProvisionImpl) CreateDataset(ref *types.NamespacedName, bucket *Provisi
 		}
 	}
 	values := map[string]string{
-		"type":              "COS",
-		secretNameKey:       bucket.SecretRef.Name,
-		scecretNamespaceKey: bucket.SecretRef.Namespace,
-		endpointKey:         bucket.Endpoint,
-		bucketKey:           bucket.Name,
-		provisionKey:        "true"}
+		"type":             "COS",
+		SecretNameKey:      bucket.SecretRef.Name,
+		SecretNamespaceKey: bucket.SecretRef.Namespace,
+		EndpointKey:        bucket.Endpoint,
+		BucketKey:          bucket.Name,
+		ProvisionKey:       RequestTrue}
 
 	dataset := newDatasetAsUnstructured(ref.Name, ref.Namespace)
 	dataset.SetLabels(map[string]string{
-		"fybrik.io/owner":  owner.Namespace + "." + owner.Name,
-		"remove-on-delete": "true"})
+		OwnerLabel:          owner.Namespace + "." + owner.Name,
+		RemoveOnDeleteLabel: removeOnDeleteValue(false)})
 
-	if err := unstructured.SetNestedStringMap(dataset.Object, values, specLiteral, localLiteral); err != nil {
+	if err := unstructured.SetNestedStringMap(dataset.Object, values, SpecKey, LocalKey); err != nil {
 		return err
 	}
 	return r.Client.Create(context.Background(), dataset)
@@ -166,13 +168,7 @@ func (r *ProvisionImpl) SetPersistent(ref *types.NamespacedName, persistent bool
 	if labels == nil {
 		labels = make(map[string]string)
 	}
-	var removeOnDelete string
-	if persistent {
-		removeOnDelete = "false"
-	} else {
-		removeOnDelete = "true"
-	}
-	labels["remove-on-delete"] = removeOnDelete
+	labels[RemoveOnDeleteLabel] = removeOnDeleteValue(persistent)
 	existing.SetLabels(labels)
 	return r.Client.Update(context.Background(), existing)
 }
@@ -183,8 +179,8 @@ func (r *ProvisionImpl) GetDatasetStatus(ref *types.NamespacedName) (*Provisione
 	if err != nil {
 		return nil, err
 	}
-	status := getValue(dataset.Object, statusLiteral, provisionKey, statusLiteral)
-	info := getValue(dataset.Object, statusLiteral, provisionKey, "info")
+	status := getValue(dataset.Object, StatusKey, ProvisionKey, ProvisionStatusKey)
+	info := getValue(dataset.Object, StatusKey, ProvisionKey, ProvisionInfoKey)
 	return &ProvisionedStorageStatus{Provisioned: status == "OK", ErrorMsg: info}, nil
 }
 
@@ -238,7 +234,7 @@ func (r *ProvisionTest) GetDatasetStatus(ref *types.NamespacedName) (*Provisione
 			return &ProvisionedStorageStatus{Provisioned: true}, nil
 		}
 	}
-	return nil, fmt.Errorf("could not find a dataset: %s", ref.Name)
+	return nil, fmt.Errorf("could not get status of a dataset: %s", ref.Name)
 }
 
 // DeleteDataset removes an existing dataset
@@ -259,4 +255,12 @@ func (r *ProvisionTest) DeleteDataset(ref *types.NamespacedName) error {
 		return nil
 	}
 	return fmt.Errorf("could not delete a dataset %s\n%s", ref.Name, errMessage)
+}
+
+// label value based on persistency
+func removeOnDeleteValue(persistent bool) string {
+	if persistent {
+		return RequestFalse
+	}
+	return RequestTrue
 }

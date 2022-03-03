@@ -6,7 +6,7 @@ package app
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"testing"
 	"time"
 
@@ -35,7 +35,7 @@ import (
 
 // Read utility
 func readObjectFromFile(f string, obj interface{}) error {
-	bytes, err := ioutil.ReadFile(f)
+	bytes, err := os.ReadFile(f)
 	if err != nil {
 		return err
 	}
@@ -87,7 +87,7 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 		},
 		ClusterManager:  &mockup.ClusterLister{},
 		Provision:       &storage.ProvisionTest{},
-		ConfigEvaluator: adminconfig.NewRegoPolicyEvaluator(log, query),
+		ConfigEvaluator: adminconfig.NewRegoPolicyEvaluator(query),
 		Infrastructure:  infrastructureManager,
 	}
 }
@@ -233,7 +233,7 @@ func TestFybrikApplicationFinalizers(t *testing.T) {
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
 	g.Expect(r).NotTo(gomega.BeNil())
-	appContext := ApplicationContext{Application: application, Log: r.Log}
+	appContext := ApplicationContext{Application: application, Log: &r.Log}
 	g.Expect(r.reconcileFinalizers(appContext)).To(gomega.BeNil())
 	g.Expect(application.Finalizers).NotTo(gomega.BeEmpty(), "finalizers have not been created")
 	// mark application as deleted
