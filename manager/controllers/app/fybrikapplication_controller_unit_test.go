@@ -1389,7 +1389,7 @@ func TestReadAndTransform(t *testing.T) {
 	g.Expect(plotter.Spec.Flows[0].SubFlows[0].Steps[0]).To(gomega.HaveLen(2))
 }
 
-func TestWriteIsNewDataSetFalse(t *testing.T) {
+func TestWriteRegisteredAsset(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	// Set the logger to development mode for verbose logs.
@@ -1401,21 +1401,6 @@ func TestWriteIsNewDataSetFalse(t *testing.T) {
 	}
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikapplication-write-AssetExists.yaml", application)).NotTo(gomega.HaveOccurred())
-	application.Spec.Data[0] = app.DataContext{
-		DataSetID:    "s3/original-dataset",
-		Flow:         taxonomy.ReadFlow,
-		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
-	}
-	application.Spec.Data[1] = app.DataContext{
-		DataSetID:    "s3/new-dataset",
-		Flow:         taxonomy.WriteFlow,
-		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
-	}
-	application.Spec.Data[2] = app.DataContext{
-		DataSetID:    "s3/new-dataset",
-		Flow:         taxonomy.ReadFlow,
-		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
-	}
 	application.SetGeneration(1)
 	application.SetUID("17")
 	// Objects to track in the fake client.
@@ -1450,6 +1435,7 @@ func TestWriteIsNewDataSetFalse(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	g.Expect(getErrorMessages(application)).To(gomega.BeEmpty())
 	// check plotter creation
+	g.Expect(application.Status.AssetStates).To(gomega.HaveLen(2))
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 	readOriginalDatalEndpoint := application.Status.AssetStates[application.Spec.Data[0].DataSetID].Endpoint
 	g.Expect(readOriginalDatalEndpoint).To(gomega.Not(gomega.BeNil()))
@@ -1474,5 +1460,5 @@ func TestWriteIsNewDataSetFalse(t *testing.T) {
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(2))
-	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2)) // expect two template: one for read and one for write
+	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2)) // expect two templates: one for read and one for write
 }
