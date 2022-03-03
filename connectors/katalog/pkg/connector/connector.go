@@ -51,7 +51,7 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 
 	response := datacatalog.GetAssetResponse{
 		ResourceMetadata: asset.Spec.Metadata,
-		ResourceDetails:  asset.Spec.Details,
+		Details:          asset.Spec.Details,
 		Credentials:      vault.PathForReadingKubeSecret(namespace, asset.Spec.SecretRef.Name),
 	}
 

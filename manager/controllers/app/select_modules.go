@@ -76,8 +76,8 @@ func (p *PlotterGenerator) FindPaths(item *DataInfo, appContext *app.FybrikAppli
 	// data source as appears in the asset metadata
 	source := Node{
 		Connection: &app.InterfaceDetails{
-			Protocol:   item.DataDetails.ResourceDetails.Connection.Name,
-			DataFormat: item.DataDetails.ResourceDetails.DataFormat,
+			Protocol:   item.DataDetails.Details.Connection.Name,
+			DataFormat: item.DataDetails.Details.DataFormat,
 		},
 	}
 	// data sink, either a virtual endpoint in read scenarios, or a datastore as in ingest scenario

@@ -132,9 +132,9 @@ func (p *PlotterGenerator) getAssetDataStore(item *DataInfo) *app.DataStore {
 		vaultMap[string(taxonomy.ReadFlow)] = app.Vault{}
 	}
 	return &app.DataStore{
-		Connection: item.DataDetails.ResourceDetails.Connection,
+		Connection: item.DataDetails.Details.Connection,
 		Vault:      vaultMap,
-		Format:     item.DataDetails.ResourceDetails.DataFormat,
+		Format:     item.DataDetails.Details.DataFormat,
 	}
 }
 
