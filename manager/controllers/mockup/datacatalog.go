@@ -131,7 +131,7 @@ func NewTestCatalog() *DataCatalogDummy {
 			Tags:      &tags,
 		},
 		Credentials: dummyCredentials,
-		ResourceDetails: datacatalog.ResourceDetails{
+		Details: datacatalog.ResourceDetails{
 			Connection: s3Connection,
 			DataFormat: csvFormat,
 		},
@@ -144,7 +144,7 @@ func NewTestCatalog() *DataCatalogDummy {
 			Tags:      &tags,
 		},
 		Credentials: dummyCredentials,
-		ResourceDetails: datacatalog.ResourceDetails{
+		Details: datacatalog.ResourceDetails{
 			Connection: s3Connection,
 			DataFormat: parquetFormat,
 		},
@@ -157,7 +157,7 @@ func NewTestCatalog() *DataCatalogDummy {
 			Tags:      &tags,
 		},
 		Credentials: dummyCredentials,
-		ResourceDetails: datacatalog.ResourceDetails{
+		Details: datacatalog.ResourceDetails{
 			Connection: s3Connection,
 			DataFormat: csvFormat,
 		},
@@ -170,7 +170,7 @@ func NewTestCatalog() *DataCatalogDummy {
 			Tags:      &tags,
 		},
 		Credentials: dummyCredentials,
-		ResourceDetails: datacatalog.ResourceDetails{
+		Details: datacatalog.ResourceDetails{
 			Connection: db2Connection,
 		},
 	}
@@ -182,7 +182,7 @@ func NewTestCatalog() *DataCatalogDummy {
 			Tags:      &tags,
 		},
 		Credentials: dummyCredentials,
-		ResourceDetails: datacatalog.ResourceDetails{
+		Details: datacatalog.ResourceDetails{
 			Connection: kafkaConnection,
 			DataFormat: jsonFormat,
 		},

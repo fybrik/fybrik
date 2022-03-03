@@ -79,8 +79,8 @@ func (p *PlotterGenerator) FindPaths(item *DataInfo, appContext *app.FybrikAppli
 	// this node appears in the asset metadata
 	NodeFromAssetMetadata := Node{
 		Connection: &app.InterfaceDetails{
-			Protocol:   item.DataDetails.ResourceDetails.Connection.Name,
-			DataFormat: item.DataDetails.ResourceDetails.DataFormat,
+			Protocol:   item.DataDetails.Details.Connection.Name,
+			DataFormat: item.DataDetails.Details.DataFormat,
 		},
 	}
 	// this node is either a virtual endpoint, or a datastore
