@@ -165,8 +165,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			Name:  plotterModule.ModuleName,
 			Chart: plotterModule.Chart,
 			Arguments: app.ModuleArguments{
-				Assets:     []app.AssetContext{},
-				Capability: plotterModule.Capability,
+				Assets: []app.AssetContext{},
 			},
 			AssetIDs: []string{plotterModule.AssetID},
 		},
@@ -209,6 +208,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			Destination:     destDataStore,
 			AssetID:         plotterModule.AssetID,
 			Transformations: plotterModule.ModuleArguments.Actions,
+			Capability:      plotterModule.Capability,
 		},
 	}
 	return blueprintModule

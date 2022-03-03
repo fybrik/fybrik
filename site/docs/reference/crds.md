@@ -427,13 +427,6 @@ Arguments are the input parameters for a specific instance of a module.
           Assets define asset related arguments, such as data source, transformations, etc.<br/>
         </td>
         <td>false</td>
-      </tr><tr>
-        <td><b>capability</b></td>
-        <td>string</td>
-        <td>
-          Capability of the module<br/>
-        </td>
-        <td>true</td>
       </tr></tbody>
 </table>
 
@@ -480,6 +473,13 @@ AssetContext defines the input parameters for modules that access an asset
         <td>string</td>
         <td>
           AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the FybrikApplication resource<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>capability</b></td>
+        <td>string</td>
+        <td>
+          Capability of the module<br/>
         </td>
         <td>true</td>
       </tr></tbody>

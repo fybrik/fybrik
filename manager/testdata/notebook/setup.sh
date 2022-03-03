@@ -6,7 +6,8 @@ kubectl create namespace fybrik-notebook-sample
 kubectl config set-context --current --namespace=fybrik-notebook-sample
 
 # Create asset and secret
-kubectl -n fybrik-notebook-sample apply -f example-asset.yaml
+kubectl -n fybrik-notebook-sample apply -f original-asset.yaml
+kubectl -n fybrik-notebook-sample apply -f new-asset.yaml
 kubectl -n fybrik-notebook-sample apply -f s3credentials.yaml
 
 # Avoid using webhooks in tests

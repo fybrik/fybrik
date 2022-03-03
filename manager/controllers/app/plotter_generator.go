@@ -203,7 +203,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 				return err
 			}
 		}
-		if !element.Sink.Virtual {
+		if !element.Sink.Virtual && item.Context.Flow != taxonomy.WriteFlow {
 			// allocate storage and create a temoprary asset
 			if sinkDataStore, err = p.GetCopyDestination(item, element.Sink.Connection, &element.StorageAccount); err != nil {
 				p.Log.Error().Err(err).Str(logging.DATASETID, item.Context.DataSetID).Msg("Storage allocation for copy failed")
@@ -244,6 +244,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 			// clear steps
 			steps = nil
 		} else {
+			// TODO: handle the case where IsNewDataSet is true in write flow
 			if steps == nil {
 				steps = []app.DataFlowStep{}
 			}

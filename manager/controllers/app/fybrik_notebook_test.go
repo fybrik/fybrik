@@ -13,10 +13,13 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/flight"
+	"github.com/apache/arrow/go/arrow/ipc"
+	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -63,8 +66,8 @@ func TestS3Notebook(t *testing.T) {
 		Region:           &region,
 		S3ForcePathStyle: aws.Bool(true),
 	}))
-	svc := s3.New(sess)
-	object, err := svc.GetObject(&s3.GetObjectInput{
+	s3Client := s3.New(sess)
+	object, err := s3Client.GetObject(&s3.GetObjectInput{
 		Bucket: &bucket,
 		Key:    &key1,
 	})
@@ -192,9 +195,90 @@ func TestS3Notebook(t *testing.T) {
 
 	reader, err := flight.NewRecordReader(stream)
 	g.Expect(err).To(gomega.BeNil())
+
+	// write the data to a new asset
+	// TODO: create a new client based on the asset, currently using the same client
+	// as its the same server
+	writeStream, err := flightClient.DoPut(context.Background())
+	g.Expect(err).To(gomega.BeNil())
+
+	schema, err := flight.DeserializeSchema(info.Schema, memory.DefaultAllocator)
+	wr := flight.NewRecordWriter(writeStream, ipc.WithSchema(schema))
+
+	request = ArrowRequest{
+		Asset: "fybrik-notebook-sample/new-data-parquet",
+	}
+
+	marshal, err = json.Marshal(request)
+	g.Expect(err).To(gomega.BeNil())
+
+	descr := &flight.FlightDescriptor{
+		Type: flight.FlightDescriptor_CMD,
+		Cmd:  marshal,
+	}
+	wr.SetFlightDescriptor(descr)
+
 	for reader.Next() {
 		record := reader.Record()
 		defer record.Release()
+
+		err = wr.Write(record)
+		g.Expect(err).To(gomega.BeNil())
+
+		g.Expect(record.ColumnName(0)).To(gomega.Equal("step"))
+		g.Expect(record.ColumnName(1)).To(gomega.Equal("type"))
+		g.Expect(record.ColumnName(3)).To(gomega.Equal("nameOrig"))
+		column := record.Column(3) // Check out the third 4th column that should be nameOrig and redacted
+
+		// Check that data of nameOrig column is the correct size and all records are redacted
+		dt := column.Data().DataType()
+		g.Expect(column.Data().Len()).To(gomega.Equal(100))
+		g.Expect(dt.ID()).To(gomega.Equal(arrow.STRING))
+		g.Expect(dt.Name()).To(gomega.Equal((&arrow.StringType{}).Name()))
+		data := array.NewStringData(column.Data())
+		for i := 0; i < data.Len(); i++ {
+			g.Expect(data.Value(i)).To(gomega.Equal("XXXXX"))
+		}
+	}
+
+	wr.Close()
+	err = writeStream.CloseSend()
+	g.Expect(err).To(gomega.BeNil())
+
+	// wait until the written data is available
+	count := 10
+	found := false
+	newBucket := "bucket2"
+	newObject := "data.parquet/"
+	for i := 1; i < count; i++ {
+		_, err := s3Client.GetObject(&s3.GetObjectInput{
+			Bucket: &newBucket,
+			Key:    &newObject,
+		})
+		if err == nil {
+			found = true
+			break
+		} else {
+			// Could not retrieve object. Assume it does not exist
+			time.Sleep(1 * time.Second)
+		}
+	}
+	g.Expect(found).To(gomega.BeTrue())
+
+	// read the new written data
+	info, err = flightClient.GetFlightInfo(context.Background(), descr)
+	g.Expect(err).To(gomega.BeNil())
+
+	newDataStream, err := flightClient.DoGet(context.Background(), info.Endpoint[0].Ticket)
+	g.Expect(err).To(gomega.BeNil())
+
+	newDataReader, err := flight.NewRecordReader(newDataStream)
+	g.Expect(err).To(gomega.BeNil())
+
+	for newDataReader.Next() {
+		record := newDataReader.Record()
+		defer record.Release()
+
 		g.Expect(record.ColumnName(0)).To(gomega.Equal("step"))
 		g.Expect(record.ColumnName(1)).To(gomega.Equal("type"))
 		g.Expect(record.ColumnName(3)).To(gomega.Equal("nameOrig"))
