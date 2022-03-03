@@ -4,7 +4,7 @@ metadata:
   name: data-csv
 spec:
   secretRef:
-    name: data-csv-creds
+    name: data-creds
   details:
     dataFormat: csv
     connection:
