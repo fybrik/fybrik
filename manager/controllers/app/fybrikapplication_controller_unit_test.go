@@ -1451,16 +1451,21 @@ func TestWriteIsNewDataSetFalse(t *testing.T) {
 	g.Expect(getErrorMessages(application)).To(gomega.BeEmpty())
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
-	readOriginaDatalEndpoint := application.Status.AssetStates[application.Spec.Data[0].DataSetID].Endpoint
-	g.Expect(readOriginaDatalEndpoint).To(gomega.Not(gomega.BeNil()))
+	readOriginalDatalEndpoint := application.Status.AssetStates[application.Spec.Data[0].DataSetID].Endpoint
+	g.Expect(readOriginalDatalEndpoint).To(gomega.Not(gomega.BeNil()))
+	readOriginalConnectionMap := readOriginalDatalEndpoint.AdditionalProperties.Items
+	g.Expect(readOriginalConnectionMap).To(gomega.HaveKey("fybrik-arrow-flight"))
+	readOriginalDataConfig := readOriginalConnectionMap["fybrik-arrow-flight"].(map[string]interface{})
+	g.Expect(readOriginalDataConfig["hostname"]).To(gomega.Equal("read-write-module"))
+
+	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 	readNewDataEndpoint := application.Status.AssetStates[application.Spec.Data[2].DataSetID].Endpoint
 	g.Expect(readNewDataEndpoint).To(gomega.Not(gomega.BeNil()))
-	readOriginaDataConnectionMap := readNewDataEndpoint.AdditionalProperties.Items
-	g.Expect(readOriginaDataConnectionMap).To(gomega.HaveKey("fybrik-arrow-flight"))
-	readOriginaDataConfig := readOriginaDataConnectionMap["fybrik-arrow-flight"].(map[string]interface{})
-	g.Expect(readOriginaDataConfig["hostname"]).To(gomega.Equal("read-write-module"))
-	readNewDataConfig := readOriginaDataConnectionMap["fybrik-arrow-flight"].(map[string]interface{})
+	readNewConnectionMap := readNewDataEndpoint.AdditionalProperties.Items
+	g.Expect(readNewConnectionMap).To(gomega.HaveKey("fybrik-arrow-flight"))
+	readNewDataConfig := readNewConnectionMap["fybrik-arrow-flight"].(map[string]interface{})
 	g.Expect(readNewDataConfig["hostname"]).To(gomega.Equal("read-write-module"))
+
 	plotterObjectKey := types.NamespacedName{
 		Namespace: application.Status.Generated.Namespace,
 		Name:      application.Status.Generated.Name,
@@ -1469,5 +1474,5 @@ func TestWriteIsNewDataSetFalse(t *testing.T) {
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(2))
-	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2)) // expect one template
+	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2)) // expect two template: one for read and one for write
 }
