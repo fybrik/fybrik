@@ -27,10 +27,10 @@ func TestBlueprint(t *testing.T) {
 			Modules: map[string]BlueprintModule{"start-instance1": {
 				Name: "start",
 				Arguments: ModuleArguments{
-					Capability: "read",
 					Assets: []AssetContext{
 						{
-							AssetID: "test-asset",
+							AssetID:    "test-asset",
+							Capability: "read",
 						},
 					},
 				},

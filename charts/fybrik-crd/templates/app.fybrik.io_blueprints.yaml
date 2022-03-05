@@ -128,6 +128,9 @@ spec:
                                   for accessing the data when it is ready It is copied
                                   from the FybrikApplication resource
                                 type: string
+                              capability:
+                                description: Capability of the module
+                                type: string
                               destination:
                                 description: Destination is the data store to which
                                   the data will be written
@@ -179,7 +182,6 @@ spec:
                                     type: object
                                 required:
                                 - connection
-                                - vault
                                 type: object
                               source:
                                 description: Source is the where the data currently
@@ -232,7 +234,6 @@ spec:
                                     type: object
                                 required:
                                 - connection
-                                - vault
                                 type: object
                               transformations:
                                 description: Transformations are different types of
@@ -249,13 +250,9 @@ spec:
                                 type: array
                             required:
                             - assetID
+                            - capability
                             type: object
                           type: array
-                        capability:
-                          description: Capability of the module
-                          type: string
-                      required:
-                      - capability
                       type: object
                     assetIds:
                       description: assetIDs indicate the assets processed by this

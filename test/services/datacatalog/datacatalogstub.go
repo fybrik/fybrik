@@ -5,7 +5,7 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -32,7 +32,7 @@ func main() {
 		}
 		log.Println("creds extracted from POST request in mockup data catalog:", creds)
 
-		input, err := ioutil.ReadAll(c.Request.Body)
+		input, err := io.ReadAll(c.Request.Body)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 			return
@@ -41,7 +41,7 @@ func main() {
 		log.Println("input extracted from POST request body in mockup data catalog:", string(input))
 		var dataCatalogReq datacatalog.GetAssetRequest
 
-		if err := json.Unmarshal(input, &dataCatalogReq); err != nil {
+		if err = json.Unmarshal(input, &dataCatalogReq); err != nil {
 			c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 			return
 		}

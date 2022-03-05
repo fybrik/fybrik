@@ -69,8 +69,9 @@ type ApplicationContext struct {
 }
 
 const (
-	ApplicationTaxonomy = "/tmp/taxonomy/fybrik_application.json"
-	DataCatalogTaxonomy = "/tmp/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
+	ApplicationTaxonomy   = "/tmp/taxonomy/fybrik_application.json"
+	DataCatalogTaxonomy   = "/tmp/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
+	FybrikApplicationKind = "fybrikApplication"
 )
 
 // Reconcile reconciles FybrikApplication CRD
@@ -78,7 +79,7 @@ const (
 // The outcome is a Plotter containing multiple Blueprints that run on different clusters
 //nolint:gocyclo
 func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	sublog := r.Log.With().Str("fybrikapplication", req.NamespacedName.String()).Logger()
+	sublog := r.Log.With().Str(FybrikApplicationKind, req.NamespacedName.String()).Logger()
 
 	sublog.Trace().Msg("*** FybrikApplication Reconcile ***")
 	// obtain FybrikApplication resource
@@ -92,7 +93,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	log := sublog.With().Str(utils.FybrikAppUUID, uuid).Logger()
 
 	// Log the fybrikapplication
-	logging.LogStructure("fybrikapplication", application, log, true, true)
+	logging.LogStructure(FybrikApplicationKind, application, log, true, true)
 	applicationContext := ApplicationContext{Log: log, Application: application, UUID: uuid}
 	if err := r.reconcileFinalizers(applicationContext); err != nil {
 		log.Error().Err(err).Msg("Could not reconcile finalizers.")

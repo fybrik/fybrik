@@ -25,6 +25,11 @@ opaServer:
     notebookSamplePolicy: |-
       package dataapi.authz
 
+      rule[{}] {
+        description := "allow the write operation"
+        input.action.actionType == "write"
+      }
+
       rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": description}] {
         description := "Redact columns tagged as PII in datasets tagged with finance = true"
         input.action.actionType == "read"

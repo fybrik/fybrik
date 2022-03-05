@@ -18,7 +18,7 @@ type GetAssetResponse struct {
 	// Source asset metadata like asset name, owner, geography, etc
 	ResourceMetadata ResourceMetadata `json:"resourceMetadata"`
 	// Source asset details like connection and data format
-	ResourceDetails ResourceDetails `json:"resourceDetails"`
+	Details ResourceDetails `json:"details"`
 	// Vault plugin path where the data credentials will be stored as kubernetes secrets
 	// This value is assumed to be known to the catalog connector.
 	Credentials string `json:"credentials"`
@@ -34,7 +34,7 @@ type CreateAssetRequest struct {
 	// Source asset metadata like asset name, owner, geography, etc
 	ResourceMetadata ResourceMetadata `json:"resourceMetadata"`
 	// Source asset details like connection and data format
-	ResourceDetails ResourceDetails `json:"resourceDetails"`
+	Details ResourceDetails `json:"details"`
 	// +kubebuilder:validation:Optional
 	// The vault plugin path where the destination data credentials will be stored as kubernetes secrets
 	Credentials string `json:"credentials"`

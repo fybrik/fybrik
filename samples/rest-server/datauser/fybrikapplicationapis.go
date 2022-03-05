@@ -16,6 +16,11 @@ import (
 	dm "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 )
 
+const (
+	uponLiteral       = " upon "
+	noDmaClinetErrMsg = "no dmaClient set"
+)
+
 var dmaClient *K8sClient
 
 // DMARoutes is a list of the REST APIs supported by the backend of the Data User GUI
@@ -42,9 +47,9 @@ func FybrikApplicationOptions(w http.ResponseWriter, r *http.Request) {
 func ListFybrikApplications(w http.ResponseWriter, r *http.Request) {
 	log.Println("In ListFybrikApplications")
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no dmaClient set")))
+		suberr := render.Render(w, r, ErrConfigProblem(errors.New(noDmaClinetErrMsg)))
 		if suberr != nil {
-			log.Printf(suberr.Error() + " upon no dmaClient set")
+			log.Printf(suberr.Error() + uponLiteral + noDmaClinetErrMsg)
 		}
 	}
 
@@ -53,7 +58,7 @@ func ListFybrikApplications(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))
 		if suberr != nil {
-			log.Printf(suberr.Error() + " upon " + err.Error())
+			log.Printf(suberr.Error() + uponLiteral + err.Error())
 		}
 		return
 	}
@@ -66,9 +71,9 @@ func ListFybrikApplications(w http.ResponseWriter, r *http.Request) {
 func GetFybrikApplication(w http.ResponseWriter, r *http.Request) {
 	log.Println("In GetFybrikApplication")
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no dmaClient set")))
+		suberr := render.Render(w, r, ErrConfigProblem(errors.New(noDmaClinetErrMsg)))
 		if suberr != nil {
-			log.Printf(suberr.Error() + " upon no dmaclient set")
+			log.Printf(suberr.Error() + uponLiteral + noDmaClinetErrMsg)
 		}
 	}
 
@@ -79,7 +84,7 @@ func GetFybrikApplication(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))
 		if suberr != nil {
-			log.Printf(suberr.Error() + " upon " + err.Error())
+			log.Printf(suberr.Error() + uponLiteral + err.Error())
 		}
 		return
 	}
@@ -91,9 +96,9 @@ func GetFybrikApplication(w http.ResponseWriter, r *http.Request) {
 func UpdateFybrikApplication(w http.ResponseWriter, r *http.Request) {
 	log.Println("In UpdateFybrikApplication")
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no dmaClient set")))
+		suberr := render.Render(w, r, ErrConfigProblem(errors.New(noDmaClinetErrMsg)))
 		if suberr != nil {
-			log.Printf(suberr.Error() + " upon no dmaclient set")
+			log.Printf(suberr.Error() + uponLiteral + noDmaClinetErrMsg)
 		}
 	}
 
@@ -106,7 +111,7 @@ func UpdateFybrikApplication(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		suberr := render.Render(w, r, ErrInvalidRequest(err))
 		if suberr != nil {
-			log.Printf(suberr.Error() + " upon " + err.Error())
+			log.Printf(suberr.Error() + uponLiteral + err.Error())
 		}
 		return
 	}
@@ -118,7 +123,7 @@ func UpdateFybrikApplication(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))
 		if suberr != nil {
-			log.Printf(suberr.Error() + " upon " + err.Error())
+			log.Printf(suberr.Error() + uponLiteral + err.Error())
 		}
 		return
 	}
@@ -130,6 +135,7 @@ func UpdateFybrikApplication(w http.ResponseWriter, r *http.Request) {
 
 // DeleteFybrikApplication deletes the FybrikApplication CRD running in the fybrik control plane,
 // and all of the components associated with it - ex: blueprint, modules that perform read, write, copy, transform, etc.
+//nolint:dupl
 func DeleteFybrikApplication(w http.ResponseWriter, r *http.Request) {
 	log.Println("In DeleteFybrikApplication")
 	if dmaClient == nil {

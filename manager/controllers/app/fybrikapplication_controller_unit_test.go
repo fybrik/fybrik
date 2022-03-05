@@ -1313,3 +1313,78 @@ func TestCopyModule(t *testing.T) {
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 }
+
+func TestReadAndTransform(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "read-test",
+		Namespace: "default",
+	}
+	application := &app.FybrikApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.Spec.Data[0] = app.DataContext{
+		DataSetID:    "s3/redact-dataset",
+		Requirements: app.DataRequirements{Interface: app.InterfaceDetails{Protocol: app.ArrowFlight}},
+	}
+	application.SetGeneration(1)
+	application.SetUID("17")
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Read module
+	readModule := &app.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	readModule.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
+	transformModule := &app.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-transform.yaml", transformModule)).NotTo(gomega.HaveOccurred())
+	transformModule.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.TODO(), transformModule)).NotTo(gomega.HaveOccurred(), "the transform module could not be created")
+
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+	g.Expect(getErrorMessages(application)).To(gomega.BeEmpty())
+	// check plotter creation
+	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
+	endpoint := application.Status.AssetStates[application.Spec.Data[0].DataSetID].Endpoint
+	g.Expect(endpoint).To(gomega.Not(gomega.BeNil()))
+	connectionMap := endpoint.AdditionalProperties.Items
+	g.Expect(connectionMap).To(gomega.HaveKey("fybrik-arrow-flight"))
+	config := connectionMap["fybrik-arrow-flight"].(map[string]interface{})
+	g.Expect(config["hostname"]).To(gomega.Equal("arrow-flight-transform"))
+	plotterObjectKey := types.NamespacedName{
+		Namespace: application.Status.Generated.Namespace,
+		Name:      application.Status.Generated.Name,
+	}
+	plotter := &app.Plotter{}
+	err = cl.Get(context.Background(), plotterObjectKey, plotter)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(1))
+	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2)) // expect two templates
+	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(1))
+	g.Expect(plotter.Spec.Flows[0].SubFlows).To(gomega.HaveLen(1))
+	g.Expect(plotter.Spec.Flows[0].SubFlows[0].Steps[0]).To(gomega.HaveLen(2))
+}

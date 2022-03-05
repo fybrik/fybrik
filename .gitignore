@@ -61,3 +61,5 @@ modules/fybrik-template/fybrik-template-0.0.0.tgz
 pipeline/custom_*
 pipeline/vault_cre*
 pipeline/custom-*
+
+dist/

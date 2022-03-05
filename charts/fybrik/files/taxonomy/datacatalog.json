@@ -6,7 +6,7 @@
       "required": [
         "destinationCatalogID",
         "resourceMetadata",
-        "resourceDetails"
+        "details"
       ],
       "properties": {
         "credentials": {
@@ -21,7 +21,7 @@
           "description": "The destination catalog id in which the new asset will be created based on the information provided in ResourceMetadata and ResourceDetails field",
           "type": "string"
         },
-        "resourceDetails": {
+        "details": {
           "$ref": "#/definitions/ResourceDetails",
           "description": "Source asset details like connection and data format"
         },
@@ -64,7 +64,7 @@
       "type": "object",
       "required": [
         "resourceMetadata",
-        "resourceDetails",
+        "details",
         "credentials"
       ],
       "properties": {
@@ -72,7 +72,7 @@
           "description": "Vault plugin path where the data credentials will be stored as kubernetes secrets This value is assumed to be known to the catalog connector.",
           "type": "string"
         },
-        "resourceDetails": {
+        "details": {
           "$ref": "#/definitions/ResourceDetails",
           "description": "Source asset details like connection and data format"
         },

@@ -16,6 +16,10 @@ import (
 	validate "fybrik.io/fybrik/pkg/taxonomy/validate"
 )
 
+const (
+	taxonomyFilePath = "/tmp/taxonomy/fybrik_application.json"
+)
+
 func (r *FybrikApplication) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
@@ -28,13 +32,13 @@ var _ webhook.Validator = &FybrikApplication{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *FybrikApplication) ValidateCreate() error {
-	taxonomyFile := "/tmp/taxonomy/fybrik_application.json"
+	taxonomyFile := taxonomyFilePath
 	return r.ValidateFybrikApplication(taxonomyFile)
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *FybrikApplication) ValidateUpdate(old runtime.Object) error {
-	taxonomyFile := "/tmp/taxonomy/fybrik_application.json"
+	taxonomyFile := taxonomyFilePath
 	return r.ValidateFybrikApplication(taxonomyFile)
 }
 
