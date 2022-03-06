@@ -31,6 +31,8 @@ jobs:
           ${{ github.workspace }}/hack/tools/bin
         key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
+    - name: install json-schema-generator
+      run: ./hack/tools/install_json-schema-generator.sh
     - name: Verify
       run: |
         make generate manifests generate-docs verify
@@ -52,6 +54,10 @@ jobs:
           ${{ github.workspace }}/hack/tools/bin
         key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
+    - name: Install tools
+      run: make install-tools
+    - name: install json-schema-generator
+      run: ./hack/tools/install_json-schema-generator.sh
     - name: Test
       run: make test
 
@@ -140,6 +146,8 @@ jobs:
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Install tools
       run: make install-tools
+    - name: install json-schema-generator
+      run: ./hack/tools/install_json-schema-generator.sh
     - name: Integration tests
       env:
         image_source_repo_password: "fake"
