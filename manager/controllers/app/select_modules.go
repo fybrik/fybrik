@@ -75,7 +75,7 @@ type Solution struct {
 func (p *PlotterGenerator) FindPaths(item *DataInfo, appContext *app.FybrikApplication) []Solution {
 	var source, destination Node
 
-	// construct two nodes of an edge:
+	// construct nodes of an edge:
 	// this node appears in the asset metadata
 	NodeFromAssetMetadata := Node{
 		Connection: &taxonomy.Interface{
@@ -85,9 +85,20 @@ func (p *PlotterGenerator) FindPaths(item *DataInfo, appContext *app.FybrikAppli
 	}
 	// this node is either a virtual endpoint, or a datastore
 	NodeFromAppRequirements := Node{Connection: &item.Context.Requirements.Interface}
+	// for write flow the dataformat in the application is not needed
+	WriteNodeFromAppRequirements := Node{
+		Connection: &taxonomy.Interface{
+			Protocol: item.Context.Requirements.Interface.Protocol,
+		},
+	}
 
 	if item.Context.Flow == taxonomy.WriteFlow {
-		source = NodeFromAppRequirements
+		if item.Context.Requirements.Interface.DataFormat != "" && item.Context.Requirements.Interface.DataFormat != item.DataDetails.Details.DataFormat {
+			p.Log.Error().Msgf("Wrong data format. Asset data format = %s, app data format = %s\n",
+				item.DataDetails.Details.DataFormat, item.Context.Requirements.Interface.DataFormat)
+			return nil
+		}
+		source = WriteNodeFromAppRequirements
 		destination = NodeFromAssetMetadata
 	} else {
 		source = NodeFromAssetMetadata
