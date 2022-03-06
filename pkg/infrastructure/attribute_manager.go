@@ -11,12 +11,13 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"fybrik.io/fybrik/pkg/logging"
 	infraattributes "fybrik.io/fybrik/pkg/model/attributes"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // A directory containing rego files that define admin config policies

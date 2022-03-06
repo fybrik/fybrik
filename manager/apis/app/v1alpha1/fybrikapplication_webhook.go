@@ -51,11 +51,10 @@ func (r *FybrikApplication) ValidateFybrikApplication(taxonomyFile string) error
 	var allErrs []*field.Error
 
 	// Convert Fybrik application Go struct to JSON
-	applicationJSON, err := json.Marshal(r)
+	applicationJSON, err := json.Marshal(&r.Spec)
 	if err != nil {
 		return err
 	}
-
 	// Validate Fybrik application against taxonomy
 	allErrs, err = validate.TaxonomyCheck(applicationJSON, taxonomyFile)
 	if err != nil {

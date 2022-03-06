@@ -1,59 +1,95 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "$id": "fybrik_module.json",
-    "title": "FybrikModule taxonomy",
-    "type": "object",
-    "description": "Values contributed to by Fybrik modules.",
-    "properties": {
-        "spec": {
-            "type": "object",
-            "properties": {
-                "pluginType": {
-                    "$ref": "taxonomy.json#/definitions/PluginType"
-                },
-                "capabilities": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "capability": {
-                                "$ref": "taxonomy.json#/definitions/Capability"
-                            },
-                            "api": {
-                                "$ref": "datacatalog.json#/definitions/ResourceDetails"
-                            },
-                            "supportedInterfaces": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "source": {
-                                            "$ref": "taxonomy.json#/definitions/Interface"
-                                        },
-                                        "sink": {
-                                            "$ref": "taxonomy.json#/definitions/Interface"
-                                        }
-                                    }
-                                }
-                            },
-                            "actions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "name": {
-                                            "$ref": "taxonomy.json#/definitions/ActionName"
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        "required": ["capability"]
-                    }
-                }
-            },
-            "required": ["capabilities"]
+  "description": "FybrikModuleSpec contains the info common to all modules, which are one of the components that process, load, write, audit, monitor the data used by the data scientist's application.",
+  "type": "object",
+  "title": "fybrik_module.json",
+  "required": [
+    "capabilities"
+  ],
+  "properties": {
+    "capabilities": {
+      "description": "Capabilities declares what this module knows how to do and the types of data it knows how to handle The key to the map is a CapabilityType string",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ModuleCapability"
+      }
+    }
+  },
+  "definitions": {
+    "ModuleCapability": {
+      "description": "Capability declares what this module knows how to do and the types of data it knows how to handle",
+      "type": "object",
+      "required": [
+        "capability"
+      ],
+      "properties": {
+        "actions": {
+          "description": "Actions are the data transformations that the module supports",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ModuleSupportedAction"
+          }
+        },
+        "api": {
+          "$ref": "datacatalog.json#/definitions/ResourceDetails",
+          "description": "API indicates to the application how to access the capabilities provided by the module"
+        },
+        "capability": {
+          "$ref": "taxonomy.json#/definitions/Capability",
+          "description": "Capability declares what this module knows how to do - ex: read, write, transform..."
+        },
+        "plugins": {
+          "description": "Plugins enable the module to add libraries to perform actions rather than implementing them by itself",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Plugin"
+          }
+        },
+        "supportedInterfaces": {
+          "description": "Copy should have one or more instances in the list, and its content should have source and sink Read should have one or more instances in the list, each with source populated Write should have one or more instances in the list, each with sink populated This field may not be required if not handling data",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ModuleInOut"
+          }
         }
+      }
     },
-    "required": ["spec"]
-} 
+    "ModuleInOut": {
+      "description": "ModuleInOut specifies the protocol and format of the data input and output by the module - if any",
+      "type": "object",
+      "properties": {
+        "sink": {
+          "$ref": "taxonomy.json#/definitions/Interface",
+          "description": "Sink specifies the output data protocol and format"
+        },
+        "source": {
+          "$ref": "taxonomy.json#/definitions/Interface",
+          "description": "Source specifies the input data protocol and format"
+        }
+      }
+    },
+    "ModuleSupportedAction": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "taxonomy.json#/definitions/ActionName",
+          "description": "Unique name of an action supported by the module"
+        }
+      }
+    },
+    "Plugin": {
+      "type": "object",
+      "required": [
+        "pluginType"
+      ],
+      "properties": {
+        "pluginType": {
+          "$ref": "taxonomy.json#/definitions/PluginType",
+          "description": "PluginType indicates the technology used for the module and the plugin to interact The values supported should come from the module taxonomy Examples of such mechanisms are vault plugins, wasm, etc"
+        }
+      }
+    }
+  }
+}

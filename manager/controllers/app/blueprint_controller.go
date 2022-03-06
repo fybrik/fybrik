@@ -225,7 +225,7 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log *zerol
 	}
 	defer func(log *zerolog.Logger) {
 		if err = os.RemoveAll(tmpDir); err != nil {
-			log.Error().Msg("Error while calling RemoveAll on directory created for pulling helm chart")
+			log.Error().Msgf("Error while calling RemoveAll on directory %s created for pulling helm chart", tmpDir)
 		}
 	}(log)
 	err = r.Helmer.Pull(chartSpec.Name, tmpDir)

@@ -33,7 +33,7 @@ type FlowRequirements struct {
 type DataRequirements struct {
 	// Interface indicates the protocol and format expected by the data user
 	// +required
-	Interface InterfaceDetails `json:"interface"`
+	Interface taxonomy.Interface `json:"interface"`
 
 	// FlowParams include the requirements for particular data flows
 	// +optional
@@ -62,6 +62,7 @@ type DataContext struct {
 }
 
 // FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.
+// +fybrik:validation:object="fybrik_application"
 type FybrikApplicationSpec struct {
 
 	// Selector enables to connect the resource to the application

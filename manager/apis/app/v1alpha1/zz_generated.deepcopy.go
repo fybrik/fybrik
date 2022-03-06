@@ -852,12 +852,12 @@ func (in *ModuleInOut) DeepCopyInto(out *ModuleInOut) {
 	*out = *in
 	if in.Source != nil {
 		in, out := &in.Source, &out.Source
-		*out = new(InterfaceDetails)
+		*out = new(taxonomy.Interface)
 		**out = **in
 	}
 	if in.Sink != nil {
 		in, out := &in.Sink, &out.Sink
-		*out = new(InterfaceDetails)
+		*out = new(taxonomy.Interface)
 		**out = **in
 	}
 }
