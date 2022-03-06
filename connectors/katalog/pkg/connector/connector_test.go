@@ -119,9 +119,9 @@ func TestCreateAssetInfo(t *testing.T) {
 		},
 	}
 	var csvFormat taxonomy.DataFormat = "csv"
-	var sourceAssetName string = "paysim-csv"
-	var destAssetName string = "new-paysim-csv"
-	var destCatalogID string = "fybrik-system"
+	var sourceAssetName = "paysim-csv"
+	var destAssetName = "new-paysim-csv"
+	var destCatalogID = "fybrik-system"
 
 	// Create a fake request to Katalog connector
 	createAssetReq := &datacatalog.CreateAssetRequest{
@@ -176,7 +176,7 @@ func TestCreateAssetInfo(t *testing.T) {
 		destAssetName2 := destCatalogID + "/" + destAssetName
 		g.Expect(&response.AssetID).To(BeEquivalentTo(&destAssetName2))
 
-		splittedID := strings.SplitN(string(destAssetName2), "/", 2)
+		splittedID := strings.SplitN(destAssetName2, "/", 2)
 		if len(splittedID) != 2 {
 			errorMessage := fmt.Sprintf("request has an invalid destAssetName %s (must be in namespace/name format)", destAssetName)
 			c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
@@ -223,7 +223,7 @@ func TestCreateAssetInfoWthNoDestinationAssetID(t *testing.T) {
 		},
 	}
 	var csvFormat taxonomy.DataFormat = "csv"
-	var sourceAssetName string = "paysim-csv"
+	var sourceAssetName = "paysim-csv"
 
 	// Create a fake request to Katalog connector
 	createAssetReq := &datacatalog.CreateAssetRequest{
@@ -280,7 +280,7 @@ func TestCreateAssetInfoWthNoDestinationAssetID(t *testing.T) {
 			BeNumerically(">", len(sourceAssetName))))
 		t.Log("response.AssetID: ", response.AssetID)
 		t.Log("sourceAssetName: ", sourceAssetName)
-		splittedID := strings.SplitN(string(response.AssetID), "/", 2)
+		splittedID := strings.SplitN(response.AssetID, "/", 2)
 		if len(splittedID) != 2 {
 			errorMessage := fmt.Sprintf("request has an invalid asset ID %s (must be in namespace/name format)", response.AssetID)
 			t.Log(errorMessage)

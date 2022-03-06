@@ -67,7 +67,7 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 
 func (r *Handler) createRandomString(length int) string {
 	const charset = "abcdefghijklmnopqrstuvwxyz"
-	var seededRand *rand.Rand = rand.New(
+	var seededRand = rand.New(
 		rand.NewSource(time.Now().UnixNano()))
 	randomString := make([]byte, length)
 	for i := range randomString {
@@ -86,8 +86,8 @@ func (r *Handler) checkIfAssetExists(namespace string, name string) error {
 }
 
 func (r *Handler) createAssetInfo(c *gin.Context) {
-	var randomStringLength int = 8
-	var retriesLimit int = 3
+	var randomStringLength = 8
+	var retriesLimit = 3
 
 	// Parse request
 	var request datacatalog.CreateAssetRequest
@@ -95,8 +95,6 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	//return errors.Wrapf(err, "%s file is not a valid draft4 JSON schema", filename)
 
 	// just for logging - start
 	b, err := json.Marshal(request)
@@ -132,11 +130,9 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 				errorMessage := fmt.Sprintf("Unsuccessful in generating destination asset id. Max retries %d exceeded", retriesLimit)
 				c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 			}
-
 		} else {
 			// request.ResourceMetadata.Name is null. Then create a random asset name with fybrik-asset as prefix
 			namespace = request.DestinationCatalogID
-
 			var i int
 			for i := 0; i < retriesLimit; i++ {
 				randomStr := r.createRandomString(randomStringLength)
