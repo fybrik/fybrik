@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"fybrik.io/fybrik/pkg/vault"
 	"github.com/rs/zerolog"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -28,6 +27,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"fybrik.io/fybrik/pkg/vault"
 
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers"

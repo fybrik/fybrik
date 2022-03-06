@@ -85,7 +85,8 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 			if err = yaml.Unmarshal(bytes, &evalStruct); err != nil {
 				return errors.Wrap(err, "Unexpected OPA response structure")
 			}
-			for _, rule := range evalStruct.Config {
+			for ind := range evalStruct.Config {
+				rule := &evalStruct.Config[ind]
 				capability := rule.Capability
 				newDecision := rule.Decision
 				// filter by policySetID
@@ -102,7 +103,7 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 				if !exists {
 					out.ConfigDecisions[capability] = newDecision
 				} else {
-					valid, mergedDecision := r.merge(newDecision, decision)
+					valid, mergedDecision := r.merge(&newDecision, &decision)
 					if !valid {
 						log.Error().Msg("Conflict while merging OPA decisions")
 						logging.LogStructure("Conflicting decisions", out, &log, true, true)
@@ -121,7 +122,7 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 // deploy: true/false take precedence over undefined, true and false result in a conflict.
 // restrictions: new pairs <key, value> are added, if both exist - compatibility is checked.
 // policy: concatenation of IDs and descriptions.
-func (r *RegoPolicyEvaluator) merge(newDecision, oldDecision Decision) (bool, Decision) {
+func (r *RegoPolicyEvaluator) merge(newDecision, oldDecision *Decision) (bool, Decision) {
 	mergedDecision := Decision{}
 	// merge deployment decisions
 	deploy := oldDecision.Deploy
