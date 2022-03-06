@@ -128,18 +128,20 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 			item.Context.Requirements.FlowParams.IsNewDataSet) {
 			// storage is required, plus more actions on copy may be needed
 			isAccountFound := false
-			for _, account := range p.StorageAccounts {
+			for accountInd := range p.StorageAccounts {
 				// validate restrictions
 				if !p.validateRestrictions(item.Configuration.ConfigDecisions[moduleCapability.Capability].
-					DeploymentRestrictions.StorageAccounts, &account.Spec, account.Name) {
-					p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msgf("storage account %s does not match the requirements", account.Name)
+					DeploymentRestrictions.StorageAccounts, &p.StorageAccounts[accountInd].Spec,
+					p.StorageAccounts[accountInd].Name) {
+					p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msgf("storage account %s does not match the requirements",
+						p.StorageAccounts[accountInd].Name)
 					continue
 				}
 				// query the policy manager whether WRITE operation is allowed
 				operation := new(policymanager.RequestAction)
 				operation.ActionType = taxonomy.WriteFlow
-				operation.Destination = string(account.Spec.Region)
-				operation.ProcessingLocation = account.Spec.Region
+				operation.Destination = string(p.StorageAccounts[accountInd].Spec.Region)
+				operation.ProcessingLocation = p.StorageAccounts[accountInd].Spec.Region
 				actions, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
 				if err != nil && err.Error() == app.WriteNotAllowed {
 					continue
@@ -150,7 +152,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 				}
 				// add WRITE actions and the selected storage account region
 				element.Actions = actions
-				element.StorageAccount = account.Spec
+				element.StorageAccount = p.StorageAccounts[accountInd].Spec
 				isAccountFound = true
 			}
 			if !isAccountFound {
@@ -187,8 +189,8 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 	for _, element := range solution.DataPath {
 		supportedCapabilities[element.Module.Spec.Capabilities[element.CapabilityIndex].Capability] = true
 	}
-	for capability, decision := range item.Configuration.ConfigDecisions {
-		if decision.Deploy == adminconfig.StatusTrue {
+	for capability := range item.Configuration.ConfigDecisions {
+		if item.Configuration.ConfigDecisions[capability].Deploy == adminconfig.StatusTrue {
 			// check that it is supported
 			if !supportedCapabilities[capability] {
 				return false
@@ -323,7 +325,7 @@ func supportsGovernanceAction(edge *Edge, action taxonomy.Action) bool {
 	return false // Action not supported by module
 }
 
-func match(source *taxonomy.Interface, sink *taxonomy.Interface) bool {
+func match(source, sink *taxonomy.Interface) bool {
 	if source == nil || sink == nil {
 		return false
 	}
