@@ -6,6 +6,7 @@ package connector
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -64,13 +65,40 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, &response)
 }
 
+func (r *Handler) createRandomString(length int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyz"
+	var seededRand *rand.Rand = rand.New(
+		rand.NewSource(time.Now().UnixNano()))
+	randomString := make([]byte, length)
+	for i := range randomString {
+		randomString[i] = charset[seededRand.Intn(len(charset))]
+	}
+	return string(randomString)
+}
+
+func (r *Handler) checkIfAssetExists(namespace string, name string) error {
+	asset := &v1alpha1.Asset{}
+	if err := r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
+		// c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return errors.New("server URL for OPA server must have http or https schema")
+	}
+	return nil
+}
+
 func (r *Handler) createAssetInfo(c *gin.Context) {
+	var randomStringLength int = 8
+	var retriesLimit int = 3
+
 	// Parse request
 	var request datacatalog.CreateAssetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	//return errors.Wrapf(err, "%s file is not a valid draft4 JSON schema", filename)
+
+	// just for logging - start
 	b, err := json.Marshal(request)
 	if err != nil {
 		fmt.Println(err)
@@ -80,35 +108,52 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	log.Println("CreateAssetRequest: ", request)
 	output := render.AsCode(request)
 	log.Println("CreateAssetRequest - render as code output: ", output)
+	// just for logging - end
 
 	var assetName string
 	var namespace string
 	if request.DestinationAssetID != "" {
-		splittedID := strings.SplitN(string(request.DestinationAssetID), "/", 2)
-		if len(splittedID) != 2 {
-			errorMessage := fmt.Sprintf("request has an invalid asset ID %s (must be in namespace/name format)", request.ResourceMetadata.Name)
-			c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
-		}
-		namespace, assetName = splittedID[0], splittedID[1]
+		namespace, assetName = request.DestinationCatalogID, request.DestinationAssetID
 	} else {
-		splittedID := strings.SplitN(string(request.ResourceMetadata.Name), "/", 2)
-		if len(splittedID) != 2 {
-			errorMessage := fmt.Sprintf("request has an invalid asset ID %s (must be in namespace/name format)", request.ResourceMetadata.Name)
-			c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		if request.ResourceMetadata.Name != "" {
+			namespace, assetName = request.DestinationCatalogID, request.ResourceMetadata.Name
+
+			var i int
+			for i := 0; i < retriesLimit; i++ {
+				// add random string to source asset
+				randomStr := r.createRandomString(randomStringLength)
+				assetName = assetName + "-" + randomStr
+				err := r.checkIfAssetExists(namespace, assetName)
+				if err == nil {
+					break
+				}
+			}
+			if i == retriesLimit {
+				errorMessage := fmt.Sprintf("Unsuccessful in generating destination asset id. Max retries %d exceeded", retriesLimit)
+				c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+			}
+
+		} else {
+			// request.ResourceMetadata.Name is null. Then create a random asset name with fybrik-asset as prefix
+			namespace = request.DestinationCatalogID
+
+			var i int
+			for i := 0; i < retriesLimit; i++ {
+				randomStr := r.createRandomString(randomStringLength)
+				assetName = "fybrik-asset-" + "-" + randomStr
+				err := r.checkIfAssetExists(namespace, assetName)
+				if err == nil {
+					break
+				}
+			}
+			if i == retriesLimit {
+				errorMessage := fmt.Sprintf("Unsuccessful in generating destination asset id. Max retries %d exceeded", retriesLimit)
+				c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+			}
 		}
-		namespace, assetName = splittedID[0], splittedID[1]
-		// add random string to source asset
-		const charset = "abcdefghijklmnopqrstuvwxyz"
-		var seededRand *rand.Rand = rand.New(
-			rand.NewSource(time.Now().UnixNano()))
-		randomString := make([]byte, 3)
-		for i := range randomString {
-			randomString[i] = charset[seededRand.Intn(len(charset))]
-		}
-		assetName = assetName + "-" + string(randomString)
-		log.Println("generated assetName :", assetName)
+		log.Println("assetName used with random string generation:", assetName)
 	}
-	log.Println("using assetName :", assetName)
+	log.Println("assetName used to store the asset :", assetName)
 
 	asset := &v1alpha1.Asset{}
 	objectMeta := &v1.ObjectMeta{
@@ -132,7 +177,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	}
 	spec.Metadata.Name = namespace + "/" + assetName
 
-	reqResourceDetails, _ := json.Marshal(request.ResourceDetails)
+	reqResourceDetails, _ := json.Marshal(request.Details)
 	err = json.Unmarshal(reqResourceDetails, &spec.Details)
 	if err != nil {
 		log.Printf("Error during unmarshal of reqResourceDetails")
@@ -142,6 +187,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 
 	asset.Spec = *spec
 
+	// just for logging - start
 	b, err = json.Marshal(asset)
 	if err != nil {
 		fmt.Println(err)
@@ -151,6 +197,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	log.Println("Created Asset: ", asset)
 	output = render.AsCode(asset)
 	log.Println("Created AssetID - render as code output: ", output)
+	// just for logging - end
 
 	log.Printf("Creating Asset in cluster: %s/%s\n", asset.Namespace, asset.Name)
 	err = r.client.Create(context.Background(), asset)

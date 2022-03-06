@@ -119,12 +119,13 @@ func TestCreateAssetInfo(t *testing.T) {
 		},
 	}
 	var csvFormat taxonomy.DataFormat = "csv"
-	var sourceAssetName string = "fybrik-system/paysim-csv"
-	var destAssetName string = "fybrik-system/new-paysim-csv"
+	var sourceAssetName string = "paysim-csv"
+	var destAssetName string = "new-paysim-csv"
+	var destCatalogID string = "fybrik-system"
 
 	// Create a fake request to Katalog connector
 	createAssetReq := &datacatalog.CreateAssetRequest{
-		DestinationCatalogID: "testcatalogid",
+		DestinationCatalogID: destCatalogID,
 		DestinationAssetID:   destAssetName,
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name: sourceAssetName,
@@ -143,7 +144,7 @@ func TestCreateAssetInfo(t *testing.T) {
 				},
 			},
 		},
-		ResourceDetails: datacatalog.ResourceDetails{
+		Details: datacatalog.ResourceDetails{
 			Connection: s3Connection,
 			DataFormat: csvFormat,
 		},
@@ -172,9 +173,10 @@ func TestCreateAssetInfo(t *testing.T) {
 		response := &datacatalog.CreateAssetResponse{}
 		err = json.Unmarshal(w.Body.Bytes(), response)
 		g.Expect(err).To(BeNil())
-		g.Expect(&response.AssetID).To(BeEquivalentTo(&destAssetName))
+		destAssetName2 := destCatalogID + "/" + destAssetName
+		g.Expect(&response.AssetID).To(BeEquivalentTo(&destAssetName2))
 
-		splittedID := strings.SplitN(string(destAssetName), "/", 2)
+		splittedID := strings.SplitN(string(destAssetName2), "/", 2)
 		if len(splittedID) != 2 {
 			errorMessage := fmt.Sprintf("request has an invalid destAssetName %s (must be in namespace/name format)", destAssetName)
 			c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
@@ -189,6 +191,7 @@ func TestCreateAssetInfo(t *testing.T) {
 		}
 		g.Expect(&createAssetReq.ResourceMetadata).To(BeEquivalentTo(&asset.Spec.Metadata))
 
+		// just for logging - start
 		b, err := json.Marshal(asset)
 		if err != nil {
 			fmt.Println(err)
@@ -198,6 +201,7 @@ func TestCreateAssetInfo(t *testing.T) {
 		t.Log("Created Asset in TestCreateAssetInfo : ", asset)
 		output := render.AsCode(asset)
 		t.Log("Created AssetID in TestCreateAssetInfo - render as code output: ", output)
+		// just for logging - end
 	})
 }
 
@@ -219,11 +223,11 @@ func TestCreateAssetInfoWthNoDestinationAssetID(t *testing.T) {
 		},
 	}
 	var csvFormat taxonomy.DataFormat = "csv"
-	var sourceAssetName string = "fybrik-system/paysim-csv"
+	var sourceAssetName string = "paysim-csv"
 
 	// Create a fake request to Katalog connector
 	createAssetReq := &datacatalog.CreateAssetRequest{
-		DestinationCatalogID: "testcatalogid",
+		DestinationCatalogID: "fybrik-system",
 		DestinationAssetID:   "",
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name: sourceAssetName,
@@ -242,7 +246,7 @@ func TestCreateAssetInfoWthNoDestinationAssetID(t *testing.T) {
 				},
 			},
 		},
-		ResourceDetails: datacatalog.ResourceDetails{
+		Details: datacatalog.ResourceDetails{
 			Connection: s3Connection,
 			DataFormat: csvFormat,
 		},
@@ -276,14 +280,14 @@ func TestCreateAssetInfoWthNoDestinationAssetID(t *testing.T) {
 			BeNumerically(">", len(sourceAssetName))))
 		t.Log("response.AssetID: ", response.AssetID)
 		t.Log("sourceAssetName: ", sourceAssetName)
-		g.Expect(response.AssetID).Should(HavePrefix(sourceAssetName))
-
 		splittedID := strings.SplitN(string(response.AssetID), "/", 2)
 		if len(splittedID) != 2 {
-			errorMessage := fmt.Sprintf("request has an invalid destAssetName %s (must be in namespace/name format)", response.AssetID)
-			c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+			errorMessage := fmt.Sprintf("request has an invalid asset ID %s (must be in namespace/name format)", response.AssetID)
+			t.Log(errorMessage)
+			return
 		}
 		namespace, assetName := splittedID[0], splittedID[1]
+		g.Expect(assetName).Should(HavePrefix(sourceAssetName))
 		t.Log("assetName used to query: ", assetName)
 
 		asset := &v1alpha1.Asset{}
@@ -296,6 +300,7 @@ func TestCreateAssetInfoWthNoDestinationAssetID(t *testing.T) {
 		createAssetReq.ResourceMetadata.Name = response.AssetID
 		g.Expect(&createAssetReq.ResourceMetadata).To(BeEquivalentTo(&asset.Spec.Metadata))
 
+		// just for logging - start
 		b, err := json.Marshal(asset)
 		if err != nil {
 			fmt.Println(err)
@@ -305,5 +310,6 @@ func TestCreateAssetInfoWthNoDestinationAssetID(t *testing.T) {
 		t.Log("Created Asset in TestCreateAssetInfo : ", asset)
 		output := render.AsCode(asset)
 		t.Log("Created AssetID in TestCreateAssetInfo - render as code output: ", output)
+		// just for logging - end
 	})
 }
