@@ -62,6 +62,7 @@ type DataContext struct {
 }
 
 // FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.
+// +fybrik:validation:object="fybrik_application"
 type FybrikApplicationSpec struct {
 
 	// Selector enables to connect the resource to the application
