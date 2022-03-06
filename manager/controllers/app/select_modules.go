@@ -4,11 +4,11 @@
 package app
 
 import (
+	"reflect"
 	"strconv"
 	"strings"
 
 	"emperror.dev/errors"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
@@ -225,7 +225,7 @@ func (p *PlotterGenerator) findPathsWithinLimit(item *DataInfo, source, sink *No
 			}
 			edge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: nil, Sink: nil}
 			// check that the module + module capability satisfy the requirements from the admin config policies
-			if !validateModuleRestrictions(item, &edge) {
+			if !p.validateModuleRestrictions(item, &edge) {
 				continue
 			}
 			// check whether the module supports the final destination
@@ -387,9 +387,16 @@ func allowCapability(item *DataInfo, capability taxonomy.Capability) bool {
 	return item.Configuration.ConfigDecisions[capability].Deploy != adminconfig.StatusFalse
 }
 
-func validateModuleRestrictions(item *DataInfo, edge *Edge) bool {
-	// TODO(shlomitk1): validate module restrictions
-	return true
+func (p *PlotterGenerator) validateModuleRestrictions(item *DataInfo, edge *Edge) bool {
+	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
+	moduleSpec := edge.Module.Spec
+	restrictions := item.Configuration.ConfigDecisions[capability.Capability].DeploymentRestrictions.Modules
+	for i := range restrictions {
+		if strings.Contains(restrictions[i].Property, "capabilities.") {
+			restrictions[i].Property = strings.Replace(restrictions[i].Property, "capabilities", "capabilities."+strconv.Itoa(edge.CapabilityIndex), 1)
+		}
+	}
+	return p.validateRestrictions(restrictions, &moduleSpec, "")
 }
 
 func (p *PlotterGenerator) validateClusterRestrictions(item *DataInfo, edge *ResolvedEdge, cluster multicluster.Cluster) bool {
@@ -432,7 +439,7 @@ func (p *PlotterGenerator) validateRestrictions(restrictions []adminconfig.Restr
 			found = true
 		} else {
 			fields := strings.Split(restrict.Property, ".")
-			value, found, err = unstructured.NestedFieldNoCopy(details, fields...)
+			value, found, err = NestedFieldNoCopy(details, fields...)
 		}
 		if err != nil || !found {
 			return false
@@ -464,4 +471,32 @@ func (p *PlotterGenerator) validateRestrictions(restrictions []adminconfig.Restr
 		}
 	}
 	return true
+}
+
+func NestedFieldNoCopy(obj map[string]interface{}, fields ...string) (interface{}, bool, error) {
+	var val interface{} = obj
+
+	for _, field := range fields {
+		if val == nil {
+			return nil, false, nil
+		}
+		if reflect.TypeOf(val).Kind() == reflect.Slice {
+			s := reflect.ValueOf(val)
+			i, err := strconv.Atoi(field)
+			if err != nil {
+				return nil, false, nil
+			}
+			val = s.Index(i).Interface()
+			continue
+		}
+		if m, ok := val.(map[string]interface{}); ok {
+			val, ok = m[field]
+			if !ok {
+				return nil, false, nil
+			}
+		} else {
+			return nil, false, nil
+		}
+	}
+	return val, true, nil
 }
