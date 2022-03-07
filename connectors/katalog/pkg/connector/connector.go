@@ -5,13 +5,13 @@ package connector
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
+	"math/big"
 	"net/http"
 	"strings"
-	"time"
 
 	"emperror.dev/errors"
 
@@ -68,15 +68,23 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, &response)
 }
 
-func (r *Handler) createRandomString(length int) string {
-	const charset = "abcdefghijklmnopqrstuvwxyz"
-	var seededRand = rand.New(
-		rand.NewSource(time.Now().UnixNano()))
-	randomString := make([]byte, length)
-	for i := range randomString {
-		randomString[i] = charset[seededRand.Intn(len(charset))]
+// GenerateRandomString returns a securely generated random string.
+// It will return an error if the system's secure random
+// number generator fails to function correctly, in which
+// case the caller should not continue.
+// Source: https://gist.github.com/dopey/c69559607800d2f2f90b1b1ed4e550fb
+func (r *Handler) GenerateRandomString(n int) (string, error) {
+	const letters = "abcdefghijklmnopqrstuvwxyz-"
+	ret := make([]byte, n)
+	for i := 0; i < n; i++ {
+		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
+		if err != nil {
+			return "", err
+		}
+		ret[i] = letters[num.Int64()]
 	}
-	return string(randomString)
+
+	return string(ret), nil
 }
 
 func (r *Handler) checkIfAssetDoesNotExistInCluster(namespace string, name string) error {
@@ -130,9 +138,16 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 			var i int
 			for i := 0; i < retriesLimit; i++ {
 				// add random string to source asset
-				randomStr := r.createRandomString(randomStringLength)
+				randomStr, err := r.GenerateRandomString(randomStringLength)
+				if err != nil {
+					errorMessage := "Error during GenerateRandomString. Error:" + err.Error()
+					log.Println(errorMessage)
+					// reset assetName
+					c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+					return
+				}
 				assetName = assetName + "-" + randomStr
-				err := r.checkIfAssetDoesNotExistInCluster(namespace, assetName)
+				err = r.checkIfAssetDoesNotExistInCluster(namespace, assetName)
 				if err == nil {
 					break
 				} else {
@@ -152,9 +167,16 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 			namespace = request.DestinationCatalogID
 			var i int
 			for i := 0; i < retriesLimit; i++ {
-				randomStr := r.createRandomString(randomStringLength)
+				randomStr, err := r.GenerateRandomString(randomStringLength)
+				if err != nil {
+					errorMessage := "Error occurred during GenerateRandomString. Error:" + err.Error()
+					log.Println(errorMessage)
+					// reset assetName
+					c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+					return
+				}
 				assetName = "fybrik-asset-" + "-" + randomStr
-				err := r.checkIfAssetDoesNotExistInCluster(namespace, assetName)
+				err = r.checkIfAssetDoesNotExistInCluster(namespace, assetName)
 				if err == nil {
 					break
 				} else {
