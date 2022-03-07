@@ -6,13 +6,14 @@ package connector
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
 	"strings"
 	"time"
+
+	"emperror.dev/errors"
 
 	"github.com/gin-gonic/gin"
 	"k8s.io/apimachinery/pkg/types"
@@ -79,8 +80,7 @@ func (r *Handler) createRandomString(length int) string {
 func (r *Handler) checkIfAssetExists(namespace string, name string) error {
 	asset := &v1alpha1.Asset{}
 	if err := r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
-		// c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return errors.New("server URL for OPA server must have http or https schema")
+		return errors.Wrap(err, "Error in checkIfAssetExists.")
 	}
 	return nil
 }
@@ -92,14 +92,14 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	// Parse request
 	var request datacatalog.CreateAssetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"Error during ShouldBindJSON in createAssetInfo": err.Error()})
 		return
 	}
 
 	// just for logging - start
 	b, err := json.Marshal(request)
 	if err != nil {
-		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"Error during marshalling request in createAssetInfo": err.Error()})
 		return
 	}
 	log.Println("CreateAssetRequest: JSON format: ", string(b))
@@ -107,6 +107,11 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	output := render.AsCode(request)
 	log.Println("CreateAssetRequest - render as code output: ", output)
 	// just for logging - end
+
+	if request.DestinationCatalogID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid DestinationCatalogID in request"})
+		return
+	}
 
 	var assetName string
 	var namespace string
@@ -129,6 +134,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 			if i == retriesLimit {
 				errorMessage := fmt.Sprintf("Unsuccessful in generating destination asset id. Max retries %d exceeded", retriesLimit)
 				c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+				return
 			}
 		} else {
 			// request.ResourceMetadata.Name is null. Then create a random asset name with fybrik-asset as prefix
@@ -145,6 +151,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 			if i == retriesLimit {
 				errorMessage := fmt.Sprintf("Unsuccessful in generating destination asset id. Max retries %d exceeded", retriesLimit)
 				c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+				return
 			}
 		}
 		log.Println("assetName used with random string generation:", assetName)
@@ -167,8 +174,9 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	reqResourceMetadata, _ := json.Marshal(request.ResourceMetadata)
 	err = json.Unmarshal(reqResourceMetadata, &spec.Metadata)
 	if err != nil {
-		log.Printf("Error during unmarshal of reqResourceMetadata")
-		fmt.Println(err)
+		errorMessage := "Error during unmarshal of reqResourceMetadata. Error:" + err.Error()
+		log.Println(errorMessage)
+		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 		return
 	}
 	spec.Metadata.Name = namespace + "/" + assetName
@@ -176,8 +184,9 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	reqResourceDetails, _ := json.Marshal(request.Details)
 	err = json.Unmarshal(reqResourceDetails, &spec.Details)
 	if err != nil {
-		log.Printf("Error during unmarshal of reqResourceDetails")
-		fmt.Println(err)
+		errorMessage := "Error during unmarshal of reqResourceDetails. Error:" + err.Error()
+		log.Println(errorMessage)
+		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 		return
 	}
 
@@ -187,6 +196,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	b, err = json.Marshal(asset)
 	if err != nil {
 		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	log.Println("Created Asset: JSON format: ", string(b))
@@ -198,8 +208,9 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	log.Printf("Creating Asset in cluster: %s/%s\n", asset.Namespace, asset.Name)
 	err = r.client.Create(context.Background(), asset)
 	if err != nil {
-		log.Printf("Error during create asset")
-		fmt.Println(err)
+		errorMessage := "Error during create asset. Error:" + err.Error()
+		log.Println(errorMessage)
+		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 		return
 	}
 
