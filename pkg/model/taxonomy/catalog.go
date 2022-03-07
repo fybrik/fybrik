@@ -9,6 +9,8 @@ import (
 	"fybrik.io/fybrik/pkg/serde"
 )
 
+const nameKey = "name"
+
 type AssetID string
 
 type ProcessingLocation string
@@ -37,7 +39,7 @@ type Tags struct {
 
 func (o Connection) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{
-		"name": o.Name,
+		nameKey: o.Name,
 	}
 
 	for key, value := range o.AdditionalProperties.Items {
@@ -50,8 +52,8 @@ func (o Connection) MarshalJSON() ([]byte, error) {
 func (o *Connection) UnmarshalJSON(bytes []byte) (err error) {
 	items := make(map[string]interface{})
 	if err = json.Unmarshal(bytes, &items); err == nil {
-		o.Name = ConnectionType(items["name"].(string))
-		delete(items, "name")
+		o.Name = ConnectionType(items[nameKey].(string))
+		delete(items, nameKey)
 		if len(items) == 0 {
 			items = nil
 		}

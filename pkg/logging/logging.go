@@ -118,7 +118,7 @@ func LogInit(callerType, callerName string) zerolog.Logger {
 }
 
 // LogStructure prints out a the provided structure to the log in json format.
-func LogStructure(argName string, argStruct interface{}, log *zerolog.Logger, forUser bool, audit bool) {
+func LogStructure(argName string, argStruct interface{}, log *zerolog.Logger, forUser, audit bool) {
 	var jsonStruct []byte
 	var err error
 	if PrettyLogging() {
