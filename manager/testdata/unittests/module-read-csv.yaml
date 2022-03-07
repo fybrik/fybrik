@@ -15,6 +15,7 @@ spec:
   type: service
   capabilities:
     - capability: read
+      scope: workload
       api:
         connection:
           name: fybrik-arrow-flight

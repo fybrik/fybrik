@@ -145,7 +145,7 @@ func (r *razeeClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha
 	groupName := getGroupName(cluster)
 	channelName := channelName(cluster, blueprint.Name)
 	version := "0"
-	logging.LogStructure("Blueprint to create", blueprint, r.log, false, false)
+	logging.LogStructure("Blueprint to create", blueprint, &r.log, false, false)
 	content, err := yaml.Marshal(blueprint)
 	if err != nil {
 		return err
@@ -250,7 +250,7 @@ func (r *razeeClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha
 	if err != nil {
 		return err
 	}
-	logging.LogStructure("Blueprint to update", blueprint, r.log, false, false)
+	logging.LogStructure("Blueprint to update", blueprint, &r.log, false, false)
 
 	max := 0
 	channelInfo, err := r.con.Channels.ChannelByName(r.orgID, channelName)

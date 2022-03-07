@@ -58,7 +58,7 @@ func setErrorCondition(appContext ApplicationContext, assetID, msg string) {
 		Str(logging.DATASETID, assetID).Msgf("Setting error condition: %s", errMsg)
 }
 
-func setDenyCondition(appContext ApplicationContext, assetID string, msg string) {
+func setDenyCondition(appContext ApplicationContext, assetID, msg string) {
 	appContext.Application.Status.AssetStates[assetID].Conditions[DenyConditionIndex] = api.Condition{
 		Type:    api.DenyCondition,
 		Status:  corev1.ConditionTrue,

@@ -11,12 +11,13 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"fybrik.io/fybrik/pkg/logging"
 	infraattributes "fybrik.io/fybrik/pkg/model/attributes"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // A directory containing rego files that define admin config policies
@@ -52,10 +53,10 @@ func readInfrastructure() (infraattributes.Infrastructure, error) {
 	if err != nil {
 		return attributes, err
 	}
-	if err = validateStructure(content, ValidationPath); err != nil {
+	if err := validateStructure(content, ValidationPath); err != nil {
 		return attributes, err
 	}
-	if err = json.Unmarshal(content, &attributes); err != nil {
+	if err := json.Unmarshal(content, &attributes); err != nil {
 		return attributes, errors.Wrap(err, "could not parse infrastructure json")
 	}
 	return attributes, nil

@@ -29,7 +29,7 @@ func (a *AdditionalPropertiesType) UnmarshalJSON(data []byte) (err error) {
 
 	if err = json.Unmarshal(data, &result.Allowed); err != nil {
 		result.Allowed = nil
-		if err = json.Unmarshal(data, &result.Schema); err != nil {
+		if err := json.Unmarshal(data, &result.Schema); err != nil {
 			return err
 		}
 	}

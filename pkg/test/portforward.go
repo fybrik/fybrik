@@ -10,6 +10,11 @@ import (
 	"strconv"
 )
 
+const (
+	bufferInitalSize   = 128
+	regexpPortMatchLen = 3
+)
+
 // TODO support other ports besides 80
 var (
 	portForwardRegexp = regexp.MustCompile(`Forwarding from (127.0.0.1|\\[::1\\]):([0-9]+) -> 80`)
@@ -33,7 +38,7 @@ func StartCmdAndStreamOutput(cmd *exec.Cmd) (stdout, stderr io.ReadCloser, err e
 
 // runPortForward runs port-forward, warning, this may need root functionality on some systems.
 // The function was inspired from kubernetes e2e framework
-func RunPortForward(ns string, svcName string, port int) (string, error) {
+func RunPortForward(ns, svcName string, port int) (string, error) {
 	// #nosec G204 -- Avoid "Subprocess launched with variable" error
 	cmd := exec.Command("kubectl", "-n", ns, "port-forward", "svc/"+svcName, ":"+strconv.Itoa(port))
 	// This is somewhat ugly but is the only way to retrieve the port that was picked
@@ -44,14 +49,14 @@ func RunPortForward(ns string, svcName string, port int) (string, error) {
 		return "", err
 	}
 
-	buf := make([]byte, 128)
+	buf := make([]byte, bufferInitalSize)
 	var n int
 	if n, err = portOutput.Read(buf); err != nil {
 		return "", err
 	}
 	portForwardOutput := string(buf[:n])
 	match := portForwardRegexp.FindStringSubmatch(portForwardOutput)
-	if len(match) != 3 {
+	if len(match) != regexpPortMatchLen {
 		return "", err
 	}
 

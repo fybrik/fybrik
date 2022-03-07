@@ -47,7 +47,7 @@ func ErrConfigProblem(err error) render.Renderer {
 func ErrInvalidRequest(err error) render.Renderer {
 	return &ErrResponse{
 		Err:            err,
-		HTTPStatusCode: 400,
+		HTTPStatusCode: http.StatusBadRequest,
 		StatusText:     "Invalid request.",
 		ErrorText:      err.Error(),
 	}
@@ -67,7 +67,7 @@ func SysErrRender(err error) render.Renderer {
 func ErrRender(err error) render.Renderer {
 	return &ErrResponse{
 		Err:            err,
-		HTTPStatusCode: 422,
+		HTTPStatusCode: http.StatusUnprocessableEntity,
 		StatusText:     "Error rendering response.",
 		ErrorText:      err.Error(),
 	}
