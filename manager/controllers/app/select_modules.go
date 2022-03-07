@@ -393,7 +393,8 @@ func (p *PlotterGenerator) validateModuleRestrictions(item *DataInfo, edge *Edge
 	restrictions := item.Configuration.ConfigDecisions[capability.Capability].DeploymentRestrictions.Modules
 	for i := range restrictions {
 		if strings.Contains(restrictions[i].Property, "capabilities.") {
-			restrictions[i].Property = strings.Replace(restrictions[i].Property, "capabilities", "capabilities."+strconv.Itoa(edge.CapabilityIndex), 1)
+			restrictions[i].Property = strings.Replace(restrictions[i].Property, "capabilities",
+				"capabilities."+strconv.Itoa(edge.CapabilityIndex), 1) //nolint:revive // ignore const
 		}
 	}
 	return p.validateRestrictions(restrictions, &moduleSpec, "")
