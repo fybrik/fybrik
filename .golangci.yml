@@ -22,6 +22,7 @@ linters-settings:
       - octalLiteral
       - whyNoLint
       - wrapperFunc
+      - unnamedResult
   gocyclo:
     min-complexity: 15
   goimports:
@@ -59,7 +60,7 @@ linters-settings:
         severity: warning
         arguments:
           - maxLitCount: "1"
-            allowStrs: '"",".","-","/","\n","\n\n","\t","error"'
+            allowStrs: '"",".","-","/","\n","\n\n","\t","error","true","false"'
             allowInts: "0,1,2,404"
             allowFloats: "0.0,0.,1.0,1.,2.0,2."
 
@@ -73,7 +74,7 @@ linters:
     - errcheck
     - exportloopref
     - funlen
-    - gochecknoinits
+    # - gochecknoinits
     - goconst
     - gocritic
     - gocyclo
