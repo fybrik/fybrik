@@ -40,7 +40,7 @@ type NewAssetInfo struct {
 // PlotterGenerator constructs a plotter based on the requirements (governance actions, data location) and the existing set of FybrikModules
 type PlotterGenerator struct {
 	Client             client.Client
-	Log                zerolog.Logger
+	Log                *zerolog.Logger
 	Modules            map[string]*app.FybrikModule
 	Clusters           []multicluster.Cluster
 	Owner              types.NamespacedName
@@ -53,7 +53,7 @@ type PlotterGenerator struct {
 }
 
 // GetCopyDestination creates a Dataset for bucket allocation by implicit copies or ingest.
-func (p *PlotterGenerator) GetCopyDestination(item DataInfo, destinationInterface *app.InterfaceDetails,
+func (p *PlotterGenerator) GetCopyDestination(item *DataInfo, destinationInterface *taxonomy.Interface,
 	account *app.FybrikStorageAccountSpec) (*app.DataStore, error) {
 	// provisioned storage for COPY
 	var genBucketName, genObjectKeyName string
@@ -168,23 +168,67 @@ func (p *PlotterGenerator) addTemplate(element *ResolvedEdge, plotterSpec *app.P
 	plotterSpec.Templates[template.Name] = template
 }
 
+func (p *PlotterGenerator) addInMemoryStep(element *ResolvedEdge, datasetID string, api *datacatalog.ResourceDetails,
+	steps []app.DataFlowStep) []app.DataFlowStep {
+	if steps == nil {
+		steps = []app.DataFlowStep{}
+	}
+	var lastStepAPI *datacatalog.ResourceDetails
+	if len(steps) > 0 {
+		lastStepAPI = steps[len(steps)-1].Parameters.API
+	}
+	assetID := ""
+	if lastStepAPI == nil {
+		assetID = datasetID
+	}
+	steps = append(steps, app.DataFlowStep{
+		Cluster:  element.Cluster,
+		Template: string(element.Module.Spec.Capabilities[element.CapabilityIndex].Capability),
+		Parameters: &app.StepParameters{
+			Source: &app.StepSource{
+				AssetID: assetID,
+				API:     lastStepAPI,
+			},
+			API:     api,
+			Actions: element.Actions,
+		},
+	})
+	return steps
+}
+
+func (p *PlotterGenerator) addStep(element *ResolvedEdge, datasetID string, api *datacatalog.ResourceDetails,
+	steps []app.DataFlowStep) []app.DataFlowStep {
+	if steps == nil {
+		steps = []app.DataFlowStep{}
+	}
+	steps = append(steps, app.DataFlowStep{
+		Cluster:  element.Cluster,
+		Template: string(element.Module.Spec.Capabilities[element.CapabilityIndex].Capability),
+		Parameters: &app.StepParameters{
+			Source:  &app.StepSource{AssetID: datasetID},
+			Sink:    &app.StepSink{AssetID: datasetID + "-copy"},
+			API:     api,
+			Actions: element.Actions,
+		},
+	})
+	return steps
+}
+
 // Adds the asset details, flows and templates to the given plotter spec.
-func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.FybrikApplication, plotterSpec *app.PlotterSpec) error {
+func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.FybrikApplication, plotterSpec *app.PlotterSpec) error {
 	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Generating a plotter")
-	selection, err := p.solve(&item, application)
-	if err != nil {
+	var err error
+	var selection Solution
+	if selection, err = p.solve(item, application); err != nil {
 		return err
 	}
 	datasetID := item.Context.DataSetID
 	subflows := make([]app.SubFlow, 0)
 
 	plotterSpec.Assets[item.Context.DataSetID] = app.AssetDetails{
-		AdvertisedAssetID: "",
-		DataStore:         *p.getAssetDataStore(&item),
+		DataStore: *p.getAssetDataStore(item),
 	}
-
 	// DataStore for destination will be determined if an implicit copy is required
-	var sinkDataStore *app.DataStore
 	var steps []app.DataFlowStep
 	flowType := item.Context.Flow
 	if flowType == "" {
@@ -194,49 +238,29 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
 		p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msgf("Adding module for %s", moduleCapability.Capability)
 		p.addTemplate(element, plotterSpec)
-
 		var api *datacatalog.ResourceDetails
 		if moduleCapability.API != nil {
-			api, err = moduleAPIToService(moduleCapability.API, moduleCapability.Scope,
-				application, element.Module.Name, datasetID)
-			if err != nil {
+			if api, err = moduleAPIToService(moduleCapability.API, moduleCapability.Scope,
+				application, element.Module.Name, datasetID); err != nil {
 				return err
 			}
 		}
 		if !element.Sink.Virtual && item.Context.Flow != taxonomy.WriteFlow {
 			// allocate storage and create a temoprary asset
+			var sinkDataStore *app.DataStore
 			if sinkDataStore, err = p.GetCopyDestination(item, element.Sink.Connection, &element.StorageAccount); err != nil {
 				p.Log.Error().Err(err).Str(logging.DATASETID, item.Context.DataSetID).Msg("Storage allocation for copy failed")
 				return err
 			}
-			copyAssetID := datasetID + "-copy"
+			steps = p.addStep(element, datasetID, api, steps)
+			copyAssetID := steps[len(steps)-1].Parameters.Sink.AssetID
 			copyAsset := app.AssetDetails{
 				AdvertisedAssetID: datasetID,
 				DataStore:         *sinkDataStore,
 			}
 			plotterSpec.Assets[copyAssetID] = copyAsset
-			if steps == nil {
-				steps = []app.DataFlowStep{}
-			}
-			steps = append(steps, app.DataFlowStep{
-				Name:     "",
-				Cluster:  element.Cluster,
-				Template: string(moduleCapability.Capability),
-				Parameters: &app.StepParameters{
-					Source: &app.StepSource{
-						AssetID: datasetID,
-						API:     nil,
-					},
-					Sink: &app.StepSink{
-						AssetID: copyAssetID,
-					},
-					API:     api,
-					Actions: element.Actions,
-				},
-			})
 			datasetID = copyAssetID
 			subflows = append(subflows, app.SubFlow{
-				Name:     "",
 				FlowType: taxonomy.CopyFlow,
 				Triggers: []app.SubFlowTrigger{app.InitTrigger},
 				Steps:    [][]app.DataFlowStep{steps},
@@ -245,41 +269,16 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 			steps = nil
 		} else {
 			// TODO: handle the case where IsNewDataSet is true in write flow
-			if steps == nil {
-				steps = []app.DataFlowStep{}
-			}
-			var lastStepAPI *datacatalog.ResourceDetails
-			if len(steps) > 0 {
-				lastStepAPI = steps[len(steps)-1].Parameters.API
-			}
-			assetID := ""
-			if lastStepAPI == nil {
-				assetID = datasetID
-			}
-			steps = append(steps, app.DataFlowStep{
-				Name:     "",
-				Cluster:  element.Cluster,
-				Template: string(moduleCapability.Capability),
-				Parameters: &app.StepParameters{
-					Source: &app.StepSource{
-						AssetID: assetID,
-						API:     lastStepAPI,
-					},
-					API:     api,
-					Actions: element.Actions,
-				},
-			})
+			steps = p.addInMemoryStep(element, datasetID, api, steps)
 		}
 	}
 	if steps != nil {
 		subflows = append(subflows, app.SubFlow{
-			Name:     "",
 			FlowType: flowType,
 			Triggers: []app.SubFlowTrigger{app.WorkloadTrigger},
 			Steps:    [][]app.DataFlowStep{steps},
 		})
 	}
-
 	// If everything finished without errors build the flow and add it to the plotter spec
 	// Also add new assets as well as templates
 	flowName := item.Context.DataSetID + "-" + string(flowType)
@@ -289,7 +288,6 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item DataInfo, application *app.F
 		AssetID:  item.Context.DataSetID,
 		SubFlows: subflows,
 	}
-
 	plotterSpec.Flows = append(plotterSpec.Flows, flow)
 	return nil
 }

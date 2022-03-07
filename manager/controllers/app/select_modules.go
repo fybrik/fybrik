@@ -4,11 +4,11 @@
 package app
 
 import (
+	"reflect"
 	"strconv"
 	"strings"
 
 	"emperror.dev/errors"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
@@ -41,7 +41,7 @@ const Transform = "transform"
 // Node represents an access point to data (as a physical source/sink, or a virtual endpoint)
 // A virtual endpoint is activated by the workload for read/write actions.
 type Node struct {
-	Connection *app.InterfaceDetails
+	Connection *taxonomy.Interface
 	Virtual    bool
 }
 
@@ -78,7 +78,7 @@ func (p *PlotterGenerator) FindPaths(item *DataInfo, appContext *app.FybrikAppli
 	// construct two nodes of an edge:
 	// this node appears in the asset metadata
 	NodeFromAssetMetadata := Node{
-		Connection: &app.InterfaceDetails{
+		Connection: &taxonomy.Interface{
 			Protocol:   item.DataDetails.Details.Connection.Name,
 			DataFormat: item.DataDetails.Details.DataFormat,
 		},
@@ -128,18 +128,20 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 			item.Context.Requirements.FlowParams.IsNewDataSet) {
 			// storage is required, plus more actions on copy may be needed
 			isAccountFound := false
-			for _, account := range p.StorageAccounts {
+			for accountInd := range p.StorageAccounts {
 				// validate restrictions
 				if !p.validateRestrictions(item.Configuration.ConfigDecisions[moduleCapability.Capability].
-					DeploymentRestrictions.StorageAccounts, &account.Spec, account.Name) {
-					p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msgf("storage account %s does not match the requirements", account.Name)
+					DeploymentRestrictions.StorageAccounts, &p.StorageAccounts[accountInd].Spec,
+					p.StorageAccounts[accountInd].Name) {
+					p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msgf("storage account %s does not match the requirements",
+						p.StorageAccounts[accountInd].Name)
 					continue
 				}
 				// query the policy manager whether WRITE operation is allowed
 				operation := new(policymanager.RequestAction)
 				operation.ActionType = taxonomy.WriteFlow
-				operation.Destination = string(account.Spec.Region)
-				operation.ProcessingLocation = account.Spec.Region
+				operation.Destination = string(p.StorageAccounts[accountInd].Spec.Region)
+				operation.ProcessingLocation = p.StorageAccounts[accountInd].Spec.Region
 				actions, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
 				if err != nil && err.Error() == app.WriteNotAllowed {
 					continue
@@ -150,7 +152,7 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 				}
 				// add WRITE actions and the selected storage account region
 				element.Actions = actions
-				element.StorageAccount = account.Spec
+				element.StorageAccount = p.StorageAccounts[accountInd].Spec
 				isAccountFound = true
 			}
 			if !isAccountFound {
@@ -187,8 +189,8 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 	for _, element := range solution.DataPath {
 		supportedCapabilities[element.Module.Spec.Capabilities[element.CapabilityIndex].Capability] = true
 	}
-	for capability, decision := range item.Configuration.ConfigDecisions {
-		if decision.Deploy == adminconfig.StatusTrue {
+	for capability := range item.Configuration.ConfigDecisions {
+		if item.Configuration.ConfigDecisions[capability].Deploy == adminconfig.StatusTrue {
 			// check that it is supported
 			if !supportedCapabilities[capability] {
 				return false
@@ -223,7 +225,7 @@ func (p *PlotterGenerator) findPathsWithinLimit(item *DataInfo, source, sink *No
 			}
 			edge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: nil, Sink: nil}
 			// check that the module + module capability satisfy the requirements from the admin config policies
-			if !validateModuleRestrictions(item, &edge) {
+			if !p.validateModuleRestrictions(item, &edge) {
 				continue
 			}
 			// check whether the module supports the final destination
@@ -323,7 +325,7 @@ func supportsGovernanceAction(edge *Edge, action taxonomy.Action) bool {
 	return false // Action not supported by module
 }
 
-func match(source, sink *app.InterfaceDetails) bool {
+func match(source, sink *taxonomy.Interface) bool {
 	if source == nil || sink == nil {
 		return false
 	}
@@ -346,7 +348,7 @@ func supportsSourceInterface(edge *Edge, source *Node) bool {
 		}
 	}
 	if capability.API != nil && !hasSources {
-		apiInterface := &app.InterfaceDetails{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
+		apiInterface := &taxonomy.Interface{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
 		if match(apiInterface, source.Connection) {
 			// consumes data via API
 			source.Virtual = true
@@ -371,7 +373,7 @@ func supportsSinkInterface(edge *Edge, sink *Node) bool {
 		}
 	}
 	if capability.API != nil && !hasSinks {
-		apiInterface := &app.InterfaceDetails{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
+		apiInterface := &taxonomy.Interface{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
 		if match(apiInterface, sink.Connection) {
 			// transfers data in-memory via API
 			sink.Virtual = true
@@ -385,9 +387,16 @@ func allowCapability(item *DataInfo, capability taxonomy.Capability) bool {
 	return item.Configuration.ConfigDecisions[capability].Deploy != adminconfig.StatusFalse
 }
 
-func validateModuleRestrictions(item *DataInfo, edge *Edge) bool {
-	// TODO(shlomitk1): validate module restrictions
-	return true
+func (p *PlotterGenerator) validateModuleRestrictions(item *DataInfo, edge *Edge) bool {
+	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
+	moduleSpec := edge.Module.Spec
+	restrictions := item.Configuration.ConfigDecisions[capability.Capability].DeploymentRestrictions.Modules
+	for i := range restrictions {
+		if strings.Contains(restrictions[i].Property, "capabilities.") {
+			restrictions[i].Property = strings.Replace(restrictions[i].Property, "capabilities", "capabilities."+strconv.Itoa(edge.CapabilityIndex), 1)
+		}
+	}
+	return p.validateRestrictions(restrictions, &moduleSpec, "")
 }
 
 func (p *PlotterGenerator) validateClusterRestrictions(item *DataInfo, edge *ResolvedEdge, cluster multicluster.Cluster) bool {
@@ -430,7 +439,7 @@ func (p *PlotterGenerator) validateRestrictions(restrictions []adminconfig.Restr
 			found = true
 		} else {
 			fields := strings.Split(restrict.Property, ".")
-			value, found, err = unstructured.NestedFieldNoCopy(details, fields...)
+			value, found, err = NestedFieldNoCopy(details, fields...)
 		}
 		if err != nil || !found {
 			return false
@@ -462,4 +471,32 @@ func (p *PlotterGenerator) validateRestrictions(restrictions []adminconfig.Restr
 		}
 	}
 	return true
+}
+
+func NestedFieldNoCopy(obj map[string]interface{}, fields ...string) (interface{}, bool, error) {
+	var val interface{} = obj
+
+	for _, field := range fields {
+		if val == nil {
+			return nil, false, nil
+		}
+		if reflect.TypeOf(val).Kind() == reflect.Slice {
+			s := reflect.ValueOf(val)
+			i, err := strconv.Atoi(field)
+			if err != nil {
+				return nil, false, nil
+			}
+			val = s.Index(i).Interface()
+			continue
+		}
+		if m, ok := val.(map[string]interface{}); ok {
+			val, ok = m[field]
+			if !ok {
+				return nil, false, nil
+			}
+		} else {
+			return nil, false, nil
+		}
+	}
+	return val, true, nil
 }

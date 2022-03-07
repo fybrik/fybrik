@@ -12,14 +12,14 @@ case ${arch} in
 esac
 
 version=2.3.1
+TARGET_VERSION=0.2.1
 
 header_text "Checking for bin/json-schema-generator"
-[[ -f bin/json-schema-generator ]] && exit 0
+[[ -f bin/json-schema-generator && `bin/json-schema-generator -v | awk 'NF>1{print $NF}'` == ${TARGET_VERSION} ]] && exit 0
 
 header_text "Installing bin/json-schema-generator"
 mkdir -p ./bin
 
-TARGET_VERSION=0.1.1
 
 
 curl -sSLo json-schema-generator.tar.gz "https://github.com/fybrik/json-schema-generator/releases/download/v${TARGET_VERSION}/json-schema-generator_${TARGET_VERSION}_${os}_${arch}.tar.gz" 

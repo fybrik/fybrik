@@ -36,7 +36,7 @@ type DataRequest struct {
 	// asset identifier
 	DatasetID string `json:"datasetID"`
 	// requested interface
-	Interface api.InterfaceDetails `json:"interface"`
+	Interface taxonomy.Interface `json:"interface"`
 	// requested usage, e.g. "read": true, "write": false
 	Usage map[api.DataFlow]bool `json:"usage"`
 	// Asset metadata

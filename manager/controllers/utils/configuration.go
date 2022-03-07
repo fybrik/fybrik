@@ -92,7 +92,7 @@ func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
 	SetIfNotSet(PrettyLoggingKey, "true", t)
 }
 
-func logEnvVariable(log zerolog.Logger, key string) {
+func logEnvVariable(log *zerolog.Logger, key string) {
 	value, found := os.LookupEnv(key)
 	if found {
 		log.Info().Msgf("%s set to \"%s\"", key, value)
@@ -101,7 +101,7 @@ func logEnvVariable(log zerolog.Logger, key string) {
 	}
 }
 
-func LogEnvVariables(log zerolog.Logger) {
+func LogEnvVariables(log *zerolog.Logger) {
 	envVarArray := [...]string{CatalogConnectorServiceAddressKey, VaultAddressKey, VaultModulesRoleKey,
 		EnableWebhooksKey, ConnectionTimeoutKey, MainPolicyManagerConnectorURLKey,
 		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey, DatapathLimitKey,
