@@ -120,7 +120,7 @@ func (p *PlotterGenerator) GetCopyDestination(item *DataInfo, destinationInterfa
 
 func (p *PlotterGenerator) getAssetDataStore(item *DataInfo, flow taxonomy.DataFlow, vaultMap map[string]app.Vault) *app.DataStore {
 	if vaultMap == nil {
-		// create a new map in case it does not exists already
+		// create a new map in case it does not exist already
 		vaultMap = make(map[string]app.Vault)
 	}
 	if utils.IsVaultEnabled() {
