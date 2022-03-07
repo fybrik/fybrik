@@ -15,6 +15,8 @@ import (
 
 	"emperror.dev/errors"
 
+	errors_apimachinery "k8s.io/apimachinery/pkg/api/errors"
+
 	"github.com/gin-gonic/gin"
 	"k8s.io/apimachinery/pkg/types"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -77,12 +79,16 @@ func (r *Handler) createRandomString(length int) string {
 	return string(randomString)
 }
 
-func (r *Handler) checkIfAssetExists(namespace string, name string) error {
+func (r *Handler) checkIfAssetDoesNotExistInCluster(namespace string, name string) error {
 	asset := &v1alpha1.Asset{}
-	if err := r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
-		return errors.Wrap(err, "Error in checkIfAssetExists.")
+	var err error
+	if err = r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
+		if errors_apimachinery.IsNotFound(err) {
+			log.Println("error cause is:", errors.Cause(err))
+			return nil
+		}
 	}
-	return nil
+	return errors.Wrap(err, "Some other error occured in checkIfAssetExists")
 }
 
 func (r *Handler) createAssetInfo(c *gin.Context) {
@@ -126,13 +132,18 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 				// add random string to source asset
 				randomStr := r.createRandomString(randomStringLength)
 				assetName = assetName + "-" + randomStr
-				err := r.checkIfAssetExists(namespace, assetName)
+				err := r.checkIfAssetDoesNotExistInCluster(namespace, assetName)
 				if err == nil {
 					break
+				} else {
+					errorMessage := "Error during checkIfAssetDoesNotExistInCluster. Retrying generation of assetid once more. Error:" + err.Error()
+					log.Println(errorMessage)
+					// reset assetName
+					assetName = request.ResourceMetadata.Name
 				}
 			}
 			if i == retriesLimit {
-				errorMessage := fmt.Sprintf("Unsuccessful in generating destination asset id. Max retries %d exceeded", retriesLimit)
+				errorMessage := fmt.Sprintf("Unsuccessful in generating destination asset id with prefix %s. Max retries %d exceeded", request.ResourceMetadata.Name, retriesLimit)
 				c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 				return
 			}
@@ -143,9 +154,12 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 			for i := 0; i < retriesLimit; i++ {
 				randomStr := r.createRandomString(randomStringLength)
 				assetName = "fybrik-asset-" + "-" + randomStr
-				err := r.checkIfAssetExists(namespace, assetName)
+				err := r.checkIfAssetDoesNotExistInCluster(namespace, assetName)
 				if err == nil {
 					break
+				} else {
+					errorMessage := "Error during checkIfAssetDoesNotExistInCluster. Retrying generation of assetid once more. Error:" + err.Error()
+					log.Println(errorMessage)
 				}
 			}
 			if i == retriesLimit {
@@ -179,7 +193,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 		return
 	}
-	spec.Metadata.Name = namespace + "/" + assetName
+	spec.Metadata.Name = assetName
 
 	reqResourceDetails, _ := json.Marshal(request.Details)
 	err = json.Unmarshal(reqResourceDetails, &spec.Details)
