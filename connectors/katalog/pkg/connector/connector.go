@@ -88,7 +88,7 @@ func (r *Handler) checkIfAssetDoesNotExistInCluster(namespace string, name strin
 			return nil
 		}
 	}
-	return errors.Wrap(err, "Some other error occured in checkIfAssetExists")
+	return errors.Wrap(err, "Some other error occurred in checkIfAssetExists")
 }
 
 func (r *Handler) createAssetInfo(c *gin.Context) {
