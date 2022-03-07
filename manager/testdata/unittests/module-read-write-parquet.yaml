@@ -12,6 +12,7 @@ spec:
   type: service
   capabilities:
     - capability: read
+      scope: workload
       api:
         connection:
           name: fybrik-arrow-flight
@@ -26,8 +27,8 @@ spec:
       actions:
       - name: RedactAction
       - name: RemoveAction
-
     - capability: write
+      scope: workload
       api:
         connection:
           name: fybrik-arrow-flight
