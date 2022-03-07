@@ -195,7 +195,7 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 	}
 	dataCatalogResp := &datacatalog.GetAssetResponse{
 		ResourceMetadata: *resourceMetaData,
-		ResourceDetails:  details,
+		Details:          details,
 		Credentials:      result.GetDetails().CredentialsInfo.VaultSecretPath,
 	}
 	// convert GRPC response to Open Api Response - end

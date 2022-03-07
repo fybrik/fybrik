@@ -4,26 +4,38 @@
 apiVersion: app.fybrik.io/v1alpha1
 kind: FybrikModule
 metadata:
-  name: arrow-flight-module
+  name: read-write-parquet
   namespace: fybrik-system
-  labels:
-    name: arrow-flight-module
-    version: 0.0.1  # semantic version
 spec:
   chart:
     name:  ghcr.io/fybrik/fybrik-template:0.1.0
   type: service
   capabilities:
     - capability: read
-      scope: workload
       api:
         connection:
           name: fybrik-arrow-flight
           fybrik-arrow-flight:
-            hostname: read-path.{{ .Release.Name}}.{{ get .Values.labels "app" | default .Release.Namespace }}
+            hostname: read-write-module
             port: 80
             scheme: grpc
       supportedInterfaces:
       - source:
           protocol: s3
-          dataformat: csv
+          dataformat: parquet
+      actions:
+      - name: RedactAction
+      - name: RemoveAction
+
+    - capability: write
+      api:
+        connection:
+          name: fybrik-arrow-flight
+          fybrik-arrow-flight:
+            hostname: read-write-module
+            port: 80
+            scheme: grpc
+      supportedInterfaces:
+      - sink:
+          protocol: s3
+          dataformat: parquet

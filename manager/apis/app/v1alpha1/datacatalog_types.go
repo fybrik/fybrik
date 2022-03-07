@@ -10,7 +10,8 @@ import "fybrik.io/fybrik/pkg/model/taxonomy"
 type DataStore struct {
 	// Holds details for retrieving credentials by the modules from Vault store.
 	// It is a map so that different credentials can be stored for the different DataFlow operations.
-	Vault map[string]Vault `json:"vault"`
+	// +optional
+	Vault map[string]Vault `json:"vault,omitempty"`
 	// Connection has the relevant details for accesing the data (url, table, ssl, etc.)
 	// +required
 	Connection taxonomy.Connection `json:"connection"`

@@ -11,6 +11,7 @@ spec:
   type: service
   capabilities:
     - capability: copy
+      scope: asset
       supportedInterfaces:
       - source:
           protocol: db2

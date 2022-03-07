@@ -1,36 +1,54 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "$id": "fybrik_application.json",
-    "title": "FybrikApplication taxonomy",
-    "type": "object",
-    "description": "Values contributed to by Fybrik applications.",
-    "properties": {
-        "spec": {
-            "type": "object",
-            "properties": {
-                "appInfo": {"$ref": "taxonomy.json#/definitions/AppInfo"},
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "flow": {
-                                "type": "string"
-                            },
-                            "requirements": {
-                                "type": "object",
-                                "properties": {
-                                    "interface": { "$ref": "taxonomy.json#/definitions/Interface"}
-                                },
-                                "required": ["interface"]
-                            }
-                        },
-                        "required": ["requirements"]
-                    }
-                }
-            },
-            "required": ["appInfo", "data"]
-        }
+  "description": "FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.",
+  "type": "object",
+  "title": "fybrik_application.json",
+  "required": [
+    "appInfo",
+    "data"
+  ],
+  "properties": {
+    "appInfo": {
+      "$ref": "taxonomy.json#/definitions/AppInfo",
+      "description": "AppInfo contains information describing the reasons for the processing that will be done by the application."
     },
-    "required": ["spec"]
-} 
+    "data": {
+      "description": "Data contains the identifiers of the data to be used by the Data Scientist's application, and the protocol used to access it and the format expected.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/DataContext"
+      }
+    }
+  },
+  "definitions": {
+    "DataContext": {
+      "description": "DataContext indicates data set being processed by the workload and includes information about the data format and technologies used to access the data.",
+      "type": "object",
+      "required": [
+        "requirements"
+      ],
+      "properties": {
+        "flow": {
+          "$ref": "taxonomy.json#/definitions/DataFlow",
+          "description": "Flows indicates what is being done with the particular dataset - ex: read, write, copy (ingest), delete This is optional for the purpose of backward compatibility. If nothing is provided, read is assumed."
+        },
+        "requirements": {
+          "$ref": "#/definitions/DataRequirements",
+          "description": "Requirements from the system"
+        }
+      }
+    },
+    "DataRequirements": {
+      "description": "DataRequirements structure contains a list of requirements (interface, need to catalog the dataset, etc.)",
+      "type": "object",
+      "required": [
+        "interface"
+      ],
+      "properties": {
+        "interface": {
+          "$ref": "taxonomy.json#/definitions/Interface",
+          "description": "Interface indicates the protocol and format expected by the data user"
+        }
+      }
+    }
+  }
+}
