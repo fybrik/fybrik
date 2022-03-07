@@ -172,7 +172,7 @@ func (p *PlotterGenerator) addTemplate(element *ResolvedEdge, plotterSpec *app.P
 }
 
 func (p *PlotterGenerator) addInMemoryStep(element *ResolvedEdge, datasetID string, api *datacatalog.ResourceDetails,
-	steps []app.DataFlowStep) []app.DataFlowStep {
+	steps []app.DataFlowStep, flowType taxonomy.DataFlow) []app.DataFlowStep {
 	if steps == nil {
 		steps = []app.DataFlowStep{}
 	}
@@ -184,18 +184,32 @@ func (p *PlotterGenerator) addInMemoryStep(element *ResolvedEdge, datasetID stri
 	if lastStepAPI == nil {
 		assetID = datasetID
 	}
-	steps = append(steps, app.DataFlowStep{
-		Cluster:  element.Cluster,
-		Template: string(element.Module.Spec.Capabilities[element.CapabilityIndex].Capability),
-		Parameters: &app.StepParameters{
-			Source: &app.StepSource{
-				AssetID: assetID,
-				API:     lastStepAPI,
+	if flowType == taxonomy.WriteFlow {
+		steps = append(steps, app.DataFlowStep{
+			Cluster:  element.Cluster,
+			Template: string(element.Module.Spec.Capabilities[element.CapabilityIndex].Capability),
+			Parameters: &app.StepParameters{
+				Sink: &app.StepSink{
+					AssetID: assetID,
+				},
+				API:     api,
+				Actions: element.Actions,
 			},
-			API:     api,
-			Actions: element.Actions,
-		},
-	})
+		})
+	} else {
+		steps = append(steps, app.DataFlowStep{
+			Cluster:  element.Cluster,
+			Template: string(element.Module.Spec.Capabilities[element.CapabilityIndex].Capability),
+			Parameters: &app.StepParameters{
+				Source: &app.StepSource{
+					AssetID: assetID,
+					API:     lastStepAPI,
+				},
+				API:     api,
+				Actions: element.Actions,
+			},
+		})
+	}
 	return steps
 }
 
@@ -228,7 +242,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 	datasetID := item.Context.DataSetID
 	subflows := make([]app.SubFlow, 0)
 
-	// it could be that vault credentails already exist for a different flow.
+	// it could be that vault credentials already exist for a different flow.
 	plotterSpec.Assets[item.Context.DataSetID] = app.AssetDetails{
 		DataStore: *p.getAssetDataStore(item, item.Context.Flow, plotterSpec.Assets[item.Context.DataSetID].DataStore.Vault),
 	}
@@ -273,7 +287,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 			steps = nil
 		} else {
 			// TODO: handle the case where IsNewDataSet is true in write flow
-			steps = p.addInMemoryStep(element, datasetID, api, steps)
+			steps = p.addInMemoryStep(element, datasetID, api, steps, flowType)
 		}
 	}
 	if steps != nil {
