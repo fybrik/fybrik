@@ -81,7 +81,7 @@ func (c *Connection) LinkPolicyToIdentity(identity, policyName, boundedNamespace
 // RemovePolicyFromIdentity removes the policy from the authentication identity with which it is associated, meaning
 // this policy will no longer be invoked when a person or service authenticates with this identity.
 func (c *Connection) RemovePolicyFromIdentity(identity, policyName, auth string) error {
-	identityPath := "auth/" + auth + "/" + identity
+	identityPath := "auth/" + auth + "/" + identity //nolint:revive
 
 	logicalClient := c.Client.Logical()
 	if logicalClient == nil {
