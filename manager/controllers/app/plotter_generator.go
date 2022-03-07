@@ -118,18 +118,21 @@ func (p *PlotterGenerator) GetCopyDestination(item *DataInfo, destinationInterfa
 	}, nil
 }
 
-func (p *PlotterGenerator) getAssetDataStore(item *DataInfo) *app.DataStore {
-	vaultMap := make(map[string]app.Vault)
+func (p *PlotterGenerator) getAssetDataStore(item *DataInfo, flow taxonomy.DataFlow, vaultMap map[string]app.Vault) *app.DataStore {
+	if vaultMap == nil {
+		// create a new map in case it does not exists already
+		vaultMap = make(map[string]app.Vault)
+	}
 	if utils.IsVaultEnabled() {
 		// Set the value received from the catalog connector.
 		vaultSecretPath := item.DataDetails.Credentials
-		vaultMap[string(taxonomy.ReadFlow)] = app.Vault{
+		vaultMap[string(flow)] = app.Vault{
 			SecretPath: vaultSecretPath,
 			Role:       utils.GetModulesRole(),
 			Address:    utils.GetVaultAddress(),
 		}
 	} else {
-		vaultMap[string(taxonomy.ReadFlow)] = app.Vault{}
+		vaultMap[string(flow)] = app.Vault{}
 	}
 	return &app.DataStore{
 		Connection: item.DataDetails.Details.Connection,
@@ -225,8 +228,9 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 	datasetID := item.Context.DataSetID
 	subflows := make([]app.SubFlow, 0)
 
+	// it could be that vault credentails already exists for a different flow.
 	plotterSpec.Assets[item.Context.DataSetID] = app.AssetDetails{
-		DataStore: *p.getAssetDataStore(item),
+		DataStore: *p.getAssetDataStore(item, item.Context.Flow, plotterSpec.Assets[item.Context.DataSetID].DataStore.Vault),
 	}
 	// DataStore for destination will be determined if an implicit copy is required
 	var steps []app.DataFlowStep
