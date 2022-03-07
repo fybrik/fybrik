@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+//nolint:gosec
 var (
 	credserverurl = "http://localhost:8080/v1/creds/usercredentials"
 	cred1         = "{\"SecretName\": \"notebook\",\"System\": \"Egeria\",\"Credentials\": {\"username\": \"user1\"}}"
@@ -25,16 +26,16 @@ func storeCredentials(t *testing.T, cred string) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := http.DefaultClient.Do(req)
 	assert.Nil(t, err)
-	assert.Equal(t, resp.StatusCode, http.StatusCreated, "Failed to store credentials")
 	defer resp.Body.Close()
+	assert.Equal(t, resp.StatusCode, http.StatusCreated, "Failed to store credentials")
 }
 
 func readCredentials(t *testing.T, path string) {
 	url := credserverurl + "/" + path
 	resp, err := http.Get(url)
 	assert.Nil(t, err)
-	assert.Equal(t, resp.StatusCode, http.StatusOK, "Failed to read credentials")
 	defer resp.Body.Close()
+	assert.Equal(t, resp.StatusCode, http.StatusOK, "Failed to read credentials")
 }
 
 func deleteCredentials(t *testing.T, path string) {
@@ -46,9 +47,8 @@ func deleteCredentials(t *testing.T, path string) {
 
 	resp, err := http.DefaultClient.Do(req)
 	assert.Nil(t, err)
-	assert.Equal(t, resp.StatusCode, http.StatusOK, "Failed to delete credentials")
-
 	defer resp.Body.Close()
+	assert.Equal(t, resp.StatusCode, http.StatusOK, "Failed to delete credentials")
 }
 
 func TestCredentialAPIs(t *testing.T) {

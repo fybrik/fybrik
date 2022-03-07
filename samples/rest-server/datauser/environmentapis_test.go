@@ -52,8 +52,6 @@ func TestEnvironmentAPIs(t *testing.T) {
 
 	err = json.Unmarshal([]byte(respString), &resultObj)
 	assert.Nil(t, err)
-
-	assert.Equal(t, resultObj, expectedObj, "Wrong response")
-
 	defer resp.Body.Close()
+	assert.Equal(t, resultObj, expectedObj, "Wrong response")
 }
