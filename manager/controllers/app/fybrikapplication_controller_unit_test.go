@@ -6,11 +6,10 @@ package app
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"testing"
 	"time"
 
-	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,6 +23,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/yaml"
 
+	"fybrik.io/fybrik/pkg/model/taxonomy"
+
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/mockup"
 	"fybrik.io/fybrik/manager/controllers/utils"
@@ -35,7 +36,7 @@ import (
 
 // Read utility
 func readObjectFromFile(f string, obj interface{}) error {
-	bytes, err := ioutil.ReadFile(f)
+	bytes, err := os.ReadFile(f)
 	if err != nil {
 		return err
 	}
@@ -87,7 +88,7 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 		},
 		ClusterManager:  &mockup.ClusterLister{},
 		Provision:       &storage.ProvisionTest{},
-		ConfigEvaluator: adminconfig.NewRegoPolicyEvaluator(log, query),
+		ConfigEvaluator: adminconfig.NewRegoPolicyEvaluator(query),
 		Infrastructure:  infrastructureManager,
 	}
 }
@@ -233,7 +234,7 @@ func TestFybrikApplicationFinalizers(t *testing.T) {
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
 	g.Expect(r).NotTo(gomega.BeNil())
-	appContext := ApplicationContext{Application: application, Log: r.Log}
+	appContext := ApplicationContext{Application: application, Log: &r.Log}
 	g.Expect(r.reconcileFinalizers(appContext)).To(gomega.BeNil())
 	g.Expect(application.Finalizers).NotTo(gomega.BeEmpty(), "finalizers have not been created")
 	// mark application as deleted
@@ -1402,7 +1403,7 @@ func TestWriteRegisteredAsset(t *testing.T) {
 	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikapplication-write-AssetExists.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.SetGeneration(1)
-	application.SetUID("17")
+	application.SetUID("18")
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,

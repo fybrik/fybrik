@@ -41,7 +41,6 @@ import (
 )
 
 const (
-	BlueprintKind          string = "blueprint"
 	BlueprintFinalizerName string = "Blueprint.finalizer"
 )
 
@@ -69,8 +68,8 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
-	log := r.Log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).
-		Str(BlueprintKind, req.NamespacedName.String()).Logger()
+	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).
+		Str("blueprint", req.NamespacedName.String()).Logger()
 
 	if res, err := r.reconcileFinalizers(&blueprint); err != nil {
 		log.Error().Err(err).Msg("Could not reconcile blueprint " + blueprint.GetName() + " finalizers")
@@ -87,7 +86,7 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	observedStatus := blueprint.Status.DeepCopy()
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("Installing/Updating blueprint " + blueprint.GetName())
 
-	result, err := r.reconcile(ctx, log, &blueprint)
+	result, err := r.reconcile(ctx, &log, &blueprint)
 	if err != nil {
 		return ctrl.Result{}, errors.Wrap(err, "failed to reconcile blueprint")
 	}
@@ -156,25 +155,8 @@ func getDomainFromImageName(image string) (string, error) {
 	return distributionref.Domain(named), nil
 }
 
-//nolint:funlen,gocritic,gocyclo
-func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolog.Logger, chartSpec fapp.ChartSpec,
-	args map[string]interface{}, blueprint *fapp.Blueprint, releaseName string) (ctrl.Result, error) {
-	// Get the unique id for the specific fybrikapplication instance.  Used for logging.
-	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
-	log = log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Str(BlueprintKind, blueprint.GetName()).Logger()
-
-	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Chart Ref ---\n\n" + chartSpec.Name + "\n\n")
-	kubeNamespace := blueprint.Spec.ModulesNamespace
-
-	args = CopyMap(args)
-	for k, v := range chartSpec.Values {
-		SetMapField(args, k, v)
-	}
-	nbytes, _ := yaml.Marshal(args)
-	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Values.yaml ---\n\n" + string(nbytes) + "\n\n")
-
+func (r *BlueprintReconciler) obtainSecrets(ctx context.Context, log *zerolog.Logger, chartSpec fapp.ChartSpec) (string, error) {
 	var registrySuccessfulLogin string
-
 	if chartSpec.ChartPullSecret != "" {
 		// obtain ChartPullSecret
 		pullSecret := corev1.Secret{}
@@ -187,7 +169,7 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolo
 				pullSecrets = append(pullSecrets, pullSecret)
 			}
 		} else {
-			return ctrl.Result{}, errors.WithMessage(err, "could not find ChartPullSecret: "+chartSpec.ChartPullSecret)
+			return "", errors.WithMessage(err, "could not find ChartPullSecret: "+chartSpec.ChartPullSecret)
 		}
 
 		if len(pullSecrets) != 0 {
@@ -196,7 +178,7 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolo
 			keyring, _ = credentialprovidersecrets.MakeDockerKeyring(pullSecrets, keyring)
 			repoToPull, err := getDomainFromImageName(chartSpec.Name)
 			if err != nil {
-				return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed to parse image name")
+				return "", errors.WithMessage(err, chartSpec.Name+": failed to parse image name")
 			}
 
 			creds, withCredentials := keyring.Lookup(chartSpec.Name)
@@ -215,13 +197,35 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log zerolo
 			}
 		}
 	}
+	return registrySuccessfulLogin, nil
+}
+
+func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log *zerolog.Logger, chartSpec fapp.ChartSpec,
+	args map[string]interface{}, blueprint *fapp.Blueprint, releaseName string) (ctrl.Result, error) {
+	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Chart Ref ---\n\n" + chartSpec.Name + "\n\n")
+	kubeNamespace := blueprint.Spec.ModulesNamespace
+
+	args = CopyMap(args)
+	for k, v := range chartSpec.Values {
+		SetMapField(args, k, v)
+	}
+	nbytes, _ := yaml.Marshal(args)
+	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Values.yaml ---\n\n" + string(nbytes) + "\n\n")
+
+	var registrySuccessfulLogin string
+	var err error
+	registrySuccessfulLogin, err = r.obtainSecrets(ctx, log, chartSpec)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	tmpDir, err := ioutil.TempDir("", "fybrik-helm-")
 	if err != nil {
 		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed to create temporary directory for chart pull")
 	}
-	defer func(log zerolog.Logger) {
+	defer func(log *zerolog.Logger) {
 		if err = os.RemoveAll(tmpDir); err != nil {
-			log.Error().Msg("Error while calling RemoveAll on directory created for pulling helm chart")
+			log.Error().Msgf("Error while calling RemoveAll on directory %s created for pulling helm chart", tmpDir)
 		}
 	}(log)
 	err = r.Helmer.Pull(chartSpec.Name, tmpDir)
@@ -301,10 +305,8 @@ func (r *BlueprintReconciler) updateModuleState(blueprint *fapp.Blueprint, insta
 }
 
 //nolint:gocyclo
-func (r *BlueprintReconciler) reconcile(ctx context.Context, log zerolog.Logger, blueprint *fapp.Blueprint) (ctrl.Result, error) {
+func (r *BlueprintReconciler) reconcile(ctx context.Context, log *zerolog.Logger, blueprint *fapp.Blueprint) (ctrl.Result, error) {
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
-	log = log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Str(BlueprintKind, blueprint.GetName()).Logger()
-
 	modulesNamespace := blueprint.Spec.ModulesNamespace
 	// Gather all templates and process them into a list of resources to apply
 	// force-update if the blueprint spec is different
@@ -424,7 +426,7 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 	numReconciles := environment.GetEnvAsInt(controllers.BlueprintConcurrentReconcilesConfiguration,
 		controllers.DefaultBlueprintConcurrentReconciles)
-	r.Log.Trace().Str(logging.CONTROLLER, "Blueprint").Msg("Concurrent blueprint reconciles: " + fmt.Sprint(numReconciles))
+	r.Log.Trace().Msg("Concurrent blueprint reconciles: " + fmt.Sprint(numReconciles))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
@@ -441,8 +443,8 @@ func (r *BlueprintReconciler) getExpectedResults(kind string) (*fapp.ResourceSta
 	if err := r.List(ctx, &moduleList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
 		return nil, err
 	}
-	for _, module := range moduleList.Items {
-		for _, res := range module.Spec.StatusIndicators {
+	for ind := range moduleList.Items {
+		for _, res := range moduleList.Items[ind].Spec.StatusIndicators {
 			if res.Kind == kind {
 				return res.DeepCopy(), nil
 			}
@@ -501,7 +503,7 @@ func getErrorMessage(res *unstructured.Unstructured, fieldPath string) string {
 func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, condition, uuid string) bool {
 	selector, err := labels.Parse(condition)
 	if err != nil {
-		r.Log.Error().Err(err).Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).
+		r.Log.Error().Err(err).Str(utils.FybrikAppUUID, uuid).
 			Msg("condition " + condition + "failed to parse")
 		return false
 	}
@@ -518,7 +520,7 @@ func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, c
 }
 
 func (r *BlueprintReconciler) checkReleaseStatus(releaseName, namespace, uuid string) (corev1.ConditionStatus, string) {
-	log := r.Log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Logger()
+	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).Logger()
 
 	// get all resources for the given helm release in their current state
 	resources, err := r.Helmer.GetResources(namespace, releaseName)

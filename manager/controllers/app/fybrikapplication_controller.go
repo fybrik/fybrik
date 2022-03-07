@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"fybrik.io/fybrik/pkg/vault"
 	"github.com/rs/zerolog"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -28,6 +27,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"fybrik.io/fybrik/pkg/vault"
 
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers"
@@ -63,7 +64,7 @@ type FybrikApplicationReconciler struct {
 }
 
 type ApplicationContext struct {
-	Log         zerolog.Logger
+	Log         *zerolog.Logger
 	Application *api.FybrikApplication
 	UUID        string
 }
@@ -71,7 +72,8 @@ type ApplicationContext struct {
 const (
 	ApplicationTaxonomy   = "/tmp/taxonomy/fybrik_application.json"
 	DataCatalogTaxonomy   = "/tmp/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
-	FybrikApplicationKind = "fybrikApplication"
+	FybrikApplicationKind = "FybrikApplication"
+	Interval              = 10
 )
 
 // Reconcile reconciles FybrikApplication CRD
@@ -93,8 +95,8 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	log := sublog.With().Str(utils.FybrikAppUUID, uuid).Logger()
 
 	// Log the fybrikapplication
-	logging.LogStructure(FybrikApplicationKind, application, log, true, true)
-	applicationContext := ApplicationContext{Log: log, Application: application, UUID: uuid}
+	logging.LogStructure(FybrikApplicationKind, application, &log, true, true)
+	applicationContext := ApplicationContext{Log: &log, Application: application, UUID: uuid}
 	if err := r.reconcileFinalizers(applicationContext); err != nil {
 		log.Error().Err(err).Msg("Could not reconcile finalizers.")
 		return ctrl.Result{}, err
@@ -153,9 +155,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		if err != nil {
 			return ctrl.Result{}, err
 		}
-		if err := r.checkReadiness(applicationContext, resourceStatus); err != nil {
-			return ctrl.Result{}, err
-		}
+		r.checkReadiness(applicationContext, resourceStatus)
 	}
 	application.Status.Ready = isReady(application)
 
@@ -173,7 +173,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	// trigger a new reconcile if required (the fybrikapplication is not ready)
 	if !isReady(application) {
-		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
+		return ctrl.Result{RequeueAfter: Interval * time.Second}, nil
 	}
 
 	return ctrl.Result{}, nil
@@ -183,7 +183,7 @@ func getBucketResourceRef(name string) *types.NamespacedName {
 	return &types.NamespacedName{Name: name, Namespace: utils.GetSystemNamespace()}
 }
 
-func (r *FybrikApplicationReconciler) checkReadiness(applicationContext ApplicationContext, status api.ObservedState) error {
+func (r *FybrikApplicationReconciler) checkReadiness(applicationContext ApplicationContext, status api.ObservedState) {
 	if applicationContext.Application.Status.AssetStates == nil {
 		initStatus(applicationContext.Application)
 	}
@@ -235,7 +235,6 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 		}
 		setReadyCondition(applicationContext, assetID)
 	}
-	return nil
 }
 
 // reconcileFinalizers reconciles finalizers for FybrikApplication
@@ -413,7 +412,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 }
 
 // CreateDataRequest generates a new DataRequest object for a specific asset based on FybrikApplication and asset metadata
-func CreateDataRequest(application *api.FybrikApplication, dataCtx api.DataContext,
+func CreateDataRequest(application *api.FybrikApplication, dataCtx *api.DataContext,
 	assetMetadata *datacatalog.ResourceMetadata) adminconfig.DataRequest {
 	var flow taxonomy.DataFlow
 
@@ -487,13 +486,13 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 		log.Error().Err(err).Msg("failed to validate the catalog connector response")
 		return err
 	}
-	logging.LogStructure("Catalog connector response", response, log, false, false)
+	logging.LogStructure("Catalog connector response", response, &log, false, false)
 	response.DeepCopyInto(req.DataDetails)
 	configEvaluatorInput := &adminconfig.EvaluatorInput{}
 	configEvaluatorInput.Workload.UUID = utils.GetFybrikApplicationUUID(input)
 	input.Spec.AppInfo.DeepCopyInto(&configEvaluatorInput.Workload.Properties)
 	configEvaluatorInput.Workload.Cluster = workloadCluster
-	configEvaluatorInput.Request = CreateDataRequest(input, *req.Context, &req.DataDetails.ResourceMetadata)
+	configEvaluatorInput.Request = CreateDataRequest(input, req.Context, &req.DataDetails.ResourceMetadata)
 
 	// Read policies for data that is processed in the workload geography
 	if configEvaluatorInput.Request.Usage == taxonomy.ReadFlow {
@@ -637,8 +636,8 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*api.FybrikMod
 	if err := r.List(ctx, &moduleList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
 		return moduleMap, err
 	}
-	for _, module := range moduleList.Items {
-		moduleMap[module.Name] = module.DeepCopy()
+	for ind := range moduleList.Items {
+		moduleMap[moduleList.Items[ind].Name] = &moduleList.Items[ind]
 	}
 	return moduleMap, nil
 }
@@ -732,10 +731,10 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 		Templates:        map[string]api.Template{},
 	}
 
-	for _, item := range requirements {
-		err := plotterGen.AddFlowInfoForAsset(item, applicationContext.Application, plotterSpec)
+	for ind := range requirements {
+		err := plotterGen.AddFlowInfoForAsset(&requirements[ind], applicationContext.Application, plotterSpec)
 		if err != nil {
-			AnalyzeError(applicationContext, item.Context.DataSetID, err)
+			AnalyzeError(applicationContext, requirements[ind].Context.DataSetID, err)
 			continue
 		}
 	}
