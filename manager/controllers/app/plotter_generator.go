@@ -228,7 +228,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 	datasetID := item.Context.DataSetID
 	subflows := make([]app.SubFlow, 0)
 
-	// it could be that vault credentails already exists for a different flow.
+	// it could be that vault credentails already exist for a different flow.
 	plotterSpec.Assets[item.Context.DataSetID] = app.AssetDetails{
 		DataStore: *p.getAssetDataStore(item, item.Context.Flow, plotterSpec.Assets[item.Context.DataSetID].DataStore.Vault),
 	}
