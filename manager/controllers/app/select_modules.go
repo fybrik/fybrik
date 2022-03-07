@@ -226,6 +226,7 @@ func (p *PlotterGenerator) findPathsWithinLimit(item *DataInfo, source, sink *No
 			edge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: nil, Sink: nil}
 			// check that the module + module capability satisfy the requirements from the admin config policies
 			if !p.validateModuleRestrictions(item, &edge) {
+				p.Log.Debug().Msgf("module %s does not satisfy requirements for capability %s", module.Name, capability.Capability)
 				continue
 			}
 			// check whether the module supports the final destination
@@ -391,9 +392,12 @@ func (p *PlotterGenerator) validateModuleRestrictions(item *DataInfo, edge *Edge
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
 	moduleSpec := edge.Module.Spec
 	restrictions := item.Configuration.ConfigDecisions[capability.Capability].DeploymentRestrictions.Modules
+	oldPrefix := "capabilities."
+	newPrefix := oldPrefix + strconv.Itoa(edge.CapabilityIndex) + "."
 	for i := range restrictions {
-		if strings.Contains(restrictions[i].Property, "capabilities.") {
-			restrictions[i].Property = strings.Replace(restrictions[i].Property, "capabilities", "capabilities."+strconv.Itoa(edge.CapabilityIndex), 1)
+		if strings.Contains(restrictions[i].Property, oldPrefix) && !strings.Contains(restrictions[i].Property, newPrefix) {
+			restrictions[i].Property = strings.Replace(restrictions[i].Property, oldPrefix,
+				newPrefix, 1)
 		}
 	}
 	return p.validateRestrictions(restrictions, &moduleSpec, "")
