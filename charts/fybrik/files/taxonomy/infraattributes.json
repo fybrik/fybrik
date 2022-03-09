@@ -1,14 +1,6 @@
 {
   "title": "infraattributes.json",
   "definitions": {
-    "AttributeType": {
-      "type": "string",
-      "enum": [
-        "numeric",
-        "string",
-        "bool"
-      ]
-    },
     "Infrastructure": {
       "type": "object",
       "required": [
@@ -18,50 +10,8 @@
         "infrastructure": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/InfrastructureElement"
+            "$ref": "taxonomy.json#/definitions/InfrastructureElement"
           }
-        }
-      }
-    },
-    "InfrastructureElement": {
-      "type": "object",
-      "required": [
-        "attribute",
-        "type",
-        "value"
-      ],
-      "properties": {
-        "attribute": {
-          "$ref": "taxonomy.json#/definitions/Attribute"
-        },
-        "description": {
-          "type": "string"
-        },
-        "instance": {
-          "type": "string"
-        },
-        "scale": {
-          "$ref": "#/definitions/RangeType"
-        },
-        "type": {
-          "$ref": "#/definitions/AttributeType"
-        },
-        "units": {
-          "$ref": "taxonomy.json#/definitions/Units"
-        },
-        "value": {
-          "type": "string"
-        }
-      }
-    },
-    "RangeType": {
-      "type": "object",
-      "properties": {
-        "max": {
-          "type": "integer"
-        },
-        "min": {
-          "type": "integer"
         }
       }
     }

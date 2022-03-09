@@ -4,7 +4,6 @@
 package adminconfig
 
 import (
-	infraattributes "fybrik.io/fybrik/pkg/model/attributes"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
@@ -23,9 +22,9 @@ const (
 type StringList []string
 
 type Restriction struct {
-	Property string                     `json:"property"`
-	Values   StringList                 `json:"values,omitempty"`
-	Range    *infraattributes.RangeType `json:"range,omitempty"`
+	Property string              `json:"property"`
+	Values   StringList          `json:"values,omitempty"`
+	Range    *taxonomy.RangeType `json:"range,omitempty"`
 }
 
 // DecisionPolicy is a justification for a policy that consists of a unique id, id of a policy set and a human readable desciption

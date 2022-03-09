@@ -43,7 +43,7 @@ func NewAttributeManager() (*AttributeManager, error) {
 
 func readInfrastructure() (infraattributes.Infrastructure, error) {
 	infrastructureFile := RegoPolicyDirectory + InfrastructureInfo
-	attributes := infraattributes.Infrastructure{Items: []infraattributes.InfrastructureElement{}}
+	attributes := infraattributes.Infrastructure{Items: []taxonomy.InfrastructureElement{}}
 	content, err := os.ReadFile(infrastructureFile)
 	if errors.Is(err, fs.ErrNotExist) {
 		// file does not exist - return an empty attribute list for backward compatibility
@@ -74,7 +74,7 @@ func validateStructure(bytes []byte, taxonomySchema string) error {
 }
 
 // GetAttribute returns an infrastructure attribute based on the attribute and instance names
-func (m *AttributeManager) GetAttribute(name taxonomy.Attribute, instance string) *infraattributes.InfrastructureElement {
+func (m *AttributeManager) GetAttribute(name taxonomy.Attribute, instance string) *taxonomy.InfrastructureElement {
 	for i, element := range m.Infrastructure.Items {
 		if element.Attribute == name && element.Instance == instance {
 			return &m.Infrastructure.Items[i]
