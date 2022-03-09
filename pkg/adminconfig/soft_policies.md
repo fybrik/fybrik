@@ -97,10 +97,12 @@ optimize[decision] {
 
 ### Weights
 
+- Each attribute defined in a specific policy has a weight. When a policy refers to multiple attributes, 
+an optimization strategy for the given context is defined by prioritizing some attributes over the others according to the defined weights.  
 - A default value is 1.0 
 - All weights in a decision are normalized, i.e. weights 1, 0.5 and 0.5 result in weights 0.5, 0.25 and 0.25 respectively.
 
 ### Conflict resolution
 
-In case of more than one optimization strategy, the first one takes precedence, and the others are ignored. 
+In case of more than one optimization strategy for a given context, the first one takes precedence, and the others are ignored. 
 In the future version there will be a priority assigned to a rule, and the strategy with the highest priority will be chosen.
