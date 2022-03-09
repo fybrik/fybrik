@@ -19,6 +19,7 @@ func IsStructuralSchema(path string) error {
 		return err
 	}
 
+	//nolint:revive
 	crd := &apiextensions.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "objects.group.io",

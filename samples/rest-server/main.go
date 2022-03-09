@@ -59,7 +59,6 @@ func main() {
 
 	// REST APIs provided
 	router := Routes(k8sclient)
-	//	credrouter := CredentialRoutes()
 
 	// Print out all the APIs
 	log.Printf("Server listening on port 8080")

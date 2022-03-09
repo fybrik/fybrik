@@ -33,24 +33,24 @@ func createApplication(t *testing.T, obj, name string) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := http.DefaultClient.Do(req)
 	assert.Nil(t, err)
-	assert.Equal(t, resp.StatusCode, http.StatusCreated, "Failed to create application "+name)
 	defer resp.Body.Close()
+	assert.Equal(t, resp.StatusCode, http.StatusCreated, "Failed to create application "+name)
 }
 
 func listApplications(t *testing.T) {
 	url := dmaserverurl
 	resp, err := http.Get(url)
 	assert.Nil(t, err)
-	assert.Equal(t, resp.StatusCode, http.StatusOK, "Failed to list applications")
 	defer resp.Body.Close()
+	assert.Equal(t, resp.StatusCode, http.StatusOK, "Failed to list applications")
 }
 
 func getApplication(t *testing.T, name string) {
 	url := dmaserverurl + "/" + name
 	resp, err := http.Get(url)
 	assert.Nil(t, err)
-	assert.Equal(t, resp.StatusCode, http.StatusOK, "Failed to get application "+name)
 	defer resp.Body.Close()
+	assert.Equal(t, resp.StatusCode, http.StatusOK, "Failed to get application "+name)
 }
 
 func deleteApplication(t *testing.T, name string) {
@@ -62,9 +62,8 @@ func deleteApplication(t *testing.T, name string) {
 
 	resp, err := http.DefaultClient.Do(req)
 	assert.Nil(t, err)
-	assert.Equal(t, resp.StatusCode, http.StatusOK, "Failed to delete application "+name)
-
 	defer resp.Body.Close()
+	assert.Equal(t, resp.StatusCode, http.StatusOK, "Failed to delete application "+name)
 }
 
 func TestApplicationAPIs(t *testing.T) {

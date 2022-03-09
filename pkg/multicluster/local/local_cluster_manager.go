@@ -77,7 +77,7 @@ func (cm *localClusterManager) CreateBlueprint(cluster string, blueprint *v1alph
 // UpdateBlueprint updates the given blueprint or creates a new one if it does not exist
 func (cm *localClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	if localCluster, err := cm.GetLocalClusterName(); err != nil || localCluster != cluster {
-		return fmt.Errorf("unregistered cluster: %s", cluster)
+		return fmt.Errorf("unregistered cluster: %s", cluster) //nolint:revive // Ignore repetitive error msg
 	}
 	resource := &v1alpha1.Blueprint{
 		ObjectMeta: metav1.ObjectMeta{

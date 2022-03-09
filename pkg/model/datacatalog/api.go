@@ -23,7 +23,8 @@ type GetAssetResponse struct {
 }
 
 type CreateAssetRequest struct {
-	// The destination catalog id in which the new asset will be created based on the information provided in ResourceMetadata and ResourceDetails field
+	// The destination catalog id in which the new asset will be created based on the information provided
+	// in ResourceMetadata and ResourceDetails field
 	DestinationCatalogID string `json:"destinationCatalogID"`
 	// +kubebuilder:validation:Optional
 	// Asset ID to be used for the created asset
