@@ -1,6 +1,7 @@
 // Copyright 2021 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
+//nolint:govet,revive
 package razee
 
 import (
@@ -181,6 +182,7 @@ func (r *razeeClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha
 	}
 
 	_, err = r.con.Groups.GroupClusters(r.orgID, groupUUID, []string{rCluster.ClusterID})
+	//nolint:revive
 	if err != nil {
 		r.log.Error().Err(err).Str("group", groupName).
 			Str(clusterKey, rCluster.Name).Str("groupUUID", groupUUID).Msg("Error while creating group")
