@@ -36,7 +36,7 @@ func getConfig(kubeNamespace string) (*action.Configuration, error) {
 	config := &genericclioptions.ConfigFlags{
 		Namespace: &kubeNamespace,
 	}
-	err := actionConfig.Init(config, kubeNamespace, os.Getenv("HELM_DRIVER"), debug)
+	err := actionConfig.Init(config, kubeNamespace, os.Getenv("HELM_DRIVER"), debugf)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func getConfig(kubeNamespace string) (*action.Configuration, error) {
 	return actionConfig, err
 }
 
-func debug(format string, v ...interface{}) {
+func debugf(format string, v ...interface{}) {
 	if debugOption {
 		format = fmt.Sprintf("[debug] %s\n", format)
 		_ = log.Output(2, fmt.Sprintf(format, v...))

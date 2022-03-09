@@ -24,6 +24,19 @@ import (
 
 var _ PolicyManager = (*grpcPolicyManager)(nil)
 
+const (
+	intentKey     = "intent"
+	roleKey       = "role"
+	columnsKey    = "columns"
+	redactKey     = "redact"
+	columnNameKey = "column_name"
+	nameKey       = "name"
+	removeName    = "remove"
+	encryptName   = "encrypt"
+	allowAction   = "Allow"
+	denyAction    = "Deny"
+)
+
 type grpcPolicyManager struct {
 	pb.UnimplementedPolicyManagerServiceServer
 
@@ -111,8 +124,8 @@ func ConvertGrpcReqToOpenAPIReq(in *pb.ApplicationContext) (*policymanager.GetPo
 
 	reqContext := make(map[string]interface{})
 	properties := in.GetAppInfo().GetProperties()
-	reqContext["intent"] = properties["intent"]
-	reqContext["role"] = properties["role"]
+	reqContext[intentKey] = properties[intentKey]
+	reqContext[roleKey] = properties[roleKey]
 	req.Context = taxonomy.PolicyManagerRequestContext{Properties: serde.Properties{Items: reqContext}}
 
 	return &req, creds, nil
@@ -126,11 +139,11 @@ func ConvertOpenAPIReqToGrpcReq(in *policymanager.GetPolicyDecisionsRequest, cre
 
 	properties := make(map[string]string)
 	reqContext := in.Context.Items
-	if intent, ok := reqContext["intent"].(string); ok {
-		properties["intent"] = intent
+	if intent, ok := reqContext[intentKey].(string); ok {
+		properties[intentKey] = intent
 	}
-	if role, ok := reqContext["role"].(string); ok {
-		properties["role"] = role
+	if role, ok := reqContext[roleKey].(string); ok {
+		properties[roleKey] = role
 	}
 
 	appInfo := &pb.ApplicationDetails{ProcessingGeography: string(processingGeo), Properties: properties}
@@ -184,14 +197,14 @@ func ConvertOpenAPIRespToGrpcResp(
 		log.Println("name received in ConvertOpenAPIRespToGrpcResp", name)
 		additionalProperties := action.AdditionalProperties.Items
 
-		if strings.EqualFold("redact", name) {
+		if strings.EqualFold(redactKey, name) {
 			if additionalProperties != nil {
-				fmt.Printf("type of additionalProperties\\[\"columns\"\\]: %s\n", reflect.TypeOf(additionalProperties["columns"]))
-				if colNames, ok := additionalProperties["columns"].([]interface{}); ok {
+				fmt.Printf("type of additionalProperties\\[\"columns\"\\]: %s\n", reflect.TypeOf(additionalProperties[columnsKey]))
+				if colNames, ok := additionalProperties[columnsKey].([]interface{}); ok {
 					for j := 0; j < len(colNames); j++ {
 						log.Println("colNames[j].(string)", colNames[j].(string))
-						newEnforcementAction := &pb.EnforcementAction{Name: "redact", Id: "redact-ID",
-							Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": colNames[j].(string)}}
+						newEnforcementAction := &pb.EnforcementAction{Name: redactKey, Id: "redact-ID",
+							Level: pb.EnforcementAction_COLUMN, Args: map[string]string{columnNameKey: colNames[j].(string)}}
 						enforcementActions = append(enforcementActions, newEnforcementAction)
 
 						policy := resultItems[i].Policy
@@ -205,14 +218,14 @@ func ConvertOpenAPIRespToGrpcResp(
 		}
 
 		//nolint:dupl
-		if strings.EqualFold("remove", name) {
+		if strings.EqualFold(removeName, name) {
 			if additionalProperties != nil {
-				fmt.Printf("type of additionalProperties\\[\"columns\"\\]: %s\n", reflect.TypeOf(additionalProperties["columns"]))
-				if colNames, ok := additionalProperties["columns"].([]interface{}); ok {
+				fmt.Printf("type of additionalProperties\\[\"columns\"\\]: %s\n", reflect.TypeOf(additionalProperties[columnsKey])) //nolint:revive
+				if colNames, ok := additionalProperties[columnsKey].([]interface{}); ok {
 					for j := 0; j < len(colNames); j++ {
-						log.Println("colNames[j].(string)", colNames[j].(string))
+						log.Println("colNames[j].(string)", colNames[j].(string)) //nolint:revive
 						newEnforcementAction := &pb.EnforcementAction{Name: "removed", Id: "removed-ID",
-							Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": colNames[j].(string)}}
+							Level: pb.EnforcementAction_COLUMN, Args: map[string]string{columnNameKey: colNames[j].(string)}}
 						enforcementActions = append(enforcementActions, newEnforcementAction)
 
 						policy := resultItems[i].Policy
@@ -224,14 +237,14 @@ func ConvertOpenAPIRespToGrpcResp(
 		}
 
 		//nolint:dupl
-		if strings.EqualFold("encrypt", name) {
+		if strings.EqualFold(encryptName, name) {
 			if additionalProperties != nil {
-				fmt.Printf("type of additionalProperties\\[\"columns\"\\]: %s\n", reflect.TypeOf(additionalProperties["columns"]))
-				if colNames, ok := additionalProperties["columns"].([]interface{}); ok {
+				fmt.Printf("type of additionalProperties\\[\"columns\"\\]: %s\n", reflect.TypeOf(additionalProperties[columnsKey]))
+				if colNames, ok := additionalProperties[columnsKey].([]interface{}); ok {
 					for j := 0; j < len(colNames); j++ {
 						log.Println("colNames[j].(string)", colNames[j].(string))
 						newEnforcementAction := &pb.EnforcementAction{Name: "encrypted", Id: "encrypted-ID",
-							Level: pb.EnforcementAction_COLUMN, Args: map[string]string{"column_name": colNames[j].(string)}}
+							Level: pb.EnforcementAction_COLUMN, Args: map[string]string{columnNameKey: colNames[j].(string)}}
 						enforcementActions = append(enforcementActions, newEnforcementAction)
 
 						policy := resultItems[i].Policy
@@ -243,21 +256,18 @@ func ConvertOpenAPIRespToGrpcResp(
 		}
 
 		if strings.EqualFold("deny", name) {
-			newEnforcementAction := &pb.EnforcementAction{Name: "Deny", Id: "Deny-ID", Level: pb.EnforcementAction_DATASET,
+			newEnforcementAction := &pb.EnforcementAction{Name: denyAction, Id: "Deny-ID", Level: pb.EnforcementAction_DATASET,
 				Args: map[string]string{}}
 			enforcementActions = append(enforcementActions, newEnforcementAction)
 
 			policy := resultItems[i].Policy
 			log.Println("policy got in ConvertOpenAPIRespToGrpcResp: ", policy)
-			// if policy == "" {
-			// 	policy = "Default Message: Deny access to Dataset"
-			// }
 			newUsedPolicy := &pb.Policy{Description: policy}
 			usedPolicies = append(usedPolicies, newUsedPolicy)
 		}
 
 		if strings.EqualFold("allow", name) {
-			newEnforcementAction := &pb.EnforcementAction{Name: "Allow", Id: "Allow-ID", Level: pb.EnforcementAction_DATASET,
+			newEnforcementAction := &pb.EnforcementAction{Name: allowAction, Id: "Allow-ID", Level: pb.EnforcementAction_DATASET,
 				Args: map[string]string{}}
 			enforcementActions = append(enforcementActions, newEnforcementAction)
 		}
@@ -282,7 +292,7 @@ func ConvertOpenAPIRespToGrpcResp(
 func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*policymanager.GetPolicyDecisionsResponse, error) {
 	// convert GRPC response to Open Api Response - start
 	// we dont get decision id returned from OPA from GRPC response. So we generate random hex string
-	decisionID, _ := random.Hex(20)
+	decisionID, _ := random.Hex(20) //nolint:revive,gomnd
 	log.Println("decision id generated", decisionID)
 
 	var datasetDecisions []*pb.DatasetDecision
@@ -315,23 +325,23 @@ func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*policymanager.
 				if level == pb.EnforcementAction_COLUMN {
 					actionOnCols := taxonomy.Action{}
 					action := make(map[string]interface{})
-					if name == "redact" {
-						action["name"] = "redact"
+					if name == redactKey {
+						action[nameKey] = redactKey
 						var colName string
-						if _, ok := args["column_name"]; ok {
-							colName = args["column_name"]
+						if _, ok := args[columnNameKey]; ok {
+							colName = args[columnNameKey]
 						} else {
 							colName = args["column"]
 						}
-						action["columns"] = []string{colName}
+						action[columnsKey] = []string{colName}
 					}
-					if name == "encrypt" {
-						action["name"] = "encrypt"
-						action["columns"] = []string{args["column_name"]}
+					if name == encryptName {
+						action[nameKey] = encryptName
+						action[columnsKey] = []string{args[columnNameKey]}
 					}
-					if name == "remove" {
-						action["name"] = "remove"
-						action["columns"] = []string{args["column_name"]}
+					if name == removeName {
+						action[nameKey] = removeName
+						action[columnsKey] = []string{args[columnNameKey]}
 					}
 
 					actionBytes, errJSON := json.MarshalIndent(action, "", "\t")
@@ -346,7 +356,7 @@ func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*policymanager.
 					// just for printing
 					actionOnColsBytes, errJSON := json.MarshalIndent(&actionOnCols, "", "\t")
 					if errJSON != nil {
-						return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
+						return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON) //nolint:revive
 					}
 					log.Println("actionOnColsBytes: ", string(actionOnColsBytes))
 
@@ -354,9 +364,9 @@ func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*policymanager.
 				}
 
 				if level == pb.EnforcementAction_DATASET || level == pb.EnforcementAction_UNKNOWN {
-					if name == "Deny" {
+					if name == denyAction {
 						actionOnDataset := taxonomy.Action{}
-						actionOnDataset.Name = "Deny"
+						actionOnDataset.Name = denyAction
 						policyManagerResult.Action = actionOnDataset
 					}
 				}
@@ -365,7 +375,7 @@ func ConvertGrpcRespToOpenAPIResp(result *pb.PoliciesDecisions) (*policymanager.
 					log.Println("usedPoliciesList[k].GetDescription()", policy)
 					policyManagerResult.Policy = policy
 				}
-				if name != "Allow" {
+				if name != allowAction {
 					// dont do anything For "Allow" action as this is convention now.
 					// If we pass empty resultitem it means allow
 					respResult = append(respResult, policyManagerResult)

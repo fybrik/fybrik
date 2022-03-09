@@ -96,7 +96,7 @@ func TestS3Notebook(t *testing.T) {
 	err = apiv1alpha1.AddToScheme(scheme.Scheme)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	k8sClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{Scheme: scheme.Scheme})
+	k8sClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{Scheme: scheme.Scheme}) //nolint:govet
 	g.Expect(err).To(gomega.BeNil())
 
 	// Create Kubernetes objects for test
@@ -251,7 +251,7 @@ func TestS3Notebook(t *testing.T) {
 	newBucket := "bucket2"
 	newObject := "data.parquet/"
 	for i := 1; i < count; i++ {
-		_, err := s3Client.GetObject(&s3.GetObjectInput{
+		_, err := s3Client.GetObject(&s3.GetObjectInput{ //nolint:govet
 			Bucket: &newBucket,
 			Key:    &newObject,
 		})

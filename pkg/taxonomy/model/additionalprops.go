@@ -58,7 +58,6 @@ func (a *AdditionalPropertiesType) ToJSONSchemaProps(flattenBy *Document) *apiex
 	// additionalProperties: false is forbidden in Kubernetes
 	// x-kubernetes-preserve-unknown-fields replaces the functionality of additionalProperties: true
 	if a.Allowed != nil {
-		// return &apiextensions.JSONSchemaPropsOrBool{Allows: *a.Allowed}
 		return nil
 	}
 
