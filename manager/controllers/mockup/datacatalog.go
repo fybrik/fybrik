@@ -16,11 +16,6 @@ import (
 	"fybrik.io/fybrik/pkg/serde"
 )
 
-const (
-	dummyResourceName = "xxx"
-	dummyCredentials  = "dummy"
-)
-
 type DataCatalogDummy struct {
 	dataDetails map[string]datacatalog.GetAssetResponse
 }
@@ -52,7 +47,8 @@ func (d *DataCatalogDummy) GetAssetInfo(in *datacatalog.GetAssetRequest, creds s
 
 func (d *DataCatalogDummy) CreateAssetInfo(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
 	// TODO
-	// will be provide a proper implementation once the implementation of CreateAssetInfo in katalog-connector is completed in a future PR. Till then a dummy implementation is provided.
+	// will be provide a proper implementation once the implementation of CreateAssetInfo in katalog-connector
+	// is completed in a future PR. Till then a dummy implementation is provided.
 	return &datacatalog.CreateAssetResponse{AssetID: "testAssetID"}, nil
 }
 
@@ -76,12 +72,16 @@ func NewTestCatalog() *DataCatalogDummy {
 	var csvFormat taxonomy.DataFormat = "csv"
 	var parquetFormat taxonomy.DataFormat = "parquet"
 	var jsonFormat taxonomy.DataFormat = "json"
+	dummyResourceName := "xxx"
+	dummyCredentials := "dummy"
+	kafkaDeserializer := "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
+	sslTruststore := "xyz123"
 
 	s3Connection := taxonomy.Connection{
-		Name: "s3",
+		Name: app.S3,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				"s3": map[string]interface{}{
+				string(app.S3): map[string]interface{}{
 					// TODO(roee88): why are real endpoints used?
 					"endpoint":   "s3.eu-gb.cloud-object-storage.appdomain.cloud",
 					"bucket":     "fybrik-test-bucket",
@@ -92,10 +92,10 @@ func NewTestCatalog() *DataCatalogDummy {
 	}
 
 	db2Connection := taxonomy.Connection{
-		Name: "db2",
+		Name: app.JdbcDb2,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				"db2": map[string]interface{}{
+				string(app.JdbcDb2): map[string]interface{}{
 					"database": "test-db",
 					"table":    "test-table",
 					"url":      "dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net",
@@ -107,19 +107,19 @@ func NewTestCatalog() *DataCatalogDummy {
 	}
 
 	kafkaConnection := taxonomy.Connection{
-		Name: "kafka",
+		Name: app.Kafka,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				"kafka": map[string]interface{}{
+				string(app.Kafka): map[string]interface{}{
 					"topic_name":              "topic",
 					"security_protocol":       "SASL_SSL",
 					"sasl_mechanism":          "SCRAM-SHA-512",
-					"ssl_truststore":          "xyz123",
-					"ssl_truststore_password": "xyz123",
+					"ssl_truststore":          sslTruststore,
+					"ssl_truststore_password": sslTruststore,
 					"schema_registry":         "kafka-registry",
 					"bootstrap_servers":       "http://kafka-servers",
-					"key_deserializer":        "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer",
-					"value_deserializer":      "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer",
+					"key_deserializer":        kafkaDeserializer,
+					"value_deserializer":      kafkaDeserializer,
 				},
 			},
 		},
@@ -132,20 +132,20 @@ func NewTestCatalog() *DataCatalogDummy {
 			Tags:      &tags,
 		},
 		Credentials: dummyCredentials,
-		ResourceDetails: datacatalog.ResourceDetails{
+		Details: datacatalog.ResourceDetails{
 			Connection: s3Connection,
 			DataFormat: csvFormat,
 		},
 	}
 
-	dummyCatalog.dataDetails["s3"] = datacatalog.GetAssetResponse{
+	dummyCatalog.dataDetails[string(app.S3)] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      dummyResourceName,
 			Geography: geo,
 			Tags:      &tags,
 		},
 		Credentials: dummyCredentials,
-		ResourceDetails: datacatalog.ResourceDetails{
+		Details: datacatalog.ResourceDetails{
 			Connection: s3Connection,
 			DataFormat: parquetFormat,
 		},
@@ -158,32 +158,32 @@ func NewTestCatalog() *DataCatalogDummy {
 			Tags:      &tags,
 		},
 		Credentials: dummyCredentials,
-		ResourceDetails: datacatalog.ResourceDetails{
+		Details: datacatalog.ResourceDetails{
 			Connection: s3Connection,
 			DataFormat: csvFormat,
 		},
 	}
 
-	dummyCatalog.dataDetails["db2"] = datacatalog.GetAssetResponse{
+	dummyCatalog.dataDetails[string(app.JdbcDb2)] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      dummyResourceName,
 			Geography: geo,
 			Tags:      &tags,
 		},
 		Credentials: dummyCredentials,
-		ResourceDetails: datacatalog.ResourceDetails{
+		Details: datacatalog.ResourceDetails{
 			Connection: db2Connection,
 		},
 	}
 
-	dummyCatalog.dataDetails["kafka"] = datacatalog.GetAssetResponse{
+	dummyCatalog.dataDetails[string(app.Kafka)] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      dummyResourceName,
 			Geography: geo,
 			Tags:      &tags,
 		},
 		Credentials: dummyCredentials,
-		ResourceDetails: datacatalog.ResourceDetails{
+		Details: datacatalog.ResourceDetails{
 			Connection: kafkaConnection,
 			DataFormat: jsonFormat,
 		},

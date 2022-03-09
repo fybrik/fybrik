@@ -45,11 +45,11 @@ const (
 type ModuleInOut struct {
 	// Source specifies the input data protocol and format
 	// +optional
-	Source *InterfaceDetails `json:"source,omitempty"`
+	Source *taxonomy.Interface `json:"source,omitempty"`
 
 	// Sink specifies the output data protocol and format
 	// +optional
-	Sink *InterfaceDetails `json:"sink,omitempty"`
+	Sink *taxonomy.Interface `json:"sink,omitempty"`
 }
 
 // Dependency details another component on which this module relies - i.e. a pre-requisit
@@ -137,6 +137,7 @@ type ResourceStatusIndicator struct {
 // FybrikModuleSpec contains the info common to all modules,
 // which are one of the components that process, load, write, audit, monitor the data used by
 // the data scientist's application.
+// +fybrik:validation:object="fybrik_module"
 type FybrikModuleSpec struct {
 	// An explanation of what this module does
 	// +optional

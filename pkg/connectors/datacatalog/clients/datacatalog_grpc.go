@@ -104,6 +104,7 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 	// convert GRPC response to Open Api Response - start
 	resourceCols := make([]datacatalog.ResourceColumn, 0)
 
+	//nolint:revive // Ignore add-constant to log msg
 	for colName, compMetaData := range result.GetDetails().Metadata.GetComponentsMetadata() {
 		if compMetaData != nil {
 			rscCol := datacatalog.ResourceColumn{
@@ -195,7 +196,7 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 	}
 	dataCatalogResp := &datacatalog.GetAssetResponse{
 		ResourceMetadata: *resourceMetaData,
-		ResourceDetails:  details,
+		Details:          details,
 		Credentials:      result.GetDetails().CredentialsInfo.VaultSecretPath,
 	}
 	// convert GRPC response to Open Api Response - end
@@ -205,7 +206,8 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 	return dataCatalogResp, nil
 }
 
-// just adding this dummy implementation as we are going to remove grpc support soon. Then this file will be removed. Till then we provide a dummy implementation.
+// just adding this dummy implementation as we are going to remove grpc support soon.
+// Then this file will be removed. Till then we provide a dummy implementation.
 func (m *grpcDataCatalog) CreateAssetInfo(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
 	return &datacatalog.CreateAssetResponse{AssetID: "testAssetID"}, nil
 }

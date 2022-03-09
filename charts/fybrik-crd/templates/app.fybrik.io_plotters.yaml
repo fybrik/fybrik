@@ -174,7 +174,6 @@ spec:
                           type: object
                       required:
                       - connection
-                      - vault
                       type: object
                   required:
                   - assetDetails

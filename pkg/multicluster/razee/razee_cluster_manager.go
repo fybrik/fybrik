@@ -1,6 +1,7 @@
 // Copyright 2021 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
+//nolint:govet,revive
 package razee
 
 import (
@@ -145,7 +146,7 @@ func (r *razeeClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha
 	groupName := getGroupName(cluster)
 	channelName := channelName(cluster, blueprint.Name)
 	version := "0"
-	logging.LogStructure("Blueprint to create", blueprint, r.log, false, false)
+	logging.LogStructure("Blueprint to create", blueprint, &r.log, false, false)
 	content, err := yaml.Marshal(blueprint)
 	if err != nil {
 		return err
@@ -181,6 +182,7 @@ func (r *razeeClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha
 	}
 
 	_, err = r.con.Groups.GroupClusters(r.orgID, groupUUID, []string{rCluster.ClusterID})
+	//nolint:revive
 	if err != nil {
 		r.log.Error().Err(err).Str("group", groupName).
 			Str(clusterKey, rCluster.Name).Str("groupUUID", groupUUID).Msg("Error while creating group")
@@ -250,7 +252,7 @@ func (r *razeeClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha
 	if err != nil {
 		return err
 	}
-	logging.LogStructure("Blueprint to update", blueprint, r.log, false, false)
+	logging.LogStructure("Blueprint to update", blueprint, &r.log, false, false)
 
 	max := 0
 	channelInfo, err := r.con.Channels.ChannelByName(r.orgID, channelName)

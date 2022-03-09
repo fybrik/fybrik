@@ -40,7 +40,7 @@ type Action struct {
 
 func (o Action) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{
-		"name": o.Name,
+		nameKey: o.Name,
 	}
 
 	for key, value := range o.AdditionalProperties.Items {
@@ -53,8 +53,8 @@ func (o Action) MarshalJSON() ([]byte, error) {
 func (o *Action) UnmarshalJSON(bytes []byte) (err error) {
 	items := make(map[string]interface{})
 	if err = json.Unmarshal(bytes, &items); err == nil {
-		o.Name = ActionName(items["name"].(string))
-		delete(items, "name")
+		o.Name = ActionName(items[nameKey].(string))
+		delete(items, nameKey)
 		if len(items) == 0 {
 			items = nil
 		}

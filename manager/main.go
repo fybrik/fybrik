@@ -1,6 +1,7 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
+//nolint:revive
 package main
 
 import (
@@ -57,7 +58,7 @@ func init() {
 func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	enableApplicationController, enableBlueprintController, enablePlotterController bool) int {
 	setupLog.Info().Msg("creating manager. based on git commit: " + gitCommit)
-	utils.LogEnvVariables(setupLog)
+	utils.LogEnvVariables(&setupLog)
 
 	var applicationNamespaceSelector fields.Selector
 	applicationNamespace := utils.GetApplicationNamespace()
@@ -141,7 +142,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to compile configuration policies")
 			return 1
 		}
-		evaluator := adminconfig.NewRegoPolicyEvaluator(logging.LogInit(logging.CONTROLLER, "FybrikApplication"), query)
+		evaluator := adminconfig.NewRegoPolicyEvaluator(query)
 		infrastructureManager, err := infrastructure.NewAttributeManager()
 		if err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to get infrastructure attributes")
