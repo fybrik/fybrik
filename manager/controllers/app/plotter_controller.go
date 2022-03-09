@@ -499,7 +499,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 	}
 
 	// TODO Once a better notification mechanism exists in razee switch to that
-	return ctrl.Result{RequeueAfter: 5 * time.Second}, errorCollection
+	return ctrl.Result{RequeueAfter: 5 * time.Second}, errorCollection //nolint:revive // for magic numbers
 }
 
 // NewPlotterReconciler creates a new reconciler for Plotter resources
