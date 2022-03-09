@@ -52,7 +52,8 @@ func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds
 }
 
 func (m *openAPIDataCatalog) CreateAssetInfo(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
-	resp, _, err := m.client.DefaultApi.CreateAssetInfo(context.Background()).XRequestDatacatalogWriteCred(creds).CreateAssetRequest(*in).Execute()
+	resp, _, err := m.client.DefaultApi.CreateAssetInfo(context.Background()).
+		XRequestDatacatalogWriteCred(creds).CreateAssetRequest(*in).Execute()
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("create asset info from %s failed", m.name))
 	}
