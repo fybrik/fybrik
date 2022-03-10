@@ -61,7 +61,36 @@ type DecisionPerCapability struct {
 // e.g. [{"capability": "read", "decision": {"deploy": "True"}}, {"capability": "write", "decision": {"deploy": "False"}}]
 type RuleDecisionList []DecisionPerCapability
 
+// +kubebuilder:validation:Enum=min;max
+type OptimizationDirective string
+
+// List of directives
+const (
+	Minimize OptimizationDirective = "min"
+	Maximize OptimizationDirective = "max"
+)
+
+type AttributeOptimization struct {
+	// Attribute name
+	// +required
+	Attribute taxonomy.Attribute `json:"attribute"`
+	// Optimization directive: minimize or maximize
+	// +required
+	Directive OptimizationDirective `json:"directive"`
+	// Weight, a positive number not exceeding 1.0
+	// Serialized as a string
+	Weight string `json:"weight,omitempty"`
+}
+
+// A list of attribute optimizations
+type OptimizationStrategy struct {
+	Strategy []AttributeOptimization `json:"strategy"`
+	Policy   DecisionPolicy          `json:"policy"`
+}
+
 // Result of query evaluation
 type EvaluationOutputStructure struct {
 	Config RuleDecisionList `json:"config"`
+	// +optional
+	Optimize []OptimizationStrategy `json:"optimize,omitempty"`
 }
