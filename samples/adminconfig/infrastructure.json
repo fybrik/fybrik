@@ -6,6 +6,7 @@
             "value": "100",
             "type": "numeric",
             "units": "US Dollar",
+            "object": "fybrikstorageaccount",
             "instance": "account-neverland"
         },
         {
@@ -14,7 +15,32 @@
             "value": "90",
             "type": "numeric",
             "units": "US Dollar",
+            "object": "fybrikstorageaccount",
             "instance": "account-theshire"
+        },
+        {
+            "attribute": "bandwidth",
+            "description": "bandwidth between neverland and theshire",
+            "value": "5",
+            "type": "numeric",
+            "units": "Mbp/s",
+            "arguments": ["theshire","neverland"]
+        },
+        {
+            "attribute": "bandwidth",
+            "description": "bandwidth between theshire and theshire",
+            "value": "1000",
+            "type": "numeric",
+            "units": "Mbp/s",
+            "arguments": ["theshire","theshire"]
+        },
+        {
+            "attribute": "bandwidth",
+            "description": "bandwidth between neverland and neverland",
+            "value": "800",
+            "type": "numeric",
+            "units": "Mbp/s",
+            "arguments": ["neverland","neverland"]
         }
     ]
 }
