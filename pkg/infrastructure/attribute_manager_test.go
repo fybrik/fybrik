@@ -54,7 +54,7 @@ func TestValidInfrastructureAttributeBW(t *testing.T) {
 			"description": "neverland object store",
 			"value": "100",
 			"type": "numeric",
-			"units": "GB/s",
+			"units": "GBps",
 			"instance": "account-neverland"
 		}]
 	}`

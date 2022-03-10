@@ -11,7 +11,7 @@ definitions:
           attribute:
             enum: [bandwidth]
           units:
-            enum: [TB/s, GB/s, MB/s]
+            enum: [Mbps, Gbps, Tbps, Kbps, MBps, GBps, TBps, KBps]
         required: [attribute, units]
       - properties:
           attribute:
