@@ -22,6 +22,8 @@ type EvaluatorOutput struct {
 	PolicySetID string
 	// Decisions per capability (after being merged)
 	ConfigDecisions DecisionPerCapabilityMap
+	// Optimization strategy
+	OptimizationStrategy []AttributeOptimization
 	// Affecting policies
 	Policies []DecisionPolicy
 }

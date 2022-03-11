@@ -70,7 +70,6 @@ func (r *RegoPolicyEvaluator) prepareInputForOPA(in *EvaluatorInput) (map[string
 
 // getOPADecisions parses the OPA decisions and merges decisions for the same capability
 func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.ResultSet, out *EvaluatorOutput) error {
-	log := r.Log.With().Str(utils.FybrikAppUUID, in.Workload.UUID).Logger()
 	out.Valid = false
 	if len(rs) == 0 {
 		return errors.New("invalid opa evaluation - an empty result set has been received")
@@ -85,37 +84,59 @@ func (r *RegoPolicyEvaluator) getOPADecisions(in *EvaluatorInput, rs rego.Result
 			if err = yaml.Unmarshal(bytes, &evalStruct); err != nil {
 				return errors.Wrap(err, "Unexpected OPA response structure")
 			}
-			for ind := range evalStruct.Config {
-				rule := &evalStruct.Config[ind]
-				capability := rule.Capability
-				newDecision := rule.Decision
-				// filter by policySetID
-				if newDecision.Policy.PolicySetID != "" && in.Workload.PolicySetID != "" && newDecision.Policy.PolicySetID != in.Workload.PolicySetID {
-					continue
-				}
-				// apply defaults for undefined fields
-				if newDecision.Deploy == "" {
-					newDecision.Deploy = StatusUnknown
-				}
-				// a single decision should be made for a capability
-				decision, exists := out.ConfigDecisions[capability]
-				out.Policies = append(out.Policies, newDecision.Policy)
-				if !exists {
-					out.ConfigDecisions[capability] = newDecision
-				} else {
-					valid, mergedDecision := r.merge(&newDecision, &decision)
-					if !valid {
-						log.Error().Msg("Conflict while merging OPA decisions")
-						logging.LogStructure("Conflicting decisions", out, &log, true, true)
-						return nil
-					}
-					out.ConfigDecisions[capability] = mergedDecision
-				}
+			if !r.processConfigDecisions(&evalStruct, in, out) {
+				return nil
 			}
+			r.processOptimizeDecisions(&evalStruct, out)
 		}
 	}
 	out.Valid = true
 	return nil
+}
+
+// merge config decisions
+// return true if there is no conflict
+func (r *RegoPolicyEvaluator) processConfigDecisions(evalStruct *EvaluationOutputStructure, in *EvaluatorInput, out *EvaluatorOutput) bool {
+	log := r.Log.With().Str(utils.FybrikAppUUID, in.Workload.UUID).Logger()
+	for ind := range evalStruct.Config {
+		rule := &evalStruct.Config[ind]
+		capability := rule.Capability
+		newDecision := rule.Decision
+		// filter by policySetID
+		if newDecision.Policy.PolicySetID != "" && in.Workload.PolicySetID != "" && newDecision.Policy.PolicySetID != in.Workload.PolicySetID {
+			continue
+		}
+		// apply defaults for undefined fields
+		if newDecision.Deploy == "" {
+			newDecision.Deploy = StatusUnknown
+		}
+		// a single decision should be made for a capability
+		decision, exists := out.ConfigDecisions[capability]
+		out.Policies = append(out.Policies, newDecision.Policy)
+		if !exists {
+			out.ConfigDecisions[capability] = newDecision
+		} else {
+			valid, mergedDecision := r.merge(&newDecision, &decision)
+			if !valid {
+				log.Error().Msg("Conflict while merging OPA decisions")
+				logging.LogStructure("Conflicting decisions", out, &log, true, true)
+				return false
+			}
+			out.ConfigDecisions[capability] = mergedDecision
+		}
+	}
+	return true
+}
+
+func (r *RegoPolicyEvaluator) processOptimizeDecisions(evalStruct *EvaluationOutputStructure, out *EvaluatorOutput) {
+	out.OptimizationStrategy = []AttributeOptimization{}
+	if len(evalStruct.Optimize) > 0 {
+		// choose the first optimization strategy
+		// TODO(shlomitk1): add priorities to optimization strategies
+		rule := evalStruct.Optimize[0]
+		out.OptimizationStrategy = append(out.OptimizationStrategy, rule.Strategy...)
+		out.Policies = append(out.Policies, rule.Policy)
+	}
 }
 
 // This function merges two decisions for the same capability using the following logic:
