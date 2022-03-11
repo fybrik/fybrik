@@ -8,11 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
-
-	"emperror.dev/errors"
-
-	errors_apimachinery "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/gin-gonic/gin"
 	"k8s.io/apimachinery/pkg/types"
@@ -23,7 +20,6 @@ import (
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/vault"
-	"github.com/gdexlab/go-render/render"
 	"github.com/rs/zerolog"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -33,12 +29,46 @@ type Handler struct {
 	log    zerolog.Logger
 }
 
+type sortByLength []string
+
+// Len implements Len of sort.Interface
+func (s sortByLength) Len() int {
+	return len(s)
+}
+
+// Swap implements Swap of sort.Interface
+func (s sortByLength) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+// Less implements Less of sort.Interface
+func (s sortByLength) Less(i, j int) bool {
+	return len(s[i]) > len(s[j])
+}
+
+func getLongest(toFind []string) []string {
+	// We sort it by length, descending
+	sort.Sort(sortByLength(toFind))
+	longest := []string{toFind[0]}
+
+	// In case we have more than one element in toFind...
+	if len(toFind) > 1 {
+		for _, str := range toFind[1:] {
+			if len(str) < len(longest[0]) {
+				break
+			}
+			longest = append(longest, str)
+		}
+	}
+	fmt.Println(longest)
+	return longest
+}
+
 func NewHandler(client kclient.Client) *Handler {
 	handler := &Handler{
 		client: client,
 		log:    logging.LogInit(logging.CONNECTOR, "katalog-connector"),
 	}
-	// handler.log.Output(zerolog.ConsoleWriter{NoColor: true})
 	return handler
 }
 
@@ -72,24 +102,42 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, &response)
 }
 
-func (r *Handler) checkIfAssetDoesNotExistInKatalog(namespace string, name string) error {
-	asset := &v1alpha1.Asset{}
-	var err error
-	if err = r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
-		if errors_apimachinery.IsNotFound(err) {
-			// log.Println("error cause is:", errors.Cause(err))
-			errorMessage := "error cause is: " + errors.Cause(err).Error()
-			r.log.Error().Msg(errorMessage)
-			return nil
+func (r *Handler) generateUniqueAssetName(namespace string, namePrefix string) (string, error) {
+	var result v1alpha1.AssetList
+	var randomStringLength = 4
+	var uniqueAssetName = ""
+	err := r.client.List(context.Background(), &result, kclient.InNamespace(namespace))
+	if err == nil {
+		listOfCandidates := make([]string, 0)
+		for i := 0; i < len(result.Items); i++ {
+			if strings.Contains(result.Items[i].Spec.Metadata.Name, namePrefix) {
+				listOfCandidates = append(listOfCandidates, result.Items[i].Spec.Metadata.Name)
+			}
 		}
+		r.log.Info().Msg("listOfCandidates : " + strings.Join(listOfCandidates, "|"))
+		randomStr, err := utils.GenerateRandomString(randomStringLength)
+		if err == nil {
+			if len(listOfCandidates) > 0 {
+				longestArr := getLongest(listOfCandidates)
+				r.log.Info().Msg("longestArr : " + strings.Join(longestArr, "|"))
+				randIdx := utils.GenerateRandomNumber(0, int64(len(longestArr)))
+				r.log.Info().Msg("randIdx : " + fmt.Sprint(randIdx))
+				uniqueAssetName = longestArr[randIdx] + "-" + randomStr
+			} else {
+				// no asset with the given prefix
+				uniqueAssetName = namePrefix + "-" + randomStr
+			}
+			r.log.Info().Msg("uniqueAssetName generated : " + uniqueAssetName)
+		} else {
+			r.log.Info().Msg("Error during GenerateRandomString: " + err.Error())
+		}
+	} else {
+		r.log.Info().Msg("Error during list operation: " + err.Error())
 	}
-	return errors.Wrap(err, "Some other error occurred in checkIfAssetExists")
+	return uniqueAssetName, err
 }
 
 func (r *Handler) createAssetInfo(c *gin.Context) {
-	var randomStringLength = 8
-	var retriesLimit = 3
-
 	// Parse request
 	var request datacatalog.CreateAssetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -108,12 +156,6 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 		return
 	}
 	r.log.Info().Msg("CreateAssetRequest: JSON format:" + string(b))
-	// log.Println("CreateAssetRequest: JSON format: ", string(b))
-	r.log.Info().Msg("CreateAssetRequest: " + fmt.Sprintf("%#v", request))
-	// log.Println("CreateAssetRequest: ", request)
-	output := render.AsCode(request)
-	// log.Println("CreateAssetRequest - render as code output: ", output)
-	r.log.Info().Msg("CreateAssetRequest - render as code output: " + output)
 	// just for logging - end
 
 	if request.DestinationCatalogID == "" {
@@ -130,73 +172,21 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	} else {
 		if request.ResourceMetadata.Name != "" {
 			namespace, assetName = request.DestinationCatalogID, request.ResourceMetadata.Name
-
-			var i int
-			for i := 0; i < retriesLimit; i++ {
-				// add random string to source asset
-				randomStr, err := utils.GenerateRandomString(randomStringLength)
-				if err != nil {
-					errorMessage := "Error during GenerateRandomString. Error:" + err.Error()
-					// log.Println(errorMessage)
-					r.log.Error().Msg(errorMessage)
-					// reset assetName
-					c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
-					return
-				}
-				assetName = assetName + "-" + randomStr
-				err = r.checkIfAssetDoesNotExistInKatalog(namespace, assetName)
-				if err == nil {
-					break
-				} else {
-					errorMessage := "Error during checkIfAssetDoesNotExistInCluster. Retrying generation of assetid once more. Error:" + err.Error()
-					r.log.Error().Msg(errorMessage)
-					// log.Println(errorMessage)
-					// reset assetName
-					assetName = request.ResourceMetadata.Name
-				}
-			}
-			if i == retriesLimit {
-				errorMessage := fmt.Sprintf("Unsuccessful in generating destination asset id with prefix %s. Max retries %d exceeded", request.ResourceMetadata.Name, retriesLimit)
-				r.log.Error().Msg(errorMessage)
-				c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
-				return
-			}
+			assetName, err = r.generateUniqueAssetName(namespace, assetName)
 		} else {
 			// request.ResourceMetadata.Name is null. Then create a random asset name with fybrik-asset as prefix
 			namespace = request.DestinationCatalogID
-			var i int
-			for i := 0; i < retriesLimit; i++ {
-				randomStr, err := utils.GenerateRandomString(randomStringLength)
-				if err != nil {
-					errorMessage := "Error occurred during GenerateRandomString. Error:" + err.Error()
-					// log.Println(errorMessage)
-					r.log.Error().Msg(errorMessage)
-					// reset assetName
-					c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
-					return
-				}
-				assetName = "fybrik-asset-" + "-" + randomStr
-				err = r.checkIfAssetDoesNotExistInKatalog(namespace, assetName)
-				if err == nil {
-					break
-				} else {
-					errorMessage := "Error during checkIfAssetDoesNotExistInCluster. Retrying generation of assetid once more. Error:" + err.Error()
-					// log.Println(errorMessage)
-					r.log.Error().Msg(errorMessage)
-				}
-			}
-			if i == retriesLimit {
-				errorMessage := fmt.Sprintf("Unsuccessful in generating destination asset id. Max retries %d exceeded", retriesLimit)
-				r.log.Error().Msg(errorMessage)
-				c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
-				return
-			}
+			assetName, err = r.generateUniqueAssetName(namespace, "fybrik-asset")
 		}
-		// log.Println("assetName used with random string generation:", assetName)
-		r.log.Info().Msg("assetName used with random string generation:" + assetName)
+		if err != nil {
+			errorMessage := "Error during generateUniqueAssetName. Error:" + err.Error()
+			r.log.Error().Msg(errorMessage)
+			c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+			return
+		}
+		r.log.Info().Msg("AssetName used with random string generation:" + assetName)
 	}
-	// log.Println("assetName used to store the asset :", assetName)
-	r.log.Info().Msg("assetName used to store the asset :" + assetName)
+	r.log.Info().Msg("AssetName used to store the asset :" + assetName)
 
 	asset := &v1alpha1.Asset{}
 	objectMeta := &v1.ObjectMeta{
@@ -215,7 +205,6 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	err = json.Unmarshal(reqResourceMetadata, &spec.Metadata)
 	if err != nil {
 		errorMessage := "Error during unmarshal of reqResourceMetadata. Error:" + err.Error()
-		// log.Println(errorMessage)
 		r.log.Error().Msg(errorMessage)
 		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 		return
@@ -226,7 +215,6 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	err = json.Unmarshal(reqResourceDetails, &spec.Details)
 	if err != nil {
 		errorMessage := "Error during unmarshal of reqResourceDetails. Error:" + err.Error()
-		// log.Println(errorMessage)
 		r.log.Error().Msg(errorMessage)
 		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 		return
@@ -239,29 +227,20 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	if err != nil {
 		errorMessage := "Error during Marshal of asset. Error:" + err.Error()
 		r.log.Error().Msg(errorMessage)
-		// fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	r.log.Info().Msg("Created Asset: JSON format: " + string(b))
-	// log.Println("Created Asset: JSON format: ", string(b))
-	// log.Println("Created Asset: ", asset)
-	r.log.Info().Msg("Created Asset: " + fmt.Sprintf("%#v", asset))
-	output = render.AsCode(asset)
-	// log.Println("Created AssetID - render as code output: ", output)
-	r.log.Info().Msg("Created AssetID - render as code output: " + output)
 	// just for logging - end
 
-	// log.Printf("Creating Asset in cluster: %s/%s\n", asset.Namespace, asset.Name)
-	r.log.Info().Msg("Creating Asset in cluster: " + fmt.Sprintf("%s/%s", asset.Namespace, asset.Name))
 	err = r.client.Create(context.Background(), asset)
 	if err != nil {
 		errorMessage := "Error during create asset. Error:" + err.Error()
-		// log.Println(errorMessage)
 		r.log.Error().Msg(errorMessage)
 		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 		return
 	}
+	r.log.Info().Msg("Created Asset in cluster: " + fmt.Sprintf("%s/%s", asset.Namespace, asset.Name))
 
 	response := datacatalog.CreateAssetResponse{
 		AssetID: namespace + "/" + assetName,
