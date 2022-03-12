@@ -15,13 +15,14 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/rs/zerolog"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
 	"fybrik.io/fybrik/connectors/katalog/utils"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/vault"
-	"github.com/rs/zerolog"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type Handler struct {
