@@ -185,7 +185,8 @@ func TestCreateAssetInfo(t *testing.T) {
 		namespace, assetName := splittedID[0], splittedID[1]
 
 		asset := &v1alpha1.Asset{}
-		if err := handler.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: namespace + "/" + assetName}, asset); err != nil {
+		if err := handler.client.Get(context.Background(),
+			types.NamespacedName{Namespace: namespace, Name: namespace + "/" + assetName}, asset); err != nil {
 			t.Log(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -292,7 +293,8 @@ func TestCreateAssetInfoWthNoDestinationAssetID(t *testing.T) {
 		t.Log("assetName used to query: ", assetName)
 
 		asset := &v1alpha1.Asset{}
-		if err := handler.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: assetName}, asset); err != nil {
+		if err := handler.client.Get(context.Background(),
+			types.NamespacedName{Namespace: namespace, Name: assetName}, asset); err != nil {
 			t.Log(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
