@@ -145,13 +145,9 @@ func (r *Handler) reportError(errorMessage string, c *gin.Context) {
 }
 
 // Enables writing of assets to katalog. The different flows supported are:
-// (a) When DestinationAssetID is specified:
-//     Then a destination asset id is created with name : <DestinationAssetID>
-// (b) When DestinationAssetID is not specified but
-//	   ResourceMetadata.Name of source asset is specified:
-//     Then an asset is created with name: ResourceMetadata.Name-<RANDOMSTRING_LENGTH_4>
-// (c) When DestinationAssetID and ResourceMetadata.Name of source asset are not specified:
-//     Then an asset is created with name: fybrik-asset-<RANDOMSTRING_LENGTH_4>
+// (a) Destination asset id is created with name : <request.DestinationAssetID>
+// (b) Destination asset is created with name: ResourceMetadata.Name-<RANDOMSTRING_LENGTH_4>
+// (c) Destination asset is created with name: fybrik-asset-<RANDOMSTRING_LENGTH_4>
 func (r *Handler) createAssetInfo(c *gin.Context) {
 	// Parse request
 	var request datacatalog.CreateAssetRequest
