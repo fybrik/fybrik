@@ -5,6 +5,7 @@ package validate
 
 import (
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/validation"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -24,7 +25,8 @@ func IsStructuralSchema(path string) error {
 			Name: "objects.group.io",
 		},
 		Spec: apiextensions.CustomResourceDefinitionSpec{
-			Group: "group.io",
+			Group:   "group.io",
+			Version: "v1",
 			Versions: []apiextensions.CustomResourceDefinitionVersion{
 				{
 					Name:    "v1",
@@ -47,7 +49,7 @@ func IsStructuralSchema(path string) error {
 		},
 	}
 
-	errorList := validation.ValidateCustomResourceDefinition(crd)
+	errorList := validation.ValidateCustomResourceDefinition(crd, apiextensionsv1.SchemeGroupVersion)
 	if len(errorList) > 0 {
 		return errorList.ToAggregate()
 	}
