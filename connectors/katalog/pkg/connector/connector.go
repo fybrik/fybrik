@@ -115,7 +115,8 @@ func (r *Handler) generateUniqueAssetName(namespace, namePrefix string) (string,
 			}
 		}
 		r.log.Info().Msg("listOfCandidates : " + strings.Join(listOfCandidates, "|"))
-		randomStr, err := utils.GenerateRandomString(randomStringLength)
+		var randomStr string
+		randomStr, err = utils.GenerateRandomString(randomStringLength)
 		if err == nil {
 			if len(listOfCandidates) > 0 {
 				longestArr := getLongest(listOfCandidates)
