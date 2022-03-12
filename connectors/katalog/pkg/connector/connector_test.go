@@ -277,7 +277,6 @@ func TestCreateAssetInfoWthNoDestinationAssetID(t *testing.T) {
 		response := &datacatalog.CreateAssetResponse{}
 		err = json.Unmarshal(w.Body.Bytes(), response)
 		g.Expect(err).To(BeNil())
-		// g.Expect(&response.AssetID).To(BeEquivalentTo(&destAssetName))
 		g.Expect(len(response.AssetID)).To(SatisfyAll(
 			BeNumerically(">", len(sourceAssetName))))
 		t.Log("response.AssetID: ", response.AssetID)

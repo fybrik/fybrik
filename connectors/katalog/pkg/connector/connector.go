@@ -121,7 +121,8 @@ func (r *Handler) generateUniqueAssetName(namespace, namePrefix string) (string,
 		if err == nil {
 			if len(listOfCandidates) > 0 {
 				longestArr := getLongest(listOfCandidates)
-				r.log.Info().Msg("longestArr : " + strings.Join(longestArr, "|"))
+				const delimiter = "|"
+				r.log.Info().Msg("longestArr : " + strings.Join(longestArr, delimiter))
 				randIdx := utils.GenerateRandomNumber(0, int64(len(longestArr)))
 				r.log.Info().Msg("randIdx : " + fmt.Sprint(randIdx))
 				uniqueAssetName = longestArr[randIdx] + "-" + randomStr
