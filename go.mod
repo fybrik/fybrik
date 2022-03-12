@@ -242,5 +242,6 @@ require (
 //go.opentelemetry.io/otel/metric => go.opentelemetry.io/otel/metric v0.23.0
 replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.5.10
+	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.3
 	helm.sh/helm/v3 v3.7.2 => github.com/fybrik/helm/v3 v3.7.2-fybrik-update
 )
