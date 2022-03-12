@@ -102,7 +102,7 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, &response)
 }
 
-func (r *Handler) generateUniqueAssetName(namespace string, namePrefix string) (string, error) {
+func (r *Handler) generateUniqueAssetName(namespace, namePrefix string) (string, error) {
 	var result v1alpha1.AssetList
 	var randomStringLength = 4
 	var uniqueAssetName = ""
@@ -137,6 +137,11 @@ func (r *Handler) generateUniqueAssetName(namespace string, namePrefix string) (
 	return uniqueAssetName, err
 }
 
+func (r *Handler) reportError(errorMessage string, c *gin.Context) {
+	r.log.Error().Msg(errorMessage)
+	c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+}
+
 // Enables writing of assets to katalog. The different flows supported are:
 // (a) When DestinationAssetID is specified:
 //     Then a destination asset id is created with name : <DestinationAssetID>
@@ -148,27 +153,21 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	// Parse request
 	var request datacatalog.CreateAssetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		errorMessage := "Error during ShouldBindJSON in createAssetInfo" + err.Error()
-		r.log.Error().Msg(errorMessage)
-		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		r.reportError("Error during ShouldBindJSON in createAssetInfo"+err.Error(), c)
 		return
 	}
 
 	// just for logging - start
 	b, err := json.Marshal(request)
 	if err != nil {
-		errorMessage := "Error during marshalling request in createAssetInfo" + err.Error()
-		r.log.Error().Msg(errorMessage)
-		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		r.reportError("Error during marshalling request in createAssetInfo"+err.Error(), c)
 		return
 	}
 	r.log.Info().Msg("CreateAssetRequest: JSON format:" + string(b))
 	// just for logging - end
 
 	if request.DestinationCatalogID == "" {
-		errorMessage := "Invalid DestinationCatalogID in request"
-		r.log.Error().Msg(errorMessage)
-		c.JSON(http.StatusBadRequest, gin.H{"Error": errorMessage})
+		r.reportError("Invalid DestinationCatalogID in request", c)
 		return
 	}
 
@@ -181,14 +180,11 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 			namespace, assetName = request.DestinationCatalogID, request.ResourceMetadata.Name
 			assetName, err = r.generateUniqueAssetName(namespace, assetName)
 		} else {
-			// request.ResourceMetadata.Name is null. Then create a random asset name with fybrik-asset as prefix
 			namespace = request.DestinationCatalogID
 			assetName, err = r.generateUniqueAssetName(namespace, "fybrik-asset")
 		}
 		if err != nil {
-			errorMessage := "Error during generateUniqueAssetName. Error:" + err.Error()
-			r.log.Error().Msg(errorMessage)
-			c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+			r.reportError("Error during generateUniqueAssetName. Error:"+err.Error(), c)
 			return
 		}
 		r.log.Info().Msg("AssetName used with random string generation:" + assetName)
@@ -221,9 +217,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	reqResourceDetails, _ := json.Marshal(request.Details)
 	err = json.Unmarshal(reqResourceDetails, &spec.Details)
 	if err != nil {
-		errorMessage := "Error during unmarshal of reqResourceDetails. Error:" + err.Error()
-		r.log.Error().Msg(errorMessage)
-		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		r.reportError("Error during unmarshal of reqResourceDetails. Error:"+err.Error(), c)
 		return
 	}
 
@@ -232,9 +226,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	// just for logging - start
 	b, err = json.Marshal(asset)
 	if err != nil {
-		errorMessage := "Error during Marshal of asset. Error:" + err.Error()
-		r.log.Error().Msg(errorMessage)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		r.reportError("Error during Marshal of asset. Error:"+err.Error(), c)
 		return
 	}
 	r.log.Info().Msg("Created Asset: JSON format: " + string(b))
@@ -242,9 +234,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 
 	err = r.client.Create(context.Background(), asset)
 	if err != nil {
-		errorMessage := "Error during create asset. Error:" + err.Error()
-		r.log.Error().Msg(errorMessage)
-		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		r.reportError("Error during create asset. Error:"+err.Error(), c)
 		return
 	}
 	r.log.Info().Msg("Created Asset in cluster: " + fmt.Sprintf("%s/%s", asset.Namespace, asset.Name))
