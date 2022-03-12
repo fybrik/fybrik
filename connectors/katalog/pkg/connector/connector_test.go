@@ -148,7 +148,7 @@ func TestCreateAssetInfo(t *testing.T) {
 			Connection: s3Connection,
 			DataFormat: csvFormat,
 		},
-		Credentials: "http://fybrik-system:8200/v1/kubernetes-secrets/wkc-creds?namespace=cp4d",
+		Credentials: "http://dummy-namespace:8200/v1/kubernetes-secrets/dummy-creds?namespace=dummy-namespace2",
 	}
 
 	// Create a fake client to mock API calls.
@@ -250,7 +250,7 @@ func TestCreateAssetInfoWthNoDestinationAssetID(t *testing.T) {
 			Connection: s3Connection,
 			DataFormat: csvFormat,
 		},
-		Credentials: "http://fybrik-system:8200/v1/kubernetes-secrets/wkc-creds?namespace=cp4d",
+		Credentials: "http://dummy-namespace:8200/v1/kubernetes-secrets/dummy-creds?namespace=dummy-namespace2",
 	}
 
 	// Create a fake client to mock API calls.
