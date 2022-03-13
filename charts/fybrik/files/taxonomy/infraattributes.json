@@ -1,14 +1,6 @@
 {
   "title": "infraattributes.json",
   "definitions": {
-    "AttributeType": {
-      "type": "string",
-      "enum": [
-        "numeric",
-        "string",
-        "bool"
-      ]
-    },
     "Infrastructure": {
       "type": "object",
       "required": [
@@ -18,76 +10,8 @@
         "infrastructure": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/InfrastructureElement"
+            "$ref": "taxonomy.json#/definitions/InfrastructureElement"
           }
-        }
-      }
-    },
-    "InfrastructureElement": {
-      "type": "object",
-      "required": [
-        "attribute",
-        "type",
-        "value"
-      ],
-      "properties": {
-        "arguments": {
-          "description": "A list of arguments defining a specific metric, e.g. regions for a bandwidth",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "attribute": {
-          "$ref": "taxonomy.json#/definitions/Attribute",
-          "description": "Attribute name defined in the taxonomy"
-        },
-        "description": {
-          "description": "Description",
-          "type": "string"
-        },
-        "instance": {
-          "description": "A reference to the resource instance, e.g. storage account name",
-          "type": "string"
-        },
-        "object": {
-          "$ref": "#/definitions/InstanceType",
-          "description": "A resource defined by the attribute (\"storageaccount\",\"module\",\"cluster\")"
-        },
-        "scale": {
-          "$ref": "#/definitions/RangeType",
-          "description": "A scale of values (minimum and maximum) when applicable"
-        },
-        "type": {
-          "$ref": "#/definitions/AttributeType",
-          "description": "Attribute type, e.g. numeric or string"
-        },
-        "units": {
-          "$ref": "taxonomy.json#/definitions/Units",
-          "description": "Measurement units defined in the tzxonomy"
-        },
-        "value": {
-          "description": "Attribute value",
-          "type": "string"
-        }
-      }
-    },
-    "InstanceType": {
-      "type": "string",
-      "enum": [
-        "fybrikmodule",
-        "fybrikstorageaccount",
-        "cluster"
-      ]
-    },
-    "RangeType": {
-      "type": "object",
-      "properties": {
-        "max": {
-          "type": "integer"
-        },
-        "min": {
-          "type": "integer"
         }
       }
     }
