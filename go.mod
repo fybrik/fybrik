@@ -20,7 +20,7 @@ require (
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.14.0
-	github.com/open-policy-agent/opa v0.34.0
+	github.com/open-policy-agent/opa v0.34.2
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.26.0
 	github.com/spf13/cobra v1.2.1
@@ -33,11 +33,11 @@ require (
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools v2.2.0+incompatible
-	helm.sh/helm/v3 v3.7.0
+	helm.sh/helm/v3 v3.7.2
 	k8s.io/api v0.22.4
-	k8s.io/apiextensions-apiserver v0.22.1
+	k8s.io/apiextensions-apiserver v0.22.4
 	k8s.io/apimachinery v0.22.4
-	k8s.io/cli-runtime v0.22.1
+	k8s.io/cli-runtime v0.22.4
 	k8s.io/client-go v0.22.4
 	sigs.k8s.io/cli-utils v0.19.2
 	sigs.k8s.io/controller-runtime v0.9.5
@@ -52,7 +52,7 @@ require (
 	github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
-	github.com/Masterminds/squirrel v1.5.0 // indirect
+	github.com/Masterminds/squirrel v1.5.2 // indirect
 	github.com/Microsoft/go-winio v0.4.17 // indirect
 	github.com/Microsoft/hcsshim v0.8.21 // indirect
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
@@ -230,7 +230,7 @@ require (
 	k8s.io/component-base v0.22.4 // indirect
 	k8s.io/klog/v2 v2.9.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20211109043538-20434351676c // indirect
-	k8s.io/kubectl v0.22.1 // indirect
+	k8s.io/kubectl v0.22.4 // indirect
 	k8s.io/utils v0.0.0-20210819203725-bdf08cb9a70a // indirect
 	oras.land/oras-go v0.4.0 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.22 // indirect
@@ -239,7 +239,4 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.1.2 // indirect
 )
 
-// This replace is for https://github.com/advisories/GHSA-w73w-5m7g-f7qc
-replace github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt v3.2.1+incompatible
-
-replace helm.sh/helm/v3 v3.7.0 => github.com/fybrik/helm/v3 v3.7.0-fybrik-update
+replace helm.sh/helm/v3 v3.7.2 => github.com/fybrik/helm/v3 v3.7.2-fybrik-update
