@@ -105,7 +105,7 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 
 func (r *Handler) generateUniqueAssetName(namespace, namePrefix string) (string, error) {
 	var result v1alpha1.AssetList
-	var randomStringLength = 4
+	var randomStringLength = 1
 	var uniqueAssetName = ""
 	err := r.client.List(context.Background(), &result, kclient.InNamespace(namespace))
 	if err == nil {
@@ -125,10 +125,10 @@ func (r *Handler) generateUniqueAssetName(namespace, namePrefix string) (string,
 				r.log.Info().Msg("longestArr : " + strings.Join(longestArr, delimiter))
 				randIdx := utils.GenerateRandomNumber(0, int64(len(longestArr)))
 				r.log.Info().Msg("randIdx : " + fmt.Sprint(randIdx))
-				uniqueAssetName = longestArr[randIdx] + "-" + randomStr
+				uniqueAssetName = longestArr[randIdx] + randomStr
 			} else {
 				// no asset with the given prefix
-				uniqueAssetName = namePrefix + "-" + randomStr
+				uniqueAssetName = namePrefix + randomStr
 			}
 			r.log.Info().Msg("uniqueAssetName generated : " + uniqueAssetName)
 		} else {
@@ -146,9 +146,12 @@ func (r *Handler) reportError(errorMessage string, c *gin.Context) {
 }
 
 // Enables writing of assets to katalog. The different flows supported are:
-// (a) Destination asset id is created with name : <request.DestinationAssetID>
-// (b) Destination asset is created with name: ResourceMetadata.Name-<RANDOMSTRING_LENGTH_4>
-// (c) Destination asset is created with name: fybrik-asset-<RANDOMSTRING_LENGTH_4>
+// (a) When DestinationAssetID is specified:
+//     Then a destination asset id is created with name : <DestinationAssetID>
+// (b) When DestinationAssetID is not specified but ResourceMetadata.Name of source asset is specified:
+//     Then an asset is created with name: ResourceMetadata.Name-<RANDOMSTRING_LENGTH_4>
+// (c) When DestinationAssetID and ResourceMetadata.Name of source asset are not specified:
+//     Then an asset is created with name: fybrik-asset-<RANDOMSTRING_LENGTH_4>
 func (r *Handler) createAssetInfo(c *gin.Context) {
 	// Parse request
 	var request datacatalog.CreateAssetRequest
