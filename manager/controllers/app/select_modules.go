@@ -73,33 +73,32 @@ type Solution struct {
 // Then, transformations are added to the found paths, and clusters are matched to satisfy restrictions from admin config policies.
 // Optimization is done by the shortest path (the paths are sorted by the length). To be changed in future versions.
 func (p *PlotterGenerator) FindPaths(item *DataInfo, appContext *app.FybrikApplication) []Solution {
-	var source, destination Node
-
-	// construct two nodes of an edge:
-	// this node appears in the asset metadata
 	NodeFromAssetMetadata := Node{
 		Connection: &taxonomy.Interface{
 			Protocol:   item.DataDetails.Details.Connection.Name,
 			DataFormat: item.DataDetails.Details.DataFormat,
 		},
 	}
-	// this node is either a virtual endpoint, or a datastore
 	NodeFromAppRequirements := Node{Connection: &item.Context.Requirements.Interface}
-
-	if item.Context.Flow == taxonomy.WriteFlow {
-		source = NodeFromAppRequirements
-		destination = NodeFromAssetMetadata
-	} else {
-		source = NodeFromAssetMetadata
-		destination = NodeFromAppRequirements
-	}
-
 	// find data paths of length up to DATAPATH_LIMIT from data source to the workload, not including transformations or branches
 	bound, err := utils.GetDataPathMaxSize()
 	if err != nil {
 		p.Log.Warn().Str(logging.DATASETID, item.Context.DataSetID).Msg("a default value for DATAPATH_LIMIT will be used")
 	}
-	solutions := p.findPathsWithinLimit(item, &source, &destination, bound)
+	var solutions []Solution
+	if item.Context.Flow != taxonomy.WriteFlow {
+		solutions = p.findPathsWithinLimit(item, &NodeFromAssetMetadata, &NodeFromAppRequirements, bound)
+	} else {
+		solutions = p.findPathsWithinLimit(item, &NodeFromAppRequirements, &NodeFromAssetMetadata, bound)
+		// reverse each solution to start with the application requirements, e.g. workload
+		for ind := range solutions {
+			for elementInd := 0; elementInd < len(solutions[ind].DataPath)/2; elementInd++ {
+				reversedInd := len(solutions[ind].DataPath) - elementInd - 1
+				solutions[ind].DataPath[elementInd], solutions[ind].DataPath[reversedInd] =
+					solutions[ind].DataPath[reversedInd], solutions[ind].DataPath[elementInd]
+			}
+		}
+	}
 	// get valid solutions by extending data paths with transformations and selecting an appropriate cluster for each capability
 	solutions = p.validSolutions(item, solutions, appContext)
 	return solutions
@@ -116,51 +115,81 @@ func (p *PlotterGenerator) validSolutions(item *DataInfo, solutions []Solution, 
 	return validPaths
 }
 
-//nolint:gocyclo
-func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, application *app.FybrikApplication) bool {
-	// start from data source, check supported actions and cluster restrictions
+// if new storage should be located, check the requirements:
+// where storage can be allocated
+// what additional actions to perform
+func (p *PlotterGenerator) validateStorageRequirements(item *DataInfo, application *app.FybrikApplication, element *ResolvedEdge) bool {
 	appContext := ApplicationContext{Application: application, Log: p.Log}
-	requiredActions := item.Actions
-	for _, element := range solution.DataPath {
-		element.Actions = []taxonomy.Action{}
-		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
-		if !element.Edge.Sink.Virtual && (item.Context.Flow != taxonomy.WriteFlow ||
-			item.Context.Requirements.FlowParams.IsNewDataSet) {
-			// storage is required, plus more actions on copy may be needed
-			isAccountFound := false
-			for accountInd := range p.StorageAccounts {
-				// validate restrictions
-				if !p.validateRestrictions(item.Configuration.ConfigDecisions[moduleCapability.Capability].
-					DeploymentRestrictions.StorageAccounts, &p.StorageAccounts[accountInd].Spec,
-					p.StorageAccounts[accountInd].Name) {
-					p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msgf("storage account %s does not match the requirements",
-						p.StorageAccounts[accountInd].Name)
-					continue
-				}
-				// query the policy manager whether WRITE operation is allowed
-				operation := new(policymanager.RequestAction)
-				operation.ActionType = taxonomy.WriteFlow
+	var err error
+	var actions []taxonomy.Action
+	operation := &policymanager.RequestAction{}
+	operation.ActionType = taxonomy.WriteFlow
+
+	if item.Context.Flow == taxonomy.WriteFlow && !item.Context.Requirements.FlowParams.IsNewDataSet {
+		// no need to allocate storage, write destination is known
+		// query the policy manager whether WRITE operation is allowed
+		operation.Destination = item.DataDetails.ResourceMetadata.Geography
+		operation.ProcessingLocation = taxonomy.ProcessingLocation(item.WorkloadCluster.Metadata.Region)
+		actions, err = LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
+		if err != nil {
+			p.Log.Error().Err(err).Msg("could not validate governance action for writing data")
+			return false
+		}
+	} else {
+		for accountInd := range p.StorageAccounts {
+			// validate restrictions
+			moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
+			if !p.validateRestrictions(
+				item.Configuration.ConfigDecisions[moduleCapability.Capability].DeploymentRestrictions.StorageAccounts,
+				&p.StorageAccounts[accountInd].Spec,
+				p.StorageAccounts[accountInd].Name) {
+				p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msgf("storage account %s does not match the requirements",
+					p.StorageAccounts[accountInd].Name)
+				continue
+			}
+			// query the policy manager whether WRITE operation is allowed
+			if !item.Context.Requirements.FlowParams.IsNewDataSet {
 				operation.Destination = string(p.StorageAccounts[accountInd].Spec.Region)
 				operation.ProcessingLocation = p.StorageAccounts[accountInd].Spec.Region
-				actions, err := LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
-				if err != nil && err.Error() == app.WriteNotAllowed {
+				actions, err = LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
+				if err != nil {
 					continue
 				}
-				// check whether WRITE actions are supported by the capability that writes the data
-				if !supportsGovernanceActions(&element.Edge, actions) {
-					continue
-				}
-				// add WRITE actions and the selected storage account region
-				element.Actions = actions
-				element.StorageAccount = p.StorageAccounts[accountInd].Spec
-				isAccountFound = true
 			}
-			if !isAccountFound {
-				p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find a storage account, aborting data path construction")
+			// add the selected storage account region
+			element.StorageAccount = p.StorageAccounts[accountInd].Spec
+			break
+		}
+		if element.StorageAccount.Region == "" {
+			p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find a storage account, aborting data path construction")
+			return false
+		}
+	}
+	// add WRITE actions
+	element.Actions = actions
+	return true
+}
+
+func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, application *app.FybrikApplication) bool {
+	// start from data source, check supported actions and cluster restrictions
+	requiredActions := item.Actions
+	for ind := range solution.DataPath {
+		element := solution.DataPath[ind]
+		if !element.Edge.Sink.Virtual {
+			if !p.validateStorageRequirements(item, application, element) {
 				return false
 			}
+			// add WRITE actions
+			if element.Actions != nil {
+				requiredActions = append(requiredActions, element.Actions...)
+			}
 		}
-		// read actions need to be handled somewhere on the path
+	}
+	// actions need to be handled somewhere on the path
+	for ind := range solution.DataPath {
+		element := solution.DataPath[ind]
+		element.Actions = []taxonomy.Action{}
+		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
 		unsupported := []taxonomy.Action{}
 		for _, action := range requiredActions {
 			if supportsGovernanceAction(&element.Edge, action) {
@@ -244,8 +273,17 @@ func (p *PlotterGenerator) findPathsWithinLimit(item *DataInfo, source, sink *No
 			}
 			// try to build data paths using the selected module capability
 			if n > 1 {
+				sources := []*taxonomy.Interface{}
 				for _, inter := range capability.SupportedInterfaces {
-					node := Node{Connection: inter.Source}
+					sources = append(sources, inter.Source)
+				}
+				if capability.API != nil {
+					sources = append(sources, &taxonomy.Interface{
+						Protocol:   capability.API.Connection.Name,
+						DataFormat: capability.API.DataFormat})
+				}
+				for _, inter := range sources {
+					node := Node{Connection: inter}
 					// recursive call to find paths of length = n-1 using the supported source of the selected module capability
 					paths := p.findPathsWithinLimit(item, source, &node, n-1)
 					// add the selected module to the found paths

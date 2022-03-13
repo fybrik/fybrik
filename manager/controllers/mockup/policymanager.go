@@ -59,7 +59,7 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 	}
 	assetID := splittedID[1]
 	switch assetID {
-	case "allow-dataset":
+	case "allow-dataset", "new-dataset":
 		// empty result simulates allow
 		// no need to construct any result item
 

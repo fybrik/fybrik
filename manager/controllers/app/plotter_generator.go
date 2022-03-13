@@ -245,7 +245,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 				return err
 			}
 		}
-		if !element.Sink.Virtual && item.Context.Flow != taxonomy.WriteFlow {
+		if !element.Sink.Virtual && element.StorageAccount.Region != "" {
 			// allocate storage and create a temoprary asset
 			var sinkDataStore *app.DataStore
 			if sinkDataStore, err = p.GetCopyDestination(item, element.Sink.Connection, &element.StorageAccount); err != nil {

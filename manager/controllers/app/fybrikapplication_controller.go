@@ -303,28 +303,27 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 	return nil
 }
 
-// setReadModulesEndpoints populates the ReadEndpointsMap map in the status of the fybrikapplication
-func setReadModulesEndpoints(application *api.FybrikApplication, flows []api.Flow) {
-	readEndpointMap := make(map[string]taxonomy.Connection)
+// setVirtualEndpoints populates the endpoints in the status of the fybrikapplication
+func setVirtualEndpoints(application *api.FybrikApplication, flows []api.Flow) {
+	endpointMap := make(map[string]taxonomy.Connection)
 	for _, flow := range flows {
-		if flow.FlowType == taxonomy.ReadFlow {
-			for _, subflow := range flow.SubFlows {
-				if subflow.FlowType == taxonomy.ReadFlow {
-					for _, sequentialSteps := range subflow.Steps {
-						// Check the last step in the sequential flow that is for read (this will expose the reading api)
-						lastStep := sequentialSteps[len(sequentialSteps)-1]
-						if lastStep.Parameters.API != nil {
-							readEndpointMap[flow.AssetID] = lastStep.Parameters.API.Connection
-						}
-					}
-				}
+		// sanity check
+		if len(flow.SubFlows) == 0 {
+			continue
+		}
+		subflow := flow.SubFlows[len(flow.SubFlows)-1]
+		for _, sequentialSteps := range subflow.Steps {
+			// Check the last step in the sequential flow (this will expose the api)
+			lastStep := sequentialSteps[len(sequentialSteps)-1]
+			if lastStep.Parameters.API != nil {
+				endpointMap[flow.AssetID] = lastStep.Parameters.API.Connection
 			}
 		}
 	}
 	// populate endpoints in application status
 	for _, asset := range application.Spec.Data {
 		state := application.Status.AssetStates[asset.DataSetID]
-		state.Endpoint = readEndpointMap[asset.DataSetID]
+		state.Endpoint = endpointMap[asset.DataSetID]
 		application.Status.AssetStates[asset.DataSetID] = state
 	}
 }
@@ -392,7 +391,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 		return ctrl.Result{RequeueAfter: 2 * time.Second}, allocationErr
 	}
 
-	setReadModulesEndpoints(applicationContext.Application, plotterSpec.Flows)
+	setVirtualEndpoints(applicationContext.Application, plotterSpec.Flows)
 	ownerRef := &api.ResourceReference{Name: applicationContext.Application.Name, Namespace: applicationContext.Application.Namespace,
 		AppVersion: applicationContext.Application.GetGeneration()}
 
@@ -494,10 +493,10 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 	configEvaluatorInput.Workload.Cluster = workloadCluster
 	configEvaluatorInput.Request = CreateDataRequest(input, req.Context, &req.DataDetails.ResourceMetadata)
 
-	// Read policies for data that is processed in the workload geography
+	// Policies for data that is processed in the workload geography
 	if configEvaluatorInput.Request.Usage == taxonomy.ReadFlow {
 		reqAction := policymanager.RequestAction{
-			ActionType:         taxonomy.ReadFlow,
+			ActionType:         configEvaluatorInput.Request.Usage,
 			Destination:        workloadCluster.Metadata.Region,
 			ProcessingLocation: taxonomy.ProcessingLocation(workloadCluster.Metadata.Region),
 		}
