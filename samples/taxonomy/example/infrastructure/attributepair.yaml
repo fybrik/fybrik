@@ -1,0 +1,21 @@
+definitions:
+  InfrastructureElement:
+    oneOf:
+      - properties:
+          attribute:
+            enum: [storage-cost]
+          units:
+            enum: [US Dollar]
+        required: [attribute, units]
+      - properties:
+          attribute:
+            enum: [bandwidth]
+          units:
+            enum: [Mbps, Gbps, Tbps, Kbps, MBps, GBps, TBps, KBps]
+        required: [attribute, units]
+      - properties:
+          attribute:
+            enum: [size]
+          units:
+            enum: [TB, GB, MB, KB]
+        required: [attribute, units]

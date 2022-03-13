@@ -23,7 +23,7 @@
             "description": "bandwidth between neverland and theshire",
             "value": "5",
             "type": "numeric",
-            "units": "Mbp/s",
+            "units": "Mbps",
             "arguments": ["theshire","neverland"]
         },
         {
@@ -31,7 +31,7 @@
             "description": "bandwidth between theshire and theshire",
             "value": "1000",
             "type": "numeric",
-            "units": "Mbp/s",
+            "units": "Mbps",
             "arguments": ["theshire","theshire"]
         },
         {
@@ -39,7 +39,7 @@
             "description": "bandwidth between neverland and neverland",
             "value": "800",
             "type": "numeric",
-            "units": "Mbp/s",
+            "units": "Mbps",
             "arguments": ["neverland","neverland"]
         }
     ]
