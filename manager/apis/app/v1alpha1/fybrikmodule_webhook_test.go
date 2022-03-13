@@ -5,7 +5,7 @@ package v1alpha1
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,7 +16,7 @@ func TestValidModuleWithTaxonomy(t *testing.T) {
 	t.Parallel()
 
 	filename := "../../../testdata/unittests/fybrikmodule-validActions.yaml"
-	moduleYaml, err := ioutil.ReadFile(filename)
+	moduleYaml, err := os.ReadFile(filename)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return
@@ -37,7 +37,7 @@ func TestInvalidModuleWithTaxonomy(t *testing.T) {
 	t.Parallel()
 
 	filename := "../../../testdata/unittests/fybrikmodule-actionsErrors.yaml"
-	buf, err := ioutil.ReadFile(filename)
+	buf, err := os.ReadFile(filename)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return

@@ -47,7 +47,8 @@ func (d *DataCatalogDummy) GetAssetInfo(in *datacatalog.GetAssetRequest, creds s
 
 func (d *DataCatalogDummy) CreateAssetInfo(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
 	// TODO
-	// will be provide a proper implementation once the implementation of CreateAssetInfo in katalog-connector is completed in a future PR. Till then a dummy implementation is provided.
+	// will be provide a proper implementation once the implementation of CreateAssetInfo in katalog-connector
+	// is completed in a future PR. Till then a dummy implementation is provided.
 	return &datacatalog.CreateAssetResponse{AssetID: "testAssetID"}, nil
 }
 
@@ -64,7 +65,7 @@ func NewTestCatalog() *DataCatalogDummy {
 	tags := taxonomy.Tags{}
 	tags.Items = map[string]interface{}{"PI": true}
 
-	geo := "theshire"
+	geo := "theshire" //nolint:goconst
 	geoExternal := "neverland"
 
 	// TODO(roee88): some of these are also defined in ifdetails.go

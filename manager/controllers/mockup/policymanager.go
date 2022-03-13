@@ -129,7 +129,7 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 		respResult = append(respResult, policyManagerResult)
 	}
 
-	decisionID, _ := random.Hex(20)
+	decisionID, _ := random.Hex(20) //nolint:revive,gomnd
 	policyManagerResp := &policymanager.GetPolicyDecisionsResponse{DecisionID: decisionID, Result: respResult}
 
 	res, err := json.MarshalIndent(policyManagerResp, "", "\t")

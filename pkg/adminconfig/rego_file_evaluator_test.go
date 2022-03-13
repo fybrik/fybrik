@@ -12,13 +12,56 @@ import (
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
 
-	adminconfig "fybrik.io/fybrik/pkg/adminconfig"
+	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 )
+
+func EvaluatorWithOptimizations() *adminconfig.RegoPolicyEvaluator {
+	module := `
+		package adminconfig
+		config[{"capability": "read", "decision": decision}] {
+			input.request.usage == "read"
+			policy := {"ID": "read-request", "version": "0.2"}
+			decision := {"policy": policy, "deploy": "True"}
+		}
+		optimize[decision] {
+			input.request.usage == "copy"
+			policy := {"ID": "save-cost", "description":"Save storage costs", "version": "0.1"}
+			decision := {"policy": policy, "strategy": [{"attribute": "storage-cost", "directive": "min"}]}
+		}
+		
+		optimize[decision] {
+			input.request.usage == "read"
+			policy := {"ID": "general-strategy", "description":"focus on higher performance while saving storage costs", "version": "0.1"}
+			optimize_bandwidth := {"attribute": "bandwidth", "directive": "max", "weight": "0.8"}
+			optimize_storage := {"attribute": "storage-cost", "directive": "min", "weight": "0.2"}
+			decision := {"policy": policy, "strategy": [optimize_bandwidth,optimize_storage]}
+		}	
+
+		optimize[decision] {
+			input.request.usage == "read"
+			policy := {"ID": "save-cost", "description":"Save storage costs", "version": "0.1"}
+			decision := {"policy": policy, "strategy": [{"attribute": "storage-cost", "directive": "min"}]}
+		}
+	`
+	// Compile the module. The keys are used as identifiers in error messages.
+	compiler, err := ast.CompileModules(map[string]string{
+		"example.rego": module,
+	})
+	Expect(err).ToNot(HaveOccurred())
+
+	rg := rego.New(
+		rego.Query("data.adminconfig"),
+		rego.Compiler(compiler),
+	)
+	query, err := rg.PrepareForEval(context.Background())
+	Expect(err).ToNot(HaveOccurred())
+	return &adminconfig.RegoPolicyEvaluator{Log: logging.LogInit("test", "ConfigPolicyEvaluator"), Query: query}
+}
 
 func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 	module := `
@@ -219,5 +262,33 @@ var _ = Describe("Evaluate a policy", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
 		Expect(out.ConfigDecisions).To(BeEmpty())
+	})
+})
+
+var _ = Describe("Optimizations", func() {
+	evaluator := EvaluatorWithOptimizations()
+	It("SingleStrategy", func() {
+		in := adminconfig.EvaluatorInput{
+			Request: adminconfig.DataRequest{
+				Usage: taxonomy.CopyFlow,
+			},
+		}
+		out, err := evaluator.Evaluate(&in)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(out.Valid).To(Equal(true))
+		Expect(out.OptimizationStrategy).To(HaveLen(1))
+		Expect(string(out.OptimizationStrategy[0].Attribute)).To(Equal("storage-cost"))
+	})
+
+	It("Multiple strategies", func() {
+		in := adminconfig.EvaluatorInput{
+			Request: adminconfig.DataRequest{
+				Usage: taxonomy.ReadFlow,
+			},
+		}
+		out, err := evaluator.Evaluate(&in)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(out.Valid).To(Equal(true))
+		Expect(out.OptimizationStrategy).To(HaveLen(2))
 	})
 })
