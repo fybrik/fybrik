@@ -1554,6 +1554,7 @@ func TestWriteWithoutPermissions(t *testing.T) {
 	application.SetUID("20")
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "s3/deny-dataset",
+		Flow:         taxonomy.WriteFlow,
 		Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.ArrowFlight}},
 	}
 
