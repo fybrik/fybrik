@@ -26,6 +26,14 @@
     "Attribute": {
       "type": "string"
     },
+    "AttributeType": {
+      "type": "string",
+      "enum": [
+        "numeric",
+        "string",
+        "bool"
+      ]
+    },
     "Capability": {
       "type": "string"
     },
@@ -56,6 +64,37 @@
     "DataFormat": {
       "type": "string"
     },
+    "InfrastructureElement": {
+      "type": "object",
+      "required": [
+        "attribute",
+        "type",
+        "value"
+      ],
+      "properties": {
+        "attribute": {
+          "$ref": "#/definitions/Attribute"
+        },
+        "description": {
+          "type": "string"
+        },
+        "instance": {
+          "type": "string"
+        },
+        "scale": {
+          "$ref": "#/definitions/RangeType"
+        },
+        "type": {
+          "$ref": "#/definitions/AttributeType"
+        },
+        "units": {
+          "$ref": "#/definitions/Units"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
     "Interface": {
       "type": "object",
       "required": [
@@ -81,6 +120,17 @@
     },
     "ProcessingLocation": {
       "type": "string"
+    },
+    "RangeType": {
+      "type": "object",
+      "properties": {
+        "max": {
+          "type": "integer"
+        },
+        "min": {
+          "type": "integer"
+        }
+      }
     },
     "Tags": {
       "type": "object",
