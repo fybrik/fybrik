@@ -1589,5 +1589,5 @@ func TestWriteWithoutPermissions(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	g.Expect(application.Status.AssetStates[application.Spec.Data[0].DataSetID].Conditions[DenyConditionIndex].Status).
-		To(gomega.Equal(v1.ConditionTrue))
+		To(gomega.BeIdenticalTo(v1.ConditionTrue))
 }

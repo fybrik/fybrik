@@ -127,14 +127,7 @@ func (p *PlotterGenerator) validateStorageRequirements(item *DataInfo, applicati
 
 	if item.Context.Flow == taxonomy.WriteFlow && !item.Context.Requirements.FlowParams.IsNewDataSet {
 		// no need to allocate storage, write destination is known
-		// query the policy manager whether WRITE operation is allowed
-		operation.Destination = item.DataDetails.ResourceMetadata.Geography
-		operation.ProcessingLocation = taxonomy.ProcessingLocation(item.WorkloadCluster.Metadata.Region)
-		actions, err = LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
-		if err != nil {
-			p.Log.Error().Err(err).Msg("could not validate governance action for writing data")
-			return false
-		}
+		return true
 	} else {
 		// select a storage account that
 		// 1. satisfies admin config restrictions on storage

@@ -495,7 +495,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 
 	// Governance actions that don't require storage location
 	// that is unknown at this point
-	if req.Actions, err = r.checkGovernanceActions(configEvaluatorInput, req.Context.DataSetID, appContext); err != nil {
+	if req.Actions, err = r.checkGovernanceActions(configEvaluatorInput, req, appContext); err != nil {
 		return err
 	}
 	configEvaluatorInput.GovernanceActions = req.Actions
@@ -511,18 +511,31 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 }
 
 func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInput *adminconfig.EvaluatorInput,
-	datasetID string, appContext ApplicationContext) ([]taxonomy.Action, error) {
+	req *DataInfo, appContext ApplicationContext) ([]taxonomy.Action, error) {
 	switch configEvaluatorInput.Request.Usage {
-	case taxonomy.CopyFlow, taxonomy.WriteFlow:
+	case taxonomy.CopyFlow:
 		// governance actions will be checked after determining the storage location
 		return []taxonomy.Action{}, nil
+	case taxonomy.WriteFlow:
+		if req.Context.Requirements.FlowParams.IsNewDataSet {
+			// governance actions will be checked after determining the storage location
+			return []taxonomy.Action{}, nil
+		}
+		// update an existing dataset
+		// query the policy manager whether the operation is allowed
+		reqAction := policymanager.RequestAction{
+			ActionType:         configEvaluatorInput.Request.Usage,
+			Destination:        req.DataDetails.ResourceMetadata.Geography,
+			ProcessingLocation: taxonomy.ProcessingLocation(configEvaluatorInput.Workload.Cluster.Metadata.Region),
+		}
+		return LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, appContext, &reqAction)
 	case taxonomy.ReadFlow, taxonomy.DeleteFlow:
 		reqAction := policymanager.RequestAction{
 			ActionType:         configEvaluatorInput.Request.Usage,
 			Destination:        configEvaluatorInput.Workload.Cluster.Metadata.Region,
 			ProcessingLocation: taxonomy.ProcessingLocation(configEvaluatorInput.Workload.Cluster.Metadata.Region),
 		}
-		return LookupPolicyDecisions(datasetID, r.PolicyManager, appContext, &reqAction)
+		return LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, appContext, &reqAction)
 	}
 	// a different flow, no actions are defined
 	return []taxonomy.Action{}, nil
