@@ -268,7 +268,6 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 			// clear steps
 			steps = nil
 		} else {
-			// TODO: handle the case where IsNewDataSet is true in write flow
 			steps = p.addInMemoryStep(element, datasetID, api, steps)
 		}
 	}

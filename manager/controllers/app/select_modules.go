@@ -136,6 +136,9 @@ func (p *PlotterGenerator) validateStorageRequirements(item *DataInfo, applicati
 			return false
 		}
 	} else {
+		// select a storage account that
+		// 1. satisfies admin config restrictions on storage
+		// 2. writing to this storage is not forbidden by governance policies
 		for accountInd := range p.StorageAccounts {
 			// validate restrictions
 			moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]

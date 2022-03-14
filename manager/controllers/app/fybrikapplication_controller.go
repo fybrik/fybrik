@@ -493,17 +493,10 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 	configEvaluatorInput.Workload.Cluster = workloadCluster
 	configEvaluatorInput.Request = CreateDataRequest(input, req.Context, &req.DataDetails.ResourceMetadata)
 
-	// Policies for data that is processed in the workload geography
-	if configEvaluatorInput.Request.Usage == taxonomy.ReadFlow {
-		reqAction := policymanager.RequestAction{
-			ActionType:         configEvaluatorInput.Request.Usage,
-			Destination:        workloadCluster.Metadata.Region,
-			ProcessingLocation: taxonomy.ProcessingLocation(workloadCluster.Metadata.Region),
-		}
-		req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, appContext, &reqAction)
-		if err != nil {
-			return err
-		}
+	// Governance actions that don't require storage location
+	// that is unknown at this point
+	if req.Actions, err = r.checkGovernanceActions(configEvaluatorInput, req.Context.DataSetID, appContext); err != nil {
+		return err
 	}
 	configEvaluatorInput.GovernanceActions = req.Actions
 	configDecisions, err := r.ConfigEvaluator.Evaluate(configEvaluatorInput)
@@ -515,6 +508,24 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 	req.WorkloadCluster = configEvaluatorInput.Workload.Cluster
 	req.Configuration = configDecisions
 	return nil
+}
+
+func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInput *adminconfig.EvaluatorInput,
+	datasetID string, appContext ApplicationContext) ([]taxonomy.Action, error) {
+	switch configEvaluatorInput.Request.Usage {
+	case taxonomy.CopyFlow, taxonomy.WriteFlow:
+		// governance actions will be checked after determining the storage location
+		return []taxonomy.Action{}, nil
+	case taxonomy.ReadFlow, taxonomy.DeleteFlow:
+		reqAction := policymanager.RequestAction{
+			ActionType:         configEvaluatorInput.Request.Usage,
+			Destination:        configEvaluatorInput.Workload.Cluster.Metadata.Region,
+			ProcessingLocation: taxonomy.ProcessingLocation(configEvaluatorInput.Workload.Cluster.Metadata.Region),
+		}
+		return LookupPolicyDecisions(datasetID, r.PolicyManager, appContext, &reqAction)
+	}
+	// a different flow, no actions are defined
+	return []taxonomy.Action{}, nil
 }
 
 // GetWorkloadCluster returns a workload cluster
