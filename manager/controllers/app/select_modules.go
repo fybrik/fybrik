@@ -128,38 +128,37 @@ func (p *PlotterGenerator) validateStorageRequirements(item *DataInfo, applicati
 	if item.Context.Flow == taxonomy.WriteFlow && !item.Context.Requirements.FlowParams.IsNewDataSet {
 		// no need to allocate storage, write destination is known
 		return true
-	} else {
-		// select a storage account that
-		// 1. satisfies admin config restrictions on storage
-		// 2. writing to this storage is not forbidden by governance policies
-		for accountInd := range p.StorageAccounts {
-			// validate restrictions
-			moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
-			if !p.validateRestrictions(
-				item.Configuration.ConfigDecisions[moduleCapability.Capability].DeploymentRestrictions.StorageAccounts,
-				&p.StorageAccounts[accountInd].Spec,
-				p.StorageAccounts[accountInd].Name) {
-				p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msgf("storage account %s does not match the requirements",
-					p.StorageAccounts[accountInd].Name)
+	}
+	// select a storage account that
+	// 1. satisfies admin config restrictions on storage
+	// 2. writing to this storage is not forbidden by governance policies
+	for accountInd := range p.StorageAccounts {
+		// validate restrictions
+		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
+		if !p.validateRestrictions(
+			item.Configuration.ConfigDecisions[moduleCapability.Capability].DeploymentRestrictions.StorageAccounts,
+			&p.StorageAccounts[accountInd].Spec,
+			p.StorageAccounts[accountInd].Name) {
+			p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msgf("storage account %s does not match the requirements",
+				p.StorageAccounts[accountInd].Name)
+			continue
+		}
+		// query the policy manager whether WRITE operation is allowed
+		if !item.Context.Requirements.FlowParams.IsNewDataSet {
+			operation.Destination = string(p.StorageAccounts[accountInd].Spec.Region)
+			operation.ProcessingLocation = p.StorageAccounts[accountInd].Spec.Region
+			actions, err = LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
+			if err != nil {
 				continue
 			}
-			// query the policy manager whether WRITE operation is allowed
-			if !item.Context.Requirements.FlowParams.IsNewDataSet {
-				operation.Destination = string(p.StorageAccounts[accountInd].Spec.Region)
-				operation.ProcessingLocation = p.StorageAccounts[accountInd].Spec.Region
-				actions, err = LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
-				if err != nil {
-					continue
-				}
-			}
-			// add the selected storage account region
-			element.StorageAccount = p.StorageAccounts[accountInd].Spec
-			break
 		}
-		if element.StorageAccount.Region == "" {
-			p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find a storage account, aborting data path construction")
-			return false
-		}
+		// add the selected storage account region
+		element.StorageAccount = p.StorageAccounts[accountInd].Spec
+		break
+	}
+	if element.StorageAccount.Region == "" {
+		p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find a storage account, aborting data path construction")
+		return false
 	}
 	// add WRITE actions
 	element.Actions = actions
