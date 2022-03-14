@@ -119,23 +119,35 @@ func (p *PlotterGenerator) GetCopyDestination(item *DataInfo, destinationInterfa
 }
 
 func (p *PlotterGenerator) getAssetDataStore(item *DataInfo) *app.DataStore {
-	vaultMap := make(map[string]app.Vault)
-	if utils.IsVaultEnabled() {
-		// Set the value received from the catalog connector.
-		vaultSecretPath := item.DataDetails.Credentials
-		vaultMap[string(taxonomy.ReadFlow)] = app.Vault{
-			SecretPath: vaultSecretPath,
-			Role:       utils.GetModulesRole(),
-			Address:    utils.GetVaultAddress(),
-		}
-	} else {
-		vaultMap[string(taxonomy.ReadFlow)] = app.Vault{}
-	}
 	return &app.DataStore{
 		Connection: item.DataDetails.Details.Connection,
-		Vault:      vaultMap,
+		Vault:      getDatasetCredentials(item),
 		Format:     item.DataDetails.Details.DataFormat,
 	}
+}
+
+// store all available credentials in the plotter
+// only relevant credentials will be sent to modules
+func getDatasetCredentials(item *DataInfo) map[string]app.Vault {
+	vaultMap := make(map[string]app.Vault)
+	// credentials for read, write, delete
+	// currently, one is used for all flows
+	// TODO: store multiple secrets with credentials depending on the flow
+	flows := []string{string(taxonomy.ReadFlow), string(taxonomy.WriteFlow), string(taxonomy.DeleteFlow)}
+	for _, flow := range flows {
+		if utils.IsVaultEnabled() {
+			// Set the value received from the catalog connector.
+			vaultSecretPath := item.DataDetails.Credentials
+			vaultMap[flow] = app.Vault{
+				SecretPath: vaultSecretPath,
+				Role:       utils.GetModulesRole(),
+				Address:    utils.GetVaultAddress(),
+			}
+		} else {
+			vaultMap[flow] = app.Vault{}
+		}
+	}
+	return vaultMap
 }
 
 // find a solution for data plane orchestration
