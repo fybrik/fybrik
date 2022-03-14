@@ -334,18 +334,6 @@ func GetDependencies(module *app.FybrikModule, moduleMap map[string]*app.FybrikM
 	return dependencies, nil
 }
 
-// SupportsGovernanceActions checks whether the module supports the required governance actions
-func supportsGovernanceActions(edge *Edge, actions []taxonomy.Action) bool {
-	// Loop over the actions requested for the declared capability
-	for _, action := range actions {
-		// If any one of the actions is not supported, return false
-		if !supportsGovernanceAction(edge, action) {
-			return false
-		}
-	}
-	return true // All actions supported
-}
-
 // supportsGovernanceAction checks whether the module supports the required governance action
 func supportsGovernanceAction(edge *Edge, action taxonomy.Action) bool {
 	// Loop over the data transforms (actions) performed by the module for this capability
