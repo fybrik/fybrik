@@ -12,7 +12,6 @@ import (
 
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -1588,6 +1587,9 @@ func TestWriteWithoutPermissions(t *testing.T) {
 
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
-	g.Expect(application.Status.AssetStates[application.Spec.Data[0].DataSetID].Conditions[DenyConditionIndex].Status).
-		To(gomega.BeIdenticalTo(v1.ConditionTrue))
+	// Expect Deny condition
+	cond := application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex]
+	g.Expect(cond.Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue), "Deny condition is not set")
+	g.Expect(cond.Message).To(gomega.ContainSubstring(app.WriteNotAllowed))
+	g.Expect(application.Status.Ready).To(gomega.BeTrue())
 }
