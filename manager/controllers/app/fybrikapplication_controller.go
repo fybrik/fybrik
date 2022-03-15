@@ -303,28 +303,27 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 	return nil
 }
 
-// setReadModulesEndpoints populates the ReadEndpointsMap map in the status of the fybrikapplication
-func setReadModulesEndpoints(application *api.FybrikApplication, flows []api.Flow) {
-	readEndpointMap := make(map[string]taxonomy.Connection)
+// setVirtualEndpoints populates the endpoints in the status of the fybrikapplication
+func setVirtualEndpoints(application *api.FybrikApplication, flows []api.Flow) {
+	endpointMap := make(map[string]taxonomy.Connection)
 	for _, flow := range flows {
-		if flow.FlowType == taxonomy.ReadFlow {
-			for _, subflow := range flow.SubFlows {
-				if subflow.FlowType == taxonomy.ReadFlow {
-					for _, sequentialSteps := range subflow.Steps {
-						// Check the last step in the sequential flow that is for read (this will expose the reading api)
-						lastStep := sequentialSteps[len(sequentialSteps)-1]
-						if lastStep.Parameters.API != nil {
-							readEndpointMap[flow.AssetID] = lastStep.Parameters.API.Connection
-						}
-					}
-				}
+		// sanity check
+		if len(flow.SubFlows) == 0 {
+			continue
+		}
+		subflow := flow.SubFlows[len(flow.SubFlows)-1]
+		for _, sequentialSteps := range subflow.Steps {
+			// Check the last step in the sequential flow (this will expose the api)
+			lastStep := sequentialSteps[len(sequentialSteps)-1]
+			if lastStep.Parameters.API != nil {
+				endpointMap[flow.AssetID] = lastStep.Parameters.API.Connection
 			}
 		}
 	}
 	// populate endpoints in application status
 	for _, asset := range application.Spec.Data {
 		state := application.Status.AssetStates[asset.DataSetID]
-		state.Endpoint = readEndpointMap[asset.DataSetID]
+		state.Endpoint = endpointMap[asset.DataSetID]
 		application.Status.AssetStates[asset.DataSetID] = state
 	}
 }
@@ -392,7 +391,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 		return ctrl.Result{RequeueAfter: 2 * time.Second}, allocationErr
 	}
 
-	setReadModulesEndpoints(applicationContext.Application, plotterSpec.Flows)
+	setVirtualEndpoints(applicationContext.Application, plotterSpec.Flows)
 	ownerRef := &api.ResourceReference{Name: applicationContext.Application.Name, Namespace: applicationContext.Application.Namespace,
 		AppVersion: applicationContext.Application.GetGeneration()}
 
@@ -494,17 +493,10 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 	configEvaluatorInput.Workload.Cluster = workloadCluster
 	configEvaluatorInput.Request = CreateDataRequest(input, req.Context, &req.DataDetails.ResourceMetadata)
 
-	// Read policies for data that is processed in the workload geography
-	if configEvaluatorInput.Request.Usage == taxonomy.ReadFlow {
-		reqAction := policymanager.RequestAction{
-			ActionType:         taxonomy.ReadFlow,
-			Destination:        workloadCluster.Metadata.Region,
-			ProcessingLocation: taxonomy.ProcessingLocation(workloadCluster.Metadata.Region),
-		}
-		req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, appContext, &reqAction)
-		if err != nil {
-			return err
-		}
+	// Governance actions that don't require storage location
+	// that is unknown at this point
+	if req.Actions, err = r.checkGovernanceActions(configEvaluatorInput, req, appContext); err != nil {
+		return err
 	}
 	configEvaluatorInput.GovernanceActions = req.Actions
 	configDecisions, err := r.ConfigEvaluator.Evaluate(configEvaluatorInput)
@@ -516,6 +508,37 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 	req.WorkloadCluster = configEvaluatorInput.Workload.Cluster
 	req.Configuration = configDecisions
 	return nil
+}
+
+func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInput *adminconfig.EvaluatorInput,
+	req *DataInfo, appContext ApplicationContext) ([]taxonomy.Action, error) {
+	switch configEvaluatorInput.Request.Usage {
+	case taxonomy.CopyFlow:
+		// governance actions will be checked after determining the storage location
+		return []taxonomy.Action{}, nil
+	case taxonomy.WriteFlow:
+		if req.Context.Requirements.FlowParams.IsNewDataSet {
+			// governance actions will be checked after determining the storage location
+			return []taxonomy.Action{}, nil
+		}
+		// update an existing dataset
+		// query the policy manager whether the operation is allowed
+		reqAction := policymanager.RequestAction{
+			ActionType:         configEvaluatorInput.Request.Usage,
+			Destination:        req.DataDetails.ResourceMetadata.Geography,
+			ProcessingLocation: taxonomy.ProcessingLocation(configEvaluatorInput.Workload.Cluster.Metadata.Region),
+		}
+		return LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, appContext, &reqAction)
+	case taxonomy.ReadFlow, taxonomy.DeleteFlow:
+		reqAction := policymanager.RequestAction{
+			ActionType:         configEvaluatorInput.Request.Usage,
+			Destination:        configEvaluatorInput.Workload.Cluster.Metadata.Region,
+			ProcessingLocation: taxonomy.ProcessingLocation(configEvaluatorInput.Workload.Cluster.Metadata.Region),
+		}
+		return LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, appContext, &reqAction)
+	}
+	// a different flow, no actions are defined
+	return []taxonomy.Action{}, nil
 }
 
 // GetWorkloadCluster returns a workload cluster

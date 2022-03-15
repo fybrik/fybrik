@@ -108,7 +108,8 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 		namespace = "default"
 	)
 	application := &app.FybrikApplication{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).To(gomega.BeNil(), "Cannot read fybrikapplication file for test")
+	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).To(gomega.BeNil(),
+		"Cannot read fybrikapplication file for test")
 	application.SetGeneration(1)
 	application.SetUID("1")
 	// Objects to track in the fake client.
@@ -563,7 +564,8 @@ func TestMultipleDatasets(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// check Deny for the first dataset
-	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).
+		To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage["db2/redact-dataset"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
 	// check plotter creation
@@ -646,8 +648,10 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 
 	// check Deny states
-	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
-	g.Expect(application.Status.AssetStates["local/redact-dataset"].Conditions[DenyConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).
+		To(gomega.BeIdenticalTo(corev1.ConditionTrue))
+	g.Expect(application.Status.AssetStates["local/redact-dataset"].Conditions[DenyConditionIndex].Status).
+		To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 }
@@ -804,7 +808,8 @@ func TestCopyData(t *testing.T) {
 
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage[assetName].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
-	g.Expect(application.Status.ProvisionedStorage[assetName].SecretRef).To(gomega.Equal("credentials-theshire"), "Incorrect storage was selected")
+	g.Expect(application.Status.ProvisionedStorage[assetName].SecretRef).To(gomega.Equal("credentials-theshire"),
+		"Incorrect storage was selected")
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 	plotterObjectKey := types.NamespacedName{
@@ -831,7 +836,6 @@ func TestCopyData(t *testing.T) {
 // This test checks the ingest scenario
 // A storage account has been defined for the region where the dataset can not be written to according to governance policies.
 // An error is received.
-//nolint:dupl
 func TestCopyDataNotAllowed(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -896,7 +900,6 @@ func TestCopyDataNotAllowed(t *testing.T) {
 // This test checks the ingest scenario
 // A storage account has been defined for the region where the dataset can not be written to according to restrictions on cost
 // An error is received.
-//nolint:dupl
 func TestStorageCost(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -1145,7 +1148,6 @@ func TestFybrikApplicationWithNoDatasets(t *testing.T) {
 	g.Expect(newApp.Status.Ready).To(gomega.BeTrue())
 }
 
-//nolint:dupl
 func TestFybrikApplicationWithInvalidAppInfo(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -1192,7 +1194,6 @@ func TestFybrikApplicationWithInvalidAppInfo(t *testing.T) {
 	g.Expect(newApp.Status.Ready).NotTo(gomega.BeTrue())
 }
 
-//nolint:dupl
 func TestFybrikApplicationWithInvalidInterface(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -1417,7 +1418,7 @@ func TestWriteRegisteredAsset(t *testing.T) {
 
 	// Read module
 	readWriteModule := &app.FybrikModule{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write-parquet.yaml", readWriteModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", readWriteModule)).NotTo(gomega.HaveOccurred())
 	readWriteModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readWriteModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 
@@ -1462,4 +1463,134 @@ func TestWriteRegisteredAsset(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(2))
 	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2)) // expect two templates: one for read and one for write
+}
+
+func TestWriteAndTransform(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "write-test",
+		Namespace: "default",
+	}
+	application := &app.FybrikApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/write_asset.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.SetGeneration(1)
+	application.SetUID("19")
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Write module
+	writeModule := &app.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", writeModule)).NotTo(gomega.HaveOccurred())
+	writeModule.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.TODO(), writeModule)).NotTo(gomega.HaveOccurred(), "the write module could not be created")
+	transformModule := &app.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-transform.yaml", transformModule)).NotTo(gomega.HaveOccurred())
+	transformModule.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.TODO(), transformModule)).NotTo(gomega.HaveOccurred(), "the transform module could not be created")
+
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+	g.Expect(getErrorMessages(application)).To(gomega.BeEmpty())
+	// check plotter creation
+	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
+	endpoint := application.Status.AssetStates[application.Spec.Data[0].DataSetID].Endpoint
+	g.Expect(endpoint).To(gomega.Not(gomega.BeNil()))
+	connectionMap := endpoint.AdditionalProperties.Items
+	g.Expect(connectionMap).To(gomega.HaveKey("fybrik-arrow-flight"))
+	config := connectionMap["fybrik-arrow-flight"].(map[string]interface{})
+	g.Expect(config["hostname"]).To(gomega.Equal("arrow-flight-transform"))
+	plotterObjectKey := types.NamespacedName{
+		Namespace: application.Status.Generated.Namespace,
+		Name:      application.Status.Generated.Name,
+	}
+	plotter := &app.Plotter{}
+	err = cl.Get(context.Background(), plotterObjectKey, plotter)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	bytes, _ := yaml.Marshal(&plotter)
+	fmt.Println("WriteAndTransform:\n " + string(bytes))
+	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(1))
+	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2)) // expect two templates
+	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(1))
+	g.Expect(plotter.Spec.Flows[0].SubFlows).To(gomega.HaveLen(1))
+	g.Expect(plotter.Spec.Flows[0].SubFlows[0].Steps[0]).To(gomega.HaveLen(2))
+}
+
+func TestWriteWithoutPermissions(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "write-test",
+		Namespace: "default",
+	}
+	application := &app.FybrikApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/write_asset.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.SetGeneration(1)
+	application.SetUID("20")
+	application.Spec.Data[0] = app.DataContext{
+		DataSetID:    "s3/deny-dataset",
+		Flow:         taxonomy.WriteFlow,
+		Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.ArrowFlight}},
+	}
+
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Write module
+	writeModule := &app.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", writeModule)).NotTo(gomega.HaveOccurred())
+	writeModule.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.TODO(), writeModule)).NotTo(gomega.HaveOccurred(), "the write module could not be created")
+
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+	// Expect Deny condition
+	cond := application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex]
+	g.Expect(cond.Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue), "Deny condition is not set")
+	g.Expect(cond.Message).To(gomega.ContainSubstring(app.WriteNotAllowed))
+	g.Expect(application.Status.Ready).To(gomega.BeTrue())
 }
