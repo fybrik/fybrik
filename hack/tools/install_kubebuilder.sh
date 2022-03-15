@@ -12,7 +12,7 @@ header_text "Checking for bin/etcd"
 header_text "Installing bin/etcd"
 mkdir -p ./bin
 
-K8S_VERSION=1.19.2
+K8S_VERSION=1.21.4
 curl -sSLo envtest-bins.tar.gz "https://storage.googleapis.com/kubebuilder-tools/kubebuilder-tools-${K8S_VERSION}-$(go env GOOS)-$(go env GOARCH).tar.gz"
 
 tar -zvxf envtest-bins.tar.gz
