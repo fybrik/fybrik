@@ -107,7 +107,7 @@ $(TOOLBIN)/openapi-generator-cli:
 
 INSTALL_TOOLS += $(TOOLBIN)/crdoc
 $(TOOLBIN)/crdoc:
-	GOBIN=$(ABSTOOLBIN) go install fybrik.io/crdoc@v0.4.0
+	GOBIN=$(ABSTOOLBIN) go install fybrik.io/crdoc@v0.6.1
 
 INSTALL_TOOLS += $(TOOLBIN)/json-schema-generator
 $(TOOLBIN)/json-schema-generator:
