@@ -39,12 +39,12 @@ import (
 // http://onsi.github.io/ginkgo/ to learn more about Ginkgo.
 
 var (
-	cfg *rest.Config
+	cfg       *rest.Config
 	k8sClient client.Client
-	mgr ctrl.Manager
-	testEnv *envtest.Environment
-	ctx  context.Context
-	cancel   context.CancelFunc
+	mgr       ctrl.Manager
+	testEnv   *envtest.Environment
+	ctx       context.Context
+	cancel    context.CancelFunc
 )
 
 func TestAPIs(t *testing.T) {
@@ -180,6 +180,7 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
+	// see https://github.com/kubernetes-sigs/controller-runtime/issues/1571
 	cancel()
 	By("tearing down the test environment")
 	gexec.KillAndWait(5 * time.Second)
