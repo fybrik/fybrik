@@ -28,7 +28,7 @@ type FlatZincParam struct {
 }
 
 // formats a paramater declaraion in FlatZinc format
-func (fzp FlatZincParam) paramDeclaration() string {
+func (fzp *FlatZincParam) paramDeclaration() string {
 	if fzp.NumInstances == 1 {
 		return fmt.Sprintf("%s: %s = %s;\n", fzp.Type, fzp.Name, fzp.Assignment)
 	}
@@ -38,11 +38,8 @@ func (fzp FlatZincParam) paramDeclaration() string {
 type Annotations []string
 
 func (annots Annotations) annotationString() string {
-	annotsStr := strings.Join(annots, " :: ")
-	if len(annotsStr) > 0 {
-		annotsStr = " :: " + annotsStr
-	}
-	return annotsStr
+	// prepending an empty string, because annotations always start with "::"
+	return strings.Join(append([]string{""}, annots...), " :: ")
 }
 
 // Data for a single FlatZinc variable
@@ -55,7 +52,7 @@ type FlatZincVariable struct {
 }
 
 // formats a variable declaraion in FlatZinc format
-func (fzv FlatZincVariable) varDeclaration() string {
+func (fzv *FlatZincVariable) varDeclaration() string {
 	if fzv.NumInstances == 1 {
 		return fmt.Sprintf("var %s: %s%s;\n", fzv.Type, fzv.Name, fzv.annotationString())
 	}
@@ -70,7 +67,7 @@ type FlatZincConstraint struct {
 }
 
 // formats a constraint statement in FlatZinc format
-func (cnstr FlatZincConstraint) constraintStatement() string {
+func (cnstr *FlatZincConstraint) constraintStatement() string {
 	exprs := strings.Join(cnstr.Expressions, ", ")
 	return fmt.Sprintf("constraint %s(%s)%s;\n", cnstr.Identifier, exprs, cnstr.annotationString())
 }
@@ -104,7 +101,7 @@ type FlatZincSolveItem struct {
 }
 
 // formats a solve item in FlatZinc format
-func (slv FlatZincSolveItem) solveItemStatement() string {
+func (slv *FlatZincSolveItem) solveItemStatement() string {
 	return fmt.Sprintf("solve%s %s %s;\n", slv.annotationString(), slv.goal, slv.expr)
 }
 
@@ -206,6 +203,7 @@ func (fzw *FlatZincModel) ReadSolutions(fileName string) ([]CPSolution, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed opening file %s for reading: %w", fileName, err)
 	}
+
 	strContent := string(data)
 	lines := strings.Split(strContent, "\n")
 	res := []CPSolution{}
@@ -213,11 +211,11 @@ func (fzw *FlatZincModel) ReadSolutions(fileName string) ([]CPSolution, error) {
 	for lineNum, line := range lines {
 		line = strings.Join(strings.Fields(line), "") // remove all whitespaces
 		switch {
-		case len(line) == 0:
+		case line == "":
 			continue // empty line
 		case strings.HasPrefix(line, "%%%"):
 			continue // stat lines are ignored
-		case line == strings.Repeat("=", 10):
+		case line == "==========":
 			if len(res) == 0 {
 				return nil, errors.New("no solution was found, though solver says it did find solution(s)")
 			}
@@ -227,7 +225,7 @@ func (fzw *FlatZincModel) ReadSolutions(fileName string) ([]CPSolution, error) {
 		case strings.HasPrefix(line, "===="):
 			err := fmt.Errorf("no solution found. Solver says %s", line) // no solution found (but not UNSAT either)
 			return nil, err
-		case line == strings.Repeat("-", 10):
+		case line == "----------":
 			res = append(res, currSolution) // marks the end of current solution
 			currSolution = make(CPSolution) // (and possible the beginning of a new one)
 		default: // this should be a variable assignment line
@@ -248,9 +246,9 @@ func (fzw *FlatZincModel) ReadSolutions(fileName string) ([]CPSolution, error) {
 // Reading a FlatZinc solutions file and returning the best solution
 // When a minimize/maximize goal is defined, best solution should be the last solution
 func (fzw *FlatZincModel) ReadBestSolution(fileName string) (CPSolution, error) {
-	solutions, error := fzw.ReadSolutions(fileName)
-	if error != nil {
-		return nil, error
+	solutions, err := fzw.ReadSolutions(fileName)
+	if err != nil {
+		return nil, err
 	}
 	if len(solutions) < 1 {
 		return nil, errors.New("no solution found")
