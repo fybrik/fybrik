@@ -165,7 +165,7 @@ scope: <scope of the capability> # cluster, workload, asset
 Lists the supported data services from which the module can read data (sources) and to which it can write (sinks).  There can be multiple sources and sinks.  For each, a protocol and format are provided.
 
 * `protocol` field can take a value such as `kafka`, `s3`, `db2`, `fybrik-arrow-flight`, etc.
-* `format` field can take a value such as `avro`, `parquet`, `json`, or `csv`.
+* `format` field can take a value such as `avro`, `parquet`, `arrow`, `json`, or `csv`.
 
 Note that a module that targets copy flows will omit the `api` field and contain just `source` and `sink`, a module that only supports reading data assets will omit the `sink` field and only contain `api` and `source`
 

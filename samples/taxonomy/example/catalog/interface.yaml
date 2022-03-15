@@ -15,5 +15,11 @@ definitions:
         required: [protocol, dataformat]
       - properties:
           protocol:
-            enum: [fybrik-arrow-flight, db2]
+            enum: [db2]
         required: [protocol]
+      - properties:
+          protocol:
+            enum: [fybrik-arrow-flight]
+          dataformat:
+            enum: [arrow]
+        required: [protocol, dataformat]
