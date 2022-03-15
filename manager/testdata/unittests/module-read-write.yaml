@@ -13,6 +13,9 @@ spec:
   capabilities:
     - capability: read
       scope: workload
+      actions:
+        - name: RedactAction
+        - name: RemoveAction
       api:
         connection:
           name: fybrik-arrow-flight
@@ -24,9 +27,9 @@ spec:
       - source:
           protocol: s3
           dataformat: parquet
-      actions:
-      - name: RedactAction
-      - name: RemoveAction
+      - source:
+          protocol: s3
+          dataformat: csv
     - capability: write
       scope: workload
       api:
@@ -40,3 +43,6 @@ spec:
       - sink:
           protocol: s3
           dataformat: parquet
+      - sink:
+          protocol: s3
+          dataformat: csv
