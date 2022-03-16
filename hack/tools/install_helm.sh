@@ -5,7 +5,7 @@
 
 source ./common.sh
 
-DESIRED_VERSION=v3.7.0
+DESIRED_VERSION=v3.7.2
 
 header_text "Checking for bin/helm $DESIRED_VERSION"
 [[ -f bin/helm &&  `bin/helm version --template='{{.Version}}'` == $DESIRED_VERSION ]] && exit 0

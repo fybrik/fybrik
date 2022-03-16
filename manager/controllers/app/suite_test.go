@@ -38,10 +38,14 @@ import (
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
 // http://onsi.github.io/ginkgo/ to learn more about Ginkgo.
 
-var cfg *rest.Config
-var k8sClient client.Client
-var mgr ctrl.Manager
-var testEnv *envtest.Environment
+var (
+	cfg       *rest.Config
+	k8sClient client.Client
+	mgr       ctrl.Manager
+	testEnv   *envtest.Environment
+	ctx       context.Context
+	cancel    context.CancelFunc
+)
 
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -52,6 +56,7 @@ func TestAPIs(t *testing.T) {
 
 var _ = BeforeSuite(func() {
 	done := make(chan interface{})
+	ctx, cancel = context.WithCancel(context.TODO())
 	go func() {
 		logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 
@@ -139,7 +144,7 @@ var _ = BeforeSuite(func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			go func() {
-				err = mgr.Start(ctrl.SetupSignalHandler())
+				err = mgr.Start(ctx)
 				Expect(err).ToNot(HaveOccurred())
 			}()
 
@@ -175,6 +180,8 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
+	// see https://github.com/kubernetes-sigs/controller-runtime/issues/1571
+	cancel()
 	By("tearing down the test environment")
 	gexec.KillAndWait(5 * time.Second)
 	err := testEnv.Stop()

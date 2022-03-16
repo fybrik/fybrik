@@ -33,7 +33,6 @@ func createTestFybrikModuleController(cl client.Client, s *runtime.Scheme) *Fybr
 	}
 }
 
-//nolint:dupl
 func TestFybrikModuleWithInvalidInterface(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -74,7 +73,6 @@ func TestFybrikModuleWithInvalidInterface(t *testing.T) {
 	g.Expect(newModule.Status.Conditions[ModuleValidationConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionFalse))
 }
 
-//nolint:dupl
 func TestFybrikModuleWithInvalidActions(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -115,7 +113,6 @@ func TestFybrikModuleWithInvalidActions(t *testing.T) {
 	g.Expect(newModule.Status.Conditions[ModuleValidationConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionFalse))
 }
 
-//nolint:dupl
 func TestFybrikModuleWithValidFields(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
