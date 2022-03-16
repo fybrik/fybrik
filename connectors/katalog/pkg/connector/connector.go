@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"sort"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -28,41 +27,6 @@ import (
 type Handler struct {
 	client kclient.Client
 	log    zerolog.Logger
-}
-
-type sortByLength []string
-
-// Len implements Len of sort.Interface
-func (s sortByLength) Len() int {
-	return len(s)
-}
-
-// Swap implements Swap of sort.Interface
-func (s sortByLength) Swap(i, j int) {
-	s[i], s[j] = s[j], s[i]
-}
-
-// Less implements Less of sort.Interface
-func (s sortByLength) Less(i, j int) bool {
-	return len(s[i]) > len(s[j])
-}
-
-func getLongest(toFind []string) []string {
-	// We sort it by length, descending
-	sort.Sort(sortByLength(toFind))
-	longest := []string{toFind[0]}
-
-	// In case we have more than one element in toFind...
-	if len(toFind) > 1 {
-		for _, str := range toFind[1:] {
-			if len(str) < len(longest[0]) {
-				break
-			}
-			longest = append(longest, str)
-		}
-	}
-	fmt.Println(longest)
-	return longest
 }
 
 func NewHandler(client kclient.Client) *Handler {
@@ -103,46 +67,9 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, &response)
 }
 
-func (r *Handler) generateUniqueAssetName(namespace, namePrefix string) (string, error) {
-	var result v1alpha1.AssetList
-	var randomStringLength = 1
-	var uniqueAssetName = ""
-	err := r.client.List(context.Background(), &result, kclient.InNamespace(namespace))
-	if err == nil {
-		listOfCandidates := make([]string, 0)
-		for i := 0; i < len(result.Items); i++ {
-			if strings.Contains(result.Items[i].Spec.Metadata.Name, namePrefix) {
-				listOfCandidates = append(listOfCandidates, result.Items[i].Spec.Metadata.Name)
-			}
-		}
-		r.log.Info().Msg("listOfCandidates : " + strings.Join(listOfCandidates, "|"))
-		var randomStr string
-		randomStr, err = utils.GenerateRandomString(randomStringLength)
-		if err == nil {
-			if len(listOfCandidates) > 0 {
-				longestArr := getLongest(listOfCandidates)
-				const delimiter = "|"
-				r.log.Info().Msg("longestArr : " + strings.Join(longestArr, delimiter))
-				randIdx := utils.GenerateRandomNumber(0, int64(len(longestArr)))
-				r.log.Info().Msg("randIdx : " + fmt.Sprint(randIdx))
-				uniqueAssetName = longestArr[randIdx] + randomStr
-			} else {
-				// no asset with the given prefix
-				uniqueAssetName = namePrefix + randomStr
-			}
-			r.log.Info().Msg("uniqueAssetName generated : " + uniqueAssetName)
-		} else {
-			r.log.Info().Msg("Error during GenerateRandomString: " + err.Error())
-		}
-	} else {
-		r.log.Info().Msg("Error during list operation: " + err.Error())
-	}
-	return uniqueAssetName, err
-}
-
-func (r *Handler) reportError(errorMessage string, c *gin.Context) {
+func (r *Handler) reportError(errorMessage string, c *gin.Context, httpCode int) {
 	r.log.Error().Msg(errorMessage)
-	c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+	c.JSON(httpCode, gin.H{"error": errorMessage})
 }
 
 // Enables writing of assets to katalog. The different flows supported are:
@@ -156,38 +83,32 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	// Parse request
 	var request datacatalog.CreateAssetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		r.reportError("Error during ShouldBindJSON in createAssetInfo"+err.Error(), c)
+		r.reportError("Error during ShouldBindJSON in createAssetInfo"+err.Error(), c, http.StatusBadRequest)
 		return
 	}
 
-	// just for logging - start
-	b, err := json.Marshal(request)
-	if err != nil {
-		r.reportError("Error during marshalling request in createAssetInfo"+err.Error(), c)
-		return
-	}
-	r.log.Info().Msg("CreateAssetRequest: JSON format:" + string(b))
-	// just for logging - end
+	r.log.Info().Msg("CreateAssetRequest object received in createAssetInfo of katalog connector:" + fmt.Sprintf("%v", request))
 
 	if request.DestinationCatalogID == "" {
-		r.reportError("Invalid DestinationCatalogID in request", c)
+		r.reportError("Invalid DestinationCatalogID in request", c, http.StatusBadRequest)
 		return
 	}
 
 	var assetName string
 	var namespace string
+	var err error
 	if request.DestinationAssetID != "" {
 		namespace, assetName = request.DestinationCatalogID, request.DestinationAssetID
 	} else {
 		if request.ResourceMetadata.Name != "" {
 			namespace, assetName = request.DestinationCatalogID, request.ResourceMetadata.Name
-			assetName, err = r.generateUniqueAssetName(namespace, assetName)
+			assetName, err = utils.GenerateUniqueAssetName(namespace, assetName, r.log, r.client)
 		} else {
 			namespace = request.DestinationCatalogID
-			assetName, err = r.generateUniqueAssetName(namespace, "fybrik-asset")
+			assetName, err = utils.GenerateUniqueAssetName(namespace, "fybrik-asset", r.log, r.client)
 		}
 		if err != nil {
-			r.reportError("Error during generateUniqueAssetName. Error:"+err.Error(), c)
+			r.reportError("Error during generateUniqueAssetName. Error:"+err.Error(), c, http.StatusInternalServerError)
 			return
 		}
 		r.log.Info().Msg("AssetName used with random string generation:" + assetName)
@@ -210,9 +131,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	reqResourceMetadata, _ := json.Marshal(request.ResourceMetadata)
 	err = json.Unmarshal(reqResourceMetadata, &spec.Metadata)
 	if err != nil {
-		errorMessage := "Error during unmarshal of reqResourceMetadata. Error:" + err.Error()
-		r.log.Error().Msg(errorMessage)
-		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		r.reportError("Error during unmarshal of reqResourceMetadata. Error:"+err.Error(), c, http.StatusInternalServerError)
 		return
 	}
 	spec.Metadata.Name = assetName
@@ -220,31 +139,24 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	reqResourceDetails, _ := json.Marshal(request.Details)
 	err = json.Unmarshal(reqResourceDetails, &spec.Details)
 	if err != nil {
-		r.reportError("Error during unmarshal of reqResourceDetails. Error:"+err.Error(), c)
+		r.reportError("Error during unmarshal of reqResourceDetails. Error:"+err.Error(), c, http.StatusInternalServerError)
 		return
 	}
 
 	asset.Spec = *spec
-
-	// just for logging - start
-	b, err = json.Marshal(asset)
-	if err != nil {
-		r.reportError("Error during Marshal of asset. Error:"+err.Error(), c)
-		return
-	}
-	r.log.Info().Msg("Created Asset: JSON format: " + string(b))
-	// just for logging - end
+	r.log.Info().Msg("Fybrik Asset to be created in Katalog:" + fmt.Sprintf("%v", asset))
 
 	err = r.client.Create(context.Background(), asset)
 	if err != nil {
-		r.reportError("Error during create asset. Error:"+err.Error(), c)
+		r.reportError("Error during create asset. Error:"+err.Error(), c, http.StatusInternalServerError)
 		return
 	}
-	r.log.Info().Msg("Created Asset in cluster: " + fmt.Sprintf("%s/%s", asset.Namespace, asset.Name))
 
 	response := datacatalog.CreateAssetResponse{
 		AssetID: namespace + "/" + assetName,
 	}
+	r.log.Info().Msg(
+		"Sending response from Katalog Connector with created asset ID: " + fmt.Sprintf("%s", response.AssetID))
 
 	c.JSON(http.StatusCreated, &response)
 }

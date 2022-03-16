@@ -13,22 +13,20 @@ import (
 	"strings"
 	"testing"
 
+	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
+	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
+	"fybrik.io/fybrik/pkg/serde"
+	"github.com/gdexlab/go-render/render"
 	"github.com/gin-gonic/gin"
 	. "github.com/onsi/gomega"
 	"gotest.tools/assert"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-
-	"github.com/gdexlab/go-render/render"
-	"k8s.io/apimachinery/pkg/types"
-
-	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
-	"fybrik.io/fybrik/pkg/model/datacatalog"
-	"fybrik.io/fybrik/pkg/model/taxonomy"
-	"fybrik.io/fybrik/pkg/serde"
 )
 
 func TestGetAssetInfo(t *testing.T) {
