@@ -11,13 +11,9 @@ import (
 
 // AssetContext defines the input parameters for modules that access an asset
 type AssetContext struct {
-	// Source is the where the data currently resides
+	// List of datastores associated with the asset
 	// +optional
-	Source *DataStore `json:"source,omitempty"`
-
-	// Destination is the data store to which the data will be written
-	// +optional
-	Destination *DataStore `json:"destination,omitempty"`
+	Arguments []*DataStore `json:"args,omitempty"`
 
 	// AssetID identifies the asset to be used for accessing the data when it is ready
 	// It is copied from the FybrikApplication resource

@@ -271,49 +271,37 @@ spec:
                                         required:
                                         - connection
                                         type: object
-                                      sink:
-                                        description: 'StepSink holds information to
-                                          where the target data will be written: it
-                                          could be assetID of an asset specified in
-                                          fybrikapplication or of an asset created
-                                          by fybrik control-plane'
-                                        properties:
-                                          assetId:
-                                            description: AssetID identifies the target
-                                              asset of this step
-                                            type: string
-                                        required:
-                                        - assetId
-                                        type: object
-                                      source:
-                                        description: 'StepSource is the source of
-                                          this step: it could be assetID or an endpoint
-                                          of another step'
-                                        properties:
-                                          api:
-                                            description: API holds information for
-                                              accessing a module instance
-                                            properties:
-                                              connection:
-                                                description: Connection information
-                                                properties:
-                                                  name:
-                                                    type: string
-                                                required:
-                                                - name
-                                                type: object
-                                                x-kubernetes-preserve-unknown-fields: true
-                                              dataFormat:
-                                                description: Data format
-                                                type: string
-                                            required:
-                                            - connection
-                                            type: object
-                                          assetId:
-                                            description: AssetID identifies the source
-                                              asset of this step
-                                            type: string
-                                        type: object
+                                      args:
+                                        items:
+                                          description: 'StepArgument describes a step:
+                                            it could be assetID or an endpoint of
+                                            another step'
+                                          properties:
+                                            api:
+                                              description: API holds information for
+                                                accessing a module instance
+                                              properties:
+                                                connection:
+                                                  description: Connection information
+                                                  properties:
+                                                    name:
+                                                      type: string
+                                                  required:
+                                                  - name
+                                                  type: object
+                                                  x-kubernetes-preserve-unknown-fields: true
+                                                dataFormat:
+                                                  description: Data format
+                                                  type: string
+                                              required:
+                                              - connection
+                                              type: object
+                                            assetId:
+                                              description: AssetID identifies the
+                                                source asset of this step
+                                              type: string
+                                          type: object
+                                        type: array
                                     type: object
                                   template:
                                     description: Template is the name of the template

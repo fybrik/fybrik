@@ -119,11 +119,11 @@ func TestPlotterController(t *testing.T) {
 	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-6575548090"].Chart.Name).
 		To(gomega.Equal("ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0"))
 	// Check that the auth path of the credentials is set
-	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-6575548090"].Arguments.Assets[0].Source.
+	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-6575548090"].Arguments.Assets[0].Arguments[0].
 		Vault[string(taxonomy.ReadFlow)].AuthPath).To(gomega.Equal("/v1/auth/kubernetes/login"))
-	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-6575548090"].Arguments.Assets[0].Destination.
+	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-6575548090"].Arguments.Assets[0].Arguments[1].
 		Vault[string(taxonomy.WriteFlow)].AuthPath).To(gomega.Equal("/v1/auth/kubernetes/login"))
-	g.Expect(deployedBp.Spec.Modules["arrow-flight-read"].Arguments.Assets[0].Source.
+	g.Expect(deployedBp.Spec.Modules["arrow-flight-read"].Arguments.Assets[0].Arguments[0].
 		Vault[string(taxonomy.ReadFlow)].AuthPath).To(gomega.Equal("/v1/auth/kubernetes/login"))
 
 	// Check the result of reconciliation to make sure it has the desired state.

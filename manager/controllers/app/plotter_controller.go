@@ -179,9 +179,9 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 
 	var dataStore *app.DataStore
 	var destDataStore *app.DataStore
-	if plotterModule.ModuleArguments.Source != nil {
-		if plotterModule.ModuleArguments.Source.AssetID != "" {
-			assetID := plotterModule.ModuleArguments.Source.AssetID
+	if len(plotterModule.ModuleArguments.Arguments) > 0 && plotterModule.ModuleArguments.Arguments[0] != nil {
+		if plotterModule.ModuleArguments.Arguments[0].AssetID != "" {
+			assetID := plotterModule.ModuleArguments.Arguments[0].AssetID
 			// Get source from plotter assetID list
 			assetInfo := plotter.Spec.Assets[assetID]
 			dataStore = &assetInfo.DataStore
@@ -189,23 +189,29 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
-				Connection: plotterModule.ModuleArguments.Source.API.Connection,
-				Format:     plotterModule.ModuleArguments.Source.API.DataFormat,
+				Connection: plotterModule.ModuleArguments.Arguments[0].API.Connection,
+				Format:     plotterModule.ModuleArguments.Arguments[0].API.DataFormat,
 			}
 		}
 	}
-	if plotterModule.ModuleArguments.Sink != nil {
+	if len(plotterModule.ModuleArguments.Arguments) > 1 && plotterModule.ModuleArguments.Arguments[1] != nil {
 		// Get only the writeFlow related creds
 		// Update vaultAuthPath from the cluster metadata
-		assetID := plotterModule.ModuleArguments.Sink.AssetID
+		assetID := plotterModule.ModuleArguments.Arguments[1].AssetID
 		assetInfo := plotter.Spec.Assets[assetID]
 		destDataStore = &assetInfo.DataStore
 		addCredentials(destDataStore, plotterModule.VaultAuthPath, taxonomy.WriteFlow)
 	}
+	var args []*app.DataStore
+	if dataStore != nil {
+		args = append(args, dataStore)
+	}
+	if destDataStore != nil {
+		args = append(args, destDataStore)
+	}
 	blueprintModule.Module.Arguments.Assets = []app.AssetContext{
 		{
-			Source:          dataStore,
-			Destination:     destDataStore,
+			Arguments:       args,
 			AssetID:         plotterModule.AssetID,
 			Transformations: plotterModule.ModuleArguments.Actions,
 			Capability:      plotterModule.Capability,
