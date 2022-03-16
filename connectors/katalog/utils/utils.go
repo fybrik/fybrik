@@ -11,9 +11,10 @@ import (
 	"sort"
 	"strings"
 
-	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
 	"github.com/rs/zerolog"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
+
+	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
 )
 
 type sortByLength []string
@@ -86,7 +87,7 @@ func GenerateRandomNumber(min, max int64) int64 {
 	return n.Int64() + min
 }
 
-func GenerateUniqueAssetName(namespace, namePrefix string, log zerolog.Logger, client kclient.Client) (string, error) {
+func GenerateUniqueAssetName(namespace, namePrefix string, log *zerolog.Logger, client kclient.Client) (string, error) {
 	var result v1alpha1.AssetList
 	var randomStringLength = 1
 	var uniqueAssetName = ""

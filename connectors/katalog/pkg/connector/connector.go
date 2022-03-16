@@ -11,11 +11,10 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"k8s.io/apimachinery/pkg/types"
-	kclient "sigs.k8s.io/controller-runtime/pkg/client"
-
 	"github.com/rs/zerolog"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
 	"fybrik.io/fybrik/connectors/katalog/utils"
@@ -87,7 +86,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 		return
 	}
 
-	r.log.Info().Msg("CreateAssetRequest object received in createAssetInfo of katalog connector:" + fmt.Sprintf("%v", request))
+	r.log.Info().Msg("CreateAssetRequest object received: " + fmt.Sprintf(" %+v", request))
 
 	if request.DestinationCatalogID == "" {
 		r.reportError("Invalid DestinationCatalogID in request", c, http.StatusBadRequest)
@@ -102,18 +101,18 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	} else {
 		if request.ResourceMetadata.Name != "" {
 			namespace, assetName = request.DestinationCatalogID, request.ResourceMetadata.Name
-			assetName, err = utils.GenerateUniqueAssetName(namespace, assetName, r.log, r.client)
+			assetName, err = utils.GenerateUniqueAssetName(namespace, assetName, &r.log, r.client)
 		} else {
 			namespace = request.DestinationCatalogID
-			assetName, err = utils.GenerateUniqueAssetName(namespace, "fybrik-asset", r.log, r.client)
+			assetName, err = utils.GenerateUniqueAssetName(namespace, "fybrik-asset", &r.log, r.client)
 		}
 		if err != nil {
-			r.reportError("Error during generateUniqueAssetName. Error:"+err.Error(), c, http.StatusInternalServerError)
+			r.reportError("Error during generateUniqueAssetName. Error: "+err.Error(), c, http.StatusInternalServerError)
 			return
 		}
-		r.log.Info().Msg("AssetName used with random string generation:" + assetName)
+		r.log.Info().Msg("AssetName used with random string generation: " + assetName)
 	}
-	r.log.Info().Msg("AssetName used to store the asset :" + assetName)
+	r.log.Info().Msg("AssetName used to store the asset: " + assetName)
 
 	asset := &v1alpha1.Asset{}
 	objectMeta := &v1.ObjectMeta{
@@ -144,7 +143,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	}
 
 	asset.Spec = *spec
-	r.log.Info().Msg("Fybrik Asset to be created in Katalog:" + fmt.Sprintf("%v", asset))
+	r.log.Info().Msg("Fybrik Asset to be created in Katalog: " + fmt.Sprintf("%+v", asset))
 
 	err = r.client.Create(context.Background(), asset)
 	if err != nil {
@@ -156,7 +155,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 		AssetID: namespace + "/" + assetName,
 	}
 	r.log.Info().Msg(
-		"Sending response from Katalog Connector with created asset ID: " + fmt.Sprintf("%s", response.AssetID))
+		"Sending response from Katalog Connector with created asset ID: " + response.AssetID)
 
 	c.JSON(http.StatusCreated, &response)
 }
