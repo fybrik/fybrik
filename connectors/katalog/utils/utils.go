@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -73,7 +74,7 @@ func GenerateRandomString(n int) (string, error) {
 }
 
 // Source: https://stackoverflow.com/questions/26153441/generate-crypto-random-integer-beetwen-min-max-values
-func GenerateRandomNumber(min, max int64) int64 {
+func GenerateRandomNumber(min, max int64) (int64, error) {
 	// calculate the max we will be using
 	bg := big.NewInt(max - min)
 
@@ -81,11 +82,11 @@ func GenerateRandomNumber(min, max int64) int64 {
 	// in this case 0 to 20
 	n, err := rand.Int(rand.Reader, bg)
 	if err != nil {
-		panic(err)
+		return -1, errors.WithMessage(err, "Error during random number generation in GenerateRandomNumber")
 	}
 
 	// add n to min to support the passed in range
-	return n.Int64() + min
+	return n.Int64() + min, nil
 }
 
 func GenerateUniqueAssetName(namespace, namePrefix string, log *zerolog.Logger, client kclient.Client) (string, error) {
@@ -108,7 +109,10 @@ func GenerateUniqueAssetName(namespace, namePrefix string, log *zerolog.Logger, 
 				longestArr := getLongest(listOfCandidates)
 				const delimiter = "|"
 				log.Info().Msg("longestArr : " + strings.Join(longestArr, delimiter))
-				randIdx := GenerateRandomNumber(0, int64(len(longestArr)))
+				randIdx, err := GenerateRandomNumber(0, int64(len(longestArr)))
+				if err != nil {
+					return "", err
+				}
 				log.Info().Msg("randIdx : " + fmt.Sprint(randIdx))
 				uniqueAssetName = longestArr[randIdx] + randomStr
 			} else {
