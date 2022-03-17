@@ -97,8 +97,8 @@ func GenerateUniqueAssetName(namespace, namePrefix string, log *zerolog.Logger, 
 	if err == nil {
 		listOfCandidates := make([]string, 0)
 		for i := 0; i < len(result.Items); i++ {
-			if strings.Contains(result.Items[i].Spec.Metadata.Name, namePrefix) {
-				listOfCandidates = append(listOfCandidates, result.Items[i].Spec.Metadata.Name)
+			if strings.Contains(result.Items[i].Name, namePrefix) {
+				listOfCandidates = append(listOfCandidates, result.Items[i].Name)
 			}
 		}
 		log.Info().Msg("listOfCandidates : " + strings.Join(listOfCandidates, "|"))
@@ -109,9 +109,9 @@ func GenerateUniqueAssetName(namespace, namePrefix string, log *zerolog.Logger, 
 				longestArr := getLongest(listOfCandidates)
 				const delimiter = "|"
 				log.Info().Msg("longestArr : " + strings.Join(longestArr, delimiter))
-				randIdx, err := GenerateRandomNumber(0, int64(len(longestArr)))
-				if err != nil {
-					return "", err
+				randIdx, err1 := GenerateRandomNumber(0, int64(len(longestArr)))
+				if err1 != nil {
+					return "", err1
 				}
 				log.Info().Msg("randIdx : " + fmt.Sprint(randIdx))
 				uniqueAssetName = longestArr[randIdx] + randomStr
