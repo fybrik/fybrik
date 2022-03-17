@@ -119,9 +119,9 @@ func TestCreateAssetInfo(t *testing.T) {
 		},
 	}
 	var csvFormat taxonomy.DataFormat = "csv"
-	var sourceAssetName = "paysim-csv"
-	var destAssetName = "new-paysim-csv"
-	var destCatalogID = "fybrik-system"
+	sourceAssetName := "paysim-csv"
+	destAssetName := "new-paysim-csv"
+	destCatalogID := "fybrik-system"
 
 	// Create a fake request to Katalog connector
 	createAssetReq := &datacatalog.CreateAssetRequest{
@@ -224,7 +224,7 @@ func TestCreateAssetInfoWthNoDestinationAssetID(t *testing.T) {
 		},
 	}
 	var csvFormat taxonomy.DataFormat = "csv"
-	var sourceAssetName = "paysim-csv"
+	sourceAssetName := "paysim-csv"
 
 	// Create a fake request to Katalog connector
 	createAssetReq := &datacatalog.CreateAssetRequest{

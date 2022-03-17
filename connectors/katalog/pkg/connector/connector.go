@@ -5,7 +5,6 @@ package connector
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -86,7 +85,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 		return
 	}
 
-	r.log.Info().Msg("CreateAssetRequest object received: " + fmt.Sprintf(" %+v", request))
+	logging.LogStructure("CreateAssetRequest object received:", request, &r.log, false, false)
 
 	if request.DestinationCatalogID == "" {
 		r.reportError("Invalid DestinationCatalogID in request", c, http.StatusBadRequest)
@@ -94,56 +93,33 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 	}
 
 	var assetName string
-	var namespace string
 	var err error
+	namespace := request.DestinationCatalogID
 	if request.DestinationAssetID != "" {
-		namespace, assetName = request.DestinationCatalogID, request.DestinationAssetID
+		assetName = request.DestinationAssetID
 	} else {
 		if request.ResourceMetadata.Name != "" {
-			namespace, assetName = request.DestinationCatalogID, request.ResourceMetadata.Name
-			assetName, err = utils.GenerateUniqueAssetName(namespace, assetName, &r.log, r.client)
+			assetName, err = utils.GenerateUniqueAssetName(
+				namespace, request.ResourceMetadata.Name, &r.log, r.client)
 		} else {
-			namespace = request.DestinationCatalogID
 			assetName, err = utils.GenerateUniqueAssetName(namespace, "fybrik-asset", &r.log, r.client)
 		}
 		if err != nil {
 			r.reportError("Error during generateUniqueAssetName. Error: "+err.Error(), c, http.StatusInternalServerError)
 			return
 		}
-		r.log.Info().Msg("AssetName used with random string generation: " + assetName)
 	}
-	r.log.Info().Msg("AssetName used to store the asset: " + assetName)
 
-	asset := &v1alpha1.Asset{}
-	objectMeta := &v1.ObjectMeta{
-		Namespace: namespace,
-		Name:      assetName,
-	}
-	asset.ObjectMeta = *objectMeta
-
-	spec := &v1alpha1.AssetSpec{
-		SecretRef: v1alpha1.SecretRef{
-			Name: request.Credentials,
+	asset := &v1alpha1.Asset{
+		ObjectMeta: v1.ObjectMeta{Namespace: namespace, Name: assetName},
+		Spec: v1alpha1.AssetSpec{
+			SecretRef: v1alpha1.SecretRef{Name: request.Credentials},
+			Metadata:  request.ResourceMetadata,
+			Details:   request.Details,
 		},
 	}
-
-	reqResourceMetadata, _ := json.Marshal(request.ResourceMetadata)
-	err = json.Unmarshal(reqResourceMetadata, &spec.Metadata)
-	if err != nil {
-		r.reportError("Error during unmarshal of reqResourceMetadata. Error:"+err.Error(), c, http.StatusInternalServerError)
-		return
-	}
-	spec.Metadata.Name = assetName
-
-	reqResourceDetails, _ := json.Marshal(request.Details)
-	err = json.Unmarshal(reqResourceDetails, &spec.Details)
-	if err != nil {
-		r.reportError("Error during unmarshal of reqResourceDetails. Error:"+err.Error(), c, http.StatusInternalServerError)
-		return
-	}
-
-	asset.Spec = *spec
-	r.log.Info().Msg("Fybrik Asset to be created in Katalog: " + fmt.Sprintf("%+v", asset))
+	asset.Spec.Metadata.Name = assetName
+	logging.LogStructure("Fybrik Asset to be created in Katalog:", asset, &r.log, false, false)
 
 	err = r.client.Create(context.Background(), asset)
 	if err != nil {

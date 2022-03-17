@@ -17,6 +17,8 @@ import (
 	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
 )
 
+const letters = "abcdefghijklmnopqrstuvwxyz"
+
 type sortByLength []string
 
 // Len implements Len of sort.Interface
@@ -58,7 +60,6 @@ func getLongest(toFind []string) []string {
 // case the caller should not continue.
 // Source: https://gist.github.com/dopey/c69559607800d2f2f90b1b1ed4e550fb
 func GenerateRandomString(n int) (string, error) {
-	const letters = "abcdefghijklmnopqrstuvwxyz"
 	ret := make([]byte, n)
 	for i := 0; i < n; i++ {
 		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
