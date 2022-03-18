@@ -12,16 +12,21 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
+	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/vault"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/util/wait"
+)
+
+const (
+	PollPeriod  = 500 // in milliseconds
+	PollTimeout = 5   // in seconds
 )
 
 type Handler struct {
@@ -94,24 +99,6 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 		return
 	}
 
-	// var assetName string
-	// var err error
-	// namespace := request.DestinationCatalogID
-	// if request.DestinationAssetID != "" {
-	// 	assetName = request.DestinationAssetID
-	// } else {
-	// 	if request.ResourceMetadata.Name != "" {
-	// 		assetName, err = utils.GenerateUniqueAssetName(
-	// 			namespace, request.ResourceMetadata.Name, &r.log, r.client)
-	// 	} else {
-	// 		assetName, err = utils.GenerateUniqueAssetName(namespace, "fybrik-asset", &r.log, r.client)
-	// 	}
-	// 	if err != nil {
-	// 		r.reportError("Error during generateUniqueAssetName. Error: "+err.Error(), c, http.StatusInternalServerError)
-	// 		return
-	// 	}
-	// }
-
 	var asset *v1alpha1.Asset
 	var err error
 	assetNamePrefix := ""
@@ -158,7 +145,7 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 			return
 		}
 
-		err := wait.Poll(500*time.Millisecond, 5*time.Second, func() (bool, error) {
+		err := wait.Poll(PollPeriod*time.Millisecond, PollTimeout*time.Second, func() (bool, error) {
 			err := r.client.Update(context.Background(), asset)
 			if err != nil && errors.IsConflict(err) {
 				r.log.Info().Msg("Error updating asset :(will retry) ")
