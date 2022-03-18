@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
@@ -16,10 +17,11 @@ import (
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
-	"fybrik.io/fybrik/connectors/katalog/utils"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/vault"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 type Handler struct {
@@ -92,33 +94,53 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 		return
 	}
 
-	var assetName string
+	// var assetName string
+	// var err error
+	// namespace := request.DestinationCatalogID
+	// if request.DestinationAssetID != "" {
+	// 	assetName = request.DestinationAssetID
+	// } else {
+	// 	if request.ResourceMetadata.Name != "" {
+	// 		assetName, err = utils.GenerateUniqueAssetName(
+	// 			namespace, request.ResourceMetadata.Name, &r.log, r.client)
+	// 	} else {
+	// 		assetName, err = utils.GenerateUniqueAssetName(namespace, "fybrik-asset", &r.log, r.client)
+	// 	}
+	// 	if err != nil {
+	// 		r.reportError("Error during generateUniqueAssetName. Error: "+err.Error(), c, http.StatusInternalServerError)
+	// 		return
+	// 	}
+	// }
+
+	var asset *v1alpha1.Asset
 	var err error
+	assetNamePrefix := ""
 	namespace := request.DestinationCatalogID
 	if request.DestinationAssetID != "" {
-		assetName = request.DestinationAssetID
+		asset = &v1alpha1.Asset{
+			ObjectMeta: v1.ObjectMeta{Namespace: namespace, Name: request.DestinationAssetID},
+			Spec: v1alpha1.AssetSpec{
+				SecretRef: v1alpha1.SecretRef{Name: request.Credentials},
+				Metadata:  request.ResourceMetadata,
+				Details:   request.Details,
+			},
+		}
 	} else {
 		if request.ResourceMetadata.Name != "" {
-			assetName, err = utils.GenerateUniqueAssetName(
-				namespace, request.ResourceMetadata.Name, &r.log, r.client)
+			assetNamePrefix = request.ResourceMetadata.Name
 		} else {
-			assetName, err = utils.GenerateUniqueAssetName(namespace, "fybrik-asset", &r.log, r.client)
+			assetNamePrefix = "fybrik-asset"
 		}
-		if err != nil {
-			r.reportError("Error during generateUniqueAssetName. Error: "+err.Error(), c, http.StatusInternalServerError)
-			return
+		r.log.Info().Msg("Using assetNamePrefix : " + assetNamePrefix)
+		asset = &v1alpha1.Asset{
+			ObjectMeta: v1.ObjectMeta{Namespace: namespace, GenerateName: assetNamePrefix},
+			Spec: v1alpha1.AssetSpec{
+				SecretRef: v1alpha1.SecretRef{Name: request.Credentials},
+				Metadata:  request.ResourceMetadata,
+				Details:   request.Details,
+			},
 		}
 	}
-
-	asset := &v1alpha1.Asset{
-		ObjectMeta: v1.ObjectMeta{Namespace: namespace, Name: assetName},
-		Spec: v1alpha1.AssetSpec{
-			SecretRef: v1alpha1.SecretRef{Name: request.Credentials},
-			Metadata:  request.ResourceMetadata,
-			Details:   request.Details,
-		},
-	}
-	asset.Spec.Metadata.Name = assetName
 	logging.LogStructure("Fybrik Asset to be created in Katalog:", asset, &r.log, false, false)
 
 	err = r.client.Create(context.Background(), asset)
@@ -126,9 +148,33 @@ func (r *Handler) createAssetInfo(c *gin.Context) {
 		r.reportError("Error during create asset. Error:"+err.Error(), c, http.StatusInternalServerError)
 		return
 	}
+	logging.LogStructure("Created Asset: ", asset, &r.log, false, false)
+
+	if assetNamePrefix != "" {
+		asset.Spec.Metadata.Name = asset.ObjectMeta.Name
+		err = r.client.Update(context.Background(), asset)
+		if err != nil {
+			r.reportError("Error during update asset. Error:"+err.Error(), c, http.StatusInternalServerError)
+			return
+		}
+
+		err := wait.Poll(500*time.Millisecond, 5*time.Second, func() (bool, error) {
+			err := r.client.Update(context.Background(), asset)
+			if err != nil && errors.IsConflict(err) {
+				r.log.Info().Msg("Error updating asset :(will retry) ")
+				return false, nil
+			}
+			return true, err
+		})
+		if err != nil {
+			r.reportError("Update asset failed after retrying for 5 seconds. Error:"+err.Error(), c, http.StatusInternalServerError)
+			return
+		}
+		logging.LogStructure("Updated Asset: ", asset, &r.log, false, false)
+	}
 
 	response := datacatalog.CreateAssetResponse{
-		AssetID: namespace + "/" + assetName,
+		AssetID: namespace + "/" + asset.ObjectMeta.Name,
 	}
 	r.log.Info().Msg(
 		"Sending response from Katalog Connector with created asset ID: " + response.AssetID)
