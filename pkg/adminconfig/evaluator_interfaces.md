@@ -16,7 +16,7 @@ Design a component that will evaluate config policies and provide the manager wi
 ### Input (`adminconfig.EvaluatorInput`)
 
 A dynamic input constructed per a FybrikApplication, per a single dataset.
-It provides general application data such as workload cluster and application properties, as well as dataset details (user requirements, metadata, required actions.
+It provides general application data such as workload cluster and application properties, as well as dataset details (user requirements, metadata).
 ```
 // WorkloadInfo holds workload details such as the cluster where the workload is running,  
 // and additional properties defined in the taxonomy, e.g. workload type
@@ -50,8 +50,6 @@ type EvaluatorInput struct {
 	Workload WorkloadInfo `json:"workload"`
 	// Requirements for asset usage
 	Request DataRequest `json:"request"`
-	// Governance Actions for reading data (relevant for read scenarios only)
-	GovernanceActions []model.Action `json:"actions"`
 }
 ```
 
@@ -239,16 +237,6 @@ config[{"capability": "copy", "decision": decision}] {
     input.request.usage.read == true
     policy := {"ID": "copy-default", "description":"Implicit copies are allowed in read scenarios"}
     decision := {"policy": policy}
-}
-
-# configure when implicit copies should be made
-config[{"capability": "copy", "decision": decision}] {
-    input.request.usage.read == true
-    input.request.dataset.geography != input.workload.cluster.metadata.region
-    count(input.actions) > 0
-    clusters := { "metadata.region" : [ input.request.dataset.geography ] }
-    policy := {"ID": "copy-remote", "description":"Implicit copies should be used if the data is in a different region than the compute, and transformations are required"}
-    decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": clusters}}
 }
 
 ```

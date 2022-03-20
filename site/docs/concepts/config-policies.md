@@ -6,7 +6,7 @@ Configuration policies are the mechanism via which the organization may influenc
 
 ## Input to policies
 
-The `input` object includes general application data such as workload cluster and application properties, as well as dataset details (user requirements, metadata, required actions).
+The `input` object includes general application data such as workload cluster and application properties, as well as dataset details (user requirements, metadata).
 
 Available properties:
 - `cluster.name`: name of the workload cluster
@@ -141,16 +141,6 @@ config[{"capability": "copy", "decision": decision}] {
     input.request.usage.read == true
     policy := {"ID": "copy-default", "description":"Implicit copies are allowed in read scenarios", "version": "0.1"}
     decision := {"policy": policy}
-}
-
-# configure when implicit copies should be made
-config[{"capability": "copy", "decision": decision}] {
-    input.request.usage.read == true
-    input.request.dataset.geography != input.workload.cluster.metadata.region
-    count(input.actions) > 0
-    clusters := { "metadata.region" : [ input.request.dataset.geography ] }
-    policy := {"ID": "copy-remote", "description":"Implicit copies should be used if the data is in a different region than the compute, and transformations are required", "version": "0.1"}
-    decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": clusters}}
 }
 
 ```
