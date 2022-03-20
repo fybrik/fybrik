@@ -243,7 +243,7 @@ func TestPlotterWithWriteFlow(t *testing.T) {
 	// Check the result of reconciliation to make sure it has the desired state.
 	g.Expect(res.Requeue).To(gomega.BeFalse(), "reconcile did not requeue request as expected")
 
-	// Check if Job has been created and has the correct size.
+	// Check if Plotter has been created
 	err = cl.Get(context.TODO(), req.NamespacedName, plotter)
 	g.Expect(err).To(gomega.BeNil(), "Can fetch plotter")
 
