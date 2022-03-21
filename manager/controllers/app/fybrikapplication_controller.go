@@ -779,7 +779,7 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 	}
 
 	for ind := range requirements {
-		path, err := env.solve(&requirements[ind])
+		path, err := solve(env, &requirements[ind])
 		if err != nil {
 			setErrorCondition(applicationContext, requirements[ind].Context.DataSetID, err.Error())
 			continue

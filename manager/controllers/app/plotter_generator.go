@@ -43,10 +43,10 @@ type PlotterGenerator struct {
 	ProvisionedStorage map[string]NewAssetInfo
 }
 
-// AllocateStorage creates a Dataset for bucket allocation by implicit copies or ingest.
+// AllocateStorage creates a Dataset for bucket allocation
 func (p *PlotterGenerator) AllocateStorage(item *DataInfo, destinationInterface *taxonomy.Interface,
 	account *app.FybrikStorageAccountSpec) (*app.DataStore, error) {
-	// provisioned storage for COPY
+	// provisioned storage
 	var genBucketName, genObjectKeyName string
 	if item.DataDetails.ResourceMetadata.Name != "" {
 		genObjectKeyName = item.DataDetails.ResourceMetadata.Name + utils.Hash(p.Owner.Name+p.Owner.Namespace, objectKeyHashLength)
