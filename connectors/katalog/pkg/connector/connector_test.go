@@ -281,7 +281,6 @@ func TestCreateAssetInfoWthNoDestinationAssetID(t *testing.T) {
 		g.Expect(len(response.AssetID)).To(SatisfyAll(
 			BeNumerically(">", len(sourceAssetName))))
 		t.Log("response.AssetID: ", response.AssetID)
-		// t.Log("sourceAssetName: ", sourceAssetName)
 		splittedID := strings.SplitN(response.AssetID, "/", 2)
 		if len(splittedID) != 2 {
 			errorMessage := fmt.Sprintf("request has an invalid asset ID %s (must be in namespace/name format)", response.AssetID)
