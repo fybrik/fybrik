@@ -829,8 +829,8 @@ func TestCopyData(t *testing.T) {
 	g.Expect(subflow.FlowType).To(gomega.Equal(taxonomy.CopyFlow))
 	g.Expect(subflow.Steps).To(gomega.HaveLen(1))
 	g.Expect(subflow.Steps[0]).To(gomega.HaveLen(1))
-	g.Expect(subflow.Steps[0][0].Parameters.Source.AssetID).To(gomega.Equal("s3-external/allow-theshire"))
-	g.Expect(subflow.Steps[0][0].Parameters.Sink.AssetID).To(gomega.Equal("s3-external/allow-theshire-copy"))
+	g.Expect(subflow.Steps[0][0].Parameters.Arguments[0].AssetID).To(gomega.Equal("s3-external/allow-theshire"))
+	g.Expect(subflow.Steps[0][0].Parameters.Arguments[1].AssetID).To(gomega.Equal("s3-external/allow-theshire-copy"))
 }
 
 // This test checks the ingest scenario

@@ -22,9 +22,9 @@ type AssetDetails struct {
 	DataStore DataStore `json:"assetDetails"`
 }
 
-// StepSource is the source of this step: it could be assetID
+// StepArgument describes a step: it could be assetID
 // or an endpoint of another step
-type StepSource struct {
+type StepArgument struct {
 	// AssetID identifies the source asset of this step
 	// +optional
 	AssetID string `json:"assetId,omitempty"`
@@ -34,23 +34,11 @@ type StepSource struct {
 	API *datacatalog.ResourceDetails `json:"api,omitempty"`
 }
 
-// StepSink holds information to where the target data will be written:
-// it could be assetID of an asset specified in fybrikapplication or of an asset created
-// by fybrik control-plane
-type StepSink struct {
-	// AssetID identifies the target asset of this step
-	// +required
-	AssetID string `json:"assetId"`
-}
-
 // StepParameters holds the parameters to the module
 // that is deployed in this step
 type StepParameters struct {
 	// +optional
-	Source *StepSource `json:"source,omitempty"`
-
-	// +optional
-	Sink *StepSink `json:"sink,omitempty"`
+	Arguments []*StepArgument `json:"args,omitempty"`
 
 	// +optional
 	API *datacatalog.ResourceDetails `json:"api,omitempty"`
