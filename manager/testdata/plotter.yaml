@@ -63,10 +63,9 @@ spec:
           cluster: thegreendragon
           template: copyTemplate
           parameters:
-            source:
-              assetId: "DB2"
-            sink:
-              assetId: "S3"
+            args:
+              - assetId: "DB2"
+              - assetId: "S3"
     - name: subflow-read
       flowType: read
       triggers:
@@ -76,15 +75,15 @@ spec:
             cluster: thegreendragon
             template: readTemplate
             parameters:
-              source:
-                assetId: "S3"
-              api:
-                connection:
-                  name: fybrik-arrow-flight
-                  fybrik-arrow-flight:
-                    hostname: mygrpc-service
-                    port: 80
-                    scheme: grpc
+              args:
+                - assetId: "S3"
+                  api:
+                    connection:
+                      name: fybrik-arrow-flight
+                      fybrik-arrow-flight:
+                        hostname: mygrpc-service
+                        port: 80
+                        scheme: grpc
   templates:
     copyTemplate:
       name: copyTemplate

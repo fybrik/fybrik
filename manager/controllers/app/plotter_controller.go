@@ -179,33 +179,46 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 
 	var dataStore *app.DataStore
 	var destDataStore *app.DataStore
-	if plotterModule.ModuleArguments.Source != nil {
-		if plotterModule.ModuleArguments.Source.AssetID != "" {
-			assetID := plotterModule.ModuleArguments.Source.AssetID
-			// Get source from plotter assetID list
+	if len(plotterModule.ModuleArguments.Arguments) > 0 && plotterModule.ModuleArguments.Arguments[0] != nil {
+		if plotterModule.ModuleArguments.Arguments[0].AssetID != "" {
+			assetID := plotterModule.ModuleArguments.Arguments[0].AssetID
+			// Get the first argument from plotter assetID list
 			assetInfo := plotter.Spec.Assets[assetID]
 			dataStore = &assetInfo.DataStore
-			addCredentials(dataStore, plotterModule.VaultAuthPath, taxonomy.ReadFlow)
+			// Get the operation of the first argument from the flow type.
+			operation := plotterModule.FlowType
+			if plotterModule.FlowType == taxonomy.CopyFlow {
+				operation = taxonomy.ReadFlow
+			}
+			addCredentials(dataStore, plotterModule.VaultAuthPath, operation)
 		} else {
 			// Fill in the DataSource from the step arguments
 			dataStore = &app.DataStore{
-				Connection: plotterModule.ModuleArguments.Source.API.Connection,
-				Format:     plotterModule.ModuleArguments.Source.API.DataFormat,
+				Connection: plotterModule.ModuleArguments.Arguments[0].API.Connection,
+				Format:     plotterModule.ModuleArguments.Arguments[0].API.DataFormat,
 			}
 		}
 	}
-	if plotterModule.ModuleArguments.Sink != nil {
-		// Get only the writeFlow related creds
+	if len(plotterModule.ModuleArguments.Arguments) > 1 && plotterModule.ModuleArguments.Arguments[1] != nil {
 		// Update vaultAuthPath from the cluster metadata
-		assetID := plotterModule.ModuleArguments.Sink.AssetID
+		assetID := plotterModule.ModuleArguments.Arguments[1].AssetID
 		assetInfo := plotter.Spec.Assets[assetID]
 		destDataStore = &assetInfo.DataStore
+		// Get the operation of the second argument.
+		// Currently it is only used in the copy flow where the second argument
+		// holds information about the asset to write.
 		addCredentials(destDataStore, plotterModule.VaultAuthPath, taxonomy.WriteFlow)
+	}
+	var args []*app.DataStore
+	if dataStore != nil {
+		args = append(args, dataStore)
+	}
+	if destDataStore != nil {
+		args = append(args, destDataStore)
 	}
 	blueprintModule.Module.Arguments.Assets = []app.AssetContext{
 		{
-			Source:          dataStore,
-			Destination:     destDataStore,
+			Arguments:       args,
 			AssetID:         plotterModule.AssetID,
 			Transformations: plotterModule.ModuleArguments.Actions,
 			Capability:      plotterModule.Capability,
