@@ -9,5 +9,6 @@ import "github.com/gin-gonic/gin"
 func NewRouter(handler *Handler) *gin.Engine {
 	router := gin.Default()
 	router.POST("/getAssetInfo", handler.getAssetInfo)
+	router.POST("/createAssetInfo", handler.createAssetInfo)
 	return router
 }
