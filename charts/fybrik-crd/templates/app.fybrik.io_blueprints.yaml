@@ -123,6 +123,65 @@ spec:
                             description: AssetContext defines the input parameters
                               for modules that access an asset
                             properties:
+                              args:
+                                description: List of datastores associated with the
+                                  asset
+                                items:
+                                  description: DataStore contains the details for
+                                    accesing the data that are sent by catalog connectors
+                                    Credentials for accesing the data are stored in
+                                    Vault, in the location represented by Vault property.
+                                  properties:
+                                    connection:
+                                      description: Connection has the relevant details
+                                        for accesing the data (url, table, ssl, etc.)
+                                      properties:
+                                        name:
+                                          type: string
+                                      required:
+                                      - name
+                                      type: object
+                                      x-kubernetes-preserve-unknown-fields: true
+                                    format:
+                                      description: Format represents data format (e.g.
+                                        parquet) as received from catalog connectors
+                                      type: string
+                                    vault:
+                                      additionalProperties:
+                                        description: Holds details for retrieving
+                                          credentials from Vault store.
+                                        properties:
+                                          address:
+                                            description: Address is Vault address
+                                            type: string
+                                          authPath:
+                                            description: AuthPath is the path to auth
+                                              method i.e. kubernetes
+                                            type: string
+                                          role:
+                                            description: Role is the Vault role used
+                                              for retrieving the credentials
+                                            type: string
+                                          secretPath:
+                                            description: SecretPath is the path of
+                                              the secret holding the Credentials in
+                                              Vault
+                                            type: string
+                                        required:
+                                        - address
+                                        - authPath
+                                        - role
+                                        - secretPath
+                                        type: object
+                                      description: Holds details for retrieving credentials
+                                        by the modules from Vault store. It is a map
+                                        so that different credentials can be stored
+                                        for the different DataFlow operations.
+                                      type: object
+                                  required:
+                                  - connection
+                                  type: object
+                                type: array
                               assetID:
                                 description: AssetID identifies the asset to be used
                                   for accessing the data when it is ready It is copied
@@ -131,110 +190,6 @@ spec:
                               capability:
                                 description: Capability of the module
                                 type: string
-                              destination:
-                                description: Destination is the data store to which
-                                  the data will be written
-                                properties:
-                                  connection:
-                                    description: Connection has the relevant details
-                                      for accesing the data (url, table, ssl, etc.)
-                                    properties:
-                                      name:
-                                        type: string
-                                    required:
-                                    - name
-                                    type: object
-                                    x-kubernetes-preserve-unknown-fields: true
-                                  format:
-                                    description: Format represents data format (e.g.
-                                      parquet) as received from catalog connectors
-                                    type: string
-                                  vault:
-                                    additionalProperties:
-                                      description: Holds details for retrieving credentials
-                                        from Vault store.
-                                      properties:
-                                        address:
-                                          description: Address is Vault address
-                                          type: string
-                                        authPath:
-                                          description: AuthPath is the path to auth
-                                            method i.e. kubernetes
-                                          type: string
-                                        role:
-                                          description: Role is the Vault role used
-                                            for retrieving the credentials
-                                          type: string
-                                        secretPath:
-                                          description: SecretPath is the path of the
-                                            secret holding the Credentials in Vault
-                                          type: string
-                                      required:
-                                      - address
-                                      - authPath
-                                      - role
-                                      - secretPath
-                                      type: object
-                                    description: Holds details for retrieving credentials
-                                      by the modules from Vault store. It is a map
-                                      so that different credentials can be stored
-                                      for the different DataFlow operations.
-                                    type: object
-                                required:
-                                - connection
-                                type: object
-                              source:
-                                description: Source is the where the data currently
-                                  resides
-                                properties:
-                                  connection:
-                                    description: Connection has the relevant details
-                                      for accesing the data (url, table, ssl, etc.)
-                                    properties:
-                                      name:
-                                        type: string
-                                    required:
-                                    - name
-                                    type: object
-                                    x-kubernetes-preserve-unknown-fields: true
-                                  format:
-                                    description: Format represents data format (e.g.
-                                      parquet) as received from catalog connectors
-                                    type: string
-                                  vault:
-                                    additionalProperties:
-                                      description: Holds details for retrieving credentials
-                                        from Vault store.
-                                      properties:
-                                        address:
-                                          description: Address is Vault address
-                                          type: string
-                                        authPath:
-                                          description: AuthPath is the path to auth
-                                            method i.e. kubernetes
-                                          type: string
-                                        role:
-                                          description: Role is the Vault role used
-                                            for retrieving the credentials
-                                          type: string
-                                        secretPath:
-                                          description: SecretPath is the path of the
-                                            secret holding the Credentials in Vault
-                                          type: string
-                                      required:
-                                      - address
-                                      - authPath
-                                      - role
-                                      - secretPath
-                                      type: object
-                                    description: Holds details for retrieving credentials
-                                      by the modules from Vault store. It is a map
-                                      so that different credentials can be stored
-                                      for the different DataFlow operations.
-                                    type: object
-                                required:
-                                - connection
-                                type: object
                               transformations:
                                 description: Transformations are different types of
                                   processing that may be done to the data as it is

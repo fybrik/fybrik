@@ -276,17 +276,10 @@ AssetContext defines the input parameters for modules that access an asset
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexdestination">destination</a></b></td>
-        <td>object</td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexargsindex">args</a></b></td>
+        <td>[]object</td>
         <td>
-          Destination is the data store to which the data will be written<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexsource">source</a></b></td>
-        <td>object</td>
-        <td>
-          Source is the where the data currently resides<br/>
+          List of datastores associated with the asset<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -300,12 +293,12 @@ AssetContext defines the input parameters for modules that access an asset
 </table>
 
 
-#### Blueprint.spec.modules[key].arguments.assets[index].destination
+#### Blueprint.spec.modules[key].arguments.assets[index].args[index]
 <sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindex)</sup></sup>
 
 
 
-Destination is the data store to which the data will be written
+DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.
 
 <table>
     <thead>
@@ -317,7 +310,7 @@ Destination is the data store to which the data will be written
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationconnection">connection</a></b></td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexargsindexconnection">connection</a></b></td>
         <td>object</td>
         <td>
           Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
@@ -331,7 +324,7 @@ Destination is the data store to which the data will be written
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexdestinationvaultkey">vault</a></b></td>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexargsindexvaultkey">vault</a></b></td>
         <td>map[string]object</td>
         <td>
           Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
@@ -341,8 +334,8 @@ Destination is the data store to which the data will be written
 </table>
 
 
-#### Blueprint.spec.modules[key].arguments.assets[index].destination.connection
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexdestination)</sup></sup>
+#### Blueprint.spec.modules[key].arguments.assets[index].args[index].connection
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexargsindex)</sup></sup>
 
 
 
@@ -368,124 +361,8 @@ Connection has the relevant details for accesing the data (url, table, ssl, etc.
 </table>
 
 
-#### Blueprint.spec.modules[key].arguments.assets[index].destination.vault[key]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexdestination)</sup></sup>
-
-
-
-Holds details for retrieving credentials from Vault store.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>address</b></td>
-        <td>string</td>
-        <td>
-          Address is Vault address<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>authPath</b></td>
-        <td>string</td>
-        <td>
-          AuthPath is the path to auth method i.e. kubernetes<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>role</b></td>
-        <td>string</td>
-        <td>
-          Role is the Vault role used for retrieving the credentials<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>secretPath</b></td>
-        <td>string</td>
-        <td>
-          SecretPath is the path of the secret holding the Credentials in Vault<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.assets[index].source
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindex)</sup></sup>
-
-
-
-Source is the where the data currently resides
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexsourceconnection">connection</a></b></td>
-        <td>object</td>
-        <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>format</b></td>
-        <td>string</td>
-        <td>
-          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexsourcevaultkey">vault</a></b></td>
-        <td>map[string]object</td>
-        <td>
-          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.assets[index].source.connection
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexsource)</sup></sup>
-
-
-
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Blueprint.spec.modules[key].arguments.assets[index].source.vault[key]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexsource)</sup></sup>
+#### Blueprint.spec.modules[key].arguments.assets[index].args[index].vault[key]
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeyargumentsassetsindexargsindex)</sup></sup>
 
 
 
@@ -2595,17 +2472,10 @@ Step parameters TODO why not flatten the parameters into this data flow step
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssink">sink</a></b></td>
-        <td>object</td>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindex">args</a></b></td>
+        <td>[]object</td>
         <td>
-          StepSink holds information to where the target data will be written: it could be assetID of an asset specified in fybrikapplication or of an asset created by fybrik control-plane<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssource">source</a></b></td>
-        <td>object</td>
-        <td>
-          StepSource is the source of this step: it could be assetID or an endpoint of another step<br/>
+          <br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -2700,12 +2570,12 @@ Connection information
 </table>
 
 
-#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.sink
+#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.args[index]
 <sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameters)</sup></sup>
 
 
 
-StepSink holds information to where the target data will be written: it could be assetID of an asset specified in fybrikapplication or of an asset created by fybrik control-plane
+StepArgument describes a step: it could be assetID or an endpoint of another step
 
 <table>
     <thead>
@@ -2717,34 +2587,7 @@ StepSink holds information to where the target data will be written: it could be
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>assetId</b></td>
-        <td>string</td>
-        <td>
-          AssetID identifies the target asset of this step<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
-
-#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.source
-<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameters)</sup></sup>
-
-
-
-StepSource is the source of this step: it could be assetID or an endpoint of another step
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapi">api</a></b></td>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindexapi">api</a></b></td>
         <td>object</td>
         <td>
           API holds information for accessing a module instance<br/>
@@ -2761,8 +2604,8 @@ StepSource is the source of this step: it could be assetID or an endpoint of ano
 </table>
 
 
-#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.source.api
-<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameterssource)</sup></sup>
+#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.args[index].api
+<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindex)</sup></sup>
 
 
 
@@ -2778,7 +2621,7 @@ API holds information for accessing a module instance
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapiconnection">connection</a></b></td>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindexapiconnection">connection</a></b></td>
         <td>object</td>
         <td>
           Connection information<br/>
@@ -2795,8 +2638,8 @@ API holds information for accessing a module instance
 </table>
 
 
-#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.source.api.connection
-<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparameterssourceapi)</sup></sup>
+#### Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.args[index].api.connection
+<sup><sup>[↩ Parent](#plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindexapi)</sup></sup>
 
 
 
