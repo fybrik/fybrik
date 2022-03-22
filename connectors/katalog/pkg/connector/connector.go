@@ -23,8 +23,6 @@ import (
 )
 
 const (
-	PollPeriod        = 500 // in milliseconds
-	PollTimeout       = 5   // in seconds
 	FybrikAssetPrefix = "fybrik-"
 )
 
