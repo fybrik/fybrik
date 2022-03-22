@@ -1,0 +1,145 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: app.fybrik.io/v1alpha1
+kind: Plotter
+metadata:
+  name: plotter
+  namespace: fybrik-system
+  labels:
+    app.fybrik.io/app-namespace: default
+    app.fybrik.io/app-name: notebook
+spec:
+  assets:
+    "S3":
+      assetDetails:
+        connection:
+          name: s3
+          s3:
+            bucket: bucket1
+            endpoint: http://s3.fybrik-system:9090
+            object_key: data.csv
+        format: csv
+        vault:
+          read:
+            address: http://vault.fybrik-system:8200
+            role: module
+            secretPath: "/v1/kubernetes-secrets/s3-read?namespace=default"
+          write:
+            address: http://vault.fybrik-system:8200
+            role: module
+            secretPath: "/v1/kubernetes-secrets/s3-write?namespace=default"
+    "S3-NEW":
+      assetDetails:
+        connection:
+          name: s3
+          s3:
+            bucket: bucket2
+            endpoint: http://s3.fybrik-system:9090
+            object_key: data.parquet
+        format: parquet
+        vault:
+          read:
+            address: http://vault.fybrik-system:8200
+            role: module
+            secretPath: "/v1/kubernetes-secrets/s3-read?namespace=default"
+          write:
+            address: http://vault.fybrik-system:8200
+            role: module
+            secretPath: "/v1/kubernetes-secrets/s3-write?namespace=default"
+  flows:
+  - assetId: "S3"
+    flowType: read
+    name: s3-asset-read
+    subFlows:
+    - flowType: read
+      name: subflow-read
+      steps:
+      - - cluster: thegreendragon
+          name: step1
+          parameters:
+            action:
+            - RedactAction:
+                columns:
+                - nameOrig
+              name: RedactAction
+            api:
+              connection:
+                fybrik-arrow-flight:
+                  hostname: mygrpc-service
+                  port: 80
+                  scheme: grpc
+                name: fybrik-arrow-flight
+            args:
+            - assetId: "S3"
+          template: read
+      triggers:
+      - workload
+  - assetId: "S3-NEW"
+    flowType: write
+    name: s3-new-asset-write
+    subFlows:
+    - flowType: write
+      name: subflow-write
+      steps:
+      - - cluster: thegreendragon
+          name: step1
+          parameters:
+            api:
+              connection:
+                fybrik-arrow-flight:
+                  hostname: mygrpc-service
+                  port: 80
+                  scheme: grpc
+                name: fybrik-arrow-flight
+            args:
+            - assetId: "S3-NEW"
+          template: write
+      triggers:
+      - workload
+  - assetId: "S3-NEW"
+    flowType: read
+    name: s3-new-asset-read
+    subFlows:
+    - flowType: read
+      name: subflow-read
+      steps:
+      - - cluster: thegreendragon
+          name: step1
+          parameters:
+            action:
+            - RedactAction:
+                columns: []
+              name: RedactAction
+            api:
+              connection:
+                fybrik-arrow-flight:
+                  hostname: mygrpc-service
+                  port: 80
+                  scheme: grpc
+                name: fybrik-arrow-flight
+            args:
+            - assetId: "S3-NEW"
+          template: read
+      triggers:
+      - workload
+  modulesNamespace: fybrik-blueprints
+  templates:
+    read:
+      modules:
+      - capability: read
+        chart:
+          name: ghcr.io/fybrik/arrow-flight-module-chart:latest
+        name: arrow-flight-module
+        scope: workload
+        type: service
+      name: read
+    write:
+      modules:
+      - capability: write
+        chart:
+          name: ghcr.io/fybrik/arrow-flight-module-chart:latest
+        name: arrow-flight-module
+        scope: workload
+        type: service
+      name: write

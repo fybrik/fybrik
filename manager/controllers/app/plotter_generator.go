@@ -173,10 +173,10 @@ func (p *PlotterGenerator) addInMemoryStep(element *ResolvedEdge, datasetID stri
 		Cluster:  element.Cluster,
 		Template: string(element.Module.Spec.Capabilities[element.CapabilityIndex].Capability),
 		Parameters: &app.StepParameters{
-			Source: &app.StepSource{
+			Arguments: []*app.StepArgument{{
 				AssetID: assetID,
 				API:     lastStepAPI,
-			},
+			}},
 			API:     api,
 			Actions: element.Actions,
 		},
@@ -193,10 +193,9 @@ func (p *PlotterGenerator) addStep(element *ResolvedEdge, datasetID string, api 
 		Cluster:  element.Cluster,
 		Template: string(element.Module.Spec.Capabilities[element.CapabilityIndex].Capability),
 		Parameters: &app.StepParameters{
-			Source:  &app.StepSource{AssetID: datasetID},
-			Sink:    &app.StepSink{AssetID: datasetID + "-copy"},
-			API:     api,
-			Actions: element.Actions,
+			Arguments: []*app.StepArgument{{AssetID: datasetID}, {AssetID: datasetID + "-copy"}},
+			API:       api,
+			Actions:   element.Actions,
 		},
 	})
 	return steps
@@ -238,7 +237,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 				return err
 			}
 			steps = p.addStep(element, datasetID, api, steps)
-			copyAssetID := steps[len(steps)-1].Parameters.Sink.AssetID
+			copyAssetID := steps[len(steps)-1].Parameters.Arguments[1].AssetID
 			copyAsset := app.AssetDetails{
 				AdvertisedAssetID: datasetID,
 				DataStore:         *sinkDataStore,
