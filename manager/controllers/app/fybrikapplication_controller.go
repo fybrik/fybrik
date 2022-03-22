@@ -366,9 +366,9 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 	var requirements []DataInfo
 	for _, dataset := range applicationContext.Application.Spec.Data {
 		req := DataInfo{
-			Context:            dataset.DeepCopy(),
-			DataDetails:        &datacatalog.GetAssetResponse{},
-			StorageRequrements: make(map[taxonomy.ProcessingLocation][]taxonomy.Action),
+			Context:             dataset.DeepCopy(),
+			DataDetails:         &datacatalog.GetAssetResponse{},
+			StorageRequirements: make(map[taxonomy.ProcessingLocation][]taxonomy.Action),
 		}
 		if err = r.constructDataInfo(&req, applicationContext, workloadCluster, env); err != nil {
 			AnalyzeError(applicationContext, req.Context.DataSetID, err)
@@ -437,7 +437,6 @@ func (r *FybrikApplicationReconciler) Environment() (*Environment, error) {
 		return nil, err
 	}
 	return &Environment{
-		Log:              r.Log,
 		Modules:          moduleMap,
 		Clusters:         clusters,
 		StorageAccounts:  accounts,
@@ -583,7 +582,7 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 		}
 		actions, err := LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, appContext, &reqAction)
 		if err == nil {
-			req.StorageRequrements[region] = actions
+			req.StorageRequirements[region] = actions
 		} else if err.Error() != api.WriteNotAllowed {
 			return err
 		}
@@ -779,7 +778,7 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 	}
 
 	for ind := range requirements {
-		path, err := solve(env, &requirements[ind])
+		path, err := solve(env, &requirements[ind], applicationContext.Log)
 		if err != nil {
 			setErrorCondition(applicationContext, requirements[ind].Context.DataSetID, err.Error())
 			continue
