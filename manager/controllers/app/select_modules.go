@@ -9,87 +9,64 @@ import (
 	"strings"
 
 	"emperror.dev/errors"
+	"github.com/rs/zerolog"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/logging"
-	"fybrik.io/fybrik/pkg/model/datacatalog"
-	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 )
-
-// DataInfo defines all the information about the given data set that comes from the fybrikapplication spec and from the connectors.
-type DataInfo struct {
-	// Source connection details
-	DataDetails *datacatalog.GetAssetResponse
-	// Pointer to the relevant data context in the Fybrik application spec
-	Context *app.DataContext
-	// Evaluated config policies
-	Configuration adminconfig.EvaluatorOutput
-	// Workload cluster
-	WorkloadCluster multicluster.Cluster
-	// Governance actions to perform on this asset
-	Actions []taxonomy.Action
-}
 
 // Temporary hard-coded capability representing Actions of read/copy capability.
 // A change to modules is requested to add "transform" as an additional capability to the existing read and copy modules.
 const Transform = "transform"
 
-// Node represents an access point to data (as a physical source/sink, or a virtual endpoint)
-// A virtual endpoint is activated by the workload for read/write actions.
-type Node struct {
-	Connection *taxonomy.Interface
-	Virtual    bool
+// component responsible for data path construction
+type PathBuilder struct {
+	Log   *zerolog.Logger
+	Env   *Environment
+	Asset *DataInfo
 }
 
-// Edge represents a module capability that gets data via source and returns data via sink interface
-type Edge struct {
-	Source          *Node
-	Sink            *Node
-	Module          *app.FybrikModule
-	CapabilityIndex int
-}
-
-// ResolvedEdge extends an Edge by adding actions that a module should perform, and the cluster where the module will be deployed
-// TODO(shlomitk1): add plugins/transformation capabilities to this structure
-type ResolvedEdge struct {
-	Edge
-	Actions        []taxonomy.Action
-	Cluster        string
-	StorageAccount app.FybrikStorageAccountSpec
-}
-
-// Solution is a final solution enabling a plotter construction.
-// It represents a full data flow between the data source and the workload.
-type Solution struct {
-	DataPath []*ResolvedEdge
+// find a solution for data plane orchestration
+func (p *PathBuilder) solve() (Solution, error) {
+	p.Log.Trace().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msg("Choose modules for dataset")
+	solutions := p.FindPaths()
+	// No data path found for the asset
+	if len(solutions) == 0 {
+		msg := "Deployed modules do not provide the functionality required to construct a data path"
+		p.Log.Error().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msg(msg)
+		logging.LogStructure("Data Item Context", p.Asset, p.Log, true, true)
+		logging.LogStructure("Module Map", p.Env.Modules, p.Log, true, true)
+		return Solution{}, errors.New(msg + " for " + p.Asset.Context.DataSetID)
+	}
+	return solutions[0], nil
 }
 
 // FindPaths finds all valid data paths between the data source and the workload
 // First, data paths are constructed using interface connections, starting from data source.
 // Then, transformations are added to the found paths, and clusters are matched to satisfy restrictions from admin config policies.
 // Optimization is done by the shortest path (the paths are sorted by the length). To be changed in future versions.
-func (p *PlotterGenerator) FindPaths(item *DataInfo, appContext *app.FybrikApplication) []Solution {
+func (p *PathBuilder) FindPaths() []Solution {
 	NodeFromAssetMetadata := Node{
 		Connection: &taxonomy.Interface{
-			Protocol:   item.DataDetails.Details.Connection.Name,
-			DataFormat: item.DataDetails.Details.DataFormat,
+			Protocol:   p.Asset.DataDetails.Details.Connection.Name,
+			DataFormat: p.Asset.DataDetails.Details.DataFormat,
 		},
 	}
-	NodeFromAppRequirements := Node{Connection: &item.Context.Requirements.Interface}
+	NodeFromAppRequirements := Node{Connection: &p.Asset.Context.Requirements.Interface}
 	// find data paths of length up to DATAPATH_LIMIT from data source to the workload, not including transformations or branches
 	bound, err := utils.GetDataPathMaxSize()
 	if err != nil {
-		p.Log.Warn().Str(logging.DATASETID, item.Context.DataSetID).Msg("a default value for DATAPATH_LIMIT will be used")
+		p.Log.Warn().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msg("a default value for DATAPATH_LIMIT will be used")
 	}
 	var solutions []Solution
-	if item.Context.Flow != taxonomy.WriteFlow {
-		solutions = p.findPathsWithinLimit(item, &NodeFromAssetMetadata, &NodeFromAppRequirements, bound)
+	if p.Asset.Context.Flow != taxonomy.WriteFlow {
+		solutions = p.findPathsWithinLimit(&NodeFromAssetMetadata, &NodeFromAppRequirements, bound)
 	} else {
-		solutions = p.findPathsWithinLimit(item, &NodeFromAppRequirements, &NodeFromAssetMetadata, bound)
+		solutions = p.findPathsWithinLimit(&NodeFromAppRequirements, &NodeFromAssetMetadata, bound)
 		// reverse each solution to start with the application requirements, e.g. workload
 		for ind := range solutions {
 			for elementInd := 0; elementInd < len(solutions[ind].DataPath)/2; elementInd++ {
@@ -100,15 +77,15 @@ func (p *PlotterGenerator) FindPaths(item *DataInfo, appContext *app.FybrikAppli
 		}
 	}
 	// get valid solutions by extending data paths with transformations and selecting an appropriate cluster for each capability
-	solutions = p.validSolutions(item, solutions, appContext)
+	solutions = p.validSolutions(solutions)
 	return solutions
 }
 
 // extend the received data paths with transformations and select an appropriate cluster for each capability in a data path
-func (p *PlotterGenerator) validSolutions(item *DataInfo, solutions []Solution, application *app.FybrikApplication) []Solution {
+func (p *PathBuilder) validSolutions(solutions []Solution) []Solution {
 	validPaths := []Solution{}
 	for ind := range solutions {
-		if p.validate(item, solutions[ind], application) {
+		if p.validate(solutions[ind]) {
 			validPaths = append(validPaths, solutions[ind])
 		}
 	}
@@ -118,46 +95,42 @@ func (p *PlotterGenerator) validSolutions(item *DataInfo, solutions []Solution, 
 // if new storage should be located, check the requirements:
 // where storage can be allocated
 // what additional actions to perform
-func (p *PlotterGenerator) validateStorageRequirements(item *DataInfo, application *app.FybrikApplication, element *ResolvedEdge) bool {
-	appContext := ApplicationContext{Application: application, Log: p.Log}
-	var err error
+func (p *PathBuilder) validateStorageRequirements(element *ResolvedEdge) bool {
+	var found bool
 	var actions []taxonomy.Action
-	operation := &policymanager.RequestAction{}
-	operation.ActionType = taxonomy.WriteFlow
 
-	if item.Context.Flow == taxonomy.WriteFlow && !item.Context.Requirements.FlowParams.IsNewDataSet {
+	if p.Asset.Context.Flow == taxonomy.WriteFlow && !p.Asset.Context.Requirements.FlowParams.IsNewDataSet {
 		// no need to allocate storage, write destination is known
 		return true
 	}
 	// select a storage account that
 	// 1. satisfies admin config restrictions on storage
 	// 2. writing to this storage is not forbidden by governance policies
-	for accountInd := range p.StorageAccounts {
+	for accountInd := range p.Env.StorageAccounts {
 		// validate restrictions
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
+		account := &p.Env.StorageAccounts[accountInd]
 		if !p.validateRestrictions(
-			item.Configuration.ConfigDecisions[moduleCapability.Capability].DeploymentRestrictions.StorageAccounts,
-			&p.StorageAccounts[accountInd].Spec,
-			p.StorageAccounts[accountInd].Name) {
-			p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msgf("storage account %s does not match the requirements",
-				p.StorageAccounts[accountInd].Name)
+			p.Asset.Configuration.ConfigDecisions[moduleCapability.Capability].DeploymentRestrictions.StorageAccounts,
+			&account.Spec, account.Name) {
+			p.Log.Debug().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msgf("storage account %s does not match the requirements",
+				account.Name)
 			continue
 		}
 		// query the policy manager whether WRITE operation is allowed
-		if !item.Context.Requirements.FlowParams.IsNewDataSet {
-			operation.Destination = string(p.StorageAccounts[accountInd].Spec.Region)
-			operation.ProcessingLocation = p.StorageAccounts[accountInd].Spec.Region
-			actions, err = LookupPolicyDecisions(item.Context.DataSetID, p.PolicyManager, appContext, operation)
-			if err != nil {
+		// not relevant for new datasets
+		if !p.Asset.Context.Requirements.FlowParams.IsNewDataSet {
+			actions, found = p.Asset.StorageRequirements[account.Spec.Region]
+			if !found {
 				continue
 			}
 		}
 		// add the selected storage account region
-		element.StorageAccount = p.StorageAccounts[accountInd].Spec
+		element.StorageAccount = account.Spec
 		break
 	}
 	if element.StorageAccount.Region == "" {
-		p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find a storage account, aborting data path construction")
+		p.Log.Debug().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msg("Could not find a storage account, aborting data path construction")
 		return false
 	}
 	// add WRITE actions
@@ -165,13 +138,13 @@ func (p *PlotterGenerator) validateStorageRequirements(item *DataInfo, applicati
 	return true
 }
 
-func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, application *app.FybrikApplication) bool {
+func (p *PathBuilder) validate(solution Solution) bool {
 	// start from data source, check supported actions and cluster restrictions
-	requiredActions := item.Actions
+	requiredActions := p.Asset.Actions
 	for ind := range solution.DataPath {
 		element := solution.DataPath[ind]
 		if !element.Edge.Sink.Virtual {
-			if !p.validateStorageRequirements(item, application, element) {
+			if !p.validateStorageRequirements(element) {
 				return false
 			}
 			// add WRITE actions
@@ -196,15 +169,15 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 		}
 		requiredActions = unsupported
 		// select a cluster for the capability that satisfy cluster restrictions specified in admin config policies
-		if !p.findCluster(item, element) {
-			p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find an available cluster for " +
+		if !p.findCluster(element) {
+			p.Log.Debug().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msg("Could not find an available cluster for " +
 				string(moduleCapability.Capability))
 			return false
 		}
 	}
 	// Are all actions supported by the capabilities in this data path?
 	if len(requiredActions) > 0 {
-		p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).
+		p.Log.Debug().Str(logging.DATASETID, p.Asset.Context.DataSetID).
 			Msg("Not all governance actions are supported, aborting data path construction")
 		return false
 	}
@@ -213,8 +186,8 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 	for _, element := range solution.DataPath {
 		supportedCapabilities[element.Module.Spec.Capabilities[element.CapabilityIndex].Capability] = true
 	}
-	for capability := range item.Configuration.ConfigDecisions {
-		if item.Configuration.ConfigDecisions[capability].Deploy == adminconfig.StatusTrue {
+	for capability := range p.Asset.Configuration.ConfigDecisions {
+		if p.Asset.Configuration.ConfigDecisions[capability].Deploy == adminconfig.StatusTrue {
 			// check that it is supported
 			if !supportedCapabilities[capability] {
 				return false
@@ -225,9 +198,9 @@ func (p *PlotterGenerator) validate(item *DataInfo, solution Solution, applicati
 }
 
 // find a cluster that satisfies the requirements
-func (p *PlotterGenerator) findCluster(item *DataInfo, element *ResolvedEdge) bool {
-	for _, cluster := range p.Clusters {
-		if p.validateClusterRestrictions(item, element, cluster) {
+func (p *PathBuilder) findCluster(element *ResolvedEdge) bool {
+	for _, cluster := range p.Env.Clusters {
+		if p.validateClusterRestrictions(element, cluster) {
 			element.Cluster = cluster.Name
 			return true
 		}
@@ -239,17 +212,17 @@ func (p *PlotterGenerator) findCluster(item *DataInfo, element *ResolvedEdge) bo
 // Only data movements between data stores/endpoints are considered.
 // Transformations are added in the later stage.
 // Capabilities outside the data path are not handled yet.
-func (p *PlotterGenerator) findPathsWithinLimit(item *DataInfo, source, sink *Node, n int) []Solution {
+func (p *PathBuilder) findPathsWithinLimit(source, sink *Node, n int) []Solution {
 	solutions := []Solution{}
-	for _, module := range p.Modules {
+	for _, module := range p.Env.Modules {
 		for capabilityInd, capability := range module.Spec.Capabilities {
 			// check if capability is allowed
-			if !allowCapability(item, capability.Capability) {
+			if !p.allowCapability(capability.Capability) {
 				continue
 			}
 			edge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: nil, Sink: nil}
 			// check that the module + module capability satisfy the requirements from the admin config policies
-			if !p.validateModuleRestrictions(item, &edge) {
+			if !p.validateModuleRestrictions(&edge) {
 				p.Log.Debug().Msgf("module %s does not satisfy requirements for capability %s", module.Name, capability.Capability)
 				continue
 			}
@@ -280,7 +253,7 @@ func (p *PlotterGenerator) findPathsWithinLimit(item *DataInfo, source, sink *No
 				for _, inter := range sources {
 					node := Node{Connection: inter}
 					// recursive call to find paths of length = n-1 using the supported source of the selected module capability
-					paths := p.findPathsWithinLimit(item, source, &node, n-1)
+					paths := p.findPathsWithinLimit(source, &node, n-1)
 					// add the selected module to the found paths
 					for i := range paths {
 						auxEdge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: &node, Sink: sink}
@@ -405,14 +378,14 @@ func supportsSinkInterface(edge *Edge, sink *Node) bool {
 	return false
 }
 
-func allowCapability(item *DataInfo, capability taxonomy.Capability) bool {
-	return item.Configuration.ConfigDecisions[capability].Deploy != adminconfig.StatusFalse
+func (p *PathBuilder) allowCapability(capability taxonomy.Capability) bool {
+	return p.Asset.Configuration.ConfigDecisions[capability].Deploy != adminconfig.StatusFalse
 }
 
-func (p *PlotterGenerator) validateModuleRestrictions(item *DataInfo, edge *Edge) bool {
+func (p *PathBuilder) validateModuleRestrictions(edge *Edge) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
 	moduleSpec := edge.Module.Spec
-	restrictions := item.Configuration.ConfigDecisions[capability.Capability].DeploymentRestrictions.Modules
+	restrictions := p.Asset.Configuration.ConfigDecisions[capability.Capability].DeploymentRestrictions.Modules
 	oldPrefix := "capabilities."
 	newPrefix := oldPrefix + strconv.Itoa(edge.CapabilityIndex) + "."
 	for i := range restrictions {
@@ -424,28 +397,28 @@ func (p *PlotterGenerator) validateModuleRestrictions(item *DataInfo, edge *Edge
 	return p.validateRestrictions(restrictions, &moduleSpec, "")
 }
 
-func (p *PlotterGenerator) validateClusterRestrictions(item *DataInfo, edge *ResolvedEdge, cluster multicluster.Cluster) bool {
+func (p *PathBuilder) validateClusterRestrictions(edge *ResolvedEdge, cluster multicluster.Cluster) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
-	if !p.validateClusterRestrictionsPerCapability(item, capability.Capability, cluster) {
+	if !p.validateClusterRestrictionsPerCapability(capability.Capability, cluster) {
 		return false
 	}
 	if len(edge.Actions) > 0 {
-		if !p.validateClusterRestrictionsPerCapability(item, Transform, cluster) {
+		if !p.validateClusterRestrictionsPerCapability(Transform, cluster) {
 			return false
 		}
 	}
 	return true
 }
 
-func (p *PlotterGenerator) validateClusterRestrictionsPerCapability(item *DataInfo, capability taxonomy.Capability,
+func (p *PathBuilder) validateClusterRestrictionsPerCapability(capability taxonomy.Capability,
 	cluster multicluster.Cluster) bool {
-	restrictions := item.Configuration.ConfigDecisions[capability].DeploymentRestrictions.Clusters
+	restrictions := p.Asset.Configuration.ConfigDecisions[capability].DeploymentRestrictions.Clusters
 	return p.validateRestrictions(restrictions, &cluster, "")
 }
 
 // Validation of an object with respect to the admin config restrictions
 //nolint:gocyclo
-func (p *PlotterGenerator) validateRestrictions(restrictions []adminconfig.Restriction, spec interface{}, instanceName string) bool {
+func (p *PathBuilder) validateRestrictions(restrictions []adminconfig.Restriction, spec interface{}, instanceName string) bool {
 	if len(restrictions) == 0 {
 		return true
 	}
@@ -458,7 +431,7 @@ func (p *PlotterGenerator) validateRestrictions(restrictions []adminconfig.Restr
 		var err error
 		var found bool
 		// infrastructure attribute or a property in the spec?
-		attributeObj := p.AttributeManager.GetAttribute(taxonomy.Attribute(restrict.Property), instanceName)
+		attributeObj := p.Env.AttributeManager.GetAttribute(taxonomy.Attribute(restrict.Property), instanceName)
 		if attributeObj != nil {
 			value = attributeObj.Value
 			found = true
