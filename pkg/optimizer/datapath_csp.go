@@ -7,49 +7,54 @@ import (
 	"fmt"
 	"strconv"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/pkg/multicluster"
+	"fybrik.io/fybrik/manager/controllers/app"
 )
 
-// DataInfo defines all the information about the given data set that comes from the fybrikapplication spec and from the connectors.
-type DataInfo struct {
-	// All available modules
-	Modules map[string]*app.FybrikModule
-	// All available clusters
-	Clusters []multicluster.Cluster
-	// Source connection details
-	//DataDetails *datacatalog.GetAssetResponse
-	// Pointer to the relevant data context in the Fybrik application spec
-	//Context *app.DataContext
-	// Evaluated config policies
-	//Configuration adminconfig.EvaluatorOutput
-	// Workload cluster
-	//WorkloadCluster multicluster.Cluster
-	// Governance actions to perform on this asset
-	//Actions []taxonomy.Action
-}
-
 type DataPathCSP struct {
-	problemData *DataInfo
+	problemData *app.DataInfo
+	env         *app.Environment
 	fzModel     *FlatZincModel
 }
 
-func NewDataPathCSP(problemData *DataInfo) *DataPathCSP {
-	dpCSP := DataPathCSP{problemData, NewFlatZincModel()}
+func NewDataPathCSP(problemData *app.DataInfo, env *app.Environment) *DataPathCSP {
+	dpCSP := DataPathCSP{problemData, env, NewFlatZincModel()}
 	return &dpCSP
 }
 
 func (dpc *DataPathCSP) BuildFzModel(pathLength uint) error {
-	arrayAnnotation := fmt.Sprintf("output_array([1..%d])", pathLength)
+	outputArrayAnnotation := fmt.Sprintf("output_array([1..%d])", pathLength)
 	// Variables to select the module we place on each data-path location
-	moduleTypeVarType := rangeVarType(len(dpc.problemData.Modules) - 1)
-	dpc.fzModel.AddVariable(pathLength, "moduleType", moduleTypeVarType, "", arrayAnnotation)
+	moduleTypeVarType := rangeVarType(len(dpc.env.Modules) - 1)
+	dpc.fzModel.AddVariable(pathLength, "moduleType", moduleTypeVarType, "", outputArrayAnnotation)
 	// Variables to select the cluster we allocate to each module on the path
-	moduleClusterVarType := rangeVarType(len(dpc.problemData.Clusters) - 1)
-	dpc.fzModel.AddVariable(pathLength, "moduleCluster", moduleClusterVarType, "", arrayAnnotation)
+	moduleClusterVarType := rangeVarType(len(dpc.env.Clusters) - 1)
+	dpc.fzModel.AddVariable(pathLength, "moduleCluster", moduleClusterVarType, "", outputArrayAnnotation)
+
+	dpc.addGovernanceActionConstraints(pathLength)
 
 	err := dpc.fzModel.Dump("dataPath.fzn")
 	return err
+}
+
+func (dpc *DataPathCSP) addGovernanceActionConstraints(pathLength uint) {
+	// TODO: Make sure arrays of size one are handled properly
+	if len(dpc.problemData.Actions) < 1 {
+		return
+	}
+
+	// Variables to mark specific actions are applied
+	dpc.fzModel.AddVariable(uint(len(dpc.problemData.Actions)), "actionHandled", "bool", "")
+	dpc.fzModel.AddConstraint("array_bool_and", []string{"actionHandled", "true"}) // All actions must be handled
+
+	// Variables to mark specific actions are applied at location i
+	outputArrayAnnotation := fmt.Sprintf("output_array([1..%d])", pathLength)
+	for actionIdx, action := range dpc.problemData.Actions {
+		actionVar := fmt.Sprintf("%sAction", action.Name)
+		dpc.fzModel.AddVariable(pathLength, actionVar, "bool", "", outputArrayAnnotation)
+		actionPosInActionsArray := fmt.Sprintf("actionHandled[%d]", actionIdx+1)
+		dpc.fzModel.AddConstraint("array_bool_or", []string{actionVar, actionPosInActionsArray})
+	}
+
 }
 
 // ----- helper functions -----
