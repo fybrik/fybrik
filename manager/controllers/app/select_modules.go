@@ -33,7 +33,7 @@ type PathBuilder struct {
 // find a solution for data plane orchestration
 func (p *PathBuilder) solve() (Solution, error) {
 	p.Log.Trace().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msg("Choose modules for dataset")
-	solutions := p.FindPaths(p.Asset)
+	solutions := p.FindPaths()
 	// No data path found for the asset
 	if len(solutions) == 0 {
 		msg := "Deployed modules do not provide the functionality required to construct a data path"
@@ -49,24 +49,24 @@ func (p *PathBuilder) solve() (Solution, error) {
 // First, data paths are constructed using interface connections, starting from data source.
 // Then, transformations are added to the found paths, and clusters are matched to satisfy restrictions from admin config policies.
 // Optimization is done by the shortest path (the paths are sorted by the length). To be changed in future versions.
-func (p *PathBuilder) FindPaths(item *DataInfo) []Solution {
+func (p *PathBuilder) FindPaths() []Solution {
 	NodeFromAssetMetadata := Node{
 		Connection: &taxonomy.Interface{
-			Protocol:   item.DataDetails.Details.Connection.Name,
-			DataFormat: item.DataDetails.Details.DataFormat,
+			Protocol:   p.Asset.DataDetails.Details.Connection.Name,
+			DataFormat: p.Asset.DataDetails.Details.DataFormat,
 		},
 	}
-	NodeFromAppRequirements := Node{Connection: &item.Context.Requirements.Interface}
+	NodeFromAppRequirements := Node{Connection: &p.Asset.Context.Requirements.Interface}
 	// find data paths of length up to DATAPATH_LIMIT from data source to the workload, not including transformations or branches
 	bound, err := utils.GetDataPathMaxSize()
 	if err != nil {
-		p.Log.Warn().Str(logging.DATASETID, item.Context.DataSetID).Msg("a default value for DATAPATH_LIMIT will be used")
+		p.Log.Warn().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msg("a default value for DATAPATH_LIMIT will be used")
 	}
 	var solutions []Solution
-	if item.Context.Flow != taxonomy.WriteFlow {
-		solutions = p.findPathsWithinLimit(item, &NodeFromAssetMetadata, &NodeFromAppRequirements, bound)
+	if p.Asset.Context.Flow != taxonomy.WriteFlow {
+		solutions = p.findPathsWithinLimit(&NodeFromAssetMetadata, &NodeFromAppRequirements, bound)
 	} else {
-		solutions = p.findPathsWithinLimit(item, &NodeFromAppRequirements, &NodeFromAssetMetadata, bound)
+		solutions = p.findPathsWithinLimit(&NodeFromAppRequirements, &NodeFromAssetMetadata, bound)
 		// reverse each solution to start with the application requirements, e.g. workload
 		for ind := range solutions {
 			for elementInd := 0; elementInd < len(solutions[ind].DataPath)/2; elementInd++ {
@@ -77,15 +77,15 @@ func (p *PathBuilder) FindPaths(item *DataInfo) []Solution {
 		}
 	}
 	// get valid solutions by extending data paths with transformations and selecting an appropriate cluster for each capability
-	solutions = p.validSolutions(item, solutions)
+	solutions = p.validSolutions(solutions)
 	return solutions
 }
 
 // extend the received data paths with transformations and select an appropriate cluster for each capability in a data path
-func (p *PathBuilder) validSolutions(item *DataInfo, solutions []Solution) []Solution {
+func (p *PathBuilder) validSolutions(solutions []Solution) []Solution {
 	validPaths := []Solution{}
 	for ind := range solutions {
-		if p.validate(item, solutions[ind]) {
+		if p.validate(solutions[ind]) {
 			validPaths = append(validPaths, solutions[ind])
 		}
 	}
@@ -95,11 +95,11 @@ func (p *PathBuilder) validSolutions(item *DataInfo, solutions []Solution) []Sol
 // if new storage should be located, check the requirements:
 // where storage can be allocated
 // what additional actions to perform
-func (p *PathBuilder) validateStorageRequirements(item *DataInfo, element *ResolvedEdge) bool {
+func (p *PathBuilder) validateStorageRequirements(element *ResolvedEdge) bool {
 	var found bool
 	var actions []taxonomy.Action
 
-	if item.Context.Flow == taxonomy.WriteFlow && !item.Context.Requirements.FlowParams.IsNewDataSet {
+	if p.Asset.Context.Flow == taxonomy.WriteFlow && !p.Asset.Context.Requirements.FlowParams.IsNewDataSet {
 		// no need to allocate storage, write destination is known
 		return true
 	}
@@ -111,16 +111,16 @@ func (p *PathBuilder) validateStorageRequirements(item *DataInfo, element *Resol
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
 		account := &p.Env.StorageAccounts[accountInd]
 		if !p.validateRestrictions(
-			item.Configuration.ConfigDecisions[moduleCapability.Capability].DeploymentRestrictions.StorageAccounts,
+			p.Asset.Configuration.ConfigDecisions[moduleCapability.Capability].DeploymentRestrictions.StorageAccounts,
 			&account.Spec, account.Name) {
-			p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msgf("storage account %s does not match the requirements",
+			p.Log.Debug().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msgf("storage account %s does not match the requirements",
 				account.Name)
 			continue
 		}
 		// query the policy manager whether WRITE operation is allowed
 		// not relevant for new datasets
-		if !item.Context.Requirements.FlowParams.IsNewDataSet {
-			actions, found = item.StorageRequirements[account.Spec.Region]
+		if !p.Asset.Context.Requirements.FlowParams.IsNewDataSet {
+			actions, found = p.Asset.StorageRequirements[account.Spec.Region]
 			if !found {
 				continue
 			}
@@ -130,7 +130,7 @@ func (p *PathBuilder) validateStorageRequirements(item *DataInfo, element *Resol
 		break
 	}
 	if element.StorageAccount.Region == "" {
-		p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find a storage account, aborting data path construction")
+		p.Log.Debug().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msg("Could not find a storage account, aborting data path construction")
 		return false
 	}
 	// add WRITE actions
@@ -138,13 +138,13 @@ func (p *PathBuilder) validateStorageRequirements(item *DataInfo, element *Resol
 	return true
 }
 
-func (p *PathBuilder) validate(item *DataInfo, solution Solution) bool {
+func (p *PathBuilder) validate(solution Solution) bool {
 	// start from data source, check supported actions and cluster restrictions
-	requiredActions := item.Actions
+	requiredActions := p.Asset.Actions
 	for ind := range solution.DataPath {
 		element := solution.DataPath[ind]
 		if !element.Edge.Sink.Virtual {
-			if !p.validateStorageRequirements(item, element) {
+			if !p.validateStorageRequirements(element) {
 				return false
 			}
 			// add WRITE actions
@@ -169,15 +169,15 @@ func (p *PathBuilder) validate(item *DataInfo, solution Solution) bool {
 		}
 		requiredActions = unsupported
 		// select a cluster for the capability that satisfy cluster restrictions specified in admin config policies
-		if !p.findCluster(item, element) {
-			p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).Msg("Could not find an available cluster for " +
+		if !p.findCluster(element) {
+			p.Log.Debug().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msg("Could not find an available cluster for " +
 				string(moduleCapability.Capability))
 			return false
 		}
 	}
 	// Are all actions supported by the capabilities in this data path?
 	if len(requiredActions) > 0 {
-		p.Log.Debug().Str(logging.DATASETID, item.Context.DataSetID).
+		p.Log.Debug().Str(logging.DATASETID, p.Asset.Context.DataSetID).
 			Msg("Not all governance actions are supported, aborting data path construction")
 		return false
 	}
@@ -186,8 +186,8 @@ func (p *PathBuilder) validate(item *DataInfo, solution Solution) bool {
 	for _, element := range solution.DataPath {
 		supportedCapabilities[element.Module.Spec.Capabilities[element.CapabilityIndex].Capability] = true
 	}
-	for capability := range item.Configuration.ConfigDecisions {
-		if item.Configuration.ConfigDecisions[capability].Deploy == adminconfig.StatusTrue {
+	for capability := range p.Asset.Configuration.ConfigDecisions {
+		if p.Asset.Configuration.ConfigDecisions[capability].Deploy == adminconfig.StatusTrue {
 			// check that it is supported
 			if !supportedCapabilities[capability] {
 				return false
@@ -198,9 +198,9 @@ func (p *PathBuilder) validate(item *DataInfo, solution Solution) bool {
 }
 
 // find a cluster that satisfies the requirements
-func (p *PathBuilder) findCluster(item *DataInfo, element *ResolvedEdge) bool {
+func (p *PathBuilder) findCluster(element *ResolvedEdge) bool {
 	for _, cluster := range p.Env.Clusters {
-		if p.validateClusterRestrictions(item, element, cluster) {
+		if p.validateClusterRestrictions(element, cluster) {
 			element.Cluster = cluster.Name
 			return true
 		}
@@ -212,17 +212,17 @@ func (p *PathBuilder) findCluster(item *DataInfo, element *ResolvedEdge) bool {
 // Only data movements between data stores/endpoints are considered.
 // Transformations are added in the later stage.
 // Capabilities outside the data path are not handled yet.
-func (p *PathBuilder) findPathsWithinLimit(item *DataInfo, source, sink *Node, n int) []Solution {
+func (p *PathBuilder) findPathsWithinLimit(source, sink *Node, n int) []Solution {
 	solutions := []Solution{}
 	for _, module := range p.Env.Modules {
 		for capabilityInd, capability := range module.Spec.Capabilities {
 			// check if capability is allowed
-			if !allowCapability(item, capability.Capability) {
+			if !p.allowCapability(capability.Capability) {
 				continue
 			}
 			edge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: nil, Sink: nil}
 			// check that the module + module capability satisfy the requirements from the admin config policies
-			if !p.validateModuleRestrictions(item, &edge) {
+			if !p.validateModuleRestrictions(&edge) {
 				p.Log.Debug().Msgf("module %s does not satisfy requirements for capability %s", module.Name, capability.Capability)
 				continue
 			}
@@ -253,7 +253,7 @@ func (p *PathBuilder) findPathsWithinLimit(item *DataInfo, source, sink *Node, n
 				for _, inter := range sources {
 					node := Node{Connection: inter}
 					// recursive call to find paths of length = n-1 using the supported source of the selected module capability
-					paths := p.findPathsWithinLimit(item, source, &node, n-1)
+					paths := p.findPathsWithinLimit(source, &node, n-1)
 					// add the selected module to the found paths
 					for i := range paths {
 						auxEdge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: &node, Sink: sink}
@@ -378,14 +378,14 @@ func supportsSinkInterface(edge *Edge, sink *Node) bool {
 	return false
 }
 
-func allowCapability(item *DataInfo, capability taxonomy.Capability) bool {
-	return item.Configuration.ConfigDecisions[capability].Deploy != adminconfig.StatusFalse
+func (p *PathBuilder) allowCapability(capability taxonomy.Capability) bool {
+	return p.Asset.Configuration.ConfigDecisions[capability].Deploy != adminconfig.StatusFalse
 }
 
-func (p *PathBuilder) validateModuleRestrictions(item *DataInfo, edge *Edge) bool {
+func (p *PathBuilder) validateModuleRestrictions(edge *Edge) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
 	moduleSpec := edge.Module.Spec
-	restrictions := item.Configuration.ConfigDecisions[capability.Capability].DeploymentRestrictions.Modules
+	restrictions := p.Asset.Configuration.ConfigDecisions[capability.Capability].DeploymentRestrictions.Modules
 	oldPrefix := "capabilities."
 	newPrefix := oldPrefix + strconv.Itoa(edge.CapabilityIndex) + "."
 	for i := range restrictions {
@@ -397,22 +397,22 @@ func (p *PathBuilder) validateModuleRestrictions(item *DataInfo, edge *Edge) boo
 	return p.validateRestrictions(restrictions, &moduleSpec, "")
 }
 
-func (p *PathBuilder) validateClusterRestrictions(item *DataInfo, edge *ResolvedEdge, cluster multicluster.Cluster) bool {
+func (p *PathBuilder) validateClusterRestrictions(edge *ResolvedEdge, cluster multicluster.Cluster) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
-	if !p.validateClusterRestrictionsPerCapability(item, capability.Capability, cluster) {
+	if !p.validateClusterRestrictionsPerCapability(capability.Capability, cluster) {
 		return false
 	}
 	if len(edge.Actions) > 0 {
-		if !p.validateClusterRestrictionsPerCapability(item, Transform, cluster) {
+		if !p.validateClusterRestrictionsPerCapability(Transform, cluster) {
 			return false
 		}
 	}
 	return true
 }
 
-func (p *PathBuilder) validateClusterRestrictionsPerCapability(item *DataInfo, capability taxonomy.Capability,
+func (p *PathBuilder) validateClusterRestrictionsPerCapability(capability taxonomy.Capability,
 	cluster multicluster.Cluster) bool {
-	restrictions := item.Configuration.ConfigDecisions[capability].DeploymentRestrictions.Clusters
+	restrictions := p.Asset.Configuration.ConfigDecisions[capability].DeploymentRestrictions.Clusters
 	return p.validateRestrictions(restrictions, &cluster, "")
 }
 
