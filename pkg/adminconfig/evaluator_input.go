@@ -41,6 +41,4 @@ type EvaluatorInput struct {
 	Workload WorkloadInfo `json:"workload"`
 	// Requirements for asset usage
 	Request DataRequest `json:"request"`
-	// Governance Actions for reading data (relevant for read scenarios only)
-	GovernanceActions []taxonomy.Action `json:"actions"`
 }

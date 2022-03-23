@@ -6,7 +6,7 @@ Configuration policies are the mechanism via which the organization may influenc
 
 ## Input to policies
 
-The `input` object includes general application data such as workload cluster and application properties, as well as dataset details (user requirements, metadata, required actions).
+The `input` object includes general application data such as workload cluster and application properties, as well as dataset details (user requirements, metadata).
 
 Available properties:
 - `cluster.name`: name of the workload cluster
@@ -30,22 +30,23 @@ Rules are written in the following syntax: `config[{"capability": capability, "d
 	"policy": {"ID": <id>, "policySetID": <setId>, "description": <description>, "version": <version>}, 
 	"deploy": <"True", "False">,
 	"restrictions": {
-		"modules": <map {key, list-of-values}>,
-		"clusters": <map {key, list-of-values}>,
-        "storageaccounts": <map {key, list-of-values}>,
+		"modules": <list of restrictions>,
+		"clusters": <list of restrictions>,
+        "storageaccounts": <list of restrictions>,
 	},
 }
 ```
+`restriction` restricts a `property` to either a set of `values` or a value in a given `range`.
 
 For example, the policy above restricts the choice of clusters and modules for a read capability by narrowing the choice of deployment clusters to the workload cluster, and restricting the module type to service.
 
 ```
 config[{"capability": "read", "decision": decision}] {
-    input.request.usage.read == true
-    policy := {"version": "0.1", "ID": "read-ID", "description":"Deploy read as a service in the workload cluster"}
-    clusters := { "name" : [ input.workload.cluster.name ] }
-    modules := { "type": ["service"]}
-    decision := {"policy": policy, "restrictions": {"clusters": clusters, "modules": modules}}
+    input.request.usage == "read"
+    policy := {"ID": "read-location", "description":"Deploy read in the workload cluster", "version": "0.1"}
+    cluster_restrict := {"property": "name", "values": [ input.workload.cluster.name ] }
+    module_restrict := {"property": "type", "values": ["service"]}
+    decision := {"policy": policy, "restrictions": {"clusters": [cluster_restrict], "modules": [module_restrict]}}
 }
 ```
 
@@ -53,7 +54,7 @@ config[{"capability": "read", "decision": decision}] {
 `policy` provides policy metadata: unique ID, human-readable description, version and `policySetID` (see ### Policy Set ID)
 
 `restrictions` provides restrictions for `modules`, `clusters` and `storageaccounts`.
-Each restriction provides a list of allowed values for a property of module/cluster/storageaccount object. For example, to restrict a module type to either "service" or "plugin", we'll use "type" as a key, and [ "service","plugin ] as a list of allowed values.
+Each restriction provides a list or a range of allowed values for a property of module/cluster/storageaccount object. For example, to restrict a module type to either "service" or "plugin", we'll use "type" as a property, and [ "service","plugin ] as a list of allowed values.
 Properties of a module can be found inside [`FybrikModule`](../reference/crds.md#fybrikmodule) Spec.
 Properties of a storage account are listed inside [`FybrikStorageAccount`](../reference/crds.md#fybrikstorageaccount).
 Cluster is not a custom resource. It has the following properties:
@@ -77,30 +78,16 @@ package adminconfig
 
 # read capability deployment
 config[{"capability": "read", "decision": decision}] {
-    input.request.usage.read == true
+    input.request.usage == "read"
     policy := {"ID": "read-default-enabled", "description":"Read capability is requested for read workloads", "version": "0.1"}
     decision := {"policy": policy, "deploy": "True"}
 }
 
-# read capability deployment
-config[{"capability": "read", "decision": decision}] {
-    input.request.usage.read == false
-    policy := {"ID": "read-default-disabled", "description":"Read capability is requested for read workloads", "version": "0.1"}
-    decision := {"policy": policy, "deploy": "False"}
-}
-
 # write capability deployment
 config[{"capability": "write", "decision": decision}] {
-    input.request.usage.write == true
+    input.request.usage == "write"
     policy := {"ID": "write-default-enabled", "description":"Write capability is requested for workloads that write data", "version": "0.1"}
     decision := {"policy": policy, "deploy": "True"}
-}
-
-# write capability deployment
-config[{"capability": "write", "decision": decision}] {
-    input.request.usage.write == false
-    policy := {"ID": "write-default-disabled", "description":"Write capability is requested for workloads that write data", "version": "0.1"}
-    decision := {"policy": policy, "deploy": "False"}
 }
 
 ```
@@ -117,40 +104,30 @@ package adminconfig
 # configure where transformations take place
 config[{"capability": "transform", "decision": decision}] {
     policy := {"ID": "transform-geo", "description":"Governance based transformations must take place in the geography where the data is stored", "version": "0.1"}
-    clusters := { "metadata.region" : [ input.request.dataset.geography ] }
-    decision := {"policy": policy, "restrictions": {"clusters": clusters}}
+    cluster_restrict := {"property": "metadata.region", "values": [input.request.dataset.geography]}
+    decision := {"policy": policy, "restrictions": {"clusters": [cluster_restrict]}}
 }
 
 # configure the scope of the read capability
 config[{"capability": "read", "decision": decision}] {
-    input.request.usage.read == true
+    input.request.usage == "read"
     policy := {"ID": "read-scope", "description":"Deploy read at the workload scope", "version": "0.1"}
-    decision := {"policy": policy, "restrictions": {"modules": {"capabilities.scope" : ["workload"]}}}
+    decision := {"policy": policy, "restrictions": {"modules": [{"property": "capabilities.scope", "values" : ["workload"]}]}}
 }
 
 # configure where the read capability will be deployed
 config[{"capability": "read", "decision": decision}] {
-    input.request.usage.read == true
+    input.request.usage == "read"
     policy := {"ID": "read-location", "description":"Deploy read in the workload cluster", "version": "0.1"}
-    clusters := { "name" : [ input.workload.cluster.name ] }
-    decision := {"policy": policy, "restrictions": {"clusters": clusters}}
+    cluster_restrict := {"property": "name", "values": [ input.workload.cluster.name ] }
+    decision := {"policy": policy, "restrictions": {"clusters": [cluster_restrict]}}
 }
 
 # allow implicit copies by default
 config[{"capability": "copy", "decision": decision}] {
-    input.request.usage.read == true
+    input.request.usage == "read"
     policy := {"ID": "copy-default", "description":"Implicit copies are allowed in read scenarios", "version": "0.1"}
     decision := {"policy": policy}
-}
-
-# configure when implicit copies should be made
-config[{"capability": "copy", "decision": decision}] {
-    input.request.usage.read == true
-    input.request.dataset.geography != input.workload.cluster.metadata.region
-    count(input.actions) > 0
-    clusters := { "metadata.region" : [ input.request.dataset.geography ] }
-    policy := {"ID": "copy-remote", "description":"Implicit copies should be used if the data is in a different region than the compute, and transformations are required", "version": "0.1"}
-    decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": clusters}}
 }
 
 ```

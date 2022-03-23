@@ -29,17 +29,6 @@ config[{"capability": "copy", "decision": decision}] {
     decision := {"policy": policy}
 }
 
-# configure when implicit copies should be made
-config[{"capability": "copy", "decision": decision}] {
-    input.request.usage == "read"
-    input.request.dataset.geography != input.workload.cluster.metadata.region
-    count(input.actions) > 0
-    cluster_restrict := {"property": "metadata.region", "values": [input.request.dataset.geography]}
-    account_restrict := {"property": "region", "values": [input.workload.cluster.metadata.region]}
-    policy := {"ID": "copy-remote", "description":"Implicit copies should be used if the data is in a different region than the compute, and transformations are required", "version": "0.1"}
-    decision := {"policy": policy, "deploy": "True", "restrictions": {"clusters": [cluster_restrict], "storageaccounts": [account_restrict]}}
-}
-
 # restrict storage for copy
 config[{"capability": "copy", "decision": decision}] {
     input.request.usage == "copy"
