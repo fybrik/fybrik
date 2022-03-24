@@ -30,7 +30,7 @@ config[{"capability": "delete", "decision": decision}] {
     decision := {"policy": policy, "deploy": "True"}
 }
 
-# do not deploy copy in scenarios different than read or copy
+# do not deploy copy in scenarios different from read or copy
 config[{"capability": "copy", "decision": decision}] {
     input.request.usage != "read"
     input.request.usage != "copy"
