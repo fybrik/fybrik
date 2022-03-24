@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"sort"
 	"strings"
 )
 
@@ -19,6 +20,10 @@ The class can also read solver solutions, written using the FlatZinc specificati
 The FlatZinc specification: https://www.minizinc.org/doc-latest/en/fzn-spec.html
 */
 
+type Declares interface {
+	Declaration() string
+}
+
 // Data for a single FlatZinc parameter
 type FlatZincParam struct {
 	NumInstances uint // NumInstances > 1 means an array of params
@@ -28,7 +33,7 @@ type FlatZincParam struct {
 }
 
 // formats a paramater declaraion in FlatZinc format
-func (fzp *FlatZincParam) paramDeclaration() string {
+func (fzp FlatZincParam) Declaration() string {
 	if fzp.NumInstances == 1 {
 		return fmt.Sprintf("%s: %s = %s;\n", fzp.Type, fzp.Name, fzp.Assignment)
 	}
@@ -52,7 +57,7 @@ type FlatZincVariable struct {
 }
 
 // formats a variable declaraion in FlatZinc format
-func (fzv *FlatZincVariable) varDeclaration() string {
+func (fzv FlatZincVariable) Declaration() string {
 	if fzv.NumInstances == 1 {
 		return fmt.Sprintf("var %s: %s%s;\n", fzv.Type, fzv.Name, fzv.annotationString())
 	}
@@ -107,16 +112,16 @@ func (slv *FlatZincSolveItem) solveItemStatement() string {
 
 // The main class for holding a FlatZinc constraint problem
 type FlatZincModel struct {
-	ParamMap    map[string]FlatZincParam
-	VarMap      map[string]FlatZincVariable
+	ParamMap    map[string]Declares
+	VarMap      map[string]Declares
 	Constraints []FlatZincConstraint
 	SolveTarget FlatZincSolveItem
 }
 
 func NewFlatZincModel() *FlatZincModel {
 	var fzw FlatZincModel
-	fzw.ParamMap = make(map[string]FlatZincParam)
-	fzw.VarMap = make(map[string]FlatZincVariable)
+	fzw.ParamMap = make(map[string]Declares)
+	fzw.VarMap = make(map[string]Declares)
 	fzw.Constraints = make([]FlatZincConstraint, 0)
 	return &fzw
 }
@@ -150,13 +155,13 @@ func (fzw *FlatZincModel) Dump(fileName string) error {
 	}()
 
 	fileContent := ""
-	for _, fzparam := range fzw.ParamMap {
-		fileContent += fzparam.paramDeclaration()
+	for _, fzparam := range mapValuesSortedByKey(fzw.ParamMap) {
+		fileContent += fzparam.Declaration()
 	}
 
 	fileContent += "\n"
-	for _, fzvar := range fzw.VarMap {
-		fileContent += fzvar.varDeclaration()
+	for _, fzvar := range mapValuesSortedByKey(fzw.VarMap) {
+		fileContent += fzvar.Declaration()
 	}
 
 	fileContent += "\n"
@@ -254,4 +259,20 @@ func (fzw *FlatZincModel) ReadBestSolution(fileName string) (CPSolution, error) 
 		return nil, errors.New("no solution found")
 	}
 	return solutions[len(solutions)-1], nil
+}
+
+// helper functions
+
+func mapValuesSortedByKey(mapToSort map[string]Declares) []Declares {
+	keys := make([]string, 0, len(mapToSort))
+	for k := range mapToSort {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	res := []Declares{}
+	for _, k := range keys {
+		res = append(res, mapToSort[k])
+	}
+	return res
 }
