@@ -42,3 +42,15 @@ type CreateAssetResponse struct {
 	// The ID of the created asset based on the source asset information given in CreateAssetRequest object
 	AssetID string `json:"assetID"`
 }
+
+type DeleteAssetRequest struct {
+	// The destination catalog id in which the asset to be deleted exists
+	DestinationCatalogID string `json:"destinationCatalogID"`
+	// Asset ID of the to-be deleted asset
+	DestinationAssetID string `json:"destinationAssetID,omitempty"`
+}
+
+type DeleteAssetResponse struct {
+	// The ID of the created asset based on the source asset information given in CreateAssetRequest object
+	Status string `json:"status"`
+}

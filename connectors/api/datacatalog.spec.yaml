@@ -63,3 +63,24 @@ paths:
                   $ref: "../../charts/fybrik/files/taxonomy/datacatalog.json#/definitions/CreateAssetResponse"
           '400':
             description: Bad request - server cannot process the request due to client error
+
+  /deleteAssetInfo:
+      post:
+        summary: This REST API deletes data asset from the data catalog configured in fybrik
+        operationId: deleteAssetInfo
+        requestBody:
+          description: Delete Asset Request
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: "../../charts/fybrik/files/taxonomy/datacatalog.json#/definitions/DeleteAssetRequest"
+        responses:
+          '200':
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: "../../charts/fybrik/files/taxonomy/datacatalog.json#/definitions/DeleteAssetResponse"
+          '400':
+            description: Bad request - server cannot process the request due to client error

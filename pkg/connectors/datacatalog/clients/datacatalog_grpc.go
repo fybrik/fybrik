@@ -211,3 +211,9 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 func (m *grpcDataCatalog) CreateAssetInfo(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
 	return &datacatalog.CreateAssetResponse{AssetID: "testAssetID"}, nil
 }
+
+// just adding this dummy implementation as we are going to remove grpc support soon.
+// Then this file will be removed. Till then we provide a dummy implementation.
+func (m *grpcDataCatalog) DeleteAssetInfo(in *datacatalog.DeleteAssetRequest, creds string) (*datacatalog.DeleteAssetResponse, error) {
+	return &datacatalog.DeleteAssetResponse{Status: "DeleteAssetInfo not implemented via GRPC"}, nil
+}

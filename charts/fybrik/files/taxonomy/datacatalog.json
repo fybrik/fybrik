@@ -43,6 +43,34 @@
         }
       }
     },
+    "DeleteAssetRequest": {
+      "type": "object",
+      "required": [
+        "destinationCatalogID"
+      ],
+      "properties": {
+        "destinationAssetID": {
+          "description": "Asset ID of the to-be deleted asset",
+          "type": "string"
+        },
+        "destinationCatalogID": {
+          "description": "The destination catalog id in which the asset to be deleted exists",
+          "type": "string"
+        }
+      }
+    },
+    "DeleteAssetResponse": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "description": "The ID of the created asset based on the source asset information given in CreateAssetRequest object",
+          "type": "string"
+        }
+      }
+    },
     "GetAssetRequest": {
       "type": "object",
       "required": [
