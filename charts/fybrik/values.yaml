@@ -13,9 +13,10 @@ fullnameOverride: ""
 
 clusterScoped: true
 
+# If we work with "clusterScope:false", the namespace must already exist
 modulesNamespace: "fybrik-blueprints"
 
-# Set if need to only watch for FybrikApplication from a specific namespace
+# Set if needs to watch for FybrikApplication from a specific namespace only, or when we work with "clusterScope:false"
 # The namespace must already exist
 applicationNamespace: ""
 

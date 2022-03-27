@@ -5,11 +5,11 @@ apiVersion: rbac.authorization.k8s.io/v1
 {{- if .Values.clusterScoped }}
 kind: ClusterRole
 metadata:
-  name: katalog-viewer
+  name: fybrik-katalog-viewer-cr
 {{- else }}
 kind: Role
 metadata:
-  name: katalog-viewer
+  name: fybrik-katalog-viewer-role
   namespace: {{ .Values.applicationNamespace | default .Release.Namespace  }}
 {{- end }}
 rules:
