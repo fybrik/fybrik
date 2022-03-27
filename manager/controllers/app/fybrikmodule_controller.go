@@ -6,12 +6,10 @@ package app
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"os"
 
 	"github.com/rs/zerolog"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -20,6 +18,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
 )
@@ -85,11 +84,8 @@ func (r *FybrikModuleReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	// Update CRD status in case of change (other than deletion, which was handled separately)
-	if !equality.Semantic.DeepEqual(&moduleContext.Status, observedStatus) && moduleContext.DeletionTimestamp.IsZero() {
-		log.Trace().Msg("Reconcile: Updating status for desired generation " + fmt.Sprint(moduleContext.GetGeneration()))
-		if err := r.Client.Status().Update(ctx, moduleContext); err != nil {
-			return ctrl.Result{}, err
-		}
+	if moduleContext.DeletionTimestamp.IsZero() {
+		return ctrl.Result{}, utils.UpdateStatus(ctx, r.Client, moduleContext, observedStatus)
 	}
 	return ctrl.Result{}, nil
 }
