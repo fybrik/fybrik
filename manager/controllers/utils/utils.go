@@ -172,7 +172,8 @@ func UpdateStatus(ctx context.Context, cl client.Client, obj client.Object, prev
 	if err != nil {
 		return err
 	}
-	currentStatus := values["status"]
+	statusKey := "status"
+	currentStatus := values[statusKey]
 	if previousStatus != nil && equality.Semantic.DeepEqual(previousStatus, currentStatus) {
 		return nil
 	}
@@ -188,7 +189,7 @@ func UpdateStatus(ctx context.Context, cl client.Client, obj client.Object, prev
 		if err := cl.Get(ctx, client.ObjectKeyFromObject(res), res); err != nil {
 			return err
 		}
-		res.Object["status"] = currentStatus
+		res.Object[statusKey] = currentStatus
 		return cl.Status().Update(ctx, res)
 	})
 }
