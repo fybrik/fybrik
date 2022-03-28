@@ -385,14 +385,13 @@ func (p *PathBuilder) allowCapability(capability taxonomy.Capability) bool {
 func (p *PathBuilder) validateModuleRestrictions(edge *Edge) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
 	moduleSpec := edge.Module.Spec
-	restrictions := p.Asset.Configuration.ConfigDecisions[capability.Capability].DeploymentRestrictions.Modules
+	restrictions := []adminconfig.Restriction{}
 	oldPrefix := "capabilities."
 	newPrefix := oldPrefix + strconv.Itoa(edge.CapabilityIndex) + "."
-	for i := range restrictions {
-		if strings.Contains(restrictions[i].Property, oldPrefix) && !strings.Contains(restrictions[i].Property, newPrefix) {
-			restrictions[i].Property = strings.Replace(restrictions[i].Property, oldPrefix,
-				newPrefix, 1)
-		}
+	for i := range p.Asset.Configuration.ConfigDecisions[capability.Capability].DeploymentRestrictions.Modules {
+		restrict := p.Asset.Configuration.ConfigDecisions[capability.Capability].DeploymentRestrictions.Modules[i]
+		restrict.Property = strings.Replace(restrict.Property, oldPrefix, newPrefix, 1)
+		restrictions = append(restrictions, restrict)
 	}
 	return p.validateRestrictions(restrictions, &moduleSpec, "")
 }
