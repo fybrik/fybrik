@@ -68,6 +68,7 @@ rules:
   - update
   - watch
 - apiGroups:
+  # to allow access to datashim, see https://github.com/datashim-io/datashim
   - com.ie.ibm.hpsys
   resources:
   - datasets

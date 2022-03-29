@@ -3,7 +3,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: {{ template "fybrik.fullname" . }}-blueprints-rb
-  namespace: {{ .Values.modulesNamespace }}
+  namespace: {{ include "fybrik.getModulesNamespace" . }}
   labels:
     {{- include "fybrik.labels" . | nindent 4 }}
 roleRef:
