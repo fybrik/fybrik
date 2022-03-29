@@ -21,7 +21,7 @@ require (
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.14.0
-	github.com/open-policy-agent/opa v0.34.2
+	github.com/open-policy-agent/opa v0.37.0
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.26.0
 	github.com/spf13/cobra v1.3.0
