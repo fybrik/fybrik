@@ -2,21 +2,26 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# Overrides names
+# Override names
 nameOverride: ""
 fullnameOverride: ""
 
-# Set to false to disable deploying cluster scoped resources.
+# If Fybrik should not create cluster scope resources, set it to false.
 # Note that these resources are still required for a valid
 # deployment. Only set this to false if you deployed cluster
 # scoped resources using a different method.
-
 clusterScoped: true
 
-# If we work with "clusterScope:false", the namespace must already exist
-modulesNamespace: "fybrik-blueprints"
+# The namespace where Fybrik deploys data path components (modules)
+modulesNamespace:
+  # The Fybrik namespace name, if not defined, default "fybrik-blueprints" is used
+  name: ""
+  # if it is true, Fybrik, during its deployment, creates this namespace and removes it when Fybrik is uninstalled.
+  # Otherwise, it is a user responsibility to create this namespace, before Fybrik deployment.
+  managedByFybrik: true
 
-# Set if needs to watch for FybrikApplication from a specific namespace only, or when we work with "clusterScope:false"
+# Define a specific namespace, if Fybrik should watch for FybrikApplication from a specific namespace only,
+#  or when we work with "clusterScope:false"
 # The namespace must already exist
 applicationNamespace: ""
 
