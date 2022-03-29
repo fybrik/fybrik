@@ -4,13 +4,20 @@
 package utils
 
 import (
+	"context"
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"runtime"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/util/retry"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
@@ -131,7 +138,7 @@ const FybrikAppUUID = "app.fybrik.io/app-uuid"
 // GetFybrikApplicationUUID returns a globally unique ID for the FybrikApplication instance.
 // It must be unique over time and across clusters, even after the instance has been deleted,
 // because this ID will be used for logging purposes.
-func GetFybrikApplicationUUID(fapp *app.FybrikApplication) string {
+func GetFybrikApplicationUUID(fapp *api.FybrikApplication) string {
 	// Use the clusterwise unique kubernetes id.
 	// No need to add cluster because FybrikApplication instances can only be created on the coordinator cluster.
 	return string(fapp.GetObjectMeta().GetUID())
@@ -144,4 +151,54 @@ func GetFybrikApplicationUUIDfromAnnotations(annotations map[string]string) stri
 		return "UUID missing"
 	}
 	return uuid
+}
+
+// UpdateFinalizers adds or removes finalizers for a resource
+func UpdateFinalizers(ctx context.Context, cl client.Client, obj client.Object) error {
+	err := cl.Update(ctx, obj)
+	if !errors.IsConflict(err) {
+		return err
+	}
+	finalizers := obj.GetFinalizers()
+	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		// Retrieve the latest version of the object before attempting update
+		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
+		if err := cl.Get(ctx, client.ObjectKeyFromObject(obj), obj); err != nil {
+			return err
+		}
+		obj.SetFinalizers(finalizers)
+		return cl.Update(ctx, obj)
+	})
+}
+
+// UpdateStatus updates the resource status
+func UpdateStatus(ctx context.Context, cl client.Client, obj client.Object, previousStatus interface{}) error {
+	err := cl.Status().Update(ctx, obj)
+	if !errors.IsConflict(err) {
+		return err
+	}
+	values, err := StructToMap(obj)
+	if err != nil {
+		return err
+	}
+	statusKey := "status"
+	currentStatus := values[statusKey]
+	if previousStatus != nil && equality.Semantic.DeepEqual(previousStatus, currentStatus) {
+		return nil
+	}
+
+	res := &unstructured.Unstructured{}
+	res.SetGroupVersionKind(obj.GetObjectKind().GroupVersionKind())
+	res.SetName(obj.GetName())
+	res.SetNamespace(obj.GetNamespace())
+
+	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		// Retrieve the latest version of the object before attempting update
+		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
+		if err := cl.Get(ctx, client.ObjectKeyFromObject(res), res); err != nil {
+			return err
+		}
+		res.Object[statusKey] = currentStatus
+		return cl.Status().Update(ctx, res)
+	})
 }
