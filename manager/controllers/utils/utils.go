@@ -12,6 +12,7 @@ import (
 	"runtime"
 
 	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -154,6 +155,10 @@ func GetFybrikApplicationUUIDfromAnnotations(annotations map[string]string) stri
 
 // UpdateFinalizers adds or removes finalizers for a resource
 func UpdateFinalizers(ctx context.Context, cl client.Client, obj client.Object) error {
+	err := cl.Update(ctx, obj)
+	if !errors.IsConflict(err) {
+		return err
+	}
 	finalizers := obj.GetFinalizers()
 	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		// Retrieve the latest version of the object before attempting update
@@ -168,6 +173,10 @@ func UpdateFinalizers(ctx context.Context, cl client.Client, obj client.Object) 
 
 // UpdateStatus updates the resource status
 func UpdateStatus(ctx context.Context, cl client.Client, obj client.Object, previousStatus interface{}) error {
+	err := cl.Status().Update(ctx, obj)
+	if !errors.IsConflict(err) {
+		return err
+	}
 	values, err := StructToMap(obj)
 	if err != nil {
 		return err
