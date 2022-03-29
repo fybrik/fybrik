@@ -51,6 +51,7 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 	if len(splittedID) != 2 {
 		errorMessage := fmt.Sprintf("request has an invalid asset ID %s (must be in namespace/name format)", request.AssetID)
 		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		return
 	}
 	namespace, name := splittedID[0], splittedID[1]
 
