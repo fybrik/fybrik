@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# Override names
+# Overrides names
 nameOverride: ""
 fullnameOverride: ""
 

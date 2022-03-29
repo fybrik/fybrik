@@ -1,4 +1,4 @@
-{{- if or .Values.coordinator.enabled .Values.worker.enabled  }}
+{{- if or .Values.coordinator.enabled .Values.worker.enabled }}
 {{- if .Values.modulesNamespace.managedByFybrik }}
 apiVersion: v1
 kind: Namespace
