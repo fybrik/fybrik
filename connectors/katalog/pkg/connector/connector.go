@@ -80,11 +80,11 @@ func (r *Handler) reportError(c *gin.Context, httpCode int, errorMessage string)
 //     Then an asset id is created with name : <DestinationAssetID>
 // (b) When DestinationAssetID is not specified:
 //     Then an asset is created with name: fybrik-<Kubernetes Generated Random String>
-func (r *Handler) createAssetInfo(c *gin.Context) {
+func (r *Handler) createAsset(c *gin.Context) {
 	// Parse request
 	var request datacatalog.CreateAssetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		r.reportError(c, http.StatusBadRequest, "Error during ShouldBindJSON in createAssetInfo"+err.Error())
+		r.reportError(c, http.StatusBadRequest, "Error during ShouldBindJSON in createAsset"+err.Error())
 		return
 	}
 

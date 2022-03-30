@@ -45,9 +45,9 @@ func (d *DataCatalogDummy) GetAssetInfo(in *datacatalog.GetAssetRequest, creds s
 	return nil, errors.New(app.InvalidAssetID)
 }
 
-func (d *DataCatalogDummy) CreateAssetInfo(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
+func (d *DataCatalogDummy) CreateAsset(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
 	// TODO
-	// will be provide a proper implementation once the implementation of CreateAssetInfo in katalog-connector
+	// will be provide a proper implementation once the implementation of CreateAsset in katalog-connector
 	// is completed in a future PR. Till then a dummy implementation is provided.
 	return &datacatalog.CreateAssetResponse{AssetID: "testAssetID"}, nil
 }
