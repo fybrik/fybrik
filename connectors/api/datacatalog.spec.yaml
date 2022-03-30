@@ -67,7 +67,7 @@ paths:
   /deleteAsset:
       post:
         summary: This REST API deletes data asset from the data catalog configured in fybrik
-        operationId: deleteAssetInfo
+        operationId: deleteAsset
         requestBody:
           description: Delete Asset Request
           required: true

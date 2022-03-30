@@ -146,30 +146,30 @@ func (a *DefaultApiService) CreateAssetExecute(r ApiCreateAssetRequest) (*Create
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
-type ApiDeleteAssetInfoRequest struct {
+type ApiDeleteAssetRequest struct {
 	ctx                context.Context
 	ApiService         *DefaultApiService
 	deleteAssetRequest *DeleteAssetRequest
 }
 
 // Delete Asset Request
-func (r ApiDeleteAssetInfoRequest) DeleteAssetRequest(deleteAssetRequest DeleteAssetRequest) ApiDeleteAssetInfoRequest {
+func (r ApiDeleteAssetRequest) DeleteAssetRequest(deleteAssetRequest DeleteAssetRequest) ApiDeleteAssetRequest {
 	r.deleteAssetRequest = &deleteAssetRequest
 	return r
 }
 
-func (r ApiDeleteAssetInfoRequest) Execute() (*DeleteAssetResponse, *http.Response, error) {
-	return r.ApiService.DeleteAssetInfoExecute(r)
+func (r ApiDeleteAssetRequest) Execute() (*DeleteAssetResponse, *http.Response, error) {
+	return r.ApiService.DeleteAssetExecute(r)
 }
 
 /*
-DeleteAssetInfo This REST API deletes data asset from the data catalog configured in fybrik
+DeleteAsset This REST API deletes data asset from the data catalog configured in fybrik
 
  @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiDeleteAssetInfoRequest
+ @return ApiDeleteAssetRequest
 */
-func (a *DefaultApiService) DeleteAssetInfo(ctx context.Context) ApiDeleteAssetInfoRequest {
-	return ApiDeleteAssetInfoRequest{
+func (a *DefaultApiService) DeleteAsset(ctx context.Context) ApiDeleteAssetRequest {
+	return ApiDeleteAssetRequest{
 		ApiService: a,
 		ctx:        ctx,
 	}
@@ -177,7 +177,7 @@ func (a *DefaultApiService) DeleteAssetInfo(ctx context.Context) ApiDeleteAssetI
 
 // Execute executes the request
 //  @return DeleteAssetResponse
-func (a *DefaultApiService) DeleteAssetInfoExecute(r ApiDeleteAssetInfoRequest) (*DeleteAssetResponse, *http.Response, error) {
+func (a *DefaultApiService) DeleteAssetExecute(r ApiDeleteAssetRequest) (*DeleteAssetResponse, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPost
 		localVarPostBody    interface{}
@@ -185,7 +185,7 @@ func (a *DefaultApiService) DeleteAssetInfoExecute(r ApiDeleteAssetInfoRequest) 
 		localVarReturnValue *DeleteAssetResponse
 	)
 
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.DeleteAssetInfo")
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.DeleteAsset")
 	if err != nil {
 		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}

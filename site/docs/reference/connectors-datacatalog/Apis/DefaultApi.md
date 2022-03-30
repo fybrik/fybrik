@@ -5,6 +5,7 @@ All URIs are relative to *https://localhost:8080*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**createAsset**](DefaultApi.md#createAsset) | **POST** /createAsset | This REST API writes data asset information to the data catalog configured in fybrik
+[**deleteAsset**](DefaultApi.md#deleteAsset) | **POST** /deleteAsset | This REST API deletes data asset from the data catalog configured in fybrik
 [**getAssetInfo**](DefaultApi.md#getAssetInfo) | **POST** /getAssetInfo | This REST API gets data asset information from the data catalog configured in fybrik for the data sets indicated in FybrikApplication yaml
 
 
@@ -26,6 +27,37 @@ Name | Type | Description  | Notes
 
 
 [**CreateAssetResponse**](../Models/CreateAssetResponse.md)
+
+
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+ [[Back to API-Specification]](../README.md) 
+
+<a name="deleteAsset"></a>
+## **deleteAsset**
+> DeleteAssetResponse deleteAsset(DeleteAssetRequest)
+
+This REST API deletes data asset from the data catalog configured in fybrik
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**DeleteAssetRequest**|**DeleteAssetRequest**| Delete Asset Request |
+
+### Return type
+
+
+[**DeleteAssetResponse**](../Models/DeleteAssetResponse.md)
 
 
 
