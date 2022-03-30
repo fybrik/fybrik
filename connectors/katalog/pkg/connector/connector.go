@@ -51,6 +51,7 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 	if len(splittedID) != 2 {
 		errorMessage := fmt.Sprintf("request has an invalid asset ID %s (must be in namespace/name format)", request.AssetID)
 		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		return
 	}
 	namespace, name := splittedID[0], splittedID[1]
 
@@ -79,11 +80,11 @@ func (r *Handler) reportError(c *gin.Context, httpCode int, errorMessage string)
 //     Then an asset id is created with name : <DestinationAssetID>
 // (b) When DestinationAssetID is not specified:
 //     Then an asset is created with name: fybrik-<Kubernetes Generated Random String>
-func (r *Handler) createAssetInfo(c *gin.Context) {
+func (r *Handler) createAsset(c *gin.Context) {
 	// Parse request
 	var request datacatalog.CreateAssetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		r.reportError(c, http.StatusBadRequest, "Error during ShouldBindJSON in createAssetInfo"+err.Error())
+		r.reportError(c, http.StatusBadRequest, "Error during ShouldBindJSON in createAsset"+err.Error())
 		return
 	}
 

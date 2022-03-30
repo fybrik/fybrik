@@ -1,8 +1,8 @@
 {{- if or .Values.coordinator.enabled .Values.worker.enabled }}
-{{- if .Values.clusterScoped }}
+{{- if .Values.modulesNamespace.managedByFybrik }}
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ .Values.modulesNamespace }}
+  name: {{ include "fybrik.getModulesNamespace" . }}
 {{- end }}
 {{- end }}

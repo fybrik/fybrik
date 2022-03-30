@@ -141,10 +141,10 @@ func getDatasetCredentials(item *DataInfo) map[string]app.Vault {
 	return vaultMap
 }
 
-func (p *PlotterGenerator) addTemplate(element *ResolvedEdge, plotterSpec *app.PlotterSpec) {
+func (p *PlotterGenerator) addTemplate(element *ResolvedEdge, plotterSpec *app.PlotterSpec, templateName string) {
 	moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
 	template := app.Template{
-		Name: string(moduleCapability.Capability),
+		Name: templateName,
 		Modules: []app.ModuleInfo{{
 			Name:       element.Module.Name,
 			Type:       element.Module.Spec.Type,
@@ -157,7 +157,7 @@ func (p *PlotterGenerator) addTemplate(element *ResolvedEdge, plotterSpec *app.P
 }
 
 func (p *PlotterGenerator) addInMemoryStep(element *ResolvedEdge, datasetID string, api *datacatalog.ResourceDetails,
-	steps []app.DataFlowStep) []app.DataFlowStep {
+	steps []app.DataFlowStep, templateName string) []app.DataFlowStep {
 	if steps == nil {
 		steps = []app.DataFlowStep{}
 	}
@@ -171,7 +171,7 @@ func (p *PlotterGenerator) addInMemoryStep(element *ResolvedEdge, datasetID stri
 	}
 	steps = append(steps, app.DataFlowStep{
 		Cluster:  element.Cluster,
-		Template: string(element.Module.Spec.Capabilities[element.CapabilityIndex].Capability),
+		Template: templateName,
 		Parameters: &app.StepParameters{
 			Arguments: []*app.StepArgument{{
 				AssetID: assetID,
@@ -185,13 +185,13 @@ func (p *PlotterGenerator) addInMemoryStep(element *ResolvedEdge, datasetID stri
 }
 
 func (p *PlotterGenerator) addStep(element *ResolvedEdge, datasetID string, api *datacatalog.ResourceDetails,
-	steps []app.DataFlowStep) []app.DataFlowStep {
+	steps []app.DataFlowStep, templateName string) []app.DataFlowStep {
 	if steps == nil {
 		steps = []app.DataFlowStep{}
 	}
 	steps = append(steps, app.DataFlowStep{
 		Cluster:  element.Cluster,
-		Template: string(element.Module.Spec.Capabilities[element.CapabilityIndex].Capability),
+		Template: templateName,
 		Parameters: &app.StepParameters{
 			Arguments: []*app.StepArgument{{AssetID: datasetID}, {AssetID: datasetID + "-copy"}},
 			API:       api,
@@ -220,8 +220,10 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 	}
 	for _, element := range selection.DataPath {
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
-		p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msgf("Adding module for %s", moduleCapability.Capability)
-		p.addTemplate(element, plotterSpec)
+		p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msgf("Adding module %s for capability %s", element.Module.Name,
+			moduleCapability.Capability)
+		templateName := element.Module.Name + "-" + string(moduleCapability.Capability)
+		p.addTemplate(element, plotterSpec, templateName)
 		var api *datacatalog.ResourceDetails
 		if moduleCapability.API != nil {
 			if api, err = moduleAPIToService(moduleCapability.API, moduleCapability.Scope,
@@ -236,7 +238,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 				p.Log.Error().Err(err).Str(logging.DATASETID, item.Context.DataSetID).Msg("Storage allocation for copy failed")
 				return err
 			}
-			steps = p.addStep(element, datasetID, api, steps)
+			steps = p.addStep(element, datasetID, api, steps, templateName)
 			copyAssetID := steps[len(steps)-1].Parameters.Arguments[1].AssetID
 			copyAsset := app.AssetDetails{
 				AdvertisedAssetID: datasetID,
@@ -252,7 +254,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 			// clear steps
 			steps = nil
 		} else {
-			steps = p.addInMemoryStep(element, datasetID, api, steps)
+			steps = p.addInMemoryStep(element, datasetID, api, steps, templateName)
 		}
 	}
 	if steps != nil {

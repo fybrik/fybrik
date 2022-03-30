@@ -26,7 +26,7 @@ var (
 // DefaultApiService DefaultApi service
 type DefaultApiService service
 
-type ApiCreateAssetInfoRequest struct {
+type ApiCreateAssetRequest struct {
 	ctx                          context.Context
 	ApiService                   *DefaultApiService
 	xRequestDatacatalogWriteCred *string
@@ -34,29 +34,29 @@ type ApiCreateAssetInfoRequest struct {
 }
 
 // This header carries credential information related to accessing the relevant destination catalog.
-func (r ApiCreateAssetInfoRequest) XRequestDatacatalogWriteCred(xRequestDatacatalogWriteCred string) ApiCreateAssetInfoRequest {
+func (r ApiCreateAssetRequest) XRequestDatacatalogWriteCred(xRequestDatacatalogWriteCred string) ApiCreateAssetRequest {
 	r.xRequestDatacatalogWriteCred = &xRequestDatacatalogWriteCred
 	return r
 }
 
 // Write Asset Request
-func (r ApiCreateAssetInfoRequest) CreateAssetRequest(createAssetRequest CreateAssetRequest) ApiCreateAssetInfoRequest {
+func (r ApiCreateAssetRequest) CreateAssetRequest(createAssetRequest CreateAssetRequest) ApiCreateAssetRequest {
 	r.createAssetRequest = &createAssetRequest
 	return r
 }
 
-func (r ApiCreateAssetInfoRequest) Execute() (*CreateAssetResponse, *http.Response, error) {
-	return r.ApiService.CreateAssetInfoExecute(r)
+func (r ApiCreateAssetRequest) Execute() (*CreateAssetResponse, *http.Response, error) {
+	return r.ApiService.CreateAssetExecute(r)
 }
 
 /*
-CreateAssetInfo This REST API writes data asset information to the data catalog configured in fybrik
+CreateAsset This REST API writes data asset information to the data catalog configured in fybrik
 
  @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiCreateAssetInfoRequest
+ @return ApiCreateAssetRequest
 */
-func (a *DefaultApiService) CreateAssetInfo(ctx context.Context) ApiCreateAssetInfoRequest {
-	return ApiCreateAssetInfoRequest{
+func (a *DefaultApiService) CreateAsset(ctx context.Context) ApiCreateAssetRequest {
+	return ApiCreateAssetRequest{
 		ApiService: a,
 		ctx:        ctx,
 	}
@@ -64,7 +64,7 @@ func (a *DefaultApiService) CreateAssetInfo(ctx context.Context) ApiCreateAssetI
 
 // Execute executes the request
 //  @return CreateAssetResponse
-func (a *DefaultApiService) CreateAssetInfoExecute(r ApiCreateAssetInfoRequest) (*CreateAssetResponse, *http.Response, error) {
+func (a *DefaultApiService) CreateAssetExecute(r ApiCreateAssetRequest) (*CreateAssetResponse, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPost
 		localVarPostBody    interface{}
@@ -72,12 +72,12 @@ func (a *DefaultApiService) CreateAssetInfoExecute(r ApiCreateAssetInfoRequest) 
 		localVarReturnValue *CreateAssetResponse
 	)
 
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.CreateAssetInfo")
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.CreateAsset")
 	if err != nil {
 		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/createAssetInfo"
+	localVarPath := localBasePath + "/createAsset"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}

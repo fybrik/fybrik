@@ -36,10 +36,10 @@ paths:
             description: Bad request - server cannot process the request due to client error
 
 
-  /createAssetInfo:
+  /createAsset:
       post:
         summary: This REST API writes data asset information to the data catalog configured in fybrik
-        operationId: createAssetInfo
+        operationId: createAsset
         parameters:
           - in: header
             name: X-Request-Datacatalog-Write-Cred
