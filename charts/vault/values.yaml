@@ -2,11 +2,12 @@ plugins:
   # Settings related to vault-plugin-secrets-kubernetes-reader plugin  
   vaultPluginSecretsKubernetesReader:
     enabled: true
-    # If true secrets can be read from any namespace. Otherwise they can be read only from
+    # If true secrets can be read from any namespace. Otherwise, they can be read only from
     # selected namespaces listed in namespaces field.
     clusterScope: true
-    # A list of namespaces that Vault can read Kuberenets secrets from.
+    # A list of namespaces that Vault can read Kubernetes secrets from.
     namespaces: 
       #- fybrik-notebook-sample
       #- fybrik-system
+# should be the same as in the chart/fybrik/values.yaml
 modulesNamespace: "fybrik-blueprints"

@@ -5,18 +5,19 @@ apiVersion: rbac.authorization.k8s.io/v1
 {{- if .Values.clusterScoped }}
 kind: ClusterRoleBinding
 metadata:
-  name:  katalog-connector-viewer
+  name:  {{ template "fybrik.fullname" . }}-katalog-connector-crb
 roleRef:
   kind: ClusterRole
+  name: fybrik-katalog-editor-cr
 {{- else }}
 kind: RoleBinding
 metadata:
-  name:  katalog-connector-viewer
+  name:  {{ template "fybrik.fullname" . }}-katalog-connector-rb
   namespace: {{ .Values.applicationNamespace | default .Release.Namespace  }}
 roleRef:
   kind: Role
+  name: {{ template "fybrik.fullname" . }}-katalog-editor-role
 {{- end }}
-  name: katalog-viewer
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
