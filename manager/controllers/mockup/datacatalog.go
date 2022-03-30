@@ -52,7 +52,7 @@ func (d *DataCatalogDummy) CreateAsset(in *datacatalog.CreateAssetRequest, creds
 	return &datacatalog.CreateAssetResponse{AssetID: "testAssetID"}, nil
 }
 
-func (m *DataCatalogDummy) DeleteAssetInfo(in *datacatalog.DeleteAssetRequest, creds string) (*datacatalog.DeleteAssetResponse, error) {
+func (m *DataCatalogDummy) DeleteAsset(in *datacatalog.DeleteAssetRequest, creds string) (*datacatalog.DeleteAssetResponse, error) {
 	// TODO
 	// will be provide a proper implementation once the implementation of DeleteAssetInfo in katalog-connector
 	// is completed in a future PR. Till then a dummy implementation is provided.

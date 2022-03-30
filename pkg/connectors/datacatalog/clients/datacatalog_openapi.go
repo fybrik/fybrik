@@ -60,7 +60,7 @@ func (m *openAPIDataCatalog) CreateAsset(in *datacatalog.CreateAssetRequest, cre
 	return resp, nil
 }
 
-func (m *openAPIDataCatalog) DeleteAssetInfo(in *datacatalog.DeleteAssetRequest, creds string) (*datacatalog.DeleteAssetResponse, error) {
+func (m *openAPIDataCatalog) DeleteAsset(in *datacatalog.DeleteAssetRequest, creds string) (*datacatalog.DeleteAssetResponse, error) {
 	resp, _, err := m.client.DefaultApi.DeleteAssetInfo(context.Background()).DeleteAssetRequest(*in).Execute()
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("delete asset info from %s failed", m.name))
