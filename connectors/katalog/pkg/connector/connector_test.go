@@ -101,11 +101,11 @@ func TestGetAssetInfo(t *testing.T) {
 	})
 }
 
-func TestCreateAssetInfo(t *testing.T) {
+func TestCreateAsset(t *testing.T) {
 	t.Parallel()
 	g := NewGomegaWithT(t)
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
-	t.Log("Executing TestCreateAssetInfo")
+	t.Log("Executing TestCreateAsset")
 
 	s3Connection := taxonomy.Connection{
 		Name: "s3",
@@ -165,10 +165,10 @@ func TestCreateAssetInfo(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	c.Request = httptest.NewRequest(http.MethodPost, "http://localhost/", bytes.NewBuffer(requestBytes))
 
-	// Call createAssetInfo with the fake request
-	handler.createAssetInfo(c)
+	// Call createAsset with the fake request
+	handler.createAsset(c)
 
-	t.Run("createAssetInfo", func(t *testing.T) {
+	t.Run("createAsset", func(t *testing.T) {
 		assert.Equal(t, 201, w.Code)
 
 		response := &datacatalog.CreateAssetResponse{}
@@ -199,16 +199,16 @@ func TestCreateAssetInfo(t *testing.T) {
 			fmt.Println(err)
 			return
 		}
-		t.Log("Created Asset in TestCreateAssetInfo : JSON format: ", string(b))
-		t.Log("Created Asset in TestCreateAssetInfo : ", asset)
+		t.Log("Created Asset in TestCreateAsset : JSON format: ", string(b))
+		t.Log("Created Asset in TestCreateAsset : ", asset)
 		output := render.AsCode(asset)
-		t.Log("Created AssetID in TestCreateAssetInfo - render as code output: ", output)
-		t.Log("Completed TestCreateAssetInfo")
+		t.Log("Created AssetID in TestCreateAsset - render as code output: ", output)
+		t.Log("Completed TestCreateAsset")
 		// just for logging - end
 	})
 }
 
-func TestCreateAssetInfoWthNoDestinationAssetID(t *testing.T) {
+func TestCreateAssetWthNoDestinationAssetID(t *testing.T) {
 	t.Parallel()
 	g := NewGomegaWithT(t)
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
@@ -269,10 +269,10 @@ func TestCreateAssetInfoWthNoDestinationAssetID(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	c.Request = httptest.NewRequest(http.MethodPost, "http://localhost/", bytes.NewBuffer(requestBytes))
 
-	// Call createAssetInfo with the fake request
-	handler.createAssetInfo(c)
+	// Call createAsset with the fake request
+	handler.createAsset(c)
 
-	t.Run("createAssetInfo", func(t *testing.T) {
+	t.Run("createAsset", func(t *testing.T) {
 		assert.Equal(t, 201, w.Code)
 
 		response := &datacatalog.CreateAssetResponse{}
@@ -307,11 +307,11 @@ func TestCreateAssetInfoWthNoDestinationAssetID(t *testing.T) {
 			fmt.Println(err)
 			return
 		}
-		t.Log("Created Asset in TestCreateAssetInfoWthNoDestinationAssetID : JSON format: ", string(b))
-		t.Log("Created Asset in TestCreateAssetInfoWthNoDestinationAssetID : ", asset)
+		t.Log("Created Asset in TestCreateAssetWthNoDestinationAssetID : JSON format: ", string(b))
+		t.Log("Created Asset in TestCreateAssetWthNoDestinationAssetID : ", asset)
 		output := render.AsCode(asset)
-		t.Log("Created AssetID in TestCreateAssetInfoWthNoDestinationAssetID - render as code output: ", output)
-		t.Log("Completed TestCreateAssetInfoWthNoDestinationAssetID")
+		t.Log("Created AssetID in TestCreateAssetWthNoDestinationAssetID - render as code output: ", output)
+		t.Log("Completed TestCreateAssetWthNoDestinationAssetID")
 		// just for logging - end
 	})
 }

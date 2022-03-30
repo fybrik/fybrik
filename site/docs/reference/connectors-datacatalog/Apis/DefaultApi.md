@@ -4,13 +4,13 @@ All URIs are relative to *https://localhost:8080*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**createAssetInfo**](DefaultApi.md#createAssetInfo) | **POST** /createAssetInfo | This REST API writes data asset information to the data catalog configured in fybrik
+[**createAsset**](DefaultApi.md#createAsset) | **POST** /createAsset | This REST API writes data asset information to the data catalog configured in fybrik
 [**getAssetInfo**](DefaultApi.md#getAssetInfo) | **POST** /getAssetInfo | This REST API gets data asset information from the data catalog configured in fybrik for the data sets indicated in FybrikApplication yaml
 
 
-<a name="createAssetInfo"></a>
-## **createAssetInfo**
-> CreateAssetResponse createAssetInfo(X-Request-Datacatalog-Write-CredCreateAssetRequest)
+<a name="createAsset"></a>
+## **createAsset**
+> CreateAssetResponse createAsset(X-Request-Datacatalog-Write-CredCreateAssetRequest)
 
 This REST API writes data asset information to the data catalog configured in fybrik
 
