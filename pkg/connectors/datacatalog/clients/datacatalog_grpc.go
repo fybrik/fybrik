@@ -13,6 +13,7 @@ import (
 	"emperror.dev/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
@@ -38,7 +39,7 @@ type grpcDataCatalog struct {
 func NewGrpcDataCatalog(name, connectionURL string, connectionTimeout time.Duration) (DataCatalog, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), connectionTimeout)
 	defer cancel()
-	connection, err := grpc.DialContext(ctx, connectionURL, grpc.WithInsecure(), grpc.WithBlock())
+	connection, err := grpc.DialContext(ctx, connectionURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("NewGrpcDataCatalog failed when connecting to %s", connectionURL))
 	}
@@ -106,35 +107,37 @@ func ConvertDataCatalogGrpcRespToOpenAPIResp(result *pb.CatalogDatasetInfo) (*da
 
 	//nolint:revive // Ignore add-constant to log msg
 	for colName, compMetaData := range result.GetDetails().Metadata.GetComponentsMetadata() {
-		if compMetaData != nil {
-			rscCol := datacatalog.ResourceColumn{
-				Name: colName}
-			rsColMap := make(map[string]interface{})
-			tags := compMetaData.GetTags()
-			for i := 0; i < len(tags); i++ {
-				rsColMap[tags[i]] = true
-			}
-
-			responseBytes, errJSON := json.MarshalIndent(rsColMap, "", "\t")
-			if errJSON != nil {
-				return nil, fmt.Errorf("error Marshalling in ConvertDataCatalogGrpcRespToOpenAPIResp: %v", errJSON)
-			}
-			log.Print("responseBytes after MarshalIndent in ConvertDataCatalogGrpcRespToOpenAPIResp:" + string(responseBytes))
-
-			if err := json.Unmarshal(responseBytes, &rscCol.Tags); err != nil {
-				return nil, fmt.Errorf("error UnMarshalling in ConvertDataCatalogGrpcRespToOpenAPIResp: %v", errJSON)
-			}
-
-			// just printing - start
-			responseBytes, errJSON = json.MarshalIndent(&rscCol, "", "\t")
-			if errJSON != nil {
-				return nil, fmt.Errorf("error Marshalling in ConvertDataCatalogGrpcRespToOpenAPIResp: %v", errJSON)
-			}
-			log.Print("responseBytes after MarshalIndent in ConvertDataCatalogGrpcRespToOpenAPIResp:" + string(responseBytes))
-			// just printing - end
-
-			resourceCols = append(resourceCols, rscCol)
+		if compMetaData == nil {
+			continue
 		}
+
+		rscCol := datacatalog.ResourceColumn{
+			Name: colName}
+		rsColMap := make(map[string]interface{})
+		tags := compMetaData.GetTags()
+		for i := 0; i < len(tags); i++ {
+			rsColMap[tags[i]] = true
+		}
+
+		responseBytes, errJSON := json.MarshalIndent(rsColMap, "", "\t")
+		if errJSON != nil {
+			return nil, fmt.Errorf("error Marshalling in ConvertDataCatalogGrpcRespToOpenAPIResp: %v", errJSON)
+		}
+		log.Print("responseBytes after MarshalIndent in ConvertDataCatalogGrpcRespToOpenAPIResp:" + string(responseBytes))
+
+		if err := json.Unmarshal(responseBytes, &rscCol.Tags); err != nil {
+			return nil, fmt.Errorf("error UnMarshalling in ConvertDataCatalogGrpcRespToOpenAPIResp: %v", errJSON)
+		}
+
+		// just printing - start
+		responseBytes, errJSON = json.MarshalIndent(&rscCol, "", "\t")
+		if errJSON != nil {
+			return nil, fmt.Errorf("error Marshalling in ConvertDataCatalogGrpcRespToOpenAPIResp: %v", errJSON)
+		}
+		log.Print("responseBytes after MarshalIndent in ConvertDataCatalogGrpcRespToOpenAPIResp:" + string(responseBytes))
+		// just printing - end
+
+		resourceCols = append(resourceCols, rscCol)
 	}
 
 	tags := result.GetDetails().Metadata.DatasetTags
