@@ -189,7 +189,7 @@ helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
 helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait
 ```
 
-### How to add expiry date to policies
+### How to add start and/or expiry dates to policies
 
 By utilizing the time built-in functions of OPA, each policy can be added with an expiry date. The related built-in functions are:
 
@@ -197,7 +197,7 @@ By utilizing the time built-in functions of OPA, each policy can be added with a
 output := time.now_ns() //Output is a number representing the current time since epoch(1970.1.1) in nanoseconds, in the time zone of UTC.
 output := time.parse_rfc3339_ns(value) //Output is a number representing the time value in nanoseconds since epoch, in the time zone of UTC; or undefined if outside the valid time range that can fit within an int64. rfc3339 refers to the predefined time format, that is year-month-dayThour-minute-secondZ.
 ```
-`parse_rfc3339_ns` enables to add the expiry date, and `now_ns` captures the date when policies are applied. Through comparisons, it can be acquired whether the current policy is still valid. Below is an example.
+`parse_rfc3339_ns` enables to add the expiry date as well as the the date for the policy to become effective, and `now_ns` captures the date when policies are applied. Through comparisons, it can be acquired whether the current policy is still valid. Below is an example.
 
 ```
 package adminconfig

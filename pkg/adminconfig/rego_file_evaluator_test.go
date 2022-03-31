@@ -129,8 +129,7 @@ func EvaluatorforExpiringPolicies() *adminconfig.RegoPolicyEvaluator {
 			input.workload.properties.severity != "critical"
 			input.request.dataset.geography == input.workload.cluster.metadata.region
 			nowDate := time.now_ns()
-            startDate := time.parse_rfc3339_ns("2022-01-01T00:00:00Z")
-            expiration := time.parse_rfc3339_ns("2022-06-01T00:00:00Z")
+			startDate := time.parse_rfc3339_ns("2022-01-01T00:00:00Z")
 			nowDate >= startDate
 			decision := {"policy": policy, "deploy": "False"}
 		}
@@ -142,7 +141,7 @@ func EvaluatorforExpiringPolicies() *adminconfig.RegoPolicyEvaluator {
 			input.request.dataset.geography != input.workload.cluster.metadata.region
 			nowDate := time.now_ns()
 			startDate := time.parse_rfc3339_ns("2022-01-01T00:00:00Z")
-            expiration := time.parse_rfc3339_ns("2022-02-01T00:00:00Z")
+			expiration := time.parse_rfc3339_ns("2022-02-01T00:00:00Z")
 			nowDate >= startDate
 			nowDate < expiration
 			decision := {"policy": policy, "deploy": "False"}
