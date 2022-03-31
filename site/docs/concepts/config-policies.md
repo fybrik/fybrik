@@ -188,3 +188,29 @@ cd fybrik
 helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
 helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait
 ```
+
+### How to add expiry date to policies
+
+By utilizing the time built-in functions of OPA, each policy can be added with an expiry date. The related built-in functions are:
+
+``` 
+output := time.now_ns() //Output is a number representing the current time since epoch(1970.1.1) in nanoseconds, in the time zone of UTC.
+output := time.parse_rfc3339_ns(value) //Output is a number representing the time value in nanoseconds since epoch, in the time zone of UTC; or undefined if outside the valid time range that can fit within an int64. rfc3339 refers to the predefined time format, that is year-month-dayThour-minute-secondZ.
+```
+`parse_rfc3339_ns` enables to add the expiry date, and `now_ns` captures the date when policies are applied. Through comparisons, it can be acquired whether the current policy is still valid. Below is an example.
+
+```
+package adminconfig
+
+# vaild from 2022.1.1, expire on 2022.6.1
+config[{"capability": "copy", "decision": decision}] {
+    policy := {"policySetID": "1", "ID": "test-1"}
+    nowDate := time.now_ns()
+    startDate := time.parse_rfc3339_ns("2022-01-01T00:00:00Z")
+    expiration := time.parse_rfc3339_ns("2022-06-01T00:00:00Z")
+    nowDate >= startDate
+    nowDate < expiration
+    decision := {"policy": policy, "deploy": "False"}
+}
+```
+Note that an empty ConfigDecisions map will be returned if the expiration date is exceeded by the time when the policy is applied. 
