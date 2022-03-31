@@ -15,8 +15,17 @@ import (
 )
 
 func TestBuildModel(t *testing.T) {
-	mod := appApi.FybrikModule{}
-	moduleMap := map[string]*appApi.FybrikModule{"mod1": &mod, "mod2": &mod}
+	encryptAction := appApi.ModuleSupportedAction{Name: "Encrypt"}
+	reductAction := appApi.ModuleSupportedAction{Name: "Reduct"}
+	copyAction := appApi.ModuleSupportedAction{Name: "Copy"}
+	modCap1 := appApi.ModuleCapability{Capability: "read", Scope: "asset", Actions: []appApi.ModuleSupportedAction{encryptAction, reductAction}}
+	modCap2 := appApi.ModuleCapability{Capability: "read", Scope: "asset", Actions: []appApi.ModuleSupportedAction{encryptAction}}
+	modCap3 := appApi.ModuleCapability{Capability: "copy", Scope: "asset", Actions: []appApi.ModuleSupportedAction{copyAction}}
+	modSpec1 := appApi.FybrikModuleSpec{Capabilities: []appApi.ModuleCapability{modCap1, modCap3}}
+	modSpec2 := appApi.FybrikModuleSpec{Capabilities: []appApi.ModuleCapability{modCap2}}
+	mod1 := appApi.FybrikModule{Spec: modSpec1}
+	mod2 := appApi.FybrikModule{Spec: modSpec2}
+	moduleMap := map[string]*appApi.FybrikModule{"mod1": &mod1, "mod2": &mod2}
 	cluster := multicluster.Cluster{}
 	clusters := []multicluster.Cluster{cluster}
 	storageAccounts := []appApi.FybrikStorageAccount{}
@@ -26,7 +35,10 @@ func TestBuildModel(t *testing.T) {
 		{Name: "Reduct", AdditionalProperties: serde.Properties{}},
 		{Name: "Encrypt", AdditionalProperties: serde.Properties{}},
 	}
-	evalOutput := adminconfig.EvaluatorOutput{}
+
+	decision := adminconfig.Decision{Deploy: adminconfig.StatusFalse}
+	decisionMap := adminconfig.DecisionPerCapabilityMap{"copy": decision}
+	evalOutput := adminconfig.EvaluatorOutput{ConfigDecisions: decisionMap}
 	dataInfo := app.DataInfo{
 		DataDetails:         nil,
 		Context:             nil,
