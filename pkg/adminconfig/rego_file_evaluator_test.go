@@ -119,6 +119,52 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 	return &adminconfig.RegoPolicyEvaluator{Log: logging.LogInit("test", "ConfigPolicyEvaluator"), Query: query}
 }
 
+func EvaluatorforExpiringPolicies() *adminconfig.RegoPolicyEvaluator {
+	module := `
+		package test
+		# copy scenario, same location, vaild from 2022.1.1, expire on 2022.6.1
+		config[{"capability": "copy", "decision": decision}] {
+			policy := {"policySetID": "1", "ID": "test-1"}
+			input.workload.properties.stage == "PROD"
+			input.workload.properties.severity != "critical"
+			input.request.dataset.geography == input.workload.cluster.metadata.region
+			nowDate := time.now_ns()
+			layout := "2006-Jan-02"
+            startDate := time.parse_ns(layout, "2022-Jan-01")
+            expiration := time.parse_ns(layout, "2022-Jun-01")
+			nowDate >= startDate
+			decision := {"policy": policy, "deploy": "False" }
+		}
+		# copy scenario, different locations, vaild from 2022.1.1, expire on 2022.2.1
+		config[{"capability": "copy", "decision": decision}] {
+			policy := {"policySetID": "1", "ID": "test-1"}
+			input.workload.properties.stage == "PROD"
+			input.workload.properties.severity != "critical"
+			input.request.dataset.geography != input.workload.cluster.metadata.region
+			nowDate := time.now_ns()
+            layout := "2006-Jan-02"
+            startDate := time.parse_ns(layout, "2022-Jan-01")
+            expiration := time.parse_ns(layout, "2022-Feb-01")
+			nowDate >= startDate
+			nowDate < expiration
+			decision := {"policy": policy, "deploy": "False"}
+		}
+	`
+	// Compile the module. The keys are used as identifiers in error messages.
+	compiler, err := ast.CompileModules(map[string]string{
+		"example.rego": module,
+	})
+	Expect(err).ToNot(HaveOccurred())
+
+	rg := rego.New(
+		rego.Query("data.test"),
+		rego.Compiler(compiler),
+	)
+	query, err := rg.PrepareForEval(context.Background())
+	Expect(err).ToNot(HaveOccurred())
+	return &adminconfig.RegoPolicyEvaluator{Log: logging.LogInit("test", "ConfigPolicyEvaluator"), Query: query}
+}
+
 func TestRegoFileEvaluator(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Config Policy Evaluator Suite")
@@ -290,5 +336,60 @@ var _ = Describe("Optimizations", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(out.Valid).To(Equal(true))
 		Expect(out.OptimizationStrategy).To(HaveLen(2))
+	})
+})
+
+var _ = Describe("Expiring policies", func() {
+	evaluator := EvaluatorforExpiringPolicies()
+	geo := "theshire"
+
+	It("ValidPolicy", func() {
+		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
+			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
+			Workload: adminconfig.WorkloadInfo{
+				Cluster: multicluster.Cluster{
+					Name:     "thegreendragon",
+					Metadata: multicluster.ClusterMetadata{Region: "theshire"},
+				},
+				Properties: taxonomy.AppInfo{
+					Properties: serde.Properties{
+						Items: map[string]interface{}{
+							"stage":    "PROD",
+							"priority": "medium",
+							"severity": "low",
+						},
+					},
+				},
+			},
+		}
+		out, err := evaluator.Evaluate(&in)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(out.Valid).To(Equal(true))
+		Expect(out.ConfigDecisions["copy"].Deploy).To(Equal(adminconfig.StatusFalse))
+	})
+
+	It("ExpiredPolicy", func() {
+		in := adminconfig.EvaluatorInput{Request: adminconfig.DataRequest{
+			Metadata: &datacatalog.ResourceMetadata{Geography: geo}},
+			Workload: adminconfig.WorkloadInfo{
+				Cluster: multicluster.Cluster{
+					Name:     "neverland-cluster",
+					Metadata: multicluster.ClusterMetadata{Region: "neverland"},
+				},
+				Properties: taxonomy.AppInfo{
+					Properties: serde.Properties{
+						Items: map[string]interface{}{
+							"stage":    "PROD",
+							"priority": "medium",
+							"severity": "low",
+						},
+					},
+				},
+			},
+		}
+		out, err := evaluator.Evaluate(&in)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(out.Valid).To(Equal(true))
+		Expect(out.ConfigDecisions).To(BeEmpty())
 	})
 })
