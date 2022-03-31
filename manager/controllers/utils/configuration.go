@@ -26,6 +26,7 @@ const (
 	PrettyLoggingKey                  string = "PRETTY_LOGGING"
 	CatalogProviderNameKey            string = "CATALOG_PROVIDER_NAME"
 	DatapathLimitKey                  string = "DATAPATH_LIMIT"
+	UseCSPKey                         string = "USE_CSP"
 )
 
 // GetSystemNamespace returns the namespace of control plane
@@ -66,6 +67,11 @@ func GetDataPathMaxSize() (int, error) {
 		return defaultLimit, err
 	}
 	return limit, nil
+}
+
+// UseCSP returns a boolean indicator for using a CSP solver when generating a plotter
+func UseCSP() bool {
+	return os.Getenv(UseCSPKey) == "true"
 }
 
 // GetDataCatalogServiceAddress returns the address where data catalog is running

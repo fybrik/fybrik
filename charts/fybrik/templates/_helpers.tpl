@@ -116,10 +116,6 @@ cert-manager.io/v1
 Get modules namespace
 */}}
 {{- define "fybrik.getModulesNamespace" -}}
-{{- if .Values.modulesNamespace -}}
-{{- .Values.modulesNamespace -}}
-{{- else -}}
-{{- "fybrik-blueprints" -}}
-{{- end -}}
+{{- .Values.modulesNamespace.name | default "fybrik-blueprints" -}}
 {{- end -}}
 

@@ -16,12 +16,9 @@ import (
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
-	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
-	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
-	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
 	"fybrik.io/fybrik/pkg/vault"
@@ -41,21 +38,15 @@ type NewAssetInfo struct {
 type PlotterGenerator struct {
 	Client             client.Client
 	Log                *zerolog.Logger
-	Modules            map[string]*app.FybrikModule
-	Clusters           []multicluster.Cluster
 	Owner              types.NamespacedName
-	PolicyManager      pmclient.PolicyManager
 	Provision          storage.ProvisionInterface
-	VaultConnection    vault.Interface
 	ProvisionedStorage map[string]NewAssetInfo
-	StorageAccounts    []app.FybrikStorageAccount
-	AttributeManager   *infrastructure.AttributeManager
 }
 
-// GetCopyDestination creates a Dataset for bucket allocation by implicit copies or ingest.
-func (p *PlotterGenerator) GetCopyDestination(item *DataInfo, destinationInterface *taxonomy.Interface,
+// AllocateStorage creates a Dataset for bucket allocation
+func (p *PlotterGenerator) AllocateStorage(item *DataInfo, destinationInterface *taxonomy.Interface,
 	account *app.FybrikStorageAccountSpec) (*app.DataStore, error) {
-	// provisioned storage for COPY
+	// provisioned storage
 	var genBucketName, genObjectKeyName string
 	if item.DataDetails.ResourceMetadata.Name != "" {
 		genObjectKeyName = item.DataDetails.ResourceMetadata.Name + utils.Hash(p.Owner.Name+p.Owner.Namespace, objectKeyHashLength)
@@ -150,25 +141,10 @@ func getDatasetCredentials(item *DataInfo) map[string]app.Vault {
 	return vaultMap
 }
 
-// find a solution for data plane orchestration
-func (p *PlotterGenerator) solve(item *DataInfo, application *app.FybrikApplication) (Solution, error) {
-	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Choose modules for dataset")
-	solutions := p.FindPaths(item, application)
-	// No data path found for the asset
-	if len(solutions) == 0 {
-		msg := "Deployed modules do not provide the functionality required to construct a data path"
-		p.Log.Error().Str(logging.DATASETID, item.Context.DataSetID).Msg(msg)
-		logging.LogStructure("Data Item Context", item, p.Log, true, true)
-		logging.LogStructure("Module Map", p.Modules, p.Log, true, true)
-		return Solution{}, errors.New(msg + " for " + item.Context.DataSetID)
-	}
-	return solutions[0], nil
-}
-
-func (p *PlotterGenerator) addTemplate(element *ResolvedEdge, plotterSpec *app.PlotterSpec) {
+func (p *PlotterGenerator) addTemplate(element *ResolvedEdge, plotterSpec *app.PlotterSpec, templateName string) {
 	moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
 	template := app.Template{
-		Name: string(moduleCapability.Capability),
+		Name: templateName,
 		Modules: []app.ModuleInfo{{
 			Name:       element.Module.Name,
 			Type:       element.Module.Spec.Type,
@@ -181,7 +157,7 @@ func (p *PlotterGenerator) addTemplate(element *ResolvedEdge, plotterSpec *app.P
 }
 
 func (p *PlotterGenerator) addInMemoryStep(element *ResolvedEdge, datasetID string, api *datacatalog.ResourceDetails,
-	steps []app.DataFlowStep) []app.DataFlowStep {
+	steps []app.DataFlowStep, templateName string) []app.DataFlowStep {
 	if steps == nil {
 		steps = []app.DataFlowStep{}
 	}
@@ -195,7 +171,7 @@ func (p *PlotterGenerator) addInMemoryStep(element *ResolvedEdge, datasetID stri
 	}
 	steps = append(steps, app.DataFlowStep{
 		Cluster:  element.Cluster,
-		Template: string(element.Module.Spec.Capabilities[element.CapabilityIndex].Capability),
+		Template: templateName,
 		Parameters: &app.StepParameters{
 			Arguments: []*app.StepArgument{{
 				AssetID: assetID,
@@ -209,13 +185,13 @@ func (p *PlotterGenerator) addInMemoryStep(element *ResolvedEdge, datasetID stri
 }
 
 func (p *PlotterGenerator) addStep(element *ResolvedEdge, datasetID string, api *datacatalog.ResourceDetails,
-	steps []app.DataFlowStep) []app.DataFlowStep {
+	steps []app.DataFlowStep, templateName string) []app.DataFlowStep {
 	if steps == nil {
 		steps = []app.DataFlowStep{}
 	}
 	steps = append(steps, app.DataFlowStep{
 		Cluster:  element.Cluster,
-		Template: string(element.Module.Spec.Capabilities[element.CapabilityIndex].Capability),
+		Template: templateName,
 		Parameters: &app.StepParameters{
 			Arguments: []*app.StepArgument{{AssetID: datasetID}, {AssetID: datasetID + "-copy"}},
 			API:       api,
@@ -226,13 +202,10 @@ func (p *PlotterGenerator) addStep(element *ResolvedEdge, datasetID string, api 
 }
 
 // Adds the asset details, flows and templates to the given plotter spec.
-func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.FybrikApplication, plotterSpec *app.PlotterSpec) error {
-	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Generating a plotter")
+func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.FybrikApplication, selection *Solution,
+	plotterSpec *app.PlotterSpec) error {
 	var err error
-	var selection Solution
-	if selection, err = p.solve(item, application); err != nil {
-		return err
-	}
+	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Generating a plotter")
 	datasetID := item.Context.DataSetID
 	subflows := make([]app.SubFlow, 0)
 
@@ -247,8 +220,10 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 	}
 	for _, element := range selection.DataPath {
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
-		p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msgf("Adding module for %s", moduleCapability.Capability)
-		p.addTemplate(element, plotterSpec)
+		p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msgf("Adding module %s for capability %s", element.Module.Name,
+			moduleCapability.Capability)
+		templateName := element.Module.Name + "-" + string(moduleCapability.Capability)
+		p.addTemplate(element, plotterSpec, templateName)
 		var api *datacatalog.ResourceDetails
 		if moduleCapability.API != nil {
 			if api, err = moduleAPIToService(moduleCapability.API, moduleCapability.Scope,
@@ -259,11 +234,11 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 		if !element.Sink.Virtual && element.StorageAccount.Region != "" {
 			// allocate storage and create a temoprary asset
 			var sinkDataStore *app.DataStore
-			if sinkDataStore, err = p.GetCopyDestination(item, element.Sink.Connection, &element.StorageAccount); err != nil {
+			if sinkDataStore, err = p.AllocateStorage(item, element.Sink.Connection, &element.StorageAccount); err != nil {
 				p.Log.Error().Err(err).Str(logging.DATASETID, item.Context.DataSetID).Msg("Storage allocation for copy failed")
 				return err
 			}
-			steps = p.addStep(element, datasetID, api, steps)
+			steps = p.addStep(element, datasetID, api, steps, templateName)
 			copyAssetID := steps[len(steps)-1].Parameters.Arguments[1].AssetID
 			copyAsset := app.AssetDetails{
 				AdvertisedAssetID: datasetID,
@@ -279,7 +254,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 			// clear steps
 			steps = nil
 		} else {
-			steps = p.addInMemoryStep(element, datasetID, api, steps)
+			steps = p.addInMemoryStep(element, datasetID, api, steps, templateName)
 		}
 	}
 	if steps != nil {

@@ -13,7 +13,6 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/rs/zerolog"
-	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -21,7 +20,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
@@ -48,11 +47,11 @@ type PlotterReconciler struct {
 func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	sublog := r.Log.With().Str(logging.CONTROLLER, PlotterKind).Str("plotter", req.NamespacedName.String()).Logger()
 
-	plotter := app.Plotter{}
+	plotter := api.Plotter{}
 	if err := r.Get(ctx, req.NamespacedName, &plotter); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-	if err := r.reconcileFinalizers(&plotter); err != nil {
+	if err := r.reconcileFinalizers(ctx, &plotter); err != nil {
 		sublog.Error().Err(err).Msg("Could not reconcile finalizers ")
 		return ctrl.Result{}, err
 	}
@@ -71,11 +70,8 @@ func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("Reconcile: Installing/Updating Plotter " + plotter.GetName())
 
 	result, reconcileErrors := r.reconcile(&plotter)
-
-	if !equality.Semantic.DeepEqual(&plotter.Status, observedStatus) {
-		if err := r.Status().Update(ctx, &plotter); err != nil {
-			return ctrl.Result{}, errors.WrapWithDetails(err, "failed to update plotter status", "status", plotter.Status)
-		}
+	if err := utils.UpdateStatus(ctx, r.Client, &plotter, observedStatus); err != nil {
+		return ctrl.Result{}, errors.WrapWithDetails(err, "failed to update plotter status", "status", plotter.Status)
 	}
 
 	if reconcileErrors != nil {
@@ -91,7 +87,7 @@ func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 }
 
 // reconcileFinalizers reconciles finalizers for Plotter
-func (r *PlotterReconciler) reconcileFinalizers(plotter *app.Plotter) error {
+func (r *PlotterReconciler) reconcileFinalizers(ctx context.Context, plotter *api.Plotter) error {
 	// finalizer
 	hasFinalizer := ctrlutil.ContainsFinalizer(plotter, PlotterFinalizerName)
 
@@ -112,7 +108,7 @@ func (r *PlotterReconciler) reconcileFinalizers(plotter *app.Plotter) error {
 			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 			ctrlutil.RemoveFinalizer(plotter, PlotterFinalizerName)
 
-			if err := r.Update(context.Background(), plotter); err != nil {
+			if err := utils.UpdateFinalizers(ctx, r.Client, plotter); err != nil {
 				return err
 			}
 		}
@@ -121,7 +117,7 @@ func (r *PlotterReconciler) reconcileFinalizers(plotter *app.Plotter) error {
 	// Make sure this CRD instance has a finalizer
 	if !hasFinalizer {
 		ctrlutil.AddFinalizer(plotter, PlotterFinalizerName)
-		if err := r.Update(context.Background(), plotter); err != nil {
+		if err := utils.UpdateFinalizers(ctx, r.Client, plotter); err != nil {
 			return err
 		}
 	}
@@ -134,20 +130,20 @@ type PlotterModulesSpec struct {
 	VaultAuthPath   string
 	AssetID         string
 	ModuleName      string
-	ModuleArguments *app.StepParameters
+	ModuleArguments *api.StepParameters
 	FlowType        taxonomy.DataFlow
-	Chart           app.ChartSpec
-	Scope           app.CapabilityScope
+	Chart           api.ChartSpec
+	Scope           api.CapabilityScope
 	Capability      taxonomy.Capability
 }
 
 // addCredentials updates Vault credentials field to hold only credentials related to the flow type
-func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType taxonomy.DataFlow) {
-	vaultMap := make(map[string]app.Vault)
+func addCredentials(dataStore *api.DataStore, vaultAuthPath string, flowType taxonomy.DataFlow) {
+	vaultMap := make(map[string]api.Vault)
 
 	// Update vaultAuthPath from the cluster metadata
 	// Get only flowType related creds
-	vaultMap[string(flowType)] = app.Vault{
+	vaultMap[string(flowType)] = api.Vault{
 		Role:       dataStore.Vault[string(flowType)].Role,
 		Address:    dataStore.Vault[string(flowType)].Address,
 		SecretPath: dataStore.Vault[string(flowType)].SecretPath,
@@ -158,14 +154,14 @@ func addCredentials(dataStore *app.DataStore, vaultAuthPath string, flowType tax
 }
 
 // convertPlotterModuleToBlueprintModule converts an object of type PlotterModulesSpec to type ModuleInstanceSpec
-func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.Plotter,
+func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *api.Plotter,
 	plotterModule *PlotterModulesSpec) *ModuleInstanceSpec {
 	blueprintModule := &ModuleInstanceSpec{
-		Module: app.BlueprintModule{
+		Module: api.BlueprintModule{
 			Name:  plotterModule.ModuleName,
 			Chart: plotterModule.Chart,
-			Arguments: app.ModuleArguments{
-				Assets: []app.AssetContext{},
+			Arguments: api.ModuleArguments{
+				Assets: []api.AssetContext{},
 			},
 			AssetIDs: []string{plotterModule.AssetID},
 		},
@@ -177,8 +173,8 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		return blueprintModule
 	}
 
-	var dataStore *app.DataStore
-	var destDataStore *app.DataStore
+	var dataStore *api.DataStore
+	var destDataStore *api.DataStore
 	if len(plotterModule.ModuleArguments.Arguments) > 0 && plotterModule.ModuleArguments.Arguments[0] != nil {
 		if plotterModule.ModuleArguments.Arguments[0].AssetID != "" {
 			assetID := plotterModule.ModuleArguments.Arguments[0].AssetID
@@ -193,7 +189,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 			addCredentials(dataStore, plotterModule.VaultAuthPath, operation)
 		} else {
 			// Fill in the DataSource from the step arguments
-			dataStore = &app.DataStore{
+			dataStore = &api.DataStore{
 				Connection: plotterModule.ModuleArguments.Arguments[0].API.Connection,
 				Format:     plotterModule.ModuleArguments.Arguments[0].API.DataFormat,
 			}
@@ -209,14 +205,14 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 		// holds information about the asset to write.
 		addCredentials(destDataStore, plotterModule.VaultAuthPath, taxonomy.WriteFlow)
 	}
-	var args []*app.DataStore
+	var args []*api.DataStore
 	if dataStore != nil {
 		args = append(args, dataStore)
 	}
 	if destDataStore != nil {
 		args = append(args, destDataStore)
 	}
-	blueprintModule.Module.Arguments.Assets = []app.AssetContext{
+	blueprintModule.Module.Arguments.Assets = []api.AssetContext{
 		{
 			Arguments:       args,
 			AssetID:         plotterModule.AssetID,
@@ -229,7 +225,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *app.P
 
 // getBlueprintsMap constructs a map of blueprints driven by the plotter structure.
 // The key is the cluster name.
-func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]app.BlueprintSpec {
+func (r *PlotterReconciler) getBlueprintsMap(plotter *api.Plotter) map[string]api.BlueprintSpec {
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
 	log := r.Log.With().Str(logging.CONTROLLER, PlotterKind).Str(utils.FybrikAppUUID, uuid).Logger()
 
@@ -288,7 +284,7 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *app.Plotter) map[string]ap
 }
 
 // updatePlotterAssetsState updates the status of the assets processed by the blueprint modules.
-func (r *PlotterReconciler) updatePlotterAssetsState(assetToStatusMap map[string]app.ObservedState, blueprint *app.Blueprint) {
+func (r *PlotterReconciler) updatePlotterAssetsState(assetToStatusMap map[string]api.ObservedState, blueprint *api.Blueprint) {
 	for instanceName, moduleState := range blueprint.Status.ModulesState {
 		for _, assetID := range blueprint.Spec.Modules[instanceName].AssetIDs {
 			state, exists := assetToStatusMap[assetID]
@@ -301,7 +297,7 @@ func (r *PlotterReconciler) updatePlotterAssetsState(assetToStatusMap map[string
 				// if the current module is not ready then update all its assets
 				// to not ready state regardless of the assets state
 			} else if !moduleState.Ready {
-				assetToStatusMap[assetID] = app.ObservedState{
+				assetToStatusMap[assetID] = api.ObservedState{
 					Ready: false,
 					Error: errMsg,
 				}
@@ -311,12 +307,12 @@ func (r *PlotterReconciler) updatePlotterAssetsState(assetToStatusMap map[string
 }
 
 // setPlotterAssetsReadyStateToFalse sets to false the status of the assets processed by the blueprint modules.
-func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap map[string]app.ObservedState,
-	blueprintSpec *app.BlueprintSpec, errMsg string) {
+func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap map[string]api.ObservedState,
+	blueprintSpec *api.BlueprintSpec, errMsg string) {
 	for _, module := range blueprintSpec.Modules {
 		for _, assetID := range module.AssetIDs {
 			var err = errMsg
-			assetToStatusMap[assetID] = app.ObservedState{
+			assetToStatusMap[assetID] = api.ObservedState{
 				Ready: false,
 				Error: err,
 			}
@@ -325,16 +321,16 @@ func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap m
 }
 
 //nolint:funlen,gocyclo
-func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []error) {
+func (r *PlotterReconciler) reconcile(plotter *api.Plotter) (ctrl.Result, []error) {
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
 	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).Logger()
 
 	if plotter.Status.Blueprints == nil {
-		plotter.Status.Blueprints = make(map[string]app.MetaBlueprint)
+		plotter.Status.Blueprints = make(map[string]api.MetaBlueprint)
 	}
 
 	// Reset Assets state
-	assetToStatusMap := make(map[string]app.ObservedState)
+	assetToStatusMap := make(map[string]api.ObservedState)
 	plotter.Status.ObservedState.Error = "" // Reset error state
 	// Reconciliation loop per cluster
 	isReady := true
@@ -389,7 +385,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 						continue
 					}
 					// Update meta blueprint without state as changes occur
-					plotter.Status.Blueprints[cluster] = app.CreateMetaBlueprintWithoutState(remoteBlueprint)
+					plotter.Status.Blueprints[cluster] = api.CreateMetaBlueprintWithoutState(remoteBlueprint)
 					// Plotter cannot be ready if changes were just applied
 					isReady = false
 					r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, "Blueprint changes just applied")
@@ -403,7 +399,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 
 			logging.LogStructure("Remote blueprint status", remoteBlueprint.Status, &log, false, false)
 
-			plotter.Status.Blueprints[cluster] = app.CreateMetaBlueprint(remoteBlueprint)
+			plotter.Status.Blueprints[cluster] = api.CreateMetaBlueprint(remoteBlueprint)
 
 			if !remoteBlueprint.Status.ObservedState.Ready {
 				isReady = false
@@ -416,7 +412,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 			r.updatePlotterAssetsState(assetToStatusMap, remoteBlueprint)
 		} else {
 			log.Warn().Msg("Found no status for cluster " + cluster)
-			blueprint := &app.Blueprint{
+			blueprint := &api.Blueprint{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "Blueprint",
 					APIVersion: "app.fybrik.io/v1alpha1",
@@ -447,7 +443,7 @@ func (r *PlotterReconciler) reconcile(plotter *app.Plotter) (ctrl.Result, []erro
 				continue
 			}
 
-			plotter.Status.Blueprints[cluster] = app.CreateMetaBlueprintWithoutState(blueprint)
+			plotter.Status.Blueprints[cluster] = api.CreateMetaBlueprintWithoutState(blueprint)
 			r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, "Blueprint just created")
 		}
 	}
@@ -533,6 +529,6 @@ func (r *PlotterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
-		For(&app.Plotter{}).
+		For(&api.Plotter{}).
 		Complete(r)
 }
