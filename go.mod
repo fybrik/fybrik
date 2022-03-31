@@ -15,7 +15,7 @@ require (
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-chi/render v1.0.1
 	github.com/hashicorp/go-retryablehttp v0.7.0
-	github.com/hashicorp/vault/api v1.3.0
+	github.com/hashicorp/vault/api v1.3.1
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/onsi/ginkgo v1.16.5
