@@ -6,7 +6,7 @@
 cd "${0%/*}"
 source ./common.sh
 
-version=1.4.3
+version=1.8.9
 
 header_text "Checking for bin/vault"
 [[ -f bin/vault ]] && exit 0
