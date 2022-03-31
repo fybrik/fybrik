@@ -46,17 +46,12 @@
     "DeleteAssetRequest": {
       "type": "object",
       "required": [
-        "destinationCatalogID",
         "assetID"
       ],
       "properties": {
         "assetID": {
           "$ref": "taxonomy.json#/definitions/AssetID",
           "description": "Asset ID of the to-be deleted asset"
-        },
-        "destinationCatalogID": {
-          "description": "The destination catalog id in which the asset exists",
-          "type": "string"
         }
       }
     },

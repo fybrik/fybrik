@@ -170,7 +170,7 @@ func (r ApiDeleteAssetRequest) Execute() (*DeleteAssetResponse, *http.Response, 
 }
 
 /*
-DeleteAsset This REST API deletes data asset from the data catalog configured in fybrik
+DeleteAsset This REST API deletes data asset
 
  @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  @return ApiDeleteAssetRequest

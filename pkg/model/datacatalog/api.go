@@ -44,8 +44,6 @@ type CreateAssetResponse struct {
 }
 
 type DeleteAssetRequest struct {
-	// The destination catalog id in which the asset exists
-	DestinationCatalogID string `json:"destinationCatalogID"`
 	// Asset ID of the to-be deleted asset
 	AssetID taxonomy.AssetID `json:"assetID"`
 }
