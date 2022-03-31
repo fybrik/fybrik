@@ -6,15 +6,15 @@
 cd "${0%/*}"
 source ./common.sh
 
-version=1.4.3
+DESIRED_VERSION=1.8.9
 
-header_text "Checking for bin/vault"
-[[ -f bin/vault ]] && exit 0
+header_text "Checking for bin/vault $DESIRED_VERSION"
+[[ -f bin/vault &&  `bin/vault -v | awk '{print $2}'` == "v$DESIRED_VERSION" ]] && exit 0
 
-header_text "Installing bin/vault"
+header_text "Installing bin/vault $DESIRED_VERSION"
 mkdir -p ./bin
-curl -L -o ./bin/vault.zip https://releases.hashicorp.com/vault/${version}/vault_${version}_${os}_amd64.zip 
-unzip ./bin/vault.zip -d ./bin/
+curl -L -o ./bin/vault.zip https://releases.hashicorp.com/vault/${DESIRED_VERSION}/vault_${DESIRED_VERSION}_${os}_amd64.zip
+unzip -o ./bin/vault.zip -d ./bin/
 rm ./bin/vault.zip
 
 chmod +x ./bin/vault
