@@ -61,7 +61,7 @@ func (m *openAPIDataCatalog) CreateAsset(in *datacatalog.CreateAssetRequest, cre
 }
 
 func (m *openAPIDataCatalog) DeleteAsset(in *datacatalog.DeleteAssetRequest, creds string) (*datacatalog.DeleteAssetResponse, error) {
-	resp, _, err := m.client.DefaultApi.DeleteAsset(context.Background()).DeleteAssetRequest(*in).Execute()
+	resp, _, err := m.client.DefaultApi.DeleteAsset(context.Background()).XRequestDatacatalogCred(creds).DeleteAssetRequest(*in).Execute()
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("delete asset info from %s failed", m.name))
 	}

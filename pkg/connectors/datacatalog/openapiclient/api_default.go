@@ -147,9 +147,16 @@ func (a *DefaultApiService) CreateAssetExecute(r ApiCreateAssetRequest) (*Create
 }
 
 type ApiDeleteAssetRequest struct {
-	ctx                context.Context
-	ApiService         *DefaultApiService
-	deleteAssetRequest *DeleteAssetRequest
+	ctx                     context.Context
+	ApiService              *DefaultApiService
+	xRequestDatacatalogCred *string
+	deleteAssetRequest      *DeleteAssetRequest
+}
+
+// This header carries credential information related to relevant catalog from which the asset information needs to be retrieved.
+func (r ApiDeleteAssetRequest) XRequestDatacatalogCred(xRequestDatacatalogCred string) ApiDeleteAssetRequest {
+	r.xRequestDatacatalogCred = &xRequestDatacatalogCred
+	return r
 }
 
 // Delete Asset Request
@@ -195,6 +202,9 @@ func (a *DefaultApiService) DeleteAssetExecute(r ApiDeleteAssetRequest) (*Delete
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
+	if r.xRequestDatacatalogCred == nil {
+		return localVarReturnValue, nil, reportError("xRequestDatacatalogCred is required and must be specified")
+	}
 	if r.deleteAssetRequest == nil {
 		return localVarReturnValue, nil, reportError("deleteAssetRequest is required and must be specified")
 	}
@@ -216,6 +226,7 @@ func (a *DefaultApiService) DeleteAssetExecute(r ApiDeleteAssetRequest) (*Delete
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	localVarHeaderParams["X-Request-Datacatalog-Cred"] = parameterToString(*r.xRequestDatacatalogCred, "")
 	// body params
 	localVarPostBody = r.deleteAssetRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)

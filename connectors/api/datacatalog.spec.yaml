@@ -68,6 +68,13 @@ paths:
       post:
         summary: This REST API deletes data asset from the data catalog configured in fybrik
         operationId: deleteAsset
+        parameters:
+          - in: header
+            name: X-Request-Datacatalog-Cred
+            description: This header carries credential information related to relevant catalog from which the asset information needs to be retrieved.
+            schema:
+              type: string
+            required: true
         requestBody:
           description: Delete Asset Request
           required: true
