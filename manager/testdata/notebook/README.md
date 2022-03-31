@@ -251,7 +251,7 @@ Run the following command to wait until the `FybrikApplication` is ready:
 while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for FybrikApplication" && sleep 5; done
 ```
 
-## Read the dataset from the notebook
+## Read the original data and save it in a new location in the notebook
 
 In your **terminal**, run the following command to print the [endpoints](../../reference/crds/#fybrikapplicationstatusreadendpointsmapkey)(*) to use for reading the data. It fetches the code from the `FybrikApplication` resource:
 ```bash
