@@ -294,6 +294,8 @@ df: pd.DataFrame = reader.read_pandas()
 # Prepare the request to write the new data
 request = {
     "asset": "fybrik-notebook-sample/new-paysim-parquet",
+    # write_mode can be append or overwrite. The default is overwrite.
+    # "write_mode": "append",
     # To request specific columns add to the request a "columns" key with a list of column names
     # "columns": [...]
 }
