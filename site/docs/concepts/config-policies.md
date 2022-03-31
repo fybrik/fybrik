@@ -210,7 +210,7 @@ config[{"capability": "copy", "decision": decision}] {
     startDate := time.parse_ns(layout, "2022-Jan-01")
     expiration := time.parse_ns(layout, "2022-Jun-01")
     nowDate >= startDate
-    nowDate < Expiration
+    nowDate < expiration
     decision := {"policy": policy, "deploy": "False"}
 }
 ```
