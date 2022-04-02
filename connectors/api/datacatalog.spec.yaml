@@ -8,7 +8,7 @@ servers:
   - url: https://localhost:8080
 paths:
   /getAssetInfo:
-      post:
+      get:
         summary: This REST API gets data asset information from the data catalog configured in fybrik for the data sets indicated in FybrikApplication yaml
         operationId: getAssetInfo
         parameters:

@@ -186,7 +186,7 @@ func (a *DefaultApiService) GetAssetInfo(ctx context.Context) ApiGetAssetInfoReq
 //  @return GetAssetResponse
 func (a *DefaultApiService) GetAssetInfoExecute(r ApiGetAssetInfoRequest) (*GetAssetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod  = http.MethodPost
+		localVarHTTPMethod  = http.MethodGet
 		localVarPostBody    interface{}
 		formFiles           []formFile
 		localVarReturnValue *GetAssetResponse

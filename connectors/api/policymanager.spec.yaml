@@ -8,7 +8,7 @@ servers:
   - url: https://localhost:8080
 paths:
   /getPoliciesDecisions:
-    post:
+    get:
       summary: This REST API gets data governance decisions for the data sets indicated in FybrikApplication yaml based on the context indicated
       operationId: getPoliciesDecisions
       parameters:
