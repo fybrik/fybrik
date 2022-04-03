@@ -1347,7 +1347,7 @@ func TestReadAndTransform(t *testing.T) {
 	readModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	readModule.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
+	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the write module could not be created")
 	transformModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-transform.yaml", transformModule)).NotTo(gomega.HaveOccurred())
 	transformModule.Namespace = utils.GetControllerNamespace()
@@ -1418,7 +1418,7 @@ func TestWriteNotRegisteredAsset(t *testing.T) {
 	readWriteModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", readWriteModule)).NotTo(gomega.HaveOccurred())
 	readWriteModule.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.TODO(), readWriteModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
+	g.Expect(cl.Create(context.TODO(), readWriteModule)).NotTo(gomega.HaveOccurred(), "the write module could not be created")
 
 	// Create storage account
 	secret := &corev1.Secret{}
@@ -1447,12 +1447,12 @@ func TestWriteNotRegisteredAsset(t *testing.T) {
 	// check plotter creation
 	g.Expect(application.Status.AssetStates).To(gomega.HaveLen(1))
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
-	readOriginalDatalEndpoint := application.Status.AssetStates[application.Spec.Data[0].DataSetID].Endpoint
-	g.Expect(readOriginalDatalEndpoint).To(gomega.Not(gomega.BeNil()))
-	readOriginalConnectionMap := readOriginalDatalEndpoint.AdditionalProperties.Items
-	g.Expect(readOriginalConnectionMap).To(gomega.HaveKey("fybrik-arrow-flight"))
-	readOriginalDataConfig := readOriginalConnectionMap["fybrik-arrow-flight"].(map[string]interface{})
-	g.Expect(readOriginalDataConfig["hostname"]).To(gomega.Equal("read-write-module"))
+	writeDatalEndpoint := application.Status.AssetStates[application.Spec.Data[0].DataSetID].Endpoint
+	g.Expect(writeDatalEndpoint).To(gomega.Not(gomega.BeNil()))
+	writeConnectionMap := writeDatalEndpoint.AdditionalProperties.Items
+	g.Expect(writeConnectionMap).To(gomega.HaveKey("fybrik-arrow-flight"))
+	writeDataConfig := writeConnectionMap["fybrik-arrow-flight"].(map[string]interface{})
+	g.Expect(writeDataConfig["hostname"]).To(gomega.Equal("read-write-module"))
 
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 
@@ -1464,7 +1464,7 @@ func TestWriteNotRegisteredAsset(t *testing.T) {
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(1))
-	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2))
+	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(1))
 }
 
 func TestWriteRegisteredAsset(t *testing.T) {

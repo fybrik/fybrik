@@ -492,7 +492,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 	input := appContext.Application
 	log := appContext.Log.With().Str(logging.DATASETID, req.Context.DataSetID).Logger()
 	var err error
-	if req.Context.Requirements.FlowParams.IsNewDataSet == false {
+	if !req.Context.Requirements.FlowParams.IsNewDataSet {
 		var credentialPath string
 		if input.Spec.SecretRef != "" {
 			if !utils.IsVaultEnabled() {
@@ -784,7 +784,7 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 			continue
 		}
 		// If the flag IsNewDataSet is true then a new asset must be allocated and registered to a catalog
-		if requirements[ind].Context.Requirements.FlowParams.IsNewDataSet == true {
+		if requirements[ind].Context.Requirements.FlowParams.IsNewDataSet {
 			err = plotterGen.HandleNewAsset(&requirements[ind], applicationContext.Application, &path, plotterSpec)
 			if err != nil {
 				setErrorCondition(applicationContext, requirements[ind].Context.DataSetID, err.Error())
