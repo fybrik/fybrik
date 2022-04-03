@@ -29,7 +29,7 @@ const (
 // NewRouter returns a new router.
 func NewRouter(controller *ConnectorController) *gin.Engine {
 	router := gin.Default()
-	router.POST("/getPoliciesDecisions", controller.GetPoliciesDecisions)
+	router.GET("/getPoliciesDecisions", controller.GetPoliciesDecisions)
 	return router
 }
 
