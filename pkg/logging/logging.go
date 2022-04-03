@@ -121,6 +121,8 @@ func LogInit(callerType, callerName string) zerolog.Logger {
 func LogStructure(argName string, argStruct interface{}, log *zerolog.Logger, forUser, audit bool) {
 	var jsonStruct []byte
 	var err error
+	const callerStackNum = 3
+
 	if PrettyLogging() {
 		jsonStruct, err = json.MarshalIndent(argStruct, "", "\t")
 	} else {
@@ -131,6 +133,6 @@ func LogStructure(argName string, argStruct interface{}, log *zerolog.Logger, fo
 		log.Warn().Msg("Failed converting " + argName + " to json")
 	} else {
 		// Log the info making sure that the calling function is listed as the caller
-		log.Debug().CallerSkipFrame(3).Bool(FORUSER, forUser).Bool(AUDIT, audit).Msg(argName + ": " + string(jsonStruct))
+		log.Debug().CallerSkipFrame(callerStackNum).Bool(FORUSER, forUser).Bool(AUDIT, audit).Msg(argName + ": " + string(jsonStruct))
 	}
 }
