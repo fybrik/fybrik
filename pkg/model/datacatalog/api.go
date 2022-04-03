@@ -42,3 +42,14 @@ type CreateAssetResponse struct {
 	// The ID of the created asset based on the source asset information given in CreateAssetRequest object
 	AssetID string `json:"assetID"`
 }
+
+type DeleteAssetRequest struct {
+	// Asset ID of the to-be deleted asset
+	AssetID taxonomy.AssetID `json:"assetID"`
+}
+
+type DeleteAssetResponse struct {
+	// +kubebuilder:validation:Optional
+	// The deletion status
+	Status string `json:"status,omitempty"`
+}
