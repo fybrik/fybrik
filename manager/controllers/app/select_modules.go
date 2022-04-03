@@ -338,10 +338,7 @@ func match(source, sink *taxonomy.Interface) bool {
 		return false
 	}
 	// an empty DataFormat value is not checked
-<<<<<<< HEAD
 	// either a module supports any format, or any format can be selected (no requirements)
-=======
->>>>>>> Handle the case of IsNewDataset is true in write flow.
 	if source.DataFormat != "" && sink.DataFormat != "" && source.DataFormat != sink.DataFormat {
 		return false
 	}
