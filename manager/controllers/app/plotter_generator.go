@@ -11,11 +11,13 @@ import (
 	"emperror.dev/errors"
 	"github.com/Masterminds/sprig/v3"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
+	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -41,6 +43,7 @@ type PlotterGenerator struct {
 	Owner              types.NamespacedName
 	Provision          storage.ProvisionInterface
 	ProvisionedStorage map[string]NewAssetInfo
+	DataCatalog        dcclient.DataCatalog
 }
 
 // AllocateStorage creates a Dataset for bucket allocation
@@ -199,6 +202,55 @@ func (p *PlotterGenerator) addStep(element *ResolvedEdge, datasetID string, api 
 		},
 	})
 	return steps
+}
+
+// Create a new asset and register it to the catalog. Used when the IsNewDataSet flag is true
+func (p *PlotterGenerator) HandleNewAsset(item *DataInfo, application *app.FybrikApplication, selection *Solution,
+	plotterSpec *app.PlotterSpec) error {
+	var err error
+	if item.DataDetails.Details.DataFormat != "" {
+		return nil
+	}
+	var sinkDataStore *app.DataStore
+	selectionLen := len(selection.DataPath)
+	element := selection.DataPath[selectionLen-1]
+	// allocate storge
+	if sinkDataStore, err = p.AllocateStorage(item, element.Sink.Connection, &element.StorageAccount); err != nil {
+		p.Log.Error().Err(err).Str(logging.DATASETID, item.Context.DataSetID).Msg("Storage allocation failed")
+		return err
+	}
+
+	item.DataDetails.Details.DataFormat = sinkDataStore.Format
+	selection.DataPath[selectionLen-1].StorageAccount.Region = ""
+
+	resourceMetadata := datacatalog.ResourceMetadata{
+		Geography: string(element.StorageAccount.Region),
+	}
+
+	details := datacatalog.ResourceDetails{
+		Connection: sinkDataStore.Connection,
+		DataFormat: sinkDataStore.Format,
+	}
+	var credentialPath string
+
+	if utils.IsVaultEnabled() {
+		credentialPath =
+			utils.GetVaultAddress() + vault.PathForReadingKubeSecret(utils.GetSystemNamespace(), element.StorageAccount.SecretRef)
+	}
+
+	request := datacatalog.CreateAssetRequest{
+		ResourceMetadata:     resourceMetadata,
+		Details:              details,
+		Credentials:          credentialPath,
+		DestinationCatalogID: utils.GetSystemNamespace(),
+	}
+
+	if _, err = p.DataCatalog.CreateAsset(&request, credentialPath); err != nil {
+		log.Error().Err(err).Msg("failed to receive the catalog connector response")
+		return err
+	}
+
+	return nil
 }
 
 // Adds the asset details, flows and templates to the given plotter spec.

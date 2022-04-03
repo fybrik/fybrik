@@ -50,8 +50,20 @@ func (p *PathBuilder) solve() (Solution, error) {
 // Then, transformations are added to the found paths, and clusters are matched to satisfy restrictions from admin config policies.
 // Optimization is done by the shortest path (the paths are sorted by the length). To be changed in future versions.
 func (p *PathBuilder) FindPaths() []Solution {
-	nodeFromAssetMetadata := p.getAssetConnectionNode()
-	nodeFromAppRequirements := p.getRequiredConnectionNode()
+	var protocol taxonomy.ConnectionType
+	// If the connection name is empty, the default protocol is s3.
+	if p.Asset.DataDetails.Details.Connection.Name == "" {
+		protocol = "s3"
+	} else {
+		protocol = p.Asset.DataDetails.Details.Connection.Name
+	}
+	NodeFromAssetMetadata := Node{
+		Connection: &taxonomy.Interface{
+			Protocol:   protocol,
+			DataFormat: p.Asset.DataDetails.Details.DataFormat,
+		},
+	}
+	NodeFromAppRequirements := Node{Connection: &p.Asset.Context.Requirements.Interface}
 	// find data paths of length up to DATAPATH_LIMIT from data source to the workload, not including transformations or branches
 	bound, err := utils.GetDataPathMaxSize()
 	if err != nil {
@@ -326,7 +338,10 @@ func match(source, sink *taxonomy.Interface) bool {
 		return false
 	}
 	// an empty DataFormat value is not checked
+<<<<<<< HEAD
 	// either a module supports any format, or any format can be selected (no requirements)
+=======
+>>>>>>> Handle the case of IsNewDataset is true in write flow.
 	if source.DataFormat != "" && sink.DataFormat != "" && source.DataFormat != sink.DataFormat {
 		return false
 	}
