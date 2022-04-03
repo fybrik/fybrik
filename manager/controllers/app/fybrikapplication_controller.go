@@ -94,7 +94,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	log := sublog.With().Str(utils.FybrikAppUUID, uuid).Logger()
 
 	// Log the fybrikapplication
-	logging.LogStructure(FybrikApplicationKind, application, &log, true, true)
+	logging.LogStructure(FybrikApplicationKind, application, &log, zerolog.TraceLevel, true, true)
 	applicationContext := ApplicationContext{Log: &log, Application: application, UUID: uuid}
 	if err := r.reconcileFinalizers(ctx, applicationContext); err != nil {
 		log.Error().Err(err).Msg("Could not reconcile finalizers.")
@@ -515,7 +515,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 		log.Error().Err(err).Msg("failed to validate the catalog connector response")
 		return err
 	}
-	logging.LogStructure("Catalog connector response", response, &log, false, false)
+	logging.LogStructure("Catalog connector response", response, &log, zerolog.DebugLevel, false, false)
 	response.DeepCopyInto(req.DataDetails)
 	configEvaluatorInput := &adminconfig.EvaluatorInput{}
 	configEvaluatorInput.Workload.UUID = utils.GetFybrikApplicationUUID(input)
@@ -533,7 +533,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 		appContext.Log.Error().Err(err).Msg("Error evaluating config policies")
 		return err
 	}
-	logging.LogStructure("Config Policy Decisions", configDecisions, appContext.Log, false, false)
+	logging.LogStructure("Config Policy Decisions", configDecisions, appContext.Log, zerolog.DebugLevel, false, false)
 	req.WorkloadCluster = configEvaluatorInput.Workload.Cluster
 	req.Configuration = configDecisions
 	return nil

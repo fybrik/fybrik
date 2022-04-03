@@ -344,7 +344,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log *zerolog.Logger
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
 
-		logging.LogStructure("Arguments", args, log, false, false)
+		logging.LogStructure("Arguments", args, log, zerolog.DebugLevel, false, false)
 		releaseName := utils.GetReleaseName(blueprint.Labels[fapp.ApplicationNameLabel],
 			blueprint.Labels[fapp.ApplicationNamespaceLabel], instanceName)
 		log.Trace().Msg("Release name: " + releaseName)
