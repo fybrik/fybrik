@@ -38,8 +38,8 @@ func (p *PathBuilder) solve() (Solution, error) {
 	if len(solutions) == 0 {
 		msg := "Deployed modules do not provide the functionality required to construct a data path"
 		p.Log.Error().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msg(msg)
-		logging.LogStructure("Data Item Context", p.Asset, p.Log, true, true)
-		logging.LogStructure("Module Map", p.Env.Modules, p.Log, true, true)
+		logging.LogStructure("Data Item Context", p.Asset, p.Log, zerolog.TraceLevel, true, true)
+		logging.LogStructure("Module Map", p.Env.Modules, p.Log, zerolog.TraceLevel, true, true)
 		return Solution{}, errors.New(msg + " for " + p.Asset.Context.DataSetID)
 	}
 	return solutions[0], nil

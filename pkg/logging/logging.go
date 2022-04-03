@@ -117,8 +117,11 @@ func LogInit(callerType, callerName string) zerolog.Logger {
 	return log
 }
 
-// LogStructure prints out a the provided structure to the log in json format.
-func LogStructure(argName string, argStruct interface{}, log *zerolog.Logger, forUser, audit bool) {
+// LogStructure prints out the provided structure to the log in json format.
+func LogStructure(argName string, argStruct interface{}, log *zerolog.Logger, verbosity zerolog.Level, forUser, audit bool) {
+	if log.GetLevel() > verbosity {
+		return
+	}
 	var jsonStruct []byte
 	var err error
 	if PrettyLogging() {
@@ -128,8 +131,10 @@ func LogStructure(argName string, argStruct interface{}, log *zerolog.Logger, fo
 	}
 
 	if err != nil {
-		log.Warn().Msg("Failed converting " + argName + " to json")
+		msg := "Failed converting " + argName + " to json: "
+		log.WithLevel(verbosity).CallerSkipFrame(1).Bool(FORUSER, forUser).Bool(AUDIT, audit).Msg(msg + fmt.Sprintf("%v", argStruct))
 	} else {
-		log.Debug().Bool(FORUSER, forUser).Bool(AUDIT, audit).Msg(argName + ": " + string(jsonStruct))
+		// Log the info making sure that the calling function is listed as the caller
+		log.WithLevel(verbosity).CallerSkipFrame(1).Bool(FORUSER, forUser).Bool(AUDIT, audit).Msg(argName + ": " + string(jsonStruct))
 	}
 }
