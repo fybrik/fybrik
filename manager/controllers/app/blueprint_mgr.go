@@ -7,6 +7,8 @@ import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/logging"
+
+	"github.com/rs/zerolog"
 )
 
 // ModuleInstanceSpec consists of the module spec and arguments
@@ -60,7 +62,7 @@ func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, p
 	}
 
 	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).Logger()
-	logging.LogStructure("BlueprintMap", blueprintMap, &log, false, false)
+	logging.LogStructure("BlueprintMap", blueprintMap, &log, zerolog.DebugLevel, false, false)
 	return blueprintMap
 }
 

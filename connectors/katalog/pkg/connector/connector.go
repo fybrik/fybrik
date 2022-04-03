@@ -88,7 +88,7 @@ func (r *Handler) createAsset(c *gin.Context) {
 		return
 	}
 
-	logging.LogStructure("CreateAssetRequest object received:", request, &r.log, false, false)
+	logging.LogStructure("CreateAssetRequest object received:", request, &r.log, zerolog.DebugLevel, false, false)
 
 	if request.DestinationCatalogID == "" {
 		r.reportError(c, http.StatusBadRequest, "Invalid DestinationCatalogID in request")
@@ -104,7 +104,7 @@ func (r *Handler) createAsset(c *gin.Context) {
 		},
 	}
 
-	logging.LogStructure("Fybrik Asset to be created in Katalog:", asset, &r.log, false, false)
+	logging.LogStructure("Fybrik Asset to be created in Katalog:", asset, &r.log, zerolog.DebugLevel, false, false)
 
 	err := r.client.Create(context.Background(), asset)
 	if err != nil {
@@ -115,7 +115,7 @@ func (r *Handler) createAsset(c *gin.Context) {
 		r.reportError(c, http.StatusInternalServerError, errString+" Error: "+err.Error())
 		return
 	}
-	logging.LogStructure("Created Asset: ", asset, &r.log, false, false)
+	logging.LogStructure("Created Asset: ", asset, &r.log, zerolog.DebugLevel, false, false)
 
 	response := datacatalog.CreateAssetResponse{
 		AssetID: request.DestinationCatalogID + "/" + asset.ObjectMeta.Name,
