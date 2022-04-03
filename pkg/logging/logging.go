@@ -124,6 +124,7 @@ func LogStructure(argName string, argStruct interface{}, log *zerolog.Logger, ve
 	}
 	var jsonStruct []byte
 	var err error
+	const colon = ": "
 	if PrettyLogging() {
 		jsonStruct, err = json.MarshalIndent(argStruct, "", "\t")
 	} else {
@@ -131,9 +132,9 @@ func LogStructure(argName string, argStruct interface{}, log *zerolog.Logger, ve
 	}
 
 	if err != nil {
-		log.WithLevel(verbosity).CallerSkipFrame(1).Bool(FORUSER, forUser).Bool(AUDIT, audit).Msg(argName + ": " + fmt.Sprintf("%v", argStruct))
+		log.WithLevel(verbosity).CallerSkipFrame(1).Bool(FORUSER, forUser).Bool(AUDIT, audit).Msg(argName + colon + fmt.Sprintf("%v", argStruct))
 	} else {
 		// Log the info making sure that the calling function is listed as the caller
-		log.WithLevel(verbosity).CallerSkipFrame(1).Bool(FORUSER, forUser).Bool(AUDIT, audit).Msg(argName + ": " + string(jsonStruct))
+		log.WithLevel(verbosity).CallerSkipFrame(1).Bool(FORUSER, forUser).Bool(AUDIT, audit).Msg(argName + colon + string(jsonStruct))
 	}
 }
