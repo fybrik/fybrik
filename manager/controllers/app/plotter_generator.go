@@ -82,7 +82,7 @@ func (p *PlotterGenerator) AllocateStorage(item *DataInfo, destinationInterface 
 		Storage: bucket,
 	}
 	p.ProvisionedStorage[item.Context.DataSetID] = assetInfo
-	logging.LogStructure("ProvisionedStorage element", assetInfo, p.Log, false, true)
+	logging.LogStructure("ProvisionedStorage element", assetInfo, p.Log, zerolog.DebugLevel, false, true)
 
 	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
 	vaultMap := make(map[string]app.Vault)

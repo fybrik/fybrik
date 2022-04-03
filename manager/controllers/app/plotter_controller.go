@@ -366,7 +366,7 @@ func (r *PlotterReconciler) reconcile(plotter *api.Plotter) (ctrl.Result, []erro
 				continue // Continue with next blueprint
 			}
 
-			logging.LogStructure("Remote blueprint", remoteBlueprint, &log, false, true)
+			logging.LogStructure("Remote blueprint", remoteBlueprint, &log, zerolog.DebugLevel, false, true)
 
 			if !reflect.DeepEqual(&blueprintSpec, &remoteBlueprint.Spec) {
 				r.Log.Warn().Msg("Blueprint specs differ.  plotter.generation " + fmt.Sprint(plotter.Generation) +
@@ -378,7 +378,7 @@ func (r *PlotterReconciler) reconcile(plotter *api.Plotter) (ctrl.Result, []erro
 					err := r.ClusterManager.UpdateBlueprint(cluster, remoteBlueprint)
 					if err != nil {
 						log.Error().Err(err).Msg("Could not update blueprint")
-						logging.LogStructure("blueprint spec", blueprintSpec, &log, false, false)
+						logging.LogStructure("blueprint spec", blueprintSpec, &log, zerolog.DebugLevel, false, false)
 						errorCollection = append(errorCollection, err)
 						isReady = false
 						r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, err.Error())
@@ -397,7 +397,7 @@ func (r *PlotterReconciler) reconcile(plotter *api.Plotter) (ctrl.Result, []erro
 				continue
 			}
 
-			logging.LogStructure("Remote blueprint status", remoteBlueprint.Status, &log, false, false)
+			logging.LogStructure("Remote blueprint status", remoteBlueprint.Status, &log, zerolog.DebugLevel, false, false)
 
 			plotter.Status.Blueprints[cluster] = api.CreateMetaBlueprint(remoteBlueprint)
 
