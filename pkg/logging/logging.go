@@ -130,6 +130,7 @@ func LogStructure(argName string, argStruct interface{}, log *zerolog.Logger, fo
 	if err != nil {
 		log.Warn().Msg("Failed converting " + argName + " to json")
 	} else {
-		log.Debug().Bool(FORUSER, forUser).Bool(AUDIT, audit).Msg(argName + ": " + string(jsonStruct))
+		// Log the info making sure that the calling function is listed as the caller
+		log.Debug().CallerSkipFrame(3).Bool(FORUSER, forUser).Bool(AUDIT, audit).Msg(argName + ": " + string(jsonStruct))
 	}
 }
