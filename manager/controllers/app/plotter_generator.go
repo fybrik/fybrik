@@ -11,7 +11,6 @@ import (
 	"emperror.dev/errors"
 	"github.com/Masterminds/sprig/v3"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -212,8 +211,13 @@ func (p *PlotterGenerator) HandleNewAsset(item *DataInfo, application *app.Fybri
 		return nil
 	}
 	var sinkDataStore *app.DataStore
-	selectionLen := len(selection.DataPath)
-	element := selection.DataPath[selectionLen-1]
+	var element *ResolvedEdge
+
+	for _, element = range selection.DataPath {
+		if element.StorageAccount.Region != "" {
+			break
+		}
+	}
 	// allocate storage
 	if sinkDataStore, err = p.AllocateStorage(item, element.Sink.Connection, &element.StorageAccount); err != nil {
 		p.Log.Error().Err(err).Str(logging.DATASETID, item.Context.DataSetID).Msg("Storage allocation failed")
@@ -221,46 +225,28 @@ func (p *PlotterGenerator) HandleNewAsset(item *DataInfo, application *app.Fybri
 	}
 
 	// Reset StorageAccount to prevent re-allocation
-	selection.DataPath[selectionLen-1].StorageAccount.Region = ""
+	element.StorageAccount.Region = ""
 
 	resourceMetadata := datacatalog.ResourceMetadata{
 		Name:      item.Context.DataSetID,
 		Geography: string(element.StorageAccount.Region),
 	}
 	// Update item with details of the asset
+	// the asset will registered in the catalog later however
+	// there are details that are already known like the asset
+	// secret path
 	item.DataDetails = &datacatalog.GetAssetResponse{
 		ResourceMetadata: resourceMetadata,
+	}
+	if utils.IsVaultEnabled() {
+		secretPath :=
+			vault.PathForReadingKubeSecret(utils.GetSystemNamespace(), element.StorageAccount.SecretRef)
+
+		item.DataDetails.Credentials = secretPath
 	}
 	item.DataDetails.Details.DataFormat = sinkDataStore.Format
 	item.DataDetails.Details.Connection = sinkDataStore.Connection
 
-	details := datacatalog.ResourceDetails{
-		Connection: sinkDataStore.Connection,
-		DataFormat: sinkDataStore.Format,
-	}
-	credentialPath := ""
-	if utils.IsVaultEnabled() {
-		secretPath :=
-			vault.PathForReadingKubeSecret(utils.GetSystemNamespace(), element.StorageAccount.SecretRef)
-		credentialPath = utils.GetVaultAddress() + secretPath
-		item.DataDetails.Credentials = secretPath
-	}
-
-	request := datacatalog.CreateAssetRequest{
-		ResourceMetadata:     resourceMetadata,
-		Details:              details,
-		Credentials:          credentialPath,
-		DestinationCatalogID: utils.GetSystemNamespace(),
-	}
-
-	var response *datacatalog.CreateAssetResponse
-	if response, err = p.DataCatalog.CreateAsset(&request, credentialPath); err != nil {
-		log.Error().Err(err).Msg("failed to receive the catalog connector response")
-		return err
-	}
-
-	// Update asset id from the data catalog response.
-	item.Context.DataSetID = response.AssetID
 	return nil
 }
 
@@ -272,16 +258,8 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 	datasetID := item.Context.DataSetID
 	subflows := make([]app.SubFlow, 0)
 
-	assetId := item.Context.DataSetID
-	advertisedAssetID := ""
-	if item.DataDetails != nil && item.Context.DataSetID != item.DataDetails.ResourceMetadata.Name {
-		advertisedAssetID = item.DataDetails.ResourceMetadata.Name
-		assetId = advertisedAssetID
-	}
-
 	plotterSpec.Assets[item.Context.DataSetID] = app.AssetDetails{
-		DataStore:         *p.getAssetDataStore(item),
-		AdvertisedAssetID: advertisedAssetID,
+		DataStore: *p.getAssetDataStore(item),
 	}
 	// DataStore for destination will be determined if an implicit copy is required
 	var steps []app.DataFlowStep
@@ -341,7 +319,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 	flow := app.Flow{
 		Name:     flowName,
 		FlowType: flowType,
-		AssetID:  assetId,
+		AssetID:  item.Context.DataSetID,
 		SubFlows: subflows,
 	}
 	plotterSpec.Flows = append(plotterSpec.Flows, flow)

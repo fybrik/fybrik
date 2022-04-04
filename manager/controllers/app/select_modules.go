@@ -51,16 +51,19 @@ func (p *PathBuilder) solve() (Solution, error) {
 // Optimization is done by the shortest path (the paths are sorted by the length). To be changed in future versions.
 func (p *PathBuilder) FindPaths() []Solution {
 	var protocol taxonomy.ConnectionType
+	var dataFormat taxonomy.DataFormat
 	// If the connection name is empty, the default protocol is s3.
-	if p.Asset.DataDetails.Details.Connection.Name == "" {
+	if p.Asset.DataDetails == nil || p.Asset.DataDetails.Details.Connection.Name == "" {
 		protocol = "s3"
+		dataFormat = ""
 	} else {
 		protocol = p.Asset.DataDetails.Details.Connection.Name
+		dataFormat = p.Asset.DataDetails.Details.DataFormat
 	}
 	NodeFromAssetMetadata := Node{
 		Connection: &taxonomy.Interface{
 			Protocol:   protocol,
-			DataFormat: p.Asset.DataDetails.Details.DataFormat,
+			DataFormat: dataFormat,
 		},
 	}
 	NodeFromAppRequirements := Node{Connection: &p.Asset.Context.Requirements.Interface}
