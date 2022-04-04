@@ -1400,7 +1400,8 @@ func TestWriteNotRegisteredAsset(t *testing.T) {
 		Namespace: "default",
 	}
 	application := &app.FybrikApplication{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikapplication-write-AssetNotExist.yaml", application)).NotTo(gomega.HaveOccurred())
+	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikapplication-write-AssetNotExist.yaml",
+		application)).NotTo(gomega.HaveOccurred())
 	application.SetGeneration(1)
 	application.SetUID("18")
 	// Objects to track in the fake client.
