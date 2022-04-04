@@ -622,6 +622,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#how-to-add-start-andor-expiry-dates-to-policies" class="md-nav__link">
+    How to add start and/or expiry dates to policies
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1218,6 +1225,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#how-to-add-start-andor-expiry-dates-to-policies" class="md-nav__link">
+    How to add start and/or expiry dates to policies
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1397,6 +1411,26 @@ helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
 helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait
 </code></pre></div></li>
 </ol>
+<h3 id="how-to-add-start-andor-expiry-dates-to-policies">How to add start and/or expiry dates to policies</h3>
+<p>By utilizing the time built-in functions of OPA, an effective date and/or expiry date of a policy can be defined. The related built-in functions are:</p>
+<p><div class="highlight"><pre><span></span><code>output := time.now_ns() //the current date
+output := time.parse_rfc3339_ns(value) //the specified date in RFC3339 format
+</code></pre></div>
+<code>parse_rfc3339_ns</code> enables to add the expiry date as well as the the date for the policy to become effective, and <code>now_ns</code> captures the date when policies are applied. Through comparisons, it can be acquired whether the current policy is still valid. Below is an example.</p>
+<p><div class="highlight"><pre><span></span><code>package adminconfig
+
+# vaild from 2022.1.1, expire on 2022.6.1
+config[{&quot;capability&quot;: &quot;copy&quot;, &quot;decision&quot;: decision}] {
+    policy := {&quot;policySetID&quot;: &quot;1&quot;, &quot;ID&quot;: &quot;test-1&quot;}
+    nowDate := time.now_ns()
+    startDate := time.parse_rfc3339_ns(&quot;2022-01-01T00:00:00Z&quot;)
+    expiration := time.parse_rfc3339_ns(&quot;2022-06-01T00:00:00Z&quot;)
+    nowDate &gt;= startDate
+    nowDate &lt; expiration
+    decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: &quot;False&quot;}
+}
+</code></pre></div>
+Note that an empty ConfigDecisions map will be returned if the expiration date is exceeded by the time when the policy is applied. </p>
 
               
             </article>
