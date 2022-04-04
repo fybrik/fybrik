@@ -9,3 +9,5 @@ type GetAssetRequest = datacatalog.GetAssetRequest
 type GetAssetResponse = datacatalog.GetAssetResponse
 type CreateAssetRequest = datacatalog.CreateAssetRequest
 type CreateAssetResponse = datacatalog.CreateAssetResponse
+type DeleteAssetRequest = datacatalog.DeleteAssetRequest
+type DeleteAssetResponse = datacatalog.DeleteAssetResponse

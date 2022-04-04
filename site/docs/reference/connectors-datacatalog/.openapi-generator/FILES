@@ -3,6 +3,8 @@ Apis/DefaultApi.md
 Models/Connection.md
 Models/CreateAssetRequest.md
 Models/CreateAssetResponse.md
+Models/DeleteAssetRequest.md
+Models/DeleteAssetResponse.md
 Models/GetAssetRequest.md
 Models/GetAssetResponse.md
 Models/OperationType.md

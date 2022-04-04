@@ -43,6 +43,27 @@
         }
       }
     },
+    "DeleteAssetRequest": {
+      "type": "object",
+      "required": [
+        "assetID"
+      ],
+      "properties": {
+        "assetID": {
+          "$ref": "taxonomy.json#/definitions/AssetID",
+          "description": "Asset ID of the to-be deleted asset"
+        }
+      }
+    },
+    "DeleteAssetResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "description": "The deletion status",
+          "type": "string"
+        }
+      }
+    },
     "GetAssetRequest": {
       "type": "object",
       "required": [
