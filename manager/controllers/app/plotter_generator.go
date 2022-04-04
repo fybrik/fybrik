@@ -238,8 +238,7 @@ func (p *PlotterGenerator) HandleNewAsset(item *DataInfo, application *app.Fybri
 		Connection: sinkDataStore.Connection,
 		DataFormat: sinkDataStore.Format,
 	}
-	var credentialPath string
-	credentialPath = ""
+	credentialPath := ""
 	if utils.IsVaultEnabled() {
 		secretPath :=
 			vault.PathForReadingKubeSecret(utils.GetSystemNamespace(), element.StorageAccount.SecretRef)
@@ -273,7 +272,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 	datasetID := item.Context.DataSetID
 	subflows := make([]app.SubFlow, 0)
 
-	assetId := string(item.Context.DataSetID)
+	assetId := item.Context.DataSetID
 	advertisedAssetID := ""
 	if item.DataDetails != nil && item.Context.DataSetID != item.DataDetails.ResourceMetadata.Name {
 		advertisedAssetID = item.DataDetails.ResourceMetadata.Name

@@ -381,8 +381,7 @@ func supportsSourceInterface(edge *Edge, sourceNode *Node) bool {
 // setSinkDataFormatFromModule sets the data format of the sink node to be the first
 // dataformat supported by the module sink interface.
 // It is called in the case where the sink does not have data format which
-// is treated as "Any".
-//nolint:dupl
+// is treated as "Any"
 func setSinkDataFormatFromModule(edge *Edge, sink *Node) {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
 	for _, inter := range capability.SupportedInterfaces {
