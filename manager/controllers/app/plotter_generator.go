@@ -208,34 +208,43 @@ func (p *PlotterGenerator) addStep(element *ResolvedEdge, datasetID string, api 
 func (p *PlotterGenerator) HandleNewAsset(item *DataInfo, application *app.FybrikApplication, selection *Solution,
 	plotterSpec *app.PlotterSpec) error {
 	var err error
-	if item.DataDetails.Details.DataFormat != "" {
+	if item.DataDetails != nil && item.DataDetails.Details.DataFormat != "" {
 		return nil
 	}
 	var sinkDataStore *app.DataStore
 	selectionLen := len(selection.DataPath)
 	element := selection.DataPath[selectionLen-1]
-	// allocate storge
+	// allocate storage
 	if sinkDataStore, err = p.AllocateStorage(item, element.Sink.Connection, &element.StorageAccount); err != nil {
 		p.Log.Error().Err(err).Str(logging.DATASETID, item.Context.DataSetID).Msg("Storage allocation failed")
 		return err
 	}
 
-	item.DataDetails.Details.DataFormat = sinkDataStore.Format
+	// Reset StorageAccount to prevent re-allocation
 	selection.DataPath[selectionLen-1].StorageAccount.Region = ""
 
 	resourceMetadata := datacatalog.ResourceMetadata{
+		Name:      item.Context.DataSetID,
 		Geography: string(element.StorageAccount.Region),
 	}
+	// Update item with details of the asset
+	item.DataDetails = &datacatalog.GetAssetResponse{
+		ResourceMetadata: resourceMetadata,
+	}
+	item.DataDetails.Details.DataFormat = sinkDataStore.Format
+	item.DataDetails.Details.Connection = sinkDataStore.Connection
 
 	details := datacatalog.ResourceDetails{
 		Connection: sinkDataStore.Connection,
 		DataFormat: sinkDataStore.Format,
 	}
 	var credentialPath string
-
+	credentialPath = ""
 	if utils.IsVaultEnabled() {
-		credentialPath =
-			utils.GetVaultAddress() + vault.PathForReadingKubeSecret(utils.GetSystemNamespace(), element.StorageAccount.SecretRef)
+		secretPath :=
+			vault.PathForReadingKubeSecret(utils.GetSystemNamespace(), element.StorageAccount.SecretRef)
+		credentialPath = utils.GetVaultAddress() + secretPath
+		item.DataDetails.Credentials = secretPath
 	}
 
 	request := datacatalog.CreateAssetRequest{
@@ -245,11 +254,14 @@ func (p *PlotterGenerator) HandleNewAsset(item *DataInfo, application *app.Fybri
 		DestinationCatalogID: utils.GetSystemNamespace(),
 	}
 
-	if _, err = p.DataCatalog.CreateAsset(&request, credentialPath); err != nil {
+	var response *datacatalog.CreateAssetResponse
+	if response, err = p.DataCatalog.CreateAsset(&request, credentialPath); err != nil {
 		log.Error().Err(err).Msg("failed to receive the catalog connector response")
 		return err
 	}
 
+	// Update asset id from the data catalog response.
+	item.Context.DataSetID = response.AssetID
 	return nil
 }
 
@@ -261,8 +273,16 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 	datasetID := item.Context.DataSetID
 	subflows := make([]app.SubFlow, 0)
 
+	assetId := string(item.Context.DataSetID)
+	advertisedAssetID := ""
+	if item.DataDetails != nil && item.Context.DataSetID != item.DataDetails.ResourceMetadata.Name {
+		advertisedAssetID = item.DataDetails.ResourceMetadata.Name
+		assetId = advertisedAssetID
+	}
+
 	plotterSpec.Assets[item.Context.DataSetID] = app.AssetDetails{
-		DataStore: *p.getAssetDataStore(item),
+		DataStore:         *p.getAssetDataStore(item),
+		AdvertisedAssetID: advertisedAssetID,
 	}
 	// DataStore for destination will be determined if an implicit copy is required
 	var steps []app.DataFlowStep
@@ -322,7 +342,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 	flow := app.Flow{
 		Name:     flowName,
 		FlowType: flowType,
-		AssetID:  item.Context.DataSetID,
+		AssetID:  assetId,
 		SubFlows: subflows,
 	}
 	plotterSpec.Flows = append(plotterSpec.Flows, flow)
