@@ -25,7 +25,9 @@ func TestBuildModel(t *testing.T) {
 	modSpec2 := appApi.FybrikModuleSpec{Capabilities: []appApi.ModuleCapability{modCap2}}
 	mod1 := appApi.FybrikModule{Spec: modSpec1}
 	mod2 := appApi.FybrikModule{Spec: modSpec2}
-	moduleMap := map[string]*appApi.FybrikModule{"mod1": &mod1, "mod2": &mod2}
+	mod1.Name = "ReaderCopier"
+	mod2.Name = "Reader"
+	moduleMap := map[string]*appApi.FybrikModule{mod1.Name: &mod1, mod2.Name: &mod2}
 	cluster := multicluster.Cluster{}
 	clusters := []multicluster.Cluster{cluster}
 	storageAccounts := []appApi.FybrikStorageAccount{}
