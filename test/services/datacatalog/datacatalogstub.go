@@ -25,7 +25,7 @@ var router *gin.Engine
 func main() {
 	router = gin.Default()
 
-	router.POST("/getAssetInfo", func(c *gin.Context) {
+	router.GET("/getAssetInfo", func(c *gin.Context) {
 		creds := ""
 		if values := c.Request.Header["X-Request-Datacatalog-Cred"]; len(values) > 0 {
 			creds = values[0]
