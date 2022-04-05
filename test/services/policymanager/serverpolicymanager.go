@@ -38,7 +38,7 @@ func constructPolicyManagerRequest(inputString string) *policymanager.GetPolicyD
 func main() {
 	router = gin.Default()
 
-	router.POST("/getPoliciesDecisions", func(c *gin.Context) {
+	router.GET("/getPoliciesDecisions", func(c *gin.Context) {
 		creds := ""
 		if values := c.Request.Header["X-Request-Cred"]; len(values) > 0 {
 			creds = values[0]
