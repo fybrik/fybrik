@@ -60,7 +60,7 @@ func (r *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	logging.LogStructure("GetAssetInfo object received in opa connector:", assetInfo, &r.log, false, false)
+	logging.LogStructure("GetAssetInfo object received in opa connector:", assetInfo, &r.log, zerolog.DebugLevel, false, false)
 
 	// Enrich request with catalog information
 	request.Resource.Metadata = &assetInfo.ResourceMetadata
@@ -73,7 +73,7 @@ func (r *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	logging.LogStructure("requestBody sent to OPA for evaluation: ", inputStruct, &r.log, false, false)
+	logging.LogStructure("requestBody sent to OPA for evaluation: ", inputStruct, &r.log, zerolog.DebugLevel, false, false)
 
 	// Send request to OPA
 	endpoint := fmt.Sprintf("%s/%s", strings.TrimRight(r.OpaServerURL, "/"), strings.TrimLeft(policyEndpoint, "/"))
