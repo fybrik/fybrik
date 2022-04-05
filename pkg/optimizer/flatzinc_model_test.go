@@ -10,6 +10,8 @@ import (
 
 func TestWriteModel(t *testing.T) {
 	myWriter := NewFlatZincModel()
+	myWriter.AddHeaderComment("hello")
+	myWriter.AddHeaderComment("this is a test")
 	myWriter.AddParam("pi", "float", "3.1415")
 	myWriter.AddParamArray("fib", "int", 7, "[1, 1, 2, 3, 5, 8, 13]")
 	myWriter.AddVariable("y", "int", "", false, false)

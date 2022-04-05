@@ -114,18 +114,22 @@ func (slv *FlatZincSolveItem) solveItemStatement() string {
 
 // The main class for holding a FlatZinc constraint problem
 type FlatZincModel struct {
-	ParamMap    map[string]Declares
-	VarMap      map[string]Declares
-	Constraints []FlatZincConstraint
-	SolveTarget FlatZincSolveItem
+	HeaderComments string
+	ParamMap       map[string]Declares
+	VarMap         map[string]Declares
+	Constraints    []FlatZincConstraint
+	SolveTarget    FlatZincSolveItem
 }
 
 func NewFlatZincModel() *FlatZincModel {
 	var fzw FlatZincModel
 	fzw.ParamMap = make(map[string]Declares)
 	fzw.VarMap = make(map[string]Declares)
-	fzw.Constraints = make([]FlatZincConstraint, 0)
 	return &fzw
+}
+
+func (fzw *FlatZincModel) AddHeaderComment(commentLine string) {
+	fzw.HeaderComments = fzw.HeaderComments + "% " + commentLine + "\n"
 }
 
 func (fzw *FlatZincModel) AddParam(name, vartype, assignment string) {
@@ -184,7 +188,7 @@ func (fzw *FlatZincModel) Dump(fileName string) error {
 		}
 	}()
 
-	fileContent := ""
+	fileContent := fzw.HeaderComments + "\n"
 	for _, fzparam := range mapValuesSortedByKey(fzw.ParamMap) {
 		fileContent += fzparam.Declaration()
 	}
