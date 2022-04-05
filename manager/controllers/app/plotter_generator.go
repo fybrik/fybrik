@@ -203,8 +203,7 @@ func (p *PlotterGenerator) addStep(element *ResolvedEdge, datasetID string, api 
 
 // Handle a new asset: allocate storage and update its metadata. Used when the
 // IsNewDataSet flag is true.
-func (p *PlotterGenerator) HandleNewAsset(item *DataInfo, application *app.FybrikApplication, selection *Solution,
-	plotterSpec *app.PlotterSpec) error {
+func (p *PlotterGenerator) handleNewAsset(item *DataInfo, selection *Solution) error {
 	var err error
 	if item.DataDetails != nil && item.DataDetails.Details.DataFormat != "" {
 		return nil

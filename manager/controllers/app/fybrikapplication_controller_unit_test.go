@@ -1448,9 +1448,9 @@ func TestWriteNotRegisteredAsset(t *testing.T) {
 	// check plotter creation
 	g.Expect(application.Status.AssetStates).To(gomega.HaveLen(1))
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
-	writeDatalEndpoint := application.Status.AssetStates[application.Spec.Data[0].DataSetID].Endpoint
-	g.Expect(writeDatalEndpoint).To(gomega.Not(gomega.BeNil()))
-	writeConnectionMap := writeDatalEndpoint.AdditionalProperties.Items
+	writeEndpoint := application.Status.AssetStates[application.Spec.Data[0].DataSetID].Endpoint
+	g.Expect(writeEndpoint).To(gomega.Not(gomega.BeNil()))
+	writeConnectionMap := writeEndpoint.AdditionalProperties.Items
 	g.Expect(writeConnectionMap).To(gomega.HaveKey("fybrik-arrow-flight"))
 	writeDataConfig := writeConnectionMap["fybrik-arrow-flight"].(map[string]interface{})
 	g.Expect(writeDataConfig["hostname"]).To(gomega.Equal("read-write-module"))
@@ -1465,10 +1465,8 @@ func TestWriteNotRegisteredAsset(t *testing.T) {
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(1))
-	g.Expect(plotter.Spec.Assets["s3-not-exists/new-dataset"].DataStore.Connection.Name == app.S3).
-		To(gomega.BeTrue())
-	g.Expect(plotter.Spec.Assets["s3-not-exists/new-dataset"].DataStore.Format != "").
-		To(gomega.BeTrue())
+	g.Expect(plotter.Spec.Assets["s3-not-exists/new-dataset"].DataStore.Connection.Name).To(gomega.Equal(app.S3))
+	g.Expect(plotter.Spec.Assets["s3-not-exists/new-dataset"].DataStore.Format).ToNot(gomega.BeEmpty())
 	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(1))
 }
 
