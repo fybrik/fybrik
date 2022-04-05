@@ -50,13 +50,8 @@ func (p *PathBuilder) solve() (Solution, error) {
 // Then, transformations are added to the found paths, and clusters are matched to satisfy restrictions from admin config policies.
 // Optimization is done by the shortest path (the paths are sorted by the length). To be changed in future versions.
 func (p *PathBuilder) FindPaths() []Solution {
-	NodeFromAssetMetadata := Node{
-		Connection: &taxonomy.Interface{
-			Protocol:   p.Asset.DataDetails.Details.Connection.Name,
-			DataFormat: p.Asset.DataDetails.Details.DataFormat,
-		},
-	}
-	NodeFromAppRequirements := Node{Connection: &p.Asset.Context.Requirements.Interface}
+	nodeFromAssetMetadata := p.getAssetConnectionNode()
+	nodeFromAppRequirements := p.getRequiredConnectionNode()
 	// find data paths of length up to DATAPATH_LIMIT from data source to the workload, not including transformations or branches
 	bound, err := utils.GetDataPathMaxSize()
 	if err != nil {
@@ -64,9 +59,9 @@ func (p *PathBuilder) FindPaths() []Solution {
 	}
 	var solutions []Solution
 	if p.Asset.Context.Flow != taxonomy.WriteFlow {
-		solutions = p.findPathsWithinLimit(&NodeFromAssetMetadata, &NodeFromAppRequirements, bound)
+		solutions = p.findPathsWithinLimit(nodeFromAssetMetadata, nodeFromAppRequirements, bound)
 	} else {
-		solutions = p.findPathsWithinLimit(&NodeFromAppRequirements, &NodeFromAssetMetadata, bound)
+		solutions = p.findPathsWithinLimit(nodeFromAppRequirements, nodeFromAssetMetadata, bound)
 		// reverse each solution to start with the application requirements, e.g. workload
 		for ind := range solutions {
 			for elementInd := 0; elementInd < len(solutions[ind].DataPath)/2; elementInd++ {
@@ -143,7 +138,7 @@ func (p *PathBuilder) validate(solution Solution) bool {
 	requiredActions := p.Asset.Actions
 	for ind := range solution.DataPath {
 		element := solution.DataPath[ind]
-		if !element.Edge.Sink.Virtual {
+		if element.Edge.Sink != nil && !element.Edge.Sink.Virtual {
 			if !p.validateStorageRequirements(element) {
 				return false
 			}
@@ -228,6 +223,7 @@ func (p *PathBuilder) findPathsWithinLimit(source, sink *Node, n int) []Solution
 			}
 			// check whether the module supports the final destination
 			if !supportsSinkInterface(&edge, sink) {
+				p.Log.Debug().Msgf("module %s does not support sink requirements for capability %s", module.Name, capability.Capability)
 				continue
 			}
 			edge.Sink = sink
@@ -238,6 +234,8 @@ func (p *PathBuilder) findPathsWithinLimit(source, sink *Node, n int) []Solution
 				var path []*ResolvedEdge
 				path = append(path, &ResolvedEdge{Edge: edge})
 				solutions = append(solutions, Solution{DataPath: path})
+			} else {
+				p.Log.Debug().Msgf("module %s does not satisfy source requirements for capability %s", module.Name, capability.Capability)
 			}
 			// try to build data paths using the selected module capability
 			if n > 1 {
@@ -324,7 +322,14 @@ func match(source, sink *taxonomy.Interface) bool {
 	if source == nil || sink == nil {
 		return false
 	}
-	return source.DataFormat == sink.DataFormat && source.Protocol == sink.Protocol
+	if source.Protocol != sink.Protocol {
+		return false
+	}
+	// an empty DataFormat value is not checked
+	if source.DataFormat != "" && sink.DataFormat != "" && source.DataFormat != sink.DataFormat {
+		return false
+	}
+	return true
 }
 
 // supportsSourceInterface indicates whether the source interface requirements are met.
@@ -338,17 +343,20 @@ func supportsSourceInterface(edge *Edge, source *Node) bool {
 		}
 		hasSources = true
 		// connection via Source
-		if match(inter.Source, source.Connection) {
+		if source != nil && match(inter.Source, source.Connection) {
 			return true
 		}
 	}
-	if capability.API != nil && !hasSources {
+	if source != nil && capability.API != nil && !hasSources {
 		apiInterface := &taxonomy.Interface{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
 		if match(apiInterface, source.Connection) {
 			// consumes data via API
 			source.Virtual = true
 			return true
 		}
+	}
+	if !hasSources && (source == nil) {
+		return true
 	}
 	return false
 }
@@ -363,11 +371,11 @@ func supportsSinkInterface(edge *Edge, sink *Node) bool {
 			continue
 		}
 		hasSinks = true
-		if match(inter.Sink, sink.Connection) {
+		if sink != nil && match(inter.Sink, sink.Connection) {
 			return true
 		}
 	}
-	if capability.API != nil && !hasSinks {
+	if sink != nil && capability.API != nil && !hasSinks {
 		apiInterface := &taxonomy.Interface{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
 		if match(apiInterface, sink.Connection) {
 			// transfers data in-memory via API
@@ -375,7 +383,24 @@ func supportsSinkInterface(edge *Edge, sink *Node) bool {
 			return true
 		}
 	}
+	if !hasSinks && (sink == nil) {
+		return true
+	}
 	return false
+}
+
+func (p *PathBuilder) getAssetConnectionNode() *Node {
+	return &Node{Connection: &taxonomy.Interface{
+		Protocol:   p.Asset.DataDetails.Details.Connection.Name,
+		DataFormat: p.Asset.DataDetails.Details.DataFormat,
+	}}
+}
+
+func (p *PathBuilder) getRequiredConnectionNode() *Node {
+	if p.Asset.Context.Requirements.Interface == nil {
+		return nil
+	}
+	return &Node{Connection: p.Asset.Context.Requirements.Interface}
 }
 
 func (p *PathBuilder) allowCapability(capability taxonomy.Capability) bool {

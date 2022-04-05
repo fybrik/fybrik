@@ -40,9 +40,6 @@
     "DataRequirements": {
       "description": "DataRequirements structure contains a list of requirements (interface, need to catalog the dataset, etc.)",
       "type": "object",
-      "required": [
-        "interface"
-      ],
       "properties": {
         "interface": {
           "$ref": "taxonomy.json#/definitions/Interface",

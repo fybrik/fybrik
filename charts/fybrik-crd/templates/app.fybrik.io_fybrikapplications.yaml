@@ -119,8 +119,6 @@ spec:
                           required:
                           - protocol
                           type: object
-                      required:
-                      - interface
                       type: object
                   required:
                   - dataSetID

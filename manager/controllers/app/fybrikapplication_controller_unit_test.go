@@ -262,7 +262,7 @@ func TestDenyOnRead(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "s3/deny-dataset",
-		Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.S3, DataFormat: app.Parquet}},
+		Requirements: app.DataRequirements{Interface: &taxonomy.Interface{Protocol: app.S3, DataFormat: app.Parquet}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("2")
@@ -315,7 +315,7 @@ func TestNoReadPath(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "db2/allow-dataset",
-		Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.JdbcDb2}},
+		Requirements: app.DataRequirements{Interface: &taxonomy.Interface{Protocol: app.JdbcDb2}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("3")
@@ -375,11 +375,11 @@ func TestWrongCopyModule(t *testing.T) {
 	application.Spec.Data = []app.DataContext{
 		{
 			DataSetID:    "s3/allow-dataset",
-			Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.ArrowFlight}},
+			Requirements: app.DataRequirements{Interface: &taxonomy.Interface{Protocol: app.ArrowFlight}},
 		},
 		{
 			DataSetID:    "kafka/allow-dataset",
-			Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.ArrowFlight}},
+			Requirements: app.DataRequirements{Interface: &taxonomy.Interface{Protocol: app.ArrowFlight}},
 		},
 	}
 	application.SetGeneration(1)
@@ -441,7 +441,7 @@ func TestActionSupport(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "db2/redact-dataset",
-		Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.ArrowFlight}},
+		Requirements: app.DataRequirements{Interface: &taxonomy.Interface{Protocol: app.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("5")
@@ -507,15 +507,15 @@ func TestMultipleDatasets(t *testing.T) {
 	application.Spec.Data = []app.DataContext{
 		{
 			DataSetID:    "s3/deny-dataset",
-			Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.ArrowFlight}},
+			Requirements: app.DataRequirements{Interface: &taxonomy.Interface{Protocol: app.ArrowFlight}},
 		},
 		{
 			DataSetID:    "s3/allow-dataset",
-			Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.ArrowFlight}},
+			Requirements: app.DataRequirements{Interface: &taxonomy.Interface{Protocol: app.ArrowFlight}},
 		},
 		{
 			DataSetID:    "db2/redact-dataset",
-			Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.ArrowFlight}},
+			Requirements: app.DataRequirements{Interface: &taxonomy.Interface{Protocol: app.ArrowFlight}},
 		},
 	}
 	application.SetGeneration(1)
@@ -602,15 +602,15 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 	application.Spec.Data = []app.DataContext{
 		{
 			DataSetID:    "s3/deny-dataset",
-			Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.ArrowFlight}},
+			Requirements: app.DataRequirements{Interface: &taxonomy.Interface{Protocol: app.ArrowFlight}},
 		},
 		{
 			DataSetID:    "local/redact-dataset",
-			Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.ArrowFlight}},
+			Requirements: app.DataRequirements{Interface: &taxonomy.Interface{Protocol: app.ArrowFlight}},
 		},
 		{
 			DataSetID:    "s3/allow-dataset",
-			Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.ArrowFlight}},
+			Requirements: app.DataRequirements{Interface: &taxonomy.Interface{Protocol: app.ArrowFlight}},
 		},
 	}
 	application.SetGeneration(1)
@@ -670,7 +670,7 @@ func TestMultipleRegions(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "s3-external/redact-dataset",
-		Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.ArrowFlight}},
+		Requirements: app.DataRequirements{Interface: &taxonomy.Interface{Protocol: app.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("8")
@@ -973,7 +973,7 @@ func TestPlotterUpdate(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "s3/allow-dataset",
-		Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.ArrowFlight}},
+		Requirements: app.DataRequirements{Interface: &taxonomy.Interface{Protocol: app.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("11")
@@ -1328,7 +1328,7 @@ func TestReadAndTransform(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "s3/redact-dataset",
-		Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.ArrowFlight}},
+		Requirements: app.DataRequirements{Interface: &taxonomy.Interface{Protocol: app.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("17")
@@ -1553,7 +1553,7 @@ func TestWriteWithoutPermissions(t *testing.T) {
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "s3/deny-dataset",
 		Flow:         taxonomy.WriteFlow,
-		Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.ArrowFlight}},
+		Requirements: app.DataRequirements{Interface: &taxonomy.Interface{Protocol: app.ArrowFlight}},
 	}
 
 	// Objects to track in the fake client.
@@ -1607,7 +1607,7 @@ func TestReadChain(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = app.DataContext{
 		DataSetID:    "s3/redact-dataset",
-		Requirements: app.DataRequirements{Interface: taxonomy.Interface{Protocol: app.ArrowFlight}},
+		Requirements: app.DataRequirements{Interface: &taxonomy.Interface{Protocol: app.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("21")
@@ -1664,4 +1664,55 @@ func TestReadChain(t *testing.T) {
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2)) // expect two templates
+}
+
+// TestEmptyInterface checks requests that do not expect a response
+// Delete flow, as an example
+func TestEmptyInterface(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	application := &app.FybrikApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/delete-flow.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.SetGeneration(1)
+	application.SetUID("22")
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// module
+	module := &app.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-delete.yaml", module)).NotTo(gomega.HaveOccurred())
+	module.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.TODO(), module)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
+
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+	namespaced := types.NamespacedName{
+		Name:      application.Name,
+		Namespace: application.Namespace,
+	}
+
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+	g.Expect(getErrorMessages(application)).To(gomega.BeEmpty())
+	// check plotter creation
+	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 }
