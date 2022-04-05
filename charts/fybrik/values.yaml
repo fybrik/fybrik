@@ -47,7 +47,7 @@ global:
   connectionTimeout: 120
   # Human readable logs
   prettyLogging: false
-  # zerolog verbosity level 
+  # zerolog verbosity level
   # ref: https://github.com/rs/zerolog#leveled-logging
   loggingVerbosity: -1
 
@@ -124,9 +124,9 @@ manager:
   # Set to true to deploy the manager component or false to skip its deployment.
   # Defaults to true if `coordinator.enabled` or `worker.enabled` is true.
   enabled: true
-  
+
   # Override GRPC connection timeout in manager
-  connectionTimeout: 
+  connectionTimeout:
 
   # Override data path limits in manager
   dataPathMaxSize: "2"
@@ -149,7 +149,7 @@ manager:
   #   value: env_value
 
   replicaCount: 1
-  
+
   serviceAccount:
     # Specifies whether a service account should be created
     create: true
@@ -206,7 +206,7 @@ opaServer:
 
   # Image name or a hub/image[:tag]
   image: "openpolicyagent/opa:0.36.0"
-  
+
   # Overrides global.imagePullPolicy
   imagePullPolicy: ""
 
@@ -219,9 +219,9 @@ opaServer:
   kubemgmt:
     image: openpolicyagent/kube-mgmt:0.11
 
-  # Used if autoscaling is not enabled 
+  # Used if autoscaling is not enabled
   replicaCount: 1
-  
+
   serviceAccount:
     # Specifies whether a service account should be created
     create: true
@@ -294,13 +294,13 @@ katalogConnector:
 
   # Image name or a hub/image[:tag]
   image: "katalog-connector"
-  
+
   # Overrides global.imagePullPolicy
   imagePullPolicy: ""
 
-  # Used if autoscaling is not enabled 
+  # Used if autoscaling is not enabled
   replicaCount: 1
-  
+
   serviceAccount:
     # Specifies whether a service account should be created
     create: true
@@ -372,9 +372,9 @@ opaConnector:
   # Overrides `.global.imagePullPolicy`
   imagePullPolicy: ""
 
-  # Used if autoscaling is not enabled 
+  # Used if autoscaling is not enabled
   replicaCount: 1
-  
+
   serviceAccount:
     # Specifies whether a service account should be created
     create: true
@@ -425,7 +425,7 @@ opaConnector:
   tolerations: []
 
   affinity: {}
-  
+
 # S3 mock service installed in fybrik namespace
 s3mock:
   enabled: false
