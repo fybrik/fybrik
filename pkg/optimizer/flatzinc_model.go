@@ -26,18 +26,19 @@ type Declares interface {
 
 // Data for a single FlatZinc parameter
 type FlatZincParam struct {
-	NumInstances uint // NumInstances > 1 means an array of params
-	Name         string
-	Type         string
-	Assignment   string
+	Name       string
+	Type       string
+	Size       uint
+	IsArray    bool // (IsArray == false) implies (Size == 1)
+	Assignment string
 }
 
 // formats a paramater declaraion in FlatZinc format
 func (fzp FlatZincParam) Declaration() string {
-	if fzp.NumInstances == 1 {
-		return fmt.Sprintf("%s: %s = %s;\n", fzp.Type, fzp.Name, fzp.Assignment)
+	if fzp.IsArray {
+		return fmt.Sprintf("array [1..%d] of %s: %s = %s;\n", fzp.Size, fzp.Type, fzp.Name, fzp.Assignment)
 	}
-	return fmt.Sprintf("array [1..%d] of %s: %s = %s;\n", fzp.NumInstances, fzp.Type, fzp.Name, fzp.Assignment)
+	return fmt.Sprintf("%s: %s = %s;\n", fzp.Type, fzp.Name, fzp.Assignment)
 }
 
 type Annotations []string
@@ -49,19 +50,20 @@ func (annots Annotations) annotationString() string {
 
 // Data for a single FlatZinc variable
 type FlatZincVariable struct {
-	NumInstances uint // NumInstances > 1 means an array of vars
-	Name         string
-	Type         string
-	Assignment   string
+	Name       string
+	Type       string
+	Size       uint
+	IsArray    bool // (IsArray == false) implies (Size == 1)
+	Assignment string
 	Annotations
 }
 
 // formats a variable declaraion in FlatZinc format
 func (fzv FlatZincVariable) Declaration() string {
-	if fzv.NumInstances == 1 {
-		return fmt.Sprintf("var %s: %s%s;\n", fzv.Type, fzv.Name, fzv.annotationString())
+	if fzv.IsArray {
+		return fmt.Sprintf("array [1..%d] of var %s: %s%s;\n", fzv.Size, fzv.Type, fzv.Name, fzv.annotationString())
 	}
-	return fmt.Sprintf("array [1..%d] of var %s: %s%s;\n", fzv.NumInstances, fzv.Type, fzv.Name, fzv.annotationString())
+	return fmt.Sprintf("var %s: %s%s;\n", fzv.Type, fzv.Name, fzv.annotationString())
 }
 
 // Data for a single FlatZinc constraint
@@ -126,12 +128,40 @@ func NewFlatZincModel() *FlatZincModel {
 	return &fzw
 }
 
-func (fzw *FlatZincModel) AddParam(numInst uint, name, vartype, assignment string) {
-	fzw.ParamMap[name] = FlatZincParam{numInst, name, vartype, assignment}
+func (fzw *FlatZincModel) AddParam(name, vartype, assignment string) {
+	fzw.ParamMap[name] = FlatZincParam{Name: name, Type: vartype, Size: 1, IsArray: false, Assignment: assignment}
 }
 
-func (fzw *FlatZincModel) AddVariable(numInst uint, name, vartype, assignment string, annotations ...string) {
-	fzw.VarMap[name] = FlatZincVariable{numInst, name, vartype, assignment, annotations}
+func (fzw *FlatZincModel) AddParamArray(name, vartype string, size uint, assignment string) {
+	fzw.ParamMap[name] = FlatZincParam{Name: name, Type: vartype, Size: size, IsArray: true, Assignment: assignment}
+}
+
+func (fzw *FlatZincModel) AddVariable(name, vartype, assignment string, isDefined, isOutput bool) {
+	annotations := []string{}
+	if isDefined {
+		annotations = append(annotations, "is_defined_var")
+	}
+	if isOutput {
+		annotations = append(annotations, "output_var")
+	}
+	fzw.VarMap[name] = FlatZincVariable{
+		Name: name, Type: vartype, Size: 1, IsArray: false,
+		Assignment: assignment, Annotations: annotations,
+	}
+}
+
+func (fzw *FlatZincModel) AddVariableArray(name, vartype string, size uint, assignment string, isDefined, isOutput bool) {
+	annotations := []string{}
+	if isDefined {
+		annotations = append(annotations, "is_defined_var")
+	}
+	if isOutput {
+		annotations = append(annotations, fmt.Sprintf("output_array([1..%d])", size))
+	}
+	fzw.VarMap[name] = FlatZincVariable{
+		Name: name, Type: vartype, Size: size, IsArray: true,
+		Assignment: assignment, Annotations: annotations,
+	}
 }
 
 func (fzw *FlatZincModel) AddConstraint(identifier string, exprs []string, annotations ...string) {
