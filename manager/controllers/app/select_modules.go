@@ -54,7 +54,7 @@ func (p *PathBuilder) FindPaths() []Solution {
 	var dataFormat taxonomy.DataFormat
 	// If the connection name is empty, the default protocol is s3.
 	if p.Asset.DataDetails == nil || p.Asset.DataDetails.Details.Connection.Name == "" {
-		protocol = "s3"
+		protocol = app.S3
 		dataFormat = ""
 	} else {
 		protocol = p.Asset.DataDetails.Details.Connection.Name
