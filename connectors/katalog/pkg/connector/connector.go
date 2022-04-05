@@ -120,7 +120,7 @@ func (r *Handler) createAsset(c *gin.Context) {
 	response := datacatalog.CreateAssetResponse{
 		AssetID: request.DestinationCatalogID + "/" + asset.ObjectMeta.Name,
 	}
-	r.log.Info().Msg(
+	r.log.Debug().Msg(
 		"Sending response from Katalog Connector with created asset ID: " + response.AssetID)
 
 	c.JSON(http.StatusCreated, &response)

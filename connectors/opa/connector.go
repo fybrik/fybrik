@@ -90,7 +90,7 @@ func (r *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	r.log.Info().Msg(
+	r.log.Debug().Msg(
 		"responseFromOPABody received after OPA evaluation: " + string(responseFromOPABody))
 
 	// Handle errors from OPA
