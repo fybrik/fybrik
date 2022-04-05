@@ -3,7 +3,7 @@ include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 
 ABS_ROOT_DIR := $(abspath ${ROOT_DIR})
-OPENAPI_GENERATOR_IMG := openapitools/openapi-generator-cli:v5.3.1
+OPENAPI_GENERATOR_IMG := openapitools/openapi-generator-cli:v5.4.0
 
 .PHONY: generate
 generate: generate-crd-docs generate-connectors-docs
