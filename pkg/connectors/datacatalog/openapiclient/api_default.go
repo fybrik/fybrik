@@ -146,6 +146,126 @@ func (a *DefaultApiService) CreateAssetExecute(r ApiCreateAssetRequest) (*Create
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
+type ApiDeleteAssetRequest struct {
+	ctx                     context.Context
+	ApiService              *DefaultApiService
+	xRequestDatacatalogCred *string
+	deleteAssetRequest      *DeleteAssetRequest
+}
+
+// This header carries credential information related to relevant catalog from which the asset information needs to be retrieved.
+func (r ApiDeleteAssetRequest) XRequestDatacatalogCred(xRequestDatacatalogCred string) ApiDeleteAssetRequest {
+	r.xRequestDatacatalogCred = &xRequestDatacatalogCred
+	return r
+}
+
+// Delete Asset Request
+func (r ApiDeleteAssetRequest) DeleteAssetRequest(deleteAssetRequest DeleteAssetRequest) ApiDeleteAssetRequest {
+	r.deleteAssetRequest = &deleteAssetRequest
+	return r
+}
+
+func (r ApiDeleteAssetRequest) Execute() (*DeleteAssetResponse, *http.Response, error) {
+	return r.ApiService.DeleteAssetExecute(r)
+}
+
+/*
+DeleteAsset This REST API deletes data asset
+
+ @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiDeleteAssetRequest
+*/
+func (a *DefaultApiService) DeleteAsset(ctx context.Context) ApiDeleteAssetRequest {
+	return ApiDeleteAssetRequest{
+		ApiService: a,
+		ctx:        ctx,
+	}
+}
+
+// Execute executes the request
+//  @return DeleteAssetResponse
+func (a *DefaultApiService) DeleteAssetExecute(r ApiDeleteAssetRequest) (*DeleteAssetResponse, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *DeleteAssetResponse
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.DeleteAsset")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/deleteAsset"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+	if r.xRequestDatacatalogCred == nil {
+		return localVarReturnValue, nil, reportError("xRequestDatacatalogCred is required and must be specified")
+	}
+	if r.deleteAssetRequest == nil {
+		return localVarReturnValue, nil, reportError("deleteAssetRequest is required and must be specified")
+	}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	localVarHeaderParams["X-Request-Datacatalog-Cred"] = parameterToString(*r.xRequestDatacatalogCred, "")
+	// body params
+	localVarPostBody = r.deleteAssetRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = ioutil.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
 type ApiGetAssetInfoRequest struct {
 	ctx                     context.Context
 	ApiService              *DefaultApiService
