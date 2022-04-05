@@ -765,7 +765,6 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 		Owner:              client.ObjectKeyFromObject(applicationContext.Application),
 		Provision:          r.Provision,
 		ProvisionedStorage: make(map[string]NewAssetInfo),
-		DataCatalog:        r.DataCatalog,
 	}
 
 	plotterSpec := &api.PlotterSpec{
