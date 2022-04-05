@@ -294,6 +294,7 @@ katalogConnector:
 
   # Image name or a hub/image[:tag]
   image: "katalog-connector"
+  
   # Overrides global.imagePullPolicy
   imagePullPolicy: ""
 
