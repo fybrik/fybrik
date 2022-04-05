@@ -14,6 +14,7 @@ import (
 
 	"emperror.dev/errors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"fybrik.io/fybrik/pkg/model/policymanager"
@@ -50,7 +51,7 @@ type grpcPolicyManager struct {
 func NewGrpcPolicyManager(name, connectionURL string, connectionTimeout time.Duration) (PolicyManager, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), connectionTimeout)
 	defer cancel()
-	connection, err := grpc.DialContext(ctx, connectionURL, grpc.WithInsecure(), grpc.WithBlock())
+	connection, err := grpc.DialContext(ctx, connectionURL, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("NewGrpcPolicyManager failed when connecting to %s", connectionURL))
 	}
