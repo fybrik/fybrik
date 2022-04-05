@@ -230,13 +230,14 @@ func (p *PlotterGenerator) HandleNewAsset(item *DataInfo, application *app.Fybri
 		return err
 	}
 
-	// Reset StorageAccount to prevent re-allocation
-	element.StorageAccount.Region = ""
-
 	resourceMetadata := datacatalog.ResourceMetadata{
 		Name:      item.Context.DataSetID,
 		Geography: string(element.StorageAccount.Region),
 	}
+
+	// Reset StorageAccount to prevent re-allocation
+	element.StorageAccount.Region = ""
+
 	// Update item with details of the asset
 	// the asset will registered in the catalog later however
 	// there are details that are already known like the asset

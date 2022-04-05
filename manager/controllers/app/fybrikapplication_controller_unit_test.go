@@ -1465,6 +1465,10 @@ func TestWriteNotRegisteredAsset(t *testing.T) {
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(1))
+	g.Expect(plotter.Spec.Assets["s3-not-exists/new-dataset"].DataStore.Connection.Name == app.S3).
+		To(gomega.BeTrue())
+	g.Expect(plotter.Spec.Assets["s3-not-exists/new-dataset"].DataStore.Format != "").
+		To(gomega.BeTrue())
 	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(1))
 }
 

@@ -88,7 +88,17 @@ func (p *PathBuilder) FindPaths() []Solution {
 	}
 	// get valid solutions by extending data paths with transformations and selecting an appropriate cluster for each capability
 	solutions = p.validSolutions(solutions)
+	// set empty data format in sink nodes from the chosen modules data format
+	p.setSinkDataFormatFromModule(solutions)
+
 	return solutions
+}
+
+// set empty data formats in sink nodes with the modules data format
+func (p *PathBuilder) setSinkDataFormatFromModule(solutions []Solution) {
+	for ind := range solutions {
+		p.setEmptySinkDataFormat(solutions[ind])
+	}
 }
 
 // extend the received data paths with transformations and select an appropriate cluster for each capability in a data path
@@ -146,6 +156,23 @@ func (p *PathBuilder) validateStorageRequirements(element *ResolvedEdge) bool {
 	// add WRITE actions
 	element.Actions = actions
 	return true
+}
+
+// setEmptySinkDataFormat sets an empty data format of the sink nodes to be the first
+// dataformat supported by the modules sink interface.
+func (p *PathBuilder) setEmptySinkDataFormat(solution Solution) {
+	for ind := range solution.DataPath {
+		element := solution.DataPath[ind]
+		capability := element.Module.Spec.Capabilities[element.CapabilityIndex]
+		for _, inter := range capability.SupportedInterfaces {
+			if inter.Sink == nil {
+				continue
+			}
+			if element.Sink.Connection.DataFormat == "" {
+				element.Sink.Connection.DataFormat = inter.Sink.DataFormat
+			}
+		}
+	}
 }
 
 func (p *PathBuilder) validate(solution Solution) bool {
@@ -245,9 +272,6 @@ func (p *PathBuilder) findPathsWithinLimit(source, sink *Node, n int) []Solution
 			edge.Sink = sink
 			// if a module supports both source and sink interfaces, it's an end of the recursion
 			if supportsSourceInterface(&edge, source) {
-				if sink.Connection.DataFormat == "" {
-					setSinkDataFormatFromModule(&edge, edge.Sink)
-				}
 				edge.Source = source
 				// found a path
 				var path []*ResolvedEdge
@@ -379,21 +403,6 @@ func supportsSourceInterface(edge *Edge, sourceNode *Node) bool {
 		return true
 	}
 	return false
-}
-
-// setSinkDataFormatFromModule sets the data format of the sink node to be the first
-// dataformat supported by the module sink interface.
-// It is called in the case where the sink does not have data format which
-// is treated as "Any"
-func setSinkDataFormatFromModule(edge *Edge, sink *Node) {
-	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
-	for _, inter := range capability.SupportedInterfaces {
-		if inter.Sink == nil {
-			continue
-		}
-		sink.Connection.DataFormat = inter.Sink.DataFormat
-		break
-	}
 }
 
 // supportsSinkInterface indicates whether the sink interface requirements are met.
