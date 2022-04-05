@@ -326,6 +326,7 @@ func match(source, sink *taxonomy.Interface) bool {
 		return false
 	}
 	// an empty DataFormat value is not checked
+	// either a module supports any format, or any format can be selected (no requirements)
 	if source.DataFormat != "" && sink.DataFormat != "" && source.DataFormat != sink.DataFormat {
 		return false
 	}
@@ -334,7 +335,7 @@ func match(source, sink *taxonomy.Interface) bool {
 
 // supportsSourceInterface indicates whether the source interface requirements are met.
 //nolint:dupl
-func supportsSourceInterface(edge *Edge, source *Node) bool {
+func supportsSourceInterface(edge *Edge, sourceNode *Node) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
 	hasSources := false
 	for _, inter := range capability.SupportedInterfaces {
@@ -343,19 +344,19 @@ func supportsSourceInterface(edge *Edge, source *Node) bool {
 		}
 		hasSources = true
 		// connection via Source
-		if source != nil && match(inter.Source, source.Connection) {
+		if sourceNode != nil && match(inter.Source, sourceNode.Connection) {
 			return true
 		}
 	}
-	if source != nil && capability.API != nil && !hasSources {
+	if sourceNode != nil && capability.API != nil && !hasSources {
 		apiInterface := &taxonomy.Interface{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
-		if match(apiInterface, source.Connection) {
+		if match(apiInterface, sourceNode.Connection) {
 			// consumes data via API
-			source.Virtual = true
+			sourceNode.Virtual = true
 			return true
 		}
 	}
-	if !hasSources && (source == nil) {
+	if !hasSources && (sourceNode == nil) {
 		return true
 	}
 	return false
@@ -363,7 +364,7 @@ func supportsSourceInterface(edge *Edge, source *Node) bool {
 
 // supportsSinkInterface indicates whether the sink interface requirements are met.
 //nolint:dupl
-func supportsSinkInterface(edge *Edge, sink *Node) bool {
+func supportsSinkInterface(edge *Edge, sinkNode *Node) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
 	hasSinks := false
 	for _, inter := range capability.SupportedInterfaces {
@@ -371,19 +372,19 @@ func supportsSinkInterface(edge *Edge, sink *Node) bool {
 			continue
 		}
 		hasSinks = true
-		if sink != nil && match(inter.Sink, sink.Connection) {
+		if sinkNode != nil && match(inter.Sink, sinkNode.Connection) {
 			return true
 		}
 	}
-	if sink != nil && capability.API != nil && !hasSinks {
+	if sinkNode != nil && capability.API != nil && !hasSinks {
 		apiInterface := &taxonomy.Interface{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
-		if match(apiInterface, sink.Connection) {
+		if match(apiInterface, sinkNode.Connection) {
 			// transfers data in-memory via API
-			sink.Virtual = true
+			sinkNode.Virtual = true
 			return true
 		}
 	}
-	if !hasSinks && (sink == nil) {
+	if !hasSinks && (sinkNode == nil) {
 		return true
 	}
 	return false
