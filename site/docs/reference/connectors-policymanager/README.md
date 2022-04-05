@@ -7,7 +7,7 @@ All URIs are relative to *https://localhost:8080*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*DefaultApi* | [**getPoliciesDecisions**](Apis/DefaultApi.md#getpoliciesdecisions) | **POST** /getPoliciesDecisions | This REST API gets data governance decisions for the data sets indicated in FybrikApplication yaml based on the context indicated
+*DefaultApi* | [**getPoliciesDecisions**](Apis/DefaultApi.md#getpoliciesdecisions) | **GET** /getPoliciesDecisions | This REST API gets data governance decisions for the data sets indicated in FybrikApplication yaml based on the context indicated
 
 
 <a name="documentation-for-models"></a>

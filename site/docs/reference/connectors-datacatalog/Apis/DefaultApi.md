@@ -6,7 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**createAsset**](DefaultApi.md#createAsset) | **POST** /createAsset | This REST API writes data asset information to the data catalog configured in fybrik
 [**deleteAsset**](DefaultApi.md#deleteAsset) | **POST** /deleteAsset | This REST API deletes data asset
-[**getAssetInfo**](DefaultApi.md#getAssetInfo) | **POST** /getAssetInfo | This REST API gets data asset information from the data catalog configured in fybrik for the data sets indicated in FybrikApplication yaml
+[**getAssetInfo**](DefaultApi.md#getAssetInfo) | **GET** /getAssetInfo | This REST API gets data asset information from the data catalog configured in fybrik for the data sets indicated in FybrikApplication yaml
 
 
 <a name="createAsset"></a>
