@@ -782,7 +782,7 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 			setErrorCondition(applicationContext, requirements[ind].Context.DataSetID, err.Error())
 			continue
 		}
-		// If the flag IsNewDataSet is true then a new asset must be allocated and registered to a catalog
+		// If the flag IsNewDataSet is true then a new asset must be allocated
 		if requirements[ind].Context.Requirements.FlowParams.IsNewDataSet {
 			err = plotterGen.HandleNewAsset(&requirements[ind], applicationContext.Application, &path, plotterSpec)
 			if err != nil {
