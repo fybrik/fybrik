@@ -190,6 +190,7 @@ func (r *Impl) Install(chart *chart.Chart, kubeNamespace string, releaseName str
 	install := action.NewInstall(cfg)
 	install.ReleaseName = releaseName
 	install.Namespace = kubeNamespace
+	install.DisableOpenAPIValidation = true
 	return install.Run(chart, vals)
 }
 
