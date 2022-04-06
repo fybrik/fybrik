@@ -7,6 +7,7 @@ import (
 	"context"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	corev1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -46,8 +47,7 @@ func (f *K8sClient) DeleteApplication(name string, options *meta_v1.DeleteOption
 	if err != nil {
 		return err
 	}
-	err = f.client.Delete(context.Background(), &result)
-	return err
+	return utils.DeleteObject(context.Background(), f.client, &result)
 }
 
 // GetApplication returns an existing FybrikApplication CRD, including its status information
@@ -109,8 +109,7 @@ func (f *K8sClient) DeleteSecret(name string, options *meta_v1.DeleteOptions) er
 	if err != nil {
 		return err
 	}
-	err = f.client.Delete(context.Background(), &result)
-	return err
+	return utils.DeleteObject(context.Background(), f.client, &result)
 }
 
 // GetSecret returns an existing secret

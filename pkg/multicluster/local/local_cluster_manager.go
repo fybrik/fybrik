@@ -14,6 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/multicluster"
 )
 
@@ -102,7 +103,7 @@ func (cm *localClusterManager) DeleteBlueprint(cluster string, namespace string,
 	if err != nil {
 		return err
 	}
-	return cm.Client.Delete(context.Background(), blueprint)
+	return utils.DeleteObject(context.Background(), cm.Client, blueprint)
 }
 
 // NewClusterManager creates an instance of ClusterManager for a local cluster configuration

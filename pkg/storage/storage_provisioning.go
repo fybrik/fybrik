@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -182,7 +183,7 @@ func (r *ProvisionImpl) GetDatasetStatus(ref *types.NamespacedName) (*Provisione
 func (r *ProvisionImpl) DeleteDataset(ref *types.NamespacedName) error {
 	dataset, err := r.getDatasetAsUnstructured(ref.Name, ref.Namespace)
 	if err == nil {
-		return r.Client.Delete(context.Background(), dataset)
+		return utils.DeleteObject(context.Background(), r.Client, dataset)
 	}
 	return err
 }

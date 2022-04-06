@@ -4,11 +4,15 @@
 package utils
 
 import (
+	"context"
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"runtime"
+
+	"k8s.io/apimachinery/pkg/api/errors"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -117,6 +121,15 @@ func Intersection(set1 []string, set2 []string) []string {
 		}
 	}
 	return res
+}
+
+// DeleteObject removes object
+func DeleteObject(ctx context.Context, cl client.Client, obj client.Object) error {
+	err := cl.Delete(ctx, obj)
+	if errors.IsNotFound(err) {
+		return nil
+	}
+	return err
 }
 
 const FybrikAppUUID = "app.fybrik.io/app-uuid"
