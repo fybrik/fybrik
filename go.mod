@@ -15,7 +15,7 @@ require (
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-chi/render v1.0.1
 	github.com/hashicorp/go-retryablehttp v0.7.0
-	github.com/hashicorp/vault/api v1.3.0
+	github.com/hashicorp/vault/api v1.3.1
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/onsi/ginkgo v1.16.5
@@ -69,7 +69,7 @@ require (
 	github.com/containerd/continuity v0.1.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/docker/cli v20.10.7+incompatible // indirect
+	github.com/docker/cli v20.10.9+incompatible // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/docker v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.6.3 // indirect
@@ -172,7 +172,7 @@ require (
 	github.com/pierrec/lz4 v2.5.2+incompatible // indirect
 	github.com/pierrec/lz4/v4 v4.1.8 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_golang v1.11.0 // indirect
+	github.com/prometheus/client_golang v1.11.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.29.0 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
