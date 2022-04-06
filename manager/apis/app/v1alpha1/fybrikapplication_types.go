@@ -32,8 +32,8 @@ type FlowRequirements struct {
 // DataRequirements structure contains a list of requirements (interface, need to catalog the dataset, etc.)
 type DataRequirements struct {
 	// Interface indicates the protocol and format expected by the data user
-	// +required
-	Interface taxonomy.Interface `json:"interface"`
+	// +optional
+	Interface *taxonomy.Interface `json:"interface,omitempty"`
 
 	// FlowParams include the requirements for particular data flows
 	// +optional

@@ -231,7 +231,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.
 				return err
 			}
 		}
-		if !element.Sink.Virtual && element.StorageAccount.Region != "" {
+		if element.Sink != nil && !element.Sink.Virtual && element.StorageAccount.Region != "" {
 			// allocate storage and create a temoprary asset
 			var sinkDataStore *app.DataStore
 			if sinkDataStore, err = p.AllocateStorage(item, element.Sink.Connection, &element.StorageAccount); err != nil {
