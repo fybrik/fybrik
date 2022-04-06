@@ -824,51 +824,17 @@ Requirements from the system
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#fybrikapplicationspecdataindexrequirementsinterface">interface</a></b></td>
-        <td>object</td>
-        <td>
-          Interface indicates the protocol and format expected by the data user<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b><a href="#fybrikapplicationspecdataindexrequirementsflowparams">flowParams</a></b></td>
         <td>object</td>
         <td>
           FlowParams include the requirements for particular data flows<br/>
         </td>
         <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### FybrikApplication.spec.data[index].requirements.interface
-<sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirements)</sup></sup>
-
-
-
-Interface indicates the protocol and format expected by the data user
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>protocol</b></td>
-        <td>string</td>
-        <td>
-          Protocol defines the interface protocol used for data transactions<br/>
-        </td>
-        <td>true</td>
       </tr><tr>
-        <td><b>dataformat</b></td>
-        <td>string</td>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementsinterface">interface</a></b></td>
+        <td>object</td>
         <td>
-          DataFormat defines the data format type<br/>
+          Interface indicates the protocol and format expected by the data user<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -912,6 +878,40 @@ FlowParams include the requirements for particular data flows
           Storage estimate indicates the estimated amount of storage in MB, GB, TB required when writing new data.<br/>
           <br/>
             <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.spec.data[index].requirements.interface
+<sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirements)</sup></sup>
+
+
+
+Interface indicates the protocol and format expected by the data user
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>protocol</b></td>
+        <td>string</td>
+        <td>
+          Protocol defines the interface protocol used for data transactions<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>dataformat</b></td>
+        <td>string</td>
+        <td>
+          DataFormat defines the data format type<br/>
         </td>
         <td>false</td>
       </tr></tbody>
