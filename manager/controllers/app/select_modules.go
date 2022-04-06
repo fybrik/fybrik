@@ -50,23 +50,9 @@ func (p *PathBuilder) solve() (Solution, error) {
 // Then, transformations are added to the found paths, and clusters are matched to satisfy restrictions from admin config policies.
 // Optimization is done by the shortest path (the paths are sorted by the length). To be changed in future versions.
 func (p *PathBuilder) FindPaths() []Solution {
-	var protocol taxonomy.ConnectionType
-	var dataFormat taxonomy.DataFormat
-	// If the connection name is empty, the default protocol is s3.
-	if p.Asset.DataDetails == nil || p.Asset.DataDetails.Details.Connection.Name == "" {
-		protocol = app.S3
-		dataFormat = ""
-	} else {
-		protocol = p.Asset.DataDetails.Details.Connection.Name
-		dataFormat = p.Asset.DataDetails.Details.DataFormat
-	}
-	NodeFromAssetMetadata := Node{
-		Connection: &taxonomy.Interface{
-			Protocol:   protocol,
-			DataFormat: dataFormat,
-		},
-	}
-	NodeFromAppRequirements := Node{Connection: &p.Asset.Context.Requirements.Interface}
+	nodeFromAssetMetadata := p.getAssetConnectionNode()
+	nodeFromAppRequirements := p.getRequiredConnectionNode()
+
 	// find data paths of length up to DATAPATH_LIMIT from data source to the workload, not including transformations or branches
 	bound, err := utils.GetDataPathMaxSize()
 	if err != nil {
@@ -434,10 +420,22 @@ func supportsSinkInterface(edge *Edge, sinkNode *Node) bool {
 }
 
 func (p *PathBuilder) getAssetConnectionNode() *Node {
-	return &Node{Connection: &taxonomy.Interface{
-		Protocol:   p.Asset.DataDetails.Details.Connection.Name,
-		DataFormat: p.Asset.DataDetails.Details.DataFormat,
-	}}
+	var protocol taxonomy.ConnectionType
+	var dataFormat taxonomy.DataFormat
+	// If the connection name is empty, the default protocol is s3.
+	if p.Asset.DataDetails == nil || p.Asset.DataDetails.Details.Connection.Name == "" {
+		protocol = app.S3
+		dataFormat = ""
+	} else {
+		protocol = p.Asset.DataDetails.Details.Connection.Name
+		dataFormat = p.Asset.DataDetails.Details.DataFormat
+	}
+	return &Node{
+		Connection: &taxonomy.Interface{
+			Protocol:   protocol,
+			DataFormat: dataFormat,
+		},
+	}
 }
 
 func (p *PathBuilder) getRequiredConnectionNode() *Node {
