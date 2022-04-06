@@ -1347,7 +1347,7 @@ func TestReadAndTransform(t *testing.T) {
 	readModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	readModule.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the write module could not be created")
+	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	transformModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-transform.yaml", transformModule)).NotTo(gomega.HaveOccurred())
 	transformModule.Namespace = utils.GetControllerNamespace()
@@ -1498,7 +1498,7 @@ func TestWriteRegisteredAsset(t *testing.T) {
 	readWriteModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", readWriteModule)).NotTo(gomega.HaveOccurred())
 	readWriteModule.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.TODO(), readWriteModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
+	g.Expect(cl.Create(context.TODO(), readWriteModule)).NotTo(gomega.HaveOccurred(), "the write module could not be created")
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
