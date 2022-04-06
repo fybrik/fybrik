@@ -74,17 +74,8 @@ func (p *PathBuilder) FindPaths() []Solution {
 	}
 	// get valid solutions by extending data paths with transformations and selecting an appropriate cluster for each capability
 	solutions = p.validSolutions(solutions)
-	// set empty data format in sink nodes from the chosen modules data format
-	p.setSinkDataFormatFromModule(solutions)
 
 	return solutions
-}
-
-// set empty data formats in sink nodes with the modules data format
-func (p *PathBuilder) setSinkDataFormatFromModule(solutions []Solution) {
-	for ind := range solutions {
-		p.setEmptySinkDataFormat(solutions[ind])
-	}
 }
 
 // extend the received data paths with transformations and select an appropriate cluster for each capability in a data path
@@ -142,23 +133,6 @@ func (p *PathBuilder) validateStorageRequirements(element *ResolvedEdge) bool {
 	// add WRITE actions
 	element.Actions = actions
 	return true
-}
-
-// setEmptySinkDataFormat sets an empty data format of the sink nodes to be the first
-// dataformat supported by the modules sink interface.
-func (p *PathBuilder) setEmptySinkDataFormat(solution Solution) {
-	for ind := range solution.DataPath {
-		element := solution.DataPath[ind]
-		capability := element.Module.Spec.Capabilities[element.CapabilityIndex]
-		for _, inter := range capability.SupportedInterfaces {
-			if inter.Sink == nil {
-				continue
-			}
-			if element.Sink.Connection.DataFormat == "" {
-				element.Sink.Connection.DataFormat = inter.Sink.DataFormat
-			}
-		}
-	}
 }
 
 func (p *PathBuilder) validate(solution Solution) bool {

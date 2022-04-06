@@ -201,6 +201,23 @@ func (p *PlotterGenerator) addStep(element *ResolvedEdge, datasetID string, api 
 	return steps
 }
 
+// setEmptySinkDataFormat sets empty data format in sink nodes to be the first
+// dataformat supported by the modules sink interface.
+func (p *PlotterGenerator) setEmptySinkDataFormat(solution *Solution) {
+	for ind := range solution.DataPath {
+		element := solution.DataPath[ind]
+		capability := element.Module.Spec.Capabilities[element.CapabilityIndex]
+		for _, inter := range capability.SupportedInterfaces {
+			if inter.Sink == nil {
+				continue
+			}
+			if element.Sink.Connection.DataFormat == "" {
+				element.Sink.Connection.DataFormat = inter.Sink.DataFormat
+			}
+		}
+	}
+}
+
 // Handle a new asset: allocate storage and update its metadata. Used when the
 // IsNewDataSet flag is true.
 func (p *PlotterGenerator) handleNewAsset(item *DataInfo, selection *Solution) error {
@@ -209,6 +226,8 @@ func (p *PlotterGenerator) handleNewAsset(item *DataInfo, selection *Solution) e
 		return nil
 	}
 	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Handle new dataset")
+	// set empty data format in sink nodes
+	p.setEmptySinkDataFormat(selection)
 	var sinkDataStore *app.DataStore
 	var element *ResolvedEdge
 

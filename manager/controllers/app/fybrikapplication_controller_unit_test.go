@@ -1446,7 +1446,6 @@ func TestWriteNotRegisteredAsset(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	g.Expect(getErrorMessages(application)).To(gomega.BeEmpty())
 	// check plotter creation
-	g.Expect(application.Status.AssetStates).To(gomega.HaveLen(1))
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 	writeEndpoint := application.Status.AssetStates[application.Spec.Data[0].DataSetID].Endpoint
 	g.Expect(writeEndpoint).To(gomega.Not(gomega.BeNil()))
