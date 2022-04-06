@@ -11,6 +11,7 @@ import (
 	appApi "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/app"
 	"fybrik.io/fybrik/pkg/adminconfig"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 )
 
@@ -23,13 +24,22 @@ type moduleAndCapability struct {
 type DataPathCSP struct {
 	problemData         *app.DataInfo
 	env                 *app.Environment
-	modulesCapabilities []moduleAndCapability // An enumeration of all capabilities in all modules
-	indicators          map[string]bool       // indicators used as part of the problem (to prevent redefinition)
+	modulesCapabilities []moduleAndCapability      // An enumeration of allowed capabilities in all modules
+	interfaceIdx        map[taxonomy.Interface]int // gives an index for each unique interface
+	indicators          map[string]bool            // indicators used as part of the problem (to prevent redefinition)
 	fzModel             *FlatZincModel
 }
 
 func NewDataPathCSP(problemData *app.DataInfo, env *app.Environment) *DataPathCSP {
 	dpCSP := DataPathCSP{problemData: problemData, env: env, fzModel: NewFlatZincModel()}
+	dpCSP.interfaceIdx = make(map[taxonomy.Interface]int)
+	dataSetIntfc := taxonomy.Interface{
+		Protocol:   dpCSP.problemData.DataDetails.Details.Connection.Name,
+		DataFormat: dpCSP.problemData.DataDetails.Details.DataFormat,
+	}
+	dpCSP.addInterfaceToMap(dataSetIntfc)
+	dpCSP.addInterfaceToMap(dpCSP.problemData.Context.Requirements.Interface)
+
 	dpCSP.fzModel.AddHeaderComment("Encoding of modules and their capabilities:")
 	modCapIdx := 1
 	comment := ""
@@ -38,16 +48,37 @@ func NewDataPathCSP(problemData *app.DataInfo, env *app.Environment) *DataPathCS
 			modCap := moduleAndCapability{module, &module.Spec.Capabilities[idx], idx}
 			if dpCSP.moduleCapabilityAllowedByRestrictions(modCap) {
 				dpCSP.modulesCapabilities = append(dpCSP.modulesCapabilities, modCap)
+				dpCSP.addModCapInterfacesToMap(modCap)
 				comment = strconv.Itoa(modCapIdx)
 				modCapIdx++
 			} else {
 				comment = "<forbidden>"
 			}
-			comment = comment + fmt.Sprintf(": Module %s, capability %d (%s)", module.Name, idx, capability.Capability)
+			comment = comment + fmt.Sprintf(" - Module: %s, Capability: %d (%s)", module.Name, idx, capability.Capability)
 			dpCSP.fzModel.AddHeaderComment(comment)
 		}
 	}
+
+	dpCSP.fzModel.AddHeaderComment("Encoding of interfaces:")
+	for intfc, intfcIdx := range dpCSP.interfaceIdx {
+		comment := fmt.Sprintf("%d - Protocol: %s, DataFormat: %s", intfcIdx, intfc.Protocol, intfc.DataFormat)
+		dpCSP.fzModel.AddHeaderComment(comment)
+	}
 	return &dpCSP
+}
+
+func (dpc *DataPathCSP) addModCapInterfacesToMap(cap moduleAndCapability) {
+	for _, iface := range cap.capability.SupportedInterfaces {
+		dpc.addInterfaceToMap(*iface.Source)
+		dpc.addInterfaceToMap(*iface.Sink)
+	}
+}
+
+func (dpc *DataPathCSP) addInterfaceToMap(intfc taxonomy.Interface) {
+	_, found := dpc.interfaceIdx[intfc]
+	if !found {
+		dpc.interfaceIdx[intfc] = len(dpc.interfaceIdx) + 1
+	}
 }
 
 func (dpc *DataPathCSP) moduleCapabilityAllowedByRestrictions(cap moduleAndCapability) bool {
@@ -70,9 +101,14 @@ func (dpc *DataPathCSP) BuildFzModel(pathLength uint) error {
 	// Variables to select the cluster we allocate to each module on the path
 	moduleClusterVarType := rangeVarType(len(dpc.env.Clusters))
 	dpc.fzModel.AddVariableArray("moduleCluster", moduleClusterVarType, pathLength, "", false, true)
+	// Variables to select the source and sink interface for each module on the path
+	moduleInterfaceVarType := rangeVarType(len(dpc.interfaceIdx))
+	dpc.fzModel.AddVariableArray("moduleSourceInterface", moduleInterfaceVarType, pathLength, "", false, true)
+	dpc.fzModel.AddVariableArray("moduleSinkInterface", moduleInterfaceVarType, pathLength, "", false, true)
 
 	dpc.addGovernanceActionConstraints(pathLength)
 	dpc.addAdminConfigRestrictions(int(pathLength))
+	dpc.addInterfaceConstraints(pathLength)
 
 	err := dpc.fzModel.Dump("dataPath.fzn")
 	return err
@@ -204,6 +240,38 @@ func (dpc *DataPathCSP) addGovernanceActionConstraints(pathLength uint) {
 	}
 }
 
+// prevent setting source/sink interfaces which are not supported by module capability
+func (dpc *DataPathCSP) addInterfaceConstraints(pathLength uint) {
+	for intfc, intfcIdx := range dpc.interfaceIdx {
+		for modCapIdx, modCap := range dpc.modulesCapabilities {
+			modcapSupportsIntfcSrc := false
+			modcapSupportsIntfcSink := false
+			for _, modifc := range modCap.capability.SupportedInterfaces {
+				if interfacesMatch(*modifc.Source, intfc) {
+					modcapSupportsIntfcSrc = true
+				}
+				if interfacesMatch(*modifc.Sink, intfc) {
+					modcapSupportsIntfcSink = true
+				}
+			}
+			if !modcapSupportsIntfcSrc {
+				dpc.preventAssignments([]string{"moduleCapability", "moduleSourceInterface"}, []int{modCapIdx + 1, intfcIdx}, int(pathLength))
+			}
+			if !modcapSupportsIntfcSink {
+				dpc.preventAssignments([]string{"moduleCapability", "moduleSinkInterface"}, []int{modCapIdx + 1, intfcIdx}, int(pathLength))
+			}
+		}
+	}
+
+	// ensuring interface matching along the datapath from dataset to workload
+	dpc.fzModel.AddConstraint("int_eq", []string{varAtPos("moduleSourceInterface", 1), "1"})
+	for pathPos := 1; pathPos < int(pathLength); pathPos++ {
+		dpc.fzModel.AddConstraint("int_eq", []string{varAtPos("moduleSinkInterface", pathPos), varAtPos("moduleSourceInterface", pathPos+1)})
+	}
+	dpc.fzModel.AddConstraint("int_eq", []string{varAtPos("moduleSinkInterface", int(pathLength)),
+		strconv.Itoa(dpc.interfaceIdx[dpc.problemData.Context.Requirements.Interface])})
+}
+
 // ----- helper functions -----
 
 func rangeVarType(rangeEnd int) string {
@@ -215,4 +283,8 @@ func rangeVarType(rangeEnd int) string {
 
 func varAtPos(variable string, pos int) string {
 	return fmt.Sprintf("%s[%d]", variable, pos)
+}
+
+func interfacesMatch(intfc1, intfc2 taxonomy.Interface) bool {
+	return intfc1.Protocol == intfc2.Protocol && intfc1.DataFormat == intfc2.DataFormat
 }
