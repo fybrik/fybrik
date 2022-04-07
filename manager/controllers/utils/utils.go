@@ -18,7 +18,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
@@ -176,8 +175,6 @@ func UpdateStatus(ctx context.Context, cl client.Client, obj client.Object, prev
 	}
 	statusKey := "status"
 	currentStatus := values[statusKey]
-	log := logging.LogInit("Debug", "Debug")
-	logging.LogStructure("currentStatus", currentStatus, log, false, false)
 
 	if previousStatus != nil && equality.Semantic.DeepEqual(previousStatus, currentStatus) {
 		return nil
@@ -194,7 +191,6 @@ func UpdateStatus(ctx context.Context, cl client.Client, obj client.Object, prev
 		if err := cl.Get(ctx, client.ObjectKeyFromObject(res), res); err != nil {
 			return err
 		}
-		logging.LogStructure("latestObjectStatus", res.Object[statusKey], log, false, false)
 		res.Object[statusKey] = currentStatus
 		return cl.Status().Update(ctx, res)
 	})
