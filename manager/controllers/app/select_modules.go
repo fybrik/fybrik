@@ -399,7 +399,6 @@ func (p *PathBuilder) getAssetConnectionNode() *Node {
 	// If the connection name is empty, the default protocol is s3.
 	if p.Asset.DataDetails == nil || p.Asset.DataDetails.Details.Connection.Name == "" {
 		protocol = app.S3
-		dataFormat = ""
 	} else {
 		protocol = p.Asset.DataDetails.Details.Connection.Name
 		dataFormat = p.Asset.DataDetails.Details.DataFormat
