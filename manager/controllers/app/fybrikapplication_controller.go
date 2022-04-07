@@ -491,32 +491,34 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 	// Call the DataCatalog service to get info about the dataset
 	input := appContext.Application
 	log := appContext.Log.With().Str(logging.DATASETID, req.Context.DataSetID).Logger()
-	var credentialPath string
-	if input.Spec.SecretRef != "" {
-		if !utils.IsVaultEnabled() {
-			log.Error().Str("SecretRef", input.Spec.SecretRef).Msg("SecretRef defined [%s], but vault is disabled")
-		} else {
-			credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
-		}
-	}
-	var response *datacatalog.GetAssetResponse
 	var err error
-	request := datacatalog.GetAssetRequest{
-		AssetID:       taxonomy.AssetID(req.Context.DataSetID),
-		OperationType: datacatalog.READ}
+	if !req.Context.Requirements.FlowParams.IsNewDataSet {
+		var credentialPath string
+		if input.Spec.SecretRef != "" {
+			if !utils.IsVaultEnabled() {
+				log.Error().Str("SecretRef", input.Spec.SecretRef).Msg("SecretRef defined [%s], but vault is disabled")
+			} else {
+				credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+			}
+		}
+		var response *datacatalog.GetAssetResponse
+		request := datacatalog.GetAssetRequest{
+			AssetID:       taxonomy.AssetID(req.Context.DataSetID),
+			OperationType: datacatalog.READ}
 
-	if response, err = r.DataCatalog.GetAssetInfo(&request, credentialPath); err != nil {
-		log.Error().Err(err).Msg("failed to receive the catalog connector response")
-		return err
-	}
+		if response, err = r.DataCatalog.GetAssetInfo(&request, credentialPath); err != nil {
+			log.Error().Err(err).Msg("failed to receive the catalog connector response")
+			return err
+		}
 
-	err = r.ValidateAssetResponse(response, DataCatalogTaxonomy, req.Context.DataSetID)
-	if err != nil {
-		log.Error().Err(err).Msg("failed to validate the catalog connector response")
-		return err
+		err = r.ValidateAssetResponse(response, DataCatalogTaxonomy, req.Context.DataSetID)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to validate the catalog connector response")
+			return err
+		}
+		logging.LogStructure("Catalog connector response", response, &log, zerolog.DebugLevel, false, false)
+		response.DeepCopyInto(req.DataDetails)
 	}
-	logging.LogStructure("Catalog connector response", response, &log, zerolog.DebugLevel, false, false)
-	response.DeepCopyInto(req.DataDetails)
 	configEvaluatorInput := &adminconfig.EvaluatorInput{}
 	configEvaluatorInput.Workload.UUID = utils.GetFybrikApplicationUUID(input)
 	input.Spec.AppInfo.DeepCopyInto(&configEvaluatorInput.Workload.Properties)
@@ -779,6 +781,14 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 		if err != nil {
 			setErrorCondition(applicationContext, requirements[ind].Context.DataSetID, err.Error())
 			continue
+		}
+		// If the flag IsNewDataSet is true then a new asset must be allocated
+		if requirements[ind].Context.Requirements.FlowParams.IsNewDataSet {
+			err = plotterGen.handleNewAsset(&requirements[ind], &path)
+			if err != nil {
+				setErrorCondition(applicationContext, requirements[ind].Context.DataSetID, err.Error())
+				return plotterGen.ProvisionedStorage, plotterSpec, err
+			}
 		}
 		err = plotterGen.AddFlowInfoForAsset(&requirements[ind], applicationContext.Application, &path, plotterSpec)
 		if err != nil {

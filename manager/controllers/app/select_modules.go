@@ -51,6 +51,7 @@ func (p *PathBuilder) solve() (Solution, error) {
 func (p *PathBuilder) FindPaths() []Solution {
 	nodeFromAssetMetadata := p.getAssetConnectionNode()
 	nodeFromAppRequirements := p.getRequiredConnectionNode()
+
 	// find data paths of length up to DATAPATH_LIMIT from data source to the workload, not including transformations or branches
 	bound, err := utils.GetDataPathMaxSize()
 	if err != nil {
@@ -72,6 +73,7 @@ func (p *PathBuilder) FindPaths() []Solution {
 	}
 	// get valid solutions by extending data paths with transformations and selecting an appropriate cluster for each capability
 	solutions = p.validSolutions(solutions)
+
 	return solutions
 }
 
@@ -225,6 +227,7 @@ func (p *PathBuilder) findPathsWithinLimit(source, sink *Node, n int) []Solution
 				p.Log.Debug().Msgf("module %s does not support sink requirements for capability %s", module.Name, capability.Capability)
 				continue
 			}
+
 			edge.Sink = sink
 			// if a module supports both source and sink interfaces, it's an end of the recursion
 			if supportsSourceInterface(&edge, source) {
@@ -390,10 +393,21 @@ func supportsSinkInterface(edge *Edge, sinkNode *Node) bool {
 }
 
 func (p *PathBuilder) getAssetConnectionNode() *Node {
-	return &Node{Connection: &taxonomy.Interface{
-		Protocol:   p.Asset.DataDetails.Details.Connection.Name,
-		DataFormat: p.Asset.DataDetails.Details.DataFormat,
-	}}
+	var protocol taxonomy.ConnectionType
+	var dataFormat taxonomy.DataFormat
+	// If the connection name is empty, the default protocol is s3.
+	if p.Asset.DataDetails == nil || p.Asset.DataDetails.Details.Connection.Name == "" {
+		protocol = app.S3
+	} else {
+		protocol = p.Asset.DataDetails.Details.Connection.Name
+		dataFormat = p.Asset.DataDetails.Details.DataFormat
+	}
+	return &Node{
+		Connection: &taxonomy.Interface{
+			Protocol:   protocol,
+			DataFormat: dataFormat,
+		},
+	}
 }
 
 func (p *PathBuilder) getRequiredConnectionNode() *Node {

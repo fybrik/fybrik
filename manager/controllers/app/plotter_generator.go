@@ -201,6 +201,76 @@ func (p *PlotterGenerator) addStep(element *ResolvedEdge, datasetID string, api 
 	return steps
 }
 
+// getSupportedFormat returns the first dataformat supported by the module's capability sink interface
+func (p *PlotterGenerator) getSupportedFormat(capability *app.ModuleCapability) taxonomy.DataFormat {
+	for _, inter := range capability.SupportedInterfaces {
+		if inter.Sink != nil {
+			return inter.Sink.DataFormat
+		}
+	}
+	return ""
+}
+
+// Handle a new asset: allocate storage and update its metadata. Used when the
+// IsNewDataSet flag is true.
+func (p *PlotterGenerator) handleNewAsset(item *DataInfo, selection *Solution) error {
+	var err error
+	if item.DataDetails != nil && item.DataDetails.Details.DataFormat != "" {
+		return nil
+	}
+	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Handle new dataset")
+
+	var sinkDataStore *app.DataStore
+	var element *ResolvedEdge
+
+	needToAllocateStorage := false
+	for _, element = range selection.DataPath {
+		if element.StorageAccount.Region != "" {
+			needToAllocateStorage = true
+			break
+		}
+	}
+	if !needToAllocateStorage {
+		return nil
+	}
+
+	// Fill in the empty dataFormat in the sink node
+	capability := element.Module.Spec.Capabilities[element.CapabilityIndex]
+	element.Sink.Connection.DataFormat = p.getSupportedFormat(&capability)
+
+	// allocate storage
+	if sinkDataStore, err = p.AllocateStorage(item, element.Sink.Connection, &element.StorageAccount); err != nil {
+		p.Log.Error().Err(err).Str(logging.DATASETID, item.Context.DataSetID).Msg("Storage allocation failed")
+		return err
+	}
+
+	resourceMetadata := datacatalog.ResourceMetadata{
+		Name:      item.Context.DataSetID,
+		Geography: string(element.StorageAccount.Region),
+	}
+
+	// Reset StorageAccount to prevent re-allocation
+	element.StorageAccount.Region = ""
+
+	// Update item with details of the asset
+	// the asset will registered in the catalog later however
+	// there are details that are already known like the asset
+	// secret path
+	item.DataDetails = &datacatalog.GetAssetResponse{
+		ResourceMetadata: resourceMetadata,
+	}
+	if utils.IsVaultEnabled() {
+		secretPath :=
+			vault.PathForReadingKubeSecret(utils.GetSystemNamespace(), element.StorageAccount.SecretRef)
+
+		item.DataDetails.Credentials = secretPath
+	}
+	item.DataDetails.Details.DataFormat = sinkDataStore.Format
+	item.DataDetails.Details.Connection = sinkDataStore.Connection
+
+	return nil
+}
+
 // Adds the asset details, flows and templates to the given plotter spec.
 func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *app.FybrikApplication, selection *Solution,
 	plotterSpec *app.PlotterSpec) error {
