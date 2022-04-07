@@ -22,7 +22,7 @@ func TestBuildModel(t *testing.T) {
 	arrowCSVInterface := taxonomy.Interface{Protocol: "fybrik-arrow-flight", DataFormat: "csv"}
 	inOutS3Parquet := appApi.ModuleInOut{Source: &s3ParquetInterface, Sink: &s3ParquetInterface}
 	ins3outdb2parquet := appApi.ModuleInOut{Source: &s3ParquetInterface, Sink: &db2ParquetInterface}
-	inDb2outS3parquet := appApi.ModuleInOut{Source: &db2ParquetInterface, Sink: &s3ParquetInterface}
+	inDB2outS3parquet := appApi.ModuleInOut{Source: &db2ParquetInterface, Sink: &s3ParquetInterface}
 	inS3outArrowCSV := appApi.ModuleInOut{Source: &s3CSVInterface, Sink: &arrowCSVInterface}
 	inParquetoutCsvS3 := appApi.ModuleInOut{Source: &s3ParquetInterface, Sink: &s3CSVInterface}
 
@@ -32,7 +32,7 @@ func TestBuildModel(t *testing.T) {
 	modCap1 := appApi.ModuleCapability{
 		Capability: "read", Scope: "asset",
 		Actions:             []appApi.ModuleSupportedAction{encryptAction, reductAction},
-		SupportedInterfaces: []appApi.ModuleInOut{ins3outdb2parquet, inDb2outS3parquet, inOutS3Parquet},
+		SupportedInterfaces: []appApi.ModuleInOut{ins3outdb2parquet, inDB2outS3parquet, inOutS3Parquet},
 	}
 	modCap2 := appApi.ModuleCapability{
 		Capability: "read", Scope: "asset",

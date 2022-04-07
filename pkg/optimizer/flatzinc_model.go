@@ -20,6 +20,21 @@ The class can also read solver solutions, written using the FlatZinc specificati
 The FlatZinc specification: https://www.minizinc.org/doc-latest/en/fzn-spec.html
 */
 
+const (
+	BoolType = "bool"
+	IntType  = "int"
+
+	BoolLeConstraint    = "bool_le"
+	BoolLinEqConstraint = "bool_lin_eq"
+	ArrBoolOrConstraint = "array_bool_or"
+	IntEqConstraint     = "int_eq"
+	SetInConstraint     = "set_in_reif"
+
+	DefinedVarAnnot = "is_defined_var"
+	OutputVarAnnot  = "output_var"
+	OutputArrAnnot  = "output_array([1..%d])"
+)
+
 type Declares interface {
 	Declaration() string
 }
@@ -143,10 +158,10 @@ func (fzw *FlatZincModel) AddParamArray(name, vartype string, size uint, assignm
 func (fzw *FlatZincModel) AddVariable(name, vartype, assignment string, isDefined, isOutput bool) {
 	annotations := []string{}
 	if isDefined {
-		annotations = append(annotations, "is_defined_var")
+		annotations = append(annotations, DefinedVarAnnot)
 	}
 	if isOutput {
-		annotations = append(annotations, "output_var")
+		annotations = append(annotations, OutputVarAnnot)
 	}
 	fzw.VarMap[name] = FlatZincVariable{
 		Name: name, Type: vartype, Size: 1, IsArray: false,
@@ -157,10 +172,10 @@ func (fzw *FlatZincModel) AddVariable(name, vartype, assignment string, isDefine
 func (fzw *FlatZincModel) AddVariableArray(name, vartype string, size uint, assignment string, isDefined, isOutput bool) {
 	annotations := []string{}
 	if isDefined {
-		annotations = append(annotations, "is_defined_var")
+		annotations = append(annotations, DefinedVarAnnot)
 	}
 	if isOutput {
-		annotations = append(annotations, fmt.Sprintf("output_array([1..%d])", size))
+		annotations = append(annotations, fmt.Sprintf(OutputArrAnnot, size))
 	}
 	fzw.VarMap[name] = FlatZincVariable{
 		Name: name, Type: vartype, Size: size, IsArray: true,
