@@ -201,21 +201,15 @@ func (p *PlotterGenerator) addStep(element *ResolvedEdge, datasetID string, api 
 	return steps
 }
 
-// setEmptySinkDataFormat sets empty data format in sink nodes to be the first
-// dataformat supported by the modules sink interface.
-func (p *PlotterGenerator) setEmptySinkDataFormat(solution *Solution) {
-	for ind := range solution.DataPath {
-		element := solution.DataPath[ind]
-		capability := element.Module.Spec.Capabilities[element.CapabilityIndex]
-		for _, inter := range capability.SupportedInterfaces {
-			if inter.Sink == nil {
-				continue
-			}
-			if element.Sink.Connection.DataFormat == "" {
-				element.Sink.Connection.DataFormat = inter.Sink.DataFormat
-			}
+// getSupportedFormat returns the first dataformat supported by the module's capability sink interface
+func (p *PlotterGenerator) getSupportedFormat(capability *app.ModuleCapability) taxonomy.DataFormat {
+	for _, inter := range capability.SupportedInterfaces {
+		if inter.Sink == nil {
+			continue
 		}
+		return inter.Sink.DataFormat
 	}
+	return ""
 }
 
 // Handle a new asset: allocate storage and update its metadata. Used when the
@@ -226,8 +220,7 @@ func (p *PlotterGenerator) handleNewAsset(item *DataInfo, selection *Solution) e
 		return nil
 	}
 	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Handle new dataset")
-	// set empty data format in sink nodes
-	p.setEmptySinkDataFormat(selection)
+
 	var sinkDataStore *app.DataStore
 	var element *ResolvedEdge
 
@@ -241,6 +234,10 @@ func (p *PlotterGenerator) handleNewAsset(item *DataInfo, selection *Solution) e
 	if !needToAllocateStorage {
 		return nil
 	}
+
+	// Fill in the empty dataFormat in the sink node
+	capability := element.Module.Spec.Capabilities[element.CapabilityIndex]
+	element.Sink.Connection.DataFormat = p.getSupportedFormat(&capability)
 
 	// allocate storage
 	if sinkDataStore, err = p.AllocateStorage(item, element.Sink.Connection, &element.StorageAccount); err != nil {
