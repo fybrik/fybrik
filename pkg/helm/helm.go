@@ -186,10 +186,10 @@ func (r *Impl) Install(chrt *chart.Chart, kubeNamespace, releaseName string, val
 	if err != nil {
 		return nil, err
 	}
-
 	install := action.NewInstall(cfg)
 	install.ReleaseName = releaseName
 	install.Namespace = kubeNamespace
+	install.DisableOpenAPIValidation = true
 	return install.Run(chrt, vals)
 }
 
@@ -201,6 +201,7 @@ func (r *Impl) Upgrade(chrt *chart.Chart, kubeNamespace, releaseName string, val
 	}
 	upgrade := action.NewUpgrade(cfg)
 	upgrade.Namespace = kubeNamespace
+	upgrade.DisableOpenAPIValidation = true
 	return upgrade.Run(releaseName, chrt, vals)
 }
 
