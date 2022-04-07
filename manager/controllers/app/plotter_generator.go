@@ -204,10 +204,9 @@ func (p *PlotterGenerator) addStep(element *ResolvedEdge, datasetID string, api 
 // getSupportedFormat returns the first dataformat supported by the module's capability sink interface
 func (p *PlotterGenerator) getSupportedFormat(capability *app.ModuleCapability) taxonomy.DataFormat {
 	for _, inter := range capability.SupportedInterfaces {
-		if inter.Sink == nil {
-			continue
+		if inter.Sink != nil {
+			return inter.Sink.DataFormat
 		}
-		return inter.Sink.DataFormat
 	}
 	return ""
 }
