@@ -1389,6 +1389,86 @@ func TestReadAndTransform(t *testing.T) {
 	g.Expect(plotter.Spec.Flows[0].SubFlows[0].Steps[0]).To(gomega.HaveLen(2))
 }
 
+func TestWriteNotRegisteredAsset(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "read-write-test",
+		Namespace: "default",
+	}
+	application := &app.FybrikApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikapplication-write-AssetNotExist.yaml",
+		application)).NotTo(gomega.HaveOccurred())
+	application.SetGeneration(1)
+	application.SetUID("18")
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Read module
+	readWriteModule := &app.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", readWriteModule)).NotTo(gomega.HaveOccurred())
+	readWriteModule.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.TODO(), readWriteModule)).NotTo(gomega.HaveOccurred(), "the write module could not be created")
+
+	// Create storage account
+	secret := &corev1.Secret{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", secret)).NotTo(gomega.HaveOccurred())
+	secret.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.Background(), secret)).NotTo(gomega.HaveOccurred())
+	account := &app.FybrikStorageAccount{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	account.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
+
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+	g.Expect(getErrorMessages(application)).To(gomega.BeEmpty())
+	// check plotter creation
+	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
+	writeEndpoint := application.Status.AssetStates[application.Spec.Data[0].DataSetID].Endpoint
+	g.Expect(writeEndpoint).To(gomega.Not(gomega.BeNil()))
+	writeConnectionMap := writeEndpoint.AdditionalProperties.Items
+	g.Expect(writeConnectionMap).To(gomega.HaveKey("fybrik-arrow-flight"))
+	writeDataConfig := writeConnectionMap["fybrik-arrow-flight"].(map[string]interface{})
+	g.Expect(writeDataConfig["hostname"]).To(gomega.Equal("read-write-module"))
+
+	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
+
+	plotterObjectKey := types.NamespacedName{
+		Namespace: application.Status.Generated.Namespace,
+		Name:      application.Status.Generated.Name,
+	}
+	plotter := &app.Plotter{}
+	err = cl.Get(context.Background(), plotterObjectKey, plotter)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(1))
+	g.Expect(plotter.Spec.Assets["s3-not-exists/new-dataset"].DataStore.Connection.Name).To(gomega.Equal(app.S3))
+	g.Expect(plotter.Spec.Assets["s3-not-exists/new-dataset"].DataStore.Format).ToNot(gomega.BeEmpty())
+	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(1))
+}
+
 func TestWriteRegisteredAsset(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -1418,7 +1498,7 @@ func TestWriteRegisteredAsset(t *testing.T) {
 	readWriteModule := &app.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", readWriteModule)).NotTo(gomega.HaveOccurred())
 	readWriteModule.Namespace = utils.GetControllerNamespace()
-	g.Expect(cl.Create(context.TODO(), readWriteModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
+	g.Expect(cl.Create(context.TODO(), readWriteModule)).NotTo(gomega.HaveOccurred(), "the write module could not be created")
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
