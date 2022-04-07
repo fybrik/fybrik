@@ -202,6 +202,7 @@ func (r *Impl) Upgrade(chart *chart.Chart, kubeNamespace string, releaseName str
 	}
 	upgrade := action.NewUpgrade(cfg)
 	upgrade.Namespace = kubeNamespace
+	upgrade.DisableOpenAPIValidation = true
 	return upgrade.Run(releaseName, chart, vals)
 }
 
