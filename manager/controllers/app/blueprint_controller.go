@@ -62,7 +62,7 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
 	log := r.Log.With().Str(logging.CONTROLLER, "Blueprint").Str(utils.FybrikAppUUID, uuid).Str("blueprint", req.NamespacedName.String()).Logger()
 
-	if res, err := r.reconcileFinalizers(&blueprint); err != nil {
+	if res, err := r.reconcileFinalizers(ctx, &blueprint); err != nil {
 		log.Error().Err(err).Msg("Could not reconcile blueprint " + blueprint.GetName() + " finalizers")
 		return res, err
 	}
@@ -83,7 +83,7 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	if !equality.Semantic.DeepEqual(&blueprint.Status, observedStatus) {
-		if err := r.Client.Status().Update(ctx, &blueprint); err != nil {
+		if err := utils.UpdateStatus(ctx, r.Client, &blueprint, observedStatus); err != nil {
 			return ctrl.Result{}, errors.WrapWithDetails(err, "failed to update blueprint status", "status", blueprint.Status)
 		}
 	}
@@ -93,7 +93,7 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 }
 
 // reconcileFinalizers reconciles finalizers for Blueprint
-func (r *BlueprintReconciler) reconcileFinalizers(blueprint *fapp.Blueprint) (ctrl.Result, error) {
+func (r *BlueprintReconciler) reconcileFinalizers(ctx context.Context, blueprint *fapp.Blueprint) (ctrl.Result, error) {
 	// finalizer
 	finalizerName := r.Name + ".finalizer"
 	hasFinalizer := ctrlutil.ContainsFinalizer(blueprint, finalizerName)
@@ -108,8 +108,7 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *fapp.Blueprint) (ct
 			}
 			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 			ctrlutil.RemoveFinalizer(blueprint, finalizerName)
-
-			if err := r.Update(context.Background(), blueprint); err != nil {
+			if err := utils.UpdateFinalizers(ctx, r.Client, blueprint); err != nil {
 				return ctrl.Result{}, err
 			}
 		}
@@ -118,7 +117,7 @@ func (r *BlueprintReconciler) reconcileFinalizers(blueprint *fapp.Blueprint) (ct
 	// Make sure this CRD instance has a finalizer
 	if !hasFinalizer {
 		ctrlutil.AddFinalizer(blueprint, finalizerName)
-		if err := r.Update(context.Background(), blueprint); err != nil {
+		if err := utils.UpdateFinalizers(ctx, r.Client, blueprint); err != nil {
 			return ctrl.Result{}, err
 		}
 	}

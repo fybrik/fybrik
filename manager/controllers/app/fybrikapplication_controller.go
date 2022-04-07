@@ -27,7 +27,6 @@ import (
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"github.com/rs/zerolog"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -93,7 +92,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	// Log the fybrikapplication
 	logging.LogStructure("fybrikapplication", application, log, true, true)
 	applicationContext := ApplicationContext{Log: log, Application: application, UUID: uuid}
-	if err := r.reconcileFinalizers(applicationContext); err != nil {
+	if err := r.reconcileFinalizers(ctx, applicationContext); err != nil {
 		log.Error().Err(err).Msg("Could not reconcile finalizers.")
 		return ctrl.Result{}, err
 	}
@@ -119,7 +118,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			log.Error().Err(err).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).Msg("FybrikApplication valdiation failed")
 			application.Status.ErrorMessage = err.Error()
 			application.Status.ValidApplication = v1.ConditionFalse
-			if err := r.Client.Status().Update(ctx, application); err != nil {
+			if err := utils.UpdateStatus(ctx, r.Client, application, observedStatus); err != nil {
 				return ctrl.Result{}, err
 			}
 			return ctrl.Result{}, nil
@@ -137,10 +136,8 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		if result, err := r.reconcile(applicationContext); err != nil {
 			// another attempt will be done
 			// users should be informed in case of errors
-			if !equality.Semantic.DeepEqual(&application.Status, observedStatus) {
-				// ignore an update error, a new reconcile will be made in any case
-				_ = r.Client.Status().Update(ctx, application)
-			}
+			// ignore an update error, a new reconcile will be made in any case
+			_ = utils.UpdateStatus(ctx, r.Client, application, observedStatus)
 			return result, err
 		}
 		application.Status.ObservedGeneration = appVersion
@@ -156,9 +153,9 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	application.Status.Ready = isReady(application)
 
 	// Update CRD status in case of change (other than deletion, which was handled separately)
-	if !equality.Semantic.DeepEqual(&application.Status, observedStatus) && application.DeletionTimestamp.IsZero() {
+	if application.DeletionTimestamp.IsZero() {
 		log.Trace().Str(logging.ACTION, logging.UPDATE).Msg("Updating status for desired generation " + fmt.Sprint(application.GetGeneration()))
-		if err := r.Client.Status().Update(ctx, application); err != nil {
+		if err := utils.UpdateStatus(ctx, r.Client, application, observedStatus); err != nil {
 			return ctrl.Result{}, err
 		}
 	}
@@ -234,7 +231,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 }
 
 // reconcileFinalizers reconciles finalizers for FybrikApplication
-func (r *FybrikApplicationReconciler) reconcileFinalizers(applicationContext ApplicationContext) error {
+func (r *FybrikApplicationReconciler) reconcileFinalizers(ctx context.Context, applicationContext ApplicationContext) error {
 	// finalizer
 	finalizerName := r.Name + ".finalizer"
 	hasFinalizer := ctrlutil.ContainsFinalizer(applicationContext.Application, finalizerName)
@@ -250,8 +247,7 @@ func (r *FybrikApplicationReconciler) reconcileFinalizers(applicationContext App
 
 			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 			ctrlutil.RemoveFinalizer(applicationContext.Application, finalizerName)
-
-			if err := r.Update(context.Background(), applicationContext.Application); err != nil {
+			if err := utils.UpdateFinalizers(ctx, r.Client, applicationContext.Application); err != nil {
 				return err
 			}
 		}
@@ -260,7 +256,7 @@ func (r *FybrikApplicationReconciler) reconcileFinalizers(applicationContext App
 	// Make sure this CRD instance has a finalizer
 	if !hasFinalizer {
 		ctrlutil.AddFinalizer(applicationContext.Application, finalizerName)
-		if err := r.Update(context.Background(), applicationContext.Application); err != nil {
+		if err := utils.UpdateFinalizers(ctx, r.Client, applicationContext.Application); err != nil {
 			return err
 		}
 	}
