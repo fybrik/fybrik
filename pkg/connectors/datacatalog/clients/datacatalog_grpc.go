@@ -220,3 +220,9 @@ func (m *grpcDataCatalog) CreateAsset(in *datacatalog.CreateAssetRequest, creds 
 func (m *grpcDataCatalog) DeleteAsset(in *datacatalog.DeleteAssetRequest, creds string) (*datacatalog.DeleteAssetResponse, error) {
 	return &datacatalog.DeleteAssetResponse{Status: "DeleteAsset not implemented via GRPC"}, nil
 }
+
+// just adding this dummy implementation as we are going to remove grpc support soon.
+// Then this file will be removed. Till then we provide a dummy implementation.
+func (m *grpcDataCatalog) UpdateAsset(in *datacatalog.UpdateAssetRequest, creds string) (*datacatalog.UpdateAssetResponse, error) {
+	return &datacatalog.UpdateAssetResponse{Status: "UpdateAsset not implemented via GRPC"}, nil
+}

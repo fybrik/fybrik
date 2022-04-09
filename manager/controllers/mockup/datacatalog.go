@@ -59,6 +59,13 @@ func (m *DataCatalogDummy) DeleteAsset(in *datacatalog.DeleteAssetRequest, creds
 	return &datacatalog.DeleteAssetResponse{Status: "DeleteAssetInfo not implemented in DataCatalogDummy"}, nil
 }
 
+func (m *DataCatalogDummy) UpdateAsset(in *datacatalog.UpdateAssetRequest, creds string) (*datacatalog.UpdateAssetResponse, error) {
+	// TODO
+	// will be provide a proper implementation once the implementation of DeleteAssetInfo in katalog-connector
+	// is completed in a future PR. Till then a dummy implementation is provided.
+	return &datacatalog.UpdateAssetResponse{Status: "UpdateAssetInfo not implemented in DataCatalogDummy"}, nil
+}
+
 func (d *DataCatalogDummy) Close() error {
 	return nil
 }
