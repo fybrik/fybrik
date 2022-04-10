@@ -241,8 +241,8 @@ func (r *FybrikApplicationReconciler) reconcileFinalizers(ctx context.Context, a
 	hasFinalizer := ctrlutil.ContainsFinalizer(applicationContext.Application, finalizerName)
 
 	// If the object has a scheduled deletion time, delete it and all resources it has created
-	if !applicationContext.Application.DeletionTimestamp.IsZero() {
-		// The object is being deleted
+	if !applicationContext.Application.DeletionTimestamp.IsZero() || (len(applicationContext.Application.Spec.Data) == 0) {
+		// The object is being deleted, or no datasets are defined
 		if hasFinalizer { // Finalizer was created when the object was created
 			// the finalizer is present - delete the allocated resources
 			if err := r.deleteExternalResources(applicationContext); err != nil {
@@ -340,9 +340,6 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 	}
 
 	if len(applicationContext.Application.Spec.Data) == 0 {
-		if err := r.deleteExternalResources(applicationContext); err != nil {
-			return ctrl.Result{}, err
-		}
 		applicationContext.Log.Info().Msg("No plotter will be generated since no datasets are specified")
 		return ctrl.Result{}, nil
 	}
@@ -650,6 +647,10 @@ func (r *FybrikApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	mapFn := func(a client.Object) []reconcile.Request {
 		labels := a.GetLabels()
 		if labels == nil {
+			return []reconcile.Request{}
+		}
+		if !a.GetDeletionTimestamp().IsZero() {
+			// the owned resource is deleted - no updates should be sent
 			return []reconcile.Request{}
 		}
 		namespace, foundNamespace := labels[api.ApplicationNamespaceLabel]
