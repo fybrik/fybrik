@@ -649,6 +649,10 @@ func (r *FybrikApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		if labels == nil {
 			return []reconcile.Request{}
 		}
+		if !a.GetDeletionTimestamp().IsZero() {
+			// the owned resource is deleted - no updates should be sent
+			return []reconcile.Request{}
+		}
 		namespace, foundNamespace := labels[api.ApplicationNamespaceLabel]
 		name, foundName := labels[api.ApplicationNameLabel]
 		if !foundNamespace || !foundName {
