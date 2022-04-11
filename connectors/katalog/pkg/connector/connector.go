@@ -131,14 +131,14 @@ func (r *Handler) deleteAsset(c *gin.Context) {
 	// Parse request
 	var request datacatalog.DeleteAssetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		r.reportError(c, http.StatusBadRequest, "Error during ShouldBindJSON in createAsset"+err.Error())
+		r.reportError(c, http.StatusBadRequest, "Error during ShouldBindJSON in deleteAsset"+err.Error())
 		return
 	}
 	logging.LogStructure("DeleteAssetRequest object received:", request, &r.log, zerolog.DebugLevel, false, false)
 
 	splittedID := strings.SplitN(string(request.AssetID), "/", 2)
 	if len(splittedID) != 2 {
-		errorMessage := fmt.Sprintf("request has an invalid asset ID %s (must be in namespace/name format)", request.AssetID)
+		errorMessage := fmt.Sprintf("DeleteAssetRequest has an invalid asset ID %s (must be in namespace/name format)", request.AssetID)
 		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 		return
 	}
@@ -150,7 +150,7 @@ func (r *Handler) deleteAsset(c *gin.Context) {
 		return
 	}
 
-	if err := r.client.Delete(context.Background(), asset, kclient.GracePeriodSeconds(5)); err != nil {
+	if err := r.client.Delete(context.Background(), asset); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
