@@ -92,6 +92,11 @@ jobs:
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Install tools
       run: make install-tools
+    - name: Integration tests no cluster scope new
+      if: ${{ matrix.k8s_version == 'new' }}
+      env:
+        K8S_VERSION: ${{ env.NEW_K8S_VERSION }}
+      run: make run-integration-tests-no-cluster-scope
     - name: Integration tests old
       if: ${{ matrix.k8s_version == 'old' }}
       env:
