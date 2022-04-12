@@ -121,7 +121,6 @@ func TestS3Notebook(t *testing.T) {
 	g.Expect(k8sClient.Create(context.Background(), writeApplication)).Should(gomega.Succeed())
 
 	// Ensure getting cleaned up after tests finish
-	//nolint:govet
 	defer func() {
 		application := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: writeApplicationKey.Namespace,
 			Name: writeApplicationKey.Name}}
@@ -304,7 +303,6 @@ func TestS3Notebook(t *testing.T) {
 		return k8sClient.Get(context.Background(), readApplicationKey, readApplication)
 	}, timeout, interval).Should(gomega.Succeed())
 	// Ensure getting cleaned up after tests finish
-	//nolint:govet
 	defer func() {
 		application := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: readApplicationKey.Namespace,
 			Name: readApplicationKey.Name}}
