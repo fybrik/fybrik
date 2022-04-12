@@ -100,11 +100,11 @@ run-notebook-tests:
 	$(MAKE) configure-vault
 	$(MAKE) -C manager run-notebook-tests
 
-.PHONY: run-integration-tests-no-cluster-scope
-run-integration-tests-no-cluster-scope: export DOCKER_HOSTNAME?=localhost:5000
-run-integration-tests-no-cluster-scope: export DOCKER_NAMESPACE?=fybrik-system
-run-integration-tests-no-cluster-scope: export VALUES_FILE=charts/fybrik/integration-tests.no-cluster-scope.values.yaml
-run-integration-tests-no-cluster-scope:
+.PHONY: run-namescope-integration-tests
+run-namescope-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-namescope-integration-tests: export DOCKER_NAMESPACE?=fybrik-system
+run-namescope-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.namescope.values.yaml
+run-namescope-integration-tests:
 	$(MAKE) kind
 	$(MAKE) cluster-prepare
 	$(MAKE) docker-build docker-push
@@ -113,11 +113,7 @@ run-integration-tests-no-cluster-scope:
 	$(MAKE) -C charts test
 	$(MAKE) deploy
 	$(MAKE) configure-vault
-	$(MAKE) -C modules helm
-	$(MAKE) -C modules helm-uninstall # Uninstalls the deployed tests from previous command
-	$(MAKE) -C pkg/helm test
 	$(MAKE) -C manager run-integration-tests
-	$(MAKE) -C modules test
 
 .PHONY: cluster-prepare
 cluster-prepare:
