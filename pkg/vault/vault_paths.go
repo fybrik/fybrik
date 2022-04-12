@@ -3,7 +3,10 @@
 
 package vault
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // The path of the Vault plugin to use to retrieve dataset credentials stored in kubernetes secret.
 // vault-plugin-secrets-kubernetes-reader plugin is used for this purpose and is enabled
@@ -26,4 +29,16 @@ func PathForReadingKubeSecret(secretNamespace, secretName string) string {
 	// Construct the path to the secret in Vault that holds the dataset credentials
 	secretPath := fmt.Sprintf("%s%s?namespace=%s", pluginPath, secretName, secretNamespace)
 	return secretPath
+}
+
+// Given a path to Vault secret that holds dataset credentials
+// return the name of the secret and its namespace
+// for example, for vault secret path:
+// "/v1/kubernetes-secrets/my-secret?namespace=default"
+// the returned values will be my-secret and default
+func GetKubeSecretDetailsFromVaultPath(secretPath string) (string, string) {
+	const nameNamespacePosition int = 3
+	parts := strings.Split(secretPath, "/")
+	parts = strings.Split(parts[nameNamespacePosition], "?namespace=")
+	return parts[0], parts[1]
 }

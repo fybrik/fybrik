@@ -100,10 +100,12 @@ func (r *Handler) createAsset(c *gin.Context) {
 		return
 	}
 
+	secretName, secretNamespace := vault.GetKubeSecretDetailsFromVaultPath(request.Credentials)
+
 	asset := &v1alpha1.Asset{
 		ObjectMeta: v1.ObjectMeta{Namespace: request.DestinationCatalogID, Name: request.DestinationAssetID, GenerateName: FybrikAssetPrefix},
 		Spec: v1alpha1.AssetSpec{
-			SecretRef: v1alpha1.SecretRef{Name: request.SecretName, Namespace: request.SecretNamespace},
+			SecretRef: v1alpha1.SecretRef{Name: secretName, Namespace: secretNamespace},
 			Metadata:  request.ResourceMetadata,
 			Details:   request.Details,
 		},

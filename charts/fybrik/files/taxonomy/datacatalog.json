@@ -9,6 +9,10 @@
         "details"
       ],
       "properties": {
+        "credentials": {
+          "description": "The vault plugin path where the destination data credentials will be stored as kubernetes secrets",
+          "type": "string"
+        },
         "destinationAssetID": {
           "description": "Asset ID to be used for the created asset",
           "type": "string"
@@ -24,14 +28,6 @@
         "resourceMetadata": {
           "$ref": "#/definitions/ResourceMetadata",
           "description": "Source asset metadata like asset name, owner, geography, etc"
-        },
-        "secretName": {
-          "description": "The secret name which holds credentials for this asset",
-          "type": "string"
-        },
-        "secretNamespace": {
-          "description": "The secret namespace which holds credentials for this asset",
-          "type": "string"
         }
       }
     },

@@ -149,7 +149,7 @@ func TestCreateAsset(t *testing.T) {
 			Connection: s3Connection,
 			DataFormat: csvFormat,
 		},
-		SecretName: "dummy-creds",
+		Credentials: "/v1/kubernetes-secrets/dummy-creds?namespace=dummy-namespace2",
 	}
 
 	// Create a fake client to mock API calls.
@@ -253,7 +253,7 @@ func TestCreateAssetWthNoDestinationAssetID(t *testing.T) {
 			Connection: s3Connection,
 			DataFormat: csvFormat,
 		},
-		SecretName: "dummy-creds",
+		Credentials: "/v1/kubernetes-secrets/dummy-creds?namespace=dummy-namespace2",
 	}
 
 	// Create a fake client to mock API calls.
