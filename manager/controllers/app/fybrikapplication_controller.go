@@ -217,7 +217,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 				setErrorCondition(applicationContext, assetID, err.Error())
 				continue
 			}
-			// register the asset: experimental feature
+			// register the asset
 			if newAssetID, err := r.RegisterAsset(assetID, dataCtx.Requirements.FlowParams.Catalog, &provisionedBucketRef,
 				applicationContext.Application); err == nil {
 				state := applicationContext.Application.Status.AssetStates[assetID]
