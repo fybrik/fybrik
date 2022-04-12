@@ -41,7 +41,7 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 	$(TOOLBIN)/kubectl create namespace $(KUBE_NAMESPACE) || true
 	$(TOOLBIN)/helm install fybrik-crd charts/fybrik-crd  \
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
-	$(TOOLBIN)/helm install fybrik charts/fybrik --values $(VALUES_FILE) \
+	$(TOOLBIN)/helm install fybrik charts/fybrik --values $(VALUES_FILE) $(HELM_SETTINGS) \
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 
 .PHONY: pre-test
@@ -102,7 +102,8 @@ run-notebook-tests:
 .PHONY: run-namescope-integration-tests
 run-namescope-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
 run-namescope-integration-tests: export DOCKER_NAMESPACE?=fybrik-system
-run-namescope-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.namescope.values.yaml
+run-namescope-integration-tests: export HELM_SETTINGS=--set "clusterScoped=false" --set "applicationNamespace=default"
+run-namescope-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
 run-namescope-integration-tests:
 	$(MAKE) kind
 	$(MAKE) cluster-prepare
