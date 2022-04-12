@@ -158,6 +158,20 @@ func TestS3Notebook(t *testing.T) {
 	modulesNamespace := plotter.Spec.ModulesNamespace
 	fmt.Printf("data access module namespace notebook test: %s\n", modulesNamespace)
 
+	g.Expect(len(writeApplication.Status.AssetStates)).To(gomega.Equal(2))
+	g.Expect(writeApplication.Status.AssetStates["new-data-parquet"].CatalogedAsset).
+		ToNot(gomega.BeEmpty())
+	newCatalogedAsset := writeApplication.Status.AssetStates["new-data-parquet"].
+		CatalogedAsset
+	parts := strings.Split(newCatalogedAsset, "/")
+	newCatalogID := parts[0]
+	newAssetID := parts[1]
+
+	g.Expect(len(writeApplication.Status.ProvisionedStorage)).To(gomega.Equal(1))
+	// check provisioned storage
+	g.Expect(writeApplication.Status.ProvisionedStorage["new-data-parquet"].DatasetRef).
+		ToNot(gomega.BeEmpty(), "No storage provisioned")
+
 	// Get the new connection details
 	var newBucket, newObject string
 	connectionMap := writeApplication.Status.ProvisionedStorage["new-data-parquet"].
@@ -167,14 +181,14 @@ func TestS3Notebook(t *testing.T) {
 	g.Expect(s3Conn["endpoint"]).To(gomega.Equal("http://s3.fybrik-system.svc.cluster.local:9090"))
 	newBucket = fmt.Sprint(s3Conn["bucket"])
 	newObject = fmt.Sprint(s3Conn["object_key"])
-	g.Expect(newBucket).NotTo(gomega.Equal(""))
-	g.Expect(newObject).NotTo(gomega.Equal(""))
+	g.Expect(newBucket).NotTo(gomega.BeEmpty())
+	g.Expect(newObject).NotTo(gomega.BeEmpty())
 
 	err = v1alpha1.AddToScheme(scheme.Scheme)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	asset := &v1alpha1.Asset{}
 	By("Expecting asset to be fetchable")
-	assetObjectKey := client.ObjectKey{Namespace: "fybrik-notebook-sample", Name: "new-data-parquet"}
+	assetObjectKey := client.ObjectKey{Namespace: newCatalogID, Name: newAssetID}
 	g.Eventually(func() error {
 		return k8sClient.Get(context.Background(), assetObjectKey, asset)
 	}, timeout, interval).Should(gomega.Succeed())
@@ -356,7 +370,7 @@ func TestS3Notebook(t *testing.T) {
 	defer flightClient.Close()
 
 	request = ArrowRequest{
-		Asset: "fybrik-notebook-sample/new-data-parquet",
+		Asset: newCatalogedAsset,
 	}
 
 	marshal, err = json.Marshal(request)
