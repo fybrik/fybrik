@@ -27,8 +27,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"fybrik.io/fybrik/pkg/vault"
-
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/utils"
@@ -45,6 +43,7 @@ import (
 	local "fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/storage"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
+	"fybrik.io/fybrik/pkg/vault"
 )
 
 // FybrikApplicationReconciler reconciles a FybrikApplication object
@@ -210,7 +209,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 			// mark the bucket as persistent and register the asset
 			provisionedBucketRef, found := applicationContext.Application.Status.ProvisionedStorage[assetID]
 			if !found {
-				message := "No copy has been created for the asset " + assetID + " required to be registered"
+				message := "No storage has been allocated for the asset " + assetID + " required to be registered"
 				setErrorCondition(applicationContext, assetID, message)
 				continue
 			}
@@ -219,7 +218,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 				continue
 			}
 			// register the asset: experimental feature
-			if newAssetID, err := r.RegisterAsset(dataCtx.Requirements.FlowParams.Catalog, &provisionedBucketRef,
+			if newAssetID, err := r.RegisterAsset(assetID, dataCtx.Requirements.FlowParams.Catalog, &provisionedBucketRef,
 				applicationContext.Application); err == nil {
 				state := applicationContext.Application.Status.AssetStates[assetID]
 				state.CatalogedAsset = newAssetID
@@ -739,9 +738,22 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 	}
 	// add or update new buckets
 	for datasetID, info := range provisionedStorage {
+		secretName := ""
+		secretNamespace := ""
+		if utils.IsVaultEnabled() {
+			secretName = info.Storage.SecretRef.Name
+			secretNamespace = info.Storage.SecretRef.Namespace
+		}
+		details := &api.DataStore{}
+		if info.Details != nil {
+			details = info.Details.DeepCopy()
+		}
+
 		applicationContext.Application.Status.ProvisionedStorage[datasetID] = api.DatasetDetails{
-			DatasetRef: info.Storage.Name,
-			SecretRef:  info.Storage.SecretRef.Name,
+			DatasetRef:      info.Storage.Name,
+			SecretName:      secretName,
+			SecretNamespace: secretNamespace,
+			Details:         details,
 		}
 	}
 	// check that the buckets have been created successfully using Dataset status

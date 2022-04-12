@@ -61,10 +61,15 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 		return
 	}
 
+	secretNamespace := namespace
+	if asset.Spec.SecretRef.Namespace != "" {
+		secretNamespace = asset.Spec.SecretRef.Namespace
+	}
+
 	response := datacatalog.GetAssetResponse{
 		ResourceMetadata: asset.Spec.Metadata,
 		Details:          asset.Spec.Details,
-		Credentials:      vault.PathForReadingKubeSecret(namespace, asset.Spec.SecretRef.Name),
+		Credentials:      vault.PathForReadingKubeSecret(secretNamespace, asset.Spec.SecretRef.Name),
 	}
 
 	c.JSON(http.StatusOK, &response)
@@ -98,7 +103,7 @@ func (r *Handler) createAsset(c *gin.Context) {
 	asset := &v1alpha1.Asset{
 		ObjectMeta: v1.ObjectMeta{Namespace: request.DestinationCatalogID, Name: request.DestinationAssetID, GenerateName: FybrikAssetPrefix},
 		Spec: v1alpha1.AssetSpec{
-			SecretRef: v1alpha1.SecretRef{Name: request.Credentials},
+			SecretRef: v1alpha1.SecretRef{Name: request.SecretName, Namespace: request.SecretNamespace},
 			Metadata:  request.ResourceMetadata,
 			Details:   request.Details,
 		},

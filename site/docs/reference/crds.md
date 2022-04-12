@@ -1302,12 +1302,142 @@ DatasetDetails holds details of the provisioned storage
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>secretRef</b></td>
-        <td>string</td>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeydetails">details</a></b></td>
+        <td>object</td>
         <td>
-          Reference to a secret where the credentials are stored<br/>
+          Dataset information<br/>
         </td>
         <td>false</td>
+      </tr><tr>
+        <td><b>secretName</b></td>
+        <td>string</td>
+        <td>
+          Name of the secret where the credentials are stored<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>secretNamespace</b></td>
+        <td>string</td>
+        <td>
+          Name of the secret namespace where the credentials are stored<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status.provisionedStorage[key].details
+<sup><sup>[↩ Parent](#fybrikapplicationstatusprovisionedstoragekey)</sup></sup>
+
+
+
+Dataset information
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeydetailsconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>format</b></td>
+        <td>string</td>
+        <td>
+          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeydetailsvaultkey">vault</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status.provisionedStorage[key].details.connection
+<sup><sup>[↩ Parent](#fybrikapplicationstatusprovisionedstoragekeydetails)</sup></sup>
+
+
+
+Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status.provisionedStorage[key].details.vault[key]
+<sup><sup>[↩ Parent](#fybrikapplicationstatusprovisionedstoragekeydetails)</sup></sup>
+
+
+
+Holds details for retrieving credentials from Vault store.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>address</b></td>
+        <td>string</td>
+        <td>
+          Address is Vault address<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>authPath</b></td>
+        <td>string</td>
+        <td>
+          AuthPath is the path to auth method i.e. kubernetes<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>role</b></td>
+        <td>string</td>
+        <td>
+          Role is the Vault role used for retrieving the credentials<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>secretPath</b></td>
+        <td>string</td>
+        <td>
+          SecretPath is the path of the secret holding the Credentials in Vault<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 
@@ -3627,8 +3757,15 @@ Reference to a Secret resource holding credentials for this asset
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          Name of the Secret resource (must exist in the same namespace)<br/>
+          Name of the Secret resource<br/>
         </td>
         <td>true</td>
+      </tr><tr>
+        <td><b>namespace</b></td>
+        <td>string</td>
+        <td>
+          Namespace of the Secret resource. If it is empty then the asset namespace is used.<br/>
+        </td>
+        <td>false</td>
       </tr></tbody>
 </table>

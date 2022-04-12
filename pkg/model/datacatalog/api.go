@@ -34,8 +34,11 @@ type CreateAssetRequest struct {
 	// Source asset details like connection and data format
 	Details ResourceDetails `json:"details"`
 	// +kubebuilder:validation:Optional
-	// The vault plugin path where the destination data credentials will be stored as kubernetes secrets
-	Credentials string `json:"credentials"`
+	// The secret name which holds credentials for this asset
+	SecretName string `json:"secretName,string"`
+	// +kubebuilder:validation:Optional
+	// The secret namespace which holds credentials for this asset
+	SecretNamespace string `json:"secretNamespace,string"`
 }
 
 type CreateAssetResponse struct {

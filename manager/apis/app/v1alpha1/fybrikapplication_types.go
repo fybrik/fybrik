@@ -113,9 +113,20 @@ type ResourceReference struct {
 // DatasetDetails holds details of the provisioned storage
 type DatasetDetails struct {
 	// Reference to a Dataset resource containing the request to provision storage
+	// +optional
 	DatasetRef string `json:"datasetRef,omitempty"`
-	// Reference to a secret where the credentials are stored
-	SecretRef string `json:"secretRef,omitempty"`
+
+	// Name of the secret where the credentials are stored
+	// +optional
+	SecretName string `json:"secretName,omitempty"`
+
+	// Name of the secret namespace where the credentials are stored
+	// +optional
+	SecretNamespace string `json:"secretNamespace,omitempty"`
+
+	// Dataset information
+	// +optional
+	Details *DataStore `json:"details,omitempty"`
 }
 
 // AssetState defines the observed state of an asset
