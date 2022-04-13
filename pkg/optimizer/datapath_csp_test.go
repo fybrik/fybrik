@@ -15,7 +15,7 @@ import (
 	"fybrik.io/fybrik/pkg/serde"
 )
 
-func TestBuildModel(t *testing.T) {
+func getTestEnv() *app.Environment {
 	s3CSVInterface := taxonomy.Interface{Protocol: "s3", DataFormat: "csv"}
 	s3ParquetInterface := taxonomy.Interface{Protocol: "s3", DataFormat: "parquet"}
 	db2ParquetInterface := taxonomy.Interface{Protocol: "db2", DataFormat: "parquet"}
@@ -51,7 +51,10 @@ func TestBuildModel(t *testing.T) {
 	clusters := []multicluster.Cluster{cluster}
 	storageAccounts := []appApi.FybrikStorageAccount{}
 	env := app.Environment{Modules: moduleMap, Clusters: clusters, StorageAccounts: storageAccounts, AttributeManager: nil}
+	return &env
+}
 
+func getDataInfo(env *app.Environment) *app.DataInfo {
 	actions := []taxonomy.Action{
 		{Name: "Reduct", AdditionalProperties: serde.Properties{}},
 		{Name: "Encrypt", AdditionalProperties: serde.Properties{}},
@@ -60,7 +63,7 @@ func TestBuildModel(t *testing.T) {
 	decision := adminconfig.Decision{Deploy: adminconfig.StatusFalse}
 	decisionMap := adminconfig.DecisionPerCapabilityMap{"copy": decision}
 	evalOutput := adminconfig.EvaluatorOutput{ConfigDecisions: decisionMap}
-	appRequirements := appApi.DataRequirements{Interface: arrowCSVInterface}
+	appRequirements := appApi.DataRequirements{Interface: *env.Modules["Reader"].Spec.Capabilities[0].SupportedInterfaces[1].Sink}
 	appContext := appApi.DataContext{Requirements: appRequirements}
 	dataSetConnection := taxonomy.Connection{Name: "s3"}
 	resourceDetails := datacatalog.ResourceDetails{Connection: dataSetConnection, DataFormat: "parquet"}
@@ -69,12 +72,18 @@ func TestBuildModel(t *testing.T) {
 		DataDetails:         &dataDetails,
 		Context:             &appContext,
 		Configuration:       evalOutput,
-		WorkloadCluster:     cluster,
+		WorkloadCluster:     env.Clusters[0],
 		Actions:             actions,
 		StorageRequirements: map[taxonomy.ProcessingLocation][]taxonomy.Action{},
 	}
-	dpCSP := NewDataPathCSP(&dataInfo, &env)
-	err := dpCSP.BuildFzModel(3)
+	return &dataInfo
+}
+
+func TestBuildModel(t *testing.T) {
+	env := getTestEnv()
+	dataInfo := getDataInfo(env)
+	dpCSP := NewDataPathCSP(dataInfo, env)
+	err := dpCSP.BuildFzModel("dataPath.fzn", 3)
 	if err != nil {
 		t.Errorf("Failed building a CSP model: %s", err)
 	}
