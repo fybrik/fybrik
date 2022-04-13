@@ -744,10 +744,9 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 		}
 
 		applicationContext.Application.Status.ProvisionedStorage[datasetID] = api.DatasetDetails{
-			DatasetRef:      info.Storage.Name,
-			SecretName:      info.Storage.SecretRef.Name,
-			SecretNamespace: info.Storage.SecretRef.Namespace,
-			Details:         details,
+			DatasetRef: info.Storage.Name,
+			SecretRef:  api.SecretRef{Name: info.Storage.SecretRef.Name, Namespace: info.Storage.SecretRef.Namespace},
+			Details:    details,
 		}
 	}
 	// check that the buckets have been created successfully using Dataset status

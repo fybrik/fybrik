@@ -338,13 +338,20 @@ spec:
                       required:
                       - connection
                       type: object
-                    secretName:
-                      description: Name of the secret where the credentials are stored
-                      type: string
-                    secretNamespace:
-                      description: Name of the secret namespace where the credentials
-                        are stored
-                      type: string
+                    secretRef:
+                      description: Reference to a secret where the credentials are
+                        stored
+                      properties:
+                        name:
+                          description: Secret name
+                          type: string
+                        namespace:
+                          description: Secret Namespace
+                          type: string
+                      required:
+                      - name
+                      - namespace
+                      type: object
                   type: object
                 description: ProvisionedStorage maps a dataset (identified by AssetID)
                   to the new provisioned bucket. It allows FybrikApplication controller

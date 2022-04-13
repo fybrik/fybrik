@@ -24,9 +24,8 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 	r.Log.Trace().Msg("RegisterAsset")
 	details := datacatalog.ResourceDetails{}
 	if info.Details != nil {
-		infoDetails := info.Details
-		details.Connection = infoDetails.Connection
-		details.DataFormat = infoDetails.Format
+		details.Connection = info.Details.Connection
+		details.DataFormat = info.Details.Format
 	}
 
 	resourceMetadata := datacatalog.ResourceMetadata{
@@ -35,7 +34,7 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 
 	creds := ""
 	if utils.IsVaultEnabled() {
-		creds = vault.PathForReadingKubeSecret(info.SecretNamespace, info.SecretName)
+		creds = vault.PathForReadingKubeSecret(info.SecretRef.Namespace, info.SecretRef.Name)
 	}
 
 	request := datacatalog.CreateAssetRequest{

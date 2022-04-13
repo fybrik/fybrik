@@ -1309,17 +1309,10 @@ DatasetDetails holds details of the provisioned storage
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>secretName</b></td>
-        <td>string</td>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeysecretref">secretRef</a></b></td>
+        <td>object</td>
         <td>
-          Name of the secret where the credentials are stored<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>secretNamespace</b></td>
-        <td>string</td>
-        <td>
-          Name of the secret namespace where the credentials are stored<br/>
+          Reference to a secret where the credentials are stored<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -1436,6 +1429,40 @@ Holds details for retrieving credentials from Vault store.
         <td>string</td>
         <td>
           SecretPath is the path of the secret holding the Credentials in Vault<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status.provisionedStorage[key].secretRef
+<sup><sup>[↩ Parent](#fybrikapplicationstatusprovisionedstoragekey)</sup></sup>
+
+
+
+Reference to a secret where the credentials are stored
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Secret name<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>namespace</b></td>
+        <td>string</td>
+        <td>
+          Secret Namespace<br/>
         </td>
         <td>true</td>
       </tr></tbody>
