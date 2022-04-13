@@ -65,11 +65,10 @@ func (annots Annotations) annotationString() string {
 
 // Data for a single FlatZinc variable
 type FlatZincVariable struct {
-	Name       string
-	Type       string
-	Size       uint
-	IsArray    bool // (IsArray == false) implies (Size == 1)
-	Assignment string
+	Name    string
+	Type    string
+	Size    uint
+	IsArray bool // (IsArray == false) implies (Size == 1)
 	Annotations
 }
 
@@ -138,8 +137,8 @@ type FlatZincModel struct {
 
 func NewFlatZincModel() *FlatZincModel {
 	var fzw FlatZincModel
-	fzw.ParamMap = make(map[string]Declares)
-	fzw.VarMap = make(map[string]Declares)
+	fzw.ParamMap = map[string]Declares{}
+	fzw.VarMap = map[string]Declares{}
 	return &fzw
 }
 
@@ -155,7 +154,7 @@ func (fzw *FlatZincModel) AddParamArray(name, vartype string, size uint, assignm
 	fzw.ParamMap[name] = FlatZincParam{Name: name, Type: vartype, Size: size, IsArray: true, Assignment: assignment}
 }
 
-func (fzw *FlatZincModel) AddVariable(name, vartype, assignment string, isDefined, isOutput bool) {
+func (fzw *FlatZincModel) AddVariable(name, vartype string, isDefined, isOutput bool) {
 	annotations := []string{}
 	if isDefined {
 		annotations = append(annotations, DefinedVarAnnot)
@@ -163,13 +162,10 @@ func (fzw *FlatZincModel) AddVariable(name, vartype, assignment string, isDefine
 	if isOutput {
 		annotations = append(annotations, OutputVarAnnot)
 	}
-	fzw.VarMap[name] = FlatZincVariable{
-		Name: name, Type: vartype, Size: 1, IsArray: false,
-		Assignment: assignment, Annotations: annotations,
-	}
+	fzw.VarMap[name] = FlatZincVariable{Name: name, Type: vartype, Size: 1, IsArray: false, Annotations: annotations}
 }
 
-func (fzw *FlatZincModel) AddVariableArray(name, vartype string, size uint, assignment string, isDefined, isOutput bool) {
+func (fzw *FlatZincModel) AddVariableArray(name, vartype string, size uint, isDefined, isOutput bool) {
 	annotations := []string{}
 	if isDefined {
 		annotations = append(annotations, DefinedVarAnnot)
@@ -177,10 +173,7 @@ func (fzw *FlatZincModel) AddVariableArray(name, vartype string, size uint, assi
 	if isOutput {
 		annotations = append(annotations, fmt.Sprintf(OutputArrAnnot, size))
 	}
-	fzw.VarMap[name] = FlatZincVariable{
-		Name: name, Type: vartype, Size: size, IsArray: true,
-		Assignment: assignment, Annotations: annotations,
-	}
+	fzw.VarMap[name] = FlatZincVariable{Name: name, Type: vartype, Size: size, IsArray: true, Annotations: annotations}
 }
 
 func (fzw *FlatZincModel) AddConstraint(identifier string, exprs []string, annotations ...string) {
@@ -189,6 +182,12 @@ func (fzw *FlatZincModel) AddConstraint(identifier string, exprs []string, annot
 
 func (fzw *FlatZincModel) SetSolveTarget(goal SolveGoal, expr string, annotations ...string) {
 	fzw.SolveTarget = FlatZincSolveItem{goal, expr, annotations}
+}
+
+func (fzw *FlatZincModel) Clear() {
+	fzw.ParamMap = map[string]Declares{}
+	fzw.VarMap = map[string]Declares{}
+	fzw.Constraints = []FlatZincConstraint{}
 }
 
 // dumps a FlatZinc model to a file, using the FlatZinc syntax
@@ -252,14 +251,18 @@ type CPSolution map[string][]string
 // Reading a FlatZinc solutions file and returning all solutions as a slice of CPSolution
 // If there can be no solution to the constraint problem (UNSAT), returns a slice with a single empty solution
 // Otherwise, must return at least one solution, or return an error
-func (fzw *FlatZincModel) ReadSolutions(fileName string) ([]CPSolution, error) {
+func (fzw *FlatZincModel) ReadSolutionsFromFile(fileName string) ([]CPSolution, error) {
 	data, err := os.ReadFile(path.Clean(fileName))
 	if err != nil {
 		return nil, fmt.Errorf("failed opening file %s for reading: %w", fileName, err)
 	}
 
-	strContent := string(data)
-	lines := strings.Split(strContent, "\n")
+	return fzw.ReadSolutions(string(data))
+}
+
+func (fzw *FlatZincModel) ReadSolutions(solverOutput string) ([]CPSolution, error) {
+	solverOutput = strings.ReplaceAll(solverOutput, "\r", "") // in case we run on Windows
+	lines := strings.Split(solverOutput, "\n")
 	res := []CPSolution{}
 	currSolution := make(CPSolution)
 	for lineNum, line := range lines {
@@ -275,7 +278,7 @@ func (fzw *FlatZincModel) ReadSolutions(fileName string) ([]CPSolution, error) {
 			}
 			return res, nil // at least one solution was found and the whole search space was covered
 		case line == "=====UNSATISFIABLE=====":
-			return []CPSolution{make(CPSolution)}, nil // no solution exists; returns a single empty solution
+			return []CPSolution{{}}, nil // no solution exists; returns a single empty solution
 		case strings.HasPrefix(line, "===="):
 			err := fmt.Errorf("no solution found. Solver says %s", line) // no solution found (but not UNSAT either)
 			return nil, err
@@ -299,8 +302,8 @@ func (fzw *FlatZincModel) ReadSolutions(fileName string) ([]CPSolution, error) {
 
 // Reading a FlatZinc solutions file and returning the best solution
 // When a minimize/maximize goal is defined, best solution should be the last solution
-func (fzw *FlatZincModel) ReadBestSolution(fileName string) (CPSolution, error) {
-	solutions, err := fzw.ReadSolutions(fileName)
+func (fzw *FlatZincModel) ReadBestSolution(solverOutput string) (CPSolution, error) {
+	solutions, err := fzw.ReadSolutions(solverOutput)
 	if err != nil {
 		return nil, err
 	}
