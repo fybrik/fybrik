@@ -104,16 +104,16 @@ func (dpc *DataPathCSP) moduleCapabilityAllowedByRestrictions(modcap moduleAndCa
 func (dpc *DataPathCSP) BuildFzModel(fzModelFile string, pathLength uint) error {
 	dpc.fzModel.Clear() // This function can be called multiple times - clear vars and constraints from last call
 	// Variables to select the module capability we use on each data-path location
-	moduleCapabilityVarType := rangeVarType(len(dpc.modulesCapabilities))
+	moduleCapabilityVarType := rangeVarType(1, len(dpc.modulesCapabilities))
 	dpc.fzModel.AddVariableArray(modCapVarname, moduleCapabilityVarType, pathLength, false, true)
 	// Variables to select storage-accounts to place on each data-path location (the value 0 means no storage account)
-	saTypeVarType := rangeVarType(len(dpc.env.StorageAccounts))
+	saTypeVarType := rangeVarType(0, len(dpc.env.StorageAccounts))
 	dpc.fzModel.AddVariableArray(saVarname, saTypeVarType, pathLength, false, true)
 	// Variables to select the cluster we allocate to each module on the path
-	moduleClusterVarType := rangeVarType(len(dpc.env.Clusters))
+	moduleClusterVarType := rangeVarType(1, len(dpc.env.Clusters))
 	dpc.fzModel.AddVariableArray(clusterVarname, moduleClusterVarType, pathLength, false, true)
 	// Variables to select the source and sink interface for each module on the path
-	moduleInterfaceVarType := rangeVarType(len(dpc.interfaceIdx))
+	moduleInterfaceVarType := rangeVarType(1, len(dpc.interfaceIdx))
 	dpc.fzModel.AddVariableArray(srcIntfcVarname, moduleInterfaceVarType, pathLength, false, true)
 	dpc.fzModel.AddVariableArray(sinkIntfcVarname, moduleInterfaceVarType, pathLength, false, true)
 
@@ -319,6 +319,10 @@ func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen i
 		modCap := dpc.modulesCapabilities[modCapIdx-1]
 		clusterIdx, _ := strconv.Atoi(clusterSolution[pathPos])
 		saIdx, _ := strconv.Atoi(saSolution[pathPos])
+		sa := appApi.FybrikStorageAccountSpec{}
+		if saIdx > 0 { // reacll that a value of 0 means no storage account
+			sa = dpc.env.StorageAccounts[saIdx-1].Spec
+		}
 		sinkIntfcIdx, _ := strconv.Atoi(sinkIntfcSolution[pathPos])
 		sinkNode := &app.Node{Connection: dpc.reverseIntfcMap[sinkIntfcIdx]}
 		edge := app.Edge{Module: modCap.module, CapabilityIndex: modCap.capabilityIdx, Source: srcNode, Sink: sinkNode}
@@ -326,7 +330,7 @@ func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen i
 			Edge:           edge,
 			Actions:        dpc.getSolutionActionsAtPos(solverSolution, pathPos),
 			Cluster:        dpc.env.Clusters[clusterIdx-1].Name,
-			StorageAccount: dpc.env.StorageAccounts[saIdx-1].Spec,
+			StorageAccount: sa,
 		}
 		solution.DataPath = append(solution.DataPath, &resolvedEdge)
 		srcNode = sinkNode
@@ -341,11 +345,11 @@ func getActionVarname(action taxonomy.Action) string {
 	return fmt.Sprintf("action%s", action.Name)
 }
 
-func rangeVarType(rangeEnd int) string {
-	if rangeEnd < 1 {
-		rangeEnd = 1
+func rangeVarType(rangeStart, rangeEnd int) string {
+	if rangeEnd < rangeStart {
+		rangeEnd = rangeStart
 	}
-	return "1.." + strconv.Itoa(rangeEnd)
+	return fmt.Sprintf("%d..%d", rangeStart, rangeEnd)
 }
 
 func varAtPos(variable string, pos int) string {
