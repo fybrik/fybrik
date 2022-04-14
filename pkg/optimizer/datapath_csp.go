@@ -15,30 +15,36 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster"
 )
 
+// Names of the primary variables on which we need to take decisions
+// Each variable is an array of ints. The i-th cell in the array represents a decision for the i-th Node/Edge in the data path
 const (
-	modCapVarname    = "moduleCapability"
-	clusterVarname   = "moduleCluster"
-	saVarname        = "storageAccount"
-	srcIntfcVarname  = "moduleSourceInterface"
-	sinkIntfcVarname = "moduleSinkInterface"
+	modCapVarname    = "moduleCapability"      // Var's value says which capability of which module to use (on each Edge)
+	clusterVarname   = "moduleCluster"         // Var's value says which of the available clusters to use (on each Edge)
+	saVarname        = "storageAccount"        // Var's value says which storage account to use (0 means no sa)
+	srcIntfcVarname  = "moduleSourceInterface" // Var's value says which interface to use as source
+	sinkIntfcVarname = "moduleSinkInterface"   // Var's value says which interface to use as sink
 )
 
+// Couples together a module and one of its capabilities
 type moduleAndCapability struct {
 	module        *appApi.FybrikModule
 	capability    *appApi.ModuleCapability
-	capabilityIdx int
+	capabilityIdx int // The index of capability in module's spec
 }
 
+// The main class for producing a CSP from data-path constraints and for decoding solver's solutions
 type DataPathCSP struct {
 	problemData         *app.DataInfo
 	env                 *app.Environment
 	modulesCapabilities []moduleAndCapability       // An enumeration of allowed capabilities in all modules
 	interfaceIdx        map[taxonomy.Interface]int  // gives an index for each unique interface
-	reverseIntfcMap     map[int]*taxonomy.Interface // This will be needed when decoding the solution
-	indicators          map[string]bool             // indicators used as part of the problem (to prevent redefinition)
+	reverseIntfcMap     map[int]*taxonomy.Interface // The reverse mapping (needed when decoding the solution)
+	indicators          map[string]bool             // indicator vars used as part of the problem (to prevent redefinition)
 	fzModel             *FlatZincModel
 }
 
+// The ctor also enumerates all available (module x capabilities) and all available interfaces
+// The generated enumerations are listed at the header of the FlatZinc model
 func NewDataPathCSP(problemData *app.DataInfo, env *app.Environment) *DataPathCSP {
 	dpCSP := DataPathCSP{problemData: problemData, env: env, fzModel: NewFlatZincModel()}
 	dpCSP.interfaceIdx = map[taxonomy.Interface]int{}
@@ -47,8 +53,8 @@ func NewDataPathCSP(problemData *app.DataInfo, env *app.Environment) *DataPathCS
 		Protocol:   dpCSP.problemData.DataDetails.Details.Connection.Name,
 		DataFormat: dpCSP.problemData.DataDetails.Details.DataFormat,
 	}
-	dpCSP.addInterfaceToMap(&dataSetIntfc)
-	dpCSP.addInterfaceToMap(&dpCSP.problemData.Context.Requirements.Interface)
+	dpCSP.addInterfaceToMaps(&dataSetIntfc)
+	dpCSP.addInterfaceToMaps(&dpCSP.problemData.Context.Requirements.Interface)
 
 	dpCSP.fzModel.AddHeaderComment("Encoding of modules and their capabilities:")
 	comment := ""
@@ -57,7 +63,7 @@ func NewDataPathCSP(problemData *app.DataInfo, env *app.Environment) *DataPathCS
 			modCap := moduleAndCapability{module, &module.Spec.Capabilities[idx], idx}
 			if dpCSP.moduleCapabilityAllowedByRestrictions(modCap) {
 				dpCSP.modulesCapabilities = append(dpCSP.modulesCapabilities, modCap)
-				dpCSP.addModCapInterfacesToMap(modCap)
+				dpCSP.addModCapInterfacesToMaps(modCap)
 				comment = strconv.Itoa(len(dpCSP.modulesCapabilities))
 			} else {
 				comment = "<forbidden>"
@@ -75,14 +81,16 @@ func NewDataPathCSP(problemData *app.DataInfo, env *app.Environment) *DataPathCS
 	return &dpCSP
 }
 
-func (dpc *DataPathCSP) addModCapInterfacesToMap(modcap moduleAndCapability) {
-	for _, iface := range modcap.capability.SupportedInterfaces {
-		dpc.addInterfaceToMap(iface.Source)
-		dpc.addInterfaceToMap(iface.Sink)
+// Add the interfaces defined in a given module's capability to the 2 interface maps
+func (dpc *DataPathCSP) addModCapInterfacesToMaps(modcap moduleAndCapability) {
+	for _, intfc := range modcap.capability.SupportedInterfaces {
+		dpc.addInterfaceToMaps(intfc.Source)
+		dpc.addInterfaceToMaps(intfc.Sink)
 	}
 }
 
-func (dpc *DataPathCSP) addInterfaceToMap(intfc *taxonomy.Interface) {
+// Add the given interface to the 2 interface maps (but avoid duplicates)
+func (dpc *DataPathCSP) addInterfaceToMaps(intfc *taxonomy.Interface) {
 	_, found := dpc.interfaceIdx[*intfc]
 	if !found {
 		intfcIdx := len(dpc.interfaceIdx) + 1
@@ -91,16 +99,9 @@ func (dpc *DataPathCSP) addInterfaceToMap(intfc *taxonomy.Interface) {
 	}
 }
 
-func (dpc *DataPathCSP) moduleCapabilityAllowedByRestrictions(modcap moduleAndCapability) bool {
-	decision := dpc.problemData.Configuration.ConfigDecisions[modcap.capability.Capability]
-	if decision.Deploy == adminconfig.StatusFalse {
-		return false // this type of capability should never be deployed
-	}
-	return dpc.moduleSatisfiesRestrictions(modcap.module, decision.DeploymentRestrictions.Modules)
-}
-
+// This is the main method for building a FlatZinc CSP out of the data-path parameters and constraints.
 // NOTE: Minimal index of FlatZinc arrays is always 1. Hence, we use 1-based modeling all over the place to avoid confusion
-
+//       The one exception is storage accounts, where a value of 0 means no storage account
 func (dpc *DataPathCSP) BuildFzModel(fzModelFile string, pathLength uint) error {
 	dpc.fzModel.Clear() // This function can be called multiple times - clear vars and constraints from last call
 	// Variables to select the module capability we use on each data-path location
@@ -151,6 +152,16 @@ func (dpc *DataPathCSP) addAdminConfigRestrictions(pathLength int) {
 	}
 }
 
+// Decide if a given module and its given capability satisfy all administrator's restrictions
+func (dpc *DataPathCSP) moduleCapabilityAllowedByRestrictions(modcap moduleAndCapability) bool {
+	decision := dpc.problemData.Configuration.ConfigDecisions[modcap.capability.Capability]
+	if decision.Deploy == adminconfig.StatusFalse {
+		return false // this type of capability should never be deployed
+	}
+	return dpc.moduleSatisfiesRestrictions(modcap.module, decision.DeploymentRestrictions.Modules)
+}
+
+// Decide if a given module satisfies all administrator's restrictions
 func (dpc *DataPathCSP) moduleSatisfiesRestrictions(module *appApi.FybrikModule, restrictions []adminconfig.Restriction) bool {
 	for _, restriction := range restrictions {
 		if !restriction.SatisfiedByResource(dpc.env.AttributeManager, module.Spec, "") {
@@ -160,6 +171,7 @@ func (dpc *DataPathCSP) moduleSatisfiesRestrictions(module *appApi.FybrikModule,
 	return true
 }
 
+// Decide if a given cluster satisfies all administrator's restrictions
 func (dpc *DataPathCSP) clusterSatisfiesRestrictions(cluster multicluster.Cluster, restrictions []adminconfig.Restriction) bool {
 	for _, restriction := range restrictions {
 		if !restriction.SatisfiedByResource(dpc.env.AttributeManager, &cluster, "") {
@@ -169,6 +181,7 @@ func (dpc *DataPathCSP) clusterSatisfiesRestrictions(cluster multicluster.Cluste
 	return true
 }
 
+// Decide if a given storage account satisfies all administrator's restrictions
 func (dpc *DataPathCSP) saSatisfiesRestrictions(sa *appApi.FybrikStorageAccount, restrictions []adminconfig.Restriction) bool {
 	for _, restriction := range restrictions {
 		if !restriction.SatisfiedByResource(dpc.env.AttributeManager, &sa.Spec, sa.Name) {
@@ -189,40 +202,36 @@ func (dpc *DataPathCSP) preventAssignments(variables []string, values []int, pat
 	}
 }
 
-// Adds contraints to prevent the joint assignment of `values` to `variables`
+// Adds constraints to prevent the joint assignment of `values` to `variables`
 func (dpc *DataPathCSP) preventAssignment(variables []string, values []int) {
 	indicators := []string{}
 	for idx, variable := range variables {
-		indicators = append(indicators, dpc.addIndicator(variable, values[idx], "ne"))
+		indicators = append(indicators, dpc.addInequalityIndicator(variable, values[idx]))
 	}
 	indicatorsArray := fznCompoundLiteral(indicators, false)
 	dpc.fzModel.AddConstraint(ArrBoolOrConstraint, []string{indicatorsArray, "true"})
 }
 
-func (dpc *DataPathCSP) addIndicator(variable string, value int, operator string) string {
-	indicator := fmt.Sprintf("ind_%s_%s_%d", variable, operator, value)
+// Adds an indicator variable which is true iff a given integer variable DOES NOT EQUAL a given value
+func (dpc *DataPathCSP) addInequalityIndicator(variable string, value int) string {
+	indicator := fmt.Sprintf("ind_%s_ne_%d", variable, value)
 	indicator = strings.ReplaceAll(indicator, "[", "")
 	indicator = strings.ReplaceAll(indicator, "]", "")
 	if _, defined := dpc.indicators[indicator]; !defined {
 		dpc.fzModel.AddVariable(indicator, BoolType, true, false)
-		constraint := fmt.Sprintf("int_%s_reif", operator)
 		annotation := fmt.Sprintf("defines_var(%s)", indicator)
-		dpc.fzModel.AddConstraint(constraint, []string{variable, strconv.Itoa(value), indicator}, annotation)
+		dpc.fzModel.AddConstraint(IntNotEqConstraint, []string{variable, strconv.Itoa(value), indicator}, annotation)
 	}
 	return indicator
 }
 
 // Make sure that every required governance action is implemented exactly one time.
 func (dpc *DataPathCSP) addGovernanceActionConstraints(pathLength uint) {
-	if len(dpc.problemData.Actions) < 1 {
-		return
-	}
-
 	repeatingOnes := strings.Repeat("1 ", int(pathLength))
 	allOnesArrayLiteral := fznCompoundLiteral(strings.Fields(repeatingOnes), false)
 
 	for _, action := range dpc.problemData.Actions {
-		// Variables to mark specific actions are applied at location i
+		// An *output* array of Booleans variable to mark whether the current action is applied at location i
 		actionVar := getActionVarname(action)
 		dpc.fzModel.AddVariableArray(actionVar, BoolType, pathLength, false, true)
 		// ensuring action is implemented once
@@ -282,6 +291,7 @@ func (dpc *DataPathCSP) addInterfaceConstraints(pathLength uint) {
 		strconv.Itoa(dpc.interfaceIdx[dpc.problemData.Context.Requirements.Interface])})
 }
 
+// Returns which actions should be activated by the module at position pathPos
 func (dpc *DataPathCSP) getSolutionActionsAtPos(solverSolution CPSolution, pathPos int) []taxonomy.Action {
 	actions := []taxonomy.Action{}
 	for _, action := range dpc.problemData.Actions {
@@ -294,6 +304,7 @@ func (dpc *DataPathCSP) getSolutionActionsAtPos(solverSolution CPSolution, pathP
 	return actions
 }
 
+// Translates a solver's solution into a FybrikApplication Solution for a given data-path
 // TODO: better handle error messages
 func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen int) (app.Solution, error) {
 	solverSolution, err := dpc.fzModel.ReadBestSolution(solverSolutionStr)
@@ -320,7 +331,7 @@ func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen i
 		clusterIdx, _ := strconv.Atoi(clusterSolution[pathPos])
 		saIdx, _ := strconv.Atoi(saSolution[pathPos])
 		sa := appApi.FybrikStorageAccountSpec{}
-		if saIdx > 0 { // reacll that a value of 0 means no storage account
+		if saIdx > 0 { // recall that a value of 0 means no storage account
 			sa = dpc.env.StorageAccounts[saIdx-1].Spec
 		}
 		sinkIntfcIdx, _ := strconv.Atoi(sinkIntfcSolution[pathPos])
@@ -356,12 +367,12 @@ func varAtPos(variable string, pos int) string {
 	return fmt.Sprintf("%s[%d]", variable, pos)
 }
 
-func fznCompoundLiteral(vals []string, isSet bool) string {
-	jointVals := strings.Join(vals, ", ")
+func fznCompoundLiteral(values []string, isSet bool) string {
+	jointValues := strings.Join(values, ", ")
 	if isSet {
-		return fmt.Sprintf("{%s}", jointVals)
+		return fmt.Sprintf("{%s}", jointValues)
 	}
-	return fmt.Sprintf("[%s]", jointVals)
+	return fmt.Sprintf("[%s]", jointValues)
 }
 
 func interfacesMatch(intfc1, intfc2 taxonomy.Interface) bool {

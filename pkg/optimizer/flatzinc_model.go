@@ -28,11 +28,12 @@ const (
 	BoolLinEqConstraint = "bool_lin_eq"
 	ArrBoolOrConstraint = "array_bool_or"
 	IntEqConstraint     = "int_eq"
+	IntNotEqConstraint  = "int_ne_reif"
 	SetInConstraint     = "set_in_reif"
 
-	DefinedVarAnnot = "is_defined_var"
-	OutputVarAnnot  = "output_var"
-	OutputArrAnnot  = "output_array([1..%d])"
+	DefinedVarAnnotation = "is_defined_var"
+	OutputVarAnnotation  = "output_var"
+	OutputArrAnnotation  = "output_array([1..%d])"
 )
 
 type Declares interface {
@@ -58,9 +59,9 @@ func (fzp FlatZincParam) Declaration() string {
 
 type Annotations []string
 
-func (annots Annotations) annotationString() string {
+func (annotations Annotations) annotationString() string {
 	// prepending an empty string, because annotations always start with "::"
-	return strings.Join(append([]string{""}, annots...), " :: ")
+	return strings.Join(append([]string{""}, annotations...), " :: ")
 }
 
 // Data for a single FlatZinc variable
@@ -88,9 +89,9 @@ type FlatZincConstraint struct {
 }
 
 // formats a constraint statement in FlatZinc format
-func (cnstr *FlatZincConstraint) constraintStatement() string {
-	exprs := strings.Join(cnstr.Expressions, ", ")
-	return fmt.Sprintf("constraint %s(%s)%s;\n", cnstr.Identifier, exprs, cnstr.annotationString())
+func (constraint *FlatZincConstraint) constraintStatement() string {
+	exprs := strings.Join(constraint.Expressions, ", ")
+	return fmt.Sprintf("constraint %s(%s)%s;\n", constraint.Identifier, exprs, constraint.annotationString())
 }
 
 // FlatZinc solve goal must be one of three types: satisfy, minimize, maximize
@@ -157,10 +158,10 @@ func (fzw *FlatZincModel) AddParamArray(name, vartype string, size uint, assignm
 func (fzw *FlatZincModel) AddVariable(name, vartype string, isDefined, isOutput bool) {
 	annotations := []string{}
 	if isDefined {
-		annotations = append(annotations, DefinedVarAnnot)
+		annotations = append(annotations, DefinedVarAnnotation)
 	}
 	if isOutput {
-		annotations = append(annotations, OutputVarAnnot)
+		annotations = append(annotations, OutputVarAnnotation)
 	}
 	fzw.VarMap[name] = FlatZincVariable{Name: name, Type: vartype, Size: 1, IsArray: false, Annotations: annotations}
 }
@@ -168,10 +169,10 @@ func (fzw *FlatZincModel) AddVariable(name, vartype string, isDefined, isOutput 
 func (fzw *FlatZincModel) AddVariableArray(name, vartype string, size uint, isDefined, isOutput bool) {
 	annotations := []string{}
 	if isDefined {
-		annotations = append(annotations, DefinedVarAnnot)
+		annotations = append(annotations, DefinedVarAnnotation)
 	}
 	if isOutput {
-		annotations = append(annotations, fmt.Sprintf(OutputArrAnnot, size))
+		annotations = append(annotations, fmt.Sprintf(OutputArrAnnotation, size))
 	}
 	fzw.VarMap[name] = FlatZincVariable{Name: name, Type: vartype, Size: size, IsArray: true, Annotations: annotations}
 }
@@ -203,18 +204,18 @@ func (fzw *FlatZincModel) Dump(fileName string) error {
 	}()
 
 	fileContent := fzw.HeaderComments + "\n"
-	for _, fzparam := range mapValuesSortedByKey(fzw.ParamMap) {
-		fileContent += fzparam.Declaration()
+	for _, fzParam := range mapValuesSortedByKey(fzw.ParamMap) {
+		fileContent += fzParam.Declaration()
 	}
 
 	fileContent += "\n"
-	for _, fzvar := range mapValuesSortedByKey(fzw.VarMap) {
-		fileContent += fzvar.Declaration()
+	for _, fzVar := range mapValuesSortedByKey(fzw.VarMap) {
+		fileContent += fzVar.Declaration()
 	}
 
 	fileContent += "\n"
-	for _, cnstr := range fzw.Constraints {
-		fileContent += cnstr.constraintStatement()
+	for _, constraint := range fzw.Constraints {
+		fileContent += constraint.constraintStatement()
 	}
 
 	fileContent += "\n" + fzw.SolveTarget.solveItemStatement()
@@ -255,7 +256,7 @@ func (fzw *FlatZincModel) ReadSolutions(solverOutput string) ([]CPSolution, erro
 	solverOutput = strings.ReplaceAll(solverOutput, "\r", "") // in case we run on Windows
 	lines := strings.Split(solverOutput, "\n")
 	res := []CPSolution{}
-	currSolution := make(CPSolution)
+	currentSolution := make(CPSolution)
 	for lineNum, line := range lines {
 		line = strings.Join(strings.Fields(line), "") // remove all whitespaces
 		switch {
@@ -274,14 +275,14 @@ func (fzw *FlatZincModel) ReadSolutions(solverOutput string) ([]CPSolution, erro
 			err := fmt.Errorf("no solution found. Solver says %s", line) // no solution found (but not UNSAT either)
 			return nil, err
 		case line == "----------":
-			res = append(res, currSolution) // marks the end of current solution
-			currSolution = make(CPSolution) // (and possible the beginning of a new one)
+			res = append(res, currentSolution) // marks the end of current solution
+			currentSolution = CPSolution{}     // (and possible the beginning of a new one)
 		default: // this should be a variable assignment line
 			varName, values, err := parseSolutionLine(line, uint(lineNum))
 			if err != nil {
 				return nil, err
 			}
-			currSolution[varName] = values
+			currentSolution[varName] = values
 		}
 	}
 
