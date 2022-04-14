@@ -45,7 +45,7 @@ var test1SolutionExpected = []CPSolution{
 
 func TestReadingResults(t *testing.T) {
 	myReader := NewFlatZincModel()
-	res, err := myReader.ReadSolutions("testdata/test1.fzn_solution")
+	res, err := myReader.ReadSolutionsFromFile("testdata/test1.fzn_solution")
 	if err != nil {
 		t.Errorf("%s", err)
 	}
@@ -56,7 +56,7 @@ func TestReadingResults(t *testing.T) {
 
 func TestReadingBestResults(t *testing.T) {
 	myReader := NewFlatZincModel()
-	res, err := myReader.ReadBestSolution("testdata/test1.fzn_solution")
+	res, err := myReader.ReadBestSolutionFromFile("testdata/test1.fzn_solution")
 	if err != nil {
 		t.Errorf("%s", err)
 	}
@@ -68,7 +68,7 @@ func TestReadingBestResults(t *testing.T) {
 
 func TestReadingUNSATResults(t *testing.T) {
 	myReader := NewFlatZincModel()
-	res, err := myReader.ReadSolutions("testdata/unsat.fzn_solution")
+	res, err := myReader.ReadSolutionsFromFile("testdata/unsat.fzn_solution")
 	if err != nil {
 		t.Errorf("%s", err)
 	}
@@ -79,7 +79,7 @@ func TestReadingUNSATResults(t *testing.T) {
 
 func TestReadingBestUNSATResults(t *testing.T) {
 	myReader := NewFlatZincModel()
-	res, err := myReader.ReadBestSolution("testdata/unsat.fzn_solution")
+	res, err := myReader.ReadBestSolutionFromFile("testdata/unsat.fzn_solution")
 	if err != nil {
 		t.Errorf("%s", err)
 	}
@@ -90,7 +90,7 @@ func TestReadingBestUNSATResults(t *testing.T) {
 
 func TestReadingUnknownResults(t *testing.T) {
 	myReader := NewFlatZincModel()
-	_, err := myReader.ReadSolutions("testdata/unknown.fzn_solution")
+	_, err := myReader.ReadSolutionsFromFile("testdata/unknown.fzn_solution")
 	if err == nil {
 		t.Errorf("Expecting an error when result is unknown")
 	}
@@ -98,7 +98,7 @@ func TestReadingUnknownResults(t *testing.T) {
 
 func TestReadingBadResults(t *testing.T) {
 	myReader := NewFlatZincModel()
-	_, err := myReader.ReadSolutions("testdata/bad.fzn_solution")
+	_, err := myReader.ReadSolutionsFromFile("testdata/bad.fzn_solution")
 	if err == nil {
 		t.Errorf("Expected a parse error on an ill-formatted file")
 	}

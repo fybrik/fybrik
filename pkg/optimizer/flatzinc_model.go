@@ -248,18 +248,9 @@ func parseSolutionLine(line string, lineNum uint) (string, []string, error) {
 // Represents a solution to the constraints problem - a map from variable names to their value(s) in the solution
 type CPSolution map[string][]string
 
-// Reading a FlatZinc solutions file and returning all solutions as a slice of CPSolution
+// Reading FlatZinc-solver solutions and returning them as a slice of CPSolution
 // If there can be no solution to the constraint problem (UNSAT), returns a slice with a single empty solution
 // Otherwise, must return at least one solution, or return an error
-func (fzw *FlatZincModel) ReadSolutionsFromFile(fileName string) ([]CPSolution, error) {
-	data, err := os.ReadFile(path.Clean(fileName))
-	if err != nil {
-		return nil, fmt.Errorf("failed opening file %s for reading: %w", fileName, err)
-	}
-
-	return fzw.ReadSolutions(string(data))
-}
-
 func (fzw *FlatZincModel) ReadSolutions(solverOutput string) ([]CPSolution, error) {
 	solverOutput = strings.ReplaceAll(solverOutput, "\r", "") // in case we run on Windows
 	lines := strings.Split(solverOutput, "\n")
@@ -300,7 +291,7 @@ func (fzw *FlatZincModel) ReadSolutions(solverOutput string) ([]CPSolution, erro
 	return res, nil
 }
 
-// Reading a FlatZinc solutions file and returning the best solution
+// Reading FlatZinc-solver solutions and returning the best one
 // When a minimize/maximize goal is defined, best solution should be the last solution
 func (fzw *FlatZincModel) ReadBestSolution(solverOutput string) (CPSolution, error) {
 	solutions, err := fzw.ReadSolutions(solverOutput)
@@ -313,7 +304,35 @@ func (fzw *FlatZincModel) ReadBestSolution(solverOutput string) (CPSolution, err
 	return solutions[len(solutions)-1], nil
 }
 
+// Just like ReadSolutions() but reading the solutions from a file
+func (fzw *FlatZincModel) ReadSolutionsFromFile(fileName string) ([]CPSolution, error) {
+	fileContent, err := getFileContent(fileName)
+	if err != nil {
+		return nil, err
+	}
+
+	return fzw.ReadSolutions(fileContent)
+}
+
+// Just like ReadBestSolution() but reading the solutions from a file
+func (fzw *FlatZincModel) ReadBestSolutionFromFile(fileName string) (CPSolution, error) {
+	fileContent, err := getFileContent(fileName)
+	if err != nil {
+		return nil, err
+	}
+
+	return fzw.ReadBestSolution(fileContent)
+}
+
 // helper functions
+
+func getFileContent(fileName string) (string, error) {
+	data, err := os.ReadFile(path.Clean(fileName))
+	if err != nil {
+		return "", fmt.Errorf("failed opening file %s for reading: %w", fileName, err)
+	}
+	return string(data), nil
+}
 
 func mapValuesSortedByKey(mapToSort map[string]Declares) []Declares {
 	keys := make([]string, 0, len(mapToSort))
