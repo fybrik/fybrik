@@ -9,6 +9,8 @@ import (
 	appApi "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/app"
 	"fybrik.io/fybrik/pkg/adminconfig"
+	"fybrik.io/fybrik/pkg/infrastructure"
+	infraattributes "fybrik.io/fybrik/pkg/model/attributes"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
@@ -47,10 +49,17 @@ func getTestEnv() *app.Environment {
 	mod1.Name = "ReaderCopier"
 	mod2.Name = "Reader"
 	moduleMap := map[string]*appApi.FybrikModule{mod1.Name: &mod1, mod2.Name: &mod2}
-	cluster := multicluster.Cluster{}
-	clusters := []multicluster.Cluster{cluster}
+	cluster1 := multicluster.Cluster{Name: "cluster1"}
+	cluster1Cost := taxonomy.InfrastructureElement{Attribute: "ClusterCost", Value: "56", Instance: "cluster1"}
+	cluster2 := multicluster.Cluster{Name: "cluster2"}
+	cluster2Cost := taxonomy.InfrastructureElement{Attribute: "ClusterCost", Value: "1", Instance: "cluster2"}
+	cluster3 := multicluster.Cluster{Name: "cluster3"}
+	cluster3Cost := taxonomy.InfrastructureElement{Attribute: "ClusterCost", Value: "58", Instance: "cluster3"}
+	clusters := []multicluster.Cluster{cluster1, cluster2, cluster3}
 	storageAccounts := []appApi.FybrikStorageAccount{}
-	env := app.Environment{Modules: moduleMap, Clusters: clusters, StorageAccounts: storageAccounts, AttributeManager: nil}
+	infra := infraattributes.Infrastructure{Items: []taxonomy.InfrastructureElement{cluster1Cost, cluster2Cost, cluster3Cost}}
+	attrManager := infrastructure.AttributeManager{Infrastructure: infra}
+	env := app.Environment{Modules: moduleMap, Clusters: clusters, StorageAccounts: storageAccounts, AttributeManager: &attrManager}
 	return &env
 }
 
@@ -62,7 +71,9 @@ func getDataInfo(env *app.Environment) *app.DataInfo {
 
 	decision := adminconfig.Decision{Deploy: adminconfig.StatusFalse}
 	decisionMap := adminconfig.DecisionPerCapabilityMap{"copy": decision}
-	evalOutput := adminconfig.EvaluatorOutput{ConfigDecisions: decisionMap}
+	attrOptimization := adminconfig.AttributeOptimization{Attribute: "ClusterCost", Weight: "1.0", Directive: adminconfig.Minimize}
+	optimizationStrategy := []adminconfig.AttributeOptimization{attrOptimization}
+	evalOutput := adminconfig.EvaluatorOutput{ConfigDecisions: decisionMap, OptimizationStrategy: optimizationStrategy}
 	appRequirements := appApi.DataRequirements{Interface: *env.Modules["Reader"].Spec.Capabilities[0].SupportedInterfaces[1].Sink}
 	appContext := appApi.DataContext{Requirements: appRequirements}
 	dataSetConnection := taxonomy.Connection{Name: "s3"}

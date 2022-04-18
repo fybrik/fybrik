@@ -23,6 +23,8 @@ const (
 	saVarname        = "storageAccount"        // Var's value says which storage account to use (0 means no sa)
 	srcIntfcVarname  = "moduleSourceInterface" // Var's value says which interface to use as source
 	sinkIntfcVarname = "moduleSinkInterface"   // Var's value says which interface to use as sink
+	actionVarname    = "action%s"              // Vars for each required action, say whether the action was applied
+	jointGoalVarname = "jointGoal"             // Var's value indicates the quality of the data path w.r.t. optimization goals
 )
 
 // Couples together a module and one of its capabilities
@@ -78,6 +80,11 @@ func NewDataPathCSP(problemData *app.DataInfo, env *app.Environment) *DataPathCS
 		comment = fmt.Sprintf("%d - Protocol: %s, DataFormat: %s", intfcIdx, intfc.Protocol, intfc.DataFormat)
 		dpCSP.fzModel.AddHeaderComment(comment)
 	}
+	dpCSP.fzModel.AddHeaderComment("Encoding of clusters:")
+	for clusterIdx, cluster := range dpCSP.env.Clusters {
+		comment = fmt.Sprintf("%d - %s", clusterIdx+1, cluster.Name)
+		dpCSP.fzModel.AddHeaderComment(comment)
+	}
 	return &dpCSP
 }
 
@@ -105,24 +112,28 @@ func (dpc *DataPathCSP) addInterfaceToMaps(intfc *taxonomy.Interface) {
 func (dpc *DataPathCSP) BuildFzModel(fzModelFile string, pathLength uint) error {
 	dpc.fzModel.Clear() // This function can be called multiple times - clear vars and constraints from last call
 	// Variables to select the module capability we use on each data-path location
-	moduleCapabilityVarType := rangeVarType(1, len(dpc.modulesCapabilities))
+	moduleCapabilityVarType := fznRangeVarType(1, len(dpc.modulesCapabilities))
 	dpc.fzModel.AddVariableArray(modCapVarname, moduleCapabilityVarType, pathLength, false, true)
 	// Variables to select storage-accounts to place on each data-path location (the value 0 means no storage account)
-	saTypeVarType := rangeVarType(0, len(dpc.env.StorageAccounts))
+	saTypeVarType := fznRangeVarType(0, len(dpc.env.StorageAccounts))
 	dpc.fzModel.AddVariableArray(saVarname, saTypeVarType, pathLength, false, true)
 	// Variables to select the cluster we allocate to each module on the path
-	moduleClusterVarType := rangeVarType(1, len(dpc.env.Clusters))
+	moduleClusterVarType := fznRangeVarType(1, len(dpc.env.Clusters))
 	dpc.fzModel.AddVariableArray(clusterVarname, moduleClusterVarType, pathLength, false, true)
 	// Variables to select the source and sink interface for each module on the path
-	moduleInterfaceVarType := rangeVarType(1, len(dpc.interfaceIdx))
+	moduleInterfaceVarType := fznRangeVarType(1, len(dpc.interfaceIdx))
 	dpc.fzModel.AddVariableArray(srcIntfcVarname, moduleInterfaceVarType, pathLength, false, true)
 	dpc.fzModel.AddVariableArray(sinkIntfcVarname, moduleInterfaceVarType, pathLength, false, true)
 
 	dpc.addGovernanceActionConstraints(pathLength)
 	dpc.addAdminConfigRestrictions(int(pathLength))
 	dpc.addInterfaceConstraints(pathLength)
+	err := dpc.addOptimizationGoals(pathLength)
+	if err != nil {
+		return err
+	}
 
-	err := dpc.fzModel.Dump(fzModelFile)
+	err = dpc.fzModel.Dump(fzModelFile)
 	return err
 }
 
@@ -219,7 +230,7 @@ func (dpc *DataPathCSP) addInequalityIndicator(variable string, value int) strin
 	indicator = strings.ReplaceAll(indicator, "]", "")
 	if _, defined := dpc.indicators[indicator]; !defined {
 		dpc.fzModel.AddVariable(indicator, BoolType, true, false)
-		annotation := fmt.Sprintf("defines_var(%s)", indicator)
+		annotation := GetDefinesVarAnnotation(indicator)
 		dpc.fzModel.AddConstraint(IntNotEqConstraint, []string{variable, strconv.Itoa(value), indicator}, annotation)
 	}
 	return indicator
@@ -227,15 +238,14 @@ func (dpc *DataPathCSP) addInequalityIndicator(variable string, value int) strin
 
 // Make sure that every required governance action is implemented exactly one time.
 func (dpc *DataPathCSP) addGovernanceActionConstraints(pathLength uint) {
-	repeatingOnes := strings.Repeat("1 ", int(pathLength))
-	allOnesArrayLiteral := fznCompoundLiteral(strings.Fields(repeatingOnes), false)
-
+	allOnesArrayLiteral := arrayOfOnes(pathLength)
 	for _, action := range dpc.problemData.Actions {
 		// An *output* array of Booleans variable to mark whether the current action is applied at location i
 		actionVar := getActionVarname(action)
 		dpc.fzModel.AddVariableArray(actionVar, BoolType, pathLength, false, true)
 		// ensuring action is implemented once
-		dpc.fzModel.AddConstraint(BoolLinEqConstraint, []string{allOnesArrayLiteral, actionVar, strconv.Itoa(1)})
+		dpc.fzModel.AddConstraint(
+			BoolLinEqConstraint, []string{fznCompoundLiteral(allOnesArrayLiteral, false), actionVar, strconv.Itoa(1)})
 
 		// accumulate module-capabilities that support the current action
 		moduleCapabilitiesStrs := []string{}
@@ -291,7 +301,115 @@ func (dpc *DataPathCSP) addInterfaceConstraints(pathLength uint) {
 		strconv.Itoa(dpc.interfaceIdx[dpc.problemData.Context.Requirements.Interface])})
 }
 
-// Returns which actions should be activated by the module at position pathPos
+// If there are optimization goals set, defines appropriate variables and sets the CSP-solver optimization goal
+// Otherwise, just sets the CSP-solver goal as "satisfy"
+func (dpc *DataPathCSP) addOptimizationGoals(pathLength uint) error {
+	const floatToIntRatio = 100.
+	goalVarnames := []string{}
+	weights := []string{}
+	for _, goal := range dpc.problemData.Configuration.OptimizationStrategy {
+		goalVarname, weight, err := dpc.addAnOptimizationGoal(goal, pathLength)
+		if err != nil {
+			return err
+		}
+		floatWeight, err := strconv.ParseFloat(weight, 64)
+		if err != nil {
+			return err
+		}
+		goalVarnames = append(goalVarnames, goalVarname)
+		weights = append(weights, strconv.Itoa(int(floatWeight*floatToIntRatio)))
+	}
+
+	if len(goalVarnames) == 0 { // No optimization goals. Just satisfy constraints
+		dpc.fzModel.SetSolveTarget(Satisfy, "")
+	} else {
+		dpc.fzModel.AddVariable(jointGoalVarname, IntType, true, true)
+		dpc.setVarAsWeightedSum(jointGoalVarname, goalVarnames, weights)
+		dpc.fzModel.SetSolveTarget(Minimize, jointGoalVarname)
+	}
+	return nil
+}
+
+// Adds variables to calculate the value of a single optimization goal
+// Returns the variable containing the goal's value and its relative weight (as a string)
+func (dpc *DataPathCSP) addAnOptimizationGoal(goal adminconfig.AttributeOptimization, pathLen uint) (string, string, error) {
+	weight := goal.Weight
+	if goal.Directive == adminconfig.Maximize {
+		weight = "-" + weight
+	}
+
+	attribute := goal.Attribute
+	goalVarname := fmt.Sprintf("goal%s", attribute)
+	dpc.fzModel.AddVariableArray(goalVarname, IntType, pathLen, false, false)
+
+	goalVarNames := []string{}
+	selectorVar, paramArray, err := dpc.getAttributeMapping(attribute)
+	if err != nil {
+		return "", "", err
+	}
+	for pos := 1; pos <= int(pathLen); pos++ {
+		goalAtPos := varAtPos(goalVarname, pos)
+		goalVarNames = append(goalVarNames, goalAtPos)
+		dpc.fzModel.AddConstraint(ArrIntElemConstraint, []string{varAtPos(selectorVar, pos), paramArray, goalAtPos})
+	}
+
+	goalSumVarname := fmt.Sprintf("goal%sSum", attribute)
+	dpc.fzModel.AddVariable(goalSumVarname, IntType, true, false)
+	dpc.setVarAsWeightedSum(goalSumVarname, goalVarNames, arrayOfOnes(pathLen))
+	return goalSumVarname, weight, nil
+}
+
+// This creates a param array with the values of the given attribute for each cluster/storage account instance
+// NOTE: We currently assume all values are integers. Code should be changes if some values are floats.
+func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute) (string, string, error) {
+	resArray := []string{}
+	for _, cluster := range dpc.env.Clusters {
+		infraElement := dpc.env.AttributeManager.GetAttribute(attr, cluster.Name)
+		if infraElement != nil {
+			resArray = append(resArray, infraElement.Value)
+		}
+	}
+	if len(resArray) > 0 {
+		if len(resArray) != len(dpc.env.Clusters) {
+			return "", "", fmt.Errorf("attribute %s is not defined for all clusters", attr)
+		}
+		paramName := "cluster" + string(attr)
+		dpc.fzModel.AddParamArray(paramName, IntType, uint(len(resArray)), fznCompoundLiteral(resArray, false))
+		return clusterVarname, paramName, nil
+	}
+
+	for saIdx := range dpc.env.StorageAccounts {
+		infraElement := dpc.env.AttributeManager.GetAttribute(attr, dpc.env.StorageAccounts[saIdx].Name)
+		if infraElement != nil {
+			resArray = append(resArray, infraElement.Value)
+		}
+	}
+	if len(resArray) > 0 {
+		if len(resArray) != len(dpc.env.StorageAccounts) {
+			return "", "", fmt.Errorf("attribute %s is not defined for all storage accounts", attr)
+		}
+		paramName := "storageAccount" + string(attr)
+		dpc.fzModel.AddParamArray(paramName, IntType, uint(len(resArray)), fznCompoundLiteral(resArray, false))
+		return saVarname, paramName, nil
+	}
+	return "", "", fmt.Errorf("there are no clusters or storage accounts with an attribute %s", attr)
+}
+
+// Sets the CSP int variable sumVarname to be the weighted sum of int elements in arrayToSum.
+// The integer weight of each element is given in the array "weights".
+// FlatZinc doesn't give us a "weighted sum" constraint (and not even sum constraint).
+// The trick is to use the dot-product constraint, add the summing var with weight -1 and force the result to be 0
+func (dpc *DataPathCSP) setVarAsWeightedSum(sumVarname string, arrayToSum, weights []string) {
+	arrayToSum = append(arrayToSum, sumVarname)
+	weights = append(weights, "-1")
+	dpc.fzModel.AddConstraint(
+		IntLinEqConstraint,
+		[]string{fznCompoundLiteral(weights, false), fznCompoundLiteral(arrayToSum, false), "0"},
+		GetDefinesVarAnnotation(sumVarname),
+	)
+}
+
+// Returns which actions should be activated by the module at position pathPos (according to the solver's solution)
 func (dpc *DataPathCSP) getSolutionActionsAtPos(solverSolution CPSolution, pathPos int) []taxonomy.Action {
 	actions := []taxonomy.Action{}
 	for _, action := range dpc.problemData.Actions {
@@ -353,26 +471,16 @@ func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen i
 // ----- helper functions -----
 
 func getActionVarname(action taxonomy.Action) string {
-	return fmt.Sprintf("action%s", action.Name)
-}
-
-func rangeVarType(rangeStart, rangeEnd int) string {
-	if rangeEnd < rangeStart {
-		rangeEnd = rangeStart
-	}
-	return fmt.Sprintf("%d..%d", rangeStart, rangeEnd)
+	return fmt.Sprintf(actionVarname, action.Name)
 }
 
 func varAtPos(variable string, pos int) string {
 	return fmt.Sprintf("%s[%d]", variable, pos)
 }
 
-func fznCompoundLiteral(values []string, isSet bool) string {
-	jointValues := strings.Join(values, ", ")
-	if isSet {
-		return fmt.Sprintf("{%s}", jointValues)
-	}
-	return fmt.Sprintf("[%s]", jointValues)
+func arrayOfOnes(arrayLen uint) []string {
+	repeatingOnes := strings.Repeat("1 ", int(arrayLen))
+	return strings.Fields(repeatingOnes)
 }
 
 func interfacesMatch(intfc1, intfc2 taxonomy.Interface) bool {

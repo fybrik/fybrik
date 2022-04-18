@@ -24,16 +24,21 @@ const (
 	BoolType = "bool"
 	IntType  = "int"
 
-	BoolLeConstraint    = "bool_le"
-	BoolLinEqConstraint = "bool_lin_eq"
-	ArrBoolOrConstraint = "array_bool_or"
-	IntEqConstraint     = "int_eq"
-	IntNotEqConstraint  = "int_ne_reif"
-	SetInConstraint     = "set_in_reif"
+	BoolLeConstraint     = "bool_le"
+	BoolLinEqConstraint  = "bool_lin_eq"
+	ArrBoolOrConstraint  = "array_bool_or"
+	IntEqConstraint      = "int_eq"
+	IntNotEqConstraint   = "int_ne_reif"
+	SetInConstraint      = "set_in_reif"
+	IntLinEqConstraint   = "int_lin_eq"
+	ArrIntElemConstraint = "array_int_element"
 
 	DefinedVarAnnotation = "is_defined_var"
+	DefinesVarAnnotation = "defines_var(%s)"
 	OutputVarAnnotation  = "output_var"
 	OutputArrAnnotation  = "output_array([1..%d])"
+
+	ElementSeparator = ", "
 )
 
 type Declares interface {
@@ -64,6 +69,10 @@ func (annotations Annotations) annotationString() string {
 	return strings.Join(append([]string{""}, annotations...), " :: ")
 }
 
+func GetDefinesVarAnnotation(variable string) string {
+	return fmt.Sprintf(DefinesVarAnnotation, variable)
+}
+
 // Data for a single FlatZinc variable
 type FlatZincVariable struct {
 	Name    string
@@ -90,7 +99,7 @@ type FlatZincConstraint struct {
 
 // formats a constraint statement in FlatZinc format
 func (constraint *FlatZincConstraint) constraintStatement() string {
-	exprs := strings.Join(constraint.Expressions, ", ")
+	exprs := strings.Join(constraint.Expressions, ElementSeparator)
 	return fmt.Sprintf("constraint %s(%s)%s;\n", constraint.Identifier, exprs, constraint.annotationString())
 }
 
@@ -347,4 +356,19 @@ func mapValuesSortedByKey(mapToSort map[string]Declares) []Declares {
 		res = append(res, mapToSort[k])
 	}
 	return res
+}
+
+func fznCompoundLiteral(values []string, isSet bool) string {
+	jointValues := strings.Join(values, ElementSeparator)
+	if isSet {
+		return fmt.Sprintf("{%s}", jointValues)
+	}
+	return fmt.Sprintf("[%s]", jointValues)
+}
+
+func fznRangeVarType(rangeStart, rangeEnd int) string {
+	if rangeEnd < rangeStart {
+		rangeEnd = rangeStart
+	}
+	return fmt.Sprintf("%d..%d", rangeStart, rangeEnd)
 }
