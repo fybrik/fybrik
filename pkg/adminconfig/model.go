@@ -33,7 +33,7 @@ type Restriction struct {
 	Range    *taxonomy.RangeType `json:"range,omitempty"`
 }
 
-// DecisionPolicy is a justification for a policy that consists of a unique id, id of a policy set and a human readable desciption
+// DecisionPolicy is a justification for a policy that consists of a unique id, id of a policy set and a human readable description
 type DecisionPolicy struct {
 	ID          string `json:"ID"`
 	PolicySetID string `json:"policySetID,omitempty"`
