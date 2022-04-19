@@ -74,7 +74,7 @@ func getDataInfo(env *app.Environment) *app.DataInfo {
 	attrOptimization := adminconfig.AttributeOptimization{Attribute: "ClusterCost", Weight: "1.0", Directive: adminconfig.Minimize}
 	optimizationStrategy := []adminconfig.AttributeOptimization{attrOptimization}
 	evalOutput := adminconfig.EvaluatorOutput{ConfigDecisions: decisionMap, OptimizationStrategy: optimizationStrategy}
-	appRequirements := appApi.DataRequirements{Interface: *env.Modules["Reader"].Spec.Capabilities[0].SupportedInterfaces[1].Sink}
+	appRequirements := appApi.DataRequirements{Interface: env.Modules["Reader"].Spec.Capabilities[0].SupportedInterfaces[1].Sink}
 	appContext := appApi.DataContext{Requirements: appRequirements}
 	dataSetConnection := taxonomy.Connection{Name: "s3"}
 	resourceDetails := datacatalog.ResourceDetails{Connection: dataSetConnection, DataFormat: "parquet"}

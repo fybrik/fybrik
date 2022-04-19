@@ -32,7 +32,9 @@ const (
 type moduleAndCapability struct {
 	module        *appApi.FybrikModule
 	capability    *appApi.ModuleCapability
-	capabilityIdx int // The index of capability in module's spec
+	capabilityIdx int  // The index of capability in module's spec
+	virtualSource bool // whether data is consumed via API
+	virtualSink   bool // whether data is transferred in memory via API
 }
 
 // The main class for producing a CSP from data-path constraints and for decoding solver's solutions
@@ -57,16 +59,16 @@ func NewDataPathCSP(problemData *app.DataInfo, env *app.Environment) *DataPathCS
 		DataFormat: dpCSP.problemData.DataDetails.Details.DataFormat,
 	}
 	dpCSP.addInterfaceToMaps(&dataSetIntfc)
-	dpCSP.addInterfaceToMaps(&dpCSP.problemData.Context.Requirements.Interface)
+	dpCSP.addInterfaceToMaps(dpCSP.problemData.Context.Requirements.Interface)
 
 	dpCSP.fzModel.AddHeaderComment("Encoding of modules and their capabilities:")
 	comment := ""
 	for _, module := range env.Modules {
 		for idx, capability := range module.Spec.Capabilities {
-			modCap := moduleAndCapability{module, &module.Spec.Capabilities[idx], idx}
+			modCap := moduleAndCapability{module, &module.Spec.Capabilities[idx], idx, false, false}
 			if dpCSP.moduleCapabilityAllowedByRestrictions(modCap) {
 				dpCSP.modulesCapabilities = append(dpCSP.modulesCapabilities, modCap)
-				dpCSP.addModCapInterfacesToMaps(modCap.capability)
+				dpCSP.addModCapInterfacesToMaps(&modCap)
 				comment = strconv.Itoa(len(dpCSP.modulesCapabilities))
 			} else {
 				comment = "<forbidden>"
@@ -90,22 +92,29 @@ func NewDataPathCSP(problemData *app.DataInfo, env *app.Environment) *DataPathCS
 }
 
 // Add the interfaces defined in a given module's capability to the 2 interface maps
-func (dpc *DataPathCSP) addModCapInterfacesToMaps(modcap *appApi.ModuleCapability) {
-	for _, intfc := range modcap.SupportedInterfaces {
-		dpc.addInterfaceToMaps(intfc.Source)
-		dpc.addInterfaceToMaps(intfc.Sink)
+func (dpc *DataPathCSP) addModCapInterfacesToMaps(modcap *moduleAndCapability) {
+	hasSource, hasSink := false, false
+	capability := modcap.capability
+	for _, intfc := range capability.SupportedInterfaces {
+		if intfc.Source != nil {
+			dpc.addInterfaceToMaps(intfc.Source)
+			hasSource = true
+		}
+		if intfc.Sink != nil {
+			dpc.addInterfaceToMaps(intfc.Sink)
+			hasSink = true
+		}
 	}
-	if modcap.API != nil {
-		apiInterface := &taxonomy.Interface{Protocol: modcap.API.Connection.Name, DataFormat: modcap.API.DataFormat}
+	if (!hasSource || !hasSink) && capability.API != nil {
+		apiInterface := &taxonomy.Interface{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
 		dpc.addInterfaceToMaps(apiInterface)
+		modcap.virtualSource = !hasSource
+		modcap.virtualSink = !hasSink
 	}
 }
 
 // Add the given interface to the 2 interface maps (but avoid duplicates)
 func (dpc *DataPathCSP) addInterfaceToMaps(intfc *taxonomy.Interface) {
-	if intfc == nil {
-		return
-	}
 	_, found := dpc.interfaceIdx[*intfc]
 	if !found {
 		intfcIdx := len(dpc.interfaceIdx) + 1
@@ -336,7 +345,7 @@ func (dpc *DataPathCSP) addInterfaceConstraints(pathLength int) {
 		dpc.fzModel.AddConstraint(IntEqConstraint, []string{varAtPos(sinkIntfcVarname, pathPos), varAtPos(srcIntfcVarname, pathPos+1)})
 	}
 	dpc.fzModel.AddConstraint(IntEqConstraint, []string{varAtPos(sinkIntfcVarname, pathLength),
-		strconv.Itoa(dpc.interfaceIdx[dpc.problemData.Context.Requirements.Interface])})
+		strconv.Itoa(dpc.interfaceIdx[*dpc.problemData.Context.Requirements.Interface])})
 }
 
 // If there are optimization goals set, defines appropriate variables and sets the CSP-solver optimization goal
@@ -491,7 +500,7 @@ func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen i
 			sa = dpc.env.StorageAccounts[saIdx-1].Spec
 		}
 		sinkIntfcIdx, _ := strconv.Atoi(sinkIntfcSolution[pathPos])
-		sinkNode := &app.Node{Connection: dpc.reverseIntfcMap[sinkIntfcIdx]}
+		sinkNode := &app.Node{Connection: dpc.reverseIntfcMap[sinkIntfcIdx], Virtual: modCap.virtualSink}
 		edge := app.Edge{Module: modCap.module, CapabilityIndex: modCap.capabilityIdx, Source: srcNode, Sink: sinkNode}
 		resolvedEdge := app.ResolvedEdge{
 			Edge:           edge,
