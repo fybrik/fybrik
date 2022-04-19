@@ -99,3 +99,25 @@ func TestBuildModel(t *testing.T) {
 		t.Errorf("Failed building a CSP model: %s", err)
 	}
 }
+
+func TestRequiredCapability(t *testing.T) {
+	env := getTestEnv()
+	dataInfo := getDataInfo(env)
+	dataInfo.Configuration.ConfigDecisions["read"] = adminconfig.Decision{Deploy: adminconfig.StatusTrue}
+	dpCSP := NewDataPathCSP(dataInfo, env)
+	err := dpCSP.BuildFzModel("dataPathReadRequired.fzn", 3)
+	if err != nil {
+		t.Errorf("Failed building a CSP model: %s", err)
+	}
+}
+
+func TestRequiredCapabilityMissing(t *testing.T) {
+	env := getTestEnv()
+	dataInfo := getDataInfo(env)
+	dataInfo.Configuration.ConfigDecisions["transform"] = adminconfig.Decision{Deploy: adminconfig.StatusTrue}
+	dpCSP := NewDataPathCSP(dataInfo, env)
+	err := dpCSP.BuildFzModel("dataPath.fzn", 3)
+	if err == nil {
+		t.Error("This test should result in an error - no module has the required capability")
+	}
+}

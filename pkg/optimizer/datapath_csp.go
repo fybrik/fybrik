@@ -23,7 +23,8 @@ const (
 	saVarname        = "storageAccount"        // Var's value says which storage account to use (0 means no sa)
 	srcIntfcVarname  = "moduleSourceInterface" // Var's value says which interface to use as source
 	sinkIntfcVarname = "moduleSinkInterface"   // Var's value says which interface to use as sink
-	actionVarname    = "action%s"              // Vars for each required action, say whether the action was applied
+	actionVarname    = "action_%s"             // Vars for each required action, say whether the action was applied
+	capVarname       = "capability_%s"         // Vars for each required capability, say whether capability was applied
 	jointGoalVarname = "jointGoal"             // Var's value indicates the quality of the data path w.r.t. optimization goals
 )
 
@@ -65,7 +66,7 @@ func NewDataPathCSP(problemData *app.DataInfo, env *app.Environment) *DataPathCS
 			modCap := moduleAndCapability{module, &module.Spec.Capabilities[idx], idx}
 			if dpCSP.moduleCapabilityAllowedByRestrictions(modCap) {
 				dpCSP.modulesCapabilities = append(dpCSP.modulesCapabilities, modCap)
-				dpCSP.addModCapInterfacesToMaps(modCap)
+				dpCSP.addModCapInterfacesToMaps(modCap.capability)
 				comment = strconv.Itoa(len(dpCSP.modulesCapabilities))
 			} else {
 				comment = "<forbidden>"
@@ -89,15 +90,22 @@ func NewDataPathCSP(problemData *app.DataInfo, env *app.Environment) *DataPathCS
 }
 
 // Add the interfaces defined in a given module's capability to the 2 interface maps
-func (dpc *DataPathCSP) addModCapInterfacesToMaps(modcap moduleAndCapability) {
-	for _, intfc := range modcap.capability.SupportedInterfaces {
+func (dpc *DataPathCSP) addModCapInterfacesToMaps(modcap *appApi.ModuleCapability) {
+	for _, intfc := range modcap.SupportedInterfaces {
 		dpc.addInterfaceToMaps(intfc.Source)
 		dpc.addInterfaceToMaps(intfc.Sink)
+	}
+	if modcap.API != nil {
+		apiInterface := &taxonomy.Interface{Protocol: modcap.API.Connection.Name, DataFormat: modcap.API.DataFormat}
+		dpc.addInterfaceToMaps(apiInterface)
 	}
 }
 
 // Add the given interface to the 2 interface maps (but avoid duplicates)
 func (dpc *DataPathCSP) addInterfaceToMaps(intfc *taxonomy.Interface) {
+	if intfc == nil {
+		return
+	}
 	_, found := dpc.interfaceIdx[*intfc]
 	if !found {
 		intfcIdx := len(dpc.interfaceIdx) + 1
@@ -109,7 +117,7 @@ func (dpc *DataPathCSP) addInterfaceToMaps(intfc *taxonomy.Interface) {
 // This is the main method for building a FlatZinc CSP out of the data-path parameters and constraints.
 // NOTE: Minimal index of FlatZinc arrays is always 1. Hence, we use 1-based modeling all over the place to avoid confusion
 //       The one exception is storage accounts, where a value of 0 means no storage account
-func (dpc *DataPathCSP) BuildFzModel(fzModelFile string, pathLength uint) error {
+func (dpc *DataPathCSP) BuildFzModel(fzModelFile string, pathLength int) error {
 	dpc.fzModel.Clear() // This function can be called multiple times - clear vars and constraints from last call
 	// Variables to select the module capability we use on each data-path location
 	moduleCapabilityVarType := fznRangeVarType(1, len(dpc.modulesCapabilities))
@@ -126,9 +134,12 @@ func (dpc *DataPathCSP) BuildFzModel(fzModelFile string, pathLength uint) error 
 	dpc.fzModel.AddVariableArray(sinkIntfcVarname, moduleInterfaceVarType, pathLength, false, true)
 
 	dpc.addGovernanceActionConstraints(pathLength)
-	dpc.addAdminConfigRestrictions(int(pathLength))
+	err := dpc.addAdminConfigRestrictions(pathLength)
+	if err != nil {
+		return err
+	}
 	dpc.addInterfaceConstraints(pathLength)
-	err := dpc.addOptimizationGoals(pathLength)
+	err = dpc.addOptimizationGoals(pathLength)
 	if err != nil {
 		return err
 	}
@@ -138,15 +149,18 @@ func (dpc *DataPathCSP) BuildFzModel(fzModelFile string, pathLength uint) error 
 }
 
 // enforce restrictions from admin configuration decisions:
-// a. cluster satisfies restrictions for the selected capability
-// b. storage account satisfies restrictions for the selected capability
-func (dpc *DataPathCSP) addAdminConfigRestrictions(pathLength int) {
+// a. Ensure capabilities that must be deployed are indeed deployed
+// b. cluster satisfies restrictions for the selected capability
+// c. storage account satisfies restrictions for the selected capability
+func (dpc *DataPathCSP) addAdminConfigRestrictions(pathLength int) error {
 	for decCapability := range dpc.problemData.Configuration.ConfigDecisions {
+		decision := dpc.problemData.Configuration.ConfigDecisions[decCapability]
+		relevantModCaps := []string{}
 		for modCapIdx, moduleCap := range dpc.modulesCapabilities {
 			if moduleCap.capability.Capability != decCapability {
 				continue
 			}
-			decision := dpc.problemData.Configuration.ConfigDecisions[decCapability]
+			relevantModCaps = append(relevantModCaps, strconv.Itoa(modCapIdx+1))
 			for clusterIdx, cluster := range dpc.env.Clusters {
 				if !dpc.clusterSatisfiesRestrictions(cluster, decision.DeploymentRestrictions.Clusters) {
 					dpc.preventAssignments([]string{modCapVarname, clusterVarname},
@@ -160,6 +174,30 @@ func (dpc *DataPathCSP) addAdminConfigRestrictions(pathLength int) {
 				}
 			}
 		}
+		if decision.Deploy == adminconfig.StatusTrue { // this capability must be deployed
+			if len(relevantModCaps) == 0 {
+				return fmt.Errorf("capability %v is required, but it is not supported by any module", decCapability)
+			}
+			dpc.ensureCapabilityIsDeployed(decCapability, relevantModCaps, pathLength)
+		}
+	}
+	return nil
+}
+
+func (dpc *DataPathCSP) ensureCapabilityIsDeployed(capability taxonomy.Capability, modCaps []string, pathLength int) {
+	reqCapVarname := fmt.Sprintf(capVarname, capability)
+	dpc.fzModel.AddVariableArray(reqCapVarname, BoolType, pathLength, false, true)
+	// TODO: capability should be applied AT LEAST once, not EXACTLY once
+	dpc.fzModel.AddConstraint(
+		BoolLinLeConstraint,
+		[]string{fznCompoundLiteral(arrayOfSameInt(-1, pathLength), false), reqCapVarname, strconv.Itoa(-1)},
+	)
+
+	for pos := 1; pos <= pathLength; pos++ {
+		dpc.fzModel.AddConstraint(
+			SetInConstraint,
+			[]string{varAtPos(modCapVarname, pos), fznCompoundLiteral(modCaps, true), varAtPos(reqCapVarname, pos)},
+		)
 	}
 }
 
@@ -220,7 +258,7 @@ func (dpc *DataPathCSP) preventAssignment(variables []string, values []int) {
 		indicators = append(indicators, dpc.addInequalityIndicator(variable, values[idx]))
 	}
 	indicatorsArray := fznCompoundLiteral(indicators, false)
-	dpc.fzModel.AddConstraint(ArrBoolOrConstraint, []string{indicatorsArray, "true"})
+	dpc.fzModel.AddConstraint(ArrBoolOrConstraint, []string{indicatorsArray, TrueValue})
 }
 
 // Adds an indicator variable which is true iff a given integer variable DOES NOT EQUAL a given value
@@ -237,8 +275,8 @@ func (dpc *DataPathCSP) addInequalityIndicator(variable string, value int) strin
 }
 
 // Make sure that every required governance action is implemented exactly one time.
-func (dpc *DataPathCSP) addGovernanceActionConstraints(pathLength uint) {
-	allOnesArrayLiteral := arrayOfOnes(pathLength)
+func (dpc *DataPathCSP) addGovernanceActionConstraints(pathLength int) {
+	allOnesArrayLiteral := arrayOfSameInt(1, pathLength)
 	for _, action := range dpc.problemData.Actions {
 		// An *output* array of Booleans variable to mark whether the current action is applied at location i
 		actionVar := getActionVarname(action)
@@ -259,7 +297,7 @@ func (dpc *DataPathCSP) addGovernanceActionConstraints(pathLength uint) {
 		modCapsSupportingAction := fznCompoundLiteral(moduleCapabilitiesStrs, true)
 
 		// add vars (and constraints) indicating if an action is supported at each path location
-		for pathPos := 1; pathPos <= int(pathLength); pathPos++ {
+		for pathPos := 1; pathPos <= pathLength; pathPos++ {
 			modCapAtPos := varAtPos(modCapVarname, pathPos)
 			actSupportedVarname := fmt.Sprintf("action%sSupportedAt%d", action.Name, pathPos)
 			dpc.fzModel.AddVariable(actSupportedVarname, BoolType, true, false)
@@ -270,7 +308,7 @@ func (dpc *DataPathCSP) addGovernanceActionConstraints(pathLength uint) {
 }
 
 // prevent setting source/sink interfaces which are not supported by module capability
-func (dpc *DataPathCSP) addInterfaceConstraints(pathLength uint) {
+func (dpc *DataPathCSP) addInterfaceConstraints(pathLength int) {
 	for intfc, intfcIdx := range dpc.interfaceIdx {
 		for modCapIdx, modCap := range dpc.modulesCapabilities {
 			modcapSupportsIntfcSrc := false
@@ -284,26 +322,26 @@ func (dpc *DataPathCSP) addInterfaceConstraints(pathLength uint) {
 				}
 			}
 			if !modcapSupportsIntfcSrc {
-				dpc.preventAssignments([]string{modCapVarname, srcIntfcVarname}, []int{modCapIdx + 1, intfcIdx}, int(pathLength))
+				dpc.preventAssignments([]string{modCapVarname, srcIntfcVarname}, []int{modCapIdx + 1, intfcIdx}, pathLength)
 			}
 			if !modcapSupportsIntfcSink {
-				dpc.preventAssignments([]string{modCapVarname, sinkIntfcVarname}, []int{modCapIdx + 1, intfcIdx}, int(pathLength))
+				dpc.preventAssignments([]string{modCapVarname, sinkIntfcVarname}, []int{modCapIdx + 1, intfcIdx}, pathLength)
 			}
 		}
 	}
 
 	// ensuring interface matching along the datapath from dataset to workload
 	dpc.fzModel.AddConstraint(IntEqConstraint, []string{varAtPos(srcIntfcVarname, 1), strconv.Itoa(1)})
-	for pathPos := 1; pathPos < int(pathLength); pathPos++ {
+	for pathPos := 1; pathPos < pathLength; pathPos++ {
 		dpc.fzModel.AddConstraint(IntEqConstraint, []string{varAtPos(sinkIntfcVarname, pathPos), varAtPos(srcIntfcVarname, pathPos+1)})
 	}
-	dpc.fzModel.AddConstraint(IntEqConstraint, []string{varAtPos(sinkIntfcVarname, int(pathLength)),
+	dpc.fzModel.AddConstraint(IntEqConstraint, []string{varAtPos(sinkIntfcVarname, pathLength),
 		strconv.Itoa(dpc.interfaceIdx[dpc.problemData.Context.Requirements.Interface])})
 }
 
 // If there are optimization goals set, defines appropriate variables and sets the CSP-solver optimization goal
 // Otherwise, just sets the CSP-solver goal as "satisfy"
-func (dpc *DataPathCSP) addOptimizationGoals(pathLength uint) error {
+func (dpc *DataPathCSP) addOptimizationGoals(pathLength int) error {
 	const floatToIntRatio = 100.
 	goalVarnames := []string{}
 	weights := []string{}
@@ -332,7 +370,7 @@ func (dpc *DataPathCSP) addOptimizationGoals(pathLength uint) error {
 
 // Adds variables to calculate the value of a single optimization goal
 // Returns the variable containing the goal's value and its relative weight (as a string)
-func (dpc *DataPathCSP) addAnOptimizationGoal(goal adminconfig.AttributeOptimization, pathLen uint) (string, string, error) {
+func (dpc *DataPathCSP) addAnOptimizationGoal(goal adminconfig.AttributeOptimization, pathLen int) (string, string, error) {
 	weight := goal.Weight
 	if goal.Directive == adminconfig.Maximize {
 		weight = "-" + weight
@@ -347,7 +385,7 @@ func (dpc *DataPathCSP) addAnOptimizationGoal(goal adminconfig.AttributeOptimiza
 	if err != nil {
 		return "", "", err
 	}
-	for pos := 1; pos <= int(pathLen); pos++ {
+	for pos := 1; pos <= pathLen; pos++ {
 		goalAtPos := varAtPos(goalVarname, pos)
 		goalVarNames = append(goalVarNames, goalAtPos)
 		dpc.fzModel.AddConstraint(ArrIntElemConstraint, []string{varAtPos(selectorVar, pos), paramArray, goalAtPos})
@@ -355,7 +393,7 @@ func (dpc *DataPathCSP) addAnOptimizationGoal(goal adminconfig.AttributeOptimiza
 
 	goalSumVarname := fmt.Sprintf("goal%sSum", attribute)
 	dpc.fzModel.AddVariable(goalSumVarname, IntType, true, false)
-	dpc.setVarAsWeightedSum(goalSumVarname, goalVarNames, arrayOfOnes(pathLen))
+	dpc.setVarAsWeightedSum(goalSumVarname, goalVarNames, arrayOfSameInt(1, pathLen))
 	return goalSumVarname, weight, nil
 }
 
@@ -374,7 +412,7 @@ func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute) (string, st
 			return "", "", fmt.Errorf("attribute %s is not defined for all clusters", attr)
 		}
 		paramName := "cluster" + string(attr)
-		dpc.fzModel.AddParamArray(paramName, IntType, uint(len(resArray)), fznCompoundLiteral(resArray, false))
+		dpc.fzModel.AddParamArray(paramName, IntType, len(resArray), fznCompoundLiteral(resArray, false))
 		return clusterVarname, paramName, nil
 	}
 
@@ -389,7 +427,7 @@ func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute) (string, st
 			return "", "", fmt.Errorf("attribute %s is not defined for all storage accounts", attr)
 		}
 		paramName := "storageAccount" + string(attr)
-		dpc.fzModel.AddParamArray(paramName, IntType, uint(len(resArray)), fznCompoundLiteral(resArray, false))
+		dpc.fzModel.AddParamArray(paramName, IntType, len(resArray), fznCompoundLiteral(resArray, false))
 		return saVarname, paramName, nil
 	}
 	return "", "", fmt.Errorf("there are no clusters or storage accounts with an attribute %s", attr)
@@ -415,7 +453,7 @@ func (dpc *DataPathCSP) getSolutionActionsAtPos(solverSolution CPSolution, pathP
 	for _, action := range dpc.problemData.Actions {
 		actionVarname := getActionVarname(action)
 		actionSolution := solverSolution[actionVarname]
-		if actionSolution[pathPos] == "true" {
+		if actionSolution[pathPos] == TrueValue {
 			actions = append(actions, action)
 		}
 	}
@@ -478,9 +516,8 @@ func varAtPos(variable string, pos int) string {
 	return fmt.Sprintf("%s[%d]", variable, pos)
 }
 
-func arrayOfOnes(arrayLen uint) []string {
-	repeatingOnes := strings.Repeat("1 ", int(arrayLen))
-	return strings.Fields(repeatingOnes)
+func arrayOfSameInt(num, arrayLen int) []string {
+	return strings.Fields(strings.Repeat(strconv.Itoa(num)+" ", arrayLen))
 }
 
 func interfacesMatch(intfc1, intfc2 taxonomy.Interface) bool {

@@ -36,7 +36,7 @@ func NewOptimizer(env *app.Environment, problemData *app.DataInfo, solverPath st
 func (opt *Optimizer) Solve() (app.Solution, error) {
 	for pathLen := 1; pathLen < MaxDataPathDepth; pathLen++ {
 		fzModelFile := fmt.Sprintf("DataPathCSP%s_%d.fzn", opt.problemData.Context.DataSetID, pathLen)
-		err := opt.dpc.BuildFzModel(fzModelFile, uint(pathLen))
+		err := opt.dpc.BuildFzModel(fzModelFile, pathLen)
 		if err != nil {
 			return app.Solution{}, err
 		}

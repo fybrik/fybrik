@@ -21,11 +21,15 @@ The FlatZinc specification: https://www.minizinc.org/doc-latest/en/fzn-spec.html
 */
 
 const (
+	TrueValue  = "true"
+	FalseValue = "false"
+
 	BoolType = "bool"
 	IntType  = "int"
 
 	BoolLeConstraint     = "bool_le"
 	BoolLinEqConstraint  = "bool_lin_eq"
+	BoolLinLeConstraint  = "bool_lin_le"
 	ArrBoolOrConstraint  = "array_bool_or"
 	IntEqConstraint      = "int_eq"
 	IntNotEqConstraint   = "int_ne_reif"
@@ -49,7 +53,7 @@ type Declares interface {
 type FlatZincParam struct {
 	Name       string
 	Type       string
-	Size       uint
+	Size       int
 	IsArray    bool // (IsArray == false) implies (Size == 1)
 	Assignment string
 }
@@ -77,7 +81,7 @@ func GetDefinesVarAnnotation(variable string) string {
 type FlatZincVariable struct {
 	Name    string
 	Type    string
-	Size    uint
+	Size    int
 	IsArray bool // (IsArray == false) implies (Size == 1)
 	Annotations
 }
@@ -160,7 +164,7 @@ func (fzw *FlatZincModel) AddParam(name, vartype, assignment string) {
 	fzw.ParamMap[name] = FlatZincParam{Name: name, Type: vartype, Size: 1, IsArray: false, Assignment: assignment}
 }
 
-func (fzw *FlatZincModel) AddParamArray(name, vartype string, size uint, assignment string) {
+func (fzw *FlatZincModel) AddParamArray(name, vartype string, size int, assignment string) {
 	fzw.ParamMap[name] = FlatZincParam{Name: name, Type: vartype, Size: size, IsArray: true, Assignment: assignment}
 }
 
@@ -175,7 +179,7 @@ func (fzw *FlatZincModel) AddVariable(name, vartype string, isDefined, isOutput 
 	fzw.VarMap[name] = FlatZincVariable{Name: name, Type: vartype, Size: 1, IsArray: false, Annotations: annotations}
 }
 
-func (fzw *FlatZincModel) AddVariableArray(name, vartype string, size uint, isDefined, isOutput bool) {
+func (fzw *FlatZincModel) AddVariableArray(name, vartype string, size int, isDefined, isOutput bool) {
 	annotations := []string{}
 	if isDefined {
 		annotations = append(annotations, DefinedVarAnnotation)
@@ -235,7 +239,7 @@ func (fzw *FlatZincModel) Dump(fileName string) error {
 }
 
 // Parses a single variable assignment line in a FlatZinc solution file. Returns the variable name and its value(s)
-func parseSolutionLine(line string, lineNum uint) (string, []string, error) {
+func parseSolutionLine(line string, lineNum int) (string, []string, error) {
 	err := fmt.Errorf("parse error on line %d: %s", lineNum, line)
 	lineParts := strings.Split(line, "=")
 	if len(lineParts) != 2 {
@@ -287,7 +291,7 @@ func (fzw *FlatZincModel) ReadSolutions(solverOutput string) ([]CPSolution, erro
 			res = append(res, currentSolution) // marks the end of current solution
 			currentSolution = CPSolution{}     // (and possible the beginning of a new one)
 		default: // this should be a variable assignment line
-			varName, values, err := parseSolutionLine(line, uint(lineNum))
+			varName, values, err := parseSolutionLine(line, lineNum)
 			if err != nil {
 				return nil, err
 			}
