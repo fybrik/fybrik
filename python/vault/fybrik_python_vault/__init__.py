@@ -5,12 +5,6 @@
 import requests
 from fybrik_python_logging import logger, Error, DataSetID, ForUser
 
-def test_func():
-    print("test func")
-    logger.trace('authenticating against vault using a JWT token',
-        extra={'full_auth_path': str("full_auth_path"),
-               DataSetID: "datasetID"})
-
 
 def get_jwt_from_file(file_name):
     """
@@ -37,6 +31,13 @@ def vault_jwt_auth(jwt, vault_address, vault_path, role, datasetID):
 
 def get_raw_secret_from_vault(jwt, secret_path, vault_address, vault_path, role, datasetID):
     """Get a raw secret from vault by providing a valid jwt token"""
+    logger.trace('getting vault credentials',
+        extra={'vault_address': str(vault_address),
+               'secret_path': str(secret_path),
+               'vault_path': str(vault_path),
+               'role': str(role),
+               DataSetID: datasetID,
+               ForUser: True})
     vault_auth_response = vault_jwt_auth(jwt, vault_address, vault_path, role, datasetID)
     if vault_auth_response is None:
         logger.error("Empty vault authorization response",
@@ -72,14 +73,6 @@ def get_credentials_from_vault(vault_credentials, datasetID):
     secret_path = vault_credentials.get('secretPath', '/v1/secret/data/cred')
     vault_auth = vault_credentials.get('authPath', '/v1/auth/kubernetes/login')
     role = vault_credentials.get('role', 'demo')
-    logger.trace('getting vault credentials',
-        extra={'jwt_file_path': str(jwt_file_path),
-               'vault_address': str(vault_address),
-               'secret_path': str(secret_path),
-               'vault_auth': str(vault_auth),
-               'role': str(role),
-               DataSetID: datasetID,
-               ForUser: True})
     credentials = get_raw_secret_from_vault(jwt, secret_path, vault_address, vault_auth, role, datasetID)
     if not credentials:
         raise ValueError("Vault credentials are missing")
