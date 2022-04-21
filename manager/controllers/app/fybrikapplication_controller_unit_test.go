@@ -314,7 +314,7 @@ func TestNoReadPath(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = v1alpha1.DataContext{
 		DataSetID:    "db2/allow-dataset",
-		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.JdbcDb2}},
+		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.JdbcDB2}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("3")

@@ -11,7 +11,7 @@ import (
 const (
 	S3          taxonomy.ConnectionType = "s3"
 	Kafka       taxonomy.ConnectionType = "kafka"
-	JdbcDb2     taxonomy.ConnectionType = "db2"
+	JdbcDB2     taxonomy.ConnectionType = "db2"
 	ArrowFlight taxonomy.ConnectionType = "fybrik-arrow-flight"
 
 	Parquet taxonomy.DataFormat = "parquet"

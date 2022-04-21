@@ -229,10 +229,10 @@ func TestReadModuleSource(t *testing.T) {
 	addModule(env, readModuleS3)
 	readModuleDB2 := readModuleS3.DeepCopy()
 	readModuleDB2.Name = "readDB2"
-	readModuleDB2.Spec.Capabilities[0].SupportedInterfaces[0] = v1alpha1.ModuleInOut{Source: &taxonomy.Interface{Protocol: v1alpha1.JdbcDb2}}
+	readModuleDB2.Spec.Capabilities[0].SupportedInterfaces[0] = v1alpha1.ModuleInOut{Source: &taxonomy.Interface{Protocol: v1alpha1.JdbcDB2}}
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: "xyz"}})
 	p := PathBuilder{Log: &testLog, Env: env, Asset: createReadRequest()}
-	p.Asset.DataDetails.Details.Connection.Name = v1alpha1.JdbcDb2
+	p.Asset.DataDetails.Details.Connection.Name = v1alpha1.JdbcDB2
 	p.Asset.DataDetails.Details.DataFormat = ""
 	_, err := p.solve()
 	g.Expect(err).To(gomega.HaveOccurred())
@@ -258,7 +258,7 @@ func TestReadAndCopyWithTransforms(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account.Spec.Region)}})
 	p := PathBuilder{Log: &testLog, Env: env, Asset: createReadRequest()}
-	p.Asset.DataDetails.Details.Connection.Name = v1alpha1.JdbcDb2
+	p.Asset.DataDetails.Details.Connection.Name = v1alpha1.JdbcDB2
 	p.Asset.DataDetails.Details.DataFormat = ""
 	addModule(p.Env, copyModule)
 	addStorageAccount(p.Env, account)

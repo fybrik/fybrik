@@ -97,10 +97,10 @@ func NewTestCatalog() *DataCatalogDummy {
 	}
 
 	db2Connection := taxonomy.Connection{
-		Name: v1alpha1.JdbcDb2,
+		Name: v1alpha1.JdbcDB2,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				string(v1alpha1.JdbcDb2): map[string]interface{}{
+				string(v1alpha1.JdbcDB2): map[string]interface{}{
 					"database": "test-db",
 					"table":    "test-table",
 					"url":      "dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net",
@@ -170,7 +170,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 	}
 
-	dummyCatalog.dataDetails[string(v1alpha1.JdbcDb2)] = datacatalog.GetAssetResponse{
+	dummyCatalog.dataDetails[string(v1alpha1.JdbcDB2)] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      dummyResourceName,
 			Geography: geo,
