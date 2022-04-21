@@ -10,7 +10,7 @@ import (
 	"log"
 	"strings"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
@@ -42,7 +42,7 @@ func (d *DataCatalogDummy) GetAssetInfo(in *datacatalog.GetAssetRequest, creds s
 		return &dataDetails, nil
 	}
 
-	return nil, errors.New(app.InvalidAssetID)
+	return nil, errors.New(v1alpha1.InvalidAssetID)
 }
 
 func (d *DataCatalogDummy) CreateAsset(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
@@ -52,7 +52,7 @@ func (d *DataCatalogDummy) CreateAsset(in *datacatalog.CreateAssetRequest, creds
 	return &datacatalog.CreateAssetResponse{AssetID: "testAssetID"}, nil
 }
 
-func (m *DataCatalogDummy) DeleteAsset(in *datacatalog.DeleteAssetRequest, creds string) (*datacatalog.DeleteAssetResponse, error) {
+func (d *DataCatalogDummy) DeleteAsset(in *datacatalog.DeleteAssetRequest, creds string) (*datacatalog.DeleteAssetResponse, error) {
 	// TODO
 	// will be provide a proper implementation once the implementation of DeleteAssetInfo in katalog-connector
 	// is completed in a future PR. Till then a dummy implementation is provided.
@@ -81,14 +81,12 @@ func NewTestCatalog() *DataCatalogDummy {
 	var jsonFormat taxonomy.DataFormat = "json"
 	dummyResourceName := "xxx"
 	dummyCredentials := "dummy"
-	kafkaDeserializer := "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
-	sslTruststore := "xyz123"
 
 	s3Connection := taxonomy.Connection{
-		Name: app.S3,
+		Name: v1alpha1.S3,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				string(app.S3): map[string]interface{}{
+				string(v1alpha1.S3): map[string]interface{}{
 					// TODO(roee88): why are real endpoints used?
 					"endpoint":   "s3.eu-gb.cloud-object-storage.appdomain.cloud",
 					"bucket":     "fybrik-test-bucket",
@@ -99,10 +97,10 @@ func NewTestCatalog() *DataCatalogDummy {
 	}
 
 	db2Connection := taxonomy.Connection{
-		Name: app.JdbcDb2,
+		Name: v1alpha1.JdbcDb2,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				string(app.JdbcDb2): map[string]interface{}{
+				string(v1alpha1.JdbcDb2): map[string]interface{}{
 					"database": "test-db",
 					"table":    "test-table",
 					"url":      "dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net",
@@ -112,12 +110,13 @@ func NewTestCatalog() *DataCatalogDummy {
 			},
 		},
 	}
-
+	kafkaDeserializer := "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
+	sslTruststore := "xyz123"
 	kafkaConnection := taxonomy.Connection{
-		Name: app.Kafka,
+		Name: v1alpha1.Kafka,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				string(app.Kafka): map[string]interface{}{
+				string(v1alpha1.Kafka): map[string]interface{}{
 					"topic_name":              "topic",
 					"security_protocol":       "SASL_SSL",
 					"sasl_mechanism":          "SCRAM-SHA-512",
@@ -145,7 +144,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 	}
 
-	dummyCatalog.dataDetails[string(app.S3)] = datacatalog.GetAssetResponse{
+	dummyCatalog.dataDetails[string(v1alpha1.S3)] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      dummyResourceName,
 			Geography: geo,
@@ -171,7 +170,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 	}
 
-	dummyCatalog.dataDetails[string(app.JdbcDb2)] = datacatalog.GetAssetResponse{
+	dummyCatalog.dataDetails[string(v1alpha1.JdbcDb2)] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      dummyResourceName,
 			Geography: geo,
@@ -183,7 +182,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 	}
 
-	dummyCatalog.dataDetails[string(app.Kafka)] = datacatalog.GetAssetResponse{
+	dummyCatalog.dataDetails[string(v1alpha1.Kafka)] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      dummyResourceName,
 			Geography: geo,
