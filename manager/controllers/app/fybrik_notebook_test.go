@@ -161,11 +161,9 @@ func TestS3Notebook(t *testing.T) {
 	g.Expect(len(writeApplication.Status.AssetStates)).To(gomega.Equal(2))
 	g.Expect(writeApplication.Status.AssetStates["new-data-parquet"].CatalogedAsset).
 		ToNot(gomega.BeEmpty())
-	newCatalogedAsset := writeApplication.Status.AssetStates["new-data-parquet"].
+	newAssetID := writeApplication.Status.AssetStates["new-data-parquet"].
 		CatalogedAsset
-	parts := strings.Split(newCatalogedAsset, "/")
-	newCatalogID := parts[0]
-	newAssetID := parts[1]
+	newCatalogID := "fybrik-notebook-sample"
 
 	g.Expect(len(writeApplication.Status.ProvisionedStorage)).To(gomega.Equal(1))
 	// check provisioned storage
@@ -370,7 +368,7 @@ func TestS3Notebook(t *testing.T) {
 	defer flightClient.Close()
 
 	request = ArrowRequest{
-		Asset: newCatalogedAsset,
+		Asset: newCatalogID + "/" + newAssetID,
 	}
 
 	marshal, err = json.Marshal(request)

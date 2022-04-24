@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/gdexlab/go-render/render"
@@ -174,19 +173,12 @@ func TestCreateAsset(t *testing.T) {
 		response := &datacatalog.CreateAssetResponse{}
 		err = json.Unmarshal(w.Body.Bytes(), response)
 		g.Expect(err).To(BeNil())
-		destAssetName2 := destCatalogID + "/" + destAssetName
-		g.Expect(&response.AssetID).To(BeEquivalentTo(&destAssetName2))
-
-		splittedID := strings.SplitN(destAssetName2, "/", 2)
-		if len(splittedID) != 2 {
-			errorMessage := fmt.Sprintf("request has an invalid destAssetName %s (must be in namespace/name format)", destAssetName)
-			c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
-		}
-		namespace, assetName := splittedID[0], splittedID[1]
+		assetName := response.AssetID
+		g.Expect(&assetName).To(BeEquivalentTo(&destAssetName))
 
 		asset := &v1alpha1.Asset{}
 		if err := handler.client.Get(context.Background(),
-			types.NamespacedName{Namespace: namespace, Name: namespace + "/" + assetName}, asset); err != nil {
+			types.NamespacedName{Namespace: destCatalogID, Name: assetName}, asset); err != nil {
 			t.Log(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -281,13 +273,9 @@ func TestCreateAssetWthNoDestinationAssetID(t *testing.T) {
 		g.Expect(len(response.AssetID)).To(SatisfyAll(
 			BeNumerically(">", len(sourceAssetName))))
 		t.Log("response.AssetID: ", response.AssetID)
-		splittedID := strings.SplitN(response.AssetID, "/", 2)
-		if len(splittedID) != 2 {
-			errorMessage := fmt.Sprintf("request has an invalid asset ID %s (must be in namespace/name format)", response.AssetID)
-			t.Log(errorMessage)
-			return
-		}
-		namespace, assetName := splittedID[0], splittedID[1]
+
+		assetName := response.AssetID
+		namespace := "fybrik-system"
 		g.Expect(assetName).Should(HavePrefix(FybrikAssetPrefix))
 		t.Log("new asset created with name: ", assetName)
 
