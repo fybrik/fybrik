@@ -100,7 +100,12 @@ func (r *Handler) createAsset(c *gin.Context) {
 		return
 	}
 
-	secretName, secretNamespace := vault.GetKubeSecretDetailsFromVaultPath(request.Credentials)
+	secretName, secretNamespace, err := vault.GetKubeSecretDetailsFromVaultPath(request.Credentials)
+	if err != nil {
+		errString := "Error during create asset!"
+		r.reportError(c, http.StatusInternalServerError, errString+" Error: "+err.Error())
+		return
+	}
 
 	asset := &v1alpha1.Asset{
 		ObjectMeta: v1.ObjectMeta{Namespace: request.DestinationCatalogID, Name: request.DestinationAssetID, GenerateName: FybrikAssetPrefix},
@@ -113,7 +118,7 @@ func (r *Handler) createAsset(c *gin.Context) {
 
 	logging.LogStructure("Fybrik Asset to be created in Katalog:", asset, &r.log, zerolog.DebugLevel, false, false)
 
-	err := r.client.Create(context.Background(), asset)
+	err = r.client.Create(context.Background(), asset)
 	if err != nil {
 		errString := "Error during create asset!"
 		if errors.IsAlreadyExists(err) {
