@@ -55,6 +55,7 @@ func deleteCredentials(t *testing.T, path string) {
 }
 
 func TestCredentialAPIs(t *testing.T) {
+	SkipOnClosedSocket("localhost:8080", t)
 	storeCredentials(t, cred1)
 	storeCredentials(t, cred2)
 	readCredentials(t, name)

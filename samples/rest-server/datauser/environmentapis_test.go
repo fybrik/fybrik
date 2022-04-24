@@ -15,6 +15,7 @@ import (
 )
 
 func TestEnvironmentAPIs(t *testing.T) {
+	SkipOnClosedSocket("localhost:8080", t)
 	expectedObj := EnvironmentInfo{
 		Namespace: "default",
 		Geography: os.Getenv("GEOGRAPHY"),

@@ -46,7 +46,6 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 
 .PHONY: pre-test
 pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
-	go run samples/rest-server/main.go&
 	mkdir -p /tmp/taxonomy
 	mkdir -p /tmp/adminconfig
 	cp charts/fybrik/files/taxonomy/*.json /tmp/taxonomy/
@@ -83,6 +82,7 @@ run-integration-tests:
 	$(MAKE) -C modules helm
 	$(MAKE) -C modules helm-uninstall # Uninstalls the deployed tests from previous command
 	$(MAKE) -C pkg/helm test
+	$(MAKE) -C samples/rest-server test
 	$(MAKE) -C manager run-integration-tests
 	$(MAKE) -C modules test
 

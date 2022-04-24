@@ -5,9 +5,11 @@ package datauser
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -71,7 +73,19 @@ func deleteApplication(t *testing.T, name string) {
 	assert.Equal(t, resp.StatusCode, http.StatusOK, "Failed to delete application "+name)
 }
 
+func SkipOnClosedSocket(address string, t *testing.T) {
+	timeout := time.Second
+	conn, err := net.DialTimeout("tcp", address, timeout)
+	if err != nil {
+		t.Skip("Skipping test as server is not running...")
+	}
+	if conn != nil {
+		defer conn.Close()
+	}
+}
+
 func TestApplicationAPIs(t *testing.T) {
+	SkipOnClosedSocket("localhost:8080", t)
 	createApplication(t, dm1, dm1name)
 	createApplication(t, dm2, dm2name)
 	listApplications(t)
