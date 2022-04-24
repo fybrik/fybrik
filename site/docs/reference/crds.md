@@ -1309,6 +1309,13 @@ DatasetDetails holds details of the provisioned storage
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeyresourcemetadata">resourceMetadata</a></b></td>
+        <td>object</td>
+        <td>
+          Resource Metadata<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeysecretref">secretRef</a></b></td>
         <td>object</td>
         <td>
@@ -1431,6 +1438,95 @@ Holds details for retrieving credentials from Vault store.
           SecretPath is the path of the secret holding the Credentials in Vault<br/>
         </td>
         <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status.provisionedStorage[key].resourceMetadata
+<sup><sup>[↩ Parent](#fybrikapplicationstatusprovisionedstoragekey)</sup></sup>
+
+
+
+Resource Metadata
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeyresourcemetadatacolumnsindex">columns</a></b></td>
+        <td>[]object</td>
+        <td>
+          Columns associated with the asset<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>geography</b></td>
+        <td>string</td>
+        <td>
+          Geography of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>owner</b></td>
+        <td>string</td>
+        <td>
+          Owner of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>tags</b></td>
+        <td>object</td>
+        <td>
+          Tags associated with the asset<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status.provisionedStorage[key].resourceMetadata.columns[index]
+<sup><sup>[↩ Parent](#fybrikapplicationstatusprovisionedstoragekeyresourcemetadata)</sup></sup>
+
+
+
+ResourceColumn represents a column in a tabular resource
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the column<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>tags</b></td>
+        <td>object</td>
+        <td>
+          Tags associated with the column<br/>
+        </td>
+        <td>false</td>
       </tr></tbody>
 </table>
 

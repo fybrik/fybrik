@@ -28,8 +28,13 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 		details.DataFormat = info.Details.Format
 	}
 
+	geo := ""
+	if info.ResourceMetadata != nil {
+		geo = info.ResourceMetadata.Geography
+	}
 	resourceMetadata := datacatalog.ResourceMetadata{
-		Name: assetID,
+		Name:      assetID,
+		Geography: geo,
 	}
 
 	creds := ""
